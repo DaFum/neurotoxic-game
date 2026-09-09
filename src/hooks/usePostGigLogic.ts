@@ -48,6 +48,11 @@ export const usePostGigLogic = () => {
     const profileMultiplier =
       getExpeditionFinaleProfile(state.expedition.finaleType)
         ?.rewardMultiplier ?? 1
+    // Tour Pressure deliberately does *not* pay here. It multiplies terminal
+    // retained Money and Fame at extraction or completion instead, so the
+    // extra reward is only collected by a run that actually survived the
+    // danger the modifiers added.
+    //
     // The run-draft Finale bonus only pays out on the Finale itself, so it is
     // composed here rather than in the profile multiplier that every node of
     // an active run carries.

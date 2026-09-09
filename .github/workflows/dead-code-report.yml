@@ -27,9 +27,6 @@ permissions:
   issues: write
   pull-requests: write
 
-env:
-  PNPM_VERSION: '11.18.0'
-
 jobs:
   dead-code:
     name: knip (report only)
@@ -44,8 +41,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run knip
         run: |

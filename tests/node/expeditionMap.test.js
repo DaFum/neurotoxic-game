@@ -19,6 +19,7 @@ import {
   BASE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_MEANINGFUL_NODES,
+  MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from '../../src/domain/expedition/defaults'
@@ -104,16 +105,37 @@ describe('standard route shape', () => {
   })
 
   it('clamps a profile that asks for a route outside the corridor', () => {
-    for (const requested of [0, 1, 6, 10, 40, Number.NaN]) {
+    // 6 is no longer clamped away: it is the shortest depth a Tour may
+    // explicitly declare, which is what lets the Blitz Tour actually be
+    // shorter instead of the registry claiming a length the route never has.
+    for (const requested of [0, 1, 10, 40, Number.NaN]) {
       const depth = routeDepth(
         build(11, {
           ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
           meaningfulNodeCount: requested
         })
       )
+      // An *invalid* declaration falls back to the standard corridor, not to
+      // the shorter floor an explicit declaration may reach. Asserting the
+      // declared floor here would let a wrong 6-node fallback pass.
       assert.ok(depth >= MIN_EXPEDITION_MEANINGFUL_NODES)
       assert.ok(depth <= MAX_EXPEDITION_MEANINGFUL_NODES)
     }
+    // Anything that declares nothing still lands in the standard corridor.
+    const neutralDepth = routeDepth(build(11, NEUTRAL_EXPEDITION_ROUTE_PROFILE))
+    assert.ok(neutralDepth >= MIN_EXPEDITION_MEANINGFUL_NODES)
+    assert.ok(neutralDepth <= MAX_EXPEDITION_MEANINGFUL_NODES)
+
+    // A declared six-step route is honoured exactly.
+    assert.equal(
+      routeDepth(
+        build(11, {
+          ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+          meaningfulNodeCount: MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+        })
+      ),
+      MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+    )
   })
 
   it('keeps the Finale reachable and unique', () => {
@@ -164,43 +186,136 @@ describe('standard route shape', () => {
     }
   })
 
-  it('places Rival and Underground special classes', () => {
-    for (const seed of SEEDS) {
-      const map = build(seed)
-      const subtypes = new Set(
-        Object.values(map.meta)
-          .map(entry => entry.specialSubtype)
-          .filter(Boolean)
-      )
-      assert.ok(subtypes.has('RIVAL_ENCOUNTER'), `seed ${seed}: no rival node`)
+  const specialSubtypes = map =>
+    new Set(
+      Object.values(map.meta)
+        .map(entry => entry.specialSubtype)
+        .filter(Boolean)
+    )
+
+  const routeOffers = (subtypes, kind) =>
+    kind === 'rival'
+      ? subtypes.has('RIVAL_ENCOUNTER')
+      : subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET')
+
+  /** Share of seeds whose route offers a category, as a percentage. */
+  const offerRate = (kind, profile, seeds = 400) => {
+    let hits = 0
+    for (let seed = 0; seed < seeds; seed++) {
+      if (routeOffers(specialSubtypes(build(seed, profile)), kind)) hits++
+    }
+    return (hits / seeds) * 100
+  }
+
+  it('offers Rival and Underground as weighted categories, not guarantees', () => {
+    // Deliberately not "every seed has both". A guaranteed node makes the
+    // Region/Tour multipliers placebos: if every route already carries one,
+    // no weight can make the category more frequent. A neutral route offers
+    // each often but not always.
+    const rival = offerRate('rival', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
+    const underground = offerRate(
+      'underground',
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    for (const [kind, rate] of [
+      ['rival', rival],
+      ['underground', underground]
+    ]) {
       assert.ok(
-        subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET'),
-        `seed ${seed}: no underground node`
+        rate > 25 && rate < 90,
+        `${kind} offered on ${rate.toFixed(0)}% of seeds is not a real weight`
       )
     }
   })
 
-  it('places an Underground node even when every retry hits the Rival layer', () => {
-    // Regression: on a short route the Underground candidate collapses to a
-    // single value, so all eight retries can land on the Rival layer. Seed
-    // 505375 is such a route and used to ship with no Underground node.
-    const subtypes = new Set(
-      Object.values(build(505375).meta)
-        .map(entry => entry.specialSubtype)
-        .filter(Boolean)
-    )
-    assert.ok(subtypes.has('RIVAL_ENCOUNTER'))
+  it('lets the weight actually move the frequency', () => {
+    const heavier = offerRate('underground', {
+      ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+      undergroundWeight: 1.35
+    })
+    const baseline = offerRate('underground', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
     assert.ok(
-      subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET'),
-      'seed 505375: no underground node'
+      heavier > baseline,
+      `1.35x underground (${heavier.toFixed(0)}%) must beat baseline (${baseline.toFixed(0)}%)`
+    )
+    assert.equal(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 0
+      }),
+      0,
+      'a zero weight must take the category off the route entirely'
     )
   })
 
-  it('omits the Rival and Underground classes when the profile forbids them', () => {
+  it('guarantees a Rival encounter on a forced-Rival profile', () => {
+    // The weighted roll can legitimately miss, so the guarantee is a
+    // deterministic post-pass rather than a rigged roll.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        forcedRival: true
+      }),
+      100
+    )
+    // Even with the roll disabled outright.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      }),
+      100
+    )
+  })
+
+  it('converts the runtime node, not just its metadata', () => {
+    // The post-pass promotes a node the roll did not pick, so it has to move
+    // both representations. Arrival reads `nodes[nodeId].type`, so a node left
+    // as `GIG` or `REST_STOP` would run its old content while the metadata
+    // promised a Rival - and a venue-bearing node would carry a venue the
+    // encounter has no use for.
+    for (const seed of SEEDS) {
+      const map = build(seed, {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      })
+      const rivalNodeIds = map.nodeOrder.filter(
+        nodeId => map.meta[nodeId]?.specialSubtype === 'RIVAL_ENCOUNTER'
+      )
+      assert.equal(rivalNodeIds.length, 1, `seed ${seed} has no forced Rival`)
+      const nodeId = rivalNodeIds[0]
+      assert.equal(map.nodes[nodeId].type, 'SPECIAL', `seed ${seed} node type`)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venue'), false)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venueId'), false)
+      // The metadata the conversion promised is still there, and the node
+      // keeps its own identity and place on the route.
+      assert.equal(map.meta[nodeId].nodeClass, 'SPECIAL')
+      assert.equal(map.nodes[nodeId].id, nodeId)
+      assert.ok(map.connections.some(edge => edge.to === nodeId))
+    }
+  })
+
+  it('does not lose an Underground node it rolled to a layer collision', () => {
+    // Regression: on a short route the Underground candidate collapses to a
+    // single value, so all eight retries can land on the Rival layer. A route
+    // that rolled Underground must still get it rather than silently dropping
+    // the node - the fallback is about not losing a rolled category, which is
+    // different from guaranteeing one.
+    assert.ok(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 3
+      }) === 100
+    )
+  })
+
+  it('omits both classes when the profile weights them to zero', () => {
     const map = build(7, {
       ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
-      rivalAllowed: false,
-      undergroundAllowed: false
+      rivalWeight: 0,
+      undergroundWeight: 0
     })
     for (const entry of Object.values(map.meta)) {
       assert.equal(entry.specialSubtype, null)

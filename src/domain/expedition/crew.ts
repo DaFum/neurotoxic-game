@@ -1,9 +1,50 @@
 import type { GameState } from '../../types'
-import type { ExpeditionNumericRules } from '../../types/expedition'
+import type { ExpeditionCapabilityId } from '../../types/career'
+import type {
+  ExpeditionCrewRole,
+  ExpeditionNumericRules
+} from '../../types/expedition'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
+/**
+ * Crew roles a Career has to unlock before it can hire them.
+ *
+ * @remarks
+ * Keyed by role rather than by crew id, so adding a second Manager does not
+ * quietly ship an ungated one. A role absent from this map is free, which is
+ * what keeps the starting roster hireable by a fresh Career.
+ */
+const CREW_ROLE_CAPABILITY: Readonly<
+  Partial<Record<ExpeditionCrewRole, ExpeditionCapabilityId>>
+> = {
+  manager: 'crew_manager',
+  security: 'crew_security'
+}
+
+/**
+ * Whether a Career may field one Crew member right now.
+ *
+ * @param state - Current game state.
+ * @param crewId - Crew member being considered.
+ * @returns True when they are unlocked, uninjured and off recovery.
+ *
+ * @remarks
+ * The single availability authority: selection, validation and the rule
+ * contribution all route through it, so an unlocked-only-by-payload Manager
+ * cannot be committed *or* contribute if it somehow were.
+ */
 export const isCrewAvailable = (state: GameState, crewId: string): boolean => {
   if (!Object.hasOwn(EXPEDITION_CREW_BY_ID, crewId)) return false
+  const definition = EXPEDITION_CREW_BY_ID[crewId]
+  if (!definition) return false
+  const capability = CREW_ROLE_CAPABILITY[definition.role]
+  if (
+    capability &&
+    !isExpeditionCapabilityUnlocked(state.career?.unlockedSetIds, capability)
+  ) {
+    return false
+  }
   const debt = state.career.crewRecoveryDebtById[crewId]
   const career = state.career.crewById[crewId]
   return (

@@ -1,4 +1,6 @@
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import { getExpeditionStaticRoutePressureProfile } from './routeProfile'
+import { getExpeditionFameProfile } from './fame'
 import { generateBrandOffers } from '../../utils/brandDealLogic'
 import {
   getAcceptDealBandUpdateFactory,
@@ -9,7 +11,10 @@ import { mulberry32 } from '../../utils/seededRng'
 import { hashExpeditionRoute } from './map'
 import type { GameState } from '../../types'
 import type { BrandDeal } from '../../types/social'
-import type { ExpeditionPreparedSponsorOffer } from '../../types/expedition'
+import type {
+  ExpeditionPreparedSponsorOffer,
+  ExpeditionSponsorStagingProvenance
+} from '../../types/expedition'
 import type { QuestEvent } from '../../types/quest'
 import {
   createBrandDealCompletedQuestEvent,
@@ -17,6 +22,29 @@ import {
   createBrandTrustChangedQuestEvent
 } from '../../quests/producers/brandQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+
+/**
+ * The most genuine matches any combination may promote into the staged pool.
+ *
+ * @remarks
+ * Fame tops out at 2, and the perk and the unlock set add one each. Without
+ * this cap a Career could guarantee every staged offer is a real match, which
+ * removes the choice the staging exists to create.
+ */
+const MAX_EXPEDITION_SPONSOR_QUALITY_BIAS = 3
+
+/**
+ * The most offers {@link buildPreparedExpeditionSponsorOffers} can ever stage.
+ *
+ * @remarks
+ * Three by default, plus one on a Region or Tour that runs on Contracts. The
+ * load sanitizer bounds the persisted snapshot by this rather than by its own
+ * literal: truncating below the producer's ceiling made the reloaded snapshot
+ * fail its own reproduction check, which cleared the staging outright.
+ */
+export const MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS = 4
 
 const sponsorSeed = (seed: number): number =>
   Number.parseInt(
@@ -40,27 +68,104 @@ export const getCanonicalBrandDealTermsHash = (
   )
 }
 /**
- * Staged Sponsor offers a prepared run may commit.
+ * The Sponsor offers a run on this Region and Tour may commit.
  *
  * @param state - Current game state.
+ * @param regionId - Region the offers are staged for.
+ * @param tourTypeId - Tour Type the offers are staged for.
+ * @param starterPerkId - Starter perk of the build being staged, for its
+ * Sponsor-quality bias.
  * @returns The deterministic offers, already narrowed by Rival interference.
  *
  * @remarks
+ * The Region, Tour and starter perk arrive as arguments rather than being read
+ * off `state.expedition.loadout`, because every caller needs them *before* that
+ * loadout exists: PREPARE runs on scene entry, before the player has chosen
+ * any of them, and START validates a candidate that is not committed yet.
+ * Reading the loadout meant this always resolved the baseline profile in
+ * production, so neither the route-specific offer count nor the perk's quality
+ * bias ever applied to a real run.
+ *
  * Nemesis tier 3 is Sponsor interference: a Rival the Career has history with
  * takes one staged offer off the table before the next tour can commit to it,
  * which is what makes the tier a real rule change rather than a number. The
  * cut is safe to derive here because a Nemesis tier only advances during an
- * *active* run, so the offers a prepared run stages cannot shift underneath
- * the load-time re-derivation that validates them.
+ * *active* run, so the offers a prepared run sees cannot shift underneath the
+ * derivation that validates them.
  */
 export const buildPreparedExpeditionSponsorOffers = (
-  state: GameState
+  state: GameState,
+  regionId: unknown,
+  tourTypeId: unknown,
+  starterPerkId: string | null = null
 ): ExpeditionPreparedSponsorOffer[] => {
   const rivalRecord = state.rivalBand
     ? state.career?.rivalsById?.[state.rivalBand.id]
     : undefined
-  const stagedOfferCount = (rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3
-  return generateBrandOffers(state, mulberry32(sponsorSeed(state.runSeed)))
+  // The run-stable half of the route profile, never the live one: this set is
+  // derived at commit time and again on load, so a Fame or Nemesis change
+  // mid-run must not silently produce a different one.
+  const route = getExpeditionStaticRoutePressureProfile(regionId, tourTypeId)
+  // A Region or Tour that runs on Contracts stages one more offer to choose
+  // from; one that keeps its distance from brands stages one fewer.
+  const routeStagedOffers =
+    route.sponsorContractEventWeightMultiplier >= 1.25
+      ? 1
+      : route.sponsorContractEventWeightMultiplier <= 0.9
+        ? -1
+        : 0
+  const stagedOfferCount = Math.max(
+    1,
+    ((rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3) + routeStagedOffers
+  )
+  // Fame biases pool *quality*, never the count: the Region and Tour decide how
+  // many offers are staged, and Fame decides how many of them are genuine
+  // matches rather than stretched ones. The bias value is the guarantee - a
+  // `touring` band is owed two real matches if the pool has them - so nothing
+  // here invents a threshold the Fame table does not already state.
+  const generated = generateBrandOffers(
+    state,
+    mulberry32(sponsorSeed(state.runSeed))
+  )
+  const genuine = generated.filter(offer => !offer.flavor.isStretched)
+  // Quality, never count. The Fame band sets the baseline guarantee, and both
+  // `premium_sponsor_pool` and the `press_pass` perk add one more genuine
+  // match on top - capped, so stacking them cannot promote more real matches
+  // than the design allows. The staged offer count is untouched either way, so
+  // neither buys extra offers or extra payout.
+  // The lean a Between-Tour `sponsor_follow_up` left, for that deal only:
+  // keeping the relationship is worth one more genuine match, walking away one
+  // fewer. Single-slot on the Career and overwritten by the next Tour's
+  // decision, so it is a lean rather than a purchase.
+  const sponsorPreference = state.career?.nextTourPreferences?.sponsor
+  const preferenceBias =
+    sponsorPreference &&
+    generated.some(offer => offer.id === sponsorPreference.dealId)
+      ? sponsorPreference.bias
+      : 0
+  const promoted = genuine.slice(
+    0,
+    Math.max(
+      0,
+      Math.min(
+        MAX_EXPEDITION_SPONSOR_QUALITY_BIAS,
+        preferenceBias +
+          getExpeditionFameProfile(state).sponsorQualityBias +
+          (isExpeditionCapabilityUnlocked(
+            state.career?.unlockedSetIds,
+            'premium_sponsor_pool'
+          )
+            ? 1
+            : 0) +
+          Math.max(
+            0,
+            getExpeditionStarterPerk(starterPerkId)?.sponsorQualityBias ?? 0
+          )
+      )
+    )
+  )
+  const promotedIds = new Set(promoted.map(offer => offer.id))
+  return [...promoted, ...generated.filter(offer => !promotedIds.has(offer.id))]
     .slice(0, stagedOfferCount)
     .map(deal => ({
       offerId: hashExpeditionRoute(
@@ -72,13 +177,46 @@ export const buildPreparedExpeditionSponsorOffers = (
     }))
 }
 
+/**
+ * Re-derives a persisted Sponsor staging on load and keeps it only if it still
+ * reproduces exactly.
+ *
+ * @param state - Loaded game state.
+ * @param persisted - The offer snapshot the save carried.
+ * @param provenance - The route the snapshot was staged for, already narrowed
+ * for shape and confirmed available to this Career; pass `undefined` to clear.
+ * @returns The surviving snapshot and provenance, or both empty.
+ *
+ * @remarks
+ * The snapshot is only re-derivable from the Region, Tour and perk it was
+ * generated for, which is what the provenance carries. Reading them off
+ * `state.expedition.loadout` instead - as this did - always resolved the
+ * baseline profile, because a `prepared` run has no committed loadout yet: a
+ * staging for any non-baseline route failed its own reproduction check and was
+ * silently wiped on every load.
+ *
+ * Offers and provenance are returned together and cleared together. Keeping
+ * one without the other would leave either offers START can no longer validate
+ * or a provenance describing offers that no longer exist.
+ */
 export const validatePreparedExpeditionSponsorOffers = (
   state: GameState,
-  persisted: readonly ExpeditionPreparedSponsorOffer[]
-): ExpeditionPreparedSponsorOffer[] => {
-  const canonical = buildPreparedExpeditionSponsorOffers(state)
-  if (JSON.stringify(canonical) !== JSON.stringify(persisted)) return []
-  return canonical
+  persisted: readonly ExpeditionPreparedSponsorOffer[],
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+): {
+  offers: ExpeditionPreparedSponsorOffer[]
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+} => {
+  const cleared = { offers: [], provenance: undefined }
+  if (!provenance) return cleared
+  const canonical = buildPreparedExpeditionSponsorOffers(
+    state,
+    provenance.regionId,
+    provenance.tourTypeId,
+    provenance.starterPerkId
+  )
+  if (JSON.stringify(canonical) !== JSON.stringify(persisted)) return cleared
+  return { offers: canonical, provenance }
 }
 
 export interface BrandDealAcceptanceResult {

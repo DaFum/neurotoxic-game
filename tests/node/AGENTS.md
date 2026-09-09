@@ -10,6 +10,13 @@
 - `economyEngine.test.js` `calculateMerchIncome` tests must cover custom `context.merchPrices` — verify non-default prices change revenue vs default, and identical prices produce identical revenue.
 - Split-runner commands must stay Windows-shell portable.
 
+## Expedition
+
+- Adding or removing an `rng()` call in `buildExpeditionMap` shifts the seeded stream and changes **every route on every seed**. Fixtures must derive node ids, reward ids and route steps from the built map — never pin `exp_3_0`, `reward_route_merch_crate`, or a literal inventory delta. Assert the invariant (`<definition>::<source>` id keying, "the walked path reaches a gig node"), not the generated value.
+- `walkTo` follows the first outgoing edge of each layer. A node on another branch is not on that path, so pick target nodes from the walk rather than from `map.meta` order.
+- Underground and Rival are weighted placement categories, not guarantees. Assert offer *rates* across many seeds; only a `forcedRival` profile is absolute. "Every seed has both" is the pre-G5 assumption and must not come back.
+- A route-rare fixture needs a seed whose route actually carries one — not every seed does. Search for a rare-bearing path instead of hand-writing a ledger entry, or the load sanitizer legitimately drops it.
+
 ## Long-Term Assets
 
 - Asset tests live in `assetReducer`, `assetTicks`, `assetSelectors`, `assetSanitizers`, `assetActionCreators`, `assetConfig`, `assetImagePrompts`, `assetModuleRegistry`, `loanProfiles`, `seededRng`, `economyAssetModifiers`, `advanceDayAssetIntegration`, and `assetGoldenPath`. RNG-sensitive tests construct `dayRngStream` arrays explicitly so the test can pin which assets trigger risk events.

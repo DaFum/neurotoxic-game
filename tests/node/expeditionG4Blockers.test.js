@@ -24,7 +24,8 @@ import {
   fixtureMap,
   firstExtractionRouteStep,
   walkTo,
-  walkToFinale
+  walkToFinale,
+  withExpeditionCapabilities
 } from '../expeditionLifecycleFixture.js'
 import {
   applyExpeditionPressureEventResolution,
@@ -34,6 +35,10 @@ import {
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
+import {
+  BASE_EXPEDITION_REGION_ID,
+  BASE_EXPEDITION_TOUR_TYPE_ID
+} from '../../src/domain/expedition/defaults.ts'
 import { EXPEDITION_PRESSURE_EVENTS_DB } from '../../src/data/events/expeditionPressure.ts'
 import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
 import { isExpeditionEventResultId } from '../../src/domain/expedition/eventDeltas.ts'
@@ -217,7 +222,11 @@ test('career rival sanitizer rejects coercible enum impostors', () => {
 })
 
 test('active obligations survive validated load sanitization', () => {
-  const prepared = preparedState()
+  // A performance Contract; `festival_network` sells that pool from G5 on,
+  // and this test's subject is the obligation, not the pool gate.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -310,12 +319,73 @@ test('persisted sponsor offers must equal the deterministic canonical offer set'
     type: ActionTypes.PREPARE_EXPEDITION_RUN,
     payload: { prepId: 'prep', runSeed: 123 }
   })
-  assert.ok(prepared.expedition.preparedSponsorOffers.length > 0)
-  const forged = structuredClone(prepared.expedition.preparedSponsorOffers)
+  // PREPARE deliberately stages nothing: it runs before the player has chosen
+  // a Region or Tour, so any set it stored would describe the baseline route
+  // rather than the one being built. The set is derived from those two ids.
+  assert.deepEqual(prepared.expedition.preparedSponsorOffers, [])
+
+  const canonical = buildPreparedExpeditionSponsorOffers(
+    prepared,
+    BASE_EXPEDITION_REGION_ID,
+    BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  assert.ok(canonical.length > 0)
+  const forged = structuredClone(canonical)
   forged.reverse()
+  // Offers and provenance are cleared together: a snapshot that no longer
+  // reproduces leaves nothing behind for START to validate against.
+  const provenance = {
+    regionId: BASE_EXPEDITION_REGION_ID,
+    tourTypeId: BASE_EXPEDITION_TOUR_TYPE_ID,
+    starterPerkId: null
+  }
   assert.deepEqual(
-    validatePreparedExpeditionSponsorOffers(prepared, forged),
-    []
+    validatePreparedExpeditionSponsorOffers(prepared, forged, provenance),
+    { offers: [], provenance: undefined }
+  )
+  // The canonical set staged for that same provenance survives intact.
+  assert.deepEqual(
+    validatePreparedExpeditionSponsorOffers(prepared, canonical, provenance),
+    { offers: canonical, provenance }
+  )
+  // No provenance means nothing is re-derivable, so nothing is kept.
+  assert.deepEqual(
+    validatePreparedExpeditionSponsorOffers(prepared, canonical, undefined),
+    { offers: [], provenance: undefined }
+  )
+})
+
+test('sponsor staging follows the selected Region and Tour', () => {
+  const initial = createInitialState()
+  const prepared = gameReducer(initial, {
+    type: ActionTypes.PREPARE_EXPEDITION_RUN,
+    payload: { prepId: 'prep', runSeed: 123 }
+  })
+  // What the plan requires is that `sponsorContractEventWeightMultiplier` has a
+  // real consumer in the staging path, and that is what this pins: staging
+  // reads the *selected* Region and Tour rather than the loadout, which is
+  // what made it resolve the baseline count in production.
+  //
+  // The exact +1/-1 count mapping below is coverage of the current
+  // implementation, not a G5 design invariant. If the offer algorithm changes
+  // while keeping the multiplier's consumer, these counts are free to change.
+  const offersFor = (regionId, tourTypeId) =>
+    buildPreparedExpeditionSponsorOffers(prepared, regionId, tourTypeId).length
+  const baseline = offersFor(
+    BASE_EXPEDITION_REGION_ID,
+    BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  // The upward half of that mapping is currently inert: `generateBrandOffers`
+  // yields at most three offers, so a Region/Tour asking for four still stages
+  // three. Assert what actually holds - Corporate never stages *fewer* than
+  // baseline - rather than a claim the pool cannot satisfy.
+  assert.ok(
+    offersFor('corporate_circuit', 'corporate_tour') >= baseline,
+    'a Region and Tour that lean on Contracts must not stage fewer offers'
+  )
+  assert.ok(
+    offersFor('underground_scene', 'underground_tour') < baseline,
+    'a Region and Tour that avoid brands must stage fewer offers'
   )
 })
 
@@ -461,7 +531,11 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
 })
 
 test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy or is forged', () => {
-  const prepared = preparedState()
+  // A performance Contract; `festival_network` sells that pool from G5 on,
+  // and this test's subject is the obligation, not the pool gate.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -494,31 +568,36 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
     meta: canonicalMap.meta
   })
 
-  // Find a node in canonicalMap that is a gig class (CLUB_GIG, FESTIVAL, or FINALE) and reachable from startNodeId
-  const gigEntry = Object.entries(canonicalMap.meta).find(
-    ([id, meta]) =>
-      id !== startNodeId &&
-      (meta.nodeClass === 'CLUB_GIG' ||
-        meta.nodeClass === 'FESTIVAL' ||
-        meta.nodeClass === 'FINALE')
-  )
-  assert.ok(gigEntry, 'gig node must exist in canonical map')
-  const [targetGigNodeId, gigMeta] = gigEntry
-  const gigRouteStep = gigMeta.routeStep
-
-  // Build a valid connected path from startNodeId to targetGigNodeId using canonicalMap connections
-  const visitedNodeIds = [startNodeId]
-  let current = startNodeId
-  for (let step = 1; step <= gigRouteStep; step++) {
+  // Walk the canonical path first, then take a gig node *from that path*.
+  // Picking one out of meta order and assuming the greedy walk reaches it is
+  // what broke here: a gig node can exist on a branch this walk never takes,
+  // and which branch carries one legitimately changes with route generation.
+  const walkedNodeIds = [startNodeId]
+  let cursor = startNodeId
+  for (
+    let step = 1;
+    step <= canonicalMap.meta[canonicalMap.finaleNodeId].routeStep;
+    step++
+  ) {
     const nextEdge = canonicalMap.connections.find(
       conn =>
-        conn.from === current && canonicalMap.meta[conn.to]?.routeStep === step
+        conn.from === cursor && canonicalMap.meta[conn.to]?.routeStep === step
     )
-    assert.ok(nextEdge, `edge at step ${step} must exist`)
-    current = nextEdge.to
-    visitedNodeIds.push(current)
+    if (!nextEdge) break
+    cursor = nextEdge.to
+    walkedNodeIds.push(cursor)
   }
-  assert.equal(current, targetGigNodeId)
+  const gigRouteStep = walkedNodeIds.findIndex(id => {
+    const entry = canonicalMap.meta[id]
+    return (
+      id !== startNodeId &&
+      (entry?.nodeClass === 'CLUB_GIG' ||
+        entry?.nodeClass === 'FESTIVAL' ||
+        entry?.nodeClass === 'FINALE')
+    )
+  })
+  assert.ok(gigRouteStep > 0, 'the walked route must reach a gig node')
+  const visitedNodeIds = walkedNodeIds.slice(0, gigRouteStep + 1)
   const actualGigNodeId = visitedNodeIds[gigRouteStep]
   const gigVenueId =
     canonicalMap.nodes[actualGigNodeId]?.venueId || actualGigNodeId
@@ -757,8 +836,8 @@ test('reckless_encore trades extraction retention for its Finale multiplier', ()
 
   const base = settleExpedition(state, 'extracted')
   const withDraft = settleExpedition(drafted, 'extracted')
-  assert.equal(base.retentionRate, 0.6)
-  assert.equal(withDraft.retentionRate, 0.6 * 0.85)
+  assert.equal(base.retentionRate, 0.7)
+  assert.equal(withDraft.retentionRate, 0.7 * 0.85)
   assert.ok(withDraft.moneyRetained < base.moneyRetained)
   assert.ok(withDraft.fameRetained < base.fameRetained)
 
@@ -850,7 +929,11 @@ test('sanitizeExpeditionState refuses forged terminal-contract progress', () => 
 })
 
 test('the Underground detour opens only once the player resolves the invite', () => {
-  const prepared = preparedState()
+  // Working the Black Market is what `underground_network` sells; the subject
+  // here is the detour's own gate, so the capability is granted explicitly.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'underground_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -915,6 +998,38 @@ test('the Underground detour opens only once the player resolves the invite', ()
   )
   assert.equal(travelled.player.currentNodeId, opportunity.targetNodeId)
   assert.equal(travelled.expedition.pressure.temporaryRouteOpportunity, null)
+  // The invite converted an ordinary node too, and the same rule applies: the
+  // detour has to outlive the move or arrival plays the node's own class.
+  assert.deepEqual(travelled.expedition.arrivedOverlay, {
+    nodeId: opportunity.targetNodeId,
+    subtype: 'UNDERGROUND_MARKET',
+    source: 'underground_invite'
+  })
+  // A reload keeps it only while the Heat that could have produced the invite
+  // still holds; below that gate the save is claiming a detour it never had.
+  assert.deepEqual(
+    sanitizeExpeditionState(
+      JSON.parse(JSON.stringify(travelled.expedition)),
+      travelled.runSeed
+    ).arrivedOverlay,
+    {
+      nodeId: opportunity.targetNodeId,
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'underground_invite'
+    }
+  )
+  assert.equal(
+    sanitizeExpeditionState(
+      JSON.parse(
+        JSON.stringify({
+          ...travelled.expedition,
+          pressure: { ...travelled.expedition.pressure, heat: 59 }
+        })
+      ),
+      travelled.runSeed
+    ).arrivedOverlay,
+    null
+  )
 
   // Below the Heat gate resolving the same invite opens nothing.
   const cold = {
@@ -1062,9 +1177,45 @@ test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
     getEffectiveExpeditionRoute(atTierTwo, map).connections,
     effective.connections
   )
-  assert.notStrictEqual(
-    applyExpeditionRouteAdvance(atTierTwo, shortcutNodeId),
-    atTierTwo
+  const travelled = applyExpeditionRouteAdvance(atTierTwo, shortcutNodeId)
+  assert.notStrictEqual(travelled, atTierTwo)
+  // The shortcut converted an ordinary node, so the conversion has to outlive
+  // the move: every reader after it - arrival, and the Rival-encounter proof a
+  // Run Draft needs - would otherwise fall back to the node's own class and
+  // resolve the Rest Stop the shortcut was offered instead of.
+  assert.deepEqual(travelled.expedition.arrivedOverlay, {
+    nodeId: shortcutNodeId,
+    subtype: 'RIVAL_ENCOUNTER',
+    source: 'nemesis_shortcut'
+  })
+  assert.equal(
+    getEffectiveExpeditionRoute(travelled, map).subtypeByNodeId[shortcutNodeId],
+    'RIVAL_ENCOUNTER'
+  )
+  // The tier is the shortcut's own gate and it lives in the Career, where the
+  // Expedition load path cannot see it - so it is re-checked on every read: a
+  // run no longer at the tier stands on a plain node again.
+  const droppedTier = {
+    ...travelled,
+    career: {
+      ...travelled.career,
+      rivalsById: {
+        ...travelled.career.rivalsById,
+        [started.rivalBand.id]: {
+          ...travelled.career.rivalsById[started.rivalBand.id],
+          history: {
+            ...travelled.career.rivalsById[started.rivalBand.id].history,
+            nemesisLevel: 1
+          }
+        }
+      }
+    }
+  }
+  assert.equal(
+    getEffectiveExpeditionRoute(droppedTier, map).subtypeByNodeId[
+      shortcutNodeId
+    ],
+    undefined
   )
 })
 
@@ -1177,8 +1328,64 @@ test('a route advance runs one deterministic Director step', () => {
   )
 })
 
+test('the Black Market interaction is sold, and the route is not', () => {
+  const invite = 'expedition_underground_invite'
+  const startRun = career => {
+    const prepared = withExpeditionCapabilities(preparedState(), career)
+    return gameReducer(prepared, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: prepared.expedition.prep.prepId,
+        expectedRunSeed: prepared.runSeed,
+        loadout: fixtureLoadout()
+      }
+    })
+  }
+  const hot = state => ({
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: {
+        ...state.expedition.pressure,
+        heat: 70,
+        pendingDirectorEventId: invite
+      }
+    }
+  })
+  const map = fixtureMap()
+  const opened = state =>
+    applyExpeditionPressureEventResolution(hot(state), invite, map)
+      .temporaryRouteOpportunity
+
+  // A fresh Career draws the same route and the same invite, and the market
+  // stays shut.
+  const fresh = startRun([])
+  const bought = startRun(['underground_network'])
+  assert.equal(opened(fresh), null)
+  assert.ok(opened(bought))
+
+  // The capability must never reach the map: same seed, Region and Tour means
+  // the same route, unlock set or not.
+  assert.equal(
+    buildExpeditionMap(
+      fresh.runSeed,
+      fresh.expedition.loadout.tourTypeId,
+      fresh.expedition.loadout.regionId
+    ).mapHash,
+    buildExpeditionMap(
+      bought.runSeed,
+      bought.expedition.loadout.tourTypeId,
+      bought.expedition.loadout.regionId
+    ).mapHash
+  )
+})
+
 test('a forged temporary route opportunity does not survive a load', () => {
-  const prepared = preparedState()
+  // Working the Black Market is what `underground_network` sells; the subject
+  // here is the detour's own gate, so the capability is granted explicitly.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'underground_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -1483,7 +1690,10 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
     fresh.player.fame = 100
     fresh.player.van.fuel = 100
     const prepared = gameReducer(
-      { ...fresh, career },
+      // Carrying a feud between runs is what `rival_network` sells. The ladder
+      // is this test's subject, so the continuation right is granted rather
+      // than re-tested here.
+      { ...fresh, career: { ...career, unlockedSetIds: ['rival_network'] } },
       {
         type: ActionTypes.PREPARE_EXPEDITION_RUN,
         payload: { prepId, runSeed: 4242 }

@@ -91,16 +91,16 @@ describe('ExtractionDialog', () => {
     state.current = buildState()
     render(<ExtractionDialog isOpen onClose={() => {}} />)
 
-    // 1000 earned at the 60% base rate.
+    // 1000 earned at the 70% base rate.
     expect(
       screen.getByTestId('expedition-extraction-retained')
-    ).toHaveTextContent('600 EUR')
+    ).toHaveTextContent('700 EUR')
     expect(
       screen.getByTestId('expedition-extraction-forfeited')
-    ).toHaveTextContent('400 EUR')
-    // 50 fame earned: 30 kept, 20 lost.
-    expect(screen.getByText('30')).toBeInTheDocument()
-    expect(screen.getByText('20')).toBeInTheDocument()
+    ).toHaveTextContent('300 EUR')
+    // 50 fame earned: 35 kept, 15 lost.
+    expect(screen.getByText('35')).toBeInTheDocument()
+    expect(screen.getByText('15')).toBeInTheDocument()
   })
 
   it('renders nothing while closed', () => {

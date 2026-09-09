@@ -89,10 +89,7 @@ Extend G3 Career state:
 
 ```ts
 export type ExpeditionCareerRank =
-  | 'rookie'
-  | 'roadtested'
-  | 'headliner'
-  | 'cult_legend'
+  'rookie' | 'roadtested' | 'headliner' | 'cult_legend'
 
 export interface ExpeditionCareerProgress {
   tourTokens: number
@@ -651,6 +648,7 @@ Reducer validates canonical registry/current observed source. Archive never gran
 
 ```ts
 export type BetweenTourDecisionType =
+  | 'sponsor_advance'
   | 'injury_rehab'
   | 'crew_debrief'
   | 'rival_response'
@@ -685,6 +683,14 @@ G5 replaces G3's placeholder `betweenTourByRunId` with the final typed record.
 Decision selection priority and target rules:
 
 ```text
+0. sponsor_advance
+   only when ALL THREE hold: the run's terminal kind is 'failed',
+   career.sponsorAdvance is null, and isExpeditionCareerInsolvent(state) -
+   which means the band cannot fuel to half a tank, not that it cannot pay
+   the cheapest legal build;
+   target is the Sponsor the failed run carried, else the lowest-upfront
+   deal in the registry, id lexical on a tie
+
 1. injury_rehab
    first serious Crew recovery debt by created run order then crew id;
    otherwise highest-stage persistent Band consequence, id lexical
@@ -712,6 +718,110 @@ Decision selection priority and target rules:
 
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
 
+Insolvency is measured against half a tank because the road fund guarantees
+the cheapest legal start. Asking whether the Career can pay *that* would make
+the rescue unreachable by construction - it fired 3,048 times before the
+guarantee and 0 after, until the threshold moved. Half a tank is what
+separates a Tour from a gesture: below it the band cannot reach the far half
+of any route, so the run it could legally book is one it cannot finish.
+
+### The road fund — added by the G6 Task 12 recovery pass
+
+`SETTLE_EXPEDITION_CAREER_RESULT` raises Career Cash to
+`getExpeditionMinimumNextStartCost(state)` when it sits below it. That figure
+is the *unavoidable* charge for booking again: a build may only top the tank
+up, so the cheapest legal `startingFuelTarget` is the tank the Tour left
+rounded up, and the cost is that rounding - a euro or two.
+
+The invariant it establishes: **whatever a Tour ends as - completed, extracted
+or failed - the Career can book the next one.** Not with high probability;
+always. A Tour that ended two euros short of topping off a tank it already
+had was ending Careers on an accounting edge, and that accounted for 2,757 of
+12,000 release sequences dropping out before six runs.
+
+It is deliberately not an income floor. It buys no Fuel above what a build
+must commit, no repairs and no cargo, and any real Tour income dwarfs it, so a
+Career that is merely poor stays poor and every other consequence of a bad
+Tour is untouched. `vehicle_repair` respects the same floor for the same
+reason: a repaired van the band cannot drive anywhere is the wreck in a
+different shape.
+
+Failure is still allowed to cost the Career dearly - retention stays 0.25, the
+van keeps its damage, Crew debt and Sponsor dependence all persist. What it may
+no longer do is end the Career technically.
+
+### `vehicle_repair` is partial — changed by the G6 Task 12 economy fix
+
+`pay_repair` originally charged `ceil((100 - condition) * €12)` and set the
+van to 100, refusing outright when the Career could not pay the whole bill.
+That made it a Career-ender rather than a repair. A van at condition 0 costs
+€1,200 to rebuild; a Career between Tours holds a few hundred, so the decision
+was refused, the van stayed at 0 for every remaining Tour, every run bailed out
+at its first extraction window on survival pressure, and nothing ever earned
+the €1,200.
+
+Measured across 150 fresh-Career sequences before the change, median van
+condition at the start of a Tour ran 100, 22, 0, 0, 0, 0. From Tour 3 onward
+the Career toured a wreck.
+
+It now buys what it can afford at the same price per point. Nothing else moves:
+the rate is unchanged, the offer still triggers below
+`BETWEEN_TOUR_REPAIR_CONDITION_CEILING` (75), and a Career that can pay the
+whole bill gets exactly the repair it used to get.
+
+### `sponsor_advance` — added by the G6 Phase A economy pass
+
+G5 first closed with six families. `sponsor_advance` is the seventh, and this
+contract - not the production code - is the change of record.
+
+It is deliberately first in priority, and that placement has a cost worth
+stating plainly: at most three decisions are generated, so on the runs where it
+appears it displaces the third-priority decision that would otherwise have been
+offered. That trade is the point. It is generated only for a Career that has
+just *failed* a run and cannot afford even the minimum Fuel top-up for the next
+one, and for such a Career a Crew debrief or an Archive lead is a decision about
+a Tour it can no longer start. Every other Between-Tour set is unaffected: the
+three preconditions are all false on a Career that completed or extracted.
+
+It is the only family that persists Cash debt, so it carries persistence and
+exit criteria the other six do not:
+
+```text
+persisted   career.sponsorAdvance: {
+              dealId, amount, outstanding, takenAfterRunId
+            } | null
+
+options     take_advance     -> +€400 Career Cash now,
+                                outstanding = round(400 * 1.25) = €500
+            decline_advance  -> no state change
+
+repayment   applyExpeditionSettlement subtracts from what a LATER run
+            retains, capped at both the retained amount and the
+            outstanding balance; never from the standing Career balance,
+            so a debt cannot bankrupt a Career between Tours
+
+exit        cleared when outstanding reaches 0; the record is then null
+            on load as well as in memory - a persisted zero would keep
+            and a new advance may be offered again
+
+re-check    both `sponsorAdvance === null` and insolvency are re-derived
+            at apply time, not trusted from the decision: an earlier
+            decision in the same set may have already made the Career
+            solvent
+
+load        an advance is dropped, never repaired, unless dealId is in the
+            canonical Sponsor registry, amount is exactly €400, and
+            outstanding is an integer in [1, 500]; a cleared advance
+            serializes as null, never as a zero balance
+```
+
+Dependent evidence that moves with this family:
+
+- `tests/node/expeditionBetweenTour.test.js` - generation preconditions,
+  repayment source, and the load-path guard
+- `docs/superpowers/reports/roguelite-expedition-v15-balance.{md,json}` - the
+  Task 12 fresh-Career sequence counts
+
 Exact options:
 
 ```text
@@ -736,7 +846,9 @@ sponsor_follow_up
   walk_away -> clear preference; next Sponsor obligation pressure -1 bounded tier
 
 vehicle_repair
-  pay_repair -> ceil((100-condition)*€12), set canonical van condition 100
+  pay_repair -> buy as many condition points as the Career can afford at
+                €12/point, up to the 100 - condition it is missing;
+                charge exactly points_bought * €12
   carry_damage -> no change
 
 network_contact

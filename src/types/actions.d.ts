@@ -178,6 +178,16 @@ export interface PrepareExpeditionRunPayload {
   runSeed: number
 }
 
+/**
+ * Payload staging deterministic Sponsor offers for a prepared run.
+ */
+export interface PrepareExpeditionSponsorOffersPayload {
+  expectedRunSeed: number
+  regionId?: string
+  tourTypeId?: string
+  starterPerkId?: string | null
+}
+
 export interface ExpeditionInjurySourcePayload {
   targetId: string
   sourceId: string
@@ -185,6 +195,97 @@ export interface ExpeditionInjurySourcePayload {
 }
 export interface SettleExpeditionCrewCareerPayload {
   runId: string
+}
+export interface SettleExpeditionCareerResultPayload {
+  runId: string
+}
+/**
+ * Intent to raise one HQ facility by exactly one level.
+ *
+ * @remarks
+ * `expectedLevel` is the level the caller believes the facility is at now, so
+ * a replayed or stale dispatch is refused instead of buying a second level.
+ * The cost is never carried: the reducer derives it from the registry.
+ */
+export interface PurchaseExpeditionHqFacilityPayload {
+  facilityId: string
+  expectedLevel: number
+}
+/**
+ * Names the unlock set a journal step applies to.
+ *
+ * @remarks
+ * The same shape for all three steps. No cost is carried: begin derives it
+ * from the registry, and complete and rollback read it back off the journal
+ * entry, so a caller cannot choose what a purchase took or refunds.
+ */
+export interface ExpeditionUnlockPurchasePayload {
+  setId: string
+}
+/**
+ * Names the finalized run whose settlement proves Ascension was earned.
+ *
+ * @remarks
+ * Carries no boolean. Every eligibility term - rank, unlock-set count and the
+ * meta-unlock quest - is recomputed in the reducer from the Career, so a
+ * caller can point at the evidence but never assert the conclusion.
+ */
+export interface UnlockExpeditionAscensionPayload {
+  runId: string
+}
+
+/**
+ * Claims the Legendary one finalized Finale earned.
+ *
+ * @remarks
+ * `expectedCapabilityId` is a stale guard, not a request: the reducer
+ * recomputes the candidate from the finalized outcome and the Career's rank
+ * and holdings, and refuses when the two disagree. That is what stops a caller
+ * from naming the Legendary it would rather have.
+ */
+export interface CommitExpeditionLegendaryRewardPayload {
+  runId: string
+  expectedCapabilityId: string
+}
+
+/**
+ * Records one thing the run met, in the Archive category it belongs to.
+ *
+ * @remarks
+ * `sourceId` is the proof, not a label: the reducer checks it against what the
+ * run is actually observing, so an id that is real but was never encountered
+ * is refused. Nothing the Archive holds grants anything.
+ */
+export interface RecordExpeditionArchiveDiscoveryPayload {
+  category: string
+  id: string
+  sourceId: string
+}
+
+/**
+ * Generates the Between-Tour decisions one finalized run leaves behind.
+ *
+ * @remarks
+ * Names the run only. The decision set is derived in the reducer from state
+ * both settlements have already advanced, and a run that already has a stored
+ * set is refused, so this cannot ask the same Tour twice.
+ */
+export interface GenerateExpeditionBetweenTourDecisionsPayload {
+  runId: string
+}
+
+/**
+ * Answers one stored Between-Tour decision.
+ *
+ * @remarks
+ * Carries no amounts and no target. Every value is derived from the stored
+ * decision plus the registry, so a caller can pick an option but never what it
+ * costs or who it acts on.
+ */
+export interface ResolveExpeditionBetweenTourDecisionPayload {
+  runId: string
+  decisionId: string
+  optionId: string
 }
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string

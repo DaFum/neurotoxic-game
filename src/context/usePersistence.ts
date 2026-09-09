@@ -3,7 +3,8 @@ import {
   type MutableRefObject,
   useCallback,
   useEffect,
-  useRef
+  useRef,
+  useState
 } from 'react'
 import type { TFunction } from 'i18next'
 import {
@@ -265,8 +266,20 @@ export function usePersistence({
     )
   }, [addToast, tRef])
 
+  /**
+   * Writes the save, reporting whether the write actually landed.
+   *
+   * @remarks
+   * The boolean exists for the crash-safe unlock journal: a caller that
+   * persists a marker between a debit and a grant has to know whether the
+   * marker survived, or it cannot decide between committing and refunding.
+   * Every other caller ignores it.
+   */
   const saveGame = useCallback(
-    (showToast = true, stateSnapshot: GameState = stateRef.current) => {
+    (
+      showToast = true,
+      stateSnapshot: GameState = stateRef.current
+    ): boolean => {
       const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
@@ -311,15 +324,34 @@ export function usePersistence({
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
+      return success === true
     },
     [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
   )
 
   const previousSceneRef = useRef(currentScene)
-  const saveAfterStateCommitRef = useRef(false)
-  const saveGameAfterStateCommit = useCallback(() => {
-    saveAfterStateCommitRef.current = true
-  }, [])
+  // A request counter rather than a flag: the effect below has to *run* for
+  // the save to happen, and a ref cannot wake it. Counting in state makes the
+  // request part of the same commit as the dispatch it follows, so a state
+  // change inside one scene persists now instead of waiting for the next
+  // scene transition - which is what a command that changes persisted state
+  // without navigating needs.
+  const [saveRequestCount, setSaveRequestCount] = useState(0)
+  const handledSaveRequestRef = useRef(0)
+  // Continuations waiting on the durability of that save. A caller sitting
+  // between a debit and a grant cannot read the write's outcome from a
+  // fire-and-forget request, and it is the only thing that may decide between
+  // committing and refunding.
+  const saveRequestListenersRef = useRef<((saved: boolean) => void)[]>([])
+  const saveGameAfterStateCommit = useCallback(
+    (onSaved?: (saved: boolean) => void) => {
+      if (onSaved) {
+        saveRequestListenersRef.current.push(onSaved)
+      }
+      setSaveRequestCount(count => count + 1)
+    },
+    []
+  )
 
   useEffect(() => {
     const previousScene = previousSceneRef.current
@@ -332,13 +364,20 @@ export function usePersistence({
         (currentScene === GAME_PHASES.GAMEOVER ||
           currentScene === GAME_PHASES.OVERWORLD))
 
-    if (saveAfterStateCommitRef.current) {
-      saveAfterStateCommitRef.current = false
-      saveGame(false)
+    if (handledSaveRequestRef.current !== saveRequestCount) {
+      handledSaveRequestRef.current = saveRequestCount
+      const saved = saveGame(false)
+      // Taken before they run: a continuation may request the next save, and
+      // that request belongs to the next commit rather than to this flush.
+      const listeners = saveRequestListenersRef.current
+      saveRequestListenersRef.current = []
+      for (const onSaved of listeners) {
+        onSaved(saved)
+      }
     } else if (shouldAutosaveOnTransition) {
       saveGame(false)
     }
-  }, [currentScene, saveGame])
+  }, [currentScene, saveGame, saveRequestCount])
 
   const loadGame = useCallback(() => {
     return safeStorageOperation(

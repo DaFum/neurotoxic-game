@@ -55,6 +55,9 @@ const reveal = (state, payload) =>
 
 const scoutCapability = (overrides = {}) => ({
   passiveLevelFloor: 0,
+  familiarNodeIds: [],
+  hasRecoveryOrSponsorHint: false,
+  hasRivalOrSponsorCategoryHint: false,
   hasScout: true,
   reconCharges: 2,
   ...overrides
@@ -64,11 +67,19 @@ describe('G1 baseline entitlement', () => {
   it('entitles nothing until G3 and G5 supply capabilities', () => {
     assert.deepEqual(getExpeditionIntelCapability(startedState()), {
       passiveLevelFloor: 0,
+      familiarNodeIds: [],
+      hasRecoveryOrSponsorHint: false,
+      hasRivalOrSponsorCategoryHint: false,
+      hasUndergroundCategoryHint: false,
       hasScout: false,
       reconCharges: 0
     })
     assert.deepEqual(BASE_EXPEDITION_INTEL_CAPABILITY, {
       passiveLevelFloor: 0,
+      familiarNodeIds: [],
+      hasRecoveryOrSponsorHint: false,
+      hasRivalOrSponsorCategoryHint: false,
+      hasUndergroundCategoryHint: false,
       hasScout: false,
       reconCharges: 0
     })

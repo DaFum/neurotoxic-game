@@ -78,10 +78,7 @@ Do not create a purchasable chassis registry. Use `CHASSIS_CONFIG.tourbus_chassi
 
 ```ts
 export type ExpeditionChassisArchetype =
-  | 'compact'
-  | 'diy'
-  | 'coach'
-  | 'armored_hauler'
+  'compact' | 'diy' | 'coach' | 'armored_hauler'
 
 export interface ExpeditionChassisProfile {
   archetype: ExpeditionChassisArchetype
@@ -239,9 +236,9 @@ Capacity units:
 Visible capacity:
 
 ```ts
-BASE_EXPEDITION_CARGO_CAPACITY
-+ chassis.cargoCapacityBonus
-+ installedModuleProfile.cargoCapacityBonus
+BASE_EXPEDITION_CARGO_CAPACITY +
+  chassis.cargoCapacityBonus +
+  installedModuleProfile.cargoCapacityBonus
 ```
 
 Hidden Contraband capacity is separate and may only absorb Contraband stacks.
@@ -317,10 +314,7 @@ Every UI-exposed repair option must be executable through the same reducer-autho
 
 ```ts
 export type ExpeditionRepairMode =
-  | 'field'
-  | 'professional'
-  | 'improvise'
-  | 'cannibalize'
+  'field' | 'professional' | 'improvise' | 'cannibalize'
 
 export interface ExpeditionRepairIntent {
   mode: ExpeditionRepairMode
@@ -348,7 +342,10 @@ Requires one spare part and a completed mapped minigame result.
 
 ```ts
 rawRestore = 20 + boundedQuality * 35 + rules.numeric.fieldRepairEfficiency * 20
-restore = Math.max(rules.flags.fieldRepairMinimumCondition, Math.min(60, Math.round(rawRestore)))
+restore = Math.max(
+  rules.flags.fieldRepairMinimumCondition,
+  Math.min(60, Math.round(rawRestore))
+)
 createDefect = !rules.flags.fieldRepairNoHiddenDefect && boundedQuality < 0.45
 ```
 
@@ -396,7 +393,8 @@ cannot reduce source below 40
 ## Task 7: Implement complete hidden-defect lifecycle
 
 ```ts
-export type HiddenDefectStatus = 'hidden' | 'revealed' | 'triggered' | 'resolved'
+export type HiddenDefectStatus =
+  'hidden' | 'revealed' | 'triggered' | 'resolved'
 export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
 
 export interface HiddenDefectState {

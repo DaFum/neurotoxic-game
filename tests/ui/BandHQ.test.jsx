@@ -14,7 +14,9 @@ vi.mock('../../src/context/GameState.tsx', () => ({
       setlist: [],
       activeQuests: [],
       venueBlacklist: [],
-      reputationByRegion: {}
+      reputationByRegion: {},
+      career: { finalizedExpeditionRuns: 0, unlockedSetIds: [] },
+      expedition: { status: 'idle' }
     }),
   useGameActions: () => ({
     updatePlayer: vi.fn(),
@@ -33,6 +35,8 @@ vi.mock('../../src/context/GameState.tsx', () => ({
     activeQuests: [],
     venueBlacklist: [],
     reputationByRegion: {},
+    career: { finalizedExpeditionRuns: 0, unlockedSetIds: [] },
+    expedition: { status: 'idle' },
     updatePlayer: vi.fn(),
     updateBand: vi.fn(),
     addToast: vi.fn(),

@@ -1,10 +1,5 @@
 import { Suspense } from 'react'
-import {
-  AnimatePresence,
-  LazyMotion,
-  domMax,
-  MotionConfig
-} from 'motion/react'
+import { AnimatePresence, LazyMotion, domMax, MotionConfig } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'

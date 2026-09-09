@@ -9,7 +9,7 @@
  * finishing the Finale.
  */
 
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import type {
   ExpeditionRewardLedgerEntry,
@@ -21,7 +21,12 @@ import { getEffectiveExpeditionRules } from './effectiveRules'
  * Base Cash/Fame retention per terminal kind, before G5 multipliers.
  */
 export const EXPEDITION_BASE_RETENTION = {
-  extracted: 0.6,
+  // 0.70 rather than 0.60: a bail-out keeps most of what the run banked, so
+  // the choice at an extraction window is between a good outcome now and a
+  // better one deeper in, not between a good outcome and a gutted one. The
+  // Finale still pays strictly more (1.0 plus the Tour's completion bonus),
+  // which is what keeps pushing on attractive.
+  extracted: 0.7,
   failed: 0.25,
   completed: 1
 } as const satisfies Record<'extracted' | 'failed' | 'completed', number>
@@ -163,6 +168,21 @@ export const settleExpedition = (
           )
         )
       : EXPEDITION_BASE_RETENTION[kind]
+  // The Tour's completion bonus, which the spec names as one of the two upsides
+  // greed buys (the other being unextracted rares). It applies only to a run
+  // that actually reached its Finale: a bail-out or a failure has not earned
+  // it, so a survival Tour's x1.2 cannot be collected by extracting early and
+  // a blitz Tour's x0.95 is not a penalty on runs that never completed.
+  const completionMultiplier =
+    kind === 'completed'
+      ? Math.max(
+          0,
+          finiteNumberOr(
+            getEffectiveExpeditionRules(state).numeric.completionMultiplier,
+            1
+          )
+        )
+      : 1
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
 
@@ -174,8 +194,30 @@ export const settleExpedition = (
     0,
     Math.round(fame - state.expedition.startingFame)
   )
-  const moneyRetained = Math.floor(moneyEarned * retentionRate)
-  const fameRetained = Math.floor(fameEarned * retentionRate)
+  // Tour Pressure pays here and nowhere else: it multiplies the Money and Fame
+  // the run terminally *retains*, on a run that extracted or completed. Not
+  // rares, not Tour Tokens, not item counts, and nothing on a failed run - the
+  // modifiers' costs are priced against what the Career actually walks away
+  // with, so paying them per-Gig would pay for danger the run never survived.
+  const pressureRewardMultiplier =
+    kind === 'failed'
+      ? 1
+      : Math.max(
+          0,
+          finiteNumberOr(
+            getEffectiveExpeditionRules(state).numeric.pressureRewardMultiplier,
+            1
+          )
+        )
+  const moneyRetained = Math.floor(
+    moneyEarned *
+      retentionRate *
+      completionMultiplier *
+      pressureRewardMultiplier
+  )
+  const fameRetained = Math.floor(
+    fameEarned * retentionRate * completionMultiplier * pressureRewardMultiplier
+  )
 
   const { retainedRewardEntryIds, abandonedRewardEntryIds } =
     splitExpeditionRewardLedger(
@@ -189,10 +231,12 @@ export const settleExpedition = (
     retentionRate,
     moneyEarned,
     moneyRetained,
-    moneyForfeited: moneyEarned - moneyRetained,
+    // Never negative: a completion bonus above 1.0 pays out more than the run
+    // earned, and that is a bonus rather than a negative forfeit.
+    moneyForfeited: Math.max(0, moneyEarned - moneyRetained),
     fameEarned,
     fameRetained,
-    fameForfeited: fameEarned - fameRetained,
+    fameForfeited: Math.max(0, fameEarned - fameRetained),
     retainedRewardEntryIds,
     abandonedRewardEntryIds
   }

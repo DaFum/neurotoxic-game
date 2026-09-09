@@ -141,7 +141,17 @@ export const getExpeditionMobilityFailureSignal = (
     ...state.player,
     money: spendable
   }
+  // Realized evidence first, for the same reason the economy signal checks
+  // `unpaidDailyObligation` before projecting: the run already tried to leave
+  // and the protected Cash floor reverted it. `checkSoftlock` cannot see that
+  // - it prices legs through the career travel gate, which knows nothing about
+  // the Expedition floor - so without this a run whose every leg is refused
+  // has no crisis, no `accept_failure`, and no way to end.
+  const blockedAt = state.expedition.blockedTravelAtRouteStep
+  const travelBlockedHere =
+    isFiniteNumber(blockedAt) && blockedAt === state.expedition.routeStep
   if (
+    !travelBlockedHere &&
     !checkSoftlock(state.gameMap, strandedView, state.band, {
       dailyObligations: getTotalDailyObligations(state)
     })

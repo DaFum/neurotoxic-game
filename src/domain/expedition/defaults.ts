@@ -31,8 +31,21 @@ export const MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS = 3 as const
  */
 const BASE_EXPEDITION_MEANINGFUL_NODES = 8 as const
 
-/** Lower bound of the approved meaningful-node corridor. */
+/** Lower bound of the approved meaningful-node corridor for a standard run. */
 export const MIN_EXPEDITION_MEANINGFUL_NODES = 7 as const
+
+/**
+ * Shortest route a Tour may explicitly declare.
+ *
+ * @remarks
+ * The 7-9 corridor above describes a *standard* run, and it stays the shape
+ * anything that does not ask for something else gets. A Tour whose whole
+ * identity is being shorter may declare one step below it - the Blitz Tour is
+ * the authored case - so the builder honours a declared depth instead of
+ * silently clamping it up and leaving the registry stating a depth the route
+ * never has.
+ */
+export const MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES = 6 as const
 
 /** Upper bound of the approved meaningful-node corridor. */
 export const MAX_EXPEDITION_MEANINGFUL_NODES = 9 as const
@@ -42,12 +55,14 @@ export const MAX_EXPEDITION_MEANINGFUL_NODES = 9 as const
  */
 export const NEUTRAL_EXPEDITION_ROUTE_PROFILE: ExpeditionRouteProfile = {
   meaningfulNodeCount: BASE_EXPEDITION_MEANINGFUL_NODES,
-  specialWeight: 1,
+  undergroundWeight: 1,
+  rivalWeight: 1,
   festivalWeight: 1,
   restWeight: 1,
   supplyWeight: 1,
-  undergroundAllowed: true,
-  rivalAllowed: true
+  gigWeight: 1,
+  extractionWindowRange: [3, 6],
+  forcedRival: false
 }
 
 /**
@@ -55,8 +70,29 @@ export const NEUTRAL_EXPEDITION_ROUTE_PROFILE: ExpeditionRouteProfile = {
  */
 export const BASE_EXPEDITION_TOUR_TYPE_ID = 'standard_tour' as const
 
-/** Home region the G1 baseline commits before G5 owns the Region registry. */
+/**
+ * The Region every pre-G5 seed and fixture is pinned to.
+ *
+ * @remarks
+ * No production path commits it any more - Tour Prep opens on
+ * {@link FREE_EXPEDITION_REGION_ID}, and this is reachable only by a Career
+ * that owns `mechanic_network`. It survives as the pinned route of the runs
+ * that were already committed against it and of the fixtures asserting their
+ * seeds, which is exactly why it must not be renamed to the free Region:
+ * changing it would move every pinned route.
+ */
 export const BASE_EXPEDITION_REGION_ID = 'industrial_belt' as const
+
+/**
+ * The Region a Career with no unlock set may always book.
+ *
+ * @remarks
+ * A fresh Career tours `home_turf` on a `standard_tour`. Separate from
+ * {@link BASE_EXPEDITION_REGION_ID} on purpose: changing that constant would
+ * move every pinned route, while what actually needed to change is which
+ * Region is free.
+ */
+export const FREE_EXPEDITION_REGION_ID = 'home_turf' as const
 
 /**
  * Builds the idle Expedition slice.
@@ -84,8 +120,11 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   protectedCareerCash: 0,
   rewardLedger: [],
   extractionWindowsSeen: [],
+  consumedLegendaryIds: [],
+  arrivedOverlay: null,
   pendingFailure: null,
   unpaidDailyObligation: 0,
+  blockedTravelAtRouteStep: null,
   outcome: null,
   crew: {
     stressByCrewId: Object.create(null) as Record<string, number>,

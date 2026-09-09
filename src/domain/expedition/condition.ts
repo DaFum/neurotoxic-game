@@ -196,6 +196,39 @@ export const calculatePostGigTechnicalWear = (
 }
 
 /**
+ * Absorbs setup protection into the wear the lowest group is about to take.
+ *
+ * @param condition - Technical condition *before* this Gig's wear.
+ * @param wear - Points of wear the Gig would otherwise deal per group.
+ * @param protection - Points the perk absorbs; `0` returns the wear unchanged.
+ * @returns The wear to apply.
+ *
+ * @remarks
+ * Spent on the group that is currently lowest so the protection lands where
+ * the run has actually taken damage, with ties resolved by the canonical group
+ * order rather than by object key order. It only ever subtracts, and never
+ * below zero: setup protection reduces damage, it never repairs.
+ */
+export const applyExpeditionSetupProtection = (
+  condition: ExpeditionTechnicalCondition,
+  wear: { pa: number; instruments: number; stageGear: number },
+  protection: number
+): { pa: number; instruments: number; stageGear: number } => {
+  const points = Math.max(0, Math.floor(finiteNumberOr(protection, 0)))
+  if (points === 0) return wear
+  let lowest: ConditionGroup = 'pa'
+  for (const group of EXPEDITION_CONDITION_GROUPS) {
+    if (clampCondition(condition[group]) < clampCondition(condition[lowest])) {
+      lowest = group
+    }
+  }
+  return {
+    ...wear,
+    [lowest]: Math.max(0, finiteNumberOr(wear[lowest], 0) - points)
+  }
+}
+
+/**
  * Applies wear deductions to an ExpeditionTechnicalCondition snapshot.
  *
  * @param condition - Current technical condition.

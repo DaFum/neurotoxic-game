@@ -1,0 +1,1086 @@
+/**
+ * @fileoverview G5 Task 13 — Between-Tour decisions with exact targets.
+ *
+ * Generated once, after both settlements, from state those settlements have
+ * already advanced. At most three, in a fixed priority order, each bound to the
+ * actor it was chosen for. Answering costs what the registry says, is
+ * re-checked for affordability at the moment it is taken, and a second answer
+ * changes nothing.
+ */
+
+import assert from 'node:assert/strict'
+import { describe, it } from 'node:test'
+
+import { gameReducer } from '../../src/context/gameReducer'
+import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers'
+import { ActionTypes } from '../../src/context/actionTypes'
+import {
+  createGenerateExpeditionBetweenTourDecisionsAction,
+  createResolveExpeditionBetweenTourDecisionAction,
+  createSettleExpeditionCareerResultAction,
+  createSettleExpeditionCrewCareerAction
+} from '../../src/context/careerActionCreators'
+import {
+  BETWEEN_TOUR_DECISION_PRIORITY,
+  BETWEEN_TOUR_OPTIONS,
+  BETWEEN_TOUR_CASH_OUT_PAYOUT,
+  BETWEEN_TOUR_REHAB_COST,
+  BETWEEN_TOUR_REPAIR_CONDITION_CEILING,
+  BETWEEN_TOUR_REPAIR_COST_PER_POINT,
+  MAX_BETWEEN_TOUR_DECISIONS,
+  isBetweenTourDecisionType
+} from '../../src/data/expedition/betweenTour'
+import {
+  areBetweenTourDecisionsResolved,
+  isExpeditionCareerInsolvent
+} from '../../src/domain/expedition/betweenTour'
+import { EXPEDITION_CREW_BY_ID } from '../../src/data/expedition/crew'
+import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
+
+/**
+ * Crew a fresh Career may actually book.
+ *
+ * Manager and Security are sold content, so the ungated roles are the only
+ * ones a fixture run can commit without inventing an unlock the suite is not
+ * testing.
+ */
+const FIXTURE_CREW_IDS = ['mika', 'tom']
+
+/** A finalized, completed run whose Crew and Career are already settled. */
+const settled = (overrides = {}, loadoutOverrides = {}) => {
+  const base = startedState(
+    { money: 5000, ...overrides },
+    { crewIds: FIXTURE_CREW_IDS, ...loadoutOverrides }
+  )
+  const atFinale = walkToFinale(base)
+  const resolved = {
+    ...atFinale,
+    currentGig: { id: 'finale_venue' },
+    lastGigStats: { score: 9000, accuracy: 85, failed: false },
+    expedition: {
+      ...atFinale.expedition,
+      lastGigResolvedAtRouteStep: atFinale.expedition.routeStep
+    }
+  }
+  const completed = gameReducer(resolved, {
+    type: ActionTypes.COMPLETE_EXPEDITION,
+    payload: {
+      finaleResultId: 'finale_result_between_tour',
+      expectedRouteStep: resolved.expedition.routeStep
+    }
+  })
+  assert.equal(completed.expedition.status, 'completed')
+  const runId = completed.expedition.outcome.runId
+  let next = gameReducer(
+    completed,
+    createSettleExpeditionCrewCareerAction(runId)
+  )
+  next = gameReducer(next, createSettleExpeditionCareerResultAction(runId))
+  return next
+}
+
+const generate = state =>
+  gameReducer(
+    state,
+    createGenerateExpeditionBetweenTourDecisionsAction(
+      state.expedition.outcome.runId
+    )
+  )
+
+const stored = state =>
+  state.career.betweenTourByRunId[state.expedition.outcome.runId]
+
+const resolve = (state, decisionId, optionId) =>
+  gameReducer(
+    state,
+    createResolveExpeditionBetweenTourDecisionAction(
+      state.expedition.outcome.runId,
+      decisionId,
+      optionId
+    )
+  )
+
+/** The stored decision of one family, or undefined. */
+const decisionOf = (state, type) =>
+  stored(state)?.decisions.find(decision => decision.type === type)
+
+describe('G5 — the registry fixes the families and their options', () => {
+  it('lists seven families in priority order and caps at three', () => {
+    assert.deepEqual(BETWEEN_TOUR_DECISION_PRIORITY, [
+      // First: an insolvent Career has no next Tour to spend the rest on.
+      'sponsor_advance',
+      'injury_rehab',
+      'crew_debrief',
+      'rival_response',
+      'sponsor_follow_up',
+      'vehicle_repair',
+      'network_contact'
+    ])
+    assert.equal(MAX_BETWEEN_TOUR_DECISIONS, 3)
+    for (const type of BETWEEN_TOUR_DECISION_PRIORITY) {
+      assert.equal(isBetweenTourDecisionType(type), true)
+      assert.equal(BETWEEN_TOUR_OPTIONS[type].length, 2, type)
+    }
+    for (const bad of ['', 'nope', null, 42, '__proto__']) {
+      assert.equal(isBetweenTourDecisionType(bad), false)
+    }
+  })
+})
+
+describe('G5 — decisions are generated once, after both settlements', () => {
+  it('refuses to generate before the settlements have run', () => {
+    const base = startedState({ money: 5000 })
+    const atFinale = walkToFinale(base)
+    const completed = gameReducer(
+      {
+        ...atFinale,
+        currentGig: { id: 'finale_venue' },
+        lastGigStats: { score: 9000, accuracy: 85, failed: false },
+        expedition: {
+          ...atFinale.expedition,
+          lastGigResolvedAtRouteStep: atFinale.expedition.routeStep
+        }
+      },
+      {
+        type: ActionTypes.COMPLETE_EXPEDITION,
+        payload: {
+          finaleResultId: 'finale_result_between_tour',
+          expectedRouteStep: atFinale.expedition.routeStep
+        }
+      }
+    )
+    // The decisions read the Career the settlements advance, so asking first
+    // would ask about state that is about to change.
+    assert.equal(generate(completed), completed)
+    assert.equal(
+      Object.hasOwn(
+        completed.career.betweenTourByRunId,
+        completed.expedition.outcome.runId
+      ),
+      false
+    )
+  })
+
+  it('generates at most three, in priority order', () => {
+    const generated = generate(settled())
+    const decisions = stored(generated).decisions
+    assert.ok(decisions.length >= 1)
+    assert.ok(decisions.length <= MAX_BETWEEN_TOUR_DECISIONS)
+    const order = decisions.map(decision =>
+      BETWEEN_TOUR_DECISION_PRIORITY.indexOf(decision.type)
+    )
+    assert.deepEqual(
+      order,
+      [...order].sort((a, b) => a - b),
+      'decisions must arrive in the registry priority order'
+    )
+    // One instance per family: a Tour never asks the same question twice.
+    assert.equal(
+      new Set(decisions.map(decision => decision.type)).size,
+      decisions.length
+    )
+    for (const decision of decisions) {
+      assert.ok(decision.optionIds.length > 0, decision.type)
+      for (const optionId of decision.optionIds) {
+        assert.ok(
+          BETWEEN_TOUR_OPTIONS[decision.type].includes(optionId),
+          `${decision.type}/${optionId}`
+        )
+      }
+    }
+  })
+
+  it('is an identity no-op the second time', () => {
+    const once = generate(settled())
+    assert.equal(generate(once), once)
+  })
+
+  it('refuses a malformed payload', () => {
+    const state = settled()
+    for (const payload of [null, 42, {}, { runId: 7 }]) {
+      assert.equal(
+        gameReducer(state, {
+          type: ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS,
+          payload
+        }),
+        state
+      )
+    }
+  })
+})
+
+describe('G5 — targets are deterministic and exact', () => {
+  /**
+   * A settled run carrying two Crew recovery debts, both for Crew that were on
+   * the road - a debt whose Crew skipped the Tour has served it and is
+   * expired before generation, which the expiry suite covers.
+   */
+  const withTwoDebts = () => {
+    const base = settled()
+    const [first, second] = FIXTURE_CREW_IDS
+    return {
+      ...base,
+      career: {
+        ...base.career,
+        settledCrewRunIds: ['run_older', base.expedition.outcome.runId],
+        crewRecoveryDebtById: Object.assign(Object.create(null), {
+          [second]: {
+            crewId: second,
+            createdFromRunId: base.expedition.outcome.runId,
+            severity: 'serious',
+            toursRemaining: 1
+          },
+          [first]: {
+            crewId: first,
+            createdFromRunId: 'run_older',
+            severity: 'serious',
+            toursRemaining: 1
+          }
+        })
+      }
+    }
+  }
+
+  it('picks the oldest Crew debt, then by id', () => {
+    const [first] = FIXTURE_CREW_IDS
+    const generated = generate(withTwoDebts())
+    const decision = decisionOf(generated, 'injury_rehab')
+    assert.ok(decision)
+    // The debt created by the *earlier* run, whatever the crew ids sort like.
+    assert.deepEqual(decision.target, { kind: 'crew', id: first })
+  })
+
+  it('falls back to the worst persistent Band consequence', () => {
+    const base = settled()
+    const withBand = {
+      ...base,
+      career: {
+        ...base.career,
+        crewRecoveryDebtById: Object.create(null),
+        bandConsequenceByMemberId: Object.assign(Object.create(null), {
+          zeta: 'light',
+          alpha: 'serious'
+        })
+      }
+    }
+    const decision = decisionOf(generate(withBand), 'injury_rehab')
+    assert.ok(decision)
+    // Highest stage wins over the lexically earlier id.
+    assert.deepEqual(decision.target, { kind: 'band', id: 'alpha' })
+  })
+
+  it('offers develop_signature only on a Crew that is eligible', () => {
+    const base = settled()
+    const decision = decisionOf(base, 'crew_debrief')
+    assert.equal(decision, undefined, 'nothing is stored before generation')
+    const generated = generate(base)
+    const debrief = decisionOf(generated, 'crew_debrief')
+    if (debrief) {
+      // A fresh Career owns no `crew_signature_traits` set, so the option that
+      // cannot be taken is not offered.
+      assert.deepEqual(debrief.optionIds, ['rest_band'])
+    }
+  })
+
+  it('offers the van only while it is actually damaged', () => {
+    const intact = settled()
+    const withIntactVan = {
+      ...intact,
+      player: {
+        ...intact.player,
+        van: {
+          ...intact.player.van,
+          condition: BETWEEN_TOUR_REPAIR_CONDITION_CEILING
+        }
+      }
+    }
+    assert.equal(
+      decisionOf(generate(withIntactVan), 'vehicle_repair'),
+      undefined
+    )
+
+    const damaged = {
+      ...intact,
+      player: { ...intact.player, van: { ...intact.player.van, condition: 40 } }
+    }
+    const decision = decisionOf(generate(damaged), 'vehicle_repair')
+    assert.ok(decision)
+    assert.deepEqual(decision.target, { kind: 'vehicle', id: 'active_van' })
+  })
+
+  it('offers the Archive lead only as the last resort', () => {
+    // A Tour with real consequences answers those; the fallback exists so a
+    // quiet Tour is never an empty screen.
+    const busy = generate(settled())
+    assert.ok(stored(busy).decisions.length > 0)
+    assert.equal(decisionOf(busy, 'network_contact'), undefined)
+  })
+})
+
+describe('G5 — answering derives every value from the stored decision', () => {
+  it('charges the registry rehab cost and clears the debt', () => {
+    const base = settled()
+    const [crewId] = FIXTURE_CREW_IDS
+    const withDebt = {
+      ...base,
+      career: {
+        ...base.career,
+        crewRecoveryDebtById: Object.assign(Object.create(null), {
+          [crewId]: {
+            crewId,
+            createdFromRunId: base.expedition.outcome.runId,
+            severity: 'serious',
+            toursRemaining: 1
+          }
+        })
+      }
+    }
+    const generated = generate(withDebt)
+    const decision = decisionOf(generated, 'injury_rehab')
+    assert.ok(decision)
+    const paid = resolve(generated, decision.id, 'pay_rehab')
+    assert.equal(
+      paid.player.money,
+      generated.player.money - BETWEEN_TOUR_REHAB_COST
+    )
+    assert.equal(Object.hasOwn(paid.career.crewRecoveryDebtById, crewId), false)
+    // The answer is recorded against the decision, which is what closes it.
+    assert.equal(
+      stored(paid).resolvedOptionByDecisionId[decision.id],
+      'pay_rehab'
+    )
+  })
+
+  it('re-checks affordability at resolve, not at generation', () => {
+    // Two money decisions in one Tour must not both be payable out of one
+    // balance, so the price is checked when the option is taken.
+    const base = settled()
+    const [crewId] = FIXTURE_CREW_IDS
+    const broke = {
+      ...base,
+      player: { ...base.player, money: BETWEEN_TOUR_REHAB_COST - 1 },
+      career: {
+        ...base.career,
+        crewRecoveryDebtById: Object.assign(Object.create(null), {
+          [crewId]: {
+            crewId,
+            createdFromRunId: base.expedition.outcome.runId,
+            severity: 'serious',
+            toursRemaining: 1
+          }
+        })
+      }
+    }
+    const generated = generate(broke)
+    const decision = decisionOf(generated, 'injury_rehab')
+    assert.ok(decision)
+    // Offered, refused, and still open: an option that cannot be taken must
+    // not consume the decision.
+    assert.ok(decision.optionIds.includes('pay_rehab'))
+    assert.equal(resolve(generated, decision.id, 'pay_rehab'), generated)
+    assert.equal(
+      areBetweenTourDecisionsResolved(
+        generated,
+        generated.expedition.outcome.runId
+      ),
+      false
+    )
+    // The free option is always answerable.
+    const accepted = resolve(generated, decision.id, 'accept_unavailability')
+    assert.notEqual(accepted, generated)
+    assert.equal(
+      Object.hasOwn(accepted.career.crewRecoveryDebtById, crewId),
+      true
+    )
+  })
+
+  it('prices the repair from the van the decision was stored for', () => {
+    const base = settled()
+    const damaged = {
+      ...base,
+      player: { ...base.player, van: { ...base.player.van, condition: 40 } }
+    }
+    const generated = generate(damaged)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision)
+    const repaired = resolve(generated, decision.id, 'pay_repair')
+    assert.equal(repaired.player.van.condition, 100)
+    assert.equal(
+      repaired.player.money,
+      generated.player.money - (100 - 40) * BETWEEN_TOUR_REPAIR_COST_PER_POINT
+    )
+    // Carrying the damage costs nothing and changes nothing.
+    const carried = resolve(generated, decision.id, 'carry_damage')
+    assert.equal(carried.player.van.condition, 40)
+    assert.equal(carried.player.money, generated.player.money)
+  })
+
+  it('buys the repair the Career can afford instead of refusing outright', () => {
+    // All-or-nothing was a Career-ender: a wrecked van costs EUR 1,200 to
+    // rebuild, a Career between Tours holds a few hundred, so the decision
+    // was refused and the van never recovered - every later Tour bailed out
+    // at its first window and nothing ever earned the EUR 1,200.
+    const base = settled()
+    const brokeAndWrecked = {
+      ...base,
+      player: {
+        ...base.player,
+        money: 240,
+        van: { ...base.player.van, condition: 0 }
+      }
+    }
+    const generated = generate(brokeAndWrecked)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision, 'a wrecked van must still be offered a repair')
+
+    const repaired = resolve(generated, decision.id, 'pay_repair')
+    const points = Math.floor(240 / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
+    assert.equal(repaired.player.van.condition, points)
+    assert.equal(
+      repaired.player.money,
+      240 - points * BETWEEN_TOUR_REPAIR_COST_PER_POINT,
+      'a partial repair is charged at the same price per point as a full one'
+    )
+    assert.ok(repaired.player.money >= 0)
+  })
+
+  it('refuses a repair the Career cannot buy a single point of', () => {
+    const base = settled()
+    const penniless = {
+      ...base,
+      player: {
+        ...base.player,
+        money: BETWEEN_TOUR_REPAIR_COST_PER_POINT - 1,
+        van: { ...base.player.van, condition: 30 }
+      }
+    }
+    const generated = generate(penniless)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision)
+    // Below one point the option does nothing rather than charging for
+    // nothing, and the decision stays unanswered.
+    assert.equal(resolve(generated, decision.id, 'pay_repair'), generated)
+  })
+
+  it('refuses a second answer to the same decision', () => {
+    const base = settled()
+    const damaged = {
+      ...base,
+      player: { ...base.player, van: { ...base.player.van, condition: 40 } }
+    }
+    const generated = generate(damaged)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    const once = resolve(generated, decision.id, 'carry_damage')
+    assert.notEqual(once, generated)
+    // The recorded answer is the guard: a replay cannot pay or treat twice.
+    assert.equal(resolve(once, decision.id, 'pay_repair'), once)
+    assert.equal(resolve(once, decision.id, 'carry_damage'), once)
+  })
+
+  it('refuses an option the stored decision does not offer', () => {
+    const generated = generate(settled())
+    const decision = stored(generated).decisions[0]
+    assert.equal(resolve(generated, decision.id, 'not_an_option'), generated)
+    // And an option belonging to a different family.
+    const foreign = BETWEEN_TOUR_OPTIONS.network_contact[0]
+    if (!decision.optionIds.includes(foreign)) {
+      assert.equal(resolve(generated, decision.id, foreign), generated)
+    }
+  })
+
+  it('refuses an unknown run or decision, and malformed payloads', () => {
+    const generated = generate(settled())
+    const decision = stored(generated).decisions[0]
+    assert.equal(
+      gameReducer(
+        generated,
+        createResolveExpeditionBetweenTourDecisionAction(
+          'some_other_run',
+          decision.id,
+          decision.optionIds[0]
+        )
+      ),
+      generated
+    )
+    assert.equal(
+      resolve(generated, 'not_a_decision', decision.optionIds[0]),
+      generated
+    )
+    for (const payload of [null, 42, {}, { runId: 'x', decisionId: 'y' }]) {
+      assert.equal(
+        gameReducer(generated, {
+          type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
+          payload
+        }),
+        generated
+      )
+    }
+  })
+})
+
+describe('G5 — a skipped Tour clears a serious recovery debt', () => {
+  it('expires the debt of a Crew the finalized run did not select', () => {
+    const base = settled()
+    const selected = base.expedition.loadout.crewIds
+    const absent = Object.keys(EXPEDITION_CREW_BY_ID).find(
+      crewId => !selected.includes(crewId)
+    )
+    assert.ok(absent, 'the fixture must leave at least one Crew off the road')
+    assert.ok(selected.length > 0, 'the fixture run must carry Crew')
+    const withDebts = {
+      ...base,
+      career: {
+        ...base.career,
+        crewRecoveryDebtById: Object.assign(Object.create(null), {
+          [absent]: {
+            crewId: absent,
+            createdFromRunId: 'run_older',
+            severity: 'serious',
+            toursRemaining: 1
+          },
+          [selected[0]]: {
+            crewId: selected[0],
+            createdFromRunId: 'run_older',
+            severity: 'serious',
+            toursRemaining: 1
+          }
+        })
+      }
+    }
+    const generated = generate(withDebts)
+    // Served: the Crew sat this Tour out, which is the one Tour it owed.
+    assert.equal(
+      Object.hasOwn(generated.career.crewRecoveryDebtById, absent),
+      false
+    )
+    // Not served: this Crew was on the road, so it still owes a Tour - and it
+    // is the one the rehab decision is about.
+    assert.equal(
+      Object.hasOwn(generated.career.crewRecoveryDebtById, selected[0]),
+      true
+    )
+    assert.deepEqual(decisionOf(generated, 'injury_rehab').target, {
+      kind: 'crew',
+      id: selected[0]
+    })
+  })
+
+  it('expires every served debt, not just the first', () => {
+    const base = settled()
+    const selected = base.expedition.loadout.crewIds
+    const absent = Object.keys(EXPEDITION_CREW_BY_ID).filter(
+      crewId => !selected.includes(crewId)
+    )
+    assert.ok(absent.length >= 2)
+    const debts = Object.create(null)
+    for (const crewId of absent) {
+      debts[crewId] = {
+        crewId,
+        createdFromRunId: 'run_older',
+        severity: 'serious',
+        toursRemaining: 1
+      }
+    }
+    const generated = generate({
+      ...base,
+      career: { ...base.career, crewRecoveryDebtById: debts }
+    })
+    assert.deepEqual(Object.keys(generated.career.crewRecoveryDebtById), [])
+  })
+})
+
+describe('G5 — the next Tour waits for the answers', () => {
+  it('blocks PREPARE_NEXT_EXPEDITION while a decision is open', () => {
+    const generated = generate(settled())
+    const runId = generated.expedition.outcome.runId
+    assert.ok(stored(generated).decisions.length > 0)
+    assert.equal(areBetweenTourDecisionsResolved(generated, runId), false)
+    assert.equal(
+      gameReducer(generated, {
+        type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+        payload: { runId }
+      }),
+      generated
+    )
+
+    let answered = generated
+    for (const decision of stored(generated).decisions) {
+      const free =
+        decision.optionIds.find(optionId =>
+          [
+            'accept_unavailability',
+            'rest_band',
+            'carry_damage',
+            'cool_down',
+            'walk_away',
+            'cash_out'
+          ].includes(optionId)
+        ) ?? decision.optionIds[0]
+      const next = resolve(answered, decision.id, free)
+      assert.notEqual(next, answered, `${decision.type}/${free} was refused`)
+      answered = next
+    }
+    assert.equal(areBetweenTourDecisionsResolved(answered, runId), true)
+    const prepared = gameReducer(answered, {
+      type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+      payload: { runId }
+    })
+    assert.equal(prepared.expedition.status, 'idle')
+  })
+
+  it('does not block a run that never generated a set', () => {
+    // The gate waits on *stored* decisions. An absent set is not an
+    // outstanding question: a failed run acknowledged straight from a crisis
+    // never reaches the Between-Tour step, and treating that as incomplete
+    // would strand it on the summary forever.
+    const base = settled()
+    assert.equal(
+      areBetweenTourDecisionsResolved(base, base.expedition.outcome.runId),
+      true
+    )
+    assert.equal(areBetweenTourDecisionsResolved(base, null), true)
+    const prepared = gameReducer(base, {
+      type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+      payload: { runId: base.expedition.outcome.runId }
+    })
+    assert.equal(prepared.expedition.status, 'idle')
+  })
+
+  it('pays out cash_out from the registry', () => {
+    const base = settled()
+    // A Tour with nothing to answer still gets the fallback contact.
+    const quiet = {
+      ...base,
+      player: {
+        ...base.player,
+        van: { ...base.player.van, condition: 100 }
+      },
+      rivalBand: null,
+      social: { ...base.social, activeDeals: [] },
+      expedition: { ...base.expedition, loadout: null },
+      career: {
+        ...base.career,
+        crewRecoveryDebtById: Object.create(null),
+        bandConsequenceByMemberId: Object.create(null),
+        rivalsById: Object.create(null),
+        archiveByCategory: {
+          ...base.career.archiveByCategory,
+          region: ['home_turf']
+        }
+      }
+    }
+    const generated = generate(quiet)
+    const decision = decisionOf(generated, 'network_contact')
+    assert.ok(decision, 'a quiet Tour must still get the fallback decision')
+    assert.deepEqual(decision.target, { kind: 'archive', id: 'home_turf' })
+    const paid = resolve(generated, decision.id, 'cash_out')
+    assert.equal(
+      paid.player.money,
+      generated.player.money + BETWEEN_TOUR_CASH_OUT_PAYOUT
+    )
+  })
+})
+
+describe('G5 — the Sponsor follow-up is about this run', () => {
+  /** A settled run carrying one committed Sponsor obligation. */
+  const withSponsorObligation = sourceId => {
+    const base = settled()
+    return {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        activeObligations: [
+          {
+            id: `obligation_${sourceId}`,
+            sourceType: 'brandDeal',
+            sourceId,
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'completed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+  }
+
+  it('targets the deal the run actually committed to', () => {
+    const generated = generate(withSponsorObligation('deal_carried'))
+    const decision = decisionOf(generated, 'sponsor_follow_up')
+    assert.ok(decision)
+    assert.deepEqual(decision.target, {
+      kind: 'sponsor',
+      id: 'deal_carried'
+    })
+  })
+
+  it('generates nothing for a sponsorless run with an older deal active', () => {
+    // The Career's deal list outlives a Tour, so reading it would follow up on
+    // a deal this run never carried.
+    const base = settled()
+    const sponsorless = {
+      ...base,
+      social: {
+        ...base.social,
+        activeDeals: [{ id: 'deal_from_an_earlier_tour' }]
+      },
+      expedition: { ...base.expedition, activeObligations: [] }
+    }
+    assert.equal(
+      decisionOf(generate(sponsorless), 'sponsor_follow_up'),
+      undefined
+    )
+  })
+
+  it('ignores a native Contract, which is not a Sponsor', () => {
+    const base = settled()
+    const nativeOnly = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        activeObligations: [
+          {
+            id: 'obligation_native',
+            sourceType: 'native',
+            sourceId: 'contract_keep_it_clean',
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'completed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+    assert.equal(
+      decisionOf(generate(nativeOnly), 'sponsor_follow_up'),
+      undefined
+    )
+  })
+})
+
+describe('G5 — the decisions survive a load', () => {
+  it('preserves the decision set, the consequences and the lean', () => {
+    // All three are saved with the Career slice, and the load path was
+    // replacing them with defaults. An absent decision set counts as resolved,
+    // so that loss also opened the next Tour on a run never answered.
+    const raw = {
+      betweenTourByRunId: {
+        run_1: {
+          runId: 'run_1',
+          decisions: [
+            {
+              id: 'run_1:injury_rehab:mika',
+              type: 'injury_rehab',
+              target: { kind: 'crew', id: 'mika' },
+              optionIds: BETWEEN_TOUR_OPTIONS.injury_rehab.slice()
+            }
+          ],
+          resolvedOptionByDecisionId: {}
+        }
+      },
+      bandConsequenceByMemberId: { member_1: 'serious' },
+      nextTourPreferences: {
+        rival: { rivalId: 'rival_1', stance: 'confront' },
+        sponsor: { dealId: 'deal_1', bias: -1 }
+      }
+    }
+    const sanitized = sanitizeCareerState(raw)
+    assert.equal(sanitized.betweenTourByRunId.run_1.runId, 'run_1')
+    assert.equal(sanitized.betweenTourByRunId.run_1.decisions.length, 1)
+    // `safeRecord` builds null-prototype records on purpose, so the entries
+    // are compared rather than the object identity - and that property is
+    // asserted here rather than assumed.
+    assert.equal(
+      Object.getPrototypeOf(sanitized.bandConsequenceByMemberId),
+      null
+    )
+    assert.deepEqual(
+      { ...sanitized.bandConsequenceByMemberId },
+      {
+        member_1: 'serious'
+      }
+    )
+    assert.deepEqual(sanitized.nextTourPreferences, {
+      rival: { rivalId: 'rival_1', stance: 'confront' },
+      sponsor: { dealId: 'deal_1', bias: -1 }
+    })
+  })
+
+  it('drops what a save must not be able to author', () => {
+    const sanitized = sanitizeCareerState({
+      betweenTourByRunId: {
+        // The key is how a resolve addresses the set, so a mismatched runId
+        // would answer a different run's questions.
+        mismatched: {
+          runId: 'other',
+          decisions: [],
+          resolvedOptionByDecisionId: {}
+        },
+        run_2: {
+          runId: 'run_2',
+          decisions: [
+            {
+              id: 'd1',
+              type: 'not_a_family',
+              target: { kind: 'crew', id: 'mika' },
+              optionIds: ['pay_rehab']
+            },
+            {
+              id: 'd2',
+              type: 'injury_rehab',
+              target: { kind: 'nobody', id: 'x' },
+              optionIds: ['pay_rehab']
+            },
+            {
+              id: 'd3',
+              type: 'injury_rehab',
+              target: { kind: 'crew', id: 'mika' },
+              // No option the family offers, so it could never be answered -
+              // and an unanswerable decision blocks the next Tour forever.
+              optionIds: ['grant_myself_everything']
+            },
+            {
+              id: 'd4',
+              type: 'rival_response',
+              target: { kind: 'rival', id: 'rival_1' },
+              optionIds: ['confront', 'grant_myself_everything']
+            }
+          ],
+          resolvedOptionByDecisionId: {
+            d4: 'grant_myself_everything',
+            unknown_decision: 'confront'
+          }
+        }
+      },
+      bandConsequenceByMemberId: { a: 'critical', b: 'invented_stage', c: 7 },
+      nextTourPreferences: {
+        rival: { rivalId: 'rival_1', stance: 'obliterate' },
+        sponsor: { dealId: 'deal_1', bias: 99 }
+      }
+    })
+
+    assert.equal(
+      Object.hasOwn(sanitized.betweenTourByRunId, 'mismatched'),
+      false
+    )
+    const kept = sanitized.betweenTourByRunId.run_2
+    // Only the one decision that is both a real family and answerable.
+    assert.deepEqual(
+      kept.decisions.map(decision => decision.id),
+      ['d4']
+    )
+    assert.deepEqual(kept.decisions[0].optionIds, ['confront'])
+    // An answer naming an option the family does not offer is not an answer.
+    assert.deepEqual({ ...kept.resolvedOptionByDecisionId }, {})
+    assert.deepEqual(
+      { ...sanitized.bandConsequenceByMemberId },
+      { a: 'critical' }
+    )
+    assert.deepEqual(sanitized.nextTourPreferences, {
+      rival: null,
+      sponsor: null
+    })
+  })
+})
+
+describe('G5 - Sponsor advance rescues an insolvent Career', () => {
+  it('is offered only when the Career cannot fuel a Tour worth starting', () => {
+    // Half a tank, not the cheapest legal build. The predicate used to ask
+    // whether the Career could pay the rounding-up of the tank it already had
+    // - a euro or two - and `SETTLE_EXPEDITION_CAREER_RESULT` now guarantees
+    // exactly that, so the rescue could never trigger again: 3,048 advances
+    // before the guarantee, 0 after.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 5000, van: { fuel: 10 } }
+      }),
+      false,
+      'a Career that can fuel up is not owed a rescue'
+    )
+    // Broke and near empty: cannot reach the far half of any route.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 10 } }
+      }),
+      true
+    )
+    // The guaranteed road fund must not read as solvency. Two euros pays the
+    // rounding charge and nothing else.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 2, van: { fuel: 12.4 } }
+      }),
+      true,
+      'affording the minimum legal start is not affording a Tour'
+    )
+    // Already past half a tank: nothing to rescue, whatever the balance.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 90 } }
+      }),
+      false
+    )
+  })
+
+  it('repays out of what a later run retains, never out of the balance', () => {
+    // The debt has to exist *before* the terminal transition, because that is
+    // what runs the repayment. Setting it on an already-settled state asserted
+    // the input back to itself and passed whether or not repayment worked.
+    const settleWithDebt = (outstanding, money, earned) => {
+      const base = startedState({ money }, { crewIds: FIXTURE_CREW_IDS })
+      const indebted = {
+        ...base,
+        career: {
+          ...base.career,
+          sponsorAdvance: {
+            dealId: 'basement_zine',
+            amount: 400,
+            outstanding,
+            // A different run: the debt was taken on an earlier Tour, which
+            // is the only shape that can be repaid by this one.
+            takenAfterRunId: 'run_earlier'
+          }
+        }
+      }
+      const atFinale = walkToFinale(indebted)
+      // The Tour has to have *earned* something, because retention applies to
+      // `money - startingMoney` and the walk alone earns nothing - which is
+      // why the previous version of this test could not exercise repayment at
+      // all.
+      const resolved = {
+        ...atFinale,
+        player: {
+          ...atFinale.player,
+          money: atFinale.expedition.startingMoney + earned
+        },
+        currentGig: { id: 'finale_venue' },
+        lastGigStats: { score: 9000, accuracy: 85, failed: false },
+        expedition: {
+          ...atFinale.expedition,
+          lastGigResolvedAtRouteStep: atFinale.expedition.routeStep
+        }
+      }
+      const startingMoney = atFinale.expedition.startingMoney
+      const completed = gameReducer(resolved, {
+        type: ActionTypes.COMPLETE_EXPEDITION,
+        payload: {
+          finaleResultId: 'finale_result_between_tour',
+          expectedRouteStep: resolved.expedition.routeStep
+        }
+      })
+      assert.equal(completed.expedition.status, 'completed')
+      return { completed, startingMoney }
+    }
+
+    // A debt smaller than what the run retains is cleared outright, and the
+    // record goes to null rather than lingering at zero.
+    const small = settleWithDebt(1, 5000, 2000)
+    assert.equal(small.completed.career.sponsorAdvance, null)
+
+    // A debt larger than one run's retained Cash survives, reduced - and the
+    // repayment came out of what the run retained, never out of the balance
+    // the Career already had.
+    const large = settleWithDebt(500, 5000, 200)
+    const remaining = large.completed.career.sponsorAdvance
+    assert.ok(remaining, 'a Tour retaining 200 cannot clear a 500 debt')
+    assert.ok(remaining.outstanding > 0)
+    assert.ok(
+      remaining.outstanding < 500,
+      'the debt has to actually go down - this is the assertion the previous version could not make'
+    )
+    // The claim the docstring makes: repayment comes out of what the run
+    // *retained*, so the balance the Career walked in with is never dipped
+    // into. The settlement also forfeits the non-retained share, so comparing
+    // against the pre-terminal balance would be the wrong bar.
+    assert.ok(
+      large.completed.player.money >= large.startingMoney,
+      'repayment must never reach below the balance the Career started the Tour with'
+    )
+  })
+
+  it('survives a save reload and drops a malformed one', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+    assert.deepEqual(
+      sanitizeCareerState({ sponsorAdvance: advance }).sponsorAdvance,
+      advance
+    )
+    // A debt is not repaired into existence: a malformed one is dropped rather
+    // than defaulted, so a save can neither forgive a real debt nor invent one.
+    for (const bad of [
+      { ...advance, amount: '400' },
+      { ...advance, outstanding: Number.NaN },
+      { ...advance, dealId: 42 },
+      null,
+      'nope'
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null
+      )
+    }
+  })
+
+  it('drops a cleared advance instead of preserving a zero balance', () => {
+    // Zero outstanding means repaid, and repaid means `null`. A preserved
+    // zero-balance record keeps `sponsorAdvance` non-null forever, and both
+    // generation and application require null - so the Career could never be
+    // offered another advance after clearing one.
+    const cleared = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 0,
+      takenAfterRunId: 'run_a'
+    }
+    assert.equal(
+      sanitizeCareerState({ sponsorAdvance: cleared }).sponsorAdvance,
+      null
+    )
+  })
+
+  it('refuses a debt production could never have created', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+
+    // `applyExpeditionSettlement` subtracts `outstanding` from the Cash a run
+    // retains, so a finite-but-arbitrary balance is not cosmetic: it would
+    // quietly drain every future settlement. There is one legal principal and
+    // one legal ceiling, and the load path is where a forged save is stopped.
+    for (const [label, bad] of [
+      ['an unknown Sponsor', { ...advance, dealId: 'no_such_sponsor' }],
+      ['a drained balance', { ...advance, outstanding: 1_000_000 }],
+      ['one cent over the ceiling', { ...advance, outstanding: 501 }],
+      ['a fractional debt', { ...advance, outstanding: 499.5 }],
+      ['a principal nobody offers', { ...advance, amount: 100_000 }],
+      ['a rounded-looking principal', { ...advance, amount: 401 }]
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null,
+        `${label} must be dropped, not repaired`
+      )
+    }
+
+    // The ceiling itself and a part-repaid balance both survive: the guard
+    // rejects what production cannot mint, not every debt. Zero is excluded
+    // deliberately - a cleared advance serializes as `null`, asserted just
+    // above - because a zero-balance record would block every later advance.
+    for (const outstanding of [500, 250, 1]) {
+      assert.deepEqual(
+        sanitizeCareerState({ sponsorAdvance: { ...advance, outstanding } })
+          .sponsorAdvance,
+        { ...advance, outstanding }
+      )
+    }
+  })
+})

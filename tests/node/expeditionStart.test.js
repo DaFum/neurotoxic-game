@@ -142,7 +142,11 @@ describe('START_EXPEDITION preconditions', () => {
       42,
       fixtureLoadout({ build: { setlistSongIds: [] } }),
       fixtureLoadout({ build: { equipment: { selectedGearItemIds: ['x'] } } }),
-      fixtureLoadout({ tourTypeId: 'blitz_tour' }),
+      // A Tour id no registry entry claims. `blitz_tour` used to stand in for
+      // this and no longer can: it is a real, bookable Tour now, so the case
+      // has to name something genuinely unknown to still prove the refusal.
+      fixtureLoadout({ tourTypeId: 'not_a_registered_tour' }),
+      fixtureLoadout({ regionId: 'not_a_registered_region' }),
       fixtureLoadout({ crewIds: ['crew_scout'] })
     ]) {
       assert.equal(start(prepared, validPayload({ loadout })), prepared)

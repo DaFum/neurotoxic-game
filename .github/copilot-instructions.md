@@ -70,8 +70,10 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Workflow
 
 - Before changing the repository, use the relevant installed workflow skill and read only the nested `AGENTS.md` files that govern the files you will touch. More-specific files override this one.
+- `docs/superpowers/plans/` and `docs/superpowers/specs/` are the binding contract for planned gate work. Read the task's own section before implementing it; a paraphrase drifts from the approved design and the drift surfaces in review, not in the tests.
 - Keep changes surgical. Do not refactor, reformat, upgrade dependencies, or remove pre-existing dead code outside the request.
 - Use `pnpm` only. Dependencies are pinned; discuss changes first. Never add Howler.js—the audio stack is Tone.js through `src/utils/audio/audioEngine.ts`.
+- `package.json#packageManager` is the sole pnpm version source; CI setup must derive and validate the version instead of duplicating it in workflow inputs or environment variables.
 
 ## Critical Commands
 
@@ -81,6 +83,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.
 - To check or review the codebase, you can also use the `symbols.json` file. Run `pnpm run symbols:update` and then `pnpm run symbols:check`. Never manually edit or commit ignored `symbols.json` files.
 - Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
+- After editing this file, run `pnpm run sync:agents`; `tests/node/agentInstructionsSync.test.js` fails when `.github/copilot-instructions.md` drifts from it.
 
 ## Architecture Constraints
 

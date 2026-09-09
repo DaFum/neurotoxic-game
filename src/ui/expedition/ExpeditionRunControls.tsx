@@ -7,12 +7,12 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
-import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
+import { isExpeditionSafeHarborWindow } from '../../domain/expedition/legendaries'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 
@@ -31,8 +31,7 @@ const useIsAtExtractionWindow = (): boolean =>
     const map = buildExpeditionMap(
       state.runSeed,
       loadout.tourTypeId,
-      loadout.regionId,
-      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      loadout.regionId
     )
     const nodeId =
       state.expedition.visitedNodeIds[
@@ -41,7 +40,13 @@ const useIsAtExtractionWindow = (): boolean =>
     if (typeof nodeId !== 'string' || !Object.hasOwn(map.meta, nodeId)) {
       return false
     }
-    return map.meta[nodeId]?.isExtractionWindow === true
+    // Composed exactly as `handleExtractExpedition` composes it: a Safe Harbor
+    // window the reducer would accept but the control never offers is an
+    // opportunity the player cannot take.
+    return (
+      map.meta[nodeId]?.isExtractionWindow === true ||
+      isExpeditionSafeHarborWindow(state, map)
+    )
   })
 
 /**

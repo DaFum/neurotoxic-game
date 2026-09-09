@@ -165,7 +165,10 @@ export const useArrivalLogic = ({
       advanceDay()
 
       // 2. Harmony Regen (if applicable)
-      const newHarmony = processHarmonyRegen(band)
+      const newHarmony = processHarmonyRegen(
+        band,
+        expedition?.status === 'active'
+      )
       if (newHarmony !== null) {
         updateBand({ harmony: newHarmony })
       }
@@ -173,7 +176,21 @@ export const useArrivalLogic = ({
       // 3. Trigger Events
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
-      const currentNode = gameMap?.nodes[player.currentNodeId]
+      const baseNode = gameMap?.nodes[player.currentNodeId]
+      // A Legendary that converted this node is what the run travelled, so
+      // arrival resolves the subtype the overlay advertised rather than the
+      // node's own class: a Ghost Route escape that landed on a Gig node must
+      // not play the show it was the escape from. The reducer records the
+      // conversion on the move and the load path re-derives it, so this only
+      // reads a fact both have already proved.
+      const arrivedOverlay =
+        expedition?.arrivedOverlay?.nodeId === player.currentNodeId
+          ? expedition.arrivedOverlay
+          : null
+      const currentNode =
+        baseNode && arrivedOverlay && baseNode.type !== 'SPECIAL'
+          ? { ...baseNode, type: 'SPECIAL' as const }
+          : baseNode
       if (expedition?.status === 'active') {
         const sourceType = currentNode?.type === 'REST_STOP' ? 'rest' : 'travel'
         const sourceId = `${sourceType}:${player.currentNodeId}:${expedition.routeStep}`

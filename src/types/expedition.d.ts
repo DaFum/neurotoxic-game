@@ -12,6 +12,21 @@ export type ExpeditionStatus =
   'idle' | 'prepared' | 'active' | 'extracted' | 'completed' | 'failed'
 
 /**
+ * Outcome of attempting the one Legendary claim a finalized run may owe.
+ *
+ * @remarks
+ * The claim is a persistence barrier, so its result has to say more than
+ * whether something happened: `not_applicable` is a run that owes no
+ * Legendary and may settle immediately, `claimed` is a durable marker plus the
+ * committed award, and `persistence_failed` is a run that owes one and could
+ * not durably record it. A caller must not settle the run on
+ * `persistence_failed` - the Career would spend its single claim on an award
+ * the next load would not have.
+ */
+export type ExpeditionLegendaryClaim =
+  'not_applicable' | 'claimed' | 'persistence_failed'
+
+/**
  * Identity of the prepared-but-not-started run.
  *
  * @remarks
@@ -152,6 +167,7 @@ export type ExpeditionBuildRejectionReason =
   | 'CREW_DUPLICATE'
   | 'CARGO_OUT_OF_RANGE'
   | 'PRESSURE_MODIFIERS_INVALID'
+  | 'CHASSIS_TIER_LOCKED'
 
 /**
  * Result of validating a candidate {@link ExpeditionLoadout}.
@@ -196,12 +212,40 @@ export type ExpeditionTier = 'low' | 'moderate' | 'high'
  */
 export interface ExpeditionRouteProfile {
   meaningfulNodeCount: number
-  specialWeight: number
   festivalWeight: number
   restWeight: number
   supplyWeight: number
-  undergroundAllowed: boolean
-  rivalAllowed: boolean
+  gigWeight: number
+  /**
+   * Inclusive route-step range at which extraction is legal.
+   *
+   * @remarks
+   * A Tour's own shape: a blitz run offers its exits early and closes them
+   * early, a survival run offers them late. Part of the route identity, so it
+   * belongs to the profile the map is built from rather than to a constant.
+   */
+  extractionWindowRange: readonly [number, number]
+  /**
+   * Scales the chance that the route offers an Underground node at all.
+   *
+   * @remarks
+   * A chance rather than a guarantee, because a guaranteed node makes the
+   * multiplier a placebo: if every route already has one, `1.35x` cannot make
+   * Underground any more frequent. A Standard route may or may not offer one;
+   * an Underground Region or Tour usually does.
+   */
+  undergroundWeight: number
+  /** Scales the chance that the route offers a Rival encounter. */
+  rivalWeight: number
+  /**
+   * Guarantees a reachable Rival encounter regardless of the weighted roll.
+   *
+   * @remarks
+   * Applied as a deterministic post-pass rather than by forcing the roll, so a
+   * Rival-hunt Tour is the same route it would otherwise have been plus the
+   * encounter it promises.
+   */
+  forcedRival: boolean
 }
 
 /**
@@ -433,6 +477,29 @@ export interface ExpeditionTemporaryRouteOpportunity {
   createdAtRouteStep: number
 }
 
+/** What opened an overlay: each one has its own evidence and its own gate. */
+export type ExpeditionOverlaySource =
+  'underground_invite' | 'nemesis_shortcut' | 'ghost_route' | 'nemesis_key'
+
+/**
+ * The overlay a move travelled, and the node it landed on.
+ *
+ * @remarks
+ * `subtype` is what the overlay advertised, which is not always what the base
+ * node is: a Ghost Route escape, a high-Heat Underground invite and a Nemesis
+ * shortcut all convert an ordinary node.
+ *
+ * `source` is carried because that is what makes the record checkable. Each
+ * source is re-derived against different evidence on load, and the one whose
+ * gate lives outside this slice - the Nemesis tier - is re-checked wherever
+ * the effective route is read.
+ */
+export interface ExpeditionArrivedOverlay {
+  nodeId: string
+  subtype: ExpeditionSpecialNodeSubtype
+  source: ExpeditionOverlaySource
+}
+
 export interface ExpeditionPressureState {
   heat: number
   exposure: number
@@ -567,6 +634,21 @@ export interface ExpeditionFinaleProfile {
  * Social and the root `GameState.runSeed` remain the canonical owners of
  * everything else.
  */
+/**
+ * The route a Sponsor offer snapshot was staged for.
+ *
+ * @remarks
+ * START re-derives the snapshot from these three axes and rejects a commitment
+ * that does not match them, so a staging generated for one Region/Tour/perk
+ * cannot be spent on another. It carries no seed of its own: the root
+ * `runSeed` is the single owner, and the staged offers already record it.
+ */
+export interface ExpeditionSponsorStagingProvenance {
+  regionId: string
+  tourTypeId: string
+  starterPerkId: string | null
+}
+
 export interface ExpeditionState {
   status: ExpeditionStatus
   prep: ExpeditionPrepState | null
@@ -582,6 +664,29 @@ export interface ExpeditionState {
   protectedCareerCash: number
   rewardLedger: ExpeditionRewardLedgerEntry[]
   extractionWindowsSeen: number[]
+  /**
+   * Legendaries this run has already spent.
+   *
+   * @remarks
+   * Run-scoped and reset by `START_EXPEDITION`: a Legendary is owned forever
+   * but acts once per run, so ownership and consumption are different facts
+   * living in different slices.
+   */
+  consumedLegendaryIds: string[]
+  /**
+   * The overlay subtype the run travelled into the node it stands on.
+   *
+   * @remarks
+   * An overlay is derived from the node the run is leaving, so it is gone the
+   * moment the move lands and the arrived node would otherwise be resolved by
+   * its base class alone - a Ghost Route escape onto a Gig node would play the
+   * show it was an escape from. Recorded here at the move, because that is the
+   * only point at which both the overlay and its destination are known.
+   *
+   * Cleared by any move that travelled no overlay, so it always describes the
+   * current node and never an earlier one.
+   */
+  arrivedOverlay: ExpeditionArrivedOverlay | null
   pendingFailure: PendingExpeditionFailure | null
   /**
    * Mandatory daily obligation a previous day could not pay from the run's
@@ -594,6 +699,18 @@ export interface ExpeditionState {
    * later day can pay it.
    */
   unpaidDailyObligation: number
+  /**
+   * Route step at which the protected Cash floor refused a travel settlement.
+   *
+   * @remarks
+   * Realized evidence, in the same sense as {@link unpaidDailyObligation}: the
+   * run actually tried to leave and the floor reverted it. Without a record,
+   * the reverted action leaves no trace and the mobility signal cannot see
+   * that the run is stuck, so no crisis is raised and `accept_failure` - the
+   * unconditional choice that is supposed to make a softlock impossible - is
+   * never offered.
+   */
+  blockedTravelAtRouteStep: number | null
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
@@ -608,6 +725,7 @@ export interface ExpeditionState {
   resolvedObligationSignalIds: string[]
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
+  preparedSponsorProvenance?: ExpeditionSponsorStagingProvenance
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
@@ -884,6 +1002,111 @@ export interface ExpeditionVehicleModuleProfile {
 /**
  * Numeric tuning rules resolved for the current Expedition.
  */
+/**
+ * A Region's canonical id.
+ */
+export type ExpeditionRegionId =
+  | 'home_turf'
+  | 'industrial_belt'
+  | 'festival_fields'
+  | 'corporate_circuit'
+  | 'underground_scene'
+
+/**
+ * A Tour Type's canonical id.
+ */
+export type ExpeditionTourTypeId =
+  | 'standard_tour'
+  | 'blitz_tour'
+  | 'underground_tour'
+  | 'corporate_tour'
+  | 'rival_hunt_tour'
+  | 'survival_tour'
+
+/**
+ * Weights that shape a run's route and content without touching its numbers.
+ *
+ * @remarks
+ * Numeric rules cannot express route identity: two Tours can share every
+ * multiplier and still need to feel different in what the route offers. These
+ * weights are that second axis, and they have exactly one owner —
+ * `getExpeditionRoutePressureProfile` — so no Region or Tour id is ever
+ * branched on outside it.
+ */
+export interface ExpeditionRoutePressureProfile {
+  supplyNodeWeightMultiplier: number
+  technicalNodeWeightMultiplier: number
+  festivalHighProfileNodeWeightMultiplier: number
+  sponsorContractEventWeightMultiplier: number
+  undergroundNodeWeightMultiplier: number
+  rivalNodeWeightMultiplier: number
+  gigNodeWeightMultiplier: number
+  recoveryNodeWeightMultiplier: number
+  forcedRival: boolean
+}
+
+/**
+ * One Region's contribution, as data.
+ */
+/**
+ * The numeric fields a Region or Tour profile may contribute.
+ *
+ * @remarks
+ * `getEffectiveExpeditionRules` composes an explicit subset of
+ * {@link ExpeditionNumericRules} from the Region and Tour profiles. Every key
+ * outside that subset keeps its base value however the registry declares it,
+ * so typing these profiles as the full `Partial<ExpeditionNumericRules>` let a
+ * balance edit add a field that compiles, passes `satisfies`, and does
+ * nothing. Narrowed to the keys the composition actually reads, so an unread
+ * one is a compile error instead of a silent placebo.
+ */
+export type ExpeditionComposableNumericRuleKey =
+  | 'startingHeat'
+  | 'startingSpareParts'
+  | 'fuelConsumptionMultiplier'
+  | 'roadWearMultiplier'
+  | 'technicalWearMultiplier'
+  | 'repairCostMultiplier'
+  | 'contractRewardMultiplier'
+  | 'heatGainMultiplier'
+  | 'exposureGainMultiplier'
+  | 'crewStressMultiplier'
+  | 'extractionRetentionMultiplier'
+  | 'rareRewardChanceMultiplier'
+  | 'completionMultiplier'
+  | 'rivalEventWeightMultiplier'
+  | 'authorityEventWeightMultiplier'
+  | 'finaleRewardMultiplier'
+
+/** A Region or Tour numeric contribution, limited to the composed keys. */
+export type ExpeditionComposableNumericProfile = Partial<
+  Pick<ExpeditionNumericRules, ExpeditionComposableNumericRuleKey>
+>
+
+export interface ExpeditionRegionDefinition {
+  id: ExpeditionRegionId
+  labelKey: string
+  numeric: ExpeditionComposableNumericProfile
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  /** Heat at or above which corporate Sponsors refuse this Region's runs. */
+  corporateSponsorHeatCeiling?: number
+}
+
+/**
+ * One Tour Type's contribution, as data.
+ */
+export interface ExpeditionTourTypeDefinition {
+  id: ExpeditionTourTypeId
+  labelKey: string
+  /** Meaningful route steps between the start and the Finale. */
+  depth: number
+  /** Inclusive route-step range at which extraction is legal. */
+  extractionWindowRange: readonly [number, number]
+  numeric: ExpeditionComposableNumericProfile
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  forcedRival: boolean
+}
+
 export interface ExpeditionNumericRules {
   startingSpareParts: number
   startingHeat: number
@@ -900,7 +1123,16 @@ export interface ExpeditionNumericRules {
   exposureGainMultiplier: number
   crewStressMultiplier: number
   extractionRetentionMultiplier: number
-  rareRewardMultiplier: number
+  /**
+   * Scales the *probability* of a chance-based rare reward, nothing else.
+   *
+   * @remarks
+   * Not carry slots, not item quantity, not reward value: `underground_scene`
+   * at 1.2 means a 20% better chance at a rare, not 20% more loot. A rare a
+   * decision grants outright - a Finale reward, an authored event result - is
+   * deterministic and never re-rolled, so this cannot touch it.
+   */
+  rareRewardChanceMultiplier: number
   completionMultiplier: number
   rivalEventWeightMultiplier: number
   authorityEventWeightMultiplier: number
@@ -1003,4 +1235,27 @@ export interface ExpeditionNodeFog {
   revealedIdentity: string | null
   /** Rare reward this node yields, only present once intel reaches level 1. */
   rareRewardId: string | null
+  /**
+   * Level-0 presence hints, earned rather than scouted.
+   *
+   * @remarks
+   * A hint says only *that* a category is on a node, never which one it is or
+   * what it pays. That is the whole difference between knowing a road and
+   * having scouted it, and it is why these stay readable at intel level 0
+   * while payout, wear and identity keep their level 1 and level 2 gates.
+   * `false` means the run is entitled to the hint and the node does not carry
+   * that category; `null` means the run has not earned the hint at all.
+   */
+  hasRecoveryOrSponsorHint: boolean | null
+  /** Level-0 Rival/Sponsor category presence, earned by Career rank. */
+  hasRivalOrSponsorCategoryHint: boolean | null
+  /**
+   * Level-0 Underground opportunity presence, earned by a starter perk.
+   *
+   * @remarks
+   * The `underground_contact` perk's half of its cost: the contact knows which
+   * stops deal, never what the deal is worth, so this stays a bare presence
+   * hint and the payout keeps its level-1 gate.
+   */
+  hasUndergroundCategoryHint: boolean | null
 }

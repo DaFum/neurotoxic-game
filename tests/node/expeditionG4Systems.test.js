@@ -191,8 +191,42 @@ test('rival selection and quest/event seams are deterministic production data', 
     createExpeditionRivalOutcomeQuestEvent('x', true).type,
     'expedition.rivalOutcome'
   )
-  assert.ok(getAvailableNativeContractTemplateIds(state, map).length >= 4)
-  assert.deepEqual(getAvailableSponsorOfferIds(state, map), [])
+  // The performance-Contract pool is sold by `festival_network`, so a fresh
+  // Career sees strictly fewer templates than one that has bought it.
+  const freeTemplates = getAvailableNativeContractTemplateIds(state, map)
+  const pooledTemplates = getAvailableNativeContractTemplateIds(
+    {
+      ...state,
+      career: { ...state.career, unlockedSetIds: ['festival_network'] }
+    },
+    map
+  )
+  assert.ok(pooledTemplates.length >= 4)
+  assert.ok(freeTemplates.length < pooledTemplates.length)
+  // Sponsor offers are derived from the route's own Region and Tour now, not
+  // read out of persisted state, so this is a real set rather than the empty
+  // list an unstaged `preparedSponsorOffers` used to produce.
+  const offerIds = getAvailableSponsorOfferIds(state, map)
+  assert.ok(offerIds.length > 0)
+  // Derived from the route, so a staged `preparedSponsorOffers` on the state
+  // must not change the answer. Comparing the selector to the function it is
+  // defined as could not fail and proved nothing about where the offers come
+  // from.
+  assert.deepEqual(
+    getAvailableSponsorOfferIds(
+      {
+        ...state,
+        expedition: {
+          ...state.expedition,
+          preparedSponsorOffers: [
+            { offerId: 'forged', dealId: 'forged', runSeed: 1 }
+          ]
+        }
+      },
+      map
+    ),
+    offerIds
+  )
   assert.deepEqual(materializeCommittedContracts([], map), [])
   assert.equal(applyExpeditionPressureDelta(state, { heat: 5 }).heat, 5)
   assert.equal(

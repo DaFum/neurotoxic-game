@@ -152,11 +152,11 @@ Before writing comments, de-duplicate aggressively:
 
 Use the repo-specific severity in `references/neurotoxic-conventions.md` when a listed rule is violated. For unlisted defects, map severity by consequence:
 
-| Level | Use when |
-|---|---|
-| **Critical** | Data loss/corruption, security vulnerability, direct state mutation, broken state transition, exploit, or functionality that is realistically broken |
-| **Important** | Concrete logic/type/boundary error that should be fixed before merge; realistic regression risk with a clear failure mode |
-| **Minor** | Real but non-blocking repo-rule or consistency issue with low runtime impact |
+| Level         | Use when                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Critical**  | Data loss/corruption, security vulnerability, direct state mutation, broken state transition, exploit, or functionality that is realistically broken |
+| **Important** | Concrete logic/type/boundary error that should be fixed before merge; realistic regression risk with a clear failure mode                            |
+| **Minor**     | Real but non-blocking repo-rule or consistency issue with low runtime impact                                                                         |
 
 Review **priority** and finding **severity** are separate: a Critical-risk file may be correct, while a small changed line can still contain a Critical defect.
 

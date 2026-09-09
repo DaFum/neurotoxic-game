@@ -23,10 +23,7 @@ import {
   executeExpeditionRepair,
   resolveExpeditionCrisis
 } from '../../src/context/expeditionActionCreators.ts'
-import {
-  startedState,
-  walkTo
-} from '../expeditionLifecycleFixture.js'
+import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
 
 const createZeroConditionState = (overrides = {}) => {
   const base = startedState()

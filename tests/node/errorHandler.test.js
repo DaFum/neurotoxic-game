@@ -2,7 +2,7 @@
  * @fileoverview Tests for the error handler module
  */
 
-import { describe, it } from 'node:test'
+import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   GameError,
@@ -16,6 +16,21 @@ import {
   initGlobalErrorHandling
 } from '../../src/utils/errorHandler'
 import { createFixedClock } from '../../src/utils/clock'
+
+let origConsoleWarn
+let origConsoleError
+
+beforeEach(() => {
+  origConsoleWarn = console.warn
+  origConsoleError = console.error
+  console.warn = () => {}
+  console.error = () => {}
+})
+
+afterEach(() => {
+  console.warn = origConsoleWarn
+  console.error = origConsoleError
+})
 
 describe('Custom Error Classes', () => {
   describe('GameError', () => {

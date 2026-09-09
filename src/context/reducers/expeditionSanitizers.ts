@@ -25,17 +25,18 @@ import {
 } from '../../domain/expedition/rewardLedger'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
+import { deriveExpeditionGhostRouteTargetFrom } from '../../domain/expedition/legendaries'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
-import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
+import {
+  getCanonicalBrandDealTermsHash,
+  MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS
+} from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
-import {
-  getExpeditionEventResultEffect,
-  isExpeditionEventResultId
-} from '../../domain/expedition/eventDeltas'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
@@ -595,36 +596,96 @@ export const sanitizeExpeditionState = (
     )
   }
 
-  // For active or terminal Expeditions, validate visitedNodeIds strictly against canonical DAG.
-  // The visited path must contain exactly routeStep + 1 nodes: startNodeId at index 0,
-  // and each step i connected to step i-1 with meta[nodeId].routeStep === i.
+  // Nemesis Key is the only overlay that spans two layers
+  // (`routeOverlay.ts` passes `stepsAhead: 2` for it and nothing else), and it
+  // is consumed by being travelled - so a run may hold at most one two-layer
+  // gap in its path, and only if that Legendary is recorded as spent. Read
+  // ahead of the narrowing below because the path check needs it here.
+  const consumedNemesisKey =
+    Array.isArray(value.consumedLegendaryIds) &&
+    value.consumedLegendaryIds.includes('nemesis_key')
+
+  // For active or terminal Expeditions, validate visitedNodeIds strictly
+  // against the canonical DAG: startNodeId at index 0, strictly increasing
+  // route steps, and every move either a base connection or the one
+  // overlay-authorized two-layer jump. The last node's step is what
+  // `routeStep` must equal - a jump advances the step by two while appending a
+  // single node, so counting nodes against `routeStep + 1` rejected a legal
+  // Nemesis Key move and reset the whole run to idle on reload.
   const validVisitedPath: string[] = []
   if (preparedMap && (status === 'active' || TERMINAL_STATUSES.has(status))) {
-    if (rawVisitedNodeIds.length !== routeStep + 1) {
+    if (rawVisitedNodeIds.length !== routeStep + 1 && !consumedNemesisKey) {
       return fallback
     }
     if (rawVisitedNodeIds[0] !== preparedMap.startNodeId) {
       return fallback
     }
+    if (preparedMap.meta[rawVisitedNodeIds[0]!]?.routeStep !== 0) {
+      return fallback
+    }
     validVisitedPath.push(rawVisitedNodeIds[0]!)
-    for (let i = 1; i <= routeStep; i++) {
+    let twoLayerJumps = 0
+    for (let i = 1; i < rawVisitedNodeIds.length; i++) {
       const prevId = validVisitedPath[i - 1]!
       const currId = rawVisitedNodeIds[i]!
+      const prevMeta = preparedMap.meta[prevId]
       const currMeta = preparedMap.meta[currId]
-      if (!currMeta || currMeta.routeStep !== i) {
-        return fallback
-      }
-      const isConnected = preparedMap.connections.some(
-        conn => conn.from === prevId && conn.to === currId
-      )
-      if (!isConnected) {
+      if (!prevMeta || !currMeta) return fallback
+      const span = currMeta.routeStep - prevMeta.routeStep
+      if (span === 1) {
+        const isConnected = preparedMap.connections.some(
+          conn => conn.from === prevId && conn.to === currId
+        )
+        if (!isConnected) return fallback
+      } else if (span === 2 && consumedNemesisKey && twoLayerJumps === 0) {
+        // The overlay edge itself is not in the base map, so the check is that
+        // the target sits two layers downstream on a branch the run could
+        // actually have been standing on - not at an arbitrary depth.
+        const reachableViaOneNode = preparedMap.connections.some(
+          first =>
+            first.from === prevId &&
+            preparedMap.connections.some(
+              second => second.from === first.to && second.to === currId
+            )
+        )
+        if (!reachableViaOneNode) return fallback
+        twoLayerJumps += 1
+      } else {
         return fallback
       }
       validVisitedPath.push(currId)
     }
+    // The path has to end where the run says it is.
+    if (preparedMap.meta[validVisitedPath.at(-1)!]?.routeStep !== routeStep) {
+      return fallback
+    }
   } else if (rawVisitedNodeIds.length > 0) {
     validVisitedPath.push(...rawVisitedNodeIds)
   }
+
+  // Narrowed to the registry only: an over-claimed consumption can never grant
+  // anything, it can only spend a Legendary the run already owns, so the save
+  // is allowed to say a run has used one. Read here because the travelled
+  // conversion below is only legitimate if the Legendary really was spent.
+  const consumedLegendaryIds = Array.isArray(value.consumedLegendaryIds)
+    ? [...new Set(value.consumedLegendaryIds.filter(isExpeditionLegendaryId))]
+    : []
+
+  // Sanitized ahead of the slice it belongs to, because the travelled overlay
+  // is checked against the run's Heat and must read the clamped value rather
+  // than whatever the save claimed.
+  const pressure = sanitizeExpeditionPressure(
+    value.pressure,
+    runId,
+    routeStep,
+    runSeed,
+    preparedMap,
+    validVisitedPath[validVisitedPath.length - 1]
+  )
+
+  const preparedSponsorProvenance = sanitizePreparedSponsorProvenance(
+    value.preparedSponsorProvenance
+  )
 
   const hasCanonicalContactEvidence = (sourceId: string): boolean => {
     const outcome = getCrewEventOutcomeBySourceId(sourceId)
@@ -704,38 +765,28 @@ export const sanitizeExpeditionState = (
       // against the same canonical evidence its reducer required rather than
       // dropped - an autosave between earning a reward and the terminal
       // settlement that materializes it must not lose it.
-      if (entry.sourceType === 'event_rare') {
-        // `resolvedEventSourceIds` is itself part of the save, so validating
-        // its shape against the registry proves only that the tuple is one the
-        // content could produce - not that this run produced it. A random
-        // event roll has no seeded anchor to re-derive it from either, unlike
-        // the route opportunity above. So an unmaterialized Event rare is
-        // dropped on load rather than authorized by evidence the save wrote
-        // itself: a reload mid-run forfeits it, which is the cost of not
-        // letting a crafted save mint one.
-        if (entry.materialized !== true) continue
-        const resolvedEventSourceIds = sanitizeUniqueStrings(
-          value.resolvedEventSourceIds
-        ).filter(isValidExpeditionEventProofId)
-        if (
-          !resolvedEventSourceIds.includes(
-            `${entry.sourceId}:${entry.earnedAtRouteStep}`
-          )
-        ) {
-          continue
-        }
-        const resultId = entry.sourceId.slice(
-          entry.sourceId.lastIndexOf(':') + 1
-        )
-        if (
-          !isExpeditionEventResultId(resultId) ||
-          getExpeditionEventResultEffect(resultId).rareRewardId !==
-            entry.rewardDefinitionId ||
-          entry.earnedAtRouteStep > routeStep
-        ) {
-          continue
-        }
-      }
+      // Always dropped: there is no load-time proof available for an Event
+      // rare, `materialized` included.
+      //
+      // The seeded pool gate is pure in `runSeed` and the route step, so it
+      // proves only that *some* pressure event could open at the step the
+      // entry names - never that this event was selected, that this option was
+      // taken, or that this result was produced. Every field that would say so
+      // (`sourceId`, `resolvedEventSourceIds`, `materialized`, the entry
+      // itself) is authored by the save, and the Director's actual selection
+      // depended on the live pressure at that step, which the save does not
+      // preserve in any re-derivable form. `materialized` in particular is a
+      // settlement bookkeeping flag, not evidence: a crafted save sets it to
+      // `true` and keeps an arbitrary canonical rare.
+      //
+      // So the choice is between keeping a claim the load cannot check and
+      // losing a real reward when a run is reloaded between earning it and the
+      // terminal settlement. This takes the second: a forged save cannot mint
+      // a rare, and the cost falls on a reload window rather than on the reward
+      // rules. Closing that window needs a reducer-authored resolution record
+      // that a save cannot construct, which is a persistence change this gate
+      // does not own.
+      if (entry.sourceType === 'event_rare') continue
       if (entry.sourceType === 'contract') {
         if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue
         if (
@@ -845,10 +896,25 @@ export const sanitizeExpeditionState = (
       : readCount(value, 'protectedCareerCash', 0),
     rewardLedger,
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
+    // Narrowed to the registry only: an over-claimed consumption can never
+    // grant anything, it can only spend a Legendary the run already owns, so
+    // the save is allowed to say a run has used one.
+    consumedLegendaryIds,
+    arrivedOverlay: sanitizeArrivedOverlay(
+      value.arrivedOverlay,
+      validVisitedPath,
+      runSeed,
+      preparedMap,
+      consumedLegendaryIds,
+      pressure.heat
+    ),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
     // A carried shortfall is a debt, so a save cannot make it negative and
     // quietly turn it into credit.
     unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
+    blockedTravelAtRouteStep: isFiniteNumber(value.blockedTravelAtRouteStep)
+      ? Math.max(0, Math.floor(value.blockedTravelAtRouteStep))
+      : null,
     outcome,
     insurancePolicyId:
       getExpeditionInsurancePolicy(
@@ -885,18 +951,17 @@ export const sanitizeExpeditionState = (
     resolvedObligationSignalIds: sanitizeUniqueStrings(
       value.resolvedObligationSignalIds
     ),
-    pressure: sanitizeExpeditionPressure(
-      value.pressure,
-      runId,
-      routeStep,
-      runSeed,
-      preparedMap,
-      validVisitedPath[validVisitedPath.length - 1]
-    ),
+    pressure,
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
       runSeed
     ),
+    // The staged offers are only re-derivable from the route they were staged
+    // for, so the provenance has to survive the load with them. Dropping it
+    // here left a prepared save holding offers START could no longer accept.
+    ...(preparedSponsorProvenance === undefined
+      ? {}
+      : { preparedSponsorProvenance }),
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
     ...(value.consumedRunDraftSourceKeys !== undefined
       ? {
@@ -1010,6 +1075,97 @@ const sanitizeTemporaryRouteOpportunity = (
   return { id: expectedId, subtype, targetNodeId, createdAtRouteStep }
 }
 
+/**
+ * Narrows the overlay a persisted run claims to have travelled into its node.
+ *
+ * @param value - Raw candidate from the save.
+ * @param visitedPath - The already-validated path the run walked.
+ * @param runSeed - The run's seed.
+ * @param map - The canonical route, when it could be built.
+ * @param consumedLegendaryIds - Legendaries the run has spent.
+ * @param heat - The run's sanitized Authority Heat.
+ * @returns The conversion the run could actually have travelled, or `null`.
+ *
+ * @remarks
+ * Re-derived rather than trusted, because readers resolve this instead of the
+ * node's own class: a forged record would hand the run an Underground stop, or
+ * a Rival encounter, in place of what the route put there.
+ *
+ * Every source is checked against its own evidence - the node the run came
+ * from has to seed exactly this target under that source's salt, and the
+ * Legendary ones have to be spent. The Nemesis shortcut's own gate is the
+ * Rival's tier, which lives in the Career rather than here, so this accepts
+ * the seeded target and `getEffectiveExpeditionRoute` re-checks the tier
+ * wherever the record is read.
+ */
+const sanitizeArrivedOverlay = (
+  value: unknown,
+  visitedPath: readonly string[],
+  runSeed: number | undefined,
+  map: ExpeditionMap | null,
+  consumedLegendaryIds: readonly string[],
+  heat: number
+): ExpeditionState['arrivedOverlay'] => {
+  if (!isLooseRecord(value) || !map) return null
+  const nodeId = readString(value, 'nodeId')
+  if (!nodeId || nodeId !== visitedPath.at(-1)) return null
+  const from = visitedPath.at(-2)
+  const fromStep = from === undefined ? undefined : map.meta[from]?.routeStep
+  const step = map.meta[nodeId]?.routeStep
+  if (fromStep === undefined || step === undefined) return null
+
+  const { subtype, source } = value
+  const seeded = (salt: string): boolean =>
+    step === fromStep + 1 &&
+    deriveExpeditionOverlayTargetFrom(from, fromStep, runSeed, map, salt) ===
+      nodeId
+
+  switch (source) {
+    case 'ghost_route':
+      // Its own derivation, which prefers a real Underground node and
+      // otherwise converts one, so it does not share the salted helper.
+      if (
+        subtype !== 'UNDERGROUND_MARKET' ||
+        !consumedLegendaryIds.includes('ghost_route') ||
+        step !== fromStep + 1 ||
+        deriveExpeditionGhostRouteTargetFrom(from, fromStep, runSeed, map) !==
+          nodeId
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'nemesis_key':
+      // The only two-layer move, and it lands on a Rival Encounter the base
+      // map already carries - so the map itself is the evidence here.
+      if (
+        subtype !== 'RIVAL_ENCOUNTER' ||
+        !consumedLegendaryIds.includes('nemesis_key') ||
+        step !== fromStep + 2 ||
+        map.meta[nodeId]?.specialSubtype !== 'RIVAL_ENCOUNTER'
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'underground_invite':
+      // Heat below the invite's own threshold could not have produced one.
+      if (
+        subtype !== 'UNDERGROUND_MARKET' ||
+        heat < 60 ||
+        !seeded('underground_invite')
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'nemesis_shortcut':
+      if (subtype !== 'RIVAL_ENCOUNTER' || !seeded('nemesis_shortcut')) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    default:
+      return null
+  }
+}
+
 const sanitizeExpeditionPressure = (
   value: unknown,
   runId: string | null = null,
@@ -1062,7 +1218,7 @@ const sanitizePreparedSponsorOffers = (
   if (!Array.isArray(value) || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['preparedSponsorOffers'] = []
   const seen = new Set<string>()
-  for (const raw of value.slice(0, 3)) {
+  for (const raw of value.slice(0, MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS)) {
     if (!isLooseRecord(raw)) continue
     const { offerId, dealId, canonicalTermsHash } = raw
     if (
@@ -1078,6 +1234,44 @@ const sanitizePreparedSponsorOffers = (
     result.push({ offerId, dealId, runSeed, canonicalTermsHash })
   }
   return result
+}
+
+/**
+ * Narrows the persisted Sponsor staging provenance to its declared shape.
+ *
+ * @param value - Raw persisted provenance.
+ * @returns The narrowed provenance, or `undefined` when the save carries none
+ * or carries a malformed one.
+ *
+ * @remarks
+ * Shape only. Whether the Region, Tour and perk are still *available* to this
+ * Career is decided by `validatePreparedExpeditionSponsorOffers`, which has the
+ * whole `GameState` to answer it with; a sanitizer that guessed here would
+ * either drop a legal staging or admit a locked one.
+ */
+const sanitizePreparedSponsorProvenance = (
+  value: unknown
+): ExpeditionState['preparedSponsorProvenance'] => {
+  if (!isLooseRecord(value)) return undefined
+  const { regionId, tourTypeId, starterPerkId } = value
+  if (
+    typeof regionId !== 'string' ||
+    typeof tourTypeId !== 'string' ||
+    isForbiddenKey(regionId) ||
+    isForbiddenKey(tourTypeId)
+  )
+    return undefined
+  if (
+    starterPerkId !== null &&
+    starterPerkId !== undefined &&
+    (typeof starterPerkId !== 'string' || isForbiddenKey(starterPerkId))
+  )
+    return undefined
+  return {
+    regionId,
+    tourTypeId,
+    starterPerkId: typeof starterPerkId === 'string' ? starterPerkId : null
+  }
 }
 
 const sanitizeRunDraftTraitIds = (

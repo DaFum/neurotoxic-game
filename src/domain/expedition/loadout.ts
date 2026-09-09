@@ -26,8 +26,10 @@ import { logger } from '../../utils/logger'
 import { ActionTypes } from '../../context/actionTypes'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
+import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
 import {
-  BASE_EXPEDITION_REGION_ID,
+  FREE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from './defaults'
@@ -45,9 +47,21 @@ import type {
   ExpeditionBuildRejectionReason,
   ExpeditionBuildValidation,
   ExpeditionLoadout,
-  ExpeditionMap
+  ExpeditionMap,
+  ExpeditionSponsorStagingProvenance
 } from '../../types/expedition'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { buildPreparedExpeditionSponsorOffers } from './sponsors'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import {
+  EXPEDITION_STARTER_PERK_IDS,
+  EXPEDITION_STARTER_PERKS
+} from '../../data/expedition/starterPerks'
+import {
+  EXPEDITION_PRESSURE_MODIFIER_IDS,
+  MAX_EXPEDITION_PRESSURE_MODIFIERS
+} from '../../data/expedition/pressureModifiers'
+import type { ExpeditionCapabilityId } from '../../types/career'
 import {
   areExpeditionContractsCompatible,
   materializeContractConstraints
@@ -56,7 +70,16 @@ import {
 /**
  * Highest fuel level the van can be topped up to before departure.
  */
-const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+/**
+ * Ceiling on a committed starting Fuel target.
+ *
+ * @remarks
+ * Exported so callers that need to reason about the cheapest legal build - the
+ * Between-Tour insolvency check, the balance harness - use the same ceiling the
+ * validator enforces rather than a literal of their own.
+ */
+export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
  * Cash the player may spend inside an active Expedition.
@@ -103,6 +126,28 @@ export const canSpendExpeditionCash = (
   getExpeditionSpendableCash(state) >= amount
 
 /**
+ * What START will charge for the cheapest legal next Expedition.
+ *
+ * @param state - Career state between Tours.
+ * @returns The unavoidable cost of booking again, in euros.
+ *
+ * @remarks
+ * A build may only top the tank up, never siphon it, so the cheapest legal
+ * `startingFuelTarget` is the tank the last Tour left rounded up - and the only
+ * unavoidable charge is that rounding. It is a euro or two, which is exactly
+ * why a Career stranded just below it reads as absurd: the band cannot book a
+ * Tour because it is two euros short of topping off a tank it already has.
+ */
+export const getExpeditionMinimumNextStartCost = (state: GameState): number => {
+  const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
+  const cheapestTarget = Math.min(
+    EXPEDITION_MAX_STARTING_FUEL,
+    Math.ceil(Math.max(0, currentFuel))
+  )
+  return getExpeditionFuelTopUpCost(currentFuel, cheapestTarget)
+}
+
+/**
  * Cost of topping the van up from its current level to a target level.
  *
  * @param currentFuel - Current `player.van.fuel`.
@@ -129,22 +174,131 @@ export const getExpeditionFuelTopUpCost = (
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The capability each non-baseline Tour and Region is gated behind.
+ *
+ * @remarks
+ * `standard_tour` is deliberately absent - it is the one Tour every Career can
+ * always book. The free Region is `home_turf`, and it is absent from
+ * `REGION_CAPABILITY` for the same reason. `industrial_belt` is *not* free: it
+ * is the pre-G5 route baseline, but new bookings need `region_industrial_belt`
+ * (see the remark on {@link getAvailableExpeditionRegionIds}), and only a run
+ * that already committed it keeps it.
+ */
+const TOUR_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
+  survival_tour: 'tour_survival_tour',
+  corporate_tour: 'tour_corporate_tour',
+  underground_tour: 'tour_underground_tour',
+  blitz_tour: 'tour_blitz_tour',
+  rival_hunt_tour: 'tour_rival_hunt_tour'
+}
+
+const REGION_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
+  industrial_belt: 'region_industrial_belt',
+  corporate_circuit: 'region_corporate_circuit',
+  underground_scene: 'region_underground_scene',
+  festival_fields: 'region_festival_fields'
+}
+
+/**
+ * The highest chassis tier a Career may tour in without buying the capability.
+ */
+const FREE_EXPEDITION_CHASSIS_TIER = 1
+
+/**
+ * Whether the Career has bought its way to an id, or never needed to.
+ *
+ * @param state - Current game state.
+ * @param id - Tour or Region id.
+ * @param gates - The capability map for that axis.
+ * @returns True when the id is ungated or its capability is unlocked.
+ */
+const isAvailableById = (
+  state: GameState,
+  id: string,
+  gates: Readonly<Record<string, ExpeditionCapabilityId>>
+): boolean => {
+  if (!Object.hasOwn(gates, id)) return true
+  const capability = gates[id]
+  return (
+    capability !== undefined &&
+    isExpeditionCapabilityUnlocked(state.career?.unlockedSetIds, capability)
+  )
+}
+
+/**
  * Tour archetypes the player may commit.
  *
- * @remarks G5 owns the Tour registry and extends this in place.
+ * @remarks
+ * Registered *and* unlocked. The registry stops a Tour from being published as
+ * data no run can reach; the capability gate is what makes an unlock set worth
+ * its Tokens. The baseline id is kept first and is never gated, so an existing
+ * save, seed or preview still resolves to the same route.
  */
-const getAvailableTourTypeIds = (_state: GameState): readonly string[] => [
-  BASE_EXPEDITION_TOUR_TYPE_ID
+export const getAvailableExpeditionTourTypeIds = (
+  state: GameState
+): readonly string[] => [
+  BASE_EXPEDITION_TOUR_TYPE_ID,
+  ...Object.keys(EXPEDITION_TOUR_TYPES).filter(
+    id =>
+      id !== BASE_EXPEDITION_TOUR_TYPE_ID &&
+      isAvailableById(state, id, TOUR_CAPABILITY)
+  )
 ]
 
 /**
  * Regions the player may commit.
  *
- * @remarks G5 owns the Region registry and extends this in place.
+ * @remarks
+ * Same rule as the Tours above: registered and unlocked. `home_turf` is the
+ * one free Region, so a fresh Career always has somewhere to go. Everything
+ * else is sold, `industrial_belt` included: it is the pre-G5 route baseline,
+ * but keeping it free would make the `region_industrial_belt` capability that
+ * `mechanic_network` charges Tokens for dead inventory. A run that already
+ * committed it keeps it - this list only gates new bookings.
  */
-const getAvailableRegionIds = (_state: GameState): readonly string[] => [
-  BASE_EXPEDITION_REGION_ID
+export const getAvailableExpeditionRegionIds = (
+  state: GameState
+): readonly string[] => [
+  FREE_EXPEDITION_REGION_ID,
+  ...Object.keys(EXPEDITION_REGIONS).filter(
+    id =>
+      id !== FREE_EXPEDITION_REGION_ID &&
+      isAvailableById(state, id, REGION_CAPABILITY)
+  )
 ]
+
+/**
+ * Whether a persisted Sponsor staging still names a Region, Tour and perk this
+ * Career may actually book.
+ *
+ * @param state - Loaded game state.
+ * @param provenance - The staging provenance a save carried.
+ * @returns `true` when every axis is still available to this Career.
+ *
+ * @remarks
+ * The sanitizer only narrows the provenance's shape; availability needs the
+ * whole Career, so it is re-derived here on load. Without it a hand-edited save
+ * could stage offers for a Region or perk it never unlocked and have START
+ * honour them.
+ */
+export const isExpeditionStagingRouteAvailable = (
+  state: GameState,
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+): boolean => {
+  if (!provenance) return false
+  if (!getAvailableExpeditionRegionIds(state).includes(provenance.regionId)) {
+    return false
+  }
+  if (
+    !getAvailableExpeditionTourTypeIds(state).includes(provenance.tourTypeId)
+  ) {
+    return false
+  }
+  return (
+    provenance.starterPerkId === null ||
+    getAvailableStarterPerkIds(state).includes(provenance.starterPerkId)
+  )
+}
 
 /**
  * Crew ids the player may commit.
@@ -158,9 +312,21 @@ export const getAvailableCrewIds = (state: GameState): readonly string[] =>
 /**
  * Starter perk ids the player may commit.
  *
- * @remarks G5 owns the starter-perk registry and extends this in place.
+ * @remarks
+ * A perk is selectable only once the Career owns the capability that carries
+ * it, so the list is empty for a Career that has bought no unlock set. The
+ * registry is the whole vocabulary: a Legendary id, or any id not in it, is
+ * never available.
  */
-const getAvailableStarterPerkIds = (_state: GameState): readonly string[] => []
+export const getAvailableStarterPerkIds = (
+  state: GameState
+): readonly string[] =>
+  EXPEDITION_STARTER_PERK_IDS.filter(perkId =>
+    isExpeditionCapabilityUnlocked(
+      state.career?.unlockedSetIds,
+      EXPEDITION_STARTER_PERKS[perkId].capabilityId
+    )
+  )
 
 /**
  * Tour Pressure modifier ids the player may commit.
@@ -168,21 +334,37 @@ const getAvailableStarterPerkIds = (_state: GameState): readonly string[] => []
  * @remarks G5 owns Ascension/Tour Pressure and extends this in place, including
  * the registry, uniqueness, max-3 and `career.ascensionUnlocked` gates.
  */
-const getAvailablePressureModifierIds = (
-  _state: GameState
-): readonly string[] => []
+export const getAvailablePressureModifierIds = (
+  state: GameState
+): readonly string[] =>
+  state.career?.ascensionUnlocked === true
+    ? EXPEDITION_PRESSURE_MODIFIER_IDS
+    : []
 
 /**
- * Deterministically prepared Sponsor-offer ids for this run.
+ * Deterministically derived Sponsor-offer ids for this run.
  *
- * @remarks G4 owns Sponsor offers and extends this in place. Offers are derived
- * from the prepared route, never accepted from the caller.
+ * @remarks
+ * Derived from the prepared route rather than read from persisted state, and
+ * the route is the authority on which Region and Tour it belongs to. That is
+ * what makes the offer set correct for the candidate being validated: the
+ * committed loadout does not exist yet at START, and at PREPARE the player has
+ * not chosen a Region or Tour at all, so a stored set is always staged against
+ * inputs it could not have known. The starter perk travels with the candidate
+ * for the same reason: `press_pass` biases the pool the build is choosing from,
+ * and that build is not committed anywhere this could read it back from.
  */
 export const getAvailableSponsorOfferIds = (
   state: GameState,
-  _preparedMap: ExpeditionMap
+  preparedMap: ExpeditionMap,
+  starterPerkId: string | null = null
 ): readonly string[] =>
-  state.expedition.preparedSponsorOffers.map(offer => offer.offerId)
+  buildPreparedExpeditionSponsorOffers(
+    state,
+    preparedMap.regionId,
+    preparedMap.tourTypeId,
+    starterPerkId
+  ).map(offer => offer.offerId)
 
 /**
  * Native Contract template ids commitable against the prepared route.
@@ -190,14 +372,24 @@ export const getAvailableSponsorOfferIds = (
  * @remarks G4 owns native Contracts and extends this in place.
  */
 export const getAvailableNativeContractTemplateIds = (
-  _state: GameState,
+  state: GameState,
   preparedMap: ExpeditionMap
-): readonly string[] =>
-  [...EXPEDITION_CONTRACTS_BY_ID.values()]
+): readonly string[] => {
+  // `performance_contract_pool` is what `festival_network` charges for: the
+  // performance-kind templates are the ones a Career books on its reputation
+  // rather than on the route it happens to have drawn.
+  const hasPerformancePool = isExpeditionCapabilityUnlocked(
+    state.career?.unlockedSetIds,
+    'performance_contract_pool'
+  )
+  return [...EXPEDITION_CONTRACTS_BY_ID.values()]
     .filter(
-      template => materializeContractConstraints(template, preparedMap) !== null
+      template =>
+        (template.kind !== 'performance' || hasPerformancePool) &&
+        materializeContractConstraints(template, preparedMap) !== null
     )
     .map(template => template.id)
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -277,8 +469,8 @@ export const validateExpeditionBuildCommitment = (
     return reject('TOUR_OR_REGION_UNKNOWN')
   }
   if (
-    !getAvailableTourTypeIds(state).includes(tourTypeId) ||
-    !getAvailableRegionIds(state).includes(regionId)
+    !getAvailableExpeditionTourTypeIds(state).includes(tourTypeId) ||
+    !getAvailableExpeditionRegionIds(state).includes(regionId)
   ) {
     return reject('TOUR_OR_REGION_UNKNOWN')
   }
@@ -334,6 +526,19 @@ export const validateExpeditionBuildCommitment = (
   } else {
     const chassis = resolveCommittedChassis(state, activeTourbusAssetId)
     if (!chassis) return reject('MODULES_DRIFT')
+    // Owning the bus is not the same as being allowed to tour in it. A tier
+    // above the free ceiling is what `chassis_higher_tier` is sold for, so the
+    // gate lives on the commitment rather than on the purchase.
+    if (
+      Math.floor(finiteNumberOr(chassis.chassisTier, 1)) >
+        FREE_EXPEDITION_CHASSIS_TIER &&
+      !isExpeditionCapabilityUnlocked(
+        state.career?.unlockedSetIds,
+        'chassis_higher_tier'
+      )
+    ) {
+      return reject('CHASSIS_TIER_LOCKED')
+    }
     normalizedModuleIds = getInstalledModuleIds(chassis)
     const committed = [...selectedTourbusModuleIds].sort()
     if (
@@ -416,8 +621,18 @@ export const validateExpeditionBuildCommitment = (
   const { sponsorOfferId } = build
   if (sponsorOfferId !== null) {
     if (typeof sponsorOfferId !== 'string') return reject('MALFORMED_CANDIDATE')
+    // The candidate's perk, not a validated one: an unavailable perk id is
+    // rejected a few checks below, so a pool widened by one can never be
+    // committed - it only keeps a legitimate `press_pass` build from being
+    // told its own staged offer is unknown.
     if (
-      !getAvailableSponsorOfferIds(state, preparedMap).includes(sponsorOfferId)
+      !getAvailableSponsorOfferIds(
+        state,
+        preparedMap,
+        typeof candidate.starterPerkId === 'string'
+          ? candidate.starterPerkId
+          : null
+      ).includes(sponsorOfferId)
     ) {
       return reject('SPONSOR_OFFER_UNKNOWN')
     }
@@ -517,6 +732,9 @@ export const validateExpeditionBuildCommitment = (
   if (!isStringArray(pressureModifierIdsRaw))
     return reject('MALFORMED_CANDIDATE')
   if (hasDuplicates(pressureModifierIdsRaw)) {
+    return reject('PRESSURE_MODIFIERS_INVALID')
+  }
+  if (pressureModifierIdsRaw.length > MAX_EXPEDITION_PRESSURE_MODIFIERS) {
     return reject('PRESSURE_MODIFIERS_INVALID')
   }
   const availablePressure = getAvailablePressureModifierIds(state)
@@ -682,6 +900,23 @@ export const enforceExpeditionCashFloor = (
     `Rejected a spend that would cross the protected Career Cash floor (${actionType})`,
     { before, after, floor }
   )
+
+  // A reverted travel settlement leaves no trace, and a run that cannot pay
+  // for any leg is then stuck with no crisis: `checkSoftlock` prices legs
+  // through the career travel gate and knows nothing about this floor, so
+  // `getExpeditionMobilityFailureSignal` stays silent and `accept_failure` -
+  // the unconditional choice that is supposed to make a softlock impossible -
+  // is never offered. Record the refusal as realized evidence, exactly as
+  // `unpaidDailyObligation` records a day tick that could not pay.
+  if (actionType === ActionTypes.COMPLETE_TRAVEL_MINIGAME) {
+    return {
+      ...previousState,
+      expedition: {
+        ...previousState.expedition,
+        blockedTravelAtRouteStep: previousState.expedition.routeStep
+      }
+    }
+  }
   return previousState
 }
 

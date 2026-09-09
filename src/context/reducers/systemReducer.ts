@@ -66,6 +66,10 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { createInitialState } from '../initialState'
 import { sanitizeCareerState } from './careerSanitizers'
+import {
+  reconcileExpeditionAscensionOnLoad,
+  settleExpeditionUnlockJournalOnLoad
+} from '../../domain/expedition/meta'
 import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
@@ -82,7 +86,10 @@ import {
 import { sanitizeExpeditionState } from './expeditionSanitizers'
 import { validatePreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
-import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
+import {
+  getExpeditionDayPolicy,
+  isExpeditionStagingRouteAvailable
+} from '../../domain/expedition/loadout'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
@@ -208,7 +215,12 @@ export const handleLoadGame = (
 
   const safeState: GameState = {
     ...state,
-    career: sanitizeCareerState(loadedState.career),
+    // A save carrying an open journal entry is a Career that was debited and
+    // never granted, so the load finishes it rather than leaving the Tokens
+    // spent and every later purchase blocked.
+    career: settleExpeditionUnlockJournalOnLoad(
+      sanitizeCareerState(loadedState.career)
+    ),
     version: Math.max(explicitVersion, CURRENT_SAVE_VERSION),
     player: mergedPlayer,
     band: validatedBand,
@@ -355,19 +367,35 @@ export const handleLoadGame = (
       safeState.completedQuestScopes,
       scope => scope.questId
     ),
+    // A prepared save re-derives its Sponsor staging against the route it was
+    // staged for. Offers and provenance survive or are dropped together: an
+    // offer set START can no longer validate is worse than none.
     expedition:
       safeState.expedition.status === 'prepared'
-        ? {
-            ...safeState.expedition,
-            preparedSponsorOffers: validatePreparedExpeditionSponsorOffers(
+        ? (() => {
+            const staged = validatePreparedExpeditionSponsorOffers(
               safeState,
-              safeState.expedition.preparedSponsorOffers
+              safeState.expedition.preparedSponsorOffers,
+              isExpeditionStagingRouteAvailable(
+                safeState,
+                safeState.expedition.preparedSponsorProvenance
+              )
+                ? safeState.expedition.preparedSponsorProvenance
+                : undefined
             )
-          }
+            return {
+              ...safeState.expedition,
+              preparedSponsorOffers: staged.offers,
+              preparedSponsorProvenance: staged.provenance
+            }
+          })()
         : safeState.expedition
   }
 
-  return migratedState
+  // Last, because it reads Career *and* quest evidence that the steps above
+  // sanitize: a persisted Ascension boolean is re-earned or dropped here, and
+  // Tour Pressure goes with it.
+  return reconcileExpeditionAscensionOnLoad(migratedState)
 }
 
 /**
