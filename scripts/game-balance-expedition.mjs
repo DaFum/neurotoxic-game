@@ -94,7 +94,8 @@ const QUICK_SAMPLE_COUNT = 20
  * release 2,000 this yields the binding 1,000, and `--quick` scales down with
  * everything else.
  */
-const careerSequencesFor = sampleCount => Math.max(1, Math.round(sampleCount / 2))
+const careerSequencesFor = sampleCount =>
+  Math.max(1, Math.round(sampleCount / 2))
 
 /**
  * The scripts whose contents decide the numbers in this report. Hashed into
@@ -147,9 +148,7 @@ export const computeReleaseBlockers = ({
 }) => {
   const releaseBlockers = []
   if (!passed) {
-    releaseBlockers.push(
-      `${hardFailures.length} hard correctness failure(s)`
-    )
+    releaseBlockers.push(`${hardFailures.length} hard correctness failure(s)`)
   }
   if (!isReleaseRun) {
     releaseBlockers.push(
@@ -157,9 +156,7 @@ export const computeReleaseBlockers = ({
     )
   }
   if (coverageShortfalls.length > 0) {
-    releaseBlockers.push(
-      `${coverageShortfalls.length} coverage shortfall(s)`
-    )
+    releaseBlockers.push(`${coverageShortfalls.length} coverage shortfall(s)`)
   }
   if (!capturedRuntime.ok) {
     releaseBlockers.push(`no usable pacing evidence: ${capturedRuntime.reason}`)
@@ -180,6 +177,531 @@ export const computeReleaseBlockers = ({
     )
   }
   return releaseBlockers
+}
+
+/**
+ * Formats a raw extraction probe result into a compact sample preserving per-window evidence and rare rewards.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactExtractionSample = entry => {
+  const pair = entry.pair ?? {}
+  const branchB = pair.branchB ?? {}
+  const windows = (pair.windows ?? []).map(window => {
+    const branchA = window.branchA ?? {}
+    return {
+      windowRouteStep: window.windowRouteStep,
+      decision: window.policyWouldExtract ? 'extract' : 'continue',
+      policyReason: window.policyReason ?? null,
+      policyScore: window.policyScore ?? null,
+      policyTolerance: window.policyTolerance ?? null,
+      extract: {
+        money: branchA.retainedMoney ?? null,
+        fame: branchA.retainedFame ?? null,
+        explicitlyExtractedRares: branchA.explicitlyExtractedRares ?? 0
+      },
+      continue: {
+        outcome: branchB.outcome ?? null,
+        money: branchB.retainedMoney ?? null,
+        fame: branchB.retainedFame ?? null,
+        securedRares: branchB.securedRares ?? 0,
+        explicitlyExtractedRares: branchB.explicitlyExtractedRares ?? 0,
+        abandonedRares: branchB.abandonedRares ?? 0
+      },
+      delta: {
+        money: window.deltaMoney ?? null,
+        fame: window.deltaFame ?? null
+      }
+    }
+  })
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    windowEncountered: pair.windowEncountered ?? false,
+    windowCount: pair.windowCount ?? windows.length,
+    windows
+  }
+}
+
+/**
+ * Formats a raw skill probe result into a compact sample preserving matched gig, wear, and hype measurements.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactSkillSample = entry => {
+  const trio = entry.trio ?? {}
+  const formatTier = res => {
+    if (!res) return null
+    const t = res.telemetry ?? {}
+    return {
+      outcome: res.outcome ?? null,
+      retainedMoney: t.retainedMoney ?? null,
+      retainedFame: t.retainedFame ?? null,
+      minTechnicalCondition: t.minTechnicalCondition ?? null,
+      minVanCondition: t.minVanCondition ?? null,
+      repairsCount: t.repairsCount ?? 0,
+      repairSpend: t.repairSpend ?? 0,
+      gigNetTotal: t.gigNetTotal ?? 0,
+      realizedHypeComboBonusTotal: t.realizedHypeComboBonusTotal ?? 0,
+      toxicModeTriggers: t.toxicModeTriggers ?? 0,
+      gigMissesTotal: t.gigMissesTotal ?? 0,
+      maxComboBest: t.maxComboBest ?? 0
+    }
+  }
+
+  const low = formatTier(trio.low)
+  const comp = formatTier(trio.competent)
+  const high = formatTier(trio.high)
+
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    skillImprovesOutcome: trio.skillImprovesOutcome ?? false,
+    skillReducesRepairSpend: trio.skillReducesRepairSpend ?? false,
+    skillPreservesCondition: trio.skillPreservesCondition ?? false,
+    low,
+    competent: comp,
+    high,
+    delta: {
+      money:
+        high?.retainedMoney != null && low?.retainedMoney != null
+          ? high.retainedMoney - low.retainedMoney
+          : null,
+      fame:
+        high?.retainedFame != null && low?.retainedFame != null
+          ? high.retainedFame - low.retainedFame
+          : null
+    }
+  }
+}
+
+/**
+ * Formats a raw fog probe result into a compact sample preserving decision fidelity fields.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactFogSample = entry => {
+  const pair = entry.pair ?? {}
+  const branchA = pair.branchA ?? {}
+  const branchB = pair.branchB ?? {}
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    source: pair.source ?? null,
+    matchedDecisionFound: pair.matchedDecisionFound ?? false,
+    decisionRouteStep: pair.decisionRouteStep ?? null,
+    candidateCount: pair.candidateCount ?? null,
+    chosenNodeA: pair.chosenNodeA ?? null,
+    chosenNodeB: pair.chosenNodeB ?? null,
+    scoreA: pair.scoreA ?? null,
+    scoreB: pair.scoreB ?? null,
+    routeChanged: pair.routeChanged ?? false,
+    revealUsed: pair.revealUsed ?? false,
+    revealedNodeIds: pair.revealedNodeIds ?? [],
+    revealedCandidateIds: pair.revealedCandidateIds ?? [],
+    intelLevelsA: pair.intelLevelsA ?? {},
+    intelLevelsB: pair.intelLevelsB ?? {},
+    inspectedFieldsA: pair.inspectedFieldsA ?? [],
+    inspectedFieldsB: pair.inspectedFieldsB ?? [],
+    branchA: {
+      outcome: branchA.outcome ?? null,
+      money: branchA.retainedMoney ?? null,
+      fame: branchA.retainedFame ?? null,
+      securedRares: branchA.securedRares ?? 0
+    },
+    branchB: {
+      outcome: branchB.outcome ?? null,
+      money: branchB.retainedMoney ?? null,
+      fame: branchB.retainedFame ?? null,
+      securedRares: branchB.securedRares ?? 0
+    },
+    delta: {
+      money:
+        branchB.retainedMoney != null && branchA.retainedMoney != null
+          ? branchB.retainedMoney - branchA.retainedMoney
+          : null,
+      fame:
+        branchB.retainedFame != null && branchA.retainedFame != null
+          ? branchB.retainedFame - branchA.retainedFame
+          : null
+    }
+  }
+}
+
+/**
+ * Formats a career sequence result into a compact sample according to report schema.
+ *
+ * @param {any} sequence
+ * @returns {object}
+ */
+const compactCareerSample = sequence => {
+  return {
+    profileId: sequence.profileId,
+    sequenceSeed: sequence.sequenceSeed,
+    runsRequested: sequence.runsRequested,
+    runsCompleted: sequence.runsCompleted,
+    haltedAtRun: sequence.haltedAtRun ?? null,
+    haltReason: sequence.haltReason ?? null,
+    runOutcomes: sequence.runOutcomes ?? []
+  }
+}
+
+/**
+ * Summarizes skill probe results across a cohort for all three skill tiers, overall and by profile.
+ *
+ * @param {any[]} results
+ * @returns {object}
+ */
+const summarizeSkillCohort = results => {
+  const summarizeList = list => {
+    const total = list.length || 1
+    let moneyLow = 0,
+      moneyComp = 0,
+      moneyHigh = 0
+    let fameLow = 0,
+      fameComp = 0,
+      fameHigh = 0
+    let condLow = 0,
+      condComp = 0,
+      condHigh = 0
+    let repairLow = 0,
+      repairComp = 0,
+      repairHigh = 0
+    let gigNetLow = 0,
+      gigNetComp = 0,
+      gigNetHigh = 0
+    let hypeLow = 0,
+      hypeComp = 0,
+      hypeHigh = 0
+    let missesLow = 0,
+      missesComp = 0,
+      missesHigh = 0
+    let compLow = 0,
+      compComp = 0,
+      compHigh = 0
+
+    for (const entry of list) {
+      const trio = entry.trio ?? {}
+      const low = trio.low?.telemetry ?? {}
+      const comp = trio.competent?.telemetry ?? {}
+      const high = trio.high?.telemetry ?? {}
+
+      moneyLow += low.retainedMoney ?? 0
+      moneyComp += comp.retainedMoney ?? 0
+      moneyHigh += high.retainedMoney ?? 0
+
+      fameLow += low.retainedFame ?? 0
+      fameComp += comp.retainedFame ?? 0
+      fameHigh += high.retainedFame ?? 0
+
+      condLow += low.minTechnicalCondition ?? 0
+      condComp += comp.minTechnicalCondition ?? 0
+      condHigh += high.minTechnicalCondition ?? 0
+
+      repairLow += low.repairSpend ?? 0
+      repairComp += comp.repairSpend ?? 0
+      repairHigh += high.repairSpend ?? 0
+
+      gigNetLow += low.gigNetTotal ?? 0
+      gigNetComp += comp.gigNetTotal ?? 0
+      gigNetHigh += high.gigNetTotal ?? 0
+
+      hypeLow += low.realizedHypeComboBonusTotal ?? 0
+      hypeComp += comp.realizedHypeComboBonusTotal ?? 0
+      hypeHigh += high.realizedHypeComboBonusTotal ?? 0
+
+      missesLow += low.gigMissesTotal ?? 0
+      missesComp += comp.gigMissesTotal ?? 0
+      missesHigh += high.gigMissesTotal ?? 0
+
+      if (trio.low?.outcome === 'completed') compLow++
+      if (trio.competent?.outcome === 'completed') compComp++
+      if (trio.high?.outcome === 'completed') compHigh++
+    }
+
+    return {
+      triosCount: total,
+      completionRate: {
+        low: compLow / total,
+        competent: compComp / total,
+        high: compHigh / total
+      },
+      meanMoney: {
+        low: moneyLow / total,
+        competent: moneyComp / total,
+        high: moneyHigh / total
+      },
+      meanFame: {
+        low: fameLow / total,
+        competent: fameComp / total,
+        high: fameHigh / total
+      },
+      meanMinCondition: {
+        low: condLow / total,
+        competent: condComp / total,
+        high: condHigh / total
+      },
+      meanRepairSpend: {
+        low: repairLow / total,
+        competent: repairComp / total,
+        high: repairHigh / total
+      },
+      meanGigNet: {
+        low: gigNetLow / total,
+        competent: gigNetComp / total,
+        high: gigNetHigh / total
+      },
+      meanRealizedHypeBonus: {
+        low: hypeLow / total,
+        competent: hypeComp / total,
+        high: hypeHigh / total
+      },
+      meanGigMisses: {
+        low: missesLow / total,
+        competent: missesComp / total,
+        high: missesHigh / total
+      }
+    }
+  }
+
+  const byProfileList = Object.create(null)
+  for (const entry of results) {
+    const pid = entry.profileId ?? 'unknown'
+    if (!byProfileList[pid]) byProfileList[pid] = []
+    byProfileList[pid].push(entry)
+  }
+
+  const byProfile = Object.create(null)
+  for (const [pid, list] of Object.entries(byProfileList)) {
+    byProfile[pid] = summarizeList(list)
+  }
+
+  return {
+    ...summarizeList(results),
+    byProfile
+  }
+}
+
+/**
+ * Summarizes career sequence outcomes by profile across sequences.
+ *
+ * @param {any[]} sequences
+ * @returns {Record<string, {
+ *   sequences: number,
+ *   completedAllRunsRate: number,
+ *   meanRunsCompleted: number,
+ *   haltReasons: Record<string, number>
+ * }>}
+ */
+const summarizeCareerSequencesByProfile = sequences => {
+  const byProfile = Object.create(null)
+  for (const seq of sequences) {
+    const id = seq.profileId
+    if (!byProfile[id]) {
+      byProfile[id] = {
+        total: 0,
+        completedAll: 0,
+        completedRunsSum: 0,
+        haltReasons: Object.create(null)
+      }
+    }
+    const cell = byProfile[id]
+    cell.total += 1
+    cell.completedRunsSum += seq.runsCompleted
+    if (seq.runsCompleted === seq.runsRequested) {
+      cell.completedAll += 1
+    } else if (seq.haltReason) {
+      cell.haltReasons[seq.haltReason] =
+        (cell.haltReasons[seq.haltReason] ?? 0) + 1
+    }
+  }
+
+  const result = Object.create(null)
+  for (const [id, cell] of Object.entries(byProfile)) {
+    result[id] = {
+      sequences: cell.total,
+      completedAllRunsRate:
+        cell.total === 0 ? 0 : cell.completedAll / cell.total,
+      meanRunsCompleted:
+        cell.total === 0 ? 0 : cell.completedRunsSum / cell.total,
+      haltReasons: { ...cell.haltReasons }
+    }
+  }
+  return result
+}
+
+/**
+ * Summarizes progression metrics across fresh-career sequences, overall and by profile.
+ *
+ * @param {any[]} sequences
+ * @returns {object}
+ */
+const summarizeCareerProgressionMetrics = sequences => {
+  const summarizeList = list => {
+    const n = list.length || 1
+
+    let roadtestedSum = 0,
+      roadtestedCount = 0
+    let headlinerSum = 0,
+      headlinerCount = 0
+    let facilitySum = 0,
+      facilityCount = 0
+    let capabilitySum = 0,
+      capabilityCount = 0
+    let run1CapabilityCount = 0
+    let run1HqCount = 0
+    let legacyHqSum = 0,
+      legacyHqCount = 0
+    let ascensionSum = 0,
+      ascensionCount = 0
+    let legendarySum = 0,
+      legendaryCount = 0
+    let signatureTraitSum = 0,
+      signatureTraitCount = 0
+    let totalAdvances = 0,
+      totalStaged = 0,
+      totalSelected = 0,
+      totalAccepted = 0
+    let totalNormalTerminals = 0,
+      totalSolventAfterNormal = 0
+    let maxNemesisSum = 0,
+      sameRivalReturnSum = 0,
+      sameRivalReturnCount = 0
+    let recoveryDebtCount = 0
+
+    for (const seq of list) {
+      const m = seq.metrics ?? {}
+      if (m.firstRoadtestedRun != null) {
+        roadtestedSum += m.firstRoadtestedRun
+        roadtestedCount++
+      }
+      if (m.firstHeadlinerRun != null) {
+        headlinerSum += m.firstHeadlinerRun
+        headlinerCount++
+      }
+      if (m.firstMetaFacilityRun != null) {
+        facilitySum += m.firstMetaFacilityRun
+        facilityCount++
+      }
+      if (m.firstPermanentExpeditionCapabilityRun != null) {
+        capabilitySum += m.firstPermanentExpeditionCapabilityRun
+        capabilityCount++
+      }
+      if (m.run1PermanentCapabilityPurchaseRate) run1CapabilityCount++
+      if (m.run1LegacyExpeditionAffectingHqPurchaseRate) run1HqCount++
+      if (m.firstLegacyExpeditionAffectingHqPurchaseRun != null) {
+        legacyHqSum += m.firstLegacyExpeditionAffectingHqPurchaseRun
+        legacyHqCount++
+      }
+      if (m.firstAscensionUnlockRun != null) {
+        ascensionSum += m.firstAscensionUnlockRun
+        ascensionCount++
+      }
+      if (m.firstNaturalLegendaryRun != null) {
+        legendarySum += m.firstNaturalLegendaryRun
+        legendaryCount++
+      }
+      if (m.signatureTraitUnlockRun != null) {
+        signatureTraitSum += m.signatureTraitUnlockRun
+        signatureTraitCount++
+      }
+
+      totalAdvances += m.sponsorAdvancesTaken ?? 0
+      totalStaged += m.sponsorOffersStaged ?? 0
+      totalSelected += m.sponsorOffersSelected ?? 0
+      totalAccepted += m.sponsorOffersAccepted ?? 0
+
+      totalNormalTerminals += m.normalTerminals ?? 0
+      totalSolventAfterNormal += m.solventAfterNormalTerminal ?? 0
+
+      maxNemesisSum += m.maxNemesisLevel ?? 0
+      if (m.sameRivalReturnRate != null) {
+        sameRivalReturnSum += m.sameRivalReturnRate
+        sameRivalReturnCount++
+      }
+      if (m.crewRecoveryDebtDurations)
+        recoveryDebtCount += m.crewRecoveryDebtDurations.length
+    }
+
+    return {
+      sequencesCount: n,
+      ranks: {
+        roadtestedReachedRate: roadtestedCount / n,
+        meanFirstRoadtestedRun:
+          roadtestedCount === 0 ? null : roadtestedSum / roadtestedCount,
+        headlinerReachedRate: headlinerCount / n,
+        meanFirstHeadlinerRun:
+          headlinerCount === 0 ? null : headlinerSum / headlinerCount
+      },
+      metaAndFacilities: {
+        facilityPurchaseRate: facilityCount / n,
+        meanFirstFacilityRun:
+          facilityCount === 0 ? null : facilitySum / facilityCount,
+        permanentCapabilityPurchaseRate: capabilityCount / n,
+        meanFirstCapabilityRun:
+          capabilityCount === 0 ? null : capabilitySum / capabilityCount,
+        run1PermanentCapabilityPurchaseRate: run1CapabilityCount / n,
+        run1LegacyHqPurchaseRate: run1HqCount / n,
+        meanFirstLegacyHqRun:
+          legacyHqCount === 0 ? null : legacyHqSum / legacyHqCount
+      },
+      milestones: {
+        ascensionUnlockRate: ascensionCount / n,
+        meanFirstAscensionRun:
+          ascensionCount === 0 ? null : ascensionSum / ascensionCount,
+        naturalLegendaryRate: legendaryCount / n,
+        meanFirstLegendaryRun:
+          legendaryCount === 0 ? null : legendarySum / legendaryCount,
+        signatureTraitUnlockRate: signatureTraitCount / n,
+        meanSignatureTraitRun:
+          signatureTraitCount === 0
+            ? null
+            : signatureTraitSum / signatureTraitCount,
+        crewRecoveryDebtEventsTotal: recoveryDebtCount
+      },
+      sponsors: {
+        advancesTakenTotal: totalAdvances,
+        meanOffersStagedPerSequence: totalStaged / n,
+        meanOffersSelectedPerSequence: totalSelected / n,
+        meanOffersAcceptedPerSequence: totalAccepted / n
+      },
+      solvency: {
+        normalTerminalsTotal: totalNormalTerminals,
+        solventAfterNormalTerminalTotal: totalSolventAfterNormal,
+        solvencyRate:
+          totalNormalTerminals === 0
+            ? null
+            : totalSolventAfterNormal / totalNormalTerminals
+      },
+      rivals: {
+        meanMaxNemesisLevel: maxNemesisSum / n,
+        meanSameRivalReturnRate:
+          sameRivalReturnCount === 0
+            ? null
+            : sameRivalReturnSum / sameRivalReturnCount
+      }
+    }
+  }
+
+  const byProfileList = Object.create(null)
+  for (const seq of sequences) {
+    const pid = seq.profileId ?? 'unknown'
+    if (!byProfileList[pid]) byProfileList[pid] = []
+    byProfileList[pid].push(seq)
+  }
+
+  const byProfile = Object.create(null)
+  for (const [pid, list] of Object.entries(byProfileList)) {
+    byProfile[pid] = summarizeList(list)
+  }
+
+  return {
+    ...summarizeList(sequences),
+    byProfile
+  }
 }
 
 /**
@@ -722,12 +1244,18 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       holdoutRegret: summarizeExtractionRegret(
         extractionResults.holdout.map(entry => entry.pair)
       ),
-      samples: extractionResults.calibration.slice(0, 5)
+      samples: extractionResults.calibration
+        .slice(0, 5)
+        .map(compactExtractionSample)
     },
     skillProbe: {
       calibrationTrios: skillResults.calibration.length,
       holdoutTrios: skillResults.holdout.length,
-      samples: skillResults.calibration.slice(0, 5)
+      summaryByCohort: {
+        calibration: summarizeSkillCohort(skillResults.calibration),
+        holdout: summarizeSkillCohort(skillResults.holdout)
+      },
+      samples: skillResults.calibration.slice(0, 5).map(compactSkillSample)
     },
     fogProbe: {
       calibrationPairs: fogResults.calibration.length,
@@ -754,7 +1282,7 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
           ]
         })
       ),
-      samples: fogResults.calibration.slice(0, 5)
+      samples: fogResults.calibration.slice(0, 5).map(compactFogSample)
     },
     careerSequences: {
       calibrationCount: careerResults.calibration.length,
@@ -764,16 +1292,19 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
         calibration: summarizeCareerCashflow(careerResults.calibration),
         holdout: summarizeCareerCashflow(careerResults.holdout)
       },
-      metrics: allCareerSequences.map(r => r.metrics),
-      funding: allCareerSequences.map(r => ({
-        profileId: r.profileId,
-        sequenceSeed: r.sequenceSeed,
-        runsRequested: r.runsRequested,
-        runsCompleted: r.runsCompleted,
-        haltedAtRun: r.haltedAtRun,
-        haltReason: r.haltReason,
-        runOutcomes: r.runOutcomes
-      }))
+      summaryByProfile: {
+        calibration: summarizeCareerSequencesByProfile(
+          careerResults.calibration
+        ),
+        holdout: summarizeCareerSequencesByProfile(careerResults.holdout)
+      },
+      progressionMetrics: {
+        calibration: summarizeCareerProgressionMetrics(
+          careerResults.calibration
+        ),
+        holdout: summarizeCareerProgressionMetrics(careerResults.holdout)
+      },
+      samples: careerResults.calibration.slice(0, 5).map(compactCareerSample)
     },
     legendaryEdgeCoverage: legendary.statusById,
     runtimeDuration: runtimeSummary,
@@ -956,9 +1487,25 @@ export function formatMarkdownReport(data) {
   md += `- Baseline \`initialState\` purse and Fame — no seeded head start.\n`
   md += `- Fuel is topped up by the build's own \`startingFuelTarget\`, charged at START; van wear carries between Tours.\n`
   md += `- Fixture capability sets are strictly empty for all fresh runs.\n\n`
-  md += `| Profile | Seed | Runs Requested | Runs Funded | Halted At | Reason |\n`
+  md += `### Summary by Profile (Calibration)\n\n`
+  md += `| Profile | Sequences | Completed All 6 % | Mean Runs Completed | Primary Halt Reasons |\n`
+  md += `| :--- | ---: | ---: | ---: | :--- |\n`
+  if (careerSequences.summaryByProfile?.calibration) {
+    for (const [id, stats] of Object.entries(
+      careerSequences.summaryByProfile.calibration
+    )) {
+      const halts =
+        Object.entries(stats.haltReasons || {})
+          .map(([r, c]) => `${c}x ${r}`)
+          .join(', ') || 'None'
+      md += `| \`${id}\` | ${stats.sequences} | ${(stats.completedAllRunsRate * 100).toFixed(1)}% | ${stats.meanRunsCompleted.toFixed(2)} | ${halts} |\n`
+    }
+  }
+  md += `\n`
+  md += `### Compact Sequence Samples\n\n`
+  md += `| Profile | Seed | Runs Requested | Runs Completed | Halted At | Reason |\n`
   md += `| :--- | ---: | ---: | ---: | ---: | :--- |\n`
-  for (const seq of careerSequences.funding) {
+  for (const seq of careerSequences.samples || []) {
     md += `| \`${seq.profileId}\` | ${seq.sequenceSeed} | ${seq.runsRequested} | ${seq.runsCompleted} | ${seq.haltedAtRun ?? '—'} | ${seq.haltReason ?? 'completed all runs'} |\n`
   }
   md += `\n`
