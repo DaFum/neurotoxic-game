@@ -50,6 +50,29 @@ describe('VoidTraderTab Component', () => {
     expect(buttons[0]).toBeDisabled()
   })
 
+  it('renders a tooltip explaining why the trade action is disabled', () => {
+    const poorPlayer = { fame: 100 }
+    const _isItemDisabled = vi.fn(() => true)
+
+    render(
+      <VoidTraderTab
+        player={poorPlayer}
+        handleTrade={handleTrade}
+        isItemOwned={isItemOwned}
+        isItemDisabled={_isItemDisabled}
+      />
+    )
+
+    // Focus or hover over the disabled button's wrapper to trigger tooltip rendering
+    const disabledButtons = screen.getAllByRole('button', {
+      name: /ui:hq.voidTrader.trade/i
+    })
+    fireEvent.focus(disabledButtons[0])
+
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent('ui:error.insufficient_fame')
+  })
+
   it('calls handleTrade when clicking trade button', () => {
     render(
       <VoidTraderTab
