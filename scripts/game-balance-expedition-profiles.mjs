@@ -207,7 +207,9 @@ export const validateExpeditionBalanceProfile = profile => {
     )
   }
   if (!isFiniteNumber(fixture.money) || fixture.money < 0) {
-    throw new Error(`Profile ${profile.id}: matureFixture.money must be a non-negative finite number`)
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.money must be a non-negative finite number`
+    )
   }
 
   // Declared per profile and serialized into provenance, so the artifact
@@ -220,10 +222,14 @@ export const validateExpeditionBalanceProfile = profile => {
     )
   }
   if (!isFiniteNumber(fixture.fame) || fixture.fame < 0) {
-    throw new Error(`Profile ${profile.id}: matureFixture.fame must be a non-negative finite number`)
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.fame must be a non-negative finite number`
+    )
   }
   if (!fixture.memberSkills || typeof fixture.memberSkills !== 'object') {
-    throw new Error(`Profile ${profile.id}: matureFixture.memberSkills must be an object`)
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.memberSkills must be an object`
+    )
   }
   for (const skill of ['tech', 'technical', 'charisma']) {
     if (!isFiniteNumber(fixture.memberSkills[skill])) {
@@ -752,7 +758,11 @@ export const getExpeditionBalanceProfile = id =>
  * @param {string | null} [rivalAlignment] - Brand alignment of the active
  * Rival, which `highest_nonrival_value` steers away from.
  */
-export const pickSponsorOffer = (stagedOffers, policy, rivalAlignment = null) => {
+export const pickSponsorOffer = (
+  stagedOffers,
+  policy,
+  rivalAlignment = null
+) => {
   if (!Array.isArray(stagedOffers) || stagedOffers.length === 0) return null
   if (policy === 'none') return null
   const scored = stagedOffers.map(offer => {

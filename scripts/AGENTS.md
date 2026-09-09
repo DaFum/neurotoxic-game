@@ -18,7 +18,7 @@
   distinguish the simulator from a crafted save or a console call - which is
   precisely what `sanitizeCareerState` and the Expedition load sanitizers exist
   to stop.
-- The exception covers fixture *construction* only. Every simulated gameplay
+- The exception covers fixture _construction_ only. Every simulated gameplay
   transition must still go through production: the chassis via the purchase
   path, modules via `INSTALL_MODULE`, Crew via `isCrewAvailable`, the run via
   `PREPARE_EXPEDITION_RUN` and `START_EXPEDITION`, the post-Gig payout via

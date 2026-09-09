@@ -719,7 +719,7 @@ Decision selection priority and target rules:
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
 
 Insolvency is measured against half a tank because the road fund guarantees
-the cheapest legal start. Asking whether the Career can pay *that* would make
+the cheapest legal start. Asking whether the Career can pay _that_ would make
 the rescue unreachable by construction - it fired 3,048 times before the
 guarantee and 0 after, until the threshold moved. Half a tank is what
 separates a Tour from a gesture: below it the band cannot reach the far half
@@ -729,7 +729,7 @@ of any route, so the run it could legally book is one it cannot finish.
 
 `SETTLE_EXPEDITION_CAREER_RESULT` raises Career Cash to
 `getExpeditionMinimumNextStartCost(state)` when it sits below it. That figure
-is the *unavoidable* charge for booking again: a build may only top the tank
+is the _unavoidable_ charge for booking again: a build may only top the tank
 up, so the cheapest legal `startingFuelTarget` is the tank the Tour left
 rounded up, and the cost is that rounding - a euro or two.
 
@@ -778,7 +778,7 @@ It is deliberately first in priority, and that placement has a cost worth
 stating plainly: at most three decisions are generated, so on the runs where it
 appears it displaces the third-priority decision that would otherwise have been
 offered. That trade is the point. It is generated only for a Career that has
-just *failed* a run and cannot afford even the minimum Fuel top-up for the next
+just _failed_ a run and cannot afford even the minimum Fuel top-up for the next
 one, and for such a Career a Crew debrief or an Archive lead is a decision about
 a Tour it can no longer start. Every other Between-Tour set is unaffected: the
 three preconditions are all false on a Career that completed or extracted.

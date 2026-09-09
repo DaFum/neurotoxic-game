@@ -3,10 +3,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
-import {
-  NODE_TEST_DIRS,
-  isToolingNodeTest
-} from './utils/node-test-dirs.mjs'
+import { NODE_TEST_DIRS, isToolingNodeTest } from './utils/node-test-dirs.mjs'
 
 const rawArgs = process.argv.slice(2)
 const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs

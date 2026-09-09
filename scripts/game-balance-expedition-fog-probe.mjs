@@ -137,16 +137,18 @@ export const runFogCounterfactualPair = (
 ) => {
   // One canonical decision state. Both branches are derived from it, so map,
   // RNG, resources, build and policy are identical by construction.
-  const canonical = buildProductionSimulationLoadout(fixtureState, profile, seed)
+  const canonical = buildProductionSimulationLoadout(
+    fixtureState,
+    profile,
+    seed
+  )
   const map = buildExpeditionMap(
     canonical.runSeed,
     canonical.expedition.loadout.tourTypeId,
     canonical.expedition.loadout.regionId
   )
 
-  const outgoing = map.connections.filter(
-    edge => edge.from === map.startNodeId
-  )
+  const outgoing = map.connections.filter(edge => edge.from === map.startNodeId)
   const candidateIds = outgoing.map(edge => edge.to)
   const empty = {
     source,

@@ -96,10 +96,7 @@ import {
   toCanonicalRegionId,
   toCanonicalTourTypeId
 } from './game-balance-expedition-profiles.mjs'
-import {
-  finiteNumberOr,
-  isFiniteNumber
-} from '../src/utils/finiteNumber.ts'
+import { finiteNumberOr, isFiniteNumber } from '../src/utils/finiteNumber.ts'
 import { clampVanCondition } from '../src/utils/gameState/index.ts'
 
 export const CALIBRATION_COHORT_NAMESPACE =
@@ -1017,8 +1014,11 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
     if (typeof option.condition === 'function' && !option.condition(state)) {
       return false
     }
-    const result = EXPEDITION_SOCIAL_RESULTS[deriveExpeditionSocialResultId(option)]
-    return Boolean(result) && (!result.requiresRival || Boolean(state.rivalBand))
+    const result =
+      EXPEDITION_SOCIAL_RESULTS[deriveExpeditionSocialResultId(option)]
+    return (
+      Boolean(result) && (!result.requiresRival || Boolean(state.rivalBand))
+    )
   })
   const option =
     preferences
@@ -1165,8 +1165,7 @@ const playPendingPressureEvent = (state, profile, telemetry) => {
     routeStep: state.expedition.routeStep,
     eventId: pendingId,
     optionId: option.id,
-    heatDelta:
-      finiteNumberOr(next.expedition.pressure.heat, 0) - heatBefore,
+    heatDelta: finiteNumberOr(next.expedition.pressure.heat, 0) - heatBefore,
     exposureDelta:
       finiteNumberOr(next.expedition.pressure.exposure, 0) - exposureBefore
   })
@@ -1328,7 +1327,10 @@ export const explainExtractionDecision = (state, profile) => {
   // What bailing out banks versus what failing here would leave. The gap is
   // the money the run is currently carrying unbanked, priced by the production
   // settlement rather than by an estimate.
-  const extractRetainedMoney = settleExpedition(state, 'extracted').moneyRetained
+  const extractRetainedMoney = settleExpedition(
+    state,
+    'extracted'
+  ).moneyRetained
   const failedRetainedMoney = settleExpedition(state, 'failed').moneyRetained
   const moneyAtRisk = Math.max(0, extractRetainedMoney - failedRetainedMoney)
 
@@ -1689,7 +1691,11 @@ export const runExpeditionSimulation = (
           if (action) {
             const beforeRepair = state
             state = gameReducer(state, action)
-            verifyProtectedCashNotSpent(beforeRepair, state, `repair:${intent.mode}`)
+            verifyProtectedCashNotSpent(
+              beforeRepair,
+              state,
+              `repair:${intent.mode}`
+            )
             telemetry.repairsCount++
             telemetry.repairSpend += resolution.result.cashCost
           }
@@ -1964,7 +1970,10 @@ export const runExpeditionSimulation = (
     let travelled = false
     for (const candidateId of orderedCandidates) {
       const attempt = gameReducer(
-        gameReducer(preTravelState, createStartTravelMinigameAction(candidateId)),
+        gameReducer(
+          preTravelState,
+          createStartTravelMinigameAction(candidateId)
+        ),
         createCompleteTravelMinigameAction(minigameDamage, [], travelRng)
       )
       if (attempt.player.currentNodeId === candidateId) {

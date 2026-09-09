@@ -167,25 +167,25 @@ Most action types route through `gameReducer`'s typed `reducerMap`. Band actions
 are deliberately delegated as a group to `bandReducer`, and
 `APPLY_QUEST_EVENT` calls `QuestEvents.emit` directly from the root map.
 
-| Handler owner | Representative actions |
-| --- | --- |
-| `sceneReducer` | `CHANGE_SCENE` |
-| `playerReducer` | `UPDATE_PLAYER` |
-| `bandReducer` | `UPDATE_BAND`, `USE_CONTRABAND`, `CONSUME_ITEM`, `UNLOCK_TRAIT`, `TOGGLE_NEURO_DECIMATOR`, `CRAFT_ITEM` |
-| `socialReducer` | `UPDATE_SOCIAL`, `PIRATE_BROADCAST`, `MERCH_PRESS`, `DARK_WEB_LEAK`, `CULT_INDOCTRINATION`, `UNBLACKLIST_VENUE` |
-| `gigReducer` | `SET_GIG`, `START_GIG`, `SET_SETLIST`, `SET_LAST_GIG_STATS`, `SET_GIG_MODIFIERS` |
-| `eventReducer` | `SET_ACTIVE_EVENT`, `SET_SCREENSHOT_MODE`, `APPLY_EVENT_DELTA`, `POP_PENDING_EVENT`, `ADD_COOLDOWN` |
-| `minigameReducer` | `START_/COMPLETE_` × `TRAVEL`, `ROADIE`, `KABELSALAT`, `AMP_CALIBRATION` |
-| `clinicReducer` | `CLINIC_HEAL`, `CLINIC_ENHANCE`, `GRAFT_NEURO_OVERCLOCK`, `BLOOD_BANK_DONATE` |
-| `questReducer` | `ADD_QUEST`, `ADVANCE_QUEST` |
-| root `QuestEvents.emit` | `APPLY_QUEST_EVENT` |
-| `rivalReducer` | `SPAWN_RIVAL_BAND`, `MOVE_RIVAL_BAND`, `CHECK_RIVAL_ENCOUNTER`, `UPDATE_RIVAL_BAND` |
-| `tradeReducer` | `TRADE_VOID_ITEM` |
-| `assetReducer` | `PURCHASE_/UPGRADE_/SELL_/REPAIR_CHASSIS`, `INSTALL_/REMOVE_MODULE`, `START_CROWDFUND`, `REFINANCE_LIABILITY`, `ASSET_FORECLOSED`, `DISMISS_FORECLOSURE_NOTICE`, asset `*_FAILED` |
-| `systemReducer` | `UPDATE_SETTINGS`, `SET_MAP`, `ADD_/REMOVE_TOAST`, `LOAD_GAME`, `RESET_STATE`, `ADVANCE_DAY`, `ADD_UNLOCK`, `SET_PENDING_BANDHQ_OPEN`, `SET_PENDING_SUPPLY_STOP_INVENTORY`, `SET_PENDING_RISK_EVENT` |
-| `expeditionReducer` | run prepare/start/advance, node intel, rewards, extraction/completion/failure, crises, repair/inspection/insurance, defects, event deltas, obligations, drafts, social results |
-| `crewReducer` | `RECORD_EXPEDITION_CREW_STRESS_SOURCE`, `RECORD_EXPEDITION_RELATIONSHIP_OUTCOME`, `ADVANCE_EXPEDITION_CREW_INJURY`, `ADVANCE_EXPEDITION_BAND_INJURY`, `CREATE_CONTACT_INTEL_GRANT` |
-| `careerReducer` | Expedition crew/career settlement, HQ facilities, unlock purchase journal, ascension, legendary rewards, archive discovery, between-tour decisions, crew signatures |
+| Handler owner           | Representative actions                                                                                                                                                                               |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sceneReducer`          | `CHANGE_SCENE`                                                                                                                                                                                       |
+| `playerReducer`         | `UPDATE_PLAYER`                                                                                                                                                                                      |
+| `bandReducer`           | `UPDATE_BAND`, `USE_CONTRABAND`, `CONSUME_ITEM`, `UNLOCK_TRAIT`, `TOGGLE_NEURO_DECIMATOR`, `CRAFT_ITEM`                                                                                              |
+| `socialReducer`         | `UPDATE_SOCIAL`, `PIRATE_BROADCAST`, `MERCH_PRESS`, `DARK_WEB_LEAK`, `CULT_INDOCTRINATION`, `UNBLACKLIST_VENUE`                                                                                      |
+| `gigReducer`            | `SET_GIG`, `START_GIG`, `SET_SETLIST`, `SET_LAST_GIG_STATS`, `SET_GIG_MODIFIERS`                                                                                                                     |
+| `eventReducer`          | `SET_ACTIVE_EVENT`, `SET_SCREENSHOT_MODE`, `APPLY_EVENT_DELTA`, `POP_PENDING_EVENT`, `ADD_COOLDOWN`                                                                                                  |
+| `minigameReducer`       | `START_/COMPLETE_` × `TRAVEL`, `ROADIE`, `KABELSALAT`, `AMP_CALIBRATION`                                                                                                                             |
+| `clinicReducer`         | `CLINIC_HEAL`, `CLINIC_ENHANCE`, `GRAFT_NEURO_OVERCLOCK`, `BLOOD_BANK_DONATE`                                                                                                                        |
+| `questReducer`          | `ADD_QUEST`, `ADVANCE_QUEST`                                                                                                                                                                         |
+| root `QuestEvents.emit` | `APPLY_QUEST_EVENT`                                                                                                                                                                                  |
+| `rivalReducer`          | `SPAWN_RIVAL_BAND`, `MOVE_RIVAL_BAND`, `CHECK_RIVAL_ENCOUNTER`, `UPDATE_RIVAL_BAND`                                                                                                                  |
+| `tradeReducer`          | `TRADE_VOID_ITEM`                                                                                                                                                                                    |
+| `assetReducer`          | `PURCHASE_/UPGRADE_/SELL_/REPAIR_CHASSIS`, `INSTALL_/REMOVE_MODULE`, `START_CROWDFUND`, `REFINANCE_LIABILITY`, `ASSET_FORECLOSED`, `DISMISS_FORECLOSURE_NOTICE`, asset `*_FAILED`                    |
+| `systemReducer`         | `UPDATE_SETTINGS`, `SET_MAP`, `ADD_/REMOVE_TOAST`, `LOAD_GAME`, `RESET_STATE`, `ADVANCE_DAY`, `ADD_UNLOCK`, `SET_PENDING_BANDHQ_OPEN`, `SET_PENDING_SUPPLY_STOP_INVENTORY`, `SET_PENDING_RISK_EVENT` |
+| `expeditionReducer`     | run prepare/start/advance, node intel, rewards, extraction/completion/failure, crises, repair/inspection/insurance, defects, event deltas, obligations, drafts, social results                       |
+| `crewReducer`           | `RECORD_EXPEDITION_CREW_STRESS_SOURCE`, `RECORD_EXPEDITION_RELATIONSHIP_OUTCOME`, `ADVANCE_EXPEDITION_CREW_INJURY`, `ADVANCE_EXPEDITION_BAND_INJURY`, `CREATE_CONTACT_INTEL_GRANT`                   |
+| `careerReducer`         | Expedition crew/career settlement, HQ facilities, unlock purchase journal, ascension, legendary rewards, archive discovery, between-tour decisions, crew signatures                                  |
 
 A new public action normally requires all affected contract layers to move
 together:
