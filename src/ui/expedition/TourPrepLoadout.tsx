@@ -1046,7 +1046,6 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       m => m.inventoryKey === item.inventoryKey
                     )
                     const currentQty = currentSelection?.quantity ?? 0
-                    const merchProfile = MERCH_PROFILES[item.inventoryKey as keyof typeof MERCH_PROFILES]
                     return (
                       <label
                         key={item.inventoryKey}
