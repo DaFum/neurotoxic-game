@@ -30,13 +30,19 @@ const FLAVORS: readonly AssetFlavor[] = ['legit', 'diy']
 const MODES: readonly AcquisitionMode[] = ['cash', 'loan', 'crowdfund']
 
 /**
- * Chassis acquisition flow: flavor → tier → mode → confirm. Picks up the
- * kind from props (sections open the modal scoped to their own kind).
+ * Orchestrates the multi-step acquisition flow for purchasing or financing new asset chassis.
  *
- * DIY+loan is disabled in the UI as the first defense; the action creator
- * is the second (it returns PURCHASE_CHASSIS_FAILED with reason
- * DIY_LOAN_NOT_ALLOWED). The hub-level toast bridge surfaces the failure
- * to the player.
+ * @remarks
+ * This modal acts as the primary commerce interface for the asset ecosystem, handling the
+ * configuration pipeline (flavor -\> tier -\> mode -\> execution).
+ *
+ * A critical business rule restricts combining 'diy' flavor assets with 'loan' acquisition
+ * modes to prevent exploitative debt loops. This constraint is enforced defensively in the UI
+ * by disabling the respective form controls, and backed up by strict validation within the
+ * `assetActionCreators.purchaseChassis` action creator which returns `PURCHASE_CHASSIS_FAILED` with `DIY_LOAN_NOT_ALLOWED`.
+ *
+ * @param props - Configuration properties detailing the asset scope and modal lifecycle hooks.
+ * @returns The rendered modal dialog and embedded crowdfund configuration child modal if triggered.
  */
 export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const { t } = useTranslation(['assets'])
