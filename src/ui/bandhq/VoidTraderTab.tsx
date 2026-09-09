@@ -101,7 +101,11 @@ export const VoidTraderTab = ({
                   cost: item.fameCost,
                   defaultValue: `Not enough fame. You need ${item.fameCost} fame.`
                 })
-              : undefined
+              : disabled && !isAnyProcessing
+                ? t('ui:shop.messages.maxCapacity', {
+                    defaultValue: 'Maximum quantity reached!'
+                  })
+                : undefined
 
           const tradeButton = (
             <ActionButton

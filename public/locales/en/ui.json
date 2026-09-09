@@ -1912,6 +1912,7 @@
   "shop.black_market_purchase": "Purchased from Black Market! Lost {{amount}} Fame.",
   "shop.insufficient_funds": "Insufficient funds.",
   "shop.messages.alreadyOwned": "Already owned {{itemName}}!",
+  "shop.messages.maxCapacity": "Maximum quantity reached!",
   "shop.messages.fame": "Fame",
   "shop.messages.invalidData": "Purchase failed: Invalid upgrade data.",
   "shop.messages.labelSigned": "Signed! {{advance}} Advance.",
