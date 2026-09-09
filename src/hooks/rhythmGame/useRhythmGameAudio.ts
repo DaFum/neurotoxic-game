@@ -17,6 +17,7 @@ import type {
   SetLastGigStats
 } from '../../types/rhythmGame'
 import type { GigAudioStatus } from '../../types/gigAudioStatus'
+import type { ExpeditionConditionPerformanceProfile } from '../../types/expedition'
 
 import type { RhythmStateSetters } from './useRhythmGameState'
 
@@ -30,6 +31,7 @@ type RhythmGameAudioParams = {
     setlist: RhythmSetlistEntry[]
     gigModifiers: GigModifiers
     currentGig: GameState['currentGig']
+    conditionProfile: ExpeditionConditionPerformanceProfile | null
   }
   contextActions: {
     addToast: (message: string, type?: string) => void
@@ -107,6 +109,7 @@ const handleHarmonyGuard = ({
 type PhysicsSetupParams = {
   currentBand: GameState['band']
   currentGigModifiers: GigModifiers
+  currentConditionProfile: ExpeditionConditionPerformanceProfile | null
   activeGig: GameState['currentGig']
   currentGameMap: GameMap | null
   currentPlayer: PlayerState
@@ -118,6 +121,7 @@ type PhysicsSetupParams = {
 const applyGigPhysicsSetup = ({
   currentBand,
   currentGigModifiers,
+  currentConditionProfile,
   activeGig,
   currentGameMap,
   currentPlayer,
@@ -145,7 +149,8 @@ const applyGigPhysicsSetup = ({
     typeof activeGig?.songId === 'string' ? activeGig.songId : undefined,
     currentGameMap,
     currentPlayer?.currentNodeId,
-    typeof setlistFirstId === 'string' ? setlistFirstId : undefined
+    typeof setlistFirstId === 'string' ? setlistFirstId : undefined,
+    currentConditionProfile
   )
   if (!physicsSetup) {
     setAudioStatus('failed')
@@ -226,8 +231,15 @@ export const useRhythmGameAudio = ({
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const audioEngine = useAudioEngine()
   const { setAudioStatus, setIsGameOver } = setters
-  const { band, gameMap, player, setlist, gigModifiers, currentGig } =
-    contextState
+  const {
+    band,
+    gameMap,
+    player,
+    setlist,
+    gigModifiers,
+    currentGig,
+    conditionProfile
+  } = contextState
   const { addToast, setLastGigStats, endGig, t } = contextActions
 
   const currentStatusRef = useRef<GigAudioStatus>('idle')
@@ -240,6 +252,7 @@ export const useRhythmGameAudio = ({
     setlist,
     gigModifiers,
     currentGig,
+    conditionProfile,
     addToast,
     setLastGigStats,
     endGig,
@@ -256,6 +269,7 @@ export const useRhythmGameAudio = ({
       setlist,
       gigModifiers,
       currentGig,
+      conditionProfile,
       addToast,
       setLastGigStats,
       endGig,
@@ -270,6 +284,7 @@ export const useRhythmGameAudio = ({
     setlist,
     gigModifiers,
     currentGig,
+    conditionProfile,
     addToast,
     setLastGigStats,
     endGig,
@@ -297,6 +312,7 @@ export const useRhythmGameAudio = ({
       setlist: currentSetlist,
       gigModifiers: currentGigModifiers,
       currentGig: activeGig,
+      conditionProfile: currentConditionProfile,
       addToast: currentAddToast,
       setLastGigStats: currentSetLastGigStats,
       endGig: currentEndGig,
@@ -358,6 +374,7 @@ export const useRhythmGameAudio = ({
       const physicsSuccess = applyGigPhysicsSetup({
         currentBand,
         currentGigModifiers,
+        currentConditionProfile,
         activeGig,
         currentGameMap,
         currentPlayer,

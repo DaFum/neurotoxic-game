@@ -16,7 +16,15 @@ import {
 } from '../../src/context/usePersistence'
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
 import { createFixedClock } from '../../src/utils/clock'
+import { buildExpeditionMap } from '../../src/domain/expedition/map'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+
+/**
+ * The fixture seed, shared by the persisted state and the route derived from
+ * it. Written twice, these drift and the load sanitizer drops the reward entry -
+ * which surfaces as a route-generation failure rather than the mismatch it is.
+ */
+const FIXTURE_RUN_SEED = 654322
 
 const clock = createFixedClock(Date.parse('2026-01-01T00:00:00Z'))
 
@@ -144,7 +152,11 @@ const buildPopulatedState = () => {
     }
   ]
   state.rngSeed = 123456
-  state.runSeed = 654321
+  // `FIXTURE_RUN_SEED` is deliberately not the original 654321: the reward
+  // ledger is re-validated on load against the canonical route, and that seed
+  // no longer produces a route rare at all, so the fixture had no legitimate
+  // entry to preserve.
+  state.runSeed = FIXTURE_RUN_SEED
   // `sanitizeRivalBand` returns exactly these five fields — `fame` is not one of
   // them, so an invented field would read as a round-trip loss.
   state.rivalBand = {
@@ -155,12 +167,172 @@ const buildPopulatedState = () => {
     currentLocationId: 'node_1'
   }
   state.unlocks = ['unlock_1', 'unlock_2']
+  state.career = {
+    ...state.career,
+    crewById: Object.assign(Object.create(null), {
+      mika: {
+        loyalty: 62,
+        storyProgress: 3,
+        signatureTraitId: 'signature_field_surgeon',
+        unavailableUntilCompletedRunCount: 0
+      }
+    }),
+    settledCrewRunIds: ['run_settled_1'],
+    finalizedExpeditionRuns: 1,
+    completedExpeditionRuns: 1
+  }
+  // A mid-run Expedition. The shape must match exactly what
+  // `sanitizeExpeditionState` accepts and returns — an inconsistent run (no
+  // `runId`, no committed loadout) is legitimately collapsed to idle on load,
+  // which would read here as a round-trip loss rather than sanitizer intent.
+  // `intelByNodeId` is null-prototype because the sanitizer returns one, and
+  // `deepStrictEqual` compares prototypes.
+  state.expedition = {
+    status: 'active',
+    prep: { prepId: 'run_fixture_1' },
+    runId: 'run_fixture_1',
+    routeStep: rareWalk.routeStep,
+    visitedNodeIds: rareWalk.visitedNodeIds,
+    intelByNodeId: Object.assign(Object.create(null), {
+      exp_node_2: 1,
+      exp_node_3: 2
+    }),
+    intelGrants: [
+      {
+        id: 'grant_1',
+        source: 'social',
+        sourceProofId: 'social_post_7',
+        nodeId: 'exp_node_4',
+        targetLevel: 1,
+        consumed: false
+      }
+    ],
+    scoutReconUsedRouteSteps: [2],
+    loadout: {
+      tourTypeId: 'standard_tour',
+      regionId: 'industrial_belt',
+      activeTourbusAssetId: 'asset_1',
+      crewIds: ['crew_scout'],
+      cargo: { spareParts: 2, supplies: 3 },
+      starterPerkId: null,
+      nativeContracts: [
+        { templateId: 'contract_route_a', targetNodeId: 'exp_node_5' }
+      ],
+      insurancePolicyId: null,
+      pressureModifierIds: [],
+      build: {
+        setlistSongIds: ['song_1'],
+        equipment: { selectedGearItemIds: ['hq_inst_guitar_custom'] },
+        selectedTourbusModuleIds: ['tb_sleeping_berths'],
+        merch: [{ inventoryKey: 'shirts', quantity: 10 }],
+        contraband: [{ stashKey: 'stash_a', instanceId: 'inst_1', stacks: 2 }],
+        sponsorOfferId: null,
+        startingFuelTarget: 80,
+        protectedCareerCash: 250
+      }
+    },
+    startingMoney: 4200,
+    startingFame: 340,
+    protectedCareerCash: 250,
+    rewardLedger: [
+      {
+        // The load sanitizer resolves the reward through the canonical
+        // registry, requires the derived `<definition>::<source>` id, and
+        // re-checks the node actually carries that rare - so the entry is
+        // derived from the route rather than written by hand. Pinning a node
+        // id and a reward id here made this fixture stale the moment route
+        // generation legitimately changed.
+        id: `${rareWalk.rareRewardId}::${rareWalk.rareNodeId}`,
+        rewardDefinitionId: rareWalk.rareRewardId,
+        sourceType: 'route_rare',
+        sourceId: rareWalk.rareNodeId,
+        secured: false,
+        earnedAtRouteStep: rareWalk.routeStep,
+        materialized: false
+      }
+    ],
+    extractionWindowsSeen: [2],
+    consumedLegendaryIds: ['the_fixer'],
+    // No Ghost Route conversion on this walk, so the slice carries the empty
+    // record rather than omitting it.
+    arrivedOverlay: null,
+    pendingFailure: null,
+    unpaidDailyObligation: 0,
+    blockedTravelAtRouteStep: 4,
+    outcome: null,
+    insurancePolicyId: null,
+    insuranceClaimConsumed: false,
+    claimConsumed: false,
+    technicalFailureAccepted: false,
+    crew: {
+      stressByCrewId: Object.create(null),
+      injuryByCrewId: Object.create(null)
+    },
+    bandInjuryByMemberId: Object.create(null),
+    resolvedCrewSourceIds: [],
+    resolvedEventSourceIds: [],
+    resolvedObligationSignalIds: [],
+    pressure: {
+      heat: 0,
+      exposure: 0,
+      crowdHype: 0,
+      severeReliefUntilRouteStep: null,
+      lastSevereEventId: null,
+      pendingDirectorEventId: null,
+      temporaryRouteOpportunity: null
+    },
+    preparedSponsorOffers: [],
+    activeObligations: [],
+    runDraftTraitIds: [],
+    pendingRunDraftOffer: null,
+    finaleType: null,
+    lastSocialResult: null,
+    pendingSocialSettlement: null,
+    lastGigResolvedAtRouteStep: null,
+    gigOutcomeByStep: Object.create(null)
+  }
 
   return state
 }
 
 const serialize = value => JSON.stringify(value)
 const deserialize = value => JSON.parse(value)
+
+/**
+ * A real path on the fixture's own route ending on a rare-bearing node.
+ *
+ * The reward ledger is re-validated on load against the canonical route, so a
+ * hand-written entry only survives while it happens to describe a node that
+ * still carries that rare. Deriving it keeps this fixture about round-trip
+ * preservation rather than about route generation.
+ */
+const findRareWalk = (runSeed, tourTypeId, regionId) => {
+  const map = buildExpeditionMap(runSeed, tourTypeId, regionId)
+  const queue = [[map.startNodeId]]
+  while (queue.length > 0) {
+    const path = queue.shift()
+    const nodeId = path[path.length - 1]
+    const entry = map.meta[nodeId]
+    if (entry?.hidden.rareRewardId && path.length > 1) {
+      return {
+        visitedNodeIds: path,
+        routeStep: entry.routeStep,
+        rareNodeId: nodeId,
+        rareRewardId: entry.hidden.rareRewardId
+      }
+    }
+    for (const edge of map.connections) {
+      if (edge.from === nodeId) queue.push([...path, edge.to])
+    }
+  }
+  throw new Error('the fixture route carries no rare reward')
+}
+
+const rareWalk = findRareWalk(
+  FIXTURE_RUN_SEED,
+  'standard_tour',
+  'industrial_belt'
+)
 
 describe('persisted save slice round-trip', () => {
   const persisted = createPersistedState(buildPopulatedState(), clock)
@@ -255,7 +427,9 @@ describe('persisted save slice round-trip', () => {
       'crowdfundCampaigns',
       'rngSeed',
       'runSeed',
-      'rivalBand'
+      'rivalBand',
+      'career',
+      'expedition'
     ]
 
     const parsed = deserialize(serialize(persisted))

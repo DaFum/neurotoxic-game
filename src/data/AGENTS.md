@@ -17,6 +17,12 @@
 - Quest offers go through `QuestOfferEngine` (`src/domain/questOfferEngine.ts`), which composes `canAcceptQuest`, quest slots (`story:1`, `side:2`, `repeatable:2`, `tutorial:1`), cooldown/scope gates, and declarative `offer.condition`. Do not reintroduce one-off "no active quest" checks in event conditions.
 - Story arcs may branch via `QuestState.followupQuestId` — `completeQuest` automatically dispatches the follow-up through the gated `addQuest` path, so repeat-policy and scope checks apply to the follow-up too. New quests must satisfy the content gates in `tests/node/questSystem.test.js`: every progressing quest declares `progressRules`, rule events are emitted by producers/gameplay, scoped repeat policies declare scope rules, repeatables declare cooldown/scope guardrails, failure penalties stay non-lethal, story quests declare completion/failure flags, and `startFlags` are always cleared on resolve. `money_earned`/`economy.moneyEarned` is emitted via `createMoneyEarnedQuestEvent` and `fame_gained`/`fame.gained` via `createFameGainedQuestEvent` (both `src/quests/producers/economyQuestEvents.ts`). Event-driven gains are emitted once, centrally, by `handleApplyEventDelta` (`src/context/reducers/eventReducer.ts`) from the effective post-clamp diff; the post-gig continue handler (`dispatchEconomyQuests`) and the brand-deal handler (`buildAcceptDealQuestEvents`) emit their own income because those paths write the player directly instead of going through an event delta. A new income source must either flow through `APPLY_EVENT_DELTA` or emit the event itself — and must not do both, or the quest is credited twice.
 
+## Expedition Registries
+
+- An `EXPEDITION_REGIONS` or `EXPEDITION_TOUR_TYPES` entry is unreachable in gameplay until `getAvailableExpeditionRegionIds` / `getAvailableExpeditionTourTypeIds` (`src/domain/expedition/loadout.ts`) list it *and* the Tour Prep selection UI offers it; `validateExpeditionBuildCommitment` otherwise rejects the candidate as `TOUR_OR_REGION_UNKNOWN`.
+- A `numeric` or `route` field with no production consumer is inert config. Wire the consumer in the same change or leave the field out — a published multiplier that nothing reads looks implemented and is not.
+- A declared Tour `depth` is honoured only down to `MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES`. A lower value is clamped, and the registry then states a route length the builder never produces.
+
 ## HQ Items
 
 - In `src/data/hqItems.ts`, each item uses a singular `effect` property, not `effects`.

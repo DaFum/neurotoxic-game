@@ -1,0 +1,1261 @@
+import type { MapNode } from './map'
+
+/**
+ * Lifecycle phase of the Expedition run.
+ *
+ * @remarks
+ * `idle` is the only status a fresh PREPARE is accepted from, and the terminal
+ * statuses (`extracted`, `completed`, `failed`) are only reachable through the
+ * reducer-authoritative terminal actions.
+ */
+export type ExpeditionStatus =
+  'idle' | 'prepared' | 'active' | 'extracted' | 'completed' | 'failed'
+
+/**
+ * Outcome of attempting the one Legendary claim a finalized run may owe.
+ *
+ * @remarks
+ * The claim is a persistence barrier, so its result has to say more than
+ * whether something happened: `not_applicable` is a run that owes no
+ * Legendary and may settle immediately, `claimed` is a durable marker plus the
+ * committed award, and `persistence_failed` is a run that owes one and could
+ * not durably record it. A caller must not settle the run on
+ * `persistence_failed` - the Career would spend its single claim on an award
+ * the next load would not have.
+ */
+export type ExpeditionLegendaryClaim =
+  'not_applicable' | 'claimed' | 'persistence_failed'
+
+/**
+ * Identity of the prepared-but-not-started run.
+ *
+ * @remarks
+ * The prepared `prepId` becomes the run's `runId` at START, so reward-ledger
+ * entries and Career settlements stay keyed by one stable id across the run.
+ */
+export interface ExpeditionPrepState {
+  prepId: string
+}
+
+/**
+ * Fog-of-war detail level for one Expedition map node.
+ *
+ * `0` shows only the always-visible route facts, `1` adds the exact numeric
+ * cost/payout band, `2` adds the hidden event/rival/authority identity.
+ */
+export type NodeIntelLevel = 0 | 1 | 2
+
+/**
+ * Source that entitles one node-intel reveal.
+ *
+ * @remarks
+ * `social_grant`/`contact_grant` require a matching {@link ExpeditionIntelGrant}
+ * produced by a canonical just-resolved Social/Contact result (G3/G4). The
+ * remaining sources are entitled by run state alone.
+ */
+export type ExpeditionIntelSource =
+  | 'scout_passive'
+  | 'scout_recon'
+  | 'perk_floor'
+  | 'social_grant'
+  | 'contact_grant'
+
+/**
+ * One consumable entitlement to raise a node's intel level.
+ *
+ * @remarks
+ * `sourceProofId` is the id of the canonical just-resolved Social/Contact
+ * result that produced the grant; the reducer rejects a grant whose proof is
+ * missing so intel cannot be minted by a forged dispatch.
+ */
+export interface ExpeditionIntelGrant {
+  id: string
+  source: 'social' | 'contact'
+  sourceProofId: string
+  nodeId: string
+  targetLevel: 1 | 2
+  consumed: boolean
+}
+
+/**
+ * Run-only activation selection over already-owned catalog performance gear.
+ *
+ * @remarks
+ * Selecting an item never mutates persistent HQ ownership; it only decides
+ * which owned items contribute Expedition gig modifiers and consume technical
+ * cargo capacity.
+ */
+export interface ExpeditionEquipmentCommitment {
+  selectedGearItemIds: string[]
+}
+
+/**
+ * One committed merch stack drawn from owned `band.inventory` quantities.
+ */
+export interface ExpeditionMerchSelection {
+  inventoryKey: string
+  quantity: number
+}
+
+/**
+ * One committed contraband stack drawn from the owned `band.stash`.
+ */
+export interface ExpeditionContrabandSelection {
+  stashKey: string
+  instanceId: string | null
+  stacks: number
+}
+
+/**
+ * One committed native Contract, optionally bound to a prepared-map target.
+ */
+export interface ExpeditionNativeContractCommitment {
+  templateId: string
+  targetNodeId: string | null
+}
+
+/**
+ * The constrained full build the player commits before the tour starts.
+ */
+export interface ExpeditionBuildCommitment {
+  setlistSongIds: string[]
+  equipment: ExpeditionEquipmentCommitment
+  selectedTourbusModuleIds: string[]
+  merch: ExpeditionMerchSelection[]
+  contraband: ExpeditionContrabandSelection[]
+  sponsorOfferId: string | null
+  startingFuelTarget: number
+  protectedCareerCash: number
+}
+
+/**
+ * Immutable run commitment stored for the whole Expedition.
+ */
+export interface ExpeditionLoadout {
+  tourTypeId: string
+  regionId: string
+  activeTourbusAssetId: string | null
+  crewIds: string[]
+  cargo: { spareParts: number; supplies: number }
+  starterPerkId: string | null
+  nativeContracts: ExpeditionNativeContractCommitment[]
+  insurancePolicyId: ExpeditionInsurancePolicyId | null
+  pressureModifierIds: string[]
+  build: ExpeditionBuildCommitment
+}
+
+/**
+ * Reason a build candidate was rejected by the canonical validator.
+ */
+export type ExpeditionBuildRejectionReason =
+  | 'MALFORMED_CANDIDATE'
+  | 'SETLIST_EMPTY'
+  | 'SETLIST_DUPLICATE'
+  | 'SETLIST_UNKNOWN_SONG'
+  | 'EQUIPMENT_TOO_MANY_ITEMS'
+  | 'EQUIPMENT_DUPLICATE'
+  | 'EQUIPMENT_UNKNOWN_ITEM'
+  | 'EQUIPMENT_NOT_OWNED'
+  | 'MODULES_DRIFT'
+  | 'MERCH_NOT_OWNED'
+  | 'CONTRABAND_NOT_OWNED'
+  | 'SPONSOR_OFFER_UNKNOWN'
+  | 'NATIVE_CONTRACT_INVALID'
+  | 'FUEL_TARGET_OUT_OF_RANGE'
+  | 'PROTECTED_CASH_OUT_OF_RANGE'
+  | 'TOUR_OR_REGION_UNKNOWN'
+  | 'CREW_DUPLICATE'
+  | 'CARGO_OUT_OF_RANGE'
+  | 'PRESSURE_MODIFIERS_INVALID'
+  | 'CHASSIS_TIER_LOCKED'
+
+/**
+ * Result of validating a candidate {@link ExpeditionLoadout}.
+ *
+ * @remarks
+ * The normalized loadout is what the reducer stores, so a caller cannot smuggle
+ * extra keys or unsorted selections into committed run identity.
+ */
+export type ExpeditionBuildValidation =
+  | { valid: true; normalized: ExpeditionLoadout }
+  | { valid: false; reason: ExpeditionBuildRejectionReason }
+
+/**
+ * Coarse route class of one Expedition map node.
+ */
+export type ExpeditionNodeClass =
+  | 'START'
+  | 'CLUB_GIG'
+  | 'FESTIVAL'
+  | 'SUPPLY_STOP'
+  | 'REST_STOP'
+  | 'SPECIAL'
+  | 'FINALE'
+
+/**
+ * Sub-classification for `SPECIAL` nodes.
+ */
+export type ExpeditionSpecialNodeSubtype =
+  'RIVAL_ENCOUNTER' | 'UNDERGROUND_MARKET' | 'BLACK_MARKET'
+
+/**
+ * Always-visible coarse danger/reward band for one node.
+ */
+export type ExpeditionTier = 'low' | 'moderate' | 'high'
+
+/**
+ * Route-shaping inputs supplied by the Region/Tour profile.
+ *
+ * @remarks
+ * G1 baseline passes neutral weights; G5 owns the typed Region/Tour profile
+ * that replaces them without changing this contract.
+ */
+export interface ExpeditionRouteProfile {
+  meaningfulNodeCount: number
+  festivalWeight: number
+  restWeight: number
+  supplyWeight: number
+  gigWeight: number
+  /**
+   * Inclusive route-step range at which extraction is legal.
+   *
+   * @remarks
+   * A Tour's own shape: a blitz run offers its exits early and closes them
+   * early, a survival run offers them late. Part of the route identity, so it
+   * belongs to the profile the map is built from rather than to a constant.
+   */
+  extractionWindowRange: readonly [number, number]
+  /**
+   * Scales the chance that the route offers an Underground node at all.
+   *
+   * @remarks
+   * A chance rather than a guarantee, because a guaranteed node makes the
+   * multiplier a placebo: if every route already has one, `1.35x` cannot make
+   * Underground any more frequent. A Standard route may or may not offer one;
+   * an Underground Region or Tour usually does.
+   */
+  undergroundWeight: number
+  /** Scales the chance that the route offers a Rival encounter. */
+  rivalWeight: number
+  /**
+   * Guarantees a reachable Rival encounter regardless of the weighted roll.
+   *
+   * @remarks
+   * Applied as a deterministic post-pass rather than by forcing the roll, so a
+   * Rival-hunt Tour is the same route it would otherwise have been plus the
+   * encounter it promises.
+   */
+  forcedRival: boolean
+}
+
+/**
+ * Intel-gated detail for one Expedition node.
+ *
+ * @remarks
+ * These fields are deterministic from the root run seed but are only surfaced
+ * to the player once the node's intel level is high enough, which is what makes
+ * information a build resource rather than a free readout.
+ */
+export interface ExpeditionNodeHiddenDetail {
+  exactPayout: number
+  exactWearCost: number
+  eventId: string | null
+  rivalId: string | null
+  authorityRisk: number
+  hiddenOpportunityId: string | null
+  /**
+   * Rare reward this node yields on arrival, or `null`.
+   *
+   * @remarks
+   * Deterministic from the run seed and intel-gated like every other hidden
+   * field, so scouting a node tells the player whether the greed is worth it.
+   */
+  rareRewardId: string | null
+}
+
+/**
+ * Always-visible plus intel-gated metadata for one Expedition node.
+ */
+export interface ExpeditionNodeMeta {
+  nodeId: string
+  routeStep: number
+  nodeClass: ExpeditionNodeClass
+  specialSubtype: ExpeditionSpecialNodeSubtype | null
+  dangerTier: ExpeditionTier
+  rewardTier: ExpeditionTier
+  isMeaningful: boolean
+  isExtractionWindow: boolean
+  hidden: ExpeditionNodeHiddenDetail
+}
+
+/**
+ * The one deterministic Expedition route, shared by Tour Prep preview and play.
+ */
+export interface ExpeditionMap {
+  /** Stable structural identity used by the START transaction's parity check. */
+  mapHash: string
+  tourTypeId: string
+  regionId: string
+  runSeed: number
+  startNodeId: string
+  finaleNodeId: string
+  nodes: Record<string, MapNode>
+  connections: Array<{ from: string; to: string }>
+  meta: Record<string, ExpeditionNodeMeta>
+  nodeOrder: string[]
+}
+
+/**
+ * Inputs describing one travel leg, gathered by the travel reducer.
+ *
+ * @remarks
+ * The plan calls this `RouteContext`; it is named for its domain here so it
+ * does not read as a generic map contract next to the rest of `src/types`.
+ *
+ * `distance` and `baseFuelLiters` come from the canonical
+ * `calculateTravelExpenses` helper, and the two `minigame*` fields from
+ * `calculateTravelMinigameResult`. Keeping them as inputs rather than
+ * recomputing them is what makes the settlement a single pass over numbers the
+ * existing travel path already owns.
+ */
+export interface ExpeditionRouteContext {
+  /** Node the leg arrives at; its declared wear cost is read from the route. */
+  targetNodeId: string
+  /** Base leg distance in km. */
+  distance: number
+  /** Base litres the canonical fuel helper computed for the leg. */
+  baseFuelLiters: number
+  /** Litres the travel minigame's own result recovered. */
+  minigameFuelBonus?: number
+  /** Vehicle damage the travel minigame's own result produced. */
+  minigameConditionLoss?: number
+}
+
+/**
+ * The once-only cost of one travel leg.
+ *
+ * @remarks
+ * `vehicleWear` is committed to the canonical `player.van.condition` only. It
+ * is never copied into the Expedition's technical Condition: those are two
+ * separate failure axes, and charging one trip to both would double-bill the
+ * player for a single decision.
+ */
+export interface ExpeditionTravelSettlement {
+  /** Net litres to deduct; negative when minigame pickups exceeded the burn. */
+  fuelConsumed: number
+  /** Non-negative points of wear for `player.van.condition`. */
+  vehicleWear: number
+}
+
+/**
+ * Canonical source families that may produce a rare Expedition reward.
+ */
+export type ExpeditionRewardSourceType =
+  | 'route_rare'
+  | 'event_rare'
+  | 'contract'
+  | 'crew_contact'
+  | 'finale_nonlegendary'
+
+/**
+ * Owner that materializes a reward after terminal settlement succeeds.
+ */
+export type ExpeditionRewardMaterializationOwner =
+  'unlock' | 'career' | 'inventory'
+
+/**
+ * Registry definition for one real v1 Expedition reward.
+ */
+export interface ExpeditionRewardDefinition {
+  id: string
+  sourceType: ExpeditionRewardSourceType
+  owner: ExpeditionRewardMaterializationOwner
+  /** Target the owner materializes: unlock id, career marker, or inventory key. */
+  target: string
+  /** Quantity applied for `inventory`/`career` owners. */
+  amount: number
+  /** Only meaningful for `finale_nonlegendary`, whose security is definition-owned. */
+  securedOnEarn: boolean
+}
+
+/**
+ * One earned rare reward, pending or settled.
+ */
+export interface ExpeditionRewardLedgerEntry {
+  id: string
+  rewardDefinitionId: string
+  sourceType: ExpeditionRewardSourceType
+  sourceId: string
+  secured: boolean
+  earnedAtRouteStep: number
+  materialized: boolean
+}
+
+/**
+ * Failure families that can terminate an Expedition run.
+ *
+ * @remarks
+ * G1A owns `bankruptcy` and `fuel_stranded`; G2/G3/G4 export the remaining
+ * signals into this same single terminal owner.
+ */
+export type ExpeditionFailureReason =
+  | 'bankruptcy'
+  | 'fuel_stranded'
+  | 'technical_shutdown'
+  | 'crew_collapse'
+  | 'authority_crisis'
+  | 'critical_contract_breach'
+
+/**
+ * Legal responses a failure crisis may expose.
+ */
+export type ExpeditionFailureChoiceId =
+  'refuel' | 'tow' | 'insurance_claim' | 'extract' | 'accept_failure'
+
+/**
+ * A raised, not-yet-terminal failure crisis with its legal recovery choices.
+ *
+ * @remarks
+ * The design forbids a single opaque roll ending a run, so a crisis always
+ * carries at least one legal choice and is derived from visible run state.
+ */
+export interface PendingExpeditionFailure {
+  id: string
+  reason: ExpeditionFailureReason
+  sourceId: string
+  raisedAtRouteStep: number
+  choices: ExpeditionFailureChoiceId[]
+}
+
+/**
+ * Signal shape later gates export into the one G1-owned failure composer.
+ */
+export interface ExpeditionFailureSignal {
+  reason: ExpeditionFailureReason
+  sourceId: string
+  choices: ExpeditionFailureChoiceId[]
+}
+
+/**
+ * Finalized economic outcome of one terminal Expedition transition.
+ */
+export interface ExpeditionSettlement {
+  retentionRate: number
+  moneyEarned: number
+  moneyRetained: number
+  moneyForfeited: number
+  fameEarned: number
+  fameRetained: number
+  fameForfeited: number
+  retainedRewardEntryIds: string[]
+  abandonedRewardEntryIds: string[]
+}
+
+/**
+ * Finalized terminal record for one run.
+ */
+export interface ExpeditionOutcome {
+  runId: string
+  kind: 'extracted' | 'completed' | 'failed'
+  reason: ExpeditionFailureReason | null
+  finalizedAtRouteStep: number
+  settlement: ExpeditionSettlement
+  finaleResultId: string | null
+}
+
+export interface ExpeditionPreparedSponsorOffer {
+  offerId: string
+  dealId: string
+  runSeed: number
+  canonicalTermsHash: string
+}
+
+export interface ExpeditionTemporaryRouteOpportunity {
+  id: string
+  subtype: 'UNDERGROUND_MARKET' | 'BLACK_MARKET' | 'RIVAL_ENCOUNTER'
+  targetNodeId: string
+  createdAtRouteStep: number
+}
+
+/** What opened an overlay: each one has its own evidence and its own gate. */
+export type ExpeditionOverlaySource =
+  'underground_invite' | 'nemesis_shortcut' | 'ghost_route' | 'nemesis_key'
+
+/**
+ * The overlay a move travelled, and the node it landed on.
+ *
+ * @remarks
+ * `subtype` is what the overlay advertised, which is not always what the base
+ * node is: a Ghost Route escape, a high-Heat Underground invite and a Nemesis
+ * shortcut all convert an ordinary node.
+ *
+ * `source` is carried because that is what makes the record checkable. Each
+ * source is re-derived against different evidence on load, and the one whose
+ * gate lives outside this slice - the Nemesis tier - is re-checked wherever
+ * the effective route is read.
+ */
+export interface ExpeditionArrivedOverlay {
+  nodeId: string
+  subtype: ExpeditionSpecialNodeSubtype
+  source: ExpeditionOverlaySource
+}
+
+export interface ExpeditionPressureState {
+  heat: number
+  exposure: number
+  crowdHype: number
+  severeReliefUntilRouteStep: number | null
+  lastSevereEventId: string | null
+  /**
+   * The one event the Director selected for this route step, until it is
+   * resolved. Selection and resolution share this id so the run cannot draw
+   * a pressure event twice.
+   */
+  pendingDirectorEventId?: string | null
+  temporaryRouteOpportunity: ExpeditionTemporaryRouteOpportunity | null
+}
+
+export type ExpeditionContractSpecialFinaleProfileId = 'all_in_showcase'
+export type ExpeditionContractConstraintTemplate =
+  | {
+      id: string
+      kind: 'gig_accuracy_count'
+      minAccuracy: number
+      requiredCount: number
+    }
+  | { id: string; kind: 'max_heat'; maxHeat: number }
+  | {
+      id: string
+      kind: 'visit_matching_node'
+      routeTargetRule: {
+        nodeType?: string
+        subtype?: ExpeditionSpecialNodeSubtype
+      }
+    }
+  | { id: string; kind: 'no_rest_before_finale' }
+  | { id: string; kind: 'finale_completed'; minHeatAtFinale: number | null }
+  | { id: string; kind: 'social_post_count'; requiredCount: number }
+  | {
+      id: string
+      kind: 'special_finale'
+      profileId: ExpeditionContractSpecialFinaleProfileId
+    }
+export type ExpeditionContractConstraint =
+  | Exclude<
+      ExpeditionContractConstraintTemplate,
+      { kind: 'visit_matching_node' }
+    >
+  | { id: string; kind: 'visit_node'; targetNodeId: string }
+export interface ExpeditionContractTemplate {
+  id: string
+  kind: 'performance' | 'behavior' | 'route' | 'high_risk'
+  constraints: ExpeditionContractConstraintTemplate[]
+  reward: { money: number; fame: number; rewardMultiplier: number }
+  failure: { heat: number; controversy: number }
+  tourEndingOnFailure: boolean
+}
+export interface ExpeditionConstraintProgress {
+  constraintId: string
+  value: number
+  satisfied: boolean
+  failed: boolean
+}
+export type ExpeditionDoubleDownConstraint =
+  | { kind: 'no_more_rest' }
+  | { kind: 'heat_cap'; maxHeat: 60 }
+  | { kind: 'finale_required' }
+  | { kind: 'social_silence'; maxPosts: 0 }
+export interface ExpeditionDoubleDownState {
+  acceptedOfferId: string
+  derivationKey: string
+  addedConstraint: ExpeditionDoubleDownConstraint
+  rewardMultiplier: 1.25 | 1.35
+  failureHeatBonus: number
+  acceptedAtRouteStep: number
+}
+export interface ActiveObligationState {
+  id: string
+  sourceType: 'native' | 'brandDeal'
+  sourceId: string
+  constraints: ExpeditionContractConstraint[]
+  progressByConstraintId: Record<string, ExpeditionConstraintProgress>
+  status: 'active' | 'completed' | 'failed'
+  settled: boolean
+  doubleDown: ExpeditionDoubleDownState | null
+}
+
+export type ExpeditionRunDraftTraitId =
+  | 'road_warrior'
+  | 'field_engineer'
+  | 'crew_mediator'
+  | 'backchannel'
+  | 'cold_trail'
+  | 'reckless_encore'
+export interface ExpeditionRunDraftOffer {
+  sourceType: 'major_gig' | 'rare_event' | 'rival' | 'supply' | 'crew'
+  sourceKey: string
+  offeredAtRouteStep: number
+  candidateTraitIds: ExpeditionRunDraftTraitId[]
+}
+export type ExpeditionSocialResultId =
+  'push' | 'monetize' | 'suppress' | 'weaponize'
+export interface ExpeditionSocialResultProof {
+  id: string
+  postOptionId: string
+  resultId: ExpeditionSocialResultId
+  resolvedAtRouteStep: number
+  intelConsumed: boolean
+}
+export type ExpeditionFinaleType =
+  | 'regional_headliner'
+  | 'corporate_showcase'
+  | 'rival_battle'
+  | 'illegal_show'
+  | 'disaster_gig'
+  | 'contract_special'
+export interface ExpeditionFinaleProfile {
+  timingWindowMultiplier: number
+  missPenaltyMultiplier: number
+  staminaDrainMultiplier: number
+  comboBonusMultiplier: number
+  technicalWearMultiplier: number
+  crowdHypeStartBonus: number
+  rewardMultiplier: number
+  heatOnSuccess: number
+  requiresRival: boolean
+}
+
+/**
+ * Run-scoped Expedition state.
+ *
+ * @remarks
+ * Every property belongs to the active or prepared run: status, route progress,
+ * failure evidence, and the finalized outcome only. `player`, `band`, assets,
+ * Social and the root `GameState.runSeed` remain the canonical owners of
+ * everything else.
+ */
+/**
+ * The route a Sponsor offer snapshot was staged for.
+ *
+ * @remarks
+ * START re-derives the snapshot from these three axes and rejects a commitment
+ * that does not match them, so a staging generated for one Region/Tour/perk
+ * cannot be spent on another. It carries no seed of its own: the root
+ * `runSeed` is the single owner, and the staged offers already record it.
+ */
+export interface ExpeditionSponsorStagingProvenance {
+  regionId: string
+  tourTypeId: string
+  starterPerkId: string | null
+}
+
+export interface ExpeditionState {
+  status: ExpeditionStatus
+  prep: ExpeditionPrepState | null
+  runId: string | null
+  routeStep: number
+  visitedNodeIds: string[]
+  intelByNodeId: Record<string, NodeIntelLevel>
+  intelGrants: ExpeditionIntelGrant[]
+  scoutReconUsedRouteSteps: number[]
+  loadout: ExpeditionLoadout | null
+  startingMoney: number
+  startingFame: number
+  protectedCareerCash: number
+  rewardLedger: ExpeditionRewardLedgerEntry[]
+  extractionWindowsSeen: number[]
+  /**
+   * Legendaries this run has already spent.
+   *
+   * @remarks
+   * Run-scoped and reset by `START_EXPEDITION`: a Legendary is owned forever
+   * but acts once per run, so ownership and consumption are different facts
+   * living in different slices.
+   */
+  consumedLegendaryIds: string[]
+  /**
+   * The overlay subtype the run travelled into the node it stands on.
+   *
+   * @remarks
+   * An overlay is derived from the node the run is leaving, so it is gone the
+   * moment the move lands and the arrived node would otherwise be resolved by
+   * its base class alone - a Ghost Route escape onto a Gig node would play the
+   * show it was an escape from. Recorded here at the move, because that is the
+   * only point at which both the overlay and its destination are known.
+   *
+   * Cleared by any move that travelled no overlay, so it always describes the
+   * current node and never an earlier one.
+   */
+  arrivedOverlay: ExpeditionArrivedOverlay | null
+  pendingFailure: PendingExpeditionFailure | null
+  /**
+   * Mandatory daily obligation a previous day could not pay from the run's
+   * spendable Cash.
+   *
+   * @remarks
+   * The protected Career Cash slice is never spent on obligations, so a
+   * shortfall has to be recorded rather than absorbed. This is the evidence the
+   * Economic failure axis derives its crisis from, and it clears as soon as a
+   * later day can pay it.
+   */
+  unpaidDailyObligation: number
+  /**
+   * Route step at which the protected Cash floor refused a travel settlement.
+   *
+   * @remarks
+   * Realized evidence, in the same sense as {@link unpaidDailyObligation}: the
+   * run actually tried to leave and the floor reverted it. Without a record,
+   * the reverted action leaves no trace and the mobility signal cannot see
+   * that the run is stuck, so no crisis is raised and `accept_failure` - the
+   * unconditional choice that is supposed to make a softlock impossible - is
+   * never offered.
+   */
+  blockedTravelAtRouteStep: number | null
+  outcome: ExpeditionOutcome | null
+  cargo?: ExpeditionCargoState | null
+  technicalCondition?: ExpeditionTechnicalCondition | null
+  insurancePolicyId?: ExpeditionInsurancePolicyId | null
+  insuranceClaimConsumed?: boolean
+  claimConsumed?: boolean
+  technicalFailureAccepted?: boolean
+  crew?: ExpeditionCrewRunState
+  bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
+  resolvedCrewSourceIds?: string[]
+  resolvedEventSourceIds?: string[]
+  resolvedObligationSignalIds: string[]
+  pressure: ExpeditionPressureState
+  preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
+  preparedSponsorProvenance?: ExpeditionSponsorStagingProvenance
+  activeObligations: ActiveObligationState[]
+  runDraftTraitIds: ExpeditionRunDraftTraitId[]
+  pendingRunDraftOffer: ExpeditionRunDraftOffer | null
+  consumedRunDraftSourceKeys?: string[]
+  finaleType: ExpeditionFinaleType | null
+  lastSocialResult: ExpeditionSocialResultProof | null
+  pendingSocialSettlement?: { routeStep: number; gigId: string | null } | null
+  lastGigResolvedAtRouteStep?: number | null
+  gigOutcomeByStep?: Record<number, { venueId: string; accuracy: number }>
+}
+
+export type ExpeditionCrewRole =
+  'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'
+export interface ExpeditionCrewDefinition {
+  id: string
+  role: ExpeditionCrewRole
+  displayNameKey: string
+}
+export type ExpeditionCrewInjuryStage = 'none' | 'light' | 'serious'
+export type ExpeditionBandInjuryStage =
+  'none' | 'light' | 'serious' | 'critical'
+export interface ExpeditionCrewRunState {
+  stressByCrewId: Record<string, number>
+  injuryByCrewId: Record<string, ExpeditionCrewInjuryStage>
+}
+export type ExpeditionCrewStressSourceType =
+  | 'travel'
+  | 'poor_gig'
+  | 'crew_event'
+  | 'authority_event'
+  | 'rest'
+  | 'successful_gig'
+export interface ExpeditionCrewStressIntent {
+  crewId: string
+  sourceType: ExpeditionCrewStressSourceType
+  sourceId: string
+  expectedRouteStep: number
+}
+export type ExpeditionRelationshipActorRef =
+  { kind: 'crew'; id: string } | { kind: 'band'; id: string }
+export type ExpeditionRelationshipTier = -2 | -1 | 0 | 1 | 2
+export interface ExpeditionRelationshipOutcomeIntent {
+  first: ExpeditionRelationshipActorRef
+  second: ExpeditionRelationshipActorRef
+  sourceType: 'crew_event' | 'travel_event' | 'gig_result' | 'rival_event'
+  sourceId: string
+  expectedRouteStep: number
+}
+export interface ExpeditionInjuryPerformanceProfile {
+  staminaDrainMultiplier: number
+  timingWindowMultiplier: number
+  missPenaltyMultiplier: number
+  cannotPerform: boolean
+}
+
+/**
+ * Physical equipment groups tracked by Expedition technical condition.
+ */
+export type ConditionGroup = 'pa' | 'instruments' | 'stageGear'
+
+/**
+ * Lifecycle status of a hidden technical defect.
+ */
+export type HiddenDefectStatus =
+  'hidden' | 'revealed' | 'triggered' | 'resolved'
+
+/**
+ * Triggers that can activate a hidden technical defect during tour progression.
+ */
+export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
+
+/**
+ * State representing an undiscovered or revealed defect on tour equipment.
+ */
+export interface HiddenDefectState {
+  id: string
+  group: ConditionGroup
+  severity: 1 | 2 | 3
+  status: HiddenDefectStatus
+  source: 'field_repair' | 'improvise' | 'critical_wear'
+  createdAtRouteStep: number
+  triggerAt: HiddenDefectTrigger
+  triggerRouteStep: number
+}
+
+/**
+ * Technical condition of the band's equipment during an Expedition.
+ */
+export interface ExpeditionTechnicalCondition {
+  pa: number
+  instruments: number
+  stageGear: number
+  defects: HiddenDefectState[]
+}
+
+/**
+ * Canonical performance profile modifiers derived from technical condition.
+ */
+export interface ExpeditionConditionPerformanceProfile {
+  audioHazardLevel: number
+  timingMultiplier: number
+  missStaminaMultiplier: number
+  comboRecoveryMultiplier: number
+  disabledGroups: ConditionGroup[]
+}
+
+/**
+ * Valid repair modes available during an Expedition.
+ */
+export type ExpeditionRepairMode =
+  'field' | 'professional' | 'improvise' | 'cannibalize'
+
+/**
+ * Intent payload to execute a repair on equipment during an Expedition.
+ */
+export interface ExpeditionRepairIntent {
+  mode: ExpeditionRepairMode
+  targetGroup: ConditionGroup
+  sourceGroup?: ConditionGroup
+  quality?: number
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of a resolved repair action.
+ */
+export interface ExpeditionRepairResult {
+  targetRestore: number
+  sourceDamage: number
+  moneyCost: number
+  sparePartsCost: number
+  createsHiddenDefect: boolean
+  resolvesTargetDefects: boolean
+}
+
+/**
+ * Inspection modes available during an active Expedition run.
+ */
+export type ExpeditionInspectionMode =
+  'quick_check' | 'crew_inspection' | 'module_inspection' | 'full_service'
+
+/**
+ * Player intent to inspect equipment.
+ */
+export interface ExpeditionInspectionIntent {
+  mode: ExpeditionInspectionMode
+  crewId?: string
+  repairTargetGroup?: ConditionGroup
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of an equipment inspection.
+ */
+export interface ExpeditionInspectionResult {
+  mode: ExpeditionInspectionMode
+  diagnosticFee: number
+  conditionBands?: Record<
+    ConditionGroup,
+    'optimal' | 'degraded' | 'critical' | 'disabled'
+  >
+  revealedDefectIds: string[]
+  professionalRepair?: ExpeditionRepairResult
+}
+
+/**
+ * Pure resolution outcome of an inspection intent.
+ */
+export type ExpeditionInspectionResolution =
+  | { ok: true; result: ExpeditionInspectionResult }
+  | { ok: false; reason: string }
+
+/**
+ * Identifier of supported Expedition insurance policies.
+ */
+export type ExpeditionInsurancePolicyId = 'roadside' | 'equipment' | 'touring'
+
+/**
+ * Failure classes covered by an Expedition insurance policy.
+ */
+export type ExpeditionInsuranceCoverage = 'vehicle' | 'technical' | 'either'
+
+/**
+ * Optional insurance policy available as a pre-tour risk sink.
+ */
+export interface ExpeditionInsurancePolicy {
+  id: ExpeditionInsurancePolicyId
+  premium: number
+  coverage: ExpeditionInsuranceCoverage
+}
+
+/**
+ * Type of rescue requested in an insurance claim.
+ */
+export type ExpeditionInsuranceClaimType = 'vehicle' | 'technical'
+
+/**
+ * Input for claiming insurance during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimInput {
+  claimType: ExpeditionInsuranceClaimType
+  targetGroup?: ConditionGroup
+}
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimIntent extends ExpeditionInsuranceClaimInput {
+  expectedRouteStep: number
+}
+
+/**
+ * Manifest representing the real physical items carried in the vehicle cargo.
+ */
+export interface ExpeditionCargoState {
+  spareParts: number
+  supplies: number
+  technicalGearItemIds: string[]
+  merch: ExpeditionMerchSelection[]
+  contraband: ExpeditionContrabandSelection[]
+}
+
+/**
+ * Breakdown of visible and hidden cargo capacities and slot usage.
+ */
+export interface ExpeditionCargoCapacity {
+  visibleCapacity: number
+  hiddenCapacity: number
+  visibleSlotsUsed: number
+  hiddenSlotsUsed: number
+  availableVisibleSlots: number
+  availableHiddenSlots: number
+}
+
+/**
+ * Unified view of active cargo state combined with capacity breakdown.
+ */
+export interface ExpeditionCargoView
+  extends ExpeditionCargoState, ExpeditionCargoCapacity {}
+
+/**
+ * Chassis archetypes for Expedition runs.
+ */
+export type ExpeditionChassisArchetype =
+  'compact' | 'diy' | 'coach' | 'armored_hauler'
+
+/**
+ * Profile defining mechanical adjustments for a chassis archetype.
+ */
+export interface ExpeditionChassisProfile {
+  archetype: ExpeditionChassisArchetype
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  cargoCapacityBonus: number
+  fieldRepairEfficiency: number
+  crewStressMultiplier: number
+  authorityEventWeightMultiplier: number
+  hiddenContrabandCapacity: number
+}
+
+/**
+ * Profile defining mechanical adjustments provided by an installed vehicle module.
+ */
+export interface ExpeditionVehicleModuleProfile {
+  cargoCapacityBonus: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  inspectionLevel: 0 | 1 | 2
+  authorityIntelBonus: 0 | 1
+  hiddenContrabandCapacity: number
+  restStressRecoveryBonus: number
+}
+
+/**
+ * Numeric tuning rules resolved for the current Expedition.
+ */
+/**
+ * A Region's canonical id.
+ */
+export type ExpeditionRegionId =
+  | 'home_turf'
+  | 'industrial_belt'
+  | 'festival_fields'
+  | 'corporate_circuit'
+  | 'underground_scene'
+
+/**
+ * A Tour Type's canonical id.
+ */
+export type ExpeditionTourTypeId =
+  | 'standard_tour'
+  | 'blitz_tour'
+  | 'underground_tour'
+  | 'corporate_tour'
+  | 'rival_hunt_tour'
+  | 'survival_tour'
+
+/**
+ * Weights that shape a run's route and content without touching its numbers.
+ *
+ * @remarks
+ * Numeric rules cannot express route identity: two Tours can share every
+ * multiplier and still need to feel different in what the route offers. These
+ * weights are that second axis, and they have exactly one owner —
+ * `getExpeditionRoutePressureProfile` — so no Region or Tour id is ever
+ * branched on outside it.
+ */
+export interface ExpeditionRoutePressureProfile {
+  supplyNodeWeightMultiplier: number
+  technicalNodeWeightMultiplier: number
+  festivalHighProfileNodeWeightMultiplier: number
+  sponsorContractEventWeightMultiplier: number
+  undergroundNodeWeightMultiplier: number
+  rivalNodeWeightMultiplier: number
+  gigNodeWeightMultiplier: number
+  recoveryNodeWeightMultiplier: number
+  forcedRival: boolean
+}
+
+/**
+ * One Region's contribution, as data.
+ */
+/**
+ * The numeric fields a Region or Tour profile may contribute.
+ *
+ * @remarks
+ * `getEffectiveExpeditionRules` composes an explicit subset of
+ * {@link ExpeditionNumericRules} from the Region and Tour profiles. Every key
+ * outside that subset keeps its base value however the registry declares it,
+ * so typing these profiles as the full `Partial<ExpeditionNumericRules>` let a
+ * balance edit add a field that compiles, passes `satisfies`, and does
+ * nothing. Narrowed to the keys the composition actually reads, so an unread
+ * one is a compile error instead of a silent placebo.
+ */
+export type ExpeditionComposableNumericRuleKey =
+  | 'startingHeat'
+  | 'startingSpareParts'
+  | 'fuelConsumptionMultiplier'
+  | 'roadWearMultiplier'
+  | 'technicalWearMultiplier'
+  | 'repairCostMultiplier'
+  | 'contractRewardMultiplier'
+  | 'heatGainMultiplier'
+  | 'exposureGainMultiplier'
+  | 'crewStressMultiplier'
+  | 'extractionRetentionMultiplier'
+  | 'rareRewardChanceMultiplier'
+  | 'completionMultiplier'
+  | 'rivalEventWeightMultiplier'
+  | 'authorityEventWeightMultiplier'
+  | 'finaleRewardMultiplier'
+
+/** A Region or Tour numeric contribution, limited to the composed keys. */
+export type ExpeditionComposableNumericProfile = Partial<
+  Pick<ExpeditionNumericRules, ExpeditionComposableNumericRuleKey>
+>
+
+export interface ExpeditionRegionDefinition {
+  id: ExpeditionRegionId
+  labelKey: string
+  numeric: ExpeditionComposableNumericProfile
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  /** Heat at or above which corporate Sponsors refuse this Region's runs. */
+  corporateSponsorHeatCeiling?: number
+}
+
+/**
+ * One Tour Type's contribution, as data.
+ */
+export interface ExpeditionTourTypeDefinition {
+  id: ExpeditionTourTypeId
+  labelKey: string
+  /** Meaningful route steps between the start and the Finale. */
+  depth: number
+  /** Inclusive route-step range at which extraction is legal. */
+  extractionWindowRange: readonly [number, number]
+  numeric: ExpeditionComposableNumericProfile
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  forcedRival: boolean
+}
+
+export interface ExpeditionNumericRules {
+  startingSpareParts: number
+  startingHeat: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  technicalWearMultiplier: number
+  repairCostMultiplier: number
+  fieldRepairEfficiency: number
+  gigRewardMultiplier: number
+  contractRewardMultiplier: number
+  contractPenaltyMultiplier: number
+  pressureRewardMultiplier: number
+  heatGainMultiplier: number
+  exposureGainMultiplier: number
+  crewStressMultiplier: number
+  extractionRetentionMultiplier: number
+  /**
+   * Scales the *probability* of a chance-based rare reward, nothing else.
+   *
+   * @remarks
+   * Not carry slots, not item quantity, not reward value: `underground_scene`
+   * at 1.2 means a 20% better chance at a rare, not 20% more loot. A rare a
+   * decision grants outright - a Finale reward, an authored event result - is
+   * deterministic and never re-rolled, so this cannot touch it.
+   */
+  rareRewardChanceMultiplier: number
+  completionMultiplier: number
+  rivalEventWeightMultiplier: number
+  authorityEventWeightMultiplier: number
+  rivalRewardMultiplier: number
+  finaleRewardMultiplier: number
+  nodeIntelFloor: 0 | 1 | 2
+  explicitExtractionRareCarrySlots: number
+}
+
+/**
+ * Discrete rule flags resolved for the current Expedition.
+ */
+export interface ExpeditionRuleFlags {
+  fieldRepairNoHiddenDefect: boolean
+  fieldRepairMinimumCondition: number
+  severeReliefBypass: boolean
+}
+
+/**
+ * Complete composable effective rules governing the active Expedition.
+ */
+export interface EffectiveExpeditionRules {
+  numeric: ExpeditionNumericRules
+  flags: ExpeditionRuleFlags
+  legendary: Record<string, boolean>
+}
+
+/**
+ * Result ids a declarative event may name to affect the active Expedition.
+ *
+ * @remarks
+ * This is the whole vocabulary an event has: the actual Heat, Condition and
+ * cargo numbers live in the Expedition's own registry, so authored content can
+ * request an outcome but never author a value.
+ */
+export type ExpeditionEventResultId =
+  | 'equipment_scuffed'
+  | 'pa_overloaded'
+  | 'spare_parts_scavenged'
+  | 'supplies_spoiled'
+  | 'attention_drawn'
+  | 'attention_faded'
+  | 'crew_conflict_separated'
+  | 'crew_band_tension_heard'
+  | 'crew_breakthrough_followed'
+  | 'crew_injury_scare_pushed'
+
+/**
+ * What one known event result does to the run.
+ */
+export interface ExpeditionEventResultEffect {
+  /**
+   * Registry id of the rare reward this result earns, if any.
+   *
+   * @remarks
+   * Named here rather than by the event, for the same reason the numbers are:
+   * an authored event may name a *result*, never a reward, so a hand-written
+   * effect cannot mint a reward the run's own rules would never produce.
+   */
+  rareRewardId?: string
+  /** Points of technical wear per equipment group. */
+  conditionWear?: { pa: number; instruments: number; stageGear: number }
+  /** Signed change to consumable cargo; gains stay bounded by capacity. */
+  cargoDelta?: { spareParts?: number; supplies?: number }
+  /** Signed Heat change, applied through the single Heat write point. */
+  heat?: number
+}
+
+/**
+ * Sanitized Expedition envelope an event delta may carry.
+ *
+ * @remarks
+ * Deliberately holds ids only. A numeric field here would be a caller-supplied
+ * state change, which is exactly what the envelope exists to prevent.
+ */
+export interface ExpeditionEventIntent {
+  resultIds: ExpeditionEventResultId[]
+}
+
+/**
+ * The projection a node's current intel level entitles the player to see.
+ *
+ * @remarks
+ * Lives here rather than beside the badge that renders it: the Fog projection
+ * is produced in the domain and consumed by several map components, so a UI
+ * module owning the contract would make the domain depend on the view.
+ */
+export interface ExpeditionNodeFog {
+  nodeClass: ExpeditionNodeClass
+  specialSubtype: ExpeditionSpecialNodeSubtype | null
+  dangerTier: ExpeditionTier
+  rewardTier: ExpeditionTier
+  isExtractionWindow: boolean
+  intelLevel: NodeIntelLevel
+  /** Exact payout, only present once intel reaches level 1. */
+  exactPayout: number | null
+  /** Exact wear cost, only present once intel reaches level 1. */
+  exactWearCost: number | null
+  /** Event/rival identity, only present at level 2. */
+  revealedIdentity: string | null
+  /** Rare reward this node yields, only present once intel reaches level 1. */
+  rareRewardId: string | null
+  /**
+   * Level-0 presence hints, earned rather than scouted.
+   *
+   * @remarks
+   * A hint says only *that* a category is on a node, never which one it is or
+   * what it pays. That is the whole difference between knowing a road and
+   * having scouted it, and it is why these stay readable at intel level 0
+   * while payout, wear and identity keep their level 1 and level 2 gates.
+   * `false` means the run is entitled to the hint and the node does not carry
+   * that category; `null` means the run has not earned the hint at all.
+   */
+  hasRecoveryOrSponsorHint: boolean | null
+  /** Level-0 Rival/Sponsor category presence, earned by Career rank. */
+  hasRivalOrSponsorCategoryHint: boolean | null
+  /**
+   * Level-0 Underground opportunity presence, earned by a starter perk.
+   *
+   * @remarks
+   * The `underground_contact` perk's half of its cost: the contact knows which
+   * stops deal, never what the deal is worth, so this stays a bare presence
+   * hint and the payout keeps its level-1 gate.
+   */
+  hasUndergroundCategoryHint: boolean | null
+}

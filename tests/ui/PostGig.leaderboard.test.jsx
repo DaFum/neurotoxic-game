@@ -198,6 +198,22 @@ describe('PostGig Leaderboard Submission', () => {
     applyQuestEvent: vi.fn()
   })
 
+  /**
+   * The leaderboard calls only.
+   *
+   * `global.fetch` is also i18next's backend, so ten locale namespace loads
+   * share every mock installed here. Whether they land before or after a
+   * `mockClear` is a race with i18next's async loader, which is why counting
+   * raw calls fails intermittently on a submission that was in fact correct.
+   */
+  const leaderboardCalls = () =>
+    vi
+      .mocked(global.fetch)
+      .mock.calls.filter(
+        call =>
+          typeof call[0] === 'string' && call[0].includes('/api/leaderboard')
+      )
+
   beforeEach(() => {
     vi.clearAllMocks()
     global.fetch = mockFetch
@@ -378,14 +394,7 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch
     await waitFor(() => {
-      const calls = vi.mocked(global.fetch).mock.calls
-      const leaderboardCalls = calls.filter(
-        call =>
-          call[0] &&
-          typeof call[0] === 'string' &&
-          call[0].includes('/api/leaderboard')
-      )
-      expect(leaderboardCalls).toHaveLength(0)
+      expect(leaderboardCalls()).toHaveLength(0)
     })
   })
 
@@ -417,14 +426,7 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch because song is unknown
     await waitFor(() => {
-      const calls = vi.mocked(global.fetch).mock.calls
-      const leaderboardCalls = calls.filter(
-        call =>
-          call[0] &&
-          typeof call[0] === 'string' &&
-          call[0].includes('/api/leaderboard')
-      )
-      expect(leaderboardCalls).toHaveLength(0)
+      expect(leaderboardCalls()).toHaveLength(0)
     })
   })
 
@@ -464,13 +466,10 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(finishBtn)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(1)
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/leaderboard/song',
-        expect.objectContaining({
-          body: expect.stringContaining('"songId":"slug-01"')
-        })
-      )
+      const calls = leaderboardCalls()
+      expect(calls).toHaveLength(1)
+      expect(calls[0][0]).toBe('/api/leaderboard/song')
+      expect(calls[0][1].body).toContain('"songId":"slug-01"')
     })
   })
 
@@ -499,7 +498,7 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(finishBtn)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(leaderboardCalls()).toHaveLength(1)
       expect(mocks.mockLoggerError).toHaveBeenCalledWith(
         'PostGig',
         expect.stringContaining('Batch score submit failed'),
@@ -530,7 +529,7 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(finishBtn)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(leaderboardCalls()).toHaveLength(1)
       expect(mocks.mockLoggerError).toHaveBeenCalledWith(
         'PostGig',
         expect.stringContaining('Batch score submit failed'),
@@ -567,7 +566,7 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should fetch once for both songs
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(1)
+      expect(leaderboardCalls()).toHaveLength(1)
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/leaderboard/song',
@@ -614,7 +613,7 @@ describe('PostGig Leaderboard Submission', () => {
     // Complete -> Continue
     fireEvent.click(await screen.findByText(/Back to Tour/i))
 
-    expect(mockFetch).not.toHaveBeenCalled()
+    expect(leaderboardCalls()).toHaveLength(0)
     await waitFor(() =>
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     )

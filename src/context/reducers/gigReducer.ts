@@ -37,6 +37,23 @@ import {
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
+import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
+import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+import { applyExpeditionSalvageRights } from '../../domain/expedition/legendaries'
+import {
+  applyExpeditionSetupProtection,
+  applyTechnicalWear,
+  calculatePostGigTechnicalWear,
+  getExpeditionConditionSummary,
+  getExpeditionTechnicalCondition
+} from '../../domain/expedition/condition'
+import {
+  getExpeditionFinaleProfile,
+  selectExpeditionFinaleType
+} from '../../domain/expedition/finales'
+import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
+import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
@@ -74,8 +91,39 @@ export const handleSetGig = (
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
+  // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
+  // it has to resolve before the screen derives its performance profile —
+  // otherwise the player would plan the gig against equipment that is about to
+  // break. No-ops outside an active run.
+  const withDefects = evaluateExpeditionDefectTriggers(state, 'pre_gig')
+  const isExpeditionFinale =
+    withDefects.expedition?.status === 'active' &&
+    withDefects.gameMap?.nodes?.[withDefects.player.currentNodeId]?.type ===
+      'FINALE'
+  const finaleType = isExpeditionFinale
+    ? selectExpeditionFinaleType({
+        specialFinaleRequired: withDefects.expedition.activeObligations.some(
+          obligation =>
+            obligation.status === 'active' &&
+            obligation.constraints.some(
+              constraint => constraint.kind === 'special_finale'
+            )
+        ),
+        nemesisLevel: withDefects.rivalBand
+          ? withDefects.career.rivalsById[withDefects.rivalBand.id]?.history
+              .nemesisLevel
+          : 0,
+        technicalConditionAggregate: getExpeditionConditionSummary(withDefects),
+        heat: withDefects.expedition.pressure.heat,
+        exposure: withDefects.expedition.pressure.exposure,
+        hasSponsorObligation: withDefects.expedition.activeObligations.some(
+          obligation => obligation.sourceType === 'brandDeal'
+        )
+      })
+    : null
+  const finaleProfile = getExpeditionFinaleProfile(finaleType)
   return {
-    ...state,
+    ...withDefects,
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
@@ -86,8 +134,26 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     // the time they render. Deliberately not persisted — a save reloaded
     // mid-gig falls back to live reputation.
     gigContextSnapshot: {
-      reputationByRegionAtStart: { ...state.reputationByRegion }
-    }
+      reputationByRegionAtStart: { ...withDefects.reputationByRegion }
+    },
+    ...(withDefects.expedition
+      ? {
+          expedition: {
+            ...withDefects.expedition,
+            finaleType,
+            pressure: finaleProfile
+              ? {
+                  ...withDefects.expedition.pressure,
+                  crowdHype: Math.min(
+                    100,
+                    withDefects.expedition.pressure.crowdHype +
+                      finaleProfile.crowdHypeStartBonus
+                  )
+                }
+              : withDefects.expedition.pressure
+          }
+        }
+      : {})
   }
 }
 
@@ -102,6 +168,11 @@ export const handleSetSetlist = (
   state: GameState,
   payload: RhythmSetlistEntry[]
 ): GameState => {
+  // An active Expedition freezes the committed setlist: the run's pacing and
+  // stamina plan were made against it, so a mid-run swap would let the player
+  // re-decide a commitment the route already priced in. Identical payloads
+  // still pass, so a replayed dispatch is a no-op rather than a rejection.
+  if (isExpeditionSetlistDrift(state, payload)) return state
   return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 
@@ -291,11 +362,30 @@ export const handleSetLastGigStats = (
   // treated as passing — matching the crisis/consequence event conditions.
   const accuracy = finiteNumberOr(safePayload.accuracy, 100)
   const gigFailed = safePayload.failed === true
-  // Region reputation and region-scoped quest events are keyed per city.
-  // player.location is the `venues:<id>.name` display key, so derive the
-  // canonical city key — checkVenueAccess reads the same key for the
-  // regional booking ban.
-  const location = getRegionKeyForLocation(state.player?.location) || 'Unknown'
+  // Two keys, deliberately not one.
+  //
+  // `cityRegion` is the canonical city key: player.location is the
+  // `venues:<id>.name` display key, and checkVenueAccess, `perRegion` quest
+  // scopes and the regional booking ban all resolve the same derivation. Every
+  // venue/quest producer below keeps it, in an Expedition or out of one.
+  //
+  // `reputationRegion` is what `reputationByRegion` is keyed by. During a run
+  // that is the committed Expedition Region: the run's nodes are
+  // `exp_<layer>_<index>`, so the city derivation would credit every
+  // Expedition gig to a single `exp` key and no Region would ever build
+  // reputation. Collapsing the two would silently move city-scoped quest
+  // semantics onto Expedition Region ids, which is exactly what this split
+  // exists to prevent.
+  const cityRegion =
+    getRegionKeyForLocation(state.player?.location) || 'Unknown'
+  const expeditionRegionId =
+    state.expedition?.status === 'active'
+      ? state.expedition.loadout?.regionId
+      : null
+  const reputationRegion =
+    typeof expeditionRegionId === 'string' && expeditionRegionId.length > 0
+      ? expeditionRegionId
+      : cityRegion
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)
@@ -308,7 +398,7 @@ export const handleSetLastGigStats = (
       score,
       capacity: finiteNumberOr(capacity, 0),
       venueId: state.currentGig?.id || '',
-      region: location
+      region: cityRegion
     })
   )
   nextState = QuestEvents.emit(
@@ -316,38 +406,38 @@ export const handleSetLastGigStats = (
     createVenueGigCompletedQuestEvent({
       score,
       venueId: state.currentGig?.id || '',
-      region: location
+      region: cityRegion
     })
   )
 
   if (gigFailed || accuracy < 30) {
-    if (!isForbiddenKey(location)) {
+    if (!isForbiddenKey(reputationRegion)) {
       const currentRep = finiteNumberOr(
-        nextState.reputationByRegion[location],
+        nextState.reputationByRegion[reputationRegion],
         0
       )
       const nextRep = clampReputation(currentRep - 10)
       // Emit the quest event only when reputation actually changed (it can
       // already sit at the clamp floor after repeated disasters).
       if (nextRep < currentRep) {
-        nextState.reputationByRegion[location] = nextRep
+        nextState.reputationByRegion[reputationRegion] = nextRep
         nextState = QuestEvents.emit(
           nextState,
           createRegionReputationChangedQuestEvent({
-            region: location,
+            region: reputationRegion,
             amount: nextRep - currentRep,
             reason: 'bad_gig'
           })
         )
         logger.warn(
           'GameState',
-          `Regional reputation loss in ${location} due to poor gig performance (-10)`
+          `Regional reputation loss in ${reputationRegion} due to poor gig performance (-10)`
         )
       }
       // Blacklisting stays outside the change guard so repeated poor shows
       // at the reputation floor still trigger it.
       if (
-        finiteNumberOr(nextState.reputationByRegion[location], 0) <=
+        finiteNumberOr(nextState.reputationByRegion[reputationRegion], 0) <=
         REGION_BLACKLIST_THRESHOLD
       ) {
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
@@ -361,26 +451,26 @@ export const handleSetLastGigStats = (
     nextState = handleRecordBadShow(nextState)
   } else if (accuracy >= 60) {
     // Increase reputation on good gigs up to 100 max
-    if (!isForbiddenKey(location)) {
+    if (!isForbiddenKey(reputationRegion)) {
       const currentRep = finiteNumberOr(
-        nextState.reputationByRegion[location],
+        nextState.reputationByRegion[reputationRegion],
         0
       )
       const bonus = accuracy >= 90 ? 10 : 5
       const nextRep = clampReputation(currentRep + bonus)
       if (nextRep > currentRep) {
-        nextState.reputationByRegion[location] = nextRep
+        nextState.reputationByRegion[reputationRegion] = nextRep
         nextState = QuestEvents.emit(
           nextState,
           createRegionReputationChangedQuestEvent({
-            region: location,
+            region: reputationRegion,
             amount: nextRep - currentRep,
             reason: 'good_gig'
           })
         )
         logger.info(
           'GameState',
-          `Regional reputation gain in ${location} (+${bonus})`
+          `Regional reputation gain in ${reputationRegion} (+${bonus})`
         )
       }
     }
@@ -392,7 +482,7 @@ export const handleSetLastGigStats = (
         score,
         capacity: finiteNumberOr(capacity, 0),
         venueId: state.currentGig?.id || '',
-        region: location
+        region: cityRegion
       })
     )
     nextState = QuestEvents.emit(
@@ -401,7 +491,7 @@ export const handleSetLastGigStats = (
         score,
         capacity: capacity ?? undefined,
         venueId: state.currentGig?.id || '',
-        region: location
+        region: cityRegion
       })
     )
     if (capacity !== null && capacity <= 300) {
@@ -411,7 +501,7 @@ export const handleSetLastGigStats = (
           score,
           capacity,
           venueId: state.currentGig?.id || '',
-          region: location
+          region: cityRegion
         })
       )
     }
@@ -448,6 +538,66 @@ export const handleSetLastGigStats = (
       newHarmony: nextState.band.harmony
     })
   )
+
+  if (nextState.expedition?.status === 'active') {
+    const rules = getEffectiveExpeditionRules(nextState)
+    const currentCondition = getExpeditionTechnicalCondition(nextState)
+    const finaleProfile = getExpeditionFinaleProfile(
+      nextState.expedition.finaleType
+    )
+    const wear = calculatePostGigTechnicalWear(
+      safePayload,
+      rules.numeric.technicalWearMultiplier *
+        (finaleProfile?.technicalWearMultiplier ?? 1)
+    )
+    // `rehearsed_set` protects the run's *first* Gig only. No extra marker is
+    // needed: `lastGigResolvedAtRouteStep` is null until a Gig resolves and a
+    // number forever after, so a reload cannot spend the protection twice.
+    const protectedWear =
+      nextState.expedition.lastGigResolvedAtRouteStep === null ||
+      nextState.expedition.lastGigResolvedAtRouteStep === undefined
+        ? applyExpeditionSetupProtection(
+            currentCondition,
+            wear,
+            getExpeditionStarterPerk(
+              nextState.expedition.loadout?.starterPerkId
+            )?.firstGigSetupProtection ?? 0
+          )
+        : wear
+    const updatedCondition = applyTechnicalWear(currentCondition, protectedWear)
+    nextState = {
+      ...nextState,
+      expedition: {
+        ...nextState.expedition,
+        technicalCondition: updatedCondition,
+        // The route step the gig actually resolved at. `lastGigStats` and
+        // `currentGig` both survive a route advance, so obligation signals
+        // bind to this stamp instead of the caller's current step - otherwise
+        // one gig re-signals at every later step of the run.
+        lastGigResolvedAtRouteStep: nextState.expedition.routeStep,
+        pendingSocialSettlement:
+          safePayload.failed !== true
+            ? {
+                routeStep: nextState.expedition.routeStep,
+                gigId: nextState.currentGig?.id ?? null
+              }
+            : null
+      }
+    }
+    // Between the wear and the boundary: Salvage Rights answers the group the
+    // *gig* just wiped, and a defect that surfaces afterwards is a separate
+    // loss the Legendary has already been spent on.
+    nextState = applyExpeditionSalvageRights(nextState, currentCondition)
+    // The gig's own wear lands first, then the `post_gig` boundary: a defect
+    // planted by an earlier improvised repair is meant to surface as the show
+    // ends, not to be pre-empted by it.
+    nextState = evaluateExpeditionDefectTriggers(nextState, 'post_gig')
+    if (finaleProfile && safePayload.failed !== true)
+      nextState = applyExpeditionEventHeat(
+        nextState,
+        finaleProfile.heatOnSuccess
+      )
+  }
 
   return nextState
 }

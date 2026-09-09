@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { UplinkButton } from '../../src/ui/shared/BrutalistUI.tsx'
+import { UplinkButton, CrisisModal } from '../../src/ui/shared/BrutalistUI.tsx'
 
 test('UplinkButton renders correctly and handles hover states properly', () => {
   const DummyIcon = () => <svg data-testid='dummy-icon' />
@@ -39,4 +39,40 @@ test('UplinkButton renders correctly and handles hover states properly', () => {
   expect(
     container.querySelector('.bg-toxic-green\\/10')
   ).not.toBeInTheDocument()
+
+  // Focus-visible ring utilities present
+  expect(link).toHaveClass(
+    'focus-visible:ring-2',
+    'focus-visible:ring-toxic-green'
+  )
+})
+
+test('CrisisModal formats action button ARIA attributes correctly with and without metadata', () => {
+  render(
+    <CrisisModal
+      isOpen={true}
+      title='Crisis Alert'
+      description='Critical decision required.'
+      actions={[
+        {
+          id: 'opt1',
+          label: 'EMERGENCY LOAN',
+          meta: '[HIGH RISK]',
+          variant: 'danger'
+        },
+        {
+          id: 'opt2',
+          label: 'ACCEPT TERMS',
+          variant: 'safe'
+        }
+      ]}
+    />
+  )
+
+  const buttons = screen.getAllByRole('button')
+  expect(buttons[0]).toHaveAttribute(
+    'aria-label',
+    'EMERGENCY LOAN - [HIGH RISK]'
+  )
+  expect(buttons[1]).not.toHaveAttribute('aria-label')
 })

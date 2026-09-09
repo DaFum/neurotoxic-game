@@ -159,6 +159,14 @@ export interface GameState {
    * Consumed by `useMapGeneration`; unlike `rngSeed` it never rotates.
    */
   runSeed: number
+  /**
+   * Run-scoped Roguelite Expedition orchestration state. Stores run identity,
+   * the immutable committed build, Intel/reward/failure evidence and the
+   * finalized outcome only; it deliberately carries no seed of its own so
+   * `runSeed` above stays the single map/run seed owner.
+   */
+  expedition: import('./expedition').ExpeditionState
+  career: import('./career').CareerState
 }
 
 /**
@@ -338,6 +346,175 @@ export type GameAction =
       { reason: import('./assets').StartCrowdfundFailureReason }
     >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
+  // Roguelite Expedition (G1)
+  | Action<
+      ActionTypes['PREPARE_EXPEDITION_RUN'],
+      import('./actions').PrepareExpeditionRunPayload
+    >
+  | Action<
+      ActionTypes['PREPARE_EXPEDITION_SPONSOR_OFFERS'],
+      import('./actions').PrepareExpeditionSponsorOffersPayload
+    >
+  | Action<
+      ActionTypes['START_EXPEDITION'],
+      import('./actions').StartExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_ROUTE'],
+      import('./actions').AdvanceExpeditionRoutePayload
+    >
+  | Action<
+      ActionTypes['REVEAL_EXPEDITION_NODE_INTEL'],
+      import('./actions').RevealExpeditionNodeIntelPayload
+    >
+  | Action<
+      ActionTypes['ADD_EXPEDITION_REWARD'],
+      import('./actions').AddExpeditionRewardPayload
+    >
+  | Action<
+      ActionTypes['EXTRACT_EXPEDITION'],
+      import('./actions').ExtractExpeditionPayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION'],
+      import('./actions').CompleteExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ACCEPT_EXPEDITION_FAILURE'],
+      import('./actions').AcceptExpeditionFailurePayload
+    >
+  | Action<
+      ActionTypes['PREPARE_NEXT_EXPEDITION'],
+      import('./actions').PrepareNextExpeditionPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_CRISIS'],
+      import('./actions').ResolveExpeditionCrisisPayload
+    >
+  | Action<
+      ActionTypes['EXECUTE_EXPEDITION_REPAIR'],
+      import('./actions').ExecuteExpeditionRepairPayload
+    >
+  | Action<
+      ActionTypes['REVEAL_EXPEDITION_DEFECT'],
+      import('./actions').RevealExpeditionDefectPayload
+    >
+  | Action<
+      ActionTypes['TRIGGER_EXPEDITION_DEFECT'],
+      import('./actions').TriggerExpeditionDefectPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_DEFECT'],
+      import('./actions').ResolveExpeditionDefectPayload
+    >
+  | Action<
+      ActionTypes['EXECUTE_EXPEDITION_INSPECTION'],
+      import('./actions').ExecuteExpeditionInspectionPayload
+    >
+  | Action<
+      ActionTypes['CLAIM_EXPEDITION_INSURANCE'],
+      import('./actions').ClaimExpeditionInsurancePayload
+    >
+  | Action<
+      ActionTypes['ACCEPT_EXPEDITION_TECHNICAL_FAILURE'],
+      import('./actions').AcceptExpeditionTechnicalFailurePayload
+    >
+  | Action<
+      ActionTypes['APPLY_EXPEDITION_EVENT_DELTA'],
+      import('./actions').ApplyExpeditionEventDeltaPayload
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_CREW_STRESS_SOURCE'],
+      import('./expedition').ExpeditionCrewStressIntent
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_RELATIONSHIP_OUTCOME'],
+      import('./expedition').ExpeditionRelationshipOutcomeIntent
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_CREW_INJURY'],
+      import('./actions').ExpeditionInjurySourcePayload
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_BAND_INJURY'],
+      import('./actions').ExpeditionInjurySourcePayload
+    >
+  | Action<
+      ActionTypes['SETTLE_EXPEDITION_CREW_CAREER'],
+      import('./actions').SettleExpeditionCrewCareerPayload
+    >
+  | Action<
+      ActionTypes['SETTLE_EXPEDITION_CAREER_RESULT'],
+      import('./actions').SettleExpeditionCareerResultPayload
+    >
+  | Action<
+      ActionTypes['PURCHASE_EXPEDITION_HQ_FACILITY'],
+      import('./actions').PurchaseExpeditionHqFacilityPayload
+    >
+  | Action<
+      ActionTypes['BEGIN_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['ROLLBACK_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['UNLOCK_EXPEDITION_ASCENSION'],
+      import('./actions').UnlockExpeditionAscensionPayload
+    >
+  | Action<
+      ActionTypes['COMMIT_EXPEDITION_LEGENDARY_REWARD'],
+      import('./actions').CommitExpeditionLegendaryRewardPayload
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_ARCHIVE_DISCOVERY'],
+      import('./actions').RecordExpeditionArchiveDiscoveryPayload
+    >
+  | Action<
+      ActionTypes['GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS'],
+      import('./actions').GenerateExpeditionBetweenTourDecisionsPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION'],
+      import('./actions').ResolveExpeditionBetweenTourDecisionPayload
+    >
+  | Action<
+      ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
+      import('./actions').AcquireExpeditionCrewSignaturePayload
+    >
+  | Action<
+      ActionTypes['CREATE_CONTACT_INTEL_GRANT'],
+      import('./actions').CreateContactIntelGrantPayload
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_OBLIGATION_SIGNAL'],
+      import('./actions').RecordExpeditionObligationSignalPayload
+    >
+  | Action<
+      ActionTypes['DOUBLE_DOWN_EXPEDITION_OBLIGATION'],
+      import('./actions').DoubleDownExpeditionObligationPayload
+    >
+  | Action<
+      ActionTypes['OFFER_EXPEDITION_DRAFT'],
+      import('./actions').OfferExpeditionDraftPayload
+    >
+  | Action<
+      ActionTypes['SELECT_EXPEDITION_DRAFT'],
+      import('./actions').SelectExpeditionDraftPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_SOCIAL_RESULT'],
+      import('./actions').ResolveExpeditionSocialResultPayload
+    >
+  | Action<
+      ActionTypes['CREATE_SOCIAL_INTEL_GRANT'],
+      import('./actions').CreateSocialIntelGrantPayload
+    >
 
 export * from './player'
 export * from './band'

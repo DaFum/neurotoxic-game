@@ -26,6 +26,7 @@ import {
   dispatchEconomyQuests,
   handleContinueSceneTransition
 } from './continueHandlerUtils'
+import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
@@ -37,6 +38,7 @@ interface UseContinueHandlerProps {
   currentGig: Venue | null
   lastGigStats: PostGigSummary | null
   setlist: RhythmSetlistEntry[]
+  expedition: GameState['expedition']
   activeStoryFlags?: string[]
   /** True when the completed gig sits on the FINALE map node — routes to the victory end screen instead of the overworld. */
   isFinaleGig?: boolean
@@ -60,6 +62,7 @@ export function useContinueHandler({
   currentGig,
   lastGigStats,
   setlist,
+  expedition,
   activeStoryFlags,
   isFinaleGig = false,
   totalDailyObligations,
@@ -72,7 +75,10 @@ export function useContinueHandler({
     addToast,
     changeScene,
     addQuest,
-    applyQuestEvent
+    applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition,
+    recordExpeditionObligationSignal
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -147,6 +153,61 @@ export function useContinueHandler({
         })
       )
 
+      const accuracy = lastGigStats?.accuracy
+      if (expedition?.status === 'active' && currentGig?.id) {
+        if (recordExpeditionObligationSignal) {
+          recordExpeditionObligationSignal('gig', currentGig.id)
+          if (isFinaleGig) {
+            recordExpeditionObligationSignal('finale', currentGig.id)
+          }
+        }
+        if (
+          typeof accuracy === 'number' &&
+          Number.isFinite(accuracy) &&
+          (accuracy < 60 || accuracy >= 80)
+        ) {
+          const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
+          const sourceId = `gig:${currentGig.id}:${expedition.routeStep}`
+          for (const crewId of expedition.loadout?.crewIds ?? []) {
+            recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+          }
+        }
+
+        // Apply Finale stamina multiplier to member stamina
+        if (isFinaleGig && Array.isArray(band.members)) {
+          const finaleProfile = getExpeditionFinaleProfile(
+            expedition.finaleType
+          )
+          const staminaMultiplier = finaleProfile?.staminaDrainMultiplier ?? 1
+          if (staminaMultiplier > 1) {
+            const baseDrain = 15
+            const extraDrain = Math.round(baseDrain * (staminaMultiplier - 1))
+            if (extraDrain > 0) {
+              updateBand((prevBand: BandState) => {
+                if (!Array.isArray(prevBand.members)) return prevBand
+                const members = prevBand.members.map(member => {
+                  if (!member) return member
+                  const currentStamina = finiteNumberOr(member.stamina, 100)
+                  const maxStamina = finiteNumberOr(member.staminaMax, 100)
+                  return {
+                    ...member,
+                    stamina: Math.max(
+                      0,
+                      Math.min(maxStamina, currentStamina - extraDrain)
+                    )
+                  }
+                })
+                return { ...prevBand, members }
+              })
+            }
+          }
+        }
+      }
+
+      if (isFinaleGig && !bankrupt) {
+        completeExpedition(`gig:${currentGig?.id ?? 'unknown'}`)
+      }
+
       handleContinueSceneTransition({
         bankrupt,
         isFinaleGig,
@@ -181,7 +242,11 @@ export function useContinueHandler({
     totalDailyObligations,
     addQuest,
     applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition,
+    recordExpeditionObligationSignal,
     setlist,
+    expedition,
     band,
     t,
     isProcessingActionRef,

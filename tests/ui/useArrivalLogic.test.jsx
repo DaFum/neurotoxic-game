@@ -99,6 +99,55 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.changeScene.mock.calls.length).toBe(0)
   })
 
+  test('resolves a Ghost Route conversion as a special node, not the gig', () => {
+    // The Legendary converts an ordinary node into the Underground way out of
+    // an Authority crisis. Arrival used to route on the node's own class, so
+    // the escape played the very show it was an escape from.
+    const venue = { name: 'Club' }
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
+      band: { harmony: 50 },
+      // No `status` here: the conversion is read straight off the slice, and
+      // the run-scoped arrival bookkeeping this hook also does needs a whole
+      // command surface the shared fixture does not carry.
+      expedition: {
+        arrivedOverlay: {
+          nodeId: 'node_start',
+          subtype: 'UNDERGROUND_MARKET'
+        }
+      }
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(0)
+    expect(
+      mockGameState.triggerEvent.mock.calls.some(([kind]) => kind === 'special')
+    ).toBe(true)
+  })
+
+  test('leaves the node alone when the record names another node', () => {
+    const venue = { name: 'Club' }
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
+      band: { harmony: 50 },
+      expedition: {
+        arrivedOverlay: {
+          nodeId: 'node_elsewhere',
+          subtype: 'UNDERGROUND_MARKET'
+        }
+      }
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+  })
+
   test('prevents GIG if harmony <= 1', () => {
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {

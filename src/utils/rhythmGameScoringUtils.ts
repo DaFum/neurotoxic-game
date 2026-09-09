@@ -2,6 +2,7 @@
  * Pure functions for rhythm game scoring logic.
  */
 import { logger } from './logger'
+import { finiteNumberOr } from './finiteNumber'
 
 /**
  * Stable lane indices used by rhythm input, note scheduling, and scoring.
@@ -126,9 +127,14 @@ export const calculateFinalScore = (
   toxicModeActive: boolean,
   hasPerfektionist: boolean,
   currentAccuracy: number,
-  isCorruptionBurstActive: boolean = false
+  isCorruptionBurstActive: boolean = false,
+  comboBonusMultiplier: number = 1
 ): number => {
-  let finalScore = basePoints + currentCombo * CONSTANTS.COMBO_POINT_BONUS
+  let finalScore =
+    basePoints +
+    currentCombo *
+      CONSTANTS.COMBO_POINT_BONUS *
+      Math.max(0, finiteNumberOr(comboBonusMultiplier, 1))
 
   if (isCorruptionBurstActive) {
     finalScore *= CONSTANTS.CORRUPTION_BURST_SCORE_MULTIPLIER
@@ -220,13 +226,17 @@ export const calculateHitCorruption = (
  */
 export const calculateHitOverload = (
   currentOverload: number,
-  isToxicModeActive: boolean
+  isToxicModeActive: boolean,
+  gainMultiplier = 1
 ): { nextOverload: number; didToxicModeTrigger: boolean } => {
   if (isToxicModeActive) {
     return { nextOverload: currentOverload, didToxicModeTrigger: false }
   }
 
-  const gain = 4
+  // Degraded stage gear makes the streak meter refill slower, which is what
+  // "combo recovery" costs the player in this engine: reaching Toxic Mode
+  // after a broken streak takes more clean hits.
+  const gain = 4 * Math.max(0, finiteNumberOr(gainMultiplier, 1))
   const nextOverload = currentOverload + gain
 
   if (nextOverload >= CONSTANTS.MAX_OVERLOAD) {
@@ -243,12 +253,16 @@ export const calculateActiveCrowdDecay = (
   baseCrowdDecay: number,
   crowdDecayModifier: number | undefined,
   rivalPenaltyActive: boolean,
-  rivalPenaltyMultiplier: number
+  rivalPenaltyMultiplier: number,
+  conditionMissMultiplier = 1
 ): number => {
   let activeCrowdDecay = baseCrowdDecay
   if (crowdDecayModifier !== undefined) {
     activeCrowdDecay *= crowdDecayModifier
   }
+  // Worn instruments make a miss cost more, composed here with the other decay
+  // sources rather than applied at a second site.
+  activeCrowdDecay *= Math.max(0, finiteNumberOr(conditionMissMultiplier, 1))
   return rivalPenaltyActive
     ? activeCrowdDecay * rivalPenaltyMultiplier
     : activeCrowdDecay

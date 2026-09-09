@@ -23,6 +23,17 @@ type UnlockCache = {
   /** In-memory cache for O(1) duplicate checks. */
   unlocks: Set<string> | null
   lastStorageSnapshot: string | null
+  /**
+   * Marker ids this session retained in the fallback store rather than in
+   * persistent storage.
+   *
+   * @remarks
+   * `readUnlockMarkers` enumerates buffered keys, so a session-only marker is
+   * indistinguishable from a durable one by presence alone. A caller that
+   * requires crash safety needs that distinction, so the refused writes are
+   * remembered here and cleared when a later write for the same id lands.
+   */
+  sessionOnly: Set<string>
 }
 
 /**
@@ -39,7 +50,7 @@ let unlockCaches = new WeakMap<IStorageAdapter, UnlockCache>()
 const getCache = (adapter: IStorageAdapter): UnlockCache => {
   let cache = unlockCaches.get(adapter)
   if (!cache) {
-    cache = { unlocks: null, lastStorageSnapshot: null }
+    cache = { unlocks: null, lastStorageSnapshot: null, sessionOnly: new Set() }
     unlockCaches.set(adapter, cache)
   }
   return cache
@@ -146,25 +157,48 @@ export const getUnlocks = (
 }
 
 /**
- * Adds a new unlock to storage if not already present.
- * @param unlockId - The ID of the unlock to add.
- * @returns True if the unlock was added (wasn't already present).
+ * How far a marker write actually reached.
+ *
+ * @remarks
+ * `session_only` is a retained unlock that will not survive the process: the
+ * adapter refused the write and the guard buffered it. Most callers can treat
+ * that as success, because the marker stays readable for the session. A caller
+ * that grants something irreversible against the marker cannot.
  */
-export const addUnlock = (
+export type UnlockMarkerPersistence = 'persisted' | 'session_only' | 'failed'
+
+type UnlockMarkerWrite = {
+  /** Whether this call put a new id into the unlock set. */
+  added: boolean
+  persistence: UnlockMarkerPersistence
+}
+
+const writeUnlockMarker = (
   unlockId: string,
-  adapter: IStorageAdapter = defaultStorageAdapter
-): boolean => {
-  if (typeof unlockId !== 'string') return false
+  adapter: IStorageAdapter
+): UnlockMarkerWrite => {
+  if (typeof unlockId !== 'string')
+    return { added: false, persistence: 'failed' }
 
   // Refresh cache from storage. loadUnlocks recreates the Set only when storage changed.
   const currentUnlocks = loadUnlocks(adapter)
-  if (currentUnlocks === UNLOCK_LOAD_FAILED) return false
+  if (currentUnlocks === UNLOCK_LOAD_FAILED)
+    return { added: false, persistence: 'failed' }
   const cache = unlockCaches.get(adapter)?.unlocks
 
-  if (!cache) return false
+  if (!cache) return { added: false, persistence: 'failed' }
 
-  // Prevent duplicates in O(1) time
-  if (cache.has(unlockId)) return false
+  const sessionOnly = getCache(adapter).sessionOnly
+  // Prevent duplicates in O(1) time - but only for a marker that is actually
+  // durable. An id whose write was refused is present in the set and still
+  // lost on the next load, so reporting the old verdict would make every
+  // retry return `session_only` for the rest of the session: the caller that
+  // offers the retry could never take it. Storage may have recovered since,
+  // and the only way to find out is to write again.
+  const known = cache.has(unlockId)
+  if (known && !sessionOnly.has(unlockId)) {
+    return { added: false, persistence: 'persisted' }
+  }
 
   // `writeStorageItem` returns false when the marker was kept in the session
   // fallback rather than persisted — the unlock is still retained for this
@@ -181,14 +215,20 @@ export const addUnlock = (
     null
   )
 
-  if (markerWrite === null) return false
+  if (markerWrite === null) return { added: false, persistence: 'failed' }
 
-  cache.add(unlockId)
-  currentUnlocks.push(unlockId)
+  if (!known) {
+    cache.add(unlockId)
+    currentUnlocks.push(unlockId)
+  }
+  if (markerWrite) sessionOnly.delete(unlockId)
+  else sessionOnly.add(unlockId)
 
   // Keep the legacy aggregate for existing saves and callers. The per-unlock
   // marker is authoritative for cross-tab safety: distinct marker keys cannot
   // overwrite each other when two tabs unlock different items concurrently.
+  // Rewritten on a retry too: the aggregate write is refused by the same
+  // storage that refused the marker.
   safeStorageOperation<boolean>(
     'saveUnlocks',
     () =>
@@ -197,8 +237,43 @@ export const addUnlock = (
   )
   getCache(adapter).lastStorageSnapshot = null
 
-  return true
+  return {
+    // A retry of an id the set already holds adds nothing, however far the
+    // write reached.
+    added: !known,
+    persistence: markerWrite ? 'persisted' : 'session_only'
+  }
 }
+
+/**
+ * Adds an unlock and reports whether its marker is durable.
+ *
+ * @param unlockId - The ID of the unlock to add.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns Whether the marker reached persistent storage, was retained for the
+ * session only, or was lost.
+ *
+ * @remarks
+ * Use this instead of {@link addUnlock} when the caller grants something it
+ * cannot take back, and so must not act on a marker that a reload would lose.
+ * An id already in the set reports `persisted` only if its own write landed;
+ * one that is present but session-only is written again, so a caller offering
+ * a retry can actually clear the barrier once storage recovers.
+ */
+export const addUnlockWithPersistence = (
+  unlockId: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): UnlockMarkerPersistence => writeUnlockMarker(unlockId, adapter).persistence
+
+/**
+ * Adds a new unlock to storage if not already present.
+ * @param unlockId - The ID of the unlock to add.
+ * @returns True if the unlock was added (wasn't already present).
+ */
+export const addUnlock = (
+  unlockId: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): boolean => writeUnlockMarker(unlockId, adapter).added
 
 /**
  * Test-only hooks for resetting unlock-manager module cache.

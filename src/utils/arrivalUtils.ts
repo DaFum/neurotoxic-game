@@ -16,6 +16,7 @@ import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'
 import { clampUnit } from './numberUtils'
 import { VENUES_BY_ID } from '../data/venues'
+import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
 /**
@@ -63,12 +64,26 @@ export type ArrivalResult = {
  * Calculates new harmony value if band has harmony regen active.
  *
  * @param band - The current band state.
+ * @param isExpeditionRunActive - True while an Expedition run is active.
  * @returns The new harmony value, or null if regen is not applicable.
+ *
+ * @remarks
+ * The regen comes from the Mobile Studio, which is `between_tours_only`: the
+ * band keeps the van, but the comfort does not follow it onto the road. The
+ * flag is persisted on the band rather than carried as an `hqUpgrades` id, so
+ * the policy has to be applied at each consumer instead of once at the id.
  */
 export const processHarmonyRegen = (
-  band: Pick<BandState, 'harmony' | 'harmonyRegenTravel'> | null | undefined
+  band: Pick<BandState, 'harmony' | 'harmonyRegenTravel'> | null | undefined,
+  isExpeditionRunActive: boolean = false
 ): number | null => {
-  if (band?.harmonyRegenTravel) {
+  if (
+    band?.harmonyRegenTravel &&
+    isExpeditionLegacyHqEffectActive(
+      isExpeditionRunActive,
+      'hq_van_sound_system'
+    )
+  ) {
     return clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)
   }
   return null

@@ -1,4 +1,5 @@
 import type { EventDelta } from './events'
+import type { ExpeditionRepairIntent, HiddenDefectTrigger } from './expedition'
 
 /**
  * Payload produced when the tourbus travel minigame finishes.
@@ -163,4 +164,316 @@ export interface SpawnRivalBandPayload {
  */
 export interface MoveRivalBandPayload {
   rivalBand: RivalBandState
+}
+
+/**
+ * Payload claiming a fresh Expedition run identity and root run seed.
+ *
+ * @remarks
+ * `runSeed` is the next value of the canonical root `GameState.runSeed`; the
+ * Expedition slice never stores a seed of its own.
+ */
+export interface PrepareExpeditionRunPayload {
+  prepId: string
+  runSeed: number
+}
+
+/**
+ * Payload staging deterministic Sponsor offers for a prepared run.
+ */
+export interface PrepareExpeditionSponsorOffersPayload {
+  expectedRunSeed: number
+  regionId?: string
+  tourTypeId?: string
+  starterPerkId?: string | null
+}
+
+export interface ExpeditionInjurySourcePayload {
+  targetId: string
+  sourceId: string
+  expectedRouteStep: number
+}
+export interface SettleExpeditionCrewCareerPayload {
+  runId: string
+}
+export interface SettleExpeditionCareerResultPayload {
+  runId: string
+}
+/**
+ * Intent to raise one HQ facility by exactly one level.
+ *
+ * @remarks
+ * `expectedLevel` is the level the caller believes the facility is at now, so
+ * a replayed or stale dispatch is refused instead of buying a second level.
+ * The cost is never carried: the reducer derives it from the registry.
+ */
+export interface PurchaseExpeditionHqFacilityPayload {
+  facilityId: string
+  expectedLevel: number
+}
+/**
+ * Names the unlock set a journal step applies to.
+ *
+ * @remarks
+ * The same shape for all three steps. No cost is carried: begin derives it
+ * from the registry, and complete and rollback read it back off the journal
+ * entry, so a caller cannot choose what a purchase took or refunds.
+ */
+export interface ExpeditionUnlockPurchasePayload {
+  setId: string
+}
+/**
+ * Names the finalized run whose settlement proves Ascension was earned.
+ *
+ * @remarks
+ * Carries no boolean. Every eligibility term - rank, unlock-set count and the
+ * meta-unlock quest - is recomputed in the reducer from the Career, so a
+ * caller can point at the evidence but never assert the conclusion.
+ */
+export interface UnlockExpeditionAscensionPayload {
+  runId: string
+}
+
+/**
+ * Claims the Legendary one finalized Finale earned.
+ *
+ * @remarks
+ * `expectedCapabilityId` is a stale guard, not a request: the reducer
+ * recomputes the candidate from the finalized outcome and the Career's rank
+ * and holdings, and refuses when the two disagree. That is what stops a caller
+ * from naming the Legendary it would rather have.
+ */
+export interface CommitExpeditionLegendaryRewardPayload {
+  runId: string
+  expectedCapabilityId: string
+}
+
+/**
+ * Records one thing the run met, in the Archive category it belongs to.
+ *
+ * @remarks
+ * `sourceId` is the proof, not a label: the reducer checks it against what the
+ * run is actually observing, so an id that is real but was never encountered
+ * is refused. Nothing the Archive holds grants anything.
+ */
+export interface RecordExpeditionArchiveDiscoveryPayload {
+  category: string
+  id: string
+  sourceId: string
+}
+
+/**
+ * Generates the Between-Tour decisions one finalized run leaves behind.
+ *
+ * @remarks
+ * Names the run only. The decision set is derived in the reducer from state
+ * both settlements have already advanced, and a run that already has a stored
+ * set is refused, so this cannot ask the same Tour twice.
+ */
+export interface GenerateExpeditionBetweenTourDecisionsPayload {
+  runId: string
+}
+
+/**
+ * Answers one stored Between-Tour decision.
+ *
+ * @remarks
+ * Carries no amounts and no target. Every value is derived from the stored
+ * decision plus the registry, so a caller can pick an option but never what it
+ * costs or who it acts on.
+ */
+export interface ResolveExpeditionBetweenTourDecisionPayload {
+  runId: string
+  decisionId: string
+  optionId: string
+}
+export interface AcquireExpeditionCrewSignaturePayload {
+  crewId: string
+  expectedTraitId: string
+  sourceType: 'career_development'
+  sourceId: string
+}
+export interface CreateContactIntelGrantPayload {
+  eventId: string
+  optionId: string
+  nodeId: string
+  expectedRouteStep: number
+}
+export interface RecordExpeditionObligationSignalPayload {
+  signalType: 'gig' | 'arrival' | 'rest' | 'heat' | 'social_post' | 'finale'
+  sourceId: string | null
+  expectedRouteStep: number
+}
+export interface DoubleDownExpeditionObligationPayload {
+  obligationId: string
+  offerId: string
+  expectedRouteStep: number
+}
+export interface OfferExpeditionDraftPayload {
+  sourceType: import('./expedition').ExpeditionRunDraftOffer['sourceType']
+  sourceKey: string
+  expectedRouteStep: number
+}
+export interface SelectExpeditionDraftPayload {
+  traitId: import('./expedition').ExpeditionRunDraftTraitId
+  expectedRouteStep: number
+}
+export interface ResolveExpeditionSocialResultPayload {
+  resultId: import('./expedition').ExpeditionSocialResultId
+  postOptionId: string
+  expectedRouteStep: number
+}
+export interface CreateSocialIntelGrantPayload {
+  postOptionId: string
+  resultId: import('./expedition').ExpeditionSocialResultId
+  nodeId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload starting the prepared Expedition run as one transaction.
+ *
+ * @remarks
+ * `expectedRunSeed` is a stale guard against the canonical root
+ * `GameState.runSeed`, and `loadout` is a *candidate*: the reducer revalidates
+ * it against the route rebuilt from that seed and stores only the normalized
+ * result.
+ */
+export interface StartExpeditionPayload {
+  prepId: string
+  expectedRunSeed: number
+  loadout: unknown
+}
+
+/**
+ * Payload advancing the run one node deeper along the prepared route.
+ */
+export interface AdvanceExpeditionRoutePayload {
+  nodeId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload raising one node's Fog-of-War intel by exactly one level.
+ */
+export interface RevealExpeditionNodeIntelPayload {
+  nodeId: string
+  source: import('./expedition').ExpeditionIntelSource
+  expectedLevel: 0 | 1
+  expectedRouteStep: number
+  grantId?: string
+}
+
+/**
+ * Payload banking one source-proven rare reward in the run ledger.
+ */
+export interface AddExpeditionRewardPayload {
+  expectedRewardId: string
+  sourceType: import('./expedition').ExpeditionRewardSourceType
+  sourceId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload extracting voluntarily at a legal extraction window.
+ */
+export interface ExtractExpeditionPayload {
+  expectedRouteStep: number
+  explicitRareRewardIds: string[]
+}
+
+/**
+ * Payload completing the run after a successful Finale.
+ */
+export interface CompleteExpeditionPayload {
+  finaleResultId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload accepting the run's current source-derived failure.
+ */
+export interface AcceptExpeditionFailurePayload {
+  pendingFailureId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload returning a finalized run to `idle`.
+ */
+export interface PrepareNextExpeditionPayload {
+  runId: string
+}
+
+/**
+ * Payload paying for a recovery option on the run's current crisis.
+ */
+export interface ResolveExpeditionCrisisPayload {
+  pendingFailureId: string
+  choice: 'refuel' | 'tow' | 'insurance_claim'
+  expectedRouteStep: number
+}
+
+/**
+ * Payload executing a repair on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent
+
+/**
+ * Payload revealing a hidden equipment defect during an active Expedition run.
+ */
+export interface RevealExpeditionDefectPayload {
+  defectId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload triggering an equipment defect during an active Expedition run.
+ */
+export interface TriggerExpeditionDefectPayload {
+  defectId: string
+  trigger: HiddenDefectTrigger
+  expectedRouteStep: number
+}
+
+/**
+ * Payload resolving an equipment defect during an active Expedition run.
+ */
+export interface ResolveExpeditionDefectPayload {
+  defectId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload executing an inspection on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionInspectionPayload =
+  import('./expedition').ExpeditionInspectionIntent
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export type ClaimExpeditionInsurancePayload =
+  import('./expedition').ExpeditionInsuranceClaimIntent
+
+/**
+ * Payload accepting an explicit technical failure on equipment.
+ */
+export interface AcceptExpeditionTechnicalFailurePayload {
+  expectedRouteStep: number
+}
+
+/**
+ * Payload applying the Expedition results a resolved event requested.
+ *
+ * @remarks
+ * Ids only, plus the usual stale guard. The reducer re-filters the ids and
+ * looks every effect up in the Expedition's own registry, so this payload can
+ * request an outcome but never carry the numbers for it.
+ */
+export interface ApplyExpeditionEventDeltaPayload {
+  resultIds: import('./expedition').ExpeditionEventResultId[]
+  expectedRouteStep: number
+  sourceEventId?: string
+  sourceOptionId?: string
 }

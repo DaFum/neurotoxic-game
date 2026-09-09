@@ -6,6 +6,13 @@ import { useAudioEngine } from '../context/AudioEngineContext'
 import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { bandHasTrait } from '../utils/traitUtils'
+import {
+  applyExpeditionGearPerformanceDelta,
+  getExpeditionCommittedGearProfile
+} from '../domain/expedition/equipment'
+import { getExpeditionPerformanceProfile } from '../domain/expedition/injuries'
+import { getExpeditionCrowdHypeProfile } from '../domain/expedition/crowdHype'
+import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -52,6 +59,32 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const gigModifiers = useGameSelector(state => state.gigModifiers)
   const currentGig = useGameSelector(state => state.currentGig)
   const rivalBand = useGameSelector(state => state.rivalBand)
+  // Only an *active* Expedition neutralizes unselected owned gear. Career play
+  // keeps the existing global purchase behavior, so this stays null outside a
+  // run and the scoring path below is unchanged there.
+  const expeditionGearDelta = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionCommittedGearProfile(state).performanceDelta
+      : null
+  )
+  // Technical Condition only exists inside a run, so this stays null in Career
+  // play and the rhythm owners fall back to their neutral multipliers.
+  const conditionProfile = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionPerformanceProfile(state)
+      : null
+  )
+  const crowdHypeComboMultiplier = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionCrowdHypeProfile(state.expedition.pressure.crowdHype)
+          .comboBonusMultiplier
+      : 1
+  )
+  const finaleProfile = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionFinaleProfile(state.expedition.finaleType)
+      : null
+  )
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
 
   // 1. Core State (React + Ref)
@@ -116,13 +149,25 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const baseTempo = finiteNumberOr(band?.tempo, 0)
     const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
 
-    return {
+    const resolved = {
       ...band?.performance,
       tempo: finalTempo,
       critChance: finiteNumberOr(band?.crit, 0),
-      crowdControl: finiteNumberOr(band?.crowdControl, 0)
+      crowdControl: finiteNumberOr(band?.crowdControl, 0),
+      comboBonusMultiplier:
+        crowdHypeComboMultiplier * (finaleProfile?.comboBonusMultiplier ?? 1),
+      timingWindowMultiplier: finaleProfile?.timingWindowMultiplier ?? 1,
+      missPenaltyMultiplier: finaleProfile?.missPenaltyMultiplier ?? 1,
+      staminaDrainMultiplier: finaleProfile?.staminaDrainMultiplier ?? 1
     }
-  }, [band])
+
+    // During an Expedition only the committed gear contributes: the delta
+    // subtracts every owned catalog contribution and re-adds the selected ones,
+    // leaving contraband and trait effects intact.
+    return expeditionGearDelta
+      ? applyExpeditionGearPerformanceDelta(resolved, expeditionGearDelta)
+      : resolved
+  }, [band, crowdHypeComboMultiplier, expeditionGearDelta, finaleProfile])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
@@ -143,7 +188,8 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       player,
       setlist,
       gigModifiers,
-      currentGig
+      currentGig,
+      conditionProfile
     },
     contextActions: { addToast, setLastGigStats, endGig, t }
   })

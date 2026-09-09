@@ -1,5 +1,6 @@
 import {
   clamp0to100,
+  isFiniteNumber,
   finiteNumberOr,
   toBoundedNonNegativeInteger
 } from '../gameState'
@@ -21,9 +22,7 @@ export const calculateTravelMinigameResult = (
   // 50% damage scaling: 100 damage -> 50 condition loss. The minigame deals
   // at most 100 damage, so the cap enforces the documented max of 50
   // condition loss against oversized direct-dispatch payloads.
-  const safeDamageTaken = Number.isFinite(Number(damageTaken))
-    ? Number(damageTaken)
-    : 0
+  const safeDamageTaken = isFiniteNumber(damageTaken) ? damageTaken : 0
   const conditionLoss = Math.floor(
     Math.min(100, Math.max(0, safeDamageTaken)) / 2
   )
@@ -88,14 +87,8 @@ export const calculateAmpCalibrationResult = (
   hijacksOverridden: number = 0,
   feedbackLoopsDampened: number = 0
 ) => {
-  let numScore = Number(score)
-  if (!Number.isFinite(numScore)) {
-    numScore = 0
-  }
-  let numResonance = Number(voidResonance)
-  if (!Number.isFinite(numResonance)) {
-    numResonance = 0
-  }
+  const numScore = isFiniteNumber(score) ? score : 0
+  const numResonance = isFiniteNumber(voidResonance) ? voidResonance : 0
   const safeScore = clamp0to100(numScore)
   const success = safeScore >= 50
   const safeResonance = clamp0to100(numResonance)

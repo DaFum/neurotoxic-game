@@ -15,9 +15,6 @@ concurrency:
   group: 'pages'
   cancel-in-progress: false
 
-env:
-  PNPM_VERSION: '11.18.0'
-
 jobs:
   deploy:
     environment:
@@ -29,17 +26,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22.13.0
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          install-args: '--frozen-lockfile'
       - name: Build
         run: pnpm run build
       - name: Setup Pages

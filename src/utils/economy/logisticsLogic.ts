@@ -1,6 +1,6 @@
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
-import { clamp0to100, finiteNumberOr } from '../gameState'
+import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../gameState'
 import { bandHasTrait } from '../traitUtils'
 import type { PlayerState, BandState, SocialState } from '../../types'
 
@@ -204,7 +204,7 @@ export const calculateRepairCost = (currentCondition: number) => {
 /**
  * Decides whether cash and daily obligations should trigger bankruptcy.
  *
- * @param newMoney - Resulting cash balance; coerced to Number and must
+ * @param newMoney - Resulting cash balance; must be a finite number
  *   be finite (a TypeError is thrown otherwise). Negative returns immediate
  *   bankruptcy, positive returns never bankrupt.
  * @param netIncome - Latest net income; defaults to
@@ -212,17 +212,17 @@ export const calculateRepairCost = (currentCondition: number) => {
  * @param totalDailyObligations - Daily obligations folded into the
  *   break-even check when the balance is exactly 0. Defaults to `0`.
  * @returns True when bankruptcy should trigger.
- * @throws TypeError when `newMoney` cannot be coerced to a finite number.
+ * @throws TypeError when `newMoney` is not a finite number.
  */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,
   netIncome: number | null | undefined,
   totalDailyObligations: number = 0
 ) => {
-  const val = Number(newMoney)
-  if (!Number.isFinite(val)) {
+  if (!isFiniteNumber(newMoney)) {
     throw new TypeError('newMoney must be a finite number')
   }
+  const val = newMoney
 
   // If player has money left, they are not bankrupt.
   if (val > 0) return false

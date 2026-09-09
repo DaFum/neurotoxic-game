@@ -41,6 +41,9 @@ export type QuestProgressSource =
   | 'venue_unblacklisted'
   | 'region_reputation_changed'
   | 'story_flag_added'
+  | 'expedition_node_resolved'
+  | 'expedition_rival_outcome'
+  | 'expedition_finale_completed'
 
 /**
  * Canonical quest event identifiers emitted by gameplay systems.

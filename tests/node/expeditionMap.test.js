@@ -1,0 +1,438 @@
+/**
+ * @fileoverview The single deterministic Expedition route builder.
+ *
+ * Preview/active parity is the invariant that makes route choice a commitment:
+ * if the Tour Prep preview and the played route could diverge, every extraction
+ * decision the player made was based on a route they never actually walked.
+ */
+
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import {
+  FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP,
+  buildExpeditionMap,
+  getExpeditionNodePublicFacts,
+  hashExpeditionRoute,
+  isExpeditionFinaleReachable
+} from '../../src/domain/expedition/map'
+import {
+  BASE_EXPEDITION_REGION_ID,
+  BASE_EXPEDITION_TOUR_TYPE_ID,
+  MAX_EXPEDITION_MEANINGFUL_NODES,
+  MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
+  MIN_EXPEDITION_MEANINGFUL_NODES,
+  NEUTRAL_EXPEDITION_ROUTE_PROFILE
+} from '../../src/domain/expedition/defaults'
+
+const build = (seed, profile = NEUTRAL_EXPEDITION_ROUTE_PROFILE) =>
+  buildExpeditionMap(
+    seed,
+    BASE_EXPEDITION_TOUR_TYPE_ID,
+    BASE_EXPEDITION_REGION_ID,
+    profile
+  )
+
+const SEEDS = [0, 1, 7, 42, 1234, 99999, 0xffffffff]
+
+const routeDepth = map =>
+  Math.max(...Object.values(map.meta).map(entry => entry.routeStep))
+
+describe('route determinism and preview/active parity', () => {
+  it('produces an identical route for the same seed', () => {
+    for (const seed of SEEDS) {
+      const preview = build(seed)
+      const active = build(seed)
+      assert.equal(active.mapHash, preview.mapHash, `seed ${seed}`)
+      assert.deepEqual(active.nodeOrder, preview.nodeOrder)
+      assert.deepEqual(active.connections, preview.connections)
+      assert.deepEqual(active.meta, preview.meta)
+    }
+  })
+
+  it('produces different routes for different seeds', () => {
+    const hashes = new Set(SEEDS.map(seed => build(seed).mapHash))
+    assert.ok(hashes.size > 1, 'the seed must actually shape the route')
+  })
+
+  it('changes the structural identity when Tour or Region changes', () => {
+    const base = build(4242)
+    const otherTour = buildExpeditionMap(
+      4242,
+      'blitz_tour',
+      BASE_EXPEDITION_REGION_ID,
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    const otherRegion = buildExpeditionMap(
+      4242,
+      BASE_EXPEDITION_TOUR_TYPE_ID,
+      'underground_network',
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    assert.notEqual(otherTour.mapHash, base.mapHash)
+    assert.notEqual(otherRegion.mapHash, base.mapHash)
+  })
+
+  it('echoes the root run seed without storing a second one', () => {
+    const map = build(4242)
+    assert.equal(map.runSeed, 4242)
+  })
+
+  it('normalizes a malformed seed rather than throwing', () => {
+    for (const seed of [Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5]) {
+      const map = build(seed)
+      assert.ok(Number.isInteger(map.runSeed))
+      assert.ok(map.runSeed >= 0)
+    }
+  })
+
+  it('hashes deterministically and distinguishes inputs', () => {
+    assert.equal(hashExpeditionRoute('a|b'), hashExpeditionRoute('a|b'))
+    assert.notEqual(hashExpeditionRoute('a|b'), hashExpeditionRoute('a|c'))
+    assert.match(hashExpeditionRoute('x'), /^[0-9a-f]{8}$/)
+  })
+})
+
+describe('standard route shape', () => {
+  it('walks 7-9 meaningful nodes on one playthrough', () => {
+    for (const seed of SEEDS) {
+      const depth = routeDepth(build(seed))
+      assert.ok(
+        depth >= MIN_EXPEDITION_MEANINGFUL_NODES &&
+          depth <= MAX_EXPEDITION_MEANINGFUL_NODES,
+        `seed ${seed} route depth ${depth} is outside the approved 7-9 corridor`
+      )
+    }
+  })
+
+  it('clamps a profile that asks for a route outside the corridor', () => {
+    // 6 is no longer clamped away: it is the shortest depth a Tour may
+    // explicitly declare, which is what lets the Blitz Tour actually be
+    // shorter instead of the registry claiming a length the route never has.
+    for (const requested of [0, 1, 10, 40, Number.NaN]) {
+      const depth = routeDepth(
+        build(11, {
+          ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+          meaningfulNodeCount: requested
+        })
+      )
+      // An *invalid* declaration falls back to the standard corridor, not to
+      // the shorter floor an explicit declaration may reach. Asserting the
+      // declared floor here would let a wrong 6-node fallback pass.
+      assert.ok(depth >= MIN_EXPEDITION_MEANINGFUL_NODES)
+      assert.ok(depth <= MAX_EXPEDITION_MEANINGFUL_NODES)
+    }
+    // Anything that declares nothing still lands in the standard corridor.
+    const neutralDepth = routeDepth(build(11, NEUTRAL_EXPEDITION_ROUTE_PROFILE))
+    assert.ok(neutralDepth >= MIN_EXPEDITION_MEANINGFUL_NODES)
+    assert.ok(neutralDepth <= MAX_EXPEDITION_MEANINGFUL_NODES)
+
+    // A declared six-step route is honoured exactly.
+    assert.equal(
+      routeDepth(
+        build(11, {
+          ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+          meaningfulNodeCount: MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+        })
+      ),
+      MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+    )
+  })
+
+  it('keeps the Finale reachable and unique', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      assert.ok(isExpeditionFinaleReachable(map), `seed ${seed}`)
+      const finales = Object.values(map.meta).filter(
+        entry => entry.nodeClass === 'FINALE'
+      )
+      assert.equal(finales.length, 1)
+      assert.equal(finales[0]?.nodeId, map.finaleNodeId)
+    }
+  })
+
+  it('starts from exactly one unlocked START node', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      const starts = Object.values(map.meta).filter(
+        entry => entry.nodeClass === 'START'
+      )
+      assert.equal(starts.length, 1)
+      assert.equal(map.nodes[map.startNodeId]?.status, 'unlocked')
+      assert.equal(map.meta[map.startNodeId]?.isMeaningful, false)
+    }
+  })
+
+  it('leaves no node unreachable from START', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      const inbound = new Set(map.connections.map(edge => edge.to))
+      for (const id of map.nodeOrder) {
+        if (id === map.startNodeId) continue
+        assert.ok(inbound.has(id), `seed ${seed}: ${id} has no inbound edge`)
+      }
+    }
+  })
+
+  it('offers a real route decision at most steps', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      const branchPoints = map.nodeOrder.filter(
+        id => map.connections.filter(edge => edge.from === id).length >= 2
+      )
+      assert.ok(
+        branchPoints.length >= 3,
+        `seed ${seed} only has ${branchPoints.length} branch points`
+      )
+    }
+  })
+
+  const specialSubtypes = map =>
+    new Set(
+      Object.values(map.meta)
+        .map(entry => entry.specialSubtype)
+        .filter(Boolean)
+    )
+
+  const routeOffers = (subtypes, kind) =>
+    kind === 'rival'
+      ? subtypes.has('RIVAL_ENCOUNTER')
+      : subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET')
+
+  /** Share of seeds whose route offers a category, as a percentage. */
+  const offerRate = (kind, profile, seeds = 400) => {
+    let hits = 0
+    for (let seed = 0; seed < seeds; seed++) {
+      if (routeOffers(specialSubtypes(build(seed, profile)), kind)) hits++
+    }
+    return (hits / seeds) * 100
+  }
+
+  it('offers Rival and Underground as weighted categories, not guarantees', () => {
+    // Deliberately not "every seed has both". A guaranteed node makes the
+    // Region/Tour multipliers placebos: if every route already carries one,
+    // no weight can make the category more frequent. A neutral route offers
+    // each often but not always.
+    const rival = offerRate('rival', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
+    const underground = offerRate(
+      'underground',
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    for (const [kind, rate] of [
+      ['rival', rival],
+      ['underground', underground]
+    ]) {
+      assert.ok(
+        rate > 25 && rate < 90,
+        `${kind} offered on ${rate.toFixed(0)}% of seeds is not a real weight`
+      )
+    }
+  })
+
+  it('lets the weight actually move the frequency', () => {
+    const heavier = offerRate('underground', {
+      ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+      undergroundWeight: 1.35
+    })
+    const baseline = offerRate('underground', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
+    assert.ok(
+      heavier > baseline,
+      `1.35x underground (${heavier.toFixed(0)}%) must beat baseline (${baseline.toFixed(0)}%)`
+    )
+    assert.equal(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 0
+      }),
+      0,
+      'a zero weight must take the category off the route entirely'
+    )
+  })
+
+  it('guarantees a Rival encounter on a forced-Rival profile', () => {
+    // The weighted roll can legitimately miss, so the guarantee is a
+    // deterministic post-pass rather than a rigged roll.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        forcedRival: true
+      }),
+      100
+    )
+    // Even with the roll disabled outright.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      }),
+      100
+    )
+  })
+
+  it('converts the runtime node, not just its metadata', () => {
+    // The post-pass promotes a node the roll did not pick, so it has to move
+    // both representations. Arrival reads `nodes[nodeId].type`, so a node left
+    // as `GIG` or `REST_STOP` would run its old content while the metadata
+    // promised a Rival - and a venue-bearing node would carry a venue the
+    // encounter has no use for.
+    for (const seed of SEEDS) {
+      const map = build(seed, {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      })
+      const rivalNodeIds = map.nodeOrder.filter(
+        nodeId => map.meta[nodeId]?.specialSubtype === 'RIVAL_ENCOUNTER'
+      )
+      assert.equal(rivalNodeIds.length, 1, `seed ${seed} has no forced Rival`)
+      const nodeId = rivalNodeIds[0]
+      assert.equal(map.nodes[nodeId].type, 'SPECIAL', `seed ${seed} node type`)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venue'), false)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venueId'), false)
+      // The metadata the conversion promised is still there, and the node
+      // keeps its own identity and place on the route.
+      assert.equal(map.meta[nodeId].nodeClass, 'SPECIAL')
+      assert.equal(map.nodes[nodeId].id, nodeId)
+      assert.ok(map.connections.some(edge => edge.to === nodeId))
+    }
+  })
+
+  it('does not lose an Underground node it rolled to a layer collision', () => {
+    // Regression: on a short route the Underground candidate collapses to a
+    // single value, so all eight retries can land on the Rival layer. A route
+    // that rolled Underground must still get it rather than silently dropping
+    // the node - the fallback is about not losing a rolled category, which is
+    // different from guaranteeing one.
+    assert.ok(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 3
+      }) === 100
+    )
+  })
+
+  it('omits both classes when the profile weights them to zero', () => {
+    const map = build(7, {
+      ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+      rivalWeight: 0,
+      undergroundWeight: 0
+    })
+    for (const entry of Object.values(map.meta)) {
+      assert.equal(entry.specialSubtype, null)
+    }
+  })
+
+  it('maps every node onto an existing overworld node type', () => {
+    const allowed = new Set([
+      'START',
+      'GIG',
+      'FESTIVAL',
+      'SUPPLY_STOP',
+      'REST_STOP',
+      'SPECIAL',
+      'FINALE'
+    ])
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      for (const node of Object.values(map.nodes)) {
+        assert.ok(allowed.has(node.type), `unexpected node type ${node.type}`)
+        assert.ok(Number.isFinite(node.x))
+        assert.ok(Number.isFinite(node.y))
+      }
+    }
+  })
+
+  it('attaches a real venue to every gig-hosting node', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      for (const entry of Object.values(map.meta)) {
+        const node = map.nodes[entry.nodeId]
+        const needsVenue = ['START', 'CLUB_GIG', 'FESTIVAL', 'FINALE'].includes(
+          entry.nodeClass
+        )
+        assert.equal(
+          Boolean(node?.venue),
+          needsVenue,
+          `${entry.nodeId} (${entry.nodeClass}) venue presence mismatch`
+        )
+      }
+    }
+  })
+})
+
+describe('extraction windows', () => {
+  it('offers no extraction before the recoverable opening steps', () => {
+    for (const seed of SEEDS) {
+      for (const entry of Object.values(build(seed).meta)) {
+        if (entry.routeStep < FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP) {
+          assert.equal(entry.isExtractionWindow, false)
+        }
+      }
+    }
+  })
+
+  it('never marks the Finale as an extraction window', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      assert.equal(map.meta[map.finaleNodeId]?.isExtractionWindow, false)
+    }
+  })
+
+  it('exposes at least one extraction window per route', () => {
+    for (const seed of SEEDS) {
+      const windows = Object.values(build(seed).meta).filter(
+        entry => entry.isExtractionWindow
+      )
+      assert.ok(windows.length > 0, `seed ${seed} has no extraction window`)
+    }
+  })
+})
+
+describe('hybrid fog projection', () => {
+  it('exposes only the always-visible facts', () => {
+    const map = build(4242)
+    const facts = getExpeditionNodePublicFacts(map, map.startNodeId)
+    assert.ok(facts)
+    assert.deepEqual(
+      Object.keys(facts).sort(),
+      [
+        'dangerTier',
+        'edges',
+        'isExtractionWindow',
+        'nodeClass',
+        'nodeId',
+        'rewardTier',
+        'routeStep',
+        'specialSubtype'
+      ].sort()
+    )
+    // The intel-gated block must not leak through the level-0 projection.
+    assert.equal(Object.hasOwn(facts, 'hidden'), false)
+  })
+
+  it('returns null for an unknown node', () => {
+    const map = build(1)
+    assert.equal(getExpeditionNodePublicFacts(map, 'nope'), null)
+    assert.equal(getExpeditionNodePublicFacts(map, '__proto__'), null)
+  })
+
+  it('keeps every hidden detail deterministic and finite', () => {
+    for (const seed of SEEDS) {
+      for (const entry of Object.values(build(seed).meta)) {
+        assert.ok(Number.isFinite(entry.hidden.exactPayout))
+        assert.ok(entry.hidden.exactPayout >= 0)
+        assert.ok(Number.isFinite(entry.hidden.exactWearCost))
+        assert.ok(entry.hidden.authorityRisk >= 0)
+        assert.ok(entry.hidden.authorityRisk <= 1)
+      }
+    }
+  })
+
+  it('gives the Finale the largest reward band on its route', () => {
+    for (const seed of SEEDS) {
+      const map = build(seed)
+      const finale = map.meta[map.finaleNodeId]
+      assert.equal(finale?.rewardTier, 'high')
+    }
+  })
+})

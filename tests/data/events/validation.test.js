@@ -7,6 +7,11 @@ import assert from 'node:assert'
 // behaviour this test asserts.
 vi.mock('../../../src/data/events/quests', () => ({ QUEST_EVENTS: [] }))
 
+// Same reason: the Pressure Director's events are `category: 'transport'` too.
+vi.mock('../../../src/data/events/expeditionPressure', () => ({
+  EXPEDITION_PRESSURE_EVENTS_DB: []
+}))
+
 // Mock the transport events module
 vi.mock('../../../src/data/events/transport', () => ({
   TRANSPORT_EVENTS: [

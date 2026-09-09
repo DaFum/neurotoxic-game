@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, test, beforeEach, afterEach } from 'node:test'
 
 import {
   getSafeStorageItem,
@@ -8,6 +8,20 @@ import {
 } from '../../src/utils/storage'
 
 describe('storage operation wrappers', () => {
+  let origConsoleWarn
+  let origConsoleError
+
+  beforeEach(() => {
+    origConsoleWarn = console.warn
+    origConsoleError = console.error
+    console.warn = () => {}
+    console.error = () => {}
+  })
+
+  afterEach(() => {
+    console.warn = origConsoleWarn
+    console.error = origConsoleError
+  })
   test('safe item helpers catch a throwing localStorage property getter', () => {
     const originalWindowDescriptor = Object.getOwnPropertyDescriptor(
       globalThis,

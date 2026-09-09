@@ -5,18 +5,14 @@ import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
-import {
-  getAcceptDealMoneyUpdate,
-  getAcceptDealBandUpdateFactory,
-  getAcceptDealSocialUpdateFactory
-} from '../../../utils/postGig'
+import { resolveBrandDealAcceptance } from '../../../domain/expedition/sponsors'
 import { getTranslatedBrandDealDisplay } from '../../../utils/brandDealI18n'
-import { buildAcceptDealQuestEvents } from './dealHandlerUtils'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useDealHandlers}: player/social state, the processing guard, translator, and dispatchers. */
 interface UseDealHandlersProps {
   player: GameState['player']
+  band: GameState['band']
   social: GameState['social']
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
@@ -32,6 +28,7 @@ interface UseDealHandlersProps {
  */
 export function useDealHandlers({
   player,
+  band,
   social,
   isProcessingActionRef,
   setIsProcessingAction,
@@ -52,28 +49,21 @@ export function useDealHandlers({
       isProcessingActionRef.current = true
       setIsProcessingAction(true)
       try {
-        const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({
-          deal,
-          player
-        })
+        const resolved = resolveBrandDealAcceptance(
+          { player, band, social },
+          deal
+        )
+        if (!resolved) throw new Error('Brand deal is no longer acceptable')
+        const { appliedMoneyDelta } = resolved
 
         if (appliedMoneyDelta !== 0) {
-          updatePlayer({ money: nextMoney })
+          updatePlayer({ money: resolved.nextPlayer.money })
         }
 
-        if (deal.offer.item) {
-          const bandUpdateFactory = getAcceptDealBandUpdateFactory(deal)
-          updateBand(bandUpdateFactory)
-        }
+        if (deal.offer.item) updateBand(resolved.bandUpdate)
+        updateSocial(resolved.socialUpdate)
 
-        const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
-        updateSocial(socialUpdateFactory)
-
-        for (const questEvent of buildAcceptDealQuestEvents({
-          deal,
-          brandReputation: social.brandReputation,
-          appliedMoneyDelta
-        })) {
+        for (const questEvent of resolved.questEvents) {
           applyQuestEvent(questEvent)
         }
 
@@ -112,7 +102,8 @@ export function useDealHandlers({
     },
     [
       player,
-      social.brandReputation,
+      band,
+      social,
       updatePlayer,
       updateBand,
       updateSocial,

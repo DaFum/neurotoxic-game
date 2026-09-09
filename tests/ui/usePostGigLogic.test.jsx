@@ -116,6 +116,8 @@ describe('usePostGigLogic', () => {
   const mockUnlockTrait = vi.fn()
   const mockAddQuest = vi.fn()
   const mockApplyQuestEvent = vi.fn()
+  const mockRecordExpeditionCrewStressSource = vi.fn()
+  const mockCompleteExpedition = vi.fn()
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -155,6 +157,7 @@ describe('usePostGigLogic', () => {
     assets: [],
     activeEvent: null,
     activeStoryFlags: [],
+    expedition: { status: 'idle', routeStep: 0, loadout: null },
     triggerEvent: mockTriggerEvent,
     updatePlayer: mockUpdatePlayer,
     updateBand: mockUpdateBand,
@@ -167,6 +170,8 @@ describe('usePostGigLogic', () => {
     setlist: [],
     addQuest: mockAddQuest,
     applyQuestEvent: mockApplyQuestEvent,
+    recordExpeditionCrewStressSource: mockRecordExpeditionCrewStressSource,
+    completeExpedition: mockCompleteExpedition,
     ...overrides
   })
 

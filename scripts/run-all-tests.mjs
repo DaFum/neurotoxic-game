@@ -4,7 +4,7 @@
  * Execution model (4-core baseline):
  *
  *   Phase A (parallel):
- *     test:node           — 161 node:test files, full worker allotment
+ *     test:node           — process-isolated node:test files, latency workers
  *     test:vitest:logic   — 26 node-env vitest files, minimal workers (5 s)
  *
  *   Phase B (sequential, after Phase A):
@@ -21,7 +21,10 @@
  */
 import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
-import { computeWorkerCount } from './utils/parallelism.mjs'
+import {
+  computeProcessWorkerCount,
+  computeWorkerCount
+} from './utils/parallelism.mjs'
 
 // ---------------------------------------------------------------------------
 // Worker allocation
@@ -44,10 +47,10 @@ const fullyParallel =
     (process.env.NODE_ALL_PARALLEL !== '0' &&
       totalWorkers >= highCoreParallelThreshold))
 
-// In the phase-split mode, the CPU-heavy node and UI suites each receive the
-// full machine budget because they run sequentially. In fully parallel mode,
-// split the available workers between them and reserve one for the small logic
-// suite; otherwise the default 18-core allocation would start 27 workers.
+// In phase-split mode, node:test gets a bounded oversubscription because every
+// file starts an isolated TSX process; extra workers hide process/import latency.
+// In fully parallel mode, split the available workers between the heavy suites
+// and reserve one for logic so the combined phases do not oversubscribe.
 const parallelSuiteBudget = Math.max(2, totalWorkers - logicWorkers)
 const uiWorkersDefault = fullyParallel
   ? Math.max(
@@ -57,7 +60,7 @@ const uiWorkersDefault = fullyParallel
   : Math.min(totalWorkers, vitestUiWorkerCap)
 const nodeWorkersDefault = fullyParallel
   ? Math.max(1, totalWorkers - logicWorkers - uiWorkersDefault)
-  : totalWorkers
+  : computeProcessWorkerCount(totalWorkers)
 
 const baseEnv = { ...process.env }
 if (!baseEnv.NODE_TEST_CONCURRENCY) {

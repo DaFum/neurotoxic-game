@@ -13,6 +13,12 @@ import {
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameState'
+import {
+  getExpeditionDayPolicy,
+  settleExpeditionDailyObligation,
+  type ExpeditionDayPolicy
+} from '../domain/expedition/loadout'
+import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { PlayerState, BandState, GameState, SocialState } from '../types'
 import {
   DEFAULT_BALANCE_TUNING,
@@ -35,8 +41,9 @@ const updatePlayerFinances = (
   nextBand: BandState,
   nextSocial: SocialState,
   rng: () => number,
-  tuning: Readonly<BalanceTuning>
-) => {
+  tuning: Readonly<BalanceTuning>,
+  expeditionPolicy: ExpeditionDayPolicy
+): number => {
   const obligations = calculateGuaranteedDailyCost(nextPlayer, nextBand, {
     youtube: 0
   })
@@ -53,6 +60,23 @@ const updatePlayerFinances = (
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {
     dailyCost -= Math.floor(finiteNumberOr(nextSocial.newsletter, 0) / 100) * 5
+  }
+
+  // Inside a run the same obligations apply, but they may only be paid from the
+  // Expedition-spendable slice. A shortfall carries forward as evidence rather
+  // than being taken out of the protected Career Cash, which is what lets the
+  // failure shell raise an attributable bankruptcy crisis.
+  if (expeditionPolicy.isActive) {
+    const settlement = settleExpeditionDailyObligation(
+      expeditionPolicy,
+      finiteNumberOr(nextPlayer.money, 0),
+      dailyCost
+    )
+    nextPlayer.money = clampPlayerMoney(settlement.nextMoney)
+    // The wealth-scaled surplus drain stays suspended for the whole run: run
+    // Cash is the resource the extraction decision is about, so an invisible
+    // tax on it would quietly reprice that decision.
+    return settlement.unpaidObligation
   }
 
   const nextMoney = clampPlayerMoney(
@@ -78,20 +102,30 @@ const updatePlayerFinances = (
       finiteNumberOr(nextPlayer.money, 0) - expense
     )
   }
+
+  return 0
 }
 
 const updateVanCondition = (
   nextPlayer: PlayerState,
-  controversySnapshot: number
+  controversySnapshot: number,
+  expeditionPolicy: ExpeditionDayPolicy
 ) => {
   // Flat daily van wear — applied every day tick regardless of distance
   // traveled (days mostly advance through travel, so this approximates
   // per-trip wear; it is intentionally not distance-scaled).
+  //
+  // Suspended for the whole of an active Expedition: there, vehicle wear is
+  // settled once per leg from the route's own declared cost
+  // (`resolveExpeditionTravelCost`), so keeping the flat tax would charge the
+  // same trip twice and make a Rest-in-Van day damage the van for nothing.
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
-    nextPlayer.van.condition = clampVanCondition(
-      finiteNumberOr(nextPlayer.van.condition, 100) - 2
-    )
+    if (!expeditionPolicy.isActive) {
+      nextPlayer.van.condition = clampVanCondition(
+        finiteNumberOr(nextPlayer.van.condition, 100) - 2
+      )
+    }
     // Increased breakdown chance when condition is low
     // Calculate base breakdown chance from upgrades every day to avoid compounding multipliers.
     const baseBreakdownChance = calcBaseBreakdownChance(
@@ -252,18 +286,26 @@ const updatePassiveEffectsAndMembers = (
   nextBand: BandState,
   nextSocial: SocialState,
   controversySnapshot: number,
-  rng: () => number
+  rng: () => number,
+  expeditionPolicy: ExpeditionDayPolicy
 ) => {
   // 4. Passive Effects
   const hqUpgrades = nextPlayer.hqUpgrades || []
   const hqUpgradesSet = new Set(hqUpgrades)
 
+  // The HQ comfort upgrades are `between_tours_only`: ownership survives, but
+  // their recovery does not follow the band onto the road, so a run cannot be
+  // sustained by furniture bought back home.
+  const isOwnedAndActive = (itemId: string) =>
+    hqUpgradesSet.has(itemId) &&
+    isExpeditionLegacyHqEffectActive(expeditionPolicy.isActive, itemId)
+
   // Coffee & Beer Fridge: Mood recovery
-  const hasCoffee = hqUpgradesSet.has('hq_room_coffee')
-  const hasBeerFridge = hqUpgradesSet.has('hq_room_cheap_beer_fridge')
+  const hasCoffee = isOwnedAndActive('hq_room_coffee')
+  const hasBeerFridge = isOwnedAndActive('hq_room_cheap_beer_fridge')
   // Sofa & Old Couch: Stamina recovery
-  const hasSofa = hqUpgradesSet.has('hq_room_sofa')
-  const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
+  const hasSofa = isOwnedAndActive('hq_room_sofa')
+  const hasOldCouch = isOwnedAndActive('hq_room_old_couch')
 
   const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
   const nextMembers = new Array(membersArray.length)
@@ -343,14 +385,24 @@ const updatePassiveEffectsAndMembers = (
 
   // Soundproofing: Harmony boost — wrap the addend so a stale undefined/NaN
   // harmony does not silently drop the bonus (matches the travel regen path).
-  if (hqUpgradesSet.has('hq_room_diy_soundproofing')) {
+  if (isOwnedAndActive('hq_room_diy_soundproofing')) {
     const nextHarmonySoundproofing = clampBandHarmony(
       finiteNumberOr(nextBand.harmony, 0) + 1
     )
     nextBand.harmony = nextHarmonySoundproofing
   }
 
-  if (nextBand.harmonyRegenTravel) {
+  // The Mobile Studio's effect is this persisted flag rather than an
+  // `hqUpgrades` id, so it needs the policy gate spelled out: it is
+  // `between_tours_only` like the rest of the comfort catalog, and an old save
+  // that owns it must not keep regenerating Harmony on the road.
+  if (
+    nextBand.harmonyRegenTravel &&
+    isExpeditionLegacyHqEffectActive(
+      expeditionPolicy.isActive,
+      'hq_van_sound_system'
+    )
+  ) {
     // increase harmony by 5 then clamp — matches the travel/arrival regen
     // (processHarmonyRegen in useArrivalLogic); wrap the addend so a
     // stale undefined/NaN harmony does not silently drop the bonus.
@@ -391,8 +443,16 @@ export const calculateDailyUpdates = (
   const controversySnapshot = finiteNumberOr(nextSocial?.controversyLevel, 0)
   const pendingFlags: Record<string, boolean> = {}
 
-  updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng, tuning)
-  updateVanCondition(nextPlayer, controversySnapshot)
+  const expeditionPolicy = getExpeditionDayPolicy(currentState)
+  const expeditionUnpaidObligation = updatePlayerFinances(
+    nextPlayer,
+    nextBand,
+    nextSocial,
+    rng,
+    tuning,
+    expeditionPolicy
+  )
+  updateVanCondition(nextPlayer, controversySnapshot, expeditionPolicy)
   updateBandHarmony(
     nextPlayer,
     nextBand,
@@ -407,13 +467,20 @@ export const calculateDailyUpdates = (
     nextBand,
     nextSocial,
     controversySnapshot,
-    rng
+    rng,
+    expeditionPolicy
   )
 
   return {
     player: nextPlayer,
     band: nextBand,
     social: nextSocial,
-    pendingFlags
+    pendingFlags,
+    /**
+     * Mandatory obligation the run could not pay this day. `0` outside a run
+     * and whenever the day was fully settled; the ADVANCE_DAY reducer records
+     * it on the Expedition slice as the bankruptcy crisis's evidence.
+     */
+    expeditionUnpaidObligation
   }
 }

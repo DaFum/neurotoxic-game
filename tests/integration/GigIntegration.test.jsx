@@ -172,6 +172,9 @@ vi.mock('../../src/context/GameState.tsx', async importOriginal => {
     currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
     band: { harmony: 50 },
     player: { currentNodeId: 'node1' },
+    // `expedition` is a required top-level GameState field; the rhythm hook
+    // reads it to decide whether committed gear neutralization applies.
+    expedition: { status: 'idle', loadout: null },
     gameMap: { nodes: { node1: { layer: 1 } } },
     setlist: [],
     settings: { volume: 50 },

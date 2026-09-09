@@ -64,6 +64,35 @@ import {
   handleBloodBankDonate
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
+import {
+  handleAcceptExpeditionFailure,
+  handleAcceptExpeditionTechnicalFailure,
+  handleApplyExpeditionEventDelta,
+  handleAddExpeditionReward,
+  handleAdvanceExpeditionRoute,
+  handleClaimExpeditionInsurance,
+  handleCompleteExpedition,
+  handleExecuteExpeditionInspection,
+  handleExecuteExpeditionRepair,
+  handleExtractExpedition,
+  handlePrepareExpeditionRun,
+  handlePrepareExpeditionSponsorOffers,
+  handlePrepareNextExpedition,
+  handleResolveExpeditionCrisis,
+  handleResolveExpeditionDefect,
+  handleRevealExpeditionDefect,
+  handleRevealExpeditionNodeIntel,
+  handleStartExpedition,
+  handleTriggerExpeditionDefect,
+  handleRecordExpeditionObligationSignal,
+  handleDoubleDownExpeditionObligation,
+  handleOfferExpeditionDraft,
+  handleSelectExpeditionDraft,
+  handleResolveExpeditionSocialResult,
+  handleCreateSocialIntelGrant
+} from './reducers/expeditionReducer'
+import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
+import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastAction } from './actionCreators'
 import { assetForeclosed } from './assetActionCreators'
@@ -81,6 +110,27 @@ import {
   handleSetPendingRiskEvent
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
+import {
+  handleAcquireExpeditionCrewSignature,
+  handleUnlockExpeditionAscension,
+  handleCommitExpeditionLegendaryReward,
+  handleRecordExpeditionArchiveDiscovery,
+  handleGenerateExpeditionBetweenTourDecisions,
+  handleResolveExpeditionBetweenTourDecision,
+  handleSettleExpeditionCrewCareer,
+  handleSettleExpeditionCareerResult,
+  handlePurchaseExpeditionHqFacility,
+  handleBeginExpeditionUnlockPurchase,
+  handleCompleteExpeditionUnlockPurchase,
+  handleRollbackExpeditionUnlockPurchase
+} from './reducers/careerReducer'
+import {
+  handleAdvanceExpeditionBandInjury,
+  handleAdvanceExpeditionCrewInjury,
+  handleCreateContactIntelGrant,
+  handleRecordExpeditionCrewStressSource,
+  handleRecordExpeditionRelationshipOutcome
+} from './reducers/crewReducer'
 import {
   handleSpawnRivalBand,
   handleMoveRivalBand,
@@ -200,7 +250,69 @@ const reducerMap: ReducerMap = {
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
   [ActionTypes.START_CROWDFUND_FAILED]: handleAssetFailedAction,
-  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed
+  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
+  [ActionTypes.PREPARE_EXPEDITION_RUN]: handlePrepareExpeditionRun,
+  [ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS]:
+    handlePrepareExpeditionSponsorOffers,
+  [ActionTypes.START_EXPEDITION]: handleStartExpedition,
+  [ActionTypes.ADVANCE_EXPEDITION_ROUTE]: handleAdvanceExpeditionRoute,
+  [ActionTypes.REVEAL_EXPEDITION_NODE_INTEL]: handleRevealExpeditionNodeIntel,
+  [ActionTypes.ADD_EXPEDITION_REWARD]: handleAddExpeditionReward,
+  [ActionTypes.EXTRACT_EXPEDITION]: handleExtractExpedition,
+  [ActionTypes.COMPLETE_EXPEDITION]: handleCompleteExpedition,
+  [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
+  [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
+  [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis,
+  [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair,
+  [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
+  [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,
+  [ActionTypes.RESOLVE_EXPEDITION_DEFECT]: handleResolveExpeditionDefect,
+  [ActionTypes.EXECUTE_EXPEDITION_INSPECTION]:
+    handleExecuteExpeditionInspection,
+  [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance,
+  [ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE]:
+    handleAcceptExpeditionTechnicalFailure,
+  [ActionTypes.APPLY_EXPEDITION_EVENT_DELTA]: handleApplyExpeditionEventDelta,
+  [ActionTypes.RECORD_EXPEDITION_CREW_STRESS_SOURCE]:
+    handleRecordExpeditionCrewStressSource,
+  [ActionTypes.RECORD_EXPEDITION_RELATIONSHIP_OUTCOME]:
+    handleRecordExpeditionRelationshipOutcome,
+  [ActionTypes.ADVANCE_EXPEDITION_CREW_INJURY]:
+    handleAdvanceExpeditionCrewInjury,
+  [ActionTypes.ADVANCE_EXPEDITION_BAND_INJURY]:
+    handleAdvanceExpeditionBandInjury,
+  [ActionTypes.SETTLE_EXPEDITION_CREW_CAREER]: handleSettleExpeditionCrewCareer,
+  [ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT]:
+    handleSettleExpeditionCareerResult,
+  [ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY]:
+    handlePurchaseExpeditionHqFacility,
+  [ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE]:
+    handleBeginExpeditionUnlockPurchase,
+  [ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE]:
+    handleCompleteExpeditionUnlockPurchase,
+  [ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE]:
+    handleRollbackExpeditionUnlockPurchase,
+  [ActionTypes.UNLOCK_EXPEDITION_ASCENSION]: handleUnlockExpeditionAscension,
+  [ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD]:
+    handleCommitExpeditionLegendaryReward,
+  [ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY]:
+    handleRecordExpeditionArchiveDiscovery,
+  [ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS]:
+    handleGenerateExpeditionBetweenTourDecisions,
+  [ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION]:
+    handleResolveExpeditionBetweenTourDecision,
+  [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
+    handleAcquireExpeditionCrewSignature,
+  [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant,
+  [ActionTypes.RECORD_EXPEDITION_OBLIGATION_SIGNAL]:
+    handleRecordExpeditionObligationSignal,
+  [ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION]:
+    handleDoubleDownExpeditionObligation,
+  [ActionTypes.OFFER_EXPEDITION_DRAFT]: handleOfferExpeditionDraft,
+  [ActionTypes.SELECT_EXPEDITION_DRAFT]: handleSelectExpeditionDraft,
+  [ActionTypes.RESOLVE_EXPEDITION_SOCIAL_RESULT]:
+    handleResolveExpeditionSocialResult,
+  [ActionTypes.CREATE_SOCIAL_INTEL_GRANT]: handleCreateSocialIntelGrant
 }
 
 /**
@@ -341,5 +453,16 @@ export const gameReducer = (
     }
   }
 
-  return nextState
+  // The protected Career Cash slice is enforced once, here, rather than at
+  // every spend site: a run's discretionary spending must never reach below it,
+  // and a per-reducer check would leave the next spend path added elsewhere
+  // unguarded. A rejected spend returns the pre-action state unchanged.
+  nextState = enforceExpeditionCashFloor(state, nextState, action.type)
+
+  // The Expedition crisis is derived, never raised by a caller, so it is
+  // recomputed centrally after every action. This is the only place the stored
+  // copy is written, which is what stops it from drifting from the state that
+  // caused it. `syncExpeditionPendingFailure` returns the identical reference
+  // when nothing changed, so a rejected action still leaves state untouched.
+  return syncExpeditionPendingFailure(nextState)
 }

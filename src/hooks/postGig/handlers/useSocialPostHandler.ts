@@ -6,6 +6,7 @@ import { calculatePostGigStateUpdates } from '../../../utils/postGig'
 import { secureRandom } from '../../../utils/crypto'
 import { applySocialPostResult } from './socialPostHandlerUtils'
 import type { HandlerDispatchers } from './types'
+import { deriveExpeditionSocialResultId } from '../../../domain/expedition/social'
 
 /** Props for {@link useSocialPostHandler}: state slices, gig context, the processing guard, translator, and dispatchers. */
 export interface UseSocialPostHandlerProps {
@@ -47,7 +48,8 @@ export function useSocialPostHandler({
     addToast,
     setPostResult,
     setBrandOffers,
-    setPhase
+    setPhase,
+    resolveExpeditionSocialResult
   }
 }: UseSocialPostHandlerProps) {
   const handlePostSelection = useCallback(
@@ -98,6 +100,12 @@ export function useSocialPostHandler({
             setPhase
           }
         })
+        if (resolveExpeditionSocialResult && option.id) {
+          resolveExpeditionSocialResult(
+            deriveExpeditionSocialResultId(option),
+            option.id
+          )
+        }
         // Guard intentionally NOT reset here: the phase transition owns the
         // lifecycle. Resetting before it runs would re-open the settlement
         // window for rapid double-clicks.
@@ -126,6 +134,7 @@ export function useSocialPostHandler({
       setPostResult,
       setBrandOffers,
       setPhase,
+      resolveExpeditionSocialResult,
       isProcessingActionRef,
       setIsProcessingAction
     ]

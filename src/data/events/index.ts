@@ -15,6 +15,8 @@ import { CRISIS_EVENTS } from './crisis'
 import { CONSEQUENCE_EVENTS } from './consequences'
 import { RELATIONSHIP_EVENTS } from './relationshipEvents'
 import { QUEST_EVENTS } from './quests'
+import { EXPEDITION_CREW_EVENTS } from './crew'
+import { EXPEDITION_PRESSURE_EVENTS_DB } from './expeditionPressure'
 import { logger } from '../../utils/logger'
 import { validateGameEvent } from '../../utils/eventValidator'
 import { EVENT_CATEGORIES, type EventCategory } from './categories'
@@ -33,7 +35,9 @@ export const ALL_RAW_EVENTS = [
   ...CRISIS_EVENTS,
   ...CONSEQUENCE_EVENTS,
   ...RELATIONSHIP_EVENTS,
-  ...QUEST_EVENTS
+  ...QUEST_EVENTS,
+  ...EXPEDITION_CREW_EVENTS,
+  ...EXPEDITION_PRESSURE_EVENTS_DB
 ]
 
 /** Validated playable events grouped by category. */

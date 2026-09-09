@@ -6,6 +6,9 @@
  * and ensures smooth, consistent micro-interactions and scene presence.
  */
 
+/**
+ * Common motion durations (in seconds) mapped to semantic interaction scales.
+ */
 export const MOTION_DURATIONS = {
   instant: 0,
   fast: 0.2,
@@ -16,12 +19,18 @@ export const MOTION_DURATIONS = {
   scene: 0.15
 } as const
 
+/**
+ * Common motion easing curves for entering, exiting, and linear animations.
+ */
 export const MOTION_EASING = {
   enter: 'easeOut',
   exit: 'easeIn',
   linear: 'linear'
 } as const
 
+/**
+ * Preset motion transitions combining duration and easing parameters tailored for specific UI layers.
+ */
 export const MOTION_TRANSITIONS = {
   ui: {
     duration: MOTION_DURATIONS.normal,

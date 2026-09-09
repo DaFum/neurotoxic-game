@@ -56,7 +56,9 @@ function makeDispatchers() {
     addToast: vi.fn(),
     changeScene: vi.fn(),
     addQuest: vi.fn(),
-    applyQuestEvent: vi.fn()
+    applyQuestEvent: vi.fn(),
+    recordExpeditionCrewStressSource: vi.fn(),
+    completeExpedition: vi.fn()
   }
 }
 
@@ -80,6 +82,7 @@ function makeProps(overrides = {}) {
     currentGig: { id: 'venue_1' },
     lastGigStats: { misses: 1 },
     setlist: [],
+    expedition: { status: 'idle', routeStep: 0, loadout: null },
     activeStoryFlags: [],
     isFinaleGig: false,
     totalDailyObligations: 50,
@@ -328,6 +331,12 @@ describe('useContinueHandler hook', () => {
     )
 
     await flushMicrotasks()
+    expect(props.dispatchers.completeExpedition).toHaveBeenCalledWith(
+      'gig:venue_1'
+    )
+    expect(
+      props.dispatchers.completeExpedition.mock.invocationCallOrder[0]
+    ).toBeLessThan(props.dispatchers.changeScene.mock.invocationCallOrder[0])
     expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
   })
 
