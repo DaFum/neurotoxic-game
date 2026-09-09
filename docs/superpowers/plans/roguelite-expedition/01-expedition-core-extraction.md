@@ -98,12 +98,7 @@ The existing required root field `GameState.runSeed` remains the **single canoni
 
 ```ts
 export type ExpeditionStatus =
-  | 'idle'
-  | 'prepared'
-  | 'active'
-  | 'extracted'
-  | 'completed'
-  | 'failed'
+  'idle' | 'prepared' | 'active' | 'extracted' | 'completed' | 'failed'
 
 export interface ExpeditionPrepState {
   prepId: string
@@ -322,8 +317,13 @@ export const getExpeditionSpendableCash = (state: GameState): number =>
     ? Math.max(0, state.player.money - state.expedition.protectedCareerCash)
     : Math.max(0, state.player.money)
 
-export const canSpendExpeditionCash = (state: GameState, amount: number): boolean =>
-  Number.isFinite(amount) && amount >= 0 && getExpeditionSpendableCash(state) >= amount
+export const canSpendExpeditionCash = (
+  state: GameState,
+  amount: number
+): boolean =>
+  Number.isFinite(amount) &&
+  amount >= 0 &&
+  getExpeditionSpendableCash(state) >= amount
 ```
 
 Every active Expedition repair/refuel/bribe/insurance/rescue/purchase and negative event Money effect must use this boundary. G2 owns the active-Expedition `ADVANCE_DAY` policy for mandatory daily obligations and legacy wear.
@@ -363,9 +363,7 @@ G1B extends the same START transaction after G2-G4 exist with cargo/insurance/Sp
 
 ```ts
 export type ExpeditionSpecialNodeSubtype =
-  | 'RIVAL_ENCOUNTER'
-  | 'UNDERGROUND_MARKET'
-  | 'BLACK_MARKET'
+  'RIVAL_ENCOUNTER' | 'UNDERGROUND_MARKET' | 'BLACK_MARKET'
 ```
 
 `buildExpeditionMap(state.runSeed, tourType, region, routeProfile)` is the only Expedition route builder. G5 supplies the typed Region/Tour route profile later; G1 baseline uses neutral weights.

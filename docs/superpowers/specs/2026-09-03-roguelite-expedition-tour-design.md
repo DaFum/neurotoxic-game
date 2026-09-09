@@ -717,22 +717,22 @@ Permanent progression must obey:
 
 The design is additive and should reuse current foundations where possible:
 
-| Existing system | New primary role |
-|---|---|
-| Map | Branching expedition route |
-| Gigs | High-reward/high-cost active encounters |
-| Rhythm gameplay | Skill conversion of management preparation |
-| Travel | Mobility, Fuel, Condition, route risk |
-| Minigames | Resource-saving and repair/recovery execution |
-| Events | Contextual run consequences and Pressure responses |
-| Social | Intel, Exposure, Heat, sponsors, rivals |
-| Contraband | High-Heat/high-reward build path |
-| Sponsors | Conditional risk contracts |
-| Quests | Run goals, rival chains, meta unlock objectives |
-| Chassis/modules | Expedition build archetypes |
-| HQ | Persistent meta hub |
-| Fame | Career/Exposure signal rather than only shop currency |
-| Harmony | Run stability and crew/band consequence driver |
+| Existing system | New primary role                                      |
+| --------------- | ----------------------------------------------------- |
+| Map             | Branching expedition route                            |
+| Gigs            | High-reward/high-cost active encounters               |
+| Rhythm gameplay | Skill conversion of management preparation            |
+| Travel          | Mobility, Fuel, Condition, route risk                 |
+| Minigames       | Resource-saving and repair/recovery execution         |
+| Events          | Contextual run consequences and Pressure responses    |
+| Social          | Intel, Exposure, Heat, sponsors, rivals               |
+| Contraband      | High-Heat/high-reward build path                      |
+| Sponsors        | Conditional risk contracts                            |
+| Quests          | Run goals, rival chains, meta unlock objectives       |
+| Chassis/modules | Expedition build archetypes                           |
+| HQ              | Persistent meta hub                                   |
+| Fame            | Career/Exposure signal rather than only shop currency |
+| Harmony         | Run stability and crew/band consequence driver        |
 
 ## 26. Balance Intent
 

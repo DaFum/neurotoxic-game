@@ -29,27 +29,35 @@ G0 -> G1A -> G2 -> G3 -> G4 -> G1B -> G5 -> G6
 ```
 
 ### G0 — Frozen baseline/provenance
+
 Owned by G6 Task 1. Freeze v14 outputs and current command/provenance rules before changing the balance horizon.
 
 ### G1A — Core foundation
+
 Owned by `01` Tasks 1–9. Creates prepared run identity, complete loadout/commitment, deterministic map/Fog/Intel, reward ledger, extraction settlement and Economy/Fuel failure shell. It may start a valid no-Contract/no-later-subsystem Expedition.
 
 ### G2 — Vehicle/Condition/Cargo/Repair
+
 Owned by `02`. Adds chassis playstyles, manifest-only cargo, technical wear, skill-based repairs, hidden defects, inspections and insurance.
 
 ### G3 — Crew/Stress/Relationships/Injuries
+
 Owned by `03`. Adds six Crew roles, source-bound Stress/relationships, Band injuries, Crew injury/unavailability, signature traits and Contact Intel.
 
 ### G4 — Pressure/Sponsors/Contracts/Social/Rivals/Finales
+
 Owned by `04`. Adds expressive native Contracts, Sponsor commitments, Double Down, Crowd Hype, Pressure Director, Authority events, persistent Rival/Nemesis identity, quests, contextual/special Finales and reducer-authoritative drafts.
 
 ### G1B — Core integration closure
+
 Owned by `01` Tasks 10–12. Integrates G2–G4 failure signals, Intel/reward producers and the full route→node→consequence→extract/finale E2E flow.
 
 ### G5 — Meta/Regions/Tours/HQ/Ascension
+
 Owned by `05`. Completes the unified effective-rules path, Region/Tour semantics, concrete Tour-Token/rank economy, HQ transition, unlock sets, 1–3 typed Between-Tour decisions, Archive, Ascension and rule-changing Legendaries.
 
 ### G6 — Evidence/calibration
+
 Owned by `06`. Builds six explicit production-valid profiles, disjoint calibration/holdout cohorts, linked Career sequences, paired extraction and skill-vs-management probes, and real runtime samples.
 
 ---
@@ -73,24 +81,24 @@ These invariants are embedded in the owning child plans and are not delegated to
 
 ## Product-fidelity matrix
 
-| Approved design pillar | Owner | Required production proof |
-|---|---|---|
-| Full constrained Tour Prep build | G1 + G4 | preview→commit→START test with setlist/equipment/chassis/modules/Crew/cargo/Sponsor/native Contracts/Fuel/Cash |
-| 7–9-node branching map + hybrid Fog | G1 + G5 | deterministic map parity, visible node class/edges, 0→1→2 Intel |
-| Six permanent HUD resources | G1 | UI test: only Cash/Fuel/Stamina/Harmony/Condition/Heat persistent |
-| Management creates situation; skill changes outcome | G2/G3/G4/G6 | Condition/Injury/Finale/Crowd-Hype modifiers + paired skill probe |
-| Chassis/module playstyles | G2/G5/G6 | production travel/cargo/repair/Authority differences + profile signatures |
-| Crew roles, Stress, relationships, injuries | G3 | each role has a consumer; source-bound stress/relationship; Band+Crew injury/recovery persistence |
-| Sponsors/Contracts/Double Down | G4 | prepared-route commitments; typed constraints; save/reload Double-Down enforcement |
-| Social as strategic system | G4 | push/monetize/suppress/weaponize + Sponsor/Rival/Intel/Crowd-Hype outputs |
-| Multi-input Pressure Director | G4 | weight tests for Heat/Exposure/Cash/Condition/Stress/obligations/Rival/depth + cross-family relief |
-| Persistent Nemesis | G4/G5/G6 | same Rival id across ≥3 linked runs + higher-level route/Sponsor/finale changes |
-| Hybrid extraction | G1/G5 | base Cash/Fame retention + secured/explicitly-extracted/abandoned rare-item divergence |
-| Contextual + Contract special Finales | G4 | exact Finale profile affects real gig lifecycle for every finale family |
-| Broadening meta progression | G5 | exact token/rank/facility/set registries + fresh-career Day-1 HQ transition |
-| 1–3 Between-Tour decisions | G5/G6 | typed persisted decisions block Next Tour until settled; linked Career simulation executes them |
-| Rule-changing Legendaries | G5/G6 | five production activation tests + coverage evidence |
-| 20–30 real minutes | G6 | real runtime samples, not simulator iteration duration |
+| Approved design pillar                              | Owner       | Required production proof                                                                                      |
+| --------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------- |
+| Full constrained Tour Prep build                    | G1 + G4     | preview→commit→START test with setlist/equipment/chassis/modules/Crew/cargo/Sponsor/native Contracts/Fuel/Cash |
+| 7–9-node branching map + hybrid Fog                 | G1 + G5     | deterministic map parity, visible node class/edges, 0→1→2 Intel                                                |
+| Six permanent HUD resources                         | G1          | UI test: only Cash/Fuel/Stamina/Harmony/Condition/Heat persistent                                              |
+| Management creates situation; skill changes outcome | G2/G3/G4/G6 | Condition/Injury/Finale/Crowd-Hype modifiers + paired skill probe                                              |
+| Chassis/module playstyles                           | G2/G5/G6    | production travel/cargo/repair/Authority differences + profile signatures                                      |
+| Crew roles, Stress, relationships, injuries         | G3          | each role has a consumer; source-bound stress/relationship; Band+Crew injury/recovery persistence              |
+| Sponsors/Contracts/Double Down                      | G4          | prepared-route commitments; typed constraints; save/reload Double-Down enforcement                             |
+| Social as strategic system                          | G4          | push/monetize/suppress/weaponize + Sponsor/Rival/Intel/Crowd-Hype outputs                                      |
+| Multi-input Pressure Director                       | G4          | weight tests for Heat/Exposure/Cash/Condition/Stress/obligations/Rival/depth + cross-family relief             |
+| Persistent Nemesis                                  | G4/G5/G6    | same Rival id across ≥3 linked runs + higher-level route/Sponsor/finale changes                                |
+| Hybrid extraction                                   | G1/G5       | base Cash/Fame retention + secured/explicitly-extracted/abandoned rare-item divergence                         |
+| Contextual + Contract special Finales               | G4          | exact Finale profile affects real gig lifecycle for every finale family                                        |
+| Broadening meta progression                         | G5          | exact token/rank/facility/set registries + fresh-career Day-1 HQ transition                                    |
+| 1–3 Between-Tour decisions                          | G5/G6       | typed persisted decisions block Next Tour until settled; linked Career simulation executes them                |
+| Rule-changing Legendaries                           | G5/G6       | five production activation tests + coverage evidence                                                           |
+| 20–30 real minutes                                  | G6          | real runtime samples, not simulator iteration duration                                                         |
 
 ---
 

@@ -89,10 +89,7 @@ Extend G3 Career state:
 
 ```ts
 export type ExpeditionCareerRank =
-  | 'rookie'
-  | 'roadtested'
-  | 'headliner'
-  | 'cult_legend'
+  'rookie' | 'roadtested' | 'headliner' | 'cult_legend'
 
 export interface ExpeditionCareerProgress {
   tourTokens: number

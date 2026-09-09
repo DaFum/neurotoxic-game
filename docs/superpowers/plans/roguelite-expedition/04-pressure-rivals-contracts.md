@@ -218,7 +218,12 @@ Template constraints are distinct from active materialized constraints:
 
 ```ts
 export type ExpeditionContractConstraintTemplate =
-  | { id: string; kind: 'gig_accuracy_count'; minAccuracy: number; requiredCount: number }
+  | {
+      id: string
+      kind: 'gig_accuracy_count'
+      minAccuracy: number
+      requiredCount: number
+    }
   | { id: string; kind: 'max_heat'; maxHeat: number }
   | {
       id: string
@@ -231,10 +236,17 @@ export type ExpeditionContractConstraintTemplate =
   | { id: string; kind: 'no_rest_before_finale' }
   | { id: string; kind: 'finale_completed'; minHeatAtFinale: number | null }
   | { id: string; kind: 'social_post_count'; requiredCount: number }
-  | { id: string; kind: 'special_finale'; profileId: ExpeditionContractSpecialFinaleProfileId }
+  | {
+      id: string
+      kind: 'special_finale'
+      profileId: ExpeditionContractSpecialFinaleProfileId
+    }
 
 export type ExpeditionContractConstraint =
-  | Exclude<ExpeditionContractConstraintTemplate, { kind: 'visit_matching_node' }>
+  | Exclude<
+      ExpeditionContractConstraintTemplate,
+      { kind: 'visit_matching_node' }
+    >
   | { id: string; kind: 'visit_node'; targetNodeId: string }
 
 export type ExpeditionContractSpecialFinaleProfileId = 'all_in_showcase'
@@ -349,12 +361,15 @@ Payload contains no accuracy/Heat/progress/result. Reducer reads canonical just-
 Settlement:
 
 ```ts
-stackMultiplier = Math.min(1.4, 1 + Math.max(0, activeConstraintCount - 1) * 0.1)
+stackMultiplier = Math.min(
+  1.4,
+  1 + Math.max(0, activeConstraintCount - 1) * 0.1
+)
 finalRewardMultiplier =
-  template.reward.rewardMultiplier
-  * stackMultiplier
-  * (obligation.doubleDown?.rewardMultiplier ?? 1)
-  * getEffectiveExpeditionRules(state).numeric.contractRewardMultiplier
+  template.reward.rewardMultiplier *
+  stackMultiplier *
+  (obligation.doubleDown?.rewardMultiplier ?? 1) *
+  getEffectiveExpeditionRules(state).numeric.contractRewardMultiplier
 ```
 
 Only positive Contract reward is multiplied. Failure penalty uses `contractPenaltyMultiplier` once. Direct Money/Fame income emits existing Money/Fame quest events.
@@ -400,9 +415,7 @@ Major/high-profile successful Gig may add +10 Hype; poor Gig may subtract 10.
 
 ```ts
 getExpeditionCrowdHypeProfile(hype).comboBonusMultiplier =
-  hype >= 90 ? 1.25 :
-  hype >= 70 ? 1.18 :
-  hype >= 40 ? 1.10 : 1.00
+  hype >= 90 ? 1.25 : hype >= 70 ? 1.18 : hype >= 40 ? 1.1 : 1.0
 ```
 
 Apply only to combo-derived bonus after successful hits. Never widen timing, raise base accuracy, prevent misses or auto-award score.
@@ -455,7 +468,12 @@ Events declare:
 
 ```ts
 severity: 'normal' | 'severe'
-pressureFamily: 'authority' | 'crew' | 'contract' | 'rival' | 'social' | 'technical'
+pressureFamily: 'authority' |
+  'crew' |
+  'contract' |
+  'rival' |
+  'social' |
+  'technical'
 ```
 
 Director:
@@ -506,7 +524,8 @@ export interface CareerRivalSnapshot {
 }
 
 export interface CareerRivalHistory {
-  relationship: 'unknown' | 'competitive' | 'rival' | 'nemesis' | 'respect' | 'alliance'
+  relationship:
+    'unknown' | 'competitive' | 'rival' | 'nemesis' | 'respect' | 'alliance'
   nemesisLevel: 0 | 1 | 2 | 3 | 4
   encounterCount: number
   lastOutcome: 'hostile_win' | 'hostile_loss' | 'respect' | 'alliance' | null
