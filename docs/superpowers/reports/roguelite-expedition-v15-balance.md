@@ -3,7 +3,7 @@
 **Correctness:** ✅ PASS
 **Release evidence:** ⚠️ NOT RELEASE EVIDENCE
 **Release blocked by:** no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 10 unresolved balance corridor finding(s)
-**Generated At:** 2026-09-08T21:39:44.449Z
+**Generated At:** 2026-09-09T08:39:48.584Z
 **Profiles:** 6 mature archetypes
 **Sample Count Per Cohort:** 2000
 
@@ -11,11 +11,11 @@
 
 | Field | Value |
 | :--- | :--- |
-| Source fingerprint | `ce1196a4faa6c04cb3c10226d6b88884382493d935c09c5da7e8ed78e46276d3` |
-| Generator fingerprint | `8e054d3d7e3d50a896a03e55185e14e85886eb41fa5aa3050665a9cfb9c7f2dc` |
+| Source fingerprint | `9b5c40d7fc2de55e73e1ade7952e9c3d3baa527c3d56dc2aae33f42994b2546f` |
+| Generator fingerprint | `e1b57cebcf5987ce4fe81081568855e3e38ca7e264f6af6de88d09b1fa9618b6` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
 | Runs per scenario | 2000 |
-| Working tree dirty | YES |
+| Working tree dirty | no |
 | Artifact schema version | 1 |
 
 ### Resolved mature-fixture inputs

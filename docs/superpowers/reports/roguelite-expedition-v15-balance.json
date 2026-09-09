@@ -20,15 +20,15 @@
     "Runtime pacing evidence unusable: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json. Capture a playtest cohort into docs/superpowers/reports/roguelite-expedition-runtime-evidence.json for this source fingerprint."
   ],
   "metadata": {
-    "sourceFingerprint": "ce1196a4faa6c04cb3c10226d6b88884382493d935c09c5da7e8ed78e46276d3",
-    "generatorFingerprint": "8e054d3d7e3d50a896a03e55185e14e85886eb41fa5aa3050665a9cfb9c7f2dc",
+    "sourceFingerprint": "9b5c40d7fc2de55e73e1ade7952e9c3d3baa527c3d56dc2aae33f42994b2546f",
+    "generatorFingerprint": "e1b57cebcf5987ce4fe81081568855e3e38ca7e264f6af6de88d09b1fa9618b6",
     "seedNamespace": "#roguelite-expedition-v1#calibration",
     "runsPerScenario": 2000,
-    "workingTreeDirty": true,
+    "workingTreeDirty": false,
     "artifactSchemaVersion": 1
   },
   "provenance": {
-    "generatedAt": "2026-09-08T21:39:44.449Z",
+    "generatedAt": "2026-09-09T08:39:48.584Z",
     "namespaces": {
       "calibration": "#roguelite-expedition-v1#calibration",
       "holdout": "#roguelite-expedition-v1#holdout",
@@ -347,134 +347,1184 @@
       {
         "profileId": "clean_sponsor",
         "seed": 1116178123,
-        "window": 3,
-        "decision": "continue",
-        "extract": {
-          "money": 7174,
-          "fame": 4148,
-          "vanCondition": null
-        },
-        "continue": {
-          "outcome": "completed",
-          "money": 11484,
-          "fame": 13478,
-          "vanCondition": null
-        },
-        "delta": {
-          "money": 4310,
-          "fame": 9330
-        }
+        "windowEncountered": true,
+        "windowCount": 4,
+        "windows": [
+          {
+            "windowRouteStep": 3,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 20.9,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7174,
+              "fame": 4148,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11484,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4310,
+              "fame": 9330
+            }
+          },
+          {
+            "windowRouteStep": 4,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 23.2,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7534,
+              "fame": 5481,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11484,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3950,
+              "fame": 7997
+            }
+          },
+          {
+            "windowRouteStep": 5,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 24.9,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7786,
+              "fame": 6814,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11484,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3698,
+              "fame": 6664
+            }
+          },
+          {
+            "windowRouteStep": 6,
+            "decision": "extract",
+            "policyReason": "vanWear",
+            "policyScore": 27.8,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7871,
+              "fame": 8146,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11484,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3613,
+              "fame": 5332
+            }
+          }
+        ]
       },
       {
         "profileId": "clean_sponsor",
         "seed": 1099400504,
-        "window": 3,
-        "decision": "continue",
-        "extract": {
-          "money": 7171,
-          "fame": 4148,
-          "vanCondition": null
-        },
-        "continue": {
-          "outcome": "completed",
-          "money": 11318,
-          "fame": 11574,
-          "vanCondition": null
-        },
-        "delta": {
-          "money": 4147,
-          "fame": 7426
-        }
+        "windowEncountered": true,
+        "windowCount": 4,
+        "windows": [
+          {
+            "windowRouteStep": 3,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 21.4,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7171,
+              "fame": 4148,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11318,
+              "fame": 11574,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4147,
+              "fame": 7426
+            }
+          },
+          {
+            "windowRouteStep": 4,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 23.7,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7532,
+              "fame": 5481,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11318,
+              "fame": 11574,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3786,
+              "fame": 6093
+            }
+          },
+          {
+            "windowRouteStep": 5,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 24,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7467,
+              "fame": 5481,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11318,
+              "fame": 11574,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3851,
+              "fame": 6093
+            }
+          },
+          {
+            "windowRouteStep": 6,
+            "decision": "extract",
+            "policyReason": "vanWear",
+            "policyScore": 27.9,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7601,
+              "fame": 6814,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11318,
+              "fame": 11574,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3717,
+              "fame": 4760
+            }
+          }
+        ]
       },
       {
         "profileId": "clean_sponsor",
         "seed": 1149733361,
-        "window": 3,
-        "decision": "continue",
-        "extract": {
-          "money": 7530,
-          "fame": 5481,
-          "vanCondition": null
-        },
-        "continue": {
-          "outcome": "completed",
-          "money": 12165,
-          "fame": 15382,
-          "vanCondition": null
-        },
-        "delta": {
-          "money": 4635,
-          "fame": 9901
-        }
+        "windowEncountered": true,
+        "windowCount": 4,
+        "windows": [
+          {
+            "windowRouteStep": 3,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 21.6,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7530,
+              "fame": 5481,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 12165,
+              "fame": 15382,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4635,
+              "fame": 9901
+            }
+          },
+          {
+            "windowRouteStep": 4,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 21.6,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7465,
+              "fame": 5481,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 12165,
+              "fame": 15382,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4700,
+              "fame": 9901
+            }
+          },
+          {
+            "windowRouteStep": 5,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 25,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7717,
+              "fame": 6814,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 12165,
+              "fame": 15382,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4448,
+              "fame": 8568
+            }
+          },
+          {
+            "windowRouteStep": 6,
+            "decision": "extract",
+            "policyReason": "vanWear",
+            "policyScore": 27.2,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7801,
+              "fame": 8146,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 12165,
+              "fame": 15382,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4364,
+              "fame": 7236
+            }
+          }
+        ]
       },
       {
         "profileId": "clean_sponsor",
         "seed": 1132955742,
-        "window": 3,
-        "decision": "continue",
-        "extract": {
-          "money": 6848,
-          "fame": 2815,
-          "vanCondition": null
-        },
-        "continue": {
-          "outcome": "completed",
-          "money": 10439,
-          "fame": 7766,
-          "vanCondition": null
-        },
-        "delta": {
-          "money": 3591,
-          "fame": 4951
-        }
+        "windowEncountered": true,
+        "windowCount": 4,
+        "windows": [
+          {
+            "windowRouteStep": 3,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 17.9,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 6848,
+              "fame": 2815,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 10439,
+              "fame": 7766,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3591,
+              "fame": 4951
+            }
+          },
+          {
+            "windowRouteStep": 4,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 20.1,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 6789,
+              "fame": 2815,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 10439,
+              "fame": 7766,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3650,
+              "fame": 4951
+            }
+          },
+          {
+            "windowRouteStep": 5,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 24.1,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7046,
+              "fame": 4148,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 10439,
+              "fame": 7766,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3393,
+              "fame": 3618
+            }
+          },
+          {
+            "windowRouteStep": 6,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 24.5,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 6985,
+              "fame": 4148,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 10439,
+              "fame": 7766,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3454,
+              "fame": 3618
+            }
+          }
+        ]
       },
       {
         "profileId": "clean_sponsor",
         "seed": 1183288599,
-        "window": 3,
-        "decision": "continue",
-        "extract": {
-          "money": 7204,
-          "fame": 4148,
-          "vanCondition": null
-        },
-        "continue": {
-          "outcome": "completed",
-          "money": 11713,
-          "fame": 13478,
-          "vanCondition": null
-        },
-        "delta": {
-          "money": 4509,
-          "fame": 9330
-        }
+        "windowEncountered": true,
+        "windowCount": 4,
+        "windows": [
+          {
+            "windowRouteStep": 3,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 19.2,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7204,
+              "fame": 4148,
+              "explicitlyExtractedRares": 0
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11713,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4509,
+              "fame": 9330
+            }
+          },
+          {
+            "windowRouteStep": 4,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 22.6,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7564,
+              "fame": 5481,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11713,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4149,
+              "fame": 7997
+            }
+          },
+          {
+            "windowRouteStep": 5,
+            "decision": "continue",
+            "policyReason": null,
+            "policyScore": 24.3,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7816,
+              "fame": 6814,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11713,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 3897,
+              "fame": 6664
+            }
+          },
+          {
+            "windowRouteStep": 6,
+            "decision": "extract",
+            "policyReason": "obligation",
+            "policyScore": 25.5,
+            "policyTolerance": 25.5,
+            "extract": {
+              "money": 7481,
+              "fame": 6814,
+              "explicitlyExtractedRares": 1
+            },
+            "continue": {
+              "outcome": "completed",
+              "money": 11713,
+              "fame": 13478,
+              "securedRares": 0,
+              "explicitlyExtractedRares": 0,
+              "abandonedRares": 0
+            },
+            "delta": {
+              "money": 4232,
+              "fame": 6664
+            }
+          }
+        ]
       }
     ]
   },
   "skillProbe": {
     "calibrationTrios": 12000,
     "holdoutTrios": 12000,
+    "summaryByCohort": {
+      "calibration": {
+        "triosCount": 12000,
+        "completionRate": {
+          "low": 0.36966666666666664,
+          "competent": 0.526,
+          "high": 0.49983333333333335
+        },
+        "meanMoney": {
+          "low": 2680.1431666666667,
+          "competent": 5024.419083333333,
+          "high": 10535.927333333333
+        },
+        "meanFame": {
+          "low": 4241.275,
+          "competent": 10504.289666666667,
+          "high": 14050.63425
+        },
+        "meanMinCondition": {
+          "low": 54.28225,
+          "competent": 60.245583333333336,
+          "high": 62.08558333333333
+        },
+        "meanRepairSpend": {
+          "low": null,
+          "competent": null,
+          "high": null
+        },
+        "meanGigNet": {
+          "low": -7607.272166666667,
+          "competent": -1722.0894166666667,
+          "high": 3926.9448333333335
+        },
+        "meanRealizedHypeBonus": {
+          "low": 10816.975,
+          "competent": 135846.91416666665,
+          "high": 760239.4991666666
+        },
+        "meanGigMisses": {
+          "low": 730.2410833333333,
+          "competent": 432.1865,
+          "high": 140.07233333333335
+        },
+        "byProfile": {
+          "clean_sponsor": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.603,
+              "competent": 0.566,
+              "high": 0.67
+            },
+            "meanMoney": {
+              "low": 4688.6875,
+              "competent": 9130.037,
+              "high": 12789.153
+            },
+            "meanFame": {
+              "low": 6011.188,
+              "competent": 8294.173,
+              "high": 10935.1225
+            },
+            "meanMinCondition": {
+              "low": 55.581,
+              "competent": 63.01,
+              "high": 64.183
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -3963.0075,
+              "competent": 908.568,
+              "high": 4801.484
+            },
+            "meanRealizedHypeBonus": {
+              "low": 6342.95,
+              "competent": 58925.755,
+              "high": 393285.77
+            },
+            "meanGigMisses": {
+              "low": 433.968,
+              "competent": 247.7465,
+              "high": 75.7785
+            }
+          },
+          "underground_heat": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.424,
+              "competent": 0.131,
+              "high": 0.8705
+            },
+            "meanMoney": {
+              "low": 2116.5315,
+              "competent": 1001.6605,
+              "high": 10114.3995
+            },
+            "meanFame": {
+              "low": 2681.911,
+              "competent": 6468.0915,
+              "high": 23375.481
+            },
+            "meanMinCondition": {
+              "low": 50.109,
+              "competent": 66.509,
+              "high": 60.5075
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -12462.5175,
+              "competent": -4319.9465,
+              "high": 4278.5265
+            },
+            "meanRealizedHypeBonus": {
+              "low": 16969.335,
+              "competent": 172301.335,
+              "high": 1286717.04
+            },
+            "meanGigMisses": {
+              "low": 1146.431,
+              "competent": 497.0205,
+              "high": 232.0675
+            }
+          },
+          "diy_repair": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.7175,
+              "competent": 0.694,
+              "high": 0.4065
+            },
+            "meanMoney": {
+              "low": 2633.848,
+              "competent": 8671.1115,
+              "high": 11161.768
+            },
+            "meanFame": {
+              "low": 7852.4015,
+              "competent": 12929.759,
+              "high": 12513.7355
+            },
+            "meanMinCondition": {
+              "low": 53.1585,
+              "competent": 59.4225,
+              "high": 61.2825
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -4559.641,
+              "competent": 1232.7175,
+              "high": 4172.3825
+            },
+            "meanRealizedHypeBonus": {
+              "low": 6656.835,
+              "competent": 69907.275,
+              "high": 396754.61
+            },
+            "meanGigMisses": {
+              "low": 491.3615,
+              "competent": 272.882,
+              "high": 74.099
+            }
+          },
+          "scout_intel": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.0355,
+              "competent": 0.617,
+              "high": 0.195
+            },
+            "meanMoney": {
+              "low": 2225.5725,
+              "competent": 5243.651,
+              "high": 7937.661
+            },
+            "meanFame": {
+              "low": 3036.3475,
+              "competent": 11242.083,
+              "high": 9906.5535
+            },
+            "meanMinCondition": {
+              "low": 53.7725,
+              "competent": 58.231,
+              "high": 63.4915
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -4285.9985,
+              "competent": 690.326,
+              "high": 3863.74
+            },
+            "meanRealizedHypeBonus": {
+              "low": 7002.845,
+              "competent": 79476.245,
+              "high": 432175.745
+            },
+            "meanGigMisses": {
+              "low": 432.136,
+              "competent": 331.0205,
+              "high": 81.4865
+            }
+          },
+          "high_exposure_performance": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.2135,
+              "competent": 0.784,
+              "high": 0.5405
+            },
+            "meanMoney": {
+              "low": 2381.049,
+              "competent": 4287.4175,
+              "high": 11803.7555
+            },
+            "meanFame": {
+              "low": 2901.621,
+              "competent": 13241.3715,
+              "high": 13877.246
+            },
+            "meanMinCondition": {
+              "low": 61.348,
+              "competent": 55.835,
+              "high": 62.1415
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -9250.9,
+              "competent": -3909.688,
+              "high": 3367.1295
+            },
+            "meanRealizedHypeBonus": {
+              "low": 12691.745,
+              "competent": 216279.63,
+              "high": 975116.78
+            },
+            "meanGigMisses": {
+              "low": 851.557,
+              "competent": 613.748,
+              "high": 182.4005
+            }
+          },
+          "rival_hunter": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.2245,
+              "competent": 0.364,
+              "high": 0.3165
+            },
+            "meanMoney": {
+              "low": 2035.1705,
+              "competent": 1812.637,
+              "high": 9408.827
+            },
+            "meanFame": {
+              "low": 2964.181,
+              "competent": 10850.26,
+              "high": 13695.667
+            },
+            "meanMinCondition": {
+              "low": 51.7245,
+              "competent": 58.466,
+              "high": 60.9075
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -11121.5685,
+              "competent": -4934.5135,
+              "high": 3078.4065
+            },
+            "meanRealizedHypeBonus": {
+              "low": 15238.14,
+              "competent": 218191.245,
+              "high": 1077387.05
+            },
+            "meanGigMisses": {
+              "low": 1025.993,
+              "competent": 630.7015,
+              "high": 194.602
+            }
+          }
+        }
+      },
+      "holdout": {
+        "triosCount": 12000,
+        "completionRate": {
+          "low": 0.35975,
+          "competent": 0.5238333333333334,
+          "high": 0.48775
+        },
+        "meanMoney": {
+          "low": 2676.7855833333333,
+          "competent": 5018.6483333333335,
+          "high": 10502.424416666667
+        },
+        "meanFame": {
+          "low": 4278.294416666667,
+          "competent": 10734.283833333333,
+          "high": 14221.392333333333
+        },
+        "meanMinCondition": {
+          "low": 54.236333333333334,
+          "competent": 60.155166666666666,
+          "high": 62.03633333333333
+        },
+        "meanRepairSpend": {
+          "low": null,
+          "competent": null,
+          "high": null
+        },
+        "meanGigNet": {
+          "low": -7625.633833333333,
+          "competent": -1730.4500833333334,
+          "high": 3912.550583333333
+        },
+        "meanRealizedHypeBonus": {
+          "low": 10842.024166666666,
+          "competent": 136096.6,
+          "high": 762194.8666666667
+        },
+        "meanGigMisses": {
+          "low": 731.6055,
+          "competent": 433.53133333333335,
+          "high": 139.95633333333333
+        },
+        "byProfile": {
+          "clean_sponsor": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.57,
+              "competent": 0.558,
+              "high": 0.646
+            },
+            "meanMoney": {
+              "low": 4674.4035,
+              "competent": 9130.819,
+              "high": 12735.9935
+            },
+            "meanFame": {
+              "low": 6017.4725,
+              "competent": 8426.672,
+              "high": 10997.5135
+            },
+            "meanMinCondition": {
+              "low": 55.5675,
+              "competent": 63.0755,
+              "high": 64.095
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -4000.9505,
+              "competent": 893.9625,
+              "high": 4785.1895
+            },
+            "meanRealizedHypeBonus": {
+              "low": 6402.955,
+              "competent": 59771.425,
+              "high": 399181.17
+            },
+            "meanGigMisses": {
+              "low": 435.823,
+              "competent": 250.1905,
+              "high": 75.837
+            }
+          },
+          "underground_heat": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.41,
+              "competent": 0.1325,
+              "high": 0.867
+            },
+            "meanMoney": {
+              "low": 2130.73,
+              "competent": 1002.667,
+              "high": 10087.4915
+            },
+            "meanFame": {
+              "low": 2665.998,
+              "competent": 6759.0395,
+              "high": 23803.2105
+            },
+            "meanMinCondition": {
+              "low": 50.0915,
+              "competent": 66.4105,
+              "high": 60.4745
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -12437.5865,
+              "competent": -4332.559,
+              "high": 4276.443
+            },
+            "meanRealizedHypeBonus": {
+              "low": 16919.28,
+              "competent": 172408.695,
+              "high": 1289006.025
+            },
+            "meanGigMisses": {
+              "low": 1143.5435,
+              "competent": 498.499,
+              "high": 231.8665
+            }
+          },
+          "diy_repair": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.703,
+              "competent": 0.683,
+              "high": 0.3915
+            },
+            "meanMoney": {
+              "low": 2625.4865,
+              "competent": 8660.2495,
+              "high": 11163.0665
+            },
+            "meanFame": {
+              "low": 8040.753,
+              "competent": 13306.056,
+              "high": 12746.4175
+            },
+            "meanMinCondition": {
+              "low": 52.8405,
+              "competent": 59.089,
+              "high": 60.9515
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -4633.7405,
+              "competent": 1202.643,
+              "high": 4193.066
+            },
+            "meanRealizedHypeBonus": {
+              "low": 6773.875,
+              "competent": 71025.785,
+              "high": 403534.08
+            },
+            "meanGigMisses": {
+              "low": 498.1575,
+              "competent": 276.9185,
+              "high": 75.1195
+            }
+          },
+          "scout_intel": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.0345,
+              "competent": 0.62,
+              "high": 0.1745
+            },
+            "meanMoney": {
+              "low": 2222.077,
+              "competent": 5234.5465,
+              "high": 7863.8235
+            },
+            "meanFame": {
+              "low": 3059.897,
+              "competent": 11436.3515,
+              "high": 9911.0275
+            },
+            "meanMinCondition": {
+              "low": 53.695,
+              "competent": 58.2485,
+              "high": 63.598
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -4317.763,
+              "competent": 685.2955,
+              "high": 3807.4855
+            },
+            "meanRealizedHypeBonus": {
+              "low": 7062.885,
+              "competent": 79818.1,
+              "high": 432968.75
+            },
+            "meanGigMisses": {
+              "low": 435.2295,
+              "competent": 332.4325,
+              "high": 81.457
+            }
+          },
+          "high_exposure_performance": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.216,
+              "competent": 0.7865,
+              "high": 0.5315
+            },
+            "meanMoney": {
+              "low": 2383.2685,
+              "competent": 4274.8405,
+              "high": 11766.0335
+            },
+            "meanFame": {
+              "low": 2911.4805,
+              "competent": 13450.199,
+              "high": 14016.4815
+            },
+            "meanMinCondition": {
+              "low": 61.3845,
+              "competent": 55.627,
+              "high": 62.068
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -9271.131,
+              "competent": -3918.795,
+              "high": 3338.706
+            },
+            "meanRealizedHypeBonus": {
+              "low": 12712.25,
+              "competent": 216825.44,
+              "high": 973113.49
+            },
+            "meanGigMisses": {
+              "low": 853.522,
+              "competent": 615.313,
+              "high": 182.0485
+            }
+          },
+          "rival_hunter": {
+            "triosCount": 2000,
+            "completionRate": {
+              "low": 0.225,
+              "competent": 0.363,
+              "high": 0.316
+            },
+            "meanMoney": {
+              "low": 2024.748,
+              "competent": 1808.7675,
+              "high": 9398.138
+            },
+            "meanFame": {
+              "low": 2974.1655,
+              "competent": 11027.385,
+              "high": 13853.7035
+            },
+            "meanMinCondition": {
+              "low": 51.839,
+              "competent": 58.4805,
+              "high": 61.031
+            },
+            "meanRepairSpend": {
+              "low": null,
+              "competent": null,
+              "high": null
+            },
+            "meanGigNet": {
+              "low": -11092.6315,
+              "competent": -4913.2475,
+              "high": 3074.4135
+            },
+            "meanRealizedHypeBonus": {
+              "low": 15180.9,
+              "competent": 216730.155,
+              "high": 1075365.685
+            },
+            "meanGigMisses": {
+              "low": 1023.3575,
+              "competent": 627.8345,
+              "high": 193.4095
+            }
+          }
+        }
+      }
+    },
     "samples": [
       {
         "profileId": "clean_sponsor",
         "seed": 3921558177,
+        "skillImprovesOutcome": true,
+        "skillReducesRepairSpend": false,
+        "skillPreservesCondition": true,
         "low": {
           "outcome": "completed",
-          "money": 5464,
-          "fame": 4080,
-          "minCondition": 67
+          "retainedMoney": 5464,
+          "retainedFame": 4080,
+          "minTechnicalCondition": 67,
+          "minVanCondition": 0,
+          "repairsCount": 3,
+          "repairSpend": null,
+          "gigNetTotal": -2275,
+          "realizedHypeComboBonusTotal": 4120,
+          "toxicModeTriggers": 0,
+          "gigMissesTotal": 288,
+          "maxComboBest": 6
         },
         "competent": {
           "outcome": "completed",
-          "money": 9767,
-          "fame": 5730,
-          "minCondition": 67
+          "retainedMoney": 9767,
+          "retainedFame": 5730,
+          "minTechnicalCondition": 67,
+          "minVanCondition": 0,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 1912,
+          "realizedHypeComboBonusTotal": 31900,
+          "toxicModeTriggers": 3,
+          "gigMissesTotal": 172,
+          "maxComboBest": 9
         },
         "high": {
           "outcome": "completed",
-          "money": 12220,
-          "fame": 7050,
-          "minCondition": 67
+          "retainedMoney": 12220,
+          "retainedFame": 7050,
+          "minTechnicalCondition": 67,
+          "minVanCondition": 5,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 4425,
+          "realizedHypeComboBonusTotal": 288830,
+          "toxicModeTriggers": 3,
+          "gigMissesTotal": 42,
+          "maxComboBest": 43
         },
         "delta": {
           "money": 6756,
@@ -484,23 +1534,50 @@
       {
         "profileId": "clean_sponsor",
         "seed": 3904780558,
+        "skillImprovesOutcome": true,
+        "skillReducesRepairSpend": true,
+        "skillPreservesCondition": true,
         "low": {
           "outcome": "extracted",
-          "money": 4281,
-          "fame": 4735,
-          "minCondition": 52
+          "retainedMoney": 4281,
+          "retainedFame": 4735,
+          "minTechnicalCondition": 52,
+          "minVanCondition": 13,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": -4806,
+          "realizedHypeComboBonusTotal": 6700,
+          "toxicModeTriggers": 0,
+          "gigMissesTotal": 480,
+          "maxComboBest": 6
         },
         "competent": {
           "outcome": "extracted",
-          "money": 7506,
-          "fame": 6660,
-          "minCondition": 67
+          "retainedMoney": 7506,
+          "retainedFame": 6660,
+          "minTechnicalCondition": 67,
+          "minVanCondition": 25,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": -436,
+          "realizedHypeComboBonusTotal": 68190,
+          "toxicModeTriggers": 5,
+          "gigMissesTotal": 271,
+          "maxComboBest": 11
         },
         "high": {
           "outcome": "extracted",
-          "money": 10230,
-          "fame": 8199,
-          "minCondition": 63
+          "retainedMoney": 10230,
+          "retainedFame": 8199,
+          "minTechnicalCondition": 63,
+          "minVanCondition": 37,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 3490,
+          "realizedHypeComboBonusTotal": 411330,
+          "toxicModeTriggers": 5,
+          "gigMissesTotal": 84,
+          "maxComboBest": 43
         },
         "delta": {
           "money": 5949,
@@ -510,23 +1587,50 @@
       {
         "profileId": "clean_sponsor",
         "seed": 3888002939,
+        "skillImprovesOutcome": true,
+        "skillReducesRepairSpend": true,
+        "skillPreservesCondition": true,
         "low": {
           "outcome": "extracted",
-          "money": 3933,
-          "fame": 10237,
-          "minCondition": 61
+          "retainedMoney": 3933,
+          "retainedFame": 10237,
+          "minTechnicalCondition": 61,
+          "minVanCondition": 20,
+          "repairsCount": 3,
+          "repairSpend": null,
+          "gigNetTotal": -4746,
+          "realizedHypeComboBonusTotal": 6720,
+          "toxicModeTriggers": 0,
+          "gigMissesTotal": 475,
+          "maxComboBest": 8
         },
         "competent": {
           "outcome": "extracted",
-          "money": 7372,
-          "fame": 14472,
-          "minCondition": 64
+          "retainedMoney": 7372,
+          "retainedFame": 14472,
+          "minTechnicalCondition": 64,
+          "minVanCondition": 32,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": -634,
+          "realizedHypeComboBonusTotal": 58000,
+          "toxicModeTriggers": 5,
+          "gigMissesTotal": 283,
+          "maxComboBest": 11
         },
         "high": {
           "outcome": "extracted",
-          "money": 10200,
-          "fame": 17860,
-          "minCondition": 69
+          "retainedMoney": 10200,
+          "retainedFame": 17860,
+          "minTechnicalCondition": 69,
+          "minVanCondition": 44,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 3456,
+          "realizedHypeComboBonusTotal": 432560,
+          "toxicModeTriggers": 5,
+          "gigMissesTotal": 83,
+          "maxComboBest": 43
         },
         "delta": {
           "money": 6267,
@@ -536,23 +1640,50 @@
       {
         "profileId": "clean_sponsor",
         "seed": 3871225320,
+        "skillImprovesOutcome": true,
+        "skillReducesRepairSpend": true,
+        "skillPreservesCondition": true,
         "low": {
           "outcome": "completed",
-          "money": 4114,
-          "fame": 8010,
-          "minCondition": 41
+          "retainedMoney": 4114,
+          "retainedFame": 8010,
+          "minTechnicalCondition": 41,
+          "minVanCondition": 0,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": -5329,
+          "realizedHypeComboBonusTotal": 7430,
+          "toxicModeTriggers": 0,
+          "gigMissesTotal": 592,
+          "maxComboBest": 6
         },
         "competent": {
           "outcome": "extracted",
-          "money": 7152,
-          "fame": 5358,
-          "minCondition": 65
+          "retainedMoney": 7152,
+          "retainedFame": 5358,
+          "minTechnicalCondition": 65,
+          "minVanCondition": 31,
+          "repairsCount": 1,
+          "repairSpend": null,
+          "gigNetTotal": -461,
+          "realizedHypeComboBonusTotal": 54010,
+          "toxicModeTriggers": 4,
+          "gigMissesTotal": 223,
+          "maxComboBest": 11
         },
         "high": {
           "outcome": "completed",
-          "money": 15757,
-          "fame": 13950,
-          "minCondition": 61
+          "retainedMoney": 15757,
+          "retainedFame": 13950,
+          "minTechnicalCondition": 61,
+          "minVanCondition": 17,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 6482,
+          "realizedHypeComboBonusTotal": 517960,
+          "toxicModeTriggers": 6,
+          "gigMissesTotal": 98,
+          "maxComboBest": 43
         },
         "delta": {
           "money": 11643,
@@ -562,23 +1693,50 @@
       {
         "profileId": "clean_sponsor",
         "seed": 3988668653,
+        "skillImprovesOutcome": true,
+        "skillReducesRepairSpend": true,
+        "skillPreservesCondition": true,
         "low": {
           "outcome": "completed",
-          "money": 3760,
-          "fame": 27660,
-          "minCondition": 51
+          "retainedMoney": 3760,
+          "retainedFame": 27660,
+          "minTechnicalCondition": 51,
+          "minVanCondition": 0,
+          "repairsCount": 3,
+          "repairSpend": null,
+          "gigNetTotal": -5259,
+          "realizedHypeComboBonusTotal": 7650,
+          "toxicModeTriggers": 0,
+          "gigMissesTotal": 588,
+          "maxComboBest": 6
         },
         "competent": {
           "outcome": "completed",
-          "money": 11203,
-          "fame": 38002,
-          "minCondition": 60
+          "retainedMoney": 11203,
+          "retainedFame": 38002,
+          "minTechnicalCondition": 60,
+          "minVanCondition": 5,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 1890,
+          "realizedHypeComboBonusTotal": 77650,
+          "toxicModeTriggers": 6,
+          "gigMissesTotal": 328,
+          "maxComboBest": 13
         },
         "high": {
           "outcome": "completed",
-          "money": 15729,
-          "fame": 42870,
-          "minCondition": 64
+          "retainedMoney": 15729,
+          "retainedFame": 42870,
+          "minTechnicalCondition": 64,
+          "minVanCondition": 21,
+          "repairsCount": 2,
+          "repairSpend": null,
+          "gigNetTotal": 6480,
+          "realizedHypeComboBonusTotal": 496420,
+          "toxicModeTriggers": 6,
+          "gigMissesTotal": 100,
+          "maxComboBest": 32
         },
         "delta": {
           "money": 11969,
@@ -611,18 +1769,52 @@
         "profileId": "clean_sponsor",
         "seed": 3583348020,
         "source": "scout_recon",
+        "matchedDecisionFound": true,
         "decisionRouteStep": 0,
-        "revealUsed": true,
+        "candidateCount": 2,
+        "chosenNodeA": "exp_1_0",
+        "chosenNodeB": "exp_1_0",
+        "scoreA": 60,
+        "scoreB": 60,
         "routeChanged": false,
+        "revealUsed": true,
+        "revealedNodeIds": [
+          "exp_1_0"
+        ],
+        "revealedCandidateIds": [
+          "exp_1_0"
+        ],
+        "intelLevelsA": {
+          "exp_1_0": 0,
+          "exp_1_1": 0
+        },
+        "intelLevelsB": {
+          "exp_1_0": 1,
+          "exp_1_1": 0
+        },
+        "inspectedFieldsA": [
+          "dangerTier",
+          "nodeClass",
+          "rewardTier"
+        ],
+        "inspectedFieldsB": [
+          "dangerTier",
+          "exactPayout",
+          "exactWearCost",
+          "nodeClass",
+          "rewardTier"
+        ],
         "branchA": {
           "outcome": "completed",
           "money": 11331,
-          "fame": 9670
+          "fame": 9670,
+          "securedRares": 0
         },
         "branchB": {
           "outcome": "completed",
           "money": 11331,
-          "fame": 9670
+          "fame": 9670,
+          "securedRares": 0
         },
         "delta": {
           "money": 0,
@@ -633,18 +1825,54 @@
         "profileId": "clean_sponsor",
         "seed": 3600125639,
         "source": "scout_recon",
+        "matchedDecisionFound": true,
         "decisionRouteStep": 0,
-        "revealUsed": true,
+        "candidateCount": 3,
+        "chosenNodeA": "exp_1_2",
+        "chosenNodeB": "exp_1_2",
+        "scoreA": 90,
+        "scoreB": 90,
         "routeChanged": false,
+        "revealUsed": true,
+        "revealedNodeIds": [
+          "exp_1_0"
+        ],
+        "revealedCandidateIds": [
+          "exp_1_0"
+        ],
+        "intelLevelsA": {
+          "exp_1_0": 0,
+          "exp_1_1": 0,
+          "exp_1_2": 0
+        },
+        "intelLevelsB": {
+          "exp_1_0": 1,
+          "exp_1_1": 0,
+          "exp_1_2": 0
+        },
+        "inspectedFieldsA": [
+          "dangerTier",
+          "nodeClass",
+          "rewardTier"
+        ],
+        "inspectedFieldsB": [
+          "dangerTier",
+          "exactPayout",
+          "exactWearCost",
+          "nodeClass",
+          "rewardTier"
+        ],
         "branchA": {
           "outcome": "completed",
           "money": 11013,
-          "fame": 21094
+          "fame": 21094,
+          "securedRares": 0
         },
         "branchB": {
           "outcome": "completed",
           "money": 11013,
-          "fame": 21094
+          "fame": 21094,
+          "securedRares": 0
         },
         "delta": {
           "money": 0,
@@ -655,18 +1883,52 @@
         "profileId": "clean_sponsor",
         "seed": 3616903258,
         "source": "scout_recon",
+        "matchedDecisionFound": true,
         "decisionRouteStep": 0,
-        "revealUsed": true,
+        "candidateCount": 2,
+        "chosenNodeA": "exp_1_0",
+        "chosenNodeB": "exp_1_0",
+        "scoreA": 90,
+        "scoreB": 90,
         "routeChanged": false,
+        "revealUsed": true,
+        "revealedNodeIds": [
+          "exp_1_0"
+        ],
+        "revealedCandidateIds": [
+          "exp_1_0"
+        ],
+        "intelLevelsA": {
+          "exp_1_0": 0,
+          "exp_1_1": 0
+        },
+        "intelLevelsB": {
+          "exp_1_0": 1,
+          "exp_1_1": 0
+        },
+        "inspectedFieldsA": [
+          "dangerTier",
+          "nodeClass",
+          "rewardTier"
+        ],
+        "inspectedFieldsB": [
+          "dangerTier",
+          "exactPayout",
+          "exactWearCost",
+          "nodeClass",
+          "rewardTier"
+        ],
         "branchA": {
           "outcome": "extracted",
           "money": 7576,
-          "fame": 5481
+          "fame": 5481,
+          "securedRares": 0
         },
         "branchB": {
           "outcome": "extracted",
           "money": 7576,
-          "fame": 5481
+          "fame": 5481,
+          "securedRares": 0
         },
         "delta": {
           "money": 0,
@@ -677,18 +1939,54 @@
         "profileId": "clean_sponsor",
         "seed": 3633680877,
         "source": "scout_recon",
+        "matchedDecisionFound": true,
         "decisionRouteStep": 0,
-        "revealUsed": true,
+        "candidateCount": 3,
+        "chosenNodeA": "exp_1_1",
+        "chosenNodeB": "exp_1_1",
+        "scoreA": 90,
+        "scoreB": 90,
         "routeChanged": false,
+        "revealUsed": true,
+        "revealedNodeIds": [
+          "exp_1_0"
+        ],
+        "revealedCandidateIds": [
+          "exp_1_0"
+        ],
+        "intelLevelsA": {
+          "exp_1_0": 0,
+          "exp_1_1": 0,
+          "exp_1_2": 0
+        },
+        "intelLevelsB": {
+          "exp_1_0": 1,
+          "exp_1_1": 0,
+          "exp_1_2": 0
+        },
+        "inspectedFieldsA": [
+          "dangerTier",
+          "nodeClass",
+          "rewardTier"
+        ],
+        "inspectedFieldsB": [
+          "dangerTier",
+          "exactPayout",
+          "exactWearCost",
+          "nodeClass",
+          "rewardTier"
+        ],
         "branchA": {
           "outcome": "completed",
           "money": 11002,
-          "fame": 9670
+          "fame": 9670,
+          "securedRares": 0
         },
         "branchB": {
           "outcome": "completed",
           "money": 11002,
-          "fame": 9670
+          "fame": 9670,
+          "securedRares": 0
         },
         "delta": {
           "money": 0,
@@ -699,18 +1997,52 @@
         "profileId": "clean_sponsor",
         "seed": 3516237544,
         "source": "scout_recon",
+        "matchedDecisionFound": true,
         "decisionRouteStep": 0,
-        "revealUsed": true,
+        "candidateCount": 2,
+        "chosenNodeA": "exp_1_0",
+        "chosenNodeB": "exp_1_0",
+        "scoreA": 60,
+        "scoreB": 60,
         "routeChanged": false,
+        "revealUsed": true,
+        "revealedNodeIds": [
+          "exp_1_0"
+        ],
+        "revealedCandidateIds": [
+          "exp_1_0"
+        ],
+        "intelLevelsA": {
+          "exp_1_0": 0,
+          "exp_1_1": 0
+        },
+        "intelLevelsB": {
+          "exp_1_0": 1,
+          "exp_1_1": 0
+        },
+        "inspectedFieldsA": [
+          "dangerTier",
+          "nodeClass",
+          "rewardTier"
+        ],
+        "inspectedFieldsB": [
+          "dangerTier",
+          "exactPayout",
+          "exactWearCost",
+          "nodeClass",
+          "rewardTier"
+        ],
         "branchA": {
           "outcome": "extracted",
           "money": 7433,
-          "fame": 5481
+          "fame": 5481,
+          "securedRares": 0
         },
         "branchB": {
           "outcome": "extracted",
           "money": 7433,
-          "fame": 5481
+          "fame": 5481,
+          "securedRares": 0
         },
         "delta": {
           "money": 0,
@@ -948,6 +2280,600 @@
           "completedAllRunsRate": 1,
           "meanRunsCompleted": 6,
           "haltReasons": {}
+        }
+      }
+    },
+    "progressionMetrics": {
+      "calibration": {
+        "sequencesCount": 6000,
+        "ranks": {
+          "roadtestedReachedRate": 0.5578333333333333,
+          "meanFirstRoadtestedRun": 2.0743949805796236,
+          "headlinerReachedRate": 0.26316666666666666,
+          "meanFirstHeadlinerRun": 5.492083597213426
+        },
+        "metaAndFacilities": {
+          "facilityPurchaseRate": 0.9908333333333333,
+          "meanFirstFacilityRun": 1,
+          "permanentCapabilityPurchaseRate": 0.5303333333333333,
+          "meanFirstCapabilityRun": 2.5175989943431802,
+          "run1PermanentCapabilityPurchaseRate": 0,
+          "run1LegacyHqPurchaseRate": 0,
+          "meanFirstLegacyHqRun": null
+        },
+        "milestones": {
+          "ascensionUnlockRate": 0,
+          "meanFirstAscensionRun": null,
+          "naturalLegendaryRate": 0.26316666666666666,
+          "meanFirstLegendaryRun": 5.492083597213426,
+          "signatureTraitUnlockRate": 0,
+          "meanSignatureTraitRun": null,
+          "crewRecoveryDebtEventsTotal": 0
+        },
+        "sponsors": {
+          "advancesTakenTotal": 487,
+          "meanOffersStagedPerSequence": 11.4545,
+          "meanOffersSelectedPerSequence": 0.8413333333333334,
+          "meanOffersAcceptedPerSequence": 0.8413333333333334
+        },
+        "solvency": {
+          "normalTerminalsTotal": 21816,
+          "solventAfterNormalTerminalTotal": 21816,
+          "solvencyRate": 1
+        },
+        "rivals": {
+          "meanMaxNemesisLevel": 0.15316666666666667,
+          "meanSameRivalReturnRate": 0
+        },
+        "byProfile": {
+          "clean_sponsor": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 1,
+              "meanFirstRoadtestedRun": 2.24,
+              "headlinerReachedRate": 0.407,
+              "meanFirstHeadlinerRun": 5.815724815724816
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 1,
+              "meanFirstCapabilityRun": 2.919,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.407,
+              "meanFirstLegendaryRun": 5.815724815724816,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 0,
+              "meanOffersStagedPerSequence": 5.871,
+              "meanOffersSelectedPerSequence": 1.957,
+              "meanOffersAcceptedPerSequence": 1.957
+            },
+            "solvency": {
+              "normalTerminalsTotal": 6000,
+              "solventAfterNormalTerminalTotal": 6000,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "underground_heat": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.17,
+              "meanFirstRoadtestedRun": 2,
+              "headlinerReachedRate": 0.055,
+              "meanFirstHeadlinerRun": 5.2
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 0.998,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.108,
+              "meanFirstCapabilityRun": 2.138888888888889,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.055,
+              "meanFirstLegendaryRun": 5.2,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 37,
+              "meanOffersStagedPerSequence": 17.583,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 1490,
+              "solventAfterNormalTerminalTotal": 1490,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "diy_repair": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 1,
+              "meanFirstRoadtestedRun": 2.005,
+              "headlinerReachedRate": 0.87,
+              "meanFirstHeadlinerRun": 5.3310344827586205
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 1,
+              "meanFirstCapabilityRun": 2.005,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.87,
+              "meanFirstLegendaryRun": 5.3310344827586205,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 0,
+              "meanOffersStagedPerSequence": 18,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 6000,
+              "solventAfterNormalTerminalTotal": 6000,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "scout_intel": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.086,
+              "meanFirstRoadtestedRun": 2,
+              "headlinerReachedRate": 0,
+              "meanFirstHeadlinerRun": null
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 0.947,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.041,
+              "meanFirstCapabilityRun": 2.5121951219512195,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0,
+              "meanFirstLegendaryRun": null,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 78,
+              "meanOffersStagedPerSequence": 18,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 1157,
+              "solventAfterNormalTerminalTotal": 1157,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "high_exposure_performance": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.465,
+              "meanFirstRoadtestedRun": 2.0086021505376346,
+              "headlinerReachedRate": 0.186,
+              "meanFirstHeadlinerRun": 5.591397849462366
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.453,
+              "meanFirstCapabilityRun": 2.719646799116998,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.186,
+              "meanFirstLegendaryRun": 5.591397849462366,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 264,
+              "meanOffersStagedPerSequence": 4.209,
+              "meanOffersSelectedPerSequence": 1.403,
+              "meanOffersAcceptedPerSequence": 1.403
+            },
+            "solvency": {
+              "normalTerminalsTotal": 3450,
+              "solventAfterNormalTerminalTotal": 3450,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "rival_hunter": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.626,
+              "meanFirstRoadtestedRun": 2,
+              "headlinerReachedRate": 0.061,
+              "meanFirstHeadlinerRun": 5.590163934426229
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.58,
+              "meanFirstCapabilityRun": 2.622413793103448,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.061,
+              "meanFirstLegendaryRun": 5.590163934426229,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 108,
+              "meanOffersStagedPerSequence": 5.064,
+              "meanOffersSelectedPerSequence": 1.688,
+              "meanOffersAcceptedPerSequence": 1.688
+            },
+            "solvency": {
+              "normalTerminalsTotal": 3719,
+              "solventAfterNormalTerminalTotal": 3719,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0.919,
+              "meanSameRivalReturnRate": 0
+            }
+          }
+        }
+      },
+      "holdout": {
+        "sequencesCount": 6000,
+        "ranks": {
+          "roadtestedReachedRate": 0.5436666666666666,
+          "meanFirstRoadtestedRun": 2.071122011036174,
+          "headlinerReachedRate": 0.26166666666666666,
+          "meanFirstHeadlinerRun": 5.478980891719745
+        },
+        "metaAndFacilities": {
+          "facilityPurchaseRate": 0.9905,
+          "meanFirstFacilityRun": 1,
+          "permanentCapabilityPurchaseRate": 0.5168333333333334,
+          "meanFirstCapabilityRun": 2.511447920025798,
+          "run1PermanentCapabilityPurchaseRate": 0,
+          "run1LegacyHqPurchaseRate": 0,
+          "meanFirstLegacyHqRun": null
+        },
+        "milestones": {
+          "ascensionUnlockRate": 0,
+          "meanFirstAscensionRun": null,
+          "naturalLegendaryRate": 0.26166666666666666,
+          "meanFirstLegendaryRun": 5.478980891719745,
+          "signatureTraitUnlockRate": 0,
+          "meanSignatureTraitRun": null,
+          "crewRecoveryDebtEventsTotal": 0
+        },
+        "sponsors": {
+          "advancesTakenTotal": 503,
+          "meanOffersStagedPerSequence": 11.429333333333334,
+          "meanOffersSelectedPerSequence": 0.8291666666666667,
+          "meanOffersAcceptedPerSequence": 0.8291666666666667
+        },
+        "solvency": {
+          "normalTerminalsTotal": 21530,
+          "solventAfterNormalTerminalTotal": 21530,
+          "solvencyRate": 1
+        },
+        "rivals": {
+          "meanMaxNemesisLevel": 0.15533333333333332,
+          "meanSameRivalReturnRate": 0
+        },
+        "byProfile": {
+          "clean_sponsor": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 1,
+              "meanFirstRoadtestedRun": 2.223,
+              "headlinerReachedRate": 0.434,
+              "meanFirstHeadlinerRun": 5.792626728110599
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 1,
+              "meanFirstCapabilityRun": 2.906,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.434,
+              "meanFirstLegendaryRun": 5.792626728110599,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 0,
+              "meanOffersStagedPerSequence": 5.853,
+              "meanOffersSelectedPerSequence": 1.951,
+              "meanOffersAcceptedPerSequence": 1.951
+            },
+            "solvency": {
+              "normalTerminalsTotal": 6000,
+              "solventAfterNormalTerminalTotal": 6000,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "underground_heat": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.151,
+              "meanFirstRoadtestedRun": 2,
+              "headlinerReachedRate": 0.047,
+              "meanFirstHeadlinerRun": 5.212765957446808
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 0.993,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.09,
+              "meanFirstCapabilityRun": 2.1222222222222222,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.047,
+              "meanFirstLegendaryRun": 5.212765957446808,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 34,
+              "meanOffersStagedPerSequence": 17.651,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 1434,
+              "solventAfterNormalTerminalTotal": 1434,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "diy_repair": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 1,
+              "meanFirstRoadtestedRun": 2.005,
+              "headlinerReachedRate": 0.865,
+              "meanFirstHeadlinerRun": 5.320231213872832
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 1,
+              "meanFirstCapabilityRun": 2.005,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.865,
+              "meanFirstLegendaryRun": 5.320231213872832,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 0,
+              "meanOffersStagedPerSequence": 18,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 6000,
+              "solventAfterNormalTerminalTotal": 6000,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "scout_intel": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.073,
+              "meanFirstRoadtestedRun": 2,
+              "headlinerReachedRate": 0,
+              "meanFirstHeadlinerRun": null
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 0.95,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.037,
+              "meanFirstCapabilityRun": 2.4864864864864864,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0,
+              "meanFirstLegendaryRun": null,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 62,
+              "meanOffersStagedPerSequence": 18,
+              "meanOffersSelectedPerSequence": 0,
+              "meanOffersAcceptedPerSequence": 0
+            },
+            "solvency": {
+              "normalTerminalsTotal": 1147,
+              "solventAfterNormalTerminalTotal": 1147,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "high_exposure_performance": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.418,
+              "meanFirstRoadtestedRun": 2.0047846889952154,
+              "headlinerReachedRate": 0.158,
+              "meanFirstHeadlinerRun": 5.550632911392405
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.405,
+              "meanFirstCapabilityRun": 2.748148148148148,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.158,
+              "meanFirstLegendaryRun": 5.550632911392405,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 289,
+              "meanOffersStagedPerSequence": 4.041,
+              "meanOffersSelectedPerSequence": 1.347,
+              "meanOffersAcceptedPerSequence": 1.347
+            },
+            "solvency": {
+              "normalTerminalsTotal": 3246,
+              "solventAfterNormalTerminalTotal": 3246,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0,
+              "meanSameRivalReturnRate": 0
+            }
+          },
+          "rival_hunter": {
+            "sequencesCount": 1000,
+            "ranks": {
+              "roadtestedReachedRate": 0.62,
+              "meanFirstRoadtestedRun": 2.003225806451613,
+              "headlinerReachedRate": 0.066,
+              "meanFirstHeadlinerRun": 5.515151515151516
+            },
+            "metaAndFacilities": {
+              "facilityPurchaseRate": 1,
+              "meanFirstFacilityRun": 1,
+              "permanentCapabilityPurchaseRate": 0.569,
+              "meanFirstCapabilityRun": 2.602811950790861,
+              "run1PermanentCapabilityPurchaseRate": 0,
+              "run1LegacyHqPurchaseRate": 0,
+              "meanFirstLegacyHqRun": null
+            },
+            "milestones": {
+              "ascensionUnlockRate": 0,
+              "meanFirstAscensionRun": null,
+              "naturalLegendaryRate": 0.066,
+              "meanFirstLegendaryRun": 5.515151515151516,
+              "signatureTraitUnlockRate": 0,
+              "meanSignatureTraitRun": null,
+              "crewRecoveryDebtEventsTotal": 0
+            },
+            "sponsors": {
+              "advancesTakenTotal": 118,
+              "meanOffersStagedPerSequence": 5.031,
+              "meanOffersSelectedPerSequence": 1.677,
+              "meanOffersAcceptedPerSequence": 1.677
+            },
+            "solvency": {
+              "normalTerminalsTotal": 3703,
+              "solventAfterNormalTerminalTotal": 3703,
+              "solvencyRate": 1
+            },
+            "rivals": {
+              "meanMaxNemesisLevel": 0.932,
+              "meanSameRivalReturnRate": 0
+            }
+          }
         }
       }
     },
