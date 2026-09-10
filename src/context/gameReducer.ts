@@ -89,7 +89,8 @@ import {
   handleOfferExpeditionDraft,
   handleSelectExpeditionDraft,
   handleResolveExpeditionSocialResult,
-  handleCreateSocialIntelGrant
+  handleCreateSocialIntelGrant,
+  handleSettleSoldMerch
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -295,6 +296,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.UNLOCK_EXPEDITION_ASCENSION]: handleUnlockExpeditionAscension,
   [ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD]:
     handleCommitExpeditionLegendaryReward,
+  [ActionTypes.SETTLE_SOLD_MERCH]: handleSettleSoldMerch,
   [ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY]:
     handleRecordExpeditionArchiveDiscovery,
   [ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS]:

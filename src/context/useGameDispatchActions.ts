@@ -58,6 +58,7 @@ import {
   createChangeSceneAction,
   createUpdatePlayerAction,
   createUpdateBandAction,
+  createSettleSoldMerchAction,
   createUpdateSocialAction,
   createUpdateSettingsAction,
   createSetMapAction,
@@ -100,6 +101,7 @@ type BaseGameDispatchActions = {
     updates: Parameters<typeof createUpdatePlayerAction>[0]
   ) => void
   updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
+  settleSoldMerch: (soldMerch: Record<string, number>) => void
   toggleNeuroDecimator: (
     isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]
   ) => void
@@ -381,6 +383,7 @@ type SimpleDispatchActions = Pick<
   BaseGameDispatchActions,
   | 'updatePlayer'
   | 'updateBand'
+  | 'settleSoldMerch'
   | 'toggleNeuroDecimator'
   | 'updateSocial'
   | 'setGameMap'
@@ -463,6 +466,8 @@ export function useGameDispatchActions({
         dispatch(createUpdatePlayerAction(updates)),
       updateBand: (updates: UpdateBandPayload) =>
         dispatch(createUpdateBandAction(updates)),
+      settleSoldMerch: (soldMerch: Record<string, number>) =>
+        dispatch(createSettleSoldMerchAction(soldMerch)),
       toggleNeuroDecimator: isActive =>
         dispatch(createToggleNeuroDecimatorAction(isActive)),
       updateSocial: (

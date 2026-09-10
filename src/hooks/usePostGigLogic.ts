@@ -79,7 +79,8 @@ export const usePostGigLogic = () => {
     recordExpeditionCrewStressSource,
     completeExpedition,
     recordExpeditionObligationSignal,
-    resolveExpeditionSocialResult
+    resolveExpeditionSocialResult,
+    settleSoldMerch
   } = useGameActions()
 
   // 1. Core State

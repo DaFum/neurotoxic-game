@@ -47,4 +47,5 @@ export interface HandlerDispatchers {
     resultId: import('../../../domain/expedition/social').ExpeditionSocialResultId,
     postOptionId: string
   ) => void
+  settleSoldMerch?: (soldMerch: Record<string, number>) => void
 }

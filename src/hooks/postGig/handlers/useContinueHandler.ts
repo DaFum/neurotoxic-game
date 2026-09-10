@@ -78,7 +78,8 @@ export function useContinueHandler({
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
-    recordExpeditionObligationSignal
+    recordExpeditionObligationSignal,
+    settleSoldMerch
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -88,18 +89,13 @@ export function useContinueHandler({
     setIsProcessingAction(true)
     try {
       if (financials.soldMerch) {
-        const soldMerch = financials.soldMerch
-        updateBand((prevBand: BandState) => ({
-          inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
-        }))
-        if (expedition?.status === 'active' && Array.isArray(expedition.cargo?.merch)) {
-          expedition.cargo.merch = expedition.cargo.merch.map(item => {
-            const soldQty = soldMerch[item.inventoryKey] ?? 0
-            return {
-              ...item,
-              quantity: Math.max(0, item.quantity - soldQty)
-            }
-          })
+        if (settleSoldMerch) {
+          settleSoldMerch(financials.soldMerch)
+        } else {
+          const soldMerch = financials.soldMerch
+          updateBand((prevBand: BandState) => ({
+            inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
+          }))
         }
       }
 
@@ -254,6 +250,7 @@ export function useContinueHandler({
     recordExpeditionCrewStressSource,
     completeExpedition,
     recordExpeditionObligationSignal,
+    settleSoldMerch,
     setlist,
     expedition,
     band,

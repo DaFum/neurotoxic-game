@@ -471,6 +471,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           <div
             role='tabpanel'
             id='panel-route_performance'
+            data-testid='expedition-prep-panel-route_performance'
             aria-labelledby='tab-route_performance'
             hidden={activeTab !== 'route_performance'}
             className='flex flex-col gap-4'
@@ -703,6 +704,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           <div
             role='tabpanel'
             id='panel-tourbus_cargo'
+            data-testid='expedition-prep-panel-tourbus_cargo'
             aria-labelledby='tab-tourbus_cargo'
             hidden={activeTab !== 'tourbus_cargo'}
             className='flex flex-col gap-4'
@@ -758,7 +760,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         Archetype: {profile.archetype} | Cargo Bonus: +
                         {profile.cargoCapacityBonus}
                         {isTierLocked && (
-                          <span className='block text-signal-red text-[10px] mt-0.5'>
+                          <span className='block text-blood-red text-[10px] mt-0.5'>
                             ({t('ui:expedition.prep.reject.CHASSIS_TIER_LOCKED')})
                           </span>
                         )}
@@ -797,7 +799,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               {/* Cargo meter */}
               <div
                 role='meter'
-                aria-label='Cargo Capacity'
+                aria-label={t('ui:expedition.prep.cargo', 'Cargo Capacity')}
                 aria-valuenow={cargoUsage.visibleSlotsUsed}
                 aria-valuemin={0}
                 aria-valuemax={cargoUsage.visibleCapacity}
@@ -887,6 +889,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           <div
             role='tabpanel'
             id='panel-risk_protection'
+            data-testid='expedition-prep-panel-risk_protection'
             aria-labelledby='tab-risk_protection'
             hidden={activeTab !== 'risk_protection'}
             className='flex flex-col gap-4'
@@ -930,8 +933,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     >
                       <strong>{policyId}</strong>
                       <span className='block normal-case text-ash-gray'>
-                        Coverage: {policy.coverage} | Premium:{' '}
-                        {formatCurrency(policy.premium, i18n.language)}
+                        {t('ui:expedition.prep.policyCoverage', 'Coverage: {{coverage}} | Premium: {{premium}}', {
+                          coverage: policy.coverage,
+                          premium: formatCurrency(policy.premium, i18n.language)
+                        })}
                       </span>
                     </button>
                   )
@@ -969,7 +974,8 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         <div className='flex justify-between text-star-white'>
                           <span>{contrabandInfo?.name ?? item.stashKey}</span>
                           <span>
-                            {currentStacks} / {item.ownedStacks} Stacks
+                            {currentStacks} / {item.ownedStacks}{' '}
+                            {t('ui:expedition.prep.stacks', 'Stacks')}
                           </span>
                         </div>
                         <input
@@ -1021,6 +1027,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           <div
             role='tabpanel'
             id='panel-commercial_contracts'
+            data-testid='expedition-prep-panel-commercial_contracts'
             aria-labelledby='tab-commercial_contracts'
             hidden={activeTab !== 'commercial_contracts'}
             className='flex flex-col gap-4'
@@ -1054,7 +1061,8 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         <div className='flex justify-between text-star-white'>
                           <span>{item.inventoryKey}</span>
                           <span>
-                            {currentQty} / {item.ownedQuantity} Items
+                            {currentQty} / {item.ownedQuantity}{' '}
+                            {t('ui:expedition.prep.items', 'Items')}
                           </span>
                         </div>
                         <input

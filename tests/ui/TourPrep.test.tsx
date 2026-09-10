@@ -124,8 +124,6 @@ describe('TourPrep scene', () => {
   it('offers no Tour Pressure until Ascension is open', () => {
     state.current = buildState()
     render(<TourPrep />)
-    // Switch to Risk & Protection tab
-    fireEvent.click(screen.getByTestId('expedition-prep-tab-risk_protection'))
     expect(
       screen.queryByTestId('expedition-prep-pressure-bad_roads')
     ).toBeNull()
@@ -137,8 +135,9 @@ describe('TourPrep scene', () => {
     state.current = base
     render(<TourPrep />)
 
-    // Switch to Risk & Protection tab where Tour Pressure lives
-    fireEvent.click(screen.getByTestId('expedition-prep-tab-risk_protection'))
+    const routeTab = screen.getByTestId('expedition-prep-tab-route_performance')
+    expect(routeTab).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByTestId('expedition-prep-panel-route_performance')).not.toHaveAttribute('hidden')
 
     const pick = (id: string) =>
       screen.getByTestId(`expedition-prep-pressure-${id}`)
@@ -165,8 +164,22 @@ describe('TourPrep scene', () => {
       {
         id: 'bus_1',
         kind: 'tourbus_chassis',
-        name: 'Custom Bus',
-        slots: [{ installedModuleId: 'module_solar' }]
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 50,
+        baseDailyRevenue: 0,
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.05,
+        slots: [
+          {
+            id: 's1',
+            slotType: 'tb_roof',
+            position: { x: 0.5, y: 0.1 },
+            installedModuleId: 'module_solar'
+          }
+        ]
       }
     ]
     base.band.inventory = { shirts: 5 }

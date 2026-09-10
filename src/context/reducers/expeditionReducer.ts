@@ -14,6 +14,7 @@
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
+import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -188,6 +189,49 @@ const applyVehicleInsuranceClaim = (state: GameState): GameState => {
       ...state.expedition,
       insuranceClaimConsumed: true,
       claimConsumed: true
+    }
+  }
+}
+
+export const handleSettleSoldMerch = (
+  state: GameState,
+  soldMerch: Record<string, number>
+): GameState => {
+  if (!soldMerch || typeof soldMerch !== 'object') return state
+  if (
+    state.expedition?.status === 'active' &&
+    Array.isArray(state.expedition.cargo?.merch)
+  ) {
+    const currentCargo = state.expedition.cargo
+    const nextMerch = currentCargo.merch.map(item => {
+      const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
+        ? soldMerch[item.inventoryKey]
+        : 0
+      const soldQty = isFiniteNumber(rawSold)
+        ? Math.max(0, Math.floor(rawSold))
+        : 0
+      return {
+        ...item,
+        quantity: Math.max(0, item.quantity - soldQty)
+      }
+    })
+    return {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        cargo: {
+          ...currentCargo,
+          merch: nextMerch
+        }
+      }
+    }
+  }
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      inventory: buildSoldMerchInventory(state.band.inventory, soldMerch)
     }
   }
 }
