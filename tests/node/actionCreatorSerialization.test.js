@@ -83,6 +83,7 @@ const baseState = () => createInitialState()
 const CREATOR_ARGS = {
   createChangeSceneAction: () => [GAME_PHASES.OVERWORLD],
   createUpdatePlayerAction: () => [{ money: 500, fame: 10 }],
+  createSettleSoldMerchAction: () => [{ shirts: 5 }],
   createUpdateBandAction: () => [{ harmony: 80 }],
   toggleNeuroDecimator: () => [true],
   createUpdateSocialAction: () => [{ instagram: 1000 }],

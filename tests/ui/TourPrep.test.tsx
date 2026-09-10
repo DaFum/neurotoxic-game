@@ -135,6 +135,10 @@ describe('TourPrep scene', () => {
     state.current = base
     render(<TourPrep />)
 
+    const routeTab = screen.getByTestId('expedition-prep-tab-route_performance')
+    expect(routeTab).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByTestId('expedition-prep-panel-route_performance')).not.toHaveAttribute('hidden')
+
     const pick = (id: string) =>
       screen.getByTestId(`expedition-prep-pressure-${id}`)
 
@@ -152,6 +156,78 @@ describe('TourPrep scene', () => {
     expect(
       actions.startExpedition.mock.calls[0][0].pressureModifierIds
     ).toEqual(['bad_roads', 'media_frenzy'])
+  })
+
+  it('allows committing tourbus asset, cargo, insurance, merch, and contraband', () => {
+    const base = buildState({ money: 10000 })
+    base.assets = [
+      {
+        id: 'bus_1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 50,
+        baseDailyRevenue: 0,
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.05,
+        slots: [
+          {
+            id: 's1',
+            slotType: 'tb_roof',
+            position: { x: 0.5, y: 0.1 },
+            installedModuleId: 'module_solar'
+          }
+        ]
+      }
+    ]
+    base.band.inventory = { shirts: 5 }
+    base.band.stash = {
+      c_void_energy: { stashKey: 'c_void_energy', stacks: 3 }
+    }
+    state.current = base
+    render(<TourPrep />)
+
+    // Tab 2: Tourbus & Cargo
+    fireEvent.click(screen.getByTestId('expedition-prep-tab-tourbus_cargo'))
+    fireEvent.click(screen.getByTestId('expedition-prep-tourbus-bus_1'))
+    fireEvent.change(screen.getByTestId('expedition-prep-spare-parts'), {
+      target: { value: '2' }
+    })
+    fireEvent.change(screen.getByTestId('expedition-prep-supplies'), {
+      target: { value: '3' }
+    })
+
+    // Tab 3: Risk & Protection
+    fireEvent.click(screen.getByTestId('expedition-prep-tab-risk_protection'))
+    fireEvent.click(screen.getByTestId('expedition-prep-insurance-roadside'))
+    fireEvent.change(
+      screen.getByTestId('expedition-prep-contraband-c_void_energy'),
+      {
+        target: { value: '2' }
+      }
+    )
+
+    // Tab 4: Commercial & Contracts
+    fireEvent.click(screen.getByTestId('expedition-prep-tab-commercial_contracts'))
+    fireEvent.change(screen.getByTestId('expedition-prep-merch-shirts'), {
+      target: { value: '4' }
+    })
+
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+    expect(actions.startExpedition).toHaveBeenCalledTimes(1)
+
+    const committed = actions.startExpedition.mock.calls[0][0]
+    expect(committed.activeTourbusAssetId).toBe('bus_1')
+    expect(committed.cargo).toEqual({ spareParts: 2, supplies: 3 })
+    expect(committed.insurancePolicyId).toBe('roadside')
+    expect(committed.build.merch).toEqual([
+      { inventoryKey: 'shirts', quantity: 4 }
+    ])
+    expect(committed.build.contraband).toEqual([
+      { stashKey: 'c_void_energy', instanceId: null, stacks: 2 }
+    ])
   })
 
   it('previews the prepared route and enables the commit', () => {

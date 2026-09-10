@@ -79,7 +79,8 @@ export const usePostGigLogic = () => {
     recordExpeditionCrewStressSource,
     completeExpedition,
     recordExpeditionObligationSignal,
-    resolveExpeditionSocialResult
+    resolveExpeditionSocialResult,
+    settleSoldMerch
   } = useGameActions()
 
   // 1. Core State
@@ -111,7 +112,8 @@ export const usePostGigLogic = () => {
       cityStates,
       triggerEvent,
       isScreenshotMode,
-      gigRewardMultiplier: finaleRewardMultiplier
+      gigRewardMultiplier: finaleRewardMultiplier,
+      expedition
     })
 
   // 3. Handlers
@@ -151,6 +153,7 @@ export const usePostGigLogic = () => {
     completeExpedition,
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
+    settleSoldMerch,
     phase,
     setPhase,
     setPostResult,

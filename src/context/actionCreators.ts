@@ -156,6 +156,13 @@ export const createUpdatePlayerAction = (
  * @param updates - Partial band update object or updater callback.
  * @returns UPDATE_BAND action with sanitized payload.
  */
+export const createSettleSoldMerchAction = (
+  soldMerch: Record<string, number>
+): Extract<GameAction, { type: typeof ActionTypes.SETTLE_SOLD_MERCH }> => ({
+  type: ActionTypes.SETTLE_SOLD_MERCH,
+  payload: soldMerch && typeof soldMerch === 'object' ? { ...soldMerch } : {}
+})
+
 export const createUpdateBandAction = (
   updates: UpdateBandPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {

@@ -86,6 +86,7 @@ describe('insurance policies and definitions', () => {
 describe('loadout validation for insurance', () => {
   it('accepts valid insurance policies and null', () => {
     const state = createInitialState()
+    state.player.money = 5000
     for (const policyId of [null, 'roadside', 'equipment', 'touring']) {
       const candidate = fixtureLoadout({ insurancePolicyId: policyId })
       const res = validateExpeditionBuildCommitment(state, candidate, map)

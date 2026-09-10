@@ -38,6 +38,7 @@ interface UsePostGigDerivationsProps {
   triggerEvent: (type: string, id: string) => boolean
   isScreenshotMode: boolean
   gigRewardMultiplier?: number
+  expedition?: GameState['expedition']
 }
 
 /**
@@ -61,7 +62,8 @@ export const usePostGigDerivations = ({
   cityStates,
   triggerEvent,
   isScreenshotMode,
-  gigRewardMultiplier
+  gigRewardMultiplier = 1,
+  expedition
 }: UsePostGigDerivationsProps) => {
   const perfScore = useMemo(
     () => calculatePerformanceScore(lastGigStats?.score ?? 0),
@@ -121,12 +123,23 @@ export const usePostGigDerivations = ({
         ? undefined
         : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
 
+    const effectiveInventory: Record<string, number> = {}
+    if (expedition?.status === 'active' && Array.isArray(expedition.cargo?.merch)) {
+      for (const item of expedition.cargo.merch) {
+        if (item && typeof item.inventoryKey === 'string' && typeof item.quantity === 'number') {
+          effectiveInventory[item.inventoryKey] = item.quantity
+        }
+      }
+    } else {
+      Object.assign(effectiveInventory, band.inventory)
+    }
+
     const nextFinancials = deriveFinancials({
       currentGig,
       lastGigStats,
       perfScore,
       gigModifiers,
-      bandInventory: band.inventory,
+      bandInventory: effectiveInventory,
       bandMerchPrices: band.merchPrices,
       bandGigModifier: finiteNumberOr(band.gigModifier, 0),
       player,
@@ -159,7 +172,9 @@ export const usePostGigDerivations = ({
     cityStates,
     gigContext,
     assetModifiers,
-    gigRewardMultiplier
+    gigRewardMultiplier,
+    expedition?.status,
+    expedition?.cargo?.merch
   ])
 
   useEffect(() => {
