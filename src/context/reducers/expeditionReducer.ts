@@ -13,7 +13,7 @@
 
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { isForbiddenKey } from '../../utils/objectUtils'
+import { isForbiddenKey, hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
@@ -197,7 +197,14 @@ export const handleSettleSoldMerch = (
   state: GameState,
   soldMerch: Record<string, number>
 ): GameState => {
-  if (!soldMerch || typeof soldMerch !== 'object') return state
+  if (
+    !soldMerch ||
+    typeof soldMerch !== 'object' ||
+    Array.isArray(soldMerch) ||
+    hasForbiddenOwnKeys(soldMerch)
+  ) {
+    return state
+  }
   if (
     state.expedition?.status === 'active' &&
     Array.isArray(state.expedition.cargo?.merch)

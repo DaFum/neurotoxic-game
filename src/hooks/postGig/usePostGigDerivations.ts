@@ -172,7 +172,9 @@ export const usePostGigDerivations = ({
     cityStates,
     gigContext,
     assetModifiers,
-    gigRewardMultiplier
+    gigRewardMultiplier,
+    expedition?.status,
+    expedition?.cargo?.merch
   ])
 
   useEffect(() => {
