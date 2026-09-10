@@ -297,6 +297,10 @@ export const buildRhythmLayout = ({
 
 /**
  * Cache for PixiJS textures loaded via the HTML Image fallback pipeline.
+ *
+ * @remarks
+ * Maintained as a separate cache from `Assets.cache` to prevent rendering bugs with `TilingSprite`,
+ * because image-fallback textures lack the proper source metadata required for tiling.
  */
 const _imageTextureCache = new Map<string, Texture>()
 
