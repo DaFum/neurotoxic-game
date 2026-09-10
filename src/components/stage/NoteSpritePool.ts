@@ -16,7 +16,7 @@ const NOTE_LIGHTNING_LANE_INDEX = 1
 
 type LaneData = {
   color: number
-  renderX: number
+  renderX?: number
 }
 
 /**
@@ -118,7 +118,8 @@ class NoteSpriteFactory {
     }
 
     sprite.tint = lane.color
-    sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+    // ⚡ BOLT OPTIMIZATION: Safely fallback renderX when undefined to accept StageLane directly
+    sprite.x = (lane.renderX ?? 0) + NOTE_CENTER_OFFSET
     sprite.y = NOTE_INITIAL_Y
 
     if (sprite.isFallback) {

@@ -27,11 +27,6 @@ type StageState = {
 type LaneLayout = { hitLineY?: number }
 type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
 
-const getLaneRenderX = (lane: StageLane): number =>
-  // RhythmGameRefState keeps renderX optional while lanes are being laid out.
-  // Before layout completes, render notes at the left edge instead of crashing.
-  lane.renderX ?? 0
-
 /**
  * Manages Note rendering resources and state.
  */
@@ -119,9 +114,11 @@ export class NoteManager {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
           if (lane && this.pool && this.container) {
-            const renderLane = { ...lane, renderX: getLaneRenderX(lane) }
+            // ⚡ BOLT OPTIMIZATION: Pass lane directly without allocating intermediate renderLane object.
+            // Why: Prevents object allocation churn on every spawned note in the 60fps game loop.
+            // Impact: Eliminates GC allocations during note spawning.
             const sprite = this.pool.acquireSpriteFromPool(
-              renderLane,
+              lane,
               note.laneIndex
             )
             this.container.addChild(sprite)
@@ -141,15 +138,23 @@ export class NoteManager {
     targetY: number
   ): void {
     let writeIdx = 0
-    for (let i = 0; i < this.activeEntities.length; i++) {
-      const entity = this.activeEntities[i]
+    // ⚡ BOLT OPTIMIZATION: Hoist loop-invariant state references to avoid property access in hot loop.
+    // Why: state.modifiers?.noteJitter, state.lanes, and state.speed are invariant across active notes in a single frame.
+    // Impact: Saves repeated property lookups on every active note in the 60fps render loop.
+    const activeEntities = this.activeEntities
+    const lanes = state.lanes
+    const isJitter = Boolean(state.modifiers?.noteJitter)
+    const speed = state.speed
+
+    for (let i = 0; i < activeEntities.length; i++) {
+      const entity = activeEntities[i]
       if (!entity) continue
       const note = entity.note
       const sprite = entity.sprite
 
       if (note.hit) {
         const laneColor =
-          state.lanes?.[note.laneIndex]?.color ??
+          lanes?.[note.laneIndex]?.color ??
           getPixiColorFromToken('--star-white')
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
@@ -163,28 +168,29 @@ export class NoteManager {
         continue
       }
 
-      const jitterOffset = state.modifiers?.noteJitter ? sprite.jitterOffset : 0
-
-      sprite.y = calculateNoteY(elapsed, note.time, targetY, state.speed)
-
-      // Unified positioning logic for both texture and fallback sprites
-      // Fallback sprites (isFallback=true) do not jitter and are centered at renderX + 50
-      // Normal sprites jitter and are also centered at renderX + 50
-      const lane = state.lanes[note.laneIndex]
+      const lane = lanes?.[note.laneIndex]
       if (!lane) {
         this.pool?.destroyNoteSprite(sprite)
         continue
       }
+
+      const jitterOffset = isJitter ? sprite.jitterOffset : 0
+      sprite.y = calculateNoteY(elapsed, note.time, targetY, speed)
+
+      // Unified positioning logic for both texture and fallback sprites
+      // Fallback sprites (isFallback=true) do not jitter and are centered at renderX + 50
+      // Normal sprites jitter and are also centered at renderX + 50
+      const renderX = lane.renderX ?? 0
       sprite.x =
-        getLaneRenderX(lane) +
+        renderX +
         NOTE_CENTER_OFFSET +
         (sprite.isFallback ? 0 : jitterOffset)
 
-      this.activeEntities[writeIdx++] = entity
+      activeEntities[writeIdx++] = entity
     }
 
     // Trim the array to the actual number of active notes remaining
-    this.activeEntities.length = writeIdx
+    activeEntities.length = writeIdx
   }
 
   dispose(): void {
