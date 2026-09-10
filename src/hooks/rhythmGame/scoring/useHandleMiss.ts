@@ -19,8 +19,13 @@ import type {
 } from '../../../types/rhythmGame'
 import type { RhythmStateSetters } from '../useRhythmGameState'
 
+/**
+ * Configuration parameters for the `useHandleMiss` hook.
+ */
 type HandleMissParams = {
+  /** Mutable reference holding the current rhythm game state. */
   gameStateRef: { current: RhythmGameRefState }
+  /** Bound state setters for updating specific rhythm game properties. */
   setters: Pick<
     RhythmStateSetters,
     | 'setCombo'
@@ -38,9 +43,24 @@ type HandleMissParams = {
   baseCrowdDecay?: number
   missPenaltyMultiplier?: number
   staminaDrainMultiplier?: number
+  /** Mutable reference to store the timer ID for game over delays. */
   gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
 }
 
+/**
+ * Provides a stable callback to process missed notes or empty hits during a gig.
+ *
+ * @remarks
+ * This hook is responsible for applying penalties when a note is missed. This includes
+ * resetting the current combo, calculating crowd decay, applying health and overload
+ * penalties, and determining if the miss results in a game over state. If health falls
+ * to zero, it halts audio playback, schedules a game over failure state, and forces an
+ * exit from the gig after a short delay to prevent softlocks. Empty hits (striking a
+ * lane with no active note) bypass toxic mode deactivation and some SFX penalties.
+ *
+ * @param params - Configuration parameters for the miss handler.
+ * @returns A stable callback function that accepts a miss count and an empty hit flag.
+ */
 export const useHandleMiss = ({
   gameStateRef,
   setters,
