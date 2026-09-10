@@ -47,4 +47,23 @@ describe('BandMemberRow via BandStatusPanel', () => {
     // Two bars per member, plus the panel's harmony bar.
     expect(getAllByRole('progressbar')).toHaveLength(members.length * 2 + 1)
   })
+
+  test('differentiates warning messages for low stamina, low mood, or both', () => {
+    const testMembers = [
+      { id: 'm1', name: 'FitMember', mood: 80, stamina: 80 },
+      { id: 'm2', name: 'LowStaminaMember', mood: 80, stamina: 20 },
+      { id: 'm3', name: 'LowMoodMember', mood: 20, stamina: 80 },
+      { id: 'm4', name: 'LowBothMember', mood: 20, stamina: 20 }
+    ]
+
+    const { getByLabelText, queryByLabelText } = render(
+      <BandStatusPanel band={{ harmony: 70, members: testMembers }} t={t} />
+    )
+
+    expect(queryByLabelText('FitMember')).not.toBeInTheDocument()
+
+    expect(getByLabelText('Low stamina')).toBeInTheDocument()
+    expect(getByLabelText('Low mood')).toBeInTheDocument()
+    expect(getByLabelText('Low stamina & low mood')).toBeInTheDocument()
+  })
 })

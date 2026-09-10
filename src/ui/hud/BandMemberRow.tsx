@@ -21,23 +21,32 @@ export const BandMemberRow = memo(({ m, t }: BandMemberRowProps) => {
   const isStaminaLow = stamina < 35
   const isWarning = isMoodLow || isStaminaLow
 
+  const warningText = isStaminaLow && isMoodLow
+    ? t('ui:overworld.memberWarningLowBoth', {
+        defaultValue: 'Low stamina & low mood'
+      })
+    : isStaminaLow
+      ? t('ui:overworld.memberWarningLowStamina', {
+          defaultValue: 'Low stamina'
+        })
+      : isMoodLow
+        ? t('ui:overworld.memberWarningLowMood', {
+            defaultValue: 'Low mood'
+          })
+        : t('ui:overworld.memberWarning', {
+            defaultValue: 'Member needs attention'
+          })
+
   return (
     <div className='flex items-center justify-between w-full mb-1.5 last:mb-0 group'>
       <div className='flex items-center gap-1.5 min-w-0'>
         {isWarning && (
-          <Tooltip
-            content={t('ui:overworld.memberWarning', {
-              defaultValue: 'Member needs attention'
-            })}
-            position='bottom'
-          >
+          <Tooltip content={warningText} position='bottom'>
             <AlertCircle
               size={12}
               className={`shrink-0 pointer-events-auto ${isStaminaLow ? 'text-blood-red' : 'text-warning-yellow'}`}
               role='img'
-              aria-label={t('ui:overworld.memberWarning', {
-                defaultValue: 'Member needs attention'
-              })}
+              aria-label={warningText}
             />
           </Tooltip>
         )}
