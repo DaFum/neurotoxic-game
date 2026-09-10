@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
+import { Tooltip } from '../shared/Tooltip'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
 import type { PlayerState } from '../../types'
 import type { VoidTraderItem } from '../../types/components'
@@ -88,6 +89,39 @@ export const VoidTraderTab = ({
           const isAnyProcessing = processingItemId != null
           const disabled = isItemDisabled(item) || isAnyProcessing
 
+          const isOwned = isItemOwned(item) && !item.stackable
+          const hasEnoughFame = (player?.fame ?? 0) >= item.fameCost
+          const disabledReason = isOwned
+            ? t('ui:shop.messages.alreadyOwned', {
+                itemName: t(item.name),
+                defaultValue: 'Already owned!'
+              })
+            : !hasEnoughFame
+              ? t('ui:error.insufficient_fame', {
+                  cost: item.fameCost,
+                  defaultValue: `Not enough fame. You need ${item.fameCost} fame.`
+                })
+              : disabled && !isAnyProcessing
+                ? t('ui:shop.messages.maxCapacity', {
+                    defaultValue: 'Maximum quantity reached!'
+                  })
+                : undefined
+
+          const tradeButton = (
+            <ActionButton
+              variant='primary'
+              onClick={() => handleTrade(item)}
+              disabled={disabled}
+              className='text-xs min-h-11 py-2 px-4 min-w-32'
+            >
+              {isProcessingThis
+                ? t('ui:loading', { defaultValue: 'PROCESSING...' })
+                : isOwned
+                  ? t('ui:hq.owned', { defaultValue: 'OWNED' })
+                  : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
+            </ActionButton>
+          )
+
           return (
             <div
               key={item.id}
@@ -96,7 +130,10 @@ export const VoidTraderTab = ({
               <div className='flex items-start gap-4 mb-4'>
                 <div className='w-16 h-16 border border-toxic-green/30 bg-void-black flex items-center justify-center shrink-0'>
                   {/* Placeholder for icon, text icon instead */}
-                  <span className='text-2xl opacity-50 text-toxic-green'>
+                  <span
+                    className='text-2xl opacity-50 text-toxic-green'
+                    aria-hidden='true'
+                  >
                     ?
                   </span>
                 </div>
@@ -129,18 +166,11 @@ export const VoidTraderTab = ({
                     {t('ui:hq.voidTrader.fame', { defaultValue: 'FAME' })}
                   </span>
                 </div>
-                <ActionButton
-                  variant='primary'
-                  onClick={() => handleTrade(item)}
-                  disabled={disabled}
-                  className='text-xs min-h-11 py-2 px-4 min-w-32'
-                >
-                  {isProcessingThis
-                    ? t('ui:loading', { defaultValue: 'PROCESSING...' })
-                    : isItemOwned(item) && !item.stackable
-                      ? t('ui:hq.owned', { defaultValue: 'OWNED' })
-                      : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
-                </ActionButton>
+                {disabledReason ? (
+                  <Tooltip content={disabledReason}>{tradeButton}</Tooltip>
+                ) : (
+                  tradeButton
+                )}
               </div>
             </div>
           )

@@ -50,6 +50,56 @@ describe('VoidTraderTab Component', () => {
     expect(buttons[0]).toBeDisabled()
   })
 
+  it('renders a tooltip explaining why the trade action is disabled', () => {
+    const poorPlayer = { fame: 100 }
+    const _isItemDisabled = vi.fn(() => true)
+
+    render(
+      <VoidTraderTab
+        player={poorPlayer}
+        handleTrade={handleTrade}
+        isItemOwned={isItemOwned}
+        isItemDisabled={_isItemDisabled}
+      />
+    )
+
+    // Focus or hover over the disabled button's wrapper to trigger tooltip rendering
+    const disabledButtons = screen.getAllByRole('button', {
+      name: /ui:hq.voidTrader.trade/i
+    })
+    fireEvent.focus(disabledButtons[0])
+
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent('ui:error.insufficient_fame')
+  })
+
+  it('renders a tooltip explaining max quantity reached when a stackable item is disabled', () => {
+    // Rich player with 2000 fame, but the stackable item is at maxStacks
+    const richPlayer = { fame: 2000 }
+
+    // isVoidItemDisabled returns true for the item (e.g. maxStacks reached)
+    const _isItemDisabled = vi.fn(item => item.id === 'c_phantom_strings' || item.stackable)
+
+    render(
+      <VoidTraderTab
+        player={richPlayer}
+        handleTrade={handleTrade}
+        isItemOwned={isItemOwned}
+        isItemDisabled={_isItemDisabled}
+      />
+    )
+
+    const disabledButtons = screen.getAllByRole('button', {
+      name: /ui:hq.voidTrader.trade/i
+    })
+
+    // Focus on the first disabled button (stackable item)
+    fireEvent.focus(disabledButtons[0])
+
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent('ui:shop.messages.maxCapacity')
+  })
+
   it('calls handleTrade when clicking trade button', () => {
     render(
       <VoidTraderTab

@@ -1942,6 +1942,7 @@
   "shop.black_market_purchase": "Auf dem Schwarzmarkt gekauft! {{amount}} Fame verloren.",
   "shop.insufficient_funds": "Ungenügend Geld.",
   "shop.messages.alreadyOwned": "{{itemName}} bereits in Besitz!",
+  "shop.messages.maxCapacity": "Maximale Menge erreicht!",
   "shop.messages.fame": "Ruhm",
   "shop.messages.invalidData": "Kauf fehlgeschlagen: Ungültige Upgrade-Daten.",
   "shop.messages.labelSigned": "Unterschrieben! {{advance}} Vorschuss.",
