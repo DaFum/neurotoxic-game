@@ -2,9 +2,13 @@ import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { BRAND_COLOR_HEX, HEX_COLOR_PATTERN } from '../../utils/brandColors'
 
-// getPixiColorFromToken accepts both `--token` and `--color-token` forms
-// (see CSS-property derivation below). Mirror both keys here so the SSR/test
-// fallback path matches the runtime path.
+/**
+ * Map of default hex fallback values for CSS token names.
+ *
+ * @remarks
+ * Maps both `--token` and `--color-token` custom property forms to default hex values
+ * defined in `BRAND_COLOR_HEX` to align runtime CSS variable resolution with SSR/test environments.
+ */
 const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
   Object.fromEntries(
     Object.entries(BRAND_COLOR_HEX).flatMap(([name, hex]) => [
@@ -14,6 +18,17 @@ const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
   )
 )
 
+/**
+ * Normalizes a raw CSS color value into a standard 6-digit hex string with a leading hash.
+ *
+ * @remarks
+ * Converts shorthand 3-digit hex strings (e.g. `#fff`) into full 6-digit hex format and truncates
+ * 8-digit hex-with-alpha strings to 6 digits. Returns `null` if the input is not a string or fails
+ * the valid hex color pattern check.
+ *
+ * @param colorValue - The input color value to normalize.
+ * @returns A standard 6-digit hex string starting with `#`, or `null` if the input is invalid.
+ */
 const normalizeHexColor = (colorValue: unknown): string | null => {
   if (typeof colorValue !== 'string') {
     return null
@@ -35,12 +50,23 @@ const normalizeHexColor = (colorValue: unknown): string | null => {
   return normalizedColorValue
 }
 
+/**
+ * Cache mapping CSS variable tokens to previously parsed numeric Pixi color values.
+ */
 const colorCache = new Map<string, number>()
 
 /**
- * Resolves a CSS variable token to a Pixi-compatible numeric color value.
- * @param tokenName - CSS custom property name (for example, "--toxic-green").
- * @returns Pixi numeric hex color.
+ * Resolves a CSS variable token to a PixiJS-compatible numeric color value.
+ *
+ * @remarks
+ * Evaluates document computed styles when running in a browser context. Uses cached values
+ * when available to avoid repetitive DOM reads. Falls back to static token definitions or
+ * `defaultHexFallback` during SSR or test execution.
+ *
+ * @param tokenName - The CSS custom property name (e.g., `--toxic-green` or `toxic-green`).
+ * @param defaultHexFallback - The fallback hex color string if the CSS token is unresolvable.
+ * Defaults to `BRAND_COLOR_HEX['star-white']`.
+ * @returns The numeric PixiJS hex color representation.
  */
 export const getPixiColorFromToken = (
   tokenName: string,
@@ -86,13 +112,17 @@ export const getPixiColorFromToken = (
 }
 
 /**
- * Wraps a promise with a timeout to prevent indefinite hanging.
- * Errors and timeouts are swallowed, logging a warning/error and returning null.
- * @typeParam T - Resolved value carried by the wrapped promise.
- * @param promise - The promise to wrap.
- * @param label - Label for logging.
- * @param timeoutMs - Timeout in milliseconds. Defaults to `10000`.
- * @returns The resolved value or null if an error/timeout occurred.
+ * Wraps a promise with a maximum timeout duration to prevent indefinite hanging.
+ *
+ * @remarks
+ * If the promise fails or times out, the error is logged via `logger` and `null` is returned,
+ * preventing unhandled promise rejections from stalling stage rendering initialization.
+ *
+ * @typeParam T - The resolved value type carried by the promise.
+ * @param promise - The promise to execute with a timeout constraint.
+ * @param label - A descriptive label used in timeout/error logging messages.
+ * @param timeoutMs - The maximum duration in milliseconds to wait before timing out. Defaults to `10000`.
+ * @returns The resolved value of the promise, or `null` if the operation failed or timed out.
  */
 export const withTimeout = async <T>(
   promise: Promise<T>,
@@ -128,12 +158,17 @@ export const withTimeout = async <T>(
 }
 
 /**
- * Calculates the Y position for a note sprite.
- * @param elapsed - Elapsed time since start in ms.
- * @param noteTime - Scheduled note time in ms.
- * @param targetY - Target hit line Y position.
- * @param speed - Note travel speed.
- * @returns Calculated Y position.
+ * Calculates the current vertical Y position of a falling note sprite.
+ *
+ * @remarks
+ * Computes the note's Y position relative to the hit line target by projecting time remaining
+ * until scheduled note hit against travel speed.
+ *
+ * @param elapsed - Total elapsed gameplay time in milliseconds.
+ * @param noteTime - Scheduled hit time of the note in milliseconds.
+ * @param targetY - Target hit line Y coordinate on stage.
+ * @param speed - Note travel speed in pixels per second.
+ * @returns The calculated Y screen position for the note sprite.
  */
 export const calculateNoteY = (
   elapsed: number,
@@ -146,16 +181,15 @@ export const calculateNoteY = (
 }
 
 /**
- * Calculates a crowd member offset based on combo intensity.
+ * Calculates a vertical bounce offset for a crowd member based on current hit combo and time.
  *
  * @remarks
- * ⚡ BOLT OPTIMIZATION: Accepts positional parameters instead of an options object
- * to prevent allocating a temporary `{ combo, timeMs }` object on every frame (60fps)
- * in the PixiJS crowd update loop.
+ * Uses a sine wave function scaled by hit combo threshold to produce rhythmic animation.
+ * Accepts positional parameters to avoid temporary object allocations during 60fps render frames.
  *
- * @param combo - Current combo count.
- * @param timeMs - Current time in ms.
- * @returns The vertical offset.
+ * @param combo - Current consecutive hit streak count.
+ * @param timeMs - Current game loop timestamp in milliseconds.
+ * @returns The non-negative vertical offset in pixels.
  */
 export const calculateCrowdOffset = (combo: number, timeMs: number): number => {
   const intensity = combo > 10 ? 2 : 1
@@ -163,11 +197,10 @@ export const calculateCrowdOffset = (combo: number, timeMs: number): number => {
 }
 
 /**
- * Calculates the lane start X position.
- * @param params - Lane layout inputs.
- * - `params.screenWidth` - Current screen width.
- * - `params.laneTotalWidth` - Total lane width.
- * @returns Lane start X position.
+ * Calculates the horizontal starting coordinate for centering rhythm lanes on screen.
+ *
+ * @param params - Layout inputs for lane positioning.
+ * @returns The horizontal starting X coordinate in pixels.
  */
 const calculateLaneStartX = ({
   screenWidth,
@@ -202,7 +235,7 @@ const RHYTHM_LAYOUT = Object.freeze({
 })
 
 /**
- * Crowd layout constants for stage rendering.
+ * Configuration parameters for crowd member layout and animation on stage.
  */
 export const CROWD_LAYOUT = Object.freeze({
   containerYRatio: 0.5,
@@ -213,11 +246,13 @@ export const CROWD_LAYOUT = Object.freeze({
 })
 
 /**
- * Builds layout metrics for the rhythm lanes.
- * @param params - Layout inputs.
- * - `params.screenWidth` - Current screen width.
- * - `params.screenHeight` - Current screen height.
- * @returns Layout metrics.
+ * Calculates responsive layout metrics for the rhythm game lanes and hit targets.
+ *
+ * @remarks
+ * Scales lane width, gap, and hit line offsets dynamically according to screen dimensions.
+ *
+ * @param params - Screen dimensions for scaling lane layout.
+ * @returns An object containing calculated layout coordinates, dimensions, and offsets.
  */
 export const buildRhythmLayout = ({
   screenWidth,
@@ -261,16 +296,18 @@ export const buildRhythmLayout = ({
 }
 
 /**
- * Simple cache for textures loaded via the Image element fallback.
- * Separate from Assets.cache to avoid issues with TilingSprite
- * (Image-based textures lack proper source metadata for tiling).
+ * Cache for PixiJS textures loaded via the HTML Image fallback pipeline.
  */
 const _imageTextureCache = new Map<string, Texture>()
 
 /**
- * Checks existing caches for a valid texture.
- * @param url - The URL of the texture.
- * @returns The cached texture or null.
+ * Retrieves a cached texture from PixiJS Assets cache or internal image texture cache.
+ *
+ * @remarks
+ * Validates that the texture source is defined and not destroyed before returning.
+ *
+ * @param url - The source URL of the texture.
+ * @returns The cached active texture, or `null` if missing or destroyed.
  */
 const _getCachedTexture = (url: string): Texture | null => {
   const pixiCache = Assets.cache
@@ -292,9 +329,11 @@ const _getCachedTexture = (url: string): Texture | null => {
 }
 
 /**
- * Checks if a URL has a file extension.
- * @param url - The URL to check.
- * @returns True if the URL has an extension, false otherwise.
+ * Determines whether a URL string contains an explicit file extension in its path.
+ *
+ * @param url - The URL string to inspect.
+ * @param baseUrl - Optional base URL for resolving relative paths.
+ * @returns `true` if the URL pathname contains a file extension, or `false` otherwise.
  */
 const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
   try {
@@ -312,9 +351,14 @@ const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
 }
 
 /**
- * Loads a texture using an Image element fallback.
- * @param url - The URL to load.
- * @returns The loaded texture or null.
+ * Loads an image asset using an HTML Image element fallback pipeline.
+ *
+ * @remarks
+ * Used when PixiJS Assets asset resolution fails or when loading non-standard dynamic URLs.
+ * Returns `null` gracefully if the runtime lacks HTML Image support or asset loading fails.
+ *
+ * @param url - The target image URL.
+ * @returns A promise resolving to the loaded PixiJS `Texture`, or `null` on failure.
  */
 const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
   return new Promise(resolve => {
@@ -343,10 +387,14 @@ const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
 }
 
 /**
- * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
- * Useful for generated URLs without extensions or with query parameters.
- * @param url - The URL to load.
- * @returns The loaded texture or null.
+ * Robustly loads a PixiJS texture from a URL using Assets with an HTML Image fallback.
+ *
+ * @remarks
+ * First checks internal and PixiJS caches for active textures. Attempts `Assets.load` for URLs with
+ * file extensions, falling back to an HTML Image loader on failure or for dynamic URLs.
+ *
+ * @param url - The target asset URL to load.
+ * @returns A promise resolving to the loaded `Texture`, or `null` if loading fails.
  */
 export const loadTexture = async (url: string): Promise<Texture | null> => {
   const cached = _getCachedTexture(url)
@@ -372,8 +420,12 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
 }
 
 /**
- * Returns an optimized resolution value capped to prevent performance bottlenecks on high-DPI devices.
- * @returns Optimized resolution (1.0 to 2.0).
+ * Calculates an optimal stage render resolution capped to prevent performance degradation on high-DPI displays.
+ *
+ * @remarks
+ * Caps device pixel ratio between 1.0 and 2.0 to balance sharp visual presentation with GPU performance.
+ *
+ * @returns The capped resolution factor.
  */
 export const getOptimalResolution = () => {
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
@@ -381,12 +433,15 @@ export const getOptimalResolution = () => {
 }
 
 /**
- * Loads multiple textures concurrently and maps the successful results to keys.
- * Handles errors cleanly without throwing, either via a provided callback or logging.
+ * Concurrently loads multiple stage textures mapped by identifier keys.
  *
- * @param urlMap - A record mapping texture keys to their URLs.
- * @param onError - Optional callback to handle individual load errors (receives error and fallback message).
- * @returns A record mapping the same keys to loaded Textures (or null if failed).
+ * @remarks
+ * Resolves all texture promises using `Promise.allSettled`. Handles individual loading failures cleanly,
+ * invoking the optional `onError` callback or logging warnings without throwing exceptions.
+ *
+ * @param urlMap - A record mapping texture keys to source URL strings or `null`.
+ * @param onError - Optional error handler callback invoked when individual texture loading fails.
+ * @returns A promise resolving to a record mapping texture keys to loaded `Texture` instances or `null`.
  */
 export const loadTextures = async (
   urlMap: Record<string, string | null>,
