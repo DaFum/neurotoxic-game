@@ -7,6 +7,7 @@ describe('ActionTypes', () => {
       'CHANGE_SCENE',
       'UPDATE_PLAYER',
       'UPDATE_BAND',
+      'SETTLE_SOLD_MERCH',
       'TOGGLE_NEURO_DECIMATOR',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',

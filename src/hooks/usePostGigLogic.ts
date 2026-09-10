@@ -153,6 +153,7 @@ export const usePostGigLogic = () => {
     completeExpedition,
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
+    settleSoldMerch,
     phase,
     setPhase,
     setPostResult,
