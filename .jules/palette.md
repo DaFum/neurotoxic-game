@@ -209,3 +209,8 @@
 
 **Learning:** Event option buttons in `EventModal.tsx` use `aria-disabled="true"` to maintain keyboard focusability, but lacked an explicit focus-visible ring color in their disabled state and omitted explanation tooltips.
 **Action:** Always include explicit focus ring colors (e.g., `focus-visible:ring-ash-gray/60`) on disabled `aria-disabled` controls and wrap disabled options in `Tooltip` providing localized context (e.g., `option.disabledReason` or `t('ui:event.optionDisabled')`).
+
+## 2026-09-10 - Progress Bar Accessible Label Context and Actual Value Ranges
+
+**Learning:** Passing percentage numbers (0–100) instead of raw domain values (`safeProgress`/`safeRequired`) to `ProgressBar` components forces the progress bar's ARIA values (`aria-valuenow`, `aria-valuemax`) to announce misleading percentages (e.g., "50 out of 100") rather than accurate domain progress (e.g., "1 out of 2"). Furthermore, progress bars rendered without `aria-label` leave assistive technology users with unlabelled meters.
+**Action:** Always pass raw domain values (`value={safeProgress}` and `max={safeRequired}`) to `ProgressBar` so ARIA values reflect real progress, and supply an explicit localized `aria-label` (e.g., `${questTitle} progress`) to identify what the progress bar measures.

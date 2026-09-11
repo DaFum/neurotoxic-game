@@ -49,6 +49,8 @@ export const ProgressBar = memo(function ProgressBar({
   const pct = Math.min(100, (safeValue / safeMax) * 100)
   const isMini = size === 'mini'
 
+  const resolvedAriaLabel = label ?? (props['aria-label'] as string | undefined)
+
   return (
     <div
       className={`w-full ${className}`}
@@ -56,7 +58,7 @@ export const ProgressBar = memo(function ProgressBar({
       aria-valuenow={Math.floor(Math.min(safeValue, safeMax))}
       aria-valuemin={0}
       aria-valuemax={safeMax}
-      aria-label={label}
+      aria-label={resolvedAriaLabel}
       {...props}
     >
       {!isMini && (label || showValue) && (

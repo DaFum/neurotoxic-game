@@ -257,10 +257,16 @@ const QuestItem = memo(
             </span>
           </div>
           <ProgressBar
-            value={progressPercent}
-            max={100}
+            value={safeProgress}
+            max={safeRequired}
             color='bg-toxic-green'
             size='md'
+            showValue={false}
+            aria-label={t('ui:quests.progressAria', {
+              quest: quest.label ? t(quest.label) : '',
+              defaultValue:
+                (quest.label ? t(quest.label) : 'Quest') + ' progress'
+            })}
           />
         </div>
 
