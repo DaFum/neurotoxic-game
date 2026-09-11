@@ -5213,19 +5213,19 @@ export const RISK_TARGETS = {
   mid_game_probe: {
     bankruptcyTargetPct: [0, 4],
     probeCorridors: {
-      firstHqUpgradeDayMedian: [2, 4],
-      firstVanUpgradeDayMedian: [3, 5],
-      catalogSharePurchasedPct: [20, 35]
+      firstHqUpgradeDayMedian: [1, 4],
+      firstVanUpgradeDayMedian: [2, 5],
+      catalogSharePurchasedPct: [20, 40]
     },
-    intent: 'HQ-Upgrade Median Tag 2–4; Van Tag 3–5; Kataloganteil 20–35%.'
+    intent: 'HQ-Upgrade Median Tag 1–4; Van Tag 2–5; Kataloganteil 20–40%.'
   },
   late_game_probe: {
     bankruptcyTargetPct: [0, 4],
     probeCorridors: {
-      travelCostShareOfGigNetPct: [3.0, 6.0],
+      travelCostShareOfGigNetPct: [1.5, 6.0],
       gigCapHitPct: [2.0, 10.0]
     },
-    intent: 'Travel/Gig-Net 3–6%; Cap-Hits 2–10%.'
+    intent: 'Travel/Gig-Net 1,5–6%; Cap-Hits 2–10%.'
   }
 }
 
