@@ -1837,6 +1837,7 @@
   "quests.premiumEndorsement.description": "Schließe drei Markendeals ab, um einen Premium-Endorsement-Bonus zu kassieren.",
   "quests.premiumEndorsement.title": "PREMIUM ENDORSEMENT",
   "quests.progress": "Fortschritt",
+  "quests.progressAria": "Fortschritt für {{quest}}",
   "quests.progressSource.asset_risk_resolved": "Fortschritt: Equipment-Notfälle entschärfen",
   "quests.progressSource.asset_risk_triggered": "Fortschritt: Equipment-Katastrophen überstehen",
   "quests.progressSource.brand_deal_completed": "Fortschritt: Markendeals abschließen",
