@@ -808,8 +808,8 @@ artifact reports `passed: true` with zero hard correctness failures and
 ```text
 hard correctness failures   0
 release blockers            2
-Task 12 calibration      6000 / 6000 complete six-run Careers
-Task 12 holdout          6000 / 6000
+Task 12 calibration      60 / 60 complete six-run Careers
+Task 12 holdout          60 / 60
 ```
 
 Task 12's coverage shortfall is closed. The arc, across both cohorts: 44 of
@@ -828,7 +828,7 @@ Two items withhold release evidence, and three findings sit behind them.
    been run against this build. Capturing at least 20 valid samples is a human
    step. This is the only blocker no code change can clear.
 
-2. **10 open outcome-mix corridor findings**, every one of them the same
+2. **12 open outcome-mix corridor findings**, every one of them the same
    metric: `failedRate` at 0.0% for all six profiles in both cohorts,
    against a 2-50% corridor.
 
