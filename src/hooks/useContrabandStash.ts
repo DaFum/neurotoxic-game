@@ -87,17 +87,25 @@ export const useContrabandStash = () => {
     [band?.stash, dispatchUseContraband, selectedMember, addToast, t]
   )
 
-  return {
-    showStash,
-    openStash,
-    closeStash,
-    stashProps: {
+  // ⚡ BOLT OPTIMIZATION: Memoize stashProps object reference
+  // Why: Prevents recreation of stashProps object literal on every hook render.
+  // Impact: Stabilizes prop identity for downstream modal and card components.
+  const stashProps = useMemo(
+    () => ({
       stash: stashArray,
       members: band.members,
       selectedMember,
       setSelectedMember,
       handleUseItem,
       onClose: closeStash
-    }
+    }),
+    [stashArray, band.members, selectedMember, handleUseItem, closeStash]
+  )
+
+  return {
+    showStash,
+    openStash,
+    closeStash,
+    stashProps
   }
 }
