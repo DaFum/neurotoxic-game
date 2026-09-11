@@ -3,7 +3,7 @@
 **Correctness:** ✅ PASS
 **Release evidence:** ⚠️ NOT RELEASE EVIDENCE
 **Release blocked by:** run size 20 is below the release size 2000; no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 12 unresolved balance corridor finding(s)
-**Generated At:** 2026-09-11T08:12:12.180Z
+**Generated At:** 2026-09-11T08:50:57.406Z
 **Profiles:** 6 mature archetypes
 **Sample Count Per Cohort:** 20
 
@@ -15,7 +15,7 @@
 | Generator fingerprint | `6f60baba1c9499d0b5eefef86a8934eaca0fe13b65c7b93c5c8af1e737742bdb` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
 | Runs per scenario | 20 |
-| Working tree dirty | YES |
+| Working tree dirty | no |
 | Artifact schema version | 1 |
 
 ### Resolved mature-fixture inputs

@@ -28,11 +28,11 @@
     "generatorFingerprint": "6f60baba1c9499d0b5eefef86a8934eaca0fe13b65c7b93c5c8af1e737742bdb",
     "seedNamespace": "#roguelite-expedition-v1#calibration",
     "runsPerScenario": 20,
-    "workingTreeDirty": true,
+    "workingTreeDirty": false,
     "artifactSchemaVersion": 1
   },
   "provenance": {
-    "generatedAt": "2026-09-11T08:12:12.180Z",
+    "generatedAt": "2026-09-11T08:50:57.406Z",
     "namespaces": {
       "calibration": "#roguelite-expedition-v1#calibration",
       "holdout": "#roguelite-expedition-v1#holdout",
