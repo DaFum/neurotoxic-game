@@ -1,16 +1,16 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-09-11T07:20:58.773Z
+Erstellt am: 2026-09-11T07:55:47.734Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77
-- Generator-Fingerprint: c0cb10c55ce9e6a265279c66035c95b319b7556a0279e2afddd3a24d2ff11992
+- Source-Fingerprint: b155e792c03612af45d361b89887af740175a775de6f3e643af16048c7ede213
+- Generator-Fingerprint: bc70a8ea1e9ce5a9f242218b74255ccf1fcaff054bb1b76c11b72fcc7ad9b62a
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
-- Working Tree Dirty: Nein
+- Working Tree Dirty: Ja
 
 ## Simulationseinstellungen
 
@@ -373,10 +373,6 @@ Diese Punkte erscheinen im Report, blockieren aber nichts:
 - ⚠️ bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
-- ⚠️ mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1, Holdout 1) liegt unter dem Zielkorridor 2–4.
-- ⚠️ mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2, Holdout 2) liegt unter dem Zielkorridor 3–5.
-- ⚠️ mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31, Holdout 37.28) liegt über dem Zielkorridor 20–35.
-- ⚠️ late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9, Holdout 1.91) liegt unter dem Zielkorridor 3–6.
 
 ## Financial-Stress-Profil
 
@@ -595,7 +591,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `657deca419501eab1be193de48a3849e19a1429faca0fb4ff35629f8409f083f` | `42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77` |
+| Source-Fingerprint | `42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77` | `b155e792c03612af45d361b89887af740175a775de6f3e643af16048c7ede213` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
@@ -630,8 +626,8 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 ### Designrisiko-Zusammenfassung (nicht blockierend)
 - Sicherheitsgates: 12/12 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.
-- Risikobänder: healthy 7 · low_risk 5.
-- ⚠️ 7 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
+- Risikobänder: healthy 9 · low_risk 3.
+- ⚠️ 3 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ✅ Alle bewerteten KPI-Zielkorridore eingehalten.
 - Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.

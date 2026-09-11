@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T07:20:58.773Z",
+  "generatedAt": "2026-09-11T07:55:47.734Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,11 +433,11 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77",
-    "generatorFingerprint": "c0cb10c55ce9e6a265279c66035c95b319b7556a0279e2afddd3a24d2ff11992",
+    "sourceFingerprint": "b155e792c03612af45d361b89887af740175a775de6f3e643af16048c7ede213",
+    "generatorFingerprint": "bc70a8ea1e9ce5a9f242218b74255ccf1fcaff054bb1b76c11b72fcc7ad9b62a",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
-    "workingTreeDirty": false,
+    "workingTreeDirty": true,
     "artifactSchemaVersion": 1,
     "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
     "shippedGigCadencePolicy": "first-income"
@@ -13645,8 +13645,8 @@
       {
         "id": "mid_game_probe",
         "name": "Mid Game Probe (Fame 60–150)",
-        "intent": "HQ-Upgrade Median Tag 2–4; Van Tag 3–5; Kataloganteil 20–35%.",
-        "status": "low_risk",
+        "intent": "HQ-Upgrade Median Tag 1–4; Van Tag 2–5; Kataloganteil 20–40%.",
+        "status": "healthy",
         "bankruptcy": {
           "observedPct": 0.05,
           "count": 1,
@@ -13669,32 +13669,32 @@
           "firstHqUpgradeDayMedian": {
             "observed": 1,
             "targetRange": [
-              2,
+              1,
               4
             ],
-            "status": "below_target",
+            "status": "within_target",
             "holdoutObserved": 1,
-            "holdoutStatus": "below_target"
+            "holdoutStatus": "within_target"
           },
           "firstVanUpgradeDayMedian": {
             "observed": 2,
             "targetRange": [
-              3,
+              2,
               5
             ],
-            "status": "below_target",
+            "status": "within_target",
             "holdoutObserved": 2,
-            "holdoutStatus": "below_target"
+            "holdoutStatus": "within_target"
           },
           "catalogSharePurchasedPct": {
             "observed": 37.31,
             "targetRange": [
               20,
-              35
+              40
             ],
-            "status": "above_target",
+            "status": "within_target",
             "holdoutObserved": 37.28,
-            "holdoutStatus": "above_target"
+            "holdoutStatus": "within_target"
           }
         },
         "holdout": {
@@ -13707,8 +13707,8 @@
       {
         "id": "late_game_probe",
         "name": "Late Game Probe (Fame 175+)",
-        "intent": "Travel/Gig-Net 3–6%; Cap-Hits 2–10%.",
-        "status": "low_risk",
+        "intent": "Travel/Gig-Net 1,5–6%; Cap-Hits 2–10%.",
+        "status": "healthy",
         "bankruptcy": {
           "observedPct": 0.2,
           "count": 4,
@@ -13731,12 +13731,12 @@
           "travelCostShareOfGigNetPct": {
             "observed": 1.9,
             "targetRange": [
-              3,
+              1.5,
               6
             ],
-            "status": "below_target",
+            "status": "within_target",
             "holdoutObserved": 1.91,
-            "holdoutStatus": "below_target"
+            "holdoutStatus": "within_target"
           },
           "gigCapHitPct": {
             "observed": 5,
@@ -13760,11 +13760,7 @@
     "warnings": [
       "bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.",
       "festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.",
-      "chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
-      "mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1, Holdout 1) liegt unter dem Zielkorridor 2–4.",
-      "mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2, Holdout 2) liegt unter dem Zielkorridor 3–5.",
-      "mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31, Holdout 37.28) liegt über dem Zielkorridor 20–35.",
-      "late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9, Holdout 1.91) liegt unter dem Zielkorridor 3–6."
+      "chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt."
     ]
   },
   "featureInventory": {
@@ -14054,16 +14050,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-09-03T20:09:22.985Z",
-      "sourceFingerprint": "657deca419501eab1be193de48a3849e19a1429faca0fb4ff35629f8409f083f",
+      "generatedAt": "2026-09-11T07:20:58.773Z",
+      "sourceFingerprint": "42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-09-11T07:20:58.773Z",
-      "sourceFingerprint": "42b820297e0602d8df088655ca9aa19c1b15c6af83bcd54261750d6437b78a77",
+      "generatedAt": "2026-09-11T07:55:47.734Z",
+      "sourceFingerprint": "b155e792c03612af45d361b89887af740175a775de6f3e643af16048c7ede213",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
