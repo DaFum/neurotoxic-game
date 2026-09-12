@@ -137,7 +137,9 @@ describe('TourPrep scene', () => {
 
     const routeTab = screen.getByTestId('expedition-prep-tab-route_performance')
     expect(routeTab).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByTestId('expedition-prep-panel-route_performance')).not.toHaveAttribute('hidden')
+    expect(
+      screen.getByTestId('expedition-prep-panel-route_performance')
+    ).not.toHaveAttribute('hidden')
 
     const pick = (id: string) =>
       screen.getByTestId(`expedition-prep-pressure-${id}`)
@@ -210,7 +212,9 @@ describe('TourPrep scene', () => {
     )
 
     // Tab 4: Commercial & Contracts
-    fireEvent.click(screen.getByTestId('expedition-prep-tab-commercial_contracts'))
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-tab-commercial_contracts')
+    )
     fireEvent.change(screen.getByTestId('expedition-prep-merch-shirts'), {
       target: { value: '4' }
     })
