@@ -49,18 +49,22 @@ export const BuildCommitmentPanel = memo(function BuildCommitmentPanel({
 }: BuildCommitmentPanelProps) {
   const { t, i18n } = useTranslation('ui')
 
-  // Route *depth*, not total node count: the player walks one node per route
-  // step, so this is the 7-9 meaningful nodes the design targets. Summing every
-  // node on the map would count the branches the run never visits.
-  const routeLength = Object.values(preparedMap.meta).reduce(
-    (deepest, entry) => Math.max(deepest, entry.routeStep),
-    0
-  )
-  const extractionWindows = new Set(
-    Object.values(preparedMap.meta)
-      .filter(entry => entry.isExtractionWindow)
-      .map(entry => entry.routeStep)
-  ).size
+  // ⚡ BOLT OPTIMIZATION: Consolidated map metadata iteration into a single procedural
+  // pass over Object.values(preparedMap.meta) to calculate max route depth and collect unique
+  // extraction window route steps without allocating intermediate filter/map arrays.
+  let routeLength = 0
+  const extractionSteps = new Set<number>()
+  const metaEntries = Object.values(preparedMap.meta)
+  for (let i = 0; i < metaEntries.length; i++) {
+    const entry = metaEntries[i]
+    if (entry.routeStep > routeLength) {
+      routeLength = entry.routeStep
+    }
+    if (entry.isExtractionWindow) {
+      extractionSteps.add(entry.routeStep)
+    }
+  }
+  const extractionWindows = extractionSteps.size
 
   return (
     <section

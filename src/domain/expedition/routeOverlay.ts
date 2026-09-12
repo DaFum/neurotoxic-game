@@ -88,13 +88,29 @@ export const deriveExpeditionOverlayTargetFrom = (
 ): string | null => {
   if (typeof from !== 'string' || !Number.isFinite(runSeed)) return null
   const nextRouteStep = routeStep + 1
-  const alreadyReachable = new Set(
-    map.connections.filter(edge => edge.from === from).map(edge => edge.to)
-  )
-  const atNextStep = map.nodeOrder.filter(
-    nodeId => map.meta[nodeId]?.routeStep === nextRouteStep
-  )
-  const unreached = atNextStep.filter(nodeId => !alreadyReachable.has(nodeId))
+
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() and .filter() calls with
+  // single-pass procedural loops to eliminate temporary array allocations on route lookups.
+  const alreadyReachable = new Set<string>()
+  for (let i = 0; i < map.connections.length; i++) {
+    const edge = map.connections[i]
+    if (edge.from === from) {
+      alreadyReachable.add(edge.to)
+    }
+  }
+
+  const atNextStep: string[] = []
+  const unreached: string[] = []
+  for (let i = 0; i < map.nodeOrder.length; i++) {
+    const nodeId = map.nodeOrder[i]
+    if (map.meta[nodeId]?.routeStep === nextRouteStep) {
+      atNextStep.push(nodeId)
+      if (!alreadyReachable.has(nodeId)) {
+        unreached.push(nodeId)
+      }
+    }
+  }
+
   const candidates = unreached.length > 0 ? unreached : atNextStep
   if (candidates.length === 0) return null
   const index =
