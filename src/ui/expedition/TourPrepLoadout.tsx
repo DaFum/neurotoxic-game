@@ -101,8 +101,9 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const career = useGameSelector(state => state.career)
   const state = useGameSelector(current => current)
 
-  const [activeTab, setActiveTab] =
-    useState<BuildTabCategory>('route_performance')
+  const [activeTab, setActiveTab] = useState<BuildTabCategory>(
+    'route_performance'
+  )
 
   const songIds = useMemo(() => [...SONGS_BY_ID.keys()], [])
 
@@ -151,8 +152,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const activeChassisAsset = useMemo(() => {
     if (!activeTourbusAssetId) return null
     return (
-      ownedTourbusAssets.find(asset => asset.id === activeTourbusAssetId) ??
-      null
+      ownedTourbusAssets.find(asset => asset.id === activeTourbusAssetId) ?? null
     )
   }, [activeTourbusAssetId, ownedTourbusAssets])
 
@@ -187,14 +187,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
         },
         cargoCapacity
       ),
-    [
-      spareParts,
-      supplies,
-      selectedGearItemIds,
-      merch,
-      contraband,
-      cargoCapacity
-    ]
+    [spareParts, supplies, selectedGearItemIds, merch, contraband, cargoCapacity]
   )
 
   const availableInsurancePolicyIds = useMemo(
@@ -752,16 +745,14 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       type='button'
                       disabled={isTierLocked}
                       aria-pressed={isSelected}
-                      onClick={() =>
-                        !isTierLocked && setActiveTourbusAssetId(asset.id)
-                      }
+                      onClick={() => !isTierLocked && setActiveTourbusAssetId(asset.id)}
                       data-testid={`expedition-prep-tourbus-${asset.id}`}
                       className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors ${
                         isTierLocked
                           ? 'border-steel-gray/30 text-steel-gray opacity-60 cursor-not-allowed'
                           : isSelected
-                            ? 'border-toxic-green bg-toxic-green/20 text-star-white'
-                            : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                          ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                          : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                       }`}
                     >
                       <strong>{asset.id}</strong>
@@ -770,9 +761,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         {profile.cargoCapacityBonus}
                         {isTierLocked && (
                           <span className='block text-blood-red text-[10px] mt-0.5'>
-                            (
-                            {t('ui:expedition.prep.reject.CHASSIS_TIER_LOCKED')}
-                            )
+                            ({t('ui:expedition.prep.reject.CHASSIS_TIER_LOCKED')})
                           </span>
                         )}
                       </span>
@@ -944,17 +933,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     >
                       <strong>{policyId}</strong>
                       <span className='block normal-case text-ash-gray'>
-                        {t(
-                          'ui:expedition.prep.policyCoverage',
-                          'Coverage: {{coverage}} | Premium: {{premium}}',
-                          {
-                            coverage: policy.coverage,
-                            premium: formatCurrency(
-                              policy.premium,
-                              i18n.language
-                            )
-                          }
-                        )}
+                        {t('ui:expedition.prep.policyCoverage', 'Coverage: {{coverage}} | Premium: {{premium}}', {
+                          coverage: policy.coverage,
+                          premium: formatCurrency(policy.premium, i18n.language)
+                        })}
                       </span>
                     </button>
                   )
