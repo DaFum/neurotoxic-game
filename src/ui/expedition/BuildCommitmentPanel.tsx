@@ -55,8 +55,7 @@ export const BuildCommitmentPanel = memo(function BuildCommitmentPanel({
   let routeLength = 0
   const extractionSteps = new Set<number>()
   const metaEntries = Object.values(preparedMap.meta)
-  for (let i = 0; i < metaEntries.length; i++) {
-    const entry = metaEntries[i]
+  for (const entry of metaEntries) {
     if (entry.routeStep > routeLength) {
       routeLength = entry.routeStep
     }

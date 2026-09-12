@@ -92,8 +92,7 @@ export const deriveExpeditionOverlayTargetFrom = (
   // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() and .filter() calls with
   // single-pass procedural loops to eliminate temporary array allocations on route lookups.
   const alreadyReachable = new Set<string>()
-  for (let i = 0; i < map.connections.length; i++) {
-    const edge = map.connections[i]
+  for (const edge of map.connections) {
     if (edge.from === from) {
       alreadyReachable.add(edge.to)
     }
@@ -101,8 +100,7 @@ export const deriveExpeditionOverlayTargetFrom = (
 
   const atNextStep: string[] = []
   const unreached: string[] = []
-  for (let i = 0; i < map.nodeOrder.length; i++) {
-    const nodeId = map.nodeOrder[i]
+  for (const nodeId of map.nodeOrder) {
     if (map.meta[nodeId]?.routeStep === nextRouteStep) {
       atNextStep.push(nodeId)
       if (!alreadyReachable.has(nodeId)) {
