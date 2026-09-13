@@ -40,7 +40,8 @@ const colorCache = new Map<string, number>()
 /**
  * Resolves a CSS variable token to a Pixi-compatible numeric color value.
  * @param tokenName - CSS custom property name (for example, "--toxic-green").
- * @returns Pixi numeric hex color.
+ * @param defaultHexFallback - The fallback hex color.
+ * @returns The Pixi numeric hex color.
  */
 export const getPixiColorFromToken = (
   tokenName: string,
@@ -133,7 +134,7 @@ export const withTimeout = async <T>(
  * @param noteTime - Scheduled note time in ms.
  * @param targetY - Target hit line Y position.
  * @param speed - Note travel speed.
- * @returns Calculated Y position.
+ * @returns The calculated Y position.
  */
 export const calculateNoteY = (
   elapsed: number,
@@ -270,7 +271,7 @@ const _imageTextureCache = new Map<string, Texture>()
 /**
  * Checks existing caches for a valid texture.
  * @param url - The URL of the texture.
- * @returns The cached texture or null.
+ * @returns The cached texture, or null if not found.
  */
 const _getCachedTexture = (url: string): Texture | null => {
   const pixiCache = Assets.cache
@@ -294,7 +295,8 @@ const _getCachedTexture = (url: string): Texture | null => {
 /**
  * Checks if a URL has a file extension.
  * @param url - The URL to check.
- * @returns True if the URL has an extension, false otherwise.
+ * @param baseUrl - The base URL to use if the URL is relative.
+ * @returns A boolean indicating if the URL has an extension.
  */
 const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
   try {
