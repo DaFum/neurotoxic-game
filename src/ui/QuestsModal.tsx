@@ -151,16 +151,6 @@ const QuestItem = memo(
     const safeProgress = quest.progress ?? 0
     const safeRequired = quest.required ?? 0
 
-    // Safe progress calculation
-    let progressPercent = 0
-    if (safeRequired > 0) {
-      progressPercent = Math.round((safeProgress / safeRequired) * 100)
-    }
-    progressPercent = Math.max(
-      0,
-      Math.min(100, Number.isFinite(progressPercent) ? progressPercent : 0)
-    )
-
     const rewardChips = getQuestRewards(quest)
     const penaltyTexts = getPenaltyTexts(quest, t)
 
@@ -257,10 +247,16 @@ const QuestItem = memo(
             </span>
           </div>
           <ProgressBar
-            value={progressPercent}
-            max={100}
+            value={safeProgress}
+            max={Math.max(1, safeRequired)}
             color='bg-toxic-green'
             size='md'
+            showValue={false}
+            aria-label={t('ui:quests.progressAria', {
+              quest: quest.label ? t(quest.label) : '',
+              defaultValue:
+                (quest.label ? t(quest.label) : 'Quest') + ' progress'
+            })}
           />
         </div>
 
