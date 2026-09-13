@@ -1837,6 +1837,7 @@
   "quests.premiumEndorsement.description": "Close three brand deals to land a premium endorsement bonus.",
   "quests.premiumEndorsement.title": "PREMIUM ENDORSEMENT",
   "quests.progress": "Progress",
+  "quests.progressAria": "{{quest}} progress",
   "quests.progressSource.asset_risk_resolved": "Progress: Resolve asset emergencies",
   "quests.progressSource.asset_risk_triggered": "Progress: Weather asset disasters",
   "quests.progressSource.brand_deal_completed": "Progress: Complete brand deals",
