@@ -435,4 +435,24 @@ describe('MinigameSceneFrame', () => {
       screen.queryByRole('button', { name: /skip|überspringen/i })
     ).toBeNull()
   })
+
+  test('SKIP button has focus-visible ring styles for keyboard accessibility', async () => {
+    mockGameState.minigame = { type: 'AMP_CALIBRATION' }
+    mockGameState.band = {}
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    const skipButton = screen.getByRole('button', {
+      name: /skip|überspringen/i
+    })
+    expect(skipButton.className).toContain('focus-visible:ring-2')
+    expect(skipButton.className).toContain('focus-visible:ring-toxic-green')
+  })
 })
