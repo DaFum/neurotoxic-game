@@ -39,8 +39,10 @@ const colorCache = new Map<string, number>()
 
 /**
  * Resolves a CSS variable token to a Pixi-compatible numeric color value.
+ *
  * @param tokenName - CSS custom property name (for example, "--toxic-green").
- * @returns Pixi numeric hex color.
+ * @param defaultHexFallback - The fallback hex color to use if the token cannot be resolved.
+ * @returns The Pixi numeric hex color.
  */
 export const getPixiColorFromToken = (
   tokenName: string,
@@ -87,7 +89,10 @@ export const getPixiColorFromToken = (
 
 /**
  * Wraps a promise with a timeout to prevent indefinite hanging.
+ *
+ * @remarks
  * Errors and timeouts are swallowed, logging a warning/error and returning null.
+ *
  * @typeParam T - Resolved value carried by the wrapped promise.
  * @param promise - The promise to wrap.
  * @param label - Label for logging.
@@ -164,10 +169,9 @@ export const calculateCrowdOffset = (combo: number, timeMs: number): number => {
 
 /**
  * Calculates the lane start X position.
- * @param params - Lane layout inputs.
- * - `params.screenWidth` - Current screen width.
- * - `params.laneTotalWidth` - Total lane width.
- * @returns Lane start X position.
+ *
+ * @param params - Lane layout inputs including screen width and total lane width.
+ * @returns The lane start X position.
  */
 const calculateLaneStartX = ({
   screenWidth,
@@ -214,10 +218,9 @@ export const CROWD_LAYOUT = Object.freeze({
 
 /**
  * Builds layout metrics for the rhythm lanes.
- * @param params - Layout inputs.
- * - `params.screenWidth` - Current screen width.
- * - `params.screenHeight` - Current screen height.
- * @returns Layout metrics.
+ *
+ * @param params - Layout inputs including screen width and screen height.
+ * @returns The calculated layout metrics.
  */
 export const buildRhythmLayout = ({
   screenWidth,
@@ -269,6 +272,7 @@ const _imageTextureCache = new Map<string, Texture>()
 
 /**
  * Checks existing caches for a valid texture.
+ *
  * @param url - The URL of the texture.
  * @returns The cached texture or null.
  */
@@ -293,7 +297,9 @@ const _getCachedTexture = (url: string): Texture | null => {
 
 /**
  * Checks if a URL has a file extension.
+ *
  * @param url - The URL to check.
+ * @param baseUrl - The base URL to use for relative URLs.
  * @returns True if the URL has an extension, false otherwise.
  */
 const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
@@ -313,6 +319,7 @@ const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
 
 /**
  * Loads a texture using an Image element fallback.
+ *
  * @param url - The URL to load.
  * @returns The loaded texture or null.
  */
@@ -344,7 +351,10 @@ const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
 
 /**
  * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
+ *
+ * @remarks
  * Useful for generated URLs without extensions or with query parameters.
+ *
  * @param url - The URL to load.
  * @returns The loaded texture or null.
  */
@@ -373,7 +383,8 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
 
 /**
  * Returns an optimized resolution value capped to prevent performance bottlenecks on high-DPI devices.
- * @returns Optimized resolution (1.0 to 2.0).
+ *
+ * @returns The optimized resolution from 1.0 to 2.0.
  */
 export const getOptimalResolution = () => {
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
