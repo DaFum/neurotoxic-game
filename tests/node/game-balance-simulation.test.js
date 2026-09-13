@@ -2834,9 +2834,9 @@ test('probe-only misses render probe warnings without false bankruptcy warnings'
         summary: {
           bankruptcy: { count: 0, sampleSize: 260, ratePct: 0.05 }, // inside [0, 4]
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
-            firstVanUpgradeDayMedian: 2,
-            catalogSharePurchasedPct: 37.32
+            firstHqUpgradeDayMedian: 0, // out of range [1, 4]
+            firstVanUpgradeDayMedian: 1,
+            catalogSharePurchasedPct: 40.32
           }
         }
       }
@@ -2847,9 +2847,9 @@ test('probe-only misses render probe warnings without false bankruptcy warnings'
         holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0.25 }, // inside [0, 4]
         summary: {
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1,
-            firstVanUpgradeDayMedian: 2,
-            catalogSharePurchasedPct: 37.32
+            firstHqUpgradeDayMedian: 0,
+            firstVanUpgradeDayMedian: 1,
+            catalogSharePurchasedPct: 40.32
           }
         }
       }
@@ -2933,9 +2933,9 @@ test('buildDesignRiskReview evaluates probe-specific target corridors and flags 
         summary: {
           bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
-            firstVanUpgradeDayMedian: 2, // out of range [3, 5]
-            catalogSharePurchasedPct: 37.32 // out of range [20, 35]
+            firstHqUpgradeDayMedian: 0, // out of range [1, 4]
+            firstVanUpgradeDayMedian: 1, // out of range [2, 5]
+            catalogSharePurchasedPct: 40.32 // out of range [20, 40]
           }
         }
       },
@@ -2945,7 +2945,7 @@ test('buildDesignRiskReview evaluates probe-specific target corridors and flags 
         summary: {
           bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
           gigEconomics: {
-            travelCostShareOfGigNetPct: 1.9 // out of range [3.0, 6.0]
+            travelCostShareOfGigNetPct: 1.4 // out of range [1.5, 6.0]
           },
           gigCapHitPct: 5.0
         }
@@ -2957,9 +2957,9 @@ test('buildDesignRiskReview evaluates probe-specific target corridors and flags 
         holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
         summary: {
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1,
-            firstVanUpgradeDayMedian: 2,
-            catalogSharePurchasedPct: 37.32
+            firstHqUpgradeDayMedian: 0,
+            firstVanUpgradeDayMedian: 1,
+            catalogSharePurchasedPct: 40.32
           }
         }
       },
@@ -2968,7 +2968,7 @@ test('buildDesignRiskReview evaluates probe-specific target corridors and flags 
         holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
         summary: {
           gigEconomics: {
-            travelCostShareOfGigNetPct: 1.9
+            travelCostShareOfGigNetPct: 1.4
           },
           gigCapHitPct: 5.0
         }
@@ -3026,7 +3026,7 @@ test('healthy bankruptcy with calibration probe miss keeps bankruptcy risk statu
         summary: {
           bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstHqUpgradeDayMedian: 0, // out of range [1, 4]
             firstVanUpgradeDayMedian: 4,
             catalogSharePurchasedPct: 25
           }
@@ -3039,7 +3039,7 @@ test('healthy bankruptcy with calibration probe miss keeps bankruptcy risk statu
         holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
         summary: {
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1,
+            firstHqUpgradeDayMedian: 0,
             firstVanUpgradeDayMedian: 4,
             catalogSharePurchasedPct: 25
           }
@@ -3077,7 +3077,7 @@ test('healthy calibration probe with out-of-range holdout probe generates a warn
         summary: {
           bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
           purchasePaths: {
-            firstHqUpgradeDayMedian: 3, // in range [2, 4] for calibration
+            firstHqUpgradeDayMedian: 3, // in range [1, 4] for calibration
             firstVanUpgradeDayMedian: 4,
             catalogSharePurchasedPct: 25
           }
@@ -3090,7 +3090,7 @@ test('healthy calibration probe with out-of-range holdout probe generates a warn
         holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
         summary: {
           purchasePaths: {
-            firstHqUpgradeDayMedian: 1, // out of range [2, 4] in holdout!
+            firstHqUpgradeDayMedian: 0, // out of range [1, 4] in holdout!
             firstVanUpgradeDayMedian: 4,
             catalogSharePurchasedPct: 25
           }
