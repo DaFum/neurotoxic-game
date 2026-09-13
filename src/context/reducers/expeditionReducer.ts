@@ -2272,9 +2272,22 @@ export const handleRecordExpeditionObligationSignal = (
         }
         changed = true
       }
-      const progress = Object.values(progressByConstraintId)
-      if (progress.some(item => item.failed)) status = 'failed'
-      else if (progress.length > 0 && progress.every(item => item.satisfied))
+      // ⚡ BOLT OPTIMIZATION: Single-pass procedural loop over progressByConstraintId
+      // Why: Avoids Object.values() array allocation and closure allocations from .some() and .every() on obligation signals.
+      // Impact: Reduces GC pressure and speeds up obligation signal processing during game steps.
+      let hasFailedConstraint = false
+      let allConstraintsSatisfied = true
+      let constraintCount = 0
+      for (const constraintId in progressByConstraintId) {
+        if (!Object.hasOwn(progressByConstraintId, constraintId)) continue
+        const item = progressByConstraintId[constraintId]
+        if (!item) continue
+        constraintCount++
+        if (item.failed) hasFailedConstraint = true
+        if (!item.satisfied) allConstraintsSatisfied = false
+      }
+      if (hasFailedConstraint) status = 'failed'
+      else if (constraintCount > 0 && allConstraintsSatisfied)
         status = 'completed'
       const doubleDown = obligation.doubleDown
       if (doubleDown) {
@@ -2297,7 +2310,7 @@ export const handleRecordExpeditionObligationSignal = (
         else if (
           doubleDown.addedConstraint.kind === 'finale_required' &&
           payload.signalType === 'finale' &&
-          progress.every(item => item.satisfied)
+          allConstraintsSatisfied
         )
           status = 'completed'
       }
