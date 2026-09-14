@@ -55,8 +55,9 @@ interface UseHandleTravelParams extends Pick<
  * @remarks
  * The travel process incorporates node connectivity verification, financial and fuel
  * requirement checks, and location-specific restrictions (e.g., repeating a gig). When
- * targeting a valid unvisited node, the user receives an upfront prompt summarizing costs
- * and requires a sequential confirmation click to bypass the pending state and finalize travel.
+ * targeting any different accessible node, the user receives an upfront prompt summarizing costs
+ * and requires a sequential confirmation click to bypass the pending state, hand off to the tourbus
+ * minigame, and defer cost and location finalization until completion.
  *
  * @param params - Configuration mapping for state references, setters, and structural dependencies
  * @returns A memoized callback function receiving a targeted node to process
