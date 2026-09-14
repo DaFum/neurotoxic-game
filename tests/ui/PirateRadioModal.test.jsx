@@ -72,4 +72,23 @@ describe('PirateRadioModal', () => {
     expect(transmitButton).toHaveAttribute('aria-disabled', 'true')
     expect(transmitButton).not.toBeDisabled()
   })
+
+  it('triggers onBroadcast when canBroadcast is true', async () => {
+    const onBroadcast = vi.fn()
+    render(
+      <PirateRadioModal
+        onClose={vi.fn()}
+        onBroadcast={onBroadcast}
+        canBroadcast={true}
+        hasBroadcastedToday={false}
+        config={config}
+      />
+    )
+
+    const transmitButton = screen.getByRole('button', { name: /TRANSMIT/i })
+    expect(transmitButton).toHaveAttribute('aria-disabled', 'false')
+
+    fireEvent.click(transmitButton)
+    expect(onBroadcast).toHaveBeenCalledTimes(1)
+  })
 })

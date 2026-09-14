@@ -147,51 +147,52 @@ export const PirateRadioModal = memo(
           <GlitchButton variant='primary' onClick={onClose} className='flex-1'>
             [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
           </GlitchButton>
-          {!canBroadcast ? (
-            <Tooltip
-              content={
-                hasBroadcastedToday
-                  ? t('ui:pirate_radio.cooldown', {
-                      defaultValue: 'ON COOLDOWN'
-                    })
-                  : !isFiniteNumber(player?.money) ||
-                      (player?.money as number) < config.COST
-                    ? t('ui:pirate_radio.not_enough_money', {
-                        defaultValue: 'Not enough money'
-                      })
-                    : !isFiniteNumber(band?.harmony) ||
-                        (band?.harmony as number) < config.HARMONY_COST
-                      ? t('ui:pirate_radio.not_enough_harmony', {
-                          defaultValue: 'Not enough band harmony'
-                        })
-                      : t('ui:shop.messages.purchaseFailed', {
-                          defaultValue: 'Purchase failed!'
-                        })
-              }
-              className='flex-1'
-            >
+          {(() => {
+            const transmitBtn = (
               <GlitchButton
                 variant='primary'
-                onClick={e => e.preventDefault()}
-                aria-disabled={true}
+                onClick={canBroadcast ? onBroadcast : e => e.preventDefault()}
+                aria-disabled={!canBroadcast}
                 disabled={false}
-                className='w-full opacity-60 cursor-not-allowed border-ash-gray text-ash-gray'
+                className={`w-full ${!canBroadcast ? 'opacity-60 cursor-not-allowed border-ash-gray text-ash-gray pointer-events-auto hover:scale-100 hover:shadow-none hover:bg-void-black hover:text-ash-gray' : 'flex-1'}`}
               >
                 {hasBroadcastedToday
                   ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]`
                   : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
               </GlitchButton>
-            </Tooltip>
-          ) : (
-            <GlitchButton
-              variant='primary'
-              onClick={onBroadcast}
-              disabled={false}
-              className='flex-1'
-            >
-              {`[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
-            </GlitchButton>
-          )}
+            )
+
+            if (!canBroadcast) {
+              return (
+                <Tooltip
+                  content={
+                    hasBroadcastedToday
+                      ? t('ui:pirate_radio.cooldown', {
+                          defaultValue: 'ON COOLDOWN'
+                        })
+                      : !isFiniteNumber(player?.money) ||
+                          (player?.money as number) < config.COST
+                        ? t('ui:pirate_radio.not_enough_money', {
+                            defaultValue: 'Not enough money'
+                          })
+                        : !isFiniteNumber(band?.harmony) ||
+                            (band?.harmony as number) < config.HARMONY_COST
+                          ? t('ui:pirate_radio.not_enough_harmony', {
+                              defaultValue: 'Not enough band harmony'
+                            })
+                          : t('ui:shop.messages.purchaseFailed', {
+                              defaultValue: 'Purchase failed!'
+                            })
+                  }
+                  className='flex-1'
+                >
+                  {transmitBtn}
+                </Tooltip>
+              )
+            }
+
+            return transmitBtn
+          })()}
         </div>
       </Modal>
     )
