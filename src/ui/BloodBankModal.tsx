@@ -146,8 +146,8 @@ const DonationCard = ({
 
   const actionBtn = (
     <ActionButton
-      onClick={onDonate}
-      disabled={!canDonate}
+      onClick={canDonate ? onDonate : e => e.preventDefault()}
+      aria-disabled={!canDonate}
       className={`w-full ${canDonate ? v.buttonEnabled : ''}`}
     >
       {t(v.actionKey, { defaultValue: v.actionDefault })}

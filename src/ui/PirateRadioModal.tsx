@@ -172,9 +172,10 @@ export const PirateRadioModal = memo(
             >
               <GlitchButton
                 variant='primary'
-                onClick={onBroadcast}
-                disabled={true}
-                className='w-full'
+                onClick={e => e.preventDefault()}
+                aria-disabled={true}
+                disabled={false}
+                className='w-full opacity-60 cursor-not-allowed border-ash-gray text-ash-gray'
               >
                 {hasBroadcastedToday
                   ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]`

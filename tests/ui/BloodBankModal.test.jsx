@@ -44,16 +44,14 @@ describe('BloodBankModal', () => {
     expect(closeButton).toHaveClass('sm:w-auto')
   })
 
-  it('wraps disabled donation action buttons in a Tooltip explaining why it is disabled', () => {
+  it('wraps disabled donation action buttons in a Tooltip explaining why it is disabled and keeps it focusable', () => {
     render(<BloodBankModal {...baseProps} canDonate={false} />)
 
     const donateButton = screen.getByRole('button', { name: /donate blood/i })
-    expect(donateButton).toBeDisabled()
+    expect(donateButton).toHaveAttribute('aria-disabled', 'true')
+    expect(donateButton).not.toBeDisabled()
 
-    const wrapper = donateButton.parentElement
-    expect(wrapper).toBeInTheDocument()
-
-    fireEvent.mouseEnter(wrapper)
+    fireEvent.mouseEnter(donateButton)
     expect(
       screen.getByRole('tooltip', { name: /too weak/i })
     ).toBeInTheDocument()

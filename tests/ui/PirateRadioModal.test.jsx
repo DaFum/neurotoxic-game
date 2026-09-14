@@ -56,4 +56,20 @@ describe('PirateRadioModal', () => {
     fireEvent.keyDown(window, { key: 'Escape' })
     await waitFor(() => expect(onClose).toHaveBeenCalled())
   })
+
+  it('keeps disabled transmit button keyboard focusable via aria-disabled', async () => {
+    render(
+      <PirateRadioModal
+        onClose={vi.fn()}
+        onBroadcast={vi.fn()}
+        canBroadcast={false}
+        hasBroadcastedToday={true}
+        config={config}
+      />
+    )
+
+    const transmitButton = screen.getByRole('button', { name: /ON COOLDOWN/i })
+    expect(transmitButton).toHaveAttribute('aria-disabled', 'true')
+    expect(transmitButton).not.toBeDisabled()
+  })
 })

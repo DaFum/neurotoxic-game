@@ -209,3 +209,8 @@
 
 **Learning:** Event option buttons in `EventModal.tsx` use `aria-disabled="true"` to maintain keyboard focusability, but lacked an explicit focus-visible ring color in their disabled state and omitted explanation tooltips.
 **Action:** Always include explicit focus ring colors (e.g., `focus-visible:ring-ash-gray/60`) on disabled `aria-disabled` controls and wrap disabled options in `Tooltip` providing localized context (e.g., `option.disabledReason` or `t('ui:event.optionDisabled')`).
+
+## 2026-08-20 - Keyboard Accessibility for Disabled Modal Action Buttons
+
+**Learning:** Action buttons in feature modals (such as `PirateRadioModal` and `BloodBankModal`) used native `disabled` attributes when unaffordable or on daily cooldown. Even when wrapped in a `Tooltip` explaining why the action was blocked, native `disabled` attributes remove the button from the tab order, completely preventing keyboard users from focusing the button and reading the explanation Tooltip.
+**Action:** Replace native `disabled` with `aria-disabled="true"` and guard the click handler with `e.preventDefault()` when wrapping disabled modal primary buttons in `Tooltip` components so keyboard users can navigate to the element and discover why the action is locked.
