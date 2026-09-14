@@ -21,22 +21,47 @@ import {
 } from '../../../utils/mapUtils'
 import type { TravelActionsParams } from '../types'
 
+/**
+ * Parameters for the useHandleTravel hook.
+ *
+ * @remarks
+ * This interface extends specific properties from the overarching TravelActionsParams
+ * and includes callback functions required to execute travel-related logic,
+ * formatting, and state synchronization.
+ */
 interface UseHandleTravelParams extends Pick<
   TravelActionsParams,
   'refs' | 'setters' | 'params'
 > {
+  /** Retrieves a formatted location string by evaluating venue name and ID. */
   getLocationName: (
     location: string | undefined,
     venueId?: string | null
   ) => string
+  /** Invoked upon successful node arrival to process phase transitions or events. */
   handleNodeArrivalCallback: (
     node: MapNode,
     travelEventActive?: boolean
   ) => void
+  /** Clears the actively tracked pending travel node state. */
   clearPendingTravel: () => void
+  /** Initiates the underlying sequential travel process towards the target node. */
   startTravelSequence: (node: MapNode) => void
 }
 
+/**
+ * Manages user interactions to initialize, validate, or execute travel onto map nodes.
+ *
+ * @remarks
+ * The travel process incorporates node connectivity verification, financial and fuel
+ * requirement checks, and location-specific restrictions (e.g., repeating a gig). When
+ * targeting any different accessible node, the user receives an upfront prompt summarizing costs
+ * and requires a sequential confirmation click to bypass the pending state, hand off to the tourbus
+ * minigame, and defer cost and location finalization until completion.
+ *
+ * @param params - Configuration mapping for state references, setters, and structural dependencies
+ * @returns A memoized callback function receiving a targeted node to process
+ */
 export const useHandleTravel = ({
   refs,
   setters,
