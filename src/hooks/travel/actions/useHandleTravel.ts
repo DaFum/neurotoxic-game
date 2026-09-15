@@ -21,22 +21,45 @@ import {
 } from '../../../utils/mapUtils'
 import type { TravelActionsParams } from '../types'
 
+/**
+ * Parameters for the useHandleTravel hook.
+ *
+ * @remarks
+ * Extends select properties from TravelActionsParams to provide references,
+ * state setters, and core parameters needed to process travel node selections.
+ */
 interface UseHandleTravelParams extends Pick<
   TravelActionsParams,
   'refs' | 'setters' | 'params'
 > {
+  /** Function to resolve a localized and normalized location name. */
   getLocationName: (
     location: string | undefined,
     venueId?: string | null
   ) => string
+  /** Callback triggered when a node is successfully reached and finalized. */
   handleNodeArrivalCallback: (
     node: MapNode,
     travelEventActive?: boolean
   ) => void
+  /** Function to clear any currently pending travel selection. */
   clearPendingTravel: () => void
+  /** Initiates the actual travel sequence minigame for a confirmed node. */
   startTravelSequence: (node: MapNode) => void
 }
 
+/**
+ * Creates a callback to handle user attempts to travel to a specific map node.
+ *
+ * @remarks
+ * Validates travel prerequisites, distance, connectivity, and resource costs.
+ * It manages a two-click confirmation sequence: the first click sets the node as
+ * pending and displays a cost breakdown warning; the second confirms travel and
+ * triggers the sequence.
+ *
+ * @param params - The configuration options and dependencies.
+ * @returns A function that accepts a target map node and processes the travel logic.
+ */
 export const useHandleTravel = ({
   refs,
   setters,
