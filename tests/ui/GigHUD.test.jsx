@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { render, cleanup } from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
@@ -8,6 +8,7 @@ vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
 }))
 
 import { GigHUD } from '../../src/components/GigHUD.tsx'
+import { GigControlsCluster } from '../../src/components/hud/GigControlsCluster.tsx'
 
 afterEach(cleanup)
 
@@ -54,4 +55,25 @@ test('GigHUD: does not render toxic border flash element when isToxicMode is fal
   const flashElement = container.querySelector('.toxic-border-flash')
 
   expect(flashElement).toBe(null)
+})
+
+test('GigControlsCluster: shortcuts button aria-controls is linked only when panel is open', async () => {
+  const { getByLabelText } = render(<GigControlsCluster />)
+
+  // Expand the controls menu
+  const menuButton = getByLabelText('Toggle game controls')
+  fireEvent.click(menuButton)
+
+  const shortcutsButton = getByLabelText('Toggle keyboard shortcuts help')
+
+  // Initially, showHelp is false, aria-controls should be null/absent
+  expect(shortcutsButton.getAttribute('aria-controls')).toBeNull()
+  expect(shortcutsButton.getAttribute('aria-expanded')).toBe('false')
+
+  // Toggle shortcuts help open
+  fireEvent.click(shortcutsButton)
+
+  // Now showHelp is true, aria-controls should point to 'shortcuts-panel'
+  expect(shortcutsButton.getAttribute('aria-controls')).toBe('shortcuts-panel')
+  expect(shortcutsButton.getAttribute('aria-expanded')).toBe('true')
 })
