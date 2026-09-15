@@ -123,7 +123,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                 type='button'
                 onClick={() => setShowHelp(prev => !prev)}
                 aria-expanded={showHelp}
-                aria-controls='shortcuts-panel'
+                aria-controls={showHelp ? 'shortcuts-panel' : undefined}
                 aria-label={t('ui:aria.shortcutsHelp', {
                   defaultValue: 'Toggle keyboard shortcuts help'
                 })}
