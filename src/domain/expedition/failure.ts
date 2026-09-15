@@ -350,6 +350,39 @@ const getCrewFailureSignal = (
 }
 
 /**
+ * Map of failure reason generators tied to EXPEDITION_FAILURE_PRIORITY keys.
+ */
+const GENERATORS_BY_REASON: Record<
+  (typeof EXPEDITION_FAILURE_PRIORITY)[number],
+  (state: GameState) => ExpeditionFailureSignal | null
+> = {
+  bankruptcy: getExpeditionEconomyFailureSignal,
+  technical_shutdown: getTechnicalFailureSignal,
+  crew_collapse: getCrewFailureSignal,
+  authority_crisis: (state: GameState) => {
+    const s = getAuthorityCrisisSignal(state)
+    return s
+      ? {
+          reason: 'authority_crisis',
+          sourceId: s.sourceId,
+          choices: ['accept_failure']
+        }
+      : null
+  },
+  critical_contract_breach: (state: GameState) => {
+    const s = getCriticalContractFailureSignal(state)
+    return s
+      ? {
+          reason: 'critical_contract_breach',
+          sourceId: s.sourceId,
+          choices: ['accept_failure']
+        }
+      : null
+  },
+  fuel_stranded: getExpeditionMobilityFailureSignal
+}
+
+/**
  * Composes every failure signal into the one terminal owner.
  *
  * @param state - Current game state.
@@ -365,41 +398,31 @@ export const composeExpeditionFailureSignal = (
   state: GameState,
   laterGateSignals: readonly ExpeditionFailureSignal[] = []
 ): ExpeditionFailureSignal | null => {
-  const signals: ExpeditionFailureSignal[] = []
-  const economy = getExpeditionEconomyFailureSignal(state)
-  if (economy) signals.push(economy)
-  const technical = getTechnicalFailureSignal(state)
-  if (technical) signals.push(technical)
-  const crew = getCrewFailureSignal(state)
-  if (crew) signals.push(crew)
-  const authoritySignal = getAuthorityCrisisSignal(state)
-  if (authoritySignal) {
-    signals.push({
-      reason: 'authority_crisis',
-      sourceId: authoritySignal.sourceId,
-      choices: ['accept_failure']
-    })
-  }
-  const criticalContract = getCriticalContractFailureSignal(state)
-  if (criticalContract) {
-    signals.push({
-      reason: 'critical_contract_breach',
-      sourceId: criticalContract.sourceId,
-      choices: ['accept_failure']
-    })
-  }
-  const mobility = getExpeditionMobilityFailureSignal(state)
-  if (mobility) signals.push(mobility)
-  for (const signal of laterGateSignals) {
-    if (signal) signals.push(signal)
-  }
-  if (signals.length === 0) return null
+  // ⚡ BOLT OPTIMIZATION: Iterates EXPEDITION_FAILURE_PRIORITY dynamically and lazily evaluates generators.
+  // Why: Uses EXPEDITION_FAILURE_PRIORITY as single source of truth while eliminating array allocations (signals = []),
+  // closure allocations (.find()), and unnecessary downstream softlock checks when higher-priority failures trigger.
+  // Impact: Zero intermediate array allocations per failure check and early exit on active failure signals.
 
   for (const reason of EXPEDITION_FAILURE_PRIORITY) {
-    const match = signals.find(signal => signal.reason === reason)
-    if (match) return match
+    const generator = GENERATORS_BY_REASON[reason]
+    const signal = generator ? generator(state) : null
+    if (signal) return signal
+
+    if (laterGateSignals.length > 0) {
+      for (const lateSignal of laterGateSignals) {
+        if (lateSignal?.reason === reason) return lateSignal
+      }
+    }
   }
-  return signals[0] ?? null
+
+  // Fallback for custom reasons in laterGateSignals not listed in EXPEDITION_FAILURE_PRIORITY
+  if (laterGateSignals.length > 0) {
+    for (const lateSignal of laterGateSignals) {
+      if (lateSignal) return lateSignal
+    }
+  }
+
+  return null
 }
 
 /**
@@ -528,10 +551,25 @@ export const getExpeditionCrisisChoices = (
   const pending = deriveExpeditionPendingFailure(state)
   if (!pending) return []
   const choices = [...pending.choices]
-  const atWindow = Object.values(map.meta).some(
-    entry =>
-      entry.routeStep === state.expedition.routeStep && entry.isExtractionWindow
-  )
+
+  // ⚡ BOLT OPTIMIZATION: Replace Object.values().some() with procedural for...in loop.
+  // Why: Avoids allocating an intermediate array and closure on every crisis choice check at extraction windows.
+  // Impact: Zero array or closure allocations during crisis choice derivation.
+  let atWindow = false
+  for (const key in map.meta) {
+    if (Object.hasOwn(map.meta, key)) {
+      const entry = map.meta[key]
+      if (
+        entry &&
+        entry.routeStep === state.expedition.routeStep &&
+        entry.isExtractionWindow
+      ) {
+        atWindow = true
+        break
+      }
+    }
+  }
+
   if (atWindow && !choices.includes('extract')) {
     choices.unshift('extract')
   }
