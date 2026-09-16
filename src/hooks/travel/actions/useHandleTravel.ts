@@ -21,22 +21,41 @@ import {
 } from '../../../utils/mapUtils'
 import type { TravelActionsParams } from '../types'
 
+/**
+ * Configuration parameters for the handle travel sequence.
+ */
 interface UseHandleTravelParams extends Pick<
   TravelActionsParams,
   'refs' | 'setters' | 'params'
 > {
+  /** Callback to retrieve the localized name of a location or venue. */
   getLocationName: (
     location: string | undefined,
     venueId?: string | null
   ) => string
+  /** Callback triggered when the player arrives at a gig node to resolve venue routing. */
   handleNodeArrivalCallback: (
     node: MapNode,
     travelEventActive?: boolean
   ) => void
+  /** Callback to reset pending travel configurations when clearing selection. */
   clearPendingTravel: () => void
+  /** Callback to initiate the travel minigame and travel state sequence. */
   startTravelSequence: (node: MapNode) => void
 }
 
+/**
+ * Validates travel constraints and handles the initiation of travel to a target map node.
+ *
+ * @remarks
+ * Coordinates multiple domain layers including node validation, resource checking,
+ * cost calculations, and connectivity. Requires the user to confirm travel by
+ * interacting with the same node twice within a timeout window, storing the pending node
+ * state across clicks. Soft-fails early with user-facing toasts on constraint violations.
+ *
+ * @param params - Aggregate configuration parameters containing refs, setters, and callbacks.
+ * @returns A callback function that accepts a target map node and attempts to initiate travel.
+ */
 export const useHandleTravel = ({
   refs,
   setters,
