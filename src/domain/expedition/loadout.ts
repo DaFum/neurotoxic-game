@@ -800,7 +800,10 @@ export const validateExpeditionBuildCommitment = (
     return reject('PROTECTED_CASH_OUT_OF_RANGE')
   }
 
-  const fuelCost = getExpeditionFuelTopUpCost(currentFuel, startingFuelTarget)
+  const fuelCost = getExpeditionFuelTopUpCost(
+    currentFuel,
+    startingFuelTarget
+  )
   const insurancePremium = getExpeditionInsurancePremium(
     normalizedInsurancePolicyId
   )

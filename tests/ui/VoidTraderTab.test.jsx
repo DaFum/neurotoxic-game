@@ -70,9 +70,7 @@ describe('VoidTraderTab Component', () => {
     fireEvent.focus(disabledButtons[0])
 
     expect(screen.getByRole('tooltip')).toBeInTheDocument()
-    expect(screen.getByRole('tooltip')).toHaveTextContent(
-      'ui:error.insufficient_fame'
-    )
+    expect(screen.getByRole('tooltip')).toHaveTextContent('ui:error.insufficient_fame')
   })
 
   it('renders a tooltip explaining max quantity reached when a stackable item is disabled', () => {
@@ -80,9 +78,7 @@ describe('VoidTraderTab Component', () => {
     const richPlayer = { fame: 2000 }
 
     // isVoidItemDisabled returns true for the item (e.g. maxStacks reached)
-    const _isItemDisabled = vi.fn(
-      item => item.id === 'c_phantom_strings' || item.stackable
-    )
+    const _isItemDisabled = vi.fn(item => item.id === 'c_phantom_strings' || item.stackable)
 
     render(
       <VoidTraderTab
@@ -101,9 +97,7 @@ describe('VoidTraderTab Component', () => {
     fireEvent.focus(disabledButtons[0])
 
     expect(screen.getByRole('tooltip')).toBeInTheDocument()
-    expect(screen.getByRole('tooltip')).toHaveTextContent(
-      'ui:shop.messages.maxCapacity'
-    )
+    expect(screen.getByRole('tooltip')).toHaveTextContent('ui:shop.messages.maxCapacity')
   })
 
   it('calls handleTrade when clicking trade button', () => {

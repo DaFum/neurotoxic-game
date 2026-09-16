@@ -72,13 +72,13 @@ describe('OverworldMenu', () => {
     expect(restButton).toBeInTheDocument()
   })
 
-  it('includes ARIA controls and aria-expanded on category buttons', () => {
+  it('includes ARIA expanded attribute on main toggle button', () => {
     const actions = defaultActions()
     render(<Harness actions={actions} />)
 
-    const catBtn = screen.getByRole('button', { name: /LOGISTICS/i })
-    expect(catBtn).toHaveAttribute('aria-expanded', 'false')
-    expect(catBtn).toHaveAttribute('aria-controls', 'overworld-menu-submenu')
+    const mainToggle = screen.getByRole('button', { name: /CLOSE MENU/i })
+    expect(mainToggle).toHaveAttribute('aria-expanded', 'true')
+    expect(mainToggle).toHaveAttribute('aria-controls', 'overworld-menu-panel')
   })
 
   it('renders a tooltip explanation when refuel or repair is disabled', () => {

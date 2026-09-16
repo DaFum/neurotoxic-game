@@ -124,16 +124,9 @@ export const usePostGigDerivations = ({
         : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
 
     const effectiveInventory: Record<string, number> = {}
-    if (
-      expedition?.status === 'active' &&
-      Array.isArray(expedition.cargo?.merch)
-    ) {
+    if (expedition?.status === 'active' && Array.isArray(expedition.cargo?.merch)) {
       for (const item of expedition.cargo.merch) {
-        if (
-          item &&
-          typeof item.inventoryKey === 'string' &&
-          typeof item.quantity === 'number'
-        ) {
+        if (item && typeof item.inventoryKey === 'string' && typeof item.quantity === 'number') {
           effectiveInventory[item.inventoryKey] = item.quantity
         }
       }

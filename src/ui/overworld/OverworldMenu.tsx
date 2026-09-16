@@ -118,8 +118,6 @@ const MenuCategoryList = React.memo(
           disabled={isTraveling}
           onClick={() => setActiveCat(c.id)}
           size='sm'
-          aria-expanded={false}
-          aria-controls='overworld-menu-submenu'
         >
           <div className='flex w-full justify-between items-center text-left'>
             <div className='menu-cat-left flex items-center gap-2.5'>
