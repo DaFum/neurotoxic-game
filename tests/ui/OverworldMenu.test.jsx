@@ -71,4 +71,38 @@ describe('OverworldMenu', () => {
     expect(actions.handleRestInVan).toHaveBeenCalledTimes(1)
     expect(restButton).toBeInTheDocument()
   })
+
+  it('includes ARIA controls and aria-expanded on category buttons', () => {
+    const actions = defaultActions()
+    render(<Harness actions={actions} />)
+
+    const catBtn = screen.getByRole('button', { name: /LOGISTICS/i })
+    expect(catBtn).toHaveAttribute('aria-expanded', 'false')
+    expect(catBtn).toHaveAttribute('aria-controls', 'overworld-menu-submenu')
+  })
+
+  it('renders a tooltip explanation when refuel or repair is disabled', () => {
+    const actions = defaultActions()
+    const [isMenuOpen, setIsMenuOpen] = [true, vi.fn()]
+
+    render(
+      <OverworldMenu
+        t={t}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+        isTraveling={false}
+        vanFuel={100}
+        vanCondition={100}
+        isSaving={false}
+        {...actions}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /LOGISTICS/i }))
+    const refuelBtn = screen.getByRole('button', { name: /REFUEL/i })
+    expect(refuelBtn).toBeDisabled()
+
+    fireEvent.mouseEnter(refuelBtn.parentElement)
+    expect(screen.getByText(/Fuel tank is already full/i)).toBeInTheDocument()
+  })
 })
