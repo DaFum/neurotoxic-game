@@ -53,7 +53,7 @@ interface UseHandleTravelParams extends Pick<
  * interacting with the same node twice within a timeout window, storing the pending node
  * state across clicks. Soft-fails early with user-facing toasts on constraint violations.
  *
- * @param params - Aggregate configuration parameters containing refs, setters, and callbacks.
+ * @param options - Aggregate configuration parameters containing refs, setters, and callbacks.
  * @returns A callback function that accepts a target map node and attempts to initiate travel.
  */
 export const useHandleTravel = ({
