@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { EXPENSE_CONSTANTS } from '../../utils/economy'
 import { GlitchButton } from '../../ui/GlitchButton'
+import { Tooltip } from '../shared/Tooltip'
 
 interface OverworldMenuProps {
   t: import('../../types/callbacks').TranslationCallback
@@ -106,7 +107,10 @@ const MenuCategoryList = React.memo(
     setActiveCat: (id: string) => void
     t: import('../../types/callbacks').TranslationCallback
   }) => (
-    <div className='menu-cat-list flex flex-col p-1.5'>
+    <div
+      className='menu-cat-list flex flex-col p-1.5'
+      id='overworld-menu-categories'
+    >
       {menuCategories.map(c => (
         <GlitchButton
           key={c.id}
@@ -157,6 +161,7 @@ const MenuSubmenu = React.memo(
     cat,
     actions,
     isDisabled,
+    getDisabledReason,
     handleClose,
     handleBack,
     t
@@ -164,11 +169,12 @@ const MenuSubmenu = React.memo(
     cat: MenuCategory
     actions: Record<MenuAction, () => void>
     isDisabled: (item: MenuItem) => boolean
+    getDisabledReason: (item: MenuItem) => string | undefined
     handleClose: () => void
     handleBack: () => void
     t: import('../../types/callbacks').TranslationCallback
   }) => (
-    <div className='menu-sub flex flex-col'>
+    <div className='menu-sub flex flex-col' id='overworld-menu-submenu'>
       <GlitchButton
         className='menu-back-btn text-left!'
         size='sm'
@@ -181,35 +187,47 @@ const MenuSubmenu = React.memo(
         })}
       </GlitchButton>
       <div className='menu-sub-items flex flex-col p-1.5'>
-        {cat.items.map(item => (
-          <GlitchButton
-            key={item.action}
-            className={`menu-sub-item hover:enabled:-translate-x-0.5 ${item.v === 'p' ? 'v-p' : item.v === 'w' ? 'v-w' : 'v-d'}`}
-            disabled={isDisabled(item)}
-            onClick={() => {
-              actions[item.action]()
-              if (!item.keepOpen) handleClose()
-            }}
-            size='sm'
-          >
-            <div className='flex w-full justify-between items-center text-left'>
-              <div className='menu-sub-item-left flex items-center gap-2.5'>
-                <span className='menu-sub-icon text-[14px] w-4.5 text-center'>
-                  {item.icon}
-                </span>
-                <div className='text-left'>
-                  <div className='menu-sub-label font-display text-[13px] tracking-[1px]'>
-                    [{item.label}]
-                  </div>
-                  <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-px'>
-                    {item.desc}
+        {cat.items.map(item => {
+          const disabled = isDisabled(item)
+          const reason = disabled ? getDisabledReason(item) : undefined
+          const button = (
+            <GlitchButton
+              key={item.action}
+              className={`menu-sub-item hover:enabled:-translate-x-0.5 ${item.v === 'p' ? 'v-p' : item.v === 'w' ? 'v-w' : 'v-d'}`}
+              disabled={disabled}
+              onClick={() => {
+                actions[item.action]()
+                if (!item.keepOpen) handleClose()
+              }}
+              size='sm'
+            >
+              <div className='flex w-full justify-between items-center text-left'>
+                <div className='menu-sub-item-left flex items-center gap-2.5'>
+                  <span className='menu-sub-icon text-[14px] w-4.5 text-center'>
+                    {item.icon}
+                  </span>
+                  <div className='text-left'>
+                    <div className='menu-sub-label font-display text-[13px] tracking-[1px]'>
+                      [{item.label}]
+                    </div>
+                    <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-px'>
+                      {item.desc}
+                    </div>
                   </div>
                 </div>
+                <span className='menu-sub-arrow text-xs opacity-50'>›</span>
               </div>
-              <span className='menu-sub-arrow text-xs opacity-50'>›</span>
-            </div>
-          </GlitchButton>
-        ))}
+            </GlitchButton>
+          )
+
+          return reason ? (
+            <Tooltip key={item.action} content={reason} className='w-full'>
+              {button}
+            </Tooltip>
+          ) : (
+            button
+          )
+        })}
       </div>
     </div>
   )
@@ -453,6 +471,40 @@ export const OverworldMenu = React.memo(
       [isSaving, isTraveling, vanCondition, vanFuel]
     )
 
+    const getDisabledReason = useCallback(
+      (item: MenuItem) => {
+        if (isTraveling) {
+          return t('ui:menu.disabled_traveling', {
+            defaultValue: 'Action unavailable while traveling'
+          })
+        }
+        if (
+          item.cond === 'fuel' &&
+          (vanFuel === undefined ||
+            vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL)
+        ) {
+          return t('ui:menu.disabled_fuel_full', {
+            defaultValue: 'Fuel tank is already full'
+          })
+        }
+        if (
+          item.cond === 'repair' &&
+          (vanCondition === undefined || vanCondition >= 100)
+        ) {
+          return t('ui:menu.disabled_repair_full', {
+            defaultValue: 'Van is already in top condition'
+          })
+        }
+        if (item.action === 'handleSaveWithDelay' && isSaving) {
+          return t('ui:menu.disabled_saving', {
+            defaultValue: 'Save operation in progress'
+          })
+        }
+        return undefined
+      },
+      [isSaving, isTraveling, t, vanCondition, vanFuel]
+    )
+
     const actions = useMemo(
       () =>
         ({
@@ -602,6 +654,7 @@ export const OverworldMenu = React.memo(
                 cat={cat}
                 actions={actions}
                 isDisabled={isDisabled}
+                getDisabledReason={getDisabledReason}
                 handleClose={handleClose}
                 handleBack={handleBack}
                 t={t}
