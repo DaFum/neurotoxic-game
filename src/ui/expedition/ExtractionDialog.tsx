@@ -42,28 +42,44 @@ export const ExtractionDialog = memo(function ExtractionDialog({
 }: ExtractionDialogProps) {
   const { t, i18n } = useTranslation('ui')
   const { extractExpedition } = useGameActions()
-  const state = useGameSelector(current => current)
-  const ledger = useGameSelector(current => current.expedition.rewardLedger)
+
+  // ⚡ BOLT OPTIMIZATION: Short-circuit state selector when dialog is closed
+  // Why: ExtractionDialog is mounted continuously during active expeditions, but isOpen is false most of the time.
+  // Returning null when closed prevents any store update (ticks, toasts, chatter) from triggering re-renders.
+  // When open, returning the real GameState avoids unsafe type assertions while keeping calculations accurate.
+  const state = useGameSelector(s => (isOpen ? s : null))
 
   const [carriedIds, setCarriedIds] = useState<string[]>([])
-  const carrySlots = getExplicitExtractionRareCarrySlots(state)
+
+  const carrySlots = useMemo(
+    () => (state ? getExplicitExtractionRareCarrySlots(state) : 1),
+    [state]
+  )
 
   const settlement = useMemo(
-    () => settleExpedition(state, 'extracted', carriedIds),
+    () => (state ? settleExpedition(state, 'extracted', carriedIds) : null),
     [carriedIds, state]
   )
 
+  const ledger = state?.expedition.rewardLedger
+
   const unsecured = useMemo(
-    () => ledger.filter(entry => !entry.secured),
+    () => (ledger ? ledger.filter(entry => !entry.secured) : []),
     [ledger]
   )
 
   const abandonedIds = useMemo(
     () =>
-      new Set(
-        splitExpeditionRewardLedger(ledger, 'extracted', carriedIds, carrySlots)
-          .abandonedRewardEntryIds
-      ),
+      ledger
+        ? new Set(
+            splitExpeditionRewardLedger(
+              ledger,
+              'extracted',
+              carriedIds,
+              carrySlots
+            ).abandonedRewardEntryIds
+          )
+        : new Set<string>(),
     [carriedIds, carrySlots, ledger]
   )
 
@@ -91,6 +107,14 @@ export const ExtractionDialog = memo(function ExtractionDialog({
     t(`ui:expedition.reward.${entry.rewardDefinitionId}`, {
       defaultValue: t('ui:expedition.reward.unknown')
     })
+
+  if (!isOpen) {
+    return null
+  }
+
+  if (!state || !settlement) {
+    return null
+  }
 
   return (
     <Modal
