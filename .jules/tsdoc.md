@@ -81,4 +81,3 @@
 | 2026-09-12 | src/hooks/travel/actions/useGetLocationName.ts | useGetLocationName |
 | 2026-09-11 | src/components/stage/stageRenderUtils.ts | getPixiColorFromToken, calculateNoteY, _getCachedTexture, _hasFileExtension |
 | 2026-09-13 | src/hooks/travel/actions/useHandleTravel.ts | UseHandleTravelParams, useHandleTravel |
-| 2026-09-17 | src/hooks/travel/effects/useTimerCleanupEffect.ts | useTimerCleanupEffect |
