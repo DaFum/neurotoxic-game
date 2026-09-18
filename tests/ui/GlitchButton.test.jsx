@@ -98,6 +98,20 @@ describe('GlitchButton', () => {
     expect(button.className).toContain('wrap-break-word')
   })
 
+  it('applies intervention styling while remaining focusable when aria-disabled is true', () => {
+    const { getByRole } = render(
+      <GlitchButton onClick={() => {}} aria-disabled={true}>
+        Aria Disabled
+      </GlitchButton>
+    )
+    const button = getByRole('button')
+    expect(button).not.toBeDisabled()
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button.className).toContain('cursor-not-allowed')
+    expect(button.className).toContain('opacity-60')
+    expect(button.className).not.toContain('hover:scale-[1.02]')
+  })
+
   it('applies owned variant style correctly', () => {
     const { container } = render(
       <GlitchButton onClick={() => {}} variant='owned' disabled>

@@ -97,7 +97,17 @@ export const ZealotryActionModal = ({
               })
 
   const executeButton = (
-    <GlitchButton variant='danger' onClick={onConfirm} disabled={isDisabled}>
+    <GlitchButton
+      variant='danger'
+      onClick={e => {
+        if (isDisabled) {
+          e.preventDefault()
+          return
+        }
+        onConfirm()
+      }}
+      aria-disabled={isDisabled}
+    >
       {labels.execute}
     </GlitchButton>
   )

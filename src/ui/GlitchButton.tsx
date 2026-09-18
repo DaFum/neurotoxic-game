@@ -42,7 +42,11 @@ export const GlitchButton = ({
   const { pending } = useFormStatus()
   const effectiveLoading = isLoading || pending
 
-  const isIntervention = disabled || effectiveLoading || variant === 'owned'
+  const isAriaDisabled =
+    props['aria-disabled'] === true || props['aria-disabled'] === 'true'
+  const isNativeDisabled = disabled || effectiveLoading
+  const isIntervention =
+    isNativeDisabled || variant === 'owned' || isAriaDisabled
 
   const getVariantClasses = () => {
     if (variant === 'owned') {
@@ -101,8 +105,8 @@ export const GlitchButton = ({
   return (
     <button
       type={type}
-      disabled={isIntervention}
-      aria-disabled={isIntervention}
+      disabled={isNativeDisabled}
+      aria-disabled={props['aria-disabled'] ?? isIntervention}
       aria-busy={effectiveLoading}
       className={`
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
