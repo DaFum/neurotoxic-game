@@ -107,12 +107,6 @@ export const ZealotryActionModal = ({
         onConfirm()
       }}
       aria-disabled={isDisabled}
-      disabled={false}
-      className={
-        isDisabled
-          ? 'opacity-60 cursor-not-allowed border-ash-gray text-ash-gray hover:scale-100 hover:shadow-none hover:bg-void-black hover:text-ash-gray'
-          : undefined
-      }
     >
       {labels.execute}
     </GlitchButton>
