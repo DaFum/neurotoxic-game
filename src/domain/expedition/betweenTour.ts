@@ -84,38 +84,65 @@ const pickTied = <T>(
 const finalizedCrewIds = (state: GameState): readonly string[] =>
   state.expedition?.loadout?.crewIds ?? []
 
-/** The `injury_rehab` target: a Crew recovery debt first, then the band. */
+// ⚡ BOLT OPTIMIZATION: Single-pass procedural scan for injury rehab targets.
+// What: Replaced Object.values(), Object.entries(), array copies, .filter(), and .sort() with single-pass for...in loops.
+// Why: Avoids temporary array allocations during between-tour target resolution.
+// Impact: Reduces garbage collection pressure on between-tour state derivation.
 const resolveInjuryRehabTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
-  const debts = Object.values(state.career.crewRecoveryDebtById)
-  if (debts.length > 0) {
-    // Created run order first, then crew id. Run order is not stored as a
-    // number, so the run's own settlement order stands in: a debt created by
-    // an earlier run sorts first because its `createdFromRunId` is earlier in
-    // `settledCrewRunIds`.
+  const debtMap = state.career.crewRecoveryDebtById
+  if (debtMap) {
     const order = state.career.settledCrewRunIds
-    const sorted = [...debts].sort((a, b) => {
-      const byRun =
-        order.indexOf(a.createdFromRunId) - order.indexOf(b.createdFromRunId)
-      return byRun !== 0 ? byRun : a.crewId.localeCompare(b.crewId)
-    })
-    const first = sorted[0]
-    if (first) return { kind: 'crew', id: first.crewId }
+    let bestDebt: (typeof debtMap)[string] | null = null
+    let bestRunIndex = Infinity
+    for (const id in debtMap) {
+      if (Object.hasOwn(debtMap, id)) {
+        const debt = debtMap[id]
+        if (!debt) continue
+        if (!bestDebt) {
+          bestDebt = debt
+          bestRunIndex = order.indexOf(debt.createdFromRunId)
+          continue
+        }
+        const runIndex = order.indexOf(debt.createdFromRunId)
+        if (
+          runIndex < bestRunIndex ||
+          (runIndex === bestRunIndex && debt.crewId.localeCompare(bestDebt.crewId) < 0)
+        ) {
+          bestDebt = debt
+          bestRunIndex = runIndex
+        }
+      }
+    }
+    if (bestDebt) return { kind: 'crew', id: bestDebt.crewId }
   }
-  // Highest stage, then id: a critical consequence outranks a light one
-  // whatever the member ids are.
-  const consequences = Object.entries(
-    state.career.bandConsequenceByMemberId
-  ).filter(([, stage]) => stage !== 'none')
-  consequences.sort((a, b) => {
-    const byStage =
-      BAND_CONSEQUENCE_ORDER.indexOf(b[1]) -
-      BAND_CONSEQUENCE_ORDER.indexOf(a[1])
-    return byStage !== 0 ? byStage : a[0].localeCompare(b[0])
-  })
-  const worst = consequences[0]
-  return worst ? { kind: 'band', id: worst[0] } : null
+
+  const consequenceMap = state.career.bandConsequenceByMemberId
+  if (consequenceMap) {
+    let worstMemberId: string | null = null
+    let worstStageIndex = -1
+    for (const memberId in consequenceMap) {
+      if (Object.hasOwn(consequenceMap, memberId)) {
+        const stage = consequenceMap[memberId]
+        if (!stage || stage === 'none') continue
+        const stageIndex = BAND_CONSEQUENCE_ORDER.indexOf(stage)
+        if (stageIndex < 0) continue
+        if (
+          stageIndex > worstStageIndex ||
+          (stageIndex === worstStageIndex &&
+            worstMemberId !== null &&
+            memberId.localeCompare(worstMemberId) < 0)
+        ) {
+          worstMemberId = memberId
+          worstStageIndex = stageIndex
+        }
+      }
+    }
+    if (worstMemberId) return { kind: 'band', id: worstMemberId }
+  }
+
+  return null
 }
 
 /**
@@ -169,22 +196,38 @@ const resolveCrewDebriefDecision = (
   return { target: { kind: 'crew', id: chosen }, optionIds: ['rest_band'] }
 }
 
-/** The `rival_response` target: the persistent Rival this run met. */
+// ⚡ BOLT OPTIMIZATION: Single-pass procedural scan for rival response target.
+// What: Replaced Object.entries(), .filter(), and .sort() with a single for...in loop.
+// Why: Avoids temporary tuple array allocations and sorting overhead.
+// Impact: Eliminates GC allocation during rival response target evaluation.
 const resolveRivalResponseTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
   const runId = state.expedition?.outcome?.runId
   if (typeof runId !== 'string') return null
-  const met = Object.entries(state.career.rivalsById)
-    .filter(([, record]) => record.history.lastSeenRunId === runId)
-    .sort(([idA, a], [idB, b]) => {
-      const byNemesis =
-        finiteNumberOr(b.history.nemesisLevel, 0) -
-        finiteNumberOr(a.history.nemesisLevel, 0)
-      return byNemesis !== 0 ? byNemesis : idA.localeCompare(idB)
-    })
-  const chosen = met[0]
-  return chosen ? { kind: 'rival', id: chosen[0] } : null
+  const rivalsById = state.career.rivalsById
+  if (!rivalsById) return null
+
+  let topRivalId: string | null = null
+  let topNemesisLevel = -1
+
+  for (const rivalId in rivalsById) {
+    if (Object.hasOwn(rivalsById, rivalId)) {
+      const record = rivalsById[rivalId]
+      if (!record || record.history.lastSeenRunId !== runId) continue
+      const nemesisLevel = finiteNumberOr(record.history.nemesisLevel, 0)
+      if (
+        topRivalId === null ||
+        nemesisLevel > topNemesisLevel ||
+        (nemesisLevel === topNemesisLevel && rivalId.localeCompare(topRivalId) < 0)
+      ) {
+        topRivalId = rivalId
+        topNemesisLevel = nemesisLevel
+      }
+    }
+  }
+
+  return topRivalId ? { kind: 'rival', id: topRivalId } : null
 }
 
 /**
@@ -249,6 +292,10 @@ export const isExpeditionCareerInsolvent = (state: GameState): boolean => {
   return finiteNumberOr(state.player.money, 0) < cost
 }
 
+// ⚡ BOLT OPTIMIZATION: Single-pass for...of loop to find cheapest brand deal.
+// What: Replaced [...BRAND_DEALS_BY_ID.values()].slice().sort(...) with a direct for...of loop over Map values.
+// Why: Avoids spreading map values into an array, copying it, and running O(N log N) sort.
+// Impact: O(N) lookup without intermediate array allocations.
 const resolveSponsorAdvanceTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
@@ -265,30 +312,45 @@ const resolveSponsorAdvanceTarget = (
   const carried = resolveSponsorFollowUpTarget(state)
   if (carried) return carried
 
-  const cheapest = [...BRAND_DEALS_BY_ID.values()]
-    .slice()
-    .sort(
-      (a, b) =>
-        finiteNumberOr(a.offer?.upfront, 0) -
-          finiteNumberOr(b.offer?.upfront, 0) || a.id.localeCompare(b.id)
-    )[0]
-  return cheapest ? { kind: 'sponsor', id: cheapest.id } : null
+  let cheapestDeal: (typeof BRAND_DEALS_BY_ID extends Map<string, infer T> ? T : never) | null = null
+  let cheapestUpfront = Infinity
+
+  for (const deal of BRAND_DEALS_BY_ID.values()) {
+    const upfront = finiteNumberOr(deal.offer?.upfront, 0)
+    if (
+      cheapestDeal === null ||
+      upfront < cheapestUpfront ||
+      (upfront === cheapestUpfront && deal.id.localeCompare(cheapestDeal.id) < 0)
+    ) {
+      cheapestDeal = deal
+      cheapestUpfront = upfront
+    }
+  }
+
+  return cheapestDeal ? { kind: 'sponsor', id: cheapestDeal.id } : null
 }
 
+// ⚡ BOLT OPTIMIZATION: Single-pass loop tracking minimum brand deal source ID.
+// What: Replaced array construction, .includes(), and .sort() with single-pass string comparison.
+// Why: Avoids temporary array allocation and sorting overhead.
+// Impact: Reduces GC pressure when evaluating active obligations.
 const resolveSponsorFollowUpTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
-  const sourceIds: string[] = []
-  for (const obligation of state.expedition?.activeObligations ?? []) {
-    if (obligation.sourceType !== 'brandDeal') continue
-    if (typeof obligation.sourceId !== 'string' || obligation.sourceId === '')
-      continue
-    if (!sourceIds.includes(obligation.sourceId))
-      sourceIds.push(obligation.sourceId)
+  let minSourceId: string | null = null
+  const obligations = state.expedition?.activeObligations
+  if (obligations) {
+    for (let i = 0; i < obligations.length; i++) {
+      const obligation = obligations[i]
+      if (!obligation || obligation.sourceType !== 'brandDeal') continue
+      if (typeof obligation.sourceId !== 'string' || obligation.sourceId === '')
+        continue
+      if (minSourceId === null || obligation.sourceId.localeCompare(minSourceId) < 0) {
+        minSourceId = obligation.sourceId
+      }
+    }
   }
-  sourceIds.sort((a, b) => a.localeCompare(b))
-  const chosen = sourceIds[0]
-  return chosen === undefined ? null : { kind: 'sponsor', id: chosen }
+  return minSourceId === null ? null : { kind: 'sponsor', id: minSourceId }
 }
 
 /** The `vehicle_repair` target: the van, when it is actually damaged. */
@@ -313,14 +375,28 @@ const resolveVehicleRepairTarget = (
  * is never an empty screen. Offered only as that fallback: a Career with real
  * consequences to answer should be answering those.
  */
+// ⚡ BOLT OPTIMIZATION: Single-pass O(N) loop to find minimum region lead.
+// What: Replaced [...regions].sort() with a single-pass loop tracking lexicographically smallest region.
+// Why: Avoids shallow array copying and sorting overhead.
+// Impact: O(N) time and zero array allocation.
 const resolveNetworkContactTarget = (
   state: GameState,
   isFallback: boolean
 ): BetweenTourTarget | null => {
   if (!isFallback) return null
-  const regions = state.career.archiveByCategory.region ?? []
-  const lead = [...regions].sort((a, b) => a.localeCompare(b))[0]
-  return lead === undefined ? null : { kind: 'archive', id: lead }
+  const regions = state.career.archiveByCategory.region
+  if (!regions || regions.length === 0) return null
+
+  let lead: string | null = null
+  for (let i = 0; i < regions.length; i++) {
+    const region = regions[i]
+    if (!region) continue
+    if (lead === null || region.localeCompare(lead) < 0) {
+      lead = region
+    }
+  }
+
+  return lead === null ? null : { kind: 'archive', id: lead }
 }
 
 /**
