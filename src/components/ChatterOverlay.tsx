@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useMemo,
   memo,
   useRef,
   useLayoutEffect,
@@ -11,7 +10,7 @@ import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { MOTION_TRANSITIONS } from '../config/motion'
 import { GAME_PHASES } from '../context/gameConstants'
-import { useGameSelector } from '../context/GameState'
+import { useGameSelector, useGameStore } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
   ChatterMessageData,
@@ -470,28 +469,13 @@ const useNonOverlappingPosition = (
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
+  // ⚡ BOLT OPTIMIZATION: Subscribe only to `currentScene` via useGameSelector so
+  // ChatterOverlay does not re-render on every game state tick, money change, or band stat update.
+  // Full game state is queried on-demand inside useChatterLogic via store.getState.
   const currentScene = useGameSelector(state => state.currentScene)
-  const band = useGameSelector(state => state.band)
-  const player = useGameSelector(state => state.player)
-  const gameMap = useGameSelector(state => state.gameMap)
-  const social = useGameSelector(state => state.social)
-  const lastGigStats = useGameSelector(state => state.lastGigStats)
-  const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const store = useGameStore()
 
-  const chatterState = useMemo(
-    () => ({
-      currentScene,
-      band,
-      player,
-      gameMap,
-      social,
-      lastGigStats,
-      gigModifiers
-    }),
-    [currentScene, band, player, gameMap, social, lastGigStats, gigModifiers]
-  )
-
-  const { messages, removeMessage } = useChatterLogic(chatterState, t)
+  const { messages, removeMessage } = useChatterLogic(store.getState, t)
 
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center
@@ -502,8 +486,14 @@ export const ChatterOverlay = memo(() => {
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
 
-  // Re-evaluate placement whenever the visible message set changes.
-  const revision = messages.map((m: ChatterMessageData) => m.id).join(',')
+  // ⚡ BOLT OPTIMIZATION: Build revision key procedurally to avoid array allocation from .map().join().
+  let revision = ''
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i]
+    if (msg) {
+      revision += (i > 0 ? ',' : '') + msg.id
+    }
+  }
   const ref = useNonOverlappingPosition(isOverworld, currentScene, revision)
 
   return (

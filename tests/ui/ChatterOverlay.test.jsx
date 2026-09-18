@@ -25,18 +25,21 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
 
   vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
 
+  const mockState = {
+    currentScene: GAME_PHASES.GIG,
+    band: { members: [] },
+    player: { currentNodeId: 'none' },
+    gameMap: { nodes: {} },
+    social: {},
+    lastGigStats: null,
+    gigModifiers: {}
+  }
+
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: vi.fn(selector =>
-      selector({
-        currentScene: GAME_PHASES.GIG,
-        band: { members: [] },
-        player: { currentNodeId: 'none' },
-        gameMap: { nodes: {} },
-        social: {},
-        lastGigStats: null,
-        gigModifiers: {}
-      })
-    )
+    useGameSelector: vi.fn(selector => selector(mockState)),
+    useGameStore: vi.fn(() => ({
+      getState: () => mockState
+    }))
   }))
 
   // Dynamic import to apply mock
