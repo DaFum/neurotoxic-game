@@ -117,7 +117,7 @@
     "postcss": "8.5.26",
     "prettier": "3.9.6",
     "rollup-plugin-visualizer": "7.1.1",
-    "serialize-javascript": "7.1.0",
+    "serialize-javascript": "7.1.1",
     "stylelint": "17.14.1",
     "stylelint-config-standard": "40.0.0",
     "tailwindcss": "4.3.3",
