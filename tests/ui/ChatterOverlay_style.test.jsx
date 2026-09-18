@@ -39,8 +39,7 @@ test('ChatterOverlay uses responsive stacking classes', async () => {
   }
 
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: vi.fn(selector => selector(mockState)),
-    useGameStore: vi.fn(() => ({ getState: () => mockState }))
+    useGameSelector: vi.fn(selector => selector(mockState))
   }))
 
   const { ChatterOverlay } =

@@ -36,10 +36,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   }
 
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: vi.fn(selector => selector(mockState)),
-    useGameStore: vi.fn(() => ({
-      getState: () => mockState
-    }))
+    useGameSelector: vi.fn(selector => selector(mockState))
   }))
 
   // Dynamic import to apply mock

@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   memo,
   useRef,
   useLayoutEffect,
@@ -10,7 +11,7 @@ import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { MOTION_TRANSITIONS } from '../config/motion'
 import { GAME_PHASES } from '../context/gameConstants'
-import { useGameSelector, useGameStore } from '../context/GameState'
+import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
   ChatterMessageData,
@@ -469,13 +470,39 @@ const useNonOverlappingPosition = (
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
-  // ⚡ BOLT OPTIMIZATION: Subscribe only to `currentScene` via useGameSelector so
-  // ChatterOverlay does not re-render on every game state tick, money change, or band stat update.
-  // Full game state is queried on-demand inside useChatterLogic via store.getState.
+  // ⚡ BOLT OPTIMIZATION: Select narrow sub-fields rather than root band/player/gameMap objects.
+  // This prevents ChatterOverlay from re-rendering on unrelated state ticks (e.g. money changes,
+  // van fuel, band health/harmony updates), while complying with src/components/AGENTS.md.
   const currentScene = useGameSelector(state => state.currentScene)
-  const store = useGameStore()
+  const members = useGameSelector(state => state.band?.members)
+  const currentNodeId = useGameSelector(state => state.player?.currentNodeId)
+  const mapNodes = useGameSelector(state => state.gameMap?.nodes)
+  const social = useGameSelector(state => state.social)
+  const lastGigStats = useGameSelector(state => state.lastGigStats)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
 
-  const { messages, removeMessage } = useChatterLogic(store.getState, t)
+  const chatterState = useMemo(
+    () => ({
+      currentScene,
+      band: members ? { members } : undefined,
+      player: currentNodeId !== undefined ? { currentNodeId } : undefined,
+      gameMap: mapNodes ? { nodes: mapNodes } : undefined,
+      social,
+      lastGigStats,
+      gigModifiers
+    }),
+    [
+      currentScene,
+      members,
+      currentNodeId,
+      mapNodes,
+      social,
+      lastGigStats,
+      gigModifiers
+    ]
+  )
+
+  const { messages, removeMessage } = useChatterLogic(chatterState, t)
 
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center

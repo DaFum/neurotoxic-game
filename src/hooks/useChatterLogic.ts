@@ -46,17 +46,15 @@ const resolveSpeaker = (
 
 /**
  * Schedules scene-aware chatter messages for the active game state.
- * @param gameStateOrGetter - Current state snapshot or getter function used when selecting chatter lines.
+ * @param gameState - Current state snapshot used when selecting chatter lines.
  * @param t - Translation callback used for fallback speaker labels.
  * @returns Active chatter messages and a handler for dismissing a message by id.
  */
 export const useChatterLogic = (
-  gameStateOrGetter: ChatterGameState | (() => ChatterGameState),
+  gameState: ChatterGameState,
   t: TranslationCallback
 ) => {
-  const stateRef = useRef<ChatterGameState | (() => ChatterGameState)>(
-    gameStateOrGetter
-  )
+  const stateRef = useRef<ChatterGameState>(gameState)
   const [messages, setMessages] = useState<ChatterMessageData[]>([])
 
   const removeMessage = useCallback((id: string) => {
@@ -64,8 +62,8 @@ export const useChatterLogic = (
   }, [])
 
   useEffect(() => {
-    stateRef.current = gameStateOrGetter
-  }, [gameStateOrGetter])
+    stateRef.current = gameState
+  }, [gameState])
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>
@@ -79,13 +77,7 @@ export const useChatterLogic = (
       timeoutId = setTimeout(() => {
         if (!active) return
 
-        // ⚡ BOLT OPTIMIZATION: If a getter function was provided, invoke it on demand
-        // to retrieve the latest live state snapshot without forcing parent re-renders.
-        const currentState =
-          typeof stateRef.current === 'function'
-            ? stateRef.current()
-            : stateRef.current
-
+        const currentState = stateRef.current
         let result: ChatterTemplate | null = null
         try {
           result = getRandomChatter(currentState) as ChatterTemplate | null
