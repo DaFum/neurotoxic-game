@@ -23,9 +23,10 @@ interface Props extends BaseModalProps {
  * Renders the modal interface for configuring and launching a new crowdfund campaign.
  *
  * @remarks
- * The player adjusts their fame stake, which recalculates the live success probability preview
- * via `resolveCrowdfundProbability` to ensure the UI remains perfectly aligned with the backend
- * tick reducer logic.
+ * The player sees a live success probability preview computed via `resolveCrowdfundProbability`
+ * (using the player's total fame, scene presence, and the target amount) to ensure the UI remains
+ * perfectly aligned with the backend tick reducer logic. The player configures the campaign by
+ * adjusting their fame stake and the campaign duration.
  *
  * The `plannedSuccessRoll` is computed deterministically at confirmation using a one-shot
  * `mulberry32` PRNG. It is seeded with the current game state's `rngSeed` XOR'd with the
