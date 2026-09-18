@@ -20,14 +20,20 @@ interface Props extends BaseModalProps {
 }
 
 /**
- * Crowdfund campaign setup: player picks a fameStake, sees the live success
- * probability preview (computed via resolveCrowdfundProbability so the UI
- * stays aligned with the tick reducer), and confirms.
+ * Renders the modal interface for configuring and launching a new crowdfund campaign.
  *
- * The plannedSuccessRoll is drawn from a one-shot mulberry32 seeded with the
- * current state.rngSeed XOR'd with a constant — the goal is determinism
- * across re-renders within a single session, NOT cryptographic
- * unpredictability.
+ * @remarks
+ * The player adjusts their fame stake, which recalculates the live success probability preview
+ * via `resolveCrowdfundProbability` to ensure the UI remains perfectly aligned with the backend
+ * tick reducer logic.
+ *
+ * The `plannedSuccessRoll` is computed deterministically at confirmation using a one-shot
+ * `mulberry32` PRNG. It is seeded with the current game state's `rngSeed` XOR'd with the
+ * selected stake and duration. This guarantees deterministic behavior across re-renders within
+ * a single play session rather than relying on cryptographic unpredictability.
+ *
+ * @param params - The destructure modal properties and asset campaign target parameters.
+ * @returns A rendered modal sheet component containing the crowdfund configuration interface.
  */
 export const CrowdfundSetupModal = ({
   kind,
