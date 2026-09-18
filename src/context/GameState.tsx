@@ -304,6 +304,20 @@ export const useGameActions = () => {
 }
 
 /**
+ * Hook to access the raw game store container (getState, subscribe).
+ *
+ * @remarks
+ * Useful for non-rendering side effects or timed hooks (like chatter scheduling)
+ * that need to query the current state snapshot on demand without subscribing
+ * the consuming component to re-render on every state update.
+ *
+ * @returns The GameStore instance.
+ */
+export const useGameStore = (): GameStore => {
+  return useRequiredContext(GameStateContext, 'useGameStore')
+}
+
+/**
  * Hook to select a specific state slice.
  *
  * @remarks

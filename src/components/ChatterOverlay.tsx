@@ -470,10 +470,13 @@ const useNonOverlappingPosition = (
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
+  // ⚡ BOLT OPTIMIZATION: Select narrow sub-fields rather than root band/player/gameMap objects.
+  // This prevents ChatterOverlay from re-rendering on unrelated state ticks (e.g. money changes,
+  // van fuel, band health/harmony updates), while complying with src/components/AGENTS.md.
   const currentScene = useGameSelector(state => state.currentScene)
-  const band = useGameSelector(state => state.band)
-  const player = useGameSelector(state => state.player)
-  const gameMap = useGameSelector(state => state.gameMap)
+  const members = useGameSelector(state => state.band?.members)
+  const currentNodeId = useGameSelector(state => state.player?.currentNodeId)
+  const mapNodes = useGameSelector(state => state.gameMap?.nodes)
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
@@ -481,14 +484,22 @@ export const ChatterOverlay = memo(() => {
   const chatterState = useMemo(
     () => ({
       currentScene,
-      band,
-      player,
-      gameMap,
+      band: members ? { members } : undefined,
+      player: currentNodeId !== undefined ? { currentNodeId } : undefined,
+      gameMap: mapNodes ? { nodes: mapNodes } : undefined,
       social,
       lastGigStats,
       gigModifiers
     }),
-    [currentScene, band, player, gameMap, social, lastGigStats, gigModifiers]
+    [
+      currentScene,
+      members,
+      currentNodeId,
+      mapNodes,
+      social,
+      lastGigStats,
+      gigModifiers
+    ]
   )
 
   const { messages, removeMessage } = useChatterLogic(chatterState, t)
@@ -502,8 +513,14 @@ export const ChatterOverlay = memo(() => {
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
 
-  // Re-evaluate placement whenever the visible message set changes.
-  const revision = messages.map((m: ChatterMessageData) => m.id).join(',')
+  // ⚡ BOLT OPTIMIZATION: Build revision key procedurally to avoid array allocation from .map().join().
+  let revision = ''
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i]
+    if (msg) {
+      revision += (i > 0 ? ',' : '') + msg.id
+    }
+  }
   const ref = useNonOverlappingPosition(isOverworld, currentScene, revision)
 
   return (

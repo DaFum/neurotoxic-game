@@ -12,18 +12,18 @@ vi.mock('../../src/hooks/useChatterLogic', () => ({
   useChatterLogic: () => ({ messages: [], removeMessage: vi.fn() })
 }))
 
+const mockState = {
+  currentScene: GAME_PHASES.GIG,
+  band: { members: [] },
+  player: { currentNodeId: 'none' },
+  gameMap: { nodes: {} },
+  social: {},
+  lastGigStats: null,
+  gigModifiers: {}
+}
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: vi.fn(selector =>
-    selector({
-      currentScene: GAME_PHASES.GIG,
-      band: { members: [] },
-      player: { currentNodeId: 'none' },
-      gameMap: { nodes: {} },
-      social: {},
-      lastGigStats: null,
-      gigModifiers: {}
-    })
-  )
+  useGameSelector: vi.fn(selector => selector(mockState))
 }))
 
 const realGetRect = Element.prototype.getBoundingClientRect
