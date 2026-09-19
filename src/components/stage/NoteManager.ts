@@ -27,7 +27,7 @@ type StageState = {
 type LaneLayout = { hitLineY?: number }
 type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
 
-export const getLaneRenderX = (lane: { renderX?: number }): number =>
+const getLaneRenderX = (lane: StageLane): number =>
   // RhythmGameRefState keeps renderX optional while lanes are being laid out.
   // Before layout completes, render notes at the left edge instead of crashing.
   lane.renderX ?? 0

@@ -2,7 +2,6 @@ import { Container, Sprite, Texture } from 'pixi.js'
 import { BaseSpritePool } from './pool/BaseSpritePool'
 import { getSafeRandom } from '../../utils/crypto'
 import type { NoteTextures } from './NoteTextureManager'
-import { getLaneRenderX } from './NoteManager'
 
 const NOTE_JITTER_RANGE = 10
 const NOTE_SPRITE_SIZE = 80
@@ -119,7 +118,7 @@ class NoteSpriteFactory {
     }
 
     sprite.tint = lane.color
-    sprite.x = getLaneRenderX(lane) + NOTE_CENTER_OFFSET
+    sprite.x = (lane.renderX ?? 0) + NOTE_CENTER_OFFSET
     sprite.y = NOTE_INITIAL_Y
 
     if (sprite.isFallback) {
