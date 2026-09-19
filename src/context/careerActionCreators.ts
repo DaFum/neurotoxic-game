@@ -2,15 +2,16 @@ import { ActionTypes } from './actionTypes'
 import type { GameAction } from '../types'
 
 /**
- * Settles one finalized run's Crew Career result: XP, Traits, and Morale.
+ * Settles one finalized run's Crew Career result: loyalty, story progress, and injury consequences.
  *
  * @param runId - The finalized run to settle.
  * @returns The typed action.
  *
  * @remarks
- * Applies the crew-specific progression from the settled run. Like the core
- * settlement action, the reducer derives all values from the run's own
- * outcome, so the caller simply nominates the run without dictating its value.
+ * Applies the crew-specific progression from the settled run. The reducer derives
+ * updates for loyalty, story progress, serious-injury recovery debt, and band
+ * injury consequences from the run's own outcome, so the caller simply nominates
+ * the run without dictating its value.
  */
 export const createSettleExpeditionCrewCareerAction = (
   runId: string
@@ -65,14 +66,15 @@ export const createPurchaseExpeditionHqFacilityAction = (
  *
  * @param crewId - The crew member acquiring the signature.
  * @param expectedTraitId - The specific trait being purchased.
- * @param sourceId - The unlock node ID that validates this purchase.
+ * @param sourceId - The generated eligibility proof (e.g., via `createCrewDevelopmentEligibilityProof`).
  * @returns The typed action.
  *
  * @remarks
  * The source type is hardcoded to `career_development` to enforce that this
- * action is only used within the Between-Tour context. The reducer verifies
- * that the expected trait is valid for the crew member and that the source node
- * is unlocked.
+ * action is only used within the Between-Tour context. The `sourceId` must be
+ * the exact eligibility token produced by the proof helper, not an unlock-node ID.
+ * The reducer verifies that the expected trait is valid for the crew member and
+ * that the source node is unlocked.
  */
 export const createAcquireExpeditionCrewSignatureAction = (
   crewId: string,
