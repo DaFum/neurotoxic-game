@@ -1,12 +1,24 @@
 import { ActionTypes } from './actionTypes'
 import type { GameAction } from '../types'
 
+/**
+ * Settles one finalized run's Crew Career result: XP, Traits, and Morale.
+ *
+ * @param runId - The finalized run to settle.
+ * @returns The typed action.
+ *
+ * @remarks
+ * Applies the crew-specific progression from the settled run. Like the core
+ * settlement action, the reducer derives all values from the run's own
+ * outcome, so the caller simply nominates the run without dictating its value.
+ */
 export const createSettleExpeditionCrewCareerAction = (
   runId: string
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.SETTLE_EXPEDITION_CREW_CAREER }
 > => ({ type: ActionTypes.SETTLE_EXPEDITION_CREW_CAREER, payload: { runId } })
+
 /**
  * Settles one finalized run's Career result: Tokens, counters and Regions.
  *
@@ -48,6 +60,20 @@ export const createPurchaseExpeditionHqFacilityAction = (
   payload: { facilityId, expectedLevel }
 })
 
+/**
+ * Purchases a signature trait for a crew member during career development.
+ *
+ * @param crewId - The crew member acquiring the signature.
+ * @param expectedTraitId - The specific trait being purchased.
+ * @param sourceId - The unlock node ID that validates this purchase.
+ * @returns The typed action.
+ *
+ * @remarks
+ * The source type is hardcoded to `career_development` to enforce that this
+ * action is only used within the Between-Tour context. The reducer verifies
+ * that the expected trait is valid for the crew member and that the source node
+ * is unlocked.
+ */
 export const createAcquireExpeditionCrewSignatureAction = (
   crewId: string,
   expectedTraitId: string,
