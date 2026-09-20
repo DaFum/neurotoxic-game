@@ -82,4 +82,3 @@
 | 2026-09-11 | src/components/stage/stageRenderUtils.ts | getPixiColorFromToken, calculateNoteY, _getCachedTexture, _hasFileExtension |
 | 2026-09-13 | src/hooks/travel/actions/useHandleTravel.ts | UseHandleTravelParams, useHandleTravel |
 | 2026-09-18 | src/components/assets/CrowdfundSetupModal.tsx | CrowdfundSetupModal |
-| 2026-09-20 | src/hooks/travel/effects/useSoftlockEffect.ts | useSoftlockEffect |
