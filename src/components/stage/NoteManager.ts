@@ -119,9 +119,11 @@ export class NoteManager {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
           if (lane && this.pool && this.container) {
-            const renderLane = { ...lane, renderX: getLaneRenderX(lane) }
+            // ⚡ BOLT OPTIMIZATION: Pass lane directly to acquireSpriteFromPool instead of creating a shallow clone
+            // Why: Prevents creating `{ ...lane, renderX }` object allocations on every note spawn during active gameplay.
+            // Impact: Eliminates object allocation and garbage collection pressure for every spawned rhythm note.
             const sprite = this.pool.acquireSpriteFromPool(
-              renderLane,
+              lane,
               note.laneIndex
             )
             this.container.addChild(sprite)
