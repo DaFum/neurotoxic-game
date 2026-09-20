@@ -1373,6 +1373,8 @@
   "map.pinTypeAlt": "Map marker: {{type}}",
   "map.rest_stop_desc": "REST STOP — Recover Stamina & Mood",
   "map.supply_stop_desc": "Supply Stop - Exclusive limited items.",
+  "map.supply_stop_empty": "No black market supplies available at this stop.",
+  "map.supply_stop_leave": "LEAVE SUPPLY STOP",
   "map.supply_stop_title": "BLACK MARKET SUPPLY STOP",
   "map.supply_stop_warning": "Warning: Purchasing goods here will negatively impact your band's reputation.",
   "map.ticket": "Ticket",

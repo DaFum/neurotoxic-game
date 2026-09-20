@@ -109,4 +109,36 @@ describe('SupplyStopModal purchase lock', () => {
       )
     })
   })
+
+  it('renders empty state and leave CTA button when inventory is empty', () => {
+    const onClose = vi.fn()
+    render(<SupplyStopModal inventory={[]} onClose={onClose} />)
+
+    expect(
+      screen.getByText('No black market supplies available at this stop.')
+    ).toBeInTheDocument()
+
+    const leaveBtn = screen.getByRole('button', { name: 'LEAVE SUPPLY STOP' })
+    expect(leaveBtn).toBeInTheDocument()
+
+    fireEvent.click(leaveBtn)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders footer leave button when inventory has items', () => {
+    const onClose = vi.fn()
+    const inventory = [
+      { id: 'item_a', name: 'Item A', cost: 100, currency: 'money' }
+    ]
+
+    render(<SupplyStopModal inventory={inventory} onClose={onClose} />)
+
+    expect(screen.getByTestId('buy-item_a')).toBeInTheDocument()
+
+    const leaveBtn = screen.getByRole('button', { name: 'LEAVE SUPPLY STOP' })
+    expect(leaveBtn).toBeInTheDocument()
+
+    fireEvent.click(leaveBtn)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
 })

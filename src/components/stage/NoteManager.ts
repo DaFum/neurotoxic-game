@@ -122,10 +122,7 @@ export class NoteManager {
             // ⚡ BOLT OPTIMIZATION: Pass lane directly to acquireSpriteFromPool instead of creating a shallow clone
             // Why: Prevents creating `{ ...lane, renderX }` object allocations on every note spawn during active gameplay.
             // Impact: Eliminates object allocation and garbage collection pressure for every spawned rhythm note.
-            const sprite = this.pool.acquireSpriteFromPool(
-              lane,
-              note.laneIndex
-            )
+            const sprite = this.pool.acquireSpriteFromPool(lane, note.laneIndex)
             this.container.addChild(sprite)
             this.activeEntities.push({ note, sprite })
           }
