@@ -1373,6 +1373,8 @@
   "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
   "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
   "map.supply_stop_desc": "Versorgungsstopp - Exklusive limitierte Items.",
+  "map.supply_stop_empty": "Keine Schwarzmarkt-Güter an diesem Stopp verfügbar.",
+  "map.supply_stop_leave": "VERSORGUNGSSTOPP VERLASSEN",
   "map.supply_stop_title": "SCHWARZMARKT-VERSORGUNGSSTOPP",
   "map.supply_stop_warning": "Warnung: Käufe hier wirken sich negativ auf den Ruf der Band aus.",
   "map.ticket": "Ticket",

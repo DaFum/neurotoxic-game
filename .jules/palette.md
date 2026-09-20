@@ -214,3 +214,8 @@
 
 **Learning:** Action buttons in feature modals (such as `PirateRadioModal` and `BloodBankModal`) used native `disabled` attributes when unaffordable or on daily cooldown. Removing native `disabled` in favor of `aria-disabled="true"` keeps them in tab order for tooltips, but causes `ActionButton` and `GlitchButton` to reactivate hover scaling/shadows or default `enabled:` styles if replacement disabled styles are not explicitly supplied.
 **Action:** When using `aria-disabled="true"` on modal primary action buttons, pair `e.preventDefault()` with explicit neutral border/text tokens (`border-ash-gray text-ash-gray opacity-60 cursor-not-allowed`) and hover overrides (`hover:scale-100 hover:shadow-none`) so the locked control remains focusable without visually mimicking an active button.
+
+## 2026-09-15 - Supply Stop Empty States & Footer Actions
+
+**Learning:** Modal views listing items or shop inventory (such as `SupplyStopModal`) that omit empty state handling render blank containers when no items are available, creating a dead-end for users. Additionally, relying solely on the top-right dialog 'X' forces keyboard and screen reader users to cycle back through modal headers to close the view.
+**Action:** Always supply an explicit empty state with an actionable CTA button when item lists are empty, and provide a dedicated footer action button (e.g. "LEAVE SUPPLY STOP") at the bottom of shop and list modals to ensure seamless completion for keyboard and mouse users.

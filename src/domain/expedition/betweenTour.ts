@@ -108,7 +108,8 @@ const resolveInjuryRehabTarget = (
         const runIndex = order.indexOf(debt.createdFromRunId)
         if (
           runIndex < bestRunIndex ||
-          (runIndex === bestRunIndex && debt.crewId.localeCompare(bestDebt.crewId) < 0)
+          (runIndex === bestRunIndex &&
+            debt.crewId.localeCompare(bestDebt.crewId) < 0)
         ) {
           bestDebt = debt
           bestRunIndex = runIndex
@@ -219,7 +220,8 @@ const resolveRivalResponseTarget = (
       if (
         topRivalId === null ||
         nemesisLevel > topNemesisLevel ||
-        (nemesisLevel === topNemesisLevel && rivalId.localeCompare(topRivalId) < 0)
+        (nemesisLevel === topNemesisLevel &&
+          rivalId.localeCompare(topRivalId) < 0)
       ) {
         topRivalId = rivalId
         topNemesisLevel = nemesisLevel
@@ -312,7 +314,9 @@ const resolveSponsorAdvanceTarget = (
   const carried = resolveSponsorFollowUpTarget(state)
   if (carried) return carried
 
-  let cheapestDeal: (typeof BRAND_DEALS_BY_ID extends Map<string, infer T> ? T : never) | null = null
+  let cheapestDeal:
+    (typeof BRAND_DEALS_BY_ID extends Map<string, infer T> ? T : never) | null =
+    null
   let cheapestUpfront = Infinity
 
   for (const deal of BRAND_DEALS_BY_ID.values()) {
@@ -320,7 +324,8 @@ const resolveSponsorAdvanceTarget = (
     if (
       cheapestDeal === null ||
       upfront < cheapestUpfront ||
-      (upfront === cheapestUpfront && deal.id.localeCompare(cheapestDeal.id) < 0)
+      (upfront === cheapestUpfront &&
+        deal.id.localeCompare(cheapestDeal.id) < 0)
     ) {
       cheapestDeal = deal
       cheapestUpfront = upfront
@@ -345,7 +350,10 @@ const resolveSponsorFollowUpTarget = (
       if (!obligation || obligation.sourceType !== 'brandDeal') continue
       if (typeof obligation.sourceId !== 'string' || obligation.sourceId === '')
         continue
-      if (minSourceId === null || obligation.sourceId.localeCompare(minSourceId) < 0) {
+      if (
+        minSourceId === null ||
+        obligation.sourceId.localeCompare(minSourceId) < 0
+      ) {
         minSourceId = obligation.sourceId
       }
     }
