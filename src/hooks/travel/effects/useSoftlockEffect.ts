@@ -19,6 +19,16 @@ import {
 import { getNodeAccessStatus } from '../../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../../data/venues'
 
+/**
+ * Monitors the travel state to detect and handle softlock scenarios when the player becomes stranded.
+ *
+ * @remarks
+ * Continuously evaluates sellable assets, post-sale scenarios, and accessible neighbor nodes
+ * based on the active booking gate rules. If no valid exit path exists, it triggers a game
+ * over state.
+ *
+ * @param params - The dependencies, references, and state required to evaluate softlocks.
+ */
 export const useSoftlockEffect = ({
   refs,
   state,
