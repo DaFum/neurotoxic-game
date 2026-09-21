@@ -1,6 +1,6 @@
 import React from 'react'
-import { render, cleanup } from '@testing-library/react'
-import { afterEach, describe, expect, test } from 'vitest'
+import { render, cleanup, fireEvent } from '@testing-library/react'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { VolumeSlider } from '../../src/ui/shared/VolumeSlider.tsx'
 
@@ -27,5 +27,24 @@ describe('VolumeSlider', () => {
     expect(input.getAttribute('aria-valuetext')).toBe('50%')
     expect(input.getAttribute('aria-valuenow')).toBe('0.5')
     expect(input.getAttribute('aria-orientation')).toBe('horizontal')
+  })
+
+  test('focuses range input when segment is selected', () => {
+    const handleChange = vi.fn()
+    const { getByLabelText, container } = render(
+      React.createElement(VolumeSlider, {
+        label: 'Music Volume',
+        value: 0.5,
+        onChange: handleChange
+      })
+    )
+
+    const input = getByLabelText('Music Volume')
+    const segmentButtons = container.querySelectorAll('button')
+    expect(segmentButtons.length).toBeGreaterThan(0)
+
+    fireEvent.click(segmentButtons[0])
+    expect(handleChange).toHaveBeenCalled()
+    expect(document.activeElement).toBe(input)
   })
 })

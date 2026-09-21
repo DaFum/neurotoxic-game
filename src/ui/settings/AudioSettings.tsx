@@ -73,17 +73,10 @@ export const AudioSettings = memo(function AudioSettings({
           onChange={handleSfxChange}
         />
         <div className='flex items-center justify-between'>
-          <span className='font-ui text-sm uppercase tracking-wide text-ash-gray'>
-            {t('ui:mute_all')}
-          </span>
           <ToggleSwitch
             isOn={isMuted}
             onToggle={onToggleMute}
-            ariaLabel={
-              isMuted
-                ? t('ui:settings.audio_unmute')
-                : t('ui:settings.audio_mute')
-            }
+            ariaLabel={t('ui:mute_all')}
           />
         </div>
       </div>

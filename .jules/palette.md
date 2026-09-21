@@ -214,3 +214,8 @@
 
 **Learning:** Action buttons in feature modals (such as `PirateRadioModal` and `BloodBankModal`) used native `disabled` attributes when unaffordable or on daily cooldown. Removing native `disabled` in favor of `aria-disabled="true"` keeps them in tab order for tooltips, but causes `ActionButton` and `GlitchButton` to reactivate hover scaling/shadows or default `enabled:` styles if replacement disabled styles are not explicitly supplied.
 **Action:** When using `aria-disabled="true"` on modal primary action buttons, pair `e.preventDefault()` with explicit neutral border/text tokens (`border-ash-gray text-ash-gray opacity-60 cursor-not-allowed`) and hover overrides (`hover:scale-100 hover:shadow-none`) so the locked control remains focusable without visually mimicking an active button.
+
+## 2026-10-01 - Segmented Track Focus Restoration & Clean Switch ARIA Labels
+
+**Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
+**Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.

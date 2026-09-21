@@ -23,17 +23,10 @@ export const VisualSettings = memo(function VisualSettings({
         {t('ui:visual_interface')}
       </h2>
       <div className='flex items-center justify-between'>
-        <span className='font-ui text-sm uppercase tracking-wide text-ash-gray'>
-          {t('ui:crt_effect')}
-        </span>
         <ToggleSwitch
           isOn={crtEnabled}
           onToggle={onToggleCRT}
-          ariaLabel={
-            crtEnabled
-              ? t('ui:settings.crt_disable')
-              : t('ui:settings.crt_enable')
-          }
+          ariaLabel={t('ui:crt_effect')}
         />
       </div>
     </div>
