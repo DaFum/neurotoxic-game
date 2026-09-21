@@ -6,6 +6,20 @@ import {
 import { finiteNumberOr } from './finiteNumber'
 import type { GameState, PlayerState, BandState, SocialState } from '../types'
 
+/**
+ * Calculates the net sale value for all valid player assets.
+ *
+ * @remarks
+ * Iterates over the player's assets to calculate the gross sale value on the given day,
+ * subtracting any outstanding principal remaining on associated liabilities to determine
+ * the true net yield if liquidated. Only assets that return a net yield greater than zero
+ * are returned.
+ *
+ * @param assets - The current list of owned assets from the game state.
+ * @param liabilities - The active liabilities dictionary mapping IDs to debt obligations.
+ * @param playerDay - The current in-game day to determine depreciation and market value.
+ * @returns An array containing the IDs and calculated net values of sellable assets.
+ */
 export const getSellableAssets = (
   assets: GameState['assets'],
   liabilities: GameState['liabilities'],
@@ -44,6 +58,23 @@ export const getSellableAssets = (
   return sellableAssets
 }
 
+/**
+ * Evaluates possible financial scenarios arising from combinations of asset sales.
+ *
+ * @remarks
+ * To evaluate softlock avoidance and strategic solvency, this evaluates permutations
+ * of selling up to the 10 most profitable assets. It calculates the resulting immediate
+ * cash proceeds alongside the adjusted ongoing daily obligations and active asset modifiers
+ * that would persist after shedding the liquidated assets and their associated debts.
+ *
+ * @param sellableAssets - A list of assets with positive net yields, sorted to optimize permutations.
+ * @param assets - The baseline list of currently owned assets.
+ * @param liabilities - The current obligations mapping.
+ * @param player - The core player state.
+ * @param band - The band state influencing overall obligations.
+ * @param social - The social connections influencing overall obligations.
+ * @returns An array of simulated outcome scenarios, detailing proceeds and resulting daily financial pressure.
+ */
 export const getPostSaleScenarios = (
   sellableAssets: { id: string; net: number }[],
   assets: GameState['assets'],
