@@ -79,6 +79,21 @@ export const useRhythmGameLoop = ({
     [audioEngine, endGig, setLastGigStats]
   )
 
+  // ⚡ BOLT OPTIMIZATION: Memoize audioEngine wrapper callbacks outside the update loop.
+  // Why: Prevents allocating 5 new closure objects on every single frame (60 FPS tick) during rhythm gameplay.
+  // Impact: Eliminates ~300 closure allocations per second during rhythm minigames, reducing GC pause risk.
+  const getGigTimeMs = useCallback(() => audioEngine.getGigTimeMs(), [audioEngine])
+  const pauseAudio = useCallback(() => audioEngine.pauseAudio(), [audioEngine])
+  const resumeAudio = useCallback(() => audioEngine.resumeAudio(), [audioEngine])
+  const setCorruptionEffect = useCallback(
+    (active: boolean) => audioEngine.setCorruptionEffect(active),
+    [audioEngine]
+  )
+  const disableCorruptionBurstAudio = useCallback(
+    () => audioEngine.disableCorruptionBurstAudio(),
+    [audioEngine]
+  )
+
   const update = useCallback(
     (deltaMS: number) => {
       const transportState = audioEngine.getTransportState()
@@ -97,25 +112,26 @@ export const useRhythmGameLoop = ({
         setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
-        // Called through closures rather than passed as detached references:
-        // `IAudioEngine` implementations may be classes (`NullAudioEngine` is
-        // one), and a detached method would lose its receiver.
-        getGigTimeMs: () => audioEngine.getGigTimeMs(),
-        pauseAudio: () => audioEngine.pauseAudio(),
-        resumeAudio: () => audioEngine.resumeAudio(),
+        getGigTimeMs,
+        pauseAudio,
+        resumeAudio,
         setCorruptionState,
-        setCorruptionEffect: active => audioEngine.setCorruptionEffect(active),
-        disableCorruptionBurstAudio: () =>
-          audioEngine.disableCorruptionBurstAudio()
+        setCorruptionEffect,
+        disableCorruptionBurstAudio
       })
     },
     [
       activeEvent,
       audioEngine,
+      disableCorruptionBurstAudio,
       finalizeGigCallback,
       gameStateRef,
+      getGigTimeMs,
       handleCollision,
       handleMiss,
+      pauseAudio,
+      resumeAudio,
+      setCorruptionEffect,
       setIsToxicMode,
       setIsCorruptionBurstActive,
       setCorruptionState
