@@ -58,8 +58,8 @@ export const createPurchaseExpeditionHqFacilityAction = (
  * Acquires a signature trait for a crew member during career development.
  *
  * @param crewId - The crew member acquiring the trait.
- * @param expectedTraitId - The signature trait to acquire.
- * @param sourceId - The source ID proving the acquisition.
+ * @param expectedTraitId - The signature trait to acquire, used as a stale guard (the eligible trait is derived from state).
+ * @param sourceId - The source ID proving eligibility, not an acquisition that has already occurred.
  * @returns The typed action.
  */
 export const createAcquireExpeditionCrewSignatureAction = (
