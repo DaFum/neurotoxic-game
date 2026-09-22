@@ -46,6 +46,10 @@ export class NoteManager {
   nextRenderIndex: number
   lastNotesVersion: number | null
   textureManager: NoteTextureManager
+  // ⚡ BOLT OPTIMIZATION: Cache fallback token color in class instance property
+  // Why: Avoids calling getPixiColorFromToken inside _updateActiveNotes loop when lane color fallback is needed.
+  // Impact: Prevents lookup calls during active hit processing in NoteManager.
+  starWhiteColor: number
 
   /**
    * @param app - App.
@@ -69,6 +73,7 @@ export class NoteManager {
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.textureManager = new NoteTextureManager()
+    this.starWhiteColor = getPixiColorFromToken('--star-white')
   }
 
   init(): void {
@@ -148,8 +153,7 @@ export class NoteManager {
 
       if (note.hit) {
         const laneColor =
-          state.lanes?.[note.laneIndex]?.color ??
-          getPixiColorFromToken('--star-white')
+          state.lanes?.[note.laneIndex]?.color ?? this.starWhiteColor
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
         }
