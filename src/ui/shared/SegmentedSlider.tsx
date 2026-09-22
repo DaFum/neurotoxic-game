@@ -1,4 +1,4 @@
-import { memo, useId } from 'react'
+import { memo, useId, useRef, useCallback } from 'react'
 import type { ChangeEvent } from 'react'
 
 type SliderSegmentProps = {
@@ -66,6 +66,15 @@ export const SegmentedSlider = memo(function SegmentedSlider({
       : 1
   const segments = Array.from({ length: safeSegmentCount }, (_, i) => i + 1)
   const inputId = useId()
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleSegmentSelect = useCallback(
+    (segment: number) => {
+      onSegmentSelect(segment)
+      inputRef.current?.focus()
+    },
+    [onSegmentSelect]
+  )
 
   return (
     <div className='w-full max-w-sm flex flex-col gap-2'>
@@ -79,6 +88,7 @@ export const SegmentedSlider = memo(function SegmentedSlider({
         <span className='text-sm font-bold text-toxic-green'>{valueLabel}</span>
       </div>
       <input
+        ref={inputRef}
         id={inputId}
         type='range'
         min={inputMin}
@@ -106,7 +116,7 @@ export const SegmentedSlider = memo(function SegmentedSlider({
               segment={segment}
               isActive={isActive}
               height={height}
-              onSelect={onSegmentSelect}
+              onSelect={handleSegmentSelect}
             />
           )
         })}

@@ -100,5 +100,6 @@ describe('ToggleSwitch', () => {
     const labelElement = container.querySelector(`[id="${labelledById}"]`)
     expect(labelElement).toBeTruthy()
     expect(labelElement.textContent).toBe('Accessible Switch')
+    expect(switchButton.getAttribute('aria-label')).toBeNull()
   })
 })
