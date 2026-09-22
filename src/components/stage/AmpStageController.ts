@@ -23,6 +23,13 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
   isAnomalyActive: boolean
   interference: number
   isHijackActive: boolean
+  // ⚡ BOLT OPTIMIZATION: Cache token colors in class instance properties
+  // Why: Calling getPixiColorFromToken inside drawBackground on every frame (60fps) causes unnecessary lookup calls.
+  // Impact: Eliminates getPixiColorFromToken calls per frame in AmpStageController background rendering.
+  colors: {
+    voidBlack: number
+    bloodRed: number
+  }
 
   /**
    * Initializes the AmpStageController with the provided options.
@@ -42,6 +49,10 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.isAnomalyActive = false
     this.interference = 0
     this.isHijackActive = false
+    this.colors = {
+      voidBlack: getPixiColorFromToken('--void-black'),
+      bloodRed: getPixiColorFromToken('--blood-red')
+    }
   }
 
   /**
@@ -143,12 +154,12 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       this.interference > 0 ? (this.interference / 100) * 0.2 : 0
 
     this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-    this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
+    this.bg.fill({ color: this.colors.voidBlack, alpha: 1 })
 
     if (tintValue > 0) {
       this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
       this.bg.fill({
-        color: getPixiColorFromToken('--blood-red'),
+        color: this.colors.bloodRed,
         alpha: tintValue
       })
     }
