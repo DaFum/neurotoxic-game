@@ -219,3 +219,8 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
+
+## 2026-09-22 - Screen Reader Context for Static List Badges
+
+**Learning:** Using `role="status"` on static list tags (like reward or penalty chips in modals) turns them into ARIA live regions, causing screen readers to announce every static tag as an intrusive dynamic update when a modal opens.
+**Action:** Use visually hidden prefix spans (`<span className="sr-only">Reward: </span>`) alongside `aria-hidden="true"` on decorative icons for static badges instead of live region roles.
