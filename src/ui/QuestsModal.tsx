@@ -66,21 +66,21 @@ const getRewardText = (
 const getRewardIcon = (type: string) => {
   switch (type) {
     case 'item.add':
-      return <IconCube className='w-4 h-4 text-toxic-green' />
+      return <IconCube className='w-4 h-4 text-toxic-green' aria-hidden='true' />
     case 'fame':
     case 'social.followers':
-      return <IconStar className='w-4 h-4 text-stamina-green' />
+      return <IconStar className='w-4 h-4 text-stamina-green' aria-hidden='true' />
     case 'skill_point':
-      return <IconFire className='w-4 h-4 text-error-red' />
+      return <IconFire className='w-4 h-4 text-error-red' aria-hidden='true' />
     case 'band.harmony':
     case 'social.loyalty':
-      return <IconThumbUp className='w-4 h-4 text-toxic-green' />
+      return <IconThumbUp className='w-4 h-4 text-toxic-green' aria-hidden='true' />
     case 'social.controversy':
-      return <IconThumbUp className='w-4 h-4 text-stamina-green' />
+      return <IconThumbUp className='w-4 h-4 text-stamina-green' aria-hidden='true' />
     case 'money':
-      return <IconCoin className='w-4 h-4 text-fuel-yellow' />
+      return <IconCoin className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
     default:
-      return <IconTrophy className='w-4 h-4 text-fuel-yellow' />
+      return <IconTrophy className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
   }
 }
 
@@ -262,21 +262,30 @@ const QuestItem = memo(
 
         {/* 4. Rewards und Penalties */}
         <div className='flex flex-wrap gap-2 mt-1 pt-2 border-t border-ash-gray/10'>
-          {rewardChips.map((reward, rewardIndex) => (
-            <span
-              key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
-              className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
-            >
-              {getRewardIcon(reward.type)}
-              {getRewardText(reward, t, i18n.language)}
-            </span>
-          ))}
+          {rewardChips.map((reward, rewardIndex) => {
+            const rewardText = getRewardText(reward, t, i18n.language)
+            return (
+              <span
+                key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
+                className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono'
+              >
+                <span className='sr-only'>
+                  {t('ui:rewards.prefix', { defaultValue: 'Reward:' })}{' '}
+                </span>
+                {getRewardIcon(reward.type)}
+                {rewardText}
+              </span>
+            )
+          })}
 
           {penaltyTexts.map(text => (
             <span
               key={text}
               className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
             >
+              <span className='sr-only'>
+                {t('ui:quests.penalty.prefix', { defaultValue: 'Penalty:' })}{' '}
+              </span>
               {text}
             </span>
           ))}
@@ -304,7 +313,7 @@ const QuestItem = memo(
                       (quest.label ? t(quest.label) : 'quest')
                   })
             }
-            className='min-w-11 min-h-11 text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+            className='min-w-11 min-h-11 text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             {showDetails ? (
               <IconChevronUp className='w-3 h-3' />
