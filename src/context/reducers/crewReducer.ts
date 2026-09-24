@@ -102,7 +102,7 @@ const hasCanonicalStressSource = (
  *
  * @param state - The current game state
  * @param payload - The stress intent containing crew ID and source type
- * @returns The updated game state with applied stress delta
+ * @returns The updated game state with applied stress delta, or the original state if validation fails
  */
 export const handleRecordExpeditionCrewStressSource = (
   state: GameState,
@@ -150,6 +150,7 @@ const validActor = (
     : state.band.members.some(
         (member: { id: string }) => member.id === actor.id
       )
+
 /**
  * Records a relationship outcome between two expedition actors (crew or band).
  *
@@ -159,7 +160,7 @@ const validActor = (
  *
  * @param state - The current game state
  * @param payload - The relationship outcome intent containing actors
- * @returns The updated game state with modified career relationship tiers
+ * @returns The updated game state with modified career relationship tiers, or the original state if validation fails
  */
 export const handleRecordExpeditionRelationshipOutcome = (
   state: GameState,
@@ -219,16 +220,17 @@ const nextBandInjury = {
   serious: 'critical',
   critical: 'critical'
 } as const
+
 /**
  * Advances the injury state of a specific crew member.
  *
  * @remarks
- * Transitions injury levels sequentially (e.g. none \-\> light \-\> serious).
+ * Transitions injury levels sequentially (e.g. none -\> light -\> serious).
  * Ensures the target exists in the crew registry and validates event proof.
  *
  * @param state - The current game state
  * @param payload - The injury payload containing the target crew ID
- * @returns The updated game state with advanced crew injury status
+ * @returns The updated game state with advanced crew injury status, or the original state if validation fails
  */
 export const handleAdvanceExpeditionCrewInjury = (
   state: GameState,
@@ -269,6 +271,7 @@ export const handleAdvanceExpeditionCrewInjury = (
     }
   }
 }
+
 /**
  * Advances the injury state of a specific band member during an expedition.
  *
@@ -278,7 +281,7 @@ export const handleAdvanceExpeditionCrewInjury = (
  *
  * @param state - The current game state
  * @param payload - The injury payload containing the target band member ID
- * @returns The updated game state with advanced band injury status
+ * @returns The updated game state with advanced band injury status, or the original state if validation fails
  */
 export const handleAdvanceExpeditionBandInjury = (
   state: GameState,
@@ -325,7 +328,7 @@ export const handleAdvanceExpeditionBandInjury = (
  *
  * @param state - The current game state
  * @param payload - The intel grant payload containing event and target node IDs
- * @returns The updated game state containing the new intel grant
+ * @returns The updated game state containing the new intel grant, or the original state if validation fails
  */
 export const handleCreateContactIntelGrant = (
   state: GameState,
@@ -396,7 +399,7 @@ export const handleCreateContactIntelGrant = (
  * @param sourceEventId - The identifier of the resolved event
  * @param sourceOptionId - The identifier of the chosen event option
  * @param resultIds - The valid outcome result identifiers
- * @returns The updated game state with all consequences applied
+ * @returns The updated game state with all consequences applied, or the original state if validation fails
  */
 export const applyResolvedCrewEventOutcome = (
   state: GameState,
