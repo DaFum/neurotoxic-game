@@ -26,6 +26,8 @@ interface HecklerOverlayProps {
   gameStateRef: HecklerStateRef
 }
 
+const RAD_TO_DEG = 180 / Math.PI
+
 /**
  * Overlay component that renders projectiles (heckler items).
  *
@@ -63,27 +65,34 @@ export const HecklerOverlay = memo(function HecklerOverlay({
 
   const projectiles = (gameStateRef.current?.projectiles ?? []) as Projectile[]
 
+  // ⚡ BOLT OPTIMIZATION: Replace .reduce() with a procedural for loop on this 60 FPS animation render path.
+  // Why: Avoids callback closure allocations and reduce accumulator overhead per frame.
+  // Impact: Eliminates array reduce callback allocations on every 60 FPS frame during active heckler events.
+  const elements: React.ReactNode[] = []
+  for (let i = 0; i < projectiles.length; i++) {
+    const p = projectiles[i]
+    if (p && p.id !== undefined) {
+      const x = p.x ?? 0
+      const y = p.y ?? 0
+      const rotation = p.rotation ?? 0
+      const deg = rotation * RAD_TO_DEG
+      elements.push(
+        <div
+          key={p.id}
+          className='absolute text-4xl drop-shadow-lg'
+          style={{
+            transform: `translate3d(${x}px, ${y}px, 0) rotate(${deg}deg)`
+          }}
+        >
+          {p.type === 'bottle' ? '🍾' : '🍅'}
+        </div>
+      )
+    }
+  }
+
   return (
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
-      {projectiles.reduce<React.ReactNode[]>((acc, p) => {
-        if (p && p.id !== undefined) {
-          const x = p.x ?? 0
-          const y = p.y ?? 0
-          const rotation = p.rotation ?? 0
-          acc.push(
-            <div
-              key={p.id}
-              className='absolute text-4xl drop-shadow-lg'
-              style={{
-                transform: `translate3d(${x}px, ${y}px, 0) rotate(${rotation * (180 / Math.PI)}deg)`
-              }}
-            >
-              {p.type === 'bottle' ? '🍾' : '🍅'}
-            </div>
-          )
-        }
-        return acc
-      }, [])}
+      {elements}
     </div>
   )
 })
