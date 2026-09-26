@@ -82,9 +82,15 @@ export const useRhythmGameLoop = ({
   // ⚡ BOLT OPTIMIZATION: Memoize audioEngine wrapper callbacks outside the update loop.
   // Why: Prevents allocating 5 new closure objects on every single frame (60 FPS tick) during rhythm gameplay.
   // Impact: Eliminates ~300 closure allocations per second during rhythm minigames, reducing GC pause risk.
-  const getGigTimeMsFn = useCallback(() => audioEngine.getGigTimeMs(), [audioEngine])
+  const getGigTimeMsFn = useCallback(
+    () => audioEngine.getGigTimeMs(),
+    [audioEngine]
+  )
   const pauseAudio = useCallback(() => audioEngine.pauseAudio(), [audioEngine])
-  const resumeAudio = useCallback(() => audioEngine.resumeAudio(), [audioEngine])
+  const resumeAudio = useCallback(
+    () => audioEngine.resumeAudio(),
+    [audioEngine]
+  )
   const setCorruptionEffect = useCallback(
     (active: boolean) => audioEngine.setCorruptionEffect(active),
     [audioEngine]

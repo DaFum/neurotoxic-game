@@ -125,4 +125,39 @@ describe('BandHQ UI tests', () => {
     expect(tablist).toHaveClass('shrink-0')
     expect(tablist).toHaveClass('scrollbar-hidden')
   })
+
+  test('supports roving tabIndex and keyboard arrow navigation between tabs', async () => {
+    const props = { onClose: () => {} }
+    render(React.createElement(BandHQ, props))
+
+    const user = userEvent.setup()
+    const statsTab = screen.getByRole('tab', { name: /stats/i })
+    const detailsTab = screen.getByRole('tab', { name: /details/i })
+
+    // Active tab has tabIndex 0, inactive has -1
+    expect(statsTab).toHaveAttribute('tabindex', '0')
+    expect(detailsTab).toHaveAttribute('tabindex', '-1')
+    expect(statsTab).toHaveAttribute('aria-selected', 'true')
+    expect(detailsTab).toHaveAttribute('aria-selected', 'false')
+
+    // Navigate using ArrowRight
+    statsTab.focus()
+    await user.keyboard('{ArrowRight}')
+
+    expect(screen.getByRole('tabpanel', { name: /details/i })).toBeVisible()
+    expect(detailsTab).toHaveAttribute('tabindex', '0')
+    expect(statsTab).toHaveAttribute('tabindex', '-1')
+
+    // Navigate to last unlocked tab with End key
+    detailsTab.focus()
+    await user.keyboard('{End}')
+    const glossaryTab = screen.getByRole('tab', { name: /glossary/i })
+    expect(glossaryTab).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('tabpanel', { name: /glossary/i })).toBeVisible()
+
+    // Navigate to first tab with Home key
+    await user.keyboard('{Home}')
+    expect(statsTab).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('tabpanel', { name: /stats/i })).toBeVisible()
+  })
 })
