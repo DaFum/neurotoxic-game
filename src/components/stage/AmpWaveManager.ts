@@ -9,6 +9,15 @@ import { getSafeRandom } from '../../utils/crypto'
 export class AmpWaveManager {
   private app: PIXI.Application
   waveGraphics: PIXI.Graphics | null
+  // ⚡ BOLT OPTIMIZATION: Cache CSS token colors on class instance
+  // Why: Prevents calling getPixiColorFromToken (DOM/style map lookup) repeatedly inside 60FPS update loops.
+  // Impact: Reduces frame render time and eliminates DOM style resolution overhead during amp minigame gameplay.
+  colors: {
+    electricBlue: number
+    toxicGreen: number
+    bloodRed: number
+    warningYellow: number
+  }
 
   /**
    * Initializes a new AmpWaveManager instance.
@@ -19,6 +28,12 @@ export class AmpWaveManager {
   constructor(container: PIXI.Container, app: PIXI.Application) {
     this.app = app
     this.waveGraphics = new PIXI.Graphics()
+    this.colors = {
+      electricBlue: getPixiColorFromToken('--electric-blue'),
+      toxicGreen: getPixiColorFromToken('--toxic-green'),
+      bloodRed: getPixiColorFromToken('--blood-red'),
+      warningYellow: getPixiColorFromToken('--warning-yellow')
+    }
     container.addChild(this.waveGraphics)
   }
 
@@ -93,10 +108,10 @@ export class AmpWaveManager {
     const isMatching = diff <= AMP_CALIBRATION_TOLERANCE
 
     const targetColor = isAnomalyActive
-      ? getPixiColorFromToken('--electric-blue')
+      ? this.colors.electricBlue
       : isMatching
-        ? getPixiColorFromToken('--toxic-green')
-        : getPixiColorFromToken('--blood-red')
+        ? this.colors.toxicGreen
+        : this.colors.bloodRed
 
     // Draw Target Wave
     const targetPeriod = width / (targetFreq / 50 + 1)
@@ -115,13 +130,13 @@ export class AmpWaveManager {
     if (isHijackActive) {
       targetAmplitude = 300
       targetJitter = 100
-      finalTargetColor = getPixiColorFromToken('--blood-red')
+      finalTargetColor = this.colors.bloodRed
     }
 
     if (interference > 0 && getSafeRandom() < interference / 200) {
       targetJitter += interference
       if (!isHijackActive)
-        finalTargetColor = getPixiColorFromToken('--warning-yellow')
+        finalTargetColor = this.colors.warningYellow
     }
 
     this.drawSineWave(
@@ -142,28 +157,28 @@ export class AmpWaveManager {
     const currentPeriod = width / (currentFreq / 50 + 1)
     let currentAmplitude = 100
     let currentJitter = 0
-    let currentColor = getPixiColorFromToken('--toxic-green')
+    let currentColor = this.colors.toxicGreen
     let currentWidth = 4
 
     if (isOverheat) {
-      currentColor = getPixiColorFromToken('--blood-red')
+      currentColor = this.colors.bloodRed
       currentAmplitude = 120
       currentJitter = 60
       currentWidth = 6
     } else if (isAnomalyActive) {
-      currentColor = getPixiColorFromToken('--electric-blue')
+      currentColor = this.colors.electricBlue
       currentAmplitude = 250
       currentJitter = 25
       currentWidth = 10
     } else if (isOverdriveActive) {
-      currentColor = getPixiColorFromToken('--warning-yellow')
+      currentColor = this.colors.warningYellow
       currentAmplitude = 180
       currentJitter = 10
       currentWidth = 8
     }
 
     if (isHijackActive) {
-      currentColor = getPixiColorFromToken('--warning-yellow')
+      currentColor = this.colors.warningYellow
       currentAmplitude = 50
       currentJitter = 200
       currentWidth = 12
