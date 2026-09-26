@@ -1,6 +1,12 @@
 import { ActionTypes } from './actionTypes'
 import type { GameAction } from '../types'
 
+/**
+ * Settles one finalized run's Crew Career result: evaluating traits and progression.
+ *
+ * @param runId - The finalized run whose crew career results are being settled.
+ * @returns The typed action.
+ */
 export const createSettleExpeditionCrewCareerAction = (
   runId: string
 ): Extract<
@@ -48,6 +54,18 @@ export const createPurchaseExpeditionHqFacilityAction = (
   payload: { facilityId, expectedLevel }
 })
 
+/**
+ * Acquires a specific expedition crew signature trait.
+ *
+ * @param crewId - The unique identifier of the crew member.
+ * @param expectedTraitId - The signature trait ID the caller expects is being acquired.
+ * @param sourceId - Evidence of the acquisition source.
+ * @returns The typed action.
+ *
+ * @remarks
+ * The expected trait ID is used as a stale guard; the exact eligible trait is derived
+ * from state. The source ID acts as proof of eligibility.
+ */
 export const createAcquireExpeditionCrewSignatureAction = (
   crewId: string,
   expectedTraitId: string,
