@@ -148,11 +148,17 @@ describe('BandHQ UI tests', () => {
     expect(detailsTab).toHaveAttribute('tabindex', '0')
     expect(statsTab).toHaveAttribute('tabindex', '-1')
 
-    // Navigate to last unlocked tab with End key
-    detailsTab.focus()
-    await user.keyboard('{End}')
+    // Navigate to Glossary tab
     const glossaryTab = screen.getByRole('tab', { name: /glossary/i })
-    expect(glossaryTab).toHaveAttribute('tabindex', '0')
+    await user.click(glossaryTab)
+    expect(screen.getByRole('tabpanel', { name: /glossary/i })).toBeVisible()
+
+    // ArrowRight onto locked Void Trader tab: receives focus, aria-disabled is true, active panel stays GLOSSARY
+    glossaryTab.focus()
+    await user.keyboard('{ArrowRight}')
+    const voidTab = screen.getByRole('tab', { name: /void/i })
+    expect(voidTab).toHaveFocus()
+    expect(voidTab).toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByRole('tabpanel', { name: /glossary/i })).toBeVisible()
 
     // Navigate to first tab with Home key

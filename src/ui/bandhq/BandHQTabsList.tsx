@@ -47,35 +47,36 @@ export const BandHQTabsList = ({
     event: React.KeyboardEvent<HTMLButtonElement>,
     tabId: string
   ) => {
-    const unlockedTabs = tabs.filter(t => !t.isLocked)
-    const currentIndex = unlockedTabs.findIndex(t => t.id === tabId)
+    const currentIndex = tabs.findIndex(t => t.id === tabId)
     if (currentIndex === -1) return
 
     let nextIndex: number
 
     switch (event.key) {
       case 'ArrowRight':
-        nextIndex = (currentIndex + 1) % unlockedTabs.length
+        nextIndex = (currentIndex + 1) % tabs.length
         break
       case 'ArrowLeft':
-        nextIndex =
-          (currentIndex - 1 + unlockedTabs.length) % unlockedTabs.length
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
         break
       case 'Home':
         nextIndex = 0
         break
       case 'End':
-        nextIndex = unlockedTabs.length - 1
+        nextIndex = tabs.length - 1
         break
       default:
         return
     }
 
-    const nextTab = unlockedTabs[nextIndex]
+    const nextTab = tabs[nextIndex]
     if (!nextTab) return
 
     event.preventDefault()
-    setActiveTab(nextTab.id)
+
+    if (!nextTab.isLocked) {
+      setActiveTab(nextTab.id)
+    }
 
     const tabList = event.currentTarget.closest('[role="tablist"]')
     const targetButton = tabList?.querySelector<HTMLElement>(

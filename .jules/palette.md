@@ -219,8 +219,3 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
-
-## 2026-09-22 - Roving TabIndex and Dynamic Panel IDREFs in Tab Lists
-
-**Learning:** In multi-tab interfaces where inactive tab panels are conditionally unmounted (such as Band HQ), leaving default `tabIndex={0}` on all tab buttons forces keyboard users to tab through every section header before reaching the active panel. Additionally, referencing unmounted panel IDs in `aria-controls` creates invalid DOM IDREFs for assistive tech.
-**Action:** Use roving tabIndex (`tabIndex={isActive ? 0 : -1}`) alongside Left/Right arrow key handlers on `role="tablist"` containers so keyboard users enter the active tab and can arrow across tabs. Conditionally set `aria-controls={isActive ? panelId : undefined}` so `aria-controls` references only currently mounted DOM panels.
