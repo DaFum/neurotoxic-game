@@ -23,6 +23,13 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
   isAnomalyActive: boolean
   interference: number
   isHijackActive: boolean
+  // ⚡ BOLT OPTIMIZATION: Cache CSS token colors on class instance
+  // Why: Prevents calling getPixiColorFromToken (DOM/style map lookup) repeatedly inside 60FPS update loops.
+  // Impact: Reduces frame render time and eliminates DOM style resolution overhead during amp minigame background draws.
+  colors: {
+    voidBlack: number
+    bloodRed: number
+  }
 
   /**
    * Initializes the AmpStageController with the provided options.
@@ -42,6 +49,10 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.isAnomalyActive = false
     this.interference = 0
     this.isHijackActive = false
+    this.colors = {
+      voidBlack: getPixiColorFromToken('--void-black'),
+      bloodRed: getPixiColorFromToken('--blood-red')
+    }
   }
 
   /**
@@ -143,12 +154,12 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       this.interference > 0 ? (this.interference / 100) * 0.2 : 0
 
     this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-    this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
+    this.bg.fill({ color: this.colors.voidBlack, alpha: 1 })
 
     if (tintValue > 0) {
       this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
       this.bg.fill({
-        color: getPixiColorFromToken('--blood-red'),
+        color: this.colors.bloodRed,
         alpha: tintValue
       })
     }
