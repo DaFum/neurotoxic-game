@@ -36,12 +36,54 @@ export const BandHQTabsList = ({
     {
       id: 'VOID',
       key:
-        controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD
+        (controversyLevel ?? 0) >= VOID_TRADER_CONTROVERSY_THRESHOLD
           ? 'tabs.voidTrader'
           : 'tabs.voidTraderLocked',
-      isLocked: controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
+      isLocked: (controversyLevel ?? 0) < VOID_TRADER_CONTROVERSY_THRESHOLD
     }
   ]
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    tabId: string
+  ) => {
+    const currentIndex = tabs.findIndex(t => t.id === tabId)
+    if (currentIndex === -1) return
+
+    let nextIndex: number
+
+    switch (event.key) {
+      case 'ArrowRight':
+        nextIndex = (currentIndex + 1) % tabs.length
+        break
+      case 'ArrowLeft':
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
+        break
+      case 'Home':
+        nextIndex = 0
+        break
+      case 'End':
+        nextIndex = tabs.length - 1
+        break
+      default:
+        return
+    }
+
+    const nextTab = tabs[nextIndex]
+    if (!nextTab) return
+
+    event.preventDefault()
+
+    if (!nextTab.isLocked) {
+      setActiveTab(nextTab.id)
+    }
+
+    const tabList = event.currentTarget.closest('[role="tablist"]')
+    const targetButton = tabList?.querySelector<HTMLElement>(
+      `#tab-${nextTab.id}`
+    )
+    targetButton?.focus()
+  }
 
   return (
     <div
@@ -65,6 +107,7 @@ export const BandHQTabsList = ({
             isActive={isActive}
             label={t(tab.key)}
             onClick={() => !tab.isLocked && setActiveTab(tab.id)}
+            onKeyDown={event => handleKeyDown(event, tab.id)}
           />
         )
 
