@@ -2,7 +2,7 @@ import { ActionTypes } from './actionTypes'
 import type { GameAction } from '../types'
 
 /**
- * Settles one finalized run's Crew Career result: evaluating traits and progression.
+ * Settles one finalized run's Crew Career result: updates loyalty, story progress, recovery debt, and band consequences while preserving signatureTraitId.
  *
  * @param runId - The finalized run whose crew career results are being settled.
  * @returns The typed action.
@@ -13,6 +13,7 @@ export const createSettleExpeditionCrewCareerAction = (
   GameAction,
   { type: typeof ActionTypes.SETTLE_EXPEDITION_CREW_CAREER }
 > => ({ type: ActionTypes.SETTLE_EXPEDITION_CREW_CAREER, payload: { runId } })
+
 /**
  * Settles one finalized run's Career result: Tokens, counters and Regions.
  *
