@@ -42,7 +42,14 @@ const META_UNLOCK_QUEST_TOKEN = 1 as const
  */
 export const getMaxPersistentNemesisLevel = (career: CareerState): number => {
   let max = 0
-  for (const record of Object.values(career.rivalsById)) {
+  const rivalsById = career?.rivalsById
+  if (!rivalsById) return 0
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with a procedural for...in loop.
+  // Why: Avoids allocating an intermediate array when computing max nemesis level.
+  // Impact: Reduces GC pressure during career rank evaluation.
+  for (const id in rivalsById) {
+    if (!Object.hasOwn(rivalsById, id)) continue
+    const record = rivalsById[id]
     // `typeof level === 'number'` admits NaN and Infinity, and Infinity wins
     // every comparison below - so a poisoned save would report an unearned
     // feud depth to the rank gate.
