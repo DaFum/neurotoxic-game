@@ -69,7 +69,7 @@ describe('QuestsModal', () => {
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })
 
-  it('renders structured rewards and failure penalties', () => {
+  it('renders structured rewards and failure penalties with accessible sr-only prefixes', () => {
     render(
       <QuestsModal
         onClose={vi.fn()}
@@ -90,6 +90,9 @@ describe('QuestsModal', () => {
 
     expect(screen.getByText('ui:rewards.fameWithAmount')).toBeInTheDocument()
     expect(screen.getByText('ui:quests.penalty.harmony')).toBeInTheDocument()
+
+    expect(screen.getByText('Reward:')).toHaveClass('sr-only')
+    expect(screen.getByText('Penalty:')).toHaveClass('sr-only')
   })
 })
 
