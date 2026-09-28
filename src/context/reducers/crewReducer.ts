@@ -93,6 +93,17 @@ const hasCanonicalStressSource = (
   return false
 }
 
+/**
+ * Records a stress source outcome onto an active expedition crew member.
+ *
+ * @remarks
+ * Uses `hasCanonicalStressSource` to strictly validate the payload against
+ * registered `CREW_STRESS_SOURCE_DELTAS` and ensures the source ID hasn't been replayed.
+ *
+ * @param state - The current game state
+ * @param payload - The stress intent containing crew ID and source type
+ * @returns The updated game state with applied stress delta, or the original state if validation fails
+ */
 export const handleRecordExpeditionCrewStressSource = (
   state: GameState,
   payload: ExpeditionCrewStressIntent
@@ -139,6 +150,18 @@ const validActor = (
     : state.band.members.some(
         (member: { id: string }) => member.id === actor.id
       )
+
+/**
+ * Records a relationship outcome between two expedition actors (crew or band).
+ *
+ * @remarks
+ * Applies a relationship tier delta based on the resolved crew event outcome.
+ * Prevents identical actors and duplicate resolutions using replay IDs.
+ *
+ * @param state - The current game state
+ * @param payload - The relationship outcome intent containing actors
+ * @returns The updated game state with modified career relationship tiers, or the original state if validation fails
+ */
 export const handleRecordExpeditionRelationshipOutcome = (
   state: GameState,
   payload: ExpeditionRelationshipOutcomeIntent
@@ -197,6 +220,18 @@ const nextBandInjury = {
   serious: 'critical',
   critical: 'critical'
 } as const
+
+/**
+ * Advances the injury state of a specific crew member.
+ *
+ * @remarks
+ * Transitions injury levels sequentially (e.g. none -\> light -\> serious).
+ * Ensures the target exists in the crew registry and validates event proof.
+ *
+ * @param state - The current game state
+ * @param payload - The injury payload containing the target crew ID
+ * @returns The updated game state with advanced crew injury status, or the original state if validation fails
+ */
 export const handleAdvanceExpeditionCrewInjury = (
   state: GameState,
   payload: ExpeditionInjurySourcePayload
@@ -236,6 +271,18 @@ export const handleAdvanceExpeditionCrewInjury = (
     }
   }
 }
+
+/**
+ * Advances the injury state of a specific band member during an expedition.
+ *
+ * @remarks
+ * Transitions band member injury levels sequentially up to critical.
+ * Validates the target exists in the band and verifies the event source proof.
+ *
+ * @param state - The current game state
+ * @param payload - The injury payload containing the target band member ID
+ * @returns The updated game state with advanced band injury status, or the original state if validation fails
+ */
 export const handleAdvanceExpeditionBandInjury = (
   state: GameState,
   payload: ExpeditionInjurySourcePayload
@@ -272,6 +319,17 @@ export const handleAdvanceExpeditionBandInjury = (
   }
 }
 
+/**
+ * Creates an intel grant for a contact at a specific map node.
+ *
+ * @remarks
+ * Intel levels max out at 2. The node must be connected to the current node.
+ * Validates the event source, route step, and verifies the node structure.
+ *
+ * @param state - The current game state
+ * @param payload - The intel grant payload containing event and target node IDs
+ * @returns The updated game state containing the new intel grant, or the original state if validation fails
+ */
 export const handleCreateContactIntelGrant = (
   state: GameState,
   payload: CreateContactIntelGrantPayload
@@ -330,6 +388,19 @@ export const handleCreateContactIntelGrant = (
   }
 }
 
+/**
+ * Applies the composite outcome of a resolved crew event.
+ *
+ * @remarks
+ * Handles compound event outcomes by chaining stress, relationship, injury, and intel
+ * handlers. Returns early if the required crew are missing or results do not match.
+ *
+ * @param state - The current game state
+ * @param sourceEventId - The identifier of the resolved event
+ * @param sourceOptionId - The identifier of the chosen event option
+ * @param resultIds - The valid outcome result identifiers
+ * @returns The updated game state with all consequences applied, or the original state if validation fails
+ */
 export const applyResolvedCrewEventOutcome = (
   state: GameState,
   sourceEventId: unknown,
