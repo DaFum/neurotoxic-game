@@ -193,10 +193,14 @@ export class RoadieTrafficManager {
    * during the last render pass, safely destroying unneeded sprites to free memory.
    */
   cleanupTraffic() {
-    // ⚡ BOLT OPTIMIZATION: Iterating Map entries directly avoids per-frame MapKeys iterator allocations (.keys()) and redundant .get(id) hash map lookups during 60 FPS cleanup.
+    // ⚡ BOLT OPTIMIZATION: Iterating keys and fetching .get(id) only on the stale branch (`!this.currentIds.has(id)`)
+    // avoids allocating/destructuring [id, sprite] entry tuples for active car sprites on normal 60 FPS frames.
     if (this.carSprites && this.carSprites.size > 0) {
-      for (const [id, sprite] of this.carSprites) {
+      for (const id of this.carSprites.keys()) {
         if (!this.currentIds.has(id)) {
+          const sprite = this.carSprites.get(id)
+          if (!sprite) continue
+
           try {
             this.container.removeChild(sprite)
           } catch (error) {
