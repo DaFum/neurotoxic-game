@@ -63,27 +63,36 @@ export const HecklerOverlay = memo(function HecklerOverlay({
 
   const projectiles = (gameStateRef.current?.projectiles ?? []) as Projectile[]
 
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.reduce with a single-pass procedural loop for rendering elements.
+  // Why: HecklerOverlay re-renders on requestAnimationFrame (~60 FPS) when projectiles are active.
+  // Using Array.reduce allocated a callback closure and accumulator array on every single frame.
+  // Impact: Eliminates ~60 closure allocations per second during heckler projectile rendering.
+  const elements: React.ReactNode[] = []
+  for (let i = 0; i < projectiles.length; i++) {
+    const p = projectiles[i]
+    if (p && p.id !== undefined) {
+      const x = p.x ?? 0
+      const y = p.y ?? 0
+      const rotation = p.rotation ?? 0
+      elements.push(
+        <div
+          key={p.id}
+          className='absolute text-4xl drop-shadow-lg'
+          style={{
+            transform: `translate3d(${x}px, ${y}px, 0) rotate(${
+              rotation * (180 / Math.PI)
+            }deg)`
+          }}
+        >
+          {p.type === 'bottle' ? '🍾' : '🍅'}
+        </div>
+      )
+    }
+  }
+
   return (
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
-      {projectiles.reduce<React.ReactNode[]>((acc, p) => {
-        if (p && p.id !== undefined) {
-          const x = p.x ?? 0
-          const y = p.y ?? 0
-          const rotation = p.rotation ?? 0
-          acc.push(
-            <div
-              key={p.id}
-              className='absolute text-4xl drop-shadow-lg'
-              style={{
-                transform: `translate3d(${x}px, ${y}px, 0) rotate(${rotation * (180 / Math.PI)}deg)`
-              }}
-            >
-              {p.type === 'bottle' ? '🍾' : '🍅'}
-            </div>
-          )
-        }
-        return acc
-      }, [])}
+      {elements}
     </div>
   )
 })
