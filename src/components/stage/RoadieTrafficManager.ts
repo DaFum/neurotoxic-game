@@ -90,7 +90,6 @@ export class RoadieTrafficManager {
         ;(sprite as Graphics).fill(this.colors.bloodRed)
       } else {
         sprite = new Sprite(texture)
-
         sprite.anchor.set(0.5)
       }
     } else {
@@ -124,7 +123,7 @@ export class RoadieTrafficManager {
     }
 
     this.currentIds.clear()
-    // ⚡ Bolt: Removed unnecessary runtime type validation and object allocation inside the hot path.
+    // ⚡ BOLT OPTIMIZATION: Removed unnecessary runtime type validation and object allocation inside the hot path.
     // Traffic array is guaranteed to be well-typed RoadieCar objects from the game logic state.
     for (const car of state.traffic) {
       if (!car) continue
@@ -148,13 +147,12 @@ export class RoadieTrafficManager {
       }
 
       // Adjust Scale if texture — constrain both width AND height
-      if (sprite instanceof Sprite && (sprite as Sprite).texture?.width > 0) {
-        const texSprite = sprite as Sprite
+      if (sprite instanceof Sprite && sprite.texture?.width > 0) {
         const targetW = carWidth * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
-          targetW / texSprite.texture.width,
-          targetH / texSprite.texture.height
+          targetW / sprite.texture.width,
+          targetH / sprite.texture.height
         )
         sprite.scale.set(
           Math.abs(scale) * Math.sign(sprite.scale.x),
@@ -176,6 +174,8 @@ export class RoadieTrafficManager {
    * during the last render pass, safely destroying unneeded sprites to free memory.
    */
   cleanupTraffic() {
+    // ⚡ BOLT OPTIMIZATION: Iterating keys and fetching .get(id) only on the stale branch (`!this.currentIds.has(id)`)
+    // avoids allocating/destructuring [id, sprite] entry tuples for active car sprites on normal 60 FPS frames.
     if (this.carSprites && this.carSprites.size > 0) {
       for (const id of this.carSprites.keys()) {
         if (!this.currentIds.has(id)) {
