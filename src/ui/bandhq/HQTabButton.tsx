@@ -14,6 +14,7 @@ interface HQTabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   isActive: boolean
   label: string
   onClick: () => void
+  onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>
 }
 
 /**
@@ -25,6 +26,7 @@ export const HQTabButton = ({
   isActive,
   label,
   onClick,
+  onKeyDown,
   ...props
 }: HQTabButtonProps) => (
   <button
@@ -32,9 +34,11 @@ export const HQTabButton = ({
     type='button'
     role='tab'
     aria-selected={isActive}
-    aria-controls={`panel-${tab.id}`}
+    aria-controls={isActive ? `panel-${tab.id}` : undefined}
     id={`tab-${tab.id}`}
+    tabIndex={isActive ? 0 : -1}
     onClick={onClick}
+    onKeyDown={onKeyDown}
     aria-disabled={tab.isLocked}
     className={`flex-1 w-full min-w-26 sm:min-w-32 py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal wrap-break-word focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
       ${tab.isLocked ? 'opacity-50 grayscale' : ''}
@@ -44,7 +48,11 @@ export const HQTabButton = ({
           : 'bg-void-black text-toxic-green border-r-2 border-l-2 border-transparent hover:border-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
       }`}
   >
-    {isActive && <span className='text-xs'>▶</span>}
+    {isActive && (
+      <span className='text-xs' aria-hidden='true'>
+        ▶
+      </span>
+    )}
     {label}
   </button>
 )

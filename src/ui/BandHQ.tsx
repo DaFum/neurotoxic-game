@@ -38,7 +38,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
 
   const currentTab =
     activeTab === 'VOID' &&
-    social.controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
+    (social?.controversyLevel ?? 0) < VOID_TRADER_CONTROVERSY_THRESHOLD
       ? 'STATS'
       : activeTab
 
