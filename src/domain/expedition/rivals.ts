@@ -53,20 +53,41 @@ export const selectExpeditionRivalForRun = (
     state.career?.unlockedSetIds,
     'rival_quest_continuation'
   )
-  const existing = (
-    canContinueFeud ? Object.values(state.career.rivalsById) : []
-  )
-    .filter(
-      record =>
-        !record.snapshot.preferredRegionId ||
-        record.snapshot.preferredRegionId === preparedMap.regionId
-    )
-    .sort(
-      (a, b) =>
-        b.history.nemesisLevel - a.history.nemesisLevel ||
-        b.history.encounterCount - a.history.encounterCount ||
-        a.snapshot.id.localeCompare(b.snapshot.id)
-    )[0]
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values(), .filter(), and .sort() with a single-pass for...in loop.
+  // Why: Avoids allocating intermediate arrays for Object.values() and .filter(), as well as O(N log N) sort overhead and closure allocations when selecting the top rival record.
+  // Impact: O(N) single-pass lookup with zero intermediate array/closure allocations.
+  let existing: CareerRivalRecord | undefined = undefined
+  if (canContinueFeud && state.career?.rivalsById) {
+    const rivalsById = state.career.rivalsById
+    const regionId = preparedMap.regionId
+    for (const id in rivalsById) {
+      if (!Object.hasOwn(rivalsById, id)) continue
+      const record = rivalsById[id]
+      if (!record) continue
+      const prefRegion = record.snapshot?.preferredRegionId
+      if (prefRegion && prefRegion !== regionId) continue
+
+      if (!existing) {
+        existing = record
+      } else {
+        const nemDiff =
+          record.history.nemesisLevel - existing.history.nemesisLevel
+        if (nemDiff > 0) {
+          existing = record
+        } else if (nemDiff === 0) {
+          const encDiff =
+            record.history.encounterCount - existing.history.encounterCount
+          if (encDiff > 0) {
+            existing = record
+          } else if (encDiff === 0) {
+            if (record.snapshot.id.localeCompare(existing.snapshot.id) < 0) {
+              existing = record
+            }
+          }
+        }
+      }
+    }
+  }
   if (existing)
     return {
       rivalBand: rehydrateRivalBand(existing),
