@@ -46,6 +46,7 @@ export class NoteManager {
   nextRenderIndex: number
   lastNotesVersion: number | null
   textureManager: NoteTextureManager
+  starWhiteColor: number
 
   /**
    * @param app - App.
@@ -69,6 +70,7 @@ export class NoteManager {
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.textureManager = new NoteTextureManager()
+    this.starWhiteColor = getPixiColorFromToken('--star-white')
   }
 
   init(): void {
@@ -147,9 +149,12 @@ export class NoteManager {
       const sprite = entity.sprite
 
       if (note.hit) {
+        // ⚡ BOLT OPTIMIZATION: Read cached starWhiteColor instance property instead of calling getPixiColorFromToken.
+        // What: Replaced DOM/style CSS variable lookup on note hit inside the 60 FPS update loop.
+        // Why: getPixiColorFromToken performs map lookups and DOM style queries every time a note is hit without a lane color.
+        // Impact: Prevents DOM/style queries and function call overhead inside 60 FPS update loop.
         const laneColor =
-          state.lanes?.[note.laneIndex]?.color ??
-          getPixiColorFromToken('--star-white')
+          state.lanes?.[note.laneIndex]?.color ?? this.starWhiteColor
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
         }
