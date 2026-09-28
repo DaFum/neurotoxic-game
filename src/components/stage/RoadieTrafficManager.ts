@@ -31,18 +31,6 @@ type RoadieTrafficState = {
  * based on the current traffic state during gameplay. It tracks active vehicles
  * by their identifiers and dynamically adjusts their positions and scales.
  */
-type RoadieCarSprite =
-  | (Sprite & { isSprite: true })
-  | (Graphics & { isSprite: false })
-
-/**
- * Manages Roadie traffic rendering resources and state.
- *
- * @remarks
- * Handles the creation, rendering, pooling, and cleanup of vehicle sprites
- * based on the current traffic state during gameplay. It tracks active vehicles
- * by their identifiers and dynamically adjusts their positions and scales.
- */
 export class RoadieTrafficManager {
   container: Container
   textures: {
@@ -51,7 +39,7 @@ export class RoadieTrafficManager {
   colors: {
     bloodRed: number
   }
-  carSprites: Map<string | number, RoadieCarSprite>
+  carSprites: Map<string | number, Sprite | Graphics>
   currentIds: Set<string | number>
 
   /**
@@ -84,7 +72,7 @@ export class RoadieTrafficManager {
    * @param car - The vehicle state data used to derive the sprite
    * @returns The newly created or existing sprite or graphics instance
    */
-  _getOrCreateCarSprite(car: RoadieCar): RoadieCarSprite {
+  _getOrCreateCarSprite(car: RoadieCar) {
     let sprite = this.carSprites.get(car.id)
     if (sprite) return sprite
 
@@ -97,23 +85,17 @@ export class RoadieTrafficManager {
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       const texture = this.textures.cars[texIndex]
       if (!texture) {
-        const g = new Graphics() as Graphics & { isSprite: false }
-        g.rect(-30, -20, 60, 40)
-        g.fill(this.colors.bloodRed)
-        g.isSprite = false
-        sprite = g
+        sprite = new Graphics()
+        ;(sprite as Graphics).rect(-30, -20, 60, 40)
+        ;(sprite as Graphics).fill(this.colors.bloodRed)
       } else {
-        const s = new Sprite(texture) as Sprite & { isSprite: true }
-        s.anchor.set(0.5)
-        s.isSprite = true
-        sprite = s
+        sprite = new Sprite(texture)
+        sprite.anchor.set(0.5)
       }
     } else {
-      const g = new Graphics() as Graphics & { isSprite: false }
-      g.rect(-30, -20, 60, 40)
-      g.fill(this.colors.bloodRed)
-      g.isSprite = false
-      sprite = g
+      sprite = new Graphics()
+      ;(sprite as Graphics).rect(-30, -20, 60, 40)
+      ;(sprite as Graphics).fill(this.colors.bloodRed)
     }
 
     this.container.addChild(sprite)
@@ -142,7 +124,6 @@ export class RoadieTrafficManager {
 
     this.currentIds.clear()
     // ⚡ BOLT OPTIMIZATION: Removed unnecessary runtime type validation and object allocation inside the hot path.
-    // Tagged `isSprite` property replaces per-frame `instanceof Sprite` prototype chain traversal.
     // Traffic array is guaranteed to be well-typed RoadieCar objects from the game logic state.
     for (const car of state.traffic) {
       if (!car) continue
@@ -166,7 +147,7 @@ export class RoadieTrafficManager {
       }
 
       // Adjust Scale if texture — constrain both width AND height
-      if (sprite.isSprite && sprite.texture?.width > 0) {
+      if (sprite instanceof Sprite && sprite.texture?.width > 0) {
         const targetW = carWidth * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
