@@ -190,7 +190,7 @@ export const ExtractionDialog = memo(function ExtractionDialog({
                       disabled={!isCarried && carriedIds.length >= carrySlots}
                       data-testid={`expedition-extraction-carry-${entry.rewardDefinitionId}`}
                       onClick={() => toggleCarried(entry.id)}
-                      className={`w-full min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isCarried
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray'

@@ -219,3 +219,8 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
+
+## 2026-09-22 - Focus Ring Visibility on Multi-Tab Loadout Controls
+
+**Learning:** Dense multi-tab setup views (such as TourPrepLoadout, ExpeditionCrewPicker, and ExtractionDialog) featuring custom toggle buttons, route pickers, and tab headers often lack explicit `focus-visible` ring utilities. Without focus indicators, keyboard users navigating through tabs and option grids quickly lose track of the focused control.
+**Action:** Always apply explicit `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black` on option toggle buttons and tab triggers in multi-category preparation interfaces.
