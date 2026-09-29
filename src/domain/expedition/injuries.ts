@@ -36,7 +36,7 @@ export const EXPEDITION_INJURY_PERFORMANCE_PROFILES: Readonly<
 }
 
 export const getExpeditionPerformanceProfile = (
-  state: GameState
+  state: Pick<GameState, 'expedition' | 'band'>
 ): import('../../types/expedition').ExpeditionConditionPerformanceProfile => {
   const condition = getExpeditionConditionPerformanceProfile(
     state.expedition.technicalCondition
@@ -71,7 +71,9 @@ export const getExpeditionPerformanceProfile = (
   }
 }
 
-export const canPerformExpeditionGig = (state: GameState): boolean => {
+export const canPerformExpeditionGig = (
+  state: Pick<GameState, 'expedition' | 'band'>
+): boolean => {
   if (state.expedition.status !== 'active') return true
   for (const member of state.band.members) {
     if (
@@ -84,7 +86,7 @@ export const canPerformExpeditionGig = (state: GameState): boolean => {
 }
 
 export const getExpeditionInjuryActiveEffects = (
-  state: GameState
+  state: Pick<GameState, 'expedition' | 'band'>
 ): Array<{ key: string; options: Record<string, number> }> => {
   let worst: ExpeditionInjuryPerformanceProfile =
     EXPEDITION_INJURY_PERFORMANCE_PROFILES.none

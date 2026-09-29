@@ -29,7 +29,7 @@ interface UsePreGigDerivationsProps {
   technicalCondition?: ExpeditionTechnicalCondition | null
   /** `canStartExpeditionPreGig` for the current state. */
   canStartShow: boolean
-  expeditionState: GameState
+  expeditionState: Pick<GameState, 'expedition' | 'band'>
 }
 
 /**
