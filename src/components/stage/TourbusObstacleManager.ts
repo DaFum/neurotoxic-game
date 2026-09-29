@@ -6,6 +6,7 @@ import type { TourbusObstacle } from '../../types/tourbus'
  * State shape for Tourbus Render.
  */
 export type TourbusRenderState = {
+  /** The list of obstacles to render during the tourbus sequence. */
   obstacles: TourbusObstacle[]
 }
 
@@ -33,6 +34,14 @@ export class TourbusObstacleManager {
   >
   currentIds: Set<string | number>
 
+  /**
+   * Initializes the obstacle manager with rendering containers and cached assets.
+   *
+   * @param container - The PixiJS container to hold all obstacle sprites.
+   * @param effectManager - The effect manager for triggering collision particles.
+   * @param textures - The dictionary of preloaded PixiJS textures for hazards.
+   * @param colors - The dictionary of cached CSS tokens mapped to PixiJS numeric colors.
+   */
   constructor(
     container: Container,
     effectManager: EffectManager,
@@ -58,6 +67,13 @@ export class TourbusObstacleManager {
     this.currentIds = new Set()
   }
 
+  /**
+   * Synchronizes the rendering layer with the latest logical obstacle state.
+   *
+   * @param state - The current render state containing active obstacles.
+   * @param height - The total height of the rendering stage.
+   * @param laneWidth - The width of a single movement lane.
+   */
   updateObstacles(
     state: TourbusRenderState,
     height: number,
@@ -153,6 +169,12 @@ export class TourbusObstacleManager {
     }
   }
 
+  /**
+   * Evaluates and removes a single obstacle sprite if it is no longer active in the current frame.
+   *
+   * @param sprite - The sprite or graphics object to potentially destroy.
+   * @param id - The unique identifier of the obstacle.
+   */
   private cleanupObstacle(
     sprite: (Sprite | Graphics) & { hasExploded?: boolean },
     id: string | number
@@ -163,14 +185,21 @@ export class TourbusObstacleManager {
     }
   }
 
+  /**
+   * Prunes destroyed or out-of-bounds obstacles from the rendering layer.
+   *
+   * @remarks
+   * Iterates using `forEach` to prevent per-frame garbage collection pauses caused by
+   * allocating `[id, sprite]` arrays in `.entries()`, while avoiding redundant `.get(id)`
+   * lookups. Passing `this` as the second argument avoids closure allocation.
+   */
   cleanupObstacles() {
-    // Performance optimization: Iterate using forEach to prevent
-    // per-frame garbage collection pauses caused by allocating [id, sprite] arrays in entries(),
-    // while also avoiding the redundant .get(id) lookup.
-    // Using a class method and passing `this` avoids closure allocation.
     this.obstacleMap.forEach(this.cleanupObstacle, this)
   }
 
+  /**
+   * Destroys all sprites and clears memory maps during component teardown.
+   */
   dispose() {
     if (this.obstacleMap) {
       for (const sprite of this.obstacleMap.values()) {
