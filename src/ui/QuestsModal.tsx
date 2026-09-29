@@ -66,36 +66,21 @@ const getRewardText = (
 const getRewardIcon = (type: string) => {
   switch (type) {
     case 'item.add':
-      return (
-        <IconCube className='w-4 h-4 text-toxic-green' aria-hidden='true' />
-      )
+      return <IconCube className='w-4 h-4 text-toxic-green' aria-hidden='true' />
     case 'fame':
     case 'social.followers':
-      return (
-        <IconStar className='w-4 h-4 text-stamina-green' aria-hidden='true' />
-      )
+      return <IconStar className='w-4 h-4 text-stamina-green' aria-hidden='true' />
     case 'skill_point':
       return <IconFire className='w-4 h-4 text-error-red' aria-hidden='true' />
     case 'band.harmony':
     case 'social.loyalty':
-      return (
-        <IconThumbUp className='w-4 h-4 text-toxic-green' aria-hidden='true' />
-      )
+      return <IconThumbUp className='w-4 h-4 text-toxic-green' aria-hidden='true' />
     case 'social.controversy':
-      return (
-        <IconThumbUp
-          className='w-4 h-4 text-stamina-green'
-          aria-hidden='true'
-        />
-      )
+      return <IconThumbUp className='w-4 h-4 text-stamina-green' aria-hidden='true' />
     case 'money':
-      return (
-        <IconCoin className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
-      )
+      return <IconCoin className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
     default:
-      return (
-        <IconTrophy className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
-      )
+      return <IconTrophy className='w-4 h-4 text-fuel-yellow' aria-hidden='true' />
   }
 }
 
@@ -299,9 +284,7 @@ const QuestItem = memo(
               className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
             >
               <span className='sr-only'>
-                {t('ui:quests.penalty.prefix', {
-                  defaultValue: 'Penalty:'
-                })}{' '}
+                {t('ui:quests.penalty.prefix', { defaultValue: 'Penalty:' })}{' '}
               </span>
               {text}
             </span>

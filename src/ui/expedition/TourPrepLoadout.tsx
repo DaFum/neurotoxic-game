@@ -459,7 +459,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               type='button'
               onClick={() => setActiveTab(tab.id)}
               data-testid={`expedition-prep-tab-${tab.id}`}
-              className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 isSelected
                   ? 'border-toxic-green bg-toxic-green/20 text-star-white font-bold'
                   : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -502,7 +502,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         selectRoute(tourTypeId, id, () => setTourTypeId(id))
                       }
                       data-testid={`expedition-prep-tour-${id}`}
-                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -525,7 +525,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         selectRoute(regionId, id, () => setRegionId(id))
                       }
                       data-testid={`expedition-prep-region-${id}`}
-                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -585,7 +585,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                   aria-pressed={starterPerkId === null}
                   onClick={() => selectStarterPerk(null)}
                   data-testid='expedition-prep-perk-none'
-                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                     starterPerkId === null
                       ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                       : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -600,7 +600,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     aria-pressed={starterPerkId === perkId}
                     onClick={() => selectStarterPerk(perkId)}
                     data-testid={`expedition-prep-perk-${perkId}`}
-                    className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                    className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                       starterPerkId === perkId
                         ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                         : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -647,7 +647,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         )
                       }
                       data-testid={`expedition-prep-pressure-${modifierId}`}
-                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         selected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -689,7 +689,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         type='button'
                         aria-pressed={isSelected}
                         onClick={() => toggleGear(itemId)}
-                        className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                        className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                           isSelected
                             ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                             : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -729,7 +729,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                   aria-pressed={activeTourbusAssetId === null}
                   onClick={() => setActiveTourbusAssetId(null)}
                   data-testid='expedition-prep-tourbus-default'
-                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                     activeTourbusAssetId === null
                       ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                       : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -756,7 +756,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         !isTierLocked && setActiveTourbusAssetId(asset.id)
                       }
                       data-testid={`expedition-prep-tourbus-${asset.id}`}
-                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isTierLocked
                           ? 'border-steel-gray/30 text-steel-gray opacity-60 cursor-not-allowed'
                           : isSelected
@@ -918,7 +918,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                   aria-pressed={insurancePolicyId === null}
                   onClick={() => setInsurancePolicyId(null)}
                   data-testid='expedition-prep-insurance-none'
-                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                     insurancePolicyId === null
                       ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                       : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -936,7 +936,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       aria-pressed={isSelected}
                       onClick={() => setInsurancePolicyId(policyId)}
                       data-testid={`expedition-prep-insurance-${policyId}`}
-                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -1117,7 +1117,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                   aria-pressed={sponsorOfferId === null}
                   onClick={() => setSponsorOfferId(null)}
                   data-testid='expedition-prep-sponsor-none'
-                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                     sponsorOfferId === null
                       ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                       : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -1141,7 +1141,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         aria-pressed={isSelected}
                         onClick={() => setSponsorOfferId(offer.offerId)}
                         data-testid={`expedition-prep-sponsor-${offer.offerId}`}
-                        className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                        className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                           isSelected
                             ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                             : 'border-steel-gray text-ash-gray hover:border-toxic-green'
@@ -1185,7 +1185,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       disabled={isBlocked}
                       onClick={() => toggleContract(templateId)}
                       data-testid={`expedition-prep-contract-${templateId}`}
-                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : isBlocked
