@@ -85,3 +85,4 @@
 | 2026-09-21        | src/utils/travelSoftlockUtils.ts | getSellableAssets, getPostSaleScenarios |
 | 2026-09-23 | src/utils/gigVisualStatus.ts | GigVisualStatus, deriveGigVisualStatus |
 | 2026-09-24 | src/context/reducers/crewReducer.ts | handleRecordExpeditionCrewStressSource, handleRecordExpeditionRelationshipOutcome, handleAdvanceExpeditionCrewInjury, handleAdvanceExpeditionBandInjury, handleCreateContactIntelGrant, applyResolvedCrewEventOutcome |
+| 2026-09-30 | src/components/hud/ControlsHint.tsx | ControlsHintProps, ControlsHint |

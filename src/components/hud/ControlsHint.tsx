@@ -25,6 +25,9 @@ interface ControlsHintProps {
  * The hint row is hidden below the `md` breakpoint because touch controls are
  * presented elsewhere, and while toxic mode is active because the crowd-energy
  * strip's warning row occupies the same band.
+ *
+ * @param props - The properties for the {@link ControlsHint} component.
+ * @returns The rendered controls hint component, or null if toxic mode is active.
  */
 export const ControlsHint = memo(function ControlsHint({
   isToxicMode = false
