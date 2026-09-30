@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useMemo } from 'react'
 import type { PlayerState, Venue, GigModifiers, GameState } from '../types'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
@@ -73,7 +73,13 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const expedition = useGameSelector(state => state.expedition)
-  const gameState = useGameSelector(state => state)
+  // ⚡ BOLT OPTIMIZATION: Eliminate root GameState selector subscription.
+  // Why: Subscribing to full GameState via `state => state` causes the pre-gig scene to re-render on EVERY state update across the entire app (ticks, toasts, chatter).
+  // Impact: Prevents unnecessary component re-renders when unrelated store slices update during pre-gig setup.
+  const expeditionState = useMemo(
+    () => ({ band, expedition }),
+    [band, expedition]
+  )
   const canStartShow = useGameSelector(canStartExpeditionPreGig)
   const {
     changeScene,
@@ -105,7 +111,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     technicalCondition:
       expedition?.status === 'active' ? expedition.technicalCondition : null,
     canStartShow,
-    expeditionState: gameState
+    expeditionState
   })
 
   const {
