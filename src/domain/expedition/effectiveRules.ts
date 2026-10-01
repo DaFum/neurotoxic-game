@@ -172,18 +172,45 @@ export const getEffectiveExpeditionRules = (
   // through a profile like every other stage; the reward half is summed
   // separately below because three multiplied bonuses compound past what the
   // economy is balanced for.
-  const pressureModifiers = (loadout?.pressureModifierIds ?? [])
-    .map(getExpeditionPressureModifier)
-    .filter((modifier): modifier is ExpeditionPressureModifierDefinition =>
-      Boolean(modifier)
-    )
-    .slice(0, MAX_EXPEDITION_PRESSURE_MODIFIERS)
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter().slice() and .reduce() with procedural loops.
+  // Why: Eliminates array/closure allocations per getEffectiveExpeditionRules call on rule checks.
+  const rawPressureIds = loadout?.pressureModifierIds
+  const pressureModifiers: ExpeditionPressureModifierDefinition[] = []
+  if (rawPressureIds) {
+    for (let i = 0; i < rawPressureIds.length; i++) {
+      const modifier = getExpeditionPressureModifier(rawPressureIds[i])
+      if (modifier) {
+        pressureModifiers.push(modifier)
+        if (pressureModifiers.length === MAX_EXPEDITION_PRESSURE_MODIFIERS) {
+          break
+        }
+      }
+    }
+  }
+
   /** One modifier field's product across the committed modifiers. */
-  const pressureProduct = (key: keyof ExpeditionNumericRules): number =>
-    pressureModifiers.reduce(
-      (product, modifier) => product * profileValue(modifier.numeric, key, 1),
-      1
-    )
+  const pressureProduct = (key: keyof ExpeditionNumericRules): number => {
+    let product = 1
+    for (let i = 0; i < pressureModifiers.length; i++) {
+      const modifier = pressureModifiers[i]
+      if (modifier) {
+        product *= profileValue(modifier.numeric, key, 1)
+      }
+    }
+    return product
+  }
+
+  let pressureRewardSum = 1
+  let severeReliefBypass = false
+  for (let i = 0; i < pressureModifiers.length; i++) {
+    const modifier = pressureModifiers[i]
+    if (modifier) {
+      pressureRewardSum += Math.max(0, modifier.rewardBonus)
+      if (modifier.flags?.severeReliefBypass === true) {
+        severeReliefBypass = true
+      }
+    }
+  }
   const drafts = new Set(state.expedition.runDraftTraitIds)
   const rivalRecord = state.rivalBand
     ? state.career.rivalsById[state.rivalBand.id]
@@ -231,10 +258,7 @@ export const getEffectiveExpeditionRules = (
     // a modifier cannot silently raise the ceiling.
     pressureRewardMultiplier: Math.min(
       MAX_EXPEDITION_PRESSURE_REWARD_MULTIPLIER,
-      pressureModifiers.reduce(
-        (sum, modifier) => sum + Math.max(0, modifier.rewardBonus),
-        1
-      )
+      pressureRewardSum
     ),
     completionMultiplier:
       profileValue(regionNumeric, 'completionMultiplier', 1) *
@@ -315,9 +339,7 @@ export const getEffectiveExpeditionRules = (
     // A modifier may only turn a flag on. Nothing composes a `false` back over
     // a `true`, so committing three modifiers can never *disable* a rule a
     // fourth stage enabled.
-    severeReliefBypass: pressureModifiers.some(
-      modifier => modifier.flags?.severeReliefBypass === true
-    )
+    severeReliefBypass
   }
 
   const legendary: Record<string, boolean> = {}
