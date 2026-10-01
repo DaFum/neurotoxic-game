@@ -91,7 +91,7 @@ describe('MerchPressModal', () => {
     expect(onPress).toHaveBeenCalledTimes(1)
   })
 
-  it('renders disabled when canPress is false', () => {
+  it('renders aria-disabled and remains focusable when canPress is false', () => {
     mockState.current = {
       ...defaultState,
       player: { money: 50 }
@@ -112,7 +112,8 @@ describe('MerchPressModal', () => {
     const confirmBtn = screen.getByRole('button', {
       name: '[ ui:merch_press.confirm ]'
     })
-    expect(confirmBtn).toBeDisabled()
+    expect(confirmBtn).not.toBeDisabled()
+    expect(confirmBtn).toHaveAttribute('aria-disabled', 'true')
 
     fireEvent.click(confirmBtn)
     expect(onPress).not.toHaveBeenCalled()

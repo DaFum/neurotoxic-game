@@ -276,10 +276,9 @@ function MerchPressActions({
   const confirmBtn = (
     <GlitchButton
       variant={canPress ? 'warning' : 'danger'}
-      onClick={onPress}
-      disabled={!canPress}
+      onClick={canPress ? onPress : e => e.preventDefault()}
+      disabled={false}
       aria-disabled={!canPress ? 'true' : undefined}
-      tabIndex={!canPress ? -1 : undefined}
       className='w-full sm:w-auto uppercase'
     >
       [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
