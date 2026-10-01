@@ -135,7 +135,8 @@ export class AmpWaveManager {
 
     if (interference > 0 && getSafeRandom() < interference / 200) {
       targetJitter += interference
-      if (!isHijackActive) finalTargetColor = this.colors.warningYellow
+      if (!isHijackActive)
+        finalTargetColor = this.colors.warningYellow
     }
 
     this.drawSineWave(
