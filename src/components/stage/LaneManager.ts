@@ -18,6 +18,13 @@ export class LaneManager {
   lastScreenWidth: number
   lastScreenHeight: number
 
+  /**
+   * Initializes the manager with core rendering dependencies.
+   *
+   * @param app - The PixiJS application instance.
+   * @param stageContainer - The root stage container where the rhythm container will be attached.
+   * @param gameStateRef - A reference to the active rhythm game state.
+   */
   constructor(
     app: Application,
     stageContainer: Container,
@@ -34,6 +41,9 @@ export class LaneManager {
     this.lastScreenHeight = -1
   }
 
+  /**
+   * Initializes the rhythm container and calculates baseline screen layout parameters.
+   */
   _initContainerAndLayout() {
     this.rhythmContainer = new Container()
     const width = this.app.screen.width
@@ -50,6 +60,9 @@ export class LaneManager {
     this.stageContainer.addChild(this.rhythmContainer)
   }
 
+  /**
+   * Executes the initialization phase, calling container setup and dynamically instantiating graphic resources for each active lane.
+   */
   init() {
     this._initContainerAndLayout()
     if (!this.laneLayout) return
@@ -69,6 +82,13 @@ export class LaneManager {
     }
   }
 
+  /**
+   * Instantiates graphic renderers for an active rhythm lane.
+   *
+   * @param lane - The rhythm lane state.
+   * @param index - The numerical index of the lane.
+   * @param laneX - The calculated x-coordinate for lane rendering.
+   */
   _createLaneGraphics(lane: RhythmLane, index: number, laneX: number) {
     if (!this.rhythmContainer || !this.laneLayout) return
 
@@ -84,6 +104,11 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
+  /**
+   * Syncs graphics sets based on the active rhythm state payload.
+   *
+   * @param state - The active snapshot of the rhythm game loop state.
+   */
   update(state: RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
@@ -102,6 +127,13 @@ export class LaneManager {
     }
   }
 
+  /**
+   * Updates renderer visibility based on lane activity changes.
+   *
+   * @param lane - The lane state containing activity tracking.
+   * @param index - The numerical index of the lane.
+   * @param graphicsSet - The graphic renderer instance assigned to the lane.
+   */
   updateLaneVisibility(
     lane: { active: boolean },
     index: number,
@@ -116,6 +148,11 @@ export class LaneManager {
     }
   }
 
+  /**
+   * Performs dynamic resolution checks and synchronizes internal lane positions.
+   *
+   * @returns A boolean indicating whether a resolution shift forced a layout update.
+   */
   updateLaneLayout() {
     const width = this.app.screen.width
     const height = this.app.screen.height
@@ -146,6 +183,9 @@ export class LaneManager {
     return true
   }
 
+  /**
+   * Executes teardown procedures, clearing graphics lists and destroying active containers.
+   */
   dispose() {
     this.laneGraphics = []
 
@@ -155,10 +195,20 @@ export class LaneManager {
     }
   }
 
+  /**
+   * Retrieves the active container node.
+   *
+   * @returns The active rhythm container instance.
+   */
   get container() {
     return this.rhythmContainer
   }
 
+  /**
+   * Retrieves the active layout object.
+   *
+   * @returns The active layout configuration parameters.
+   */
   get layout() {
     return this.laneLayout
   }
