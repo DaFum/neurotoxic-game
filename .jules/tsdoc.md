@@ -86,3 +86,4 @@
 | 2026-09-23 | src/utils/gigVisualStatus.ts | GigVisualStatus, deriveGigVisualStatus |
 | 2026-09-24 | src/context/reducers/crewReducer.ts | handleRecordExpeditionCrewStressSource, handleRecordExpeditionRelationshipOutcome, handleAdvanceExpeditionCrewInjury, handleAdvanceExpeditionBandInjury, handleCreateContactIntelGrant, applyResolvedCrewEventOutcome |
 | 2026-09-29 | src/components/stage/TourbusObstacleManager.ts | TourbusRenderState, TourbusObstacleManager |
+| 2026-10-02 | src/context/expeditionActionCreators.ts | recordExpeditionObligationSignal, doubleDownExpeditionObligation, offerExpeditionDraft, selectExpeditionDraft, resolveExpeditionSocialResult, createSocialIntelGrant, recordExpeditionCrewStressSource, recordExpeditionRelationshipOutcome, advanceExpeditionCrewInjury, advanceExpeditionBandInjury, createContactIntelGrant |
