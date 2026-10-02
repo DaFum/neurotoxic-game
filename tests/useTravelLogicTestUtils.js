@@ -24,9 +24,7 @@ const mockCalculateRefuelCost = mock.fn(calculateRefuelCostDefault)
 
 const mockCalculateRepairCost = mock.fn(currentCondition => {
   const missing = Math.max(0, 100 - currentCondition)
-  return Math.ceil(
-    missing * mockExpenseConstants.transport.repairCostPerUnit
-  )
+  return Math.ceil(missing * mockExpenseConstants.transport.repairCostPerUnit)
 })
 
 const guaranteedDailyCostDefault = (player, band, social = 0) => {

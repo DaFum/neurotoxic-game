@@ -1,4 +1,13 @@
-import { deepFreeze } from '../utils/objectUtils'
+import re
+
+with open("src/config/balance.ts", "r") as f:
+    content = f.read()
+
+# Add the ranges and read functions back, and add readNestedNumber correctly.
+# The diff shows they were accidentally completely overridden because of the previous regex replacing the whole RANGES block!
+
+content = """import { deepFreeze } from '../utils/objectUtils'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
  * Central balance configuration.
@@ -7,7 +16,7 @@ import { deepFreeze } from '../utils/objectUtils'
  * The tuning surface the economy engine reads lives here rather than next to
  * the engine, so a lever change is one reviewed diff in one file. Engine
  * functions take the config **as a parameter** (defaulting to
- * {@link BALANCE_CONFIG}) rather than destructuring it at module scope —
+ * {@link BALANCE_CONFIG}) rather than destructuring it at module scope \u2014
  * module-scope destructuring defeats tree-shaking and pins tests to live values.
  *
  * `configVersion` is bumped whenever the shape changes, so a stale external
@@ -87,31 +96,11 @@ interface CapsConfig {
  */
 interface ExpensesConfig {
   readonly daily: { readonly baseCost: number }
-  readonly transport: {
-    readonly fuelPer100km: number
-    readonly fuelPrice: number
-    readonly maxFuel: number
-    readonly repairCostPerUnit: number
-    readonly insuranceMonthly: number
-    readonly maintenance30Days: number
-  }
-  readonly food: {
-    readonly fastFood: number
-    readonly restaurant: number
-    readonly energyDrink: number
-    readonly alcohol: number
-  }
+  readonly transport: { readonly fuelPer100km: number; readonly fuelPrice: number; readonly maxFuel: number; readonly repairCostPerUnit: number; readonly insuranceMonthly: number; readonly maintenance30Days: number }
+  readonly food: { readonly fastFood: number; readonly restaurant: number; readonly energyDrink: number; readonly alcohol: number }
   readonly accommodation: { readonly hostel: number; readonly hotel: number }
-  readonly equipment: {
-    readonly strings: number
-    readonly sticks: number
-    readonly cable: number
-    readonly tubes: number
-  }
-  readonly admin: {
-    readonly proberaum: number
-    readonly insuranceEquip: number
-  }
+  readonly equipment: { readonly strings: number; readonly sticks: number; readonly cable: number; readonly tubes: number }
+  readonly admin: { readonly proberaum: number; readonly insuranceEquip: number }
 }
 
 /**
@@ -144,7 +133,7 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
   },
   penalties: {
     // Raised from 0.5 so a full tour funds the one-off shop catalogue; prices
-    // and income each close half of the gap. Re-derive both together — moving
+    // and income each close half of the gap. Re-derive both together \u2014 moving
     // one alone breaks the target.
     globalPayoutNerf: 0.97,
     managementCutRate: 0.15,
@@ -171,14 +160,7 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
   },
   expenses: {
     daily: { baseCost: 62 },
-    transport: {
-      fuelPer100km: 10,
-      fuelPrice: 1.75,
-      maxFuel: 100,
-      repairCostPerUnit: 6,
-      insuranceMonthly: 80,
-      maintenance30Days: 200
-    },
+    transport: { fuelPer100km: 10, fuelPrice: 1.75, maxFuel: 100, repairCostPerUnit: 6, insuranceMonthly: 80, maintenance30Days: 200 },
     food: { fastFood: 8, restaurant: 15, energyDrink: 3, alcohol: 15 },
     accommodation: { hostel: 25, hotel: 60 },
     equipment: { strings: 15, sticks: 12, cable: 25, tubes: 80 },
@@ -276,9 +258,7 @@ const readNestedNumber = (
   }
   const sub = section[subsection]
   if (typeof sub !== 'object' || sub === null || Array.isArray(sub)) {
-    throw new TypeError(
-      `Balance config section "${subsection}" must be an object`
-    )
+    throw new TypeError(`Balance config section "${subsection}" must be an object`)
   }
   const typedSub = sub as Record<string, unknown>
   if (!Object.hasOwn(typedSub, key)) {
@@ -424,137 +404,41 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
     },
     caps: {
       maxGigNet: readNumber(caps, 'caps', 'maxGigNet'),
-      travelLogisticsCashCap: readNumber(
-        caps,
-        'caps',
-        'travelLogisticsCashCap'
-      ),
+      travelLogisticsCashCap: readNumber(caps, 'caps', 'travelLogisticsCashCap'),
       enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing === true,
-      antiSwingHalfLife: Object.hasOwn(caps, 'antiSwingHalfLife')
-        ? readNumber(caps, 'caps', 'antiSwingHalfLife')
-        : 1500
+      antiSwingHalfLife: Object.hasOwn(caps, 'antiSwingHalfLife') ? readNumber(caps, 'caps', 'antiSwingHalfLife') : 1500
     },
     expenses: {
       daily: {
-        baseCost: readNestedNumber(
-          expenses,
-          'daily',
-          'baseCost',
-          'dailyBaseCost'
-        )
+        baseCost: readNestedNumber(expenses, 'daily', 'baseCost', 'dailyBaseCost')
       },
       transport: {
-        fuelPer100km: readNestedNumber(
-          expenses,
-          'transport',
-          'fuelPer100km',
-          'transportFuelPer100km'
-        ),
-        fuelPrice: readNestedNumber(
-          expenses,
-          'transport',
-          'fuelPrice',
-          'transportFuelPrice'
-        ),
-        maxFuel: readNestedNumber(
-          expenses,
-          'transport',
-          'maxFuel',
-          'transportMaxFuel'
-        ),
-        repairCostPerUnit: readNestedNumber(
-          expenses,
-          'transport',
-          'repairCostPerUnit',
-          'transportRepairCostPerUnit'
-        ),
-        insuranceMonthly: readNestedNumber(
-          expenses,
-          'transport',
-          'insuranceMonthly',
-          'transportInsuranceMonthly'
-        ),
-        maintenance30Days: readNestedNumber(
-          expenses,
-          'transport',
-          'maintenance30Days',
-          'transportMaintenance30Days'
-        )
+        fuelPer100km: readNestedNumber(expenses, 'transport', 'fuelPer100km', 'transportFuelPer100km'),
+        fuelPrice: readNestedNumber(expenses, 'transport', 'fuelPrice', 'transportFuelPrice'),
+        maxFuel: readNestedNumber(expenses, 'transport', 'maxFuel', 'transportMaxFuel'),
+        repairCostPerUnit: readNestedNumber(expenses, 'transport', 'repairCostPerUnit', 'transportRepairCostPerUnit'),
+        insuranceMonthly: readNestedNumber(expenses, 'transport', 'insuranceMonthly', 'transportInsuranceMonthly'),
+        maintenance30Days: readNestedNumber(expenses, 'transport', 'maintenance30Days', 'transportMaintenance30Days')
       },
       food: {
-        fastFood: readNestedNumber(
-          expenses,
-          'food',
-          'fastFood',
-          'foodFastFood'
-        ),
-        restaurant: readNestedNumber(
-          expenses,
-          'food',
-          'restaurant',
-          'foodRestaurant'
-        ),
-        energyDrink: readNestedNumber(
-          expenses,
-          'food',
-          'energyDrink',
-          'foodEnergyDrink'
-        ),
+        fastFood: readNestedNumber(expenses, 'food', 'fastFood', 'foodFastFood'),
+        restaurant: readNestedNumber(expenses, 'food', 'restaurant', 'foodRestaurant'),
+        energyDrink: readNestedNumber(expenses, 'food', 'energyDrink', 'foodEnergyDrink'),
         alcohol: readNestedNumber(expenses, 'food', 'alcohol', 'foodAlcohol')
       },
       accommodation: {
-        hostel: readNestedNumber(
-          expenses,
-          'accommodation',
-          'hostel',
-          'accommodationHostel'
-        ),
-        hotel: readNestedNumber(
-          expenses,
-          'accommodation',
-          'hotel',
-          'accommodationHotel'
-        )
+        hostel: readNestedNumber(expenses, 'accommodation', 'hostel', 'accommodationHostel'),
+        hotel: readNestedNumber(expenses, 'accommodation', 'hotel', 'accommodationHotel')
       },
       equipment: {
-        strings: readNestedNumber(
-          expenses,
-          'equipment',
-          'strings',
-          'equipmentStrings'
-        ),
-        sticks: readNestedNumber(
-          expenses,
-          'equipment',
-          'sticks',
-          'equipmentSticks'
-        ),
-        cable: readNestedNumber(
-          expenses,
-          'equipment',
-          'cable',
-          'equipmentCable'
-        ),
-        tubes: readNestedNumber(
-          expenses,
-          'equipment',
-          'tubes',
-          'equipmentTubes'
-        )
+        strings: readNestedNumber(expenses, 'equipment', 'strings', 'equipmentStrings'),
+        sticks: readNestedNumber(expenses, 'equipment', 'sticks', 'equipmentSticks'),
+        cable: readNestedNumber(expenses, 'equipment', 'cable', 'equipmentCable'),
+        tubes: readNestedNumber(expenses, 'equipment', 'tubes', 'equipmentTubes')
       },
       admin: {
-        proberaum: readNestedNumber(
-          expenses,
-          'admin',
-          'proberaum',
-          'adminProberaum'
-        ),
-        insuranceEquip: readNestedNumber(
-          expenses,
-          'admin',
-          'insuranceEquip',
-          'adminInsuranceEquip'
-        )
+        proberaum: readNestedNumber(expenses, 'admin', 'proberaum', 'adminProberaum'),
+        insuranceEquip: readNestedNumber(expenses, 'admin', 'insuranceEquip', 'adminInsuranceEquip')
       }
     }
   })
@@ -567,3 +451,7 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
 export const BALANCE_CONFIG: Readonly<BalanceConfig> = parseBalanceConfig(
   RAW_DEFAULT_BALANCE_CONFIG
 )
+"""
+
+with open("src/config/balance.ts", "w") as f:
+    f.write(content)

@@ -31,16 +31,19 @@ export * from './calculators'
  * @param delta - The raw delta to smooth.
  * @param config - The active balance configuration.
  */
-export const applySwingSmoothing = (delta: number, config: import('../../../config/balance').BalanceConfig = BALANCE_CONFIG): number => {
-  if (!config.caps.enableAntiSwingSmoothing) return delta;
-  const halfLife = config.caps.antiSwingHalfLife;
-  if (halfLife <= 0) return delta;
+export const applySwingSmoothing = (
+  delta: number,
+  config: import('../../../config/balance').BalanceConfig = BALANCE_CONFIG
+): number => {
+  if (!config.caps.enableAntiSwingSmoothing) return delta
+  const halfLife = config.caps.antiSwingHalfLife
+  if (halfLife <= 0) return delta
 
   // smoothedDelta = delta * (1 - exp(-|delta| / SWING_HALF_LIFE))
-  const sign = Math.sign(delta);
-  const absDelta = Math.abs(delta);
-  const smoothed = absDelta * (1 - Math.exp(-absDelta / halfLife));
-  return Math.floor(sign * smoothed);
+  const sign = Math.sign(delta)
+  const absDelta = Math.abs(delta)
+  const smoothed = absDelta * (1 - Math.exp(-absDelta / halfLife))
+  return Math.floor(sign * smoothed)
 }
 
 /**

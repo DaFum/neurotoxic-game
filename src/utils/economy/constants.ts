@@ -75,12 +75,6 @@ export const ZEALOTRY_PROMO_THRESHOLD =
  */
 export const EXPENSE_CONSTANTS = BALANCE_CONFIG.expenses
 
-
-
-
-
-
-
 /**
  * Shared tuning constants for ticket-sales calculations.
  */
