@@ -170,31 +170,26 @@ export class TourbusObstacleManager {
   }
 
   /**
-   * Evaluates and removes a single obstacle sprite if it is no longer active in the current frame.
-   *
-   * @param sprite - The sprite or graphics object to potentially destroy.
-   * @param id - The unique identifier of the obstacle.
-   */
-  private cleanupObstacle(
-    sprite: (Sprite | Graphics) & { hasExploded?: boolean },
-    id: string | number
-  ) {
-    if (!this.currentIds.has(id)) {
-      if (sprite) sprite.destroy() // PixiJS automatically removes from parent
-      this.obstacleMap.delete(id)
-    }
-  }
-
-  /**
    * Prunes destroyed or out-of-bounds obstacles from the rendering layer.
    *
    * @remarks
-   * Iterates using `forEach` to prevent per-frame garbage collection pauses caused by
-   * allocating `[id, sprite]` arrays in `.entries()`, while avoiding redundant `.get(id)`
-   * lookups. Passing `this` as the second argument avoids closure allocation.
+   * Iterates directly over Map keys without allocating `[id, sprite]` entry tuples,
+   * fetching `.get(id)` only for stale obstacles that require cleanup.
    */
   cleanupObstacles() {
-    this.obstacleMap.forEach(this.cleanupObstacle, this)
+    // ⚡ BOLT OPTIMIZATION: Iterating map keys directly and calling .get(id) only when an obstacle is stale (`!this.currentIds.has(id)`)
+    // What: Replaced per-frame `Map.prototype.forEach` callback invocation loop with a direct `for...of` keys loop.
+    // Why: Eliminates callback invocation frame overhead and skips map value lookups for active obstacles every 60 FPS tick.
+    // Impact: Reduces frame update time and eliminates function invocation overhead during Tourbus minigame rendering.
+    if (this.obstacleMap && this.obstacleMap.size > 0) {
+      for (const id of this.obstacleMap.keys()) {
+        if (!this.currentIds.has(id)) {
+          const sprite = this.obstacleMap.get(id)
+          if (sprite) sprite.destroy()
+          this.obstacleMap.delete(id)
+        }
+      }
+    }
   }
 
   /**
