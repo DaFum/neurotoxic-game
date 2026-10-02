@@ -12,6 +12,7 @@ import {
   ZEALOTRY_PROMO_THRESHOLD
 } from '../constants'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../assetSelectors'
+import { BALANCE_CONFIG } from '../../../config/balance'
 import type { AssetModifiers } from '../../../types/assets'
 import {
   calculateTicketIncome,
@@ -23,6 +24,25 @@ import {
   calculateGigExpenses
 } from './calculators'
 export * from './calculators'
+
+/**
+ * Applies a mathematical anti-swing smoothing curve to a delta.
+ * Reduces extreme swings proportionally rather than cutting them off abruptly.
+ * @param delta - The raw delta to smooth.
+ * @param config - The active balance configuration.
+ */
+export const applySwingSmoothing = (delta: number, config: import('../../../config/balance').BalanceConfig = BALANCE_CONFIG): number => {
+  if (!config.caps.enableAntiSwingSmoothing) return delta;
+  const halfLife = config.caps.antiSwingHalfLife;
+  if (halfLife <= 0) return delta;
+
+  // smoothedDelta = delta * (1 - exp(-|delta| / SWING_HALF_LIFE))
+  const sign = Math.sign(delta);
+  const absDelta = Math.abs(delta);
+  const smoothed = absDelta * (1 - Math.exp(-absDelta / halfLife));
+  return Math.floor(sign * smoothed);
+}
+
 /**
  * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
  * @param params - Parameters object
@@ -236,6 +256,30 @@ export const calculateGigFinancials = (
   }
 
   report.net = report.income.total - report.expenses.total
+
+  // Anti-Swing Smoothing (Soft Ceiling/Floor)
+  const smoothedNet = applySwingSmoothing(report.net);
+  if (smoothedNet !== report.net) {
+    const swingDampener = report.net - smoothedNet;
+    // For positive nets, a positive dampener is an expense (reduces net).
+    // For negative nets, a negative dampener acts as an income (increases net).
+    if (swingDampener > 0) {
+      report.expenses.breakdown.push({
+        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
+        value: swingDampener,
+        detailKey: 'economy:gigExpenses.swingDampener.detail'
+      });
+      report.expenses.total += swingDampener;
+    } else if (swingDampener < 0) {
+      report.income.breakdown.push({
+        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
+        value: Math.abs(swingDampener),
+        detailKey: 'economy:gigIncome.swingBoost.detail'
+      });
+      report.income.total += Math.abs(swingDampener);
+    }
+    report.net = report.income.total - report.expenses.total;
+  }
 
   // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
   if (report.net > MAX_GIG_NET) {

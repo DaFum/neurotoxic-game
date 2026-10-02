@@ -74,7 +74,7 @@ export const useVanMaintenance = ({
 
     updatePlayer({
       money: clampPlayerMoney(finiteNumberOr(player.money, 0) - cost),
-      van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
+      van: { ...player.van, fuel: EXPENSE_CONSTANTS.transport.maxFuel }
     })
     addToast(
       i18n.t('ui:travel.refuel.refueled', {

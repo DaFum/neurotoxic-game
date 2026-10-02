@@ -706,7 +706,7 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       DEFAULT_PLAYER_STATE.clinicVisits
     ),
     van: {
-      fuel: finiteNumberOr(vanData.fuel, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL),
+      fuel: finiteNumberOr(vanData.fuel, EXPENSE_CONSTANTS.transport.maxFuel),
       condition: finiteNumberOr(
         vanData.condition,
         DEFAULT_PLAYER_STATE.van.condition

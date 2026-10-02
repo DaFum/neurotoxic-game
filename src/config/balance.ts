@@ -1,4 +1,5 @@
 import { deepFreeze } from '../utils/objectUtils'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
  * Central balance configuration.
@@ -73,7 +74,24 @@ interface CapsConfig {
   readonly maxGigNet: number
   /** Maximum cash logistics expense contribution. */
   readonly travelLogisticsCashCap: number
+  /** Whether to apply mathematical anti-swing smoothing to gig payouts. */
+  readonly enableAntiSwingSmoothing: boolean
+  /** The half-life parameter for the anti-swing smoothing curve. */
+  readonly antiSwingHalfLife: number
 }
+
+/**
+ * Shared expense tuning for daily, transport, food, accommodation, equipment, and admin costs.
+ */
+interface ExpensesConfig {
+  readonly daily: { readonly baseCost: number }
+  readonly transport: { readonly fuelPer100km: number; readonly fuelPrice: number; readonly maxFuel: number; readonly repairCostPerUnit: number; readonly insuranceMonthly: number; readonly maintenance30Days: number }
+  readonly food: { readonly fastFood: number; readonly restaurant: number; readonly energyDrink: number; readonly alcohol: number }
+  readonly accommodation: { readonly hostel: number; readonly hotel: number }
+  readonly equipment: { readonly strings: number; readonly sticks: number; readonly cable: number; readonly tubes: number }
+  readonly admin: { readonly proberaum: number; readonly insuranceEquip: number }
+}
+
 
 /**
  * The full balance surface plus the version of its shape.
@@ -84,6 +102,7 @@ export interface BalanceConfig {
   readonly penalties: PenaltiesConfig
   readonly modifiers: ModifiersConfig
   readonly caps: CapsConfig
+  readonly expenses: ExpensesConfig
 }
 
 /**
@@ -125,7 +144,9 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
     // gross-net clipping threshold means scaling it by the same factor:
     // 30000 * 0.97. Derive it, do not guess it.
     maxGigNet: 29100,
-    travelLogisticsCashCap: 45
+    travelLogisticsCashCap: 45,
+    enableAntiSwingSmoothing: true,
+    antiSwingHalfLife: 1500
   }
 }
 
@@ -148,7 +169,27 @@ const RANGES = {
   soundcheck: [0, 100_000],
   guestlist: [0, 100_000],
   maxGigNet: [0, 10_000_000],
-  travelLogisticsCashCap: [0, 100_000]
+  travelLogisticsCashCap: [0, 100_000],
+  antiSwingHalfLife: [100, 100_000],
+  dailyBaseCost: [0, 100_000],
+  transportFuelPer100km: [0, 100_000],
+  transportFuelPrice: [0, 100_000],
+  transportMaxFuel: [0, 100_000],
+  transportRepairCostPerUnit: [0, 100_000],
+  transportInsuranceMonthly: [0, 100_000],
+  transportMaintenance30Days: [0, 100_000],
+  foodFastFood: [0, 100_000],
+  foodRestaurant: [0, 100_000],
+  foodEnergyDrink: [0, 100_000],
+  foodAlcohol: [0, 100_000],
+  accommodationHostel: [0, 100_000],
+  accommodationHotel: [0, 100_000],
+  equipmentStrings: [0, 100_000],
+  equipmentSticks: [0, 100_000],
+  equipmentCable: [0, 100_000],
+  equipmentTubes: [0, 100_000],
+  adminProberaum: [0, 100_000],
+  adminInsuranceEquip: [0, 100_000]
 } as const
 
 type RangedKey = keyof typeof RANGES
@@ -315,7 +356,42 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
     },
     caps: {
       maxGigNet: readNumber(caps, 'caps', 'maxGigNet'),
-      travelLogisticsCashCap: readNumber(caps, 'caps', 'travelLogisticsCashCap')
+      travelLogisticsCashCap: readNumber(caps, 'caps', 'travelLogisticsCashCap'),
+      enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing === true,
+      antiSwingHalfLife: Object.hasOwn(caps, 'antiSwingHalfLife') ? readNumber(caps, 'caps', 'antiSwingHalfLife') : 1500
+    },
+    expenses: {
+      daily: {
+        baseCost: finiteNumberOr((raw as any).expenses?.daily?.baseCost, 62)
+      },
+      transport: {
+        fuelPer100km: finiteNumberOr((raw as any).expenses?.transport?.fuelPer100km, 10),
+        fuelPrice: finiteNumberOr((raw as any).expenses?.transport?.fuelPrice, 1.75),
+        maxFuel: finiteNumberOr((raw as any).expenses?.transport?.maxFuel, 100),
+        repairCostPerUnit: finiteNumberOr((raw as any).expenses?.transport?.repairCostPerUnit, 6),
+        insuranceMonthly: finiteNumberOr((raw as any).expenses?.transport?.insuranceMonthly, 80),
+        maintenance30Days: finiteNumberOr((raw as any).expenses?.transport?.maintenance30Days, 200)
+      },
+      food: {
+        fastFood: finiteNumberOr((raw as any).expenses?.food?.fastFood, 8),
+        restaurant: finiteNumberOr((raw as any).expenses?.food?.restaurant, 15),
+        energyDrink: finiteNumberOr((raw as any).expenses?.food?.energyDrink, 3),
+        alcohol: finiteNumberOr((raw as any).expenses?.food?.alcohol, 15)
+      },
+      accommodation: {
+        hostel: finiteNumberOr((raw as any).expenses?.accommodation?.hostel, 25),
+        hotel: finiteNumberOr((raw as any).expenses?.accommodation?.hotel, 60)
+      },
+      equipment: {
+        strings: finiteNumberOr((raw as any).expenses?.equipment?.strings, 15),
+        sticks: finiteNumberOr((raw as any).expenses?.equipment?.sticks, 12),
+        cable: finiteNumberOr((raw as any).expenses?.equipment?.cable, 25),
+        tubes: finiteNumberOr((raw as any).expenses?.equipment?.tubes, 80)
+      },
+      admin: {
+        proberaum: finiteNumberOr((raw as any).expenses?.admin?.proberaum, 180),
+        insuranceEquip: finiteNumberOr((raw as any).expenses?.admin?.insuranceEquip, 150)
+      }
     }
   })
 }

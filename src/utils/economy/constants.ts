@@ -73,39 +73,13 @@ export const ZEALOTRY_PROMO_THRESHOLD =
 /**
  * Shared expense tuning for daily, travel, food, lodging, gear, and admin costs.
  */
-export const EXPENSE_CONSTANTS = {
-  DAILY: {
-    BASE_COST: 62
-  },
-  TRANSPORT: {
-    FUEL_PER_100KM: 10, // Liters
-    FUEL_PRICE: 1.75, // Euro per Liter
-    MAX_FUEL: 100, // Liters
-    REPAIR_COST_PER_UNIT: 6, // Per 1% condition
-    INSURANCE_MONTHLY: 80,
-    MAINTENANCE_30DAYS: 200
-  },
-  FOOD: {
-    FAST_FOOD: 8, // Per person per day
-    RESTAURANT: 15, // Per person per day
-    ENERGY_DRINK: 3,
-    ALCOHOL: 15
-  },
-  ACCOMMODATION: {
-    HOSTEL: 25, // Per person
-    HOTEL: 60 // Per person
-  },
-  EQUIPMENT: {
-    STRINGS: 15,
-    STICKS: 12,
-    CABLE: 25,
-    TUBES: 80
-  },
-  ADMIN: {
-    PROBERAUM: 180, // Monthly
-    INSURANCE_EQUIP: 150 // Monthly
-  }
-}
+export const EXPENSE_CONSTANTS = BALANCE_CONFIG.expenses
+
+
+
+
+
+
 
 /**
  * Shared tuning constants for ticket-sales calculations.

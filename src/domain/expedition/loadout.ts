@@ -81,7 +81,7 @@ import {
  * Between-Tour insolvency check, the balance harness - use the same ceiling the
  * validator enforces rather than a literal of their own.
  */
-export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.transport.maxFuel
 const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
@@ -169,7 +169,7 @@ export const getExpeditionFuelTopUpCost = (
   const from = isFiniteNumber(currentFuel) ? currentFuel : 0
   const to = isFiniteNumber(targetFuel) ? targetFuel : 0
   const missing = Math.max(0, Math.min(MAX_STARTING_FUEL, to) - from)
-  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  return Math.ceil(missing * EXPENSE_CONSTANTS.transport.fuelPrice)
 }
 
 /* -------------------------------------------------------------------------- */

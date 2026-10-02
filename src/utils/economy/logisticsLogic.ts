@@ -62,7 +62,7 @@ export const calculateFuelCost = (
     return { fuelLiters: 0, fuelCost: 0 }
   }
 
-  let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
+  let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.transport.fuelPer100km
 
   // Check for 'van_tuning' upgrade
   if (
@@ -82,7 +82,7 @@ export const calculateFuelCost = (
   fuelLiters *= finiteNumberOr(assetModifiers.fuelMultiplier, 1.0)
 
   const fuelCost = Math.floor(
-    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+    fuelLiters * EXPENSE_CONSTANTS.transport.fuelPrice
   )
 
   return { fuelLiters, fuelCost }
@@ -108,7 +108,7 @@ export const calculateGuaranteedDailyCost = (
   const fameLevel = finiteNumberOr(player.fameLevel, 0)
   const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
   let dailyCost =
-    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+    EXPENSE_CONSTANTS.daily.baseCost + bandSize * 8 + lifestyleInflation
 
   const youtube = finiteNumberOr(social.youtube, 0)
   if (youtube >= 10000) {
@@ -154,7 +154,7 @@ export const calculateTravelExpenses = (
   const fameLevel = finiteNumberOr(playerState?.fameLevel, 0)
 
   // Base food cost
-  const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
+  const foodCost = bandSize * EXPENSE_CONSTANTS.food.fastFood
 
   // Keep travel scaling predictable: mild distance pressure, mild fame pressure,
   // and at most a small reserve fee for travelling with a large cash buffer.
@@ -186,8 +186,8 @@ export const calculateTravelExpenses = (
  */
 export const calculateRefuelCost = (currentFuel: number) => {
   const safeFuel = clamp0to100(finiteNumberOr(currentFuel, 0))
-  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel)
-  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  const missing = Math.max(0, EXPENSE_CONSTANTS.transport.maxFuel - safeFuel)
+  return Math.ceil(missing * EXPENSE_CONSTANTS.transport.fuelPrice)
 }
 
 /**
@@ -198,7 +198,7 @@ export const calculateRefuelCost = (currentFuel: number) => {
 export const calculateRepairCost = (currentCondition: number) => {
   const safeCondition = clamp0to100(finiteNumberOr(currentCondition, 0))
   const missing = 100 - safeCondition
-  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
+  return Math.ceil(missing * EXPENSE_CONSTANTS.transport.repairCostPerUnit)
 }
 
 /**
