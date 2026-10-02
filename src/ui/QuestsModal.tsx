@@ -267,6 +267,7 @@ const QuestItem = memo(
             return (
               <span
                 key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
+                title={rewardText}
                 className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono'
               >
                 <span className='sr-only'>
@@ -281,6 +282,7 @@ const QuestItem = memo(
           {penaltyTexts.map(text => (
             <span
               key={text}
+              title={text}
               className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
             >
               <span className='sr-only'>
