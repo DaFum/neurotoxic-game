@@ -25,11 +25,11 @@ import type {
 } from '../types/expedition'
 
 /**
- * Records an incoming obligation signal affecting the current expedition step.
+ * Builds the action to request recording an incoming obligation signal.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param signalType - The type of obligation signal to record.
- * @param sourceId - Optional ID of the event or source that emitted the signal.
+ * @param sourceId - The canonical non-empty source ID required for an effective signal. While typed as allowing null, the reducer rejects empty values silently.
  * @returns Typed `RECORD_EXPEDITION_OBLIGATION_SIGNAL` action.
  */
 export const recordExpeditionObligationSignal = (
@@ -48,7 +48,7 @@ export const recordExpeditionObligationSignal = (
   }
 })
 /**
- * Commits to doubling down on a specific active expedition obligation.
+ * Builds the action requesting to double down on a specific active expedition obligation.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param obligationId - The ID of the targeted obligation.
@@ -71,7 +71,7 @@ export const doubleDownExpeditionObligation = (
   }
 })
 /**
- * Offers a draft selection for crew traits or modifiers during an expedition.
+ * Builds the action requesting a draft selection for crew traits or modifiers.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param sourceType - The type indicating where this draft originated.
@@ -94,7 +94,7 @@ export const offerExpeditionDraft = (
   }
 })
 /**
- * Selects a specific trait from an active expedition draft offer.
+ * Builds the action requesting to select a specific trait from an active draft offer.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param traitId - The ID of the drafted trait to apply.
@@ -112,7 +112,7 @@ export const selectExpeditionDraft = (
 })
 
 /**
- * Resolves a pending social consequence from a recently completed gig.
+ * Builds the action requesting to resolve a pending social consequence from a recently completed gig.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param resultId - The canonical ID of the selected social consequence.
@@ -135,7 +135,7 @@ export const resolveExpeditionSocialResult = (
   }
 })
 /**
- * Grants node intel dynamically as a reward from a resolved social result.
+ * Builds the action requesting to grant node intel dynamically as a reward from a resolved social result.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param postOptionId - The ID of the post-gig option generating the intel.
@@ -676,7 +676,7 @@ export const applyExpeditionEventDelta = (
 }
 
 /**
- * Records a verified source of crew stress during an active expedition.
+ * Builds the action requesting to record a source of crew stress during an active expedition.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param crewId - The ID of the crew member experiencing stress.
@@ -703,7 +703,7 @@ export const recordExpeditionCrewStressSource = (
 })
 
 /**
- * Records a verified shift in relationship status between crew members.
+ * Builds the action requesting to record a shift in relationship status between crew members.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param input - The payload describing the specific relationship adjustment, excluding route step.
@@ -724,11 +724,11 @@ export const recordExpeditionRelationshipOutcome = (
 })
 
 /**
- * Progresses the severity or stage of an active crew injury.
+ * Builds the action requesting to progress the severity or stage of an active crew injury.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param targetId - The ID of the injured crew member.
- * @param sourceId - The ID of the specific injury condition to advance.
+ * @param sourceId - The ID of the resolved event outcome that provides proof for this advancement.
  * @returns Typed `ADVANCE_EXPEDITION_CREW_INJURY` action.
  */
 export const advanceExpeditionCrewInjury = (
@@ -744,11 +744,11 @@ export const advanceExpeditionCrewInjury = (
 })
 
 /**
- * Progresses the severity or stage of an active band-wide injury or condition.
+ * Builds the action requesting to progress an injury condition for a specific band member.
  *
  * @param state - Current game state, read for the expected route step stale guard.
- * @param targetId - The ID of the affected band condition target.
- * @param sourceId - The ID of the specific condition to advance.
+ * @param targetId - The ID of the specific existing band member.
+ * @param sourceId - The ID of the resolved event outcome that provides proof for this advancement.
  * @returns Typed `ADVANCE_EXPEDITION_BAND_INJURY` action.
  */
 export const advanceExpeditionBandInjury = (
@@ -764,7 +764,7 @@ export const advanceExpeditionBandInjury = (
 })
 
 /**
- * Grants node intel dynamically through interaction with an expedition contact.
+ * Builds the action requesting to grant node intel dynamically through interaction with an expedition contact.
  *
  * @param state - Current game state, read for the expected route step stale guard.
  * @param eventId - The ID of the event providing the contact interaction.
