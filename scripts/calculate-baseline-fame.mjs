@@ -22,7 +22,7 @@ import {
 const TARGET_DAYS = 75 // The typical length of a complete game simulation run
 const MAX_FAME_GAIN = BALANCE_CONSTANTS.MAX_FAME_GAIN
 const FLAT_FAME_PENALTY_PER_BAD_GIG = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-const DAILY_COST = 64 // matches EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × 8
+const DAILY_COST = 64 // matches EXPENSE_CONSTANTS.daily.baseCost + 3 members × 8
 const CLINIC_COST = 150 // matches simulation clinic visit cost
 
 // Initialize typical starting stats for a player

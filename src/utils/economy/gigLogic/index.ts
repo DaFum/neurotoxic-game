@@ -257,30 +257,6 @@ export const calculateGigFinancials = (
 
   report.net = report.income.total - report.expenses.total
 
-  // Anti-Swing Smoothing (Soft Ceiling/Floor)
-  const smoothedNet = applySwingSmoothing(report.net);
-  if (smoothedNet !== report.net) {
-    const swingDampener = report.net - smoothedNet;
-    // For positive nets, a positive dampener is an expense (reduces net).
-    // For negative nets, a negative dampener acts as an income (increases net).
-    if (swingDampener > 0) {
-      report.expenses.breakdown.push({
-        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
-        value: swingDampener,
-        detailKey: 'economy:gigExpenses.swingDampener.detail'
-      });
-      report.expenses.total += swingDampener;
-    } else if (swingDampener < 0) {
-      report.income.breakdown.push({
-        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
-        value: Math.abs(swingDampener),
-        detailKey: 'economy:gigIncome.swingBoost.detail'
-      });
-      report.income.total += Math.abs(swingDampener);
-    }
-    report.net = report.income.total - report.expenses.total;
-  }
-
   // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
   if (report.net > MAX_GIG_NET) {
     const overageFee = report.net - MAX_GIG_NET

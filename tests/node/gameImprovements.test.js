@@ -91,7 +91,7 @@ test('calculateDailyUpdates: daily cost includes band size scaling', () => {
   const state = buildFullState()
   const result = calculateDailyUpdates(state)
 
-  const fullCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+  const fullCost = EXPENSE_CONSTANTS.daily.baseCost + 3 * 8
   const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
   assert.equal(
     result.player.money,
@@ -103,7 +103,7 @@ test('calculateDailyUpdates: daily cost includes band size scaling', () => {
 test('calculateDailyUpdates does not scale YouTube revenue with obligation relief', () => {
   const state = buildFullState({ social: { youtube: 10000 } })
   const result = calculateDailyUpdates(state, () => 0.99)
-  const fullObligations = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+  const fullObligations = EXPENSE_CONSTANTS.daily.baseCost + 3 * 8
   const scaledObligations =
     fullObligations * getEarlyGameObligationMultiplier(2)
 

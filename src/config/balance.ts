@@ -96,6 +96,8 @@ interface ExpensesConfig {
 /**
  * The full balance surface plus the version of its shape.
  */
+type NestedUnknown = Record<string, Record<string, unknown> | undefined> | undefined
+
 export interface BalanceConfig {
   readonly configVersion: number
   readonly attendance: AttendanceConfig
@@ -147,6 +149,15 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
     travelLogisticsCashCap: 45,
     enableAntiSwingSmoothing: true,
     antiSwingHalfLife: 1500
+  },
+
+    expenses: {
+    daily: { baseCost: 62 },
+    transport: { fuelPer100km: 10, fuelPrice: 1.75, maxFuel: 100, repairCostPerUnit: 6, insuranceMonthly: 80, maintenance30Days: 200 },
+    food: { fastFood: 8, restaurant: 15, energyDrink: 3, alcohol: 15 },
+    accommodation: { hostel: 25, hotel: 60 },
+    equipment: { strings: 15, sticks: 12, cable: 25, tubes: 80 },
+    admin: { proberaum: 180, insuranceEquip: 150 }
   }
 }
 
@@ -228,6 +239,8 @@ const readNumber = (
   }
   return value
 }
+
+
 
 const readSplitRates = (
   section: Record<string, unknown>
@@ -360,37 +373,38 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
       enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing === true,
       antiSwingHalfLife: Object.hasOwn(caps, 'antiSwingHalfLife') ? readNumber(caps, 'caps', 'antiSwingHalfLife') : 1500
     },
+
     expenses: {
       daily: {
-        baseCost: finiteNumberOr((raw as any).expenses?.daily?.baseCost, 62)
+        baseCost: finiteNumberOr((record.expenses as NestedUnknown)?.daily?.baseCost, 62)
       },
       transport: {
-        fuelPer100km: finiteNumberOr((raw as any).expenses?.transport?.fuelPer100km, 10),
-        fuelPrice: finiteNumberOr((raw as any).expenses?.transport?.fuelPrice, 1.75),
-        maxFuel: finiteNumberOr((raw as any).expenses?.transport?.maxFuel, 100),
-        repairCostPerUnit: finiteNumberOr((raw as any).expenses?.transport?.repairCostPerUnit, 6),
-        insuranceMonthly: finiteNumberOr((raw as any).expenses?.transport?.insuranceMonthly, 80),
-        maintenance30Days: finiteNumberOr((raw as any).expenses?.transport?.maintenance30Days, 200)
+        fuelPer100km: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.fuelPer100km, 10),
+        fuelPrice: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.fuelPrice, 1.75),
+        maxFuel: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.maxFuel, 100),
+        repairCostPerUnit: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.repairCostPerUnit, 6),
+        insuranceMonthly: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.insuranceMonthly, 80),
+        maintenance30Days: finiteNumberOr((record.expenses as NestedUnknown)?.transport?.maintenance30Days, 200)
       },
       food: {
-        fastFood: finiteNumberOr((raw as any).expenses?.food?.fastFood, 8),
-        restaurant: finiteNumberOr((raw as any).expenses?.food?.restaurant, 15),
-        energyDrink: finiteNumberOr((raw as any).expenses?.food?.energyDrink, 3),
-        alcohol: finiteNumberOr((raw as any).expenses?.food?.alcohol, 15)
+        fastFood: finiteNumberOr((record.expenses as NestedUnknown)?.food?.fastFood, 8),
+        restaurant: finiteNumberOr((record.expenses as NestedUnknown)?.food?.restaurant, 15),
+        energyDrink: finiteNumberOr((record.expenses as NestedUnknown)?.food?.energyDrink, 3),
+        alcohol: finiteNumberOr((record.expenses as NestedUnknown)?.food?.alcohol, 15)
       },
       accommodation: {
-        hostel: finiteNumberOr((raw as any).expenses?.accommodation?.hostel, 25),
-        hotel: finiteNumberOr((raw as any).expenses?.accommodation?.hotel, 60)
+        hostel: finiteNumberOr((record.expenses as NestedUnknown)?.accommodation?.hostel, 25),
+        hotel: finiteNumberOr((record.expenses as NestedUnknown)?.accommodation?.hotel, 60)
       },
       equipment: {
-        strings: finiteNumberOr((raw as any).expenses?.equipment?.strings, 15),
-        sticks: finiteNumberOr((raw as any).expenses?.equipment?.sticks, 12),
-        cable: finiteNumberOr((raw as any).expenses?.equipment?.cable, 25),
-        tubes: finiteNumberOr((raw as any).expenses?.equipment?.tubes, 80)
+        strings: finiteNumberOr((record.expenses as NestedUnknown)?.equipment?.strings, 15),
+        sticks: finiteNumberOr((record.expenses as NestedUnknown)?.equipment?.sticks, 12),
+        cable: finiteNumberOr((record.expenses as NestedUnknown)?.equipment?.cable, 25),
+        tubes: finiteNumberOr((record.expenses as NestedUnknown)?.equipment?.tubes, 80)
       },
       admin: {
-        proberaum: finiteNumberOr((raw as any).expenses?.admin?.proberaum, 180),
-        insuranceEquip: finiteNumberOr((raw as any).expenses?.admin?.insuranceEquip, 150)
+        proberaum: finiteNumberOr((record.expenses as NestedUnknown)?.admin?.proberaum, 180),
+        insuranceEquip: finiteNumberOr((record.expenses as NestedUnknown)?.admin?.insuranceEquip, 150)
       }
     }
   })
