@@ -5,6 +5,7 @@ type SliderSegmentProps = {
   segment: number
   isActive: boolean
   height: string
+  title?: string
   onSelect: (segment: number) => void
 }
 
@@ -12,6 +13,7 @@ const SliderSegment = memo(function SliderSegment({
   segment,
   isActive,
   height,
+  title,
   onSelect
 }: SliderSegmentProps) {
   return (
@@ -21,6 +23,7 @@ const SliderSegment = memo(function SliderSegment({
       className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer'
       tabIndex={-1}
       aria-hidden='true'
+      title={title}
     >
       <div
         style={{ height }}
@@ -40,6 +43,7 @@ type SegmentedSliderProps = {
   activeSegments: number
   segmentCount: number
   valueLabel: string
+  ariaDescribedBy?: string
   onInputChange: (event: ChangeEvent<HTMLInputElement>) => void
   onSegmentSelect: (segment: number) => void
 }
@@ -57,6 +61,7 @@ export const SegmentedSlider = memo(function SegmentedSlider({
   activeSegments,
   segmentCount,
   valueLabel,
+  ariaDescribedBy,
   onInputChange,
   onSegmentSelect
 }: SegmentedSliderProps) {
@@ -101,6 +106,7 @@ export const SegmentedSlider = memo(function SegmentedSlider({
         aria-valuemin={inputMin}
         aria-valuemax={inputMax}
         aria-valuetext={valueLabel}
+        aria-describedby={ariaDescribedBy}
         className='sr-only peer'
       />
       <div
@@ -110,12 +116,14 @@ export const SegmentedSlider = memo(function SegmentedSlider({
         {segments.map(segment => {
           const isActive = segment <= activeSegments
           const height = `${30 + (segment / safeSegmentCount) * 70}%`
+          const segmentPct = Math.round((segment / safeSegmentCount) * 100)
           return (
             <SliderSegment
               key={segment}
               segment={segment}
               isActive={isActive}
               height={height}
+              title={`${label}: ${segmentPct}%`}
               onSelect={handleSegmentSelect}
             />
           )
