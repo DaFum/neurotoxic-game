@@ -365,7 +365,15 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
   const attendance = readSection(record, 'attendance')
   const penalties = readSection(record, 'penalties')
   const modifiers = readSection(record, 'modifiers')
+
   const caps = readSection(record, 'caps')
+
+  if (typeof caps.enableAntiSwingSmoothing !== 'boolean') {
+    throw new TypeError(
+      'Balance config caps.enableAntiSwingSmoothing must be a boolean'
+    )
+  }
+
   const expenses = readSection(record, 'expenses')
 
   return deepFreeze({
@@ -429,10 +437,8 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
         'caps',
         'travelLogisticsCashCap'
       ),
-      enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing === true,
-      antiSwingHalfLife: Object.hasOwn(caps, 'antiSwingHalfLife')
-        ? readNumber(caps, 'caps', 'antiSwingHalfLife')
-        : 1500
+      enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing as boolean,
+      antiSwingHalfLife: readNumber(caps, 'caps', 'antiSwingHalfLife')
     },
     expenses: {
       daily: {

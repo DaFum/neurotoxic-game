@@ -42,7 +42,7 @@ export const applySwingSmoothing = (
   // smoothedDelta = delta * (1 - exp(-|delta| / SWING_HALF_LIFE))
   const sign = Math.sign(delta)
   const absDelta = Math.abs(delta)
-  const smoothed = absDelta * (1 - Math.exp(-absDelta / halfLife))
+  const smoothed = halfLife * (1 - Math.exp(-absDelta / halfLife))
   return Math.floor(sign * smoothed)
 }
 
