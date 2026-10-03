@@ -65,7 +65,9 @@ test('TourbusObstacleManager updates active obstacles and prunes stale obstacles
 
   // Pass 2: 'obs-1' moves out of view, only 'obs-2' remains
   const updatedState = {
-    obstacles: [{ id: 'obs-2', type: 'OBSTACLE', lane: 1, y: 70, collided: false }]
+    obstacles: [
+      { id: 'obs-2', type: 'OBSTACLE', lane: 1, y: 70, collided: false }
+    ]
   }
 
   manager.updateObstacles(updatedState, 600, 100)

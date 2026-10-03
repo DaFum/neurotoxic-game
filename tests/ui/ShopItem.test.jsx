@@ -78,13 +78,14 @@ describe('ShopItem', () => {
     expect(onBuy).toHaveBeenCalledWith(mockItem)
   })
 
-  it('is disabled when isDisabled prop is true', () => {
+  it('is aria-disabled when isDisabled prop is true', () => {
     const onBuy = vi.fn()
     const { getByText } = render(
       <ShopItem {...defaultProps} isDisabled={true} onBuy={onBuy} />
     )
     const button = getByText('BUY').closest('button')
-    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).not.toBeDisabled()
     fireEvent.click(button)
     expect(onBuy).not.toHaveBeenCalled()
   })
