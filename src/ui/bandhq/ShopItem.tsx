@@ -100,7 +100,7 @@ export const ShopItem = React.memo(
       <GlitchButton
         onClick={handlePurchase}
         disabled={isOtherProcessing}
-        aria-disabled={isLockedState || isOtherProcessing}
+        aria-disabled={isLockedState || isAnyProcessing}
         variant={isPurchased ? 'owned' : 'primary'}
         isLoading={isProcessingThis}
         size='sm'
