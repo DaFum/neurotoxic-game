@@ -11,7 +11,7 @@ import type { EngineEvent, EngineGameState } from './types'
  * @param pool - The array of potential events to evaluate.
  * @param trigger - The explicit trigger identifier to match, or null to bypass trigger checking. Events marked as 'random' are always evaluated.
  * @param state - The current game state provided to the event conditions for validation.
- * @returns A filtered array containing only the events that are eligible to be executed.
+ * @returns A filtered array containing only the events that pass the trigger and condition checks.
  */
 export const filterEvents = (
   pool: EngineEvent[],

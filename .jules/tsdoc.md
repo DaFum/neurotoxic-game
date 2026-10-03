@@ -87,4 +87,4 @@
 | 2026-09-24 | src/context/reducers/crewReducer.ts | handleRecordExpeditionCrewStressSource, handleRecordExpeditionRelationshipOutcome, handleAdvanceExpeditionCrewInjury, handleAdvanceExpeditionBandInjury, handleCreateContactIntelGrant, applyResolvedCrewEventOutcome |
 | 2026-09-29 | src/components/stage/TourbusObstacleManager.ts | TourbusRenderState, TourbusObstacleManager |
 | 2026-10-02 | src/context/expeditionActionCreators.ts | recordExpeditionObligationSignal, doubleDownExpeditionObligation, offerExpeditionDraft, selectExpeditionDraft, resolveExpeditionSocialResult, createSocialIntelGrant, recordExpeditionCrewStressSource, recordExpeditionRelationshipOutcome, advanceExpeditionCrewInjury, advanceExpeditionBandInjury, createContactIntelGrant |
-| 2026-10-06 | src/utils/eventEngine/filterEvents.ts | filterEvents |
+| 2026-10-03 | src/utils/eventEngine/filterEvents.ts | filterEvents |
