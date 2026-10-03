@@ -601,7 +601,7 @@ test('Golden Path: Daily cost scaling with band size', async t => {
     const moneyBefore = state.player.money
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
     // Phase 3 relief scales the canonical base plus per-member obligation.
-    const fullCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+    const fullCost = EXPENSE_CONSTANTS.daily.baseCost + 3 * 8
     const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
     assert.equal(
       state.player.money,

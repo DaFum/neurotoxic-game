@@ -1504,9 +1504,9 @@ export const handleResolveExpeditionCrisis = (
 
   const nextFuel =
     choice === 'refuel'
-      ? EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+      ? EXPENSE_CONSTANTS.transport.maxFuel
       : Math.min(
-          EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+          EXPENSE_CONSTANTS.transport.maxFuel,
           currentFuel + EXPEDITION_TOW_FUEL_RESTORED
         )
 

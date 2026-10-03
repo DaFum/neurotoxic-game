@@ -264,7 +264,7 @@ export const wrapClockHour = (hour: number): number => {
  */
 export const clampVanFuel = (
   fuel: number,
-  maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+  maxFuel = EXPENSE_CONSTANTS.transport.maxFuel
 ): number => {
   if (!Number.isFinite(fuel)) return 0
   return Math.max(0, Math.min(maxFuel, fuel))

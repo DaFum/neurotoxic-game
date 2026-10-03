@@ -32,7 +32,8 @@ vi.mock('../../src/context/GameState', () => {
 })
 vi.mock('../../src/utils/economy', () => ({
   calculateGigFinancials: vi.fn(),
-  shouldTriggerBankruptcy: vi.fn()
+  shouldTriggerBankruptcy: vi.fn(),
+  applySwingSmoothing: vi.fn(val => val)
 }))
 vi.mock('../../src/utils/assetSelectors', () => ({
   getTotalDailyObligations: vi.fn(() => 0),

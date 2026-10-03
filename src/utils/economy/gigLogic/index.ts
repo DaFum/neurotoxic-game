@@ -12,6 +12,7 @@ import {
   ZEALOTRY_PROMO_THRESHOLD
 } from '../constants'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../assetSelectors'
+import { BALANCE_CONFIG } from '../../../config/balance'
 import type { AssetModifiers } from '../../../types/assets'
 import {
   calculateTicketIncome,
@@ -23,6 +24,28 @@ import {
   calculateGigExpenses
 } from './calculators'
 export * from './calculators'
+
+/**
+ * Applies a mathematical anti-swing smoothing curve to a delta.
+ * Reduces extreme swings proportionally rather than cutting them off abruptly.
+ * @param delta - The raw delta to smooth.
+ * @param config - The active balance configuration.
+ */
+export const applySwingSmoothing = (
+  delta: number,
+  config: import('../../../config/balance').BalanceConfig = BALANCE_CONFIG
+): number => {
+  if (!config.caps.enableAntiSwingSmoothing) return delta
+  const halfLife = config.caps.antiSwingHalfLife
+  if (halfLife <= 0) return delta
+
+  // smoothedDelta = delta * (1 - exp(-|delta| / SWING_HALF_LIFE))
+  const sign = Math.sign(delta)
+  const absDelta = Math.abs(delta)
+  const smoothed = halfLife * (1 - Math.exp(-absDelta / halfLife))
+  return Math.floor(sign * smoothed)
+}
+
 /**
  * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
  * @param params - Parameters object

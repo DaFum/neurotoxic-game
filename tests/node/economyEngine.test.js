@@ -529,14 +529,14 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
 })
 
 test('EXPENSE_CONSTANTS are properly defined', () => {
-  assert.ok(EXPENSE_CONSTANTS.TRANSPORT, 'Should have TRANSPORT constants')
-  assert.ok(EXPENSE_CONSTANTS.FOOD, 'Should have FOOD constants')
+  assert.ok(EXPENSE_CONSTANTS.transport, 'Should have TRANSPORT constants')
+  assert.ok(EXPENSE_CONSTANTS.food, 'Should have FOOD constants')
   assert.ok(
-    EXPENSE_CONSTANTS.ACCOMMODATION,
+    EXPENSE_CONSTANTS.accommodation,
     'Should have ACCOMMODATION constants'
   )
   assert.ok(
-    EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE > 0,
+    EXPENSE_CONSTANTS.transport.fuelPrice > 0,
     'Fuel price should be positive'
   )
 })
@@ -698,14 +698,14 @@ test('calculateFuelCost applies van tuning upgrade', () => {
 // Upgrade testing is handled in calculateFuelCost tests.
 
 test('calculateRefuelCost handles normal and edge cases', async t => {
-  const maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
-  const fullRefuel = Math.ceil(maxFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  const maxFuel = EXPENSE_CONSTANTS.transport.maxFuel
+  const fullRefuel = Math.ceil(maxFuel * EXPENSE_CONSTANTS.transport.fuelPrice)
 
   await t.test('calculates correct cost for partial fuel', () => {
     const currentFuel = maxFuel / 2
     const cost = calculateRefuelCost(currentFuel)
     const expected = Math.ceil(
-      (maxFuel - currentFuel) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+      (maxFuel - currentFuel) * EXPENSE_CONSTANTS.transport.fuelPrice
     )
     assert.equal(cost, expected)
   })
@@ -741,7 +741,7 @@ test('calculateRepairCost handles normal and edge cases', async t => {
     // Current condition = 80. Missing = 20. Cost = 20 * 6 = 120
     const cost = calculateRepairCost(80)
     const expected = Math.ceil(
-      20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      20 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(cost, expected)
   })
@@ -759,35 +759,35 @@ test('calculateRepairCost handles normal and edge cases', async t => {
 
   await t.test('handles completely broken condition (0)', () => {
     const expected = Math.ceil(
-      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(calculateRepairCost(0), expected)
   })
 
   await t.test('handles negative condition gracefully by clamping to 0', () => {
     const expected = Math.ceil(
-      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(calculateRepairCost(-10), expected)
   })
 
   await t.test('handles NaN condition gracefully', () => {
     const expected = Math.ceil(
-      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(calculateRepairCost(NaN), expected)
   })
 
   await t.test('handles Infinity condition gracefully', () => {
     const expected = Math.ceil(
-      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(calculateRepairCost(Infinity), expected)
   })
 
   await t.test('handles missing condition conservatively', () => {
     const expected = Math.ceil(
-      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.transport.repairCostPerUnit
     )
     assert.equal(calculateRepairCost(undefined), expected)
   })

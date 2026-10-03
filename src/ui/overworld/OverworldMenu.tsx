@@ -457,7 +457,7 @@ export const OverworldMenu = React.memo(
         if (
           item.cond === 'fuel' &&
           (vanFuel === undefined ||
-            vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL)
+            vanFuel >= EXPENSE_CONSTANTS.transport.maxFuel)
         )
           return true
         if (
@@ -481,7 +481,7 @@ export const OverworldMenu = React.memo(
         if (
           item.cond === 'fuel' &&
           (vanFuel === undefined ||
-            vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL)
+            vanFuel >= EXPENSE_CONSTANTS.transport.maxFuel)
         ) {
           return t('ui:menu.disabled_fuel_full', {
             defaultValue: 'Fuel tank is already full'

@@ -40,11 +40,14 @@ interface AttendanceConfig {
  * Multipliers and rates that take money away from the gross payout.
  */
 interface PenaltiesConfig {
-  /** Global multiplier applied to gig payouts. */
+  /** Applied to the final positive net of the gig (1.0 = no nerf). */
   readonly globalPayoutNerf: number
-  /** Maximum fame-scaled management cut. */
+  /** Maximum management fee rate at high fame. */
   readonly managementCutRate: number
-  /** Venue revenue split by venue difficulty. */
+  /**
+   * Venue split rate by venue difficulty tier (key is difficulty).
+   * Note: The object keys must be numeric strings.
+   */
   readonly venueSplitRates: Readonly<Record<number, number>>
   /** Base logistics expense for gig travel. */
   readonly travelLogisticsBase: number
@@ -73,6 +76,42 @@ interface CapsConfig {
   readonly maxGigNet: number
   /** Maximum cash logistics expense contribution. */
   readonly travelLogisticsCashCap: number
+  /** Whether to apply mathematical anti-swing smoothing to gig payouts. */
+  readonly enableAntiSwingSmoothing: boolean
+  /** The half-life parameter for the anti-swing smoothing curve. */
+  readonly antiSwingHalfLife: number
+}
+
+/**
+ * Shared expense tuning for daily, transport, food, accommodation, equipment, and admin costs.
+ */
+interface ExpensesConfig {
+  readonly daily: { readonly baseCost: number }
+  readonly transport: {
+    readonly fuelPer100km: number
+    readonly fuelPrice: number
+    readonly maxFuel: number
+    readonly repairCostPerUnit: number
+    readonly insuranceMonthly: number
+    readonly maintenance30Days: number
+  }
+  readonly food: {
+    readonly fastFood: number
+    readonly restaurant: number
+    readonly energyDrink: number
+    readonly alcohol: number
+  }
+  readonly accommodation: { readonly hostel: number; readonly hotel: number }
+  readonly equipment: {
+    readonly strings: number
+    readonly sticks: number
+    readonly cable: number
+    readonly tubes: number
+  }
+  readonly admin: {
+    readonly proberaum: number
+    readonly insuranceEquip: number
+  }
 }
 
 /**
@@ -84,12 +123,13 @@ export interface BalanceConfig {
   readonly penalties: PenaltiesConfig
   readonly modifiers: ModifiersConfig
   readonly caps: CapsConfig
+  readonly expenses: ExpensesConfig
 }
 
 /**
  * Shape version. Bump when a field is added, removed, or renamed.
  */
-export const BALANCE_CONFIG_VERSION = 1
+export const BALANCE_CONFIG_VERSION = 4
 
 const RAW_DEFAULT_BALANCE_CONFIG = {
   configVersion: BALANCE_CONFIG_VERSION,
@@ -125,9 +165,26 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
     // gross-net clipping threshold means scaling it by the same factor:
     // 30000 * 0.97. Derive it, do not guess it.
     maxGigNet: 29100,
-    travelLogisticsCashCap: 45
+    travelLogisticsCashCap: 45,
+    enableAntiSwingSmoothing: true,
+    antiSwingHalfLife: 1500
+  },
+  expenses: {
+    daily: { baseCost: 62 },
+    transport: {
+      fuelPer100km: 10,
+      fuelPrice: 1.75,
+      maxFuel: 100,
+      repairCostPerUnit: 6,
+      insuranceMonthly: 80,
+      maintenance30Days: 200
+    },
+    food: { fastFood: 8, restaurant: 15, energyDrink: 3, alcohol: 15 },
+    accommodation: { hostel: 25, hotel: 60 },
+    equipment: { strings: 15, sticks: 12, cable: 25, tubes: 80 },
+    admin: { proberaum: 180, insuranceEquip: 150 }
   }
-}
+} satisfies BalanceConfig
 
 const RANGES = {
   baseDrawRatio: [0, 1],
@@ -148,7 +205,27 @@ const RANGES = {
   soundcheck: [0, 100_000],
   guestlist: [0, 100_000],
   maxGigNet: [0, 10_000_000],
-  travelLogisticsCashCap: [0, 100_000]
+  travelLogisticsCashCap: [0, 100_000],
+  antiSwingHalfLife: [100, 100_000],
+  dailyBaseCost: [0, 100_000],
+  transportFuelPer100km: [0, 100_000],
+  transportFuelPrice: [0, 100_000],
+  transportMaxFuel: [0, 100_000],
+  transportRepairCostPerUnit: [0, 100_000],
+  transportInsuranceMonthly: [0, 100_000],
+  transportMaintenance30Days: [0, 100_000],
+  foodFastFood: [0, 100_000],
+  foodRestaurant: [0, 100_000],
+  foodEnergyDrink: [0, 100_000],
+  foodAlcohol: [0, 100_000],
+  accommodationHostel: [0, 100_000],
+  accommodationHotel: [0, 100_000],
+  equipmentStrings: [0, 100_000],
+  equipmentSticks: [0, 100_000],
+  equipmentCable: [0, 100_000],
+  equipmentTubes: [0, 100_000],
+  adminProberaum: [0, 100_000],
+  adminInsuranceEquip: [0, 100_000]
 } as const
 
 type RangedKey = keyof typeof RANGES
@@ -183,6 +260,38 @@ const readNumber = (
   if (value < minimum || value > maximum) {
     throw new RangeError(
       `Balance config ${sectionName}.${key} is outside [${minimum}, ${maximum}]: ${value}`
+    )
+  }
+  return value
+}
+
+const readNestedNumber = (
+  section: Record<string, unknown>,
+  subsection: string,
+  key: string,
+  rangeKey: RangedKey
+): number => {
+  if (!Object.hasOwn(section, subsection)) {
+    throw new TypeError(`Balance config is missing ${subsection}.${key}`)
+  }
+  const sub = section[subsection]
+  if (typeof sub !== 'object' || sub === null || Array.isArray(sub)) {
+    throw new TypeError(
+      `Balance config section "${subsection}" must be an object`
+    )
+  }
+  const typedSub = sub as Record<string, unknown>
+  if (!Object.hasOwn(typedSub, key)) {
+    throw new TypeError(`Balance config is missing ${subsection}.${key}`)
+  }
+  const value = typedSub[key]
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new TypeError(`Balance config ${subsection}.${key} must be a number`)
+  }
+  const [min, max] = RANGES[rangeKey]
+  if (value < min || value > max) {
+    throw new RangeError(
+      `Balance config ${subsection}.${key} (${value}) is outside allowed range [${min}, ${max}]`
     )
   }
   return value
@@ -225,13 +334,12 @@ const readSplitRates = (
 }
 
 /**
- * Validates a raw balance config, throwing descriptively on the first problem.
+ * Boot-time guard that validates the provided config object against the
+ * expected shape and version.
  *
- * @param raw - Untrusted config payload.
- * @returns A deep-frozen, fully validated config.
- *
- * @throws TypeError when a section, field, or type is wrong, or the version
- * does not match {@link BALANCE_CONFIG_VERSION}.
+ * @param raw - An unknown object, typically from a saved file.
+ * @returns A validated, frozen BalanceConfig.
+ * @throws TypeError when the structure is invalid.
  * @throws RangeError when a value is outside its allowed range.
  *
  * @remarks
@@ -257,7 +365,16 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
   const attendance = readSection(record, 'attendance')
   const penalties = readSection(record, 'penalties')
   const modifiers = readSection(record, 'modifiers')
+
   const caps = readSection(record, 'caps')
+
+  if (typeof caps.enableAntiSwingSmoothing !== 'boolean') {
+    throw new TypeError(
+      'Balance config caps.enableAntiSwingSmoothing must be a boolean'
+    )
+  }
+
+  const expenses = readSection(record, 'expenses')
 
   return deepFreeze({
     configVersion,
@@ -315,7 +432,136 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
     },
     caps: {
       maxGigNet: readNumber(caps, 'caps', 'maxGigNet'),
-      travelLogisticsCashCap: readNumber(caps, 'caps', 'travelLogisticsCashCap')
+      travelLogisticsCashCap: readNumber(
+        caps,
+        'caps',
+        'travelLogisticsCashCap'
+      ),
+      enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing as boolean,
+      antiSwingHalfLife: readNumber(caps, 'caps', 'antiSwingHalfLife')
+    },
+    expenses: {
+      daily: {
+        baseCost: readNestedNumber(
+          expenses,
+          'daily',
+          'baseCost',
+          'dailyBaseCost'
+        )
+      },
+      transport: {
+        fuelPer100km: readNestedNumber(
+          expenses,
+          'transport',
+          'fuelPer100km',
+          'transportFuelPer100km'
+        ),
+        fuelPrice: readNestedNumber(
+          expenses,
+          'transport',
+          'fuelPrice',
+          'transportFuelPrice'
+        ),
+        maxFuel: readNestedNumber(
+          expenses,
+          'transport',
+          'maxFuel',
+          'transportMaxFuel'
+        ),
+        repairCostPerUnit: readNestedNumber(
+          expenses,
+          'transport',
+          'repairCostPerUnit',
+          'transportRepairCostPerUnit'
+        ),
+        insuranceMonthly: readNestedNumber(
+          expenses,
+          'transport',
+          'insuranceMonthly',
+          'transportInsuranceMonthly'
+        ),
+        maintenance30Days: readNestedNumber(
+          expenses,
+          'transport',
+          'maintenance30Days',
+          'transportMaintenance30Days'
+        )
+      },
+      food: {
+        fastFood: readNestedNumber(
+          expenses,
+          'food',
+          'fastFood',
+          'foodFastFood'
+        ),
+        restaurant: readNestedNumber(
+          expenses,
+          'food',
+          'restaurant',
+          'foodRestaurant'
+        ),
+        energyDrink: readNestedNumber(
+          expenses,
+          'food',
+          'energyDrink',
+          'foodEnergyDrink'
+        ),
+        alcohol: readNestedNumber(expenses, 'food', 'alcohol', 'foodAlcohol')
+      },
+      accommodation: {
+        hostel: readNestedNumber(
+          expenses,
+          'accommodation',
+          'hostel',
+          'accommodationHostel'
+        ),
+        hotel: readNestedNumber(
+          expenses,
+          'accommodation',
+          'hotel',
+          'accommodationHotel'
+        )
+      },
+      equipment: {
+        strings: readNestedNumber(
+          expenses,
+          'equipment',
+          'strings',
+          'equipmentStrings'
+        ),
+        sticks: readNestedNumber(
+          expenses,
+          'equipment',
+          'sticks',
+          'equipmentSticks'
+        ),
+        cable: readNestedNumber(
+          expenses,
+          'equipment',
+          'cable',
+          'equipmentCable'
+        ),
+        tubes: readNestedNumber(
+          expenses,
+          'equipment',
+          'tubes',
+          'equipmentTubes'
+        )
+      },
+      admin: {
+        proberaum: readNestedNumber(
+          expenses,
+          'admin',
+          'proberaum',
+          'adminProberaum'
+        ),
+        insuranceEquip: readNestedNumber(
+          expenses,
+          'admin',
+          'insuranceEquip',
+          'adminInsuranceEquip'
+        )
+      }
     }
   })
 }

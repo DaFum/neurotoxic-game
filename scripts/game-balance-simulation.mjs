@@ -6143,7 +6143,7 @@ const buildMarkdownReport = payload => {
   lines.push(`| Runs je Szenario | ${payload.constants.runsPerScenario} |`)
   lines.push(`| Tage je Run | ${payload.constants.daysPerRun} |`)
   lines.push(
-    `| Basis-Tageskosten | ${fmtEur(EXPENSE_CONSTANTS.DAILY.BASE_COST)} |`
+    `| Basis-Tageskosten | ${fmtEur(EXPENSE_CONSTANTS.daily.baseCost)} |`
   )
   lines.push(
     `| Modifier-Kosten | Catering ${fmtEur(MODIFIER_COSTS.catering)}, Promo ${fmtEur(MODIFIER_COSTS.promo)}, Merch ${fmtEur(MODIFIER_COSTS.merch)}, Soundcheck ${fmtEur(MODIFIER_COSTS.soundcheck)}, Guestlist ${fmtEur(MODIFIER_COSTS.guestlist)} |`

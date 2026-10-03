@@ -1,4 +1,4 @@
-import { calculateGigFinancials } from '../economy'
+import { calculateGigFinancials, applySwingSmoothing } from '../economy'
 import { BREAKDOWN_LABEL_KEYS } from '../economy/breakdownLabelKeys'
 import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
@@ -193,20 +193,50 @@ export const deriveFinancials = ({
     ? applyRepeatDemandAdjustment(performanceAdjusted, repeatDemandContext)
     : performanceAdjusted
   const rewardMultiplier = Math.max(0, finiteNumberOr(gigRewardMultiplier, 1))
-  if (rewardMultiplier === 1) return demandAdjusted
-  const income = {
-    ...demandAdjusted.income,
-    total: Math.round(demandAdjusted.income.total * rewardMultiplier),
-    breakdown: demandAdjusted.income.breakdown.map(item => ({
-      ...item,
-      value: Math.round(item.value * rewardMultiplier)
-    }))
+
+  const finalPreSmooth =
+    rewardMultiplier === 1
+      ? demandAdjusted
+      : (() => {
+          const income = {
+            ...demandAdjusted.income,
+            total: Math.round(demandAdjusted.income.total * rewardMultiplier),
+            breakdown: demandAdjusted.income.breakdown.map(item => ({
+              ...item,
+              value: Math.round(item.value * rewardMultiplier)
+            }))
+          }
+          return {
+            ...demandAdjusted,
+            income,
+            net: income.total - demandAdjusted.expenses.total
+          }
+        })()
+
+  // Anti-Swing Smoothing (Soft Ceiling/Floor)
+  const smoothedNet = applySwingSmoothing(finalPreSmooth.net)
+  if (smoothedNet !== finalPreSmooth.net) {
+    const swingDampener = finalPreSmooth.net - smoothedNet
+    if (swingDampener > 0) {
+      finalPreSmooth.expenses.breakdown.push({
+        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
+        value: swingDampener,
+        detailKey: 'economy:gigExpenses.swingDampener.detail'
+      })
+      finalPreSmooth.expenses.total += swingDampener
+    } else if (swingDampener < 0) {
+      finalPreSmooth.income.breakdown.push({
+        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
+        value: Math.abs(swingDampener),
+        detailKey: 'economy:gigIncome.swingBoost.detail'
+      })
+      finalPreSmooth.income.total += Math.abs(swingDampener)
+    }
+    finalPreSmooth.net =
+      finalPreSmooth.income.total - finalPreSmooth.expenses.total
   }
-  return {
-    ...demandAdjusted,
-    income,
-    net: income.total - demandAdjusted.expenses.total
-  }
+
+  return finalPreSmooth
 }
 
 /**

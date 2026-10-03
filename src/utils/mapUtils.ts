@@ -349,7 +349,7 @@ export const checkSoftlock = (
     const refuelCost = calculateRefuelCost(currentFuel)
     if (refuelCost > 0 && scenarioMoney >= refuelCost) {
       return checkReachabilityWithMoneyAndFuel(
-        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+        EXPENSE_CONSTANTS.transport.maxFuel,
         scenarioMoney - refuelCost,
         customCtx
       )

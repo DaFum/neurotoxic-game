@@ -764,7 +764,7 @@ describe('PostGig Component - Complete Phase', () => {
       // Updates player
       expect(mockUpdatePlayer).toHaveBeenCalledWith(
         expect.objectContaining({
-          money: 700, // 500 + 200 (net)
+          money: 687, // 500 + 187 (net with smoothing)
           fame: expect.any(Number)
         })
       )

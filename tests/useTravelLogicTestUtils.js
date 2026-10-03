@@ -6,27 +6,25 @@ import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.ts'
 // Mocks
 const mockCalculateTravelExpenses = mock.fn()
 const mockExpenseConstants = {
-  TRANSPORT: {
-    FUEL_PRICE: 2,
-    MAX_FUEL: 100,
-    REPAIR_COST_PER_UNIT: 5
+  transport: {
+    fuelPrice: 2,
+    maxFuel: 100,
+    repairCostPerUnit: 5
   }
 }
 
 const calculateRefuelCostDefault = currentFuel => {
   const missing = Math.max(
     0,
-    mockExpenseConstants.TRANSPORT.MAX_FUEL - currentFuel
+    mockExpenseConstants.transport.maxFuel - currentFuel
   )
-  return Math.ceil(missing * mockExpenseConstants.TRANSPORT.FUEL_PRICE)
+  return Math.ceil(missing * mockExpenseConstants.transport.fuelPrice)
 }
 const mockCalculateRefuelCost = mock.fn(calculateRefuelCostDefault)
 
 const mockCalculateRepairCost = mock.fn(currentCondition => {
   const missing = Math.max(0, 100 - currentCondition)
-  return Math.ceil(
-    missing * mockExpenseConstants.TRANSPORT.REPAIR_COST_PER_UNIT
-  )
+  return Math.ceil(missing * mockExpenseConstants.transport.repairCostPerUnit)
 })
 
 const guaranteedDailyCostDefault = (player, band, social = 0) => {

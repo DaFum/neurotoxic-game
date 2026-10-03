@@ -11,7 +11,7 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
     // checkSoftlock reads MAX_FUEL for its refuel escape hatch.
-    EXPENSE_CONSTANTS: { TRANSPORT: { MAX_FUEL: 100 } }
+    EXPENSE_CONSTANTS: { transport: { maxFuel: 100 } }
   }
 })
 
