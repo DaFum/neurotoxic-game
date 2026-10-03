@@ -23,6 +23,10 @@ type RoadieTrafficState = {
   traffic?: RoadieCar[]
 }
 
+type RoadieSpriteMember = Sprite & { isSprite: true }
+type RoadieGraphicsMember = Graphics & { isSprite: false }
+type RoadieCarDisplayObject = RoadieSpriteMember | RoadieGraphicsMember
+
 /**
  * Manages Roadie traffic rendering resources and state.
  *
@@ -39,7 +43,7 @@ export class RoadieTrafficManager {
   colors: {
     bloodRed: number
   }
-  carSprites: Map<string | number, Sprite | Graphics>
+  carSprites: Map<string | number, RoadieCarDisplayObject>
   currentIds: Set<string | number>
 
   /**
@@ -72,7 +76,7 @@ export class RoadieTrafficManager {
    * @param car - The vehicle state data used to derive the sprite
    * @returns The newly created or existing sprite or graphics instance
    */
-  _getOrCreateCarSprite(car: RoadieCar) {
+  _getOrCreateCarSprite(car: RoadieCar): RoadieCarDisplayObject {
     let sprite = this.carSprites.get(car.id)
     if (sprite) return sprite
 
@@ -85,17 +89,23 @@ export class RoadieTrafficManager {
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       const texture = this.textures.cars[texIndex]
       if (!texture) {
-        sprite = new Graphics()
-        ;(sprite as Graphics).rect(-30, -20, 60, 40)
-        ;(sprite as Graphics).fill(this.colors.bloodRed)
+        const gfx = new Graphics() as RoadieGraphicsMember
+        gfx.rect(-30, -20, 60, 40)
+        gfx.fill(this.colors.bloodRed)
+        gfx.isSprite = false
+        sprite = gfx
       } else {
-        sprite = new Sprite(texture)
-        sprite.anchor.set(0.5)
+        const sp = new Sprite(texture) as RoadieSpriteMember
+        sp.anchor.set(0.5)
+        sp.isSprite = true
+        sprite = sp
       }
     } else {
-      sprite = new Graphics()
-      ;(sprite as Graphics).rect(-30, -20, 60, 40)
-      ;(sprite as Graphics).fill(this.colors.bloodRed)
+      const gfx = new Graphics() as RoadieGraphicsMember
+      gfx.rect(-30, -20, 60, 40)
+      gfx.fill(this.colors.bloodRed)
+      gfx.isSprite = false
+      sprite = gfx
     }
 
     this.container.addChild(sprite)
@@ -147,7 +157,11 @@ export class RoadieTrafficManager {
       }
 
       // Adjust Scale if texture — constrain both width AND height
-      if (sprite instanceof Sprite && sprite.texture?.width > 0) {
+      // ⚡ BOLT OPTIMIZATION: Read discriminated `isSprite` boolean property instead of walking prototype chain via `instanceof Sprite`.
+      // What: Replaced `sprite instanceof Sprite` prototype chain traversal with direct `isSprite` check in 60 FPS update loop.
+      // Why: `instanceof` prototype chain traversal across PixiJS display objects on every frame creates measurable execution overhead.
+      // Impact: Eliminates prototype chain lookups for all active traffic car display objects in 60 FPS update loop.
+      if (sprite.isSprite && sprite.texture?.width > 0) {
         const targetW = carWidth * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
