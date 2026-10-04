@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import type { MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
 
 /**
@@ -6,6 +7,7 @@ import type { TFunction } from 'i18next'
  * @param isPoweredOn - Suspends surge timers after successful wiring.
  * @param isGameOver - Suspends surge timers after terminal overlay state.
  * @param isShocked - Suspends surge timers during shock recovery.
+ * @param isWinningRef - Suppresses surge shocks while the win transition is pending.
  * @param triggerShock - Callback that activates the Kabelsalat shock state.
  * @param t - Translation callback used for localized labels and messages.
  * @returns Current surge meter, purge count, and purge command.
@@ -14,6 +16,7 @@ export const useKabelsalatVoidSurge = (
   isPoweredOn: boolean,
   isGameOver: boolean,
   isShocked: boolean,
+  isWinningRef: MutableRefObject<boolean>,
   triggerShock: (reason: string) => void,
   t: TFunction<['ui'], undefined>
 ) => {
@@ -39,14 +42,19 @@ export const useKabelsalatVoidSurge = (
   }, [isActive])
 
   useEffect(() => {
-    if (voidSurge >= 100 && !triggeredRef.current && isActive) {
+    if (
+      voidSurge >= 100 &&
+      !triggeredRef.current &&
+      isActive &&
+      !isWinningRef.current
+    ) {
       triggeredRef.current = true
       triggerShock(t('ui:minigames.kabelsalat.systemShock'))
       setVoidSurge(0)
     } else if (voidSurge === 0) {
       triggeredRef.current = false
     }
-  }, [voidSurge, triggerShock, t, isActive])
+  }, [voidSurge, triggerShock, t, isActive, isWinningRef])
 
   const purgeVoidSurge = useCallback(() => {
     if (isActive && voidSurge > 0) {

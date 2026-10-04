@@ -104,7 +104,14 @@ export const useKabelsalatState = (): KabelsalatState => {
 
   // 6. Void Surge (Autonomously injected mechanic)
   const { voidSurge, voidSurgesPurged, purgeVoidSurge } =
-    useKabelsalatVoidSurge(isPoweredOn, isGameOver, isShocked, triggerShock, t)
+    useKabelsalatVoidSurge(
+      isPoweredOn,
+      isGameOver,
+      isShocked,
+      isWinningRef,
+      triggerShock,
+      t
+    )
 
   // 3. Game End
   const { forceAdvance } = useKabelsalatGameEnd(
