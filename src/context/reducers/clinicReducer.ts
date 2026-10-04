@@ -179,7 +179,8 @@ export const handleClinicHeal = (
   const staminaGain = finiteNumberOr(payload.staminaGain, 0)
   const moodGain = finiteNumberOr(payload.moodGain, 0)
 
-  return executeClinicAction(state, payload, member => {
+  // The handler owns the cost type so a missing or forged `type` can't skip the charge.
+  return executeClinicAction(state, { ...payload, type: 'heal' }, member => {
     const prevStamina = finiteNumberOr(member.stamina, 0)
     const prevMood = finiteNumberOr(member.mood, 0)
 
@@ -502,7 +503,8 @@ export const handleClinicEnhance = (
     }
   }
 
-  return executeClinicAction(state, payload, member => {
+  // The handler owns the cost type so a missing or forged `type` can't skip the charge.
+  return executeClinicAction(state, { ...payload, type: 'enhance' }, member => {
     const updatedTraits = normalizeTraitMap(member.traits)
     updatedTraits[resolvedTrait.id] = resolvedTrait
 
