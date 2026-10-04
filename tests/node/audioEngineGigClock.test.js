@@ -86,8 +86,13 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-const { getGigTimeMs, startGigClock, startGigPlayback } =
-  await import('../../src/utils/audio/gigPlayback')
+const {
+  getGigTimeMs,
+  startGigClock,
+  startGigPlayback,
+  pauseGigPlayback,
+  resumeGigPlayback
+} = await import('../../src/utils/audio/gigPlayback')
 const { audioState, resetGigState } =
   await import('../../src/utils/audio/state')
 
@@ -217,4 +222,32 @@ test('the gig clock re-anchors continuously across a song transition', async () 
   }
 
   assert.strictEqual(seamReadings.length, SONG_COUNT)
+})
+
+test('pausing during the lead-in keeps the clock aligned with the audio on resume', async () => {
+  resetHarness(10)
+
+  const started = await startGigPlayback({
+    filename: 'song1.ogg',
+    delayMs: 2000
+  })
+  assert.strictEqual(started, true)
+
+  // Pause 1s into the 2s lead-in, then resume 5s later.
+  rawContext.currentTime = 11
+  pauseGigPlayback()
+  rawContext.currentTime = 16
+  assert.strictEqual(resumeGigPlayback(), true)
+
+  const resumedSource = sources[sources.length - 1]
+  const [startAtSec, offsetSec] = resumedSource.start.mock.calls[0].arguments
+  // The remaining 1s of lead-in is preserved and the audio starts at the
+  // excerpt start, exactly when the clock reaches 0.
+  assert.strictEqual(startAtSec, 17)
+  assert.strictEqual(offsetSec, 0)
+  assertWithinTolerance(getGigTimeMs(), -1000, 'during remaining lead-in')
+  rawContext.currentTime = startAtSec
+  assertWithinTolerance(getGigTimeMs(), 0, 'when audio starts')
+  rawContext.currentTime = startAtSec + 5
+  assertWithinTolerance(getGigTimeMs(), 5000, '5s into the audio')
 })
