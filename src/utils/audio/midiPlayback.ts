@@ -319,10 +319,10 @@ function scheduleSongPlayback(
   delay: number,
   reqId: number,
   transport: ReturnType<typeof Tone.getTransport>,
-  onEnded?: (() => void) | null
+  onEnded?: (() => void) | null,
+  startTimeSec: number | null = null
 ): void {
-  const minLookahead = 0.1
-  const startTime = Tone.now() + Math.max(minLookahead, delay)
+  const startTime = getTransportStartTime(startTimeSec, delay)
 
   if (onEnded) {
     const duration = lastTime + Tone.Time('4n').toSeconds()
@@ -448,7 +448,8 @@ export async function playSongFromData(
     validDelay,
     prep.reqId,
     transport,
-    prep.normalizedOptions.onEnded as (() => void) | null
+    prep.normalizedOptions.onEnded as (() => void) | null,
+    prep.normalizedOptions.startTimeSec
   )
 
   return true

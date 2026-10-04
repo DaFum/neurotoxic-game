@@ -170,7 +170,10 @@ mock.module(
           normalizedOptions: {
             useCleanPlayback: true,
             onEnded:
-              typeof options?.onEnded === 'function' ? options.onEnded : null
+              typeof options?.onEnded === 'function' ? options.onEnded : null,
+            startTimeSec: Number.isFinite(options?.startTimeSec)
+              ? options.startTimeSec
+              : null
           }
         }
       }),
@@ -294,6 +297,16 @@ test('startMetalGenerator Tests', async t => {
       '+0.5',
       'Should start transport with correct delay'
     )
+  })
+
+  await t.test('starts the transport at an absolute startTimeSec', async () => {
+    const result = await startMetalGenerator(
+      { difficulty: 3, bpm: 120, duration: 30 },
+      2,
+      { startTimeSec: 1234.5 }
+    )
+    assert.strictEqual(result, true)
+    assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1234.5)
   })
 
   await t.test(
