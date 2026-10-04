@@ -263,6 +263,37 @@ describe('useDealNegotiation', () => {
     )
   })
 
+  it('opening another deal cancels the previous auto-close timer', () => {
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
+    const dealA = { id: 'deal-a', name: 'Deal A' }
+    const dealB = { id: 'deal-b', name: 'Deal B' }
+
+    act(() => {
+      result.current.handleNegotiationStart(dealA)
+    })
+    vi.mocked(negotiateDeal).mockReturnValueOnce({
+      status: 'FAILED',
+      success: false,
+      deal: dealA,
+      feedbackKey: 'ui:deals.feedback.safeFailure'
+    })
+    act(() => {
+      result.current.handleNegotiationSubmit('SAFE')
+      result.current.setNegotiationModalOpen(false)
+    })
+    act(() => {
+      result.current.handleNegotiationStart(dealB)
+    })
+    act(() => {
+      vi.advanceTimersByTime(1500)
+    })
+
+    expect(result.current.negotiationModalOpen).toBe(true)
+    expect(result.current.selectedDeal).toBe(dealB)
+  })
+
   it('handleNegotiationSubmit handles error during negotiation', () => {
     const { result } = renderHook(() =>
       useDealNegotiation({ onAccept: mockOnAccept })

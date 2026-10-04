@@ -48,6 +48,11 @@ export const useDealNegotiation = ({
   }, [])
 
   const handleNegotiationStart = useCallback((deal: Deal) => {
+    // A pending auto-close from the previous negotiation must not close this one.
+    if (negotiationTimerRef.current) {
+      clearTimeout(negotiationTimerRef.current)
+      negotiationTimerRef.current = null
+    }
     setSelectedDeal(deal)
     setNegotiationResult(null)
     setNegotiationModalOpen(true)
