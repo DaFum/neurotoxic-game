@@ -1,5 +1,6 @@
 import type { GameState, RivalBandState, ToastPayload } from '../../types'
 import { buildDeterministicToastId } from './toastSanitizers'
+import { clampNonNegative, isFiniteNumber } from '../../utils/gameState'
 import type {
   SpawnRivalBandPayload,
   MoveRivalBandPayload
@@ -84,11 +85,22 @@ export const handleUpdateRivalBand = (
 ): GameState => {
   if (!state.rivalBand) return state
 
+  // Sanitized by createUpdateRivalBandAction; re-check powerLevel so a raw
+  // dispatch cannot write NaN/Infinity or a non-number into state.
+  const updates = { ...payload }
+  if (Object.hasOwn(updates, 'powerLevel')) {
+    if (isFiniteNumber(updates.powerLevel)) {
+      updates.powerLevel = clampNonNegative(updates.powerLevel)
+    } else {
+      delete updates.powerLevel
+    }
+  }
+
   return {
     ...state,
     rivalBand: {
       ...state.rivalBand,
-      ...payload // already sanitized by createUpdateRivalBandAction
+      ...updates
     }
   }
 }

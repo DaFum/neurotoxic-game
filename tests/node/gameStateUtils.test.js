@@ -18,6 +18,8 @@ import {
   normalizeSetlistForSave
 } from '../../src/utils/gameState'
 import {
+  clampToNonNegativeInt,
+  clampUnitRandom,
   clampVanBreakdownChance,
   wrapClockHour
 } from '../../src/utils/gameState/clamps'
@@ -34,6 +36,22 @@ test('clampNonNegative edge cases', () => {
   assert.strictEqual(clampNonNegative(NaN), 0)
   assert.strictEqual(clampNonNegative(Infinity), 0)
   assert.strictEqual(clampNonNegative(-Infinity), 0)
+})
+
+test('clampToNonNegativeInt rejects non-number input without coercion', () => {
+  assert.strictEqual(clampToNonNegativeInt(4.7), 4)
+  assert.strictEqual(clampToNonNegativeInt(-2), 0)
+  for (const value of [true, [42], '77', null, Number.NaN]) {
+    assert.strictEqual(clampToNonNegativeInt(value), 0)
+  }
+})
+
+test('clampUnitRandom rejects non-number input without coercion', () => {
+  assert.strictEqual(clampUnitRandom(0.5), 0.5)
+  assert.strictEqual(clampUnitRandom(-1), 0)
+  for (const value of [null, [], '0.5', true, Number.NaN]) {
+    assert.strictEqual(clampUnitRandom(value), undefined)
+  }
 })
 
 test('clampVanBreakdownChance recovers from non-finite input', () => {

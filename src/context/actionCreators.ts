@@ -827,9 +827,8 @@ export const createUpdateRivalBandAction = (
   if (payload.id !== undefined) safeUpdates.id = payload.id
   if (payload.name !== undefined) safeUpdates.name = payload.name
   if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
-  if (payload.powerLevel !== undefined) {
-    const raw = Number(payload.powerLevel)
-    safeUpdates.powerLevel = clampNonNegative(raw)
+  if (isFiniteNumber(payload.powerLevel)) {
+    safeUpdates.powerLevel = clampNonNegative(payload.powerLevel)
   }
   if (payload.currentLocationId !== undefined)
     safeUpdates.currentLocationId = payload.currentLocationId
