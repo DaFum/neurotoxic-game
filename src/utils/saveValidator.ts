@@ -328,6 +328,11 @@ const validateSocial = (social: unknown): void => {
     if (key === 'lastCultIndoctrinationDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
+    if (
+      key === 'pendingSocialOptionId' &&
+      (val === null || typeof val === 'string')
+    )
+      continue
 
     // Backwards compatibility: Ignore legacy sponsorActive boolean
     if (key === 'sponsorActive' && typeof val === 'boolean') continue

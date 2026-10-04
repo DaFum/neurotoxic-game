@@ -772,7 +772,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedNaN[f] = Number.NaN
@@ -787,7 +786,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedInf[f] = Number.POSITIVE_INFINITY
@@ -817,7 +815,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedNull[f] = null
@@ -826,6 +823,18 @@ describe('Action Creators', () => {
 
       const actionForbidden = createUpdateSocialAction(payloadForbidden)
       assert.deepStrictEqual(actionForbidden.payload, {})
+    })
+
+    it('keeps pendingSocialOptionId so expedition social settlement can match it', () => {
+      assert.deepStrictEqual(
+        createUpdateSocialAction({ pendingSocialOptionId: 'perf_crowd_surf' })
+          .payload,
+        { pendingSocialOptionId: 'perf_crowd_surf' }
+      )
+      assert.deepStrictEqual(
+        createUpdateSocialAction({ pendingSocialOptionId: null }).payload,
+        { pendingSocialOptionId: null }
+      )
     })
 
     it('drops non-finite cult indoctrination cooldown updates while preserving null', () => {

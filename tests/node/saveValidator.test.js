@@ -330,6 +330,17 @@ describe('saveValidator', () => {
       })
     })
 
+    it('accepts a string or null pendingSocialOptionId and rejects other types', () => {
+      for (const value of ['perf_crowd_surf', null]) {
+        const data = getValidData()
+        data.social.pendingSocialOptionId = value
+        assert.strictEqual(validateSaveData(data), true)
+      }
+      const data = getValidData()
+      data.social.pendingSocialOptionId = { id: 1 }
+      assert.throws(() => validateSaveData(data))
+    })
+
     it('throws if social values are not numbers (except lastGigDay)', () => {
       const data = getValidData()
       data.social.fans = 'not a number'

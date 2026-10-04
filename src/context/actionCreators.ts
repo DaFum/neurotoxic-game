@@ -227,8 +227,9 @@ const SOCIAL_FIELDS = {
   activeDeals: {},
   brandReputation: {},
   influencers: {},
-  scenePresence: {},
-  regionalGigHistory: {}
+  scenePresence: { numeric: true },
+  regionalGigHistory: {},
+  pendingSocialOptionId: {}
 } as const satisfies Record<
   keyof SocialState,
   { numeric?: boolean; nullable?: boolean }
