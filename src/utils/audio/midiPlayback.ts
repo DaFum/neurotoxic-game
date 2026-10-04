@@ -746,6 +746,24 @@ function scheduleMidiEndEvents(
   stopAfterSeconds: number | null,
   transport: ReturnType<typeof Tone.getTransport>
 ): void {
+  const stopTime =
+    isFiniteNumber(stopAfterSeconds) && stopAfterSeconds > 0
+      ? requestedOffset + stopAfterSeconds
+      : null
+  if (onEnded && stopTime !== null && stopTime < duration) {
+    // The excerpt ends before the MIDI does. stopAudio() would invalidate the
+    // request before onEnded fires and halt the Transport the gig loop needs
+    // to finalize, so mute the parts and report the end instead, like the OGG
+    // path does when its source ends.
+    audioState.transportEndEventId = transport.scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      audioState.midiParts.forEach(part => {
+        part.mute = true
+      })
+      onEnded({ filename, duration, offsetSeconds: requestedOffset })
+    }, stopTime)
+    return
+  }
   scheduleEndCallback(
     reqId,
     filename,
