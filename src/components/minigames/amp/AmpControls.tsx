@@ -172,7 +172,7 @@ export const AmpControls = memo(function AmpControls({
         <button
           type='button'
           onClick={handleToggleOverdrive}
-          className={`px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 ${
+          className={`px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
             isOverdriveActive
               ? 'bg-toxic-green text-void-black border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)] animate-pulse'
               : 'bg-void-black text-toxic-green border-toxic-green hover:bg-toxic-green/20'
