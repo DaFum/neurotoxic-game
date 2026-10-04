@@ -1310,6 +1310,14 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   if (typeof safeValue.trend === 'string') {
     sanitized.trend = safeValue.trend
   }
+  // Provenance for an open Expedition social settlement; dropping it on load
+  // would make the settlement permanently unresolvable.
+  if (
+    typeof safeValue.pendingSocialOptionId === 'string' ||
+    safeValue.pendingSocialOptionId === null
+  ) {
+    sanitized.pendingSocialOptionId = safeValue.pendingSocialOptionId
+  }
 
   if (Array.isArray(safeValue.activeDeals)) {
     sanitized.activeDeals = safeValue.activeDeals.flatMap(
