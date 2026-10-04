@@ -25,6 +25,7 @@ import {
   clampZealotry,
   clampControversyLevel,
   clampNonNegative,
+  clamp0to100,
   isFiniteNumber,
   finiteNumberOr
 } from '../../utils/gameState'
@@ -239,20 +240,24 @@ export const handleUpdateSocial = (
     }
   }
 
-  if (updates.zealotry !== undefined) {
-    updates.zealotry = clampZealotry(
-      finiteNumberOr(Number(updates.zealotry), 0)
-    )
-  }
-
-  if (updates.loyalty !== undefined) {
-    updates.loyalty = clampLoyalty(finiteNumberOr(Number(updates.loyalty), 0))
-  }
-
-  if (updates.controversyLevel !== undefined) {
-    updates.controversyLevel = clampControversyLevel(
-      finiteNumberOr(Number(updates.controversyLevel), 0)
-    )
+  // Malformed numbers are dropped, never coerced or reset to 0.
+  const clampedNumericFields = {
+    zealotry: clampZealotry,
+    loyalty: clampLoyalty,
+    controversyLevel: clampControversyLevel,
+    scenePresence: clamp0to100
+  } as const
+  for (const key of Object.keys(clampedNumericFields) as Array<
+    keyof typeof clampedNumericFields
+  >) {
+    if (updates[key] === undefined) continue
+    const value = updates[key]
+    if (isFiniteNumber(value)) {
+      updates[key] = clampedNumericFields[key](value)
+    } else {
+      logger.warn('GameState', `Invalid ${key} update: ${String(value)}`)
+      delete updates[key]
+    }
   }
 
   if (updates.activeDeals !== undefined) {

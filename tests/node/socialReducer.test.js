@@ -61,6 +61,37 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.loyalty, 100)
     })
 
+    it('drops malformed numeric updates instead of zeroing or coercing them', () => {
+      baseState.social.loyalty = 40
+      baseState.social.zealotry = 30
+      baseState.social.controversyLevel = 70
+      baseState.social.scenePresence = 20
+      const nextState = handleUpdateSocial(baseState, {
+        loyalty: '90',
+        zealotry: Number.NaN,
+        controversyLevel: Number.POSITIVE_INFINITY,
+        scenePresence: Number.NaN
+      })
+
+      assert.strictEqual(nextState.social.loyalty, 40)
+      assert.strictEqual(nextState.social.zealotry, 30)
+      assert.strictEqual(nextState.social.controversyLevel, 70)
+      assert.strictEqual(nextState.social.scenePresence, 20)
+    })
+
+    it('clamps scenePresence updates to 0-100', () => {
+      assert.strictEqual(
+        handleUpdateSocial(baseState, { scenePresence: 250 }).social
+          .scenePresence,
+        100
+      )
+      assert.strictEqual(
+        handleUpdateSocial(baseState, { scenePresence: -5 }).social
+          .scenePresence,
+        0
+      )
+    })
+
     it('should ignore invalid trend updates', () => {
       const payload = { trend: 'invalid_trend', loyalty: 20 }
       const nextState = handleUpdateSocial(baseState, payload)
