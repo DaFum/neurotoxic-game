@@ -37,6 +37,11 @@ export const useGigSession = ({
   const hasInteractedRef = useRef(false)
 
   useEffect(() => {
+    // The game loop reads this so an event overlay does not resume audio
+    // underneath the pause menu.
+    if (gameStateRef.current) {
+      gameStateRef.current.userPaused = isPaused
+    }
     if (!hasInteractedRef.current) {
       if (!isPaused) {
         hasInteractedRef.current = true
@@ -60,6 +65,15 @@ export const useGigSession = ({
         'info'
       )
     } else {
+      if (gameStateRef.current?.transportPausedByOverlay) {
+        // An event overlay still owns the transport pause; the game loop
+        // resumes audio once the overlay clears.
+        addToast(
+          tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
+          'info'
+        )
+        return
+      }
       let cancelled = false
       void resumeAudio().then(resumed => {
         if (cancelled) return
@@ -84,7 +98,7 @@ export const useGigSession = ({
         cancelled = true
       }
     }
-  }, [isPaused, addToast, tRef])
+  }, [isPaused, addToast, tRef, gameStateRef])
 
   const handleTogglePause = useCallback(() => {
     setIsPaused(prev => !prev)

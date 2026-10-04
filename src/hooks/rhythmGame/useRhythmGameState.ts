@@ -269,6 +269,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   // detect a song transition and reset its render pointer.
   notesVersion: 0,
   transportPausedByOverlay: false,
+  userPaused: false,
   toxicTimeTotal: 0,
   toxicModeEndTime: 0,
   corruptionLevel: 0,

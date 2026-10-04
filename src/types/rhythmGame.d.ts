@@ -175,6 +175,8 @@ export type RhythmGameRefState = {
   notesVersion: number
   /** Whether transport was paused by an overlay rather than normal playback end. */
   transportPausedByOverlay: boolean
+  /** Whether the player opened the pause menu; overlay resumes must wait for it. */
+  userPaused?: boolean
   toxicTimeTotal: number
   toxicModeEndTime: number
   corruptionLevel: number

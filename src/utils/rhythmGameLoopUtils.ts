@@ -44,6 +44,9 @@ const handleOverlayResume = (
   transportState: string,
   resumeAudio: AsyncBooleanCallback
 ): void => {
+  // The player's pause menu outranks the overlay: keep the overlay flag so the
+  // loop resumes once the player unpauses, not while the menu is still open.
+  if (stateRef.userPaused) return
   if (stateRef.transportPausedByOverlay) {
     if (transportState === 'paused') {
       try {

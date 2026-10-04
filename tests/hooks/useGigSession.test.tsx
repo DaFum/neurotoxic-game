@@ -257,4 +257,39 @@ describe('useGigSession', () => {
       'error'
     )
   })
+
+  it('mirrors the pause into the game ref and leaves an overlay-owned pause to the game loop', async () => {
+    const mockTRef = {
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
+    }
+    const gameStateRef = {
+      current: {
+        transportPausedByOverlay: true
+      } as unknown as RhythmGameRefState
+    }
+
+    const { result } = renderHook(() =>
+      useGigSession({
+        addToast: vi.fn(),
+        setLastGigStats: vi.fn(),
+        endGig: vi.fn(),
+        tRef: mockTRef,
+        gameStateRef
+      })
+    )
+
+    act(() => {
+      result.current.handleTogglePause()
+    })
+    expect(gameStateRef.current.userPaused).toBe(true)
+
+    await act(async () => {
+      result.current.handleTogglePause()
+    })
+    expect(gameStateRef.current.userPaused).toBe(false)
+    // The event overlay still owns the pause; the loop resumes once it clears.
+    expect(resumeAudio).not.toHaveBeenCalled()
+  })
 })
