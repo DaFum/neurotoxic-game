@@ -8,6 +8,8 @@ import * as m from 'motion/react-m'
 import { HexNode } from '../ui/shared'
 import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'
+import { formatCurrency } from '../utils/numberUtils'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
@@ -35,6 +37,7 @@ interface MapNodeTooltipProps {
   nodeLocationName: string
   ticketPrice?: number
   t: TranslationCallback
+  language: string
   harmony?: number
   tourSuccess?: number
   cityTraits?: CityTraitState
@@ -75,6 +78,9 @@ interface MapNodeProps {
  * @param type - The functional classification of the node
  * @returns The localized alternative text string
  */
+const formatVenueCurrency = (value: unknown, language: string): string =>
+  isFiniteNumber(value) ? formatCurrency(value, language) : ''
+
 const getPinAltText = (t: TranslationCallback, type: string): string => {
   return t('ui:map.pinTypeAlt', {
     type: t('ui:map.nodeType.fallback', {
@@ -166,6 +172,7 @@ const MapNodeTooltip = memo(
     nodeLocationName,
     ticketPrice,
     t,
+    language,
     harmony,
     tourSuccess,
     cityTraits,
@@ -238,12 +245,11 @@ const MapNodeTooltip = memo(
               </div>
             )}
             {t('ui:map.cap')}: {node.venue?.capacity} | {t('ui:map.pay')}: ~
-            {node.venue?.pay}
-            {'\u20AC'}
+            {formatVenueCurrency(node.venue?.pay, language)}
             <br />
-            {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
-            {'\u20AC'} | {t('ui:map.diff')}:{' '}
-            {'\u2605'.repeat(node.venue?.diff ?? 0)}
+            {t('ui:map.ticket')}:{' '}
+            {formatVenueCurrency(ticketPrice ?? node.venue?.price, language)} |{' '}
+            {t('ui:map.diff')}: {'\u2605'.repeat(node.venue?.diff ?? 0)}
           </div>
         )}
         {isGigLike && harmony !== undefined && (
@@ -307,7 +313,7 @@ export const MapNodeView = memo(
     cityTraits,
     expeditionFog
   }: MapNodeProps) => {
-    const { t } = useTranslation(['venues', 'ui'])
+    const { t, i18n } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
 
     const handleClick = () => handleTravel(node)
@@ -488,6 +494,7 @@ export const MapNodeView = memo(
           nodeLocationName={nodeLocationName}
           ticketPrice={ticketPrice}
           t={t}
+          language={i18n.language}
           harmony={harmony}
           tourSuccess={tourSuccess}
           cityTraits={cityTraits}
