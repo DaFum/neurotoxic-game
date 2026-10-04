@@ -48,7 +48,7 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
 // Mock audioEngine to prevent Tone.js initialization crash
 vi.mock('../../src/utils/audio/audioEngine', () => ({
   pauseAudio: vi.fn(),
-  resumeAudio: vi.fn(),
+  resumeAudio: vi.fn(async () => true),
   stopAudio: vi.fn(),
   setupAudio: vi.fn(),
   ensureAudioContext: vi.fn().mockResolvedValue(true),
