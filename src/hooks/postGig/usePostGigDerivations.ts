@@ -70,13 +70,18 @@ export const usePostGigDerivations = ({
     [lastGigStats]
   )
 
+  // One post-gig roll per gig. `activeEvent` is a dependency only so the roll
+  // can wait for an event that was already open on entry; resolving the rolled
+  // event must not roll again.
+  const rolledForGigRef = useRef<Venue | null>(null)
   useEffect(() => {
-    if (!currentGig) return
+    if (!currentGig || rolledForGigRef.current === currentGig) return
 
     // `isScreenshotMode` suppresses the roll the same way `usePreGigLogic`
     // does. Without it POSTGIG could never be captured cleanly: entering the
     // scene always drew a random event modal over the report.
     if (!activeEvent && !isScreenshotMode) {
+      rolledForGigRef.current = currentGig
       if (!triggerEvent('financial', 'post_gig')) {
         if (!triggerEvent('special', 'post_gig')) {
           triggerEvent('band', 'post_gig')
