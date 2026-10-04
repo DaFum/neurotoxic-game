@@ -1741,6 +1741,7 @@
   "pregig.effects.injuryTiming": "VERLETZUNG: -{{penalty}}% Trefferfenster",
   "pregig.effects.merch": "MERCH-STAND: Bessere Merch-Verkäufe",
   "pregig.effects.missStaminaPenalty": "AUSDAUER: +{{penalty}}% Abzug bei Fehlschlag",
+  "pregig.effects.neurotoxic": "NEUROTOXIC: Publikumsenergie sinkt 50% langsamer",
   "pregig.effects.promo": "PROMO: Größeres Publikum",
   "pregig.effects.soundcheck": "SOUNDCHECK: Leichtere Treffer",
   "pregig.effects.telepathy": "TELEPATHIE (Harmonie > 80): Leichtere Treffer",

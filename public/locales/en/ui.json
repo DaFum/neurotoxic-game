@@ -1741,6 +1741,7 @@
   "pregig.effects.injuryTiming": "INJURY: -{{penalty}}% hit window",
   "pregig.effects.merch": "MERCH STAND: Better Merch Sales",
   "pregig.effects.missStaminaPenalty": "STAMINA: +{{penalty}}% Drain on Miss",
+  "pregig.effects.neurotoxic": "NEUROTOXIC: Crowd energy drains 50% slower",
   "pregig.effects.promo": "PROMO: Bigger Crowd",
   "pregig.effects.soundcheck": "SOUNDCHECK: Easier Hits",
   "pregig.effects.telepathy": "TELEPATHY (Harmony > 80): Easier Hits",
