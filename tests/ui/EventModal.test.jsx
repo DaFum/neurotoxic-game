@@ -5,14 +5,20 @@ import { EventModal } from '../../src/ui/EventModal.tsx'
 
 vi.mock('motion/react', () => createMotionReactMock())
 
-const translationBehavior = vi.hoisted(() => ({ useDefaultValue: false }))
+const translationBehavior = vi.hoisted(() => ({
+  useDefaultValue: false,
+  calls: []
+}))
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, options) =>
-      translationBehavior.useDefaultValue
+    t: (key, options) => {
+      translationBehavior.calls.push({ key, options })
+      if (key === 'venues:leipzig_conne_island.name') return 'Conne Island'
+      return translationBehavior.useDefaultValue
         ? (options?.defaultValue ?? key)
-        : key,
+        : key
+    },
     i18n: {
       language: 'en',
       changeLanguage: () => new Promise(() => {}),
@@ -112,6 +118,28 @@ test('EventModal renders event details and handles click flow', async () => {
       })
     )
   })
+})
+
+test('EventModal translates venue keys in the event context before interpolation', () => {
+  translationBehavior.calls = []
+  render(
+    <EventModal
+      event={{
+        id: 'toxic_infighting',
+        title: 'events:toxic_infighting.title',
+        description: 'events:toxic_infighting.desc',
+        context: { venue: 'venues:leipzig_conne_island.name', member1: 'M1' },
+        options: [{ label: 'Option 1' }]
+      }}
+      onOptionSelect={vi.fn()}
+    />
+  )
+
+  const descCall = translationBehavior.calls.find(
+    call => call.key === 'events:toxic_infighting.desc'
+  )
+  expect(descCall?.options?.venue).toBe('Conne Island')
+  expect(descCall?.options?.member1).toBe('M1')
 })
 
 test('EventModal handles resolveEventChoice error by showing fallback preview', async () => {
