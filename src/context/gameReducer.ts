@@ -95,7 +95,7 @@ import {
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
 import { MILESTONES } from '../data/milestones/milestones'
-import { createAddToastAction } from './actionCreators'
+import { createAddToastActionWithId } from './actionCreators'
 import { buildDeterministicToastId } from './reducers/toastSanitizers'
 import { assetForeclosed } from './assetActionCreators'
 import {
@@ -444,20 +444,19 @@ export const gameReducer = (
           nextState = gameReducer(nextState, rewardAction)
         }
 
-        // Reducers must stay pure: replace the creator's random UUID with an
-        // id derived from state so the same action always yields the same toast.
-        const toastAction = createAddToastAction({
-          type: 'info',
-          messageKey: milestone.labelKey,
-          options: milestone.createLabelOptions?.()
-        })
-        nextState = gameReducer(nextState, {
-          ...toastAction,
-          payload: {
-            ...toastAction.payload,
-            id: buildDeterministicToastId('milestone-toast', nextState.toasts)
-          }
-        })
+        // Reducers must stay pure, so the toast id is derived from state
+        // instead of minted by createAddToastAction.
+        nextState = gameReducer(
+          nextState,
+          createAddToastActionWithId(
+            {
+              type: 'info',
+              messageKey: milestone.labelKey,
+              options: milestone.createLabelOptions?.()
+            },
+            buildDeterministicToastId('milestone-toast', nextState.toasts)
+          )
+        )
       }
     }
   }

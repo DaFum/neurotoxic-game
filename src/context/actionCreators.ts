@@ -424,6 +424,24 @@ export const createSetScreenshotModeAction = (
 })
 
 /**
+ * Creates a toast addition action with a caller-supplied id.
+ *
+ * Reducers that emit toasts use this with `buildDeterministicToastId` so they
+ * never generate random ids; `createAddToastAction` always mints a UUID.
+ *
+ * @param payload - Structured toast payload without an id.
+ * @param id - Precomputed toast id.
+ * @returns ADD_TOAST action carrying `id`.
+ */
+export const createAddToastActionWithId = (
+  payload: Omit<ToastPayload, 'id'>,
+  id: string
+): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> => ({
+  type: ActionTypes.ADD_TOAST,
+  payload: { ...payload, id }
+})
+
+/**
  * Creates a toast addition action
  * @param messageOrPayload - Toast message string or structured payload
  * @param type - Toast type (info, success, error, warning)

@@ -14,6 +14,7 @@ import {
   createUpdatePlayerAction,
   createUpdateBandAction,
   createUpdateSocialAction,
+  createAddToastActionWithId,
   createTradeVoidItemAction,
   createUpdateSettingsAction,
   createSetMapAction,
@@ -835,6 +836,19 @@ describe('Action Creators', () => {
 
       const actionForbidden = createUpdateSocialAction(payloadForbidden)
       assert.deepStrictEqual(actionForbidden.payload, {})
+    })
+
+    it('createAddToastActionWithId keeps the supplied id', () => {
+      const action = createAddToastActionWithId(
+        { type: 'info', messageKey: 'ui:milestones.survive_1_week' },
+        'milestone-toast-0'
+      )
+      assert.strictEqual(action.type, ActionTypes.ADD_TOAST)
+      assert.deepStrictEqual(action.payload, {
+        type: 'info',
+        messageKey: 'ui:milestones.survive_1_week',
+        id: 'milestone-toast-0'
+      })
     })
 
     it('keeps pendingSocialOptionId so expedition social settlement can match it', () => {
