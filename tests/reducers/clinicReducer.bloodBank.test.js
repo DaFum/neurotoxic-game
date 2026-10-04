@@ -146,6 +146,23 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(result.player.money, initialState.player.money)
   })
 
+  test('rejects donations whose harmony or stamina cost is missing or malformed', () => {
+    for (const costs of [
+      { staminaCost: 10 },
+      { harmonyCost: Number.NaN, staminaCost: 10 },
+      { harmonyCost: 10, staminaCost: '5' },
+      { harmonyCost: 10, staminaCost: -1 }
+    ]) {
+      const initialState = getInitialState()
+      const result = handleBloodBankDonate(initialState, {
+        moneyGain: 50,
+        controversyGain: 0,
+        ...costs
+      })
+      assert.strictEqual(result, initialState)
+    }
+  })
+
   test('applies default payload values when payload is empty or undefined', () => {
     const testCases = [{}, undefined, null]
 

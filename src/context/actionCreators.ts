@@ -62,20 +62,25 @@ import type { AssetKind, RiskEventDescriptor } from '../types/assets'
  * and stamping any `successToast` with a fresh UUID. Returns the payload
  * unchanged if it is not an object.
  *
- * Negative values for the listed `numericKeys` (e.g. `harmonyCost`,
- * `staminaCost`, `controversyGain`) are silently floored to `0` rather
- * than rejected. Reducers downstream re-clamp the final state and treat
- * `0` as a safe no-op, so the silent floor is intentional: callers can
- * pass best-effort costs without needing to short-circuit on bad inputs.
+ * Invalid values for the listed gain `numericKeys` (e.g. `controversyGain`)
+ * are silently floored to `0`: reducers re-clamp the final state and treat a
+ * zero gain as a safe no-op. Price keys listed in `costKeys` (e.g. `cost`,
+ * `harmonyCost`) are never coerced: a non-finite or negative price is dropped
+ * so the reducer rejects the action instead of granting it for free.
  */
 const sanitizeNonNegativePayload = <
   T extends { successToast?: { id?: string } | undefined }
 >(
   payload: T,
-  numericKeys: ReadonlyArray<keyof T>
+  numericKeys: ReadonlyArray<keyof T>,
+  costKeys: ReadonlyArray<keyof T> = []
 ): T => {
   if (!payload || typeof payload !== 'object') return payload
   const sanitized = { ...payload }
+  for (const key of costKeys) {
+    const raw = payload[key] as unknown
+    if (!isFiniteNumber(raw) || raw < 0) delete sanitized[key]
+  }
   for (const key of numericKeys) {
     const raw = payload[key] as unknown
     const numeric = Number(raw)
@@ -1047,13 +1052,11 @@ export const createPirateBroadcastAction = (
   payload: PirateBroadcastPayload
 ): Extract<GameAction, { type: typeof ActionTypes.PIRATE_BROADCAST }> => ({
   type: ActionTypes.PIRATE_BROADCAST,
-  payload: sanitizeNonNegativePayload(payload, [
-    'cost',
-    'fameGain',
-    'zealotryGain',
-    'controversyGain',
-    'harmonyCost'
-  ])
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['fameGain', 'zealotryGain', 'controversyGain'],
+    ['cost', 'harmonyCost']
+  )
 })
 
 /**
@@ -1145,12 +1148,11 @@ export const createBloodBankDonateAction = (
   payload: BloodBankDonatePayload
 ): Extract<GameAction, { type: typeof ActionTypes.BLOOD_BANK_DONATE }> => ({
   type: ActionTypes.BLOOD_BANK_DONATE,
-  payload: sanitizeNonNegativePayload(payload, [
-    'moneyGain',
-    'harmonyCost',
-    'staminaCost',
-    'controversyGain'
-  ])
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['moneyGain', 'controversyGain'],
+    ['harmonyCost', 'staminaCost']
+  )
 })
 
 /**
@@ -1165,7 +1167,7 @@ export const createBloodBankDonateAction = (
 export const createTradeVoidItemAction = (
   payload: TradeVoidItemPayload
 ): Extract<GameAction, { type: typeof ActionTypes.TRADE_VOID_ITEM }> => {
-  const base = sanitizeNonNegativePayload(payload, ['fameCost'])
+  const base = sanitizeNonNegativePayload(payload, [], ['fameCost'])
   return {
     type: ActionTypes.TRADE_VOID_ITEM,
     payload:
@@ -1191,13 +1193,11 @@ export const createDarkWebLeakAction = (
   payload: DarkWebLeakPayload
 ): Extract<GameAction, { type: typeof ActionTypes.DARK_WEB_LEAK }> => ({
   type: ActionTypes.DARK_WEB_LEAK,
-  payload: sanitizeNonNegativePayload(payload, [
-    'cost',
-    'fameGain',
-    'zealotryGain',
-    'controversyGain',
-    'harmonyCost'
-  ])
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['fameGain', 'zealotryGain', 'controversyGain'],
+    ['cost', 'harmonyCost']
+  )
 })
 
 /**
@@ -1216,13 +1216,11 @@ export const createMerchPressAction = (
   payload: MerchPressPayload
 ): Extract<GameAction, { type: typeof ActionTypes.MERCH_PRESS }> => ({
   type: ActionTypes.MERCH_PRESS,
-  payload: sanitizeNonNegativePayload(payload, [
-    'cost',
-    'loyaltyGain',
-    'controversyGain',
-    'fameGain',
-    'harmonyCost'
-  ])
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['loyaltyGain', 'controversyGain', 'fameGain'],
+    ['cost', 'harmonyCost']
+  )
 })
 
 /**
@@ -1296,11 +1294,9 @@ export const createCultIndoctrinationAction = (
   payload: CultIndoctrinationPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CULT_INDOCTRINATION }> => ({
   type: ActionTypes.CULT_INDOCTRINATION,
-  payload: sanitizeNonNegativePayload(payload, [
-    'cost',
-    'fameGain',
-    'zealotryGain',
-    'controversyGain',
-    'harmonyCost'
-  ])
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['fameGain', 'zealotryGain', 'controversyGain'],
+    ['cost', 'harmonyCost']
+  )
 })

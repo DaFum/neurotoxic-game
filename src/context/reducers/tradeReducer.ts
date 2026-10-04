@@ -5,7 +5,8 @@ import {
   calculateFameLevel,
   clampNonNegative,
   isForbiddenKey,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameState'
 import {
   isLooseRecord,
@@ -66,12 +67,11 @@ export const handleTradeVoidItem = (
   const instanceId =
     typeof payload.instanceId === 'string' ? payload.instanceId : undefined
 
-  const parsedCost = Number(fameCost)
-  if (!Number.isFinite(parsedCost) || parsedCost < 0) {
+  if (!isFiniteNumber(fameCost) || fameCost < 0) {
     logger.warn('GameState', 'Invalid fameCost for void trade', fameCost)
     return state
   }
-  const cost = clampNonNegative(parsedCost)
+  const cost = clampNonNegative(fameCost)
   const currentFame = finiteNumberOr(state.player.fame, 0)
 
   if (currentFame < cost) {

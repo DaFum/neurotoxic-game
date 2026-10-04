@@ -235,9 +235,20 @@ export const handleBloodBankDonate = (
     staminaCost: 0,
     controversyGain: 0
   }
+  // Costs are never coerced: a missing or malformed price must not make the
+  // donation free.
+  if (
+    !isFiniteNumber(safePayload.harmonyCost) ||
+    safePayload.harmonyCost < 0 ||
+    !isFiniteNumber(safePayload.staminaCost) ||
+    safePayload.staminaCost < 0
+  ) {
+    logger.warn('ClinicReducer', 'Invalid blood bank cost payload')
+    return state
+  }
   const moneyGain = Math.max(0, finiteNumberOr(safePayload.moneyGain, 0))
-  const harmonyCost = Math.max(0, finiteNumberOr(safePayload.harmonyCost, 0))
-  const staminaCost = Math.max(0, finiteNumberOr(safePayload.staminaCost, 0))
+  const harmonyCost = safePayload.harmonyCost
+  const staminaCost = safePayload.staminaCost
   const controversyGain = Math.max(
     0,
     finiteNumberOr(safePayload.controversyGain, 0)
