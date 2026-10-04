@@ -145,6 +145,17 @@ export const copySafePrimitiveEntries = (
   return copied
 }
 
+/**
+ * Copies safe primitive entries from an object, returning undefined if empty.
+ *
+ * @remarks
+ * This function wraps `copySafePrimitiveEntries`, additionally verifying the input
+ * is a traversable record and ensuring that if no safe primitive entries remain,
+ * it returns `undefined` rather than an empty object.
+ *
+ * @param value - The candidate object to sanitize and copy.
+ * @returns A new record containing only safe primitives, or undefined if none exist or the input is invalid.
+ */
 export const copySafePrimitiveObject = (
   value: unknown
 ): Record<string, string | number | boolean | null> | undefined => {
