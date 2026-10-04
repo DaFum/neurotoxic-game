@@ -75,6 +75,19 @@ test('calculateViralityScore boosts for Kaminstube venue', () => {
   assert.ok(historicScore > normalScore, 'Historic venue should boost virality')
 })
 
+test('calculateViralityScore boosts for the real Kaminstube venue record', () => {
+  const kaminstube = {
+    id: 'tangermuende_kaminstube',
+    name: 'venues:tangermuende_kaminstube.name'
+  }
+  const normalVenue = { id: 'regular', name: 'venues:regular.name' }
+
+  assert.ok(
+    calculateViralityScore(50, [], kaminstube) >
+      calculateViralityScore(50, [], normalVenue)
+  )
+})
+
 test('calculateViralityScore boosts for stage diver event', () => {
   const venue = { name: 'Test Venue' }
   const noEvents = calculateViralityScore(80, [], venue)

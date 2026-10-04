@@ -33,7 +33,7 @@ export const useGigVisuals = ({
   // Determine Background URL
   const bgUrl = useMemo(() => {
     let bgPrompt = IMG_PROMPTS.VENUE_CLUB
-    if (currentGig?.name?.includes('Kaminstube'))
+    if (currentGig?.name && /kaminstube/i.test(currentGig.name))
       bgPrompt = IMG_PROMPTS.VENUE_KAMINSTUBE
     else if (currentGig?.name && FESTIVAL_REGEX.test(currentGig.name))
       bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
