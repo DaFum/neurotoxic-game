@@ -60,11 +60,29 @@ export const useGigSession = ({
         'info'
       )
     } else {
-      resumeAudio()
-      addToast(
-        tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
-        'info'
-      )
+      let cancelled = false
+      void resumeAudio().then(resumed => {
+        if (cancelled) return
+        if (resumed) {
+          addToast(
+            tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
+            'info'
+          )
+          return
+        }
+        // The audio context refused to resume: stay paused instead of
+        // showing a running gig over a stopped transport.
+        addToast(
+          tRef.current('ui:gig.resumeFailed', {
+            defaultValue: 'Audio could not resume. Try again.'
+          }),
+          'error'
+        )
+        setIsPaused(true)
+      })
+      return () => {
+        cancelled = true
+      }
     }
   }, [isPaused, addToast, tRef])
 

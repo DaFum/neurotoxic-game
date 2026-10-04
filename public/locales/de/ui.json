@@ -1225,6 +1225,7 @@
   "gig.quit": "GIG BEENDEN",
   "gig.resume": "WEITER",
   "gig.resumed": "FORTGESETZT",
+  "gig.resumeFailed": "Audio konnte nicht fortgesetzt werden. Versuch es nochmal.",
   "gig.score": "PUNKTE",
   "gig.systemLocked": "SYSTEM GESPERRT",
   "gig.toasts.bandCollapsed": "BAND KOLLABIERT",

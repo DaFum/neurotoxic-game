@@ -1225,6 +1225,7 @@
   "gig.quit": "QUIT GIG",
   "gig.resume": "RESUME",
   "gig.resumed": "RESUMED",
+  "gig.resumeFailed": "Audio could not resume. Try again.",
   "gig.score": "SCORE",
   "gig.systemLocked": "SYSTEM LOCKED",
   "gig.toasts.bandCollapsed": "BAND COLLAPSED",
