@@ -35,6 +35,9 @@ export const useGigSession = ({
 }: UseGigSessionProps): UseGigSessionReturn => {
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)
+  // Set when a failed resume re-pauses, so that re-pause doesn't stack a
+  // PAUSED toast on top of the resume-failed error.
+  const silentRepauseRef = useRef(false)
 
   useEffect(() => {
     // The game loop reads this so an event overlay does not resume audio
@@ -60,6 +63,10 @@ export const useGigSession = ({
 
     if (isPaused) {
       pauseAudio()
+      if (silentRepauseRef.current) {
+        silentRepauseRef.current = false
+        return
+      }
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
@@ -92,6 +99,7 @@ export const useGigSession = ({
           }),
           'error'
         )
+        silentRepauseRef.current = true
         setIsPaused(true)
       })
       return () => {

@@ -256,6 +256,11 @@ describe('useGigSession', () => {
       'Audio could not resume. Try again.',
       'error'
     )
+    // The re-pause after the failure must not stack a second PAUSED toast on
+    // top of the error.
+    expect(
+      mockAddToast.mock.calls.filter(([message]) => message === 'PAUSED')
+    ).toHaveLength(1)
   })
 
   it('mirrors the pause into the game ref and leaves an overlay-owned pause to the game loop', async () => {

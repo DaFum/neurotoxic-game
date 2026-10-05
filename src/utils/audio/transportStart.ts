@@ -41,6 +41,8 @@ export function deferScheduledTransportStart(): boolean {
   if (!scheduled) return false
   const remainingSec = scheduled.timeSec - getAudioContextTimeSec()
   if (!(remainingSec > 0)) return false
+  // Relies on Tone's Clock.stop() cancelling state events after now
+  // (`_state.cancel(time)`), which removes the pending start (Tone 15.5).
   Tone.getTransport().stop()
   audioState.transportScheduledStart = null
   audioState.transportDeferredStart = { remainingSec, offset: scheduled.offset }
