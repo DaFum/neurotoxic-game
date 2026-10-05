@@ -90,7 +90,6 @@ const buildPopulatedState = () => {
   state.completedQuestIds = ['quest_0']
   state.completedQuestScopes = ['scope_a']
   state.reputationByRegion = { berlin: 25, hamburg: -10 }
-  state.npcs = { promoter_1: { trust: 40 } }
   state.gigModifiers = { ...state.gigModifiers, merch: true, promo: true }
   state.setlist = [{ songId: 'song_1' }, { songId: 'song_2' }]
   state.minigame = { ...state.minigame, type: 'travel', targetNodeId: 'node_2' }

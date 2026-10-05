@@ -10,6 +10,8 @@
 - Prototype-pollution rejection in reducers must return the **identical memory reference** (`nextState === baseState`), not just a deep-equal copy. `{ ...state }` "safe copy" still fails `tests/node/reducerInvariants.test.js` and `tests/node/bandReducer.security.test.js` — the forbidden-key branch must short-circuit before any state copy.
 - Stash hydration in `sanitizeBand` spreads the canonical `CONTRABAND_BY_ID` definition LAST (`{ ...itemObj, ...baseItem }`) so save data can never override definition fields (`value`, `effectType`, `duration`, `type`, `maxStacks`); only per-instance runtime fields (`instanceId`, `applied`, `stacks`) survive from the save, and `stacks` is sanitized to a positive integer. Do not flip the spread order back.
 - Legacy-key migrations in sanitizers (e.g. `energy → catering` in `sanitizeGigModifiers`) must only apply when the save lacks the current key — the current key always wins over a stale alias.
+- `sanitizePlayer`/`sanitizeBand` own value clamping on load (a direct `LOAD_GAME` bypasses `saveValidator.ts`); the validator stays structural (type/shape rejection). Clamp new persisted numeric fields in the sanitizer, not the validator.
+- Gig-modifier keys have one whitelist, `sanitizeGigModifierUpdates` (`stateSanitizers.ts`), shared by the `SET_GIG_MODIFIERS` creator, `gigReducer` and `sanitizeGigModifiers`. A runtime flag such as `damaged_gear` must be added there, never to a second list.
 
 ## Band Effects
 

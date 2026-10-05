@@ -8,7 +8,7 @@ type RecordGuard = (value: unknown) => value is Record<string, unknown>
 /**
  * Object keys that must be dropped when traversing untrusted payloads.
  */
-export const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
+const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
   '__proto__',
   'constructor',
   'prototype'
@@ -46,36 +46,62 @@ export const hasForbiddenOwnKeys = (obj: object): boolean => {
  */
 const MAX_FORBIDDEN_KEY_SCAN_DEPTH = 64
 
+/**
+ * Label reported by {@link findUnsafeKeyDeep} for payloads rejected because of
+ * their shape (cycle, excessive depth, accessor property) rather than a named
+ * forbidden key.
+ */
+const UNSAFE_STRUCTURE_LABEL = '[unsafe structure]'
+
 const scanForForbiddenKeys = (
   value: unknown,
   path: WeakSet<object>,
   cleared: WeakSet<object>,
   depth: number
-): boolean => {
-  if (typeof value !== 'object' || value === null) return false
-  if (depth > MAX_FORBIDDEN_KEY_SCAN_DEPTH) return true
+): string | null => {
+  if (typeof value !== 'object' || value === null) return null
+  if (depth > MAX_FORBIDDEN_KEY_SCAN_DEPTH) return UNSAFE_STRUCTURE_LABEL
   // `path` holds only the current recursion ancestors, so a repeat is a real
   // cycle. `cleared` memoizes subtrees already proven safe, which keeps a
   // shared (DAG) child from being re-walked — accepting it without the
   // exponential blowup that re-traversal would cost on hostile input.
-  if (path.has(value)) return true
-  if (cleared.has(value)) return false
-  if (!Array.isArray(value) && !isLooseRecord(value)) return false
+  if (path.has(value)) return UNSAFE_STRUCTURE_LABEL
+  if (cleared.has(value)) return null
+  if (!Array.isArray(value) && !isLooseRecord(value)) return null
 
   path.add(value)
+  let found: string | null = null
   // `getOwnPropertyNames`, not `Object.keys`: a non-enumerable own key hides
   // from enumeration but still pollutes on copy, and a non-enumerable accessor
   // would otherwise be invoked later by the caller's field reads.
-  const found = Object.getOwnPropertyNames(value).some(key => {
-    if (isForbiddenKey(key)) return true
+  for (const key of Object.getOwnPropertyNames(value)) {
+    if (isForbiddenKey(key)) {
+      found = key
+      break
+    }
     const descriptor = Object.getOwnPropertyDescriptor(value, key)
-    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
-    return scanForForbiddenKeys(descriptor.value, path, cleared, depth + 1)
-  })
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) {
+      found = UNSAFE_STRUCTURE_LABEL
+      break
+    }
+    found = scanForForbiddenKeys(descriptor.value, path, cleared, depth + 1)
+    if (found !== null) break
+  }
   path.delete(value)
-  if (!found) cleared.add(value)
+  if (found === null) cleared.add(value)
   return found
 }
+
+/**
+ * Locates the first reason an untrusted payload is unsafe to copy, using the
+ * same hostile-input-safe traversal as {@link hasForbiddenKeysDeep}.
+ *
+ * @param value - Arbitrary value from a JSON, storage, or generated-data boundary.
+ * @returns The offending forbidden key name, `'[unsafe structure]'` for a
+ * cycle, an over-deep payload or an accessor property, or `null` when safe.
+ */
+export const findUnsafeKeyDeep = (value: unknown): string | null =>
+  scanForForbiddenKeys(value, new WeakSet(), new WeakSet(), 0)
 
 /**
  * Recursively checks an untrusted payload for prototype-polluting own keys at
@@ -92,7 +118,7 @@ const scanForForbiddenKeys = (
  * @returns True when the payload is unsafe to copy.
  */
 export const hasForbiddenKeysDeep = (value: unknown): boolean =>
-  scanForForbiddenKeys(value, new WeakSet(), new WeakSet(), 0)
+  findUnsafeKeyDeep(value) !== null
 
 /**
  * Filters a value to the subset of its entries that are strings.

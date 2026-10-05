@@ -506,6 +506,23 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'gigModifiers hydration: damaged_gear survives LOAD_GAME and bad values are dropped',
+    () => {
+      const kept = handleLoadGame(createInitialState(), {
+        gigModifiers: { promo: true, damaged_gear: true }
+      })
+      assert.equal(kept.gigModifiers.damaged_gear, true)
+      assert.equal(kept.gigModifiers.promo, true)
+
+      const dropped = handleLoadGame(createInitialState(), {
+        gigModifiers: { damaged_gear: 'yes', unknown_flag: true }
+      })
+      assert.equal(Object.hasOwn(dropped.gigModifiers, 'damaged_gear'), false)
+      assert.equal(Object.hasOwn(dropped.gigModifiers, 'unknown_flag'), false)
+    }
+  )
+
   await t.test('hydrates array-based contraband stash (migration)', () => {
     const initialState = createInitialState()
     const loadedState = {
@@ -1000,11 +1017,6 @@ test('systemReducer - LOAD_GAME', async t => {
         void: Number.NaN,
         bad: 'high'
       },
-      npcs: {
-        n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm', 4] },
-        bad: { name: 'No Id' },
-        primitive: 5
-      },
       gigModifiers: {
         promo: true,
         merch: 'yes',
@@ -1044,9 +1056,6 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
     assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
-    assert.deepEqual(nextState.npcs, {
-      n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm'] }
-    })
     assert.equal(nextState.gigModifiers.promo, true)
     assert.equal(nextState.gigModifiers.merch, false)
     assert.equal(nextState.gigModifiers.catering, true)
@@ -1066,6 +1075,19 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
     assert.deepEqual(nextState.unlocks, ['u1'])
   })
+
+  await t.test(
+    'strips the retired npcs field from old saves while loading the rest',
+    () => {
+      const nextState = handleLoadGame(createInitialState(), {
+        player: { money: 777 },
+        npcs: { n1: { id: 'n1', name: 'Nina', role: 'booker' } }
+      })
+
+      assert.equal(nextState.player.money, 777)
+      assert.equal(Object.hasOwn(nextState, 'npcs'), false)
+    }
+  )
 
   await t.test('normalizes a legacy bare-string setlist on load', () => {
     const nextState = handleLoadGame(createInitialState(), {

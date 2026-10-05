@@ -13,7 +13,7 @@ import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
-import { sanitizeGigModifierUpdates } from './initialState'
+import { sanitizeGigModifierUpdates } from './reducers/sanitizers/stateSanitizers'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {

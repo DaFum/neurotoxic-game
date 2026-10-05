@@ -6,10 +6,8 @@ import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
-import {
-  DEFAULT_GIG_MODIFIERS,
-  sanitizeGigModifierUpdates
-} from '../initialState'
+import { DEFAULT_GIG_MODIFIERS } from '../initialState'
+import { sanitizeGigModifierUpdates } from './sanitizers/stateSanitizers'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,

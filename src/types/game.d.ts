@@ -133,7 +133,6 @@ export interface GameState {
     reputationByRegionAtStart?: Record<string, number>
   }
   settings: GameSettings
-  npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
   /** Cumulative raw score adjustment emitted by events during the active gig. */
   gigEventScoreDelta: number

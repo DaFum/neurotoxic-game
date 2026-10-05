@@ -85,7 +85,6 @@ const PERSISTED_FIELDS = {
   completedQuestScopes: Array.isArray,
   reputationByRegion: isLooseRecord,
   settings: isLooseRecord,
-  npcs: isLooseRecord,
   gigModifiers: isLooseRecord,
   setlist: Array.isArray,
   minigame: isNullableObject,

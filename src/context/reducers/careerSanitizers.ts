@@ -50,8 +50,7 @@ const safeRecord = <T>(
   const result = Object.create(null) as Record<string, T>
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
-    if (key === '__proto__' || key === 'prototype' || key === 'constructor')
-      continue
+    if (isForbiddenKey(key)) continue
     const sanitized = map(entry, key)
     if (sanitized !== null) result[key] = sanitized
   }
