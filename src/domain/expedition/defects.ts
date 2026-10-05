@@ -14,6 +14,7 @@ import type {
 import type { GameState } from '../../types'
 import { clampCondition, getExpeditionTechnicalCondition } from './condition'
 import { mulberry32 } from '../../utils/seededRng'
+import { pickIndex } from '../../utils/selectionUtils'
 
 /**
  * Condition damage inflicted when a defect of a given severity triggers.
@@ -73,7 +74,7 @@ export const createDeterministicHiddenDefect = (
     severity = roll < 0.5 ? 1 : roll < 0.85 ? 2 : 3
   }
 
-  const triggerIndex = Math.floor(rng() * TRIGGERS.length)
+  const triggerIndex = pickIndex(TRIGGERS, rng)
   const triggerAt = TRIGGERS[triggerIndex] || 'pre_gig'
   const triggerRouteStep = routeStep + 1
 
