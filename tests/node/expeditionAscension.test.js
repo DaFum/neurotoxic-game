@@ -10,6 +10,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
+import { QUEST_EXPEDITION_META_UNLOCK } from '../../src/data/questsConstants'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createUnlockExpeditionAscensionAction } from '../../src/context/careerActionCreators'
@@ -21,10 +22,7 @@ import {
   getExpeditionPressureModifier,
   isExpeditionPressureModifierId
 } from '../../src/data/expedition/pressureModifiers'
-import {
-  EXPEDITION_META_UNLOCK_QUEST_ID,
-  isExpeditionAscensionEligible
-} from '../../src/domain/expedition/meta'
+import { isExpeditionAscensionEligible } from '../../src/domain/expedition/meta'
 import {
   getAvailablePressureModifierIds,
   validateExpeditionBuildCommitment
@@ -43,7 +41,7 @@ const eligibleState = (overrides = {}) => {
   const base = createInitialState()
   return {
     ...base,
-    completedQuestIds: [EXPEDITION_META_UNLOCK_QUEST_ID],
+    completedQuestIds: [QUEST_EXPEDITION_META_UNLOCK],
     career: {
       ...base.career,
       // headliner: 5 completed runs across 2 Regions.

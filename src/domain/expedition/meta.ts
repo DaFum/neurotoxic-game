@@ -11,6 +11,7 @@
 
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isExpeditionUnlockSetId } from '../../data/expedition/unlockSets'
+import { QUEST_EXPEDITION_META_UNLOCK } from '../../data/questsConstants'
 import type { CareerState, ExpeditionCareerRank } from '../../types/career'
 import type { GameState } from '../../types'
 
@@ -216,9 +217,6 @@ export const resolveExpeditionCareerSettlement = (
   }
 }
 
-/** Quest whose completion is the third Ascension prerequisite. */
-export const EXPEDITION_META_UNLOCK_QUEST_ID = 'quest_expedition_meta_unlock'
-
 /** Unlock sets the Career must own before Ascension opens. */
 const EXPEDITION_ASCENSION_REQUIRED_SETS = 3
 
@@ -243,7 +241,7 @@ export const isExpeditionAscensionEligible = (state: GameState): boolean => {
   if (owned < EXPEDITION_ASCENSION_REQUIRED_SETS) return false
   return (
     Array.isArray(state.completedQuestIds) &&
-    state.completedQuestIds.includes(EXPEDITION_META_UNLOCK_QUEST_ID)
+    state.completedQuestIds.includes(QUEST_EXPEDITION_META_UNLOCK)
   )
 }
 
