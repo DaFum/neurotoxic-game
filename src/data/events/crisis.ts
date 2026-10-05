@@ -5,6 +5,7 @@ import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
 import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
+import { isHighControversy } from '../../utils/socialThresholds'
 import { FLAGS } from '../flags.registry'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
@@ -265,7 +266,7 @@ export const CRISIS_EVENTS = [
     trigger: 'travel',
     chance: 0.3,
     condition: (gs: GameState) =>
-      (gs.social?.controversyLevel ?? 0) >= 40 &&
+      isHighControversy(gs.social?.controversyLevel) &&
       !hasStateItem(gs.eventCooldowns, 'crisis_redemption_charity'),
     options: [
       {

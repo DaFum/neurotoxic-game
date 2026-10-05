@@ -198,6 +198,9 @@ export const calculateRefuelCost = (currentFuel: number) => {
 
 /**
  * Calculates the cost to repair the van to full condition.
+ *
+ * Prices the Career van's cash repair (`transport.repairCostPerUnit`); chassis,
+ * between-Tour and Expedition repairs are separate concepts with their own rates.
  * @param currentCondition - Current condition (0-100).
  * @returns Cost in euros.
  */

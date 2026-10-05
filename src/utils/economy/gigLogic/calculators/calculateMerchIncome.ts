@@ -19,6 +19,7 @@ import type { GigModifiers } from '../../../../types'
 import type { FinancialBreakdownItem } from '../../../../types/economy'
 import { MERCH_PROFILE_VALUES, SORTED_MERCH_KEYS } from '../../constants'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../../assetSelectors'
+import { isCultAudience } from '../../../socialThresholds'
 import type { AssetModifiers } from '../../../../types/assets'
 /**
  * Calculates merch sales revenue and costs.
@@ -69,10 +70,7 @@ export const calculateMerchIncome = (
   if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Loyalty converts to merch sales during controversy
-  if (
-    finiteNumberOr(context?.controversyLevel, 0) >= 40 &&
-    finiteNumberOr(context?.loyalty, 0) >= 20
-  ) {
+  if (isCultAudience(context?.controversyLevel, context?.loyalty)) {
     const loyalty = finiteNumberOr(context.loyalty, 0)
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
