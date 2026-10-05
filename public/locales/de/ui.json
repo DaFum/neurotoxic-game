@@ -305,6 +305,7 @@
   "event.severity.critical": "KRITISCH",
   "event.story_updated": "Geschichte aktualisiert",
   "event.untitled": "EREIGNIS",
+  "event.venueFallback": "Club",
   "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
   "expedition.condition.breaking": "Am Ende",

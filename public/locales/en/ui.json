@@ -305,6 +305,7 @@
   "event.severity.critical": "CRITICAL",
   "event.story_updated": "Story Updated",
   "event.untitled": "EVENT",
+  "event.venueFallback": "venue",
   "event_error": "EVENT ERROR: Resolution failed.",
   "executed": "EXECUTED",
   "expedition.condition.breaking": "Breaking",
