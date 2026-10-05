@@ -50,6 +50,7 @@ import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventPr
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
+import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
@@ -172,6 +173,9 @@ import {
   createExpeditionNodeResolvedQuestEvent,
   createExpeditionRivalOutcomeQuestEvent
 } from '../../quests/producers/expeditionQuestEvents'
+
+/** The one registry reward a resolved Crew Contact earns (`crew_contact`). */
+const CREW_CONTACT_REWARD_ID = 'reward_contact_backline_deal'
 
 /**
  * Applies an insurance claim through the canonical resolver.
@@ -2112,6 +2116,21 @@ export const handleApplyExpeditionEventDelta = (
         rewardLedger: [...proven.expedition.rewardLedger, resolution.entry]
       }
     }
+  }
+  // A Contact the run's Crew actually made earns the Crew-contact reward
+  // through the same ADD_EXPEDITION_REWARD handler a dispatch would hit. It is
+  // composed here, in the commit that resolved the event, because the
+  // evidence is the Crew records `applyResolvedCrewEventOutcome` just wrote:
+  // a separate dispatch could be missed and leave the reward unearnable, and
+  // the derived entry id still refuses a replay.
+  const crewSourceId = `${payload.sourceEventId}:${payload.sourceOptionId}`
+  if (getCrewEventOutcomeBySourceId(crewSourceId)?.contactIntel === true) {
+    withRewards = handleAddExpeditionReward(withRewards, {
+      expectedRewardId: CREW_CONTACT_REWARD_ID,
+      sourceType: 'crew_contact',
+      sourceId: crewSourceId,
+      expectedRouteStep: withRewards.expedition.routeStep
+    })
   }
   return withRewards
 }

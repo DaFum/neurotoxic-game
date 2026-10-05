@@ -54,6 +54,53 @@ test('breakthrough produces one source-proven Contact Intel grant', () => {
   assert.equal(replayed.expedition.intelGrants.length, 1)
 })
 
+test('a resolved Contact banks the secured Crew-contact reward once', () => {
+  const event = EXPEDITION_CREW_EVENTS.find(
+    candidate => candidate.id === 'expedition_crew_breakthrough'
+  )
+  assert.ok(event)
+  const started = startedState(
+    { unlockedSetIds: ['industry_network'] },
+    { crewIds: ['noah', 'yara'] }
+  )
+  const state = { ...started, activeEvent: event }
+  const resolution = resolveEvent(event.options[0], state)
+  const next = resolution.actions.reduce(gameReducer, state)
+  const sourceId = `${event.id}:${event.options[0].id}`
+  const entries = next.expedition.rewardLedger.filter(
+    entry => entry.sourceType === 'crew_contact'
+  )
+  assert.equal(entries.length, 1)
+  assert.equal(entries[0].id, `reward_contact_backline_deal::${sourceId}`)
+  assert.equal(entries[0].secured, true)
+  const replayed = resolution.actions.reduce(gameReducer, next)
+  assert.equal(
+    replayed.expedition.rewardLedger.filter(
+      entry => entry.sourceType === 'crew_contact'
+    ).length,
+    1
+  )
+})
+
+test('a Crew event that made no Contact banks no Crew-contact reward', () => {
+  const event = EXPEDITION_CREW_EVENTS.find(
+    candidate => candidate.id === 'expedition_crew_conflict_mika_tom'
+  )
+  assert.ok(event)
+  const started = startedState({}, { crewIds: ['mika', 'tom'] })
+  const state = { ...started, activeEvent: event }
+  const next = resolveEvent(event.options[0], state).actions.reduce(
+    gameReducer,
+    state
+  )
+  assert.equal(
+    next.expedition.rewardLedger.some(
+      entry => entry.sourceType === 'crew_contact'
+    ),
+    false
+  )
+})
+
 test('forged crew source ids return the identical state reference', () => {
   const state = {
     ...createInitialState(),
