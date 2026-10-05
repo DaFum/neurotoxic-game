@@ -286,7 +286,7 @@ describe('gameReducer', () => {
 
   describe('ADD_TOAST', () => {
     it('should add toast to array', () => {
-      const toast = { id: 1, message: 'Test', type: 'info' }
+      const toast = { id: '1', message: 'Test', type: 'info' }
       const action = { type: ActionTypes.ADD_TOAST, payload: toast }
       const newState = gameReducer(testState, action)
 

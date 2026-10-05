@@ -53,9 +53,34 @@ describe('gigReducer', () => {
 
       assert.deepStrictEqual(nextState.currentGig, payload)
     })
+
+    it('accepts null to clear the current gig', () => {
+      baseState.currentGig = { id: 'gig1', name: 'Test Gig' }
+      assert.strictEqual(handleSetGig(baseState, null).currentGig, null)
+    })
+
+    it('rejects non-object and hostile payloads with the same state reference', () => {
+      for (const hostile of [
+        undefined,
+        'gig',
+        7,
+        true,
+        [],
+        JSON.parse('{"id":"g","__proto__":{"evil":1}}'),
+        JSON.parse('{"id":"g","nested":{"constructor":{"x":1}}}')
+      ]) {
+        assert.strictEqual(handleSetGig(baseState, hostile), baseState)
+      }
+    })
   })
 
   describe('handleStartGig', () => {
+    it('returns state unchanged for payloadless dispatches', () => {
+      for (const hostile of [undefined, null, 'gig', 7]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+    })
+
     it('should initialize gig state and transition to PRE_GIG', () => {
       const payload = { id: 'gig2', name: 'Starting Gig' }
       const nextState = handleStartGig(baseState, payload)

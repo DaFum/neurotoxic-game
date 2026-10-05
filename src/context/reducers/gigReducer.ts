@@ -2,7 +2,10 @@ import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
-import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
+import {
+  hasForbiddenKeysDeep,
+  hasForbiddenOwnKeys
+} from '../../utils/objectUtils'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
@@ -69,6 +72,15 @@ export const handleSetGig = (
   state: GameState,
   payload: Venue | null
 ): GameState => {
+  if (
+    payload !== null &&
+    (typeof payload !== 'object' ||
+      Array.isArray(payload) ||
+      hasForbiddenKeysDeep(payload))
+  ) {
+    logger.warn('GameState', 'Rejected malformed SET_GIG payload')
+    return state
+  }
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }
@@ -88,6 +100,7 @@ export const handleSetGig = (
  * @returns Updated state ready for pre-gig setup.
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
+  if (!payload || typeof payload !== 'object') return state
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
   // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
   // it has to resolve before the screen derives its performance profile —

@@ -1,7 +1,22 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { handleBloodBankDonate } from '../../src/context/reducers/clinicReducer.ts'
+import {
+  handleBloodBankDonate,
+  handleGraftNeuroOverclock
+} from '../../src/context/reducers/clinicReducer.ts'
+
+describe('handleGraftNeuroOverclock - payload guard', () => {
+  it('returns state unchanged (no throw) for payloadless or non-object dispatches', () => {
+    const state = {
+      player: { money: 99999 },
+      band: { members: [{ id: 'm1', health: 100, traits: {} }] }
+    }
+    for (const hostile of [undefined, null, 'm1', 7, true]) {
+      assert.strictEqual(handleGraftNeuroOverclock(state, hostile), state)
+    }
+  })
+})
 
 /**
  * Builds a minimal GameState suitable for blood-bank tests.

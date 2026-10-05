@@ -645,6 +645,88 @@ describe('Action Creators', () => {
         0
       )
     })
+
+    it('does not coerce booleans, arrays or numeric strings into amounts', () => {
+      for (const hostile of [true, false, [3], '4', ' 5 ', null, {}]) {
+        assert.strictEqual(
+          createAdvanceQuestAction('quest_1', hostile).payload.amount,
+          0,
+          `amount ${JSON.stringify(hostile)} must fall back to 0`
+        )
+      }
+    })
+  })
+
+  describe('numeric coercion boundaries', () => {
+    it('createCompleteTravelMinigameAction rejects non-number damage', () => {
+      for (const hostile of [true, [7], '9', null, {}]) {
+        assert.strictEqual(
+          createCompleteTravelMinigameAction(hostile, []).payload.damageTaken,
+          0,
+          `damage ${JSON.stringify(hostile)} must fall back to 0`
+        )
+      }
+      assert.strictEqual(
+        createCompleteTravelMinigameAction(12, []).payload.damageTaken,
+        12
+      )
+    })
+
+    it('sanitizeNonNegativePayload gains reject booleans, arrays and numeric strings', () => {
+      const action = createMerchPressAction({
+        cost: 10,
+        harmonyCost: 1,
+        loyaltyGain: true,
+        controversyGain: '5',
+        fameGain: [3]
+      })
+      assert.strictEqual(action.payload.loyaltyGain, 0)
+      assert.strictEqual(action.payload.controversyGain, 0)
+      assert.strictEqual(action.payload.fameGain, 0)
+
+      const ok = createMerchPressAction({
+        cost: 10,
+        harmonyCost: 1,
+        loyaltyGain: 4,
+        controversyGain: 2,
+        fameGain: 1
+      })
+      assert.strictEqual(ok.payload.loyaltyGain, 4)
+    })
+  })
+
+  describe('createAddToastAction sanitization', () => {
+    it('keeps only primitive options and drops forbidden keys', () => {
+      const options = JSON.parse(
+        '{"n":1,"s":"x","b":false,"z":null,"obj":{"a":1},"arr":[1],"__proto__":{"evil":1}}'
+      )
+      const action = createAddToastAction({
+        messageKey: 'ui:toast.test',
+        type: 'success',
+        options
+      })
+      assert.deepStrictEqual(action.payload.options, {
+        n: 1,
+        s: 'x',
+        b: false,
+        z: null
+      })
+      assert.strictEqual(
+        Object.hasOwn(action.payload.options, '__proto__'),
+        false
+      )
+    })
+
+    it('normalizes an unknown toast type and never emits non-string messages', () => {
+      const action = createAddToastAction({
+        messageKey: 'ui:toast.test',
+        type: 'bogus'
+      })
+      assert.strictEqual(action.payload.type, 'info')
+
+      const empty = createAddToastAction({ message: { not: 'a string' } })
+      assert.strictEqual(typeof empty.payload.message, 'string')
+    })
   })
 
   describe('createPirateBroadcastAction', () => {

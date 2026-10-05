@@ -9,7 +9,7 @@ mock.module('../../src/utils/logger', {
   }
 })
 
-const { handleMerchPress } =
+const { handleMerchPress, handleDarkWebLeak } =
   await import('../../src/context/reducers/socialReducer')
 const { handleUpdateSocial } =
   await import('../../src/context/reducers/socialReducer')
@@ -78,6 +78,91 @@ describe('socialReducer.merchPress', () => {
 
     assert.strictEqual(result.player.money, 850)
     assert.strictEqual(result.band.harmony, 85)
+  })
+
+  test('returns state unchanged for payloadless or non-object dispatches', () => {
+    const state = {
+      player: { money: 1000, fame: 0, fameLevel: 0 },
+      band: { harmony: 100, inventory: {} },
+      social: { loyalty: 10, controversyLevel: 0 }
+    }
+    for (const hostile of [undefined, null, 'merch', 5]) {
+      assert.strictEqual(handleMerchPress(state, hostile), state)
+    }
+  })
+
+  test('accepts fractional player money and harmony instead of rejecting them', () => {
+    const state = {
+      player: { money: 1000.75, fame: 0, fameLevel: 0 },
+      band: { harmony: 80.5, inventory: {} },
+      social: { loyalty: 10, controversyLevel: 0 }
+    }
+    const result = handleMerchPress(state, {
+      cost: 150,
+      loyaltyGain: 5,
+      controversyGain: 10,
+      harmonyCost: 10
+    })
+
+    assert.notStrictEqual(result, state)
+    assert.strictEqual(result.player.money, 850)
+    assert.strictEqual(result.band.harmony, 70)
+  })
+
+  test('rejects non-finite or out-of-range funds without Number() coercion', () => {
+    const payload = {
+      cost: 1,
+      loyaltyGain: 1,
+      controversyGain: 1,
+      harmonyCost: 1
+    }
+    for (const [money, harmony] of [
+      [Number.NaN, 50],
+      [Number.POSITIVE_INFINITY, 50],
+      [-5, 50],
+      ['1000', 50],
+      [true, 50],
+      [100, '50'],
+      [100, 0],
+      [100, 101]
+    ]) {
+      const state = {
+        player: { money, fame: 0, fameLevel: 0 },
+        band: { harmony, inventory: {} },
+        social: { loyalty: 10, controversyLevel: 0 }
+      }
+      assert.strictEqual(
+        handleMerchPress(state, payload),
+        state,
+        `money=${String(money)} harmony=${String(harmony)} must be rejected`
+      )
+    }
+  })
+
+  test('zealotry-style actions share the finite-number funds read', () => {
+    const payload = {
+      cost: 10,
+      fameGain: 1,
+      zealotryGain: 1,
+      controversyGain: 1,
+      harmonyCost: 1
+    }
+    const makeState = (money, harmony) => ({
+      player: { money, fame: 0, fameLevel: 0, day: 3 },
+      band: { harmony, inventory: {} },
+      social: { zealotry: 0, controversyLevel: 0 }
+    })
+
+    // A numeric string used to pass through Number() and be accepted.
+    const stringMoney = makeState('1000', 50)
+    assert.strictEqual(handleDarkWebLeak(stringMoney, payload), stringMoney)
+    const boolMoney = makeState(true, 50)
+    assert.strictEqual(handleDarkWebLeak(boolMoney, payload), boolMoney)
+
+    // Fractional funds are valid state and produce a whole-unit result.
+    const fractional = handleDarkWebLeak(makeState(100.5, 50.5), payload)
+    assert.strictEqual(fractional.player.money, 90)
+    assert.strictEqual(fractional.band.harmony, 49)
   })
 
   test('formats toast cost at dispatch time', () => {

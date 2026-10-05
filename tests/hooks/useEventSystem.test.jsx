@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useEventSystem } from '../../src/context/useEventSystem'
+import { eventEngine } from '../../src/utils/eventEngine'
 import { ActionTypes } from '../../src/context/actionTypes'
 
 describe('useEventSystem.triggerEvent pending-queue drain', () => {
@@ -81,6 +82,57 @@ describe('useEventSystem.triggerEvent pending-queue drain', () => {
     expect(dispatch).not.toHaveBeenCalledWith({
       type: ActionTypes.POP_PENDING_EVENT
     })
+  })
+})
+
+describe('useEventSystem.triggerEvent daily cap with a corrupt counter', () => {
+  const fakeEvent = { id: 'fake_event', options: [] }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const setup = eventsTriggeredToday => {
+    vi.spyOn(eventEngine, 'checkEvent').mockReturnValue(fakeEvent)
+    vi.spyOn(eventEngine, 'processOptions').mockReturnValue(fakeEvent)
+    const dispatch = vi.fn()
+    const params = {
+      stateRef: {
+        current: {
+          currentScene: 'OVERWORLD',
+          player: { eventsTriggeredToday },
+          pendingEvents: [],
+          eventCooldowns: [],
+          activeStoryFlags: [],
+          band: { members: [], harmony: 50 },
+          social: {},
+          assets: []
+        }
+      },
+      dispatch,
+      addToast: vi.fn(),
+      changeScene: vi.fn(),
+      saveGame: vi.fn(),
+      tRef: { current: key => key }
+    }
+    const { result } = renderHook(() => useEventSystem(params))
+    return { result, dispatch }
+  }
+
+  it('recovers a NaN counter to 0 so the increment stays finite', () => {
+    const { result, dispatch } = setup(Number.NaN)
+
+    expect(result.current.triggerEvent('special', 'post_gig')).toBe(true)
+
+    const update = dispatch.mock.calls.find(
+      ([action]) => action.type === ActionTypes.UPDATE_PLAYER
+    )
+    expect(update[0].payload.eventsTriggeredToday).toBe(1)
+  })
+
+  it('still enforces the cap at 2 for a finite counter', () => {
+    const { result } = setup(2)
+    expect(result.current.triggerEvent('special', 'post_gig')).toBe(false)
   })
 })
 

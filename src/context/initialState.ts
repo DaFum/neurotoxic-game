@@ -248,8 +248,9 @@ const initialState: GameState = {
   liabilities: {},
   crowdfundCampaigns: [],
   // Seeded RNG for deterministic asset ticks. Replaced by sanitizer on load
-  // when missing; falls back to Date.now() & 0xFFFFFFFF on fresh start.
-  rngSeed: Date.now() >>> 0,
+  // when missing; crypto-derived on fresh start so two sessions started in the
+  // same millisecond do not share an asset-tick timeline.
+  rngSeed: getSecureRandomUint32(),
   // Stable map seed for this run. Crypto-derived so two sessions started in the
   // same millisecond do not share a map.
   runSeed: getSecureRandomUint32(),
@@ -319,7 +320,7 @@ export const createInitialState = (
   assets: [],
   liabilities: {},
   crowdfundCampaigns: [],
-  rngSeed: Date.now() >>> 0,
+  rngSeed: getSecureRandomUint32(),
   runSeed: getSecureRandomUint32(),
   expedition: createDefaultExpeditionState(),
   career: createInitialCareerState()

@@ -468,6 +468,162 @@ test('EventDelta clamps luck, loyalty, and zealotry identically in preview and a
   assert.equal(applied2.band.luck, 0)
 })
 
+// Numeric lockstep sweep: for every numeric channel the preview reports, the
+// previewed change must equal the real state difference produced by apply,
+// including out-of-range deltas that the clamps truncate. `player.time` is
+// excluded on purpose: the preview reports the requested hour shift while the
+// apply wraps into 0..23 (documented in calculateAppliedDelta).
+const NUMERIC_LOCKSTEP_CHANNELS = [
+  {
+    name: 'player.money',
+    preview: p => p.player.money,
+    diff: (b, a) => a.player.money - b.player.money,
+    section: v => ({ player: { money: v } }),
+    values: [-1e6, -500, -501, 0, 75, 1e12]
+  },
+  {
+    name: 'player.fame',
+    preview: p => p.player.fame,
+    diff: (b, a) => a.player.fame - b.player.fame,
+    section: v => ({ player: { fame: v } }),
+    values: [-1e6, -50, -51, 20, 1e12]
+  },
+  {
+    name: 'player.score',
+    preview: p => p.score,
+    diff: (b, a) => a.player.score - b.player.score,
+    section: v => ({ player: { score: v } }),
+    values: [-1e6, -100, -101, 7, 1e9]
+  },
+  {
+    name: 'player.day',
+    preview: p => p.player.day,
+    diff: (b, a) => a.player.day - b.player.day,
+    section: v => ({ player: { day: v } }),
+    values: [-100, -3, -2, -1, 0, 1, 2.7, -0.5, 365]
+  },
+  {
+    name: 'player.stats (existing stat)',
+    preview: p => p.player.stats.gigsPlayed,
+    diff: (b, a) => a.player.stats.gigsPlayed - b.player.stats.gigsPlayed,
+    section: v => ({ player: { stats: { gigsPlayed: v } } }),
+    values: [-1e6, -3, -2, -1, 0, 4]
+  },
+  {
+    name: 'player.stats (new stat)',
+    preview: p => p.player.stats.brandNew,
+    diff: (b, a) => a.player.stats.brandNew - (b.player.stats.brandNew ?? 0),
+    section: v => ({ player: { stats: { brandNew: v } } }),
+    values: [-5, 0, 6]
+  },
+  {
+    name: 'player.van.fuel',
+    preview: p => p.player.van.fuel,
+    diff: (b, a) => a.player.van.fuel - b.player.van.fuel,
+    section: v => ({ player: { van: { fuel: v } } }),
+    values: [-1e6, -50, -51, 25, 1e6]
+  },
+  {
+    name: 'player.van.condition',
+    preview: p => p.player.van.condition,
+    diff: (b, a) => a.player.van.condition - b.player.van.condition,
+    section: v => ({ player: { van: { condition: v } } }),
+    values: [-1e6, -60, -61, 25, 1e6]
+  },
+  {
+    name: 'band.harmony',
+    preview: p => p.band.harmony,
+    diff: (b, a) => a.band.harmony - b.band.harmony,
+    section: v => ({ band: { harmony: v } }),
+    values: [-1e6, -49, -50, 20, 1e6]
+  },
+  {
+    name: 'band.luck',
+    preview: p => p.band.luck,
+    diff: (b, a) => a.band.luck - b.band.luck,
+    section: v => ({ band: { luck: v } }),
+    values: [-1e6, -5, -6, 3, 1e6]
+  },
+  {
+    name: 'social.controversyLevel',
+    preview: p => p.social.controversyLevel,
+    diff: (b, a) => a.social.controversyLevel - b.social.controversyLevel,
+    section: v => ({ social: { controversyLevel: v } }),
+    values: [-1e6, -20, -21, 30, 1e6]
+  },
+  {
+    name: 'social.loyalty',
+    preview: p => p.social.loyalty,
+    diff: (b, a) => a.social.loyalty - b.social.loyalty,
+    section: v => ({ social: { loyalty: v } }),
+    values: [-1e6, -10, -11, 30, 1e6]
+  },
+  {
+    name: 'social.zealotry',
+    preview: p => p.social.zealotry,
+    diff: (b, a) => a.social.zealotry - b.social.zealotry,
+    section: v => ({ social: { zealotry: v } }),
+    values: [-1e6, -10, -11, 30, 1e6]
+  },
+  {
+    name: 'social.viral',
+    preview: p => p.social.viral,
+    diff: (b, a) => a.social.viral - b.social.viral,
+    section: v => ({ social: { viral: v } }),
+    values: [-1e6, -10, -11, 30, 1e6]
+  }
+]
+
+test('preview equals the apply diff for out-of-range numeric deltas', async t => {
+  for (const channel of NUMERIC_LOCKSTEP_CHANNELS) {
+    for (const value of channel.values) {
+      await t.test(`${channel.name} delta ${value}`, () => {
+        const delta = withDelta(channel.section(value))
+        const before = buildState()
+        const preview = calculateAppliedDelta(buildState(), delta)
+        const after = applyEventDelta(buildState(), delta)
+
+        assert.equal(channel.preview(preview), channel.diff(before, after))
+      })
+    }
+  }
+})
+
+test('preview equals the apply diff when day and stats start from the floor', () => {
+  const state = buildState()
+  state.player.day = 1
+  state.player.stats = { gigsPlayed: 0, negativeStat: -5 }
+  const delta = withDelta({
+    player: { day: -5, stats: { gigsPlayed: -2, negativeStat: 3 } }
+  })
+
+  const preview = calculateAppliedDelta(state, delta)
+  const applied = applyEventDelta(state, delta)
+
+  assert.equal(preview.player.day, applied.player.day - state.player.day)
+  assert.equal(
+    preview.player.stats.gigsPlayed,
+    applied.player.stats.gigsPlayed - state.player.stats.gigsPlayed
+  )
+  assert.equal(
+    preview.player.stats.negativeStat,
+    applied.player.stats.negativeStat - state.player.stats.negativeStat
+  )
+})
+
+test('empty location / currentNodeId deltas never overwrite the stored values', () => {
+  for (const player of [
+    { location: '', currentNodeId: '' },
+    { location: 5, currentNodeId: ['x'] },
+    { location: null, currentNodeId: null }
+  ]) {
+    const before = buildState()
+    const after = applyEventDelta(buildState(), withDelta({ player }))
+    assert.equal(after.player.location, before.player.location)
+    assert.equal(after.player.currentNodeId, before.player.currentNodeId)
+  }
+})
+
 test('EventDelta rejects sums that overflow to Infinity', () => {
   // Two finite numbers still sum to Infinity, and `Math.max(0, Infinity)` is
   // not a finite clamp: the next save would serialize the stat as `null`.

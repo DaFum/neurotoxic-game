@@ -157,25 +157,30 @@ const appendDeltaSuccessToast = (
 }
 
 /**
- * Validates state.player.money and state.band.harmony are within expected
- * bounds for zealotry-style actions. Returns the parsed numbers, or null when
- * the state itself is corrupted - callers should bail with unchanged state.
+ * Validates state.player.money and state.band.harmony are finite numbers
+ * within expected bounds for merch-press and zealotry-style actions. Returns
+ * the values normalized to whole units (fractional money/harmony is valid
+ * state, not corruption), or null when the state itself is corrupted -
+ * callers should bail with unchanged state.
  */
 const readPlayerFundsAndHarmony = (
   state: GameState
 ): { money: number; harmony: number } | null => {
-  const money = Number(state.player.money)
-  const harmony = Number(state.band.harmony)
+  const rawMoney = state.player.money
+  const rawHarmony = state.band.harmony
   if (
-    !Number.isFinite(money) ||
-    !Number.isFinite(harmony) ||
-    money < 0 ||
-    harmony < 1 ||
-    harmony > 100
+    !isFiniteNumber(rawMoney) ||
+    !isFiniteNumber(rawHarmony) ||
+    rawMoney < 0 ||
+    rawHarmony < 1 ||
+    rawHarmony > 100
   ) {
     return null
   }
-  return { money, harmony }
+  return {
+    money: clampPlayerMoney(rawMoney),
+    harmony: clampBandHarmony(rawHarmony)
+  }
 }
 
 /**
@@ -618,6 +623,7 @@ export const handleMerchPress = (
   state: GameState,
   payload: MerchPressPayload
 ): GameState => {
+  if (!payload || typeof payload !== 'object') return state
   // Reducers reject malformed payloads without coercion; numeric strings are
   // normalized (or dropped) at the action-creator boundary only.
   const rawFameGain = payload.fameGain == null ? 0 : payload.fameGain
@@ -639,16 +645,13 @@ export const handleMerchPress = (
   const fameGain = clampNonNegative(rawFameGain)
   const successToast = payload.successToast
 
-  const currentMoney = clampPlayerMoney(state.player.money)
-  const currentHarmony = clampBandHarmony(state.band.harmony)
-
-  if (
-    currentMoney !== state.player.money ||
-    currentHarmony !== state.band.harmony
-  ) {
+  const funds = readPlayerFundsAndHarmony(state)
+  if (!funds) {
     logger.warn('GameState', 'Invalid player funds or harmony state')
     return state
   }
+  const currentMoney = funds.money
+  const currentHarmony = funds.harmony
 
   if (currentMoney < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', 'Insufficient funds or harmony for merch press')

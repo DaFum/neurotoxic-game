@@ -1633,13 +1633,58 @@ test('systemReducer - SET_MAP', () => {
   assert.deepEqual(handleSetMap(state, newMap), { gameMap: newMap })
 })
 
+test('systemReducer - SET_MAP rejects non-object and hostile payloads', () => {
+  const state = { gameMap: { nodes: {} } }
+
+  assert.equal(handleSetMap(state, 'not a map'), state)
+  assert.equal(handleSetMap(state, 42), state)
+  assert.equal(handleSetMap(state, []), state)
+  assert.equal(
+    handleSetMap(state, JSON.parse('{"nodes":{"a":{"__proto__":{"x":1}}}}')),
+    state
+  )
+  // null stays a valid "generation failed" fallback.
+  assert.deepEqual(handleSetMap(state, null), { gameMap: null })
+})
+
 test('systemReducer - ADD_TOAST', () => {
   const state = { toasts: [{ id: '1' }] }
-  const newToast = { id: '2', message: 'Hello' }
+  const newToast = { id: '2', type: 'info', message: 'Hello' }
 
   assert.deepEqual(handleAddToast(state, newToast), {
-    toasts: [{ id: '1' }, { id: '2', message: 'Hello' }]
+    toasts: [{ id: '1' }, { id: '2', type: 'info', message: 'Hello' }]
   })
+})
+
+test('systemReducer - ADD_TOAST keeps only primitive options and drops invalid toasts', () => {
+  const state = { toasts: [] }
+  const result = handleAddToast(state, {
+    id: 't1',
+    type: 'warning',
+    messageKey: 'ui:toast.test',
+    options: {
+      count: 3,
+      label: 'ok',
+      ok: true,
+      nothing: null,
+      nested: { deep: 1 },
+      list: [1, 2],
+      fn: () => 1
+    }
+  })
+
+  assert.deepEqual(result.toasts[0].options, {
+    count: 3,
+    label: 'ok',
+    ok: true,
+    nothing: null
+  })
+
+  // Missing id or missing message/messageKey: dropped, same state reference.
+  assert.equal(handleAddToast(state, { type: 'info', message: 'x' }), state)
+  assert.equal(handleAddToast(state, { id: 't2', type: 'info' }), state)
+  assert.equal(handleAddToast(state, null), state)
+  assert.equal(handleAddToast(state, 'toast'), state)
 })
 
 test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
