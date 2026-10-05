@@ -24,7 +24,11 @@ import { MERCH_PROFILES } from '../../data/merch'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { logger } from '../../utils/logger'
 import { ActionTypes } from '../../context/actionTypes'
-import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
+import {
+  finiteNumberOr,
+  isFiniteNumber,
+  isNonNegativeInteger
+} from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
 import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
@@ -35,7 +39,7 @@ import {
 } from './defaults'
 import { getExpeditionOwnedPerformanceGear } from './equipment'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
-import { isCrewAvailable } from './crew'
+import { isCrewAvailable, validateExpeditionCrewSelection } from './crew'
 import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
@@ -400,9 +404,6 @@ const reject = (
   reason: ExpeditionBuildRejectionReason
 ): ExpeditionBuildValidation => ({ valid: false, reason })
 
-const isNonNegativeInteger = (value: unknown): value is number =>
-  isFiniteNumber(value) && Number.isInteger(value) && value >= 0
-
 const hasDuplicates = (values: readonly string[]): boolean =>
   new Set(values).size !== values.length
 
@@ -700,11 +701,15 @@ export const validateExpeditionBuildCommitment = (
   // ── Crew, starter perk, insurance, Tour Pressure (later-gate registries) ───
   const crewIdsRaw = candidate.crewIds
   if (!isStringArray(crewIdsRaw)) return reject('MALFORMED_CANDIDATE')
-  if (crewIdsRaw.length > 3) return reject('MALFORMED_CANDIDATE')
-  if (hasDuplicates(crewIdsRaw)) return reject('CREW_DUPLICATE')
-  const availableCrew = getAvailableCrewIds(state)
-  for (const crewId of crewIdsRaw) {
-    if (!availableCrew.includes(crewId)) return reject('CREW_DUPLICATE')
+  const crewSelection = validateExpeditionCrewSelection(state, crewIdsRaw)
+  if (!crewSelection.valid) {
+    return reject(
+      crewSelection.reason === 'TOO_MANY'
+        ? 'MALFORMED_CANDIDATE'
+        : crewSelection.reason === 'DUPLICATE'
+          ? 'CREW_DUPLICATE'
+          : 'CREW_UNAVAILABLE'
+    )
   }
 
   const { starterPerkId, insurancePolicyId } = candidate

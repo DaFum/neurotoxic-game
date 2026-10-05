@@ -16,7 +16,10 @@ import { canSpendExpeditionCash } from './loadout'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { aggregateExpeditionModuleProfiles } from './modules'
 import { isExpeditionServiceLocation, resolveExpeditionRepair } from './repairs'
-import { getExpeditionTechnicalCondition } from './condition'
+import {
+  getExpeditionConditionTier,
+  getExpeditionTechnicalCondition
+} from './condition'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 /**
@@ -33,10 +36,12 @@ export const DIAGNOSTIC_FEE_BASE = 150
 export const getConditionBand = (
   condition: number
 ): 'optimal' | 'degraded' | 'critical' | 'disabled' => {
-  if (condition <= 0) return 'disabled'
-  if (condition < 40) return 'critical'
-  if (condition < 70) return 'degraded'
-  return 'optimal'
+  const tier = getExpeditionConditionTier(condition)
+  if (tier === 'healthy') return 'optimal'
+  if (tier === 'worn') return 'degraded'
+  // Inspections report a dead group on its own, so the two lowest live tiers
+  // collapse into `critical`.
+  return tier === 'disabled' ? 'disabled' : 'critical'
 }
 
 /**

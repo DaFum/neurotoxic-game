@@ -23,6 +23,7 @@ import {
   executeExpeditionRepair,
   resolveExpeditionCrisis
 } from '../../src/context/expeditionActionCreators.ts'
+import { resolveExpeditionRepair } from '../../src/domain/expedition/repairs.ts'
 import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
 
 const createZeroConditionState = (overrides = {}) => {
@@ -79,7 +80,7 @@ const createZeroConditionState = (overrides = {}) => {
 }
 
 describe('Task 10: Technical Recovery Controls & Eligibility', () => {
-  it('reports all controls disabled except acceptTechnicalFailure when resources are empty', () => {
+  it('reports only improvise and acceptTechnicalFailure when resources are empty', () => {
     const state = createZeroConditionState()
     const controls = getAvailableTechnicalRecoveryControls(state, 'pa')
 
@@ -88,9 +89,12 @@ describe('Task 10: Technical Recovery Controls & Eligibility', () => {
     assert.equal(controls.cannibalize, false)
     assert.equal(controls.insuranceClaim, false)
     assert.equal(controls.salvageRights, false)
+    // Improvise is free and legal on any group below 50 Condition, so a dead
+    // group always has at least this one recovery on offer.
+    assert.equal(controls.improvise, true)
     assert.equal(controls.acceptTechnicalFailure, true)
 
-    assert.equal(hasLegalTechnicalRecovery(state, 'pa'), false)
+    assert.equal(hasLegalTechnicalRecovery(state, 'pa'), true)
   })
 
   it('enables fieldRepair control when spare parts >= 1', () => {
@@ -147,14 +151,23 @@ describe('Task 10: getTechnicalFailureSignal Derivation', () => {
     assert.equal(getTechnicalFailureSignal(state), null)
   })
 
-  it('returns technical_shutdown signal when a group is at 0 and NO legal recovery exists', () => {
+  it('does not terminate a group at 0 while improvise is still on offer', () => {
+    // Regression: hasLegalTechnicalRecovery ignored improvise, so a run with
+    // no spare parts, cash, donor or insurance was terminated automatically even
+    // though the repair panel still offered a legal improvised repair.
     const state = createZeroConditionState()
-    const signal = getTechnicalFailureSignal(state)
+    const improvise = resolveExpeditionRepair(state, {
+      mode: 'improvise',
+      targetGroup: 'pa',
+      expectedRouteStep: state.expedition.routeStep
+    })
+    assert.equal(improvise.ok, true)
 
-    assert.ok(signal)
-    assert.equal(signal.reason, 'technical_shutdown')
-    assert.equal(signal.sourceId, 'pa')
-    assert.ok(signal.choices.includes('accept_failure'))
+    assert.equal(getTechnicalFailureSignal(state), null)
+    assert.equal(
+      syncExpeditionPendingFailure(state).expedition.pendingFailure,
+      null
+    )
   })
 
   it('returns technical_shutdown signal when player explicitly accepts technical failure even if recovery exists', () => {
@@ -224,7 +237,8 @@ describe('Task 10: Explicit Technical Failure & Terminal Settlement', () => {
 
   it('acceptExpeditionFailure finalizes run with reason: technical_shutdown', () => {
     const state = createZeroConditionState()
-    // No recovery -> pendingFailure is automatically derived
+    // Explicit acceptance -> pendingFailure is derived
+    state.expedition.technicalFailureAccepted = true
     const stateWithPending = syncExpeditionPendingFailure(state)
     assert.ok(stateWithPending.expedition.pendingFailure)
     assert.equal(

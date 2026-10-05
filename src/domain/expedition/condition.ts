@@ -13,6 +13,7 @@ import type {
 } from '../../types/expedition'
 import type { GameState, PostGigSummary } from '../../types'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { canPerformExpeditionGig } from './injuries'
 
 /**
  * All physical equipment groups tracked by technical condition.
@@ -39,6 +40,46 @@ export const EXPEDITION_CONDITION_GROUPS: readonly ConditionGroup[] = [
 export const clampCondition = (value: unknown): number => {
   const num = finiteNumberOr(value, 0)
   return Math.max(0, Math.min(100, Math.round(num)))
+}
+
+/**
+ * Canonical condition tier, best to worst.
+ *
+ * @remarks
+ * The one band vocabulary. Run HUD and inspection readouts each present a
+ * coarser label set over it (see `getExpeditionConditionBand` and
+ * `getConditionBand`), but both derive their thresholds from this table.
+ */
+export type ExpeditionConditionTier =
+  'healthy' | 'worn' | 'critical' | 'breaking' | 'disabled'
+
+/**
+ * Inclusive lower bound of each tier above disabled, best first.
+ */
+const EXPEDITION_CONDITION_TIER_FLOORS: ReadonlyArray<
+  readonly [Exclude<ExpeditionConditionTier, 'disabled'>, number]
+> = [
+  ['healthy', 70],
+  ['worn', 40],
+  ['critical', 20],
+  // Anything above zero that is not yet disabled.
+  ['breaking', Number.MIN_VALUE]
+]
+
+/**
+ * Resolves a condition value into its canonical tier.
+ *
+ * @param value - Raw condition; non-finite values count as `0`.
+ * @returns The tier the value falls in.
+ */
+export const getExpeditionConditionTier = (
+  value: unknown
+): ExpeditionConditionTier => {
+  const condition = finiteNumberOr(value, 0)
+  for (const [tier, floor] of EXPEDITION_CONDITION_TIER_FLOORS) {
+    if (condition >= floor) return tier
+  }
+  return 'disabled'
 }
 
 /**
@@ -326,13 +367,9 @@ export const getExpeditionConditionActiveEffects = (
 export const canStartExpeditionPreGig = (state: GameState): boolean => {
   if (state.expedition?.status !== 'active') return true
   const tc = state.expedition?.technicalCondition
-  const hasCriticalInjury = state.band.members.some(
-    (member: { id: string } | undefined) =>
-      member &&
-      state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
-  )
-  if (!tc) return !hasCriticalInjury
+  const canPerform = canPerformExpeditionGig(state)
+  if (!tc) return canPerform
 
   const profile = getExpeditionConditionPerformanceProfile(tc)
-  return profile.disabledGroups.length === 0 && !hasCriticalInjury
+  return profile.disabledGroups.length === 0 && canPerform
 }

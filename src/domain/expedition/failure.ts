@@ -21,14 +21,15 @@ import {
 } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
-import { canSpendExpeditionCash, getExpeditionSpendableCash } from './loadout'
+import { getExpeditionSpendableCash } from './loadout'
 import { canClaimExpeditionInsurance } from './insurance'
 import {
   EXPEDITION_CONDITION_GROUPS,
   getExpeditionTechnicalCondition
 } from './condition'
-import { isExpeditionServiceLocation } from './repairs'
-import { getEffectiveExpeditionRules } from './effectiveRules'
+import { resolveExpeditionRepair } from './repairs'
+import { isExpeditionLegendaryAvailable } from './legendaries'
+import { getCriticallyInjuredBandMemberId } from './injuries'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import type { GameState } from '../../types'
@@ -37,6 +38,7 @@ import type {
   ExpeditionFailureChoiceId,
   ExpeditionFailureSignal,
   ExpeditionMap,
+  ExpeditionRepairMode,
   PendingExpeditionFailure
 } from '../../types/expedition'
 
@@ -193,6 +195,14 @@ export const getExpeditionMobilityFailureSignal = (
  * @param state - Current game state.
  * @param targetGroup - Target group to recover (or first disabled group).
  * @returns Status of each potential recovery or termination control.
+ *
+ * @remarks
+ * Every repair control is read from `resolveExpeditionRepair`, the same resolver
+ * the reducer and the service panel use, so pricing, the cannibalize donor
+ * threshold and the improvise cut-off live in exactly one place and this crisis
+ * logic cannot disagree with what the player is actually offered.
+ * `salvageRights` reports whether the Legendary is still unspent; it acts on the
+ * Gig that wipes a group (`applyExpeditionSalvageRights`), not as a repair mode.
  */
 export const getAvailableTechnicalRecoveryControls = (
   state: GameState,
@@ -200,6 +210,7 @@ export const getAvailableTechnicalRecoveryControls = (
 ): {
   fieldRepair: boolean
   professionalRepair: boolean
+  improvise: boolean
   cannibalize: boolean
   insuranceClaim: boolean
   salvageRights: boolean
@@ -208,28 +219,29 @@ export const getAvailableTechnicalRecoveryControls = (
   const tc = getExpeditionTechnicalCondition(state)
   const group =
     targetGroup ?? EXPEDITION_CONDITION_GROUPS.find(g => tc[g] === 0) ?? 'pa'
+  const expectedRouteStep = state.expedition?.routeStep ?? 0
+  const isRepairLegal = (
+    mode: ExpeditionRepairMode,
+    sourceGroup?: ConditionGroup
+  ): boolean =>
+    resolveExpeditionRepair(state, {
+      mode,
+      targetGroup: group,
+      sourceGroup,
+      expectedRouteStep
+    }).ok
 
-  // Field repair requires at least one spare part in cargo
-  const spareParts = state.expedition?.cargo?.spareParts ?? 0
-  const fieldRepair = spareParts >= 1
-
-  // Professional repair requires service location and sufficient spendable cash
-  const isService = isExpeditionServiceLocation(state)
-  const rules = getEffectiveExpeditionRules(state)
-  const missing = Math.max(0, 100 - tc[group])
-  const basePrice = Math.ceil(missing * 10)
-  const proCost = Math.round(basePrice * rules.numeric.repairCostMultiplier)
-  const professionalRepair = isService && canSpendExpeditionCash(state, proCost)
-
-  // Cannibalize requires another group with condition >= 55
-  const otherGroups = EXPEDITION_CONDITION_GROUPS.filter(g => g !== group)
-  const cannibalize = otherGroups.some(other => tc[other] >= 55)
+  const fieldRepair = isRepairLegal('field')
+  const professionalRepair = isRepairLegal('professional')
+  const improvise = isRepairLegal('improvise')
+  const cannibalize = EXPEDITION_CONDITION_GROUPS.some(
+    source => source !== group && isRepairLegal('cannibalize', source)
+  )
 
   // Insurance claim requires policy covering technical and claim not yet consumed
   const insuranceClaim = canClaimExpeditionInsurance(state, 'technical', group)
 
-  // G5 Salvage Rights when later available
-  const salvageRights = false
+  const salvageRights = isExpeditionLegendaryAvailable(state, 'salvage_rights')
 
   // Accept technical failure is always an available termination control when any group is disabled
   const acceptTechnicalFailure = EXPEDITION_CONDITION_GROUPS.some(
@@ -239,6 +251,7 @@ export const getAvailableTechnicalRecoveryControls = (
   return {
     fieldRepair,
     professionalRepair,
+    improvise,
     cannibalize,
     insuranceClaim,
     salvageRights,
@@ -269,6 +282,7 @@ export const hasLegalTechnicalRecovery = (
     const hasRecovery =
       controls.fieldRepair ||
       controls.professionalRepair ||
+      controls.improvise ||
       controls.cannibalize ||
       controls.insuranceClaim ||
       controls.salvageRights
@@ -324,16 +338,12 @@ const getCrewFailureSignal = (
   state: GameState
 ): ExpeditionFailureSignal | null => {
   if (state.expedition?.status !== 'active') return null
-  for (const member of state.band.members) {
-    if (
-      member &&
-      state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
-    ) {
-      return {
-        reason: 'crew_collapse',
-        sourceId: member.id,
-        choices: ['accept_failure']
-      }
+  const injuredMemberId = getCriticallyInjuredBandMemberId(state)
+  if (injuredMemberId !== null) {
+    return {
+      reason: 'crew_collapse',
+      sourceId: injuredMemberId,
+      choices: ['accept_failure']
     }
   }
   const crewIds = state.expedition.loadout?.crewIds ?? []

@@ -71,19 +71,35 @@ export const getExpeditionPerformanceProfile = (
   }
 }
 
-export const canPerformExpeditionGig = (
+/**
+ * Finds the first band member whose Expedition injury is critical.
+ *
+ * @param state - Expedition and band slices.
+ * @returns The member's id, or `null` when nobody is critically injured or no
+ * run is active.
+ *
+ * @remarks
+ * The one owner of the critical-injury scan: the gig gate below, the pre-gig
+ * start check and the crew-collapse failure signal all read it, so they cannot
+ * disagree about who counts as unable to play.
+ */
+export const getCriticallyInjuredBandMemberId = (
   state: Pick<GameState, 'expedition' | 'band'>
-): boolean => {
-  if (state.expedition.status !== 'active') return true
+): string | null => {
+  if (state.expedition?.status !== 'active') return null
   for (const member of state.band.members) {
     if (
       member &&
       state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
     )
-      return false
+      return member.id
   }
-  return true
+  return null
 }
+
+export const canPerformExpeditionGig = (
+  state: Pick<GameState, 'expedition' | 'band'>
+): boolean => getCriticallyInjuredBandMemberId(state) === null
 
 export const getExpeditionInjuryActiveEffects = (
   state: Pick<GameState, 'expedition' | 'band'>
