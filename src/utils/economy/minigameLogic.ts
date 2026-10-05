@@ -1,5 +1,6 @@
 import {
   clamp0to100,
+  clampPercent,
   isFiniteNumber,
   finiteNumberOr,
   toBoundedNonNegativeInteger
@@ -22,10 +23,7 @@ export const calculateTravelMinigameResult = (
   // 50% damage scaling: 100 damage -> 50 condition loss. The minigame deals
   // at most 100 damage, so the cap enforces the documented max of 50
   // condition loss against oversized direct-dispatch payloads.
-  const safeDamageTaken = isFiniteNumber(damageTaken) ? damageTaken : 0
-  const conditionLoss = Math.floor(
-    Math.min(100, Math.max(0, safeDamageTaken)) / 2
-  )
+  const conditionLoss = Math.floor(clampPercent(damageTaken) / 2)
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   let fuelItems = 0

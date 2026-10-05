@@ -13,32 +13,19 @@ import {
   sanitizeTraversableValue,
   safeJsonParse
 } from '../../utils/objectUtils'
+import { escapeHtml } from '../../utils/stringUtils'
 import { addContrabandHelper } from './bandReducer'
 import {
   buildDeterministicToastId,
   sanitizeSuccessToast
 } from './toastSanitizers'
 
-const ESCAPE_MAP = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;'
-}
-
 const sanitizeContextValue = (value: unknown): unknown => {
   return sanitizeTraversableValue(value, {
     isRecord: isLooseRecord,
     createObject: () => Object.create(null),
     shouldSkipKey: isForbiddenKey,
-    transformLeaf: leaf => {
-      if (typeof leaf !== 'string') return leaf
-      return leaf.replace(/[&<>"']/g, match => {
-        const escapeKey = match as keyof typeof ESCAPE_MAP
-        return ESCAPE_MAP[escapeKey]
-      })
-    }
+    transformLeaf: leaf => (typeof leaf === 'string' ? escapeHtml(leaf) : leaf)
   })
 }
 
