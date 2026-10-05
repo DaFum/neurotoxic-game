@@ -1,6 +1,7 @@
 import type { GameState } from '../../types'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 import { finiteNumberOr } from '../../utils/gameState'
+import { UNLOCK_IDS } from '../unlocks'
 
 /** Raw transport event definitions consumed by the event registry. */
 export const TRANSPORT_EVENTS = [
@@ -299,7 +300,7 @@ export const TRANSPORT_EVENTS = [
           threshold: 5, // 50/50
           success: {
             type: 'unlock',
-            unlock: 'rare_vinyl',
+            unlock: UNLOCK_IDS.RARE_VINYL,
             description: 'events:wrong_turn.opt2.d_d549'
           },
           failure: {
