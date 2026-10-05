@@ -824,6 +824,13 @@ const parseNumericStats = (
 }
 
 /**
+ * How many trailing entries of an untrusted banter log are inspected on load.
+ * The margin over {@link MAX_BANTER_EVENTS} absorbs malformed tail entries,
+ * while a huge hostile array still costs only a bounded scan.
+ */
+const BANTER_SCAN_WINDOW = MAX_BANTER_EVENTS * 4
+
+/**
  * Rebuilds the persisted banter log from whitelisted fields only.
  *
  * @param value - The raw untrusted `band.banterEvents` payload
@@ -834,7 +841,7 @@ const sanitizeBanterEvents = (
 ): NonNullable<BandState['banterEvents']> => {
   if (!Array.isArray(value)) return []
   const events: NonNullable<BandState['banterEvents']> = []
-  for (const entry of value) {
+  for (const entry of value.slice(-BANTER_SCAN_WINDOW)) {
     if (!isLooseRecord(entry)) continue
     const { member1, member2, delta, timestamp } = entry
     if (

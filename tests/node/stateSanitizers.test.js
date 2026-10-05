@@ -403,6 +403,30 @@ describe('stateSanitizers', () => {
       )
     })
 
+    it('only inspects a bounded tail of an oversized banterEvents array', () => {
+      const entry = i => ({
+        member1: 'Matze',
+        member2: 'Lars',
+        delta: i,
+        timestamp: 1000 + i
+      })
+      const huge = Array.from({ length: 100_000 }, (_, i) => entry(i))
+      const band = sanitizeBand({ banterEvents: huge })
+      assert.strictEqual(band.banterEvents.length, 50)
+      assert.deepStrictEqual(band.banterEvents[49], entry(99_999))
+
+      // Valid entries buried before a long malformed tail fall outside the
+      // scan window, so the load cost stays bounded.
+      const buried = [
+        ...Array.from({ length: 50 }, (_, i) => entry(i)),
+        ...Array.from({ length: 1000 }, () => 'junk')
+      ]
+      assert.deepStrictEqual(
+        sanitizeBand({ banterEvents: buried }).banterEvents,
+        []
+      )
+    })
+
     it('rebuilds banter entries from whitelisted fields so hostile keys are dropped', () => {
       const hostile = JSON.parse(
         '{"member1":"a","member2":"b","delta":1,"timestamp":1,"__proto__":{"x":1}}'
