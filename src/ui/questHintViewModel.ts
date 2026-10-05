@@ -5,11 +5,21 @@ import type { PlayerState, QuestState } from '../types'
 // module so they can be unit-tested directly while the component module
 // exports only UI components.
 
+/**
+ * Represents the extended state of a quest for UI display purposes.
+ *
+ * @remarks
+ * Merges the base quest state with a description that represents a translation key (not localized text directly)
+ * and a `moneyReward` that is a legacy persisted reward field (handled by questLegacyMigration.ts), rather than a derived value.
+ */
 export type QuestDisplayState = QuestState & {
   description?: string
   moneyReward?: number
 }
 
+/**
+ * Represents the categorized urgency level and corresponding UI text configuration for a quest's deadline.
+ */
 export type QuestDeadlineView =
   | { level: 'none'; text: null }
   | { level: 'safe'; text: string; count: number }
@@ -19,6 +29,13 @@ export type QuestDeadlineView =
   | { level: 'today'; text: string }
   | { level: 'overdue'; text: string }
 
+/**
+ * Calculates the urgency classification of a quest deadline relative to the current day.
+ *
+ * @param quest - The quest display state to evaluate.
+ * @param currentDay - The current in-game day number.
+ * @returns A categorized view object representing the deadline urgency.
+ */
 export const getQuestDeadlineView = (
   quest: QuestDisplayState,
   currentDay: number
@@ -53,11 +70,24 @@ export const getQuestDeadlineView = (
   }
 }
 
+/**
+ * Extracts the remaining days count from a deadline view if applicable.
+ *
+ * @param view - The deadline view configuration to parse.
+ * @returns An object containing the remaining day count, or undefined if not applicable.
+ */
 export const deadlineCount = (
   view: QuestDeadlineView
 ): { count: number } | undefined =>
   'count' in view ? { count: view.count } : undefined
 
+/**
+ * Determines if the player's current location or venue matches the quest's required scope policy.
+ *
+ * @param quest - The quest to evaluate.
+ * @param player - The current player state containing location and node data.
+ * @returns A hint configuration object if a scope applies, or null if no scope logic is needed.
+ */
 export const getQuestScopeHint = (
   quest: QuestDisplayState,
   player: PlayerState
@@ -99,6 +129,13 @@ export const getQuestScopeHint = (
   return null
 }
 
+/**
+ * Resolves the localized translation text for the quest's next required action step.
+ *
+ * @param quest - The quest display state.
+ * @param t - The translation function to localize the hint key.
+ * @returns The translated hint string, or a default fallback step.
+ */
 export const getQuestNextStepHint = (
   quest: QuestDisplayState,
   t: (key: string, options?: Record<string, unknown>) => string
@@ -115,6 +152,12 @@ export const getQuestNextStepHint = (
   return t('ui:quests.hint.nextStep.default')
 }
 
+/**
+ * Evaluates all quest hints and determines the highest-priority status message to display.
+ *
+ * @param options - The hint options object.
+ * @returns An object containing the prioritized text and message severity type, or null.
+ */
 export const getQuestPrimaryHint = ({
   deadlineView,
   scopeHint,
