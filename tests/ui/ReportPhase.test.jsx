@@ -61,3 +61,33 @@ test('ReportPhase uses a mobile-first report grid and touch-sized action', () =>
   expect(button).toHaveClass('sm:w-auto')
   expect(button).toHaveClass('min-h-11')
 })
+
+test('ReportPhase renders a breakdown row detail line when a detailKey is present', () => {
+  const mockFinancials = {
+    income: {
+      breakdown: [
+        {
+          labelKey: 'economy:postGig.ticketSales',
+          value: 500,
+          detailKey: 'economy:gigIncome.swingBoost.detail'
+        }
+      ],
+      total: 500
+    },
+    expenses: {
+      breakdown: [{ labelKey: 'economy:postGig.gearRepair', value: 100 }],
+      total: 100
+    },
+    net: 400
+  }
+
+  render(<ReportPhase financials={mockFinancials} onNext={vi.fn()} />)
+
+  expect(
+    screen.getByText('economy:gigIncome.swingBoost.detail')
+  ).toBeInTheDocument()
+  // Rows without a detailKey render no extra line.
+  expect(
+    screen.queryByText('economy:gigExpenses.swingDampener.detail')
+  ).toBeNull()
+})

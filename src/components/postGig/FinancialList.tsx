@@ -25,6 +25,11 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
           >
             <span className='min-w-0 text-star-white/70 break-words'>
               {t(item.labelKey)}
+              {item.detailKey ? (
+                <span className='block text-xs text-star-white/40'>
+                  {t(item.detailKey, item.detailParams)}
+                </span>
+              ) : null}
             </span>
             <span
               className={`${getFinancialColors(type).text} shrink-0 text-right font-bold tabular-nums`}
