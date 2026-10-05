@@ -1223,6 +1223,10 @@ export interface ExpeditionEventIntent {
  * module owning the contract would make the domain depend on the view.
  */
 export interface ExpeditionNodeFog {
+  /** Route depth of the node; always visible. */
+  routeStep: number
+  /** How many route edges leave the node; always visible. */
+  onwardRouteCount: number
   nodeClass: ExpeditionNodeClass
   specialSubtype: ExpeditionSpecialNodeSubtype | null
   dangerTier: ExpeditionTier

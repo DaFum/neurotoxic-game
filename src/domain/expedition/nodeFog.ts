@@ -8,7 +8,7 @@
  * was never earned.
  */
 
-import { buildExpeditionMap } from './map'
+import { buildExpeditionMap, getExpeditionNodePublicFacts } from './map'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import {
   getExpeditionIntelCapability,
@@ -51,14 +51,19 @@ export const getExpeditionNodeFogByNodeId = (
   const out: Record<string, ExpeditionNodeFog> = {}
   for (const nodeId of map.nodeOrder) {
     const entry = map.meta[nodeId]
-    if (!entry) continue
+    // The always-visible half comes from the one public projection, so the
+    // Fog cannot show a level-0 fact that projection does not list.
+    const facts = getExpeditionNodePublicFacts(map, nodeId)
+    if (!entry || !facts) continue
     const intelLevel = getExpeditionNodeIntelLevel(state, nodeId, capability)
     out[nodeId] = {
-      nodeClass: entry.nodeClass,
-      specialSubtype: entry.specialSubtype,
-      dangerTier: entry.dangerTier,
-      rewardTier: entry.rewardTier,
-      isExtractionWindow: entry.isExtractionWindow,
+      routeStep: facts.routeStep,
+      onwardRouteCount: facts.edges.length,
+      nodeClass: facts.nodeClass,
+      specialSubtype: facts.specialSubtype,
+      dangerTier: facts.dangerTier,
+      rewardTier: facts.rewardTier,
+      isExtractionWindow: facts.isExtractionWindow,
       intelLevel,
       exactPayout: intelLevel >= 1 ? entry.hidden.exactPayout : null,
       // The *effective* cost, not the route's raw declaration. Revealing the
