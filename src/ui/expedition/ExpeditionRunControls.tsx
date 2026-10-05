@@ -9,6 +9,7 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
+import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
@@ -77,6 +78,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
 
       {/* Active obligations & double down controls */}
       <ExpeditionObligationsPanel />
+
+      {/* Route intel is spent before choosing the next leg, so it sits with
+          the other on-the-road decisions. */}
+      <ExpeditionIntelPanel />
 
       {/* Repairs and inspections belong on the road, where the player still
           has the choice between paying for a fix and pushing on. */}

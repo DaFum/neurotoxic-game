@@ -13,6 +13,7 @@ import { nextSeed } from '../utils/seededRng'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
+import { getExpeditionNodeIntelLevel } from '../domain/expedition/nodeIntel'
 import type { GameAction, GameState } from '../types'
 import type { ResolveExpeditionCrisisPayload } from '../types/actions'
 import type {
@@ -301,7 +302,11 @@ export const advanceExpeditionRoute = (
  *
  * @remarks
  * `expectedLevel` is read from state rather than accepted from the caller, so a
- * UI cannot request a two-level jump; the reducer re-checks it anyway.
+ * UI cannot request a two-level jump; the reducer re-checks it anyway. It is
+ * the *effective* level the reducer compares against - stored intel raised to
+ * the Region familiarity floor - because a familiar node reads at level 1
+ * while storing 0, and a stale guard built from storage alone refused every
+ * further reveal on it.
  */
 export const revealExpeditionNodeIntel = (
   state: GameState,
@@ -314,15 +319,13 @@ export const revealExpeditionNodeIntel = (
   GameAction,
   { type: typeof ActionTypes.REVEAL_EXPEDITION_NODE_INTEL }
 > => {
-  const stored = Object.hasOwn(state.expedition.intelByNodeId, input.nodeId)
-    ? state.expedition.intelByNodeId[input.nodeId]
-    : 0
+  const level = getExpeditionNodeIntelLevel(state, input.nodeId)
   return {
     type: ActionTypes.REVEAL_EXPEDITION_NODE_INTEL,
     payload: {
       nodeId: input.nodeId,
       source: input.source,
-      expectedLevel: stored === 1 ? 1 : 0,
+      expectedLevel: level === 1 ? 1 : 0,
       expectedRouteStep: state.expedition.routeStep,
       ...(input.grantId === undefined ? {} : { grantId: input.grantId })
     }

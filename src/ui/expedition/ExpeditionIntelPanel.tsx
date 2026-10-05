@@ -1,0 +1,293 @@
+/**
+ * The run's route-intel surface: Scout reads, recon, and the tips Contacts and
+ * Social posts earn.
+ *
+ * @remarks
+ * Information is a build resource, so every reveal here spends something the
+ * run actually holds - a committed Scout, a recon charge, or a grant a resolved
+ * Contact event or Social result produced. Legality is never decided here: each
+ * reveal asks the same resolver `REVEAL_EXPEDITION_NODE_INTEL` uses, and the
+ * reducer re-validates the dispatch regardless.
+ */
+
+import { memo, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useGameActions, useGameSelector } from '../../context/GameState'
+import { ActionButton } from '../shared/ActionButton'
+import { buildExpeditionMap } from '../../domain/expedition/map'
+import {
+  getExpeditionIntelCapability,
+  getExpeditionNodeIntelLevel,
+  resolveExpeditionIntelReveal
+} from '../../domain/expedition/nodeIntel'
+import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
+import type { GameState } from '../../types'
+import type {
+  ExpeditionNodeClass,
+  ExpeditionSocialResultId,
+  ExpeditionSpecialNodeSubtype,
+  NodeIntelLevel
+} from '../../types/expedition'
+
+/** One onward node and what the run may reveal about it right now. */
+interface IntelCandidate {
+  nodeId: string
+  routeStep: number
+  nodeClass: ExpeditionNodeClass
+  specialSubtype: ExpeditionSpecialNodeSubtype | null
+  level: NodeIntelLevel
+  canPassive: boolean
+  canRecon: boolean
+  usableGrants: Array<{ id: string; source: 'social' | 'contact' }>
+}
+
+/** Everything the panel renders, derived in one selector pass. */
+interface IntelView {
+  isActive: boolean
+  hasScout: boolean
+  reconLeft: number
+  candidates: IntelCandidate[]
+  socialTip: {
+    postOptionId: string
+    resultId: ExpeditionSocialResultId
+  } | null
+}
+
+const INACTIVE_VIEW: IntelView = {
+  isActive: false,
+  hasScout: false,
+  reconLeft: 0,
+  candidates: [],
+  socialTip: null
+}
+
+/**
+ * Asks the canonical intel resolver what the run may reveal on its onward
+ * nodes.
+ *
+ * @param state - Current game state.
+ * @returns The panel's view model.
+ *
+ * @remarks
+ * Candidates are the base-route neighbours of the node the run stands on: the
+ * Contact and Social grant producers both target that same set, so a grant
+ * always names a node this panel lists.
+ */
+const selectIntelView = (state: GameState): IntelView => {
+  const expedition = state.expedition
+  const loadout = expedition?.loadout
+  if (expedition?.status !== 'active' || !loadout) return INACTIVE_VIEW
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const currentNodeId = expedition.visitedNodeIds.at(-1)
+  if (typeof currentNodeId !== 'string') return INACTIVE_VIEW
+  const capability = getExpeditionIntelCapability(state)
+  const routeStep = expedition.routeStep
+
+  const candidates: IntelCandidate[] = []
+  for (const edge of map.connections) {
+    if (edge.from !== currentNodeId) continue
+    const meta = Object.hasOwn(map.meta, edge.to) ? map.meta[edge.to] : null
+    if (!meta) continue
+    const level = getExpeditionNodeIntelLevel(state, edge.to, capability)
+    const ask = (
+      source:
+        'scout_passive' | 'scout_recon' | 'social_grant' | 'contact_grant',
+      grantId?: string
+    ): boolean =>
+      level < 2 &&
+      resolveExpeditionIntelReveal(
+        state,
+        {
+          nodeId: edge.to,
+          source,
+          expectedLevel: level === 1 ? 1 : 0,
+          expectedRouteStep: routeStep,
+          ...(grantId === undefined ? {} : { grantId })
+        },
+        map,
+        capability
+      ).ok
+    candidates.push({
+      nodeId: edge.to,
+      routeStep: meta.routeStep,
+      nodeClass: meta.nodeClass,
+      specialSubtype: meta.specialSubtype,
+      level,
+      canPassive: ask('scout_passive'),
+      canRecon: ask('scout_recon'),
+      usableGrants: expedition.intelGrants
+        .filter(
+          grant =>
+            grant.nodeId === edge.to &&
+            ask(
+              grant.source === 'social' ? 'social_grant' : 'contact_grant',
+              grant.id
+            )
+        )
+        .map(grant => ({ id: grant.id, source: grant.source }))
+    })
+  }
+
+  // The same proof `CREATE_SOCIAL_INTEL_GRANT` checks: a settled result from
+  // this route step, not yet turned into a grant, whose registry entry
+  // actually carries intel.
+  const proof = expedition.lastSocialResult
+  const socialTip =
+    proof &&
+    !proof.intelConsumed &&
+    proof.resolvedAtRouteStep === routeStep &&
+    state.player.currentNodeId === currentNodeId &&
+    Object.hasOwn(EXPEDITION_SOCIAL_RESULTS, proof.resultId) &&
+    EXPEDITION_SOCIAL_RESULTS[proof.resultId].intelTargetLevel !== null
+      ? { postOptionId: proof.postOptionId, resultId: proof.resultId }
+      : null
+
+  return {
+    isActive: true,
+    hasScout: capability.hasScout,
+    reconLeft: Math.max(
+      0,
+      capability.reconCharges - expedition.scoutReconUsedRouteSteps.length
+    ),
+    candidates,
+    socialTip
+  }
+}
+
+/**
+ * Renders the onward nodes' intel and every reveal the run may spend on them.
+ */
+export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
+  const { t } = useTranslation('ui')
+  const view = useGameSelector(selectIntelView)
+  const { revealExpeditionNodeIntel, createSocialIntelGrant } = useGameActions()
+
+  // A Scout reads the road continuously, so the passive level-1 reveal is not
+  // a button: it is spent as soon as the run stands next to a node it has not
+  // read. Remembered per node and step so a refused reveal is not retried on
+  // every render.
+  const passiveAttemptsRef = useRef(new Set<string>())
+  useEffect(() => {
+    for (const candidate of view.candidates) {
+      if (!candidate.canPassive) continue
+      const key = `${candidate.routeStep}:${candidate.nodeId}`
+      if (passiveAttemptsRef.current.has(key)) continue
+      passiveAttemptsRef.current.add(key)
+      revealExpeditionNodeIntel({
+        nodeId: candidate.nodeId,
+        source: 'scout_passive'
+      })
+    }
+  }, [revealExpeditionNodeIntel, view.candidates])
+
+  if (!view.isActive || view.candidates.length === 0) return null
+  const hasGrant = view.candidates.some(
+    candidate => candidate.usableGrants.length > 0
+  )
+  if (!view.hasScout && !hasGrant && view.socialTip === null) return null
+  const socialTip = view.socialTip
+
+  return (
+    <section
+      className='mb-2 w-full border border-steel-gray bg-charcoal-gray p-2 flex flex-col gap-2 text-xs font-mono'
+      data-testid='expedition-intel-panel'
+      aria-label={t('ui:expedition.intel.title')}
+    >
+      <div className='flex flex-wrap items-baseline justify-between gap-2'>
+        <h3 className='text-[0.625rem] uppercase tracking-widest text-toxic-green'>
+          {t('ui:expedition.intel.title')}
+        </h3>
+        {view.hasScout ? (
+          <span
+            className='text-[0.625rem] text-ash-gray uppercase'
+            data-testid='expedition-intel-recon-left'
+          >
+            {t('ui:expedition.intel.reconLeft', { count: view.reconLeft })}
+          </span>
+        ) : null}
+      </div>
+      {socialTip ? (
+        <p className='text-[0.625rem] text-ash-gray'>
+          {t('ui:expedition.intel.socialTipHint')}
+        </p>
+      ) : null}
+      <ul className='flex flex-col gap-2'>
+        {view.candidates.map(candidate => (
+          <li
+            key={candidate.nodeId}
+            className='flex flex-wrap items-center gap-2 border border-steel-gray bg-void-black px-2 py-1 text-star-white'
+            data-testid={`expedition-intel-node-${candidate.nodeId}`}
+          >
+            <span className='uppercase'>
+              {candidate.specialSubtype
+                ? t(`ui:expedition.node.subtype.${candidate.specialSubtype}`)
+                : t(`ui:expedition.node.class.${candidate.nodeClass}`)}
+            </span>
+            <span className='text-ash-gray'>
+              {t('ui:expedition.intel.level', { level: candidate.level })}
+            </span>
+            {candidate.canRecon ? (
+              <ActionButton
+                variant='secondary'
+                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                data-testid={`expedition-intel-recon-${candidate.nodeId}`}
+                onClick={() =>
+                  revealExpeditionNodeIntel({
+                    nodeId: candidate.nodeId,
+                    source: 'scout_recon'
+                  })
+                }
+              >
+                {t('ui:expedition.intel.recon')}
+              </ActionButton>
+            ) : null}
+            {candidate.usableGrants.map(grant => (
+              <ActionButton
+                key={grant.id}
+                variant='secondary'
+                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                data-testid={`expedition-intel-grant-${grant.source}-${candidate.nodeId}`}
+                onClick={() =>
+                  revealExpeditionNodeIntel({
+                    nodeId: candidate.nodeId,
+                    source:
+                      grant.source === 'social'
+                        ? 'social_grant'
+                        : 'contact_grant',
+                    grantId: grant.id
+                  })
+                }
+              >
+                {t(
+                  grant.source === 'social'
+                    ? 'ui:expedition.intel.useSocial'
+                    : 'ui:expedition.intel.useContact'
+                )}
+              </ActionButton>
+            ))}
+            {socialTip && candidate.level < 2 ? (
+              <ActionButton
+                variant='secondary'
+                className='px-3 py-1 text-xs border border-steel-gray text-ash-gray'
+                data-testid={`expedition-intel-social-tip-${candidate.nodeId}`}
+                onClick={() =>
+                  createSocialIntelGrant(
+                    socialTip.postOptionId,
+                    socialTip.resultId,
+                    candidate.nodeId
+                  )
+                }
+              >
+                {t('ui:expedition.intel.socialTip')}
+              </ActionButton>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+})
