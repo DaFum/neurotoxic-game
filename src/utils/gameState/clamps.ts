@@ -125,6 +125,38 @@ export const clamp0to100 = (value: number): number => {
 }
 
 /**
+ * Clamps unknown input to the 0..100 percentage range without rounding.
+ *
+ * @remarks
+ * Unlike {@link clamp0to100}, this keeps fractional values (e.g. condition,
+ * pressure or tempo that accumulate in sub-integer steps) and never coerces:
+ * only finite numbers are accepted, so booleans, numeric strings and arrays
+ * resolve to `fallback`.
+ *
+ * @param value - Unknown value crossing a state, storage, or payload boundary.
+ * @param fallback - Value used when `value` is not a finite number. Defaults to `0`.
+ * @returns The value clamped to `0..100`, or `fallback` for non-finite input.
+ */
+export const clampPercent = (value: unknown, fallback = 0): number =>
+  Math.max(0, Math.min(100, finiteNumberOr(value, fallback)))
+
+/**
+ * Clamps unknown input to the band-member skill range 1..10 without flooring.
+ *
+ * @remarks
+ * Skill rewards and event skill deltas add whole or fractional steps to
+ * `baseStats.skill`, and the load sanitizer keeps the stored value as-is, so
+ * flooring here would silently discard a fractional increment. Only finite
+ * numbers are accepted; everything else resolves to `fallback`.
+ *
+ * @param value - Unknown value crossing a state, storage, or payload boundary.
+ * @param fallback - Value used when `value` is not a finite number. Defaults to `1`.
+ * @returns The value clamped to `1..10`, or the clamped `fallback`.
+ */
+export const clampMemberSkill = (value: unknown, fallback = 1): number =>
+  Math.max(1, Math.min(10, finiteNumberOr(value, fallback)))
+
+/**
  * Clamps finite numeric input to the reputation range.
  *
  * @param value - Candidate reputation value.

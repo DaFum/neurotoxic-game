@@ -26,3 +26,12 @@ export const finiteNumberOr = (value: unknown, fallback: number): number => {
  */
 export const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value)
+
+/**
+ * Checks whether an unknown value is a finite integer that is at least zero.
+ *
+ * @param value - Unknown value to inspect; numeric strings and booleans are rejected.
+ * @returns True when value is a number, an integer, and not negative.
+ */
+export const isNonNegativeInteger = (value: unknown): value is number =>
+  Number.isInteger(value) && (value as number) >= 0

@@ -75,3 +75,9 @@ export const RELATIONSHIP_MIN_SCORE = 0
  * Upper bound for persisted relationship scores after normalization.
  */
 export const RELATIONSHIP_MAX_SCORE = 100
+
+/**
+ * Maximum number of banter outcomes kept in `band.banterEvents`; older entries
+ * are dropped first, both when events are applied and when a save is loaded.
+ */
+export const MAX_BANTER_EVENTS = 50

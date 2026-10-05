@@ -6,6 +6,7 @@ import {
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
+  MAX_BANTER_EVENTS,
   RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER,
   RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER,
   RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER,
@@ -17,6 +18,7 @@ import {
   clampPlayerFame,
   clampBandHarmony,
   clampMemberMood,
+  clampMemberSkill,
   clampMemberStamina,
   clampRelationship,
   clampNonNegative,
@@ -419,10 +421,7 @@ export const calculateAppliedDelta = (
         const member = members[i]
         if (!member) continue
         const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-        const nextSkill = Math.max(
-          1,
-          Math.min(10, currentSkill + delta.band.skill)
-        )
+        const nextSkill = clampMemberSkill(currentSkill + delta.band.skill)
         const memberDelta = nextSkill - currentSkill
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
@@ -655,7 +654,7 @@ export const applyEventDelta = (
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
           ...newBanterEvents
-        ].slice(-50)
+        ].slice(-MAX_BANTER_EVENTS)
       }
     } else if (isRelationshipChange(rawRC) && isNotSelfRelationship(rawRC)) {
       relationshipChange.push(rawRC)
@@ -669,7 +668,7 @@ export const applyEventDelta = (
             delta: rcr.change,
             timestamp: finiteNumberOr(rcr.timestamp, 0)
           }
-        ].slice(-50)
+        ].slice(-MAX_BANTER_EVENTS)
       }
     }
     const rawSkillDelta = delta.band.skill
@@ -780,7 +779,7 @@ export const applyEventDelta = (
         // 3. Skill
         if (skillDelta !== null && skillDelta !== 0) {
           const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-          const newSkill = Math.max(1, Math.min(10, currentSkill + skillDelta))
+          const newSkill = clampMemberSkill(currentSkill + skillDelta)
 
           if (newSkill !== currentSkill) {
             if (nextMember === member) nextMember = { ...member }
