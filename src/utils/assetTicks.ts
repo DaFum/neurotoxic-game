@@ -27,6 +27,7 @@ import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY,
   FORECLOSURE_FAME_PENALTY,
+  LIABILITY_DEFAULT_DAYS,
   RISK_EVENT_CONDITION_LOSS
 } from './assetConfig'
 import {
@@ -182,8 +183,8 @@ export const processAssetTick = (state: GameState): GameState => {
  * (`principalRemaining × interestRate / 365`) and a principal reduction, so
  * `principalRemaining` tracks the amortization balance that priced
  * `dailyPayment`; the final payment charges only the remaining payoff. On
- * shortfall, increments defaultCounter; on 7-day default, removes the asset
- * (foreclosure) and applies a fame penalty.
+ * shortfall, increments defaultCounter; at `LIABILITY_DEFAULT_DAYS` it removes
+ * the asset (foreclosure) and applies a fame penalty.
  */
 export const processLiabilityTick = (
   state: GameState
@@ -231,7 +232,7 @@ export const processLiabilityTick = (
       if (unpaid > 0) {
         additionalUnpaidObligation += unpaid
         const defaultCounter = liability.defaultCounter + 1
-        if (defaultCounter >= 7) {
+        if (defaultCounter >= LIABILITY_DEFAULT_DAYS) {
           if (!foreclosedAssetIds.has(liability.assetId)) {
             foreclosedAssetIds.add(liability.assetId)
             nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
@@ -279,7 +280,7 @@ export const processLiabilityTick = (
         }
       } else {
         const defaultCounter = liability.defaultCounter + 1
-        if (defaultCounter >= 7) {
+        if (defaultCounter >= LIABILITY_DEFAULT_DAYS) {
           // Apply the fame penalty exactly once per newly foreclosed asset:
           // a single asset may have multiple liabilities (e.g. loan + future
           // crowdfund top-up). Without this guard the player would lose

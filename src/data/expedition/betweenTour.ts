@@ -61,7 +61,10 @@ export const BETWEEN_TOUR_REHAB_COST = 300
 /** Career Cash `cash_out` pays instead of a discovery. */
 export const BETWEEN_TOUR_CASH_OUT_PAYOUT = 200
 
-/** Cost per missing condition point when repairing the van. */
+/**
+ * Career Cash per missing condition point for the between-Tour van repair
+ * decision; deliberately separate from the in-Tour van and chassis repair rates.
+ */
 export const BETWEEN_TOUR_REPAIR_COST_PER_POINT = 12
 
 /** Van condition at or above which no repair decision is offered. */

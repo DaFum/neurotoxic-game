@@ -89,6 +89,10 @@ export const calculateChassisUpgradeCost = (
 /**
  * EUR cost per missing condition point to repair an asset back to 100. Repair
  * is a single-shot action (no partial repairs).
+ *
+ * Prices Long-Term Asset chassis repair only; the van
+ * (`EXPENSE_CONSTANTS.transport.repairCostPerUnit`), the between-Tour van fix
+ * and Expedition professional repair each price their own rate.
  */
 export const REPAIR_COST_PER_POINT = 8
 
@@ -115,6 +119,13 @@ export const RISK_EVENT_CONDITION_LOSS = 15
 
 /** Fame penalty applied when a liability defaults to foreclosure. */
 export const FORECLOSURE_FAME_PENALTY = 10
+
+/**
+ * Consecutive missed daily payments after which a liability defaults and the
+ * asset is foreclosed. The `defaultCounter` countdown shown in the UI is
+ * `LIABILITY_DEFAULT_DAYS - defaultCounter`.
+ */
+export const LIABILITY_DEFAULT_DAYS = 7
 
 /**
  * RNG stream sizing for `advanceDay`. The reducer must consume rolls

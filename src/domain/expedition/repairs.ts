@@ -157,6 +157,8 @@ export const resolveExpeditionRepair = (
 
       const targetCondition = tc[targetGroup]
       const missing = Math.max(0, 100 - targetCondition)
+      // Expedition professional repair of a run-equipment group: its own
+      // 10/pt rate, separate from van, chassis and between-Tour repair pricing.
       const basePrice = Math.ceil(missing * 10)
       const moneyCost = Math.round(
         basePrice * rules.numeric.repairCostMultiplier
