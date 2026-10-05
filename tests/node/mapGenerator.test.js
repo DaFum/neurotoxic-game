@@ -278,3 +278,18 @@ test('deriveCityTraits varies across different city keys', () => {
     'Different cities should not all collide to one trait set'
   )
 })
+
+test('MapGenerator rejects coerced seeds and falls back to the injected clock', () => {
+  const clock = { now: () => 1_700_000_123_456, today: () => new Date(0) }
+  const expected = new MapGenerator(clock.now()).seed
+  for (const bad of ['42', true, null, undefined, [], Number.NaN, Infinity]) {
+    const generator = new MapGenerator(bad, clock)
+    assert.equal(generator.seed, expected, `seed ${String(bad)}`)
+  }
+  // Finite numeric seeds never consult the clock.
+  const throwingClock = {
+    now: () => assert.fail('clock must not be read for a finite seed'),
+    today: () => new Date(0)
+  }
+  assert.equal(new MapGenerator(42, throwingClock).seed, 42)
+})

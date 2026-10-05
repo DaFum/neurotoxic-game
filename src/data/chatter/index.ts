@@ -1,6 +1,7 @@
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter'
 import { getSafeRandom } from '../../utils/crypto'
+import { pickWeighted } from '../../utils/selectionUtils'
 import type { GameState } from '../../types'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
@@ -168,25 +169,12 @@ const selectRandomChatter = (
   if (pool.length === 0) return null
 
   // Weighted Random Selection
-  let totalWeight = 0
-  for (let i = 0; i < pool.length; i++) {
-    const entry = pool[i]
-    if (!entry) continue
-    totalWeight += entry.weight ?? 1
-  }
-
-  let roll = getSafeRandom() * totalWeight
-
-  let item = pool[pool.length - 1]
+  const item =
+    pickWeighted(
+      pool.map(entry => ({ value: entry, weight: entry.weight ?? 1 })),
+      getSafeRandom
+    ) ?? pool[pool.length - 1]
   if (!item) return null
-
-  for (const entry of pool) {
-    roll -= entry.weight ?? 1
-    if (roll <= 0) {
-      item = entry
-      break
-    }
-  }
 
   return {
     text: item.text,

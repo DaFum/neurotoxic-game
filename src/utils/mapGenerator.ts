@@ -1,7 +1,9 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
-import { finiteNumberOr } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
+import { systemClock } from './clock'
+import type { IClock } from './clock'
 import type { Venue } from '../types'
 import {
   getCityKeyFromVenueId,
@@ -40,11 +42,13 @@ export class MapGenerator {
 
   /**
    * Creates a new MapGenerator instance.
-   * @param seed - The seed for the random number generator.
+   * @param seed - The seed for the random number generator. Anything that is
+   * not a finite number (including numeric strings) falls back to the clock.
+   * @param clock - Time source for the non-finite-seed fallback.
+   * @defaultValue `systemClock`
    */
-  constructor(seed: number) {
-    const s = Number(seed)
-    const finiteSeed = Number.isFinite(s) ? s : Date.now()
+  constructor(seed: number, clock: IClock = systemClock) {
+    const finiteSeed = isFiniteNumber(seed) ? seed : clock.now()
     this.seed = ((finiteSeed % 233280) + 233280) % 233280
   }
 

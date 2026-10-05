@@ -27,6 +27,7 @@ import {
 import { audioService, getSongId } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
+import { pickWeighted } from '../../utils/selectionUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import {
   getLastMinigameFallback,
@@ -293,33 +294,14 @@ export const usePreGigHandlers = ({
         // Ignore SecurityError or other storage errors
       }
 
-      let totalWeight = 0
-      const derivedWeights: Partial<Record<Minigame, number>> = {}
-
-      for (const key in MINIGAME_CONFIG) {
-        if (Object.hasOwn(MINIGAME_CONFIG, key)) {
-          const id = key as Minigame
-          const conf = MINIGAME_CONFIG[id]
-          const weight = lastMinigame === id ? 0.2 : conf.weight
-          derivedWeights[id] = weight
-          totalWeight += weight
-        }
-      }
-
-      const randomVal = getSafeRandom() * totalWeight
-
-      let cumulative = 0
-      let chosenGame: Minigame = 'roadie'
-      for (const key in derivedWeights) {
-        if (Object.hasOwn(derivedWeights, key)) {
-          const id = key as Minigame
-          cumulative += derivedWeights[id]!
-          if (randomVal < cumulative) {
-            chosenGame = id
-            break
-          }
-        }
-      }
+      const weightedGames = (Object.keys(MINIGAME_CONFIG) as Minigame[]).map(
+        id => ({
+          value: id,
+          weight: lastMinigame === id ? 0.2 : MINIGAME_CONFIG[id].weight
+        })
+      )
+      const chosenGame: Minigame =
+        pickWeighted(weightedGames, getSafeRandom) ?? 'roadie'
 
       const chosenConfig = MINIGAME_CONFIG[chosenGame]
 

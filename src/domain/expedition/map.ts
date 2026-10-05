@@ -19,7 +19,8 @@ import { ALL_VENUES } from '../../data/venues'
 import { EXPEDITION_ROUTE_RARE_REWARD_IDS } from './rewardLedger'
 import { mulberry32 } from '../../utils/seededRng'
 import { clampUnit } from '../../utils/numberUtils'
-import { pickBoundedIndex } from '../../utils/selectionUtils'
+import { pickBoundedIndex, pickWeighted } from '../../utils/selectionUtils'
+import { fnv1a32 } from '../../utils/stringUtils'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
   MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
@@ -130,12 +131,7 @@ const pickRouteRareReward = (
  * never showed. It is a structural fingerprint, not a security primitive.
  */
 export const hashExpeditionRoute = (value: string): string => {
-  let hash = 0x811c9dc5
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i)
-    hash = Math.imul(hash, 0x01000193) >>> 0
-  }
-  return hash.toString(16).padStart(8, '0')
+  return fnv1a32(value).toString(16).padStart(8, '0')
 }
 
 /**
@@ -166,20 +162,6 @@ const resolveMeaningfulNodeCount = (
       ? MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
       : MIN_EXPEDITION_MEANINGFUL_NODES
   return clampInt(requested, floor, MAX_EXPEDITION_MEANINGFUL_NODES)
-}
-
-const pickWeighted = (
-  roll: number,
-  entries: ReadonlyArray<{ value: ExpeditionNodeClass; weight: number }>
-): ExpeditionNodeClass => {
-  const total = entries.reduce((sum, entry) => sum + entry.weight, 0)
-  if (total <= 0) return 'CLUB_GIG'
-  let cursor = roll * total
-  for (const entry of entries) {
-    cursor -= entry.weight
-    if (cursor < 0) return entry.value
-  }
-  return entries[entries.length - 1]?.value ?? 'CLUB_GIG'
 }
 
 const tierFromScore = (score: number): ExpeditionTier => {
@@ -402,7 +384,7 @@ export const buildExpeditionMap = (
         nodeClass = 'SPECIAL'
         specialSubtype = rng() < 0.5 ? 'UNDERGROUND_MARKET' : 'BLACK_MARKET'
       } else {
-        nodeClass = pickWeighted(rng(), weightedEntries)
+        nodeClass = pickWeighted(weightedEntries, rng) ?? 'CLUB_GIG'
       }
 
       const depthRatio = plan.layer / meaningfulNodeCount

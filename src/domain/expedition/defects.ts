@@ -16,6 +16,7 @@ import type { GameState } from '../../types'
 import { clampCondition, getExpeditionTechnicalCondition } from './condition'
 import { mulberry32 } from '../../utils/seededRng'
 import { pickIndex } from '../../utils/selectionUtils'
+import { hash31 } from '../../utils/stringUtils'
 
 /**
  * Condition damage inflicted when a defect of a given severity triggers.
@@ -31,14 +32,6 @@ const TRIGGERS: readonly HiddenDefectTrigger[] = [
   'pre_gig',
   'post_gig'
 ] as const
-
-const hashString = (str: string): number => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) >>> 0
-  }
-  return hash
-}
 
 /**
  * Generates a deterministic hidden defect tied to runSeed, equipment group, and route step.
@@ -58,7 +51,7 @@ export const createDeterministicHiddenDefect = (
   severityOverride?: 1 | 2 | 3
 ): HiddenDefectState => {
   const seed =
-    (runSeed + routeStep * 1000 + hashString(`${group}_${source}`)) >>> 0
+    (runSeed + routeStep * 1000 + (hash31(`${group}_${source}`) >>> 0)) >>> 0
   const rng = mulberry32(seed)
 
   const id = `defect_${group}_${source}_step_${routeStep}`

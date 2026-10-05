@@ -1,4 +1,5 @@
 import { logger } from '../logger'
+import { fnv1a32 } from '../stringUtils'
 import type { CityTraitState } from '../../types'
 
 const warnedMalformedVenueIds = new Set<string>()
@@ -51,15 +52,6 @@ const CITY_TRAIT_SPENDING_PROFILES = [
   'merch-hungry'
 ] as const
 
-const hashCityKey = (cityKey: string): number => {
-  let h = 2166136261
-  for (let i = 0; i < cityKey.length; i++) {
-    h ^= cityKey.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
-
 /**
  * Deterministically derive city traits for a given city key. Used to backfill
  * `cityStates` for saved maps that predate the city intel system.
@@ -68,7 +60,7 @@ const hashCityKey = (cityKey: string): number => {
  * @returns Deterministic city trait profile for genre bias, attention span, and spending.
  */
 export const deriveCityTraits = (cityKey: string): CityTraitState => {
-  const h = hashCityKey(cityKey)
+  const h = fnv1a32(cityKey)
   const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
   const attentionSpan = 15 + ((h >>> 8) % 45)
   const barSpendingProfile =

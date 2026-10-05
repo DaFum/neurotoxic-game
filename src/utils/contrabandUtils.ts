@@ -3,7 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
-import { selectRandomItem } from './selectionUtils'
+import { pickWeighted, selectRandomItem } from './selectionUtils'
 import { finiteNumberOr } from './gameState'
 import type { Rarity } from '../types'
 
@@ -76,23 +76,10 @@ export function computeStashBustRisk(stash: unknown) {
  * @returns Selected rarity tier.
  */
 export function pickRarity(rng = secureRandom) {
-  const weights = CONTRABAND_RARITY_WEIGHTS
-  let total = 0
-  for (const rarity in weights) {
-    if (Object.hasOwn(weights, rarity)) {
-      total += weights[rarity as keyof typeof weights]
-    }
-  }
-
-  let r = rng() * total
-  for (const rarity in weights) {
-    if (Object.hasOwn(weights, rarity)) {
-      const w = weights[rarity as keyof typeof weights]
-      if (r < w) return rarity
-      r -= w
-    }
-  }
-  return 'common'
+  const entries = Object.entries(CONTRABAND_RARITY_WEIGHTS).map(
+    ([rarity, weight]) => ({ value: rarity, weight })
+  )
+  return pickWeighted(entries, rng) ?? 'common'
 }
 
 /**

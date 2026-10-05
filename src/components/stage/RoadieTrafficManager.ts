@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
-import { hashString } from '../../utils/stringUtils'
+import { hash31 } from '../../utils/stringUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
@@ -83,7 +83,7 @@ export class RoadieTrafficManager {
     if (this.textures.cars.length > 0) {
       const textureHash = finiteNumberOr(
         car.textureHash,
-        hashString(String(car.id ?? `car_${car.row}_${car.speed}`))
+        hash31(String(car.id ?? `car_${car.row}_${car.speed}`))
       )
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
