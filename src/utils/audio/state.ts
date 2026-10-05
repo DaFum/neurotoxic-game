@@ -69,6 +69,18 @@ export const audioState = {
   playRequestId: 0,
   transportEndEventId: null as Nullable<number>,
   transportStopEventId: null as Nullable<number>,
+  // Lead-in transport start still in the future, and the remainder kept when a
+  // pause cancelled it (see transportStart.ts).
+  transportScheduledStart: null as Nullable<{
+    timeSec: number
+    offset: number | undefined
+  }>,
+  transportDeferredStart: null as Nullable<{
+    remainingSec: number
+    offset: number | undefined
+  }>,
+  // Bumped by every pause so a resume that began earlier cannot restart audio.
+  transportPauseGeneration: 0,
 
   // Gig Playback State
   gigSource: null as Nullable<BufferSource>,

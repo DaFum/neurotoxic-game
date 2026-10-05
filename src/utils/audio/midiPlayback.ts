@@ -9,6 +9,7 @@ import { midiUrlMap } from './assets'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
 import { clampUnit } from '../numberUtils'
 import { isFiniteNumber } from '../finiteNumber'
+import { startTransportAt } from './transportStart'
 import type { ProcessedTempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
@@ -333,7 +334,7 @@ function scheduleSongPlayback(
     }, duration)
   }
 
-  transport.start(startTime)
+  startTransportAt(startTime)
 }
 
 /**
@@ -849,7 +850,7 @@ function scheduleMidiTransport(
     params.startTimeSec,
     validDelay
   )
-  transport.start(transportStartTime, requestedOffset)
+  startTransportAt(transportStartTime, requestedOffset)
 }
 
 /**

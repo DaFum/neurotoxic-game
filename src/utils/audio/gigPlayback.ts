@@ -9,6 +9,10 @@ import {
 import { createAndConnectBufferSource } from './sharedBufferUtils'
 import { loadAudioBuffer } from './assets'
 import { isFiniteNumber } from '../finiteNumber'
+import {
+  clearScheduledTransportStart,
+  startTransportAt
+} from './transportStart'
 
 /**
  * Computes elapsed gig time from raw audio-context timestamps.
@@ -266,7 +270,7 @@ export async function startGigPlayback({
   }
 
   try {
-    Tone.getTransport().start(startAt, offsetSeconds)
+    startTransportAt(startAt, offsetSeconds)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to start Tone.Transport', error)
   }
@@ -288,6 +292,7 @@ export async function startGigPlayback({
     } catch {
       /* ignore */
     }
+    clearScheduledTransportStart()
     releaseAudioResource('gigSource')
     return false
   }

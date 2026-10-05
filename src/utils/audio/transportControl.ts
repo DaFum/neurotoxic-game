@@ -9,6 +9,10 @@ import {
 } from './gigPlayback'
 import { disableCorruptionBurstAudio } from './corruptionEffects'
 import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
+import {
+  deferScheduledTransportStart,
+  resumeDeferredTransportStart
+} from './transportStart'
 
 /**
  * Tears down the Tone transport, scheduled events, and corruption burst audio.
@@ -54,9 +58,14 @@ export function stopAudio(): void {
  * @returns Resolves after pause attempts finish.
  */
 export async function pauseAudio(): Promise<void> {
+  // Invalidate any resume still waiting on the audio-context gate.
+  audioState.transportPauseGeneration++
   try {
     if (Tone.getTransport().state === 'started') {
       await Tone.getTransport().pause()
+    } else {
+      // A lead-in start is still pending; Tone reports it as stopped.
+      deferScheduledTransportStart()
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to pause audio transport', err)
@@ -73,18 +82,26 @@ export async function pauseAudio(): Promise<void> {
  * @returns Whether gig playback is running or was already active.
  */
 export async function resumeAudio(): Promise<boolean> {
+  // A pause that lands while this resume awaits must win.
+  const pauseGeneration = audioState.transportPauseGeneration
+  const isSuperseded = () =>
+    pauseGeneration !== audioState.transportPauseGeneration
   try {
     // Guarded: a resume triggered while the context is still suspended would
     // otherwise start a transport that produces no sound. A refused gate is a
     // resume failure — reporting success here would let callers clear the paused
     // state and announce "resumed" while the transport stays silent.
     const gateResult = await withAudioContext(async () => {
-      if (Tone.getTransport().state === 'paused') {
+      if (isSuperseded()) return false
+      if (
+        !resumeDeferredTransportStart() &&
+        Tone.getTransport().state === 'paused'
+      ) {
         await Tone.getTransport().start()
       }
       return true
     }, 'resumeAudio')
-    if (gateResult === null) return false
+    if (gateResult !== true || isSuperseded()) return false
   } catch (err) {
     // A transport that threw on start is not running, so reporting success here
     // would let callers clear the paused state over silent audio — the same
