@@ -589,6 +589,17 @@ export const buildExpeditionMap = (
     nodeOrder
   }
 
+  // The layer/edge construction above always links the Finale, so this is an
+  // invariant check rather than a retry: it consumes no randomness and leaves
+  // every valid seed's route untouched. A build that broke it would hand the
+  // player a silently unwinnable run, so it fails loudly instead of being
+  // cached and played.
+  if (!isExpeditionFinaleReachable(built)) {
+    throw new Error(
+      `Expedition route ${built.mapHash} has no path from ${startNodeId} to the Finale ${finaleNodeId}`
+    )
+  }
+
   if (ROUTE_CACHE.size >= ROUTE_CACHE_LIMIT) {
     const oldest = ROUTE_CACHE.keys().next().value
     if (oldest !== undefined) ROUTE_CACHE.delete(oldest)
