@@ -38,7 +38,8 @@ import {
   handleStartGig,
   handleSetSetlist,
   handleSetLastGigStats,
-  handleSetGigModifiers
+  handleSetGigModifiers,
+  handleSettleSoldMerch
 } from './reducers/gigReducer'
 import {
   handleSetActiveEvent,
@@ -89,8 +90,7 @@ import {
   handleOfferExpeditionDraft,
   handleSelectExpeditionDraft,
   handleResolveExpeditionSocialResult,
-  handleCreateSocialIntelGrant,
-  handleSettleSoldMerch
+  handleCreateSocialIntelGrant
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'

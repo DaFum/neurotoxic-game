@@ -10,12 +10,14 @@
  * numeric strings cannot enter the run state.
  */
 
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { isFiniteNumber, isNonNegativeInteger } from '../../utils/finiteNumber'
+import { clampPercent } from '../../utils/gameState/clamps'
 import {
   isForbiddenKey,
   isLooseRecord,
   sanitizeStringArray
 } from '../../utils/objectUtils'
+import { clampCondition } from '../../domain/expedition/condition'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
 import { getExpeditionInsurancePolicy } from '../../domain/expedition/insurance'
 import {
@@ -128,7 +130,7 @@ const readCount = (
 ): number => {
   if (!Object.hasOwn(record, key)) return fallback
   const raw = record[key]
-  if (!isFiniteNumber(raw) || !Number.isInteger(raw) || raw < 0) return fallback
+  if (!isNonNegativeInteger(raw)) return fallback
   return raw
 }
 
@@ -140,8 +142,7 @@ const sanitizeIntegerList = (value: unknown): number[] => {
   const seen = new Set<number>()
   const out: number[] = []
   for (const entry of value.slice(0, MAX_COLLECTION_ENTRIES)) {
-    if (!isFiniteNumber(entry) || !Number.isInteger(entry) || entry < 0)
-      continue
+    if (!isNonNegativeInteger(entry)) continue
     if (seen.has(entry)) continue
     seen.add(entry)
     out.push(entry)
@@ -534,9 +535,9 @@ const sanitizeExpeditionTechnicalCondition = (
   }
 
   return {
-    pa: Math.max(0, Math.min(100, pa)),
-    instruments: Math.max(0, Math.min(100, instruments)),
-    stageGear: Math.max(0, Math.min(100, stageGear)),
+    pa: clampCondition(pa),
+    instruments: clampCondition(instruments),
+    stageGear: clampCondition(stageGear),
     defects
   }
 }
@@ -1178,7 +1179,7 @@ const sanitizeExpeditionPressure = (
   if (!isLooseRecord(value)) return defaults
   const clampAxis = (key: 'heat' | 'exposure' | 'crowdHype'): number => {
     const candidate = value[key]
-    return isFiniteNumber(candidate) ? Math.max(0, Math.min(100, candidate)) : 0
+    return clampPercent(candidate)
   }
   return {
     heat: clampAxis('heat'),
@@ -1651,7 +1652,7 @@ const sanitizeCrewStressMap = (value: unknown): Record<string, number> => {
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
     if (isForbiddenKey(key) || !isFiniteNumber(entry)) continue
-    result[key] = Math.max(0, Math.min(100, entry))
+    result[key] = clampPercent(entry)
   }
   return result
 }

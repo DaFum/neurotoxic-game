@@ -2,6 +2,8 @@ import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
+import { isFiniteNumber } from '../../utils/finiteNumber'
+import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
 import {
   hasForbiddenKeysDeep,
   hasForbiddenOwnKeys
@@ -611,4 +613,65 @@ export const handleSetLastGigStats = (
   }
 
   return nextState
+}
+
+/**
+ * Settles merch sold during a gig against the stock it came from.
+ *
+ * @param state - Current game state before the sale is deducted.
+ * @param soldMerch - Sold quantity per inventory key.
+ * @returns Updated state, or the identical reference for a malformed or
+ * forbidden-key payload.
+ *
+ * @remarks
+ * During an active Expedition the sold stock is the run cargo, so the quantities
+ * are deducted there; otherwise they come out of the band's ordinary inventory.
+ */ export const handleSettleSoldMerch = (
+  state: GameState,
+  soldMerch: Record<string, number>
+): GameState => {
+  if (
+    !soldMerch ||
+    typeof soldMerch !== 'object' ||
+    Array.isArray(soldMerch) ||
+    hasForbiddenOwnKeys(soldMerch)
+  ) {
+    return state
+  }
+  if (
+    state.expedition?.status === 'active' &&
+    Array.isArray(state.expedition.cargo?.merch)
+  ) {
+    const currentCargo = state.expedition.cargo
+    const nextMerch = currentCargo.merch.map(item => {
+      const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
+        ? soldMerch[item.inventoryKey]
+        : 0
+      const soldQty = isFiniteNumber(rawSold)
+        ? Math.max(0, Math.floor(rawSold))
+        : 0
+      return {
+        ...item,
+        quantity: Math.max(0, item.quantity - soldQty)
+      }
+    })
+    return {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        cargo: {
+          ...currentCargo,
+          merch: nextMerch
+        }
+      }
+    }
+  }
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      inventory: buildSoldMerchInventory(state.band.inventory, soldMerch)
+    }
+  }
 }

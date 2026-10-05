@@ -13,8 +13,7 @@
 
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { isForbiddenKey, hasForbiddenOwnKeys } from '../../utils/objectUtils'
-import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
+import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -54,8 +53,9 @@ import { applyResolvedCrewEventOutcome } from './crewReducer'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
-  canClaimExpeditionInsurance,
-  getExpeditionInsurancePremium
+  EXPEDITION_INSURANCE_RESTORED_CONDITION,
+  getExpeditionInsurancePremium,
+  resolveExpeditionInsuranceClaim
 } from '../../domain/expedition/insurance'
 import {
   DEFECT_SEVERITY_DAMAGE,
@@ -91,7 +91,11 @@ import {
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
 import { calculateFameLevel } from '../../utils/gameState/calculations'
-import { clampControversyLevel } from '../../utils/gameState/clamps'
+import {
+  clampControversyLevel,
+  clampVanCondition,
+  clampVanFuel
+} from '../../utils/gameState/clamps'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createFameGainedQuestEvent,
@@ -138,6 +142,7 @@ import type {
 import type {
   ConditionGroup,
   ExpeditionFailureReason,
+  ExpeditionInsuranceClaimType,
   ExpeditionRepairIntent,
   ExpeditionSettlement,
   ExpeditionTechnicalCondition,
@@ -167,82 +172,74 @@ import {
 } from '../../quests/producers/expeditionQuestEvents'
 
 /**
- * Executes a vehicle insurance claim, restoring van fuel and condition.
+ * Applies an insurance claim through the canonical resolver.
+ *
+ * @param state - Current game state.
+ * @param claimType - Which kind of failure the claim covers.
+ * @param targetGroup - Zero-Condition technical group for a technical claim.
+ * @returns Next state with the claim consumed, or the identical reference when
+ * the resolver refuses it.
+ *
+ * @remarks
+ * Eligibility and the restored value come from
+ * `resolveExpeditionInsuranceClaim`, so the three claim entry points (direct
+ * claim, fuel-stranded crisis, technical-shutdown crisis) cannot drift apart.
+ * Persisted van numbers are read through `finiteNumberOr`, so a NaN fuel or
+ * condition is repaired instead of written back.
  */
-const applyVehicleInsuranceClaim = (state: GameState): GameState => {
-  if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
-  const currentCondition = state.player.van?.condition ?? 100
-  return {
-    ...state,
-    player: {
-      ...state.player,
-      van: {
-        ...state.player.van,
-        fuel: Math.max(
-          state.player.van?.fuel ?? 0,
-          EXPEDITION_TOW_FUEL_RESTORED
-        ),
-        condition: currentCondition <= 0 ? 25 : currentCondition
-      }
-    },
-    expedition: {
-      ...state.expedition,
-      insuranceClaimConsumed: true,
-      claimConsumed: true
-    }
-  }
-}
-
-export const handleSettleSoldMerch = (
+const applyExpeditionInsuranceClaim = (
   state: GameState,
-  soldMerch: Record<string, number>
+  claimType: ExpeditionInsuranceClaimType,
+  targetGroup?: ConditionGroup
 ): GameState => {
-  if (
-    !soldMerch ||
-    typeof soldMerch !== 'object' ||
-    Array.isArray(soldMerch) ||
-    hasForbiddenOwnKeys(soldMerch)
-  ) {
-    return state
+  const resolution = resolveExpeditionInsuranceClaim(state, {
+    claimType,
+    targetGroup
+  })
+  if (!resolution.ok) return state
+  const consumedClaim = {
+    ...state.expedition,
+    insuranceClaimConsumed: true,
+    claimConsumed: true
   }
-  if (
-    state.expedition?.status === 'active' &&
-    Array.isArray(state.expedition.cargo?.merch)
-  ) {
-    const currentCargo = state.expedition.cargo
-    const nextMerch = currentCargo.merch.map(item => {
-      const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
-        ? soldMerch[item.inventoryKey]
-        : 0
-      const soldQty = isFiniteNumber(rawSold)
-        ? Math.max(0, Math.floor(rawSold))
-        : 0
-      return {
-        ...item,
-        quantity: Math.max(0, item.quantity - soldQty)
-      }
-    })
+
+  if (resolution.claimType === 'vehicle') {
+    const van = state.player.van
+    const currentCondition = clampVanCondition(
+      finiteNumberOr(van?.condition, 0)
+    )
     return {
       ...state,
-      expedition: {
-        ...state.expedition,
-        cargo: {
-          ...currentCargo,
-          merch: nextMerch
+      player: {
+        ...state.player,
+        van: {
+          ...van,
+          fuel: clampVanFuel(
+            Math.max(finiteNumberOr(van?.fuel, 0), resolution.restoredValue)
+          ),
+          condition:
+            currentCondition <= 0
+              ? EXPEDITION_INSURANCE_RESTORED_CONDITION
+              : currentCondition
         }
+      },
+      expedition: consumedClaim
+    }
+  }
+
+  if (!resolution.targetGroup) return state
+  return {
+    ...state,
+    expedition: {
+      ...consumedClaim,
+      technicalFailureAccepted: false,
+      technicalCondition: {
+        ...getExpeditionTechnicalCondition(state),
+        [resolution.targetGroup]: resolution.restoredValue
       }
     }
   }
-
-  return {
-    ...state,
-    band: {
-      ...state.band,
-      inventory: buildSoldMerchInventory(state.band.inventory, soldMerch)
-    }
-  }
 }
-
 /**
  * Narrows a payload seed to the unsigned 32-bit integer range the root
  * `runSeed` contract uses.
@@ -660,6 +657,11 @@ export const handleStartExpedition = (
  * Finale — and a replayed arrival — a no-op rather than free progress. The
  * extraction windows the run has seen are recorded here, because a window the
  * player passed up is what makes the extraction decision a real one.
+ *
+ * This is a thin stale-guarded wrapper over {@link applyExpeditionRouteAdvance},
+ * the single implementation. Travel arrival already applies that helper
+ * automatically, so a run does not need this action to progress; it exists for
+ * callers that advance the route outside the arrival flow.
  */
 export const handleAdvanceExpeditionRoute = (
   state: GameState,
@@ -678,21 +680,6 @@ export const handleAdvanceExpeditionRoute = (
 }
 
 /**
- * Advances the run one node deeper, without the public stale guard.
- *
- * @param state - Current game state.
- * @param nodeId - Target node.
- * @returns Next state, or the identical reference for an illegal move.
- *
- * @remarks
- * A pure state-to-state helper rather than a dispatched action, so the travel
- * reducer can commit the player's move and the run's route step in one atomic
- * pass — two dispatches could leave `player.currentNodeId` a node deeper than
- * `expedition.routeStep`. Same authority as the public action: the target must
- * be a real neighbour exactly one step deeper, and a run that is not active
- * leaves the state untouched.
- */
-/**
  * Emits the node-resolved quest event for a committed route advance.
  *
  * @param state - State that has already advanced.
@@ -708,6 +695,21 @@ const withNodeResolved = (state: GameState): GameState =>
     createExpeditionNodeResolvedQuestEvent(state.player.currentNodeId)
   )
 
+/**
+ * Advances the run one node deeper, without the public stale guard.
+ *
+ * @param state - Current game state.
+ * @param nodeId - Target node.
+ * @returns Next state, or the identical reference for an illegal move.
+ *
+ * @remarks
+ * A pure state-to-state helper rather than a dispatched action, so the travel
+ * reducer can commit the player's move and the run's route step in one atomic
+ * pass — two dispatches could leave `player.currentNodeId` a node deeper than
+ * `expedition.routeStep`. Same authority as the public action: the target must
+ * be a real neighbour exactly one step deeper, and a run that is not active
+ * leaves the state untouched.
+ */
 export const applyExpeditionRouteAdvance = (
   state: GameState,
   nodeId: unknown
@@ -1470,28 +1472,13 @@ export const handleResolveExpeditionCrisis = (
   if (!pending.choices.includes(choice)) return state
 
   if (choice === 'insurance_claim') {
-    if (pending.reason === 'technical_shutdown') {
-      const targetGroup = pending.sourceId as ConditionGroup
-      if (!canClaimExpeditionInsurance(state, 'technical', targetGroup)) {
-        return state
-      }
-      const tc = getExpeditionTechnicalCondition(state)
-      return {
-        ...state,
-        expedition: {
-          ...state.expedition,
-          insuranceClaimConsumed: true,
-          claimConsumed: true,
-          technicalFailureAccepted: false,
-          technicalCondition: {
-            ...tc,
-            [targetGroup]: 25
-          }
-        }
-      }
-    }
-
-    return applyVehicleInsuranceClaim(state)
+    return pending.reason === 'technical_shutdown'
+      ? applyExpeditionInsuranceClaim(
+          state,
+          'technical',
+          pending.sourceId as ConditionGroup
+        )
+      : applyExpeditionInsuranceClaim(state, 'vehicle')
   }
 
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
@@ -1543,32 +1530,7 @@ export const handleClaimExpeditionInsurance = (
   const { claimType, targetGroup } = payload
   if (claimType !== 'vehicle' && claimType !== 'technical') return state
 
-  if (!canClaimExpeditionInsurance(state, claimType, targetGroup)) return state
-
-  if (claimType === 'vehicle') {
-    return applyVehicleInsuranceClaim(state)
-  }
-
-  if (claimType === 'technical') {
-    if (!targetGroup) return state
-    const tc = getExpeditionTechnicalCondition(state)
-    const nextTc: ExpeditionTechnicalCondition = {
-      ...tc,
-      [targetGroup]: 25
-    }
-    return {
-      ...state,
-      expedition: {
-        ...state.expedition,
-        technicalCondition: nextTc,
-        insuranceClaimConsumed: true,
-        claimConsumed: true,
-        technicalFailureAccepted: false
-      }
-    }
-  }
-
-  return state
+  return applyExpeditionInsuranceClaim(state, claimType, targetGroup)
 }
 
 /**
@@ -2166,6 +2128,7 @@ export const handleRecordExpeditionObligationSignal = (
   state: GameState,
   payload: RecordExpeditionObligationSignalPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep
@@ -2480,6 +2443,7 @@ export const handleDoubleDownExpeditionObligation = (
   state: GameState,
   payload: DoubleDownExpeditionObligationPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep
@@ -2518,6 +2482,7 @@ export const handleOfferExpeditionDraft = (
   state: GameState,
   payload: OfferExpeditionDraftPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
@@ -2613,6 +2578,7 @@ export const handleSelectExpeditionDraft = (
   state: GameState,
   payload: SelectExpeditionDraftPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   const offer = state.expedition.pendingRunDraftOffer
   if (
     !offer ||
@@ -2641,6 +2607,7 @@ export const handleResolveExpeditionSocialResult = (
   state: GameState,
   payload: ResolveExpeditionSocialResultPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
@@ -2806,13 +2773,16 @@ export const handleCreateSocialIntelGrant = (
   state: GameState,
   payload: CreateSocialIntelGrantPayload
 ): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep
   )
     return state
   const proof = state.expedition.lastSocialResult
-  const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+  const result = Object.hasOwn(EXPEDITION_SOCIAL_RESULTS, payload.resultId)
+    ? EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+    : undefined
   if (
     !proof ||
     proof.intelConsumed ||

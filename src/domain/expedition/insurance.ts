@@ -25,6 +25,12 @@ import type {
   ExpeditionInsurancePolicyId
 } from '../../types/expedition'
 
+/**
+ * Condition a successful claim restores a zero-Condition technical group, or a
+ * broken van, to. One value for both so the claim paths cannot drift apart.
+ */
+export const EXPEDITION_INSURANCE_RESTORED_CONDITION = 25
+
 export const EXPEDITION_INSURANCE_POLICIES: Record<
   ExpeditionInsurancePolicyId,
   ExpeditionInsurancePolicy
@@ -174,7 +180,7 @@ export const resolveExpeditionInsuranceClaim = (
       ok: true,
       claimType: 'technical',
       targetGroup,
-      restoredValue: 25
+      restoredValue: EXPEDITION_INSURANCE_RESTORED_CONDITION
     }
   }
 
