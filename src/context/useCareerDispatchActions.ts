@@ -4,7 +4,6 @@ import {
   createAcquireExpeditionCrewSignatureAction,
   createSettleExpeditionCareerResultAction,
   createSettleExpeditionCrewCareerAction,
-  createPurchaseExpeditionHqFacilityAction,
   createGenerateExpeditionBetweenTourDecisionsAction,
   createRecordExpeditionArchiveDiscoveryAction,
   createResolveExpeditionBetweenTourDecisionAction,
@@ -17,7 +16,6 @@ export type CareerDispatchActions = Pick<
   | 'settleExpeditionCrewCareer'
   | 'settleExpeditionCareerResult'
   | 'acquireExpeditionCrewSignature'
-  | 'purchaseExpeditionHqFacility'
   | 'unlockExpeditionAscension'
   | 'recordExpeditionArchiveDiscovery'
   | 'generateExpeditionBetweenTourDecisions'
@@ -33,10 +31,6 @@ export const useCareerDispatchActions = (
         dispatch(createSettleExpeditionCrewCareerAction(runId)),
       settleExpeditionCareerResult: runId =>
         dispatch(createSettleExpeditionCareerResultAction(runId)),
-      purchaseExpeditionHqFacility: (facilityId, expectedLevel) =>
-        dispatch(
-          createPurchaseExpeditionHqFacilityAction(facilityId, expectedLevel)
-        ),
       unlockExpeditionAscension: runId =>
         dispatch(createUnlockExpeditionAscensionAction(runId)),
       recordExpeditionArchiveDiscovery: (category, id, sourceId) =>

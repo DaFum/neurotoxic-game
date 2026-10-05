@@ -37,7 +37,7 @@ describe('ExpeditionMetaTab', () => {
     for (const fn of Object.values(actions)) fn.mockClear()
   })
 
-  it('builds the next facility level at the stored level and saves', () => {
+  it('builds the next facility level at the stored level', () => {
     state.current = withCareer({ tourTokens: 4 })
     render(<ExpeditionMetaTab />)
     fireEvent.click(screen.getByTestId('expedition-meta-build-workshop'))
@@ -45,7 +45,10 @@ describe('ExpeditionMetaTab', () => {
       'workshop',
       0
     )
-    expect(actions.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+    // The command owns persistence and refusal feedback, so the tab neither
+    // saves nor toasts on its own.
+    expect(actions.saveGameAfterStateCommit).not.toHaveBeenCalled()
+    expect(actions.addToast).not.toHaveBeenCalled()
   })
 
   it('names the current level as the stale guard for a level-2 build', () => {
@@ -93,7 +96,7 @@ describe('ExpeditionMetaTab', () => {
     )
   })
 
-  it('toasts a failure when the reducer refuses the set', () => {
+  it('leaves a refused set to the command, with no success toast', () => {
     actions.purchaseExpeditionUnlockSet.mockReturnValueOnce(false)
     state.current = withCareer({
       tourTokens: 5,
@@ -103,18 +106,29 @@ describe('ExpeditionMetaTab', () => {
     fireEvent.click(
       screen.getByTestId('expedition-meta-unlock-mechanic_network')
     )
-    expect(actions.addToast).toHaveBeenCalledWith(
-      'ui:expedition.meta.setPurchaseFailed',
-      'error'
-    )
+    expect(actions.addToast).not.toHaveBeenCalled()
   })
 
-  it('keeps a set locked until its facility is built', () => {
+  it('keeps a set locked until its facility is built and says why', () => {
     state.current = withCareer({ tourTokens: 5 })
     render(<ExpeditionMetaTab />)
     expect(
       screen.getByTestId('expedition-meta-unlock-mechanic_network')
     ).toBeDisabled()
+    expect(
+      screen.getByTestId('expedition-meta-unlock-blocker-mechanic_network')
+    ).toHaveTextContent('ui:expedition.meta.blocked.facility')
+  })
+
+  it('names the token shortfall on an otherwise buyable set', () => {
+    state.current = withCareer({
+      tourTokens: 1,
+      hqFacilityLevels: Object.assign(Object.create(null), { workshop: 1 })
+    })
+    render(<ExpeditionMetaTab />)
+    expect(
+      screen.getByTestId('expedition-meta-unlock-blocker-mechanic_network')
+    ).toHaveTextContent('ui:expedition.meta.blocked.tokens')
   })
 
   it('shows an owned set instead of a buy control', () => {

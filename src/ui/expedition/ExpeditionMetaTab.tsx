@@ -5,7 +5,8 @@
  * Every price, ceiling and requirement shown here is read from the same
  * registries the Career reducer derives from, so a control is only enabled when
  * the reducer would accept it - and the reducer re-validates the dispatch
- * regardless. Nothing here decides legality on its own.
+ * regardless. Both purchase commands ask the reducer before dispatching, toast
+ * a refusal's reason, and persist only a purchase that was accepted.
  */
 
 import { memo, useCallback } from 'react'
@@ -22,45 +23,12 @@ import {
   EXPEDITION_UNLOCK_SETS
 } from '../../data/expedition/unlockSets'
 import {
-  careerHasExpeditionRank,
-  deriveExpeditionCareerRank
+  deriveExpeditionCareerRank,
+  getExpeditionHqFacilityLevel,
+  getExpeditionUnlockSetPurchaseBlocker
 } from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import type { CareerState, ExpeditionUnlockSetId } from '../../types/career'
-
-/** The stored level of one facility, read the way the reducer reads it. */
-const readFacilityLevel = (career: CareerState, facilityId: string): number =>
-  Math.max(
-    0,
-    Math.floor(
-      finiteNumberOr(
-        Object.hasOwn(career.hqFacilityLevels, facilityId)
-          ? career.hqFacilityLevels[facilityId]
-          : 0,
-        0
-      )
-    )
-  )
-
-/** Why an unlock set cannot be bought right now, or `null` when it can. */
-const getUnlockSetBlocker = (
-  career: CareerState,
-  tokens: number,
-  setId: ExpeditionUnlockSetId
-): 'owned' | 'pending' | 'rank' | 'facility' | 'tokens' | null => {
-  const set = EXPEDITION_UNLOCK_SETS[setId]
-  if (career.unlockedSetIds.includes(setId)) return 'owned'
-  if (career.pendingUnlockPurchase !== null) return 'pending'
-  if (!careerHasExpeditionRank(career, set.requiredRank)) return 'rank'
-  if (
-    readFacilityLevel(career, set.requiredFacility.id) <
-    set.requiredFacility.level
-  ) {
-    return 'facility'
-  }
-  if (tokens < set.cost) return 'tokens'
-  return null
-}
+import type { ExpeditionUnlockSetId } from '../../types/career'
 
 /**
  * Renders the Career's touring economy and its two purchase surfaces.
@@ -71,7 +39,6 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
   const {
     purchaseExpeditionHqFacility,
     purchaseExpeditionUnlockSet,
-    saveGameAfterStateCommit,
     addToast
   } = useGameActions()
 
@@ -80,19 +47,16 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
 
   const buildFacility = useCallback(
     (facilityId: string, currentLevel: number) => {
+      // The command toasts its own refusal and saves only an accepted build.
       purchaseExpeditionHqFacility(facilityId, currentLevel)
-      // A facility changes nothing about the scene, so no transition autosave
-      // will carry it; the purchase persists itself like every other Career
-      // command answered outside a scene change.
-      saveGameAfterStateCommit()
     },
-    [purchaseExpeditionHqFacility, saveGameAfterStateCommit]
+    [purchaseExpeditionHqFacility]
   )
 
   const buySet = useCallback(
     (setId: ExpeditionUnlockSetId) => {
-      // The command persists its own journal; `false` means the reducer
-      // refused it and nothing was taken.
+      // The command persists its own journal and toasts its own refusal;
+      // `false` means nothing was taken.
       if (purchaseExpeditionUnlockSet(setId)) {
         addToast(
           t('ui:expedition.meta.setPurchased', {
@@ -100,8 +64,6 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
           }),
           'success'
         )
-      } else {
-        addToast(t('ui:expedition.meta.setPurchaseFailed'), 'error')
       }
     },
     [addToast, purchaseExpeditionUnlockSet, t]
@@ -129,7 +91,7 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
         </h3>
         <ul className='flex flex-col gap-2'>
           {HQ_FACILITY_IDS.map(facilityId => {
-            const level = readFacilityLevel(career, facilityId)
+            const level = getExpeditionHqFacilityLevel(career, facilityId)
             const maxLevel = HQ_FACILITY_MAX_IMPLEMENTED_LEVEL[facilityId]
             const cost = getExpeditionHqFacilityLevelCost(facilityId, level + 1)
             const canBuild = cost !== null && tokens >= cost
@@ -176,7 +138,7 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
         <ul className='flex flex-col gap-2'>
           {EXPEDITION_UNLOCK_SET_IDS.map(setId => {
             const set = EXPEDITION_UNLOCK_SETS[setId]
-            const blocker = getUnlockSetBlocker(career, tokens, setId)
+            const blocker = getExpeditionUnlockSetPurchaseBlocker(career, setId)
             return (
               <li
                 key={setId}
@@ -200,15 +162,25 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
                     {t('ui:expedition.meta.setOwned')}
                   </span>
                 ) : (
-                  <ActionButton
-                    variant='secondary'
-                    className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
-                    disabled={blocker !== null}
-                    data-testid={`expedition-meta-unlock-${setId}`}
-                    onClick={() => buySet(setId)}
-                  >
-                    {t('ui:expedition.meta.unlock', { cost: set.cost })}
-                  </ActionButton>
+                  <span className='flex flex-wrap items-center gap-2'>
+                    {blocker !== null ? (
+                      <span
+                        className='text-warning-yellow uppercase'
+                        data-testid={`expedition-meta-unlock-blocker-${setId}`}
+                      >
+                        {t(`ui:expedition.meta.blocked.${blocker}`)}
+                      </span>
+                    ) : null}
+                    <ActionButton
+                      variant='secondary'
+                      className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                      disabled={blocker !== null}
+                      data-testid={`expedition-meta-unlock-${setId}`}
+                      onClick={() => buySet(setId)}
+                    >
+                      {t('ui:expedition.meta.unlock', { cost: set.cost })}
+                    </ActionButton>
+                  </span>
                 )}
               </li>
             )

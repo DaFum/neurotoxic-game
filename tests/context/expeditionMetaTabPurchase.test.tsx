@@ -23,16 +23,49 @@ vi.mock('react-i18next', () => ({
 
 const SAVE_KEY = 'neurotoxic_v3_save'
 
-/** Exposes the provider's commands and Career to the test. */
+/** Exposes the provider's commands, Career and toasts to the test. */
 const probe: {
   actions: GameDispatchActions | null
   career: CareerState | null
-} = { actions: null, career: null }
+  toasts: Array<{ message: string; type: string }>
+} = { actions: null, career: null, toasts: [] }
 
 const Probe = () => {
   probe.actions = useGameActions()
   probe.career = useGameSelector(state => state.career)
+  probe.toasts = useGameSelector(state => state.toasts) as Array<{
+    message: string
+    type: string
+  }>
   return null
+}
+
+/** Seeds a save with the given Career and mounts the tab on the provider. */
+const mountWithCareer = (career: Partial<CareerState>) => {
+  const adapter = new InMemoryAdapter()
+  const base = createInitialState()
+  adapter.set(
+    SAVE_KEY,
+    JSON.stringify({
+      player: base.player,
+      band: base.band,
+      social: base.social,
+      gameMap: base.gameMap,
+      career: { ...base.career, ...career }
+    })
+  )
+  render(
+    <StorageProvider adapter={adapter}>
+      <GameStateProvider>
+        <Probe />
+        <ExpeditionMetaTab />
+      </GameStateProvider>
+    </StorageProvider>
+  )
+  act(() => {
+    probe.actions?.loadGame()
+  })
+  return adapter
 }
 
 describe('ExpeditionMetaTab through the real reducer', () => {
@@ -94,5 +127,50 @@ describe('ExpeditionMetaTab through the real reducer', () => {
     expect(
       screen.queryByTestId('expedition-meta-unlock-mechanic_network')
     ).toBeNull()
+    expect(probe.toasts.some(toast => toast.type === 'error')).toBe(false)
+  })
+
+  it('saves an accepted build', () => {
+    const adapter = mountWithCareer({ tourTokens: 2 })
+    act(() => {
+      fireEvent.click(screen.getByTestId('expedition-meta-build-workshop'))
+    })
+    const saved = JSON.parse(String(adapter.get(SAVE_KEY)))
+    expect(saved.career.hqFacilityLevels.workshop).toBe(1)
+    expect(saved.career.tourTokens).toBe(0)
+  })
+
+  it('toasts a refused build and saves nothing', () => {
+    const adapter = mountWithCareer({ tourTokens: 0 })
+    const before = adapter.get(SAVE_KEY)
+    let built = true
+    act(() => {
+      built = probe.actions?.purchaseExpeditionHqFacility('workshop', 0) ?? true
+    })
+    expect(built).toBe(false)
+    expect(probe.career?.hqFacilityLevels.workshop ?? 0).toBe(0)
+    expect(adapter.get(SAVE_KEY)).toBe(before)
+    expect(probe.toasts).toContainEqual(
+      expect.objectContaining({
+        message: 'ui:expedition.meta.purchaseFailed.tokens',
+        type: 'error'
+      })
+    )
+  })
+
+  it('toasts the reason a refused unlock set gives', () => {
+    mountWithCareer({ tourTokens: 5 })
+    let bought = true
+    act(() => {
+      bought =
+        probe.actions?.purchaseExpeditionUnlockSet('mechanic_network') ?? true
+    })
+    expect(bought).toBe(false)
+    expect(probe.toasts).toContainEqual(
+      expect.objectContaining({
+        message: 'ui:expedition.meta.purchaseFailed.facility',
+        type: 'error'
+      })
+    )
   })
 })
