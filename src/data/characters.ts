@@ -165,6 +165,22 @@ export const CHARACTERS = {
         desc: 'traits:ironLiver.desc',
         effect: 'stamina_decay_reduction',
         unlockHint: 'traits:ironLiver.unlockHint'
+      },
+      {
+        id: 'neuro_overclock',
+        name: 'traits:neuroOverclock.name',
+        desc: 'traits:neuroOverclock.desc',
+        effect: 'rhythm_overclock',
+        unlockHint: 'traits:neuroOverclock.unlockHint',
+        // Tuning read through `getNeuroOverclockEffects` (traitUtils):
+        // `rhythmMultiplier` scales the hit window (tempo bonus is the
+        // multiplier minus 1); the per-gig costs land on band stress and the
+        // carrier's stamina after every real gig.
+        effects: {
+          rhythmMultiplier: 1.5,
+          stressPerGig: 5,
+          staminaPerGig: -10
+        }
       }
     ],
     equipment: {}

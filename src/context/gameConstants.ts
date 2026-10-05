@@ -126,6 +126,19 @@ export const GAME_CONSTANTS = Object.freeze({
 export const CLINIC_GRAFT_COST = 8500
 
 /**
+ * One-off body cost of the Neuro-Overclock graft, besides its money price.
+ *
+ * @remarks
+ * The member model has no health or stress fields, so the cost lands on the
+ * grafted member's stamina (floored at 1 so the graft cannot knock them out)
+ * and on the band-level stress loop.
+ */
+export const NEURO_OVERCLOCK_GRAFT_COST = Object.freeze({
+  STAMINA: 20,
+  STRESS: 30
+})
+
+/**
  * Clinic treatment tuning and the trait granted by enhancement treatment.
  *
  * @remarks

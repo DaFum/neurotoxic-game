@@ -10,7 +10,10 @@ import {
 } from '../../utils/objectUtils'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
-import { applyTraitUnlocks } from '../../utils/traitUtils'
+import {
+  applyNeuroOverclockGigCost,
+  applyTraitUnlocks
+} from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { sanitizeGigModifierUpdates } from './sanitizers/stateSanitizers'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
@@ -354,14 +357,15 @@ export const handleSetLastGigStats = (
       ...state.player,
       lastGigNodeId: state.player?.currentNodeId ?? state.player?.lastGigNodeId
     },
-    band: {
+    // Real gigs build up band stress; days decay it (handleAdvanceDay). A
+    // Neuro-Overclock carrier pays its own per-gig stress and stamina on top.
+    band: applyNeuroOverclockGigCost({
       ...traitResult.band,
-      // Real gigs build up band stress; days decay it (handleAdvanceDay)
       stress: clampBandStress(
         finiteNumberOr(traitResult.band.stress, 0) +
           BALANCE_CONSTANTS.STRESS_PER_GIG
       )
-    },
+    }),
     toasts: traitResult.toasts,
     reputationByRegion: { ...state.reputationByRegion }
   }

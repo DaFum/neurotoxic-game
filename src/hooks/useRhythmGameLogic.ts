@@ -5,7 +5,11 @@ import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { useAudioEngine } from '../context/AudioEngineContext'
 import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
-import { bandHasTrait } from '../utils/traitUtils'
+import {
+  bandHasTrait,
+  getNeuroOverclockEffects,
+  NEURO_OVERCLOCK_TRAIT_ID
+} from '../utils/traitUtils'
 import {
   applyExpeditionGearPerformanceDelta,
   getExpeditionCommittedGearProfile
@@ -145,9 +149,13 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // Fold temporary band effects (contraband/equipment) into the static
   // performance values the scoring hook consumes.
   const scoringPerformance = useMemo(() => {
-    const hasNeuroOverclock = bandHasTrait(band, 'neuro_overclock')
+    const hasNeuroOverclock = bandHasTrait(band, NEURO_OVERCLOCK_TRAIT_ID)
     const baseTempo = finiteNumberOr(band?.tempo, 0)
-    const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
+    // The trait's hit-window multiplier (1.5 = +50%) comes from its canonical
+    // definition, so tuning the trait data retunes the gig.
+    const finalTempo = hasNeuroOverclock
+      ? baseTempo + (getNeuroOverclockEffects().rhythmMultiplier - 1)
+      : baseTempo
 
     const resolved = {
       ...band?.performance,
