@@ -626,7 +626,8 @@ export const handleSetLastGigStats = (
  * @remarks
  * During an active Expedition the sold stock is the run cargo, so the quantities
  * are deducted there; otherwise they come out of the band's ordinary inventory.
- */ export const handleSettleSoldMerch = (
+ */
+export const handleSettleSoldMerch = (
   state: GameState,
   soldMerch: Record<string, number>
 ): GameState => {

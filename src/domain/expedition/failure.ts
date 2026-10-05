@@ -265,6 +265,11 @@ export const getAvailableTechnicalRecoveryControls = (
  * @param state - Current game state.
  * @param targetGroup - Specific group or all disabled groups if omitted.
  * @returns True if at least one recovery option is available.
+ *
+ * @remarks
+ * Improvise is free and legal on any group below 50 Condition, so every
+ * zero-Condition group is always recoverable and this is true for any disabled
+ * group; it is only false for a group that is not disabled and has no option.
  */
 export const hasLegalTechnicalRecovery = (
   state: GameState,
@@ -299,8 +304,11 @@ export const hasLegalTechnicalRecovery = (
  * @returns The signal, or `null` when healthy or recoverable without explicit acceptance.
  *
  * @remarks
- * Becomes true only after explicit `accept_failure` (or `technicalFailureAccepted`)
- * or when the current canonical crisis has no legal recovery and the player confirms termination.
+ * Improvise keeps every zero-Condition group recoverable, so the signal exists
+ * only once the player explicitly accepts technical failure
+ * (`technicalFailureAccepted`); a dead group alone never ends the run. The
+ * no-legal-recovery branch is kept as a safety net should the repair rules
+ * ever stop offering a free option.
  */
 export const getTechnicalFailureSignal = (
   state: GameState

@@ -39,6 +39,7 @@ import {
 } from '../../src/domain/expedition/injuries.ts'
 import {
   FIXTURE_REGION_ID,
+  fixtureMap,
   FIXTURE_TOUR_ID,
   preparedState,
   startedState
@@ -65,22 +66,57 @@ describe('expedition reducer payload guards', () => {
   }
 
   it('CREATE_SOCIAL_INTEL_GRANT never reads inherited result keys', () => {
-    const state = startedState()
-    for (const resultId of ['__proto__', 'constructor', 'toString']) {
-      const next = gameReducer(state, {
-        type: ActionTypes.CREATE_SOCIAL_INTEL_GRANT,
-        payload: {
-          expectedRouteStep: state.expedition.routeStep,
-          postOptionId: 'x',
-          resultId,
-          nodeId: 'n'
+    // The handler only reaches the registry lookup with a live, unconsumed
+    // proof at the current step, so build exactly that. The proof names an
+    // inherited key as its result, and Object.prototype is poisoned with the
+    // one field a real result would need: without the Object.hasOwn guard the
+    // inherited value would authorize an Intel grant.
+    const base = startedState()
+    const map = fixtureMap()
+    const nodeId = map.connections.find(
+      edge => edge.from === base.player.currentNodeId
+    )?.to
+    assert.ok(nodeId, 'the fixture start node must have a neighbour')
+    const grantFor = resultId => {
+      const state = {
+        ...base,
+        expedition: {
+          ...base.expedition,
+          lastSocialResult: {
+            id: `proof:${resultId}`,
+            postOptionId: 'x',
+            resultId,
+            resolvedAtRouteStep: base.expedition.routeStep,
+            intelConsumed: false
+          }
         }
-      })
-      assert.equal(next, state)
+      }
+      return {
+        state,
+        next: gameReducer(state, {
+          type: ActionTypes.CREATE_SOCIAL_INTEL_GRANT,
+          payload: {
+            expectedRouteStep: state.expedition.routeStep,
+            postOptionId: 'x',
+            resultId,
+            nodeId
+          }
+        })
+      }
+    }
+
+    Object.prototype.intelTargetLevel = 'full'
+    try {
+      for (const resultId of ['__proto__', 'constructor', 'toString']) {
+        const { state, next } = grantFor(resultId)
+        assert.equal(next, state, resultId)
+        assert.equal(next.expedition.intelGrants.length, 0, resultId)
+      }
+    } finally {
+      delete Object.prototype.intelTargetLevel
     }
   })
 })
-
 describe('insurance claim NaN safety', () => {
   it('repairs NaN van fuel and condition instead of writing them back', () => {
     const state = startedState(

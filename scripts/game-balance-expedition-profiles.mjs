@@ -41,10 +41,8 @@ import {
   validateExpeditionBuildCommitment
 } from '../src/domain/expedition/loadout.ts'
 import { calculateExpeditionCargoCapacity } from '../src/domain/expedition/cargo.ts'
-import {
-  isExpeditionAscensionEligible,
-  EXPEDITION_META_UNLOCK_QUEST_ID
-} from '../src/domain/expedition/meta.ts'
+import { isExpeditionAscensionEligible } from '../src/domain/expedition/meta.ts'
+import { QUEST_EXPEDITION_META_UNLOCK } from '../src/data/questsConstants.ts'
 import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.ts'
 
 export const EXPEDITION_BALANCE_NAMESPACE = '#roguelite-expedition-v1'
@@ -864,7 +862,7 @@ export const buildProductionSimulationLoadout = (
       completedQuestIds: [
         ...new Set([
           ...(state.completedQuestIds ?? []),
-          EXPEDITION_META_UNLOCK_QUEST_ID
+          QUEST_EXPEDITION_META_UNLOCK
         ])
       ],
       career: {
