@@ -3,7 +3,10 @@ import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
 } from './economy'
-import { validateBloodBankDonation } from './bloodBankUtils'
+import {
+  calculateBloodBankPayout,
+  validateBloodBankDonation
+} from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
 import type { BandState } from '../types'
@@ -146,6 +149,24 @@ export const getRegionKeyForLocation = (location: unknown): string | null => {
   if (!venueId) return null
   const idx = venueId.indexOf('_')
   return idx > 0 ? venueId.slice(0, idx) : venueId
+}
+
+/**
+ * Cash a travel leg needs up front. Arrival advances the day, so the tank-and-
+ * wallet gate must cover the trip cost plus the day's obligations; negative
+ * obligations (net asset income) never lower the requirement below the trip
+ * cost, since the income arrives only after the travel debit.
+ *
+ * @param totalCost - Immediate travel cost.
+ * @param dailyObligations - Total daily obligations the arrival tick charges.
+ * @returns `max(totalCost, totalCost + dailyObligations)`; non-finite inputs count as `0`.
+ */
+export const calculateTravelCashRequired = (
+  totalCost: unknown,
+  dailyObligations: unknown
+): number => {
+  const cost = finiteNumberOr(totalCost, 0)
+  return Math.max(cost, cost + finiteNumberOr(dailyObligations, 0))
 }
 
 /** Regional reputation at or below this value blacklists the band from booking in that region. */
@@ -302,11 +323,7 @@ export const checkSoftlock = (
       return (
         accessAllowed &&
         fuel >= finiteNumberOr(fuelLiters, 0) &&
-        money >=
-          Math.max(
-            finiteNumberOr(totalCost, 0),
-            finiteNumberOr(totalCost, 0) + activeDailyObligations
-          )
+        money >= calculateTravelCashRequired(totalCost, activeDailyObligations)
       )
     }
 
@@ -336,7 +353,6 @@ export const checkSoftlock = (
   }
 
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
-  const fameMultiplier = 1 + finiteNumberOr(player.fameLevel, 0) * 0.2
 
   const evaluateScenario = (
     scenarioMoney: number,
@@ -366,8 +382,9 @@ export const checkSoftlock = (
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST
     })
   ) {
-    const marrowMoney = Math.floor(
-      GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier
+    const marrowMoney = calculateBloodBankPayout(
+      GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY,
+      player.fameLevel
     )
     if (evaluateScenario(playerMoney + marrowMoney)) return false
   } else if (
@@ -376,8 +393,9 @@ export const checkSoftlock = (
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
     })
   ) {
-    const bloodMoney = Math.floor(
-      GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier
+    const bloodMoney = calculateBloodBankPayout(
+      GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY,
+      player.fameLevel
     )
     if (evaluateScenario(playerMoney + bloodMoney)) return false
   }
