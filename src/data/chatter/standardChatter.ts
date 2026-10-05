@@ -1,6 +1,7 @@
 import type { GameState } from '../../types'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { isFiniteNumber } from '../../utils/finiteNumber'
+import { getRegionKeyForLocation } from '../../utils/mapUtils'
 
 const getBandStat = (
   state: GameState,
@@ -35,18 +36,11 @@ const getMinStamina = (state: GameState, memo: Record<string, unknown>) =>
 const getMaxStamina = (state: GameState, memo: Record<string, unknown>) =>
   getBandStat(state, memo, 'maxStamina', 'stamina', true)
 
-const isPlayerInCity = (state: GameState, citySlug: string) => {
-  const location = state.player?.location
-  if (!location) return false
-
-  if (location === citySlug || location.includes(`venues:${citySlug}`)) {
-    return true
-  }
-
-  // Canonical venue IDs can be stored without the legacy `venues:` prefix,
-  // e.g. `berlin_end_venue`; treat those as city matches too.
-  return location.startsWith(`${citySlug}_`)
-}
+// `player.location` is stored as `venues:<id>.name`, a bare venue id or a city
+// key; comparing region keys (never substrings) keeps `berlin` from matching
+// `berlinale_*`-style slugs.
+const isPlayerInCity = (state: GameState, citySlug: string) =>
+  getRegionKeyForLocation(state.player?.location) === citySlug
 
 const getInventoryAmount = (
   inventory: Record<string, unknown> | undefined,

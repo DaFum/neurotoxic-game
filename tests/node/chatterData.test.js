@@ -619,11 +619,38 @@ const locationVariants = [
     expectedKey: 'chatter:standard.msg_203'
   },
   {
-    label: 'Stendal [includes partial match]',
-    location: 'some_prefix_venues:stendal_suffix',
+    label: 'Stendal [bare venue id]',
+    location: 'stendal_adler',
     expectedKey: 'chatter:standard.msg_202'
+  },
+  {
+    label: 'Berlin [legacy .name key]',
+    location: 'venues:berlin_so36.name',
+    expectedKey: 'chatter:standard.msg_203'
   }
 ]
+
+// City matching goes through getRegionKeyForLocation, never substrings.
+const nonCityLocations = [
+  'some_prefix_venues:stendal_suffix',
+  'venues:stendalstadt_x',
+  'berlinale_arena',
+  'venues:notberlin_so36.name'
+]
+
+nonCityLocations.forEach(location => {
+  test(`location chatter does not substring-match ${location}`, () => {
+    const state = buildState(GAME_PHASES.OVERWORLD, { player: { location } })
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(state) &&
+        (e.text === 'chatter:standard.msg_202' ||
+          e.text === 'chatter:standard.msg_203')
+    )
+    assert.equal(matches.length, 0)
+  })
+})
 
 locationVariants.forEach(variant => {
   test(`location chatter fires ${variant.label}`, () => {

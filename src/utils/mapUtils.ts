@@ -9,6 +9,7 @@ import {
 } from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
+import { getCityPrefix } from './mapGenerator/cityTraits'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
@@ -137,9 +138,9 @@ const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
  * writers (gig reputation, region quest events) and readers (booking refusal,
  * quest scope stamping) share — mixing raw locations and city keys is what
  * previously made the regional booking ban unreachable. City derivation
- * mirrors `getCityKeyFromVenueId` (prefix before the first underscore) but
- * falls back to the full id for underscore-less city keys like `stendal`
- * instead of returning an empty string.
+ * shares `getCityPrefix` with `getCityKeyFromVenueId` (prefix before the first
+ * underscore) but falls back to the full id for underscore-less city keys like
+ * `stendal` instead of returning an empty string.
  *
  * @param location - Raw location value (`venues:<id>.name` key, bare venue id, or city key).
  * @returns The city key, or null when no usable string was provided.
@@ -147,8 +148,7 @@ const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 export const getRegionKeyForLocation = (location: unknown): string | null => {
   const venueId = normalizeVenueId(location)
   if (!venueId) return null
-  const idx = venueId.indexOf('_')
-  return idx > 0 ? venueId.slice(0, idx) : venueId
+  return getCityPrefix(venueId) || venueId
 }
 
 /**

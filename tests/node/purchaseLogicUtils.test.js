@@ -285,9 +285,37 @@ describe('purchaseLogicUtils', () => {
       const result = applyInventoryAdd(effect, bandInventory)
       assert.deepStrictEqual(result, { inventory: { coffee: 5 } })
     })
+
+    test('rejects coerced addends (numeric strings, booleans, arrays) instead of Number()-ing them', () => {
+      for (const value of ['5', true, [5], Number.NaN, Infinity]) {
+        assert.throws(
+          () => applyInventoryAdd({ item: 'coffee', value }, {}),
+          /Invalid inventory_add value/,
+          String(value)
+        )
+      }
+    })
+
+    test('treats a missing addend as 0', () => {
+      const result = applyInventoryAdd({ item: 'coffee' }, { coffee: 3 })
+      assert.deepStrictEqual(result, { inventory: { coffee: 3 } })
+    })
   })
 
   describe('applyStatModifier', () => {
+    test('ignores coerced stat values instead of Number()-ing them', () => {
+      const player = { fame: 50 }
+      for (const value of ['10', true, [10]]) {
+        const result = applyStatModifier(
+          { target: 'player', stat: 'fame', value },
+          {},
+          player,
+          {}
+        )
+        assert.equal(result.playerPatch.fame, 50, String(value))
+      }
+    })
+
     test('applies to player stat', () => {
       const effect = { target: 'player', stat: 'fame', value: 10 }
       const playerPatch = {}

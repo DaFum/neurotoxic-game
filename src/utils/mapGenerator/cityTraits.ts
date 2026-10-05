@@ -5,11 +5,27 @@ import type { CityTraitState } from '../../types'
 const warnedMalformedVenueIds = new Set<string>()
 
 /**
+ * Pure city-prefix extraction shared by `getCityKeyFromVenueId` and
+ * `getRegionKeyForLocation` (`mapUtils`), so the two cannot disagree on what a
+ * venue id's city is.
+ *
+ * @param venueId - Venue id such as `berlin_so36`.
+ * @returns The prefix before the first underscore, or `''` when the id has no
+ * underscore or starts with one.
+ */
+export const getCityPrefix = (venueId: string): string => {
+  const idx = venueId.indexOf('_')
+  return idx > 0 ? venueId.slice(0, idx) : ''
+}
+
+/**
  * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
  *
  * Returns '' when the ID has no underscore; callers must guard against the
  * empty string. In dev builds a malformed non-empty ID emits a warning so
  * legacy/typo'd venue IDs surface rather than silently disabling city intel.
+ * `getRegionKeyForLocation` shares {@link getCityPrefix} but, for city keys
+ * stored as-is (e.g. `stendal`), falls back to the whole id instead of `''`.
  *
  * @param venueId - Canonical venue id containing a city prefix.
  * @returns Prefix before the first underscore, or an empty string for malformed ids.
@@ -31,7 +47,7 @@ export const getCityKeyFromVenueId = (venueId: string): string => {
     }
     return ''
   }
-  return venueId.slice(0, idx)
+  return getCityPrefix(venueId)
 }
 
 const CITY_TRAIT_GENRES = [
