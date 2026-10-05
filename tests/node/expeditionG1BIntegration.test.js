@@ -15,6 +15,10 @@ import { composeExpeditionFailureSignal } from '../../src/domain/expedition/fail
 import { canSpendExpeditionCash } from '../../src/domain/expedition/loadout.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import {
+  getExpeditionContractTargetNodeId,
+  materializeCommittedContracts
+} from '../../src/domain/expedition/contracts.ts'
+import {
   fixtureLoadout,
   fixtureMap,
   preparedState,
@@ -754,5 +758,28 @@ describe('G1B — core end-to-end checks without G5 forward dependencies', () =>
     // Every G1/G2/G4 spend owner asks this one gate, so the protected slice is
     // not something an individual owner can decide to ignore.
     assert.equal(canSpendExpeditionCash(run, run.player.money), false)
+  })
+})
+
+describe('START materializes the committed native Contracts', () => {
+  it('commits exactly what materializeCommittedContracts derives for the committed pairs', () => {
+    for (const [templateId, targetNodeId] of [
+      ['contract_three_good_gigs', null],
+      [
+        'contract_route_target',
+        getExpeditionContractTargetNodeId('contract_route_target', map)
+      ]
+    ]) {
+      const started = startedWithContract(templateId, targetNodeId)
+      const [materialized] = materializeCommittedContracts(
+        [{ templateId, targetNodeId }],
+        map
+      )
+      assert.ok(materialized?.constraints, templateId)
+      assert.deepEqual(
+        started.expedition.activeObligations[0].constraints,
+        materialized.constraints
+      )
+    }
   })
 })

@@ -111,7 +111,7 @@ import {
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import {
   deriveExpeditionDoubleDownOffer,
-  materializeContractConstraints
+  materializeCommittedContracts
 } from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
@@ -474,13 +474,12 @@ export const handleStartExpedition = (
   if (stagedSponsor && !sponsorAcceptance) return state
   const activeObligations: import('../../types/expedition').ActiveObligationState[] =
     []
-  for (const commitment of normalized.nativeContracts) {
-    const template = EXPEDITION_CONTRACTS_BY_ID.get(commitment.templateId)
-    const constraints = materializeContractConstraints(
-      template,
-      preparedMap,
-      commitment.targetNodeId
-    )
+  // The committed `{templateId, targetNodeId}` pairs materialize here, once, at
+  // START, against the route this transaction just rebuilt.
+  for (const { template, constraints } of materializeCommittedContracts(
+    normalized.nativeContracts,
+    preparedMap
+  )) {
     if (!template || !constraints) return state
     const progressByConstraintId: import('../../types/expedition').ActiveObligationState['progressByConstraintId'] =
       Object.create(null)

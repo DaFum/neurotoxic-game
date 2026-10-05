@@ -165,6 +165,14 @@ export const getExpeditionContractTargetNodeId = (
   return visit?.kind === 'visit_node' ? visit.targetNodeId : null
 }
 
+/**
+ * Materializes the committed native Contracts against the prepared route.
+ *
+ * @param commitments - The loadout's committed `{templateId, targetNodeId}` pairs.
+ * @param map - The route START rebuilt from the canonical run seed.
+ * @returns One entry per commitment; `template` or `constraints` is missing when
+ * the commitment no longer materializes, which START treats as a refusal.
+ */
 export const materializeCommittedContracts = (
   commitments: readonly ExpeditionNativeContractCommitment[],
   map: MaterializationMap
