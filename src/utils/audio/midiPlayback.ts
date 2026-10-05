@@ -9,6 +9,7 @@ import { midiUrlMap } from './assets'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
 import { clampUnit } from '../numberUtils'
 import { isFiniteNumber } from '../finiteNumber'
+import { startTransportAt } from './transportStart'
 import type { ProcessedTempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
@@ -319,10 +320,10 @@ function scheduleSongPlayback(
   delay: number,
   reqId: number,
   transport: ReturnType<typeof Tone.getTransport>,
-  onEnded?: (() => void) | null
+  onEnded?: (() => void) | null,
+  startTimeSec: number | null = null
 ): void {
-  const minLookahead = 0.1
-  const startTime = Tone.now() + Math.max(minLookahead, delay)
+  const startTime = getTransportStartTime(startTimeSec, delay)
 
   if (onEnded) {
     const duration = lastTime + Tone.Time('4n').toSeconds()
@@ -333,7 +334,7 @@ function scheduleSongPlayback(
     }, duration)
   }
 
-  transport.start(startTime)
+  startTransportAt(startTime)
 }
 
 /**
@@ -448,7 +449,8 @@ export async function playSongFromData(
     validDelay,
     prep.reqId,
     transport,
-    prep.normalizedOptions.onEnded as (() => void) | null
+    prep.normalizedOptions.onEnded as (() => void) | null,
+    prep.normalizedOptions.startTimeSec
   )
 
   return true
@@ -746,6 +748,24 @@ function scheduleMidiEndEvents(
   stopAfterSeconds: number | null,
   transport: ReturnType<typeof Tone.getTransport>
 ): void {
+  const stopTime =
+    isFiniteNumber(stopAfterSeconds) && stopAfterSeconds > 0
+      ? requestedOffset + stopAfterSeconds
+      : null
+  if (onEnded && stopTime !== null && stopTime < duration) {
+    // The excerpt ends before the MIDI does. stopAudio() would invalidate the
+    // request before onEnded fires and halt the Transport the gig loop needs
+    // to finalize, so mute the parts and report the end instead, like the OGG
+    // path does when its source ends.
+    audioState.transportEndEventId = transport.scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      audioState.midiParts.forEach(part => {
+        part.mute = true
+      })
+      onEnded({ filename, duration, offsetSeconds: requestedOffset })
+    }, stopTime)
+    return
+  }
   scheduleEndCallback(
     reqId,
     filename,
@@ -830,7 +850,7 @@ function scheduleMidiTransport(
     params.startTimeSec,
     validDelay
   )
-  transport.start(transportStartTime, requestedOffset)
+  startTransportAt(transportStartTime, requestedOffset)
 }
 
 /**

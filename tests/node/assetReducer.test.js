@@ -433,6 +433,72 @@ test('handleUpgradeChassisTier - normalizes non-finite money on upgrade', () => 
   assert.strictEqual(next.player.money, 0)
 })
 
+test('handleUpgradeChassisTier - only adds the slots the target tier introduces', () => {
+  CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+    price: 4000,
+    upkeep: 20,
+    revenue: 0,
+    slots: ['tb_roof'],
+    baseRiskEventChance: 0.005
+  }
+  CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+    price: 9000,
+    upkeep: 35,
+    revenue: 0,
+    slots: ['tb_roof', 'tb_front'],
+    baseRiskEventChance: 0.005
+  }
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 100000 },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 20,
+        baseDailyRevenue: 0,
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.005
+      }
+    ]
+  }
+
+  const forged = handleUpgradeChassisTier(startState, {
+    assetId: 'a1',
+    targetTier: 2,
+    newSlotIds: [
+      { id: 's2', slotType: 'tb_front' },
+      { id: 's3', slotType: 'tb_front' },
+      { id: 's4', slotType: 'tb_roof' },
+      { id: 's5', slotType: 'bogus' },
+      { id: 's1', slotType: 'tb_front' }
+    ]
+  })
+  assert.deepStrictEqual(
+    forged.assets[0].slots.map(slot => [slot.id, slot.slotType]),
+    [
+      ['s1', 'tb_roof'],
+      ['s2', 'tb_front']
+    ]
+  )
+
+  // A payload that omits a slot the target tier introduces is rejected rather
+  // than upgrading the tier without it.
+  for (const newSlotIds of [undefined, []]) {
+    const missing = handleUpgradeChassisTier(startState, {
+      assetId: 'a1',
+      targetTier: 2,
+      newSlotIds
+    })
+    assert.strictEqual(missing, startState)
+  }
+})
+
 test('handleRepairChassis - rejects insufficient funds', () => {
   const startState = {
     ...mockState,

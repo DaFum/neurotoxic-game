@@ -15,10 +15,17 @@ const transport = {
   state: 'paused',
   start: mock.fn(async () => {}),
   pause: mock.fn(async () => {}),
-  stop: mock.fn()
+  stop: mock.fn(),
+  cancel: mock.fn(),
+  clear: mock.fn(),
+  position: 0
 }
 
 let gateRefuses = false
+// When set, the audio-context gate waits on this promise before running `fn`,
+// modelling a context that is still resuming.
+let gateDelay = null
+let contextTimeSec = 0
 
 mock.module('tone', {
   namedExports: {
@@ -34,9 +41,12 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mock.fn(async () => true),
     getRawAudioContext: () => ({ currentTime: 0, state: 'running' }),
-    getAudioContextTimeSec: () => 0,
+    getAudioContextTimeSec: () => contextTimeSec,
     // Mirrors the real contract: `null` means the guard refused to run `fn`.
-    withAudioContext: mock.fn(async fn => (gateRefuses ? null : await fn()))
+    withAudioContext: mock.fn(async fn => {
+      if (gateDelay) await gateDelay
+      return gateRefuses ? null : await fn()
+    })
   }
 })
 
@@ -51,15 +61,24 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-const { resumeAudio } = await import('../../src/utils/audio/transportControl')
+const { resumeAudio, pauseAudio, stopAudio } =
+  await import('../../src/utils/audio/transportControl')
+const { startTransportAt } =
+  await import('../../src/utils/audio/transportStart')
 const { audioState, resetGigState } =
   await import('../../src/utils/audio/state')
 
 const reset = () => {
   resetGigState()
   gateRefuses = false
+  gateDelay = null
+  contextTimeSec = 0
   transport.state = 'paused'
   transport.start.mock.resetCalls()
+  transport.pause.mock.resetCalls()
+  transport.stop.mock.resetCalls()
+  audioState.transportScheduledStart = null
+  audioState.transportDeferredStart = null
 }
 
 test('resumeAudio reports failure when the audio-context gate refuses', async () => {
@@ -99,4 +118,80 @@ test('resumeAudio skips the transport start when it is not paused', async () => 
 
   assert.strictEqual(await resumeAudio(), true)
   assert.strictEqual(transport.start.mock.calls.length, 0)
+})
+
+test('a pause that lands while a resume waits on the context gate wins', async () => {
+  reset()
+  let releaseGate
+  gateDelay = new Promise(resolve => {
+    releaseGate = resolve
+  })
+  audioState.gigIsPaused = true
+
+  const pendingResume = resumeAudio()
+  await pauseAudio()
+  releaseGate()
+
+  assert.strictEqual(await pendingResume, false)
+  assert.strictEqual(transport.start.mock.calls.length, 0)
+  assert.strictEqual(audioState.gigIsPaused, true)
+})
+
+test('pausing before a scheduled transport start defers it until resume', async () => {
+  reset()
+  transport.state = 'stopped'
+  contextTimeSec = 10
+  // Lead-in: the transport is scheduled to start 2s from now at offset 3s.
+  startTransportAt(12, 3)
+  transport.start.mock.resetCalls()
+
+  contextTimeSec = 11
+  await pauseAudio()
+  assert.strictEqual(transport.stop.mock.calls.length, 1)
+
+  // Resume 5s later: the remaining 1s of lead-in is kept and the offset reused.
+  contextTimeSec = 16
+  audioState.gigIsPaused = false
+  assert.strictEqual(await resumeAudio(), true)
+  assert.deepStrictEqual(transport.start.mock.calls[0].arguments, [17, 3])
+})
+
+test('stopping audio drops a deferred transport start', async () => {
+  reset()
+  transport.state = 'stopped'
+  contextTimeSec = 10
+  startTransportAt(12, 0)
+  contextTimeSec = 11
+  await pauseAudio()
+  stopAudio()
+  transport.start.mock.resetCalls()
+
+  audioState.gigIsPaused = false
+  await resumeAudio()
+  assert.strictEqual(transport.start.mock.calls.length, 0)
+})
+
+test('a transport start that throws leaves no phantom scheduled start', () => {
+  reset()
+  transport.start.mock.mockImplementationOnce(() => {
+    throw new Error('start failed')
+  })
+  assert.throws(() => startTransportAt(12, 0))
+  assert.strictEqual(audioState.transportScheduledStart, null)
+})
+
+test('a deferred start survives a re-schedule that throws', async () => {
+  reset()
+  transport.state = 'stopped'
+  contextTimeSec = 10
+  startTransportAt(12, 0)
+  contextTimeSec = 11
+  await pauseAudio()
+  transport.start.mock.mockImplementationOnce(() => {
+    throw new Error('start failed')
+  })
+  audioState.gigIsPaused = false
+
+  assert.strictEqual(await resumeAudio(), false)
+  assert.ok(audioState.transportDeferredStart)
 })

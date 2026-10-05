@@ -98,6 +98,10 @@ const CREATOR_ARGS = {
   createSetActiveEventAction: () => [{ id: 'evt_1', type: 'flavor' }],
   createSetScreenshotModeAction: () => [true],
   createAddToastAction: () => ['hello', 'info'],
+  createAddToastActionWithId: () => [
+    { type: 'info', message: 'hello' },
+    'toast-0'
+  ],
   createRemoveToastAction: () => ['toast_1'],
   createSetGigModifiersAction: () => [{ merch: true }],
   createLoadGameAction: () => [{ version: 1, player: { money: 100 } }],

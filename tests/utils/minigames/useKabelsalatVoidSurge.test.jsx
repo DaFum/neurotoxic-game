@@ -20,7 +20,14 @@ describe('useKabelsalatVoidSurge', () => {
 
   it('initializes at 0 and increments every second when active', () => {
     const { result } = renderHook(() =>
-      useKabelsalatVoidSurge(false, false, false, triggerShockMock, tMock)
+      useKabelsalatVoidSurge(
+        false,
+        false,
+        false,
+        { current: false },
+        triggerShockMock,
+        tMock
+      )
     )
 
     expect(result.current.voidSurge).toBe(0)
@@ -40,7 +47,14 @@ describe('useKabelsalatVoidSurge', () => {
 
   it('triggers shock and resets when reaching 100', () => {
     const { result } = renderHook(() =>
-      useKabelsalatVoidSurge(false, false, false, triggerShockMock, tMock)
+      useKabelsalatVoidSurge(
+        false,
+        false,
+        false,
+        { current: false },
+        triggerShockMock,
+        tMock
+      )
     )
 
     act(() => {
@@ -55,8 +69,16 @@ describe('useKabelsalatVoidSurge', () => {
   })
 
   it('does not increment when inactive', () => {
-    const { result } = renderHook(
-      () => useKabelsalatVoidSurge(true, false, false, triggerShockMock, tMock) // isPoweredOn = true -> inactive
+    const { result } = renderHook(() =>
+      // isPoweredOn = true -> inactive
+      useKabelsalatVoidSurge(
+        true,
+        false,
+        false,
+        { current: false },
+        triggerShockMock,
+        tMock
+      )
     )
 
     act(() => {
@@ -68,7 +90,14 @@ describe('useKabelsalatVoidSurge', () => {
 
   it('can be purged manually, incrementing the purged count', () => {
     const { result } = renderHook(() =>
-      useKabelsalatVoidSurge(false, false, false, triggerShockMock, tMock)
+      useKabelsalatVoidSurge(
+        false,
+        false,
+        false,
+        { current: false },
+        triggerShockMock,
+        tMock
+      )
     )
 
     act(() => {
@@ -84,5 +113,29 @@ describe('useKabelsalatVoidSurge', () => {
 
     expect(result.current.voidSurge).toBe(0)
     expect(result.current.voidSurgesPurged).toBe(1)
+  })
+
+  it('does not trigger a shock while the win transition is pending', () => {
+    const isWinningRef = { current: false }
+    renderHook(() =>
+      useKabelsalatVoidSurge(
+        false,
+        false,
+        false,
+        isWinningRef,
+        triggerShockMock,
+        tMock
+      )
+    )
+
+    act(() => {
+      vi.advanceTimersByTime(19000) // 95
+    })
+    isWinningRef.current = true
+    act(() => {
+      vi.advanceTimersByTime(1000) // would reach 100
+    })
+
+    expect(triggerShockMock).not.toHaveBeenCalled()
   })
 })

@@ -45,6 +45,21 @@ describe('saveValidator', () => {
     assert.deepEqual(loaded.social.regionalGigHistory, { berlin: [2, 4] })
   })
 
+  it('roundtrips pendingSocialOptionId through validation and hydration', () => {
+    for (const value of ['perf_crowd_surf', null]) {
+      const state = createInitialState()
+      state.gameMap = {}
+      state.social.pendingSocialOptionId = value
+      const parsed = JSON.parse(JSON.stringify(createPersistedState(state)))
+      assert.equal(validateSaveData(parsed), true)
+      const loaded = handleLoadGame(
+        createInitialState(),
+        createRawLoadPayload(parsed, [])
+      )
+      assert.strictEqual(loaded.social.pendingSocialOptionId, value)
+    }
+  })
+
   it('rejects malformed or unbounded regional gig history', () => {
     for (const history of [
       { berlin: '4' },
@@ -328,6 +343,17 @@ describe('saveValidator', () => {
         name: 'StateError',
         message: /social must be an object/
       })
+    })
+
+    it('accepts a string or null pendingSocialOptionId and rejects other types', () => {
+      for (const value of ['perf_crowd_surf', null]) {
+        const data = getValidData()
+        data.social.pendingSocialOptionId = value
+        assert.strictEqual(validateSaveData(data), true)
+      }
+      const data = getValidData()
+      data.social.pendingSocialOptionId = { id: 1 }
+      assert.throws(() => validateSaveData(data))
     })
 
     it('throws if social values are not numbers (except lastGigDay)', () => {

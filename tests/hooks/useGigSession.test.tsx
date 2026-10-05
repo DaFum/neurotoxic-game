@@ -179,7 +179,7 @@ describe('useGigSession', () => {
     expect(result.current.isPaused).toBe(true)
   })
 
-  it('handles pause effect (toggling pause on and off)', () => {
+  it('handles pause effect (toggling pause on and off)', async () => {
     const mockAddToast = vi.fn()
     const mockSetLastGigStats = vi.fn()
     const mockEndGig = vi.fn()
@@ -214,12 +214,87 @@ describe('useGigSession', () => {
     expect(mockAddToast).toHaveBeenCalledWith('PAUSED', 'info')
 
     // Toggle pause off
-    act(() => {
+    vi.mocked(resumeAudio).mockResolvedValue(true)
+    await act(async () => {
       result.current.handleTogglePause()
     })
 
     expect(result.current.isPaused).toBe(false)
     expect(resumeAudio).toHaveBeenCalled()
     expect(mockAddToast).toHaveBeenCalledWith('RESUMED', 'info')
+  })
+
+  it('stays paused and reports an error when audio fails to resume', async () => {
+    const mockAddToast = vi.fn()
+    const mockTRef = {
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
+    }
+
+    const { result } = renderHook(() =>
+      useGigSession({
+        addToast: mockAddToast,
+        setLastGigStats: vi.fn(),
+        endGig: vi.fn(),
+        tRef: mockTRef,
+        gameStateRef: { current: {} as unknown as RhythmGameRefState }
+      })
+    )
+
+    act(() => {
+      result.current.handleTogglePause()
+    })
+    vi.mocked(resumeAudio).mockResolvedValue(false)
+    await act(async () => {
+      result.current.handleTogglePause()
+    })
+
+    expect(result.current.isPaused).toBe(true)
+    expect(mockAddToast).not.toHaveBeenCalledWith('RESUMED', 'info')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Audio could not resume. Try again.',
+      'error'
+    )
+    // The re-pause after the failure must not stack a second PAUSED toast on
+    // top of the error.
+    expect(
+      mockAddToast.mock.calls.filter(([message]) => message === 'PAUSED')
+    ).toHaveLength(1)
+  })
+
+  it('mirrors the pause into the game ref and leaves an overlay-owned pause to the game loop', async () => {
+    const mockTRef = {
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
+    }
+    const gameStateRef = {
+      current: {
+        transportPausedByOverlay: true
+      } as unknown as RhythmGameRefState
+    }
+
+    const { result } = renderHook(() =>
+      useGigSession({
+        addToast: vi.fn(),
+        setLastGigStats: vi.fn(),
+        endGig: vi.fn(),
+        tRef: mockTRef,
+        gameStateRef
+      })
+    )
+
+    act(() => {
+      result.current.handleTogglePause()
+    })
+    expect(gameStateRef.current.userPaused).toBe(true)
+
+    await act(async () => {
+      result.current.handleTogglePause()
+    })
+    expect(gameStateRef.current.userPaused).toBe(false)
+    // The event overlay still owns the pause; the loop resumes once it clears.
+    expect(resumeAudio).not.toHaveBeenCalled()
   })
 })

@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { audioState } from './state'
 import { prepareTransportPlayback } from './playbackUtils'
+import { startTransportAt } from './transportStart'
 import { playDrumNote } from './drumMappings'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
@@ -95,7 +96,7 @@ export async function startMetalGenerator(
   const { success, reqId, normalizedOptions } =
     await prepareTransportPlayback(options)
   if (!success) return false
-  const { onEnded } = normalizedOptions
+  const { onEnded, startTimeSec } = normalizedOptions
 
   // Guard BPM against zero/negative/falsy values
   // Use ?? for difficulty to correctly handle 0 as a valid difficulty
@@ -155,6 +156,8 @@ export async function startMetalGenerator(
     }, duration)
   }
 
-  Tone.getTransport().start(`+${startDelay}`)
+  // An absolute start time lets the caller anchor the gig clock to the exact
+  // moment the transport starts.
+  startTransportAt(startTimeSec ?? Tone.now() + startDelay)
   return true
 }

@@ -1,5 +1,5 @@
 import { EXPENSE_CONSTANTS } from '../economy'
-import { finiteNumberOr } from '../finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 import {
   RELATIONSHIP_DEFAULT_SCORE,
   RELATIONSHIP_MAX_SCORE,
@@ -39,13 +39,11 @@ export const addClampedNonNegative = (base: number, delta: number): number => {
 /**
  * Normalizes unknown numeric input to a non-negative integer.
  *
- * @param value - Unknown value to coerce.
- * @returns Non-negative integer, or 0 for non-finite input.
+ * @param value - Unknown value to normalize; non-numbers are never coerced.
+ * @returns Non-negative integer, or 0 for anything but a finite number.
  */
-export const clampToNonNegativeInt = (value: unknown): number => {
-  const n = Number(value)
-  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
-}
+export const clampToNonNegativeInt = (value: unknown): number =>
+  isFiniteNumber(value) ? Math.max(0, Math.floor(value)) : 0
 
 const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
 
@@ -56,8 +54,8 @@ const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
  * @returns Clamped random value, or undefined for non-finite input.
  */
 export const clampUnitRandom = (value: unknown): number | undefined => {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return undefined
+  if (!isFiniteNumber(value)) return undefined
+  const n = value
   if (n < 0) return 0
   if (n >= 1) return MAX_UNIT_RANDOM_EXCLUSIVE
   return n

@@ -35,6 +35,8 @@ export function stopTransportAndClear() {
     audioState.midiParts = []
   }
   Tone.getTransport().cancel()
+  audioState.transportScheduledStart = null
+  audioState.transportDeferredStart = null
 }
 
 /**

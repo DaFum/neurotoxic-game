@@ -127,9 +127,16 @@ const playNoteDataSynthesis = async (
 ): Promise<boolean> => {
   if (notes.length === 0) return false
 
-  startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+  // Tone schedules relative to Tone.now(), which runs `lookAhead` ahead of the
+  // raw context clock; anchor both the clock and the transport to one absolute
+  // time, as the MIDI path does.
+  const startTimeSec = getToneStartTimeSec(
+    getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+  )
+  startGigClock({ offsetMs: 0, startTimeSec })
   const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000, {
-    onEnded: onSongEnded
+    onEnded: onSongEnded,
+    startTimeSec
   })
 
   if (success) {
@@ -147,11 +154,14 @@ const playProceduralMetal = async (
   rng: RandomFn
 ): Promise<boolean> => {
   const audioDelay = GIG_LEAD_IN_MS / 1000
-  startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+  const startTimeSec = getToneStartTimeSec(
+    getAudioContextTimeSec() + audioDelay
+  )
+  startGigClock({ offsetMs: 0, startTimeSec })
   const success = await startMetalGenerator(
     currentSong,
     audioDelay,
-    { onEnded: onSongEnded },
+    { onEnded: onSongEnded, startTimeSec },
     rng
   )
 

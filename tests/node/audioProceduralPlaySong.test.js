@@ -173,7 +173,10 @@ mock.module(
           normalizedOptions: {
             useCleanPlayback: true,
             onEnded:
-              typeof options?.onEnded === 'function' ? options.onEnded : null
+              typeof options?.onEnded === 'function' ? options.onEnded : null,
+            startTimeSec: Number.isFinite(options?.startTimeSec)
+              ? options.startTimeSec
+              : null
           }
         }
       }),
@@ -268,6 +271,14 @@ test('playSongFromData Tests', async t => {
     )
     const startArgs = mockTransport.start.mock.calls[0].arguments
     assert.ok(startArgs[0] >= 1000.1, 'Start time should include lookahead')
+  })
+
+  await t.test('starts the transport at an absolute startTimeSec', async () => {
+    const result = await playSongFromData(validSong, 2, {
+      startTimeSec: 1234.5
+    })
+    assert.strictEqual(result, true)
+    assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1234.5)
   })
 
   await t.test(

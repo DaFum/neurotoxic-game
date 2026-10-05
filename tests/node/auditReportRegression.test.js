@@ -209,7 +209,9 @@ test('milestones do not store raw action objects or raw toast actions', () => {
   assert.doesNotMatch(milestones, /rewardAction\??:\s*GameAction/)
   assert.doesNotMatch(milestones, /type:\s*ActionTypes\./)
   assert.doesNotMatch(reducer, /type:\s*ActionTypes\.ADD_TOAST/)
-  assert.match(reducer, /createAddToastAction/)
+  assert.match(reducer, /createAddToastActionWithId/)
+  // createAddToastAction mints a random UUID; reducers must stay pure.
+  assert.doesNotMatch(reducer, /createAddToastAction\(/)
 })
 
 test('milestone toast labels use namespaced flat ui keys', () => {

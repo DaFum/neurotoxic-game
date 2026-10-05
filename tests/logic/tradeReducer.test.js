@@ -26,6 +26,18 @@ describe('Trade Reducer', () => {
     assert.deepStrictEqual(nextState.toasts, initialState.toasts)
   })
 
+  it('rejects trades with a missing or non-numeric fameCost', () => {
+    for (const fameCost of [undefined, null, '', '10', Number.NaN, -1]) {
+      const initialState = makeState(2000)
+      const nextState = handleTradeVoidItem(initialState, {
+        contrabandId: 'c_phantom_strings',
+        fameCost,
+        instanceId: '123'
+      })
+      assert.strictEqual(nextState, initialState)
+    }
+  })
+
   it('should deduct fame and add item to stash on successful trade', () => {
     const initialState = makeState(2000)
 

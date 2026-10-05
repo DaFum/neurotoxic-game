@@ -9,6 +9,10 @@ import {
 import { createAndConnectBufferSource } from './sharedBufferUtils'
 import { loadAudioBuffer } from './assets'
 import { isFiniteNumber } from '../finiteNumber'
+import {
+  clearScheduledTransportStart,
+  startTransportAt
+} from './transportStart'
 
 /**
  * Computes elapsed gig time from raw audio-context timestamps.
@@ -266,7 +270,7 @@ export async function startGigPlayback({
   }
 
   try {
-    Tone.getTransport().start(startAt, offsetSeconds)
+    startTransportAt(startAt, offsetSeconds)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to start Tone.Transport', error)
   }
@@ -288,6 +292,7 @@ export async function startGigPlayback({
     } catch {
       /* ignore */
     }
+    clearScheduledTransportStart()
     releaseAudioResource('gigSource')
     return false
   }
@@ -385,7 +390,12 @@ export function resumeGigPlayback(): boolean {
   )
   if (!source) return false
 
-  const startAt = getRawAudioContext().currentTime
+  // A pause during the lead-in leaves a negative seek offset. The buffer can't
+  // start before its excerpt, so keep the remaining lead-in and anchor the
+  // clock where the audio actually starts.
+  const remainingLeadInSec = Math.max(0, -audioState.gigSeekOffsetMs / 1000)
+  if (remainingLeadInSec > 0) audioState.gigSeekOffsetMs = 0
+  const startAt = getRawAudioContext().currentTime + remainingLeadInSec
   audioState.gigStartCtxTime = startAt
   audioState.gigIsPaused = false
 

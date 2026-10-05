@@ -206,6 +206,26 @@ describe('gameReducer', () => {
 
       assert.strictEqual(newState.band.harmony, 1)
     })
+
+    it('builds milestone toasts with deterministic ids', () => {
+      testState = {
+        ...testState,
+        player: { ...testState.player, day: 8 },
+        completedMilestones: [],
+        toasts: []
+      }
+      const action = { type: ActionTypes.ADVANCE_DAY }
+      const milestoneToastIds = state =>
+        state.toasts
+          .filter(toast => toast.messageKey === 'ui:milestones.survive_1_week')
+          .map(toast => toast.id)
+
+      const first = milestoneToastIds(gameReducer(testState, action))
+      const second = milestoneToastIds(gameReducer(testState, action))
+
+      assert.strictEqual(first.length, 1)
+      assert.deepStrictEqual(first, second)
+    })
   })
 
   describe('UPDATE_SOCIAL', () => {

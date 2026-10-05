@@ -362,4 +362,29 @@ test('playMidiFile Tests', async t => {
       'Should schedule stop event'
     )
   })
+
+  await t.test(
+    'Options: stopAfterSeconds with onEnded reports the excerpt end without stopping the Transport',
+    async () => {
+      mockStopAudio.mock.resetCalls()
+      const onEnded = mock.fn()
+      const result = await playMidiFile('test.mid', 0, false, 0, {
+        stopAfterSeconds: 5,
+        onEnded
+      })
+      assert.strictEqual(result, true)
+
+      // Fire scheduled Transport events in time order, as Tone would.
+      const scheduled = mockTransport.scheduleOnce.mock.calls
+        .map(call => ({ callback: call.arguments[0], time: call.arguments[1] }))
+        .sort((a, b) => a.time - b.time)
+      assert.strictEqual(scheduled[0].time, 5)
+      for (const { callback } of scheduled) callback()
+
+      assert.strictEqual(onEnded.mock.calls.length, 1)
+      assert.strictEqual(mockStopAudio.mock.calls.length, 0)
+      assert.ok(mockAudioState.midiParts.length > 0)
+      assert.ok(mockAudioState.midiParts.every(part => part.mute === true))
+    }
+  )
 })

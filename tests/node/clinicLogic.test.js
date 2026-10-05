@@ -147,6 +147,47 @@ test('clinicReducer', async t => {
     })
   })
 
+  await t.test('clinic cost type is owned by the reducer', async t2 => {
+    await t2.test(
+      'heal charges money even when payload.type is missing or wrong',
+      () => {
+        for (const type of [undefined, 'enhance']) {
+          const state = {
+            player: { money: 500, fame: 1000, clinicVisits: 0 },
+            band: { members: [{ id: 'm1', stamina: 50, mood: 50 }] }
+          }
+          const nextState = handleClinicHeal(state, {
+            memberId: 'm1',
+            type,
+            staminaGain: 10,
+            moodGain: 10
+          })
+          assert.equal(nextState.player.money, 220)
+          assert.equal(nextState.player.fame, 1000)
+        }
+      }
+    )
+
+    await t2.test(
+      'enhance charges fame even when payload.type is missing or wrong',
+      () => {
+        for (const type of [undefined, 'heal']) {
+          const state = {
+            player: { money: 1000, fame: 500, clinicVisits: 0 },
+            band: { members: [{ id: 'm1', traits: {} }] }
+          }
+          const nextState = handleClinicEnhance(state, {
+            memberId: 'm1',
+            type,
+            trait: 'cyber_lungs'
+          })
+          assert.equal(nextState.player.fame, 0)
+          assert.equal(nextState.player.money, 1000)
+        }
+      }
+    )
+  })
+
   await t.test('handleClinicEnhance', async t2 => {
     await t2.test('adds trait and deducts fame', () => {
       const state = {

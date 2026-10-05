@@ -63,7 +63,8 @@ export const calculateViralityScore = (
   else if (performanceScore > 75) baseChance *= 1.5
 
   // Venue Multiplier
-  if (venue?.name?.includes('Kaminstube')) baseChance *= 1.5 // Historical
+  // Venue names are i18n keys (venues:tangermuende_kaminstube.name), so match case-insensitively.
+  if (venue?.name && /kaminstube/i.test(venue.name)) baseChance *= 1.5 // Historical
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
   if (gigEvents != null) {

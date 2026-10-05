@@ -35,8 +35,16 @@ export const useGigSession = ({
 }: UseGigSessionProps): UseGigSessionReturn => {
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)
+  // Set when a failed resume re-pauses, so that re-pause doesn't stack a
+  // PAUSED toast on top of the resume-failed error.
+  const silentRepauseRef = useRef(false)
 
   useEffect(() => {
+    // The game loop reads this so an event overlay does not resume audio
+    // underneath the pause menu.
+    if (gameStateRef.current) {
+      gameStateRef.current.userPaused = isPaused
+    }
     if (!hasInteractedRef.current) {
       if (!isPaused) {
         hasInteractedRef.current = true
@@ -55,18 +63,50 @@ export const useGigSession = ({
 
     if (isPaused) {
       pauseAudio()
+      if (silentRepauseRef.current) {
+        silentRepauseRef.current = false
+        return
+      }
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
       )
     } else {
-      resumeAudio()
-      addToast(
-        tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
-        'info'
-      )
+      if (gameStateRef.current?.transportPausedByOverlay) {
+        // An event overlay still owns the transport pause; the game loop
+        // resumes audio once the overlay clears.
+        addToast(
+          tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
+          'info'
+        )
+        return
+      }
+      let cancelled = false
+      void resumeAudio().then(resumed => {
+        if (cancelled) return
+        if (resumed) {
+          addToast(
+            tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
+            'info'
+          )
+          return
+        }
+        // The audio context refused to resume: stay paused instead of
+        // showing a running gig over a stopped transport.
+        addToast(
+          tRef.current('ui:gig.resumeFailed', {
+            defaultValue: 'Audio could not resume. Try again.'
+          }),
+          'error'
+        )
+        silentRepauseRef.current = true
+        setIsPaused(true)
+      })
+      return () => {
+        cancelled = true
+      }
     }
-  }, [isPaused, addToast, tRef])
+  }, [isPaused, addToast, tRef, gameStateRef])
 
   const handleTogglePause = useCallback(() => {
     setIsPaused(prev => !prev)

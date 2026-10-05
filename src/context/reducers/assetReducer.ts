@@ -435,17 +435,40 @@ export const handleUpgradeChassisTier = (
   )
   if (state.player.money < upgradeCost) return state
 
+  // Only accept the slots the target tier introduces, mirroring the diff in
+  // upgradeChassisTier: a forged payload must not add arbitrary slots.
+  const allowedByType = new Map<string, number>()
+  for (const slotType of targetConfigTier.slots) {
+    allowedByType.set(slotType, (allowedByType.get(slotType) ?? 0) + 1)
+  }
+  const usedIds = new Set<string>()
+  for (const slot of targetAsset.slots) {
+    usedIds.add(slot.id)
+    if (slot.addedByModuleId !== undefined) continue
+    const allowed = allowedByType.get(slot.slotType)
+    if (allowed !== undefined) allowedByType.set(slot.slotType, allowed - 1)
+  }
   const nextSlots = [...targetAsset.slots]
-  for (let i = 0; i < newSlotIds.length; i++) {
-    const newSlot = newSlotIds[i]
-    if (newSlot) {
-      nextSlots.push({
-        id: newSlot.id,
-        slotType: newSlot.slotType,
-        position: { x: 0, y: 0 },
-        installedModuleId: null
-      })
-    }
+  const safeNewSlotIds = Array.isArray(newSlotIds) ? newSlotIds : []
+  for (let i = 0; i < safeNewSlotIds.length; i++) {
+    const newSlot = safeNewSlotIds[i]
+    if (!newSlot || typeof newSlot.id !== 'string' || usedIds.has(newSlot.id))
+      continue
+    const allowed = allowedByType.get(newSlot.slotType) ?? 0
+    if (allowed <= 0) continue
+    allowedByType.set(newSlot.slotType, allowed - 1)
+    usedIds.add(newSlot.id)
+    nextSlots.push({
+      id: newSlot.id,
+      slotType: newSlot.slotType,
+      position: { x: 0, y: 0 },
+      installedModuleId: null
+    })
+  }
+  // Every slot the target tier introduces must be supplied; otherwise the
+  // tier would be bought without them.
+  for (const remaining of allowedByType.values()) {
+    if (remaining > 0) return state
   }
 
   const nextAssets = [...state.assets]

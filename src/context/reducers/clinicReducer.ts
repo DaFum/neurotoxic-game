@@ -179,7 +179,8 @@ export const handleClinicHeal = (
   const staminaGain = finiteNumberOr(payload.staminaGain, 0)
   const moodGain = finiteNumberOr(payload.moodGain, 0)
 
-  return executeClinicAction(state, payload, member => {
+  // The handler owns the cost type so a missing or forged `type` can't skip the charge.
+  return executeClinicAction(state, { ...payload, type: 'heal' }, member => {
     const prevStamina = finiteNumberOr(member.stamina, 0)
     const prevMood = finiteNumberOr(member.mood, 0)
 
@@ -234,9 +235,20 @@ export const handleBloodBankDonate = (
     staminaCost: 0,
     controversyGain: 0
   }
+  // Costs are never coerced: a missing or malformed price must not make the
+  // donation free.
+  if (
+    !isFiniteNumber(safePayload.harmonyCost) ||
+    safePayload.harmonyCost < 0 ||
+    !isFiniteNumber(safePayload.staminaCost) ||
+    safePayload.staminaCost < 0
+  ) {
+    logger.warn('ClinicReducer', 'Invalid blood bank cost payload')
+    return state
+  }
   const moneyGain = Math.max(0, finiteNumberOr(safePayload.moneyGain, 0))
-  const harmonyCost = Math.max(0, finiteNumberOr(safePayload.harmonyCost, 0))
-  const staminaCost = Math.max(0, finiteNumberOr(safePayload.staminaCost, 0))
+  const harmonyCost = safePayload.harmonyCost
+  const staminaCost = safePayload.staminaCost
   const controversyGain = Math.max(
     0,
     finiteNumberOr(safePayload.controversyGain, 0)
@@ -502,7 +514,8 @@ export const handleClinicEnhance = (
     }
   }
 
-  return executeClinicAction(state, payload, member => {
+  // The handler owns the cost type so a missing or forged `type` can't skip the charge.
+  return executeClinicAction(state, { ...payload, type: 'enhance' }, member => {
     const updatedTraits = normalizeTraitMap(member.traits)
     updatedTraits[resolvedTrait.id] = resolvedTrait
 

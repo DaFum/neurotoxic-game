@@ -163,6 +163,38 @@ describe('usePostGigDerivations', () => {
     expect(mockTriggerEvent).toHaveBeenNthCalledWith(2, 'special', 'post_gig')
   })
 
+  it('rolls post-gig events only once per gig, not again after an event resolves', () => {
+    const activeEvent = {
+      type: 'some_event',
+      id: 'some'
+    } as import('../../../src/types').GameEvent
+    const { rerender } = renderHook(props => usePostGigDerivations(props), {
+      initialProps: defaultProps
+    })
+    expect(mockTriggerEvent).toHaveBeenCalledTimes(1)
+
+    rerender({ ...defaultProps, activeEvent })
+    rerender({ ...defaultProps, activeEvent: null })
+
+    expect(mockTriggerEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('rolls once after an event that was active on entry resolves', () => {
+    const activeEvent = {
+      type: 'some_event',
+      id: 'some'
+    } as import('../../../src/types').GameEvent
+    const { rerender } = renderHook(props => usePostGigDerivations(props), {
+      initialProps: { ...defaultProps, activeEvent }
+    })
+    expect(mockTriggerEvent).not.toHaveBeenCalled()
+
+    rerender({ ...defaultProps, activeEvent: null })
+    rerender({ ...defaultProps, activeEvent: null, social: {} as SocialState })
+
+    expect(mockTriggerEvent).toHaveBeenCalledTimes(1)
+  })
+
   it('uses cityStates from props if available instead of deriving', () => {
     const cityStates = {
       'test-city': {

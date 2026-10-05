@@ -16,7 +16,7 @@ const { handleUpdateSocial } =
 const { formatCurrency } = await import('../../src/utils/numberUtils')
 
 describe('socialReducer.merchPress', () => {
-  test('sanitizes non-finite social update numbers before clamping', () => {
+  test('drops non-finite social update numbers instead of zeroing them', () => {
     const state = {
       social: { zealotry: 7, loyalty: 11, controversyLevel: 13 },
       pendingEvents: [],
@@ -29,9 +29,9 @@ describe('socialReducer.merchPress', () => {
       controversyLevel: Number.NEGATIVE_INFINITY
     })
 
-    assert.strictEqual(result.social.zealotry, 0)
-    assert.strictEqual(result.social.loyalty, 0)
-    assert.strictEqual(result.social.controversyLevel, 0)
+    assert.strictEqual(result.social.zealotry, 7)
+    assert.strictEqual(result.social.loyalty, 11)
+    assert.strictEqual(result.social.controversyLevel, 13)
   })
 
   test('rejects if insufficient funds', () => {

@@ -8,6 +8,7 @@ import { VoidSkullIcon } from './shared/Icons'
 import { Tooltip } from './shared/Tooltip'
 import { generateEffectText } from '../utils/effectFormatter'
 import { formatCurrency } from '../utils/numberUtils'
+import { translateContextKeys } from '../utils/translationUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
 import type { EngineGameState } from '../utils/eventEngine'
@@ -377,9 +378,11 @@ export const EventModal = ({
   const eventContext = useMemo(
     () =>
       typeof event?.context === 'object' && event!.context !== null
-        ? (event!.context as Record<string, unknown>)
+        ? // Context values such as `venue` can be i18n keys; i18next does not
+          // translate interpolated values, so resolve them first.
+          (translateContextKeys(event!.context, t) as Record<string, unknown>)
         : undefined,
-    [event]
+    [event, t]
   )
 
   // Keyboard shortcut: press 1-4 to select options

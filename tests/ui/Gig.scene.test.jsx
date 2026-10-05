@@ -27,7 +27,7 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
     ensureAudioContext: vi.fn().mockResolvedValue(true)
   },
   pauseAudio: vi.fn(),
-  resumeAudio: vi.fn(),
+  resumeAudio: vi.fn(async () => true),
   stopAudio: vi.fn(),
   getPlayRequestId: vi.fn()
 }))
@@ -325,7 +325,7 @@ describe('Gig Scene Component', () => {
       )
     })
 
-    test('resumes audio when pause is toggled off', () => {
+    test('resumes audio when pause is toggled off', async () => {
       render(<Gig />)
 
       const pauseButton = screen.getByText('Pause Button')
@@ -335,7 +335,7 @@ describe('Gig Scene Component', () => {
       })
 
       const resumeButton = screen.getByText(/RESUME/i)
-      act(() => {
+      await act(async () => {
         fireEvent.click(resumeButton)
       })
 

@@ -14,6 +14,8 @@ import {
   createUpdatePlayerAction,
   createUpdateBandAction,
   createUpdateSocialAction,
+  createAddToastActionWithId,
+  createTradeVoidItemAction,
   createUpdateSettingsAction,
   createSetMapAction,
   createSetGigAction,
@@ -680,7 +682,7 @@ describe('Action Creators', () => {
       assert.ok(action.payload.successToast.id.length > 0)
     })
 
-    it('coerces non-finite numeric fields to zero across service actions', () => {
+    it('coerces non-finite gains to zero and drops invalid prices across service actions', () => {
       const pirate = createPirateBroadcastAction({
         cost: Number.POSITIVE_INFINITY,
         fameGain: Number.NaN,
@@ -688,7 +690,9 @@ describe('Action Creators', () => {
         controversyGain: 10,
         harmonyCost: 5
       })
-      assert.strictEqual(pirate.payload.cost, 0)
+      // A dropped price makes the reducer reject the action instead of granting it free.
+      assert.strictEqual(Object.hasOwn(pirate.payload, 'cost'), false)
+      assert.strictEqual(pirate.payload.harmonyCost, 5)
       assert.strictEqual(pirate.payload.fameGain, 0)
 
       const blood = createBloodBankDonateAction({
@@ -698,7 +702,16 @@ describe('Action Creators', () => {
         controversyGain: 5
       })
       assert.strictEqual(blood.payload.moneyGain, 0)
-      assert.strictEqual(blood.payload.harmonyCost, 0)
+      assert.strictEqual(Object.hasOwn(blood.payload, 'harmonyCost'), false)
+      assert.strictEqual(blood.payload.staminaCost, 10)
+
+      for (const fameCost of [undefined, null, Number.NaN, -5, '10']) {
+        const trade = createTradeVoidItemAction({
+          contrabandId: 'c1',
+          fameCost
+        })
+        assert.strictEqual(Object.hasOwn(trade.payload, 'fameCost'), false)
+      }
 
       const leak = createDarkWebLeakAction({
         cost: 100,
@@ -772,7 +785,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedNaN[f] = Number.NaN
@@ -787,7 +799,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedInf[f] = Number.POSITIVE_INFINITY
@@ -817,7 +828,6 @@ describe('Action Creators', () => {
         'activeDeals',
         'brandReputation',
         'influencers',
-        'scenePresence',
         'regionalGigHistory'
       ].forEach(f => {
         expectedNull[f] = null
@@ -826,6 +836,37 @@ describe('Action Creators', () => {
 
       const actionForbidden = createUpdateSocialAction(payloadForbidden)
       assert.deepStrictEqual(actionForbidden.payload, {})
+    })
+
+    it('createAddToastActionWithId keeps the supplied id', () => {
+      const action = createAddToastActionWithId(
+        { type: 'info', messageKey: 'ui:milestones.survive_1_week' },
+        'milestone-toast-0'
+      )
+      assert.strictEqual(action.type, ActionTypes.ADD_TOAST)
+      assert.deepStrictEqual(action.payload, {
+        type: 'info',
+        messageKey: 'ui:milestones.survive_1_week',
+        id: 'milestone-toast-0'
+      })
+    })
+
+    it('keeps pendingSocialOptionId so expedition social settlement can match it', () => {
+      assert.deepStrictEqual(
+        createUpdateSocialAction({ pendingSocialOptionId: 'perf_crowd_surf' })
+          .payload,
+        { pendingSocialOptionId: 'perf_crowd_surf' }
+      )
+      assert.deepStrictEqual(
+        createUpdateSocialAction({ pendingSocialOptionId: null }).payload,
+        { pendingSocialOptionId: null }
+      )
+      for (const invalid of [{}, 42, ['id'], true]) {
+        assert.deepStrictEqual(
+          createUpdateSocialAction({ pendingSocialOptionId: invalid }).payload,
+          {}
+        )
+      }
     })
 
     it('drops non-finite cult indoctrination cooldown updates while preserving null', () => {

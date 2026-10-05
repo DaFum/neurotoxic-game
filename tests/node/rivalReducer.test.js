@@ -99,20 +99,35 @@ describe('rivalReducer', () => {
       assert.equal(action.payload.powerLevel, 0)
     })
 
-    it('coerces NaN powerLevel to zero', () => {
-      const action = createUpdateRivalBandAction({ powerLevel: Number.NaN })
-      assert.equal(action.payload.powerLevel, 0)
+    it('drops malformed powerLevel instead of wiping it', () => {
+      for (const powerLevel of [
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        '7',
+        null,
+        true
+      ]) {
+        const action = createUpdateRivalBandAction({ powerLevel })
+        assert.equal(Object.hasOwn(action.payload, 'powerLevel'), false)
+      }
     })
 
-    it('coerces Infinity powerLevel to zero', () => {
-      const posInf = createUpdateRivalBandAction({
-        powerLevel: Number.POSITIVE_INFINITY
+    it('reducer ignores a malformed powerLevel in a raw payload', () => {
+      const initialState = {
+        rivalBand: { id: 'rival_1', name: 'Rival', powerLevel: 10 }
+      }
+      const next = handleUpdateRivalBand(initialState, {
+        powerLevel: Number.NaN,
+        currentLocationId: 'node_b'
       })
-      assert.equal(posInf.payload.powerLevel, 0)
-      const negInf = createUpdateRivalBandAction({
-        powerLevel: Number.NEGATIVE_INFINITY
-      })
-      assert.equal(negInf.payload.powerLevel, 0)
+      assert.equal(next.rivalBand.powerLevel, 10)
+      assert.equal(next.rivalBand.currentLocationId, 'node_b')
+      assert.equal(
+        handleUpdateRivalBand(initialState, { powerLevel: -3 }).rivalBand
+          .powerLevel,
+        0
+      )
     })
   })
 })

@@ -33,6 +33,29 @@ describe('MapNodeView', () => {
     MapNodeView = module.MapNodeView
   })
 
+  test('formats venue pay and ticket price with formatCurrency', async () => {
+    const { formatCurrency } = await import('../../src/utils/numberUtils')
+    const i18n = (await import('i18next')).default
+    const { container } = render(
+      <MapNodeView
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={true}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
+    )
+    const text = container.textContent
+    expect(text).toContain(`~${formatCurrency(300, i18n.language)}`)
+    expect(text).toContain(formatCurrency(25, i18n.language))
+  })
+
   test('renders visual states appropriately (position, current, travel, pending, unreachable, ticketPrice)', async () => {
     const { container, rerender } = render(
       <MapNodeView

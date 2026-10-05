@@ -101,6 +101,18 @@ describe('useRhythmGameLoop', () => {
     expect(gameStateRef.current.transportPausedByOverlay).toBe(true)
   })
 
+  it('does not resume overlay-paused audio while the player has the gig paused', () => {
+    mocks.getTransportState.mockReturnValue('paused')
+    gameStateRef.current.transportPausedByOverlay = true
+    gameStateRef.current.userPaused = true
+    const { result } = setup(null)
+
+    result.current.update(16)
+
+    expect(mocks.resumeAudio).not.toHaveBeenCalled()
+    expect(gameStateRef.current.transportPausedByOverlay).toBe(true)
+  })
+
   it('resumes audio after overlay pause when transport paused', () => {
     mocks.getTransportState.mockReturnValue('paused')
     gameStateRef.current.transportPausedByOverlay = true

@@ -170,7 +170,10 @@ mock.module(
           normalizedOptions: {
             useCleanPlayback: true,
             onEnded:
-              typeof options?.onEnded === 'function' ? options.onEnded : null
+              typeof options?.onEnded === 'function' ? options.onEnded : null,
+            startTimeSec: Number.isFinite(options?.startTimeSec)
+              ? options.startTimeSec
+              : null
           }
         }
       }),
@@ -284,16 +287,23 @@ test('startMetalGenerator Tests', async t => {
       'Should start Transport'
     )
     const startArgs = mockTransport.start.mock.calls[0].arguments
-    // Expect +0.5 (delay) but capped at min 0.1 lookahead.
-    // Wait, code says `const startDelay = Math.max(0.1, delay)`.
-    // And `Tone.getTransport().start(\`+\${startDelay}\`)`
-    // Wait, the code actually does: `Tone.getTransport().start(\`+\${startDelay}\`)`
-    // mockTransport.start mock receives the string argument.
+    // The start is absolute (Tone.now() = 1000 in this mock, plus the 0.5s
+    // delay) so a pause during the lead-in can defer it.
     assert.strictEqual(
       startArgs[0],
-      '+0.5',
+      1000.5,
       'Should start transport with correct delay'
     )
+  })
+
+  await t.test('starts the transport at an absolute startTimeSec', async () => {
+    const result = await startMetalGenerator(
+      { difficulty: 3, bpm: 120, duration: 30 },
+      2,
+      { startTimeSec: 1234.5 }
+    )
+    assert.strictEqual(result, true)
+    assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1234.5)
   })
 
   await t.test(
