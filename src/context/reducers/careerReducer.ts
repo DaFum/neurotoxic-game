@@ -11,8 +11,12 @@ import type {
   UnlockExpeditionAscensionPayload
 } from '../../types/actions'
 import type { GameState } from '../../types'
+import type { BetweenTourDecisionInstance } from '../../types/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
-import { getEligibleCrewSignatureTrait } from '../../domain/expedition/career'
+import {
+  createCrewDevelopmentEligibilityProof,
+  getEligibleCrewSignatureTrait
+} from '../../domain/expedition/career'
 import {
   isExpeditionAscensionEligible,
   resolveExpeditionCareerSettlement
@@ -646,6 +650,38 @@ const expireServedCrewRecoveryDebts = (
 }
 
 /**
+ * Answers `crew_debrief -> develop_signature` through the G3 acquisition.
+ *
+ * @param state - Current game state.
+ * @param decision - The stored debrief decision.
+ * @returns Next state, or `null` when the Crew cannot take the trait now.
+ *
+ * @remarks
+ * Plan 03 Task 9 binds this option to the same `career_development` proof and
+ * the exact `ACQUIRE_EXPEDITION_CREW_SIGNATURE` handler, so there is one
+ * acquisition implementation rather than a second copy inside the decision
+ * resolver. Eligibility is re-derived here, not trusted from generation: a
+ * rehab answered first may have created a recovery debt since.
+ */
+const developExpeditionCrewSignature = (
+  state: GameState,
+  decision: BetweenTourDecisionInstance
+): GameState | null => {
+  if (decision.target.kind !== 'crew') return null
+  const crewId = decision.target.id
+  const expectedTraitId = getEligibleCrewSignatureTrait(state, crewId)
+  const sourceId = createCrewDevelopmentEligibilityProof(state, crewId)
+  if (expectedTraitId === null || sourceId === null) return null
+  const acquired = handleAcquireExpeditionCrewSignature(state, {
+    crewId,
+    expectedTraitId,
+    sourceType: 'career_development',
+    sourceId
+  })
+  return acquired === state ? null : acquired
+}
+
+/**
  * Answers one stored Between-Tour decision.
  *
  * @param state - Current game state.
@@ -687,11 +723,10 @@ export const handleResolveExpeditionBetweenTourDecision = (
   )
   if (!decision || !decision.optionIds.includes(payload.optionId)) return state
 
-  const applied = applyBetweenTourDecisionOption(
-    state,
-    decision,
-    payload.optionId
-  )
+  const applied =
+    decision.type === 'crew_debrief' && payload.optionId === 'develop_signature'
+      ? developExpeditionCrewSignature(state, decision)
+      : applyBetweenTourDecisionOption(state, decision, payload.optionId)
   // `null` means the option could not be taken after all - most often an
   // affordability check that no longer holds - and an unanswerable option must
   // leave the decision open rather than consume it.
