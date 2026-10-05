@@ -22,7 +22,10 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta.band.relationshipChange.push({
       member1: resolveName(String(eff.member1 ?? '')),
       member2: resolveName(String(eff.member2 ?? '')),
-      change: parsedChange
+      change: parsedChange,
+      // Only the `banter` tag is meaningful downstream (`applyEventDelta` logs
+      // it into `band.banterEvents`); any other value is dropped.
+      ...(eff.source === 'banter' ? { source: 'banter' } : {})
     })
   },
   resource: (

@@ -141,6 +141,75 @@ test('Relationship Mechanics', async t => {
     ])
   })
 
+  await t.test('Event Engine forwards an explicit banter source tag', () => {
+    const context = { member1: 'Matze', member2: 'Lars' }
+    const tagged = eventEngine.applyResult(
+      {
+        type: 'composite',
+        effects: [
+          {
+            type: 'relationship',
+            member1: '{member1}',
+            member2: '{member2}',
+            value: 10,
+            source: 'banter'
+          }
+        ]
+      },
+      context
+    )
+    assert.deepStrictEqual(tagged.band.relationshipChange, [
+      { member1: 'Matze', member2: 'Lars', change: 10, source: 'banter' }
+    ])
+
+    // Any other source value is not forwarded.
+    const untagged = eventEngine.applyResult(
+      {
+        type: 'composite',
+        effects: [
+          {
+            type: 'relationship',
+            member1: 'Matze',
+            member2: 'Lars',
+            value: 10,
+            source: 'something_else'
+          }
+        ]
+      },
+      context
+    )
+    assert.deepStrictEqual(untagged.band.relationshipChange, [
+      { member1: 'Matze', member2: 'Lars', change: 10 }
+    ])
+  })
+
+  await t.test(
+    'Banter-tagged relationship changes are logged by applyEventDelta',
+    () => {
+      const state = createInitialState()
+      const delta = eventEngine.applyResult(
+        {
+          type: 'composite',
+          effects: [
+            {
+              type: 'relationship',
+              member1: 'Matze',
+              member2: 'Lars',
+              value: 10,
+              source: 'banter'
+            }
+          ]
+        },
+        {}
+      )
+      delta.band.relationshipChange[0].timestamp = 1234
+      const next = applyEventDelta(state, delta)
+      assert.deepStrictEqual(next.band.banterEvents, [
+        { member1: 'Matze', member2: 'Lars', delta: 10, timestamp: 1234 }
+      ])
+    }
+  )
+
   await t.test('Unlock Checks', () => {
     const state = createInitialState()
     const matze = state.band.members.find(m => m.name === 'Matze')

@@ -269,6 +269,7 @@
   "detailedStats.passiveFollowersPerDay_one": "+{{count}}/day",
   "detailedStats.passiveFollowersPerDay_other": "+{{count}}/day",
   "detailedStats.perfModifiers": "Performance Modifiers",
+  "detailedStats.recentBanter": "Recent Banter",
   "detailedStats.skillBase": "Skill (Base)",
   "detailedStats.skills": "Skills",
   "detailedStats.stamina": "Stamina",

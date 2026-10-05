@@ -93,7 +93,8 @@ export const RELATIONSHIP_EVENTS = [
               type: 'relationship',
               member1: '{member1}',
               member2: '{member2}',
-              value: -15
+              value: -15,
+              source: 'banter'
             }
           ]
         },
@@ -123,7 +124,8 @@ export const RELATIONSHIP_EVENTS = [
               type: 'relationship',
               member1: '{member1}',
               member2: '{member2}',
-              value: 10
+              value: 10,
+              source: 'banter'
             }
           ]
         },
