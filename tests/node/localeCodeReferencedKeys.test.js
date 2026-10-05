@@ -10,6 +10,7 @@ const read = (lang, ns) =>
 const CODE_REFERENCED_KEYS = [
   ['economy', 'gigExpenses.swingDampener.detail'],
   ['economy', 'gigIncome.swingBoost.detail'],
+  ['economy', 'unknownBreakdownLabel'],
   ['ui', 'quest.unknown'],
   ['ui', 'event.venueFallback'],
   ['traits', 'neuroOverclock.name'],

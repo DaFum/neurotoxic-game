@@ -37,6 +37,12 @@ export const BREAKDOWN_LABEL_KEYS = {
 } as const
 
 /**
+ * Generic label shown for a breakdown line whose key is not registered (a
+ * stale or hand-edited save), instead of rendering the raw key.
+ */
+export const UNKNOWN_BREAKDOWN_LABEL_KEY = 'economy:unknownBreakdownLabel'
+
+/**
  * Prefix shared by every per-merch-item breakdown line.
  *
  * @remarks
