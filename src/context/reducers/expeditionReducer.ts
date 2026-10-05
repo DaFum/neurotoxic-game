@@ -58,7 +58,9 @@ import {
   resolveExpeditionInsuranceClaim
 } from '../../domain/expedition/insurance'
 import {
-  DEFECT_SEVERITY_DAMAGE,
+  applyExpeditionDefectResolution,
+  applyExpeditionDefectReveal,
+  applyExpeditionDefectTrigger,
   createDeterministicHiddenDefect
 } from '../../domain/expedition/defects'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
@@ -1545,6 +1547,59 @@ export const handleClaimExpeditionInsurance = (
 }
 
 /**
+ * Commits a defect transition's technical condition.
+ *
+ * @param state - Current game state.
+ * @param technicalCondition - The transitioned condition, or `null` when the
+ * domain transition refused.
+ * @returns Next state, or the identical reference on a refusal.
+ */
+const withTechnicalCondition = (
+  state: GameState,
+  technicalCondition: ExpeditionTechnicalCondition | null
+): GameState =>
+  technicalCondition === null
+    ? state
+    : { ...state, expedition: { ...state.expedition, technicalCondition } }
+
+/**
+ * Lists the revealed or triggered defects of one group, in stored order.
+ *
+ * @param tc - Current technical condition.
+ * @param group - Group a repair targets.
+ * @returns Ids of the defects a repair on that group may resolve.
+ */
+const getKnownGroupDefectIds = (
+  tc: ExpeditionTechnicalCondition,
+  group: ConditionGroup
+): string[] =>
+  tc.defects
+    .filter(
+      d =>
+        d.group === group &&
+        (d.status === 'revealed' || d.status === 'triggered')
+    )
+    .map(d => d.id)
+
+/**
+ * Resolves each listed defect through the shared resolve transition.
+ *
+ * @param tc - Current technical condition.
+ * @param defectIds - Defects to resolve; ids the transition refuses are skipped.
+ * @returns The next technical condition (the same object when nothing changed).
+ */
+const resolveExpeditionDefects = (
+  tc: ExpeditionTechnicalCondition,
+  defectIds: readonly string[]
+): ExpeditionTechnicalCondition => {
+  let next = tc
+  for (const id of defectIds) {
+    next = applyExpeditionDefectResolution(next, id) ?? next
+  }
+  return next
+}
+
+/**
  * Authoritatively executes a repair on equipment during an active Expedition run.
  *
  * @param state - Current game state.
@@ -1573,7 +1628,7 @@ export const handleExecuteExpeditionRepair = (
     ? clampCondition(tc[sourceGroup] - result.sourceDamage)
     : undefined
 
-  const updatedTc: ExpeditionTechnicalCondition = {
+  let updatedTc: ExpeditionTechnicalCondition = {
     ...tc,
     [targetGroup]: nextTargetCondition,
     ...(sourceGroup && nextSourceCondition !== undefined
@@ -1581,28 +1636,17 @@ export const handleExecuteExpeditionRepair = (
       : {})
   }
 
-  if (result.resolvesTargetDefects && updatedTc.defects.length > 0) {
-    if (payload.mode === 'professional') {
-      updatedTc.defects = updatedTc.defects.map(d =>
-        d.group === targetGroup &&
-        (d.status === 'revealed' || d.status === 'triggered')
-          ? { ...d, status: 'resolved' as const }
-          : d
-      )
-    } else if (payload.mode === 'cannibalize') {
-      let resolvedOne = false
-      updatedTc.defects = updatedTc.defects.map(d => {
-        if (
-          !resolvedOne &&
-          d.group === targetGroup &&
-          (d.status === 'revealed' || d.status === 'triggered')
-        ) {
-          resolvedOne = true
-          return { ...d, status: 'resolved' as const }
-        }
-        return d
-      })
-    }
+  if (result.resolvesTargetDefects) {
+    // Professional resolves every known target-group defect, cannibalize the
+    // first one; the transition itself is the shared resolve.
+    const known = getKnownGroupDefectIds(updatedTc, targetGroup)
+    const resolving =
+      payload.mode === 'professional'
+        ? known
+        : payload.mode === 'cannibalize'
+          ? known.slice(0, 1)
+          : []
+    updatedTc = resolveExpeditionDefects(updatedTc, resolving)
   }
 
   if (result.createsHiddenDefect) {
@@ -1649,8 +1693,12 @@ export const handleExecuteExpeditionRepair = (
  * Reveals a hidden equipment defect.
  *
  * @param state - Current game state.
- * @param payload - Defect id, revelation source, and expected route step.
+ * @param payload - Defect id and expected route step.
  * @returns Next state, or identical reference when preconditions fail.
+ *
+ * @remarks
+ * Delegates to `applyExpeditionDefectReveal`, the same transition inspections
+ * use, so a dispatched reveal and an inspection reveal cannot drift apart.
  */
 export const handleRevealExpeditionDefect = (
   state: GameState,
@@ -1668,28 +1716,10 @@ export const handleRevealExpeditionDefect = (
   const tc = state.expedition.technicalCondition
   if (!tc || !Array.isArray(tc.defects)) return state
 
-  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
-  if (targetIndex === -1) return state
-
-  const targetDefect = tc.defects[targetIndex]
-  if (!targetDefect || targetDefect.status !== 'hidden') return state
-
-  const updatedDefects = [...tc.defects]
-  updatedDefects[targetIndex] = {
-    ...targetDefect,
-    status: 'revealed'
-  }
-
-  return {
-    ...state,
-    expedition: {
-      ...state.expedition,
-      technicalCondition: {
-        ...tc,
-        defects: updatedDefects
-      }
-    }
-  }
+  return withTechnicalCondition(
+    state,
+    applyExpeditionDefectReveal(tc, payload.defectId)
+  )
 }
 
 /**
@@ -1698,6 +1728,11 @@ export const handleRevealExpeditionDefect = (
  * @param state - Current game state.
  * @param payload - Defect id, trigger boundary, and expected route step.
  * @returns Next state, or identical reference when preconditions fail.
+ *
+ * @remarks
+ * Delegates to `applyExpeditionDefectTrigger`, the same transition the
+ * automatic boundary sweep (`evaluateExpeditionDefectTriggers`) uses, so the
+ * severity damage has one implementation.
  */
 export const handleTriggerExpeditionDefect = (
   state: GameState,
@@ -1715,46 +1750,22 @@ export const handleTriggerExpeditionDefect = (
   const tc = state.expedition.technicalCondition
   if (!tc || !Array.isArray(tc.defects)) return state
 
-  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
-  if (targetIndex === -1) return state
-
-  const targetDefect = tc.defects[targetIndex]
-  if (
-    !targetDefect ||
-    targetDefect.status === 'triggered' ||
-    targetDefect.status === 'resolved'
-  ) {
-    return state
-  }
-
-  const damage = DEFECT_SEVERITY_DAMAGE[targetDefect.severity] || 8
-  const nextCondition = clampCondition(tc[targetDefect.group] - damage)
-
-  const updatedDefects = [...tc.defects]
-  updatedDefects[targetIndex] = {
-    ...targetDefect,
-    status: 'triggered'
-  }
-
-  return {
-    ...state,
-    expedition: {
-      ...state.expedition,
-      technicalCondition: {
-        ...tc,
-        [targetDefect.group]: nextCondition,
-        defects: updatedDefects
-      }
-    }
-  }
+  return withTechnicalCondition(
+    state,
+    applyExpeditionDefectTrigger(tc, payload.defectId)
+  )
 }
 
 /**
  * Resolves an equipment defect following repair.
  *
  * @param state - Current game state.
- * @param payload - Defect id, repair resolution id, and expected route step.
+ * @param payload - Defect id and expected route step.
  * @returns Next state, or identical reference when preconditions fail.
+ *
+ * @remarks
+ * Delegates to `applyExpeditionDefectResolution`, the same transition the
+ * repair and full-service paths use.
  */
 export const handleResolveExpeditionDefect = (
   state: GameState,
@@ -1772,28 +1783,10 @@ export const handleResolveExpeditionDefect = (
   const tc = state.expedition.technicalCondition
   if (!tc || !Array.isArray(tc.defects)) return state
 
-  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
-  if (targetIndex === -1) return state
-
-  const targetDefect = tc.defects[targetIndex]
-  if (!targetDefect || targetDefect.status === 'resolved') return state
-
-  const updatedDefects = [...tc.defects]
-  updatedDefects[targetIndex] = {
-    ...targetDefect,
-    status: 'resolved'
-  }
-
-  return {
-    ...state,
-    expedition: {
-      ...state.expedition,
-      technicalCondition: {
-        ...tc,
-        defects: updatedDefects
-      }
-    }
-  }
+  return withTechnicalCondition(
+    state,
+    applyExpeditionDefectResolution(tc, payload.defectId)
+  )
 }
 
 /**
@@ -1824,21 +1817,12 @@ export const handleExecuteExpeditionInspection = (
     finiteNumberOr(state.player.money, 0) - result.diagnosticFee
   )
 
-  const tc = getExpeditionTechnicalCondition(state)
-  let updatedDefects = [...tc.defects]
-  const revealedSet = new Set(result.revealedDefectIds)
-
-  if (revealedSet.size > 0) {
-    updatedDefects = updatedDefects.map(d =>
-      revealedSet.has(d.id) && d.status === 'hidden'
-        ? { ...d, status: 'revealed' as const }
-        : d
-    )
-  }
-
-  let updatedTc: ExpeditionTechnicalCondition = {
-    ...tc,
-    defects: updatedDefects
+  // Every reveal goes through the shared transition; one that is not hidden
+  // any more is skipped rather than re-revealed.
+  let updatedTc: ExpeditionTechnicalCondition =
+    getExpeditionTechnicalCondition(state)
+  for (const defectId of new Set(result.revealedDefectIds)) {
+    updatedTc = applyExpeditionDefectReveal(updatedTc, defectId) ?? updatedTc
   }
 
   if (result.professionalRepair && payload.repairTargetGroup) {
@@ -1854,11 +1838,9 @@ export const handleExecuteExpeditionInspection = (
       [targetGroup]: nextTargetCondition
     }
     if (result.professionalRepair.resolvesTargetDefects) {
-      updatedTc.defects = updatedTc.defects.map(d =>
-        d.group === targetGroup &&
-        (d.status === 'revealed' || d.status === 'triggered')
-          ? { ...d, status: 'resolved' as const }
-          : d
+      updatedTc = resolveExpeditionDefects(
+        updatedTc,
+        getKnownGroupDefectIds(updatedTc, targetGroup)
       )
     }
   }

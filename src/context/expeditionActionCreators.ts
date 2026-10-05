@@ -495,7 +495,6 @@ export const executeExpeditionRepair = (
  *
  * @param state - Current game state.
  * @param defectId - Target defect id.
- * @param source - Revelation source description.
  * @returns Typed `REVEAL_EXPEDITION_DEFECT` action, or `null` when run is not active.
  */
 export const revealExpeditionDefect = (
@@ -547,7 +546,6 @@ export const triggerExpeditionDefect = (
  *
  * @param state - Current game state.
  * @param defectId - Target defect id.
- * @param repairResolutionId - Associated repair resolution id.
  * @returns Typed `RESOLVE_EXPEDITION_DEFECT` action, or `null` when run is not active.
  */
 export const resolveExpeditionDefect = (

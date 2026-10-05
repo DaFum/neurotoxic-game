@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  applyExpeditionDefectResolution,
+  applyExpeditionDefectReveal,
+  applyExpeditionDefectTrigger,
   createDeterministicHiddenDefect,
   getVisibleExpeditionDefects,
   evaluateExpeditionDefectTriggers
@@ -302,6 +305,62 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
         visible.some(d => d.id === 'fixed_defect'),
         false
       )
+    }
+  )
+
+  await t.test(
+    'the three lifecycle transitions are single domain functions the handlers and sweep share',
+    () => {
+      const defect = {
+        id: 'd_shared',
+        group: 'pa',
+        severity: 2,
+        status: 'hidden',
+        source: 'field_repair',
+        createdAtRouteStep: 1,
+        triggerAt: 'post_travel',
+        triggerRouteStep: 2
+      }
+      const state = createActiveStateWithDefects([defect], { pa: 60 })
+      const tc = state.expedition.technicalCondition
+
+      // Reveal: hidden -> revealed; anything else is refused.
+      const revealed = applyExpeditionDefectReveal(tc, 'd_shared')
+      assert.equal(revealed?.defects[0].status, 'revealed')
+      assert.equal(applyExpeditionDefectReveal(revealed, 'd_shared'), null)
+      assert.equal(applyExpeditionDefectReveal(tc, 'missing'), null)
+      assert.deepEqual(
+        handleRevealExpeditionDefect(state, {
+          defectId: 'd_shared',
+          expectedRouteStep: 2
+        }).expedition.technicalCondition,
+        revealed
+      )
+
+      // Trigger: severity damage applied once; a triggered defect is refused.
+      const triggered = applyExpeditionDefectTrigger(tc, 'd_shared')
+      assert.equal(triggered?.pa, 45)
+      assert.equal(triggered?.defects[0].status, 'triggered')
+      assert.equal(applyExpeditionDefectTrigger(triggered, 'd_shared'), null)
+      assert.deepEqual(
+        handleTriggerExpeditionDefect(state, {
+          defectId: 'd_shared',
+          trigger: 'post_travel',
+          expectedRouteStep: 2
+        }).expedition.technicalCondition,
+        triggered
+      )
+      assert.deepEqual(
+        evaluateExpeditionDefectTriggers(state, 'post_travel').expedition
+          .technicalCondition,
+        triggered
+      )
+
+      // Resolve: any unresolved status -> resolved; resolved is refused.
+      const resolved = applyExpeditionDefectResolution(triggered, 'd_shared')
+      assert.equal(resolved?.defects[0].status, 'resolved')
+      assert.equal(resolved?.pa, 45)
+      assert.equal(applyExpeditionDefectResolution(resolved, 'd_shared'), null)
     }
   )
 
