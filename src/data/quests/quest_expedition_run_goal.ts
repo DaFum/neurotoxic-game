@@ -20,7 +20,12 @@ export const quest_expedition_run_goal = {
     { event: 'expedition.nodeResolved', amount: 'fixed', fixedAmount: 1 }
   ],
   required: 5,
-  offer: { trigger: 'random', category: 'transport', chance: 0.08 },
+  offer: {
+    trigger: 'random',
+    category: 'transport',
+    chance: 0.08,
+    condition: { requireActiveExpedition: true }
+  },
   rewards: [
     { type: 'money', amount: 900 },
     { type: 'fame', amount: 200 }

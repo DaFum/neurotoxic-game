@@ -20,7 +20,12 @@ export const quest_expedition_nemesis = {
     { event: 'expedition.rivalOutcome', amount: 'fixed', fixedAmount: 1 }
   ],
   required: 3,
-  offer: { trigger: 'random', category: 'band', chance: 0.06 },
+  offer: {
+    trigger: 'random',
+    category: 'band',
+    chance: 0.06,
+    condition: { requireActiveExpedition: true }
+  },
   rewards: [
     { type: 'fame', amount: 450 },
     { type: 'social.followers', amount: 1500 }

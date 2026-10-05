@@ -20,7 +20,12 @@ export const quest_expedition_meta_unlock = {
     { event: 'expedition.finaleCompleted', amount: 'fixed', fixedAmount: 1 }
   ],
   required: 2,
-  offer: { trigger: 'random', category: 'special', chance: 0.05 },
+  offer: {
+    trigger: 'random',
+    category: 'special',
+    chance: 0.05,
+    condition: { requireActiveExpedition: true }
+  },
   rewards: [
     { type: 'money', amount: 2200 },
     { type: 'fame', amount: 600 }
