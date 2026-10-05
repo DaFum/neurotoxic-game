@@ -404,6 +404,8 @@ export const handleGraftNeuroOverclock = (
     return state
   }
 
+  if (!payload || typeof payload !== 'object') return state
+
   if (!isFiniteNumber(state.player.money)) {
     return state // Corrupted funds state
   }

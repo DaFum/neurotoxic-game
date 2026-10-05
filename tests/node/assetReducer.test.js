@@ -155,6 +155,88 @@ test('handlePurchaseChassis - rejects crowdfund-mode payload (no free chassis)',
   assert.strictEqual(next, startState)
 })
 
+test('handlePurchaseChassis - rejects raw DIY loan dispatch (no bank underwrites squats)', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].diy[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = { ...mockState }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'diy',
+    tier: 1,
+    mode: 'loan',
+    loanProfileId: 'shortTerm',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handlePurchaseChassis - rejects raw loan dispatch for an ineligible profile', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  // coop requires scenePresence >= 50; state has none.
+  const startState = { ...mockState, social: { scenePresence: 10 } }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'loan',
+    loanProfileId: 'coop',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handlePurchaseChassis - NaN scenePresence does not satisfy a loan profile gate', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = { ...mockState, social: { scenePresence: NaN } }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'loan',
+    loanProfileId: 'coop',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handlePurchaseChassis - eligible loan dispatch still mints the chassis and liability', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = { ...mockState, social: { scenePresence: 80 } }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'loan',
+    loanProfileId: 'coop',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next.assets[0].id, 'a1')
+  assert.ok(next.liabilities.loan_a1)
+})
+
 test('handlePurchaseChassis - uses direct DIY config values', () => {
   const kind = 'tourbus_chassis'
   CHASSIS_CONFIG[kind].legit[1] = {

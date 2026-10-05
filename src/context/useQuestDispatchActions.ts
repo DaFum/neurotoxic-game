@@ -11,6 +11,11 @@ import {
  */
 export interface QuestDispatchActions {
   addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
+  /**
+   * Advances a quest's progress directly.
+   *
+   * @internal Test-only. Production progress flows through `applyQuestEvent`.
+   */
   advanceQuest: (
     questId: Parameters<typeof createAdvanceQuestAction>[0],
     progressAmount: Parameters<typeof createAdvanceQuestAction>[1]

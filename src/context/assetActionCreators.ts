@@ -194,7 +194,7 @@ export const purchaseChassis = (
     if (
       !isLoanProfileEligible(profile, {
         fame: state.player.fame,
-        scenePresence: state.social?.scenePresence ?? 0
+        scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
       })
     ) {
       return fail('LOAN_PROFILE_INELIGIBLE')
@@ -484,7 +484,7 @@ export const refinanceLiability = (
   if (
     !isLoanProfileEligible(profile, {
       fame: state.player.fame,
-      scenePresence: state.social?.scenePresence ?? 0
+      scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
     })
   ) {
     return fail('LOAN_PROFILE_INELIGIBLE')
