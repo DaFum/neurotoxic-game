@@ -9,8 +9,8 @@ import type { PlayerState, QuestState } from '../types'
  * Represents the extended state of a quest for UI display purposes.
  *
  * @remarks
- * Merges the base quest state with optional localized description and calculated
- * monetary reward values used by presentation components.
+ * Merges the base quest state with a description that represents a translation key (not localized text directly)
+ * and a `moneyReward` that is a legacy persisted reward field (handled by questLegacyMigration.ts), rather than a derived value.
  */
 export type QuestDisplayState = QuestState & {
   description?: string
