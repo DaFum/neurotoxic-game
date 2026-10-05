@@ -29,7 +29,6 @@ export {
   stopGigPlayback
 } from './gigPlayback'
 export {
-  stopAmbientPlayback,
   isAmbientOggPlaying,
   stopAudio,
   pauseAudio,

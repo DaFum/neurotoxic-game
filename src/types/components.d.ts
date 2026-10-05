@@ -16,7 +16,6 @@ import type {
   Platform,
   SocialPostOption
 } from './social'
-export type { AudioState, AudioControls } from './audio'
 
 /**
  * Minimal lifecycle contract for Pixi stage controllers.
