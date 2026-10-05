@@ -1,5 +1,6 @@
 import type { EventDelta } from '../../types'
 import { finiteNumberOr, isFiniteNumber } from '../gameState'
+import { getSafeUUID } from '../crypto'
 import { resolveTemplateString } from './templateResolver'
 import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
 import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
@@ -226,6 +227,20 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     const previous = delta.expedition?.resultIds ?? []
     if (previous.includes(eff.result)) return
     delta.expedition = { resultIds: [...previous, eff.result] }
+  },
+  /**
+   * contraband
+   * Grants one catalogue contraband item (`eff.itemId`) through the stash path.
+   * The instance id is minted here because reducers must stay free of UUID
+   * generation; `applyEventDelta` validates the id against the catalogue.
+   */
+  contraband: (eff: EffectShape, delta: EventDelta) => {
+    if (typeof eff.itemId !== 'string' || eff.itemId.length === 0) return
+    if (!delta.band.stashAdd) delta.band.stashAdd = []
+    delta.band.stashAdd.push({
+      contrabandId: eff.itemId,
+      instanceId: getSafeUUID()
+    })
   },
   stash_confiscate: (
     eff: EffectShape,

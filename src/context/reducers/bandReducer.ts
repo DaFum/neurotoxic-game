@@ -21,6 +21,7 @@ import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../../utils/contrabandEffects'
+import { addContrabandToBand } from '../../utils/contrabandStashUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createItemUsedQuestEvent,
@@ -320,65 +321,8 @@ export const addContrabandHelper = (
   state: GameState,
   payload: { contrabandId: string; instanceId?: string }
 ): GameState => {
-  const { contrabandId, instanceId } = payload
-  if (isForbiddenKey(contrabandId)) return state
-  const item = CONTRABAND_BY_ID.get(contrabandId)
-  if (!item) return state
-
-  const newBand = { ...state.band }
-  const currentStash = newBand.stash || {}
-
-  // Handle stackable logic and uniqueness
-  const existingItem = Object.hasOwn(currentStash, item.id)
-    ? (currentStash[item.id] as Record<string, unknown>)
-    : undefined
-  if (existingItem) {
-    if (!item.stackable) {
-      return state // Don't add duplicate non-stackable items
-    } else {
-      const currentStacks = (existingItem.stacks as number | undefined) ?? 1
-      const max = (item.maxStacks as number) || Infinity
-      if (currentStacks < max) {
-        newBand.stash = Object.assign(Object.create(null), currentStash, {
-          [item.id]: {
-            ...existingItem,
-            stacks: currentStacks + 1
-          }
-        })
-        return { ...state, band: newBand }
-      } else {
-        return state // Reached max stacks
-      }
-    }
-  }
-
-  const newInstance = {
-    ...item,
-    instanceId,
-    remainingDuration: isFiniteNumber(item.duration)
-      ? (item.duration as number)
-      : null,
-    applied: !!item.applyOnAdd,
-    stacks: item.stackable ? 1 : null
-  }
-
-  newBand.stash = Object.assign(Object.create(null), currentStash, {
-    [item.id]: newInstance
-  })
-
-  if (item.applyOnAdd && item.type === 'equipment') {
-    applySharedBandEffect(
-      newBand,
-      item.effectType,
-      item.value as number,
-      EQUIPMENT_APPLY_ON_ADD_EFFECTS
-    )
-  }
-
-  return {
-    ...state,
-    band: newBand
-  }
+  const nextBand = addContrabandToBand(state.band, payload)
+  return nextBand === state.band ? state : { ...state, band: nextBand }
 }
 
 /** Stack count of a stash entry (non-stackable owned items count as 1). */

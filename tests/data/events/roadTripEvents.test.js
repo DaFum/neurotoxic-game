@@ -6,7 +6,10 @@ import {
   KNOWN_EVENT_IDS,
   EVENTS_DB
 } from '../../../src/data/events/index'
-import { resolveEventChoice } from '../../../src/utils/eventEngine/index'
+import {
+  eventEngine,
+  resolveEventChoice
+} from '../../../src/utils/eventEngine/index'
 import { applyEventDelta } from '../../../src/utils/gameState/delta'
 import { createInitialState } from '../../../src/context/initialState'
 import { validateGameEvent } from '../../../src/utils/eventValidator'
@@ -162,7 +165,46 @@ describe('Road Trip Events Suite', () => {
     assert.ok(opt1.delta)
     const nextState = applyEventDelta(state, opt1.delta)
     assert.equal(nextState.player.money, snapshotMoney - 120)
-    assert.equal(nextState.band.inventory.c_diy_overdrive, 1)
+    // The module is real contraband: it lands in the stash (not a dead
+    // inventory counter), is applied as equipment and is not double-granted.
+    const stashed = nextState.band.stash.c_diy_overdrive
+    assert.ok(stashed, 'c_diy_overdrive must land in the stash')
+    assert.equal(stashed.applied, true)
+    assert.equal(stashed.type, 'equipment')
+    assert.equal(
+      nextState.band.inventory.c_diy_overdrive,
+      undefined,
+      'must not also create an inventory counter'
+    )
+    assert.equal(nextState.band.crit, (state.band.crit ?? 0) + 0.03)
+  })
+
+  it('reststop_trunk_dealer haggle success grants the same stash item', () => {
+    const state = createInitialState()
+    const event = ALL_RAW_EVENTS.find(e => e.id === 'reststop_trunk_dealer')
+    const success = event.options[1].skillCheck.success
+    const delta = eventEngine.applyResult(success, {})
+    const nextState = applyEventDelta(state, delta)
+    assert.ok(nextState.band.stash.c_diy_overdrive)
+    assert.equal(nextState.player.money, state.player.money - 60)
+  })
+
+  it('a second trunk purchase does not duplicate the non-stackable pedal or re-apply its bonus', () => {
+    const state = createInitialState()
+    const event = ALL_RAW_EVENTS.find(e => e.id === 'reststop_trunk_dealer')
+    const first = applyEventDelta(
+      state,
+      resolveEventChoice(event.options[0], state).delta
+    )
+    const second = applyEventDelta(
+      first,
+      resolveEventChoice(event.options[0], first).delta
+    )
+    assert.equal(second.band.crit, first.band.crit)
+    assert.equal(
+      second.band.stash.c_diy_overdrive.instanceId,
+      first.band.stash.c_diy_overdrive.instanceId
+    )
   })
 
   it('reststop_night_coffee enforces affordability conditions', () => {

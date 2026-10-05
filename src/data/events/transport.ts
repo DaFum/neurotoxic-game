@@ -986,7 +986,7 @@ export const TRANSPORT_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'resource', resource: 'money', value: -120 },
-            { type: 'item', item: 'c_diy_overdrive', value: 1 }
+            { type: 'contraband', itemId: 'c_diy_overdrive' }
           ]
         },
         outcomeText: 'events:reststop_trunk_dealer.opt1.outcome'
@@ -1002,7 +1002,7 @@ export const TRANSPORT_EVENTS = [
             type: 'composite',
             effects: [
               { type: 'resource', resource: 'money', value: -60 },
-              { type: 'item', item: 'c_diy_overdrive', value: 1 }
+              { type: 'contraband', itemId: 'c_diy_overdrive' }
             ],
             description: 'events:reststop_trunk_dealer.opt2.successOutcome'
           },

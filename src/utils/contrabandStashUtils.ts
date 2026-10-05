@@ -1,5 +1,12 @@
+import type { BandState } from '../types'
 import type { ValidationResult } from '../types/validation'
-
+import { CONTRABAND_BY_ID } from '../data/contraband'
+import {
+  applySharedBandEffect,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from './contrabandEffects'
+import { isFiniteNumber } from './finiteNumber'
+import { isForbiddenKey } from './objectUtils'
 type StashItemLike = {
   id?: string
   name?: string
@@ -59,4 +66,78 @@ export const getStashItemUseMessage = (
       defaultValue: `${messageAction} ${translatedName}!`
     }
   }
+}
+
+/**
+ * Adds a catalogue contraband item to a band's stash, honouring stacking,
+ * uniqueness and apply-on-add equipment rules.
+ *
+ * @param band - Band whose stash receives the item.
+ * @param payload - Catalogue id to add and the instance id stamped on a new entry.
+ * @returns A new band with the item added, or the identical `band` reference
+ * when the id is forbidden or unknown, a non-stackable duplicate already
+ * exists, or the stack is full.
+ *
+ * @remarks
+ * The single stash-add implementation: the `addContrabandHelper` reducer
+ * helper (drops, trades, crafting) and the event-delta `stashAdd` path
+ * (events that hand out contraband) both call it, so an event-granted item
+ * is indistinguishable from a dropped one.
+ */
+export const addContrabandToBand = (
+  band: BandState,
+  payload: { contrabandId: string; instanceId?: string }
+): BandState => {
+  const { contrabandId, instanceId } = payload
+  if (isForbiddenKey(contrabandId)) return band
+  const item = CONTRABAND_BY_ID.get(contrabandId)
+  if (!item) return band
+
+  const newBand = { ...band }
+  const currentStash = newBand.stash || {}
+
+  // Handle stackable logic and uniqueness
+  const existingItem = Object.hasOwn(currentStash, item.id)
+    ? (currentStash[item.id] as Record<string, unknown>)
+    : undefined
+  if (existingItem) {
+    if (!item.stackable) {
+      return band // Don't add duplicate non-stackable items
+    }
+    const currentStacks = (existingItem.stacks as number | undefined) ?? 1
+    const max = (item.maxStacks as number) || Infinity
+    if (currentStacks >= max) return band // Reached max stacks
+    newBand.stash = Object.assign(Object.create(null), currentStash, {
+      [item.id]: {
+        ...existingItem,
+        stacks: currentStacks + 1
+      }
+    })
+    return newBand
+  }
+
+  const newInstance = {
+    ...item,
+    instanceId,
+    remainingDuration: isFiniteNumber(item.duration)
+      ? (item.duration as number)
+      : null,
+    applied: !!item.applyOnAdd,
+    stacks: item.stackable ? 1 : null
+  }
+
+  newBand.stash = Object.assign(Object.create(null), currentStash, {
+    [item.id]: newInstance
+  })
+
+  if (item.applyOnAdd && item.type === 'equipment') {
+    applySharedBandEffect(
+      newBand,
+      item.effectType,
+      item.value as number,
+      EQUIPMENT_APPLY_ON_ADD_EFFECTS
+    )
+  }
+
+  return newBand
 }
