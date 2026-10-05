@@ -6,8 +6,11 @@ import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
+  applyNeuroOverclockGigCost,
   bandHasTrait,
+  getNeuroOverclockEffects,
   hasTrait,
+  NEURO_OVERCLOCK_TRAIT_ID,
   normalizeTraitMap,
   removeExclusiveTraits
 } from '../../src/utils/traitUtils'
@@ -53,10 +56,13 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 
 mock.module(new URL('../../src/utils/traitUtils.ts', import.meta.url).href, {
   namedExports: {
+    applyNeuroOverclockGigCost,
     applyTraitUnlocks: mockApplyTraitUnlocks,
     bandHasTrait,
+    getNeuroOverclockEffects,
     getTraitById: mock.fn(traitId => ({ id: traitId })),
     hasTrait,
+    NEURO_OVERCLOCK_TRAIT_ID,
     normalizeTraitMap,
     removeExclusiveTraits
   }
