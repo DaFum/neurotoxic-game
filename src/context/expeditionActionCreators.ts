@@ -14,6 +14,7 @@ import { isFiniteNumber } from '../utils/finiteNumber'
 import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import type { GameAction, GameState } from '../types'
+import type { ResolveExpeditionCrisisPayload } from '../types/actions'
 import type {
   ExpeditionEventResultId,
   ExpeditionInspectionIntent,
@@ -445,7 +446,7 @@ export const prepareNextExpedition = (
  */
 export const resolveExpeditionCrisis = (
   state: GameState,
-  choice: 'refuel' | 'tow' | 'insurance_claim'
+  choice: ResolveExpeditionCrisisPayload['choice']
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RESOLVE_EXPEDITION_CRISIS }

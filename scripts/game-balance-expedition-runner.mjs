@@ -1647,6 +1647,30 @@ export const runExpeditionSimulation = (
         }
       }
 
+      // No paid recovery: a crisis at an extraction window offers `extract`,
+      // and a player keeps the extracted share there rather than the failed
+      // one. Production's crisis path carries no rare reward, but the dialog
+      // the player actually sees routes through the extraction confirmation,
+      // so the policy carries what a voluntary extraction would.
+      if (!resolved && pendingFailure.choices.includes('extract')) {
+        const carrySlots = getExplicitExtractionRareCarrySlots(state)
+        const unmaterializedRares = state.expedition.rewardLedger
+          .filter(entry => !entry.secured && !entry.abandoned)
+          .slice(0, carrySlots)
+          .map(entry => entry.id)
+        const extracted = gameReducer(
+          state,
+          extractExpedition(state, unmaterializedRares)
+        )
+        if (extracted.expedition.status === 'extracted') {
+          state = extracted
+          telemetry.terminalKind = 'extracted'
+          telemetry.terminalSource = 'crisis_extraction'
+          telemetry.explicitlyExtractedRares = unmaterializedRares.length
+          break
+        }
+      }
+
       if (!resolved) {
         const failAction = acceptExpeditionFailure(state)
         if (failAction) {

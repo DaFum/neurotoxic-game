@@ -69,6 +69,7 @@ import {
 } from '../../domain/expedition/rewardLedger'
 import {
   canExtractExpedition,
+  isAtExpeditionExtractionWindow,
   settleExpedition,
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
@@ -79,8 +80,7 @@ import {
   consumeExpeditionLegendary,
   deriveExpeditionGhostRouteTarget,
   deriveExpeditionNemesisKeyTarget,
-  isExpeditionLegendaryAvailable,
-  isExpeditionSafeHarborWindow
+  isExpeditionLegendaryAvailable
 } from '../../domain/expedition/legendaries'
 import {
   EXPEDITION_TOW_COST,
@@ -1174,17 +1174,11 @@ export const handleExtractExpedition = (
     loadout.tourTypeId,
     loadout.regionId
   )
-  const currentNodeId =
-    state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
-  // Safe Harbor is an *extra* opportunity, so it is composed with the base
-  // window rather than replacing it: the route's own windows are unchanged and
-  // the Legendary only ever adds the one node its own predicate names.
-  const atWindow =
-    (typeof currentNodeId === 'string' &&
-      Object.hasOwn(map.meta, currentNodeId) &&
-      map.meta[currentNodeId]?.isExtractionWindow === true) ||
-    isExpeditionSafeHarborWindow(state, map)
-  if (!canExtractExpedition(state, atWindow)) return state
+  if (
+    !canExtractExpedition(state, isAtExpeditionExtractionWindow(state, map))
+  ) {
+    return state
+  }
 
   const explicitRareRewardIds = Array.isArray(payload.explicitRareRewardIds)
     ? payload.explicitRareRewardIds.filter(id => typeof id === 'string')
@@ -1443,7 +1437,8 @@ export const handlePrepareNextExpedition = (
  * `refuel` fills the tank; `tow` restores enough fuel to leave the node without
  * filling it, which is what makes it the pricier, less efficient escape. Both
  * spend through the Expedition boundary, so neither can dip into the protected
- * Career slice.
+ * Career slice. `extract` is offered only at an extraction window and ends the
+ * run through {@link handleExtractExpedition}.
  */
 export const handleResolveExpeditionCrisis = (
   state: GameState,
@@ -1465,11 +1460,27 @@ export const handleResolveExpeditionCrisis = (
   }
 
   const { choice } = payload
-  if (choice !== 'refuel' && choice !== 'tow' && choice !== 'insurance_claim') {
+  if (
+    choice !== 'refuel' &&
+    choice !== 'tow' &&
+    choice !== 'insurance_claim' &&
+    choice !== 'extract'
+  ) {
     return state
   }
   // Only a choice the derived crisis actually offers may be paid for.
   if (!pending.choices.includes(choice)) return state
+
+  if (choice === 'extract') {
+    // The crisis only offers this at a legal window, and it ends the run
+    // through the one extraction path: same window proof, settlement and
+    // quest event as a voluntary extraction. No rare reward is carried - the
+    // payload names none, and carrying is the extraction dialog's choice.
+    return handleExtractExpedition(state, {
+      expectedRouteStep: payload.expectedRouteStep,
+      explicitRareRewardIds: []
+    })
+  }
 
   if (choice === 'insurance_claim') {
     return pending.reason === 'technical_shutdown'

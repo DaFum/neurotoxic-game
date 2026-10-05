@@ -149,7 +149,7 @@ export function useExpeditionDispatchActions({
         if (action) dispatch(action)
       },
       resolveExpeditionCrisis: (
-        choice: 'refuel' | 'tow' | 'insurance_claim'
+        choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
       ) => {
         const action = resolveExpeditionCrisisAction(stateRef.current, choice)
         if (action) dispatch(action)

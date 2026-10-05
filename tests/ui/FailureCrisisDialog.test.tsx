@@ -180,6 +180,19 @@ describe('FailureCrisisDialog', () => {
     expect(onExtract).toHaveBeenCalledTimes(1)
   })
 
+  it('renders the extract escape with its label and extracts directly without a host dialog', () => {
+    state.current = buildState(
+      crisis({ choices: ['extract', 'accept_failure'] })
+    )
+    render(<FailureCrisisDialog />)
+
+    const extract = screen.getByTestId('crisis-choice-extract')
+    expect(extract).toHaveTextContent('ui:expedition.crisis.choice.extract')
+    expect(extract).toHaveAttribute('data-variant', 'risk')
+    fireEvent.click(extract)
+    expect(resolveExpeditionCrisis).toHaveBeenCalledWith('extract')
+  })
+
   it('dispatches the terminal transition itself', () => {
     state.current = buildState(crisis())
     render(<FailureCrisisDialog />)

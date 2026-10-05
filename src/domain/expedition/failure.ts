@@ -32,6 +32,11 @@ import { isExpeditionLegendaryAvailable } from './legendaries'
 import { getCriticallyInjuredBandMemberId } from './injuries'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
+import { getActiveExpeditionMap } from './map'
+import {
+  canExtractExpedition,
+  isAtExpeditionExtractionWindow
+} from './extraction'
 import type { GameState } from '../../types'
 import type {
   ConditionGroup,
@@ -489,7 +494,11 @@ export const deriveExpeditionPendingFailure = (
     reason: signal.reason,
     sourceId: signal.sourceId,
     raisedAtRouteStep: state.expedition.routeStep,
-    choices: signal.choices
+    choices: getExpeditionCrisisChoices(
+      state,
+      getActiveExpeditionMap(state),
+      signal.choices
+    )
   }
 }
 
@@ -552,43 +561,34 @@ export const isCurrentExpeditionFailureId = (
 }
 
 /**
- * Lists the legal responses to the current crisis.
+ * Lists the legal responses to a crisis signal.
  *
  * @param state - Current game state.
- * @param map - The route built from the canonical root run seed.
- * @returns Legal choices, with `extract` added at an extraction window.
+ * @param map - The route built from the canonical root run seed, or `null`
+ * when no route is committed.
+ * @param signalChoices - The choices the failure signal itself offers.
+ * @returns Legal choices, with `extract` first at an extraction window.
  *
  * @remarks
  * The extraction escape depends on the route, which the signal producers do not
- * read, so it is composed here where the prepared map is available.
+ * read, so it is composed here where the prepared map is available. The window
+ * test is the one `EXTRACT_EXPEDITION` applies (`isAtExpeditionExtractionWindow`
+ * plus `canExtractExpedition`), so the crisis never offers an extraction the
+ * reducer would refuse. {@link deriveExpeditionPendingFailure} routes every
+ * crisis through here, which is how `extract` reaches the stored
+ * `pendingFailure.choices`.
  */
 export const getExpeditionCrisisChoices = (
   state: GameState,
-  map: ExpeditionMap
+  map: ExpeditionMap | null,
+  signalChoices: readonly ExpeditionFailureChoiceId[]
 ): ExpeditionFailureChoiceId[] => {
-  const pending = deriveExpeditionPendingFailure(state)
-  if (!pending) return []
-  const choices = [...pending.choices]
-
-  // ⚡ BOLT OPTIMIZATION: Replace Object.values().some() with procedural for...in loop.
-  // Why: Avoids allocating an intermediate array and closure on every crisis choice check at extraction windows.
-  // Impact: Zero array or closure allocations during crisis choice derivation.
-  let atWindow = false
-  for (const key in map.meta) {
-    if (Object.hasOwn(map.meta, key)) {
-      const entry = map.meta[key]
-      if (
-        entry &&
-        entry.routeStep === state.expedition.routeStep &&
-        entry.isExtractionWindow
-      ) {
-        atWindow = true
-        break
-      }
-    }
-  }
-
-  if (atWindow && !choices.includes('extract')) {
+  const choices = [...signalChoices]
+  if (
+    map !== null &&
+    !choices.includes('extract') &&
+    canExtractExpedition(state, isAtExpeditionExtractionWindow(state, map))
+  ) {
     choices.unshift('extract')
   }
   return choices

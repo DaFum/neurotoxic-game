@@ -260,7 +260,7 @@ type BaseGameDispatchActions = {
   acceptExpeditionFailure: () => void
   prepareNextExpedition: () => void
   resolveExpeditionCrisis: (
-    choice: 'refuel' | 'tow' | 'insurance_claim'
+    choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
   ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent

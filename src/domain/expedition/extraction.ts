@@ -12,10 +12,12 @@
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import type {
+  ExpeditionMap,
   ExpeditionRewardLedgerEntry,
   ExpeditionSettlement
 } from '../../types/expedition'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { isExpeditionSafeHarborWindow } from './legendaries'
 
 /**
  * Base Cash/Fame retention per terminal kind, before G5 multipliers.
@@ -254,3 +256,30 @@ export const canExtractExpedition = (
   state: GameState,
   isWindowStep: boolean
 ): boolean => state.expedition.status === 'active' && isWindowStep
+
+/**
+ * Whether the node the run stands on opens an extraction window.
+ *
+ * @param state - Current game state.
+ * @param map - The run's canonical route.
+ * @returns True on a base-route window or the one Safe Harbor grants.
+ *
+ * @remarks
+ * Safe Harbor is an *extra* opportunity, so it is composed with the base window
+ * rather than replacing it. The extraction reducer and the crisis choice list
+ * both read this, so the crisis can never offer an extraction the reducer
+ * would refuse.
+ */
+export const isAtExpeditionExtractionWindow = (
+  state: GameState,
+  map: ExpeditionMap
+): boolean => {
+  const visited = state.expedition.visitedNodeIds
+  const currentNodeId = visited[visited.length - 1]
+  return (
+    (typeof currentNodeId === 'string' &&
+      Object.hasOwn(map.meta, currentNodeId) &&
+      map.meta[currentNodeId]?.isExtractionWindow === true) ||
+    isExpeditionSafeHarborWindow(state, map)
+  )
+}
