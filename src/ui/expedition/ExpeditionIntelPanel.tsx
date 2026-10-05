@@ -32,13 +32,13 @@ import type {
 /** One onward node and what the run may reveal about it right now. */
 interface IntelCandidate {
   nodeId: string
-  routeStep: number
   nodeClass: ExpeditionNodeClass
   specialSubtype: ExpeditionSpecialNodeSubtype | null
   level: NodeIntelLevel
   canPassive: boolean
   canRecon: boolean
   usableGrants: Array<{ id: string; source: 'social' | 'contact' }>
+  canSocialTip: boolean
 }
 
 /** Everything the panel renders, derived in one selector pass. */
@@ -47,10 +47,9 @@ interface IntelView {
   hasScout: boolean
   reconLeft: number
   candidates: IntelCandidate[]
-  socialTip: {
-    postOptionId: string
-    resultId: ExpeditionSocialResultId
-  } | null
+  /** The settled Social result a tip would spend; both null when none fits. */
+  socialPostOptionId: string | null
+  socialResultId: ExpeditionSocialResultId | null
 }
 
 const INACTIVE_VIEW: IntelView = {
@@ -58,7 +57,8 @@ const INACTIVE_VIEW: IntelView = {
   hasScout: false,
   reconLeft: 0,
   candidates: [],
-  socialTip: null
+  socialPostOptionId: null,
+  socialResultId: null
 }
 
 /**
@@ -87,6 +87,19 @@ const selectIntelView = (state: GameState): IntelView => {
   const capability = getExpeditionIntelCapability(state)
   const routeStep = expedition.routeStep
 
+  // The same proof `CREATE_SOCIAL_INTEL_GRANT` checks: a settled result from
+  // this route step, not yet turned into a grant, whose registry entry
+  // actually carries intel.
+  const proof = expedition.lastSocialResult
+  const socialTargetLevel =
+    proof &&
+    !proof.intelConsumed &&
+    proof.resolvedAtRouteStep === routeStep &&
+    state.player.currentNodeId === currentNodeId &&
+    Object.hasOwn(EXPEDITION_SOCIAL_RESULTS, proof.resultId)
+      ? EXPEDITION_SOCIAL_RESULTS[proof.resultId].intelTargetLevel
+      : null
+
   const candidates: IntelCandidate[] = []
   for (const edge of map.connections) {
     if (edge.from !== currentNodeId) continue
@@ -113,7 +126,6 @@ const selectIntelView = (state: GameState): IntelView => {
       ).ok
     candidates.push({
       nodeId: edge.to,
-      routeStep: meta.routeStep,
       nodeClass: meta.nodeClass,
       specialSubtype: meta.specialSubtype,
       level,
@@ -128,23 +140,17 @@ const selectIntelView = (state: GameState): IntelView => {
               grant.id
             )
         )
-        .map(grant => ({ id: grant.id, source: grant.source }))
+        .map(grant => ({ id: grant.id, source: grant.source })),
+      // The grant the tip mints targets the result's level, and the resolver
+      // only spends a grant one level above the node's effective intel - so
+      // the tip is offered only where the grant it makes is usable now.
+      canSocialTip:
+        socialTargetLevel !== null && level + 1 === socialTargetLevel
     })
   }
 
-  // The same proof `CREATE_SOCIAL_INTEL_GRANT` checks: a settled result from
-  // this route step, not yet turned into a grant, whose registry entry
-  // actually carries intel.
-  const proof = expedition.lastSocialResult
-  const socialTip =
-    proof &&
-    !proof.intelConsumed &&
-    proof.resolvedAtRouteStep === routeStep &&
-    state.player.currentNodeId === currentNodeId &&
-    Object.hasOwn(EXPEDITION_SOCIAL_RESULTS, proof.resultId) &&
-    EXPEDITION_SOCIAL_RESULTS[proof.resultId].intelTargetLevel !== null
-      ? { postOptionId: proof.postOptionId, resultId: proof.resultId }
-      : null
+  const hasSocialTip =
+    proof !== null && candidates.some(candidate => candidate.canSocialTip)
 
   return {
     isActive: true,
@@ -153,9 +159,28 @@ const selectIntelView = (state: GameState): IntelView => {
       0,
       capability.reconCharges - expedition.scoutReconUsedRouteSteps.length
     ),
-    candidates,
-    socialTip
+    candidates: reuseCandidates(candidates),
+    socialPostOptionId: hasSocialTip ? proof.postOptionId : null,
+    socialResultId: hasSocialTip ? proof.resultId : null
   }
+}
+
+/** The last candidate list handed out, and its content key. */
+let lastCandidates: { key: string; value: IntelCandidate[] } | null = null
+
+/**
+ * Returns the previous candidate array when its content is unchanged.
+ *
+ * @remarks
+ * `useGameSelector` compares the view shallowly, so a fresh array on every
+ * store change would re-render the panel - and re-run its passive-read effect
+ * - for state that has nothing to do with intel.
+ */
+const reuseCandidates = (candidates: IntelCandidate[]): IntelCandidate[] => {
+  const key = JSON.stringify(candidates)
+  if (lastCandidates?.key === key) return lastCandidates.value
+  lastCandidates = { key, value: candidates }
+  return candidates
 }
 
 /**
@@ -168,15 +193,14 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
 
   // A Scout reads the road continuously, so the passive level-1 reveal is not
   // a button: it is spent as soon as the run stands next to a node it has not
-  // read. Remembered per node and step so a refused reveal is not retried on
-  // every render.
+  // read. Remembered per node id - a node is an onward candidate at exactly
+  // one route step - so a refused reveal is not retried on every render.
   const passiveAttemptsRef = useRef(new Set<string>())
   useEffect(() => {
     for (const candidate of view.candidates) {
       if (!candidate.canPassive) continue
-      const key = `${candidate.routeStep}:${candidate.nodeId}`
-      if (passiveAttemptsRef.current.has(key)) continue
-      passiveAttemptsRef.current.add(key)
+      if (passiveAttemptsRef.current.has(candidate.nodeId)) continue
+      passiveAttemptsRef.current.add(candidate.nodeId)
       revealExpeditionNodeIntel({
         nodeId: candidate.nodeId,
         source: 'scout_passive'
@@ -188,8 +212,9 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
   const hasGrant = view.candidates.some(
     candidate => candidate.usableGrants.length > 0
   )
-  if (!view.hasScout && !hasGrant && view.socialTip === null) return null
-  const socialTip = view.socialTip
+  const { socialPostOptionId, socialResultId } = view
+  const hasSocialTip = socialPostOptionId !== null && socialResultId !== null
+  if (!view.hasScout && !hasGrant && !hasSocialTip) return null
 
   return (
     <section
@@ -210,7 +235,7 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
           </span>
         ) : null}
       </div>
-      {socialTip ? (
+      {hasSocialTip ? (
         <p className='text-[0.625rem] text-ash-gray'>
           {t('ui:expedition.intel.socialTipHint')}
         </p>
@@ -269,15 +294,17 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
                 )}
               </ActionButton>
             ))}
-            {socialTip && candidate.level < 2 ? (
+            {candidate.canSocialTip &&
+            socialPostOptionId !== null &&
+            socialResultId !== null ? (
               <ActionButton
                 variant='secondary'
                 className='px-3 py-1 text-xs border border-steel-gray text-ash-gray'
                 data-testid={`expedition-intel-social-tip-${candidate.nodeId}`}
                 onClick={() =>
                   createSocialIntelGrant(
-                    socialTip.postOptionId,
-                    socialTip.resultId,
+                    socialPostOptionId,
+                    socialResultId,
                     candidate.nodeId
                   )
                 }

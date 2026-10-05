@@ -219,11 +219,12 @@ export type ExpeditionRewardResolution =
  * `route_rare` requires the node to be on the prepared route, to be the one the
  * run is currently standing on, *and* to be carrying exactly the reward the
  * request names: standing on a node is not evidence for a reward the seed put
- * somewhere else. The `finale_nonlegendary`, `event_rare`, `contract` and
- * `crew_contact` families have no producer before G3/G4 — nothing yet maps a
- * resolved Finale result to its reward — so their evidence check is the one
- * function those gates extend, and until then no evidence can exist and the
- * reward is refused rather than minted.
+ * somewhere else. Every other family names the just-resolved source the reducer
+ * composes it from: a completed native Contract, the resolved Finale gig, the
+ * event result triple banked by the event reducer, and - for `crew_contact` -
+ * the Crew records a resolved Contact event wrote, banked in that same commit
+ * by `handleApplyExpeditionEventDelta`. Without that evidence the reward is
+ * refused rather than minted.
  */
 const hasCanonicalSourceEvidence = (
   state: GameState,

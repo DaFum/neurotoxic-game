@@ -170,6 +170,61 @@ describe('ExpeditionIntelPanel', () => {
     )
   })
 
+  it('offers no level-1 tip on nodes a Scout has already read', () => {
+    const read = Object.fromEntries(onward.map(nodeId => [nodeId, 1 as const]))
+    state.current = buildState({
+      crewIds: ['noah'],
+      intelByNodeId: read,
+      lastSocialResult: {
+        id: 'social_proof',
+        postOptionId: 'post_hype',
+        resultId: 'push',
+        resolvedAtRouteStep: 0,
+        intelConsumed: false
+      }
+    })
+    render(<ExpeditionIntelPanel />)
+    for (const nodeId of onward) {
+      expect(
+        screen.queryByTestId(`expedition-intel-social-tip-${nodeId}`)
+      ).toBeNull()
+    }
+  })
+
+  it('offers a level-2 tip only where the node already reads level 1', () => {
+    const tip = {
+      id: 'social_proof',
+      postOptionId: 'post_calm',
+      resultId: 'suppress' as const,
+      resolvedAtRouteStep: 0,
+      intelConsumed: false
+    }
+    state.current = buildState({ lastSocialResult: tip })
+    const { container, unmount } = render(<ExpeditionIntelPanel />)
+    // Every onward node is unread, so a level-2 grant would be unusable.
+    expect(container.firstChild).toBeNull()
+    unmount()
+
+    state.current = buildState({
+      lastSocialResult: tip,
+      intelByNodeId: { [firstOnward as string]: 1 }
+    })
+    render(<ExpeditionIntelPanel />)
+    fireEvent.click(
+      screen.getByTestId(`expedition-intel-social-tip-${firstOnward}`)
+    )
+    expect(actions.createSocialIntelGrant).toHaveBeenCalledWith(
+      'post_calm',
+      'suppress',
+      firstOnward
+    )
+    for (const nodeId of onward.filter(id => id !== firstOnward)) {
+      expect(
+        screen.queryByTestId(`expedition-intel-social-tip-${nodeId}`)
+      ).toBeNull()
+    }
+  })
+
   it('offers no tip for a Social result that carries no intel', () => {
     state.current = buildState({
       lastSocialResult: {

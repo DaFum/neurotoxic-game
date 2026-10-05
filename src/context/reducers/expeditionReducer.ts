@@ -64,7 +64,10 @@ import {
   applyExpeditionDefectTrigger,
   createDeterministicHiddenDefect
 } from '../../domain/expedition/defects'
-import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
+import {
+  getExpeditionNodeIntelLevel,
+  resolveExpeditionIntelReveal
+} from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
   resolveExpeditionReward,
@@ -2122,7 +2125,10 @@ export const handleApplyExpeditionEventDelta = (
   // composed here, in the commit that resolved the event, because the
   // evidence is the Crew records `applyResolvedCrewEventOutcome` just wrote:
   // a separate dispatch could be missed and leave the reward unearnable, and
-  // the derived entry id still refuses a replay.
+  // the derived entry id still refuses a replay. The reward is independent of
+  // the Contact intel grant: it is banked even when no grant could be created
+  // (every onward node already at full intel, or none left to target), because
+  // the evidence is the resolved Contact, not the grant.
   const crewSourceId = `${payload.sourceEventId}:${payload.sourceOptionId}`
   if (getCrewEventOutcomeBySourceId(crewSourceId)?.contactIntel === true) {
     withRewards = handleAddExpeditionReward(withRewards, {
@@ -2816,6 +2822,16 @@ export const handleCreateSocialIntelGrant = (
     !map.connections.some(
       edge => edge.from === currentNodeId && edge.to === payload.nodeId
     )
+  )
+    return state
+  // The grant must be spendable on that node: the reveal resolver only
+  // consumes a grant whose target is exactly one level above the node's
+  // effective intel, so a grant aimed anywhere else would burn the Social
+  // result on something that can never be used. Refused here, the proof stays
+  // unconsumed and can still be pointed at a node it fits.
+  if (
+    getExpeditionNodeIntelLevel(state, payload.nodeId) + 1 !==
+    result.intelTargetLevel
   )
     return state
   const grantId = `${proof.id}:social:${payload.nodeId}`
