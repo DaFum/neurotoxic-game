@@ -170,3 +170,28 @@ test('stopping audio drops a deferred transport start', async () => {
   await resumeAudio()
   assert.strictEqual(transport.start.mock.calls.length, 0)
 })
+
+test('a transport start that throws leaves no phantom scheduled start', () => {
+  reset()
+  transport.start.mock.mockImplementationOnce(() => {
+    throw new Error('start failed')
+  })
+  assert.throws(() => startTransportAt(12, 0))
+  assert.strictEqual(audioState.transportScheduledStart, null)
+})
+
+test('a deferred start survives a re-schedule that throws', async () => {
+  reset()
+  transport.state = 'stopped'
+  contextTimeSec = 10
+  startTransportAt(12, 0)
+  contextTimeSec = 11
+  await pauseAudio()
+  transport.start.mock.mockImplementationOnce(() => {
+    throw new Error('start failed')
+  })
+  audioState.gigIsPaused = false
+
+  assert.strictEqual(await resumeAudio(), false)
+  assert.ok(audioState.transportDeferredStart)
+})

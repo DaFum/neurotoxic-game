@@ -15,9 +15,11 @@ import { getAudioContextTimeSec } from './context'
  * @param offset - Optional transport offset passed through to Tone.
  */
 export function startTransportAt(timeSec: number, offset?: number): void {
+  // Record only after Tone accepted the start: a throw must neither leave a
+  // phantom scheduled start nor drop a deferred one that a retry still needs.
+  Tone.getTransport().start(timeSec, offset)
   audioState.transportDeferredStart = null
   audioState.transportScheduledStart = { timeSec, offset }
-  Tone.getTransport().start(timeSec, offset)
 }
 
 /**

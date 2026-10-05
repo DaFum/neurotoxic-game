@@ -79,6 +79,22 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.scenePresence, 20)
     })
 
+    it('keeps pendingSocialOptionId only as a string or null', () => {
+      baseState.social.pendingSocialOptionId = 'perf_crowd_surf'
+      for (const invalid of [{}, 42, ['id']]) {
+        assert.strictEqual(
+          handleUpdateSocial(baseState, { pendingSocialOptionId: invalid })
+            .social.pendingSocialOptionId,
+          'perf_crowd_surf'
+        )
+      }
+      assert.strictEqual(
+        handleUpdateSocial(baseState, { pendingSocialOptionId: null }).social
+          .pendingSocialOptionId,
+        null
+      )
+    })
+
     it('clamps scenePresence updates to 0-100', () => {
       assert.strictEqual(
         handleUpdateSocial(baseState, { scenePresence: 250 }).social

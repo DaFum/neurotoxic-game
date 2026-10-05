@@ -861,6 +861,12 @@ describe('Action Creators', () => {
         createUpdateSocialAction({ pendingSocialOptionId: null }).payload,
         { pendingSocialOptionId: null }
       )
+      for (const invalid of [{}, 42, ['id'], true]) {
+        assert.deepStrictEqual(
+          createUpdateSocialAction({ pendingSocialOptionId: invalid }).payload,
+          {}
+        )
+      }
     })
 
     it('drops non-finite cult indoctrination cooldown updates while preserving null', () => {

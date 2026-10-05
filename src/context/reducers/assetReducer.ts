@@ -465,6 +465,11 @@ export const handleUpgradeChassisTier = (
       installedModuleId: null
     })
   }
+  // Every slot the target tier introduces must be supplied; otherwise the
+  // tier would be bought without them.
+  for (const remaining of allowedByType.values()) {
+    if (remaining > 0) return state
+  }
 
   const nextAssets = [...state.assets]
   nextAssets[targetAssetIndex] = {

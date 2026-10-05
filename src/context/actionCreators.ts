@@ -249,6 +249,13 @@ const sanitizeSocialUpdates = (
     if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
     if (!Object.hasOwn(SOCIAL_FIELDS, key)) continue
+    // Settlement provenance must stay a string option id or null.
+    if (
+      key === 'pendingSocialOptionId' &&
+      value !== null &&
+      typeof value !== 'string'
+    )
+      continue
 
     const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as {
       numeric?: boolean

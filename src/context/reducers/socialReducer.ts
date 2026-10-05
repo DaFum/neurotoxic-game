@@ -240,6 +240,15 @@ export const handleUpdateSocial = (
     }
   }
 
+  if (
+    updates.pendingSocialOptionId !== undefined &&
+    updates.pendingSocialOptionId !== null &&
+    typeof updates.pendingSocialOptionId !== 'string'
+  ) {
+    logger.warn('GameState', 'Invalid pendingSocialOptionId update')
+    delete updates.pendingSocialOptionId
+  }
+
   // Malformed numbers are dropped, never coerced or reset to 0.
   const clampedNumericFields = {
     zealotry: clampZealotry,

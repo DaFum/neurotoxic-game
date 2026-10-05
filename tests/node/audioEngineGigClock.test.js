@@ -251,3 +251,21 @@ test('pausing during the lead-in keeps the clock aligned with the audio on resum
   rawContext.currentTime = startAtSec + 5
   assertWithinTolerance(getGigTimeMs(), 5000, '5s into the audio')
 })
+
+test('transport-only playback paused in the lead-in reaches 0 when the transport restarts', () => {
+  resetHarness(10)
+  // MIDI / synthesis fallbacks: clock anchored 2s ahead, no gig buffer.
+  startGigClock({ offsetMs: 0, startTimeSec: 12 })
+
+  rawContext.currentTime = 11
+  pauseGigPlayback()
+  rawContext.currentTime = 16
+  assert.strictEqual(resumeGigPlayback(), true)
+
+  // The deferred transport is re-scheduled at now + remaining lead-in (17).
+  assertWithinTolerance(getGigTimeMs(), -1000, 'during remaining lead-in')
+  rawContext.currentTime = 17
+  assertWithinTolerance(getGigTimeMs(), 0, 'when the transport restarts')
+  rawContext.currentTime = 20
+  assertWithinTolerance(getGigTimeMs(), 3000, '3s into the music')
+})

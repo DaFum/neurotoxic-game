@@ -487,12 +487,16 @@ test('handleUpgradeChassisTier - only adds the slots the target tier introduces'
     ]
   )
 
-  const missing = handleUpgradeChassisTier(startState, {
-    assetId: 'a1',
-    targetTier: 2
-  })
-  assert.strictEqual(missing.assets[0].chassisTier, 2)
-  assert.strictEqual(missing.assets[0].slots.length, 1)
+  // A payload that omits a slot the target tier introduces is rejected rather
+  // than upgrading the tier without it.
+  for (const newSlotIds of [undefined, []]) {
+    const missing = handleUpgradeChassisTier(startState, {
+      assetId: 'a1',
+      targetTier: 2,
+      newSlotIds
+    })
+    assert.strictEqual(missing, startState)
+  }
 })
 
 test('handleRepairChassis - rejects insufficient funds', () => {
