@@ -148,8 +148,29 @@ export const getNeuroOverclockEffects = (): {
 }
 
 /**
+ * Applies a Neuro-Overclock stamina cost (graft or per-gig). The trait never
+ * knocks its carrier out, so a cost stops at 1 stamina; a member already below
+ * that floor is left where they are rather than raised to it.
+ *
+ * @param stamina - The member's current stamina.
+ * @param delta - Signed stamina change (negative for a cost).
+ * @param staminaMax - The member's stamina cap.
+ * @returns The clamped stamina after the cost.
+ */
+export const applyNeuroOverclockStaminaCost = (
+  stamina: number,
+  delta: number,
+  staminaMax: number
+): number =>
+  clampMemberStamina(
+    Math.max(Math.min(stamina, 1), stamina + delta),
+    staminaMax
+  )
+
+/**
  * Applies the Neuro-Overclock per-gig cost: each carrier adds `stressPerGig`
- * to band stress and changes its own stamina by `staminaPerGig`.
+ * to band stress and changes its own stamina by `staminaPerGig`, stopping at
+ * the same floor as the graft (`applyNeuroOverclockStaminaCost`).
  *
  * @param band - Band after a real (non-practice) gig.
  * @returns A new band with the cost applied, or the identical `band` when no
@@ -164,8 +185,9 @@ export const applyNeuroOverclockGigCost = (band: BandState): BandState => {
     carriers += 1
     return {
       ...member,
-      stamina: clampMemberStamina(
-        finiteNumberOr(member.stamina, 0) + staminaPerGig,
+      stamina: applyNeuroOverclockStaminaCost(
+        finiteNumberOr(member.stamina, 0),
+        staminaPerGig,
         finiteNumberOr(member.staminaMax, 100)
       )
     }
@@ -212,6 +234,29 @@ export const normalizeTraitMap = (
     return traitsMap
   }
   return Object.create(null)
+}
+
+/**
+ * Normalizes a loaded trait map and swaps every stored trait that has a
+ * canonical definition for that definition.
+ *
+ * @remarks
+ * Saves can hold stale or legacy-shaped copies, e.g. the pre-registration
+ * `neuro_overclock` graft fallback with raw `name`/`description` keys and no
+ * `desc`/`unlockHint`, which Band HQ filters out as malformed. Traits without a
+ * canonical definition are kept as stored so `hasTrait` still sees them.
+ * @param traits - The raw traits read from a save.
+ * @returns A null-prototype trait map with canonical definitions.
+ */
+export const rehydrateTraitMap = (
+  traits: unknown
+): Record<string, TraitDef> => {
+  const traitsMap = normalizeTraitMap(traits)
+  for (const id of Object.keys(traitsMap)) {
+    const canonical = getTraitById(id)
+    if (canonical) traitsMap[id] = canonical
+  }
+  return traitsMap
 }
 
 /**

@@ -202,8 +202,9 @@ const restoreBackground = (element: Element, owner: symbol) => {
  * @remarks
  * Attach `overlayRef` to the full-screen wrapper (give it `data-modal-overlay`)
  * and `dialogRef` to the element carrying `role='dialog'` and `tabIndex={-1}`.
- * While open the hook mutes every sibling branch (`aria-hidden` + `inert`),
- * traps Tab inside the topmost dialog, routes Escape to the topmost dialog's
+ * While open the hook mutes every sibling branch (`aria-hidden` + `inert`)
+ * except `data-modal-keep-announcing` live regions and
+ * `data-modal-keep-interactive` companion panels, traps Tab inside the topmost dialog, routes Escape to the topmost dialog's
  * `onClose` only, and restores background state and focus on close.
  * @param isOpen - Whether the dialog is currently shown.
  * @param onClose - Called when Escape is pressed while this dialog is topmost.
@@ -256,7 +257,11 @@ export const useModalBehavior = (
           // Never mute an ARIA live region: aria-hidden on the toast container
           // silences every announcement made while a modal is open, so a
           // confirmation triggered from inside the dialog is never read out.
-          sibling.hasAttribute('data-modal-keep-announcing')
+          sibling.hasAttribute('data-modal-keep-announcing') ||
+          // Never mute a non-modal companion panel (the tutorial card): it
+          // sits above the modal layer and must stay clickable while a dialog
+          // is open. Tab focus is still trapped in the topmost dialog.
+          sibling.hasAttribute('data-modal-keep-interactive')
         ) {
           continue
         }

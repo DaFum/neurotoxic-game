@@ -6,7 +6,7 @@ import { Tooltip } from '../../ui/shared'
 import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { GraftModal } from './GraftModal'
-import { hasTrait } from '../../utils/traitUtils'
+import { hasTrait, NEURO_OVERCLOCK_TRAIT_ID } from '../../utils/traitUtils'
 import { canAfford } from '../../utils/purchaseLogicUtils'
 import type {
   ClinicMemberCardProps,
@@ -59,7 +59,7 @@ export const ClinicMemberCard = ({
     player,
     CLINIC_GRAFT_COST
   )
-  const hasGraft = hasTrait(member, 'neuro_overclock')
+  const hasGraft = hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =
     member.stamina >= 100 &&

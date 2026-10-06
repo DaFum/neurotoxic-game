@@ -17,7 +17,7 @@ import { normalizeVenueId } from '../../../utils/mapUtils'
 import { isMapNodeType } from '../../../utils/mapNodeTypes'
 import type { MapNodeType } from '../../../utils/mapNodeTypes'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
-import { normalizeTraitMap } from '../../../utils/traitUtils'
+import { rehydrateTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
   clampMemberMood,
@@ -1066,7 +1066,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           : undefined
       const member: BandMember = {
         id,
-        traits: normalizeTraitMap(m.traits),
+        traits: rehydrateTraitMap(m.traits),
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {

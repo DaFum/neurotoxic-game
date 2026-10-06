@@ -250,6 +250,9 @@ export const selectPressureEvent = (
       16
     )
   )
+  // `pickWeighted` uses half-open intervals (strict `<`); the previous local
+  // loop used `roll <= 0`, so only an exact interval edge (a 2^-32 mulberry32
+  // event) can pick differently. `?? last` keeps the old past-the-total fallback.
   return (
     pickWeighted(
       weighted.map(item => ({ value: item.event, weight: item.weight })),
