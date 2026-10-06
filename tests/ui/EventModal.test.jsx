@@ -1,5 +1,12 @@
 import { expect, test, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createMotionReactMock } from '../mocks/motionMock'
 import { EventModal } from '../../src/ui/EventModal.tsx'
 
@@ -526,4 +533,52 @@ test('EventModal Continue button calls onOptionSelect only once even on rapid cl
   await waitFor(() => {
     expect(handleSelect).toHaveBeenCalledTimes(1)
   })
+})
+
+test('EventModal joins the shared modal stack: traps Tab, swallows Escape and restores opener focus', async () => {
+  const user = userEvent.setup()
+  const mockEvent = {
+    id: 'modal_stack_test',
+    title: 'Modal Stack',
+    description: 'Focus management.',
+    options: [{ label: 'Option 1' }, { label: 'Option 2' }]
+  }
+  const handleSelect = vi.fn()
+
+  const Harness = ({ open }) => (
+    <>
+      <button type='button'>Open event</button>
+      {open && <EventModal event={mockEvent} onOptionSelect={handleSelect} />}
+    </>
+  )
+
+  const { rerender } = render(<Harness open={false} />)
+  const opener = screen.getByRole('button', { name: 'Open event' })
+  opener.focus()
+  rerender(<Harness open={true} />)
+
+  const dialog = await screen.findByRole('dialog')
+  await waitFor(() => expect(dialog).toHaveFocus())
+  expect(dialog).toHaveAttribute('aria-modal', 'true')
+  expect(dialog.parentElement).toHaveAttribute('data-modal-overlay')
+  expect(opener).toHaveAttribute('inert')
+
+  // Tab wraps within the dialog instead of escaping to the page behind it.
+  const options = within(dialog).getAllByRole('button')
+  options[options.length - 1].focus()
+  await user.tab()
+  expect(options[0]).toHaveFocus()
+  await user.tab({ shift: true })
+  expect(options[options.length - 1]).toHaveFocus()
+
+  // An event must be answered: Escape never dismisses it or picks an option.
+  await user.keyboard('{Escape}')
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
+  expect(handleSelect).not.toHaveBeenCalled()
+
+  // Closing restores focus to the opener and un-inerts the page.
+  rerender(<Harness open={false} />)
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(opener).not.toHaveAttribute('inert')
+  expect(opener).toHaveFocus()
 })

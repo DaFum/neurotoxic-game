@@ -4,6 +4,7 @@ import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { MOTION_TRANSITIONS } from '../config/motion'
 import { AlertIcon } from './shared/BrutalistUI'
+import { CriticalDialogShell } from './shared/CriticalDialogShell'
 import { VoidSkullIcon } from './shared/Icons'
 import { Tooltip } from './shared/Tooltip'
 import { generateEffectText } from '../utils/effectFormatter'
@@ -258,7 +259,6 @@ export const EventModal = ({
   className?: string
 }) => {
   const { t, i18n } = useTranslation(['ui', 'events', 'items'])
-  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
@@ -409,11 +409,6 @@ export const EventModal = ({
     return () => window.removeEventListener('keydown', handleKey)
   }, [event, outcome, handleOptionSelect, eventOptions])
 
-  // Auto-focus container for screen readers
-  useEffect(() => {
-    containerRef.current?.focus()
-  }, [event])
-
   const precomputedDelta =
     outcome?._precomputedResult?.appliedDelta ??
     outcome?._precomputedResult?.delta
@@ -448,94 +443,43 @@ export const EventModal = ({
     event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
-    <m.div
-      ref={containerRef}
-      tabIndex={-1}
-      role='dialog'
-      aria-modal='true'
-      aria-labelledby='event-title'
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isExiting ? 0 : 1 }}
-      exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
-      transition={
-        isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
-      }
-      onAnimationComplete={handleAnimationComplete}
-      className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${isExiting ? 'pointer-events-none' : ''} ${className}`}
+    <CriticalDialogShell
+      labelledBy='event-title'
+      severityLabel={t('ui:event.severity.critical')}
+      overlayClassName={`${isExiting ? 'pointer-events-none' : ''} ${className}`}
+      panelClassName='border-4 p-3 sm:p-6 shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
+      severityLabelClassName='px-2'
+      animation={{ isExiting, onAnimationComplete: handleAnimationComplete }}
+      focusKey={event}
     >
-      {/* Backdrop */}
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isExiting ? 0 : 1 }}
-        exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
-        transition={
-          isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
-        }
-        className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
-      />
-      {/* Scanline FX on background */}
-      <div
-        className='absolute inset-0 pointer-events-none opacity-20'
-        style={{
-          backgroundImage:
-            'linear-gradient(transparent 50%, var(--color-void-black-50) 50%)',
-          backgroundSize: '100% 4px'
-        }}
-      />
+      <div className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'>
+        <EventHeader
+          event={event}
+          eventContext={eventContext}
+          titleKey={titleKey}
+          descriptionKey={descriptionKey}
+          t={t}
+        />
 
-      <m.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={
-          isExiting
-            ? { scale: 0.95, opacity: 0, y: 10 }
-            : { scale: 1, opacity: 1, y: 0 }
-        }
-        exit={{
-          scale: 0.95,
-          opacity: 0,
-          y: 10,
-          transition: MOTION_TRANSITIONS.modalExit
-        }}
-        transition={
-          isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
-        }
-        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
-      >
-        {/* Hardware details */}
-        <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
-        <div className='absolute top-0 left-2 px-2 h-4 bg-toxic-green text-void-black text-xs font-bold text-center leading-4 uppercase'>
-          {t('ui:event.severity.critical')}
-        </div>
-
-        <div className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'>
-          <EventHeader
-            event={event}
-            eventContext={eventContext}
-            titleKey={titleKey}
-            descriptionKey={descriptionKey}
+        {outcome ? (
+          <EventOutcomeView
+            outcomeMessage={outcomeMessage}
+            memoizedEffectText={memoizedEffectText}
+            isResolved={isResolved}
+            handleContinue={handleContinue}
             t={t}
           />
-
-          {outcome ? (
-            <EventOutcomeView
-              outcomeMessage={outcomeMessage}
-              memoizedEffectText={memoizedEffectText}
-              isResolved={isResolved}
-              handleContinue={handleContinue}
-              t={t}
-            />
-          ) : (
-            <EventOptionsList
-              eventOptions={eventOptions}
-              eventContext={eventContext}
-              gameState={gameState}
-              i18n={i18n}
-              handleOptionSelect={handleOptionSelect}
-              t={t}
-            />
-          )}
-        </div>
-      </m.div>
-    </m.div>
+        ) : (
+          <EventOptionsList
+            eventOptions={eventOptions}
+            eventContext={eventContext}
+            gameState={gameState}
+            i18n={i18n}
+            handleOptionSelect={handleOptionSelect}
+            t={t}
+          />
+        )}
+      </div>
+    </CriticalDialogShell>
   )
 }

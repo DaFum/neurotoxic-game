@@ -2,52 +2,12 @@
  * Modal - A shared overlay component.
  */
 
-import { useEffect, useId, useRef } from 'react'
+import { useId } from 'react'
 import type { ReactNode, MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { UIFrameCorner } from './Icons'
+import { FrameCorners } from './FrameCorners'
 import { Tooltip } from './Tooltip'
-
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'area[href]',
-  'button:not([disabled])',
-  'input:not([disabled]):not([type="hidden"])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[contenteditable]:not([contenteditable="false"])',
-  '[tabindex]:not([tabindex="-1"])'
-].join(',')
-
-/**
- * Rejects focus candidates that match the selector but cannot take focus
- * because CSS hides them; `preventDefault()` plus a no-op `focus()` would make
- * Tab appear dead. `checkVisibility` also covers hidden ancestors where
- * available; the computed-style fallback keeps non-browser DOMs working.
- * @param element - Candidate focusable element inside the dialog.
- * @returns Whether the element is rendered and can receive focus.
- */
-const isRenderedCandidate = (element: HTMLElement): boolean => {
-  if (element === document.activeElement) return true
-
-  const checkVisibility = element.checkVisibility
-  if (typeof checkVisibility === 'function') {
-    return checkVisibility.call(element, { checkVisibilityCSS: true })
-  }
-
-  // `visibility` is inherited, so the resolved value on the candidate already
-  // accounts for hidden ancestors *and* a descendant's `visibility: visible`
-  // override. `display` is not inherited, so the chain needs walking; an
-  // ancestor with `display: contents` is not `none` and keeps traversal going.
-  if (window.getComputedStyle(element).visibility === 'hidden') return false
-
-  let ancestor: HTMLElement | null = element
-  while (ancestor) {
-    if (window.getComputedStyle(ancestor).display === 'none') return false
-    ancestor = ancestor.parentElement
-  }
-  return true
-}
+import { useModalBehavior } from './useModalBehavior'
 
 type ModalProps = {
   isOpen: boolean
@@ -57,119 +17,6 @@ type ModalProps = {
   children?: ReactNode
   contentClassName?: string
   className?: string
-}
-
-type ModalStackEntry = {
-  token: symbol
-  overlay: HTMLDivElement
-  dialog: HTMLDivElement
-  opener: HTMLElement | null
-  onCloseRef: { current: () => void }
-}
-
-type BackgroundState = {
-  ariaHidden: string | null
-  inert: string | null
-  owners: Set<symbol>
-}
-
-/**
- * Delay before the dialog claims focus on open.
- *
- * @remarks
- * Focus is deferred one frame-ish rather than set synchronously so a mount or
- * entry transition on the dialog cannot immediately pull focus back. Tests that
- * assert initial focus must advance timers past this.
- */
-const INITIAL_FOCUS_DELAY_MS = 50
-
-const modalStack: ModalStackEntry[] = []
-const backgroundStates = new Map<Element, BackgroundState>()
-let stackOpener: HTMLElement | null = null
-
-const handleModalKeyDown = (event: KeyboardEvent) => {
-  const activeModal = modalStack[modalStack.length - 1]
-  if (!activeModal) return
-
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    activeModal.onCloseRef.current()
-    return
-  }
-
-  if (event.key !== 'Tab') return
-
-  const { dialog } = activeModal
-  const focusableElements = Array.from(
-    dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-  ).filter(
-    element =>
-      !element.hidden &&
-      element.getAttribute('aria-hidden') !== 'true' &&
-      !element.closest('[inert]') &&
-      isRenderedCandidate(element)
-  )
-
-  if (focusableElements.length === 0) {
-    event.preventDefault()
-    dialog.focus()
-    return
-  }
-
-  const firstFocusable = focusableElements[0]
-  const lastFocusable = focusableElements[focusableElements.length - 1]
-  const activeElement = document.activeElement
-
-  if (
-    activeElement === dialog ||
-    !dialog.contains(activeElement) ||
-    (event.shiftKey && activeElement === firstFocusable) ||
-    (!event.shiftKey && activeElement === lastFocusable)
-  ) {
-    event.preventDefault()
-    ;(event.shiftKey ? lastFocusable : firstFocusable)?.focus()
-  }
-}
-
-const muteBackground = (element: Element, owner: symbol) => {
-  const existingState = backgroundStates.get(element)
-
-  if (existingState) {
-    existingState.owners.add(owner)
-  } else {
-    backgroundStates.set(element, {
-      ariaHidden: element.getAttribute('aria-hidden'),
-      inert: element.getAttribute('inert'),
-      owners: new Set([owner])
-    })
-  }
-
-  element.setAttribute('aria-hidden', 'true')
-  element.setAttribute('inert', '')
-}
-
-const restoreBackground = (element: Element, owner: symbol) => {
-  const state = backgroundStates.get(element)
-  if (!state) return
-
-  state.owners.delete(owner)
-  if (state.owners.size > 0) {
-    element.setAttribute('aria-hidden', 'true')
-    element.setAttribute('inert', '')
-    return
-  }
-
-  if (state.ariaHidden === null) {
-    element.removeAttribute('aria-hidden')
-  } else {
-    element.setAttribute('aria-hidden', state.ariaHidden)
-  }
-  if (state.inert === null) {
-    element.removeAttribute('inert')
-  } else {
-    element.setAttribute('inert', state.inert)
-  }
-  backgroundStates.delete(element)
 }
 
 /**
@@ -185,9 +32,7 @@ export const Modal = ({
   contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',
   className = 'max-w-md'
 }: ModalProps) => {
-  const overlayRef = useRef<HTMLDivElement | null>(null)
-  const dialogRef = useRef<HTMLDivElement | null>(null)
-  const onCloseRef = useRef(onClose)
+  const { overlayRef, dialogRef } = useModalBehavior(isOpen, onClose)
   const titleId = useId()
   const { t } = useTranslation(['ui'])
   const dialogAriaLabel = ariaLabel || undefined
@@ -196,107 +41,6 @@ export const Modal = ({
     : title
       ? titleId
       : undefined
-
-  // Sync in an effect, not during render: a discarded render must not leak its
-  // onClose into the module-level stack entry that Escape invokes.
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const overlay = overlayRef.current
-    const dialog = dialogRef.current
-    if (!overlay || !dialog) return
-
-    const opener =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
-    const entry: ModalStackEntry = {
-      token: Symbol('modal'),
-      overlay,
-      dialog,
-      opener,
-      onCloseRef
-    }
-    const backgroundElements = new Set<Element>()
-    let modalBranch: Element | null = overlay
-
-    while (modalBranch?.parentElement) {
-      const parentElement: HTMLElement = modalBranch.parentElement
-      for (const sibling of parentElement.children) {
-        if (
-          sibling === modalBranch ||
-          sibling.hasAttribute('data-modal-overlay') ||
-          // Never mute an ARIA live region: aria-hidden on the toast container
-          // silences every announcement made while a modal is open, so a
-          // confirmation triggered from inside the dialog is never read out.
-          sibling.hasAttribute('data-modal-keep-announcing')
-        ) {
-          continue
-        }
-        backgroundElements.add(sibling)
-        muteBackground(sibling, entry.token)
-      }
-      modalBranch = parentElement
-      if (parentElement === document.body) break
-    }
-
-    if (modalStack.length === 0) {
-      stackOpener = opener
-      window.addEventListener('keydown', handleModalKeyDown)
-    }
-    for (const stackedModal of modalStack) {
-      backgroundElements.add(stackedModal.overlay)
-      muteBackground(stackedModal.overlay, entry.token)
-    }
-    modalStack.push(entry)
-
-    const timer = window.setTimeout(() => {
-      // Deferred so the dialog's own mount/entry animation cannot steal focus
-      // back; see INITIAL_FOCUS_DELAY_MS.
-      if (
-        modalStack[modalStack.length - 1] === entry &&
-        !dialog.contains(document.activeElement)
-      ) {
-        dialog.focus()
-      }
-    }, INITIAL_FOCUS_DELAY_MS)
-
-    return () => {
-      window.clearTimeout(timer)
-      for (const element of backgroundElements) {
-        restoreBackground(element, entry.token)
-      }
-
-      const entryIndex = modalStack.indexOf(entry)
-      const wasTopmost = entryIndex === modalStack.length - 1
-      if (entryIndex !== -1) {
-        modalStack.splice(entryIndex, 1)
-      }
-
-      const activeModal = modalStack[modalStack.length - 1]
-      if (!activeModal) {
-        window.removeEventListener('keydown', handleModalKeyDown)
-        if (stackOpener?.isConnected) {
-          stackOpener.focus()
-        }
-        stackOpener = null
-      } else if (wasTopmost) {
-        if (
-          entry.opener?.isConnected &&
-          activeModal.dialog.contains(entry.opener)
-        ) {
-          entry.opener.focus()
-        } else {
-          activeModal.dialog.focus()
-        }
-      }
-    }
-  }, [isOpen])
-
   if (!isOpen) return null
 
   return (
@@ -320,10 +64,10 @@ export const Modal = ({
         tabIndex={-1}
       >
         {/* Brutalist Frame Corners */}
-        <UIFrameCorner className='absolute -top-1 -left-1 w-8 h-8 text-toxic-green opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -top-1 -right-1 w-8 h-8 text-toxic-green rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-toxic-green rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-toxic-green -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
+        <FrameCorners
+          outset
+          className='w-8 h-8 text-toxic-green opacity-50 transition-opacity group-hover:opacity-100'
+        />
 
         <Tooltip
           content={t('ui:closeModal')}

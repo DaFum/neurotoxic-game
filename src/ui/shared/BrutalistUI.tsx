@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CriticalDialogShell } from './CriticalDialogShell'
 
 const SCANLINE_BACKGROUND_STYLE = {
   backgroundImage:
@@ -372,74 +373,51 @@ export const CrisisModal = memo(
     }
 
     return (
-      <div
-        className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4'
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby={titleId}
+      <CriticalDialogShell
+        onClose={onClose}
+        onBackdropClick={onClose}
+        labelledBy={titleId}
+        severityLabel={t('ui:event.severity.critical')}
+        panelClassName={`border-2 shadow-[8px_8px_0px_var(--color-toxic-green-bright)] ${className || ''}`}
+        severityLabelClassName='w-16'
       >
-        {/* Backdrop */}
-        <div
-          className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
-          onClick={onClose}
-          aria-hidden='true'
-        ></div>
-        {/* Scanline FX on background */}
-        <div
-          className='absolute inset-0 pointer-events-none opacity-20'
-          style={SCANLINE_BACKGROUND_STYLE}
-        ></div>
-
-        {/* Modal Box */}
-        <div
-          className={`relative w-full max-w-4xl border-2 border-toxic-green bg-void-black shadow-[8px_8px_0px_var(--color-toxic-green-bright)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
-        >
-          {/* Hardware details */}
-          <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
-          <div className='absolute top-0 left-2 w-16 h-4 bg-toxic-green text-void-black text-xs font-bold text-center leading-4 uppercase'>
-            {t('ui:event.severity.critical')}
+        <div className='p-8 flex flex-col gap-6'>
+          <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
+            <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
+            <div>
+              <h2
+                id={titleId}
+                className='text-2xl font-bold tracking-widest uppercase glitch-text'
+                data-text={modalTitle}
+              >
+                {modalTitle}
+              </h2>
+              <p className='mt-2 text-sm opacity-80 leading-relaxed'>
+                {modalDescription}
+              </p>
+            </div>
           </div>
 
-          <div className='p-8 flex flex-col gap-6'>
-            <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
-              <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
-              <div>
-                <h2
-                  id={titleId}
-                  className='text-2xl font-bold tracking-widest uppercase glitch-text'
-                  data-text={modalTitle}
-                >
-                  {modalTitle}
-                </h2>
-                <p className='mt-2 text-sm opacity-80 leading-relaxed'>
-                  {modalDescription}
-                </p>
-              </div>
-            </div>
-
-            <div className='flex flex-col gap-3'>
-              {modalActions.map(action => (
-                <button
-                  key={action.id}
-                  type='button'
-                  onClick={action.onClick ?? onClose}
-                  aria-label={
-                    action.meta ? `${action.label} - ${action.meta}` : undefined
-                  }
-                  className={getActionClassName(action.variant)}
-                >
-                  <span>{action.label}</span>
-                  {action.meta ? (
-                    <span className='opacity-50 text-xs mt-1'>
-                      {action.meta}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
+          <div className='flex flex-col gap-3'>
+            {modalActions.map(action => (
+              <button
+                key={action.id}
+                type='button'
+                onClick={action.onClick ?? onClose}
+                aria-label={
+                  action.meta ? `${action.label} - ${action.meta}` : undefined
+                }
+                className={getActionClassName(action.variant)}
+              >
+                <span>{action.label}</span>
+                {action.meta ? (
+                  <span className='opacity-50 text-xs mt-1'>{action.meta}</span>
+                ) : null}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      </CriticalDialogShell>
     )
   }
 )

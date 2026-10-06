@@ -2,6 +2,10 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { EXPENSE_CONSTANTS } from '../../utils/economy'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../shared/Tooltip'
+import {
+  getFocusableElements,
+  getTabWrapTarget
+} from '../shared/useModalBehavior'
 
 interface OverworldMenuProps {
   t: import('../../types/callbacks').TranslationCallback
@@ -609,21 +613,19 @@ export const OverworldMenu = React.memo(
 
         if (event.key !== 'Tab') return
 
-        const focusable = menuRootRef.current?.querySelectorAll<HTMLElement>(
-          '.menu-panel button:not(:disabled), .menu-panel [href], .menu-panel [tabindex]:not([tabindex="-1"])'
+        const panel =
+          menuRootRef.current?.querySelector<HTMLElement>('.menu-panel')
+        if (!panel) return
+        const focusable = getFocusableElements(panel)
+        const target = getTabWrapTarget(
+          focusable,
+          document.activeElement,
+          event.shiftKey,
+          false
         )
-        if (!focusable || focusable.length === 0) return
-        const first = focusable[0]
-        const last = focusable[focusable.length - 1]
-        if (!first || !last) return
-
-        const activeElement = document.activeElement
-        if (!event.shiftKey && activeElement === last) {
+        if (target) {
           event.preventDefault()
-          first.focus()
-        } else if (event.shiftKey && activeElement === first) {
-          event.preventDefault()
-          last.focus()
+          target.focus()
         }
       }
 
