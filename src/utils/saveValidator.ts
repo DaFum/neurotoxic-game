@@ -151,12 +151,16 @@ const validatePlayer = (player: unknown): void => {
 /**
  * Rejects saves carrying prototype-polluting keys at any depth, plus cyclic,
  * over-deep or accessor-bearing payloads that the shared scan treats as unsafe.
+ * The error names the forbidden key, or reports an unsafe structure when the
+ * payload was rejected for its shape rather than for a key.
  */
 const checkPrototypePollution = (obj: unknown): void => {
   const offender = findUnsafeKeyDeep(obj)
-  if (offender !== null) {
+  if (offender === null) return
+  if (isForbiddenKey(offender)) {
     throw new StateError(`Prototype pollution detected: ${offender}`)
   }
+  throw new StateError('Unsafe payload structure detected')
 }
 
 const validateBand = (band: unknown): void => {
