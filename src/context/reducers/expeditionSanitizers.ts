@@ -478,6 +478,9 @@ const sanitizeExpeditionTechnicalCondition = (
   const stageGear = readCount(value, 'stageGear', 100)
 
   const defects: HiddenDefectState[] = []
+  // Defect transitions look a defect up by id, so a duplicated id would leave
+  // every later copy permanently unreachable. Keep the first valid entry.
+  const seenDefectIds = new Set<string>()
   if (Array.isArray(value.defects)) {
     for (const raw of value.defects.slice(0, MAX_COLLECTION_ENTRIES)) {
       if (!isLooseRecord(raw)) continue
@@ -520,6 +523,8 @@ const sanitizeExpeditionTechnicalCondition = (
       ) {
         continue
       }
+      if (seenDefectIds.has(id)) continue
+      seenDefectIds.add(id)
 
       defects.push({
         id,
