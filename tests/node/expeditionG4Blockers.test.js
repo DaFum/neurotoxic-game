@@ -1921,6 +1921,44 @@ test('a pending Run Draft holds the route until the player picks', () => {
   )
 })
 
+test('a full Run Draft refuses further offers and keeps the route moving', () => {
+  const walked = walkTo(startedState(), 1)
+  const nodeId = walked.player.currentNodeId
+  const full = {
+    ...walked,
+    gameMap: {
+      ...walked.gameMap,
+      nodes: { ...walked.gameMap?.nodes, [nodeId]: { type: 'FESTIVAL' } }
+    },
+    currentGig: { id: 'venue_major' },
+    lastGigStats: { score: 9000, accuracy: 85, failed: false },
+    expedition: {
+      ...walked.expedition,
+      runDraftTraitIds: ['road_warrior', 'field_engineer']
+    }
+  }
+  // A pending offer here could never be picked (SELECT refuses a third
+  // trait) and would hold the route forever.
+  assert.strictEqual(
+    handleOfferExpeditionDraft(full, {
+      sourceType: 'major_gig',
+      sourceKey: 'venue_major',
+      expectedRouteStep: full.expedition.routeStep
+    }),
+    full
+  )
+
+  const map = fixtureMap()
+  const nextNodeId = Object.keys(map.meta).find(
+    id => map.meta[id]?.routeStep === full.expedition.routeStep + 1
+  )
+  assert.ok(nextNodeId)
+  assert.equal(
+    applyExpeditionRouteAdvance(full, nextNodeId).expedition.routeStep,
+    full.expedition.routeStep + 1
+  )
+})
+
 test('the Director and the authored events share one draw', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {

@@ -2565,15 +2565,21 @@ export const handleDoubleDownExpeditionObligation = (
   }
   return { ...state, expedition: { ...state.expedition, activeObligations } }
 }
+/** Traits one run may draft; SELECT refuses a pick beyond it. */
+const MAX_RUN_DRAFT_TRAITS = 2
+
 export const handleOfferExpeditionDraft = (
   state: GameState,
   payload: OfferExpeditionDraftPayload
 ): GameState => {
   if (payload === null || typeof payload !== 'object') return state
+  // A full draft refuses the offer: SELECT could never resolve it, and a
+  // pending offer holds the route (`applyExpeditionRouteAdvance`) forever.
   if (
     state.expedition.status !== 'active' ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
-    state.expedition.pendingRunDraftOffer
+    state.expedition.pendingRunDraftOffer ||
+    state.expedition.runDraftTraitIds.length >= MAX_RUN_DRAFT_TRAITS
   )
     return state
   if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
@@ -2668,7 +2674,7 @@ export const handleSelectExpeditionDraft = (
     !offer ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
     offer.offeredAtRouteStep !== state.expedition.routeStep ||
-    state.expedition.runDraftTraitIds.length >= 2 ||
+    state.expedition.runDraftTraitIds.length >= MAX_RUN_DRAFT_TRAITS ||
     !offer.candidateTraitIds.includes(payload.traitId)
   )
     return state
