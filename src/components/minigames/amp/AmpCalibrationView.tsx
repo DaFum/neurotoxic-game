@@ -8,7 +8,7 @@ import type {
   StageControllerOptions,
   AmpStageOptions
 } from '../../../types/components'
-import { AmpStageController } from '../../stage/AmpStageController'
+import type { AmpStageController } from '../../stage/AmpStageController'
 const INACTIVE_UI_STATE = { timeLeft: 0, score: 0, isGameOver: false }
 
 /**
