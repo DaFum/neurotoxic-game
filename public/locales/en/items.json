@@ -214,5 +214,20 @@
   "social_bot.name": "Bot Network",
   "social_bot.description": "Passive +5 followers per day.",
   "label_contact.name": "Label Contact",
-  "label_contact.description": "Gain +1,000 Fame immediately."
+  "label_contact.description": "Gain +1,000 Fame immediately.",
+  "shirts.name": "Shirts",
+  "hoodies.name": "Hoodies",
+  "patches.name": "Patches",
+  "cds.name": "CDs",
+  "vinyl.name": "Vinyl",
+  "neuro_cutting_board.name": "Neuro Cutting Boards",
+  "neuro_lunchbox.name": "Neuro Lunchboxes",
+  "neuro_mug.name": "Neuro Mugs",
+  "neuro_bowl.name": "Neuro Bowls",
+  "strings.name": "Guitar Strings",
+  "cables.name": "Gold Cables",
+  "drum_parts.name": "Drum Parts",
+  "golden_pick.name": "Golden Pick",
+  "neurotoxicPedal.name": "Neurotoxic Pedal",
+  "neuroDecimator.name": "Neuro-Decimator"
 }

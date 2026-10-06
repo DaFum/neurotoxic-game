@@ -122,10 +122,14 @@ describe('FailureCrisisDialog', () => {
     expect(
       screen.getByText('ui:expedition.crisis.title.fuel_stranded')
     ).toBeInTheDocument()
-    // The crisis must expose the cause, so the node id reaches the copy.
+    // The cause is shown as a label, never as the raw node id: a node with no
+    // venue falls back to "the route".
     expect(
-      screen.getByText('ui:expedition.crisis.cause.fuel_stranded:exp_4_0')
+      screen.getByText(
+        'ui:expedition.crisis.cause.fuel_stranded:ui:expedition.crisis.source.expedition_route'
+      )
     ).toBeInTheDocument()
+    expect(screen.queryByText(/exp_4_0/)).not.toBeInTheDocument()
   })
 
   it('offers exactly the reducer-derived choices', () => {
@@ -214,9 +218,9 @@ describe('FailureCrisisDialog', () => {
       screen.getByText('ui:expedition.crisis.title.bankruptcy')
     ).toBeInTheDocument()
     expect(
-      // The mocked `t` resolves the nested source lookup to its defaultValue,
-      // which is the raw source id.
-      screen.getByText('ui:expedition.crisis.cause.bankruptcy:expedition_cash')
+      screen.getByText(
+        'ui:expedition.crisis.cause.bankruptcy:ui:expedition.crisis.source.expedition_cash'
+      )
     ).toBeInTheDocument()
   })
 })

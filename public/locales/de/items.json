@@ -214,5 +214,20 @@
   "social_bot.name": "Bot-Netzwerk",
   "social_bot.description": "Passiv +5 Follower pro Tag.",
   "label_contact.name": "Label-Kontakt",
-  "label_contact.description": "Erhalte sofort +1.000 Ruhm."
+  "label_contact.description": "Erhalte sofort +1.000 Ruhm.",
+  "shirts.name": "T-Shirts",
+  "hoodies.name": "Hoodies",
+  "patches.name": "Aufnäher",
+  "cds.name": "CDs",
+  "vinyl.name": "Vinyl",
+  "neuro_cutting_board.name": "Neuro-Schneidebretter",
+  "neuro_lunchbox.name": "Neuro-Lunchboxen",
+  "neuro_mug.name": "Neuro-Tassen",
+  "neuro_bowl.name": "Neuro-Schalen",
+  "strings.name": "Gitarrensaiten",
+  "cables.name": "Goldkabel",
+  "drum_parts.name": "Drum-Zubehör",
+  "golden_pick.name": "Goldenes Plektrum",
+  "neurotoxicPedal.name": "Neurotoxisches Pedal",
+  "neuroDecimator.name": "Neuro-Dezimator"
 }

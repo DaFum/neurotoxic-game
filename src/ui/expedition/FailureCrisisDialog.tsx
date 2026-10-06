@@ -9,6 +9,7 @@ import { formatCurrency } from '../../utils/numberUtils'
 import { CrisisModal } from '../shared/BrutalistUI'
 import { EXPEDITION_TOW_COST } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
+import { getCrisisSourceLabel } from './crisisSourceLabel'
 import type { ExpeditionFailureChoiceId } from '../../types/expedition'
 
 /**
@@ -55,6 +56,11 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     state => state.expedition.pendingFailure
   )
   const currentFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const members = useGameSelector(state => state.band.members)
+  const obligations = useGameSelector(
+    state => state.expedition.activeObligations
+  )
 
   const handleAccept = useCallback(() => {
     acceptExpeditionFailure()
@@ -107,9 +113,12 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
         isOpen
         title={t(`ui:expedition.crisis.title.${pendingFailure.reason}`)}
         description={t(`ui:expedition.crisis.cause.${pendingFailure.reason}`, {
-          source: t(`ui:expedition.crisis.source.${pendingFailure.sourceId}`, {
-            defaultValue: pendingFailure.sourceId
-          })
+          source: getCrisisSourceLabel(
+            t,
+            pendingFailure.reason,
+            pendingFailure.sourceId,
+            { gameMap, members, obligations }
+          )
         })}
         actions={pendingFailure.choices.map(choice => ({
           id: choice,
