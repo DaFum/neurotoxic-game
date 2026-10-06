@@ -154,6 +154,7 @@ vi.mock('react-i18next', () => ({
         'assets:modulePicker.installCost': `Install cost: ${opts?.amount}`,
         'assets:module.unlock.otherModule': `Requires module: ${opts?.moduleRefs}`,
         'assets:module.unlock.story': `Requires story progress: ${opts?.flag}`,
+        'assets:module.unlock.money': `Requires ${opts?.amount}`,
         'assets:storyFlag.found_record_collection': 'Found record collection',
         'assets:actions.remove': 'Remove',
         'assets:actions.install': 'Install'
@@ -261,5 +262,36 @@ describe('ModulePickerModal remove flow', () => {
     expect(
       screen.queryByText(/found_record_collection/)
     ).not.toBeInTheDocument()
+  })
+
+  it('formats money lock reasons as currency instead of a raw number', () => {
+    mockGetModulePoolForAsset.mockReturnValue([
+      {
+        module: storyLockedModule,
+        unlocked: false,
+        lockReasons: [{ kind: 'money', amount: 1234 }]
+      }
+    ])
+
+    render(
+      <ModulePickerModal
+        asset={{
+          ...asset,
+          slots: [
+            {
+              id: 'audio-slot',
+              slotType: 'tb_audio',
+              position: { x: 0, y: 0 },
+              installedModuleId: null
+            }
+          ]
+        }}
+        slotId='audio-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Requires 1234 EUR')).toBeInTheDocument()
   })
 })

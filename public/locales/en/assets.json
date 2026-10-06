@@ -63,7 +63,7 @@
   "modulePicker.insufficientFunds": "Not enough money.",
   "modulePicker.removeRefund": "Refund: {{amount}}",
   "module.unlock.fame": "Requires {{amount}} fame",
-  "module.unlock.money": "Requires {{amount}} money",
+  "module.unlock.money": "Requires {{amount}}",
   "module.unlock.story": "Requires story progress: {{flag}}",
   "module.unlock.skill": "Requires {{member}} {{skill}} tier {{tier}}",
   "module.unlock.skillAny": "Requires any member with {{skill}} tier {{tier}}",
