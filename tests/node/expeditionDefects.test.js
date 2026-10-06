@@ -22,6 +22,7 @@ import { gameReducer } from '../../src/context/gameReducer'
 import { createInitialState } from '../../src/context/initialState'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers'
 import { startedState } from '../expeditionLifecycleFixture.js'
+import { DIAGNOSTIC_FEE_BASE } from '../../src/domain/expedition/inspections'
 
 test('Task 7: Hidden-Defect Lifecycle', async t => {
   const createActiveStateWithDefects = (defects = [], tcOverrides = {}) => {
@@ -31,6 +32,9 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       ...state.expedition,
       status: 'active',
       routeStep: 2,
+      // A committed roadie makes the free crew inspection available, the
+      // canonical source a reveal is authorised by.
+      loadout: { ...state.expedition.loadout, crewIds: ['crew_roadie_bob'] },
       technicalCondition: {
         pa: 100,
         instruments: 100,
@@ -86,6 +90,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
 
       const nextState = handleRevealExpeditionDefect(state, {
         defectId: defect.id,
+        source: { mode: 'crew_inspection' },
         expectedRouteStep: 2
       })
 
@@ -98,6 +103,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       // Stale route step guard
       const staleState = handleRevealExpeditionDefect(state, {
         defectId: defect.id,
+        source: { mode: 'crew_inspection' },
         expectedRouteStep: 1 // state is at 2
       })
       assert.equal(staleState, state)
@@ -197,6 +203,11 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
 
       const nextState = handleResolveExpeditionDefect(state, {
         defectId: 'd1',
+        repair: {
+          mode: 'cannibalize',
+          targetGroup: 'pa',
+          sourceGroup: 'instruments'
+        },
         expectedRouteStep: 2
       })
 
@@ -334,6 +345,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       assert.deepEqual(
         handleRevealExpeditionDefect(state, {
           defectId: 'd_shared',
+          source: { mode: 'crew_inspection' },
           expectedRouteStep: 2
         }).expedition.technicalCondition,
         revealed
@@ -382,7 +394,9 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       let state = createActiveStateWithDefects([defect], { pa: 80 })
 
       // 1. revealExpeditionDefect
-      const revealAction = revealExpeditionDefect(state, 'defect_pa_test')
+      const revealAction = revealExpeditionDefect(state, 'defect_pa_test', {
+        mode: 'crew_inspection'
+      })
       assert.ok(revealAction)
       assert.equal(revealAction.type, 'REVEAL_EXPEDITION_DEFECT')
       state = gameReducer(state, revealAction)
@@ -407,7 +421,11 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       assert.equal(state.expedition.technicalCondition.pa, 65) // 80 - 15
 
       // 3. resolveExpeditionDefect
-      const resolveAction = resolveExpeditionDefect(state, 'defect_pa_test')
+      const resolveAction = resolveExpeditionDefect(state, 'defect_pa_test', {
+        mode: 'cannibalize',
+        targetGroup: 'pa',
+        sourceGroup: 'instruments'
+      })
       assert.ok(resolveAction)
       assert.equal(resolveAction.type, 'RESOLVE_EXPEDITION_DEFECT')
       state = gameReducer(state, resolveAction)
@@ -415,6 +433,282 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
         state.expedition.technicalCondition.defects[0].status,
         'resolved'
       )
+    }
+  )
+})
+
+test('defect reducers refuse raw dispatches the inspection/repair paths would refuse', async t => {
+  const makeDefect = (id, overrides = {}) => ({
+    id,
+    group: 'pa',
+    severity: 1,
+    status: 'hidden',
+    source: 'improvise',
+    createdAtRouteStep: 1,
+    triggerAt: 'pre_gig',
+    triggerRouteStep: 2,
+    ...overrides
+  })
+  // No committed crew, no inspection module, no service location: only the
+  // free paths a test opts into are available.
+  const buildState = (defects, { atService = false, crew = false } = {}) => {
+    const state = createInitialState()
+    state.runSeed = 424242
+    state.player.money = 1500
+    if (atService) {
+      state.player.currentNodeId = 'service_node'
+      state.gameMap = {
+        nodes: {
+          service_node: {
+            id: 'service_node',
+            type: 'SUPPLY_STOP',
+            label: 'Supply Stop',
+            layer: 0
+          }
+        },
+        connections: []
+      }
+    }
+    state.expedition = {
+      ...state.expedition,
+      status: 'active',
+      routeStep: 2,
+      protectedCareerCash: 0,
+      visitedNodeIds: atService ? ['service_node'] : [],
+      loadout: {
+        ...state.expedition.loadout,
+        crewIds: crew ? ['crew_roadie_bob'] : [],
+        build: { selectedTourbusModuleIds: [] }
+      },
+      technicalCondition: {
+        pa: 60,
+        instruments: 100,
+        stageGear: 100,
+        defects
+      }
+    }
+    state.band = {
+      ...state.band,
+      members: state.band.members.map(member => ({ ...member, role: 'band' }))
+    }
+    return state
+  }
+  const statusOf = (state, id) =>
+    state.expedition.technicalCondition.defects.find(d => d.id === id)?.status
+
+  await t.test('a reveal without an inspection source is refused', () => {
+    const state = buildState([makeDefect('d1')], { crew: true })
+    for (const payload of [
+      { defectId: 'd1', expectedRouteStep: 2 },
+      { defectId: 'd1', source: null, expectedRouteStep: 2 },
+      { defectId: 'd1', source: 'crew_inspection', expectedRouteStep: 2 },
+      { defectId: 'd1', source: { mode: 'bogus' }, expectedRouteStep: 2 },
+      { defectId: 'd1', source: { mode: 'quick_check' }, expectedRouteStep: 2 },
+      { defectId: 7, source: { mode: 'crew_inspection' }, expectedRouteStep: 2 }
+    ]) {
+      assert.equal(handleRevealExpeditionDefect(state, payload), state)
+    }
+  })
+
+  await t.test('a reveal needs the inspection gate the UI path checks', () => {
+    // No eligible crew, no inspection module, not at a service location.
+    const state = buildState([makeDefect('d1')])
+    for (const mode of [
+      'crew_inspection',
+      'module_inspection',
+      'full_service'
+    ]) {
+      assert.equal(
+        handleRevealExpeditionDefect(state, {
+          defectId: 'd1',
+          source: { mode },
+          expectedRouteStep: 2
+        }),
+        state,
+        mode
+      )
+    }
+  })
+
+  await t.test('a reveal the inspection would not produce is refused', () => {
+    // An untrained crew finds only the first hidden defect.
+    const state = buildState(
+      [
+        makeDefect('d1'),
+        makeDefect('d2'),
+        makeDefect('d3', { status: 'revealed' })
+      ],
+      { crew: true }
+    )
+    for (const defectId of ['d2', 'd3', 'missing']) {
+      assert.equal(
+        handleRevealExpeditionDefect(state, {
+          defectId,
+          source: { mode: 'crew_inspection' },
+          expectedRouteStep: 2
+        }),
+        state,
+        defectId
+      )
+    }
+    const revealed = handleRevealExpeditionDefect(state, {
+      defectId: 'd1',
+      source: { mode: 'crew_inspection' },
+      expectedRouteStep: 2
+    })
+    assert.equal(statusOf(revealed, 'd1'), 'revealed')
+    assert.equal(statusOf(revealed, 'd2'), 'hidden')
+  })
+
+  await t.test(
+    'a full-service reveal charges the diagnostic fee and nothing else',
+    () => {
+      const state = buildState([makeDefect('d1')], { atService: true })
+      const next = handleRevealExpeditionDefect(state, {
+        defectId: 'd1',
+        // A smuggled repair target must not turn the reveal into a repair.
+        source: { mode: 'full_service', repairTargetGroup: 'pa' },
+        expectedRouteStep: 2
+      })
+      assert.equal(statusOf(next, 'd1'), 'revealed')
+      assert.equal(next.player.money, 1500 - DIAGNOSTIC_FEE_BASE)
+      assert.equal(next.expedition.technicalCondition.pa, 60)
+
+      const broke = buildState([makeDefect('d1')], { atService: true })
+      broke.player.money = DIAGNOSTIC_FEE_BASE - 1
+      assert.equal(
+        handleRevealExpeditionDefect(broke, {
+          defectId: 'd1',
+          source: { mode: 'full_service' },
+          expectedRouteStep: 2
+        }),
+        broke
+      )
+    }
+  )
+
+  await t.test('a resolve without a resolving repair is refused', () => {
+    const state = buildState([makeDefect('d1', { status: 'revealed' })])
+    for (const payload of [
+      { defectId: 'd1', expectedRouteStep: 2 },
+      { defectId: 'd1', repair: null, expectedRouteStep: 2 },
+      { defectId: 'd1', repair: 'professional', expectedRouteStep: 2 },
+      // Improvise never resolves a defect.
+      {
+        defectId: 'd1',
+        repair: { mode: 'improvise', targetGroup: 'pa' },
+        expectedRouteStep: 2
+      },
+      // A repair on another group does not touch this defect.
+      {
+        defectId: 'd1',
+        repair: {
+          mode: 'cannibalize',
+          targetGroup: 'stageGear',
+          sourceGroup: 'instruments'
+        },
+        expectedRouteStep: 2
+      },
+      // Professional repair needs a service location.
+      {
+        defectId: 'd1',
+        repair: { mode: 'professional', targetGroup: 'pa' },
+        expectedRouteStep: 2
+      }
+    ]) {
+      assert.equal(handleResolveExpeditionDefect(state, payload), state)
+    }
+  })
+
+  await t.test('a hidden or already resolved defect cannot be resolved', () => {
+    const cannibalize = {
+      mode: 'cannibalize',
+      targetGroup: 'pa',
+      sourceGroup: 'instruments'
+    }
+    for (const status of ['hidden', 'resolved']) {
+      const state = buildState([makeDefect('d1', { status })])
+      assert.equal(
+        handleResolveExpeditionDefect(state, {
+          defectId: 'd1',
+          repair: cannibalize,
+          expectedRouteStep: 2
+        }),
+        state,
+        status
+      )
+    }
+  })
+
+  await t.test('a professional resolve charges the repair cost', () => {
+    const state = buildState([makeDefect('d1', { status: 'triggered' })], {
+      atService: true
+    })
+    const next = handleResolveExpeditionDefect(state, {
+      defectId: 'd1',
+      repair: { mode: 'professional', targetGroup: 'pa' },
+      expectedRouteStep: 2
+    })
+    assert.equal(statusOf(next, 'd1'), 'resolved')
+    // (100 - 60) * 10 at the default repair multiplier.
+    assert.equal(next.player.money, 1100)
+    assert.equal(next.expedition.technicalCondition.pa, 100)
+  })
+
+  await t.test(
+    'a trigger must name a valid boundary the defect is due at',
+    () => {
+      const state = buildState([
+        makeDefect('due', { triggerAt: 'pre_gig', triggerRouteStep: 2 }),
+        makeDefect('later', { triggerAt: 'pre_gig', triggerRouteStep: 3 })
+      ])
+      for (const payload of [
+        { defectId: 'due', expectedRouteStep: 2 },
+        { defectId: 'due', trigger: 'bogus', expectedRouteStep: 2 },
+        { defectId: 'due', trigger: 'post_gig', expectedRouteStep: 2 },
+        { defectId: 'later', trigger: 'pre_gig', expectedRouteStep: 2 }
+      ]) {
+        assert.equal(handleTriggerExpeditionDefect(state, payload), state)
+      }
+      const triggered = handleTriggerExpeditionDefect(state, {
+        defectId: 'due',
+        trigger: 'pre_gig',
+        expectedRouteStep: 2
+      })
+      assert.equal(statusOf(triggered, 'due'), 'triggered')
+      assert.equal(triggered.expedition.technicalCondition.pa, 52)
+    }
+  )
+
+  await t.test(
+    'creators carry only the authorising source and repair fields',
+    () => {
+      const state = buildState([makeDefect('d1')])
+      const reveal = revealExpeditionDefect(state, 'd1', {
+        mode: 'full_service',
+        crewId: 'crew_roadie_bob',
+        repairTargetGroup: 'pa'
+      })
+      assert.deepEqual(reveal.payload, {
+        defectId: 'd1',
+        source: { mode: 'full_service', crewId: 'crew_roadie_bob' },
+        expectedRouteStep: 2
+      })
+      const resolve = resolveExpeditionDefect(state, 'd1', {
+        mode: 'cannibalize',
+        targetGroup: 'pa',
+        sourceGroup: 'instruments',
+        expectedRouteStep: 99
+      })
+      assert.deepEqual(resolve.payload, {
+        defectId: 'd1',
+        repair: {
+          mode: 'cannibalize',
+          targetGroup: 'pa',
+          sourceGroup: 'instruments'
+        },
+        expectedRouteStep: 2
+      })
     }
   )
 })
