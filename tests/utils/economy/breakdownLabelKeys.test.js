@@ -91,8 +91,21 @@ describe('BREAKDOWN_LABEL_KEYS', () => {
       isRegisteredBreakdownLabelKey(BREAKDOWN_LABEL_KEYS.TICKET_SALES)
     ).toBe(true)
     expect(
-      isRegisteredBreakdownLabelKey(buildMerchSalesLabelKey('shirt'))
+      isRegisteredBreakdownLabelKey(buildMerchSalesLabelKey('shirts'))
     ).toBe(true)
+    for (const itemKey of Object.keys(MERCH_PROFILES)) {
+      expect(
+        isRegisteredBreakdownLabelKey(buildMerchSalesLabelKey(itemKey))
+      ).toBe(true)
+    }
+    // A stale save can carry a merch line for an item that no longer exists;
+    // it must fall back to the generic label, not render a raw key.
+    expect(
+      isRegisteredBreakdownLabelKey(buildMerchSalesLabelKey('unknown_item'))
+    ).toBe(false)
+    expect(
+      isRegisteredBreakdownLabelKey(buildMerchSalesLabelKey('__proto__'))
+    ).toBe(false)
     expect(isRegisteredBreakdownLabelKey('economy:notARegisteredKey')).toBe(
       false
     )
