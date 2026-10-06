@@ -169,6 +169,7 @@ export type ExpeditionBuildRejectionReason =
   | 'CARGO_OUT_OF_RANGE'
   | 'PRESSURE_MODIFIERS_INVALID'
   | 'CHASSIS_TIER_LOCKED'
+  | 'FAME_ACCESS_LOCKED'
   | 'UPFRONT_COST_UNAFFORDABLE'
 
 /**

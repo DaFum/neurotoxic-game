@@ -46,6 +46,8 @@ export type TravelLogicParams = {
   changeScene: (scene: GamePhase) => void
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
+  /** Expedition run status, so a gig re-entry honours the Fame booking lock. */
+  expeditionStatus?: GameState['expedition']['status']
   onShowHQ?: () => void
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]

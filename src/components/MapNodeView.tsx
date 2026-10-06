@@ -8,7 +8,11 @@ import * as m from 'motion/react-m'
 import { HexNode } from '../ui/shared'
 import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'
-import { formatCurrency, formatPercent } from '../utils/numberUtils'
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent
+} from '../utils/numberUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
@@ -48,6 +52,8 @@ interface MapNodeTooltipProps {
    * exact payout and wear behind earned intel.
    */
   expeditionFog?: ExpeditionNodeFog
+  /** Fame this node's booking needs; set only while the band is below it. */
+  bookingLockMinimumFame?: number | null
 }
 
 /**
@@ -70,6 +76,11 @@ interface MapNodeProps {
   cityTraits?: CityTraitState
   /** Hybrid-Fog projection for this node while an Expedition is active. */
   expeditionFog?: ExpeditionNodeFog
+  /**
+   * Fame this node's booking needs while the band is below its access tier.
+   * The band can still travel here; the promoter just will not book it.
+   */
+  bookingLockMinimumFame?: number | null
 }
 
 /**
@@ -182,7 +193,8 @@ const MapNodeTooltip = memo(
     tourSuccess,
     cityTraits,
     isPendingConfirm,
-    expeditionFog
+    expeditionFog,
+    bookingLockMinimumFame
   }: MapNodeTooltipProps) => {
     const isGigLike =
       node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
@@ -241,6 +253,17 @@ const MapNodeTooltip = memo(
         )}
 
         {expeditionFog && <ExpeditionNodeFogBadge fog={expeditionFog} t={t} />}
+
+        {isFiniteNumber(bookingLockMinimumFame) && (
+          <div
+            className='text-xs text-blood-red font-mono font-bold mt-1'
+            data-testid='map-node-booking-locked'
+          >
+            {t('ui:map.bookingFameLocked', {
+              fame: formatNumber(bookingLockMinimumFame, language)
+            })}
+          </div>
+        )}
 
         {showCareerVenueDetail && (
           <div className='text-xs text-ash-gray font-mono'>
@@ -317,7 +340,8 @@ export const MapNodeView = memo(
     harmony,
     tourSuccess,
     cityTraits,
-    expeditionFog
+    expeditionFog,
+    bookingLockMinimumFame
   }: MapNodeProps) => {
     const { t, i18n } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
@@ -506,6 +530,7 @@ export const MapNodeView = memo(
           cityTraits={cityTraits}
           isPendingConfirm={isPendingConfirm}
           expeditionFog={expeditionFog}
+          bookingLockMinimumFame={bookingLockMinimumFame}
         />
       </div>
     )
@@ -541,7 +566,8 @@ export const MapNodeView = memo(
       // changes what the tooltip shows.
       prev.expeditionFog?.intelLevel === next.expeditionFog?.intelLevel &&
       prev.expeditionFog?.rewardTier === next.expeditionFog?.rewardTier &&
-      prev.expeditionFog?.dangerTier === next.expeditionFog?.dangerTier
+      prev.expeditionFog?.dangerTier === next.expeditionFog?.dangerTier &&
+      prev.bookingLockMinimumFame === next.bookingLockMinimumFame
     )
   }
 )

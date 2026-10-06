@@ -6,6 +6,7 @@ import {
   processTravelEvents
 } from '../utils/arrivalUtils'
 import { handleError } from '../utils/errorHandler'
+import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import i18n from '../i18n'
 import { GAME_PHASES } from '../context/gameConstants'
 import type { GamePhase, Venue } from '../types'
@@ -261,7 +262,11 @@ export const useArrivalLogic = ({
                 setPendingSupplyStopInventory(inventory)
               }),
             eventAlreadyActive: travelEventActive,
-            rng
+            rng,
+            bookingLock: getExpeditionNodeBookingLock(
+              { player, expedition },
+              currentNode.type
+            )
           })
         : { scene: GAME_PHASES.OVERWORLD as GamePhase, gigStarted: false }
 

@@ -10,6 +10,7 @@
  */
 
 import type { GameState } from '../../types'
+import type { ExpeditionContractTemplate } from '../../types/expedition'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /** One Fame band and everything it changes. */
@@ -89,6 +90,49 @@ const FAME_BANDS: readonly (ExpeditionFameProfile & { minimumFame: number })[] =
     { minimumFame: 0, ...UNKNOWN_FAME_PROFILE }
   ]
 
+/** One rung of the Fame access ladder. */
+export type ExpeditionAccessTier = ExpeditionFameProfile['accessTier']
+
+/**
+ * The minimum `accessTier` each piece of high-profile content requires.
+ *
+ * @remarks
+ * The one place the access gates are tuned. Two kinds of content are gated,
+ * both identified by data the game already carries rather than a new
+ * per-item flag:
+ *
+ * - `festivalBooking` (tier 1, `local`, 250 Fame): booking the gig on an
+ *   Expedition `FESTIVAL` node. The table's own `highProfileNodeWeightMultiplier`
+ *   is below neutral (0.9) only for `unknown`, so `local` is the first band
+ *   the world stops discounting for high-profile stops. Fame rises with every
+ *   Gig of a run, so a fresh band (Fame 0) is turned away only until its first
+ *   club shows carry it past 250. The gate refuses the *booking*, never the
+ *   travel: the band still arrives and the route continues, so no route can
+ *   soft-lock. `START`, `GIG` and `FINALE` nodes are never gated.
+ * - `showcaseContract` (tier 2, `underground`, 1,000 Fame): a native Contract
+ *   whose constraints force a special Finale (`special_finale`, today
+ *   `contract_all_in`). It books the run's biggest stage - the
+ *   `contract_special` Finale at x1.35 reward and a Tour-ending failure - so it
+ *   needs the first band the table actively courts: sponsor quality +1 and
+ *   high-profile weight 1.05.
+ *
+ * Measured pacing (fresh-Career balance sequences): a band leaves its first
+ * Tour with roughly 4,000-15,000 Fame, so both gates bind on the very first
+ * Tour and again only after heavy Fame loss. Regions, Tour Types and unlock
+ * sets are deliberately *not* gated: they are permanent Career capabilities,
+ * and Fame never buys or withholds one of those.
+ */
+export const EXPEDITION_ACCESS_TIER_REQUIREMENTS = {
+  festivalBooking: 1,
+  showcaseContract: 2
+} as const satisfies Record<string, ExpeditionAccessTier>
+
+/** A refused access check: the tier the content needs and its Fame floor. */
+export interface ExpeditionAccessLock {
+  requiredTier: ExpeditionAccessTier
+  minimumFame: number
+}
+
 /**
  * Resolves the Fame profile for the current state.
  *
@@ -100,7 +144,7 @@ const FAME_BANDS: readonly (ExpeditionFameProfile & { minimumFame: number })[] =
  * signal and a test can move one number and watch them all react.
  */
 export const getExpeditionFameProfile = (
-  state: GameState
+  state: Pick<GameState, 'player'>
 ): ExpeditionFameProfile => {
   const fame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
   for (const entry of FAME_BANDS) {
@@ -115,3 +159,71 @@ export const getExpeditionFameProfile = (
   // baseline instead of throwing.
   return { ...UNKNOWN_FAME_PROFILE }
 }
+
+/**
+ * The lowest Fame that reaches an access tier.
+ *
+ * @param tier - Required tier.
+ * @returns The Fame floor of the lowest band at or above it.
+ */
+const getMinimumFameForAccessTier = (tier: ExpeditionAccessTier): number => {
+  let minimum = Number.POSITIVE_INFINITY
+  for (const entry of FAME_BANDS) {
+    if (entry.accessTier >= tier) minimum = Math.min(minimum, entry.minimumFame)
+  }
+  return minimum
+}
+
+/**
+ * Checks the band's Fame against a required access tier.
+ *
+ * @param state - State carrying the canonical `player.fame`.
+ * @param requiredTier - Tier the content needs.
+ * @returns `null` when the band clears it, otherwise the lock to explain.
+ */
+export const getExpeditionAccessLock = (
+  state: Pick<GameState, 'player'>,
+  requiredTier: ExpeditionAccessTier
+): ExpeditionAccessLock | null =>
+  getExpeditionFameProfile(state).accessTier >= requiredTier
+    ? null
+    : { requiredTier, minimumFame: getMinimumFameForAccessTier(requiredTier) }
+
+/**
+ * The booking lock on an Expedition map node of the given type.
+ *
+ * @param state - State carrying the run status and `player.fame`.
+ * @param nodeType - The node's map type.
+ * @returns The lock, or `null` when the booking is open. Always `null`
+ * outside an active run, so the Career map is never gated.
+ */
+export const getExpeditionNodeBookingLock = (
+  state: Pick<GameState, 'player'> & {
+    expedition?: Pick<GameState['expedition'], 'status'> | null
+  },
+  nodeType: unknown
+): ExpeditionAccessLock | null =>
+  state.expedition?.status === 'active' && nodeType === 'FESTIVAL'
+    ? getExpeditionAccessLock(
+        state,
+        EXPEDITION_ACCESS_TIER_REQUIREMENTS.festivalBooking
+      )
+    : null
+
+/**
+ * The access lock on one native Contract template.
+ *
+ * @param state - State carrying `player.fame`.
+ * @param template - The registry template, if any.
+ * @returns The lock, or `null` when the template is ungated or cleared.
+ */
+export const getExpeditionContractAccessLock = (
+  state: Pick<GameState, 'player'>,
+  template: Pick<ExpeditionContractTemplate, 'constraints'> | undefined
+): ExpeditionAccessLock | null =>
+  template?.constraints.some(constraint => constraint.kind === 'special_finale')
+    ? getExpeditionAccessLock(
+        state,
+        EXPEDITION_ACCESS_TIER_REQUIREMENTS.showcaseContract
+      )
+    : null

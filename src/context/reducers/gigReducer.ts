@@ -61,6 +61,7 @@ import {
 } from '../../domain/expedition/finales'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
+import { getExpeditionNodeBookingLock } from '../../domain/expedition/fame'
 import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
@@ -119,6 +120,20 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     payload.name === ''
   ) {
     logger.warn('GameState', 'Rejected malformed START_GIG payload')
+    return state
+  }
+  // A Festival booking needs the Fame access tier the map and arrival already
+  // show; re-checked here so a raw dispatch cannot book a locked stage.
+  if (
+    getExpeditionNodeBookingLock(
+      state,
+      state.gameMap?.nodes?.[state.player.currentNodeId]?.type
+    ) !== null
+  ) {
+    logger.warn(
+      'GameState',
+      'Rejected START_GIG: Festival booking needs a higher Fame access tier'
+    )
     return state
   }
   logger.info('GameState', 'Starting Gig Sequence', payload.name)

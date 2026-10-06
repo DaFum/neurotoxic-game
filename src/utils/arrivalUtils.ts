@@ -14,10 +14,11 @@ import {
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'
-import { clampUnit } from './numberUtils'
+import { clampUnit, formatNumber } from './numberUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
+import type { ExpeditionAccessLock } from '../domain/expedition/fame'
 
 /**
  * Map-node shape accepted by shared arrival processing.
@@ -146,6 +147,12 @@ type HandleNodeArrivalParams = {
   ) => void
   eventAlreadyActive?: boolean
   rng?: () => number
+  /**
+   * Fame access lock on this node's booking, from
+   * `getExpeditionNodeBookingLock`. When set, the band arrives but the gig is
+   * not booked, mirroring the `START_GIG` reducer refusal.
+   */
+  bookingLock?: ExpeditionAccessLock | null
 }
 
 /**
@@ -173,7 +180,8 @@ export const handleNodeArrival = (
     onShowHQ,
     onShowSupplyStop,
     eventAlreadyActive = false,
-    rng = secureRandom
+    rng = secureRandom,
+    bookingLock = null
   } = params
   switch (node.type) {
     case 'SUPPLY_STOP': {
@@ -250,6 +258,17 @@ export const handleNodeArrival = (
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
+      // Checked before the harmony roll: a promoter who never booked the band
+      // is not a cancelled show, so it costs no Fame.
+      if (bookingLock) {
+        addToast(
+          i18n.t('ui:arrival.bookingFameLocked', {
+            fame: formatNumber(bookingLock.minimumFame, i18n.language)
+          }),
+          'warning'
+        )
+        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      }
       const harmony = clampBandHarmony(band?.harmony)
 
       // Show cancellation check: Deterministic for harmony <= 1, probabilistic for low harmony (Chaos Tour Mechanic)
