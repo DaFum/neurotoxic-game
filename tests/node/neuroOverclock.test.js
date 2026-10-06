@@ -8,6 +8,7 @@ import {
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer'
 import { CLINIC_GRAFT_COST } from '../../src/context/gameConstants'
 import {
+  applyNeuroOverclockGigCost,
   getNeuroOverclockEffects,
   getTraitById,
   hasTrait
@@ -63,6 +64,30 @@ describe('handleGraftNeuroOverclock', () => {
     assert.equal(grafted.stamina, Math.max(1, member.stamina - 20))
     assert.equal(next.band.stress, stressBefore + 30)
     assert.equal(next.player.money, state.player.money - CLINIC_GRAFT_COST)
+  })
+
+  it('floors the grafted member stamina at 1', () => {
+    const state = richState()
+    const members = state.band.members.map((member, index) =>
+      index === 0 ? { ...member, stamina: 10 } : member
+    )
+    const next = handleGraftNeuroOverclock(
+      { ...state, band: { ...state.band, members } },
+      { memberId: members[0].id }
+    )
+    assert.equal(next.band.members[0].stamina, 1)
+  })
+
+  it('does not raise a member already below the floor', () => {
+    const state = richState()
+    const members = state.band.members.map((member, index) =>
+      index === 0 ? { ...member, stamina: 0 } : member
+    )
+    const next = handleGraftNeuroOverclock(
+      { ...state, band: { ...state.band, members } },
+      { memberId: members[0].id }
+    )
+    assert.equal(next.band.members[0].stamina, 0)
   })
 
   it('does not re-charge an already grafted member', () => {
@@ -127,7 +152,10 @@ describe('neuro_overclock per-gig cost', () => {
     const carrierBefore = grafted.band.members[0].stamina
     assert.equal(
       withTrait.band.members[0].stamina,
-      Math.max(0, carrierBefore + effects.staminaPerGig)
+      Math.max(
+        Math.min(carrierBefore, 1),
+        carrierBefore + effects.staminaPerGig
+      )
     )
     // Non-carriers are untouched.
     assert.equal(
@@ -150,6 +178,34 @@ describe('neuro_overclock per-gig cost', () => {
       grafted.band.members[0].stamina
     )
     assert.equal(practice.band.stress, grafted.band.stress)
+  })
+
+  it('floors the carrier stamina at the graft floor instead of 0', () => {
+    const base = richState()
+    const grafted = handleGraftNeuroOverclock(base, {
+      memberId: base.band.members[0].id
+    })
+    const tired = {
+      ...grafted.band,
+      members: grafted.band.members.map((member, index) =>
+        index === 0 ? { ...member, stamina: 5 } : member
+      )
+    }
+    assert.equal(applyNeuroOverclockGigCost(tired).members[0].stamina, 1)
+  })
+
+  it('never raises a carrier that is already below the floor', () => {
+    const base = richState()
+    const grafted = handleGraftNeuroOverclock(base, {
+      memberId: base.band.members[0].id
+    })
+    const drained = {
+      ...grafted.band,
+      members: grafted.band.members.map((member, index) =>
+        index === 0 ? { ...member, stamina: 0 } : member
+      )
+    }
+    assert.equal(applyNeuroOverclockGigCost(drained).members[0].stamina, 0)
   })
 
   it('does nothing without a carrier', () => {

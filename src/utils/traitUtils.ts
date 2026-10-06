@@ -148,8 +148,29 @@ export const getNeuroOverclockEffects = (): {
 }
 
 /**
+ * Applies a Neuro-Overclock stamina cost (graft or per-gig). The trait never
+ * knocks its carrier out, so a cost stops at 1 stamina; a member already below
+ * that floor is left where they are rather than raised to it.
+ *
+ * @param stamina - The member's current stamina.
+ * @param delta - Signed stamina change (negative for a cost).
+ * @param staminaMax - The member's stamina cap.
+ * @returns The clamped stamina after the cost.
+ */
+export const applyNeuroOverclockStaminaCost = (
+  stamina: number,
+  delta: number,
+  staminaMax: number
+): number =>
+  clampMemberStamina(
+    Math.max(Math.min(stamina, 1), stamina + delta),
+    staminaMax
+  )
+
+/**
  * Applies the Neuro-Overclock per-gig cost: each carrier adds `stressPerGig`
- * to band stress and changes its own stamina by `staminaPerGig`.
+ * to band stress and changes its own stamina by `staminaPerGig`, stopping at
+ * the same floor as the graft (`applyNeuroOverclockStaminaCost`).
  *
  * @param band - Band after a real (non-practice) gig.
  * @returns A new band with the cost applied, or the identical `band` when no
@@ -164,8 +185,9 @@ export const applyNeuroOverclockGigCost = (band: BandState): BandState => {
     carriers += 1
     return {
       ...member,
-      stamina: clampMemberStamina(
-        finiteNumberOr(member.stamina, 0) + staminaPerGig,
+      stamina: applyNeuroOverclockStaminaCost(
+        finiteNumberOr(member.stamina, 0),
+        staminaPerGig,
         finiteNumberOr(member.staminaMax, 100)
       )
     }
