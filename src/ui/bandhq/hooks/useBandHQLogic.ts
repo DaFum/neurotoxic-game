@@ -67,7 +67,7 @@ export const useBandHQLogic = ({
           if (player.fame < fameCost) {
             throw new GameError(
               t('ui:error.insufficient_fame', {
-                defaultValue: `Not enough fame. You need ${fameCost} fame.`,
+                defaultValue: 'Not enough fame. You need {{cost}} fame.',
                 cost: fameCost
               }),
               { context: { cost: fameCost } }

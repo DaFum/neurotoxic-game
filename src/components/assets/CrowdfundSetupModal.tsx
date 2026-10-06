@@ -104,7 +104,7 @@ export const CrowdfundSetupModal = ({
             onChange={e => setFameStake(Number(e.target.value))}
             aria-valuetext={t('assets:crowdfund.fameStakeAria', {
               amount: fameStake,
-              defaultValue: `${fameStake} Fame`
+              defaultValue: '{{amount}} Fame'
             })}
           />
         </label>
@@ -122,7 +122,7 @@ export const CrowdfundSetupModal = ({
             onChange={e => setDays(Number(e.target.value))}
             aria-valuetext={t('assets:crowdfund.daysAria', {
               days: days,
-              defaultValue: `${days} Days`
+              defaultValue: '{{days}} Days'
             })}
           />
         </label>

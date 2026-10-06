@@ -33,7 +33,7 @@ export const VanConditionSection = ({
         label={t('ui:detailedStats.upgrades', { defaultValue: 'Upgrades' })}
         value={t('ui:detailedStats.vanUpgrades.installed', {
           count: (player.van?.upgrades || []).length,
-          defaultValue: `${(player.van?.upgrades || []).length} Installed`
+          defaultValue: '{{count}} Installed'
         })}
         subtext={
           player.van?.upgrades?.join(', ') ||

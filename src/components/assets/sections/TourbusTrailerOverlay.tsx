@@ -46,7 +46,7 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
             top='50%'
             ariaLabel={t('ui:assets.tourbus.trailer_slot', {
               slotType: translatedSlotType,
-              defaultValue: `slot ${translatedSlotType}`
+              defaultValue: 'slot {{slotType}}'
             })}
           />
         )

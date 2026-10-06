@@ -114,7 +114,7 @@ export function useMinorHandlers({
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
         moneyText,
-        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+        defaultValue: 'Story Spun. Controversy reduced.{{moneyText}}'
       }),
       'success'
     )

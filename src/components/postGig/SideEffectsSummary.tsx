@@ -89,7 +89,7 @@ export const SideEffectsSummary = ({
           {result.targetMember
             ? t('ui:postGig.memberAffected', {
                 member: result.targetMember,
-                defaultValue: `${result.targetMember} Affected`
+                defaultValue: '{{member}} Affected'
               })
             : t('ui:postGig.bandAffected', {
                 defaultValue: 'Band Affected'

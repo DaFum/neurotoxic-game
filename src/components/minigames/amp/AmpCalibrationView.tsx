@@ -81,14 +81,14 @@ export const AmpCalibrationView = ({
       <div className='flex flex-col gap-2'>
         <div>
           {t('ui:minigames.amp.completion.stability', {
-            defaultValue: `Stability Achieved: ${Math.floor(score)}%`,
+            defaultValue: 'Stability Achieved: {{score}}%',
             score: Math.floor(score)
           })}
         </div>
         {voidResonance > 0 && (
           <div className='text-electric-blue font-bold animate-pulse'>
             {t('ui:minigames.amp.completion.resonance', {
-              defaultValue: `Void Resonance Captured: ${Math.floor(voidResonance)}%`,
+              defaultValue: 'Void Resonance Captured: {{voidResonance}}%',
               voidResonance: Math.floor(voidResonance)
             })}
           </div>
@@ -96,7 +96,7 @@ export const AmpCalibrationView = ({
         {hijacksOverridden > 0 && (
           <div className='text-warning-yellow font-bold'>
             {t('ui:minigames.amp.completion.hijacks', {
-              defaultValue: `Hijacks Overridden: ${hijacksOverridden}`,
+              defaultValue: 'Hijacks Overridden: {{hijacksOverridden}}',
               hijacksOverridden
             })}
           </div>
@@ -104,7 +104,8 @@ export const AmpCalibrationView = ({
         {(feedbackLoopsDampened ?? 0) > 0 && (
           <div className='text-error-red font-bold animate-pulse'>
             {t('ui:minigames.amp.completion.feedbackDampened', {
-              defaultValue: `Feedback Loops Dampened: ${feedbackLoopsDampened}`,
+              defaultValue:
+                'Feedback Loops Dampened: {{feedbackLoopsDampened}}',
               feedbackLoopsDampened
             })}
           </div>

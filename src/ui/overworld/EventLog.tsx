@@ -82,18 +82,18 @@ export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
     if (entry.kind === 'init') {
       return t('ui:overworld.locations_loaded', {
         count: entry.payload.count ?? 0,
-        defaultValue: `Tour initialized. ${entry.payload.count ?? 0} locations loaded.`
+        defaultValue: 'Tour initialized. {{count}} locations loaded.'
       })
     }
 
     if (entry.kind === 'tour_active') {
       const label = t('ui:overworld.day_format', {
         day: entry.day,
-        defaultValue: `Day ${entry.day}`
+        defaultValue: 'Day {{day}}'
       })
       return t('ui:overworld.tour_active', {
         label,
-        defaultValue: `${label}: Tour active.`
+        defaultValue: '{{label}}: Tour active.'
       })
     }
 
@@ -101,7 +101,7 @@ export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
     const location = translateLocation(t, rawLocation, rawLocation)
     return t('ui:overworld.location_secured', {
       location,
-      defaultValue: `${location} secured.`
+      defaultValue: '{{location}} secured.'
     })
   }
 

@@ -98,8 +98,7 @@ export const VoidTraderTab = ({
               })
             : !hasEnoughFame
               ? t('ui:error.insufficient_fame', {
-                  cost: item.fameCost,
-                  defaultValue: `Not enough fame. You need ${item.fameCost} fame.`
+                  cost: item.fameCost
                 })
               : disabled && !isAnyProcessing
                 ? t('ui:shop.messages.maxCapacity', {
