@@ -9,6 +9,7 @@
 import { gameReducer } from '../src/context/gameReducer.ts'
 import { ActionTypes } from '../src/context/actionTypes.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
+import { getExpeditionNodeBookingLock } from '../src/domain/expedition/fame.ts'
 import { getEffectiveExpeditionRoute } from '../src/domain/expedition/routeOverlay.ts'
 import { resolveExpeditionTravelCost } from '../src/domain/expedition/travel.ts'
 import {
@@ -1539,6 +1540,8 @@ export const runExpeditionSimulation = (
     minVanCondition: state.player.van.condition ?? 100,
     minTechnicalCondition: getExpeditionConditionSummary(state),
     repairsCount: 0,
+    // Festival bookings the Fame access tier refused on arrival.
+    fameLockedBookings: 0,
     repairSpend: 0,
     defectsRevealed: 0,
     defectsTriggered: 0,
@@ -1778,11 +1781,20 @@ export const runExpeditionSimulation = (
     // C: Handle Node Encounters / Gigs
     const currentMeta = map.meta[currentNodeId]
     const nodeClass = currentMeta?.nodeClass
+    // A Festival the band's Fame cannot book is refused by START_GIG, so the
+    // band arrives and moves on - no Gig, no payout - exactly as in production.
+    const bookingLocked =
+      getExpeditionNodeBookingLock(
+        state,
+        state.gameMap?.nodes?.[currentNodeId]?.type
+      ) !== null
+    if (bookingLocked) telemetry.fameLockedBookings += 1
     if (
-      nodeClass === 'START' ||
-      nodeClass === 'CLUB_GIG' ||
-      nodeClass === 'FESTIVAL' ||
-      nodeClass === 'FINALE'
+      !bookingLocked &&
+      (nodeClass === 'START' ||
+        nodeClass === 'CLUB_GIG' ||
+        nodeClass === 'FESTIVAL' ||
+        nodeClass === 'FINALE')
     ) {
       const venue = resolveVenueForNode(currentNodeId, map)
       // 1. START_GIG
