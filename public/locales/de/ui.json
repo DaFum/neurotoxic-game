@@ -1542,6 +1542,7 @@
   "minigames.amp.hud.stability": "STABILITÄT:",
   "minigames.amp.hud.time": "ZEIT:",
   "minigames.amp.title": "AMP_KALIBRIERUNG",
+  "minigames.complete": "ABGESCHLOSSEN",
   "minigames.kabelsalat.a11y.cable": "Kabel {{label}}",
   "minigames.kabelsalat.a11y.socket": "Buchse {{label}}",
   "minigames.kabelsalat.ampsReady": "Amps glühen vor, Mikros offen.",

@@ -83,7 +83,7 @@ describe('MinigameSceneFrame', () => {
       />
     )
 
-    expect(screen.queryByText('COMPLETE')).toBeFalsy()
+    expect(screen.queryByText('ui:minigames.complete')).toBeFalsy()
   })
 
   test('shows completion overlay when game is over', async () => {
@@ -96,7 +96,7 @@ describe('MinigameSceneFrame', () => {
       />
     )
 
-    expect(screen.getByText('COMPLETE')).toBeTruthy()
+    expect(screen.getByText('ui:minigames.complete')).toBeTruthy()
   })
 
   test('displays custom completion title', async () => {
@@ -326,7 +326,7 @@ describe('MinigameSceneFrame', () => {
     )
 
     // Should render completion overlay without stats
-    expect(screen.getByText('COMPLETE')).toBeTruthy()
+    expect(screen.getByText('ui:minigames.complete')).toBeTruthy()
     expect(screen.getByRole('button', { name: /continue/i })).toBeTruthy()
   })
 

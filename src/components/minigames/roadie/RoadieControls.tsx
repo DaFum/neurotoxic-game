@@ -27,10 +27,11 @@ export const RoadieControls = memo(function RoadieControls({
         handleMoveRight={handleMoveRight}
       />
 
-      {/* Controls Toggle (Desktop Mode Support) */}
+      {/* Controls Toggle (Desktop Mode Support). Sits below the frame's SKIP
+          button, which owns the top-right corner (top-4). */}
       <button
         type='button'
-        className='absolute top-4 right-4 z-50 p-2 bg-void-black/50 text-toxic-green border-2 border-toxic-green hover:bg-toxic-green/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green pointer-events-auto text-xs font-mono hidden md:block'
+        className='absolute top-16 right-4 z-50 p-2 bg-void-black/50 text-toxic-green border-2 border-toxic-green hover:bg-toxic-green/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green pointer-events-auto text-xs font-mono hidden md:block'
         onClick={() => setShowControls(prev => !prev)}
         aria-label={t('ui:roadieRun.controls.toggleAria')}
       >

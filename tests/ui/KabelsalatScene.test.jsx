@@ -331,3 +331,85 @@ describe('KabelsalatScene - visual feedback', () => {
     expect(timeDisplay).toHaveClass(/text-3xl/)
   })
 })
+
+describe('KabelsalatScene - shared minigame exit controls', () => {
+  let mockCompleteMinigame
+  let mockChangeScene
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockCompleteMinigame = vi.fn()
+    mockChangeScene = vi.fn()
+
+    vi.mocked(useGameActions).mockReturnValue({
+      completeKabelsalatMinigame: mockCompleteMinigame,
+      completeRoadieMinigame: vi.fn(),
+      completeAmpCalibration: vi.fn(),
+      changeScene: mockChangeScene,
+      band: {},
+      minigame: { type: 'KABELSALAT' }
+    })
+  })
+
+  it('offers SKIP that forfeits the run as not-powered and routes to GIG', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'SKIP' }))
+
+    expect(mockCompleteMinigame).toHaveBeenCalledWith({
+      isPoweredOn: false,
+      timeLeft: 0
+    })
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('DEV Shift+P backdoor force-completes the run as powered and routes to GIG', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'P', shiftKey: true })
+    })
+
+    expect(mockCompleteMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('hides SKIP once the run is over', async () => {
+    vi.useFakeTimers()
+    try {
+      await act(async () => {
+        render(<KabelsalatScene />)
+      })
+      await act(async () => {
+        vi.advanceTimersByTime(25000)
+      })
+
+      expect(screen.queryByRole('button', { name: 'SKIP' })).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not offer SKIP when another minigame type is active', async () => {
+    vi.mocked(useGameActions).mockReturnValue({
+      completeKabelsalatMinigame: mockCompleteMinigame,
+      completeRoadieMinigame: vi.fn(),
+      completeAmpCalibration: vi.fn(),
+      changeScene: mockChangeScene,
+      band: {},
+      minigame: { type: 'TOURBUS' }
+    })
+
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    expect(screen.queryByRole('button', { name: 'SKIP' })).toBeNull()
+  })
+})
