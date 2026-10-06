@@ -20,8 +20,10 @@ const bandPanelRenders = vi.hoisted(() => ({ count: 0 }))
 vi.mock('../../src/ui/hud/shared/SharedHUDComponents', async () => {
   const { default: ReactModule } = await import('react')
   return {
-    VanStatusMiniBars: ReactModule.memo(() => (
-      <div data-testid='van-status-mini-bars' />
+    PlayerStatusCard: ReactModule.memo(() => (
+      <div data-testid='player-status-card'>
+        <div data-testid='van-status-mini-bars' />
+      </div>
     )),
     BandStatusPanel: ReactModule.memo(() => {
       bandPanelRenders.count++
