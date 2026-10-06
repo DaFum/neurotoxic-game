@@ -50,6 +50,7 @@ import {
 import { VENUES_BY_ID } from '../../data/venues'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { isForbiddenKey } from '../../utils/objectUtils'
+import { recordExpeditionArchiveObservations } from './careerReducer'
 
 /** Controversy at or above this voids active brand deals. */
 const DEAL_BREAK_CONTROVERSY = 85
@@ -320,6 +321,16 @@ export const handleUpdateSocial = (
   let nextState: GameState = {
     ...state,
     social: { ...state.social, ...updates }
+  }
+
+  // A deal signed mid-run can end before the terminal Archive sweep sees it,
+  // so the run records it where it is signed - before a controversy break
+  // below can void it in the same update.
+  if (
+    updates.activeDeals !== undefined &&
+    state.expedition?.status === 'active'
+  ) {
+    nextState = recordExpeditionArchiveObservations(nextState)
   }
 
   if (updates.loyalty !== undefined) {
