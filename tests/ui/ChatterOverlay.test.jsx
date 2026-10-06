@@ -61,3 +61,49 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
 
   expect(callArgs.currentScene).toBe(GAME_PHASES.GIG)
 })
+
+test('ChatterOverlay passes the full player and band slices to getRandomChatter', async () => {
+  // Chatter conditions read player money/van/day/fame and band harmony/luck/
+  // inventory. A slice narrowed to `{ currentNodeId }` / `{ members }` made
+  // `state.player.van.fuel` throw, so no chatter line was ever selected.
+  vi.resetModules()
+  vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
+
+  const mockState = {
+    currentScene: GAME_PHASES.OVERWORLD,
+    band: { members: [], harmony: 20, luck: 4, inventory: { strings: false } },
+    player: {
+      currentNodeId: 'none',
+      money: 50,
+      day: 1,
+      van: { fuel: 10, condition: 90 }
+    },
+    gameMap: { nodes: {}, connections: [] },
+    social: {},
+    lastGigStats: null,
+    gigModifiers: {}
+  }
+
+  vi.doMock('../../src/context/GameState', () => ({
+    useGameSelector: vi.fn(selector => selector(mockState))
+  }))
+
+  const { ChatterOverlay } =
+    await import('../../src/components/ChatterOverlay.tsx')
+
+  await act(async () => {
+    render(<ChatterOverlay />)
+  })
+
+  await act(async () => {
+    vi.advanceTimersByTime(30000)
+  })
+
+  expect(getRandomChatterMock).toHaveBeenCalled()
+  const callArgs = getRandomChatterMock.mock.calls[0][0]
+  expect(callArgs.player).toBe(mockState.player)
+  expect(callArgs.band).toBe(mockState.band)
+  expect(callArgs.gameMap).toBe(mockState.gameMap)
+  expect(callArgs.player.van.fuel).toBe(10)
+  expect(callArgs.band.harmony).toBe(20)
+})

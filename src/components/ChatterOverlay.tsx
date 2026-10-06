@@ -470,13 +470,13 @@ const useNonOverlappingPosition = (
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
-  // ⚡ BOLT OPTIMIZATION: Select narrow sub-fields rather than root band/player/gameMap objects.
-  // This prevents ChatterOverlay from re-rendering on unrelated state ticks (e.g. money changes,
-  // van fuel, band health/harmony updates), while complying with src/components/AGENTS.md.
+  // Select only the slices chatter reads instead of the root state (see
+  // src/components/AGENTS.md). Player and band stay whole: chatter conditions
+  // read money, van, day, fame, harmony, luck and inventory from them.
   const currentScene = useGameSelector(state => state.currentScene)
-  const members = useGameSelector(state => state.band?.members)
-  const currentNodeId = useGameSelector(state => state.player?.currentNodeId)
-  const mapNodes = useGameSelector(state => state.gameMap?.nodes)
+  const band = useGameSelector(state => state.band)
+  const player = useGameSelector(state => state.player)
+  const gameMap = useGameSelector(state => state.gameMap)
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
@@ -484,22 +484,14 @@ export const ChatterOverlay = memo(() => {
   const chatterState = useMemo(
     () => ({
       currentScene,
-      band: members ? { members } : undefined,
-      player: currentNodeId !== undefined ? { currentNodeId } : undefined,
-      gameMap: mapNodes ? { nodes: mapNodes } : undefined,
+      band,
+      player,
+      gameMap,
       social,
       lastGigStats,
       gigModifiers
     }),
-    [
-      currentScene,
-      members,
-      currentNodeId,
-      mapNodes,
-      social,
-      lastGigStats,
-      gigModifiers
-    ]
+    [currentScene, band, player, gameMap, social, lastGigStats, gigModifiers]
   )
 
   const { messages, removeMessage } = useChatterLogic(chatterState, t)
