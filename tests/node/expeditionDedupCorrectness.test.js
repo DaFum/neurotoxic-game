@@ -36,7 +36,7 @@ import {
 import {
   canPerformExpeditionGig,
   getCriticallyInjuredBandMemberId
-} from '../../src/domain/expedition/injuries.ts'
+} from '../../src/domain/expedition/injuryGate.ts'
 import {
   FIXTURE_REGION_ID,
   fixtureMap,
@@ -278,8 +278,8 @@ describe('condition bands share one threshold table', () => {
     [70, 'healthy', 'good', 'optimal'],
     [69, 'worn', 'worn', 'degraded'],
     [40, 'worn', 'worn', 'degraded'],
-    [39, 'critical', 'critical', 'critical'],
-    [20, 'critical', 'critical', 'critical'],
+    [39, 'damaged', 'critical', 'critical'],
+    [20, 'damaged', 'critical', 'critical'],
     [19, 'breaking', 'breaking', 'critical'],
     [1, 'breaking', 'breaking', 'critical'],
     [0, 'disabled', 'breaking', 'disabled']

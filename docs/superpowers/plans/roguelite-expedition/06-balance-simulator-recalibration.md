@@ -844,9 +844,15 @@ Two items withhold release evidence, and three findings sit behind them.
    `bankruptcy` and `fuel_stranded` by construction.
 
    The other four still read 0.0%. They complete or extract before anything can
-   kill them, and the remaining lethal path - `technical_shutdown` - needs a
-   condition group at 0 while technical condition sits at 60-66 at every
-   window. That last part is a G2 question about wear rates.
+   kill them. The remaining lethal path - `technical_shutdown` - is never
+   derived from a dead group on its own: improvise keeps every zero-Condition
+   group recoverable, so the crisis exists only after the player explicitly
+   accepts technical failure (`ACCEPT_EXPEDITION_TECHNICAL_FAILURE`), and it
+   then offers the insurance claim where a policy covers the group alongside
+   `accept_failure`. The harness takes that step only for a dead group that no
+   field, professional, cannibalize or insurance recovery can bring back, while
+   technical condition sits at 60-66 at every window. How often a group should
+   reach 0 at all is a G2 question about wear rates.
 
 3. **Fresh-Career risk is now a curve rather than a cliff.** Across 12,000
    sequences the run outcome mix is 36.3% completed, 23.9% extracted, 39.8%

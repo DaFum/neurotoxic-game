@@ -122,6 +122,7 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/domain/expedition/fame.ts',
   'src/domain/expedition/finales.ts',
   'src/domain/expedition/injuries.ts',
+  'src/domain/expedition/injuryGate.ts',
   'src/domain/expedition/inspections.ts',
   'src/domain/expedition/insurance.ts',
   'src/domain/expedition/legacyHqPolicy.ts',

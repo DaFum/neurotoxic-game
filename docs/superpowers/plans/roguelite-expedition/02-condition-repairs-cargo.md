@@ -412,10 +412,16 @@ export interface HiddenDefectState {
 Creation is deterministic from root `state.runSeed`, group/source/route step. Duplicate source+group+step cannot create twice.
 
 ```ts
-REVEAL_EXPEDITION_DEFECT { defectId; source; expectedRouteStep }
+REVEAL_EXPEDITION_DEFECT { defectId; source: { mode; crewId? }; expectedRouteStep }
 TRIGGER_EXPEDITION_DEFECT { defectId; trigger; expectedRouteStep }
-RESOLVE_EXPEDITION_DEFECT { defectId; repairResolutionId; expectedRouteStep }
+RESOLVE_EXPEDITION_DEFECT {
+  defectId
+  repair: { mode; targetGroup; sourceGroup?; quality? }
+  expectedRouteStep
+}
 ```
+
+`source` is the revealing inspection (`ExpeditionInspectionIntent` mode plus optional Crew); the reducer runs it through the canonical inspection path with its Crew/module/service gates and diagnostic fee, and refuses unless that inspection reveals `defectId`. `repair` is the resolving `ExpeditionRepairIntent` without its route step; the reducer runs it through the Task 6 repair path with its gates and costs, and refuses unless the repair resolves `defectId`. `trigger` must be a valid `HiddenDefectTrigger` at which the defect is due.
 
 Trigger consequence:
 

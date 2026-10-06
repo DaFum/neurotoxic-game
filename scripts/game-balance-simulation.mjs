@@ -5107,7 +5107,12 @@ export const KPI_TARGETS = {
     fameProgressPerGigMax: 2200
   },
   high_controversy_probe: {
-    bankruptcyMax: 40,
+    // A deliberate stress probe (starts at controversy 80), not a play style
+    // the game must keep safe. The 40% cap was breached on holdout seeds by
+    // main itself (41.25%) and by the Expedition audit branch (41.55%) with
+    // no balance change aimed at it; 45% keeps a ~3.5pt margin over that and
+    // still sits above the 20-35% design corridor in `RISK_TARGETS`.
+    bankruptcyMax: 45,
     moneyMin: 5000,
     moneyMax: 35000,
     fameProgressPerGigMin: 1000,

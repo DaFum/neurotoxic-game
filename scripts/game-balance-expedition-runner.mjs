@@ -13,6 +13,7 @@ import { getEffectiveExpeditionRoute } from '../src/domain/expedition/routeOverl
 import { resolveExpeditionTravelCost } from '../src/domain/expedition/travel.ts'
 import {
   EXPEDITION_CONDITION_GROUPS,
+  canStartExpeditionPreGig,
   getExpeditionTechnicalCondition,
   getExpeditionConditionSummary
 } from '../src/domain/expedition/condition.ts'
@@ -72,7 +73,8 @@ import {
   prepareNextExpedition,
   resolveExpeditionCrisis,
   executeExpeditionRepair,
-  revealExpeditionNodeIntel
+  revealExpeditionNodeIntel,
+  claimExpeditionInsurance
 } from '../src/context/expeditionActionCreators.ts'
 import {
   createStartTravelMinigameAction,
@@ -162,6 +164,86 @@ export const generateCohortSeeds = (namespace, count, offset = 0) => {
  */
 export const deriveCohortSeed = (namespace, index) => {
   return generateCohortSeeds(namespace, 1, index)[0]
+}
+
+/** Repair modes probed for a dead group by Gate 10. */
+const GATE10_REPAIR_MODES = ['field', 'professional', 'improvise', 'cannibalize']
+
+/**
+ * Gate 10's way-out probe: whether the production reducer accepts at least
+ * one action that actually leaves a blocked or crisis state.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('../src/types/expedition').PendingExpeditionFailure | null} pending
+ * @returns {boolean}
+ *
+ * @remarks
+ * Judged by the outcome, not by reference identity: `gameReducer` re-syncs
+ * the derived crisis onto state for any action, so a refused action can still
+ * return a fresh object. A crisis is left when the run ends or a different
+ * (or no) crisis is derived; a blocked PreGig is left when the dead group has
+ * Condition again or the run ends.
+ */
+const hasAcceptedExpeditionWayOut = (state, pending) => {
+  const dispatch = action => (action === null ? null : gameReducer(state, action))
+  const ended = next => next !== null && next.expedition.status !== 'active'
+
+  if (pending) {
+    return pending.choices.some(choice => {
+      const next = dispatch(
+        choice === 'accept_failure'
+          ? acceptExpeditionFailure(state)
+          : resolveExpeditionCrisis(state, choice)
+      )
+      return (
+        ended(next) ||
+        (next !== null && deriveExpeditionPendingFailure(next)?.id !== pending.id)
+      )
+    })
+  }
+
+  const tc = getExpeditionTechnicalCondition(state)
+  for (const group of EXPEDITION_CONDITION_GROUPS.filter(g => tc[g] === 0)) {
+    const revived = next =>
+      ended(next) ||
+      (next !== null && getExpeditionTechnicalCondition(next)[group] > 0)
+    for (const mode of GATE10_REPAIR_MODES) {
+      const sources =
+        mode === 'cannibalize'
+          ? EXPEDITION_CONDITION_GROUPS.filter(source => source !== group)
+          : [undefined]
+      for (const sourceGroup of sources) {
+        const next = dispatch(
+          executeExpeditionRepair(state, {
+            mode,
+            targetGroup: group,
+            ...(sourceGroup ? { sourceGroup } : {}),
+            expectedRouteStep: state.expedition.routeStep
+          })
+        )
+        if (revived(next)) return true
+      }
+    }
+    const claimed = dispatch(
+      claimExpeditionInsurance(state, {
+        claimType: 'technical',
+        targetGroup: group
+      })
+    )
+    if (revived(claimed)) return true
+  }
+
+  // The explicit termination: accepting technical failure has to raise a
+  // crisis, and that crisis has to accept `accept_failure` in turn.
+  const afterAccept = dispatch(acceptExpeditionTechnicalFailure(state))
+  if (afterAccept === null || deriveExpeditionPendingFailure(afterAccept) === null) {
+    return false
+  }
+  const failAction = acceptExpeditionFailure(afterAccept)
+  return (
+    failAction !== null &&
+    gameReducer(afterAccept, failAction).expedition.status === 'failed'
+  )
 }
 
 /**
@@ -407,25 +489,29 @@ export const verifyHardCorrectnessGates = (
 
   // Gate 10: PreGig zero-Condition / critical-incapacity softlock.
   //
-  // A wiped technical Condition or a live crisis must always leave the run a
-  // way out: either the crisis offers a recovery, or accepting failure is
-  // available. A state with neither is a run the player cannot leave.
+  // Threshold: the gate arms whenever PreGig would refuse Start
+  // (`canStartExpeditionPreGig` - any single group at 0 Condition, or a
+  // critically injured band member) or a crisis is pending. It used to arm on
+  // the Condition *summary* reaching 0, which is the mean of the van and all
+  // three groups and so needs every one of them dead; one dead group, the
+  // case plan 02 Task 10 is about, never armed it.
   //
-  // A dead technical group never derives a crisis on its own: improvise keeps
-  // it recoverable, so ending the run is the player's explicit
-  // `ACCEPT_EXPEDITION_TECHNICAL_FAILURE`. That action is therefore a valid way
-  // out for a zero-Condition state with no pending crisis.
+  // A way out is an action the production reducer actually accepts, not an
+  // action creator that returns non-null: the creators only check
+  // preconditions, so a pending crisis always "had" an accept-failure action
+  // and the gate could not fail. Accepted ways out are any offered crisis
+  // choice; with no crisis, any repair or claim on a dead group, or the
+  // explicit technical failure followed by an accepted `accept_failure`.
   if (state.expedition.status === 'active') {
-    const conditionSummary = getExpeditionConditionSummary(state)
     const pending = deriveExpeditionPendingFailure(state)
-    if (conditionSummary <= 0 || pending !== null) {
-      const hasRecovery = (pending?.choices?.length ?? 0) > 0
-      const canAcceptFailure =
-        acceptExpeditionFailure(state) !== null ||
-        acceptExpeditionTechnicalFailure(state) !== null
-      if (!hasRecovery && !canAcceptFailure) {
+    if (pending !== null || !canStartExpeditionPreGig(state)) {
+      if (!hasAcceptedExpeditionWayOut(state, pending)) {
         throw new Error(
-          `[HardGate10] Softlock at stage ${stage}: condition ${conditionSummary} with no recovery and no acceptable failure`
+          `[HardGate10] Softlock at stage ${stage}: ${
+            pending
+              ? `crisis ${pending.reason} has no choice the reducer accepts`
+              : 'PreGig is blocked and no recovery or technical failure is accepted'
+          }`
         )
       }
     }
@@ -1476,6 +1562,113 @@ const verifyProtectedCashNotSpent = (before, after, label) => {
 }
 
 /**
+ * Recovers a zero-Condition group through the first legal recovery the plan
+ * lists for it.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('../src/types/expedition').ConditionGroup} group - The dead group.
+ * @param {ReturnType<typeof getAvailableTechnicalRecoveryControls>} controls -
+ * The production recovery controls for `group`.
+ * @param {number} repairQuality - Minigame quality a field repair is played at.
+ * @param {Record<string, any>} telemetry
+ * @returns {import('../src/types').GameState}
+ *
+ * @remarks
+ * Order follows plan 02 Task 10: field repair, professional repair,
+ * cannibalize, insurance claim. Counting cannibalize and the claim as a way
+ * out without ever taking them left the group at zero for the rest of the
+ * route - the policy declined to fail, and nothing repaired it either. Every
+ * recovery goes through its production action, so a refusal leaves state
+ * untouched and is not recorded.
+ */
+const recoverDeadTechnicalGroup = (
+  state,
+  group,
+  controls,
+  repairQuality,
+  telemetry
+) => {
+  const routeStep = state.expedition.routeStep
+  /** @type {import('../src/types/expedition').ExpeditionRepairIntent | null} */
+  let intent = null
+  if (controls.fieldRepair) {
+    intent = {
+      mode: 'field',
+      targetGroup: group,
+      quality: repairQuality,
+      expectedRouteStep: routeStep
+    }
+  } else if (controls.professionalRepair) {
+    intent = {
+      mode: 'professional',
+      targetGroup: group,
+      expectedRouteStep: routeStep
+    }
+  } else if (controls.cannibalize) {
+    // The healthiest legal donor, ties broken by the canonical group order.
+    const tc = getExpeditionTechnicalCondition(state)
+    const sourceGroup = EXPEDITION_CONDITION_GROUPS.filter(
+      source =>
+        source !== group &&
+        resolveExpeditionRepair(state, {
+          mode: 'cannibalize',
+          targetGroup: group,
+          sourceGroup: source,
+          expectedRouteStep: routeStep
+        }).ok
+    ).reduce(
+      (best, source) => (best === null || tc[source] > tc[best] ? source : best),
+      /** @type {import('../src/types/expedition').ConditionGroup | null} */ (
+        null
+      )
+    )
+    if (sourceGroup) {
+      intent = {
+        mode: 'cannibalize',
+        targetGroup: group,
+        sourceGroup,
+        expectedRouteStep: routeStep
+      }
+    }
+  }
+
+  if (intent) {
+    const resolution = resolveExpeditionRepair(state, intent)
+    const action = executeExpeditionRepair(state, intent)
+    if (!resolution.ok || !action) return state
+    const next = gameReducer(state, action)
+    if (next === state) return state
+    verifyProtectedCashNotSpent(state, next, `repair:${intent.mode}`)
+    telemetry.repairsCount++
+    telemetry.repairSpend += resolution.result.moneyCost
+    telemetry.deadGroupRecoveries.push({
+      routeStep,
+      group,
+      mode: intent.mode,
+      ...(intent.sourceGroup ? { sourceGroup: intent.sourceGroup } : {})
+    })
+    return next
+  }
+
+  if (!controls.insuranceClaim) return state
+  const claim = claimExpeditionInsurance(state, {
+    claimType: 'technical',
+    targetGroup: group
+  })
+  if (!claim) return state
+  const next = gameReducer(state, claim)
+  if (next === state) return state
+  verifyProtectedCashNotSpent(state, next, 'insurance_claim')
+  telemetry.insuranceClaimed = true
+  telemetry.deadGroupRecoveries.push({
+    routeStep,
+    group,
+    mode: 'insurance_claim'
+  })
+  return next
+}
+
+/**
  * Runs a single Expedition simulation from production loadout creation to terminal settlement.
  *
  * @param {import('../src/types').GameState} fixtureState
@@ -1548,6 +1741,8 @@ export const runExpeditionSimulation = (
     insuranceOffered: Boolean(profile.insurancePolicyId),
     insuranceBought: Boolean(state.expedition.loadout?.insurancePolicyId),
     insuranceClaimed: false,
+    /** @type {Array<{ routeStep: number, group: string, mode: string, sourceGroup?: string }>} */
+    deadGroupRecoveries: [],
     authoritySafeExitsOffered: 0,
     authoritySafeExitsUsed: 0,
     crewStressMax: 0,
@@ -1682,14 +1877,15 @@ export const runExpeditionSimulation = (
       }
     }
 
-    // A2: A dead technical group the policy cannot pay to repair.
+    // A2: A dead technical group.
     //
     // Production never derives a technical crisis for a zero-Condition group
     // while improvise is on offer, so ending the run there is the player's
-    // explicit `accept_failure` (ExpeditionServicePanel). The policy makes that
-    // choice when no spare part, service-stop repair, donor group or insurance
-    // claim can recover the group; improvise is the free fallback it declines,
-    // which is what the old derived shutdown meant by "no legal recovery".
+    // explicit `accept_failure` (ExpeditionServicePanel). The policy recovers
+    // the group through the first recovery the plan lists (field, professional,
+    // cannibalize, insurance claim) and accepts failure only when none of them
+    // is legal; improvise is the free fallback it declines, which is what the
+    // old derived shutdown meant by "no legal recovery".
     const deadGroup = EXPEDITION_CONDITION_GROUPS.find(
       group => getExpeditionTechnicalCondition(state)[group] === 0
     )
@@ -1700,6 +1896,15 @@ export const runExpeditionSimulation = (
         controls.professionalRepair ||
         controls.cannibalize ||
         controls.insuranceClaim
+      if (hasPaidRecovery) {
+        state = recoverDeadTechnicalGroup(
+          state,
+          deadGroup,
+          controls,
+          repairQuality,
+          telemetry
+        )
+      }
       const acceptTechnical = hasPaidRecovery
         ? null
         : acceptExpeditionTechnicalFailure(state)

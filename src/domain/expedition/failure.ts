@@ -29,7 +29,7 @@ import {
 } from './condition'
 import { resolveExpeditionRepair } from './repairs'
 import { isExpeditionLegendaryAvailable } from './legendaries'
-import { getCriticallyInjuredBandMemberId } from './injuries'
+import { getCriticallyInjuredBandMemberId } from './injuryGate'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'

@@ -120,6 +120,58 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     )
   })
 
+  it('HardGate10 fails when the reducer accepts no way out of a blocked PreGig', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // One dead group and a corrupted route step: every repair, claim and the
+    // technical failure carry that step as their stale guard, so the reducer
+    // refuses all of them. The Condition summary is still 75, which is why
+    // the old summary-based trigger never even looked at this state.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*PreGig is blocked/
+    )
+  })
+
+  it('HardGate10 fails when a pending crisis offers no choice the reducer accepts', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // An accepted technical failure derives a `technical_shutdown` crisis, so
+    // `acceptExpeditionFailure` returns an action - which is all the old gate
+    // asked. The reducer still refuses it here, so the crisis is a dead end.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalFailureAccepted: true,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*crisis technical_shutdown/
+    )
+  })
+
   it('accepts technical failure when a dead group has no paid recovery', () => {
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const base = buildProductionSimulationLoadout(undefined, profile, 4242)
@@ -149,6 +201,63 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     const result = runExpeditionSimulation(stranded, profile, 4242)
     assert.equal(result.outcome, 'failed')
     assert.equal(result.terminalSource, 'technical_shutdown')
+  })
+
+  /**
+   * A run whose PA is dead with no spare part and no cash for the service
+   * stop, so only a donor group or the insurance claim can bring it back.
+   *
+   * @param {number} donorCondition - Condition of the two healthy groups.
+   */
+  const deadPaWithoutPaidRepair = donorCondition => {
+    // `clean_sponsor` carries the `touring` policy, which covers technical
+    // claims.
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const base = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const state = {
+      ...base,
+      player: {
+        ...base.player,
+        money: base.expedition.loadout.build.protectedCareerCash + 10
+      },
+      expedition: {
+        ...base.expedition,
+        cargo: { ...base.expedition.cargo, spareParts: 0 },
+        technicalCondition: {
+          ...base.expedition.technicalCondition,
+          pa: 0,
+          instruments: donorCondition,
+          stageGear: donorCondition
+        }
+      }
+    }
+    return { profile, state }
+  }
+
+  it('cannibalizes a healthy donor when that is the recovery for a dead group', () => {
+    const { profile, state } = deadPaWithoutPaidRepair(100)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'cannibalize',
+      sourceGroup: 'instruments'
+    })
+    // The free donor repair comes before the one-shot claim.
+    assert.equal(result.telemetry.insuranceClaimed, false)
+  })
+
+  it('claims insurance for a dead group when no donor is healthy enough', () => {
+    // 50 is below the cannibalize donor floor, so the claim is the only
+    // recovery left besides the improvise the policy declines.
+    const { profile, state } = deadPaWithoutPaidRepair(50)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'insurance_claim'
+    })
+    assert.equal(result.telemetry.insuranceClaimed, true)
   })
   it('evaluates candidate nodes with profile-specific decision policies', () => {
     const cleanProfile = EXPEDITION_BALANCE_PROFILES.find(

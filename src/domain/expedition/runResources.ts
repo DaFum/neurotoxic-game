@@ -45,7 +45,8 @@ const getExpeditionConditionBand = (
 ): ExpeditionConditionBand => {
   const tier = getExpeditionConditionTier(condition)
   if (tier === 'healthy') return 'good'
-  if (tier === 'worn' || tier === 'critical') return tier
+  if (tier === 'worn') return 'worn'
+  if (tier === 'damaged') return 'critical'
   return 'breaking'
 }
 
