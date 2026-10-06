@@ -1476,6 +1476,25 @@ const verifyProtectedCashNotSpent = (before, after, label) => {
 }
 
 /**
+ * The rare rewards an extraction carries out: the unsecured, unabandoned
+ * ledger entries, in ledger order, up to the build's explicit carry slots.
+ *
+ * @param {import('../src/types').GameState} state - State at the extraction.
+ * @returns {string[]} Ledger entry ids to pass to `extractExpedition`.
+ *
+ * @remarks
+ * Shared by the voluntary and the crisis extraction, so both policies carry
+ * the same selection.
+ */
+const selectExtractionRareCarryIds = state => {
+  const carrySlots = getExplicitExtractionRareCarrySlots(state)
+  return state.expedition.rewardLedger
+    .filter(entry => !entry.secured && !entry.abandoned)
+    .slice(0, carrySlots)
+    .map(entry => entry.id)
+}
+
+/**
  * Runs a single Expedition simulation from production loadout creation to terminal settlement.
  *
  * @param {import('../src/types').GameState} fixtureState
@@ -1653,11 +1672,7 @@ export const runExpeditionSimulation = (
       // the player actually sees routes through the extraction confirmation,
       // so the policy carries what a voluntary extraction would.
       if (!resolved && pendingFailure.choices.includes('extract')) {
-        const carrySlots = getExplicitExtractionRareCarrySlots(state)
-        const unmaterializedRares = state.expedition.rewardLedger
-          .filter(entry => !entry.secured && !entry.abandoned)
-          .slice(0, carrySlots)
-          .map(entry => entry.id)
+        const unmaterializedRares = selectExtractionRareCarryIds(state)
         const extracted = gameReducer(
           state,
           extractExpedition(state, unmaterializedRares)
@@ -1932,11 +1947,7 @@ export const runExpeditionSimulation = (
     }
 
     if (shouldExtract && extractionAllowed) {
-      const carrySlots = getExplicitExtractionRareCarrySlots(state)
-      const unmaterializedRares = state.expedition.rewardLedger
-        .filter(entry => !entry.secured && !entry.abandoned)
-        .slice(0, carrySlots)
-        .map(entry => entry.id)
+      const unmaterializedRares = selectExtractionRareCarryIds(state)
 
       const extractAction = extractExpedition(state, unmaterializedRares)
       state = gameReducer(state, extractAction)
