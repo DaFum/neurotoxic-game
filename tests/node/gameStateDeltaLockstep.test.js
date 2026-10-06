@@ -681,8 +681,9 @@ test('EventDelta rejects sums that overflow to Infinity', () => {
   state.band.luck = 1e308
   state.band.inventory.sticker = 1e308
   state.social.viral = 1e308
+  state.player.stats.gigsPlayed = 1e308
   const delta = withDelta({
-    player: { score: 1e308 },
+    player: { score: 1e308, stats: { gigsPlayed: 1e308 } },
     band: { luck: 1e308, inventory: { sticker: 1e308 } },
     social: { viral: 1e308 }
   })
@@ -692,10 +693,13 @@ test('EventDelta rejects sums that overflow to Infinity', () => {
 
   // The unrepresentable addend is dropped; the stored value is untouched.
   assert.equal(preview.score, 0)
+  assert.equal(preview.player.stats.gigsPlayed, 0)
   assert.equal(preview.band.luck, 0)
   assert.equal(preview.social.viral, 0)
   assert.equal(preview.band.inventory.sticker, undefined)
   assert.equal(applied.player.score, 1e308)
+  // An overflowing stat sum keeps the stored value instead of resetting to 0.
+  assert.equal(applied.player.stats.gigsPlayed, 1e308)
   assert.equal(applied.band.luck, 1e308)
   assert.equal(applied.social.viral, 1e308)
   assert.equal(applied.band.inventory.sticker, 1e308)

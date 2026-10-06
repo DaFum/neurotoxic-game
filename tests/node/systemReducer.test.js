@@ -2074,6 +2074,67 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       )
     }
   )
+
+  await t.test(
+    'gives risk-event toasts deterministic ids that avoid existing toast ids',
+    () => {
+      const initialState = createInitialState()
+      const makeAsset = id => ({
+        id,
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 0,
+        baseDailyRevenue: 0,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 1
+      })
+      // Two assets fire on the same day; an existing toast already holds the
+      // id the first risk toast would otherwise take.
+      const existingToast = {
+        id: 'risk-toast-1',
+        type: 'info',
+        message: 'already shown'
+      }
+      const currentState = {
+        ...initialState,
+        player: { ...initialState.player, day: 1 },
+        assets: [makeAsset('asset_a'), makeAsset('asset_b')],
+        pendingRiskEvent: null,
+        toasts: [existingToast],
+        activeQuests: []
+      }
+      const payload = {
+        dayRngStream: [0, 0, 0, 0],
+        nextRngSeed: initialState.rngSeed,
+        rng: () => 0.5
+      }
+
+      const first = handleAdvanceDay(currentState, payload)
+      const riskToasts = first.toasts.filter(toast =>
+        toast.messageKey?.startsWith('assets:risk.event.')
+      )
+
+      assert.deepEqual(
+        riskToasts.map(toast => toast.options.assetId),
+        ['asset_a', 'asset_b']
+      )
+      assert.deepEqual(
+        riskToasts.map(toast => toast.id),
+        ['risk-toast-2', 'risk-toast-3']
+      )
+      const ids = first.toasts.map(toast => toast.id)
+      assert.equal(new Set(ids).size, ids.length)
+      // Same input, same ids: no RNG or UUID in the reducer.
+      assert.deepEqual(
+        handleAdvanceDay(currentState, payload).toasts.map(toast => toast.id),
+        ids
+      )
+    }
+  )
 })
 
 test('systemReducer - rivalBand persistence', async t => {
