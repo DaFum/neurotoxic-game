@@ -498,7 +498,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       version: 1,
       money: 500000,
       operatingCash: MATURE_FIXTURE_OPERATING_CASH,
-      fame: 150,
+      // The showcase Contract this profile prefers (`contract_all_in`) needs
+      // the `underground` access tier (EXPEDITION_ACCESS_TIER_REQUIREMENTS),
+      // so the fixture declares that floor instead of having it silently
+      // filtered out of the build.
+      fame: 1000,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
       // not have a hidden builder default: this value decides the START
@@ -723,7 +727,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       version: 1,
       money: 500000,
       operatingCash: MATURE_FIXTURE_OPERATING_CASH,
-      fame: 150,
+      // The showcase Contract this profile prefers (`contract_all_in`) needs
+      // the `underground` access tier (EXPEDITION_ACCESS_TIER_REQUIREMENTS),
+      // so the fixture declares that floor instead of having it silently
+      // filtered out of the build.
+      fame: 1000,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
       // not have a hidden builder default: this value decides the START

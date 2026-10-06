@@ -73,6 +73,7 @@ import {
   areExpeditionContractsCompatible,
   materializeContractConstraints
 } from './contracts'
+import { getExpeditionContractAccessLock } from './fame'
 
 /**
  * Highest fuel level the van can be topped up to before departure.
@@ -393,7 +394,37 @@ export const getAvailableNativeContractTemplateIds = (
     .filter(
       template =>
         (template.kind !== 'performance' || hasPerformancePool) &&
-        materializeContractConstraints(template, preparedMap) !== null
+        materializeContractConstraints(template, preparedMap) !== null &&
+        getExpeditionContractAccessLock(state, template) === null
+    )
+    .map(template => template.id)
+}
+
+/**
+ * Native Contract templates this Career could book but its Fame cannot.
+ *
+ * @param state - Current game state.
+ * @param preparedMap - The prepared route.
+ * @returns Template ids that pass every gate except the Fame access tier.
+ *
+ * @remarks
+ * Tour Prep renders these as locked with the Fame they need, so a showcase is
+ * visibly out of reach rather than silently missing from the list.
+ */
+export const getExpeditionFameLockedContractTemplateIds = (
+  state: GameState,
+  preparedMap: ExpeditionMap
+): readonly string[] => {
+  const hasPerformancePool = isExpeditionCapabilityUnlocked(
+    state.career?.unlockedSetIds,
+    'performance_contract_pool'
+  )
+  return [...EXPEDITION_CONTRACTS_BY_ID.values()]
+    .filter(
+      template =>
+        (template.kind !== 'performance' || hasPerformancePool) &&
+        materializeContractConstraints(template, preparedMap) !== null &&
+        getExpeditionContractAccessLock(state, template) !== null
     )
     .map(template => template.id)
 }
@@ -657,10 +688,20 @@ export const validateExpeditionBuildCommitment = (
     const { templateId } = entry
     const targetNodeId =
       entry.targetNodeId === undefined ? null : entry.targetNodeId
+    if (typeof templateId !== 'string') {
+      return reject('NATIVE_CONTRACT_INVALID')
+    }
+    // Named before the availability check, so a showcase the band is not yet
+    // famous enough for explains itself instead of reading as unknown.
     if (
-      typeof templateId !== 'string' ||
-      !availableTemplates.includes(templateId)
+      getExpeditionContractAccessLock(
+        state,
+        EXPEDITION_CONTRACTS_BY_ID.get(templateId)
+      ) !== null
     ) {
+      return reject('FAME_ACCESS_LOCKED')
+    }
+    if (!availableTemplates.includes(templateId)) {
       return reject('NATIVE_CONTRACT_INVALID')
     }
     if (seenTemplateIds.has(templateId))

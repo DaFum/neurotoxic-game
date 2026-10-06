@@ -117,4 +117,32 @@ describe('TourPrepLoadout', () => {
       .at(-1)
     expect(call?.options).toEqual({ used: 20, max: 8 })
   })
+
+  it('shows the showcase Contract locked with its Fame floor until the band is known', () => {
+    const unknown = createInitialState()
+    unknown.player.fame = 0
+    state.current = unknown
+    const { unmount } = render(<TourPrepLoadout />)
+    fireEvent.click(screen.getAllByRole('tab')[3]!)
+
+    const locked = screen.getByTestId(
+      'expedition-prep-contract-contract_all_in'
+    )
+    expect(locked).toBeDisabled()
+    expect(locked).toHaveTextContent('ui:expedition.prep.contractFameLocked')
+    const call = tCalls
+      .filter(c => c.key === 'ui:expedition.prep.contractFameLocked')
+      .at(-1)
+    expect(call?.options).toEqual({ fame: '1,000' })
+    unmount()
+
+    const known = createInitialState()
+    known.player.fame = 1000
+    state.current = known
+    render(<TourPrepLoadout />)
+    fireEvent.click(screen.getAllByRole('tab')[3]!)
+    const open = screen.getByTestId('expedition-prep-contract-contract_all_in')
+    expect(open).toBeEnabled()
+    expect(open).not.toHaveTextContent('ui:expedition.prep.contractFameLocked')
+  })
 })

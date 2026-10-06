@@ -14,6 +14,7 @@
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import { logger } from '../../utils/logger'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -430,7 +431,17 @@ export const handleStartExpedition = (
     loadout,
     preparedMap
   )
-  if (!validation.valid) return state
+  if (!validation.valid) {
+    // Tour Prep shows Fame-locked content as locked and never commits it, so
+    // this refusal is only reachable by a raw dispatch.
+    if (validation.reason === 'FAME_ACCESS_LOCKED') {
+      logger.warn(
+        'ExpeditionReducer',
+        'Rejected START_EXPEDITION: build needs a higher Fame access tier'
+      )
+    }
+    return state
+  }
 
   const { normalized } = validation
   const currentFuel = isFiniteNumber(state.player.van?.fuel)

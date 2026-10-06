@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { SONGS_BY_ID } from '../../data/songs'
 import {
@@ -25,6 +25,7 @@ import {
   getAvailableStarterPerkIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableNativeContractTemplateIds,
+  getExpeditionFameLockedContractTemplateIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -45,7 +46,11 @@ import { getExpeditionChassisProfile } from '../../domain/expedition/chassis'
 import { MERCH_PROFILES } from '../../data/merch'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
-import { MAX_NATIVE_EXPEDITION_CONTRACTS } from '../../data/expedition/contracts'
+import {
+  EXPEDITION_CONTRACTS_BY_ID,
+  MAX_NATIVE_EXPEDITION_CONTRACTS
+} from '../../data/expedition/contracts'
+import { getExpeditionContractAccessLock } from '../../domain/expedition/fame'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { ProgressBar } from '../shared/ProgressBar'
@@ -303,6 +308,22 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const availableContractTemplateIds = useMemo(
     () => getAvailableNativeContractTemplateIds(state, preparedMap),
+    [preparedMap, state]
+  )
+  // Shown locked with the Fame they need rather than left out, so a showcase
+  // the band is not yet known enough for is visibly out of reach.
+  const fameLockedContracts = useMemo(
+    () =>
+      getExpeditionFameLockedContractTemplateIds(state, preparedMap).map(
+        templateId => ({
+          templateId,
+          minimumFame:
+            getExpeditionContractAccessLock(
+              state,
+              EXPEDITION_CONTRACTS_BY_ID.get(templateId)
+            )?.minimumFame ?? 0
+        })
+      ),
     [preparedMap, state]
   )
 
@@ -1207,6 +1228,25 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     </button>
                   )
                 })}
+                {fameLockedContracts.map(({ templateId, minimumFame }) => (
+                  <button
+                    key={templateId}
+                    type='button'
+                    disabled
+                    aria-pressed={false}
+                    data-testid={`expedition-prep-contract-${templateId}`}
+                    className='min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border border-steel-gray/30 text-steel-gray opacity-60 cursor-not-allowed'
+                  >
+                    {t(`ui:expedition.contract.${templateId}`, {
+                      defaultValue: templateId
+                    })}
+                    <span className='block normal-case text-blood-red text-[10px] mt-0.5'>
+                      {t('ui:expedition.prep.contractFameLocked', {
+                        fame: formatNumber(minimumFame, i18n.language)
+                      })}
+                    </span>
+                  </button>
+                ))}
               </div>
             </fieldset>
           </div>
