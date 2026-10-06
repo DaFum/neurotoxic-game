@@ -6,7 +6,7 @@ import type { AssetKind } from '../../types/assets'
 import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { ASSET_SECTION_TABS, ASSET_SECTION_TABS_MAP } from './sectionTabs'
-import { DEFAULT_SECTION_ACCENT, SECTION_VIEWS } from './sectionRegistry'
+import { SECTION_VIEWS } from './sectionRegistry'
 import './assetsHub.css'
 
 /**
@@ -21,8 +21,7 @@ export const AssetsScene = () => {
   const { changeScene } = useGameActions()
   const [active, setActive] = useState<AssetKind>('tourbus_chassis')
 
-  const activeView = SECTION_VIEWS[active]
-  const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
+  const { Component: ActiveSection, accent } = SECTION_VIEWS[active]
   const activeTab = ASSET_SECTION_TABS_MAP[active] ?? ASSET_SECTION_TABS[0]
 
   // The CSS variable cascades to every descendant via inline style; modals
@@ -63,13 +62,7 @@ export const AssetsScene = () => {
         role='tabpanel'
         aria-labelledby={`assets-tab-${active}`}
       >
-        {activeView ? (
-          <activeView.Component />
-        ) : (
-          <p className='font-mono text-sm opacity-60'>
-            {t('assets:scene.noSectionRegistered')}
-          </p>
-        )}
+        <ActiveSection />
       </section>
 
       <AssetsBottomTabs active={active} onSelect={setActive} />

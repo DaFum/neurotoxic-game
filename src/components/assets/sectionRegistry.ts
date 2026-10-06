@@ -11,10 +11,6 @@ import { MerchWorkshopSection } from './sections/MerchWorkshopSection'
  * The `Component` renders the section's main view (vehicle silhouette,
  * floorplan, dollhouse, production line). `accent` is the CSS-variable
  * expression bound to `--section-accent` while this section is active.
- *
- * Section plans (2–5) register their entries by importing `SECTION_VIEWS`
- * and assigning at module load time. Foundation leaves the registry empty
- * so `AssetsScene` renders a neutral placeholder until a section ships.
  */
 export interface SectionView {
   Component: ComponentType
@@ -22,33 +18,28 @@ export interface SectionView {
 }
 
 /**
- * Registered asset section views keyed by asset kind.
+ * Section views keyed by asset kind.
+ *
+ * @remarks
+ * Typed as a full `Record<AssetKind, SectionView>`, so adding an `AssetKind`
+ * without registering its section fails to compile and `AssetsScene` never has
+ * a kind without a view to render.
  */
-export const SECTION_VIEWS: Partial<Record<AssetKind, SectionView>> = {}
-
-SECTION_VIEWS.tourbus_chassis = {
-  Component: TourbusSection,
-  accent: 'var(--color-toxic-green)'
-}
-
-SECTION_VIEWS.studio_chassis = {
-  Component: StudioSection,
-  accent: 'var(--color-electric-blue)'
-}
-
-SECTION_VIEWS.bandhaus_chassis = {
-  Component: BandhausSection,
-  accent: 'var(--color-cosmic-purple)'
-}
-
-SECTION_VIEWS.merch_workshop_chassis = {
-  Component: MerchWorkshopSection,
-  accent: 'var(--color-warning-yellow)'
-}
-
-/**
- * Default accent token used when no section view is registered for the
- * currently-active tab. Mirrors the brutalist baseline so the hub never
- * renders with an unset `--section-accent`.
- */
-export const DEFAULT_SECTION_ACCENT = 'var(--color-toxic-green)'
+export const SECTION_VIEWS = {
+  tourbus_chassis: {
+    Component: TourbusSection,
+    accent: 'var(--color-toxic-green)'
+  },
+  studio_chassis: {
+    Component: StudioSection,
+    accent: 'var(--color-electric-blue)'
+  },
+  bandhaus_chassis: {
+    Component: BandhausSection,
+    accent: 'var(--color-cosmic-purple)'
+  },
+  merch_workshop_chassis: {
+    Component: MerchWorkshopSection,
+    accent: 'var(--color-warning-yellow)'
+  }
+} as const satisfies Record<AssetKind, SectionView>
