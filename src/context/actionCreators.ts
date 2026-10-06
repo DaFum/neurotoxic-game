@@ -454,18 +454,6 @@ export const createAddToastActionWithId = (
 })
 
 /**
- * Runs a raw toast through the shared toast sanitizer (primitive-only options,
- * allow-listed type, trimmed message). A toast with neither a message nor a
- * message key sanitizes to nothing; it is replaced by an empty `info` toast
- * that `handleAddToast` re-validates and drops, so the action stays well-formed.
- */
-const sanitizeToastForAction = (
-  raw: Record<string, unknown>,
-  id: string
-): ToastPayload =>
-  sanitizeLoadedToast({ ...raw, id }) ?? { id, type: 'info', message: '' }
-
-/**
  * Creates a toast addition action
  *
  * The payload is sanitized with the shared toast sanitizer: `options` keep only
@@ -474,7 +462,8 @@ const sanitizeToastForAction = (
  *
  * @param messageOrPayload - Toast message string or structured payload
  * @param type - Toast type (info, success, error, warning)
- * @returns Action object with generated ID
+ * @returns Action object with generated ID, or null when the toast has neither
+ * a message nor a message key (the reducer would drop it).
  */
 export const createAddToastAction = (
   messageOrPayload:
@@ -482,7 +471,8 @@ export const createAddToastAction = (
     | (Omit<ToastPayload, 'id' | 'type'> &
         Partial<Pick<ToastPayload, 'id' | 'type'>>),
   type = 'info'
-): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> => {
+): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> | null => {
+  let raw: Record<string, unknown>
   if (
     messageOrPayload &&
     typeof messageOrPayload === 'object' &&
@@ -493,21 +483,17 @@ export const createAddToastAction = (
       type: payloadType,
       ...restPayload
     } = messageOrPayload
-    return {
-      type: ActionTypes.ADD_TOAST,
-      payload: sanitizeToastForAction(
-        { ...restPayload, type: payloadType ?? type },
-        getSafeUUID()
-      )
-    }
+    raw = { ...restPayload, type: payloadType ?? type }
+  } else {
+    raw = { message: messageOrPayload, type }
   }
+
+  const payload = sanitizeLoadedToast({ ...raw, id: getSafeUUID() })
+  if (!payload) return null
 
   return {
     type: ActionTypes.ADD_TOAST,
-    payload: sanitizeToastForAction(
-      { message: messageOrPayload, type },
-      getSafeUUID()
-    )
+    payload
   }
 }
 

@@ -723,9 +723,18 @@ describe('Action Creators', () => {
         type: 'bogus'
       })
       assert.strictEqual(action.payload.type, 'info')
+    })
 
-      const empty = createAddToastAction({ message: { not: 'a string' } })
-      assert.strictEqual(typeof empty.payload.message, 'string')
+    it('returns null instead of a toast the reducer would drop', () => {
+      // No usable message or message key: dispatching this would only be a
+      // no-op that `handleAddToast` rejects.
+      assert.strictEqual(
+        createAddToastAction({ message: { not: 'a string' } }),
+        null
+      )
+      assert.strictEqual(createAddToastAction({ message: '   ' }), null)
+      assert.strictEqual(createAddToastAction(''), null)
+      assert.strictEqual(createAddToastAction({ messageKey: '' }), null)
     })
   })
 

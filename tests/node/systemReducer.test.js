@@ -18,6 +18,7 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
 import { SONGS_DB } from '../../src/data/songs'
 import { FLAGS } from '../../src/data/flags.registry'
+import { logger } from '../../src/utils/logger'
 
 // Loaded setlists are validated against the song catalog, so these tests must
 // use real ids rather than placeholders.
@@ -1730,6 +1731,21 @@ test('systemReducer - ADD_TOAST keeps only primitive options and drops invalid t
   assert.equal(handleAddToast(state, { id: 't2', type: 'info' }), state)
   assert.equal(handleAddToast(state, null), state)
   assert.equal(handleAddToast(state, 'toast'), state)
+})
+
+test('systemReducer - ADD_TOAST logs a malformed payload it drops', t => {
+  const warn = t.mock.method(logger, 'warn', () => {})
+  const state = { toasts: [] }
+
+  handleAddToast(state, { id: 't1', type: 'info', message: 'kept' })
+  assert.equal(warn.mock.callCount(), 0)
+
+  assert.equal(handleAddToast(state, { id: 't2', type: 'info' }), state)
+  assert.equal(warn.mock.callCount(), 1)
+  assert.deepEqual(warn.mock.calls[0].arguments, [
+    'GameState',
+    'Rejected malformed ADD_TOAST payload'
+  ])
 })
 
 test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
