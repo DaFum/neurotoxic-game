@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
+import { useDisclosure } from './useDisclosure'
 import { secureRandom } from '../utils/crypto'
 
 /**
@@ -12,10 +13,11 @@ export const useMerchPress = () => {
   const band = useGameSelector(state => state.band)
   const { merchPress } = useGameActions()
 
-  const [showMerchPress, setShowMerchPress] = useState(false)
-
-  const openMerchPress = useCallback(() => setShowMerchPress(true), [])
-  const closeMerchPress = useCallback(() => setShowMerchPress(false), [])
+  const {
+    isOpen: showMerchPress,
+    open: openMerchPress,
+    close: closeMerchPress
+  } = useDisclosure()
 
   const config = useMemo(() => {
     // Dynamic config scaling with fame level (e.g. higher stakes as you grow)
