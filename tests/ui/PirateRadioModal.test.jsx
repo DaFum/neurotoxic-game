@@ -28,6 +28,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 const config = {
+  COST: 50,
   FAME_GAIN: 12,
   ZEALOTRY_GAIN: 8,
   CONTROVERSY_GAIN: 4,
@@ -71,6 +72,24 @@ describe('PirateRadioModal', () => {
     const transmitButton = screen.getByRole('button', { name: /ON COOLDOWN/i })
     expect(transmitButton).toHaveAttribute('aria-disabled', 'true')
     expect(transmitButton).not.toBeDisabled()
+  })
+
+  it('renders as a ZealotryActionModal label wrapper with the pirate radio labels', () => {
+    render(
+      <PirateRadioModal
+        onClose={vi.fn()}
+        onBroadcast={vi.fn()}
+        canBroadcast={true}
+        hasBroadcastedToday={false}
+        config={config}
+      />
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: 'PIRATE RADIO BROADCAST' })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/FAME GAIN:/)).toBeInTheDocument()
+    expect(screen.getByText(/HARMONY DRAIN:/)).toBeInTheDocument()
   })
 
   it('triggers onBroadcast when canBroadcast is true', async () => {

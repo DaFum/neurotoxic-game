@@ -55,7 +55,7 @@ export const DarkWebLeakModal = ({
         alreadyRanToday: t('ui:dark_web_leak.leaked_today', {
           defaultValue: 'Data leaked for today.'
         }),
-        cancel: t('ui:dark_web_leak.cancel', { defaultValue: 'CANCEL' }),
+        cancel: t('ui:action_cancel', { defaultValue: 'CANCEL' }),
         execute: t('ui:dark_web_leak.execute', { defaultValue: 'EXECUTE LEAK' })
       }}
     />
