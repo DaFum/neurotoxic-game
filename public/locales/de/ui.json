@@ -496,6 +496,7 @@
   "expedition.prep.noModulesInstalled": "Keine installierten Module",
   "expedition.prep.cargo": "Frachtliste",
   "expedition.prep.cargoHint": "Packe Ersatzteile für Notreparaturen und Proviant für Reise-Events ein.",
+  "expedition.prep.cargoOverCapacityText": "{{used}} von {{max}} Frachtslots belegt, Kapazität überschritten",
   "expedition.prep.cargoUsage": "Frachtslots: {{used}}/{{max}} (Versteckter Schmuggel: {{hiddenUsed}}/{{hiddenMax}})",
   "expedition.prep.spareParts": "Ersatzteile: {{value}}",
   "expedition.prep.supplies": "Proviant: {{value}}",

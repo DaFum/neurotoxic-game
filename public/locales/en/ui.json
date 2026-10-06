@@ -496,6 +496,7 @@
   "expedition.prep.noModulesInstalled": "None installed",
   "expedition.prep.cargo": "Cargo Manifest",
   "expedition.prep.cargoHint": "Pack spare parts for field repairs and supplies for journey events.",
+  "expedition.prep.cargoOverCapacityText": "{{used}} of {{max}} cargo slots used, over capacity",
   "expedition.prep.cargoUsage": "Cargo Slots: {{used}}/{{max}} (Hidden Contraband: {{hiddenUsed}}/{{hiddenMax}})",
   "expedition.prep.spareParts": "Spare Parts: {{value}}",
   "expedition.prep.supplies": "Supplies: {{value}}",
