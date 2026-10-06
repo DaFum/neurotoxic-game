@@ -23,12 +23,15 @@ export type CrowdTextures = {
 export class CrowdTextureManager {
   /** The current bundle of managed crowd textures. */
   textures: CrowdTextures
+  /** Indicates whether this manager has been disposed. */
+  isDisposed: boolean
 
   /**
    * Initializes a new crowd texture manager with empty texture states.
    */
   constructor() {
     this.textures = { idle: null, mosh: null }
+    this.isDisposed = false
   }
 
   /**
@@ -36,7 +39,8 @@ export class CrowdTextureManager {
    *
    * @remarks
    * Failures during the loading process are caught and sent to the error handler silently,
-   * leaving the target textures as null.
+   * leaving the target textures as null. If the manager is disposed while assets are loading,
+   * the newly loaded textures are immediately destroyed to guarantee leak-free cleanup.
    *
    * @returns A promise that resolves when texture loading is complete.
    */
@@ -53,6 +57,16 @@ export class CrowdTextureManager {
           handleError(error, { fallbackMessage, silent: true })
         }
       )
+
+      if (this.isDisposed) {
+        if (loadedTextures.idle && typeof loadedTextures.idle.destroy === 'function') {
+          loadedTextures.idle.destroy(true)
+        }
+        if (loadedTextures.mosh && typeof loadedTextures.mosh.destroy === 'function') {
+          loadedTextures.mosh.destroy(true)
+        }
+        return
+      }
 
       if (loadedTextures.idle) this.textures.idle = loadedTextures.idle
       if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh
@@ -84,6 +98,7 @@ export class CrowdTextureManager {
    * it is only destroyed once.
    */
   dispose(): void {
+    this.isDisposed = true
     const uniqueTextures = new Set<Texture>()
 
     if (this.textures.idle) {
