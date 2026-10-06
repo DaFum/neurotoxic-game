@@ -53,8 +53,8 @@ export const TourPrep = () => {
 
         <ActionButton
           onClick={handleAbort}
-          variant='secondary'
-          className='px-8 py-4 border-2 border-steel-gray text-ash-gray self-start'
+          variant='custom'
+          className='px-8 py-4 border-2 border-steel-gray text-ash-gray self-start focus-visible:ring-4 focus-visible:ring-toxic-green-20'
         >
           {t('ui:expedition.prep.abort')}
         </ActionButton>

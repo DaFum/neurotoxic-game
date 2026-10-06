@@ -66,3 +66,22 @@ test('ActionButton keeps a mobile-friendly touch target', () => {
   expect(button).toHaveClass('min-h-11')
   expect(button).toHaveClass('touch-manipulation')
 })
+
+test('ActionButton secondary variant is visibly bordered and keeps the default focus ring', () => {
+  render(<ActionButton variant='secondary'>Back</ActionButton>)
+
+  const button = screen.getByRole('button', { name: 'Back' })
+  expect(button).toHaveClass('border-2')
+  expect(button).toHaveClass('border-steel-gray')
+  expect(button).toHaveClass('focus-visible:ring-4')
+  expect(button).not.toHaveClass('bg-toxic-green')
+  expect(button).not.toHaveClass('px-8')
+})
+
+test('ActionButton danger variant uses the blood-red frame', () => {
+  render(<ActionButton variant='danger'>Accept failure</ActionButton>)
+
+  const button = screen.getByRole('button', { name: 'Accept failure' })
+  expect(button).toHaveClass('border-blood-red')
+  expect(button).not.toHaveClass('bg-toxic-green')
+})
