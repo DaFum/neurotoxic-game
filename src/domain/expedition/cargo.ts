@@ -23,12 +23,6 @@ import { isFiniteNumber, isNonNegativeInteger } from '../../utils/finiteNumber'
 import { getExpeditionChassisProfile } from './chassis'
 import { aggregateExpeditionModuleProfiles } from './modules'
 
-export type {
-  ExpeditionCargoCapacity,
-  ExpeditionCargoState,
-  ExpeditionCargoView
-}
-
 /**
  * Baseline visible cargo capacity for any Expedition run before chassis or module bonuses.
  */

@@ -10,7 +10,7 @@ type TabIcon = ComponentType<{
 /**
  * Asset section tab metadata rendered by the assets navigation.
  */
-export interface AssetSectionTab {
+interface AssetSectionTab {
   key: AssetKind
   shortLabel: 'tourbus' | 'studio' | 'bandhaus' | 'workshop'
   Icon: TabIcon

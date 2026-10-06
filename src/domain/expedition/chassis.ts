@@ -14,8 +14,6 @@ import type {
   ExpeditionChassisProfile
 } from '../../types/expedition'
 
-export type { ExpeditionChassisArchetype, ExpeditionChassisProfile }
-
 /**
  * Baseline profiles for each of the four chassis archetypes.
  */
@@ -67,7 +65,7 @@ export const EXPEDITION_CHASSIS_PROFILES: Readonly<
 /**
  * Shape of an asset or partial asset descriptor specifying chassis flavor and tier.
  */
-export interface ChassisDescriptor {
+interface ChassisDescriptor {
   chassisFlavor?: unknown
   chassisTier?: unknown
   kind?: unknown

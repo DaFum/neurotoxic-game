@@ -11,7 +11,7 @@ import {
 } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
-export type CareerDispatchActions = Pick<
+type CareerDispatchActions = Pick<
   GameDispatchActions,
   | 'settleExpeditionCrewCareer'
   | 'settleExpeditionCareerResult'

@@ -22,7 +22,7 @@ import type { BandState, MapNode, PlayerState, Venue } from '../types'
 /**
  * Map-node shape accepted by shared arrival processing.
  */
-export type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
+type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string
   venue?: unknown
 }
@@ -30,7 +30,7 @@ export type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
 /**
  * Arrival node narrowed to venue-bearing gig node types.
  */
-export type GigArrivalNode<T = ArrivalNode> = T & {
+type GigArrivalNode<T = ArrivalNode> = T & {
   type: 'GIG' | 'FESTIVAL' | 'FINALE'
 }
 
@@ -53,7 +53,7 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
 /**
  * Result returned by arrival processing for the caller to route scene changes.
  */
-export type ArrivalResult = {
+type ArrivalResult = {
   /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
   scene: import('../types/game').GamePhase
   /** True when startGig was called successfully. Hook must not call changeScene when true. */

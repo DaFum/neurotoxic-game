@@ -22,7 +22,6 @@ import type {
 } from './mapGenerator/types'
 
 export { getCityKeyFromVenueId, deriveCityTraits }
-export type { GeneratedMapNode, MapGeneratorState, VenuePools }
 
 let cachedHomeVenue: Venue | null = null
 let cachedFinaleVenue: Venue | null = null

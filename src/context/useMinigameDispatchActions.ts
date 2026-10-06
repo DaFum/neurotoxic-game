@@ -16,7 +16,7 @@ import type { GameDispatchActions } from './useGameDispatchActions'
 /**
  * Minigame start/complete dispatch wrappers, sliced from {@link GameDispatchActions}.
  */
-export type MinigameDispatchActions = Pick<
+type MinigameDispatchActions = Pick<
   GameDispatchActions,
   | 'startTravelMinigame'
   | 'completeTravelMinigame'

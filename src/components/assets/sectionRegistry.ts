@@ -12,7 +12,7 @@ import { MerchWorkshopSection } from './sections/MerchWorkshopSection'
  * floorplan, dollhouse, production line). `accent` is the CSS-variable
  * expression bound to `--section-accent` while this section is active.
  */
-export interface SectionView {
+interface SectionView {
   Component: ComponentType
   accent: string
 }
