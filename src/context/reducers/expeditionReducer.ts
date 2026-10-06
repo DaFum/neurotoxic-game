@@ -2522,7 +2522,6 @@ export const handleOfferExpeditionDraft = (
         const isMajorClass =
           currentNode &&
           (currentNode.nodeClass === 'MAJOR_GIG' ||
-            currentNode.type === 'MAJOR_GIG' ||
             currentNode.type === 'FESTIVAL')
         return (
           state.lastGigStats !== null &&

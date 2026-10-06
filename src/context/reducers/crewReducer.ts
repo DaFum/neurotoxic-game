@@ -148,9 +148,7 @@ const validActor = (
 ): boolean =>
   actor.kind === 'crew'
     ? Object.hasOwn(EXPEDITION_CREW_BY_ID, actor.id)
-    : state.band.members.some(
-        (member: { id: string }) => member.id === actor.id
-      )
+    : state.band.members.some(member => member.id === actor.id)
 
 /**
  * Records a relationship outcome between two expedition actors (crew or band).
@@ -296,9 +294,7 @@ export const handleAdvanceExpeditionBandInjury = (
   const outcome = getCrewEventOutcomeBySourceId(payload.sourceId)
   const replayId = `${payload.sourceId}:band-injury:${payload.targetId}`
   if (
-    !state.band.members.some(
-      (member: { id: string }) => member.id === payload.targetId
-    ) ||
+    !state.band.members.some(member => member.id === payload.targetId) ||
     !acceptsSource(state, payload.sourceId, payload.expectedRouteStep) ||
     outcome?.bandInjuryId !== payload.targetId ||
     !hasResolvedEventProof(state, payload.sourceId) ||

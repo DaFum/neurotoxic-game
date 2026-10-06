@@ -45,7 +45,7 @@ export const getExpeditionPerformanceProfile = (
   let timingWindowMultiplier = 1
   let missPenaltyMultiplier = 1
   for (const member of state.band.members) {
-    if (!member) continue
+    if (!member || typeof member.id !== 'string') continue
     const stage = state.expedition.bandInjuryByMemberId?.[member.id] ?? 'none'
     const injury = EXPEDITION_INJURY_PERFORMANCE_PROFILES[stage]
     staminaDrainMultiplier = Math.max(
@@ -90,6 +90,7 @@ export const getCriticallyInjuredBandMemberId = (
   for (const member of state.band.members) {
     if (
       member &&
+      typeof member.id === 'string' &&
       state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
     )
       return member.id
@@ -107,7 +108,7 @@ export const getExpeditionInjuryActiveEffects = (
   let worst: ExpeditionInjuryPerformanceProfile =
     EXPEDITION_INJURY_PERFORMANCE_PROFILES.none
   for (const member of state.band.members) {
-    if (!member) continue
+    if (!member || typeof member.id !== 'string') continue
     const stage = state.expedition.bandInjuryByMemberId?.[member.id] ?? 'none'
     const profile = EXPEDITION_INJURY_PERFORMANCE_PROFILES[stage]
     if (profile.staminaDrainMultiplier > worst.staminaDrainMultiplier) {

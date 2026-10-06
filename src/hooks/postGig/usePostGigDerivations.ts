@@ -18,7 +18,7 @@ import type {
   PlayerState,
   BandState,
   SocialState,
-  GigStats,
+  PostGigSummary,
   CityTraitState
 } from '../../types'
 
@@ -30,7 +30,7 @@ interface UsePostGigDerivationsProps {
   band: BandState
   assets: GameState['assets']
   social: SocialState
-  lastGigStats: GigStats | null
+  lastGigStats: PostGigSummary | null
   reputationByRegion: GameState['reputationByRegion']
   activeStoryFlags: string[]
   activeQuests: GameState['activeQuests']
@@ -101,7 +101,7 @@ export const usePostGigDerivations = ({
 
   const financialSnapshotRef = useRef<{
     currentGig: Venue | null
-    lastGigStats: GigStats | null
+    lastGigStats: PostGigSummary | null
     financials: ReturnType<typeof deriveFinancials>
   } | null>(null)
 

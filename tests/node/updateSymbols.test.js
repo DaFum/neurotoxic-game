@@ -370,23 +370,37 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   )
   assert.match(questCooldown.jsDoc.summary, /repeatPolicy/)
 
-  // Ambient `.d.ts` types used only as field/payload types in another
-  // declaration file (via `export *` re-export, not an import) must record a
-  // cross-file `referencedBy` edge so they are not mistaken for orphans.
+  // A type imported with `import type` is an ordinary `usedBy` edge.
   assert.ok(
-    questCooldown.referencedBy?.some(
+    questCooldown.usedBy?.some(
+      usage =>
+        usage.path === 'src/types/game.d.ts' &&
+        usage.importedAs === 'QuestCooldown' &&
+        usage.typeOnly === true
+    ),
+    'QuestCooldown should be usedBy game.d.ts through its type import'
+  )
+
+  // `.d.ts` types used only through an inline `import('./x').T` type query in
+  // another declaration file have no import binding, so they must record a
+  // cross-file `referencedBy` edge or they would be mistaken for orphans.
+  const careerState = ks.CareerState.find(
+    entry => entry.path === 'src/types/career.d.ts'
+  )
+  assert.ok(
+    careerState?.referencedBy?.some(
       ref => ref.path === 'src/types/game.d.ts' && ref.symbol === 'GameState'
     ),
-    'QuestCooldown should be referencedBy GameState in game.d.ts'
+    'CareerState should be referencedBy GameState in game.d.ts'
   )
-  const travelPayload = ks.CompleteTravelMinigamePayload.find(
+  const injuryPayload = ks.ExpeditionInjurySourcePayload.find(
     entry => entry.path === 'src/types/actions.d.ts'
   )
   assert.ok(
-    travelPayload?.referencedBy?.some(
+    injuryPayload?.referencedBy?.some(
       ref => ref.path === 'src/types/game.d.ts' && ref.symbol === 'GameAction'
     ),
-    'CompleteTravelMinigamePayload should be referencedBy GameAction'
+    'ExpeditionInjurySourcePayload should be referencedBy GameAction'
   )
 
   const bandHq = ks.BandHQ.find(entry => entry.path === 'src/ui/BandHQ.tsx')

@@ -1,4 +1,8 @@
 import type { EventDelta } from './events'
+import type { RawGameSettings, ToastPayload, UnknownRecord } from './game'
+import type { PlayerState } from './player'
+import type { BandState } from './band'
+import type { RivalBandState } from './social'
 import type { ExpeditionRepairIntent, HiddenDefectTrigger } from './expedition'
 
 /**

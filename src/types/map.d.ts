@@ -1,5 +1,6 @@
 import type { PurchaseItem } from './components'
 import type { MapNodeType } from '../utils/mapNodeTypes'
+import type { CityTraitState, GamePhase } from './game'
 
 /**
  * Visibility state for overworld map nodes.

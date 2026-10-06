@@ -4,8 +4,35 @@ import type { GAME_PHASES } from '../context/gameConstants'
 import type { UpdateSocialPayload } from './social'
 import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
-import type { ActiveQuestState } from './quest'
-import type { PopPendingEventPayload } from './actions'
+import type {
+  ActiveQuestState,
+  QuestCooldown,
+  QuestScopeCompletion,
+  QuestState
+} from './quest'
+import type {
+  BloodBankDonatePayload,
+  ClinicActionPayload,
+  CompleteTravelMinigamePayload,
+  CultIndoctrinationPayload,
+  DarkWebLeakPayload,
+  EventDeltaPayload,
+  MerchPressPayload,
+  MoveRivalBandPayload,
+  PirateBroadcastPayload,
+  PopPendingEventPayload,
+  ResetStatePayload,
+  SpawnRivalBandPayload,
+  TradeVoidItemPayload,
+  UpdateBandPayload,
+  UpdatePlayerPayload
+} from './actions'
+import type { PlayerState } from './player'
+import type { BandState } from './band'
+import type { RivalBandState, SocialState } from './social'
+import type { GameMap, Venue } from './map'
+import type { GigModifiers, PostGigSummary } from './gig'
+import type { GameEvent } from './events'
 
 /**
  * Relationship delta between two band members.
@@ -100,7 +127,10 @@ export interface ToastPayload {
   message?: unknown
   messageKey?: string
   options?: Record<string, unknown>
-  [key: string]: unknown
+  /** Display duration in ms; kept by `sanitizeLoadedToast` when finite and non-negative. */
+  timeout?: number
+  /** Creation timestamp; kept by `sanitizeLoadedToast` when finite. */
+  createdAt?: number
 }
 
 /**
@@ -178,15 +208,16 @@ export type RawLoadedGame = UnknownRecord
  *
  * @remarks
  * When `TPayload` is `undefined`, the action has no `payload` key. Otherwise
- * the payload key is required and carries the supplied shape.
+ * the payload key is required and carries the supplied shape. The check is
+ * non-distributive, so a union payload stays one action whose payload is the
+ * union rather than splitting into one action per member.
  *
  * @typeParam TType - Concrete action type discriminant.
  * @typeParam TPayload - Payload shape for actions that carry data.
  */
-export type Action<
-  TType extends ActionType,
-  TPayload = undefined
-> = TPayload extends undefined
+export type Action<TType extends ActionType, TPayload = undefined> = [
+  TPayload
+] extends [undefined]
   ? { type: TType }
   : { type: TType; payload: TPayload }
 
@@ -194,324 +225,351 @@ export type Action<
  * Complete set of reducer actions accepted by the game-state reducer.
  */
 export type GameAction =
-  | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
-  | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
-  | Action<ActionTypes['TOGGLE_NEURO_DECIMATOR'], { isActive: boolean }>
-  | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
-  | Action<ActionTypes['UPDATE_SOCIAL'], UpdateSocialPayload>
-  | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
-  | Action<ActionTypes['SET_MAP'], GameMap | null>
-  | Action<ActionTypes['SET_GIG'], Venue | null>
-  | Action<ActionTypes['START_GIG'], Venue>
-  | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
-  | Action<ActionTypes['SET_LAST_GIG_STATS'], PostGigSummary | null>
-  | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
-  | Action<ActionTypes['SET_SCREENSHOT_MODE'], boolean>
-  | Action<ActionTypes['ADD_TOAST'], ToastPayload>
-  | Action<ActionTypes['REMOVE_TOAST'], string>
+  | Action<(typeof ActionTypes)['CHANGE_SCENE'], GamePhase>
+  | Action<(typeof ActionTypes)['UPDATE_PLAYER'], UpdatePlayerPayload>
   | Action<
-      ActionTypes['SET_GIG_MODIFIERS'],
+      (typeof ActionTypes)['TOGGLE_NEURO_DECIMATOR'],
+      { isActive: boolean }
+    >
+  | Action<(typeof ActionTypes)['UPDATE_BAND'], UpdateBandPayload>
+  | Action<(typeof ActionTypes)['SETTLE_SOLD_MERCH'], Record<string, number>>
+  | Action<(typeof ActionTypes)['UPDATE_SOCIAL'], UpdateSocialPayload>
+  | Action<(typeof ActionTypes)['UPDATE_SETTINGS'], UnknownRecord>
+  | Action<(typeof ActionTypes)['SET_MAP'], GameMap | null>
+  | Action<(typeof ActionTypes)['SET_GIG'], Venue | null>
+  | Action<(typeof ActionTypes)['START_GIG'], Venue>
+  | Action<(typeof ActionTypes)['SET_SETLIST'], RhythmSetlistEntry[]>
+  | Action<(typeof ActionTypes)['SET_LAST_GIG_STATS'], PostGigSummary | null>
+  | Action<(typeof ActionTypes)['SET_ACTIVE_EVENT'], GameEvent | null>
+  | Action<(typeof ActionTypes)['SET_SCREENSHOT_MODE'], boolean>
+  | Action<(typeof ActionTypes)['ADD_TOAST'], ToastPayload>
+  | Action<(typeof ActionTypes)['REMOVE_TOAST'], string>
+  | Action<
+      (typeof ActionTypes)['SET_GIG_MODIFIERS'],
       Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
     >
-  | Action<ActionTypes['LOAD_GAME'], RawLoadedGame>
-  | Action<ActionTypes['RESET_STATE'], ResetStatePayload>
-  | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
-  | Action<ActionTypes['POP_PENDING_EVENT'], PopPendingEventPayload>
-  | Action<ActionTypes['CONSUME_ITEM'], string>
+  | Action<(typeof ActionTypes)['LOAD_GAME'], RawLoadedGame>
+  | Action<(typeof ActionTypes)['RESET_STATE'], ResetStatePayload>
+  | Action<(typeof ActionTypes)['APPLY_EVENT_DELTA'], EventDeltaPayload>
+  | Action<(typeof ActionTypes)['POP_PENDING_EVENT']>
+  | Action<(typeof ActionTypes)['POP_PENDING_EVENT'], PopPendingEventPayload>
+  | Action<(typeof ActionTypes)['CONSUME_ITEM'], string>
   | Action<
-      ActionTypes['ADVANCE_DAY'],
+      (typeof ActionTypes)['ADVANCE_DAY'],
       { dayRngStream: number[]; nextRngSeed: number }
     >
-  | Action<ActionTypes['ADD_COOLDOWN'], string>
-  | Action<ActionTypes['START_TRAVEL_MINIGAME'], { targetNodeId: string }>
+  | Action<(typeof ActionTypes)['ADD_COOLDOWN'], string>
   | Action<
-      ActionTypes['COMPLETE_TRAVEL_MINIGAME'],
+      (typeof ActionTypes)['START_TRAVEL_MINIGAME'],
+      { targetNodeId: string }
+    >
+  | Action<
+      (typeof ActionTypes)['COMPLETE_TRAVEL_MINIGAME'],
       CompleteTravelMinigamePayload
     >
-  | Action<ActionTypes['START_ROADIE_MINIGAME'], { gigId: string }>
+  | Action<(typeof ActionTypes)['START_ROADIE_MINIGAME'], { gigId: string }>
   | Action<
-      ActionTypes['COMPLETE_ROADIE_MINIGAME'],
+      (typeof ActionTypes)['COMPLETE_ROADIE_MINIGAME'],
       {
         equipmentDamage: number
         contrabandDelivered?: number
         deliveredStashItemId?: string
       }
     >
-  | Action<ActionTypes['START_KABELSALAT_MINIGAME'], { gigId: string }>
-  | Action<ActionTypes['COMPLETE_KABELSALAT_MINIGAME'], { results: unknown }>
-  | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
+  | Action<(typeof ActionTypes)['START_KABELSALAT_MINIGAME'], { gigId: string }>
   | Action<
-      ActionTypes['COMPLETE_AMP_CALIBRATION'],
+      (typeof ActionTypes)['COMPLETE_KABELSALAT_MINIGAME'],
+      { results: unknown }
+    >
+  | Action<(typeof ActionTypes)['START_AMP_CALIBRATION'], { gigId: string }>
+  | Action<
+      (typeof ActionTypes)['COMPLETE_AMP_CALIBRATION'],
       {
         score: number
         voidResonance: number
         purgesUsed: number
         hijacksOverridden: number
+        feedbackLoopsDampened?: number
       }
     >
-  | Action<ActionTypes['SPAWN_RIVAL_BAND'], SpawnRivalBandPayload>
-  | Action<ActionTypes['MOVE_RIVAL_BAND'], MoveRivalBandPayload>
-  | Action<ActionTypes['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>
-  | Action<ActionTypes['CHECK_RIVAL_ENCOUNTER']>
-  | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
+  | Action<(typeof ActionTypes)['SPAWN_RIVAL_BAND'], SpawnRivalBandPayload>
+  | Action<(typeof ActionTypes)['MOVE_RIVAL_BAND'], MoveRivalBandPayload>
+  | Action<(typeof ActionTypes)['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>
+  | Action<(typeof ActionTypes)['CHECK_RIVAL_ENCOUNTER']>
   | Action<
-      ActionTypes['UNBLACKLIST_VENUE'],
+      (typeof ActionTypes)['UNLOCK_TRAIT'],
+      { memberId: string; traitId: string }
+    >
+  | Action<
+      (typeof ActionTypes)['UNBLACKLIST_VENUE'],
       { venueId: string; toastId: string }
     >
   | Action<
-      ActionTypes['CRAFT_ITEM'],
+      (typeof ActionTypes)['CRAFT_ITEM'],
       { recipeId: string; instanceId: string; toastId: string }
     >
-  | Action<ActionTypes['ADD_QUEST'], QuestState>
+  | Action<(typeof ActionTypes)['ADD_QUEST'], QuestState>
   | Action<
-      ActionTypes['ADVANCE_QUEST'],
+      (typeof ActionTypes)['ADVANCE_QUEST'],
       { questId: string; amount: number; randomIdx?: number }
     >
   | Action<
-      ActionTypes['APPLY_QUEST_EVENT'],
+      (typeof ActionTypes)['APPLY_QUEST_EVENT'],
       import('../utils/questProgress').QuestProgressEvent
     >
-  | Action<ActionTypes['ADD_UNLOCK'], string>
+  | Action<(typeof ActionTypes)['ADD_UNLOCK'], string>
   | Action<
-      ActionTypes['USE_CONTRABAND'],
+      (typeof ActionTypes)['USE_CONTRABAND'],
       { instanceId: string; contrabandId: string; memberId?: string }
     >
-  | Action<ActionTypes['CLINIC_HEAL'], ClinicActionPayload>
-  | Action<ActionTypes['CLINIC_ENHANCE'], ClinicActionPayload>
-  | Action<ActionTypes['GRAFT_NEURO_OVERCLOCK'], { memberId: string }>
-  | Action<ActionTypes['PIRATE_BROADCAST'], PirateBroadcastPayload>
-  | Action<ActionTypes['MERCH_PRESS'], MerchPressPayload>
-  | Action<ActionTypes['TRADE_VOID_ITEM'], TradeVoidItemPayload>
-  | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
-  | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>
-  | Action<ActionTypes['CULT_INDOCTRINATION'], CultIndoctrinationPayload>
-  | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
+  | Action<(typeof ActionTypes)['CLINIC_HEAL'], ClinicActionPayload>
+  | Action<(typeof ActionTypes)['CLINIC_ENHANCE'], ClinicActionPayload>
+  | Action<(typeof ActionTypes)['GRAFT_NEURO_OVERCLOCK'], { memberId: string }>
+  | Action<(typeof ActionTypes)['PIRATE_BROADCAST'], PirateBroadcastPayload>
+  | Action<(typeof ActionTypes)['MERCH_PRESS'], MerchPressPayload>
+  | Action<(typeof ActionTypes)['TRADE_VOID_ITEM'], TradeVoidItemPayload>
+  | Action<(typeof ActionTypes)['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
+  | Action<(typeof ActionTypes)['DARK_WEB_LEAK'], DarkWebLeakPayload>
   | Action<
-      ActionTypes['SET_PENDING_SUPPLY_STOP_INVENTORY'],
+      (typeof ActionTypes)['CULT_INDOCTRINATION'],
+      CultIndoctrinationPayload
+    >
+  | Action<(typeof ActionTypes)['SET_PENDING_BANDHQ_OPEN'], boolean>
+  | Action<
+      (typeof ActionTypes)['SET_PENDING_SUPPLY_STOP_INVENTORY'],
       PurchaseItem[] | null
     >
-  | Action<ActionTypes['DISMISS_FORECLOSURE_NOTICE'], { kind: AssetKind }>
-  | Action<ActionTypes['SET_PENDING_RISK_EVENT'], RiskEventDescriptor | null>
+  | Action<
+      (typeof ActionTypes)['DISMISS_FORECLOSURE_NOTICE'],
+      { kind: AssetKind }
+    >
+  | Action<
+      (typeof ActionTypes)['SET_PENDING_RISK_EVENT'],
+      RiskEventDescriptor | null
+    >
   // Long-term assets (Plan 1)
   | Action<
-      ActionTypes['PURCHASE_CHASSIS'],
+      (typeof ActionTypes)['PURCHASE_CHASSIS'],
       import('./assets').PurchaseChassisPayload
     >
   | Action<
-      ActionTypes['PURCHASE_CHASSIS_FAILED'],
+      (typeof ActionTypes)['PURCHASE_CHASSIS_FAILED'],
       { reason: import('./assets').PurchaseFailureReason }
     >
   | Action<
-      ActionTypes['UPGRADE_CHASSIS_TIER'],
+      (typeof ActionTypes)['UPGRADE_CHASSIS_TIER'],
       import('./assets').UpgradeChassisTierPayload
     >
   | Action<
-      ActionTypes['UPGRADE_CHASSIS_TIER_FAILED'],
+      (typeof ActionTypes)['UPGRADE_CHASSIS_TIER_FAILED'],
       { reason: import('./assets').UpgradeFailureReason }
     >
-  | Action<ActionTypes['SELL_CHASSIS'], { assetId: string }>
+  | Action<(typeof ActionTypes)['SELL_CHASSIS'], { assetId: string }>
   | Action<
-      ActionTypes['SELL_CHASSIS_FAILED'],
+      (typeof ActionTypes)['SELL_CHASSIS_FAILED'],
       { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
     >
-  | Action<ActionTypes['REPAIR_CHASSIS'], { assetId: string }>
+  | Action<(typeof ActionTypes)['REPAIR_CHASSIS'], { assetId: string }>
   | Action<
-      ActionTypes['REPAIR_CHASSIS_FAILED'],
+      (typeof ActionTypes)['REPAIR_CHASSIS_FAILED'],
       { reason: import('./assets').RepairFailureReason }
     >
   | Action<
-      ActionTypes['REFINANCE_LIABILITY'],
+      (typeof ActionTypes)['REFINANCE_LIABILITY'],
       import('./assets').RefinanceLiabilityPayload
     >
   | Action<
-      ActionTypes['REFINANCE_LIABILITY_FAILED'],
+      (typeof ActionTypes)['REFINANCE_LIABILITY_FAILED'],
       { reason: import('./assets').RefinanceFailureReason }
     >
   | Action<
-      ActionTypes['INSTALL_MODULE'],
+      (typeof ActionTypes)['INSTALL_MODULE'],
       import('./assets').InstallModulePayload
     >
   | Action<
-      ActionTypes['INSTALL_MODULE_FAILED'],
+      (typeof ActionTypes)['INSTALL_MODULE_FAILED'],
       { reason: import('./assets').InstallModuleFailureReason }
     >
-  | Action<ActionTypes['REMOVE_MODULE'], { assetId: string; slotId: string }>
   | Action<
-      ActionTypes['START_CROWDFUND'],
+      (typeof ActionTypes)['REMOVE_MODULE'],
+      { assetId: string; slotId: string }
+    >
+  | Action<
+      (typeof ActionTypes)['START_CROWDFUND'],
       { campaign: import('./assets').CrowdfundCampaign }
     >
   | Action<
-      ActionTypes['START_CROWDFUND_FAILED'],
+      (typeof ActionTypes)['START_CROWDFUND_FAILED'],
       { reason: import('./assets').StartCrowdfundFailureReason }
     >
-  | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
+  | Action<(typeof ActionTypes)['ASSET_FORECLOSED'], { assetId: string }>
   // Roguelite Expedition (G1)
   | Action<
-      ActionTypes['PREPARE_EXPEDITION_RUN'],
+      (typeof ActionTypes)['PREPARE_EXPEDITION_RUN'],
       import('./actions').PrepareExpeditionRunPayload
     >
   | Action<
-      ActionTypes['PREPARE_EXPEDITION_SPONSOR_OFFERS'],
+      (typeof ActionTypes)['PREPARE_EXPEDITION_SPONSOR_OFFERS'],
       import('./actions').PrepareExpeditionSponsorOffersPayload
     >
   | Action<
-      ActionTypes['START_EXPEDITION'],
+      (typeof ActionTypes)['START_EXPEDITION'],
       import('./actions').StartExpeditionPayload
     >
   | Action<
-      ActionTypes['ADVANCE_EXPEDITION_ROUTE'],
+      (typeof ActionTypes)['ADVANCE_EXPEDITION_ROUTE'],
       import('./actions').AdvanceExpeditionRoutePayload
     >
   | Action<
-      ActionTypes['REVEAL_EXPEDITION_NODE_INTEL'],
+      (typeof ActionTypes)['REVEAL_EXPEDITION_NODE_INTEL'],
       import('./actions').RevealExpeditionNodeIntelPayload
     >
   | Action<
-      ActionTypes['ADD_EXPEDITION_REWARD'],
+      (typeof ActionTypes)['ADD_EXPEDITION_REWARD'],
       import('./actions').AddExpeditionRewardPayload
     >
   | Action<
-      ActionTypes['EXTRACT_EXPEDITION'],
+      (typeof ActionTypes)['EXTRACT_EXPEDITION'],
       import('./actions').ExtractExpeditionPayload
     >
   | Action<
-      ActionTypes['COMPLETE_EXPEDITION'],
+      (typeof ActionTypes)['COMPLETE_EXPEDITION'],
       import('./actions').CompleteExpeditionPayload
     >
   | Action<
-      ActionTypes['ACCEPT_EXPEDITION_FAILURE'],
+      (typeof ActionTypes)['ACCEPT_EXPEDITION_FAILURE'],
       import('./actions').AcceptExpeditionFailurePayload
     >
   | Action<
-      ActionTypes['PREPARE_NEXT_EXPEDITION'],
+      (typeof ActionTypes)['PREPARE_NEXT_EXPEDITION'],
       import('./actions').PrepareNextExpeditionPayload
     >
   | Action<
-      ActionTypes['RESOLVE_EXPEDITION_CRISIS'],
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_CRISIS'],
       import('./actions').ResolveExpeditionCrisisPayload
     >
   | Action<
-      ActionTypes['EXECUTE_EXPEDITION_REPAIR'],
+      (typeof ActionTypes)['EXECUTE_EXPEDITION_REPAIR'],
       import('./actions').ExecuteExpeditionRepairPayload
     >
   | Action<
-      ActionTypes['REVEAL_EXPEDITION_DEFECT'],
+      (typeof ActionTypes)['REVEAL_EXPEDITION_DEFECT'],
       import('./actions').RevealExpeditionDefectPayload
     >
   | Action<
-      ActionTypes['TRIGGER_EXPEDITION_DEFECT'],
+      (typeof ActionTypes)['TRIGGER_EXPEDITION_DEFECT'],
       import('./actions').TriggerExpeditionDefectPayload
     >
   | Action<
-      ActionTypes['RESOLVE_EXPEDITION_DEFECT'],
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_DEFECT'],
       import('./actions').ResolveExpeditionDefectPayload
     >
   | Action<
-      ActionTypes['EXECUTE_EXPEDITION_INSPECTION'],
+      (typeof ActionTypes)['EXECUTE_EXPEDITION_INSPECTION'],
       import('./actions').ExecuteExpeditionInspectionPayload
     >
   | Action<
-      ActionTypes['CLAIM_EXPEDITION_INSURANCE'],
+      (typeof ActionTypes)['CLAIM_EXPEDITION_INSURANCE'],
       import('./actions').ClaimExpeditionInsurancePayload
     >
   | Action<
-      ActionTypes['ACCEPT_EXPEDITION_TECHNICAL_FAILURE'],
+      (typeof ActionTypes)['ACCEPT_EXPEDITION_TECHNICAL_FAILURE'],
       import('./actions').AcceptExpeditionTechnicalFailurePayload
     >
   | Action<
-      ActionTypes['APPLY_EXPEDITION_EVENT_DELTA'],
+      (typeof ActionTypes)['APPLY_EXPEDITION_EVENT_DELTA'],
       import('./actions').ApplyExpeditionEventDeltaPayload
     >
   | Action<
-      ActionTypes['RECORD_EXPEDITION_CREW_STRESS_SOURCE'],
+      (typeof ActionTypes)['RECORD_EXPEDITION_CREW_STRESS_SOURCE'],
       import('./expedition').ExpeditionCrewStressIntent
     >
   | Action<
-      ActionTypes['RECORD_EXPEDITION_RELATIONSHIP_OUTCOME'],
+      (typeof ActionTypes)['RECORD_EXPEDITION_RELATIONSHIP_OUTCOME'],
       import('./expedition').ExpeditionRelationshipOutcomeIntent
     >
   | Action<
-      ActionTypes['ADVANCE_EXPEDITION_CREW_INJURY'],
+      (typeof ActionTypes)['ADVANCE_EXPEDITION_CREW_INJURY'],
       import('./actions').ExpeditionInjurySourcePayload
     >
   | Action<
-      ActionTypes['ADVANCE_EXPEDITION_BAND_INJURY'],
+      (typeof ActionTypes)['ADVANCE_EXPEDITION_BAND_INJURY'],
       import('./actions').ExpeditionInjurySourcePayload
     >
   | Action<
-      ActionTypes['SETTLE_EXPEDITION_CREW_CAREER'],
+      (typeof ActionTypes)['SETTLE_EXPEDITION_CREW_CAREER'],
       import('./actions').SettleExpeditionCrewCareerPayload
     >
   | Action<
-      ActionTypes['SETTLE_EXPEDITION_CAREER_RESULT'],
+      (typeof ActionTypes)['SETTLE_EXPEDITION_CAREER_RESULT'],
       import('./actions').SettleExpeditionCareerResultPayload
     >
   | Action<
-      ActionTypes['PURCHASE_EXPEDITION_HQ_FACILITY'],
+      (typeof ActionTypes)['PURCHASE_EXPEDITION_HQ_FACILITY'],
       import('./actions').PurchaseExpeditionHqFacilityPayload
     >
   | Action<
-      ActionTypes['BEGIN_EXPEDITION_UNLOCK_PURCHASE'],
+      (typeof ActionTypes)['BEGIN_EXPEDITION_UNLOCK_PURCHASE'],
       import('./actions').ExpeditionUnlockPurchasePayload
     >
   | Action<
-      ActionTypes['COMPLETE_EXPEDITION_UNLOCK_PURCHASE'],
+      (typeof ActionTypes)['COMPLETE_EXPEDITION_UNLOCK_PURCHASE'],
       import('./actions').ExpeditionUnlockPurchasePayload
     >
   | Action<
-      ActionTypes['ROLLBACK_EXPEDITION_UNLOCK_PURCHASE'],
+      (typeof ActionTypes)['ROLLBACK_EXPEDITION_UNLOCK_PURCHASE'],
       import('./actions').ExpeditionUnlockPurchasePayload
     >
   | Action<
-      ActionTypes['UNLOCK_EXPEDITION_ASCENSION'],
+      (typeof ActionTypes)['UNLOCK_EXPEDITION_ASCENSION'],
       import('./actions').UnlockExpeditionAscensionPayload
     >
   | Action<
-      ActionTypes['COMMIT_EXPEDITION_LEGENDARY_REWARD'],
+      (typeof ActionTypes)['COMMIT_EXPEDITION_LEGENDARY_REWARD'],
       import('./actions').CommitExpeditionLegendaryRewardPayload
     >
   | Action<
-      ActionTypes['RECORD_EXPEDITION_ARCHIVE_DISCOVERY'],
+      (typeof ActionTypes)['RECORD_EXPEDITION_ARCHIVE_DISCOVERY'],
       import('./actions').RecordExpeditionArchiveDiscoveryPayload
     >
   | Action<
-      ActionTypes['GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS'],
+      (typeof ActionTypes)['GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS'],
       import('./actions').GenerateExpeditionBetweenTourDecisionsPayload
     >
   | Action<
-      ActionTypes['RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION'],
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION'],
       import('./actions').ResolveExpeditionBetweenTourDecisionPayload
     >
   | Action<
-      ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
+      (typeof ActionTypes)['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >
   | Action<
-      ActionTypes['CREATE_CONTACT_INTEL_GRANT'],
+      (typeof ActionTypes)['CREATE_CONTACT_INTEL_GRANT'],
       import('./actions').CreateContactIntelGrantPayload
     >
   | Action<
-      ActionTypes['RECORD_EXPEDITION_OBLIGATION_SIGNAL'],
+      (typeof ActionTypes)['RECORD_EXPEDITION_OBLIGATION_SIGNAL'],
       import('./actions').RecordExpeditionObligationSignalPayload
     >
   | Action<
-      ActionTypes['DOUBLE_DOWN_EXPEDITION_OBLIGATION'],
+      (typeof ActionTypes)['DOUBLE_DOWN_EXPEDITION_OBLIGATION'],
       import('./actions').DoubleDownExpeditionObligationPayload
     >
   | Action<
-      ActionTypes['OFFER_EXPEDITION_DRAFT'],
+      (typeof ActionTypes)['OFFER_EXPEDITION_DRAFT'],
       import('./actions').OfferExpeditionDraftPayload
     >
   | Action<
-      ActionTypes['SELECT_EXPEDITION_DRAFT'],
+      (typeof ActionTypes)['SELECT_EXPEDITION_DRAFT'],
       import('./actions').SelectExpeditionDraftPayload
     >
   | Action<
-      ActionTypes['RESOLVE_EXPEDITION_SOCIAL_RESULT'],
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_SOCIAL_RESULT'],
       import('./actions').ResolveExpeditionSocialResultPayload
     >
   | Action<
-      ActionTypes['CREATE_SOCIAL_INTEL_GRANT'],
+      (typeof ActionTypes)['CREATE_SOCIAL_INTEL_GRANT'],
       import('./actions').CreateSocialIntelGrantPayload
     >
 

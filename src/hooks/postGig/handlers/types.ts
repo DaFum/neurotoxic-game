@@ -2,6 +2,7 @@ import type {
   GamePhase,
   GameState,
   UpdatePlayerPayload,
+  UpdateBandPayload,
   PostResult
 } from '../../../types'
 import type { BrandDeal } from '../../../types/social'
@@ -16,11 +17,7 @@ import type { PostGigPhase } from '../usePostGigState'
 export interface HandlerDispatchers {
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   updatePlayer: (updates: UpdatePlayerPayload) => void
-  updateBand: (
-    updates:
-      | Partial<GameState['band']>
-      | ((prev: GameState['band']) => GameState['band'])
-  ) => void
+  updateBand: (updates: UpdateBandPayload) => void
   updateSocial: (
     updates:
       | Partial<GameState['social']>

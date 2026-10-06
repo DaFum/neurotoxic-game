@@ -1,3 +1,5 @@
+import type { UnknownRecord } from './game'
+
 /**
  * Pre-gig modifier flags applied to gig setup and calculations.
  */

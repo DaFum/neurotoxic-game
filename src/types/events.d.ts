@@ -1,3 +1,5 @@
+import type { UnknownRecord } from './game'
+
 /**
  * Selectable option on a game event.
  */
