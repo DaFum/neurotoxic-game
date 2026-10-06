@@ -358,11 +358,40 @@ describe('KabelsalatScene - shared minigame exit controls', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'SKIP' }))
 
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteMinigame).toHaveBeenCalledWith({
       isPoweredOn: false,
-      timeLeft: 0
+      timeLeft: 0,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('keeps the void-surge purge count when skipping after a purge', async () => {
+    // The first completion clears `minigame.active`, so a second dispatch is
+    // ignored by the reducer: SKIP must complete once, with the purge count.
+    vi.useFakeTimers()
+    try {
+      await act(async () => {
+        render(<KabelsalatScene />)
+      })
+      await act(async () => {
+        vi.advanceTimersByTime(2000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: /purgeAnomaly/i }))
+
+      fireEvent.click(screen.getByRole('button', { name: 'SKIP' }))
+
+      expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+      expect(mockCompleteMinigame).toHaveBeenCalledWith({
+        isPoweredOn: false,
+        timeLeft: 0,
+        voidSurgesPurged: 1
+      })
+      expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('DEV Shift+P backdoor force-completes the run as powered and routes to GIG', async () => {

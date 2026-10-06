@@ -96,6 +96,29 @@ describe('gigReducer', () => {
       }
     })
 
+    it('rejects accessor-bearing venues without invoking their getters', () => {
+      let getterCalls = 0
+      const throwingGetter = () => {
+        getterCalls++
+        throw new Error('getter must not run')
+      }
+      const withIdGetter = { name: 'G' }
+      Object.defineProperty(withIdGetter, 'id', {
+        enumerable: true,
+        get: throwingGetter
+      })
+      const withNameGetter = { id: 'g' }
+      Object.defineProperty(withNameGetter, 'name', {
+        enumerable: true,
+        get: throwingGetter
+      })
+
+      for (const hostile of [withIdGetter, withNameGetter]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+      assert.strictEqual(getterCalls, 0)
+    })
+
     it('should initialize gig state and transition to PRE_GIG', () => {
       const payload = { id: 'gig2', name: 'Starting Gig' }
       const nextState = handleStartGig(baseState, payload)
