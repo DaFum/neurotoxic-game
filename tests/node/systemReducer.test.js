@@ -1629,19 +1629,39 @@ test('systemReducer - UPDATE_SETTINGS', () => {
 
 test('systemReducer - SET_MAP', () => {
   const state = { gameMap: null }
-  const newMap = { nodes: [] }
+  const newMap = { nodes: {}, connections: [] }
 
   assert.deepEqual(handleSetMap(state, newMap), { gameMap: newMap })
 })
 
+test('systemReducer - SET_MAP rejects payloads that break the GameMap contract', () => {
+  const state = { gameMap: { nodes: {}, connections: [] } }
+
+  for (const malformed of [
+    {},
+    { nodes: {}, connections: 'bad' },
+    { nodes: {} },
+    { connections: [] },
+    { nodes: [], connections: [] },
+    { nodes: null, connections: [] },
+    { nodes: 'x', connections: [] },
+    { nodes: {}, connections: {} }
+  ]) {
+    assert.equal(handleSetMap(state, malformed), state)
+  }
+})
+
 test('systemReducer - SET_MAP rejects non-object and hostile payloads', () => {
-  const state = { gameMap: { nodes: {} } }
+  const state = { gameMap: { nodes: {}, connections: [] } }
 
   assert.equal(handleSetMap(state, 'not a map'), state)
   assert.equal(handleSetMap(state, 42), state)
   assert.equal(handleSetMap(state, []), state)
   assert.equal(
-    handleSetMap(state, JSON.parse('{"nodes":{"a":{"__proto__":{"x":1}}}}')),
+    handleSetMap(
+      state,
+      JSON.parse('{"nodes":{"a":{"__proto__":{"x":1}}},"connections":[]}')
+    ),
     state
   )
   // null stays a valid "generation failed" fallback.

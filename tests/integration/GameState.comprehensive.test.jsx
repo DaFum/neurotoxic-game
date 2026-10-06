@@ -881,7 +881,9 @@ describe('GameState Context - Gig Management', () => {
 
           <button
             type='button'
-            onClick={() => gameState.startGig({ name: 'Test Venue' })}
+            onClick={() =>
+              gameState.startGig({ id: 'test_venue', name: 'Test Venue' })
+            }
           >
             Start
           </button>

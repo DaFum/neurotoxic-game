@@ -108,7 +108,13 @@ const resolveDayDelta = (
   deltaDay: number
 ): { base: number; next: number } => {
   const base = Math.max(1, Math.floor(finiteNumberOr(currentDay, 1)))
-  return { base, next: Math.max(1, Math.floor(base + deltaDay)) }
+  const sum = base + deltaDay
+  // Two finite values can still overflow; keep the recovered base rather than
+  // persisting `Infinity`, matching `resolveStatDelta`.
+  return {
+    base,
+    next: Number.isFinite(sum) ? Math.max(1, Math.floor(sum)) : base
+  }
 }
 
 /**

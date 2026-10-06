@@ -105,7 +105,19 @@ export const handleSetGig = (
  * @returns Updated state ready for pre-gig setup.
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
-  if (!payload || typeof payload !== 'object') return state
+  // Same hostile-payload gate as SET_GIG, plus the venue's mandatory identity:
+  // a raw dispatch must not move to PRE_GIG with an invalid `currentGig`.
+  if (
+    !isLooseRecord(payload) ||
+    typeof payload.id !== 'string' ||
+    payload.id === '' ||
+    typeof payload.name !== 'string' ||
+    payload.name === '' ||
+    hasForbiddenKeysDeep(payload)
+  ) {
+    logger.warn('GameState', 'Rejected malformed START_GIG payload')
+    return state
+  }
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
   // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
   // it has to resolve before the screen derives its performance profile —

@@ -2,6 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  addClampedPercent,
   clampPercent,
   clampMemberSkill
 } from '../../src/utils/gameState/clamps.ts'
@@ -42,6 +43,31 @@ describe('clampPercent', () => {
 
   it('normalizes negative zero', () => {
     assert.equal(Object.is(clampPercent(-0), 0), true)
+  })
+})
+
+describe('addClampedPercent', () => {
+  it('adds and range-clamps an ordinary sum', () => {
+    assert.equal(addClampedPercent(40, 15.5), 55.5)
+    assert.equal(addClampedPercent(90, 30), 100)
+    assert.equal(addClampedPercent(10, -30), 0)
+  })
+
+  it('caps an overflowing sum at the bounds instead of falling back', () => {
+    assert.equal(addClampedPercent(Number.MAX_VALUE, Number.MAX_VALUE), 100)
+    assert.equal(addClampedPercent(0, Number.MAX_VALUE * 2), 100)
+    assert.equal(addClampedPercent(-Number.MAX_VALUE, -Number.MAX_VALUE), 0)
+  })
+
+  it('recovers a malformed stored base before adding', () => {
+    for (const base of [...NON_NUMBERS, ...NON_FINITE]) {
+      assert.equal(addClampedPercent(base, 7), 7)
+    }
+  })
+
+  it('keeps the base when the delta is NaN', () => {
+    assert.equal(addClampedPercent(42, Number.NaN), 42)
+    assert.equal(addClampedPercent(150, Number.NaN), 100)
   })
 })
 

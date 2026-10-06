@@ -16,7 +16,7 @@
  */
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
-import { clampPercent } from '../../utils/gameState/clamps'
+import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
 import { getExpeditionSpendableCash } from './loadout'
 import {
   getExpeditionConditionSummary,
@@ -94,7 +94,7 @@ export const applyExpeditionEventHeat = (
           )
         )
       : 1
-  const heat = clampPercent(current + heatDelta * multiplier)
+  const heat = addClampedPercent(current, heatDelta * multiplier)
   if (heat === current) return state
   return {
     ...state,
