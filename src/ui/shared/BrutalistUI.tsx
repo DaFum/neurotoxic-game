@@ -50,9 +50,9 @@ interface CrisisModalProps {
   className?: string
   isOpen: boolean
   onClose?: () => void
-  title?: string
-  description?: string
-  actions?: Array<{
+  title: string
+  description: string
+  actions: Array<{
     id: string
     label: string
     meta?: string
@@ -335,29 +335,6 @@ export const CrisisModal = memo(
     const { t } = useTranslation(['ui'])
     const titleId = useId()
     if (!isOpen) return null
-    const modalTitle = title ?? t('ui:crisis.title')
-    const modalDescription = description ?? t('ui:crisis.desc')
-    const modalActions = actions ?? [
-      {
-        id: 'opt1',
-        label: t('ui:crisis.opt1'),
-        meta: t('ui:crisis.safe'),
-        variant: 'safe' as const
-      },
-      {
-        id: 'opt2',
-        label: t('ui:crisis.opt2'),
-        meta: t('ui:crisis.risk'),
-        variant: 'risk' as const
-      },
-      {
-        id: 'opt3',
-        label: t('ui:crisis.opt3'),
-        meta: t('ui:crisis.risky'),
-        variant: 'danger' as const
-      }
-    ]
-
     const getActionClassName = (
       variant: 'safe' | 'risk' | 'danger' = 'safe'
     ): string => {
@@ -388,18 +365,18 @@ export const CrisisModal = memo(
               <h2
                 id={titleId}
                 className='text-2xl font-bold tracking-widest uppercase glitch-text'
-                data-text={modalTitle}
+                data-text={title}
               >
-                {modalTitle}
+                {title}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed'>
-                {modalDescription}
+                {description}
               </p>
             </div>
           </div>
 
           <div className='flex flex-col gap-3'>
-            {modalActions.map(action => (
+            {actions.map(action => (
               <button
                 key={action.id}
                 type='button'
