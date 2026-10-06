@@ -3,6 +3,7 @@ import type { UnknownRecord } from '../types'
 import { formatCurrency } from './numberUtils'
 import { isFiniteNumber } from './finiteNumber'
 import { getQuestDefinition } from '../data/questRegistry'
+import { CONTRABAND_BY_ID } from '../data/contraband'
 
 type EffectDelta = {
   [key: string]: unknown
@@ -11,6 +12,7 @@ type EffectDelta = {
   band?: UnknownRecord & {
     membersDelta?: UnknownRecord | UnknownRecord[]
     inventory?: UnknownRecord
+    stashAdd?: unknown
   }
   flags?: UnknownRecord & {
     addQuest?: unknown
@@ -178,6 +180,19 @@ export const generateEffectText = (
       } else if (qty === false) {
         lines.push(`-${t(`items:${key}`, { defaultValue: key })}`)
       }
+    }
+  }
+
+  // Contraband granted through the stash path (e.g. reststop_trunk_dealer)
+  if (Array.isArray(delta.band?.stashAdd)) {
+    for (const entry of delta.band.stashAdd) {
+      if (!entry || typeof entry !== 'object') continue
+      if (!Object.hasOwn(entry, 'contrabandId')) continue
+      const contrabandId = (entry as UnknownRecord).contrabandId
+      if (typeof contrabandId !== 'string') continue
+      const item = CONTRABAND_BY_ID.get(contrabandId)
+      if (!item) continue
+      lines.push(`+${t(item.name, { defaultValue: contrabandId })}`)
     }
   }
 

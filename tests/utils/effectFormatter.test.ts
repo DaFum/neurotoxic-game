@@ -86,6 +86,32 @@ describe('generateEffectText', () => {
     assert.equal(result, 'Effects: Mood: +10, Stamina: +20')
   })
 
+  it('lists contraband granted to the stash by its catalogue name', () => {
+    // e.g. reststop_trunk_dealer grants c_diy_overdrive via a contraband effect.
+    const names: Record<string, string> = {
+      'items:contraband.c_diy_overdrive.name': 'DIY Overdrive Pedal'
+    }
+    const tItems = (key: string, options?: { defaultValue?: string }) =>
+      names[key] ?? options?.defaultValue ?? key
+    const delta = {
+      player: { money: -120 },
+      band: {
+        stashAdd: [{ contrabandId: 'c_diy_overdrive', instanceId: 'uuid-1' }]
+      }
+    }
+    assert.equal(
+      generateEffectText(delta, tItems, 'en'),
+      'Effects: Money: -€120, +DIY Overdrive Pedal'
+    )
+  })
+
+  it('skips stash entries that are not in the contraband catalogue', () => {
+    const delta = {
+      band: { stashAdd: [{ contrabandId: 'not_a_real_item' }, null] }
+    }
+    assert.equal(generateEffectText(delta, t, 'en'), '')
+  })
+
   it('formats inventory items (numbers and booleans)', () => {
     const delta = {
       band: {
