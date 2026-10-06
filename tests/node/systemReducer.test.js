@@ -1668,6 +1668,30 @@ test('systemReducer - SET_MAP rejects non-object and hostile payloads', () => {
   assert.deepEqual(handleSetMap(state, null), { gameMap: null })
 })
 
+test('systemReducer - SET_MAP rejects accessor-bearing maps without invoking their getters', () => {
+  const state = { gameMap: { nodes: {}, connections: [] } }
+  let getterCalls = 0
+  const throwingGetter = () => {
+    getterCalls++
+    throw new Error('getter must not run')
+  }
+  const withNodesGetter = { connections: [] }
+  Object.defineProperty(withNodesGetter, 'nodes', {
+    enumerable: true,
+    get: throwingGetter
+  })
+  const withConnectionsGetter = { nodes: {} }
+  Object.defineProperty(withConnectionsGetter, 'connections', {
+    enumerable: true,
+    get: throwingGetter
+  })
+
+  for (const hostile of [withNodesGetter, withConnectionsGetter]) {
+    assert.equal(handleSetMap(state, hostile), state)
+  }
+  assert.equal(getterCalls, 0)
+})
+
 test('systemReducer - ADD_TOAST', () => {
   const state = { toasts: [{ id: '1' }] }
   const newToast = { id: '2', type: 'info', message: 'Hello' }
