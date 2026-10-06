@@ -34,6 +34,7 @@ vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
+    i18n: { language: 'en' },
     t: (key: string, options?: { days?: number; rate?: string }) => {
       const labels: Record<string, string> = {
         'assets:mode.loan': 'Loan',
@@ -41,7 +42,7 @@ vi.mock('react-i18next', () => ({
         'ui:closeModal': 'Close modal'
       }
       if (key === 'assets:loan.profileMeta') {
-        return `${options?.days ?? 0} days / ${options?.rate ?? '0'}%`
+        return `${options?.days ?? 0} days / ${options?.rate ?? '0'}`
       }
       return labels[key] ?? key
     }
@@ -71,5 +72,17 @@ describe('LoanProfileModal', () => {
 
     expect(onSelect).toHaveBeenCalledWith('shortTerm')
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('formats the interest rate with the locale percent formatter', () => {
+    render(<LoanProfileModal isOpen onClose={vi.fn()} onSelect={vi.fn()} />)
+
+    const rates = Object.values(LOAN_PROFILES).map(
+      profile =>
+        `${profile.termDays} days / ${(profile.interestRate * 100).toFixed(1)}%`
+    )
+    for (const text of rates) {
+      expect(screen.getAllByText(text).length).toBeGreaterThan(0)
+    }
   })
 })

@@ -8,7 +8,7 @@ import * as m from 'motion/react-m'
 import { HexNode } from '../ui/shared'
 import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'
-import { formatCurrency } from '../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../utils/numberUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
@@ -127,15 +127,20 @@ const CancellationBadge = memo(
   ({
     harmony,
     tourSuccess,
-    t
+    t,
+    language
   }: {
     harmony: number
     tourSuccess?: number
     t: TranslationCallback
+    language: string
   }) => {
     const risk = getCancellationRisk(harmony, tourSuccess)
     if (risk <= 0) return null
-    const pct = (risk * 100).toFixed(1)
+    const pct = formatPercent(risk, language, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    })
     const freqDenom = Math.round(1 / risk)
     const badgeClass =
       risk >= 1
@@ -149,7 +154,7 @@ const CancellationBadge = memo(
     return (
       <div className={`text-xs font-mono mt-1 ${badgeClass}`}>
         {t('ui:map.cancellationRisk', {
-          defaultValue: '⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)',
+          defaultValue: '⚠ Cancel risk: {{pct}} (1-in-{{freq}} chance)',
           pct,
           freq: freqDenom
         })}
@@ -257,6 +262,7 @@ const MapNodeTooltip = memo(
             harmony={harmony}
             tourSuccess={tourSuccess}
             t={t}
+            language={language}
           />
         )}
         {node.type === 'REST_STOP' && (

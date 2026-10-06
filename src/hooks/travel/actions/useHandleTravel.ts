@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import i18n from '../../../i18n'
 import type { MapNode } from '../../../types'
 import { logger } from '../../../utils/logger'
-import { formatCurrency } from '../../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../../utils/numberUtils'
 import { handleError } from '../../../utils/errorHandler'
 import { VENUES_BY_ID } from '../../../data/venues'
 import { isGigNode } from '../../../utils/arrivalUtils'
@@ -253,7 +253,7 @@ export const useHandleTravel = ({
           travelCost: formatCurrency(totalCost, i18n.language),
           dailyCost: formatCurrency(dailyCost, i18n.language),
           totalCost: formatCurrency(totalCashImpact, i18n.language),
-          fuelLiters: fuelLiters.toFixed(1)
+          fuelLiters: formatNumber(fuelLiters, i18n.language, 1)
         }),
         'warning'
       )

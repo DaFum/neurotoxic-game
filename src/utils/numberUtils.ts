@@ -28,18 +28,64 @@ const getFormatter = (
 }
 
 /**
- * Formats an integer-like number with the user's selected language.
+ * Formats a number with the user's selected language.
  *
  * @param value - Number to display.
  * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
- * @returns Locale-formatted decimal string without fractional digits.
+ * @param fractionDigits - Exact number of fractional digits. Defaults to `0`.
+ * @returns Locale-formatted decimal string, so German gets a decimal comma.
  */
-export const formatNumber = (value: number, language: string): string => {
-  const formatter = getFormatter(language, 'decimal-0', {
+export const formatNumber = (
+  value: number,
+  language: string,
+  fractionDigits = 0
+): string => {
+  const formatter = getFormatter(language, `decimal-${fractionDigits}`, {
     style: 'decimal',
-    maximumFractionDigits: 0
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
   })
   return formatter.format(value)
+}
+
+/**
+ * Formats a fraction as a locale-aware percentage.
+ *
+ * @param value - Fraction to display, where `0.25` renders as 25%.
+ * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
+ * @param options - Fraction digits (both default to `0`) and sign policy.
+ * @returns Locale-formatted percent string, including the percent sign.
+ *
+ * @remarks
+ * Non-finite input renders as 0% rather than `NaN%`, and `-0` is normalized to
+ * `+0` so it never prints a leading minus. German output uses a decimal comma
+ * and a no-break space before the sign.
+ */
+export const formatPercent = (
+  value: number,
+  language: string,
+  options: Pick<
+    Intl.NumberFormatOptions,
+    'minimumFractionDigits' | 'maximumFractionDigits' | 'signDisplay'
+  > = {}
+): string => {
+  const {
+    minimumFractionDigits = 0,
+    maximumFractionDigits = Math.max(0, minimumFractionDigits),
+    signDisplay = 'auto'
+  } = options
+  const formatter = getFormatter(
+    language,
+    `percent-${minimumFractionDigits}-${maximumFractionDigits}-${signDisplay}`,
+    {
+      style: 'percent',
+      minimumFractionDigits,
+      maximumFractionDigits,
+      signDisplay
+    }
+  )
+  const safe = Number.isFinite(value) ? value : 0
+  return formatter.format(safe === 0 ? 0 : safe)
 }
 
 /**

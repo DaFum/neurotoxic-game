@@ -5,7 +5,7 @@ import { CancelButton } from './shared/CancelButton'
 import { ConfirmButton } from './shared/ConfirmButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getCrowdfundImagePrompt } from '../../utils/imageGen'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../../utils/numberUtils'
 import { resolveCrowdfundProbability } from '../../utils/assetTicks'
 import { mulberry32 } from '../../utils/seededRng'
 import { useGameActions, useGameSelector } from '../../context/GameState'
@@ -129,8 +129,9 @@ export const CrowdfundSetupModal = ({
         <p>
           {t('assets:crowdfund.target')}:{' '}
           {formatCurrency(targetAmount, i18n.language)} ·{' '}
-          {(probability * 100).toFixed(0)}
-          {t('assets:crowdfund.chance')}
+          {t('assets:crowdfund.chance', {
+            percent: formatPercent(probability, i18n.language)
+          })}
         </p>
         <div className='flex justify-end gap-2'>
           <CancelButton onClick={onClose} />
