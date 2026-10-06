@@ -107,8 +107,12 @@ export type ExpeditionAccessTier = ExpeditionFameProfile['accessTier']
  *   the world stops discounting for high-profile stops. Fame rises with every
  *   Gig of a run, so a fresh band (Fame 0) is turned away only until its first
  *   club shows carry it past 250. The gate refuses the *booking*, never the
- *   travel: the band still arrives and the route continues, so no route can
- *   soft-lock. `START`, `GIG` and `FINALE` nodes are never gated.
+ *   travel: the band still arrives and the route continues. A locked Festival
+ *   is not an in-place gig escape, so a band that also cannot afford any
+ *   onward leg raises the `fuel_stranded` crisis
+ *   (`getExpeditionMobilityFailureSignal`), whose unconditional
+ *   `accept_failure` keeps the run from soft-locking. `START`, `GIG` and
+ *   `FINALE` nodes are never gated.
  * - `showcaseContract` (tier 2, `underground`, 1,000 Fame): a native Contract
  *   whose constraints force a special Finale (`special_finale`, today
  *   `contract_all_in`). It books the run's biggest stage - the

@@ -22,6 +22,7 @@ import {
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
+import { getExpeditionNodeBookingLock } from './fame'
 import { canClaimExpeditionInsurance } from './insurance'
 import {
   EXPEDITION_CONDITION_GROUPS,
@@ -135,7 +136,8 @@ export const getExpeditionEconomyFailureSignal = (
  * `checkSoftlock` is the canonical stranded authority and already accounts for
  * the travel gate, in-place gig escapes and an affordable refuel. It is given a
  * player view whose cash is the Expedition-spendable slice, so the protected
- * Career Cash cannot silently defuse a stranded verdict.
+ * Career Cash cannot silently defuse a stranded verdict, and whose current
+ * node counts as played when the Fame access gate refuses to book it.
  */
 export const getExpeditionMobilityFailureSignal = (
   state: GameState
@@ -144,9 +146,20 @@ export const getExpeditionMobilityFailureSignal = (
   if (!state.gameMap) return null
 
   const spendable = getExpeditionSpendableCash(state)
+  // A gig node the Fame access gate refuses to book cannot earn the way out,
+  // so it is presented to `checkSoftlock` as already played and its in-place
+  // gig escape does not defuse the stranded verdict.
+  const currentNodeId = state.player.currentNodeId
+  const currentNodeType =
+    typeof currentNodeId === 'string'
+      ? state.gameMap.nodes?.[currentNodeId]?.type
+      : undefined
   const strandedView = {
     ...state.player,
-    money: spendable
+    money: spendable,
+    ...(getExpeditionNodeBookingLock(state, currentNodeType)
+      ? { lastGigNodeId: currentNodeId }
+      : {})
   }
   // Realized evidence first, for the same reason the economy signal checks
   // `unpaidDailyObligation` before projecting: the run already tried to leave

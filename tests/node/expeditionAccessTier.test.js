@@ -29,6 +29,7 @@ import {
 } from '../../src/domain/expedition/loadout.ts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../src/data/expedition/contracts.ts'
 import { handleNodeArrival } from '../../src/utils/arrivalUtils.ts'
+import { getExpeditionMobilityFailureSignal } from '../../src/domain/expedition/failure.ts'
 import { fixtureLoadout } from '../expeditionLifecycleFixture.js'
 
 const TOUR = 'standard_tour'
@@ -307,6 +308,43 @@ describe('Fame access tiers - a new run is never soft-locked', () => {
     assert.equal(started.expedition.status, 'active')
     const atGig = walk(started, pathTo(map, nodeId))
     assert.equal(startGig(atGig, nodeId).currentScene, GAME_PHASES.PRE_GIG)
+  })
+
+  it('strands a band at a locked Festival with no fuel and no spendable cash', () => {
+    const { seed, map, nodeId } = seedWith('FESTIVAL')
+    const started = start(prepare(seed, 0), fixtureLoadout())
+    const atFestival = walk(started, pathTo(map, nodeId))
+    // Empty tank, spendable slice exhausted, and a band too frayed to donate
+    // blood: the unplayed Festival gig is the only remaining escape.
+    const broke = {
+      ...atFestival,
+      player: {
+        ...atFestival.player,
+        money: atFestival.expedition.protectedCareerCash,
+        van: { ...atFestival.player.van, fuel: 0 }
+      },
+      band: { ...atFestival.band, harmony: 0 }
+    }
+    assert.notEqual(broke.player.lastGigNodeId, nodeId)
+
+    const locked = getExpeditionMobilityFailureSignal(broke)
+    assert.equal(
+      locked?.reason,
+      'fuel_stranded',
+      'a Festival the band cannot book is not an escape'
+    )
+    assert.ok(locked.choices.includes('accept_failure'))
+
+    const { minimumFame } = getExpeditionNodeBookingLock(broke, 'FESTIVAL')
+    const famous = {
+      ...broke,
+      player: { ...broke.player, fame: minimumFame }
+    }
+    assert.equal(
+      getExpeditionMobilityFailureSignal(famous),
+      null,
+      'a bookable Festival still earns the way out'
+    )
   })
 
   it('leaves the fresh build and every Finale ungated at Fame 0', () => {
