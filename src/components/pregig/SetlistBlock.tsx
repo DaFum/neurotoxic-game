@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
+import { ProgressBar } from '../../ui/shared/ProgressBar'
 import { Tooltip } from '../../ui/shared/Tooltip'
 import { buildSetlistChartDensity } from '../../utils/chartDensity'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
@@ -80,10 +81,15 @@ const SongRow = memo(function SongRow({
           <span className='text-xxs text-ash-gray/50 uppercase tracking-wider'>
             {t('ui:pregig.nrg')}
           </span>
-          <div className='w-14 h-1.5 bg-shadow-black overflow-hidden border border-ash-gray/20'>
-            <div
-              className={`h-full transition-all ${isSelected ? 'bg-toxic-green' : 'bg-blood-red/60'}`}
-              style={{ width: `${song.energy?.peak ?? 50}%` }}
+          <div className='w-14'>
+            <ProgressBar
+              value={song.energy?.peak ?? 50}
+              max={100}
+              showValue={false}
+              aria-label={t('ui:pregig.nrg')}
+              color={isSelected ? 'bg-toxic-green' : 'bg-blood-red/60'}
+              trackClassName='w-full h-1.5 bg-shadow-black overflow-hidden border border-ash-gray/20'
+              fillClassName='transition-all'
             />
           </div>
         </div>

@@ -26,6 +26,13 @@ interface ProgressBarProps extends Omit<
   showValue?: boolean
   warn?: boolean
   className?: string
+  /**
+   * Replaces the default track chrome (border, background, height) so compact
+   * HUD meters keep their own frame while sharing the clamping and ARIA wiring.
+   */
+  trackClassName?: string
+  /** Replaces the default fill transition (transition-all duration-500). */
+  fillClassName?: string
 }
 
 /**
@@ -41,6 +48,8 @@ export const ProgressBar = memo(function ProgressBar({
   showValue = true,
   warn = false,
   className = '',
+  trackClassName,
+  fillClassName = 'transition-all duration-500',
   ...props
 }: ProgressBarProps) {
   const finiteMax = finiteNumberOr(max, 1)
@@ -72,14 +81,17 @@ export const ProgressBar = memo(function ProgressBar({
         </div>
       )}
       <div
-        className={`w-full bg-charcoal-gray border ${
-          isMini
-            ? 'border-steel-gray overflow-hidden'
-            : 'border-2 border-toxic-green'
-        } ${SIZE_CLASSES[size]}`}
+        className={
+          trackClassName ??
+          `w-full bg-charcoal-gray border ${
+            isMini
+              ? 'border-steel-gray overflow-hidden'
+              : 'border-2 border-toxic-green'
+          } ${SIZE_CLASSES[size]}`
+        }
       >
         <div
-          className={`h-full ${color} transition-all duration-500 ${warn ? 'animate-fuel-warning' : ''}`}
+          className={`h-full ${color} ${fillClassName} ${warn ? 'animate-fuel-warning' : ''}`}
           style={{ width: `${pct}%` }}
         />
       </div>

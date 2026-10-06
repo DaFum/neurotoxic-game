@@ -4,6 +4,7 @@ import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economy'
 import { clampZealotry } from '../../utils/gameState'
 import { IMG_PROMPTS } from '../../utils/imageGen'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
+import { ProgressBar } from '../../ui/shared/ProgressBar'
 
 type ZealotryGaugeProps = { zealotryLevel?: number }
 
@@ -41,14 +42,16 @@ export const ZealotryGauge = memo(
               {zealotryLevel}%
             </span>
           </div>
-          <div className='w-full bg-void-black/50 h-2 overflow-hidden'>
-            <div
-              className='bg-blood-red h-full transition-all duration-500'
-              style={{
-                width: `${clampZealotry(zealotryLevel)}%`
-              }}
-            />
-          </div>
+          <ProgressBar
+            value={clampZealotry(zealotryLevel)}
+            max={100}
+            showValue={false}
+            aria-label={t('economy:social.cultZealotry', {
+              defaultValue: 'CULT ZEALOTRY'
+            })}
+            color='bg-blood-red'
+            trackClassName='w-full bg-void-black/50 h-2 overflow-hidden'
+          />
           {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
             <div className='text-xs text-blood-red-bright mt-1 uppercase animate-pulse break-words'>
               {t('economy:social.zealotryWarning', {

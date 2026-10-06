@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ProgressBar } from '../../../ui/shared/ProgressBar'
 import type { AmpHUDProps } from '../../../types/components'
 import type { TranslationCallback } from '../../../types/callbacks'
 
@@ -32,12 +33,17 @@ function VoidResonanceIndicator({
           {Math.floor(voidResonance)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
-        <div
-          className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'motion-safe:animate-pulse' : ''}`}
-          style={{ width: `${voidResonance}%` }}
-        />
-      </div>
+      <ProgressBar
+        value={voidResonance}
+        max={100}
+        showValue={false}
+        aria-label={t('ui:minigames.amp.hud.resonance', {
+          defaultValue: 'VOID RESONANCE'
+        })}
+        color='bg-electric-blue'
+        trackClassName='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'
+        fillClassName={`transition-all duration-100 ${isAnomalyActive ? 'motion-safe:animate-pulse' : ''}`}
+      />
     </div>
   )
 }
@@ -65,12 +71,19 @@ function HeatIndicator({
           {Math.floor(heat)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
-        <div
-          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-error-red motion-safe:animate-pulse' : 'bg-warning-yellow'}`}
-          style={{ width: `${heat}%` }}
-        />
-      </div>
+      <ProgressBar
+        value={heat}
+        max={100}
+        showValue={false}
+        aria-label={t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
+        color={
+          isOverheat
+            ? 'bg-error-red motion-safe:animate-pulse'
+            : 'bg-warning-yellow'
+        }
+        trackClassName='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'
+        fillClassName='transition-all duration-100'
+      />
     </div>
   )
 }
@@ -134,12 +147,17 @@ function InterferenceIndicator({
           {Math.floor(interference)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_var(--color-error-red)]'>
-        <div
-          className='h-full bg-error-red transition-all duration-100'
-          style={{ width: `${interference}%` }}
-        />
-      </div>
+      <ProgressBar
+        value={interference}
+        max={100}
+        showValue={false}
+        aria-label={t('ui:minigames.amp.hud.interference', {
+          defaultValue: 'INTERFERENCE'
+        })}
+        color='bg-error-red'
+        trackClassName='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_var(--color-error-red)]'
+        fillClassName='transition-all duration-100'
+      />
     </div>
   )
 }
