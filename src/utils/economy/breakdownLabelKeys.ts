@@ -1,3 +1,5 @@
+import { MERCH_PROFILES } from '../../data/merch'
+
 /**
  * Single source of truth for the i18n keys used by gig-economy breakdown lines.
  *
@@ -65,17 +67,18 @@ export const buildMerchSalesLabelKey = (itemKey: string): string =>
  * Whether a label key belongs to the registry, including dynamic merch lines.
  *
  * @param labelKey - Label key emitted by a breakdown line.
- * @returns `true` when the key is registered or a well-formed merch key.
+ * @returns `true` when the key is registered or names a registered merch item.
  */
 export const isRegisteredBreakdownLabelKey = (labelKey: string): boolean => {
   const registered: readonly string[] = Object.values(BREAKDOWN_LABEL_KEYS)
   if (registered.includes(labelKey)) return true
   if (!labelKey.startsWith(MERCH_SALES_LABEL_KEY_PREFIX)) return false
-  // The item id segment must be non-empty: `merchSales..label` names no item
-  // and cannot resolve to a real merch label.
+  if (!labelKey.endsWith('.label')) return false
+  // The item segment must be a registered merch item: a stale save can carry a
+  // line for a removed item, whose key has no translation.
   const itemSegment = labelKey.slice(
     MERCH_SALES_LABEL_KEY_PREFIX.length,
     -'.label'.length
   )
-  return labelKey.endsWith('.label') && itemSegment.length > 0
+  return Object.hasOwn(MERCH_PROFILES, itemSegment)
 }
