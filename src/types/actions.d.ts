@@ -4,6 +4,7 @@ import type { PlayerState } from './player'
 import type { BandState } from './band'
 import type { RivalBandState } from './social'
 import type {
+  ExpeditionFailureChoiceId,
   ExpeditionInspectionIntent,
   ExpeditionRepairIntent,
   HiddenDefectTrigger
@@ -418,7 +419,8 @@ export interface PrepareNextExpeditionPayload {
  */
 export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
-  choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
+  /** Every crisis choice except `accept_failure`, which has its own action. */
+  choice: Exclude<ExpeditionFailureChoiceId, 'accept_failure'>
   expectedRouteStep: number
 }
 

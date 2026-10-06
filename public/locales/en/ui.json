@@ -460,6 +460,7 @@
   "expedition.node.payout": "Payout:",
   "expedition.node.rare": "Rare: {{name}}",
   "expedition.node.reward": "Reward:",
+  "expedition.node.routeFacts": "{{step}} · {{onward}}",
   "expedition.node.routeStep": "Stop {{step}}",
   "expedition.node.subtype.BLACK_MARKET": "Black market",
   "expedition.node.subtype.RIVAL_ENCOUNTER": "Rival encounter",

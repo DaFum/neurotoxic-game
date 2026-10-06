@@ -266,7 +266,7 @@ type BaseGameDispatchActions = {
   acceptExpeditionFailure: () => void
   prepareNextExpedition: () => void
   resolveExpeditionCrisis: (
-    choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
+    choice: import('../types/actions').ResolveExpeditionCrisisPayload['choice']
   ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent

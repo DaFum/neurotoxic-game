@@ -1,5 +1,6 @@
 import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState } from '../types'
+import type { ResolveExpeditionCrisisPayload } from '../types/actions'
 import type {
   ExpeditionInspectionIntent,
   ExpeditionInsuranceClaimInput,
@@ -149,7 +150,7 @@ export function useExpeditionDispatchActions({
         if (action) dispatch(action)
       },
       resolveExpeditionCrisis: (
-        choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
+        choice: ResolveExpeditionCrisisPayload['choice']
       ) => {
         const action = resolveExpeditionCrisisAction(stateRef.current, choice)
         if (action) dispatch(action)
