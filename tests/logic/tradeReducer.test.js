@@ -3,11 +3,16 @@ import assert from 'node:assert/strict'
 import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createTradeVoidItemAction } from '../../src/context/actionCreators'
+import { VOID_TRADER_CONTROVERSY_THRESHOLD } from '../../src/data/contraband'
 
 describe('Trade Reducer', () => {
-  const makeState = fame => ({
+  const makeState = (
+    fame,
+    controversyLevel = VOID_TRADER_CONTROVERSY_THRESHOLD
+  ) => ({
     player: { fame },
     band: { stash: {} },
+    social: { controversyLevel },
     toasts: []
   })
 
@@ -36,6 +41,38 @@ describe('Trade Reducer', () => {
       })
       assert.strictEqual(nextState, initialState)
     }
+  })
+
+  it('rejects a raw dispatch while controversy is below the unlock threshold', () => {
+    const payload = {
+      contrabandId: 'c_phantom_strings',
+      fameCost: 1000,
+      instanceId: '123'
+    }
+
+    for (const controversyLevel of [
+      VOID_TRADER_CONTROVERSY_THRESHOLD - 1,
+      0,
+      Number.NaN,
+      undefined
+    ]) {
+      const initialState = makeState(2000, controversyLevel)
+      assert.strictEqual(
+        handleTradeVoidItem(initialState, payload),
+        initialState
+      )
+    }
+
+    const noSocial = { ...makeState(2000), social: undefined }
+    assert.strictEqual(handleTradeVoidItem(noSocial, payload), noSocial)
+  })
+
+  it('allows the trade exactly at the unlock threshold', () => {
+    const nextState = handleTradeVoidItem(
+      makeState(2000, VOID_TRADER_CONTROVERSY_THRESHOLD),
+      { contrabandId: 'c_phantom_strings', fameCost: 1000, instanceId: '123' }
+    )
+    assert.strictEqual(nextState.player.fame, 1000)
   })
 
   it('should deduct fame and add item to stash on successful trade', () => {

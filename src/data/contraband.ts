@@ -9,6 +9,7 @@ import {
   type SanitizedContrabandItem
 } from '../schemas/contraband'
 import { logger } from '../utils/logger'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import type { Rarity } from '../types'
 
 const CONTRABAND_DB = [
@@ -539,6 +540,18 @@ export const VOID_TRADER_COSTS = {
   epic: 1000,
   rare: 400
 }
+
+/** Minimum controversy level that unlocks the Void Trader. */
+export const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
+
+/**
+ * Whether a controversy level unlocks the Void Trader.
+ *
+ * @param controversyLevel - Raw controversy value; non-finite input counts as 0.
+ * @returns True when the level meets {@link VOID_TRADER_CONTROVERSY_THRESHOLD}.
+ */
+export const isVoidTraderUnlocked = (controversyLevel: unknown): boolean =>
+  finiteNumberOr(controversyLevel, 0) >= VOID_TRADER_CONTROVERSY_THRESHOLD
 
 /** Lookup map of contraband definition by item id. */
 export const CONTRABAND_BY_ID = new Map<string, SanitizedContrabandItem>()

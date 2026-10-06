@@ -1,5 +1,6 @@
 import type { GameState, ToastPayload, TradeVoidItemPayload } from '../../types'
 import { logger } from '../../utils/logger'
+import { isVoidTraderUnlocked } from '../../data/contraband'
 import {
   clampPlayerFame,
   calculateFameLevel,
@@ -37,7 +38,7 @@ const sanitizeContextValue = (value: unknown): unknown => {
  * @param payload - Contraband id, fame cost, generated instance id, and optional
  * success toast.
  * @returns State with fame deducted and contraband added, or the original state
- * when validation fails.
+ * when validation fails or the Void Trader is still locked by controversy.
  */
 export const handleTradeVoidItem = (
   state: GameState,
@@ -45,6 +46,13 @@ export const handleTradeVoidItem = (
 ): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for TRADE_VOID_ITEM')
+    return state
+  }
+
+  // The Void Trader is gated on controversy; the UI hides the tab, but a raw
+  // dispatch must not be able to bypass the gate.
+  if (!isVoidTraderUnlocked(state.social?.controversyLevel)) {
+    logger.warn('GameState', 'Void trader is locked: controversy too low')
     return state
   }
 

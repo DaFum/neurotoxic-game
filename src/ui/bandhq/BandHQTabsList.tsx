@@ -8,19 +8,17 @@ import { HQTabButton } from './HQTabButton.tsx'
 interface BandHQTabsListProps {
   currentTab: string
   setActiveTab: (tab: string) => void
-  controversyLevel: number
-  VOID_TRADER_CONTROVERSY_THRESHOLD: number
+  isVoidTraderUnlocked: boolean
 }
 
 /**
  * Displays Band HQ tab buttons with active-tab state and labels.
- * @param props - Active tab state, tab switch callback, controversy level, and void-trader unlock threshold.
+ * @param props - Active tab state, tab switch callback, and whether the void trader is unlocked.
  */
 export const BandHQTabsList = ({
   currentTab,
   setActiveTab,
-  controversyLevel,
-  VOID_TRADER_CONTROVERSY_THRESHOLD
+  isVoidTraderUnlocked
 }: BandHQTabsListProps) => {
   const { t } = useTranslation()
 
@@ -37,11 +35,8 @@ export const BandHQTabsList = ({
     { id: 'GLOSSARY', key: 'tabs.glossary' },
     {
       id: 'VOID',
-      key:
-        (controversyLevel ?? 0) >= VOID_TRADER_CONTROVERSY_THRESHOLD
-          ? 'tabs.voidTrader'
-          : 'tabs.voidTraderLocked',
-      isLocked: (controversyLevel ?? 0) < VOID_TRADER_CONTROVERSY_THRESHOLD
+      key: isVoidTraderUnlocked ? 'tabs.voidTrader' : 'tabs.voidTraderLocked',
+      isLocked: !isVoidTraderUnlocked
     }
   ]
 

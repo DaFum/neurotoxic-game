@@ -90,8 +90,7 @@ describe('Band HQ gates the legacy catalog on Expedition progress', () => {
   const renderBuyButton = async () => {
     render(
       React.createElement(BandHQContentArea, {
-        currentTab: 'UPGRADES',
-        VOID_TRADER_CONTROVERSY_THRESHOLD: 50
+        currentTab: 'UPGRADES'
       })
     )
     // GlitchButton reports its blocked state through `aria-disabled`.
