@@ -13,7 +13,7 @@ import type {
 } from '../../types/expedition'
 import type { GameState, PostGigSummary } from '../../types'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { canPerformExpeditionGig } from './injuries'
+import { canPerformExpeditionGig } from './injuryGate'
 
 /**
  * All physical equipment groups tracked by technical condition.

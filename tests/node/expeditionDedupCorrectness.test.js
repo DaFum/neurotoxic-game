@@ -36,7 +36,7 @@ import {
 import {
   canPerformExpeditionGig,
   getCriticallyInjuredBandMemberId
-} from '../../src/domain/expedition/injuries.ts'
+} from '../../src/domain/expedition/injuryGate.ts'
 import {
   FIXTURE_REGION_ID,
   fixtureMap,
