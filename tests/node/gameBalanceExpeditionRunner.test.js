@@ -319,6 +319,24 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     }
   })
 
+  it('keeps repairSpend a finite cash total once the runner repairs', () => {
+    // The step-B repair read a non-existent `cashCost`, turning repairSpend
+    // into NaN after the first repair; ExpeditionRepairResult carries moneyCost.
+    const repairedRuns = []
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      for (let seed = 5001; seed <= 5012 && repairedRuns.length < 3; seed++) {
+        const result = runExpeditionSimulation(undefined, profile, seed)
+        if (result.telemetry.repairsCount > 0) repairedRuns.push(result)
+      }
+    }
+
+    assert.ok(repairedRuns.length > 0, 'expected at least one repairing run')
+    for (const result of repairedRuns) {
+      assert.ok(Number.isFinite(result.telemetry.repairSpend))
+      assert.ok(result.telemetry.repairSpend >= 0)
+    }
+  })
+
   it('runs a cohort batch and checks strategy dominance', () => {
     const profiles = EXPEDITION_BALANCE_PROFILES.slice(0, 3)
     const calSeeds = generateCohortSeeds(CALIBRATION_COHORT_NAMESPACE, 3)

@@ -1974,7 +1974,7 @@ export const runExpeditionSimulation = (
               `repair:${intent.mode}`
             )
             telemetry.repairsCount++
-            telemetry.repairSpend += resolution.result.cashCost
+            telemetry.repairSpend += resolution.result.moneyCost
           }
         }
       }
