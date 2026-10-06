@@ -150,6 +150,63 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     assert.equal(result.outcome, 'failed')
     assert.equal(result.terminalSource, 'technical_shutdown')
   })
+
+  /**
+   * A run whose PA is dead with no spare part and no cash for the service
+   * stop, so only a donor group or the insurance claim can bring it back.
+   *
+   * @param {number} donorCondition - Condition of the two healthy groups.
+   */
+  const deadPaWithoutPaidRepair = donorCondition => {
+    // `clean_sponsor` carries the `touring` policy, which covers technical
+    // claims.
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const base = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const state = {
+      ...base,
+      player: {
+        ...base.player,
+        money: base.expedition.loadout.build.protectedCareerCash + 10
+      },
+      expedition: {
+        ...base.expedition,
+        cargo: { ...base.expedition.cargo, spareParts: 0 },
+        technicalCondition: {
+          ...base.expedition.technicalCondition,
+          pa: 0,
+          instruments: donorCondition,
+          stageGear: donorCondition
+        }
+      }
+    }
+    return { profile, state }
+  }
+
+  it('cannibalizes a healthy donor when that is the recovery for a dead group', () => {
+    const { profile, state } = deadPaWithoutPaidRepair(100)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'cannibalize',
+      sourceGroup: 'instruments'
+    })
+    // The free donor repair comes before the one-shot claim.
+    assert.equal(result.telemetry.insuranceClaimed, false)
+  })
+
+  it('claims insurance for a dead group when no donor is healthy enough', () => {
+    // 50 is below the cannibalize donor floor, so the claim is the only
+    // recovery left besides the improvise the policy declines.
+    const { profile, state } = deadPaWithoutPaidRepair(50)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'insurance_claim'
+    })
+    assert.equal(result.telemetry.insuranceClaimed, true)
+  })
   it('evaluates candidate nodes with profile-specific decision policies', () => {
     const cleanProfile = EXPEDITION_BALANCE_PROFILES.find(
       p => p.id === 'clean_sponsor'

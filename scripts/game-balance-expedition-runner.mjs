@@ -72,7 +72,8 @@ import {
   prepareNextExpedition,
   resolveExpeditionCrisis,
   executeExpeditionRepair,
-  revealExpeditionNodeIntel
+  revealExpeditionNodeIntel,
+  claimExpeditionInsurance
 } from '../src/context/expeditionActionCreators.ts'
 import {
   createStartTravelMinigameAction,
@@ -1476,6 +1477,113 @@ const verifyProtectedCashNotSpent = (before, after, label) => {
 }
 
 /**
+ * Recovers a zero-Condition group through the first legal recovery the plan
+ * lists for it.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('../src/types/expedition').ConditionGroup} group - The dead group.
+ * @param {ReturnType<typeof getAvailableTechnicalRecoveryControls>} controls -
+ * The production recovery controls for `group`.
+ * @param {number} repairQuality - Minigame quality a field repair is played at.
+ * @param {Record<string, any>} telemetry
+ * @returns {import('../src/types').GameState}
+ *
+ * @remarks
+ * Order follows plan 02 Task 10: field repair, professional repair,
+ * cannibalize, insurance claim. Counting cannibalize and the claim as a way
+ * out without ever taking them left the group at zero for the rest of the
+ * route - the policy declined to fail, and nothing repaired it either. Every
+ * recovery goes through its production action, so a refusal leaves state
+ * untouched and is not recorded.
+ */
+const recoverDeadTechnicalGroup = (
+  state,
+  group,
+  controls,
+  repairQuality,
+  telemetry
+) => {
+  const routeStep = state.expedition.routeStep
+  /** @type {import('../src/types/expedition').ExpeditionRepairIntent | null} */
+  let intent = null
+  if (controls.fieldRepair) {
+    intent = {
+      mode: 'field',
+      targetGroup: group,
+      quality: repairQuality,
+      expectedRouteStep: routeStep
+    }
+  } else if (controls.professionalRepair) {
+    intent = {
+      mode: 'professional',
+      targetGroup: group,
+      expectedRouteStep: routeStep
+    }
+  } else if (controls.cannibalize) {
+    // The healthiest legal donor, ties broken by the canonical group order.
+    const tc = getExpeditionTechnicalCondition(state)
+    const sourceGroup = EXPEDITION_CONDITION_GROUPS.filter(
+      source =>
+        source !== group &&
+        resolveExpeditionRepair(state, {
+          mode: 'cannibalize',
+          targetGroup: group,
+          sourceGroup: source,
+          expectedRouteStep: routeStep
+        }).ok
+    ).reduce(
+      (best, source) => (best === null || tc[source] > tc[best] ? source : best),
+      /** @type {import('../src/types/expedition').ConditionGroup | null} */ (
+        null
+      )
+    )
+    if (sourceGroup) {
+      intent = {
+        mode: 'cannibalize',
+        targetGroup: group,
+        sourceGroup,
+        expectedRouteStep: routeStep
+      }
+    }
+  }
+
+  if (intent) {
+    const resolution = resolveExpeditionRepair(state, intent)
+    const action = executeExpeditionRepair(state, intent)
+    if (!resolution.ok || !action) return state
+    const next = gameReducer(state, action)
+    if (next === state) return state
+    verifyProtectedCashNotSpent(state, next, `repair:${intent.mode}`)
+    telemetry.repairsCount++
+    telemetry.repairSpend += resolution.result.moneyCost
+    telemetry.deadGroupRecoveries.push({
+      routeStep,
+      group,
+      mode: intent.mode,
+      ...(intent.sourceGroup ? { sourceGroup: intent.sourceGroup } : {})
+    })
+    return next
+  }
+
+  if (!controls.insuranceClaim) return state
+  const claim = claimExpeditionInsurance(state, {
+    claimType: 'technical',
+    targetGroup: group
+  })
+  if (!claim) return state
+  const next = gameReducer(state, claim)
+  if (next === state) return state
+  verifyProtectedCashNotSpent(state, next, 'insurance_claim')
+  telemetry.insuranceClaimed = true
+  telemetry.deadGroupRecoveries.push({
+    routeStep,
+    group,
+    mode: 'insurance_claim'
+  })
+  return next
+}
+
+/**
  * Runs a single Expedition simulation from production loadout creation to terminal settlement.
  *
  * @param {import('../src/types').GameState} fixtureState
@@ -1548,6 +1656,8 @@ export const runExpeditionSimulation = (
     insuranceOffered: Boolean(profile.insurancePolicyId),
     insuranceBought: Boolean(state.expedition.loadout?.insurancePolicyId),
     insuranceClaimed: false,
+    /** @type {Array<{ routeStep: number, group: string, mode: string, sourceGroup?: string }>} */
+    deadGroupRecoveries: [],
     authoritySafeExitsOffered: 0,
     authoritySafeExitsUsed: 0,
     crewStressMax: 0,
@@ -1682,14 +1792,15 @@ export const runExpeditionSimulation = (
       }
     }
 
-    // A2: A dead technical group the policy cannot pay to repair.
+    // A2: A dead technical group.
     //
     // Production never derives a technical crisis for a zero-Condition group
     // while improvise is on offer, so ending the run there is the player's
-    // explicit `accept_failure` (ExpeditionServicePanel). The policy makes that
-    // choice when no spare part, service-stop repair, donor group or insurance
-    // claim can recover the group; improvise is the free fallback it declines,
-    // which is what the old derived shutdown meant by "no legal recovery".
+    // explicit `accept_failure` (ExpeditionServicePanel). The policy recovers
+    // the group through the first recovery the plan lists (field, professional,
+    // cannibalize, insurance claim) and accepts failure only when none of them
+    // is legal; improvise is the free fallback it declines, which is what the
+    // old derived shutdown meant by "no legal recovery".
     const deadGroup = EXPEDITION_CONDITION_GROUPS.find(
       group => getExpeditionTechnicalCondition(state)[group] === 0
     )
@@ -1700,6 +1811,15 @@ export const runExpeditionSimulation = (
         controls.professionalRepair ||
         controls.cannibalize ||
         controls.insuranceClaim
+      if (hasPaidRecovery) {
+        state = recoverDeadTechnicalGroup(
+          state,
+          deadGroup,
+          controls,
+          repairQuality,
+          telemetry
+        )
+      }
       const acceptTechnical = hasPaidRecovery
         ? null
         : acceptExpeditionTechnicalFailure(state)
