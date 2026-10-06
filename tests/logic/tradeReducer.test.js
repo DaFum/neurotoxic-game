@@ -54,7 +54,7 @@ describe('Trade Reducer', () => {
       VOID_TRADER_CONTROVERSY_THRESHOLD - 1,
       0,
       Number.NaN,
-      undefined
+      null
     ]) {
       const initialState = makeState(2000, controversyLevel)
       assert.strictEqual(

@@ -11,9 +11,9 @@ vi.mock('react-i18next', () => ({
       // Simple translation mock
       if (options?.defaultValue) {
         let text = options.defaultValue
-        if (options.action) text = text.replace('{action}', options.action)
+        if (options.action) text = text.replace('{{action}}', options.action)
         if (options.itemName)
-          text = text.replace('{itemName}', options.itemName)
+          text = text.replace('{{itemName}}', options.itemName)
         return text
       }
       return key
