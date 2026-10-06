@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import test from 'node:test'
+import { fileURLToPath } from 'node:url'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { CHARACTERS } from '../../src/data/characters'
@@ -11,8 +13,12 @@ import {
 
 // Keys the UI builds from a data id (`t(`ns:prefix.${id}`)`). A literal-key scan
 // cannot see them, so each id family is checked against the data it comes from.
+const LOCALES_ROOT = fileURLToPath(
+  new URL('../../public/locales/', import.meta.url)
+)
+
 const read = (lang, ns) =>
-  JSON.parse(readFileSync(`public/locales/${lang}/${ns}.json`, 'utf8'))
+  JSON.parse(readFileSync(join(LOCALES_ROOT, lang, `${ns}.json`), 'utf8'))
 
 const expectKeys = (ns, keys) => {
   for (const lang of ['en', 'de']) {
