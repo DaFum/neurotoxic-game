@@ -26,7 +26,7 @@ vi.mock('../../src/utils/logger', () => ({
   }
 }))
 
-// Mock useGameState
+// Shared state/actions backing the useGameSelector/useGameActions mocks
 const mockGameState = {
   player: { day: 5, money: 500, van: { upgrades: [] } },
   band: { harmony: 50 },
