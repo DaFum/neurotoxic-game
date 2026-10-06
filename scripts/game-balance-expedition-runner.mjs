@@ -1934,9 +1934,12 @@ export const runExpeditionSimulation = (
           telemetry
         )
       }
-      const acceptTechnical = hasPaidRecovery
-        ? null
-        : acceptExpeditionTechnicalFailure(state)
+      // Re-read after the attempt: a recovery the reducer refused leaves the
+      // group at zero, and the explicit acceptance is then the only way out.
+      const stillDead = getExpeditionTechnicalCondition(state)[deadGroup] === 0
+      const acceptTechnical = stillDead
+        ? acceptExpeditionTechnicalFailure(state)
+        : null
       if (acceptTechnical) {
         state = gameReducer(state, acceptTechnical)
         const failAction = acceptExpeditionFailure(state)

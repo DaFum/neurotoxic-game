@@ -3,7 +3,7 @@
  */
 
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { describe, it, mock } from 'node:test'
 
 import {
   CALIBRATION_COHORT_NAMESPACE,
@@ -259,6 +259,37 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     })
     assert.equal(result.telemetry.insuranceClaimed, true)
   })
+
+  it('accepts technical failure when the listed recovery is refused', async () => {
+    // Production's reducer and recovery controls share one resolver, so a
+    // refusal cannot be staged through state alone: the claim builder is
+    // mocked to refuse, and a fresh runner instance picks the mock up.
+    const actionCreators =
+      await import('../../src/context/expeditionActionCreators.ts')
+    const refusedClaim = mock.module(
+      '../../src/context/expeditionActionCreators.ts',
+      {
+        namedExports: {
+          ...actionCreators,
+          claimExpeditionInsurance: () => null
+        }
+      }
+    )
+    try {
+      const { runExpeditionSimulation: runWithRefusedClaim } =
+        await import('../../scripts/game-balance-expedition-runner.mjs?refused-claim')
+      // The claim is the only listed recovery: donors sit below the floor.
+      const { profile, state } = deadPaWithoutPaidRepair(50)
+      const result = runWithRefusedClaim(state, profile, 4242)
+      assert.deepEqual(result.telemetry.deadGroupRecoveries, [])
+      assert.equal(result.telemetry.insuranceClaimed, false)
+      assert.equal(result.outcome, 'failed')
+      assert.equal(result.terminalSource, 'technical_shutdown')
+    } finally {
+      refusedClaim.restore()
+    }
+  })
+
   it('evaluates candidate nodes with profile-specific decision policies', () => {
     const cleanProfile = EXPEDITION_BALANCE_PROFILES.find(
       p => p.id === 'clean_sponsor'
