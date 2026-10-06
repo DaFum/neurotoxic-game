@@ -138,11 +138,13 @@ test.describe('Game Flow', () => {
     // This test goes through rhythm game and minigames, so it needs extra time.
     test.setTimeout(180000)
 
-    // The run seed is crypto-random, so pin the map through the DEV-only
-    // `?seed=` override (src/utils/devSeedOverride.ts). Map seed 2 connects the
-    // start node to exactly one GIG, Leipzig in layer 1, so travel always has
-    // the same target and still goes through the Tourbus minigame.
-    const SEEDED_URL = '/?seed=2'
+    // The run seed and event rolls use the secure RNG, so pin both through the
+    // DEV-only URL switches in src/utils/devSeedOverride.ts. Map seed 2 connects
+    // the start node to exactly one GIG, Leipzig in layer 1, so travel always
+    // has the same target and still goes through the Tourbus minigame.
+    // `events=off` stops travel, gig and post-gig events, so no random event
+    // dialog can sit over a scene the test is waiting for.
+    const SEEDED_URL = '/?seed=2&events=off'
 
     await skipToMenu(page, { url: SEEDED_URL })
     const startBtn = page.getByRole('button', { name: /start tour/i })
@@ -250,9 +252,9 @@ test.describe('Game Flow', () => {
       await hqHeading.waitFor({ state: 'hidden' })
     }
 
-    // Travel events, gig events and the unplayed show's payout are still
-    // random, and a bad roll can bankrupt the starting 500 and end the run on
-    // the SOLD OUT screen instead of returning to the overworld. Give the band
+    // The unplayed show's payout still depends on how the rhythm game goes, and
+    // a poor result can bankrupt the starting 500 and end the run on the SOLD
+    // OUT screen instead of returning to the overworld. Give the band
     // a cash buffer through the DEV-only `window.gameState` dispatchers, which
     // run the normal UPDATE_PLAYER action creator and reducer.
     const SEEDED_MONEY = 5000

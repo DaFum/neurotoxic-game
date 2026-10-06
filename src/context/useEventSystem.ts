@@ -9,6 +9,7 @@ import { addUnlock } from '../utils/unlockManager'
 import { KNOWN_EVENT_IDS } from '../data/events'
 import { eventEngine } from '../utils/eventEngine'
 import { logger } from '../utils/logger'
+import { isDevEventsDisabled } from '../utils/devSeedOverride'
 import { GAME_PHASES } from './gameConstants'
 import { gameReducer } from './gameReducer'
 import {
@@ -202,6 +203,8 @@ export function useEventSystem({
 
   const triggerEvent = useCallback(
     (category: string, triggerPoint: string | null = null) => {
+      // DEV/QA `?events=off`: no random event rolls (e2e golden path).
+      if (isDevEventsDisabled()) return false
       const currentState = stateRef.current
       // gig_intro / gig_mid events are the one class that fires DURING the gig:
       // the rhythm loop pauses the audio while `activeEvent` is set (see

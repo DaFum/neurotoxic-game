@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useEventSystem } from '../../src/context/useEventSystem'
 import { ActionTypes } from '../../src/context/actionTypes'
+import { eventEngine } from '../../src/utils/eventEngine'
 
 describe('useEventSystem.triggerEvent pending-queue drain', () => {
   let dispatch
@@ -136,5 +137,63 @@ describe('useEventSystem unlock persistence honors the injected adapter', () => 
     // ...and must not leak into the module-default backend, or a save written
     // through adapter B would reference unlocks stored in adapter A.
     expect(localStorage.getItem(MARKER_KEY)).toBeNull()
+  })
+})
+
+describe('useEventSystem.triggerEvent DEV ?events=off switch', () => {
+  const buildState = () => ({
+    currentScene: 'OVERWORLD',
+    player: { eventsTriggeredToday: 0 },
+    // An unknown head would normally be drained with a dispatch.
+    pendingEvents: ['removed_in_patch_event'],
+    eventCooldowns: [],
+    activeStoryFlags: [],
+    band: { members: [], harmony: 50 },
+    social: {},
+    assets: []
+  })
+  const buildParams = dispatch => ({
+    stateRef: { current: buildState() },
+    dispatch,
+    addToast: vi.fn(),
+    changeScene: vi.fn(),
+    saveGame: vi.fn(),
+    tRef: { current: key => key }
+  })
+
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+    vi.restoreAllMocks()
+  })
+
+  it('rolls no event and dispatches nothing while ?events=off is set', () => {
+    window.history.replaceState(null, '', '/?seed=2&events=off')
+    const checkEvent = vi.spyOn(eventEngine, 'checkEvent')
+    const dispatch = vi.fn()
+
+    const { result } = renderHook(() => useEventSystem(buildParams(dispatch)))
+
+    for (const [category, triggerPoint] of [
+      ['transport', 'travel'],
+      ['gig', 'gig_intro'],
+      ['financial', 'post_gig']
+    ]) {
+      expect(result.current.triggerEvent(category, triggerPoint)).toBe(false)
+    }
+    expect(checkEvent).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
+  })
+
+  it('keeps rolling events for any other events value', () => {
+    window.history.replaceState(null, '', '/?events=on')
+    const checkEvent = vi.spyOn(eventEngine, 'checkEvent')
+    const dispatch = vi.fn()
+    const params = buildParams(dispatch)
+    params.stateRef.current = { ...buildState(), pendingEvents: [] }
+
+    const { result } = renderHook(() => useEventSystem(params))
+    result.current.triggerEvent('transport', 'travel')
+
+    expect(checkEvent).toHaveBeenCalledTimes(1)
   })
 })
