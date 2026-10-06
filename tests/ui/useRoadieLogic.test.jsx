@@ -169,6 +169,12 @@ describe('useRoadieLogic', () => {
       })
     }
     expect(game.traffic.length).toBeGreaterThan(0)
+    const trafficIds = game.traffic.map(car => car.id)
+    expect(new Set(trafficIds).size).toBe(trafficIds.length)
+    for (const car of game.traffic) {
+      expect(Number.isInteger(car.textureHash)).toBe(true)
+      expect(car.textureHash).toBeGreaterThanOrEqual(0)
+    }
 
     // 6. Handle collision and damage
     game.playerPos = { x: 6, y: 1 }

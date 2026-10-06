@@ -16,6 +16,7 @@ import {
   ROADIE_MOVE_COOLDOWN_BASE
 } from './minigameConstants'
 import { hash31 } from '../../utils/stringUtils'
+import { getSafeUUID } from '../../utils/crypto'
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
@@ -32,7 +33,7 @@ function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
     while (spawner.timer > spawner.rate) {
       spawner.timer -= spawner.rate
 
-      const id = `${performance.now()}-${spawner.row}-${spawner.timer}`
+      const id = getSafeUUID()
 
       game.traffic.push({
         id,

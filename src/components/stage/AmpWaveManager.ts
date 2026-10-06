@@ -49,23 +49,22 @@ export class AmpWaveManager {
     if (!this.waveGraphics) return
 
     // ⚡ BOLT OPTIMIZATION: Precompute inverse period and hoist jitter branching outside loop
-    // What: Pre-calculate 1/period and branch jitter logic into separate loops without inline conditionals or getSafeRandom() calls inside step iterations.
-    // Why: Eliminates floating point division (x / period) and per-step jitter conditionals / secureRandom crypto array lookups inside 60 FPS update loop.
-    // Impact: Saves up to ~768 divisions and condition/random checks per frame during Amp minigame rendering.
+    // What: Pre-calculate 1/period and branch jitter logic into separate loops without inline conditionals inside step iterations.
+    // Why: Eliminates floating point division (x / period) and per-step jitter conditionals inside 60 FPS update loop.
+    // Impact: Saves up to ~768 divisions and condition checks per frame during Amp minigame rendering.
+    // Jitter noise uses getSafeRandom(), which reads a pre-filled crypto batch, so it stays cheap per step.
     const invPeriod = 1 / period
 
     if (jitter !== 0) {
       const firstY =
-        centerY +
-        Math.sin(time) * amplitude +
-        (Math.random() - 0.5) * jitter
+        centerY + Math.sin(time) * amplitude + (getSafeRandom() - 0.5) * jitter
       this.waveGraphics.moveTo(0, firstY)
 
       for (let x = 5; x < width; x += 5) {
         const y =
           centerY +
           Math.sin(x * invPeriod + time) * amplitude +
-          (Math.random() - 0.5) * jitter
+          (getSafeRandom() - 0.5) * jitter
         this.waveGraphics.lineTo(x, y)
       }
     } else {

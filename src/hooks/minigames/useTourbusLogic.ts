@@ -11,7 +11,7 @@ import {
   TOURBUS_SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
-import { getSafeRandom } from '../../utils/crypto'
+import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
 import { clamp0to100 } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
@@ -57,10 +57,8 @@ const spawnObstacles = (
 ) => {
   game.lastSpawnTime += deltaMS
   while (game.lastSpawnTime >= currentSpawnRate) {
-    const time = performance.now()
     const safeRandomLane = getSafeRandom()
     const safeRandomType = getSafeRandom()
-    const safeRandomId = getSafeRandom()
 
     const lane = Math.floor(safeRandomLane * TOURBUS_LANE_COUNT)
     let type: TourbusObstacleType = 'OBSTACLE'
@@ -70,7 +68,7 @@ const spawnObstacles = (
       type = 'FUEL' // 20% chance
     }
     game.obstacles.push({
-      id: `${time}-${safeRandomId}`,
+      id: getSafeUUID(),
       lane,
       y: -10, // Start above screen (0 to 100 is visible area)
       type,
