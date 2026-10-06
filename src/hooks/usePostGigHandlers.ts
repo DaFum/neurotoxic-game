@@ -77,6 +77,7 @@ export function usePostGigHandlers({
   recordExpeditionObligationSignal,
   resolveExpeditionSocialResult,
   settleSoldMerch,
+  offerExpeditionDraft,
   phase,
   setPhase,
   setBrandOffers,
@@ -117,7 +118,8 @@ export function usePostGigHandlers({
       completeExpedition,
       recordExpeditionObligationSignal,
       resolveExpeditionSocialResult,
-      settleSoldMerch
+      settleSoldMerch,
+      offerExpeditionDraft
     }),
     [
       updatePlayer,
@@ -135,7 +137,8 @@ export function usePostGigHandlers({
       completeExpedition,
       recordExpeditionObligationSignal,
       resolveExpeditionSocialResult,
-      settleSoldMerch
+      settleSoldMerch,
+      offerExpeditionDraft
     ]
   )
   const handleContinue = useContinueHandler({

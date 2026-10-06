@@ -804,6 +804,12 @@ export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
  * State representing an undiscovered or revealed defect on tour equipment.
  */
 export interface HiddenDefectState {
+  /**
+   * Unique within `ExpeditionTechnicalCondition.defects`; every defect
+   * transition addresses a defect by this id. Creation skips an id already
+   * present and hydration keeps the first entry per id, so a duplicate is
+   * invalid state rather than a second defect.
+   */
   id: string
   group: ConditionGroup
   severity: 1 | 2 | 3

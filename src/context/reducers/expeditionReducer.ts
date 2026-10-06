@@ -2589,15 +2589,13 @@ export const handleOfferExpeditionDraft = (
         const currentNode = state.player.currentNodeId
           ? state.gameMap?.nodes?.[state.player.currentNodeId]
           : undefined
-        const isMajorClass =
-          currentNode &&
-          (currentNode.nodeClass === 'MAJOR_GIG' ||
-            currentNode.type === 'FESTIVAL')
+        // A major gig is the route's Festival class, which the built map
+        // renders as node type `FESTIVAL`; the Finale ends the run instead.
         return (
           state.lastGigStats !== null &&
           state.lastGigStats.failed !== true &&
           state.currentGig?.id === payload.sourceKey &&
-          Boolean(isMajorClass)
+          currentNode?.type === 'FESTIVAL'
         )
       }
       case 'rare_event': {

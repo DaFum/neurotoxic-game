@@ -46,10 +46,14 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
         {classLabel}
       </div>
       <div className='text-ash-gray' data-testid='expedition-node-fog-route'>
-        {t('ui:expedition.node.routeStep', { step: fog.routeStep })}
         {fog.onwardRouteCount > 0
-          ? ` · ${t('ui:expedition.node.onwardRoutes', { count: fog.onwardRouteCount })}`
-          : null}
+          ? t('ui:expedition.node.routeFacts', {
+              step: t('ui:expedition.node.routeStep', { step: fog.routeStep }),
+              onward: t('ui:expedition.node.onwardRoutes', {
+                count: fog.onwardRouteCount
+              })
+            })
+          : t('ui:expedition.node.routeStep', { step: fog.routeStep })}
       </div>
       <div>
         <span className='text-star-white'>

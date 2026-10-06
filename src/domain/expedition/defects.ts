@@ -163,6 +163,14 @@ export const getVisibleExpeditionDefects = (
  * @param index - Index of the defect being transitioned.
  * @param defect - The transitioned defect.
  * @returns A copy of `tc` with the defect list updated.
+ *
+ * @remarks
+ * The reveal, trigger and resolve transitions locate their defect with
+ * `findIndex` by id. That addresses exactly one defect because ids are unique:
+ * {@link createDeterministicHiddenDefect} derives the id from group, source and
+ * route step, the repair reducer skips an id that is already present, and the
+ * save sanitizer keeps only the first entry per id. A duplicate id is invalid
+ * state, not a second defect.
  */
 const withDefectAt = (
   tc: ExpeditionTechnicalCondition,

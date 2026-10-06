@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ExpeditionIntelPanel } from '../../src/ui/expedition/ExpeditionIntelPanel'
 import { createInitialState } from '../../src/context/initialState'
@@ -15,11 +15,34 @@ const actions = vi.hoisted(() => ({
   createSocialIntelGrant: vi.fn()
 }))
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector: (s: GameState) => unknown) =>
-    selector(state.current),
-  useGameActions: () => actions
-}))
+// Store listeners, so a test can publish a new state to a mounted panel the
+// way the real store subscription does (the panel is memoized and takes no
+// props, so a plain rerender would not reach it).
+const listeners = vi.hoisted(() => new Set<() => void>())
+
+vi.mock('../../src/context/GameState', async () => {
+  const { useEffect, useReducer } = await import('react')
+  return {
+    useGameSelector: (selector: (s: GameState) => unknown) => {
+      const [, forceRender] = useReducer((n: number) => n + 1, 0)
+      useEffect(() => {
+        listeners.add(forceRender)
+        return () => {
+          listeners.delete(forceRender)
+        }
+      }, [])
+      return selector(state.current)
+    },
+    useGameActions: () => actions
+  }
+})
+
+const publish = (next: GameState): void => {
+  state.current = next
+  act(() => {
+    for (const listener of listeners) listener()
+  })
+}
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -40,6 +63,7 @@ const onward = map.connections
 const [firstOnward] = onward
 
 const buildState = ({
+  runId = 'run_1',
   crewIds = [] as string[],
   intelGrants = [] as ExpeditionIntelGrant[],
   intelByNodeId = {} as Record<string, 0 | 1 | 2>,
@@ -51,7 +75,7 @@ const buildState = ({
   base.expedition = {
     ...createDefaultExpeditionState(),
     status: 'active',
-    runId: 'run_1',
+    runId,
     routeStep: 0,
     visitedNodeIds: [startNodeId],
     intelGrants,
@@ -98,6 +122,31 @@ describe('ExpeditionIntelPanel', () => {
     state.current = buildState({ crewIds: ['noah'] })
     render(<ExpeditionIntelPanel />)
     expect(onward.length).toBeGreaterThan(0)
+    for (const nodeId of onward) {
+      expect(actions.revealExpeditionNodeIntel).toHaveBeenCalledWith({
+        nodeId,
+        source: 'scout_passive'
+      })
+    }
+  })
+
+  it('reads each onward node once per run, and again in the next run', () => {
+    // Node ids are deterministic per seed, so the next run on the same route
+    // reuses them; the passive read must not stay remembered across runs.
+    state.current = buildState({ crewIds: ['noah'] })
+    render(<ExpeditionIntelPanel />)
+    expect(actions.revealExpeditionNodeIntel).toHaveBeenCalledTimes(
+      onward.length
+    )
+
+    // Same run, fresh state object: no second read.
+    publish(buildState({ crewIds: ['noah'] }))
+    expect(actions.revealExpeditionNodeIntel).toHaveBeenCalledTimes(
+      onward.length
+    )
+
+    actions.revealExpeditionNodeIntel.mockClear()
+    publish(buildState({ runId: 'run_2', crewIds: ['noah'] }))
     for (const nodeId of onward) {
       expect(actions.revealExpeditionNodeIntel).toHaveBeenCalledWith({
         nodeId,

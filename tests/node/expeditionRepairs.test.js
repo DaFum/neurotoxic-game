@@ -183,6 +183,30 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
+    'A second same-step repair of the same group adds no duplicate defect id',
+    () => {
+      // Defect ids are unique per run: every transition addresses a defect by
+      // id, so a second copy could never be revealed, triggered or resolved.
+      const payload = {
+        mode: 'improvise',
+        targetGroup: 'pa',
+        expectedRouteStep: 3
+      }
+      const once = handleExecuteExpeditionRepair(
+        createActiveExpeditionState(),
+        payload
+      )
+      assert.equal(once.expedition.technicalCondition.defects.length, 1)
+      const twice = handleExecuteExpeditionRepair(once, payload)
+      assert.notEqual(twice, once)
+      assert.deepEqual(
+        twice.expedition.technicalCondition.defects,
+        once.expedition.technicalCondition.defects
+      )
+    }
+  )
+
+  await t.test(
     'Cannibalize repair: sacrifices 15 points from source (>= 55) to restore +25 capped at 60',
     () => {
       const state = createActiveExpeditionState()

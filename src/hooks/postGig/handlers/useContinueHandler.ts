@@ -79,7 +79,8 @@ export function useContinueHandler({
     recordExpeditionCrewStressSource,
     completeExpedition,
     recordExpeditionObligationSignal,
-    settleSoldMerch
+    settleSoldMerch,
+    offerExpeditionDraft
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -166,6 +167,16 @@ export function useContinueHandler({
             recordExpeditionObligationSignal('finale', currentGig.id)
           }
         }
+        // A completed major gig is a Run Draft moment (spec §9). The reducer
+        // proves the node is a Festival and the gig did not fail, so this only
+        // names the moment; the Finale ends the run, so no draft follows it.
+        if (
+          offerExpeditionDraft &&
+          !isFinaleGig &&
+          lastGigStats?.failed !== true
+        ) {
+          offerExpeditionDraft('major_gig', currentGig.id)
+        }
         if (
           typeof accuracy === 'number' &&
           Number.isFinite(accuracy) &&
@@ -251,6 +262,7 @@ export function useContinueHandler({
     completeExpedition,
     recordExpeditionObligationSignal,
     settleSoldMerch,
+    offerExpeditionDraft,
     setlist,
     expedition,
     band,

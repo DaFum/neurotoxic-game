@@ -461,6 +461,7 @@
   "expedition.node.payout": "Gage:",
   "expedition.node.rare": "Selten: {{name}}",
   "expedition.node.reward": "Beute:",
+  "expedition.node.routeFacts": "{{step}} · {{onward}}",
   "expedition.node.routeStep": "Halt {{step}}",
   "expedition.node.subtype.BLACK_MARKET": "Schwarzmarkt",
   "expedition.node.subtype.RIVAL_ENCOUNTER": "Rivalen-Begegnung",
