@@ -1838,6 +1838,40 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
   assert.equal(selectExpeditionFinaleType({ nemesisLevel: 4 }), 'rival_battle')
 })
 
+test('a completed Festival gig offers the major_gig Run Draft', () => {
+  const walked = walkTo(startedState(), 1)
+  const nodeId = walked.player.currentNodeId
+  const atGig = (type, failed) => ({
+    ...walked,
+    gameMap: {
+      ...walked.gameMap,
+      nodes: { ...walked.gameMap?.nodes, [nodeId]: { type } }
+    },
+    currentGig: { id: 'venue_major' },
+    lastGigStats: { score: 9000, accuracy: 85, failed }
+  })
+  const offer = state =>
+    handleOfferExpeditionDraft(state, {
+      sourceType: 'major_gig',
+      sourceKey: 'venue_major',
+      expectedRouteStep: state.expedition.routeStep
+    })
+
+  const festival = atGig('FESTIVAL', false)
+  const offered = offer(festival)
+  assert.equal(offered.expedition.pendingRunDraftOffer?.sourceType, 'major_gig')
+  assert.equal(
+    offered.expedition.pendingRunDraftOffer?.candidateTraitIds.length,
+    3
+  )
+
+  // A club gig is not a major gig, and a failed show earns nothing.
+  const club = atGig('GIG', false)
+  assert.strictEqual(offer(club), club)
+  const flop = atGig('FESTIVAL', true)
+  assert.strictEqual(offer(flop), flop)
+})
+
 test('a pending Run Draft holds the route until the player picks', () => {
   const walked = walkTo(startedState(), 1)
   const nodeId = walked.player.currentNodeId
