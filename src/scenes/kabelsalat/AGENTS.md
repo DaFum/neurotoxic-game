@@ -14,3 +14,4 @@
 ## Shuffle
 
 - Socket/cable shuffles must use an in-place Fisher-Yates over `getSafeRandom()` from `src/utils/crypto` (which falls back to `Math.random()` once if the Crypto API is unavailable). Never use `sort(() => Math.random() - 0.5)` — biased and previously flagged insecure. Use `secureRandom()` directly only for non-shuffle visuals where a throw on missing Crypto is acceptable.
+- `KabelsalatScene` keeps its own SVG layout but mounts the shared exit controls: `useMinigameSceneLogic` (SKIP forfeit, DEV `Shift+P` backdoor via `finishMinigame`) and `MinigameSkipButton`. The hook is fed `isGameOver || isPoweredOn` so SKIP hides and the backdoor idles once an auto-advance is pending; `forceAdvance` is the single, idempotent completion path for skip, backdoor, Escape and the timers. `tests/ui/KabelsalatScene.test.jsx` pins the reachability.
