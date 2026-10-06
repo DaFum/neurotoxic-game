@@ -116,6 +116,56 @@ describe('handleGraftNeuroOverclock', () => {
   })
 })
 
+describe('legacy neuro_overclock saves', () => {
+  // Shape the pre-registration graft fallback wrote: raw i18n keys under the
+  // wrong names, `description` instead of `desc`, and no `unlockHint`.
+  const legacyTrait = {
+    id: 'neuro_overclock',
+    name: 'traits:neuro_overclock.name',
+    description: 'traits:neuro_overclock.description',
+    effects: { rhythmMultiplier: 1.5, stressPerGig: 5, healthPerGig: -10 }
+  }
+
+  it('rehydrates the stored fallback object to the canonical trait on load', () => {
+    const state = richState()
+    const legacyBand = {
+      ...state.band,
+      members: state.band.members.map((member, index) =>
+        index === 0
+          ? {
+              ...member,
+              traits: { ...member.traits, neuro_overclock: legacyTrait }
+            }
+          : member
+      )
+    }
+
+    const reloaded = sanitizeBand(JSON.parse(JSON.stringify(legacyBand)))
+
+    assert.deepEqual(
+      reloaded.members[0].traits.neuro_overclock,
+      getTraitById('neuro_overclock')
+    )
+  })
+
+  it('keeps a stored trait whose id has no canonical definition', () => {
+    const state = richState()
+    const unknownTrait = { id: 'retired_trait', name: 'old' }
+    const legacyBand = {
+      ...state.band,
+      members: state.band.members.map((member, index) =>
+        index === 0
+          ? { ...member, traits: { retired_trait: unknownTrait } }
+          : member
+      )
+    }
+
+    const reloaded = sanitizeBand(JSON.parse(JSON.stringify(legacyBand)))
+
+    assert.deepEqual(reloaded.members[0].traits.retired_trait, unknownTrait)
+  })
+})
+
 describe('handleClinicEnhance cannot bypass the graft', () => {
   it('rejects neuro_overclock so it cannot be bought for the cheap enhance fee', () => {
     const state = richState()

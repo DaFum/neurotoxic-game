@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { DetailedStatsTab } from '../../../src/ui/bandhq/DetailedStatsTab.tsx'
+import { sanitizeBand } from '../../../src/context/reducers/sanitizers/stateSanitizers'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -114,6 +115,39 @@ describe('DetailedStatsTab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use Guitar Strings' }))
 
     expect(onConsumeItem).toHaveBeenCalledWith('strings')
+  })
+
+  it('shows a graft trait loaded from a legacy save as active', () => {
+    const legacySave = {
+      ...band,
+      members: [
+        {
+          id: 'matze',
+          name: 'Matze',
+          traits: {
+            // Pre-registration graft fallback: wrong key names, no unlockHint.
+            neuro_overclock: {
+              id: 'neuro_overclock',
+              name: 'traits:neuro_overclock.name',
+              description: 'traits:neuro_overclock.description'
+            }
+          }
+        }
+      ]
+    }
+
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={sanitizeBand(legacySave)}
+        social={social}
+      />
+    )
+
+    const trait = screen.getByRole('button', {
+      name: /traits:neuroOverclock\.name/
+    })
+    expect(trait).toHaveTextContent('Active')
   })
 
   it('does not expose consume controls for passive owned gear', () => {

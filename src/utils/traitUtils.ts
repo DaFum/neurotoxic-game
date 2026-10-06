@@ -237,6 +237,29 @@ export const normalizeTraitMap = (
 }
 
 /**
+ * Normalizes a loaded trait map and swaps every stored trait that has a
+ * canonical definition for that definition.
+ *
+ * @remarks
+ * Saves can hold stale or legacy-shaped copies, e.g. the pre-registration
+ * `neuro_overclock` graft fallback with raw `name`/`description` keys and no
+ * `desc`/`unlockHint`, which Band HQ filters out as malformed. Traits without a
+ * canonical definition are kept as stored so `hasTrait` still sees them.
+ * @param traits - The raw traits read from a save.
+ * @returns A null-prototype trait map with canonical definitions.
+ */
+export const rehydrateTraitMap = (
+  traits: unknown
+): Record<string, TraitDef> => {
+  const traitsMap = normalizeTraitMap(traits)
+  for (const id of Object.keys(traitsMap)) {
+    const canonical = getTraitById(id)
+    if (canonical) traitsMap[id] = canonical
+  }
+  return traitsMap
+}
+
+/**
  * Removes mutually exclusive traits from a traits map based on a newly added trait definition.
  *
  * @param traitsMap - The object containing the current traits.
