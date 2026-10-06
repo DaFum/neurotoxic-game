@@ -45,6 +45,7 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/nodeTestDiscovery.test.js',
   'tests/node/parallelism.test.js',
   'tests/node/playwright-screenshot-fixture-validation.test.js',
+  'tests/node/projectDeclarationsLibCheck.test.js',
   'tests/node/updateSymbols.test.js',
   'tests/node/vitePwaConfig.test.js'
 ])
