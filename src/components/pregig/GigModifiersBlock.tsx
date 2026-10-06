@@ -11,6 +11,7 @@ type GigModifiersBlockProps = {
   t: TranslationCallback
   gigModifierOptions: ModifierOption[]
   gigModifiers: Record<string, boolean>
+  canAffordModifier: (key: ModifierOption['key']) => boolean
   toggleModifier: (key: ModifierOption['key']) => void
   handleBandMeeting: () => void
   bandMeetingCost: number
@@ -50,12 +51,13 @@ const getEffectLabel = (eff: ActiveEffectEntry, t: TranslationCallback) => {
 
 /**
  * Displays paid pre-gig modifiers and toggles the selected modifier state.
- * @param props - Translator, modifier options/state, modifier toggle, band-meeting handler/cost, and active-effect summary.
+ * @param props - Translator, modifier options/state, affordability check, modifier toggle, band-meeting handler/cost, and active-effect summary.
  */
 export const GigModifiersBlock = ({
   t,
   gigModifierOptions,
   gigModifiers,
+  canAffordModifier,
   toggleModifier,
   handleBandMeeting,
   bandMeetingCost,
@@ -78,7 +80,9 @@ export const GigModifiersBlock = ({
             key={item.key}
             item={item}
             isActive={!!gigModifiers[item.key]}
-            onClick={() => toggleModifier(item.key)}
+            // An active modifier can always be switched off; only enabling is gated.
+            disabled={!gigModifiers[item.key] && !canAffordModifier(item.key)}
+            onClick={toggleModifier}
           />
         ))}
 

@@ -23,6 +23,7 @@ describe('GigModifiersBlock', () => {
       { key: 'lightShow', label: 'Light Show', cost: 50, desc: 'Lights!' }
     ] as ModifierOption[],
     gigModifiers: { pyrotechnics: true, lightShow: false },
+    canAffordModifier: vi.fn(() => true),
     toggleModifier: vi.fn(),
     handleBandMeeting: vi.fn(),
     bandMeetingCost: 50,
@@ -54,6 +55,32 @@ describe('GigModifiersBlock', () => {
     fireEvent.click(lightButton)
 
     expect(defaultProps.toggleModifier).toHaveBeenCalledWith('lightShow')
+  })
+
+  it('disables an unaffordable modifier that is not yet active', () => {
+    const canAffordModifier = vi.fn((key: string) => key !== 'lightShow')
+    render(
+      <GigModifiersBlock
+        {...defaultProps}
+        canAffordModifier={canAffordModifier}
+      />
+    )
+
+    const lightButton = screen.getByRole('button', { name: /Light Show/i })
+    expect(lightButton).toBeDisabled()
+    fireEvent.click(lightButton)
+    expect(defaultProps.toggleModifier).not.toHaveBeenCalled()
+  })
+
+  it('keeps an active modifier switchable off even when it is no longer affordable', () => {
+    render(
+      <GigModifiersBlock {...defaultProps} canAffordModifier={() => false} />
+    )
+
+    const pyroButton = screen.getByRole('button', { name: /Pyrotechnics/i })
+    expect(pyroButton).not.toBeDisabled()
+    fireEvent.click(pyroButton)
+    expect(defaultProps.toggleModifier).toHaveBeenCalledWith('pyrotechnics')
   })
 
   it('calls handleBandMeeting when band meeting button is clicked', () => {
