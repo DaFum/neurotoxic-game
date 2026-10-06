@@ -20,6 +20,8 @@ import {
 } from '../../src/context/expeditionActionCreators'
 import { gameReducer } from '../../src/context/gameReducer'
 import { createInitialState } from '../../src/context/initialState'
+import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers'
+import { startedState } from '../expeditionLifecycleFixture.js'
 
 test('Task 7: Hidden-Defect Lifecycle', async t => {
   const createActiveStateWithDefects = (defects = [], tcOverrides = {}) => {
@@ -414,5 +416,43 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
         'resolved'
       )
     }
+  )
+})
+
+test('hydration keeps only the first defect for a duplicated id', () => {
+  // Every transition looks a defect up by id, so a second copy could never be
+  // revealed, triggered or resolved and would stay pending for the whole run.
+  const base = startedState()
+  const raw = structuredClone(base.expedition)
+  const defect = createDeterministicHiddenDefect(
+    base.runSeed,
+    'pa',
+    'improvise',
+    1,
+    1
+  )
+  raw.technicalCondition = {
+    pa: 90,
+    instruments: 100,
+    stageGear: 100,
+    defects: [
+      { ...defect, id: 'dup', group: 'instruments', severity: 7 },
+      { ...defect, id: 'dup', status: 'revealed' },
+      { ...defect, id: 'other' },
+      { ...defect, id: 'dup', status: 'resolved' }
+    ]
+  }
+
+  const { defects } = sanitizeExpeditionState(
+    raw,
+    base.runSeed
+  ).technicalCondition
+  // The malformed first entry is dropped, so the first *valid* one wins.
+  assert.deepEqual(
+    defects.map(d => [d.id, d.status]),
+    [
+      ['dup', 'revealed'],
+      ['other', 'hidden']
+    ]
   )
 })

@@ -19,6 +19,7 @@ import { resolveExpeditionTravelCost } from '../../src/domain/expedition/travel'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules'
 import { getExpeditionTechnicalCondition } from '../../src/domain/expedition/condition'
 import { getExpeditionNodeFogByNodeId } from '../../src/domain/expedition/nodeFog'
+import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay'
 import { fixtureMap, startedState } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
@@ -329,5 +330,48 @@ describe('the Fog reveals the cost the player will actually pay', () => {
     const fog = getExpeditionNodeFogByNodeId(startedState())
     assert.ok(fog)
     assert.equal(fog[firstHop()]?.exactWearCost, null)
+  })
+})
+
+describe('the Fog counts the onward routes the run may actually travel', () => {
+  it('includes an overlay edge from the node the run stands on', () => {
+    const started = startedState()
+    // exp_1_1 reaches only exp_2_1 on the base route; an Underground invite
+    // opens exp_2_0 as an extra edge, and travel authorizes it.
+    const from = 'exp_1_1'
+    const baseCount = map.connections.filter(edge => edge.from === from).length
+    assert.equal(baseCount, 1, 'the fixture changed; pick another node')
+    const state = {
+      ...started,
+      player: { ...started.player, currentNodeId: from },
+      expedition: {
+        ...started.expedition,
+        routeStep: 1,
+        visitedNodeIds: [map.startNodeId, from],
+        pressure: {
+          ...started.expedition.pressure,
+          temporaryRouteOpportunity: {
+            id: 'fog-onward-test',
+            subtype: 'UNDERGROUND_MARKET',
+            targetNodeId: 'exp_2_0',
+            createdAtRouteStep: 1
+          }
+        }
+      }
+    }
+    const effectiveCount = getEffectiveExpeditionRoute(
+      state,
+      map
+    ).connections.filter(edge => edge.from === from).length
+    assert.equal(effectiveCount, 2)
+
+    const fog = getExpeditionNodeFogByNodeId(state)
+    assert.ok(fog)
+    assert.equal(fog[from]?.onwardRouteCount, effectiveCount)
+    // Nodes the run is not standing on keep their base count.
+    assert.equal(
+      fog.exp_1_2?.onwardRouteCount,
+      map.connections.filter(edge => edge.from === 'exp_1_2').length
+    )
   })
 })
