@@ -120,6 +120,58 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     )
   })
 
+  it('HardGate10 fails when the reducer accepts no way out of a blocked PreGig', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // One dead group and a corrupted route step: every repair, claim and the
+    // technical failure carry that step as their stale guard, so the reducer
+    // refuses all of them. The Condition summary is still 75, which is why
+    // the old summary-based trigger never even looked at this state.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*PreGig is blocked/
+    )
+  })
+
+  it('HardGate10 fails when a pending crisis offers no choice the reducer accepts', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // An accepted technical failure derives a `technical_shutdown` crisis, so
+    // `acceptExpeditionFailure` returns an action - which is all the old gate
+    // asked. The reducer still refuses it here, so the crisis is a dead end.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalFailureAccepted: true,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*crisis technical_shutdown/
+    )
+  })
+
   it('accepts technical failure when a dead group has no paid recovery', () => {
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const base = buildProductionSimulationLoadout(undefined, profile, 4242)

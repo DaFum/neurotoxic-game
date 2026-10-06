@@ -13,6 +13,7 @@ import { getEffectiveExpeditionRoute } from '../src/domain/expedition/routeOverl
 import { resolveExpeditionTravelCost } from '../src/domain/expedition/travel.ts'
 import {
   EXPEDITION_CONDITION_GROUPS,
+  canStartExpeditionPreGig,
   getExpeditionTechnicalCondition,
   getExpeditionConditionSummary
 } from '../src/domain/expedition/condition.ts'
@@ -163,6 +164,86 @@ export const generateCohortSeeds = (namespace, count, offset = 0) => {
  */
 export const deriveCohortSeed = (namespace, index) => {
   return generateCohortSeeds(namespace, 1, index)[0]
+}
+
+/** Repair modes probed for a dead group by Gate 10. */
+const GATE10_REPAIR_MODES = ['field', 'professional', 'improvise', 'cannibalize']
+
+/**
+ * Gate 10's way-out probe: whether the production reducer accepts at least
+ * one action that actually leaves a blocked or crisis state.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('../src/types/expedition').PendingExpeditionFailure | null} pending
+ * @returns {boolean}
+ *
+ * @remarks
+ * Judged by the outcome, not by reference identity: `gameReducer` re-syncs
+ * the derived crisis onto state for any action, so a refused action can still
+ * return a fresh object. A crisis is left when the run ends or a different
+ * (or no) crisis is derived; a blocked PreGig is left when the dead group has
+ * Condition again or the run ends.
+ */
+const hasAcceptedExpeditionWayOut = (state, pending) => {
+  const dispatch = action => (action === null ? null : gameReducer(state, action))
+  const ended = next => next !== null && next.expedition.status !== 'active'
+
+  if (pending) {
+    return pending.choices.some(choice => {
+      const next = dispatch(
+        choice === 'accept_failure'
+          ? acceptExpeditionFailure(state)
+          : resolveExpeditionCrisis(state, choice)
+      )
+      return (
+        ended(next) ||
+        (next !== null && deriveExpeditionPendingFailure(next)?.id !== pending.id)
+      )
+    })
+  }
+
+  const tc = getExpeditionTechnicalCondition(state)
+  for (const group of EXPEDITION_CONDITION_GROUPS.filter(g => tc[g] === 0)) {
+    const revived = next =>
+      ended(next) ||
+      (next !== null && getExpeditionTechnicalCondition(next)[group] > 0)
+    for (const mode of GATE10_REPAIR_MODES) {
+      const sources =
+        mode === 'cannibalize'
+          ? EXPEDITION_CONDITION_GROUPS.filter(source => source !== group)
+          : [undefined]
+      for (const sourceGroup of sources) {
+        const next = dispatch(
+          executeExpeditionRepair(state, {
+            mode,
+            targetGroup: group,
+            ...(sourceGroup ? { sourceGroup } : {}),
+            expectedRouteStep: state.expedition.routeStep
+          })
+        )
+        if (revived(next)) return true
+      }
+    }
+    const claimed = dispatch(
+      claimExpeditionInsurance(state, {
+        claimType: 'technical',
+        targetGroup: group
+      })
+    )
+    if (revived(claimed)) return true
+  }
+
+  // The explicit termination: accepting technical failure has to raise a
+  // crisis, and that crisis has to accept `accept_failure` in turn.
+  const afterAccept = dispatch(acceptExpeditionTechnicalFailure(state))
+  if (afterAccept === null || deriveExpeditionPendingFailure(afterAccept) === null) {
+    return false
+  }
+  const failAction = acceptExpeditionFailure(afterAccept)
+  return (
+    failAction !== null &&
+    gameReducer(afterAccept, failAction).expedition.status === 'failed'
+  )
 }
 
 /**
@@ -408,25 +489,29 @@ export const verifyHardCorrectnessGates = (
 
   // Gate 10: PreGig zero-Condition / critical-incapacity softlock.
   //
-  // A wiped technical Condition or a live crisis must always leave the run a
-  // way out: either the crisis offers a recovery, or accepting failure is
-  // available. A state with neither is a run the player cannot leave.
+  // Threshold: the gate arms whenever PreGig would refuse Start
+  // (`canStartExpeditionPreGig` - any single group at 0 Condition, or a
+  // critically injured band member) or a crisis is pending. It used to arm on
+  // the Condition *summary* reaching 0, which is the mean of the van and all
+  // three groups and so needs every one of them dead; one dead group, the
+  // case plan 02 Task 10 is about, never armed it.
   //
-  // A dead technical group never derives a crisis on its own: improvise keeps
-  // it recoverable, so ending the run is the player's explicit
-  // `ACCEPT_EXPEDITION_TECHNICAL_FAILURE`. That action is therefore a valid way
-  // out for a zero-Condition state with no pending crisis.
+  // A way out is an action the production reducer actually accepts, not an
+  // action creator that returns non-null: the creators only check
+  // preconditions, so a pending crisis always "had" an accept-failure action
+  // and the gate could not fail. Accepted ways out are any offered crisis
+  // choice; with no crisis, any repair or claim on a dead group, or the
+  // explicit technical failure followed by an accepted `accept_failure`.
   if (state.expedition.status === 'active') {
-    const conditionSummary = getExpeditionConditionSummary(state)
     const pending = deriveExpeditionPendingFailure(state)
-    if (conditionSummary <= 0 || pending !== null) {
-      const hasRecovery = (pending?.choices?.length ?? 0) > 0
-      const canAcceptFailure =
-        acceptExpeditionFailure(state) !== null ||
-        acceptExpeditionTechnicalFailure(state) !== null
-      if (!hasRecovery && !canAcceptFailure) {
+    if (pending !== null || !canStartExpeditionPreGig(state)) {
+      if (!hasAcceptedExpeditionWayOut(state, pending)) {
         throw new Error(
-          `[HardGate10] Softlock at stage ${stage}: condition ${conditionSummary} with no recovery and no acceptable failure`
+          `[HardGate10] Softlock at stage ${stage}: ${
+            pending
+              ? `crisis ${pending.reason} has no choice the reducer accepts`
+              : 'PreGig is blocked and no recovery or technical failure is accepted'
+          }`
         )
       }
     }
