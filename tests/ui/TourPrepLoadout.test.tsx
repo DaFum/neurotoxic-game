@@ -44,6 +44,36 @@ describe('TourPrepLoadout', () => {
     expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
   })
 
+  it('supports roving tabindex with Arrow/Home/End keyboard navigation on category tabs', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map(tab => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+      '-1'
+    ])
+
+    tabs[0]!.focus()
+    fireEvent.keyDown(tabs[0]!, { key: 'ArrowRight' })
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[1]).toHaveFocus()
+    expect(tabs[1]).toHaveAttribute('tabindex', '0')
+
+    fireEvent.keyDown(tabs[1]!, { key: 'End' })
+    expect(tabs[3]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[3]).toHaveFocus()
+
+    fireEvent.keyDown(tabs[3]!, { key: 'ArrowRight' })
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+
+    fireEvent.keyDown(tabs[0]!, { key: 'Home' })
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[0]).toHaveFocus()
+  })
+
   it('includes focus-visible ring classes on category tabs and selection controls', () => {
     state.current = createInitialState()
     render(<TourPrepLoadout />)

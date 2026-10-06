@@ -2,11 +2,14 @@ import { SONGS_DB } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
-import { useState, type KeyboardEvent } from 'react'
+import { useState } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { ExpeditionServicePanel } from '../ui/expedition/ExpeditionServicePanel'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
+import { useRovingTabs } from '../ui/shared/useRovingTabs'
+
+const PREGIG_TABS = ['logistics', 'merch'] as const
 
 const SONGS_DICT = Object.create(null)
 for (let i = 0; i < SONGS_DB.length; i++) {
@@ -19,43 +22,14 @@ for (let i = 0; i < SONGS_DB.length; i++) {
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
 export const PreGig = () => {
-  const [activeTab, setActiveTab] = useState<'logistics' | 'merch'>('logistics')
+  const [activeTab, setActiveTab] =
+    useState<(typeof PREGIG_TABS)[number]>('logistics')
 
-  const handleTabKeyDown = (
-    event: KeyboardEvent<HTMLButtonElement>,
-    index: number
-  ) => {
-    const tabsList: Array<'logistics' | 'merch'> = ['logistics', 'merch']
-    let nextIndex: number
-
-    switch (event.key) {
-      case 'ArrowRight':
-        nextIndex = (index + 1) % tabsList.length
-        break
-      case 'ArrowLeft':
-        nextIndex = (index - 1 + tabsList.length) % tabsList.length
-        break
-      case 'Home':
-        nextIndex = 0
-        break
-      case 'End':
-        nextIndex = tabsList.length - 1
-        break
-      default:
-        return
-    }
-
-    const nextTab = tabsList[nextIndex]
-    if (!nextTab) return
-
-    event.preventDefault()
-    setActiveTab(nextTab)
-
-    const tabListEl = event.currentTarget.closest('[role="tablist"]')
-    const nextTabEl =
-      tabListEl?.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]
-    nextTabEl?.focus()
-  }
+  const { getTabProps } = useRovingTabs({
+    ids: PREGIG_TABS,
+    activeId: activeTab,
+    onSelect: setActiveTab
+  })
   const {
     t,
     i18n,
@@ -104,14 +78,13 @@ export const PreGig = () => {
             id='tab-logistics'
             aria-selected={activeTab === 'logistics'}
             aria-controls='panel-logistics'
-            tabIndex={activeTab === 'logistics' ? 0 : -1}
+            {...getTabProps('logistics')}
             className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
               activeTab === 'logistics'
                 ? 'bg-toxic-green text-void-black font-bold'
                 : 'text-ash-gray hover:text-toxic-green'
             }`}
             onClick={() => setActiveTab('logistics')}
-            onKeyDown={e => handleTabKeyDown(e, 0)}
           >
             {t('ui:pregig.tabs.logistics')}
           </button>
@@ -121,14 +94,13 @@ export const PreGig = () => {
             id='tab-merch'
             aria-selected={activeTab === 'merch'}
             aria-controls='panel-merch'
-            tabIndex={activeTab === 'merch' ? 0 : -1}
+            {...getTabProps('merch')}
             className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
               activeTab === 'merch'
                 ? 'bg-toxic-green text-void-black font-bold'
                 : 'text-ash-gray hover:text-toxic-green'
             }`}
             onClick={() => setActiveTab('merch')}
-            onKeyDown={e => handleTabKeyDown(e, 1)}
           >
             {t('ui:pregig.tabs.merch')}
           </button>

@@ -48,6 +48,8 @@ import { CONTRABAND_BY_ID } from '../../data/contraband'
 import { MAX_NATIVE_EXPEDITION_CONTRACTS } from '../../data/expedition/contracts'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
+import { ProgressBar } from '../shared/ProgressBar'
+import { useRovingTabs } from '../shared/useRovingTabs'
 import { BuildCommitmentPanel } from './BuildCommitmentPanel'
 import { ExpeditionCrewPicker } from './ExpeditionCrewPicker'
 import type {
@@ -440,6 +442,12 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     }
   ]
 
+  const { getTabProps } = useRovingTabs({
+    ids: TAB_CATEGORIES.map(tab => tab.id),
+    activeId: activeTab,
+    onSelect: setActiveTab
+  })
+
   return (
     <div
       className='flex flex-col gap-6'
@@ -457,6 +465,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               aria-selected={isSelected}
               aria-controls={`panel-${tab.id}`}
               type='button'
+              {...getTabProps(tab.id)}
               onClick={() => setActiveTab(tab.id)}
               data-testid={`expedition-prep-tab-${tab.id}`}
               className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
@@ -808,14 +817,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               </p>
 
               {/* Cargo meter */}
-              <div
-                role='meter'
-                aria-label={t('ui:expedition.prep.cargo', 'Cargo Capacity')}
-                aria-valuenow={cargoUsage.visibleSlotsUsed}
-                aria-valuemin={0}
-                aria-valuemax={cargoUsage.visibleCapacity}
-                className='p-2 border border-steel-gray bg-void-black flex flex-col gap-1 text-xs font-mono'
-              >
+              <div className='p-2 border border-steel-gray bg-void-black flex flex-col gap-1 text-xs font-mono'>
                 <div className='flex justify-between text-star-white'>
                   <span>
                     {t('ui:expedition.prep.cargoUsage', {
@@ -826,23 +828,19 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     })}
                   </span>
                 </div>
-                <div className='w-full h-2 bg-steel-gray/30 overflow-hidden flex'>
-                  <div
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (cargoUsage.visibleSlotsUsed /
-                          Math.max(1, cargoUsage.visibleCapacity)) *
-                          100
-                      )}%`
-                    }}
-                    className={`h-full ${
-                      cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity
-                        ? 'bg-blood-red'
-                        : 'bg-toxic-green'
-                    }`}
-                  />
-                </div>
+                <ProgressBar
+                  value={cargoUsage.visibleSlotsUsed}
+                  max={Math.max(1, cargoUsage.visibleCapacity)}
+                  showValue={false}
+                  aria-label={t('ui:expedition.prep.cargo', 'Cargo Capacity')}
+                  color={
+                    cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity
+                      ? 'bg-blood-red'
+                      : 'bg-toxic-green'
+                  }
+                  trackClassName='w-full h-2 bg-steel-gray/30 overflow-hidden flex'
+                  fillClassName=''
+                />
               </div>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2'>

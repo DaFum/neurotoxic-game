@@ -36,6 +36,36 @@ describe('AssetsBottomTabs', () => {
     expect(onSelect).toHaveBeenCalledWith('studio_chassis')
   })
 
+  it('supports roving tabindex with Arrow/Home/End keyboard navigation', () => {
+    const onSelect = vi.fn()
+    render(<AssetsBottomTabs active='tourbus_chassis' onSelect={onSelect} />)
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map(tab => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+      '-1'
+    ])
+
+    tabs[0]?.focus()
+    fireEvent.keyDown(tabs[0] as HTMLElement, { key: 'ArrowRight' })
+    expect(onSelect).toHaveBeenLastCalledWith('studio_chassis')
+    expect(tabs[1]).toHaveFocus()
+
+    fireEvent.keyDown(tabs[0] as HTMLElement, { key: 'ArrowLeft' })
+    expect(onSelect).toHaveBeenLastCalledWith('merch_workshop_chassis')
+    expect(tabs[3]).toHaveFocus()
+
+    fireEvent.keyDown(tabs[3] as HTMLElement, { key: 'Home' })
+    expect(onSelect).toHaveBeenLastCalledWith('tourbus_chassis')
+    expect(tabs[0]).toHaveFocus()
+
+    fireEvent.keyDown(tabs[0] as HTMLElement, { key: 'End' })
+    expect(onSelect).toHaveBeenLastCalledWith('merch_workshop_chassis')
+    expect(tabs[3]).toHaveFocus()
+  })
+
   it('preserves tab ids and panel controls', () => {
     render(
       <AssetsBottomTabs

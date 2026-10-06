@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../shared/Tooltip.tsx'
+import { useRovingTabs } from '../shared/useRovingTabs.ts'
 import { type HQTabDef } from './HQTabButton.tsx'
 import { HQTabButton } from './HQTabButton.tsx'
 
@@ -44,47 +45,12 @@ export const BandHQTabsList = ({
     }
   ]
 
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    tabId: string
-  ) => {
-    const currentIndex = tabs.findIndex(t => t.id === tabId)
-    if (currentIndex === -1) return
-
-    let nextIndex: number
-
-    switch (event.key) {
-      case 'ArrowRight':
-        nextIndex = (currentIndex + 1) % tabs.length
-        break
-      case 'ArrowLeft':
-        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
-        break
-      case 'Home':
-        nextIndex = 0
-        break
-      case 'End':
-        nextIndex = tabs.length - 1
-        break
-      default:
-        return
-    }
-
-    const nextTab = tabs[nextIndex]
-    if (!nextTab) return
-
-    event.preventDefault()
-
-    if (!nextTab.isLocked) {
-      setActiveTab(nextTab.id)
-    }
-
-    const tabList = event.currentTarget.closest('[role="tablist"]')
-    const targetButton = tabList?.querySelector<HTMLElement>(
-      `#tab-${nextTab.id}`
-    )
-    targetButton?.focus()
-  }
+  const { getTabProps } = useRovingTabs({
+    ids: tabs.map(tab => tab.id),
+    activeId: currentTab,
+    onSelect: setActiveTab,
+    isLocked: id => tabs.find(tab => tab.id === id)?.isLocked === true
+  })
 
   return (
     <div
@@ -108,7 +74,7 @@ export const BandHQTabsList = ({
             isActive={isActive}
             label={t(tab.key)}
             onClick={() => !tab.isLocked && setActiveTab(tab.id)}
-            onKeyDown={event => handleKeyDown(event, tab.id)}
+            onKeyDown={getTabProps(tab.id).onKeyDown}
           />
         )
 
