@@ -103,7 +103,7 @@ vi.mock('../../src/utils/economy', () => ({
 vi.mock('../../src/utils/audio/songUtils', () => ({
   getSongId: vi.fn(s => s.id)
 }))
-// Mock useGameState
+// Shared state/actions backing the useGameSelector/useGameActions mocks
 const mockUseGameState = {
   currentGig: { id: 'gig1', name: 'Test Gig' },
   changeScene: vi.fn(),

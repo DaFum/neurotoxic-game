@@ -1252,9 +1252,10 @@ function collectDeclarationDependencies({ entry, decl }) {
         // Cross-file reference that no `import` of this symbol backs. Two real
         // cases produce these and the import-only `usedBy` pass misses both,
         // causing false orphan signals:
-        //   1. Ambient `.d.ts` type usage — a type declared in one declaration
-        //      file used as a field/payload type in another (e.g. GameState's
-        //      `npcs: Record<string, CharacterProfile>`) without an import.
+        //   1. Inline type queries in `.d.ts` files — a type declared in one
+        //      declaration file used as a field/payload type in another via
+        //      `import('./x').T` (e.g. GameState's
+        //      `career: import('./career').CareerState`), with no import binding.
         //   2. Namespace-member access — `import * as ns` then `ns.foo()`,
         //      where the import binds `ns`, not `foo`.
         // Record the inverse edge so the symbol is not mistaken for an orphan.

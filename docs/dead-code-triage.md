@@ -19,7 +19,8 @@ Since the original pass:
 - `ValidatedMap` (`src/utils/mapValidation.ts`) was demoted to module-private in
   the original pass, re-exported by `682160f92`, and is module-private again.
   Knip's default run flagged it each time it was exported.
-- `motion-dom` and `motion-utils` no longer appear: the `motion` 13.4.x bumps
+- `motion-dom` and `motion-utils` no longer appear: `217d6957b` (the Motion
+  refactor and dependency cleanup, while `motion` was still pinned at 13.1.1)
   removed them from `package.json`. `vite.config.js` still names them in a
   manual-chunk `test` pattern, which matches by path and needs no dependency.
 - `lint-staged` is a new unused-devDependency finding. It is a false positive:
@@ -42,7 +43,13 @@ Since the original pass:
 - `HQ_FACILITY_IDS` and `EXPEDITION_UNLOCK_SET_IDS` are production code now:
   `ExpeditionMetaTab` renders both lists, so they are not test-only any more.
 
-## Resolved (68)
+Count against the 78-finding baseline: the original pass resolved 68 (listed
+below) and left 10. The refresh resolved 3 more of those 10
+(`AudioEngineProvider`, `motion-dom`, `motion-utils`), so 71 of the 78 are
+resolved and 7 remain. `lint-staged` is not part of the baseline; it brings the
+live report to the 8 listed under [Remaining](#remaining-8--intentional-keep).
+
+## Resolved in the original pass (68)
 
 ### Broken script (1)
 
