@@ -472,12 +472,14 @@ export const handleSetMap = (
   state: GameState,
   payload: GameMap | null
 ): GameState => {
+  // The deep scan runs before any field read so it rejects own accessors
+  // without invoking them.
   if (
     payload !== null &&
     (!isLooseRecord(payload) ||
+      hasForbiddenKeysDeep(payload) ||
       !isLooseRecord(payload.nodes) ||
-      !Array.isArray(payload.connections) ||
-      hasForbiddenKeysDeep(payload))
+      !Array.isArray(payload.connections))
   ) {
     logger.warn('GameState', 'Rejected malformed SET_MAP payload')
     return state

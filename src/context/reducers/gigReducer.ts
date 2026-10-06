@@ -104,13 +104,15 @@ export const handleSetGig = (
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   // Same hostile-payload gate as SET_GIG, plus the venue's mandatory identity:
   // a raw dispatch must not move to PRE_GIG with an invalid `currentGig`.
+  // The deep scan runs before any field read so it rejects own accessors
+  // without invoking them.
   if (
     !isLooseRecord(payload) ||
+    hasForbiddenKeysDeep(payload) ||
     typeof payload.id !== 'string' ||
     payload.id === '' ||
     typeof payload.name !== 'string' ||
-    payload.name === '' ||
-    hasForbiddenKeysDeep(payload)
+    payload.name === ''
   ) {
     logger.warn('GameState', 'Rejected malformed START_GIG payload')
     return state
