@@ -49,9 +49,14 @@ export const clampCondition = (value: unknown): number => {
  * The one band vocabulary. Run HUD and inspection readouts each present a
  * coarser label set over it (see `getExpeditionConditionBand` and
  * `getConditionBand`), but both derive their thresholds from this table.
+ *
+ * The 20..39 tier is `damaged`, not `critical`: `critical` already names a
+ * presentation label (the HUD's 20..39 band, the inspection readout's 1..39
+ * band) and the persisted band-injury stage, so a tier of the same name read
+ * as one of those whenever the three met in one file.
  */
 export type ExpeditionConditionTier =
-  'healthy' | 'worn' | 'critical' | 'breaking' | 'disabled'
+  'healthy' | 'worn' | 'damaged' | 'breaking' | 'disabled'
 
 /**
  * Inclusive lower bound of each tier above disabled, best first.
@@ -61,7 +66,7 @@ const EXPEDITION_CONDITION_TIER_FLOORS: ReadonlyArray<
 > = [
   ['healthy', 70],
   ['worn', 40],
-  ['critical', 20],
+  ['damaged', 20],
   // Anything above zero that is not yet disabled.
   ['breaking', Number.MIN_VALUE]
 ]
