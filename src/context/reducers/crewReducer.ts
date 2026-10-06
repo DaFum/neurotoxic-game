@@ -481,14 +481,21 @@ export const applyResolvedCrewEventOutcome = (
       next.expedition.loadout.regionId
     )
     const currentNodeId = next.expedition.visitedNodeIds.at(-1)
-    const target = map.connections.find(edge => edge.from === currentNodeId)?.to
-    if (target) {
-      next = handleCreateContactIntelGrant(next, {
+    // One grant (plan 03 Task 10), on the first onward node in route order
+    // that can still take it: an onward node already at full intel would
+    // refuse the grant while another reachable node is still unread.
+    for (const edge of map.connections) {
+      if (edge.from !== currentNodeId) continue
+      const granted = handleCreateContactIntelGrant(next, {
         eventId: sourceEventId,
         optionId: sourceOptionId,
-        nodeId: target,
+        nodeId: edge.to,
         expectedRouteStep: state.expedition.routeStep
       })
+      if (granted !== next) {
+        next = granted
+        break
+      }
     }
   }
   return {
