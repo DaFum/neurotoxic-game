@@ -168,7 +168,12 @@ export const deriveCohortSeed = (namespace, index) => {
 }
 
 /** Repair modes probed for a dead group by Gate 10. */
-const GATE10_REPAIR_MODES = ['field', 'professional', 'improvise', 'cannibalize']
+const GATE10_REPAIR_MODES = [
+  'field',
+  'professional',
+  'improvise',
+  'cannibalize'
+]
 
 /**
  * Gate 10's way-out probe: whether the production reducer accepts at least
@@ -186,7 +191,8 @@ const GATE10_REPAIR_MODES = ['field', 'professional', 'improvise', 'cannibalize'
  * Condition again or the run ends.
  */
 const hasAcceptedExpeditionWayOut = (state, pending) => {
-  const dispatch = action => (action === null ? null : gameReducer(state, action))
+  const dispatch = action =>
+    action === null ? null : gameReducer(state, action)
   const ended = next => next !== null && next.expedition.status !== 'active'
 
   if (pending) {
@@ -198,7 +204,8 @@ const hasAcceptedExpeditionWayOut = (state, pending) => {
       )
       return (
         ended(next) ||
-        (next !== null && deriveExpeditionPendingFailure(next)?.id !== pending.id)
+        (next !== null &&
+          deriveExpeditionPendingFailure(next)?.id !== pending.id)
       )
     })
   }
@@ -237,7 +244,10 @@ const hasAcceptedExpeditionWayOut = (state, pending) => {
   // The explicit termination: accepting technical failure has to raise a
   // crisis, and that crisis has to accept `accept_failure` in turn.
   const afterAccept = dispatch(acceptExpeditionTechnicalFailure(state))
-  if (afterAccept === null || deriveExpeditionPendingFailure(afterAccept) === null) {
+  if (
+    afterAccept === null ||
+    deriveExpeditionPendingFailure(afterAccept) === null
+  ) {
     return false
   }
   const failAction = acceptExpeditionFailure(afterAccept)
@@ -1618,7 +1628,8 @@ const recoverDeadTechnicalGroup = (
           expectedRouteStep: routeStep
         }).ok
     ).reduce(
-      (best, source) => (best === null || tc[source] > tc[best] ? source : best),
+      (best, source) =>
+        best === null || tc[source] > tc[best] ? source : best,
       /** @type {import('../src/types/expedition').ConditionGroup | null} */ (
         null
       )
