@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
 import { DetailedStatsTab } from '../../src/ui/bandhq/DetailedStatsTab.tsx'
+import { createApplyEventDeltaAction } from '../../src/context/actionCreators'
+import { gameReducer } from '../../src/context/gameReducer'
+import { createInitialState } from '../../src/context/initialState'
+import { createFixedClock } from '../../src/utils/clock'
+import { eventEngine } from '../../src/utils/eventEngine'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -77,10 +82,11 @@ describe('DetailedStatsTab', () => {
     )
     expect(screen.queryByText('Recent Banter')).not.toBeInTheDocument()
 
+    // Distinct deltas per entry so each rendered value pins its own entry.
     const banterEvents = Array.from({ length: 7 }, (_, i) => ({
       member1: `Left${i}`,
       member2: `Right${i}`,
-      delta: i % 2 === 0 ? 10 : -15,
+      delta: i % 2 === 0 ? 10 + i : -(10 + i),
       timestamp: 1000 + i
     }))
     rerender(
@@ -92,12 +98,64 @@ describe('DetailedStatsTab', () => {
     )
 
     expect(screen.getByText('Recent Banter')).toBeInTheDocument()
-    // Only the 5 newest entries are shown, newest first.
-    expect(screen.getByText('Left6 ↔ Right6')).toBeInTheDocument()
-    expect(screen.getByText('Left2 ↔ Right2')).toBeInTheDocument()
-    expect(screen.queryByText('Left1 ↔ Right1')).not.toBeInTheDocument()
-    expect(screen.getAllByText('+10').length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/-15/).length).toBeGreaterThan(0)
+    // Only the 5 newest entries are shown, newest first, each with its own
+    // signed delta.
+    const rows = screen
+      .getAllByText(/ ↔ /)
+      .map(label => [label.textContent, label.nextElementSibling?.textContent])
+    expect(rows).toEqual([
+      ['Left6 ↔ Right6', '+16'],
+      ['Left5 ↔ Right5', '-15'],
+      ['Left4 ↔ Right4', '+14'],
+      ['Left3 ↔ Right3', '-13'],
+      ['Left2 ↔ Right2', '+12']
+    ])
+  })
+
+  test('a banter event delta flows through the action creator and reducer into the banter log', () => {
+    const initial = createInitialState()
+    const [first, second] = initial.band.members
+    const delta = eventEngine.applyResult(
+      {
+        type: 'composite',
+        effects: [
+          {
+            type: 'relationship',
+            member1: first.name,
+            member2: second.name,
+            value: -12,
+            source: 'banter'
+          }
+        ]
+      },
+      {}
+    )
+
+    const action = createApplyEventDeltaAction(
+      delta,
+      createFixedClock(1_700_000_000_000)
+    )
+    const next = gameReducer(initial, action)
+
+    expect(next.band.banterEvents).toEqual([
+      {
+        member1: first.name,
+        member2: second.name,
+        delta: -12,
+        timestamp: 1_700_000_000_000
+      }
+    ])
+
+    render(
+      <DetailedStatsTab
+        player={next.player}
+        band={next.band}
+        social={next.social}
+      />
+    )
+    expect(screen.getByText('Recent Banter')).toBeInTheDocument()
+    const label = screen.getByText(`${first.name} ↔ ${second.name}`)
+    expect(label.nextElementSibling?.textContent).toBe('-12')
   })
 
   test('renders Member equipment correctly', () => {
