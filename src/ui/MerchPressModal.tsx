@@ -6,6 +6,7 @@ import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { PlayerState, BandState } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 type MerchPressConfig = {
   cost: number
@@ -37,9 +38,11 @@ export const MerchPressModal = ({
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
-  const isAffordable = (player?.money ?? 0) >= (config.cost ?? 0)
+  const isAffordable =
+    finiteNumberOr(player?.money, 0) >= finiteNumberOr(config.cost, 0)
   const hasEnoughHarmony =
-    (band?.harmony ?? 0) >= (config.harmonyCostOnFail ?? 0)
+    finiteNumberOr(band?.harmony, 0) >=
+    finiteNumberOr(config.harmonyCostOnFail, 0)
 
   const disabledReason = !isAffordable
     ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
@@ -182,7 +185,8 @@ function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
         {t('ui:merch_press.risk_warning', {
           risk: config.failChance * 100,
           harmonyCostOnFail: config.harmonyCostOnFail,
-          defaultValue: `WARNING: ${config.failChance * 100}% CHANCE OF EQUIPMENT FAILURE (-${config.harmonyCostOnFail} HARMONY)`
+          defaultValue:
+            'WARNING: {{risk}}% CHANCE OF EQUIPMENT FAILURE (-{{harmonyCostOnFail}} HARMONY)'
         })}
       </p>
     </div>
@@ -205,6 +209,8 @@ function MerchPressCurrentStats({
   hasEnoughHarmony
 }: MerchPressCurrentStatsProps) {
   const { t, i18n } = useTranslation(['ui'])
+  const money = finiteNumberOr(player?.money, 0)
+  const harmony = finiteNumberOr(band?.harmony, 0)
   return (
     <div className='border border-toxic-green-20 p-4 space-y-4'>
       <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
@@ -221,15 +227,13 @@ function MerchPressCurrentStats({
             <span
               className={`${isAffordable ? 'text-toxic-green' : 'text-error-red'}`}
             >
-              {formatCurrency(player?.money ?? 0, i18n.language)} /{' '}
+              {formatCurrency(money, i18n.language)} /{' '}
               {formatCurrency(config.cost, i18n.language)}
             </span>
           </div>
           <ProgressBar
             value={
-              config.cost > 0
-                ? Math.min(100, ((player?.money ?? 0) / config.cost) * 100)
-                : 0
+              config.cost > 0 ? Math.min(100, (money / config.cost) * 100) : 0
             }
             max={100}
             showValue={false}
@@ -244,11 +248,11 @@ function MerchPressCurrentStats({
             <span
               className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-error-red'}`}
             >
-              {band?.harmony ?? 0}%
+              {harmony}%
             </span>
           </div>
           <ProgressBar
-            value={band?.harmony ?? 0}
+            value={harmony}
             max={100}
             showValue={false}
             color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-error-red'}
