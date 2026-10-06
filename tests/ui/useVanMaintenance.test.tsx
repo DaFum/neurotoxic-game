@@ -53,4 +53,31 @@ describe('useVanMaintenance', () => {
       'warning'
     )
   })
+
+  it('keeps refuel/repair referentially stable across unrelated player changes', () => {
+    const params = createParams(0)
+    const { result, rerender } = renderHook(
+      ({ player }) => {
+        const isTravelingRef = useRef(false)
+        return useVanMaintenance({ ...params, player, isTravelingRef })
+      },
+      { initialProps: { player: params.player } }
+    )
+    const { handleRefuel, handleRepair } = result.current
+
+    // Same van and money, but a new player object with unrelated fields changed.
+    rerender({ player: { ...params.player, fame: 99, day: 7 } as never })
+    expect(result.current.handleRefuel).toBe(handleRefuel)
+    expect(result.current.handleRepair).toBe(handleRepair)
+
+    // A changed van invalidates them, since the handlers read it.
+    rerender({
+      player: {
+        ...params.player,
+        van: { ...params.player.van, fuel: 10 }
+      }
+    })
+    expect(result.current.handleRefuel).not.toBe(handleRefuel)
+    expect(result.current.handleRepair).not.toBe(handleRepair)
+  })
 })
