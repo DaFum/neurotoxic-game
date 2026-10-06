@@ -314,6 +314,34 @@ describe('TutorialManager', () => {
     ).toBe('')
   })
 
+  test('stays interactive while a modal mutes the rest of the page', async () => {
+    const user = userEvent.setup()
+    const { Modal } = await import('../../src/ui/shared/Modal.tsx')
+
+    render(
+      <>
+        <main data-testid='background-content'>
+          <button type='button'>Background action</button>
+        </main>
+        <TutorialManager />
+        <Modal isOpen={true} onClose={() => {}} title='Event'>
+          Modal content
+        </Modal>
+      </>
+    )
+
+    const background = screen.getByTestId('background-content')
+    expect(background).toHaveAttribute('inert')
+    expect(background).toHaveAttribute('aria-hidden', 'true')
+
+    const tutorialRegion = screen.getByRole('region', { name: /tutorial/i })
+    expect(tutorialRegion).not.toHaveAttribute('inert')
+    expect(tutorialRegion).not.toHaveAttribute('aria-hidden')
+
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: 1 })
+  })
+
   test('handles missing player.tutorialStep gracefully', async () => {
     mockGameStateValue.player = {} // No tutorialStep
     mockGameStateValue.currentScene = GAME_PHASES.MENU
