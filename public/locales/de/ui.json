@@ -340,7 +340,7 @@
   "expedition.crisis.cause.crew_collapse": "Es geht nicht weiter, weil {{source}} nicht mehr kann.",
   "expedition.crisis.cause.critical_contract_breach": "Der Vertrag ist gebrochen: {{source}}.",
   "expedition.crisis.cause.fuel_stranded": "Keine Route weg von {{source}} ist bezahlbar.",
-  "expedition.crisis.cause.technical_shutdown": "Es geht nicht weiter, weil {{source}} nicht mehr einsetzbar ist.",
+  "expedition.crisis.cause.technical_shutdown": "Es geht nicht weiter – nicht mehr einsetzbar: {{source}}.",
   "expedition.crisis.choice.accept_failure": "Tour beenden",
   "expedition.crisis.choice.extract": "Jetzt aussteigen",
   "expedition.crisis.choice.insurance_claim": "Versicherung einlösen",
