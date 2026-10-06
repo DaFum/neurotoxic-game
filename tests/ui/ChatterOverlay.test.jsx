@@ -62,7 +62,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   expect(callArgs.currentScene).toBe(GAME_PHASES.GIG)
 })
 
-test('ChatterOverlay passes the full player and band slices to getRandomChatter', async () => {
+test('ChatterOverlay passes every player and band field chatter reads to getRandomChatter', async () => {
   // Chatter conditions read player money/van/day/fame and band harmony/luck/
   // inventory. A slice narrowed to `{ currentNodeId }` / `{ members }` made
   // `state.player.van.fuel` throw, so no chatter line was ever selected.
@@ -101,9 +101,15 @@ test('ChatterOverlay passes the full player and band slices to getRandomChatter'
 
   expect(getRandomChatterMock).toHaveBeenCalled()
   const callArgs = getRandomChatterMock.mock.calls[0][0]
-  expect(callArgs.player).toBe(mockState.player)
-  expect(callArgs.band).toBe(mockState.band)
-  expect(callArgs.gameMap).toBe(mockState.gameMap)
-  expect(callArgs.player.van.fuel).toBe(10)
+  expect(callArgs.player.currentNodeId).toBe('none')
+  expect(callArgs.player.money).toBe(50)
+  expect(callArgs.player.day).toBe(1)
+  expect(callArgs.player.van).toEqual({ fuel: 10, condition: 90 })
+  expect(callArgs.band.members).toBe(mockState.band.members)
   expect(callArgs.band.harmony).toBe(20)
+  expect(callArgs.band.luck).toBe(4)
+  expect(callArgs.band.inventory).toBe(mockState.band.inventory)
+  expect(callArgs.gameMap.nodes).toBe(mockState.gameMap.nodes)
+  // Only the leaf fields chatter reads are forwarded, not whole slices.
+  expect(Object.hasOwn(callArgs.gameMap, 'connections')).toBe(false)
 })
