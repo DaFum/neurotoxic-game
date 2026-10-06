@@ -13,7 +13,7 @@
 
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { isForbiddenKey } from '../../utils/objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -62,7 +62,9 @@ import {
   applyExpeditionDefectResolution,
   applyExpeditionDefectReveal,
   applyExpeditionDefectTrigger,
-  createDeterministicHiddenDefect
+  createDeterministicHiddenDefect,
+  isExpeditionDefectDue,
+  isHiddenDefectTrigger
 } from '../../domain/expedition/defects'
 import {
   getExpeditionNodeIntelLevel,
@@ -148,10 +150,12 @@ import type {
 import type {
   ConditionGroup,
   ExpeditionFailureReason,
+  ExpeditionInspectionIntent,
   ExpeditionInsuranceClaimType,
   ExpeditionRepairIntent,
   ExpeditionSettlement,
   ExpeditionTechnicalCondition,
+  HiddenDefectState,
   NodeIntelLevel
 } from '../../types/expedition'
 import type { CareerRivalRecord } from '../../types/career'
@@ -1696,36 +1700,78 @@ export const handleExecuteExpeditionRepair = (
 }
 
 /**
- * Reveals a hidden equipment defect.
+ * Shared guard of the three defect handlers: an active run, a record payload
+ * naming a string `defectId`, and a current `expectedRouteStep`.
  *
  * @param state - Current game state.
- * @param payload - Defect id and expected route step.
+ * @param payload - Raw dispatched payload.
+ * @returns The stored defect the payload names, or `null` when any check fails.
+ */
+const findDispatchedDefect = (
+  state: GameState,
+  payload: unknown
+): HiddenDefectState | null => {
+  if (state.expedition.status !== 'active') return null
+  if (!isLooseRecord(payload) || typeof payload.defectId !== 'string') {
+    return null
+  }
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return null
+  }
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return null
+  return tc.defects.find(d => d.id === payload.defectId) ?? null
+}
+
+/**
+ * Reads a defect's status from a (possibly unchanged) state.
+ *
+ * @param state - State to read.
+ * @param defectId - Defect to look up.
+ * @returns The stored status, or `undefined` when the defect is missing.
+ */
+const getDefectStatus = (
+  state: GameState,
+  defectId: string
+): HiddenDefectState['status'] | undefined =>
+  state.expedition.technicalCondition?.defects?.find(d => d.id === defectId)
+    ?.status
+
+/**
+ * Reveals a hidden equipment defect through the inspection that finds it.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, revealing inspection, and expected route step.
  * @returns Next state, or identical reference when preconditions fail.
  *
  * @remarks
- * Delegates to `applyExpeditionDefectReveal`, the same transition inspections
- * use, so a dispatched reveal and an inspection reveal cannot drift apart.
+ * A reveal is never free: it runs `payload.source` through
+ * `handleExecuteExpeditionInspection`, so the inspection's own gates (crew,
+ * module, service location) and diagnostic fee apply, and the whole
+ * inspection result is committed. It is refused, fee included, unless that
+ * inspection reveals the requested defect. Only the source's `mode` and
+ * `crewId` are forwarded, so a reveal cannot smuggle in a full-service repair.
  */
 export const handleRevealExpeditionDefect = (
   state: GameState,
   payload: RevealExpeditionDefectPayload
 ): GameState => {
-  if (state.expedition.status !== 'active') return state
-  if (!payload || typeof payload !== 'object') return state
-  if (
-    !isFiniteNumber(payload.expectedRouteStep) ||
-    payload.expectedRouteStep !== state.expedition.routeStep
-  ) {
-    return state
-  }
+  const defect = findDispatchedDefect(state, payload)
+  if (!defect || defect.status !== 'hidden') return state
+  const source: unknown = payload.source
+  if (!isLooseRecord(source) || typeof source.mode !== 'string') return state
 
-  const tc = state.expedition.technicalCondition
-  if (!tc || !Array.isArray(tc.defects)) return state
-
-  return withTechnicalCondition(
-    state,
-    applyExpeditionDefectReveal(tc, payload.defectId)
-  )
+  const inspected = handleExecuteExpeditionInspection(state, {
+    mode: source.mode as ExpeditionInspectionIntent['mode'],
+    ...(typeof source.crewId === 'string' ? { crewId: source.crewId } : {}),
+    expectedRouteStep: payload.expectedRouteStep
+  })
+  return getDefectStatus(inspected, defect.id) === 'revealed'
+    ? inspected
+    : state
 }
 
 /**
@@ -1736,63 +1782,76 @@ export const handleRevealExpeditionDefect = (
  * @returns Next state, or identical reference when preconditions fail.
  *
  * @remarks
- * Delegates to `applyExpeditionDefectTrigger`, the same transition the
- * automatic boundary sweep (`evaluateExpeditionDefectTriggers`) uses, so the
- * severity damage has one implementation.
+ * `payload.trigger` must be a valid boundary at which the defect is due
+ * (`isExpeditionDefectDue`, the rule the automatic boundary sweep uses), so a
+ * dispatch cannot fire a defect early or at the wrong boundary. Delegates to
+ * `applyExpeditionDefectTrigger`, so the severity damage has one implementation.
  */
 export const handleTriggerExpeditionDefect = (
   state: GameState,
   payload: TriggerExpeditionDefectPayload
 ): GameState => {
-  if (state.expedition.status !== 'active') return state
-  if (!payload || typeof payload !== 'object') return state
+  const defect = findDispatchedDefect(state, payload)
+  if (!defect || !isHiddenDefectTrigger(payload.trigger)) return state
   if (
-    !isFiniteNumber(payload.expectedRouteStep) ||
-    payload.expectedRouteStep !== state.expedition.routeStep
+    !isExpeditionDefectDue(defect, payload.trigger, state.expedition.routeStep)
   ) {
     return state
   }
 
-  const tc = state.expedition.technicalCondition
-  if (!tc || !Array.isArray(tc.defects)) return state
-
   return withTechnicalCondition(
     state,
-    applyExpeditionDefectTrigger(tc, payload.defectId)
+    applyExpeditionDefectTrigger(
+      getExpeditionTechnicalCondition(state),
+      defect.id
+    )
   )
 }
 
 /**
- * Resolves an equipment defect following repair.
+ * Resolves a known equipment defect through the repair that fixes it.
  *
  * @param state - Current game state.
- * @param payload - Defect id and expected route step.
+ * @param payload - Defect id, resolving repair, and expected route step.
  * @returns Next state, or identical reference when preconditions fail.
  *
  * @remarks
- * Delegates to `applyExpeditionDefectResolution`, the same transition the
- * repair and full-service paths use.
+ * A resolve is never free: it runs `payload.repair` through
+ * `handleExecuteExpeditionRepair`, so the repair's own gates and costs apply
+ * and the whole repair is committed. Only a revealed or triggered defect can
+ * be resolved, as on the repair path, and the dispatch is refused, costs
+ * included, unless that repair actually resolves the requested defect.
  */
 export const handleResolveExpeditionDefect = (
   state: GameState,
   payload: ResolveExpeditionDefectPayload
 ): GameState => {
-  if (state.expedition.status !== 'active') return state
-  if (!payload || typeof payload !== 'object') return state
+  const defect = findDispatchedDefect(state, payload)
   if (
-    !isFiniteNumber(payload.expectedRouteStep) ||
-    payload.expectedRouteStep !== state.expedition.routeStep
+    !defect ||
+    (defect.status !== 'revealed' && defect.status !== 'triggered')
+  ) {
+    return state
+  }
+  const repair: unknown = payload.repair
+  if (
+    !isLooseRecord(repair) ||
+    typeof repair.mode !== 'string' ||
+    typeof repair.targetGroup !== 'string'
   ) {
     return state
   }
 
-  const tc = state.expedition.technicalCondition
-  if (!tc || !Array.isArray(tc.defects)) return state
-
-  return withTechnicalCondition(
-    state,
-    applyExpeditionDefectResolution(tc, payload.defectId)
-  )
+  const repaired = handleExecuteExpeditionRepair(state, {
+    mode: repair.mode as ExpeditionRepairIntent['mode'],
+    targetGroup: repair.targetGroup as ConditionGroup,
+    ...(typeof repair.sourceGroup === 'string'
+      ? { sourceGroup: repair.sourceGroup as ConditionGroup }
+      : {}),
+    ...(isFiniteNumber(repair.quality) ? { quality: repair.quality } : {}),
+    expectedRouteStep: payload.expectedRouteStep
+  })
+  return getDefectStatus(repaired, defect.id) === 'resolved' ? repaired : state
 }
 
 /**

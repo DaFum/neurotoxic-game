@@ -34,6 +34,40 @@ const TRIGGERS: readonly HiddenDefectTrigger[] = [
 ] as const
 
 /**
+ * Narrows untrusted input to a defect trigger boundary.
+ *
+ * @param value - Candidate trigger, e.g. from a dispatched payload.
+ * @returns True for `post_travel`, `pre_gig` or `post_gig`.
+ */
+export const isHiddenDefectTrigger = (
+  value: unknown
+): value is HiddenDefectTrigger =>
+  TRIGGERS.includes(value as HiddenDefectTrigger)
+
+/**
+ * Whether a defect fires at a trigger boundary on the given route step.
+ *
+ * @param defect - Defect to check.
+ * @param trigger - Boundary being crossed.
+ * @param routeStep - Current route step.
+ * @returns True when the defect is still pending (`hidden` or `revealed`), is
+ * bound to `trigger`, and its trigger step has been reached.
+ *
+ * @remarks
+ * The one due rule: the automatic boundary sweep and `TRIGGER_EXPEDITION_DEFECT`
+ * both use it, so a dispatched trigger cannot fire a defect early or at the
+ * wrong boundary.
+ */
+export const isExpeditionDefectDue = (
+  defect: HiddenDefectState,
+  trigger: HiddenDefectTrigger,
+  routeStep: number
+): boolean =>
+  (defect.status === 'hidden' || defect.status === 'revealed') &&
+  defect.triggerAt === trigger &&
+  defect.triggerRouteStep <= routeStep
+
+/**
  * Generates a deterministic hidden defect tied to runSeed, equipment group, and route step.
  *
  * @param runSeed - Root run seed.
@@ -237,11 +271,7 @@ export const evaluateExpeditionDefectTriggers = (
 
   let updatedTc = tc
   for (const defect of tc.defects) {
-    if (
-      (defect.status === 'hidden' || defect.status === 'revealed') &&
-      defect.triggerAt === trigger &&
-      defect.triggerRouteStep <= currentRouteStep
-    ) {
+    if (isExpeditionDefectDue(defect, trigger, currentRouteStep)) {
       updatedTc =
         applyExpeditionDefectTrigger(updatedTc, defect.id) ?? updatedTc
     }

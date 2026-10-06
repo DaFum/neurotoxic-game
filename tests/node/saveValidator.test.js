@@ -88,7 +88,7 @@ describe('saveValidator', () => {
       data.band.self = data.band
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /Prototype pollution detected/
+        message: /^Unsafe payload structure detected$/
       })
     })
 
@@ -101,7 +101,19 @@ describe('saveValidator', () => {
       }
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /Prototype pollution detected/
+        message: /^Unsafe payload structure detected$/
+      })
+    })
+
+    it('rejects an own accessor property as an unsafe structure, not a forbidden key', () => {
+      const data = getValidData()
+      Object.defineProperty(data.social, 'trap', {
+        get: () => 1,
+        enumerable: true
+      })
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /^Unsafe payload structure detected$/
       })
     })
 
@@ -128,7 +140,7 @@ describe('saveValidator', () => {
         for (const data of [root, nested, inArray]) {
           assert.throws(() => validateSaveData(data), {
             name: 'StateError',
-            message: new RegExp(`Prototype pollution detected: ${poisonKey}`)
+            message: new RegExp(`^Prototype pollution detected: ${poisonKey}$`)
           })
         }
       })

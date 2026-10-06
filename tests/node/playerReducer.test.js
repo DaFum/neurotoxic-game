@@ -230,6 +230,18 @@ describe('playerReducer', () => {
         }
       })
 
+      it('falls back to day 1 when both the update and the stored day are malformed', () => {
+        const corrupt = { player: { ...baseState().player, day: Number.NaN } }
+        assert.strictEqual(
+          handleUpdatePlayer(corrupt, { day: 'x' }).player.day,
+          1
+        )
+        assert.strictEqual(
+          handleUpdatePlayer(corrupt, { day: 3 }).player.day,
+          3
+        )
+      })
+
       it('wraps time into the 0..23 clock range', () => {
         assert.strictEqual(
           handleUpdatePlayer(baseState(), { time: 26 }).player.time,
