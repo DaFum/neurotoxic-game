@@ -10,10 +10,10 @@ import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
  * Hosts the Kabelsalat wiring minigame using shared state, board, header, and rules views.
  *
  * @remarks
- * Keeps its own SVG layout but shares the minigame exit controls: the SKIP
- * forfeit button and the DEV `Shift+P` backdoor come from `useMinigameSceneLogic`.
- * `forceAdvance` is idempotent, so skip, backdoor, Escape and the auto-advance
- * timer can race safely.
+ * Keeps its own SVG layout but shares the minigame exit controls: SKIP
+ * visibility and the DEV `Shift+P` backdoor come from `useMinigameSceneLogic`.
+ * `forceAdvance` is the single, idempotent completion path, so skip, backdoor,
+ * Escape and the auto-advance timer can race safely.
  */
 export const KabelsalatScene = () => {
   const {
@@ -50,11 +50,15 @@ export const KabelsalatScene = () => {
     () => forceAdvance(isPoweredOn),
     [forceAdvance, isPoweredOn]
   )
-  const { handleSkip, canSkip } = useMinigameSceneLogic({
+  const { canSkip } = useMinigameSceneLogic({
     logic,
     uiState,
     onComplete: handleComplete
   })
+  // SKIP forfeits through forceAdvance instead of the shared handleSkip: that
+  // one dispatches a result without voidSurgesPurged, and its first completion
+  // clears minigame.active, so the reducer would drop the purge stress.
+  const handleSkip = useCallback(() => forceAdvance(false), [forceAdvance])
 
   return (
     <div
