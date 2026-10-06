@@ -18,16 +18,9 @@ function mockGameState(state) {
 vi.mock('../../src/context/GameState', () => {
   const useGameActions = vi.fn()
   const useGameSelector = vi.fn()
-  const extractActions = state => {
-    return Object.keys(state).reduce((acc, key) => {
-      if (typeof state[key] === 'function') acc[key] = state[key]
-      return acc
-    }, {})
-  }
   return {
     useGameActions,
-    useGameSelector,
-    extractActions
+    useGameSelector
   }
 })
 vi.mock('../../src/utils/economy', () => ({
@@ -69,8 +62,7 @@ vi.mock('../../src/utils/socialEngine', () => ({
   generatePostOptions: vi.fn(),
   resolvePost: vi.fn(),
   checkViralEvent: vi.fn(),
-  calculateSocialGrowth: vi.fn(),
-  generateBrandOffers: vi.fn()
+  calculateSocialGrowth: vi.fn()
 }))
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(),

@@ -17,7 +17,7 @@ vi.mock('react-i18next', () => ({
   })
 }))
 
-vi.mock('../../src/utils/networkStatus', () => ({
+vi.mock('../../src/hooks/useNetworkStatus', () => ({
   useNetworkStatus: () => true
 }))
 

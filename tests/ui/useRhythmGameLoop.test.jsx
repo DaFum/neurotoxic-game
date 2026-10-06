@@ -4,7 +4,6 @@ import { renderHook } from '@testing-library/react'
 const mocks = vi.hoisted(() => ({
   trySpawnProjectile: vi.fn(),
   processProjectiles: vi.fn((_, projectiles) => projectiles),
-  checkCollisions: vi.fn(v => v),
   getGigTimeMs: vi.fn(() => 0),
   getTransportState: vi.fn(() => 'started'),
   pauseAudio: vi.fn(),
@@ -16,8 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../src/utils/hecklerLogic', () => ({
   createHecklerSession: vi.fn(() => ({ pool: [], nextId: 0, projectiles: [] })),
   trySpawnProjectile: mocks.trySpawnProjectile,
-  processProjectiles: mocks.processProjectiles,
-  checkCollisions: mocks.checkCollisions
+  processProjectiles: mocks.processProjectiles
 }))
 
 vi.mock('../../src/utils/audio/audioEngine', () => ({

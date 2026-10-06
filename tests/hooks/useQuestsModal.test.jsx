@@ -17,10 +17,9 @@ const DEFAULT_STATE = Object.freeze({
 const mocks = vi.hoisted(() => ({ state: null }))
 
 vi.mock('../../src/context/GameState.tsx', () => {
-  const useGameState = vi.fn(() => mocks.state)
+  const useGameActions = vi.fn(() => mocks.state)
   return {
-    useGameState,
-    useGameActions: useGameState,
+    useGameActions,
     useGameSelector: selector => selector(mocks.state)
   }
 })

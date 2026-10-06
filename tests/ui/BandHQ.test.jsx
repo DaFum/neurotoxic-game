@@ -25,24 +25,6 @@ vi.mock('../../src/context/GameState.tsx', () => ({
     updateSettings: vi.fn(),
     deleteSave: vi.fn(),
     setSetlist: vi.fn()
-  }),
-  useGameState: () => ({
-    player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
-    band: { members: [] },
-    social: { instagram: 0, tiktok: 0 },
-    settings: {},
-    setlist: [],
-    activeQuests: [],
-    venueBlacklist: [],
-    reputationByRegion: {},
-    career: { finalizedExpeditionRuns: 0, unlockedSetIds: [] },
-    expedition: { status: 'idle' },
-    updatePlayer: vi.fn(),
-    updateBand: vi.fn(),
-    addToast: vi.fn(),
-    updateSettings: vi.fn(),
-    deleteSave: vi.fn(),
-    setSetlist: vi.fn()
   })
 }))
 
@@ -77,8 +59,7 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
     isItemOwned: () => false,
     isItemDisabled: () => false,
     getAdjustedCost: item => item.cost
-  }),
-  getPrimaryEffect: () => ({})
+  })
 }))
 
 describe('BandHQ UI tests', () => {

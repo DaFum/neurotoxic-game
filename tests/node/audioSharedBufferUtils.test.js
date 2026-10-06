@@ -14,7 +14,6 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
       )
     },
     ensureAudioContext: async () => true,
-    setupAudio: async () => {},
     getToneStartTimeSec: t => t,
     getAudioContextTimeSec: () => 0
   }

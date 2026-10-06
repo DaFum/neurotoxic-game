@@ -4,16 +4,15 @@ import { useMerchPress } from '../../src/hooks/useMerchPress'
 import * as GameStateContext from '../../src/context/GameState'
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
 const mockState = (player, band = { harmony: 80 }) =>
-  GameStateContext.useGameState.mockReturnValue({
+  GameStateContext.useGameActions.mockReturnValue({
     merchPress: vi.fn(),
     player,
     band

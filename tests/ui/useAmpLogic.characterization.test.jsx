@@ -5,10 +5,6 @@ const mockCompleteAmpCalibration = vi.fn()
 const mockChangeScene = vi.fn()
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    completeAmpCalibration: mockCompleteAmpCalibration,
-    changeScene: mockChangeScene
-  }),
   useGameActions: () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene

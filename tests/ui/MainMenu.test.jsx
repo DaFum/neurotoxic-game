@@ -59,8 +59,7 @@ vi.mock('../../src/utils/errorHandler', async importOriginal => {
   return {
     ...actual,
     handleError: mockHandleError,
-    runSafeStorageOperation,
-    safeStorageOperation: runSafeStorageOperation
+    runSafeStorageOperation
   }
 })
 

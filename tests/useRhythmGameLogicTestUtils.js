@@ -122,7 +122,6 @@ export const mockRhythmGameLogicModules = () => {
   const mockGameActions = () => extractActions(mockUseGameState())
   mock.module('../src/context/GameState.tsx', {
     namedExports: {
-      useGameState: mockUseGameState,
       useGameActions: mockGameActions,
       useGameSelector: mockGameSelector
     }

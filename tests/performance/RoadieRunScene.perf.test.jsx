@@ -21,7 +21,6 @@ const mockGameState = {
   settings: { crtEnabled: false }
 }
 const mockGameActions = { changeScene: mockChangeScene }
-const mockUseGameState = () => mockGameState
 
 const mockUseRoadieLogic = () => ({
   uiState: mockUiState,
@@ -33,7 +32,6 @@ const mockUseRoadieLogic = () => ({
 
 // Register mocks
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: mockUseGameState,
   useGameActions: () => mockGameActions,
   useGameSelector: selector => selector(mockGameState)
 }))

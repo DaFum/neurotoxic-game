@@ -16,15 +16,6 @@ vi.mock('../../src/context/GameState', () => ({
     }),
   useGameActions: () => ({
     removeToast: vi.fn()
-  }),
-  useGameState: () => ({
-    toasts: [
-      { id: 1, type: 'success', message: 'Saved' },
-      { id: 2, type: 'warning', message: 'Low harmony' },
-      { id: 3, type: 'error', message: 'Crash' },
-      { id: 4, type: 'info', message: 'Traveling' },
-      { id: 5, type: 'info', message: 'ui:test.key|{invalid:json}' }
-    ]
   })
 }))
 

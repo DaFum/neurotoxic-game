@@ -9,10 +9,6 @@ const mockSetCurrentGig = vi.fn()
 const mockChangeScene = vi.fn()
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    setCurrentGig: mockSetCurrentGig,
-    changeScene: mockChangeScene
-  }),
   useGameActions: () => ({
     setCurrentGig: mockSetCurrentGig,
     changeScene: mockChangeScene

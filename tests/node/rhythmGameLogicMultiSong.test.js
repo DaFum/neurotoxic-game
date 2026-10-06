@@ -229,7 +229,6 @@ const mockGigStats = {
 // Register mocks BEFORE import
 mock.module(new URL('../../src/context/GameState.tsx', import.meta.url).href, {
   namedExports: {
-    useGameState: mockUseGameState,
     useGameActions: mockUseGameState,
     useGameSelector: mockGameSelector
   }
@@ -339,7 +338,6 @@ const _stableI18n = {
 }
 mock.module('react-i18next', {
   namedExports: {
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useTranslation: () => _stableI18n,
     Trans: ({ i18nKey }) => i18nKey,
     initReactI18next: { type: '3rdParty', init: () => {} }

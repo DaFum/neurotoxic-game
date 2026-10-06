@@ -90,8 +90,7 @@ vi.mock('../../src/utils/errorHandler', () => {
     handleError: mockHandleError,
     StorageError: MockStorageError,
     StateError: class StateError extends Error {},
-    runSafeStorageOperation,
-    safeStorageOperation: runSafeStorageOperation
+    runSafeStorageOperation
   }
 })
 

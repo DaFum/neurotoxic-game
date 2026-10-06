@@ -10,7 +10,7 @@ import {
   setupMainMenuAudioTest
 } from '../mainMenuAudioTestUtils'
 
-const { MainMenu, mockUseGameState } = await setupMainMenuAudioTest()
+const { MainMenu, mockGameStateSource } = await setupMainMenuAudioTest()
 
 const flushPromises = async () => {
   await Promise.resolve()
@@ -28,7 +28,7 @@ after(() => {
 beforeEach(() => {
   mockAudioManager.ensureAudioContext.mock.resetCalls()
   mockAudioManager.startAmbient.mock.resetCalls()
-  mockUseGameState.mock.mockImplementation(() =>
+  mockGameStateSource.mock.mockImplementation(() =>
     createMockGameState({ canLoad: true })
   )
 
