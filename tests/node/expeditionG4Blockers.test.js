@@ -305,6 +305,37 @@ test('Crowd Hype multiplies combo-derived points without changing base score', (
   )
 })
 
+test('START_GIG recovers a non-finite stored Crowd Hype before adding the finale bonus', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const atFinale = walkToFinale(started)
+  const corrupted = {
+    ...atFinale,
+    expedition: {
+      ...atFinale.expedition,
+      pressure: {
+        ...atFinale.expedition.pressure,
+        heat: 75,
+        crowdHype: Number.POSITIVE_INFINITY
+      }
+    }
+  }
+  const preGig = gameReducer(corrupted, {
+    type: ActionTypes.START_GIG,
+    payload: { id: 'finale-gig', name: 'Finale' }
+  })
+  assert.equal(preGig.expedition.finaleType, 'illegal_show')
+  // Recovered base 0 plus the illegal_show bonus (10), not a capped 100.
+  assert.equal(preGig.expedition.pressure.crowdHype, 10)
+})
+
 test('Finale profile enters the production gig lifecycle and applies success Heat', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
