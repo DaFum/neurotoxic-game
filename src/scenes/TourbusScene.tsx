@@ -7,6 +7,7 @@ import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
 import { calculateTravelMinigameResult } from '../utils/economy'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
  * Hosts the tourbus travel minigame and hands completion to the arrival sequence.
@@ -40,14 +41,14 @@ export const TourbusScene = () => {
       completionButtonText={t('ui:continue', { defaultValue: 'CONTINUE' })}
       renderCompletionStats={(state: unknown) => {
         const damage =
-          state && typeof state === 'object' && Object.hasOwn(state, 'damage')
-            ? Number((state as { damage?: unknown }).damage)
+          state && typeof state === 'object'
+            ? finiteNumberOr((state as { damage?: unknown }).damage, 0)
             : 0
-        const { conditionLoss } = calculateTravelMinigameResult(
-          Number.isFinite(damage) ? damage : 0,
-          []
-        )
-        return `${t('minigame:tourbus.condition_loss', { defaultValue: 'Condition Loss:' })} ${conditionLoss}%`
+        const { conditionLoss } = calculateTravelMinigameResult(damage, [])
+        return t('minigame:tourbus.condition_loss', {
+          loss: conditionLoss,
+          defaultValue: 'Condition Loss: {{loss}}%'
+        })
       }}
     >
       {/* UI Overlay */}

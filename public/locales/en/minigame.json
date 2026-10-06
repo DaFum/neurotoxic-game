@@ -1,6 +1,6 @@
 {
   "tourbus.damage": "DAMAGE:",
-  "tourbus.condition_loss": "Condition Loss:",
+  "tourbus.condition_loss": "Condition Loss: {{loss}}%",
   "tourbus.destination_reached": "DESTINATION REACHED",
   "tourbus.distance": "DISTANCE:",
   "tourbus.moveLeft": "Move Left",
