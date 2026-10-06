@@ -77,46 +77,52 @@ test('Full locale validation tests', async t => {
   })
 
   await t.test(
-    'economy namespace placeholders are consistent between locales',
+    'placeholders are consistent between locales in every namespace',
     async () => {
-      const enData = allData.get('en/economy')
-      if (!enData) return
-      const { entries: enEntries } = enData
-      const enKeys = new Set(enEntries.map(e => e.key))
+      for (const namespace of NAMESPACES) {
+        const enData = allData.get(`en/${namespace}`)
+        if (!enData) continue
+        const { entries: enEntries } = enData
+        const enKeys = new Set(enEntries.map(e => e.key))
 
-      for (const locale of LOCALES) {
-        if (locale === 'en') continue
-        const localeData = allData.get(`${locale}/economy`)
-        if (!localeData) continue
-        const { entries: deEntries } = localeData
+        for (const locale of LOCALES) {
+          if (locale === 'en') continue
+          const localeData = allData.get(`${locale}/${namespace}`)
+          if (!localeData) continue
+          const { entries: localeEntries } = localeData
 
-        const deKeys = new Set(deEntries.map(e => e.key))
-        assert.deepEqual(
-          deKeys,
-          enKeys,
-          `Keys in ${locale}/economy.json should match en/economy.json exactly`
-        )
+          const localeKeys = new Set(localeEntries.map(e => e.key))
+          assert.deepEqual(
+            localeKeys,
+            enKeys,
+            `Keys in ${locale}/${namespace}.json should match en/${namespace}.json exactly`
+          )
 
-        const deMap = new Map(deEntries.map(e => [e.key, e.value]))
+          const localeMap = new Map(localeEntries.map(e => [e.key, e.value]))
 
-        enEntries.forEach(e => {
-          if (typeof e.value === 'string') {
-            const deVal = deMap.get(e.key)
-            assert.ok(
-              deVal !== undefined,
-              `Missing translation for key ${e.key} in ${locale}`
-            )
-            if (typeof deVal === 'string') {
-              const enPlaceholders = (e.value.match(/{{[^}]+}}/g) || []).sort()
-              const dePlaceholders = (deVal.match(/{{[^}]+}}/g) || []).sort()
-              assert.deepEqual(
-                dePlaceholders,
-                enPlaceholders,
-                `economy.json key "${e.key}" should have matching placeholders in ${locale}`
+          enEntries.forEach(e => {
+            if (typeof e.value === 'string') {
+              const localeVal = localeMap.get(e.key)
+              assert.ok(
+                localeVal !== undefined,
+                `Missing translation for key ${namespace}:${e.key} in ${locale}`
               )
+              if (typeof localeVal === 'string') {
+                const enPlaceholders = (
+                  e.value.match(/{{[^}]+}}/g) || []
+                ).sort()
+                const localePlaceholders = (
+                  localeVal.match(/{{[^}]+}}/g) || []
+                ).sort()
+                assert.deepEqual(
+                  localePlaceholders,
+                  enPlaceholders,
+                  `${namespace}.json key "${e.key}" should have matching placeholders in ${locale}`
+                )
+              }
             }
-          }
-        })
+          })
+        }
       }
     }
   )
