@@ -19,7 +19,7 @@ import {
   clampPlayerFame,
   clampBandHarmony,
   clampMemberMood,
-  clampMemberSkill,
+  addClampedMemberSkill,
   clampMemberStamina,
   clampRelationship,
   clampNonNegative,
@@ -490,7 +490,7 @@ export const calculateAppliedDelta = (
         const member = members[i]
         if (!member) continue
         const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-        const nextSkill = clampMemberSkill(currentSkill + delta.band.skill)
+        const nextSkill = addClampedMemberSkill(currentSkill, delta.band.skill)
         const memberDelta = nextSkill - currentSkill
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
@@ -851,7 +851,7 @@ export const applyEventDelta = (
         // 3. Skill
         if (skillDelta !== null && skillDelta !== 0) {
           const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-          const newSkill = clampMemberSkill(currentSkill + skillDelta)
+          const newSkill = addClampedMemberSkill(currentSkill, skillDelta)
 
           if (newSkill !== currentSkill) {
             if (nextMember === member) nextMember = { ...member }

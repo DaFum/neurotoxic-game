@@ -686,3 +686,19 @@ test('isForbiddenKey identifies prototype pollution keys', () => {
   assert.strictEqual(isForbiddenKey(null), false)
   assert.strictEqual(isForbiddenKey(undefined), false)
 })
+
+test('band skill delta caps an overflowing sum at 10 instead of resetting to 1', () => {
+  const state = {
+    player: { money: 0 },
+    band: {
+      members: [{ id: 'a', name: 'A', baseStats: { skill: Number.MAX_VALUE } }]
+    }
+  }
+  const delta = { band: { skill: Number.MAX_VALUE } }
+
+  const next = applyEventDelta(state, delta)
+  assert.strictEqual(next.band.members[0].baseStats.skill, 10)
+
+  const preview = calculateAppliedDelta(state, delta)
+  assert.strictEqual(preview.band.members[0].skill, 10 - Number.MAX_VALUE)
+})

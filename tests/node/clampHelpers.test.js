@@ -2,6 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  addClampedMemberSkill,
   addClampedPercent,
   clampPercent,
   clampMemberSkill
@@ -68,6 +69,33 @@ describe('addClampedPercent', () => {
   it('keeps the base when the delta is NaN', () => {
     assert.equal(addClampedPercent(42, Number.NaN), 42)
     assert.equal(addClampedPercent(150, Number.NaN), 100)
+  })
+})
+
+describe('addClampedMemberSkill', () => {
+  it('adds in range and clamps to 1..10 without flooring', () => {
+    assert.equal(addClampedMemberSkill(5, 1.5), 6.5)
+    assert.equal(addClampedMemberSkill(9, 3), 10)
+    assert.equal(addClampedMemberSkill(2, -5), 1)
+  })
+
+  it('caps an overflowing sum instead of resetting it', () => {
+    assert.equal(addClampedMemberSkill(Number.MAX_VALUE, Number.MAX_VALUE), 10)
+    assert.equal(addClampedMemberSkill(10, Number.POSITIVE_INFINITY), 10)
+    assert.equal(addClampedMemberSkill(10, Number.MAX_VALUE * 2), 10)
+    assert.equal(addClampedMemberSkill(-Number.MAX_VALUE, -Number.MAX_VALUE), 1)
+    assert.equal(addClampedMemberSkill(7, Number.NEGATIVE_INFINITY), 1)
+  })
+
+  it('recovers a non-finite or non-number base before adding', () => {
+    for (const base of [...NON_FINITE, ...NON_NUMBERS]) {
+      assert.equal(addClampedMemberSkill(base, 3), 4)
+    }
+  })
+
+  it('keeps the base for a NaN delta', () => {
+    assert.equal(addClampedMemberSkill(6, Number.NaN), 6)
+    assert.equal(addClampedMemberSkill(99, Number.NaN), 10)
   })
 })
 

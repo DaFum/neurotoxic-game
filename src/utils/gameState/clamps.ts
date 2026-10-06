@@ -179,6 +179,27 @@ export const clampMemberSkill = (value: unknown, fallback = 1): number =>
   Math.max(1, Math.min(10, finiteNumberOr(value, fallback)))
 
 /**
+ * Adds a delta to a band-member skill, capping an overflowing sum at the range
+ * ends instead of resetting it.
+ *
+ * @remarks
+ * Same bug class as {@link addClampedPercent}: `clampMemberSkill` treats a
+ * non-finite value as malformed and returns its fallback, so
+ * `clampMemberSkill(base + overflowingDelta)` would reset a maxed skill to `1`.
+ * No flooring, matching `clampMemberSkill`, so fractional steps survive.
+ *
+ * @param base - Stored skill; recovered with `finiteNumberOr` first.
+ * @param delta - Finite delta, possibly the result of an overflowing product.
+ * @returns The sum clamped to `1..10`; `+Infinity` caps at `10`, `-Infinity`
+ * floors at `1`, and a `NaN` delta leaves the recovered base unchanged.
+ */
+export const addClampedMemberSkill = (base: unknown, delta: number): number => {
+  const safeBase = finiteNumberOr(base, 1)
+  const sum = safeBase + delta
+  return Math.max(1, Math.min(10, Number.isNaN(sum) ? safeBase : sum))
+}
+
+/**
  * Clamps finite numeric input to the reputation range.
  *
  * @param value - Candidate reputation value.
