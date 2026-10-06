@@ -375,14 +375,17 @@ export const getAvailableSponsorOfferIds = (
   ).map(offer => offer.offerId)
 
 /**
- * Native Contract template ids commitable against the prepared route.
+ * Classifies every native Contract template against the prepared route once.
  *
- * @remarks G4 owns native Contracts and extends this in place.
+ * @param state - Current game state.
+ * @param preparedMap - The prepared route.
+ * @returns Template ids that pass every gate, and those refused only by the
+ * Fame access tier.
  */
-export const getAvailableNativeContractTemplateIds = (
+const classifyNativeContractTemplates = (
   state: GameState,
   preparedMap: ExpeditionMap
-): readonly string[] => {
+): { available: string[]; fameLocked: string[] } => {
   // `performance_contract_pool` is what `festival_network` charges for: the
   // performance-kind templates are the ones a Career books on its reputation
   // rather than on the route it happens to have drawn.
@@ -390,15 +393,30 @@ export const getAvailableNativeContractTemplateIds = (
     state.career?.unlockedSetIds,
     'performance_contract_pool'
   )
-  return [...EXPEDITION_CONTRACTS_BY_ID.values()]
-    .filter(
-      template =>
-        (template.kind !== 'performance' || hasPerformancePool) &&
-        materializeContractConstraints(template, preparedMap) !== null &&
-        getExpeditionContractAccessLock(state, template) === null
-    )
-    .map(template => template.id)
+  const available: string[] = []
+  const fameLocked: string[] = []
+  for (const template of EXPEDITION_CONTRACTS_BY_ID.values()) {
+    if (template.kind === 'performance' && !hasPerformancePool) continue
+    if (materializeContractConstraints(template, preparedMap) === null) continue
+    if (getExpeditionContractAccessLock(state, template) === null) {
+      available.push(template.id)
+    } else {
+      fameLocked.push(template.id)
+    }
+  }
+  return { available, fameLocked }
 }
+
+/**
+ * Native Contract template ids commitable against the prepared route.
+ *
+ * @remarks G4 owns native Contracts and extends this in place.
+ */
+export const getAvailableNativeContractTemplateIds = (
+  state: GameState,
+  preparedMap: ExpeditionMap
+): readonly string[] =>
+  classifyNativeContractTemplates(state, preparedMap).available
 
 /**
  * Native Contract templates this Career could book but its Fame cannot.
@@ -414,20 +432,8 @@ export const getAvailableNativeContractTemplateIds = (
 export const getExpeditionFameLockedContractTemplateIds = (
   state: GameState,
   preparedMap: ExpeditionMap
-): readonly string[] => {
-  const hasPerformancePool = isExpeditionCapabilityUnlocked(
-    state.career?.unlockedSetIds,
-    'performance_contract_pool'
-  )
-  return [...EXPEDITION_CONTRACTS_BY_ID.values()]
-    .filter(
-      template =>
-        (template.kind !== 'performance' || hasPerformancePool) &&
-        materializeContractConstraints(template, preparedMap) !== null &&
-        getExpeditionContractAccessLock(state, template) !== null
-    )
-    .map(template => template.id)
-}
+): readonly string[] =>
+  classifyNativeContractTemplates(state, preparedMap).fameLocked
 
 /* -------------------------------------------------------------------------- */
 
