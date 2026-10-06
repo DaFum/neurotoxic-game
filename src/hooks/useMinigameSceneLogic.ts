@@ -82,16 +82,12 @@ export const useMinigameSceneLogic = ({
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
           const currentLogic = logicRef.current
-          // Tourbus always exposes finishMinigame, so only the minigames
-          // without one need a direct completion dispatch below.
+          // Tourbus and Kabelsalat always expose finishMinigame, so only the
+          // minigames without one need a direct completion dispatch below.
           if (currentLogic?.finishMinigame) {
             currentLogic.finishMinigame()
           } else if (minigameType === MINIGAME_TYPES.ROADIE) {
             completeRoadieMinigame(0)
-            onCompleteRef.current()
-            return
-          } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
-            completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
             onCompleteRef.current()
             return
           } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
@@ -115,7 +111,6 @@ export const useMinigameSceneLogic = ({
     uiState?.isGameOver,
     minigameType,
     completeRoadieMinigame,
-    completeKabelsalatMinigame,
     completeAmpCalibration
   ])
 
