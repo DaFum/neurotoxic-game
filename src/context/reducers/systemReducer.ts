@@ -95,7 +95,7 @@ import {
 } from '../../domain/expedition/loadout'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { isFiniteNumber } from '../../utils/finiteNumber'
-import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
+import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
@@ -456,11 +456,13 @@ export const handleUpdateSettings = (
  * Stores the generated map or records a null map fallback.
  *
  * @remarks
- * Structural gate only: non-object payloads, arrays, and payloads carrying
- * prototype-polluting keys at any depth are rejected (state returned
- * unchanged). Generator quality rules (`validateGeneratedMap` diversity checks)
- * stay at the generation boundary in `useMapGeneration`; applying them here
- * would reject legitimate small seed/test maps.
+ * Structural gate only: payloads that are not a `nodes` record plus a
+ * `connections` array (the shape `OverworldMap` and the route readers
+ * dereference unguarded), and payloads carrying prototype-polluting keys at any
+ * depth, are rejected (state returned unchanged). Generator quality rules
+ * (`validateGeneratedMap` diversity checks) stay at the generation boundary in
+ * `useMapGeneration`; applying them here would reject legitimate small
+ * seed/test maps.
  *
  * @param state - Current game state before map replacement.
  * @param payload - Generated game map, or null when generation failed safely.
@@ -472,8 +474,9 @@ export const handleSetMap = (
 ): GameState => {
   if (
     payload !== null &&
-    (typeof payload !== 'object' ||
-      Array.isArray(payload) ||
+    (!isLooseRecord(payload) ||
+      !isLooseRecord(payload.nodes) ||
+      !Array.isArray(payload.connections) ||
       hasForbiddenKeysDeep(payload))
   ) {
     logger.warn('GameState', 'Rejected malformed SET_MAP payload')

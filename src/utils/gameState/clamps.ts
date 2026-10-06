@@ -141,6 +141,27 @@ export const clampPercent = (value: unknown, fallback = 0): number =>
   Math.max(0, Math.min(100, finiteNumberOr(value, fallback)))
 
 /**
+ * Adds a delta to a stored 0..100 percentage and range-clamps the sum.
+ *
+ * @remarks
+ * Use this instead of `clampPercent(base + delta)`. Two finite numbers still
+ * sum to `±Infinity` (`Number.MAX_VALUE * 2`), and `clampPercent` treats a
+ * non-finite value as malformed input and returns its fallback, so an
+ * overflowing gain would reset the stat to `0` instead of capping at `100`.
+ * `clampPercent` itself keeps rejecting `Infinity`, because for a loaded save
+ * that value is corruption rather than "very large".
+ *
+ * @param base - Stored percentage; recovered with `finiteNumberOr` first.
+ * @param delta - Finite delta, possibly the result of an overflowing product.
+ * @returns The sum clamped to `0..100`; `+Infinity` caps at `100`, `-Infinity`
+ * floors at `0`.
+ */
+export const addClampedPercent = (base: unknown, delta: number): number => {
+  const sum = finiteNumberOr(base, 0) + delta
+  return Number.isNaN(sum) ? 0 : Math.max(0, Math.min(100, sum))
+}
+
+/**
  * Clamps unknown input to the band-member skill range 1..10 without flooring.
  *
  * @remarks

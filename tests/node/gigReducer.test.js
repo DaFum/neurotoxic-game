@@ -81,6 +81,21 @@ describe('gigReducer', () => {
       }
     })
 
+    it('rejects malformed and hostile venues before any transition side effect', () => {
+      for (const hostile of [
+        [],
+        {},
+        { id: 'g' },
+        { name: 'No id' },
+        { id: '', name: 'Empty id' },
+        { id: 'g', name: 42 },
+        JSON.parse('{"id":"g","name":"G","__proto__":{"evil":1}}'),
+        JSON.parse('{"id":"g","name":"G","nested":{"constructor":{"x":1}}}')
+      ]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+    })
+
     it('should initialize gig state and transition to PRE_GIG', () => {
       const payload = { id: 'gig2', name: 'Starting Gig' }
       const nextState = handleStartGig(baseState, payload)

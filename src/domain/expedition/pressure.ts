@@ -1,5 +1,5 @@
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { clampPercent } from '../../utils/gameState/clamps'
+import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../data/expedition/pressureEvents'
 import { hashExpeditionRoute } from './map'
 import { deriveExpeditionOverlayTarget } from './routeOverlay'
@@ -388,18 +388,19 @@ export const applyExpeditionPressureDelta = (
   const exposureDelta = finiteNumberOr(delta.exposure, 0)
   return {
     ...pressure,
-    heat: clampPercent(
-      pressure.heat +
-        (heatDelta > 0 ? heatDelta * effective.heatGainMultiplier : heatDelta)
+    heat: addClampedPercent(
+      pressure.heat,
+      heatDelta > 0 ? heatDelta * effective.heatGainMultiplier : heatDelta
     ),
-    exposure: clampPercent(
-      pressure.exposure +
-        (exposureDelta > 0
-          ? exposureDelta * effective.exposureGainMultiplier
-          : exposureDelta)
+    exposure: addClampedPercent(
+      pressure.exposure,
+      exposureDelta > 0
+        ? exposureDelta * effective.exposureGainMultiplier
+        : exposureDelta
     ),
-    crowdHype: clampPercent(
-      pressure.crowdHype + finiteNumberOr(delta.crowdHype, 0)
+    crowdHype: addClampedPercent(
+      pressure.crowdHype,
+      finiteNumberOr(delta.crowdHype, 0)
     )
   }
 }
