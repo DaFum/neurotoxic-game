@@ -64,6 +64,11 @@ describe('addClampedPercent', () => {
       assert.equal(addClampedPercent(base, 7), 7)
     }
   })
+
+  it('keeps the base when the delta is NaN', () => {
+    assert.equal(addClampedPercent(42, Number.NaN), 42)
+    assert.equal(addClampedPercent(150, Number.NaN), 100)
+  })
 })
 
 describe('clampMemberSkill', () => {

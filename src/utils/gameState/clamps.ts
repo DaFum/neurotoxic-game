@@ -154,11 +154,12 @@ export const clampPercent = (value: unknown, fallback = 0): number =>
  * @param base - Stored percentage; recovered with `finiteNumberOr` first.
  * @param delta - Finite delta, possibly the result of an overflowing product.
  * @returns The sum clamped to `0..100`; `+Infinity` caps at `100`, `-Infinity`
- * floors at `0`.
+ * floors at `0`, and a `NaN` delta leaves the recovered base unchanged.
  */
 export const addClampedPercent = (base: unknown, delta: number): number => {
-  const sum = finiteNumberOr(base, 0) + delta
-  return Number.isNaN(sum) ? 0 : Math.max(0, Math.min(100, sum))
+  const safeBase = finiteNumberOr(base, 0)
+  const sum = safeBase + delta
+  return Math.max(0, Math.min(100, Number.isNaN(sum) ? safeBase : sum))
 }
 
 /**
