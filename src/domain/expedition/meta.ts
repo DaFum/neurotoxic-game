@@ -181,6 +181,15 @@ export const getExpeditionHqFacilityLevel = (
   )
 
 /**
+ * The spendable Tour Token balance, read the way the Career reducer reads it.
+ *
+ * @param career - Career slice.
+ * @returns The stored balance, floored at zero and never non-finite.
+ */
+export const getExpeditionTourTokenBalance = (career: CareerState): number =>
+  Math.max(0, finiteNumberOr(career.tourTokens, 0))
+
+/**
  * Explains why the next level of a facility cannot be bought.
  *
  * @param career - Career slice.
@@ -197,7 +206,7 @@ export const getExpeditionHqFacilityPurchaseBlocker = (
     getExpeditionHqFacilityLevel(career, facilityId) + 1
   )
   if (cost === null) return 'maxed'
-  if (Math.max(0, finiteNumberOr(career.tourTokens, 0)) < cost) return 'tokens'
+  if (getExpeditionTourTokenBalance(career) < cost) return 'tokens'
   return null
 }
 
@@ -223,9 +232,7 @@ export const getExpeditionUnlockSetPurchaseBlocker = (
   ) {
     return 'facility'
   }
-  if (Math.max(0, finiteNumberOr(career.tourTokens, 0)) < set.cost) {
-    return 'tokens'
-  }
+  if (getExpeditionTourTokenBalance(career) < set.cost) return 'tokens'
   return null
 }
 

@@ -18,6 +18,8 @@ import {
   getEligibleCrewSignatureTrait
 } from '../../domain/expedition/career'
 import {
+  getExpeditionHqFacilityLevel,
+  getExpeditionTourTokenBalance,
   isExpeditionAscensionEligible,
   resolveExpeditionCareerSettlement
 } from '../../domain/expedition/meta'
@@ -252,24 +254,14 @@ export const handlePurchaseExpeditionHqFacility = (
   if (isForbiddenKey(facilityId)) return state
   if (expectedLevel !== 0 && expectedLevel !== 1) return state
 
-  const stored = Math.max(
-    0,
-    Math.floor(
-      finiteNumberOr(
-        Object.hasOwn(state.career.hqFacilityLevels, facilityId)
-          ? state.career.hqFacilityLevels[facilityId]
-          : 0,
-        0
-      )
-    )
-  )
+  const stored = getExpeditionHqFacilityLevel(state.career, facilityId)
   if (stored !== expectedLevel) return state
 
   const targetLevel = stored + 1
   const cost = getExpeditionHqFacilityLevelCost(facilityId, targetLevel)
   if (cost === null) return state
 
-  const tokens = Math.max(0, finiteNumberOr(state.career.tourTokens, 0))
+  const tokens = getExpeditionTourTokenBalance(state.career)
   if (tokens < cost) return state
 
   return {
@@ -311,20 +303,13 @@ export const handleBeginExpeditionUnlockPurchase = (
   if (state.career.unlockedSetIds.includes(set.id)) return state
   if (!hasExpeditionCareerRank(state, set.requiredRank)) return state
 
-  const facilityLevel = Math.max(
-    0,
-    Math.floor(
-      finiteNumberOr(
-        Object.hasOwn(state.career.hqFacilityLevels, set.requiredFacility.id)
-          ? state.career.hqFacilityLevels[set.requiredFacility.id]
-          : 0,
-        0
-      )
-    )
+  const facilityLevel = getExpeditionHqFacilityLevel(
+    state.career,
+    set.requiredFacility.id
   )
   if (facilityLevel < set.requiredFacility.level) return state
 
-  const tokens = Math.max(0, finiteNumberOr(state.career.tourTokens, 0))
+  const tokens = getExpeditionTourTokenBalance(state.career)
   if (tokens < set.cost) return state
 
   return {
@@ -391,7 +376,7 @@ export const handleRollbackExpeditionUnlockPurchase = (
     career: {
       ...state.career,
       tourTokens:
-        Math.max(0, finiteNumberOr(state.career.tourTokens, 0)) +
+        getExpeditionTourTokenBalance(state.career) +
         Math.max(0, finiteNumberOr(pending.debitedTokens, 0)),
       pendingUnlockPurchase: null
     }
