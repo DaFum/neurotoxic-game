@@ -907,31 +907,44 @@ export const VENUE_CHATTER_DB = [
     linesByScene: {
       ANY: [
         'chatter:venues.koeln_underground.ANY_01',
-        'chatter:venues.koeln_underground.ANY_02'
+        'chatter:venues.koeln_underground.ANY_02',
+        'chatter:venues.koeln_underground.ANY_03'
       ],
       OVERWORLD: [
         'chatter:venues.koeln_underground.OVERWORLD_01',
         'chatter:venues.koeln_underground.OVERWORLD_02',
         'chatter:venues.koeln_underground.OVERWORLD_03',
-        'chatter:venues.koeln_underground.OVERWORLD_04'
+        'chatter:venues.koeln_underground.OVERWORLD_04',
+        'chatter:venues.koeln_underground.OVERWORLD_05',
+        'chatter:venues.koeln_underground.OVERWORLD_06',
+        'chatter:venues.koeln_underground.OVERWORLD_07'
       ],
       PREGIG: [
         'chatter:venues.koeln_underground.PREGIG_01',
         'chatter:venues.koeln_underground.PREGIG_02',
         'chatter:venues.koeln_underground.PREGIG_03',
-        'chatter:venues.koeln_underground.PREGIG_04'
+        'chatter:venues.koeln_underground.PREGIG_04',
+        'chatter:venues.koeln_underground.PREGIG_05',
+        'chatter:venues.koeln_underground.PREGIG_06',
+        'chatter:venues.koeln_underground.PREGIG_07'
       ],
       GIG: [
         'chatter:venues.koeln_underground.GIG_01',
         'chatter:venues.koeln_underground.GIG_02',
         'chatter:venues.koeln_underground.GIG_03',
-        'chatter:venues.koeln_underground.GIG_04'
+        'chatter:venues.koeln_underground.GIG_04',
+        'chatter:venues.koeln_underground.GIG_05',
+        'chatter:venues.koeln_underground.GIG_06',
+        'chatter:venues.koeln_underground.GIG_07'
       ],
       POSTGIG: [
         'chatter:venues.koeln_underground.POSTGIG_01',
         'chatter:venues.koeln_underground.POSTGIG_02',
         'chatter:venues.koeln_underground.POSTGIG_03',
-        'chatter:venues.koeln_underground.POSTGIG_04'
+        'chatter:venues.koeln_underground.POSTGIG_04',
+        'chatter:venues.koeln_underground.POSTGIG_05',
+        'chatter:venues.koeln_underground.POSTGIG_06',
+        'chatter:venues.koeln_underground.POSTGIG_07'
       ]
     }
   },
@@ -941,31 +954,44 @@ export const VENUE_CHATTER_DB = [
     linesByScene: {
       ANY: [
         'chatter:venues.koeln_mtc.ANY_01',
-        'chatter:venues.koeln_mtc.ANY_02'
+        'chatter:venues.koeln_mtc.ANY_02',
+        'chatter:venues.koeln_mtc.ANY_03'
       ],
       OVERWORLD: [
         'chatter:venues.koeln_mtc.OVERWORLD_01',
         'chatter:venues.koeln_mtc.OVERWORLD_02',
         'chatter:venues.koeln_mtc.OVERWORLD_03',
-        'chatter:venues.koeln_mtc.OVERWORLD_04'
+        'chatter:venues.koeln_mtc.OVERWORLD_04',
+        'chatter:venues.koeln_mtc.OVERWORLD_05',
+        'chatter:venues.koeln_mtc.OVERWORLD_06'
       ],
       PREGIG: [
         'chatter:venues.koeln_mtc.PREGIG_01',
         'chatter:venues.koeln_mtc.PREGIG_02',
         'chatter:venues.koeln_mtc.PREGIG_03',
-        'chatter:venues.koeln_mtc.PREGIG_04'
+        'chatter:venues.koeln_mtc.PREGIG_04',
+        'chatter:venues.koeln_mtc.PREGIG_05',
+        'chatter:venues.koeln_mtc.PREGIG_06',
+        'chatter:venues.koeln_mtc.PREGIG_07',
+        'chatter:venues.koeln_mtc.PREGIG_08'
       ],
       GIG: [
         'chatter:venues.koeln_mtc.GIG_01',
         'chatter:venues.koeln_mtc.GIG_02',
         'chatter:venues.koeln_mtc.GIG_03',
-        'chatter:venues.koeln_mtc.GIG_04'
+        'chatter:venues.koeln_mtc.GIG_04',
+        'chatter:venues.koeln_mtc.GIG_05',
+        'chatter:venues.koeln_mtc.GIG_06',
+        'chatter:venues.koeln_mtc.GIG_07'
       ],
       POSTGIG: [
         'chatter:venues.koeln_mtc.POSTGIG_01',
         'chatter:venues.koeln_mtc.POSTGIG_02',
         'chatter:venues.koeln_mtc.POSTGIG_03',
-        'chatter:venues.koeln_mtc.POSTGIG_04'
+        'chatter:venues.koeln_mtc.POSTGIG_04',
+        'chatter:venues.koeln_mtc.POSTGIG_05',
+        'chatter:venues.koeln_mtc.POSTGIG_06',
+        'chatter:venues.koeln_mtc.POSTGIG_07'
       ]
     }
   },
@@ -981,25 +1007,37 @@ export const VENUE_CHATTER_DB = [
         'chatter:venues.koeln_luxor.OVERWORLD_01',
         'chatter:venues.koeln_luxor.OVERWORLD_02',
         'chatter:venues.koeln_luxor.OVERWORLD_03',
-        'chatter:venues.koeln_luxor.OVERWORLD_04'
+        'chatter:venues.koeln_luxor.OVERWORLD_04',
+        'chatter:venues.koeln_luxor.OVERWORLD_05',
+        'chatter:venues.koeln_luxor.OVERWORLD_06'
       ],
       PREGIG: [
         'chatter:venues.koeln_luxor.PREGIG_01',
         'chatter:venues.koeln_luxor.PREGIG_02',
         'chatter:venues.koeln_luxor.PREGIG_03',
-        'chatter:venues.koeln_luxor.PREGIG_04'
+        'chatter:venues.koeln_luxor.PREGIG_04',
+        'chatter:venues.koeln_luxor.PREGIG_05',
+        'chatter:venues.koeln_luxor.PREGIG_06',
+        'chatter:venues.koeln_luxor.PREGIG_07',
+        'chatter:venues.koeln_luxor.PREGIG_08'
       ],
       GIG: [
         'chatter:venues.koeln_luxor.GIG_01',
         'chatter:venues.koeln_luxor.GIG_02',
         'chatter:venues.koeln_luxor.GIG_03',
-        'chatter:venues.koeln_luxor.GIG_04'
+        'chatter:venues.koeln_luxor.GIG_04',
+        'chatter:venues.koeln_luxor.GIG_05',
+        'chatter:venues.koeln_luxor.GIG_06',
+        'chatter:venues.koeln_luxor.GIG_07'
       ],
       POSTGIG: [
         'chatter:venues.koeln_luxor.POSTGIG_01',
         'chatter:venues.koeln_luxor.POSTGIG_02',
         'chatter:venues.koeln_luxor.POSTGIG_03',
-        'chatter:venues.koeln_luxor.POSTGIG_04'
+        'chatter:venues.koeln_luxor.POSTGIG_04',
+        'chatter:venues.koeln_luxor.POSTGIG_05',
+        'chatter:venues.koeln_luxor.POSTGIG_06',
+        'chatter:venues.koeln_luxor.POSTGIG_07'
       ]
     }
   },
