@@ -993,9 +993,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
     const value = finiteOptionalNumber(bandData[key])
     if (value === undefined) continue
     if (key === 'tempo') {
-      // Same 0..100 range as `handleUpdateBand`, but not floored: contraband
+      // Same rule as `handleUpdateBand`: 0..100, not floored. Contraband
       // tempo effects are fractional (+0.15) and reverted by an exact additive
-      // inverse, so flooring on load would leave the revert below zero.
+      // inverse, so flooring would leave the revert below zero.
       rawBand[key] = clampPercent(value)
     } else if (key === 'style' || key === 'crit') {
       // No reducer-side rule exists; the invariant is finite and non-negative.

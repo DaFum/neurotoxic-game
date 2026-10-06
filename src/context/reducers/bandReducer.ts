@@ -2,13 +2,13 @@ import { logger } from '../../utils/logger'
 import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { assertNever } from '../../utils/assertNever'
 import {
-  clamp0to100,
   clampLuck,
   clampBandHarmony,
   clampBandStress,
   clampMemberMood,
   clampMemberStamina,
   clampRelationship,
+  clampPercent,
   applyInventoryItemDelta,
   isForbiddenKey,
   finiteNumberOr,
@@ -122,7 +122,9 @@ export const handleUpdateBand = (
   }
   sanitizeNumericKey('stress', clampBandStress)
   sanitizeNumericKey('luck', clampLuck)
-  sanitizeNumericKey('tempo', clamp0to100)
+  // Not floored: contraband tempo effects are fractional (+0.15), matching the
+  // load sanitizer (`sanitizeBand`).
+  sanitizeNumericKey('tempo', clampPercent)
 
   if (Array.isArray(safeUpdates.members)) {
     // Members come in as partial patches; merge by id against the prior
