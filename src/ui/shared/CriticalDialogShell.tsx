@@ -22,8 +22,9 @@ const noop = () => {}
 interface CriticalDialogShellProps {
   /**
    * Called when Escape is pressed while this dialog is topmost. Omit for
-   * dialogs that must be answered: Escape is then swallowed, not ignored by
-   * the stack, so it cannot reach the scene behind the dialog.
+   * dialogs that must be answered: Escape then closes nothing. The modal
+   * stack's window listener still calls `preventDefault()`, but other window
+   * listeners (menus, keyboard shortcuts) receive the key as usual.
    */
   onClose?: () => void
   /** Called when the dimmed backdrop is clicked; the backdrop is inert without it. */

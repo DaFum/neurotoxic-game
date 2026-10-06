@@ -49,7 +49,7 @@ import { MAX_NATIVE_EXPEDITION_CONTRACTS } from '../../data/expedition/contracts
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { ProgressBar } from '../shared/ProgressBar'
-import { useRovingTabs } from '../shared/useRovingTabs'
+import { createRovingTabs } from '../shared/rovingTabs'
 import { BuildCommitmentPanel } from './BuildCommitmentPanel'
 import { ExpeditionCrewPicker } from './ExpeditionCrewPicker'
 import type {
@@ -442,7 +442,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     }
   ]
 
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: TAB_CATEGORIES.map(tab => tab.id),
     activeId: activeTab,
     onSelect: setActiveTab

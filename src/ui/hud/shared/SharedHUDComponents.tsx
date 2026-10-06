@@ -7,7 +7,7 @@ import type { TFunction } from 'i18next'
 import { finiteNumberOr } from '../../../utils/gameState'
 import { formatCurrency } from '../../../utils/numberUtils'
 
-export const VanStatusMiniBars = memo(
+const VanStatusMiniBars = memo(
   ({
     fuel,
     condition,

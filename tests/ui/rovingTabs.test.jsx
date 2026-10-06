@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useRovingTabs } from '../../src/ui/shared/useRovingTabs'
+import { createRovingTabs } from '../../src/ui/shared/rovingTabs'
 
 const IDS = ['one', 'two', 'three']
 
 const Tabs = ({ activeId = 'one', onSelect, isLocked }) => {
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: IDS,
     activeId,
     onSelect,
@@ -22,7 +22,7 @@ const Tabs = ({ activeId = 'one', onSelect, isLocked }) => {
   )
 }
 
-describe('useRovingTabs', () => {
+describe('createRovingTabs', () => {
   it('puts only the active tab in the page tab sequence', () => {
     render(<Tabs activeId='two' onSelect={vi.fn()} />)
 

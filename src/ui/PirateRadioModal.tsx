@@ -44,11 +44,21 @@ export const PirateRadioModal = memo(
             defaultValue:
               'Hack local frequencies and broadcast your rawest tracks. The signal will reach the desperate and the disillusioned, boosting your fame and feeding the cult.'
           }),
-          costLabel: `${t('ui:pirate_radio.cost', { defaultValue: 'COST (BRIBES/TECH)' })}:`,
-          fameLabel: `${t('ui:pirate_radio.fame_gain', { defaultValue: 'FAME GAIN' })}:`,
-          zealotryLabel: `${t('ui:pirate_radio.zealotry_gain', { defaultValue: 'ZEALOTRY GAIN' })}:`,
-          controversyLabel: `${t('ui:pirate_radio.controversy_gain', { defaultValue: 'CONTROVERSY' })}:`,
-          harmonyCostLabel: `${t('ui:pirate_radio.harmony_cost', { defaultValue: 'HARMONY DRAIN' })}:`,
+          costLabel: t('ui:pirate_radio.cost', {
+            defaultValue: 'COST (BRIBES/TECH):'
+          }),
+          fameLabel: t('ui:pirate_radio.fame_gain', {
+            defaultValue: 'FAME GAIN:'
+          }),
+          zealotryLabel: t('ui:pirate_radio.zealotry_gain', {
+            defaultValue: 'ZEALOTRY GAIN:'
+          }),
+          controversyLabel: t('ui:pirate_radio.controversy_gain', {
+            defaultValue: 'CONTROVERSY:'
+          }),
+          harmonyCostLabel: t('ui:pirate_radio.harmony_cost', {
+            defaultValue: 'HARMONY DRAIN:'
+          }),
           alreadyRanToday: cooldown,
           cancel: t('ui:action_cancel', { defaultValue: 'CANCEL' }),
           execute: hasBroadcastedToday

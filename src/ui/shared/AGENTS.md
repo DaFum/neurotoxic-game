@@ -15,5 +15,5 @@
 - `GeneratedImagePanel` fallback/background styles must use defined tokens such as `--color-void-black`; `--color-void` is not defined.
 - Section views (registered in `src/components/assets/sectionRegistry.ts`) set `--section-accent` once on the scene root; downstream components in `src/components/assets/` read it via `var(--section-accent, var(--color-toxic-green))`. No prop drilling.
 - Dialog behaviour (modal stack, Tab trap, `inert` background, focus restore, the single window-level Escape handler) lives in `useModalBehavior`. `Modal` uses it; hand-styled shells (`BandHQ`, `BloodBankModal`) and the critical dialogs (`EventModal`, `CrisisModal` via `CriticalDialogShell`) attach its `overlayRef`/`dialogRef` and must not add their own Escape/focus-trap listeners.
-- Tablists use `useRovingTabs` (`getTabProps(id)`) for Arrow/Home/End and roving `tabIndex`; do not hand-roll tab keyboard handling.
+- Tablists use `createRovingTabs` (`getTabProps(id)`) for Arrow/Home/End and roving `tabIndex`; do not hand-roll tab keyboard handling.
 - Meters use `ProgressBar` (clamped width, `role='progressbar'`); pass `trackClassName`/`fillClassName` to keep a compact HUD frame instead of re-inlining a bar.
