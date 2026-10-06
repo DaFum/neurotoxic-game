@@ -3,6 +3,15 @@ import { computeStashBustRisk } from '../../utils/contrabandUtils'
 import { finiteNumberOr } from '../../utils/gameState'
 import { UNLOCK_IDS } from '../unlocks'
 
+/**
+ * True when the band already owns the non-stackable trunk-dealer pedal.
+ * `addContrabandToBand` ignores a duplicate grant, so a paid option must be
+ * unavailable rather than charge the player for nothing.
+ */
+const ownsDiyOverdrive = (state: GameState): boolean =>
+  Boolean(state.band?.stash) &&
+  Object.hasOwn(state.band.stash, 'c_diy_overdrive')
+
 /** Raw transport event definitions consumed by the event registry. */
 export const TRANSPORT_EVENTS = [
   {
@@ -982,6 +991,7 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'events:reststop_trunk_dealer.opt1.label',
         condition: (state: GameState) =>
+          !ownsDiyOverdrive(state) &&
           finiteNumberOr(state.player?.money, 0) >= 120,
         effect: {
           type: 'composite',
@@ -995,6 +1005,7 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'events:reststop_trunk_dealer.opt2.label',
         condition: (state: GameState) =>
+          !ownsDiyOverdrive(state) &&
           finiteNumberOr(state.player?.money, 0) >= 60,
         skillCheck: {
           stat: 'charisma',
