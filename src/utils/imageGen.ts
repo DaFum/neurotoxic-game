@@ -8,7 +8,18 @@ import { MODULE_REGISTRY, MODULE_PROMPTS } from './assetModuleRegistry'
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
-const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
+
+/**
+ * Pollinations key, injected at build time from the Vercel variable `Flux`
+ * (see `vite.config.js`). Without it the request goes out without a key.
+ */
+const getImageKey = (): string => {
+  const key =
+    typeof import.meta !== 'undefined' && import.meta.env
+      ? import.meta.env.VITE_FLUX_KEY
+      : undefined
+  return typeof key === 'string' ? key.trim() : ''
+}
 
 const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '') : ''}images/generated-offline-fallback.svg`
 
@@ -41,7 +52,9 @@ export const getGeneratedImageFallbackUrl = () =>
  */
 export const getGenImageUrl = (description: string) => {
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=` // "&=" is required to ensure working image generation
+  const key = getImageKey()
+  const keyParam = key ? `&key=${encodeURIComponent(key)}` : ''
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666${keyParam}&=` // "&=" is required to ensure working image generation
 }
 
 /**
