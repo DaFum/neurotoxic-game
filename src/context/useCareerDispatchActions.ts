@@ -11,6 +11,10 @@ import {
 } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
+/**
+ * Isolates the subset of global dispatch actions specifically related to expedition
+ * career progression, HQ upgrades, and meta-progression management.
+ */
 type CareerDispatchActions = Pick<
   GameDispatchActions,
   | 'settleExpeditionCrewCareer'
@@ -22,6 +26,12 @@ type CareerDispatchActions = Pick<
   | 'resolveExpeditionBetweenTourDecision'
 >
 
+/**
+ * Constructs a memoized object of bound dispatch functions for career-related state transitions.
+ *
+ * @param dispatch - The global store dispatch function.
+ * @returns A stable record of bound career dispatch actions.
+ */
 export const useCareerDispatchActions = (
   dispatch: Dispatch<GameAction>
 ): CareerDispatchActions =>
