@@ -5,7 +5,8 @@ import {
   handleSetGig,
   handleStartGig,
   handleSetGigModifiers,
-  handleSetLastGigStats
+  handleSetLastGigStats,
+  handleSettleSoldMerch
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
 import {
@@ -493,6 +494,35 @@ describe('gigReducer', () => {
       baseState.currentGig = { isPractice: true }
       const nextState = handleSetLastGigStats(baseState, { score: 70 })
       assert.strictEqual(nextState.band.stress, undefined)
+    })
+  })
+
+  describe('handleSettleSoldMerch', () => {
+    it('rejects accessor-bearing sold counts without invoking their getters', () => {
+      let getterCalls = 0
+      const soldMerch = {}
+      Object.defineProperty(soldMerch, 'shirts', {
+        enumerable: true,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const bandState = { band: { inventory: { shirts: 10 } } }
+      const expeditionState = {
+        band: { inventory: { shirts: 10 } },
+        expedition: {
+          status: 'active',
+          cargo: { merch: [{ inventoryKey: 'shirts', quantity: 10 }] }
+        }
+      }
+
+      assert.strictEqual(handleSettleSoldMerch(bandState, soldMerch), bandState)
+      assert.strictEqual(
+        handleSettleSoldMerch(expeditionState, soldMerch),
+        expeditionState
+      )
+      assert.strictEqual(getterCalls, 0)
     })
   })
 })

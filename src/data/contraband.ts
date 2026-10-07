@@ -599,3 +599,18 @@ for (const item of CONTRABAND_DB) {
     )
   }
 }
+
+/**
+ * Canonical Void Trader Fame price of a catalogue item.
+ *
+ * @param contrabandId - Catalogue id of the item being traded.
+ * @returns The price for the item's rarity from {@link VOID_TRADER_COSTS}, or
+ * `null` when the trader does not sell it (unknown id, or a rarity without a
+ * trader price).
+ */
+export const getVoidTraderFameCost = (contrabandId: string): number | null => {
+  const rarity = CONTRABAND_BY_ID.get(contrabandId)?.rarity
+  return rarity !== undefined && Object.hasOwn(VOID_TRADER_COSTS, rarity)
+    ? VOID_TRADER_COSTS[rarity as keyof typeof VOID_TRADER_COSTS]
+    : null
+}
