@@ -830,6 +830,20 @@ const parseNumericStats = (
 const BANTER_SCAN_WINDOW = MAX_BANTER_EVENTS * 4
 
 /**
+ * Reads an own data property of an untrusted record without invoking an
+ * accessor; an accessor or a missing key yields `undefined`.
+ */
+const readOwnDataValue = (
+  record: Record<string, unknown>,
+  key: string
+): unknown => {
+  const descriptor = Object.getOwnPropertyDescriptor(record, key)
+  return descriptor && Object.hasOwn(descriptor, 'value')
+    ? descriptor.value
+    : undefined
+}
+
+/**
  * Rebuilds the persisted banter log from whitelisted fields only.
  *
  * @param value - The raw untrusted `band.banterEvents` payload
@@ -842,7 +856,12 @@ const sanitizeBanterEvents = (
   const events: NonNullable<BandState['banterEvents']> = []
   for (const entry of value.slice(-BANTER_SCAN_WINDOW)) {
     if (!isLooseRecord(entry)) continue
-    const { member1, member2, delta, timestamp } = entry
+    // Read through descriptors: a raw LOAD_GAME entry may carry throwing
+    // getters, and an accessor field leaves the entry malformed (skipped).
+    const member1 = readOwnDataValue(entry, 'member1')
+    const member2 = readOwnDataValue(entry, 'member2')
+    const delta = readOwnDataValue(entry, 'delta')
+    const timestamp = readOwnDataValue(entry, 'timestamp')
     if (
       typeof member1 !== 'string' ||
       typeof member2 !== 'string' ||

@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
+import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
 import {
   isLooseRecord,
   clampPlayerMoney,
@@ -36,7 +36,10 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
 
-  if (!isLooseRecord(updates) || hasForbiddenOwnKeys(updates)) {
+  // The deep, descriptor-safe scan runs before the spreads below, so a raw
+  // payload with an accessor (top level or nested, e.g. `van.fuel`) is
+  // rejected without invoking it.
+  if (!isLooseRecord(updates) || hasForbiddenKeysDeep(updates)) {
     return state
   }
 
