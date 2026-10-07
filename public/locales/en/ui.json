@@ -562,6 +562,7 @@
   "expedition.prep.reject.PROTECTED_CASH_OUT_OF_RANGE": "You cannot protect more cash than you have.",
   "expedition.prep.reject.SETLIST_DUPLICATE": "A song is listed twice.",
   "expedition.prep.reject.SETLIST_EMPTY": "Pick at least one song.",
+  "expedition.prep.reject.SETLIST_TOO_LONG": "A tour setlist holds at most four songs.",
   "expedition.prep.reject.SETLIST_UNKNOWN_SONG": "One of these songs does not exist.",
   "expedition.prep.reject.SPONSOR_OFFER_UNKNOWN": "That sponsor offer is not available.",
   "expedition.prep.reject.TOUR_OR_REGION_UNKNOWN": "That tour or region is not unlocked.",

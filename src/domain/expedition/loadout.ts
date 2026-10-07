@@ -534,6 +534,9 @@ export const validateExpeditionBuildCommitment = (
   const setlistSongIds = build.setlistSongIds
   if (!isStringArray(setlistSongIds)) return reject('MALFORMED_CANDIDATE')
   if (setlistSongIds.length === 0) return reject('SETLIST_EMPTY')
+  if (setlistSongIds.length > EXPEDITION_MAX_SETLIST_SONGS) {
+    return reject('SETLIST_TOO_LONG')
+  }
   if (hasDuplicates(setlistSongIds)) return reject('SETLIST_DUPLICATE')
   for (const songId of setlistSongIds) {
     if (!SONGS_BY_ID.has(songId)) return reject('SETLIST_UNKNOWN_SONG')

@@ -136,6 +136,21 @@ describe('tour and region', () => {
 })
 
 describe('setlist', () => {
+  it('caps a committed setlist at the four-song Expedition limit', () => {
+    const songIds = [...SONGS_BY_ID.keys()]
+    assert.ok(songIds.length > 4, 'needs five distinct songs')
+    expectReason(
+      validate(createInitialState(), {
+        build: { setlistSongIds: songIds.slice(0, 5) }
+      }),
+      'SETLIST_TOO_LONG'
+    )
+    const atLimit = validate(createInitialState(), {
+      build: { setlistSongIds: songIds.slice(0, 4) }
+    })
+    assert.equal(atLimit.valid, true)
+  })
+
   it('requires a non-empty unique setlist of real songs', () => {
     expectReason(
       validate(createInitialState(), { build: { setlistSongIds: [] } }),

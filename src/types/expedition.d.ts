@@ -150,6 +150,7 @@ export interface ExpeditionLoadout {
 export type ExpeditionBuildRejectionReason =
   | 'MALFORMED_CANDIDATE'
   | 'SETLIST_EMPTY'
+  | 'SETLIST_TOO_LONG'
   | 'SETLIST_DUPLICATE'
   | 'SETLIST_UNKNOWN_SONG'
   | 'EQUIPMENT_TOO_MANY_ITEMS'

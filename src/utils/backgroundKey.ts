@@ -22,19 +22,18 @@ export const clearEdgeBackground = (
 ): void => {
   if (width <= 0 || height <= 0 || data.length < width * height * 4) return
 
-  // The corners decide the background colour; a sprite rarely touches them.
+  // The corners decide the background colour. A per-channel median, not a
+  // mean, so one corner the sprite reaches into cannot shift the sample.
   const corners = [0, width - 1, (height - 1) * width, height * width - 1]
-  let red = 0
-  let green = 0
-  let blue = 0
-  for (const pixel of corners) {
-    red += data[pixel * 4] ?? 0
-    green += data[pixel * 4 + 1] ?? 0
-    blue += data[pixel * 4 + 2] ?? 0
+  const cornerMedian = (channel: number): number => {
+    const values = corners
+      .map(pixel => data[pixel * 4 + channel] ?? 0)
+      .sort((a, b) => a - b)
+    return ((values[1] ?? 0) + (values[2] ?? 0)) / 2
   }
-  red /= corners.length
-  green /= corners.length
-  blue /= corners.length
+  const red = cornerMedian(0)
+  const green = cornerMedian(1)
+  const blue = cornerMedian(2)
 
   const isBackground = (pixel: number): boolean => {
     const offset = pixel * 4

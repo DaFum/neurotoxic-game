@@ -61,6 +61,21 @@ test('keeps an enclosed area of the background colour opaque', () => {
   ])
 })
 
+test('a sprite reaching into one corner does not shift the background', () => {
+  // Three white corners and one black: the field is still white.
+  const image = imageFrom(['WWWWW', 'WRRRW', 'WRRRW', 'WRRKK', 'WWWKK'])
+
+  clearEdgeBackground(image.data, image.width, image.height)
+
+  assert.deepEqual(alphaMap(image), [
+    '.....',
+    '.###.',
+    '.###.',
+    '.####',
+    '...##'
+  ])
+})
+
 test('leaves a buffer that is too small for its size untouched', () => {
   const data = new Uint8ClampedArray([255, 255, 255, 255])
 
