@@ -97,6 +97,8 @@ type ModalStackEntry = {
   token: symbol
   overlay: HTMLDivElement
   dialog: HTMLDivElement
+  /** `data-modal-keep-interactive` siblings the Tab cycle also visits. */
+  companions: Element[]
   opener: HTMLElement | null
   onCloseRef: { current: () => void }
 }
@@ -135,14 +137,40 @@ const handleModalKeyDown = (event: KeyboardEvent) => {
 
   const { dialog } = activeModal
   const focusableElements = getFocusableElements(dialog)
+  const companionFocusables = activeModal.companions.flatMap(companion =>
+    companion instanceof HTMLElement && companion.isConnected
+      ? getFocusableElements(companion)
+      : []
+  )
 
-  if (focusableElements.length === 0) {
+  if (focusableElements.length === 0 && companionFocusables.length === 0) {
     event.preventDefault()
     dialog.focus()
     return
   }
 
   const activeElement = document.activeElement
+
+  // A kept-interactive companion (the tutorial card) joins the cycle after the
+  // dialog: its DOM position is unrelated to the overlay's, so the browser's
+  // own Tab order cannot be trusted to cross between them and every step is
+  // placed explicitly.
+  if (companionFocusables.length > 0) {
+    const cycle = [...focusableElements, ...companionFocusables]
+    const index =
+      activeElement instanceof HTMLElement ? cycle.indexOf(activeElement) : -1
+    const step = event.shiftKey ? -1 : 1
+    const target =
+      index === -1
+        ? event.shiftKey
+          ? cycle[cycle.length - 1]
+          : cycle[0]
+        : cycle[(index + step + cycle.length) % cycle.length]
+    event.preventDefault()
+    target?.focus()
+    return
+  }
+
   const target = getTabWrapTarget(
     focusableElements,
     activeElement,
@@ -204,8 +232,10 @@ const restoreBackground = (element: Element, owner: symbol) => {
  * and `dialogRef` to the element carrying `role='dialog'` and `tabIndex={-1}`.
  * While open the hook mutes every sibling branch (`aria-hidden` + `inert`)
  * except `data-modal-keep-announcing` live regions and
- * `data-modal-keep-interactive` companion panels, traps Tab inside the topmost dialog, routes Escape to the topmost dialog's
- * `onClose` only, and restores background state and focus on close.
+ * `data-modal-keep-interactive` companion panels, traps Tab inside the
+ * topmost dialog plus those companions (dialog controls first), routes Escape
+ * to the topmost dialog's `onClose` only, and restores background state and
+ * focus on close.
  * @param isOpen - Whether the dialog is currently shown.
  * @param onClose - Called when Escape is pressed while this dialog is topmost.
  * @returns Refs for the overlay wrapper and the dialog element.
@@ -238,10 +268,12 @@ export const useModalBehavior = (
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null
+    const companions: Element[] = []
     const entry: ModalStackEntry = {
       token: Symbol('modal'),
       overlay,
       dialog,
+      companions,
       opener,
       onCloseRef
     }
@@ -257,12 +289,15 @@ export const useModalBehavior = (
           // Never mute an ARIA live region: aria-hidden on the toast container
           // silences every announcement made while a modal is open, so a
           // confirmation triggered from inside the dialog is never read out.
-          sibling.hasAttribute('data-modal-keep-announcing') ||
-          // Never mute a non-modal companion panel (the tutorial card): it
-          // sits above the modal layer and must stay clickable while a dialog
-          // is open. Tab focus is still trapped in the topmost dialog.
-          sibling.hasAttribute('data-modal-keep-interactive')
+          sibling.hasAttribute('data-modal-keep-announcing')
         ) {
+          continue
+        }
+        // Never mute a non-modal companion panel (the tutorial card): it sits
+        // above the modal layer and must stay usable while a dialog is open,
+        // so the Tab cycle visits it after the dialog's own controls.
+        if (sibling.hasAttribute('data-modal-keep-interactive')) {
+          companions.push(sibling)
           continue
         }
         backgroundElements.add(sibling)
@@ -284,10 +319,14 @@ export const useModalBehavior = (
 
     const timer = window.setTimeout(() => {
       // Deferred so the dialog's own mount/entry animation cannot steal focus
-      // back; see INITIAL_FOCUS_DELAY_MS.
+      // back; see INITIAL_FOCUS_DELAY_MS. Focus already in a companion panel
+      // is inside the Tab cycle, so it is not pulled back either.
       if (
         modalStack[modalStack.length - 1] === entry &&
-        !dialog.contains(document.activeElement)
+        !dialog.contains(document.activeElement) &&
+        !companions.some(companion =>
+          companion.contains(document.activeElement)
+        )
       ) {
         dialog.focus()
       }
