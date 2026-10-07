@@ -528,6 +528,7 @@
   "expedition.prep.protectedCash": "Protected career cash: {{amount}}",
   "expedition.prep.protectedCashHint": "Protected cash survives the run but cannot be spent during it.",
   "expedition.prep.reject.CARGO_OUT_OF_RANGE": "Cargo amounts must be whole numbers.",
+  "expedition.prep.reject.CARGO_OVER_CAPACITY": "Too much cargo: the tour bus has no free slots left.",
   "expedition.prep.reject.CHASSIS_TIER_LOCKED": "Higher tier tourbus requires Career capability unlock.",
   "expedition.prep.reject.CONTRABAND_NOT_OWNED": "That contraband is not in your stash.",
   "expedition.prep.reject.CREW_DUPLICATE": "A crew member is selected twice.",

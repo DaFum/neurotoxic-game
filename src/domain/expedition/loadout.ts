@@ -833,7 +833,7 @@ export const validateExpeditionBuildCommitment = (
   )
 
   if (cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity) {
-    return reject('CARGO_OUT_OF_RANGE')
+    return reject('CARGO_OVER_CAPACITY')
   }
 
   // ── Fuel target and protected Career Cash ──────────────────────────────────

@@ -528,6 +528,7 @@
   "expedition.prep.protectedCash": "Geschützte Karrierekasse: {{amount}}",
   "expedition.prep.protectedCashHint": "Geschütztes Geld überlebt den Run, ist aber währenddessen gesperrt.",
   "expedition.prep.reject.CARGO_OUT_OF_RANGE": "Ladungsmengen müssen ganze Zahlen sein.",
+  "expedition.prep.reject.CARGO_OVER_CAPACITY": "Zu viel Fracht: Im Tourbus ist kein Platz mehr frei.",
   "expedition.prep.reject.CHASSIS_TIER_LOCKED": "Höhere Tourbus-Stufe erfordert Karriere-Freischaltung.",
   "expedition.prep.reject.CONTRABAND_NOT_OWNED": "Diese Schmuggelware liegt nicht in deinem Stash.",
   "expedition.prep.reject.CREW_DUPLICATE": "Ein Crew-Mitglied ist doppelt ausgewählt.",
