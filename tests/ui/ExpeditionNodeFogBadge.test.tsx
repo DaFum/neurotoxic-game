@@ -58,6 +58,31 @@ describe('ExpeditionNodeFogBadge', () => {
     expect(route.textContent).not.toContain('·')
   })
 
+  it('rounds the scouted wear instead of printing float noise', () => {
+    const state = startedState() as GameState
+    const loadout = state.expedition.loadout
+    if (!loadout) throw new Error('fixture run has no loadout')
+    const map = buildExpeditionMap(
+      state.runSeed,
+      loadout.tourTypeId,
+      loadout.regionId
+    )
+    const nodeId = map.nodeOrder.find(id => map.meta[id]?.routeStep === 1)
+    const fog = nodeId ? getExpeditionNodeFogByNodeId(state)?.[nodeId] : null
+    if (!fog) throw new Error('node has no fog projection')
+
+    // Route wear times fractional chassis and crew multipliers.
+    render(
+      <ExpeditionNodeFogBadge
+        fog={{ ...fog, exactPayout: 195, exactWearCost: 12.0703 }}
+        t={t}
+      />
+    )
+
+    expect(document.body.textContent).toContain('ui:expedition.node.wear 12')
+    expect(document.body.textContent).not.toContain('12.07')
+  })
+
   it('omits the onward count on the Finale, which has no exits', () => {
     const state = startedState() as GameState
     const loadout = state.expedition.loadout
