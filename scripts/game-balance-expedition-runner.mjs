@@ -75,7 +75,9 @@ import {
   resolveExpeditionCrisis,
   executeExpeditionRepair,
   revealExpeditionNodeIntel,
-  claimExpeditionInsurance
+  claimExpeditionInsurance,
+  offerExpeditionDraft,
+  selectExpeditionDraft
 } from '../src/context/expeditionActionCreators.ts'
 import {
   createStartTravelMinigameAction,
@@ -122,6 +124,40 @@ const SKILL_TIMING_NAMESPACE = '#roguelite-expedition-v1#skill-timing'
  * @returns {number}
  */
 const deriveUnitInterval = key => deriveCohortSeed(key, 0) / 4294967296
+/**
+ * Run Draft pick order per `decisionPolicy`. The first listed trait among the
+ * offered candidates wins; with none listed, the first candidate (the order
+ * `deriveExpeditionDraftCandidates` derives from the run seed) is taken, so the
+ * pick is deterministic for every seed.
+ *
+ * @type {Readonly<Record<string, readonly string[]>>}
+ */
+const RUN_DRAFT_PREFERENCES = Object.freeze({
+  safe_value: ['road_warrior', 'crew_mediator', 'cold_trail'],
+  push_heat: ['cold_trail', 'reckless_encore', 'road_warrior'],
+  repair_first: ['field_engineer', 'road_warrior'],
+  intel_then_value: ['backchannel', 'cold_trail'],
+  performance_push: ['reckless_encore', 'crew_mediator'],
+  rival_pressure: ['reckless_encore', 'road_warrior']
+})
+
+/**
+ * Picks the trait a profile drafts from an offer's candidates.
+ *
+ * @param {readonly string[]} candidateTraitIds
+ * @param {string} decisionPolicy
+ * @returns {string|undefined}
+ */
+const pickRunDraftTrait = (candidateTraitIds, decisionPolicy) => {
+  const preferences = Object.hasOwn(RUN_DRAFT_PREFERENCES, decisionPolicy)
+    ? RUN_DRAFT_PREFERENCES[decisionPolicy]
+    : []
+  return (
+    preferences.find(traitId => candidateTraitIds.includes(traitId)) ??
+    candidateTraitIds[0]
+  )
+}
+
 /** Van condition is stored fractionally; wear comparisons tolerate float noise. */
 const TRAVEL_WEAR_EPSILON = 1e-6
 
@@ -2148,6 +2184,24 @@ export const runExpeditionSimulation = (
           expectedRouteStep: state.expedition.routeStep
         }
       })
+
+      // 5. Run Draft. `useContinueHandler` offers a `major_gig` draft after
+      // every non-Finale Gig that did not fail, and the reducer proves the
+      // node is a Festival (and refuses a full draft). A pending offer holds
+      // the route, so the profile picks before travelling on.
+      if (nodeClass !== 'FINALE' && gigStats.failed !== true) {
+        state = gameReducer(
+          state,
+          offerExpeditionDraft(state, 'major_gig', venue.id)
+        )
+        const offer = state.expedition.pendingRunDraftOffer
+        const traitId = offer
+          ? pickRunDraftTrait(offer.candidateTraitIds, profile.decisionPolicy)
+          : undefined
+        if (traitId) {
+          state = gameReducer(state, selectExpeditionDraft(state, traitId))
+        }
+      }
     }
 
     // D: Check Finale Completion

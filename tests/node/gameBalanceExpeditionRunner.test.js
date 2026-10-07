@@ -20,6 +20,8 @@ import {
   buildProductionSimulationLoadout
 } from '../../scripts/game-balance-expedition-profiles.mjs'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../src/domain/expedition/runDrafts.ts'
+import { BALANCE_SOURCE_FILES } from '../../scripts/utils/balance-report-metadata.mjs'
 
 describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
   it('generates provably disjoint seeds between calibration and holdout cohorts', () => {
@@ -348,6 +350,47 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
       // Verify that final state terminal status matches
       assert.equal(result.finalState.expedition.status, result.outcome)
     }
+  })
+
+  it('drafts a Run Draft trait after a completed Festival gig', () => {
+    // Production offers a `major_gig` Run Draft after every completed,
+    // non-failed Festival gig (`useContinueHandler`), and a pending offer holds
+    // the route. A runner that settles the Festival and moves on never drafts,
+    // so every cohort ran without road-wear, repair or Finale-reward traits.
+    const profile = EXPEDITION_BALANCE_PROFILES.find(
+      candidate => candidate.id === 'clean_sponsor'
+    )
+    assert.ok(profile)
+    const result = runExpeditionSimulation(undefined, profile, 5002)
+    const finalState = result.finalState
+    const map = buildExpeditionMap(
+      finalState.runSeed,
+      finalState.expedition.loadout.tourTypeId,
+      finalState.expedition.loadout.regionId
+    )
+    const festivalsVisited = finalState.expedition.visitedNodeIds.filter(
+      nodeId => map.meta[nodeId]?.nodeClass === 'FESTIVAL'
+    )
+    assert.ok(festivalsVisited.length > 0, 'fixture must reach a Festival')
+    assert.equal(result.telemetry.fameLockedBookings, 0)
+
+    const drafted = finalState.expedition.runDraftTraitIds
+    assert.ok(drafted.length >= 1, 'a completed Festival gig must draft')
+    assert.ok(drafted.length <= 2)
+    for (const traitId of drafted) {
+      assert.ok(EXPEDITION_RUN_DRAFT_TRAITS.includes(traitId))
+    }
+    assert.equal(finalState.expedition.pendingRunDraftOffer, null)
+  })
+
+  it('fingerprints the post-Gig owner that offers the Festival draft', () => {
+    // The runner mirrors `useContinueHandler`'s draft offer, so an edit there
+    // can move the reports and must move `sourceFingerprint` with it.
+    assert.ok(
+      BALANCE_SOURCE_FILES.includes(
+        'src/hooks/postGig/handlers/useContinueHandler.ts'
+      )
+    )
   })
 
   it('keeps repairSpend a finite cash total once the runner repairs', () => {
