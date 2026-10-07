@@ -390,11 +390,20 @@ export const MapNodeView = memo(
       setIsHoveredLocal(false)
     }
 
+    // Expedition supply, rest and special stops have no venue to name them by;
+    // their class and subtype are public at every intel level, so show those.
+    const expeditionStopName = expeditionFog
+      ? expeditionFog.specialSubtype
+        ? t(`ui:expedition.node.subtype.${expeditionFog.specialSubtype}`)
+        : t(`ui:expedition.node.class.${expeditionFog.nodeClass}`)
+      : null
     const nodeLocationName = translateLocation(
       t,
       node.venue?.name ?? '',
-      t('ui:map.unknown')
+      expeditionStopName ?? t('ui:map.unknown')
     )
+    // A supply stop named by its class would repeat its type chip verbatim.
+    const nodeTypeLabel = getNodeTypeLabel(t, node.type)
 
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
@@ -508,9 +517,12 @@ export const MapNodeView = memo(
         <div
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
-          <span className='text-xxs font-bold uppercase tracking-wide text-ash-gray px-1 bg-void-black'>
-            {getNodeTypeLabel(t, node.type)}
-          </span>
+          {nodeTypeLabel.toLocaleLowerCase() !==
+            nodeLocationName.toLocaleLowerCase() && (
+            <span className='text-xxs font-bold uppercase tracking-wide text-ash-gray px-1 bg-void-black'>
+              {nodeTypeLabel}
+            </span>
+          )}
           <span
             className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
           >
@@ -565,6 +577,9 @@ export const MapNodeView = memo(
       // defeat the memo; the intel level plus the reward band is what actually
       // changes what the tooltip shows.
       prev.expeditionFog?.intelLevel === next.expeditionFog?.intelLevel &&
+      prev.expeditionFog?.nodeClass === next.expeditionFog?.nodeClass &&
+      prev.expeditionFog?.specialSubtype ===
+        next.expeditionFog?.specialSubtype &&
       prev.expeditionFog?.rewardTier === next.expeditionFog?.rewardTier &&
       prev.expeditionFog?.dangerTier === next.expeditionFog?.dangerTier &&
       prev.bookingLockMinimumFame === next.bookingLockMinimumFame

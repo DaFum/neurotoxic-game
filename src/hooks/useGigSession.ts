@@ -34,7 +34,9 @@ export const useGigSession = ({
   gameStateRef
 }: UseGigSessionProps): UseGigSessionReturn => {
   const [isPaused, setIsPaused] = useState(false)
-  const hasInteractedRef = useRef(false)
+  // The pause state the effect last acted on. StrictMode replays the mount
+  // effect, so "not paused" alone must not resume audio or toast RESUMED.
+  const appliedPausedRef = useRef(false)
   // Set when a failed resume re-pauses, so that re-pause doesn't stack a
   // PAUSED toast on top of the resume-failed error.
   const silentRepauseRef = useRef(false)
@@ -45,21 +47,8 @@ export const useGigSession = ({
     if (gameStateRef.current) {
       gameStateRef.current.userPaused = isPaused
     }
-    if (!hasInteractedRef.current) {
-      if (!isPaused) {
-        hasInteractedRef.current = true
-        return
-      }
-      // If starts paused (unlikely) or quick toggle
-      pauseAudio()
-      addToast(
-        tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
-        'info'
-      )
-      // Focus management delegated to Modal or done here if needed
-      hasInteractedRef.current = true
-      return
-    }
+    if (appliedPausedRef.current === isPaused) return
+    appliedPausedRef.current = isPaused
 
     if (isPaused) {
       pauseAudio()

@@ -11,6 +11,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economy'
 
 import { canStartExpeditionPreGig } from '../domain/expedition/condition'
+import { EXPEDITION_MAX_SETLIST_SONGS } from '../domain/expedition/loadout'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 
@@ -37,6 +38,8 @@ interface PreGigLogicReturn {
   currentGig: Venue | null
   player: PlayerState
   setlist: RhythmSetlistEntry[]
+  /** Songs the setlist may hold: the committed Expedition set, else three. */
+  setlistMax: number
   gigModifiers: GigModifiers
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
   assetModifiers: AssetModifiers
@@ -52,6 +55,8 @@ interface PreGigLogicReturn {
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
   handleStartShow: () => Promise<void>
 }
+
+const CAREER_MAX_SETLIST_SONGS = 3
 
 /**
  * Builds pre-gig setup state and actions for setlists, modifiers, merch, and show start.
@@ -82,6 +87,10 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     [band, expedition]
   )
   const canStartShow = useGameSelector(canStartExpeditionPreGig)
+  const setlistMax =
+    expedition?.status === 'active'
+      ? EXPEDITION_MAX_SETLIST_SONGS
+      : CAREER_MAX_SETLIST_SONGS
   const {
     changeScene,
     setSetlist,
@@ -129,6 +138,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     player,
     currentGig,
     setlist,
+    setlistMax,
     gigModifiers,
     assetModifiers,
     adjustedBandMeetingCost,
@@ -178,6 +188,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     currentGig,
     player,
     setlist,
+    setlistMax,
     gigModifiers,
     currentModifiers,
     assetModifiers,

@@ -56,6 +56,40 @@ describe('MapNodeView', () => {
     expect(text).toContain(formatCurrency(25, i18n.language))
   })
 
+  test('names a venue-less Expedition stop by its public subtype', async () => {
+    const i18n = (await import('i18next')).default
+    const rivalStop = { id: 'exp_1_0', type: 'SPECIAL', x: 40, y: 20 }
+    const { container } = render(
+      <MapNodeView
+        node={rivalStop}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        expeditionFog={{
+          routeStep: 1,
+          onwardRouteCount: 2,
+          nodeClass: 'SPECIAL',
+          specialSubtype: 'RIVAL_ENCOUNTER',
+          dangerTier: 'medium',
+          rewardTier: 'medium',
+          isExtractionWindow: false,
+          intelLevel: 0,
+          exactPayout: null,
+          exactWearCost: null
+        }}
+      />
+    )
+
+    const subtype = i18n.t('ui:expedition.node.subtype.RIVAL_ENCOUNTER')
+    expect(container.textContent).toContain(subtype)
+    expect(container.textContent).not.toContain(i18n.t('ui:map.unknown'))
+  })
+
   test('shows the Fame booking lock only when one is passed', () => {
     const festival = { ...mockNode, type: 'FESTIVAL' }
     const props = {

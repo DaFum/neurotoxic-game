@@ -4,7 +4,7 @@
 
 import { memo } from 'react'
 import i18n from '../../i18n'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { ExpeditionNodeFog, ExpeditionTier } from '../../types/expedition'
 
@@ -92,7 +92,7 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
               <span className='text-star-white'>
                 {t('ui:expedition.node.wear')}
               </span>{' '}
-              {fog.exactWearCost}
+              {formatNumber(fog.exactWearCost, i18n.language)}
             </>
           )}
         </div>

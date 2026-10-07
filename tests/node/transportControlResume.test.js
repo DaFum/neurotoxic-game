@@ -61,7 +61,7 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-const { resumeAudio, pauseAudio, stopAudio } =
+const { resumeAudio, pauseAudio, stopAudio, getTransportState } =
   await import('../../src/utils/audio/transportControl')
 const { startTransportAt } =
   await import('../../src/utils/audio/transportStart')
@@ -154,6 +154,43 @@ test('pausing before a scheduled transport start defers it until resume', async 
   audioState.gigIsPaused = false
   assert.strictEqual(await resumeAudio(), true)
   assert.deepStrictEqual(transport.start.mock.calls[0].arguments, [17, 3])
+})
+
+test('a deferred transport start reports as paused', async () => {
+  reset()
+  transport.state = 'stopped'
+  contextTimeSec = 10
+  startTransportAt(12, 0)
+  contextTimeSec = 11
+  await pauseAudio()
+
+  // The rhythm loop only resumes a `paused` transport; Tone's `stopped` would
+  // leave the deferred start pending forever.
+  assert.strictEqual(getTransportState(), 'paused')
+})
+
+test('pausing in a lead-in defers the scheduled start while the transport runs', async () => {
+  reset()
+  // The next song's lead-in start is scheduled, and the overlay's resume has
+  // already restarted the transport when a gig event pauses it again.
+  transport.state = 'started'
+  contextTimeSec = 10
+  startTransportAt(12, 0)
+  transport.start.mock.resetCalls()
+
+  contextTimeSec = 11
+  await pauseAudio()
+  // `pause()` would leave the scheduled restart in Tone's timeline, so the
+  // transport would start by itself while the event overlay is still open.
+  assert.strictEqual(transport.pause.mock.calls.length, 0)
+  assert.strictEqual(transport.stop.mock.calls.length, 1)
+  transport.state = 'stopped'
+  assert.strictEqual(getTransportState(), 'paused')
+
+  contextTimeSec = 16
+  audioState.gigIsPaused = false
+  assert.strictEqual(await resumeAudio(), true)
+  assert.deepStrictEqual(transport.start.mock.calls[0].arguments, [17, 0])
 })
 
 test('stopping audio drops a deferred transport start', async () => {

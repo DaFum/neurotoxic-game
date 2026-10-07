@@ -145,4 +145,82 @@ describe('TourPrepLoadout', () => {
     expect(open).toBeEnabled()
     expect(open).not.toHaveTextContent('ui:expedition.prep.contractFameLocked')
   })
+
+  it('names insurance policies and their cover instead of raw ids', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+
+    const roadside = screen.getByTestId('expedition-prep-insurance-roadside')
+    expect(roadside).toHaveTextContent(
+      'ui:expedition.insurance.policy.roadside'
+    )
+    expect(
+      tCalls.some(c => c.key === 'ui:expedition.insurance.coverage.vehicle')
+    ).toBe(true)
+  })
+
+  it('states sponsor and contract terms before the player commits', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+
+    const sponsorTerms = screen.getAllByTestId(
+      /^expedition-prep-sponsor-terms-/
+    )
+    expect(sponsorTerms.length).toBeGreaterThan(0)
+    expect(sponsorTerms[0]).toHaveTextContent('ui:deals.upfront')
+
+    const contractTerms = screen.getByTestId(
+      'expedition-prep-contract-terms-contract_keep_it_clean'
+    )
+    expect(contractTerms).toHaveTextContent(
+      'ui:expedition.contractTerms.contract_keep_it_clean'
+    )
+    expect(contractTerms).toHaveTextContent('ui:expedition.prep.contractReward')
+    expect(contractTerms).toHaveTextContent(
+      'ui:expedition.prep.contractFailure'
+    )
+  })
+
+  it('counts the sponsor advance in the cash available after start', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+    const amount = () =>
+      Number(
+        screen
+          .getByTestId('expedition-prep-spendable')
+          .textContent?.replace(/\D/g, '')
+      )
+
+    const before = amount()
+    const offer = screen.getAllByTestId(
+      /^expedition-prep-sponsor-(?!none|terms)/
+    )[0]
+    fireEvent.click(offer!)
+
+    expect(amount()).toBeGreaterThan(before)
+  })
+
+  it('explains a full tank instead of offering a stuck fuel slider', () => {
+    state.current = createInitialState()
+    state.current.player.van = { ...state.current.player.van, fuel: 100 }
+    render(<TourPrepLoadout />)
+
+    expect(screen.getByTestId('expedition-prep-fuel-target')).toBeDisabled()
+    expect(
+      screen.getByText('ui:expedition.prep.fuelTankFull')
+    ).toBeInTheDocument()
+  })
+
+  it('labels the merch and protected-cash sliders', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+
+    const patches = screen.getByTestId('expedition-prep-merch-patches')
+    expect(patches.closest('label')).toHaveTextContent(
+      'economy:gigIncome.merchSales.patches.label'
+    )
+    expect(
+      screen.getByTestId('expedition-prep-protected-cash')
+    ).toHaveAccessibleName('ui:expedition.prep.protectedCash')
+  })
 })

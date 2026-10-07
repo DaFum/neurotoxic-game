@@ -420,7 +420,7 @@
   "gig_intro_dead_air.title": "FUNKSTILLE",
   "gig_intro_drunk_fan.desc": "Jemand brüllt wiederholt 'SPIELT SLAYER'.",
   "gig_intro_drunk_fan.opt1.label": "Ignorieren",
-  "gig_intro_drunk_fan.opt1.outcome": "Du hast das Set gestartet.",
+  "gig_intro_drunk_fan.opt1.outcome": "Ihr ignoriert ihn und spielt weiter. Das Gebrüll schlägt der Band trotzdem aufs Gemüt.",
   "gig_intro_drunk_fan.opt2.label": "Verarschen",
   "gig_intro_drunk_fan.opt2.outcome": "Publikumsreaktion.",
   "gig_intro_drunk_fan.title": "BETRUNKENER HECKLER",

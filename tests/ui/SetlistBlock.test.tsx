@@ -36,6 +36,7 @@ describe('SetlistBlock', () => {
     const { getAllByRole, getByText } = render(
       <SetlistBlock
         setlist={[{ id: 'song1' }]}
+        maxSongs={3}
         songsDb={sampleSongs}
         songsDict={songsDict}
         selectedSongIds={selectedSongIds}
@@ -61,6 +62,27 @@ describe('SetlistBlock', () => {
     expect(toggleSongMock).toHaveBeenCalledWith(sampleSongs[1])
   })
 
+  test('counts the setlist against the given maximum', () => {
+    // An Expedition commits four songs; the header must not read "4/3".
+    const { getByText } = render(
+      <SetlistBlock
+        setlist={[
+          { id: 'song1' },
+          { id: 'song2' },
+          { id: 'song3' },
+          { id: 'song4' }
+        ]}
+        maxSongs={4}
+        songsDb={sampleSongs}
+        songsDict={songsDict}
+        selectedSongIds={new Set(['song1', 'song2'])}
+        toggleSong={vi.fn()}
+      />
+    )
+
+    expect(getByText(/4\/4/)).toBeTruthy()
+  })
+
   test('keeps locked song focusable (tabIndex 0) with aria-disabled="true" and tooltip', () => {
     const toggleSongMock = vi.fn()
     const selectedSongIds = new Set<string>()
@@ -73,6 +95,7 @@ describe('SetlistBlock', () => {
     const { getAllByRole, queryByRole } = render(
       <SetlistBlock
         setlist={[]}
+        maxSongs={3}
         songsDb={sampleSongs}
         songsDict={songsDict}
         selectedSongIds={selectedSongIds}

@@ -122,6 +122,9 @@ export const playSongSequence = async (
 
   gameStateRef.current.setlistCompleted = false
   gameStateRef.current.songTransitioning = true
+  // Progress is per song and only advances once the transport runs, so a value
+  // left from the previous song would fire `gig_mid` during this lead-in.
+  gameStateRef.current.progress = 0
   gameStateRef.current.notes = []
   gameStateRef.current.nextMissCheckIndex = 0
 

@@ -420,7 +420,7 @@
   "gig_intro_dead_air.title": "DEAD AIR",
   "gig_intro_drunk_fan.desc": "Someone is yelling 'PLAY FREEBIRD' repeatedly.",
   "gig_intro_drunk_fan.opt1.label": "Ignore",
-  "gig_intro_drunk_fan.opt1.outcome": "You started the set.",
+  "gig_intro_drunk_fan.opt1.outcome": "You ignore him and play on. The heckling still gets to the band.",
   "gig_intro_drunk_fan.opt2.label": "Mock him",
   "gig_intro_drunk_fan.opt2.outcome": "Crowd reaction.",
   "gig_intro_drunk_fan.title": "DRUNK HECKLER",

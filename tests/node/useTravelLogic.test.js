@@ -128,6 +128,70 @@ describe('useTravelLogic', () => {
     assert.equal(mockAudioManager.playSFX.mock.calls[0].arguments[0], 'travel')
   })
 
+  const mapWithTarget = target => ({
+    nodes: {
+      node_start: {
+        id: 'node_start',
+        layer: 0,
+        type: 'START',
+        venue: { id: 'hq_club', name: 'HQ' }
+      },
+      node_target: { id: 'node_target', layer: 1, ...target }
+    },
+    connections: [{ from: 'node_start', to: 'node_target' }]
+  })
+
+  const firstToast = props => props.addToast.mock.calls[0]?.arguments
+
+  test('handleTravel accepts an Expedition stop that has no venue', () => {
+    // Expedition supply, rest and special stops host no gig and carry no venue.
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      gameMap: mapWithTarget({ type: 'SUPPLY_STOP' })
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.pendingTravelNode?.id, 'node_target')
+    assert.equal(firstToast(props)[1], 'warning')
+    assert.doesNotMatch(firstToast(props)[0], /Invalid location/)
+  })
+
+  test('handleTravel rejects a gig node without any venue', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      gameMap: mapWithTarget({ type: 'GIG' })
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.pendingTravelNode, null)
+    // The stranded-softlock check may toast first, since this map offers no
+    // other destination.
+    assert.ok(
+      props.addToast.mock.calls.some(
+        ({ arguments: [message, type] }) =>
+          type === 'error' && /Invalid location/.test(message)
+      )
+    )
+  })
+
+  test('handleTravel resolves a reloaded gig node from its venueId', () => {
+    // The save sanitizer keeps only `venueId` on map nodes.
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      gameMap: mapWithTarget({ type: 'GIG', venueId: 'tangermuende_burgfest' })
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.pendingTravelNode?.id, 'node_target')
+    assert.equal(firstToast(props)[1], 'warning')
+  })
+
   test('handleTravel confirmation includes travel, upkeep, and total cash impact', () => {
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: {

@@ -124,7 +124,7 @@ test('Task 4: Expedition Cargo Manifest and Capacity Model', async t => {
       const result = validateExpeditionBuildCommitment(state, candidate, map)
       assert.equal(result.valid, false)
       if (!result.valid) {
-        assert.equal(result.reason, 'CARGO_OUT_OF_RANGE')
+        assert.equal(result.reason, 'CARGO_OVER_CAPACITY')
       }
     }
   )
@@ -153,7 +153,7 @@ test('Task 4: Expedition Cargo Manifest and Capacity Model', async t => {
       const result = validateExpeditionBuildCommitment(state, candidate, map)
       assert.equal(result.valid, false)
       if (!result.valid) {
-        assert.equal(result.reason, 'CARGO_OUT_OF_RANGE')
+        assert.equal(result.reason, 'CARGO_OVER_CAPACITY')
       }
     }
   )

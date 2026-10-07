@@ -14,7 +14,8 @@ vi.mock('../../src/context/GameState', () => ({
     selector(state.current)
 }))
 
-vi.mock('../../src/utils/numberUtils', () => ({
+vi.mock('../../src/utils/numberUtils', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../src/utils/numberUtils')>()),
   formatCurrency: (value: number) => `${value} EUR`
 }))
 
@@ -97,6 +98,15 @@ describe('ExpeditionStatusStrip', () => {
     state.current = buildState()
     render(<ExpeditionStatusStrip />)
     expect(screen.getByTestId('expedition-hud-stamina')).toHaveTextContent('70')
+  })
+
+  it('rounds fractional readouts instead of printing float noise', () => {
+    state.current = buildState()
+    state.current.player.van = { ...state.current.player.van, fuel: 96.6505 }
+    render(<ExpeditionStatusStrip />)
+    const fuel = screen.getByTestId('expedition-hud-fuel')
+    expect(fuel).toHaveTextContent('97')
+    expect(fuel).not.toHaveTextContent('96.6505')
   })
 
   it('renders nothing outside an active run', () => {

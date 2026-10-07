@@ -124,7 +124,7 @@ export const Overworld = () => {
 
   return (
     <div
-      className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
+      className={`scene ${expeditionStatus === 'active' ? 'scene--expedition' : ''} ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
       <OverworldHeader
         t={t}

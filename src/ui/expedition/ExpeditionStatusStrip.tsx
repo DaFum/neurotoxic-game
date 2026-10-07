@@ -5,7 +5,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import { getExpeditionRunResources } from '../../domain/expedition/runResources'
 
 /**
@@ -80,28 +80,28 @@ export const ExpeditionStatusStrip = memo(function ExpeditionStatusStrip() {
       <ResourceCell
         testId='expedition-hud-fuel'
         label={t('ui:expedition.hud.fuel')}
-        value={`${resources.fuel}`}
+        value={formatNumber(resources.fuel, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-stamina'
         label={t('ui:expedition.hud.stamina')}
-        value={`${resources.stamina}`}
+        value={formatNumber(resources.stamina, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-harmony'
         label={t('ui:expedition.hud.harmony')}
-        value={`${resources.harmony}`}
+        value={formatNumber(resources.harmony, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-condition'
         label={t('ui:expedition.hud.condition')}
-        value={`${resources.condition}`}
+        value={formatNumber(resources.condition, i18n.language)}
         meta={t(`ui:expedition.condition.${resources.conditionBand}`)}
       />
       <ResourceCell
         testId='expedition-hud-heat'
         label={t('ui:expedition.hud.heat')}
-        value={`${resources.heat}`}
+        value={formatNumber(resources.heat, i18n.language)}
         meta={t('ui:expedition.hud.routeStep', { step: routeStep })}
       />
     </section>

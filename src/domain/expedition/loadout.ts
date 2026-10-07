@@ -90,6 +90,12 @@ export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.transport.maxFuel
 const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
+ * Songs a Tour Prep build may commit. The run plays this set at every gig, so
+ * PreGig counts against it rather than the three-song Career setlist.
+ */
+export const EXPEDITION_MAX_SETLIST_SONGS = 4
+
+/**
  * Cash the player may spend inside an active Expedition.
  *
  * @param state - Current game state.
@@ -528,6 +534,9 @@ export const validateExpeditionBuildCommitment = (
   const setlistSongIds = build.setlistSongIds
   if (!isStringArray(setlistSongIds)) return reject('MALFORMED_CANDIDATE')
   if (setlistSongIds.length === 0) return reject('SETLIST_EMPTY')
+  if (setlistSongIds.length > EXPEDITION_MAX_SETLIST_SONGS) {
+    return reject('SETLIST_TOO_LONG')
+  }
   if (hasDuplicates(setlistSongIds)) return reject('SETLIST_DUPLICATE')
   for (const songId of setlistSongIds) {
     if (!SONGS_BY_ID.has(songId)) return reject('SETLIST_UNKNOWN_SONG')
@@ -827,7 +836,7 @@ export const validateExpeditionBuildCommitment = (
   )
 
   if (cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity) {
-    return reject('CARGO_OUT_OF_RANGE')
+    return reject('CARGO_OVER_CAPACITY')
   }
 
   // ── Fuel target and protected Career Cash ──────────────────────────────────

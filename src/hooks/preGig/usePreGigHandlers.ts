@@ -45,6 +45,8 @@ export interface UsePreGigHandlersProps {
   player: PlayerState
   currentGig: Venue | null
   setlist: RhythmSetlistEntry[]
+  /** Most songs the setlist may hold. */
+  setlistMax: number
   gigModifiers: GigModifiers
   assetModifiers: AssetModifiers
   adjustedBandMeetingCost: number
@@ -96,6 +98,7 @@ export const usePreGigHandlers = ({
   player,
   currentGig,
   setlist,
+  setlistMax,
   gigModifiers,
   assetModifiers,
   adjustedBandMeetingCost,
@@ -238,11 +241,11 @@ export const usePreGigHandlers = ({
     (song: Song) => {
       if (selectedSongIds.has(song.id)) {
         setSetlist(setlist.filter(s => getSongId(s) !== song.id))
-      } else if (setlist.length < 3) {
+      } else if (setlist.length < setlistMax) {
         setSetlist([...setlist, { id: song.id }])
       }
     },
-    [selectedSongIds, setSetlist, setlist]
+    [selectedSongIds, setSetlist, setlist, setlistMax]
   )
 
   // Single affordability rule for enabling a modifier: the projected budget

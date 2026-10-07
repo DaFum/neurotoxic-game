@@ -171,13 +171,14 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
 })
 
 const stageRenderUtilsMocks = {
+  createEdgeKeyedTexture: mock.fn(texture => texture),
   getPixiColorFromToken: mock.fn(() => 0xffffff),
   loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
   loadTextures: mock.fn(async urlMap => {
     const results = {}
     for (const key in urlMap) {
       if (Object.hasOwn(urlMap, key)) {
-        results[key] = { width: 100, height: 100 }
+        results[key] = { width: 100, height: 100, key }
       }
     }
     return results
@@ -319,8 +320,14 @@ describe('TourbusStageController', () => {
 
   it('should handle asset loading', async () => {
     imageGen.isImageGenerationAvailable.mock.mockImplementation(() => true)
+    stageRenderUtilsMocks.createEdgeKeyedTexture.mock.resetCalls()
     await controller.loadAssets()
     assert.ok(controller.textures.bus)
+    // Generated sprites lose their flat background; the road tile keeps it.
+    const keyed = stageRenderUtilsMocks.createEdgeKeyedTexture.mock.calls.map(
+      call => call.arguments[0].key
+    )
+    assert.deepEqual(keyed, ['bus', 'rock', 'barrier', 'fuel', 'voidHazard'])
   })
 
   it('should handle asset loading fallback when offline', async () => {

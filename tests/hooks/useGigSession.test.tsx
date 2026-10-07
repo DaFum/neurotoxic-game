@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
@@ -30,6 +31,38 @@ vi.mock('../../src/utils/errorHandler', () => ({
 describe('useGigSession', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+  })
+
+  it('does not resume or toast RESUMED when StrictMode replays the mount effect', async () => {
+    const mockAddToast = vi.fn()
+    vi.mocked(resumeAudio).mockResolvedValue(true)
+
+    renderHook(
+      () =>
+        useGigSession({
+          addToast: mockAddToast,
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn(),
+          tRef: {
+            current: vi.fn(
+              (key, options) => options.defaultValue
+            ) as unknown as TFunction
+          },
+          gameStateRef: {
+            current: {
+              transportPausedByOverlay: false
+            } as unknown as RhythmGameRefState
+          }
+        }),
+      { wrapper: StrictMode }
+    )
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(resumeAudio).not.toHaveBeenCalled()
+    expect(pauseAudio).not.toHaveBeenCalled()
+    expect(mockAddToast).not.toHaveBeenCalled()
   })
 
   it('handles error during handleQuitGig when stopAudio fails', async () => {

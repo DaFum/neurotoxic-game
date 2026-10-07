@@ -150,6 +150,7 @@ export interface ExpeditionLoadout {
 export type ExpeditionBuildRejectionReason =
   | 'MALFORMED_CANDIDATE'
   | 'SETLIST_EMPTY'
+  | 'SETLIST_TOO_LONG'
   | 'SETLIST_DUPLICATE'
   | 'SETLIST_UNKNOWN_SONG'
   | 'EQUIPMENT_TOO_MANY_ITEMS'
@@ -167,6 +168,7 @@ export type ExpeditionBuildRejectionReason =
   | 'CREW_DUPLICATE'
   | 'CREW_UNAVAILABLE'
   | 'CARGO_OUT_OF_RANGE'
+  | 'CARGO_OVER_CAPACITY'
   | 'PRESSURE_MODIFIERS_INVALID'
   | 'CHASSIS_TIER_LOCKED'
   | 'FAME_ACCESS_LOCKED'

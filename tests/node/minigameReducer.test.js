@@ -193,6 +193,39 @@ describe('minigameReducer', () => {
       )
     })
 
+    it('keeps the current location when the target stop has no venue', () => {
+      // Expedition supply, rest and special stops carry no venue.
+      const activeState = withActiveMinigame(
+        {
+          ...baseState,
+          player: {
+            ...baseState.player,
+            location: 'venues:stendal_proberaum.name'
+          }
+        },
+        MINIGAME_TYPES.TOURBUS
+      )
+      activeState.gameMap = {
+        ...baseState.gameMap,
+        nodes: {
+          ...baseState.gameMap.nodes,
+          node2: { id: 'node2', type: 'SUPPLY_STOP', x: 100, y: 0 }
+        }
+      }
+      activeState.minigame.targetDestination = 'node2'
+
+      const nextState = handleCompleteTravelMinigame(activeState, {
+        damageTaken: 0,
+        itemsCollected: []
+      })
+
+      assert.strictEqual(nextState.player.currentNodeId, 'node2')
+      assert.strictEqual(
+        nextState.player.location,
+        'venues:stendal_proberaum.name'
+      )
+    })
+
     it('should return safely if invalid targetNode and preserve currentScene', () => {
       const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
       activeState.currentScene = GAME_PHASES.TRAVEL_MINIGAME

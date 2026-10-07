@@ -23,6 +23,8 @@ interface SongRowProps {
 
 interface SetlistBlockProps {
   setlist: RhythmSetlistEntry[]
+  /** Most songs the setlist may hold. */
+  maxSongs: number
   songsDb: Song[]
   songsDict: Record<string, Song>
   player?: SetlistPlayerState
@@ -121,6 +123,7 @@ SongRow.displayName = 'SongRow'
  */
 export const SetlistBlock = ({
   setlist,
+  maxSongs,
   songsDb,
   songsDict,
   selectedSongIds,
@@ -171,7 +174,7 @@ export const SetlistBlock = ({
         <span className='tabular-nums'>
           {t('ui:pregig.setlistCountMax', {
             count: setlist.length,
-            max: 3,
+            max: maxSongs,
             defaultValue: '{{count}}/{{max}} max'
           })}
         </span>
