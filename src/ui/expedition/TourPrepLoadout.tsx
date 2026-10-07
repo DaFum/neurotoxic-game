@@ -14,7 +14,10 @@ import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from '../../domain/expedition/defaults'
-import { buildPreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
+import {
+  buildPreparedExpeditionSponsorOffers,
+  resolveBrandDealAcceptance
+} from '../../domain/expedition/sponsors'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
@@ -28,7 +31,8 @@ import {
   getExpeditionFameLockedContractTemplateIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment,
-  EXPEDITION_MAX_SETLIST_SONGS
+  EXPEDITION_MAX_SETLIST_SONGS,
+  EXPEDITION_MAX_STARTING_FUEL
 } from '../../domain/expedition/loadout'
 import {
   areExpeditionContractsCompatible,
@@ -82,6 +86,41 @@ const toggleBounded = (
   if (selected.includes(id)) return selected.filter(entry => entry !== id)
   if (selected.length >= max) return [...selected]
   return [...selected, id]
+}
+
+/**
+ * States what a contract asks for, what it pays and what a breach costs, so the
+ * player can weigh it before committing.
+ */
+const ContractTerms = ({ templateId }: { templateId: string }) => {
+  const { t, i18n } = useTranslation('ui')
+  const template = EXPEDITION_CONTRACTS_BY_ID.get(templateId)
+  if (!template) return null
+  return (
+    <span
+      className='block normal-case text-ash-gray'
+      data-testid={`expedition-prep-contract-terms-${templateId}`}
+    >
+      <span className='block'>
+        {t(`ui:expedition.contractTerms.${templateId}`)}
+      </span>
+      <span className='block'>
+        {t('ui:expedition.prep.contractReward', {
+          money: formatCurrency(template.reward.money, i18n.language),
+          fame: formatNumber(template.reward.fame, i18n.language)
+        })}
+      </span>
+      <span className='block'>
+        {t('ui:expedition.prep.contractFailure', {
+          heat: formatNumber(template.failure.heat, i18n.language),
+          controversy: formatNumber(template.failure.controversy, i18n.language)
+        })}
+        {template.tourEndingOnFailure
+          ? ` ${t('ui:expedition.prep.contractTourEnding')}`
+          : null}
+      </span>
+    </span>
+  )
 }
 
 /**
@@ -385,11 +424,21 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
 
   const fuelCost = getExpeditionFuelTopUpCost(currentFuel, startingFuelTarget)
+  // The build may only top the tank up, so a full tank leaves nothing to pick.
+  const isTankFull = Math.ceil(currentFuel) >= EXPEDITION_MAX_STARTING_FUEL
   const insurancePremium = getExpeditionInsurancePremium(insurancePolicyId)
   const upfrontCost = fuelCost + insurancePremium
+  // START pays the chosen sponsor's advance, so the preview has to count it.
+  const selectedSponsorDealId = sponsorOffers.find(
+    offer => offer.offerId === sponsorOfferId
+  )?.dealId
+  const sponsorAdvance = selectedSponsorDealId
+    ? (resolveBrandDealAcceptance(state, selectedSponsorDealId)
+        ?.appliedMoneyDelta ?? 0)
+    : 0
   const spendableAfterCommit = Math.max(
     0,
-    money - upfrontCost - protectedCareerCash
+    money - upfrontCost - protectedCareerCash + sponsorAdvance
   )
 
   const handleCommit = useCallback(() => {
@@ -912,15 +961,27 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 <input
                   type='range'
                   min={Math.ceil(currentFuel)}
-                  max={100}
+                  max={EXPEDITION_MAX_STARTING_FUEL}
                   step={1}
                   value={startingFuelTarget}
+                  disabled={isTankFull}
+                  aria-describedby={
+                    isTankFull ? 'expedition-prep-fuel-full' : undefined
+                  }
                   data-testid='expedition-prep-fuel-target'
                   onChange={event =>
                     setStartingFuelTarget(Number(event.currentTarget.value))
                   }
                 />
               </label>
+              {isTankFull && (
+                <p
+                  id='expedition-prep-fuel-full'
+                  className='text-xs text-ash-gray'
+                >
+                  {t('ui:expedition.prep.fuelTankFull')}
+                </p>
+              )}
             </fieldset>
           </div>
 
@@ -970,13 +1031,17 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                       }`}
                     >
-                      <strong>{policyId}</strong>
+                      <strong>
+                        {t(`ui:expedition.insurance.policy.${policyId}`)}
+                      </strong>
                       <span className='block normal-case text-ash-gray'>
                         {t(
                           'ui:expedition.prep.policyCoverage',
                           'Coverage: {{coverage}} | Premium: {{premium}}',
                           {
-                            coverage: policy.coverage,
+                            coverage: t(
+                              `ui:expedition.insurance.coverage.${policy.coverage}`
+                            ),
                             premium: formatCurrency(
                               policy.premium,
                               i18n.language
@@ -1047,13 +1112,17 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
             </fieldset>
 
             <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
-              <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+              <legend
+                id='expedition-prep-protected-cash-label'
+                className='text-xs uppercase tracking-widest text-toxic-green px-1'
+              >
                 {t('ui:expedition.prep.protectedCash', {
                   amount: formatCurrency(protectedCareerCash, i18n.language)
                 })}
               </legend>
               <input
                 type='range'
+                aria-labelledby='expedition-prep-protected-cash-label'
                 min={0}
                 max={Math.max(0, Math.floor(money))}
                 step={10}
@@ -1105,7 +1174,12 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray border border-steel-gray/40 p-2'
                       >
                         <div className='flex justify-between text-star-white'>
-                          <span>{item.inventoryKey}</span>
+                          <span>
+                            {t(
+                              `economy:gigIncome.merchSales.${item.inventoryKey}.label`,
+                              { defaultValue: item.inventoryKey }
+                            )}
+                          </span>
                           <span>
                             {currentQty} / {item.ownedQuantity}{' '}
                             {t('ui:expedition.prep.items', 'Items')}
@@ -1169,15 +1243,35 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         aria-pressed={isSelected}
                         onClick={() => setSponsorOfferId(offer.offerId)}
                         data-testid={`expedition-prep-sponsor-${offer.offerId}`}
-                        className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                        className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                           isSelected
                             ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                             : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                         }`}
                       >
-                        {(deal
-                          ? getTranslatedBrandDealDisplay(deal, t)?.name
-                          : null) ?? offer.dealId}
+                        <strong className='block'>
+                          {(deal
+                            ? getTranslatedBrandDealDisplay(deal, t)?.name
+                            : null) ?? offer.dealId}
+                        </strong>
+                        {deal && (
+                          <span
+                            className='block normal-case text-ash-gray'
+                            data-testid={`expedition-prep-sponsor-terms-${offer.offerId}`}
+                          >
+                            {[
+                              `${t('ui:deals.upfront')} ${formatCurrency(deal.offer.upfront, i18n.language)}`,
+                              deal.offer.perGig === undefined
+                                ? null
+                                : `${t('ui:deals.perGig')} ${formatCurrency(deal.offer.perGig, i18n.language)}`,
+                              t('ui:brandDeals.durationValue', {
+                                count: deal.offer.duration
+                              })
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        )}
                       </button>
                     )
                   })}
@@ -1213,7 +1307,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       disabled={isBlocked}
                       onClick={() => toggleContract(templateId)}
                       data-testid={`expedition-prep-contract-${templateId}`}
-                      className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                      className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                         isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : isBlocked
@@ -1221,9 +1315,12 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                             : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                       }`}
                     >
-                      {t(`ui:expedition.contract.${templateId}`, {
-                        defaultValue: templateId
-                      })}
+                      <strong className='block'>
+                        {t(`ui:expedition.contract.${templateId}`, {
+                          defaultValue: templateId
+                        })}
+                      </strong>
+                      <ContractTerms templateId={templateId} />
                     </button>
                   )
                 })}
@@ -1244,6 +1341,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         fame: formatNumber(minimumFame, i18n.language)
                       })}
                     </span>
+                    <ContractTerms templateId={templateId} />
                   </button>
                 ))}
               </div>
