@@ -40,6 +40,37 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
+    it('rejects accessor-bearing updates without invoking their getters', () => {
+      const initialState = {
+        player: { money: 100, day: 1, van: { fuel: 50, condition: 80 } }
+      }
+      let getterCalls = 0
+      const throwingGetter = () => {
+        getterCalls++
+        throw new Error('getter must not run')
+      }
+      const van = { condition: 70 }
+      Object.defineProperty(van, 'fuel', {
+        enumerable: true,
+        get: throwingGetter
+      })
+      const topLevel = { day: 2 }
+      Object.defineProperty(topLevel, 'money', {
+        enumerable: true,
+        get: throwingGetter
+      })
+
+      assert.strictEqual(
+        handleUpdatePlayer(initialState, { van }),
+        initialState
+      )
+      assert.strictEqual(
+        handleUpdatePlayer(initialState, topLevel),
+        initialState
+      )
+      assert.strictEqual(getterCalls, 0)
+    })
+
     it('should preserve properties not updated', () => {
       const initialState = {
         otherProp: 'test',
