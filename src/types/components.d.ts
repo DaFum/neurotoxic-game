@@ -6,6 +6,8 @@ import type {
   PlayerState,
   BandMember
 } from './game'
+import type { BandState } from './band'
+import type { GameMap } from './map'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
@@ -46,18 +48,29 @@ export interface ChatterMessageData {
 }
 
 /**
- * Game-state slice required to select and render chatter.
+ * Game-state slice required to select and render chatter. Band, player and
+ * map are narrowed to the leaf fields chatter conditions read, so the global
+ * overlay does not re-render on unrelated changes to those slices.
  */
 export type ChatterGameState = Pick<
   GameState,
-  | 'currentScene'
-  | 'band'
-  | 'player'
-  | 'gameMap'
-  | 'social'
-  | 'lastGigStats'
-  | 'gigModifiers'
->
+  'currentScene' | 'social' | 'lastGigStats' | 'gigModifiers'
+> & {
+  band: Pick<BandState, 'members' | 'harmony' | 'luck' | 'inventory'>
+  player: Pick<
+    PlayerState,
+    | 'currentNodeId'
+    | 'location'
+    | 'money'
+    | 'day'
+    | 'fame'
+    | 'fameLevel'
+    | 'totalTravels'
+  > & {
+    van: Pick<PlayerState['van'], 'fuel' | 'condition'>
+  }
+  gameMap: Pick<GameMap, 'nodes'> | null
+}
 
 /**
  * Message data and callbacks required to render and dismiss one chatter entry.

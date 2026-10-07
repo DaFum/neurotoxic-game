@@ -76,8 +76,7 @@ import type {
   ActiveBrandDeal,
   ToastPayload,
   GameMap,
-  GamePhase,
-  GigModifiers
+  GamePhase
 } from '../../../types'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
@@ -1621,17 +1620,15 @@ const ALLOWED_GIG_MODIFIER_KEYS: ReadonlySet<string> = new Set([
  */
 export const sanitizeGigModifierUpdates = (
   updates: unknown
-): Partial<GigModifiers> => {
+): Record<string, boolean> => {
   if (!isLooseRecord(updates)) return {}
-  const out: Partial<GigModifiers> = {}
+  const out: Record<string, boolean> = {}
   for (const key of ALLOWED_GIG_MODIFIER_KEYS) {
     if (
       Object.hasOwn(updates, key) &&
       typeof (updates as Record<string, unknown>)[key] === 'boolean'
     ) {
-      out[key as keyof GigModifiers] = (updates as Record<string, unknown>)[
-        key
-      ] as boolean
+      out[key] = (updates as Record<string, unknown>)[key] as boolean
     }
   }
   return out

@@ -151,6 +151,49 @@ describe('standard route shape', () => {
     }
   })
 
+  it('never throws from the root reducer path across a wide seed and profile sweep', () => {
+    // buildExpeditionMap throws on an unreachable Finale and the root reducer
+    // calls it, so one bad seed would crash the game. Sweep far more seeds than
+    // the targeted tests, with spread (non-neutral) seeds across every Tour,
+    // Region, route length and forced-Rival setting.
+    const tourTypeIds = Object.keys(EXPEDITION_TOUR_TYPES)
+    const regionIds = Object.keys(EXPEDITION_REGIONS)
+    let builds = 0
+    for (const tourTypeId of tourTypeIds) {
+      for (const regionId of regionIds) {
+        for (let i = 0; i < 520; i += 1) {
+          const seed = (Math.imul(i + 1, 2654435761) ^ (i * 40503)) >>> 0
+          assert.doesNotThrow(
+            () => buildExpeditionMap(seed, tourTypeId, regionId),
+            `tour ${tourTypeId} region ${regionId} seed ${seed}`
+          )
+          builds += 1
+        }
+      }
+    }
+    for (
+      let count = MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES;
+      count <= MAX_EXPEDITION_MEANINGFUL_NODES;
+      count += 1
+    ) {
+      for (const forcedRival of [false, true]) {
+        for (let seed = 0; seed < 520; seed += 1) {
+          const profile = {
+            ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+            meaningfulNodeCount: count,
+            forcedRival
+          }
+          assert.doesNotThrow(
+            () => build(seed * 104729, profile),
+            `nodes ${count} forcedRival ${forcedRival} seed ${seed * 104729}`
+          )
+          builds += 1
+        }
+      }
+    }
+    assert.ok(builds >= 500)
+  })
+
   it('asserts Finale reachability on every build of every Tour and Region', () => {
     // The builder throws on an unreachable Finale, so building is the check;
     // the predicate itself must also be able to say no.

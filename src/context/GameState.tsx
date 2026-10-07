@@ -48,9 +48,8 @@ import {
   useGameDispatchActions,
   type GameDispatchActions
 } from './useGameDispatchActions'
-export type { GameDispatchActions }
 
-export type GameStore = {
+type GameStore = {
   getState: () => GameState
   subscribe: (listener: () => void) => () => void
 }

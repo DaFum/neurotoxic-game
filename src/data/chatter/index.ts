@@ -2,7 +2,7 @@ import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter'
 import { getSafeRandom } from '../../utils/crypto'
 import { pickWeighted } from '../../utils/selectionUtils'
-import type { GameState } from '../../types'
+import type { ChatterGameState } from '../../types/components'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
@@ -51,16 +51,7 @@ const getValidatedVenueChatterLine = (
   )
 }
 
-type ChatterState = Pick<
-  GameState,
-  | 'gameMap'
-  | 'player'
-  | 'currentScene'
-  | 'band'
-  | 'social'
-  | 'gigModifiers'
-  | 'lastGigStats'
->
+type ChatterState = ChatterGameState
 
 const getVenueChatter = (state: ChatterState): ChatterPoolItem[] => {
   const pool: ChatterPoolItem[] = []

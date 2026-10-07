@@ -17,7 +17,7 @@ type DrumKit = NonNullable<typeof audioState.drumKit>
 /**
  * Dispatch table for MIDI drum events, keyed by the mapped voice.
  */
-export const DRUM_HANDLERS: Record<
+const DRUM_HANDLERS: Record<
   DrumKind,
   (kit: DrumKit, map: DrumMap, time: number, vel: number) => void
 > = {

@@ -189,22 +189,29 @@ describe('Road Trip Events Suite', () => {
     assert.equal(nextState.player.money, state.player.money - 60)
   })
 
-  it('a second trunk purchase does not duplicate the non-stackable pedal or re-apply its bonus', () => {
+  it('trunk dealer purchase options are unavailable once the pedal is owned, so nobody is charged for nothing', () => {
     const state = createInitialState()
+    state.player.money = 500
     const event = ALL_RAW_EVENTS.find(e => e.id === 'reststop_trunk_dealer')
-    const first = applyEventDelta(
+    assert.equal(event.options[0].condition(state), true)
+    assert.equal(event.options[1].condition(state), true)
+
+    const owned = applyEventDelta(
       state,
       resolveEventChoice(event.options[0], state).delta
     )
-    const second = applyEventDelta(
-      first,
-      resolveEventChoice(event.options[0], first).delta
-    )
-    assert.equal(second.band.crit, first.band.crit)
-    assert.equal(
-      second.band.stash.c_diy_overdrive.instanceId,
-      first.band.stash.c_diy_overdrive.instanceId
-    )
+    assert.ok(owned.band.stash.c_diy_overdrive)
+    owned.player.money = 500
+
+    assert.equal(event.options[0].condition(owned), false)
+    assert.equal(event.options[1].condition(owned), false)
+    // The resolver refuses a rejected option, so no money delta is produced.
+    const rejected = resolveEventChoice(event.options[0], owned)
+    assert.equal(rejected.result.outcome, 'rejected')
+    const after = applyEventDelta(owned, rejected.delta)
+    assert.equal(after.player.money, owned.player.money)
+    // The free option stays available.
+    assert.equal(event.options[2].condition, undefined)
   })
 
   it('reststop_night_coffee enforces affordability conditions', () => {

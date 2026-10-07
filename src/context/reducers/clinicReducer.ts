@@ -35,8 +35,7 @@ import {
 } from './toastSanitizers'
 import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
-type MemberUpdaterResult =
-  { updatedMember: BandMember; toastArgs?: unknown[] } | BandMember
+type MemberUpdaterResult = { updatedMember: BandMember; toastArgs?: number[] }
 
 /**
  * Finds a band member by ID within a member array.
@@ -112,11 +111,8 @@ const executeClinicAction = (
     return state
   }
 
-  const memberUpdateResult = memberUpdater(targetMember)
-  const updatedMember =
-    'updatedMember' in memberUpdateResult
-      ? memberUpdateResult.updatedMember
-      : memberUpdateResult
+  const { updatedMember, toastArgs: toastArgsArray } =
+    memberUpdater(targetMember)
 
   const updatedMembers: BandMember[] = [...state.band.members]
   updatedMembers[targetIndex] = updatedMember
@@ -138,14 +134,10 @@ const executeClinicAction = (
   }
 
   // Append success toast atomically so it only appears when the action succeeds
-  const toastArgsArray =
-    memberUpdateResult && 'toastArgs' in memberUpdateResult
-      ? memberUpdateResult.toastArgs
-      : undefined
   const finalSuccessToast =
     successToast ||
     (typeof getSuccessToast === 'function' && toastArgsArray
-      ? (getSuccessToast as (...args: unknown[]) => unknown)(...toastArgsArray)
+      ? getSuccessToast(...toastArgsArray)
       : null)
   // Action creators stamp toast UUIDs; this fallback only covers reducer-built
   // or malformed toasts and must stay deterministic (reducer purity).
@@ -421,7 +413,8 @@ export const handleGraftNeuroOverclock = (
     (m: import('../../types/band').BandMember) => m.id === memberId
   )
 
-  if (memberIndex === -1) {
+  const member = state.band.members[memberIndex]
+  if (memberIndex === -1 || !member) {
     logger.warn(
       'ClinicReducer',
       `handleGraftNeuroOverclock: Member ${memberId} not found`
@@ -429,7 +422,6 @@ export const handleGraftNeuroOverclock = (
     return state
   }
 
-  const member = state.band.members[memberIndex]
   if (hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)) {
     return state // Already grafted
   }

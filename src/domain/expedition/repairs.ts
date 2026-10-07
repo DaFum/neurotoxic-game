@@ -60,18 +60,11 @@ export const isExpeditionServiceLocation = (
   for (const nodeId of candidateIds) {
     if (state.gameMap?.nodes?.[nodeId]) {
       const node = state.gameMap.nodes[nodeId]
-      const meta = state.gameMap.meta?.[nodeId]
+      // `gameMap` carries only nodes and connections (START_EXPEDITION drops the
+      // route `meta`), and every Expedition node class maps 1:1 onto `type`.
       const type = node.type
-      const metaClass = meta?.nodeClass
 
-      if (
-        type === 'SUPPLY_STOP' ||
-        type === 'START' ||
-        type === 'FESTIVAL' ||
-        metaClass === 'SUPPLY_STOP' ||
-        metaClass === 'START' ||
-        metaClass === 'FESTIVAL'
-      ) {
+      if (type === 'SUPPLY_STOP' || type === 'START' || type === 'FESTIVAL') {
         return true
       }
     }

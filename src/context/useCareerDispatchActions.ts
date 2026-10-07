@@ -15,7 +15,7 @@ import type { GameDispatchActions } from './useGameDispatchActions'
  * Isolates the subset of global dispatch actions specifically related to expedition
  * career progression, HQ upgrades, and meta-progression management.
  */
-export type CareerDispatchActions = Pick<
+type CareerDispatchActions = Pick<
   GameDispatchActions,
   | 'settleExpeditionCrewCareer'
   | 'settleExpeditionCareerResult'

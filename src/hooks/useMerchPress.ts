@@ -43,20 +43,18 @@ export const useMerchPress = () => {
     const isFailure = secureRandom() < config.failChance
     const harmonyCost = isFailure ? config.harmonyCostOnFail : 0
 
-    const successToast = {
-      messageKey: isFailure
-        ? 'ui:merch_press.failure_toast'
-        : 'ui:merch_press.success_toast',
-      type: isFailure ? 'warning' : 'success'
-    }
-
     merchPress({
       cost: config.cost,
       loyaltyGain: config.loyaltyGain,
       controversyGain: config.controversyGain,
       fameGain: config.fameGain,
       harmonyCost,
-      successToast
+      successToast: {
+        messageKey: isFailure
+          ? 'ui:merch_press.failure_toast'
+          : 'ui:merch_press.success_toast',
+        type: isFailure ? 'warning' : 'success'
+      }
     })
 
     closeMerchPress()

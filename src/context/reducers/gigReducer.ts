@@ -24,6 +24,7 @@ import {
   finiteNumberOr,
   clampBandHarmony,
   clampBandStress,
+  addClampedPercent,
   clampReputation,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
@@ -174,10 +175,9 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
             pressure: finaleProfile
               ? {
                   ...withDefects.expedition.pressure,
-                  crowdHype: Math.min(
-                    100,
-                    withDefects.expedition.pressure.crowdHype +
-                      finaleProfile.crowdHypeStartBonus
+                  crowdHype: addClampedPercent(
+                    withDefects.expedition.pressure.crowdHype,
+                    finaleProfile.crowdHypeStartBonus
                   )
                 }
               : withDefects.expedition.pressure

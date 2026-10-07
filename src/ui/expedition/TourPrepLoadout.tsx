@@ -833,6 +833,16 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                   max={Math.max(1, cargoUsage.visibleCapacity)}
                   showValue={false}
                   aria-label={t('ui:expedition.prep.cargo', 'Cargo Capacity')}
+                  // ProgressBar clamps aria-valuenow to the capacity, so an
+                  // over-capacity load is only audible through the value text.
+                  aria-valuetext={
+                    cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity
+                      ? t('ui:expedition.prep.cargoOverCapacityText', {
+                          used: cargoUsage.visibleSlotsUsed,
+                          max: cargoUsage.visibleCapacity
+                        })
+                      : undefined
+                  }
                   color={
                     cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity
                       ? 'bg-blood-red'

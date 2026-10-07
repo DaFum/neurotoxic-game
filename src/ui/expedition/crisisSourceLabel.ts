@@ -13,7 +13,7 @@ import { translateLocation } from '../../utils/locationI18n'
  */
 export interface CrisisSourceContext {
   gameMap: GameState['gameMap']
-  members: ReadonlyArray<{ id: string; name?: string } | null | undefined>
+  members: ReadonlyArray<{ id?: string; name?: string } | null | undefined>
   obligations: readonly ActiveObligationState[]
 }
 

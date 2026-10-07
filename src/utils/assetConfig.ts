@@ -29,7 +29,7 @@ import {
 /**
  * Price, upkeep, revenue, slots, and risk tuning for one chassis tier.
  */
-export interface ChassisTierConfig {
+interface ChassisTierConfig {
   price: number
   upkeep: number
   revenue: number
@@ -45,7 +45,7 @@ type ChassisFlavorConfig = Record<ChassisTier, ChassisTierConfig>
 /**
  * Flavor configuration map for one asset kind.
  */
-export type ChassisKindConfig = Record<AssetFlavor, ChassisFlavorConfig>
+type ChassisKindConfig = Record<AssetFlavor, ChassisFlavorConfig>
 
 /**
  * Price multiplier used to derive DIY chassis tiers from legit tiers.

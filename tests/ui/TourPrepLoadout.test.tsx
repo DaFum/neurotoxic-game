@@ -17,10 +17,15 @@ vi.mock('../../src/context/GameState', () => ({
   })
 }))
 
+const tCalls = vi.hoisted(() => [] as Array<{ key: string; options: unknown }>)
+
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: unknown) => {
+      tCalls.push({ key, options })
+      return key
+    },
     i18n: { language: 'en' }
   })
 }))
@@ -83,5 +88,33 @@ describe('TourPrepLoadout', () => {
 
     const perkNone = screen.getByTestId('expedition-prep-perk-none')
     expect(perkNone.className).toContain('focus-visible:ring-toxic-green')
+  })
+
+  it('exposes the raw load and capacity to assistive tech only when the cargo meter is over capacity', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+    fireEvent.click(screen.getAllByRole('tab')[1]!)
+
+    const meter = () =>
+      screen.getByRole('progressbar', { name: 'ui:expedition.prep.cargo' })
+    expect(meter()).not.toHaveAttribute('aria-valuetext')
+
+    fireEvent.change(screen.getByTestId('expedition-prep-spare-parts'), {
+      target: { value: '10' }
+    })
+    fireEvent.change(screen.getByTestId('expedition-prep-supplies'), {
+      target: { value: '10' }
+    })
+
+    // aria-valuenow is clamped to the capacity, so the overflow is only
+    // audible through the value text.
+    expect(meter()).toHaveAttribute(
+      'aria-valuetext',
+      'ui:expedition.prep.cargoOverCapacityText'
+    )
+    const call = tCalls
+      .filter(c => c.key === 'ui:expedition.prep.cargoOverCapacityText')
+      .at(-1)
+    expect(call?.options).toEqual({ used: 20, max: 8 })
   })
 })

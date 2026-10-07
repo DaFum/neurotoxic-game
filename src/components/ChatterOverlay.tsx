@@ -14,6 +14,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
+  ChatterGameState,
   ChatterMessageData,
   ChatterMessageProps,
   ChatterMessageType
@@ -470,23 +471,45 @@ const useNonOverlappingPosition = (
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
-  // ⚡ BOLT OPTIMIZATION: Select narrow sub-fields rather than root band/player/gameMap objects.
-  // This prevents ChatterOverlay from re-rendering on unrelated state ticks (e.g. money changes,
-  // van fuel, band health/harmony updates), while complying with src/components/AGENTS.md.
+  // Select only the leaf fields chatter reads instead of the root state or the
+  // whole band/player/map slices (see src/components/AGENTS.md), so unrelated
+  // updates such as score or van upgrades do not re-render this global overlay.
+  // `ChatterGameState` lists the fields; typecheck fails if a condition reads
+  // one that is missing here.
   const currentScene = useGameSelector(state => state.currentScene)
   const members = useGameSelector(state => state.band?.members)
+  const harmony = useGameSelector(state => state.band?.harmony)
+  const luck = useGameSelector(state => state.band?.luck)
+  const inventory = useGameSelector(state => state.band?.inventory)
   const currentNodeId = useGameSelector(state => state.player?.currentNodeId)
+  const location = useGameSelector(state => state.player?.location)
+  const money = useGameSelector(state => state.player?.money)
+  const day = useGameSelector(state => state.player?.day)
+  const fame = useGameSelector(state => state.player?.fame)
+  const fameLevel = useGameSelector(state => state.player?.fameLevel)
+  const totalTravels = useGameSelector(state => state.player?.totalTravels)
+  const vanFuel = useGameSelector(state => state.player?.van?.fuel)
+  const vanCondition = useGameSelector(state => state.player?.van?.condition)
   const mapNodes = useGameSelector(state => state.gameMap?.nodes)
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
 
-  const chatterState = useMemo(
+  const chatterState = useMemo<ChatterGameState>(
     () => ({
       currentScene,
-      band: members ? { members } : undefined,
-      player: currentNodeId !== undefined ? { currentNodeId } : undefined,
-      gameMap: mapNodes ? { nodes: mapNodes } : undefined,
+      band: { members, harmony, luck, inventory },
+      player: {
+        currentNodeId,
+        location,
+        money,
+        day,
+        fame,
+        fameLevel,
+        totalTravels,
+        van: { fuel: vanFuel, condition: vanCondition }
+      },
+      gameMap: mapNodes ? { nodes: mapNodes } : null,
       social,
       lastGigStats,
       gigModifiers
@@ -494,7 +517,18 @@ export const ChatterOverlay = memo(() => {
     [
       currentScene,
       members,
+      harmony,
+      luck,
+      inventory,
       currentNodeId,
+      location,
+      money,
+      day,
+      fame,
+      fameLevel,
+      totalTravels,
+      vanFuel,
+      vanCondition,
       mapNodes,
       social,
       lastGigStats,

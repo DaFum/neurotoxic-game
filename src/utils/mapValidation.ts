@@ -35,7 +35,7 @@ interface ValidatedMapConnection {
 /**
  * Generated map that satisfies the structural and diversity contract.
  */
-export interface ValidatedMap {
+interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
   edges?: Array<{ from: string; to: string }>
@@ -46,7 +46,7 @@ export interface ValidatedMap {
 /**
  * One reason a map failed validation.
  */
-export interface MapValidationIssue {
+interface MapValidationIssue {
   /** Stable machine-readable code used in the failure signature. */
   code: string
   /** Dotted path to the offending value, or `''` for whole-map issues. */

@@ -1,11 +1,46 @@
-# Dead-code triage — 2026-08-03
+# Dead-code triage — 2026-08-03, refreshed 2026-10-06
 
 Triage of the 78-finding knip baseline captured on 2026-08-02 (issue #2677).
-After this pass the report is down to **10 findings**, and `.ci/dead-code-budget.json`
-`max` is lowered to match.
+After the original pass the report was down to **10 findings**. The 2026-10-06
+code-quality audit pass (`docs/code-quality-audit-2026-10-05.md`) brought it to
+**8**, and `.ci/dead-code-budget.json` `max` is lowered to match.
 
 Everything left in the report is listed below with the reason it stays. There is
-no untriaged remainder.
+no untriaged remainder. Items knip does not report but that look dead to a
+production-only reachability scan are recorded in
+[Intentionally kept: test oracles, seams and tooling](#intentionally-kept-test-oracles-seams-and-tooling).
+
+## 2026-10-06 refresh
+
+Since the original pass:
+
+- `AudioEngineProvider` is no longer a finding: `App.tsx` mounts it, so it is
+  reachable from `src/main.tsx`. The earlier "nothing mounts it" claim is gone.
+- `ValidatedMap` (`src/utils/mapValidation.ts`) was demoted to module-private in
+  the original pass, re-exported by `682160f92`, and is module-private again.
+  Knip's default run flagged it each time it was exported.
+- `motion-dom` and `motion-utils` no longer appear: the `motion` 13.4.x bumps
+  removed them from `package.json`. `vite.config.js` still names them in a
+  manual-chunk `test` pattern, which matches by path and needs no dependency.
+- `lint-staged` is a new unused-devDependency finding. It is a false positive:
+  `.husky/pre-commit` runs `npx lint-staged` and `package.json` carries the
+  `lint-staged` config block, but Knip does not see the `npx` call. It is
+  recorded here and left in place — `AGENTS.md` requires dependency changes to
+  be discussed first.
+- The unused-export demotions from the audit (§2.3) are done: `DRUM_HANDLERS`,
+  `GameStore`, the `{Asset,Career,Expedition,Minigame}DispatchActions` slices,
+  `PurchaseChassisInput` / `InstallModuleInput` / `StartCrowdfundInput`,
+  `SectionView`, `AssetSectionTab`, `ArrivalNode` / `GigArrivalNode` /
+  `ArrivalResult`, `ChassisTierConfig` / `ChassisKindConfig`, `AmpGameRefs` /
+  `AmpGameSetters` and `ChassisDescriptor` lost their `export`. The dead
+  re-exports of `GameDispatchActions` (`GameState.tsx`),
+  `GeneratedMapNode` / `MapGeneratorState` / `VenuePools` (`mapGenerator.ts`),
+  `ExpeditionCargo*` (`cargo.ts`) and `ExpeditionChassis*` (`chassis.ts`) were
+  deleted; the definitions live in `src/types/*.d.ts` or their leaf modules.
+  `GameDispatchActions` itself stays exported from `useGameDispatchActions.ts`
+  because the slice hooks and a context test import it there.
+- `HQ_FACILITY_IDS` and `EXPEDITION_UNLOCK_SET_IDS` are production code now:
+  `ExpeditionMetaTab` renders both lists, so they are not test-only any more.
 
 ## Resolved (68)
 
@@ -88,15 +123,14 @@ Notes:
 - `BreakdownLabelKey` (`src/utils/economy/breakdownLabelKeys.ts`) — derived type
   with no reference anywhere, including its own file.
 
-## Remaining (10) — intentional, keep
+## Remaining (8) — intentional, keep
 
-### Deliberate exports (3)
+### Deliberate exports (2)
 
-| Symbol                                                       | Why it stays                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `EFFECT_HANDLERS` (`src/utils/purchaseLogicUtils.ts`)        | Fixture for `tests/node/updateSymbols.test.js`, which asserts `referencedInFile === true` for it. Unexporting drops it from `symbols.json` and breaks the extractor's own coverage.                                                                                   |
-| `QUEST_SLOT_LIMITS` (`src/domain/questAcceptance.ts`)        | Same — the `updateSymbols` test uses it as the "referenced only from module-private helpers" case.                                                                                                                                                                    |
-| `AudioEngineProvider` (`src/context/AudioEngineContext.tsx`) | The only writer for `AudioEngineContext`. Nothing currently mounts it (the app relies on the `toneAudioEngine` default), but removing it would delete the audio-engine injection seam, which is a design decision rather than a cleanup. Flagged for a separate call. |
+| Symbol                                                | Why it stays                                                                                                                                                                        |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EFFECT_HANDLERS` (`src/utils/purchaseLogicUtils.ts`) | Fixture for `tests/node/updateSymbols.test.js`, which asserts `referencedInFile === true` for it. Unexporting drops it from `symbols.json` and breaks the extractor's own coverage. |
+| `QUEST_SLOT_LIMITS` (`src/domain/questAcceptance.ts`) | Same — the `updateSymbols` test uses it as the "referenced only from module-private helpers" case.                                                                                  |
 
 ### Duplicate export (1)
 
@@ -107,16 +141,81 @@ Notes:
 `ORIGINAL_CONTROL_BALANCE_TUNING` explicitly as the control arm. Collapsing them
 would erase that distinction.
 
-### Unused dependencies (6)
+### Unused dependencies (5)
 
-`flatted`, `motion-dom`, `motion-utils` (`dependencies`);
-`eslint-plugin-react-refresh`, `rollup-plugin-visualizer`, `serialize-javascript`
-(`devDependencies`).
+`flatted` (`dependencies`); `eslint-plugin-react-refresh`, `lint-staged`,
+`rollup-plugin-visualizer`, `serialize-javascript` (`devDependencies`).
 
-No source, config, script, or skill references any of them — `eslint.config.js`
-does not register `react-refresh` and `vite.config.js` does not use
-`visualizer`. They look like transitive packages that were promoted to direct
-entries by accident.
+No source, config, script, or skill references `flatted`, `react-refresh`,
+`visualizer` or `serialize-javascript` — `eslint.config.js` does not register
+`react-refresh` and `vite.config.js` does not use `visualizer`. They look like
+transitive packages that were promoted to direct entries by accident.
+
+`lint-staged` is the exception and a false positive: `.husky/pre-commit` runs
+`npx lint-staged` against the config block in `package.json`. Removing it would
+break the pre-commit hook.
 
 Left in place deliberately: `AGENTS.md` requires dependency changes to be
-discussed first, and these are pinned. Removing all six would take the report to 4. That is a follow-up decision, not part of this triage.
+discussed first, and these are pinned. Removing the four genuinely unused ones
+would take the report to 4. That is a follow-up decision, not part of this
+triage.
+
+## Intentionally kept: test oracles, seams and tooling
+
+These have no production import, or none that Knip counts, and are **kept on
+purpose**. They are not Knip findings (the `tests/**` and `scripts/**` entries
+reach them), but a production-only reachability scan lists them, so each one is
+recorded here.
+
+### Test oracles and script tooling
+
+Plan- or script-backed helpers whose only callers are tests or the balance
+scripts in `scripts/`.
+
+| Symbol                                                                                 | Consumer                                                                    |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `findExpeditionRewardsWithUnreachableTarget` (`src/domain/expedition/rewardLedger.ts`) | `tests/node/expeditionRewardLedger.test.js` — reward-ledger oracle          |
+| `getContrabandValidationFailures` (`src/data/contraband.ts`)                           | `tests/node/contraband.schema.test.js` — schema oracle                      |
+| `BASE_EXPEDITION_REGION_ID` (`src/domain/expedition/defaults.ts`)                      | Expedition map and cargo tests                                              |
+| `GIG_CLOCK_DRIFT_TOLERANCE_MS` (`src/utils/audio/constants.ts`)                        | `tests/node/audioEngineGigClock.test.js`                                    |
+| `doesLegacyHqItemTouchExpedition` (`src/domain/expedition/legacyHqPolicy.ts`)          | `scripts/game-balance-expedition-career.mjs` and the legacy-HQ policy tests |
+| `resolveBalanceTuning`, `BALANCE_RECOMMENDATION_HOLD` (`src/utils/balanceTuning.ts`)   | `scripts/game-balance-experiments.mjs` and its tests                        |
+| `CANONICAL_LEADERBOARD_IDS` (`lib/leaderboardSongIds.js`)                              | `tests/api/leaderboard.song.test.js` — pins the canonical song-id list      |
+
+### Test seams
+
+Explicit dependency-injection or reset seams. Production uses the defaults.
+
+- `ClockProvider`, `createFixedClock` — `IClock` injection (`src/context/ClockContext.tsx`, `src/utils/clock.ts`).
+- `StorageProvider`, `NoopAdapter` — storage adapter injection (`src/context/StorageContext.tsx`, `src/utils/storageAdapter.ts`).
+- `resetStorageFallback` (`src/utils/storage.ts`) — resets the in-memory fallback between tests.
+- `NullAudioEngine`, `createStubAudioEngine` (`src/utils/audio/audioEngineInterface.ts`) — substitutable `IAudioEngine` surface; see `src/utils/audio/AGENTS.md`.
+- `__testInternals` (`src/utils/crypto.ts`, `src/utils/unlockManager.ts`) — test-only access to module-private state.
+- `resetLastMinigameFallback` (`src/hooks/preGig/preGigUtils.ts`) — resets the pre-gig minigame fallback memo.
+- `useArrivalLogic` options `onShowHQ`, `onShowSupplyStop` and `rng` (`src/hooks/useArrivalLogic.ts`) — production (`TourbusScene`) passes no options; the TSDoc on each marks it a test seam.
+
+### Composition-only Crew dispatch wrappers
+
+`recordExpeditionRelationshipOutcome`, `advanceExpeditionCrewInjury`,
+`advanceExpeditionBandInjury` and `createContactIntelGrant` have complete
+reducer paths but no UI caller **by design**. They are applied inside
+`applyResolvedCrewEventOutcome` when a resolved Crew event is committed, and a
+standalone dispatch is refused by `hasResolvedEventProof`. The dispatch methods
+stay as the typed intent surface and are documented as composition-only in
+`src/context/useGameDispatchActions.ts`.
+
+`recordExpeditionArchiveDiscovery` is kept for the same reason from the other
+side: the START and terminal transitions already sweep every provable Archive
+observation through `recordExpeditionArchiveObservations`, so a standalone
+dispatch is a redundant no-op for anything the run has met. It stays as the
+typed intent surface for Archive discoveries.
+
+### `audioEngine.ts` barrel re-exports
+
+`src/utils/audio/audioEngine.ts` is the declared public facade of the audio
+stack: `src/utils/audio/AGENTS.md` requires every import from outside
+`src/utils/audio/` to go through it. Tests live outside that directory, so the
+16 re-exports that only tests reach (`getRawAudioContext`, `withAudioContext`,
+`safeDispose`, `calculateGigTimeMs`, `startGigClock`, `playMidiFile`,
+`NOTE_TAIL_MS`, …) are part of that contract and stay. Repointing the tests at
+the leaf modules would break the rule the barrel exists to enforce.

@@ -164,15 +164,21 @@ type ActionFor<K extends HandledActionTypes> = Extract<
   { type: K }
 >
 
-type PayloadFor<K extends HandledActionTypes> =
-  ActionFor<K> extends { payload: infer P } ? P : undefined
+/** Payload union of an action union; `never` when no member carries one. */
+type PayloadOf<A> = A extends { payload: infer P } ? P : never
 
-type ReducerEntry<K extends HandledActionTypes> =
-  ActionFor<K> extends {
-    payload: infer P
-  }
-    ? (state: GameState, payload: P) => GameState
-    : (state: GameState) => GameState
+/**
+ * Handler signature for one action type. An action type with both a
+ * payloadless and a payload form (POP_PENDING_EVENT) needs a handler whose
+ * payload parameter is optional but still typed.
+ */
+type ReducerEntry<K extends HandledActionTypes> = [
+  PayloadOf<ActionFor<K>>
+] extends [never]
+  ? (state: GameState) => GameState
+  : [Exclude<ActionFor<K>, { payload: unknown }>] extends [never]
+    ? (state: GameState, payload: PayloadOf<ActionFor<K>>) => GameState
+    : (state: GameState, payload?: PayloadOf<ActionFor<K>>) => GameState
 
 type ReducerMap = {
   [K in HandledActionTypes]: ReducerEntry<K>
@@ -333,10 +339,18 @@ function runHandledAction<K extends HandledActionTypes>(
 ): GameState {
   const handler = reducerMap[action.type]
 
-  if (Object.hasOwn(action, 'payload')) {
-    return (handler as (state: GameState, payload: PayloadFor<K>) => GameState)(
+  // TypeScript cannot correlate `handler` with `action` across the generic `K`
+  // (a correlated-union limitation), so the handler is erased to the payload
+  // type `in` narrowing can prove. `reducerMap: ReducerMap` above is what ties
+  // each handler's payload type to its action.
+  // `Object.hasOwn` is the runtime check: only an own `payload` counts, never
+  // one inherited from a hostile prototype. `'payload' in action` adds nothing
+  // at runtime but is the only form TypeScript narrows, so `action.payload`
+  // can be read without casting the action.
+  if (Object.hasOwn(action, 'payload') && 'payload' in action) {
+    return (handler as (state: GameState, payload: unknown) => GameState)(
       state,
-      (action as { payload: PayloadFor<K> }).payload
+      action.payload
     )
   }
 

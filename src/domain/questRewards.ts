@@ -12,7 +12,7 @@ import {
   clampBandHarmony,
   clampControversyLevel,
   clampLoyalty,
-  clampMemberSkill,
+  addClampedMemberSkill,
   clampPlayerFame,
   clampPlayerMoney,
   finiteNumberOr,
@@ -155,7 +155,7 @@ const applySkillPointReward = (
         // Same 1..10 range as event skill deltas (gameState/delta.ts); an
         // unclamped increment would let repeated quest rewards push the stat
         // out of the range balancing formulas assume.
-        skill: clampMemberSkill(skillValue + 1)
+        skill: addClampedMemberSkill(skillValue, 1)
       }
     }
   }

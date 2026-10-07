@@ -5,7 +5,7 @@ import { clampUnit } from '../../utils/numberUtils'
 /**
  * Mutable refs consumed by the high-frequency amp calibration update loop.
  */
-export interface AmpGameRefs {
+interface AmpGameRefs {
   isCompleteRef: { current: boolean }
   timeLeftRef: { current: number }
   heatRef: { current: number }
@@ -25,7 +25,7 @@ export interface AmpGameRefs {
 /**
  * React state setters used by the amp calibration update loop.
  */
-export interface AmpGameSetters {
+interface AmpGameSetters {
   setTimeLeft: (value: number | ((prev: number) => number)) => void
   handleComplete: () => void
   setIsOverdriveActive: (value: boolean | ((prev: boolean) => boolean)) => void

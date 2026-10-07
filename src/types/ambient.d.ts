@@ -7,11 +7,6 @@ declare const process: {
   env: Record<string, string | undefined>
 }
 
-declare module '*.svg' {
-  const src: string
-  export default src
-}
-
 declare module 'virtual:pwa-register/react' {
   export function useRegisterSW(options?: {
     onRegisterError?: (error: unknown) => void

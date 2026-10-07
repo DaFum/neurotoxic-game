@@ -1,3 +1,5 @@
+import type { UnknownRecord } from './game'
+
 /**
  * Persisted band-member stats, traits, relationships, and equipment.
  */

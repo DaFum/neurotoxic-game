@@ -19,7 +19,7 @@ import type { GameDispatchActions } from './useGameDispatchActions'
 /**
  * Long-term asset dispatch wrappers, sliced from {@link GameDispatchActions}.
  */
-export type AssetDispatchActions = Pick<
+type AssetDispatchActions = Pick<
   GameDispatchActions,
   | 'purchaseChassis'
   | 'upgradeChassisTier'

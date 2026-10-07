@@ -477,7 +477,10 @@ const sanitizeToastForAction = (
  * @returns Action object with generated ID
  */
 export const createAddToastAction = (
-  messageOrPayload: string | Omit<ToastPayload, 'id'>,
+  messageOrPayload:
+    | string
+    | (Omit<ToastPayload, 'id' | 'type'> &
+        Partial<Pick<ToastPayload, 'id' | 'type'>>),
   type = 'info'
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> => {
   if (
@@ -489,8 +492,7 @@ export const createAddToastAction = (
       id: _ignoredId,
       type: payloadType,
       ...restPayload
-    } = messageOrPayload as Omit<ToastPayload, 'id'> &
-      Partial<Pick<ToastPayload, 'id'>>
+    } = messageOrPayload
     return {
       type: ActionTypes.ADD_TOAST,
       payload: sanitizeToastForAction(

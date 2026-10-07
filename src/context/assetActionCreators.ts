@@ -122,7 +122,7 @@ const buildAddedSlotEntries = (moduleId: string): NewSlotEntry[] => {
 /**
  * Raw chassis purchase request from the asset UI.
  */
-export interface PurchaseChassisInput {
+interface PurchaseChassisInput {
   /** Asset section to acquire. */
   kind: AssetKind
   /** Legit or DIY acquisition flavor. */
@@ -221,7 +221,7 @@ export const purchaseChassis = (
 /**
  * Raw module installation request from an asset slot.
  */
-export interface InstallModuleInput {
+interface InstallModuleInput {
   /** Asset that owns the target slot. */
   assetId: string
   /** Slot receiving the module. */
@@ -507,7 +507,7 @@ export const refinanceLiability = (
 /**
  * Raw crowdfund campaign setup request.
  */
-export interface StartCrowdfundInput {
+interface StartCrowdfundInput {
   /** Asset section to crowdfund. */
   kind: AssetKind
   /** Chassis flavor to materialize on success. */
