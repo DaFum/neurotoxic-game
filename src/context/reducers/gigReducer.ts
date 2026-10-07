@@ -638,8 +638,8 @@ export const handleSetLastGigStats = (
  *
  * @param state - Current game state before the sale is deducted.
  * @param soldMerch - Sold quantity per inventory key.
- * @returns Updated state, or the identical reference for a malformed or
- * forbidden-key payload.
+ * @returns Updated state, or the identical reference for a malformed,
+ * forbidden-key or accessor-bearing payload.
  *
  * @remarks
  * During an active Expedition the sold stock is the run cargo, so the quantities
@@ -653,7 +653,8 @@ export const handleSettleSoldMerch = (
     !soldMerch ||
     typeof soldMerch !== 'object' ||
     Array.isArray(soldMerch) ||
-    hasForbiddenOwnKeys(soldMerch)
+    // Descriptor-safe: rejects accessor-bearing counts before the reads below.
+    hasForbiddenKeysDeep(soldMerch)
   ) {
     return state
   }
