@@ -85,7 +85,15 @@ export const useHandleTravel = ({
       const social = refs.socialRef.current
       const gameMap = refs.gameMapRef.current
 
-      if (!node?.venue) {
+      // A reloaded save keeps only `venueId`. Expedition supply, rest and
+      // special stops host no gig and carry no venue at all, so only a node
+      // that books a gig needs one.
+      const venue = node
+        ? (node.venue ??
+          resolveTravelVenue(node.venueId, VENUES_BY_ID) ??
+          undefined)
+        : undefined
+      if (!node || (!venue && isGigNode(node))) {
         addToast(
           i18n.t('ui:travel.errors.invalidLocation', {
             defaultValue: 'Error: Invalid location.'
@@ -94,6 +102,11 @@ export const useHandleTravel = ({
         )
         return
       }
+      const locationName = venue
+        ? getLocationName(venue.name, normalizeVenueId(venue))
+        : i18n.t(`ui:expedition.node.class.${node.type}`, {
+            defaultValue: i18n.t('ui:map.unknown')
+          })
 
       if (node.id === player.currentNodeId) {
         if (refs.pendingTravelNodeRef.current?.id === node.id) {
@@ -112,10 +125,10 @@ export const useHandleTravel = ({
             return
           }
 
-          const resolvedVenue = resolveTravelVenue(node.venue, VENUES_BY_ID)
+          const resolvedVenue = resolveTravelVenue(venue, VENUES_BY_ID)
           const processedNode = {
             ...node,
-            venue: resolvedVenue ?? node.venue
+            venue: resolvedVenue ?? venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
@@ -133,10 +146,7 @@ export const useHandleTravel = ({
           addToast(
             i18n.t('ui:travel.currentLocation', {
               defaultValue: 'You are at {{location}}.',
-              location: getLocationName(
-                node.venue.name,
-                normalizeVenueId(node.venue)
-              )
+              location: locationName
             }),
             'info'
           )
@@ -245,10 +255,7 @@ export const useHandleTravel = ({
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
             '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}} | Daily Upkeep: {{dailyCost}} | Total Cash Impact: {{totalCost}} | Fuel: {{fuelLiters}}L — Click again to confirm',
-          location: getLocationName(
-            node.venue.name,
-            normalizeVenueId(node.venue)
-          ),
+          location: locationName,
           distance: dist,
           travelCost: formatCurrency(totalCost, i18n.language),
           dailyCost: formatCurrency(dailyCost, i18n.language),

@@ -218,13 +218,15 @@ export const handleCompleteTravelMinigame = (
     typeof canonicalVenueId === 'string' && canonicalVenueId.length > 0
       ? `venues:${canonicalVenueId}.name`
       : null
+  // An Expedition supply, rest or special stop has no venue: the band is still
+  // in the region it last played, so the location stays put.
   const nextLocation =
     canonicalVenueLocation ??
     (typeof venueObj?.name === 'string'
       ? venueObj.name
       : typeof targetNode.venue === 'string'
         ? targetNode.venue
-        : 'Unknown')
+        : state.player.location)
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
