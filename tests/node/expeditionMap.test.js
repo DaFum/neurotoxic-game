@@ -22,6 +22,8 @@ import {
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from '../../src/domain/expedition/defaults'
+import { EXPEDITION_TOUR_TYPES } from '../../src/data/expedition/tourTypes'
+import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions'
 
 const build = (seed, profile = NEUTRAL_EXPEDITION_ROUTE_PROFILE) =>
   buildExpeditionMap(
@@ -147,6 +149,29 @@ describe('standard route shape', () => {
       assert.equal(finales.length, 1)
       assert.equal(finales[0]?.nodeId, map.finaleNodeId)
     }
+  })
+
+  it('asserts Finale reachability on every build of every Tour and Region', () => {
+    // The builder throws on an unreachable Finale, so building is the check;
+    // the predicate itself must also be able to say no.
+    for (const tourTypeId of Object.keys(EXPEDITION_TOUR_TYPES)) {
+      for (const regionId of Object.keys(EXPEDITION_REGIONS)) {
+        for (let seed = 0; seed < 64; seed += 1) {
+          const map = buildExpeditionMap(seed * 7919, tourTypeId, regionId)
+          assert.ok(isExpeditionFinaleReachable(map))
+        }
+      }
+    }
+    const map = build(4242)
+    assert.equal(
+      isExpeditionFinaleReachable({
+        ...map,
+        connections: map.connections.filter(
+          edge => edge.to !== map.finaleNodeId
+        )
+      }),
+      false
+    )
   })
 
   it('starts from exactly one unlocked START node', () => {

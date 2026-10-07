@@ -1,9 +1,15 @@
 import type { EventDelta } from '../../types'
-import { finiteNumberOr } from '../gameState'
+import { finiteNumberOr, isFiniteNumber } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
 import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
 import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
+
+/** Reads the flat mood/stamina accumulator the stat handler builds up. */
+const readMembersDelta = (value: unknown): Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
 
 /**
  * Effect handler registry keyed by declarative event effect type.
@@ -14,9 +20,8 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta: EventDelta,
     context: TemplateContext
   ) => {
-    const parsedChange =
-      typeof eff.value === 'number' ? eff.value : Number(eff.value)
-    if (!Number.isFinite(parsedChange)) return
+    const parsedChange = eff.value
+    if (!isFiniteNumber(parsedChange)) return
     if (!delta.band.relationshipChange) delta.band.relationshipChange = []
     const resolveName = (str: string) => resolveTemplateString(str, context)
     delta.band.relationshipChange.push({
@@ -97,16 +102,20 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       }
       delta.band.harmony = prevDelta + change
     }
+    // Mood/stamina accumulate like every other stat: a composite event with two
+    // mood effects must apply both, not just the last one.
     if (eff.stat === 'mood') {
+      const previous = readMembersDelta(delta.band.membersDelta)
       delta.band.membersDelta = {
-        ...(delta.band.membersDelta || {}),
-        moodChange: asNumber(eff.value)
+        ...previous,
+        moodChange: asNumber(previous.moodChange) + asNumber(eff.value)
       }
     }
     if (eff.stat === 'stamina') {
+      const previous = readMembersDelta(delta.band.membersDelta)
       delta.band.membersDelta = {
-        ...(delta.band.membersDelta || {}),
-        staminaChange: asNumber(eff.value)
+        ...previous,
+        staminaChange: asNumber(previous.staminaChange) + asNumber(eff.value)
       }
     }
     if (eff.stat === 'van_condition') {

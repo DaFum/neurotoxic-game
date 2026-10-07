@@ -43,6 +43,8 @@ import {
 } from '../../src/data/expedition/hqFacilities'
 import { EXPEDITION_UNLOCK_SETS } from '../../src/data/expedition/unlockSets'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog'
+import { createAcquireExpeditionCrewSignatureAction } from '../../src/context/careerActionCreators'
+import { createCrewDevelopmentEligibilityProof } from '../../src/domain/expedition/career'
 import { isExpeditionLegacyHqPurchaseAllowed } from '../../src/domain/expedition/legacyHqPolicy'
 import { areBetweenTourDecisionsResolved } from '../../src/domain/expedition/betweenTour'
 import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions'
@@ -766,6 +768,35 @@ describe('G5 evidence — Crew consequences target deterministically', () => {
     assert.ok(developed.career.crewById.tom.signatureTraitId)
     // The other candidate is untouched: one decision, one actor.
     assert.equal(developed.career.crewById.mika.signatureTraitId, null)
+    // The option goes through the G3 acquisition: the Crew ends exactly where
+    // the career_development proof and ACQUIRE_EXPEDITION_CREW_SIGNATURE put it.
+    const acquired = gameReducer(
+      next,
+      createAcquireExpeditionCrewSignatureAction(
+        'tom',
+        developed.career.crewById.tom.signatureTraitId,
+        createCrewDevelopmentEligibilityProof(next, 'tom')
+      )
+    )
+    assert.deepEqual(developed.career.crewById, acquired.career.crewById)
+    // When the acquisition refuses - here the Crew Lounge is gone - the
+    // decision stays open instead of being consumed on nothing.
+    const withoutLounge = {
+      ...next,
+      career: {
+        ...next.career,
+        hqFacilityLevels: Object.assign(
+          Object.create(null),
+          next.career.hqFacilityLevels,
+          { crew_lounge: 0 }
+        )
+      }
+    }
+    const refused = gameReducer(withoutLounge, {
+      type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
+      payload: { runId, decisionId: debrief.id, optionId: 'develop_signature' }
+    })
+    assert.equal(refused, withoutLounge)
   })
 
   it('clears a serious recovery debt after one skipped Tour', () => {

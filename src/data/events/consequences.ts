@@ -1,6 +1,7 @@
 import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameState'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { isHighControversy } from '../../utils/socialThresholds'
 
 import { QUEST_APOLOGY_TOUR, QUEST_EGO_MANAGEMENT } from '../questsConstants'
 import { QuestOfferEngine } from '../../domain/questOfferEngine'
@@ -93,10 +94,9 @@ export const CONSEQUENCE_EVENTS = [
         state.player?.stats?.consecutiveBadShows,
         0
       )
-      const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
       return (
         consecutiveBadShows >= 2 &&
-        controversy >= 40 &&
+        isHighControversy(state.social?.controversyLevel) &&
         !hasStateItem(
           state.eventCooldowns,
           'consequences_ticket_sales_collapse'

@@ -19,6 +19,7 @@ import { LeaderboardTab } from './leaderboard/LeaderboardTab.tsx'
 import { VoidTraderTab } from './VoidTraderTab.tsx'
 import { GlossaryTab } from './GlossaryTab.tsx'
 import { BrandDealsTab } from './BrandDealsTab.tsx'
+import { ExpeditionMetaTab } from '../expedition/ExpeditionMetaTab'
 
 /**
  * Active tab id and unlock threshold used to choose the Band HQ tab panel.
@@ -168,6 +169,8 @@ export const BandHQContentArea = ({
         {currentTab === 'UPGRADES' && (
           <UpgradesTab {...catalogTabProps} upgrades={unifiedUpgradeCatalog} />
         )}
+
+        {currentTab === 'EXPEDITION' && <ExpeditionMetaTab />}
 
         {currentTab === 'SETLIST' && (
           <SetlistTab

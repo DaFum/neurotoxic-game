@@ -115,6 +115,17 @@ interface ExpensesConfig {
 }
 
 /**
+ * Social-standing gates shared by the economy engine, post-gig options and
+ * event conditions, so "high controversy" means one number everywhere.
+ */
+interface SocialConfig {
+  /** Controversy level at which the audience counts as scandal-hit. */
+  readonly highControversyThreshold: number
+  /** Loyalty a scandal-hit audience still needs to rally behind the band. */
+  readonly cultLoyaltyThreshold: number
+}
+
+/**
  * The full balance surface plus the version of its shape.
  */
 export interface BalanceConfig {
@@ -123,13 +134,14 @@ export interface BalanceConfig {
   readonly penalties: PenaltiesConfig
   readonly modifiers: ModifiersConfig
   readonly caps: CapsConfig
+  readonly social: SocialConfig
   readonly expenses: ExpensesConfig
 }
 
 /**
  * Shape version. Bump when a field is added, removed, or renamed.
  */
-export const BALANCE_CONFIG_VERSION = 4
+export const BALANCE_CONFIG_VERSION = 5
 
 const RAW_DEFAULT_BALANCE_CONFIG = {
   configVersion: BALANCE_CONFIG_VERSION,
@@ -169,6 +181,10 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
     enableAntiSwingSmoothing: true,
     antiSwingHalfLife: 1500
   },
+  social: {
+    highControversyThreshold: 40,
+    cultLoyaltyThreshold: 20
+  },
   expenses: {
     daily: { baseCost: 62 },
     transport: {
@@ -207,6 +223,8 @@ const RANGES = {
   maxGigNet: [0, 10_000_000],
   travelLogisticsCashCap: [0, 100_000],
   antiSwingHalfLife: [100, 100_000],
+  highControversyThreshold: [0, 100],
+  cultLoyaltyThreshold: [0, 100],
   dailyBaseCost: [0, 100_000],
   transportFuelPer100km: [0, 100_000],
   transportFuelPrice: [0, 100_000],
@@ -374,6 +392,7 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
     )
   }
 
+  const social = readSection(record, 'social')
   const expenses = readSection(record, 'expenses')
 
   return deepFreeze({
@@ -439,6 +458,14 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
       ),
       enableAntiSwingSmoothing: caps.enableAntiSwingSmoothing as boolean,
       antiSwingHalfLife: readNumber(caps, 'caps', 'antiSwingHalfLife')
+    },
+    social: {
+      highControversyThreshold: readNumber(
+        social,
+        'social',
+        'highControversyThreshold'
+      ),
+      cultLoyaltyThreshold: readNumber(social, 'social', 'cultLoyaltyThreshold')
     },
     expenses: {
       daily: {

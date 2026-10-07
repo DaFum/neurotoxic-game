@@ -16,9 +16,9 @@ import type { ExpeditionFailureChoiceId } from '../../types/expedition'
  *
  * @remarks
  * `refuel` and `tow` are pure state transitions and are dispatched here, so a
- * mounted crisis can never render a button that does nothing. Extraction needs
- * the confirmation dialog and the run-summary navigation the host scene owns,
- * so that one stays a callback.
+ * mounted crisis can never render a button that does nothing. Extraction
+ * prefers the host's confirmation dialog (it owns the rare-reward carry
+ * choice); without a host callback the crisis extracts directly.
  */
 export interface FailureCrisisDialogProps {
   onExtract?: () => void
@@ -72,6 +72,10 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     () => resolveExpeditionCrisis('insurance_claim'),
     [resolveExpeditionCrisis]
   )
+  const handleExtract = useCallback(
+    () => resolveExpeditionCrisis('extract'),
+    [resolveExpeditionCrisis]
+  )
 
   if (!pendingFailure) return null
 
@@ -82,7 +86,9 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     if (choice === 'refuel') return handleRefuel
     if (choice === 'tow') return handleTow
     if (choice === 'insurance_claim') return handleInsuranceClaim
-    return onExtract
+    // A host that owns the extraction dialog opens it, so the player can still
+    // pick a rare reward to carry; without one the crisis extracts directly.
+    return onExtract ?? handleExtract
   }
 
   const metaFor = (choice: ExpeditionFailureChoiceId): string => {

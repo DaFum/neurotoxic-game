@@ -27,7 +27,10 @@ import {
   QUEST_BURNED_BRIDGES,
   QUEST_VENUE_REGULAR,
   QUEST_BRAND_AMBASSADOR,
-  QUEST_ALCHEMIST
+  QUEST_ALCHEMIST,
+  QUEST_EXPEDITION_RUN_GOAL,
+  QUEST_EXPEDITION_NEMESIS,
+  QUEST_EXPEDITION_META_UNLOCK
 } from '../questsConstants'
 
 const defineQuestOfferEvent = <
@@ -513,6 +516,60 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_alchemist.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -2 },
         outcomeText: 'events:quest_trigger_alchemist.opt2.outcome'
+      }
+    ]
+  }),
+  // Expedition quests (G4 Task 11). Their registry offers carry
+  // `requireActiveExpedition`, so these only surface on a live run - the only
+  // place the Expedition producers that progress them fire.
+  defineQuestOfferEvent(QUEST_EXPEDITION_RUN_GOAL, {
+    id: 'quest_trigger_expedition_run_goal',
+    title: 'events:quest_trigger_expedition_run_goal.title',
+    description: 'events:quest_trigger_expedition_run_goal.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_expedition_run_goal.opt1.label',
+        effect: { type: 'quest', quest: QUEST_EXPEDITION_RUN_GOAL },
+        outcomeText: 'events:quest_trigger_expedition_run_goal.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_expedition_run_goal.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_expedition_run_goal.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_EXPEDITION_NEMESIS, {
+    id: 'quest_trigger_expedition_nemesis',
+    title: 'events:quest_trigger_expedition_nemesis.title',
+    description: 'events:quest_trigger_expedition_nemesis.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_expedition_nemesis.opt1.label',
+        effect: { type: 'quest', quest: QUEST_EXPEDITION_NEMESIS },
+        outcomeText: 'events:quest_trigger_expedition_nemesis.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_expedition_nemesis.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_expedition_nemesis.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_EXPEDITION_META_UNLOCK, {
+    id: 'quest_trigger_expedition_meta_unlock',
+    title: 'events:quest_trigger_expedition_meta_unlock.title',
+    description: 'events:quest_trigger_expedition_meta_unlock.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_expedition_meta_unlock.opt1.label',
+        effect: { type: 'quest', quest: QUEST_EXPEDITION_META_UNLOCK },
+        outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_expedition_meta_unlock.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt2.outcome'
       }
     ]
   })

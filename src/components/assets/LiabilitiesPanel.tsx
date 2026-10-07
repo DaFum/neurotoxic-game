@@ -8,6 +8,7 @@ import {
   type LoanProfileId
 } from '../../utils/loanProfiles'
 import { finiteNumberOr } from '../../utils/gameState'
+import { LIABILITY_DEFAULT_DAYS } from '../../utils/assetConfig'
 
 /**
  * Lightweight read-only list of every outstanding liability with the most
@@ -72,7 +73,10 @@ export const LiabilitiesPanel = () => {
               {defaultCounter > 0 && (
                 <span style={{ color: 'var(--color-blood-red)' }}>
                   {t('assets:loan.defaultWarning', {
-                    daysLeft: Math.max(0, 7 - defaultCounter)
+                    daysLeft: Math.max(
+                      0,
+                      LIABILITY_DEFAULT_DAYS - defaultCounter
+                    )
                   })}
                 </span>
               )}

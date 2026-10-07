@@ -1,7 +1,7 @@
 import { generateRivalBand } from '../../utils/rivalEngine'
 import { getExpeditionRoutePressureProfile } from './routeProfile'
 import { mulberry32 } from '../../utils/seededRng'
-import { hashString } from '../../utils/stringUtils'
+import { hash31 } from '../../utils/stringUtils'
 import type { GameState, RivalBandState } from '../../types'
 import type { CareerRivalRecord } from '../../types/career'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
@@ -96,11 +96,11 @@ export const selectExpeditionRivalForRun = (
     }
   const rivalBand = generateRivalBand(
     state.player.day,
-    mulberry32(hashString(`${state.runSeed}:expedition-rival`))
+    mulberry32(hash31(`${state.runSeed}:expedition-rival`))
   )
   const behavior =
     (['aggressive', 'showboat', 'saboteur', 'dealbreaker'] as const)[
-      Math.abs(hashString(rivalBand.id)) % 4
+      Math.abs(hash31(rivalBand.id)) % 4
     ] ?? 'aggressive'
   const record: CareerRivalRecord = {
     snapshot: {

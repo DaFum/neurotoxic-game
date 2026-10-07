@@ -9,10 +9,11 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
+import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
-import { isExpeditionSafeHarborWindow } from '../../domain/expedition/legendaries'
+import { isAtExpeditionExtractionWindow } from '../../domain/expedition/extraction'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 
@@ -33,20 +34,10 @@ const useIsAtExtractionWindow = (): boolean =>
       loadout.tourTypeId,
       loadout.regionId
     )
-    const nodeId =
-      state.expedition.visitedNodeIds[
-        state.expedition.visitedNodeIds.length - 1
-      ]
-    if (typeof nodeId !== 'string' || !Object.hasOwn(map.meta, nodeId)) {
-      return false
-    }
-    // Composed exactly as `handleExtractExpedition` composes it: a Safe Harbor
+    // The same predicate `handleExtractExpedition` applies: a Safe Harbor
     // window the reducer would accept but the control never offers is an
     // opportunity the player cannot take.
-    return (
-      map.meta[nodeId]?.isExtractionWindow === true ||
-      isExpeditionSafeHarborWindow(state, map)
-    )
+    return isAtExpeditionExtractionWindow(state, map)
   })
 
 /**
@@ -87,6 +78,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
 
       {/* Active obligations & double down controls */}
       <ExpeditionObligationsPanel />
+
+      {/* Route intel is spent before choosing the next leg, so it sits with
+          the other on-the-road decisions. */}
+      <ExpeditionIntelPanel />
 
       {/* Repairs and inspections belong on the road, where the player still
           has the choice between paying for a fix and pushing on. */}

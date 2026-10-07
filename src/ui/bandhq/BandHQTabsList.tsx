@@ -28,6 +28,7 @@ export const BandHQTabsList = ({
     { id: 'DETAILS', key: 'tabs.details' },
     { id: 'SHOP', key: 'tabs.shop' },
     { id: 'UPGRADES', key: 'tabs.upgrades' },
+    { id: 'EXPEDITION', key: 'tabs.expedition' },
     { id: 'SETLIST', key: 'tabs.setlist' },
     { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
     { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },

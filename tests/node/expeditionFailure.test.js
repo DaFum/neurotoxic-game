@@ -286,18 +286,96 @@ describe('composition into one terminal owner', () => {
   it('adds the extraction escape at an extraction window', () => {
     const early = broke(walkTo(startedState(), 1))
     assert.equal(
-      getExpeditionCrisisChoices(early, map).includes('extract'),
+      getExpeditionCrisisChoices(early, map, ['accept_failure']).includes(
+        'extract'
+      ),
       false
     )
     const atWindow = broke(walkTo(startedState(), WINDOW_STEP))
-    assert.ok(getExpeditionCrisisChoices(atWindow, map).includes('extract'))
+    assert.deepEqual(
+      getExpeditionCrisisChoices(atWindow, map, ['accept_failure']),
+      ['extract', 'accept_failure']
+    )
+    // No committed route, no window to extract at.
+    assert.deepEqual(
+      getExpeditionCrisisChoices(atWindow, null, ['accept_failure']),
+      ['accept_failure']
+    )
   })
 
-  it('reports no choices on a healthy run', () => {
-    assert.deepEqual(
-      getExpeditionCrisisChoices(startedState({ money: 5000 }), map),
-      []
+  it('composes the extraction escape into the derived crisis', () => {
+    const early = broke(walkTo(startedState(), 1))
+    assert.deepEqual(deriveExpeditionPendingFailure(early)?.choices, [
+      'accept_failure'
+    ])
+    const atWindow = broke(walkTo(startedState(), WINDOW_STEP))
+    assert.deepEqual(deriveExpeditionPendingFailure(atWindow)?.choices, [
+      'extract',
+      'accept_failure'
+    ])
+  })
+
+  it('reports no crisis on a healthy run', () => {
+    assert.equal(
+      deriveExpeditionPendingFailure(startedState({ money: 5000 })),
+      null
     )
+  })
+})
+
+describe('the extract crisis choice ends the run through the extraction path', () => {
+  const bankruptAtWindow = () =>
+    gameReducer(broke(walkTo(startedState(), WINDOW_STEP)), {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money: 0 }
+    })
+
+  it('is stored on the synced crisis the dialog renders', () => {
+    const state = bankruptAtWindow()
+    assert.deepEqual(state.expedition.pendingFailure?.choices, [
+      'extract',
+      'accept_failure'
+    ])
+  })
+
+  it('extracts with the extracted settlement when the crisis offers it', () => {
+    const state = bankruptAtWindow()
+    const action = resolveExpeditionCrisis(state, 'extract')
+    assert.ok(action)
+    const extracted = gameReducer(state, action)
+    assert.equal(extracted.expedition.status, 'extracted')
+    assert.equal(extracted.expedition.outcome?.kind, 'extracted')
+    // Same terminal as a direct EXTRACT_EXPEDITION from the same state.
+    const direct = gameReducer(state, {
+      type: ActionTypes.EXTRACT_EXPEDITION,
+      payload: {
+        expectedRouteStep: state.expedition.routeStep,
+        explicitRareRewardIds: []
+      }
+    })
+    assert.deepEqual(
+      extracted.expedition.outcome?.settlement,
+      direct.expedition.outcome?.settlement
+    )
+  })
+
+  it('refuses extract where the crisis does not offer it', () => {
+    const early = gameReducer(broke(walkTo(startedState(), 1)), {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money: 0 }
+    })
+    assert.equal(resolveExpeditionCrisis(early, 'extract'), null)
+    const pending = deriveExpeditionPendingFailure(early)
+    assert.ok(pending)
+    const forged = gameReducer(early, {
+      type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+      payload: {
+        pendingFailureId: pending.id,
+        choice: 'extract',
+        expectedRouteStep: early.expedition.routeStep
+      }
+    })
+    assert.equal(forged.expedition.status, 'active')
   })
 })
 

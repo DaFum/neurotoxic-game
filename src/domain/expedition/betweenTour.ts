@@ -609,22 +609,10 @@ export const applyBetweenTourDecisionOption = (
           }
         }
       }
-      if (optionId !== 'develop_signature') return null
-      // Re-checked, not trusted: eligibility can have lapsed since the
-      // decision was generated - a rehab decision answered first may have
-      // created a recovery debt, and a Crew in debt is not developing.
-      const traitId = getEligibleCrewSignatureTrait(state, crewId)
-      if (traitId === null) return null
-      return {
-        ...state,
-        career: {
-          ...state.career,
-          crewById: {
-            ...state.career.crewById,
-            [crewId]: { ...prior, signatureTraitId: traitId }
-          }
-        }
-      }
+      // `develop_signature` is answered by the Career reducer through the G3
+      // `ACQUIRE_EXPEDITION_CREW_SIGNATURE` handler (plan 03 Task 9), so the
+      // acquisition has one implementation; nothing else is legal here.
+      return null
     }
 
     case 'rival_response': {

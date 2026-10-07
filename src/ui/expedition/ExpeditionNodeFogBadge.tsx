@@ -20,7 +20,8 @@ const TIER_COLORS: Record<ExpeditionTier, string> = {
  * @param props - The fog projection and the translation callback.
  *
  * @remarks
- * The always-visible half — class, danger tier, reward tier — is unconditional,
+ * The always-visible half — class, route depth and onward routes, danger tier,
+ * reward tier — is unconditional,
  * because the design requires enough information to plan a route. Everything
  * numeric is gated: at intel `0` the player sees bands, not amounts. That
  * gating is what makes a Scout or a Social grant worth a build slot.
@@ -43,6 +44,12 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
     >
       <div className='text-toxic-green font-bold uppercase tracking-wider'>
         {classLabel}
+      </div>
+      <div className='text-ash-gray' data-testid='expedition-node-fog-route'>
+        {t('ui:expedition.node.routeStep', { step: fog.routeStep })}
+        {fog.onwardRouteCount > 0
+          ? ` · ${t('ui:expedition.node.onwardRoutes', { count: fog.onwardRouteCount })}`
+          : null}
       </div>
       <div>
         <span className='text-star-white'>

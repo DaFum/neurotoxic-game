@@ -213,6 +213,8 @@ export interface QuestOfferCondition {
   requireLocation?: boolean
   /** Only offer while at least one venue is blacklisted. */
   requireBlacklistedVenue?: boolean
+  /** Only offer while an Expedition run is active. */
+  requireActiveExpedition?: boolean
 }
 
 /**

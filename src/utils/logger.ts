@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 import { getSafeUUID } from './crypto'
+import { systemClock } from './clock'
+import type { IClock } from './clock'
 import { LocalStorageAdapter } from './storageAdapter'
 
 /** Storage key holding the persisted minimum log level. */
@@ -88,7 +90,14 @@ export class Logger {
    * Subscribers notified when log history changes.
    */
   listeners: Array<(event: LogEvent) => void>
-  constructor() {
+  #clock: IClock
+  /**
+   * Creates a logger.
+   * @param clock - Time source for entry timestamps.
+   * @defaultValue `systemClock`
+   */
+  constructor(clock: IClock = systemClock) {
+    this.#clock = clock
     this.logs = []
     this.maxLogs = 1000
     this.listeners = []
@@ -155,7 +164,7 @@ export class Logger {
   ): LogEntry {
     return {
       id: getSafeUUID(),
-      timestamp: new Date().toISOString(),
+      timestamp: this.#clock.today().toISOString(),
       level,
       channel,
       message,

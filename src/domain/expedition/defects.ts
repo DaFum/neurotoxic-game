@@ -8,6 +8,7 @@
 
 import type {
   ConditionGroup,
+  ExpeditionTechnicalCondition,
   HiddenDefectState,
   HiddenDefectTrigger
 } from '../../types/expedition'
@@ -15,6 +16,7 @@ import type { GameState } from '../../types'
 import { clampCondition, getExpeditionTechnicalCondition } from './condition'
 import { mulberry32 } from '../../utils/seededRng'
 import { pickIndex } from '../../utils/selectionUtils'
+import { hash31 } from '../../utils/stringUtils'
 
 /**
  * Condition damage inflicted when a defect of a given severity triggers.
@@ -30,14 +32,6 @@ const TRIGGERS: readonly HiddenDefectTrigger[] = [
   'pre_gig',
   'post_gig'
 ] as const
-
-const hashString = (str: string): number => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) >>> 0
-  }
-  return hash
-}
 
 /**
  * Generates a deterministic hidden defect tied to runSeed, equipment group, and route step.
@@ -57,7 +51,7 @@ export const createDeterministicHiddenDefect = (
   severityOverride?: 1 | 2 | 3
 ): HiddenDefectState => {
   const seed =
-    (runSeed + routeStep * 1000 + hashString(`${group}_${source}`)) >>> 0
+    (runSeed + routeStep * 1000 + (hash31(`${group}_${source}`) >>> 0)) >>> 0
   const rng = mulberry32(seed)
 
   const id = `defect_${group}_${source}_step_${routeStep}`
@@ -129,6 +123,103 @@ export const getVisibleExpeditionDefects = (
 }
 
 /**
+ * Replaces one defect entry, returning the next technical condition.
+ *
+ * @param tc - Current technical condition.
+ * @param index - Index of the defect being transitioned.
+ * @param defect - The transitioned defect.
+ * @returns A copy of `tc` with the defect list updated.
+ */
+const withDefectAt = (
+  tc: ExpeditionTechnicalCondition,
+  index: number,
+  defect: HiddenDefectState
+): ExpeditionTechnicalCondition => {
+  const defects = [...tc.defects]
+  defects[index] = defect
+  return { ...tc, defects }
+}
+
+/**
+ * Reveals one hidden defect (`hidden` -\> `revealed`).
+ *
+ * @param tc - Current technical condition.
+ * @param defectId - Defect to reveal.
+ * @returns The next technical condition, or `null` when the defect is unknown
+ * or not hidden.
+ *
+ * @remarks
+ * The single reveal transition: `REVEAL_EXPEDITION_DEFECT` and every inspection
+ * that reveals defects go through here.
+ */
+export const applyExpeditionDefectReveal = (
+  tc: ExpeditionTechnicalCondition,
+  defectId: string
+): ExpeditionTechnicalCondition | null => {
+  const index = tc.defects.findIndex(d => d.id === defectId)
+  const defect = index === -1 ? undefined : tc.defects[index]
+  if (!defect || defect.status !== 'hidden') return null
+  return withDefectAt(tc, index, { ...defect, status: 'revealed' })
+}
+
+/**
+ * Triggers one defect (`hidden`/`revealed` -\> `triggered`) and applies its
+ * severity damage to the defect's group.
+ *
+ * @param tc - Current technical condition.
+ * @param defectId - Defect to trigger.
+ * @returns The next technical condition, or `null` when the defect is unknown,
+ * already triggered or resolved.
+ *
+ * @remarks
+ * The single trigger transition and the only place severity damage is applied:
+ * `TRIGGER_EXPEDITION_DEFECT` and the automatic boundary sweep in
+ * {@link evaluateExpeditionDefectTriggers} both go through here.
+ */
+export const applyExpeditionDefectTrigger = (
+  tc: ExpeditionTechnicalCondition,
+  defectId: string
+): ExpeditionTechnicalCondition | null => {
+  const index = tc.defects.findIndex(d => d.id === defectId)
+  const defect = index === -1 ? undefined : tc.defects[index]
+  if (
+    !defect ||
+    defect.status === 'triggered' ||
+    defect.status === 'resolved'
+  ) {
+    return null
+  }
+  const damage = DEFECT_SEVERITY_DAMAGE[defect.severity] || 8
+  return {
+    ...withDefectAt(tc, index, { ...defect, status: 'triggered' }),
+    [defect.group]: clampCondition(tc[defect.group] - damage)
+  }
+}
+
+/**
+ * Resolves one defect (any unresolved status -\> `resolved`).
+ *
+ * @param tc - Current technical condition.
+ * @param defectId - Defect to resolve.
+ * @returns The next technical condition, or `null` when the defect is unknown
+ * or already resolved.
+ *
+ * @remarks
+ * The single resolve transition: `RESOLVE_EXPEDITION_DEFECT` and the repair
+ * paths (professional, cannibalize, full-service repair) go through here. Which
+ * defects a repair may resolve is the repair's own rule; this only performs it.
+ */
+export const applyExpeditionDefectResolution = (
+  tc: ExpeditionTechnicalCondition,
+  defectId: string
+): ExpeditionTechnicalCondition | null => {
+  const index = tc.defects.findIndex(d => d.id === defectId)
+  const defect = index === -1 ? undefined : tc.defects[index]
+  if (!defect || defect.status === 'resolved') return null
+  return withDefectAt(tc, index, { ...defect, status: 'resolved' })
+}
+
+/**
  * Checks all eligible defects for an Expedition trigger boundary and applies damage.
  *
  * @param state - Current game state.
@@ -144,35 +235,19 @@ export const evaluateExpeditionDefectTriggers = (
   const tc = getExpeditionTechnicalCondition(state)
   const currentRouteStep = state.expedition.routeStep ?? 0
 
-  let conditionChanged = false
-  const updatedTc = {
-    ...tc,
-    pa: tc.pa,
-    instruments: tc.instruments,
-    stageGear: tc.stageGear,
-    defects: [...tc.defects]
-  }
-
-  for (let i = 0; i < updatedTc.defects.length; i++) {
-    const defect = updatedTc.defects[i]
-    if (!defect) continue
-
+  let updatedTc = tc
+  for (const defect of tc.defects) {
     if (
       (defect.status === 'hidden' || defect.status === 'revealed') &&
       defect.triggerAt === trigger &&
       defect.triggerRouteStep <= currentRouteStep
     ) {
-      conditionChanged = true
-      const damage = DEFECT_SEVERITY_DAMAGE[defect.severity] || 8
-      updatedTc[defect.group] = clampCondition(updatedTc[defect.group] - damage)
-      updatedTc.defects[i] = {
-        ...defect,
-        status: 'triggered'
-      }
+      updatedTc =
+        applyExpeditionDefectTrigger(updatedTc, defect.id) ?? updatedTc
     }
   }
 
-  if (!conditionChanged) return state
+  if (updatedTc === tc) return state
 
   return {
     ...state,

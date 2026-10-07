@@ -14,6 +14,8 @@ const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 // Cap matches the daily-tick worst case (condition < 30 plus controversy: 3.5x).
 const BREAKDOWN_CHANCE_FACTOR_CAP = 4
+/** Template `{venue}` stand-in (an i18n key) for a player with no location. */
+const EVENT_VENUE_FALLBACK_KEY = 'ui:event.venueFallback'
 
 type EventPoolById = Record<string, EngineEvent>
 
@@ -85,9 +87,15 @@ const resolveEventText = (
   logger.debug('EventEngine', 'Event Selected', event.id)
 
   // Dynamic text parsing
+  // The venue is passed as an i18n key (`venues:<id>.name` or the fallback
+  // key); the event modal translates context keys before interpolation.
+  const location = gameState.player?.location
   const variables: Record<string, string> = {
     ...contextvars,
-    venue: String(gameState.player?.location || 'the venue')
+    venue:
+      typeof location === 'string' && location.length > 0
+        ? location
+        : EVENT_VENUE_FALLBACK_KEY
   }
 
   const title = resolveTemplateString(event.title || '', variables)

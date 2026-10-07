@@ -10,7 +10,14 @@
  */
 
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { isExpeditionUnlockSetId } from '../../data/expedition/unlockSets'
+import {
+  getExpeditionUnlockSet,
+  isExpeditionUnlockSetId
+} from '../../data/expedition/unlockSets'
+import {
+  getExpeditionHqFacilityLevelCost,
+  isExpeditionHqFacilityId
+} from '../../data/expedition/hqFacilities'
 import { QUEST_EXPEDITION_META_UNLOCK } from '../../data/questsConstants'
 import type { CareerState, ExpeditionCareerRank } from '../../types/career'
 import type { GameState } from '../../types'
@@ -137,6 +144,90 @@ export const hasExpeditionCareerRank = (
   state: GameState,
   minimum: ExpeditionCareerRank
 ): boolean => careerHasExpeditionRank(state.career, minimum)
+
+/**
+ * Why a Career purchase cannot be made, for the player-facing explanation.
+ *
+ * @remarks
+ * These name the reason only; legality stays with the Career reducer, which
+ * the dispatch layer asks directly. `stale` covers a refusal no reason below
+ * explains, such as a purchase raced by another one in the same commit.
+ */
+export type ExpeditionCareerPurchaseBlocker =
+  | 'unknown'
+  | 'maxed'
+  | 'owned'
+  | 'pending'
+  | 'rank'
+  | 'facility'
+  | 'tokens'
+  | 'stale'
+
+/** The stored level of one facility, read the way the Career reducer reads it. */
+export const getExpeditionHqFacilityLevel = (
+  career: CareerState,
+  facilityId: string
+): number =>
+  Math.max(
+    0,
+    Math.floor(
+      finiteNumberOr(
+        Object.hasOwn(career.hqFacilityLevels, facilityId)
+          ? career.hqFacilityLevels[facilityId]
+          : 0,
+        0
+      )
+    )
+  )
+
+/**
+ * Explains why the next level of a facility cannot be bought.
+ *
+ * @param career - Career slice.
+ * @param facilityId - Facility to raise.
+ * @returns The blocker, or `null` when nothing explains a refusal.
+ */
+export const getExpeditionHqFacilityPurchaseBlocker = (
+  career: CareerState,
+  facilityId: string
+): ExpeditionCareerPurchaseBlocker | null => {
+  if (!isExpeditionHqFacilityId(facilityId)) return 'unknown'
+  const cost = getExpeditionHqFacilityLevelCost(
+    facilityId,
+    getExpeditionHqFacilityLevel(career, facilityId) + 1
+  )
+  if (cost === null) return 'maxed'
+  if (Math.max(0, finiteNumberOr(career.tourTokens, 0)) < cost) return 'tokens'
+  return null
+}
+
+/**
+ * Explains why an unlock set cannot be bought.
+ *
+ * @param career - Career slice.
+ * @param setId - Set to buy.
+ * @returns The blocker, or `null` when nothing explains a refusal.
+ */
+export const getExpeditionUnlockSetPurchaseBlocker = (
+  career: CareerState,
+  setId: string
+): ExpeditionCareerPurchaseBlocker | null => {
+  const set = getExpeditionUnlockSet(setId)
+  if (!set) return 'unknown'
+  if (career.unlockedSetIds.includes(set.id)) return 'owned'
+  if (career.pendingUnlockPurchase !== null) return 'pending'
+  if (!careerHasExpeditionRank(career, set.requiredRank)) return 'rank'
+  if (
+    getExpeditionHqFacilityLevel(career, set.requiredFacility.id) <
+    set.requiredFacility.level
+  ) {
+    return 'facility'
+  }
+  if (Math.max(0, finiteNumberOr(career.tourTokens, 0)) < set.cost) {
+    return 'tokens'
+  }
+  return null
+}
 
 /** What settling one run's Career result changes. */
 export interface ExpeditionCareerSettlement {

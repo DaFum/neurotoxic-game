@@ -20,6 +20,7 @@ import {
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getExpeditionNodeIntelLevel } from '../../domain/expedition/nodeIntel'
 
 const acceptsSource = (
   state: GameState,
@@ -352,11 +353,17 @@ export const handleCreateContactIntelGrant = (
     : null
   const meta = map?.meta[payload.nodeId]
   const currentNodeId = state.expedition.visitedNodeIds.at(-1)
+  // The effective level - stored intel raised to the familiarity floor - is
+  // what the reveal resolver compares a grant against. Targeting one above the
+  // stored level instead minted an unusable grant on a familiar node.
+  const currentLevel = meta
+    ? getExpeditionNodeIntelLevel(state, payload.nodeId)
+    : 0
   if (
     !map ||
     !meta ||
     meta.routeStep <= state.expedition.routeStep ||
-    (state.expedition.intelByNodeId[payload.nodeId] ?? 0) >= 2 ||
+    currentLevel >= 2 ||
     !map.connections.some(
       connection =>
         connection.from === currentNodeId && connection.to === payload.nodeId
@@ -366,8 +373,7 @@ export const handleCreateContactIntelGrant = (
   const replayId = `${sourceId}:contact:${payload.nodeId}`
   if ((state.expedition.resolvedCrewSourceIds ?? []).includes(replayId))
     return state
-  const targetLevel = ((state.expedition.intelByNodeId[payload.nodeId] ?? 0) +
-    1) as 1 | 2
+  const targetLevel = (currentLevel + 1) as 1 | 2
   return {
     ...state,
     expedition: {

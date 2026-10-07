@@ -1,4 +1,8 @@
-import { normalizeVenueId, REGION_BLACKLIST_THRESHOLD } from './mapUtils'
+import {
+  calculateTravelCashRequired,
+  normalizeVenueId,
+  REGION_BLACKLIST_THRESHOLD
+} from './mapUtils'
 import { getCityKeyFromVenueId } from './mapGenerator'
 import { clampPlayerMoney, clampVanFuel, finiteNumberOr } from './gameState'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
@@ -356,7 +360,7 @@ export function calculateTravelCostsAndImpact(
     liabilities
   })
   const totalCashImpact = totalCost + dailyCost
-  const cashRequired = Math.max(totalCost, totalCashImpact)
+  const cashRequired = calculateTravelCashRequired(totalCost, dailyCost)
 
   return {
     dist,

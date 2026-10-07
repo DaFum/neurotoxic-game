@@ -20,6 +20,8 @@ import {
 } from '../../src/domain/expedition/nodeIntel.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
+import { revealExpeditionNodeIntel } from '../../src/context/expeditionActionCreators.ts'
+import { gameReducer } from '../../src/context/gameReducer.ts'
 
 /** The fixture run, re-pointed at one Region and given a Career history. */
 const runIn = (regionId, career = {}, expedition = {}, reputation = {}) => {
@@ -269,6 +271,27 @@ describe('G5 — familiarity is bounded free Intel', () => {
       capability
     )
     assert.deepEqual(resolution, { ok: false, reason: 'SOURCE_NOT_ENTITLED' })
+  })
+
+  it('lets a Scout recon the familiar node through the real creator', () => {
+    // The familiar node reads at level 1 while storing 0, so a stale guard
+    // built from storage alone refused the recon the panel offers on it.
+    const familiar = runIn('home_turf', {}, {}, { home_turf: 60 })
+    const state = {
+      ...familiar,
+      expedition: {
+        ...familiar.expedition,
+        loadout: { ...familiar.expedition.loadout, crewIds: ['noah'] }
+      }
+    }
+    const [nodeId] = getExpeditionIntelCapability(state).familiarNodeIds
+    const action = revealExpeditionNodeIntel(state, {
+      nodeId,
+      source: 'scout_recon'
+    })
+    assert.equal(action.payload.expectedLevel, 1)
+    const next = gameReducer(state, action)
+    assert.equal(next.expedition.intelByNodeId[nodeId], 2)
   })
 
   it('leaves a committed Scout strictly better than familiarity', () => {

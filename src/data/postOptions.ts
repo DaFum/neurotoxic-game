@@ -9,6 +9,7 @@ import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
 import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
 import { pickIndex, selectRandomItem } from '../utils/selectionUtils'
+import { isCultAudience } from '../utils/socialThresholds'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -371,7 +372,7 @@ export const POST_OPTIONS = [
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
     condition: ({ social }: GameState) =>
-      (social?.controversyLevel ?? 0) >= 40 && (social?.loyalty ?? 0) >= 20,
+      isCultAudience(social?.controversyLevel, social?.loyalty),
     resolve: ({ social }: GameState) => {
       const loyaltyVal = social?.loyalty ?? 0
       const moneyGain = Math.min(loyaltyVal * 8, 600)

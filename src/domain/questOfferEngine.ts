@@ -98,6 +98,15 @@ const matchesOfferCondition = (
     return false
   }
 
+  // Expedition quests progress only on Expedition route events, so offering
+  // one outside a live run would start a deadline nothing can advance.
+  if (
+    condition.requireActiveExpedition &&
+    state.expedition?.status !== 'active'
+  ) {
+    return false
+  }
+
   return true
 }
 

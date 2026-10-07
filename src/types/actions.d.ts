@@ -410,7 +410,7 @@ export interface PrepareNextExpeditionPayload {
  */
 export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
-  choice: 'refuel' | 'tow' | 'insurance_claim'
+  choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
   expectedRouteStep: number
 }
 

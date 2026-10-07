@@ -1,5 +1,5 @@
 import type { BandState } from '../types'
-import { isFiniteNumber } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 /**
  * Validates whether the band can pay the harmony and stamina cost for a blood-bank donation.
@@ -22,3 +22,20 @@ export const validateBloodBankDonation = (
   )
   return hasEnoughHarmony && allMembersHaveStamina
 }
+
+/** Extra payout fraction a blood-bank donation earns per fame level. */
+const FAME_PAYOUT_STEP = 0.2
+
+/**
+ * Computes the cash a blood-bank donation pays at the player's fame level.
+ *
+ * @param baseMoney - Variant base payout (blood or marrow).
+ * @param fameLevel - Persisted fame level; non-finite values count as `0` so a
+ * corrupted level cannot poison the payout with `NaN`.
+ * @returns Whole-euro payout, `floor(baseMoney * (1 + fameLevel * 0.2))`.
+ */
+export const calculateBloodBankPayout = (
+  baseMoney: number,
+  fameLevel: unknown
+): number =>
+  Math.floor(baseMoney * (1 + finiteNumberOr(fameLevel, 0) * FAME_PAYOUT_STEP))

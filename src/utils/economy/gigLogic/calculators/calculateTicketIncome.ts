@@ -2,6 +2,10 @@ import { finiteNumberOr } from '../../../gameState'
 import type { GigEconomyData, EconomyContext } from '../../types'
 import type { GigModifiers } from '../../../../types'
 import { TICKET_SALES_CONSTANTS } from '../../constants'
+import {
+  HIGH_CONTROVERSY_THRESHOLD,
+  isHighControversy
+} from '../../../socialThresholds'
 import { calculateEffectiveTicketPrice } from './calculateEffectiveTicketPrice'
 import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
@@ -63,10 +67,14 @@ export const calculateTicketIncome = (
     fillRate -= 0.15
   }
 
-  // Controversy attendance penalty: -1% per point above 40, max -30%
+  // Controversy attendance penalty: -1% per point above the high-controversy
+  // gate, max -30%
   const controversyLevel = finiteNumberOr(context.controversyLevel, 0)
-  if (controversyLevel >= 40) {
-    fillRate -= Math.min(0.3, (controversyLevel - 40) * 0.01)
+  if (isHighControversy(controversyLevel)) {
+    fillRate -= Math.min(
+      0.3,
+      (controversyLevel - HIGH_CONTROVERSY_THRESHOLD) * 0.01
+    )
   }
 
   // Regional reputation bonus/penalty

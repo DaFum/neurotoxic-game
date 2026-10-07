@@ -41,6 +41,14 @@ describe('Logger', () => {
     assert.deepStrictEqual(logger.logs, [])
   })
 
+  test('entry timestamps come from the injected clock', () => {
+    const fixedNow = Date.UTC(2031, 0, 2, 3, 4, 5)
+    const clock = { now: () => fixedNow, today: () => new Date(fixedNow) }
+    const logger = new Logger(clock)
+    logger.info('test', 'message')
+    assert.strictEqual(logger.logs[0].timestamp, '2031-01-02T03:04:05.000Z')
+  })
+
   test('constructor loads level from localStorage', () => {
     globalThis.localStorage.getItem.mock.mockImplementation(() =>
       LOG_LEVELS.WARN.toString()

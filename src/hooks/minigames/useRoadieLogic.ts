@@ -15,7 +15,7 @@ import {
   ROADIE_GRID_HEIGHT,
   ROADIE_MOVE_COOLDOWN_BASE
 } from './minigameConstants'
-import { hashString } from '../../utils/stringUtils'
+import { hash31 } from '../../utils/stringUtils'
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
@@ -36,7 +36,7 @@ function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
 
       game.traffic.push({
         id,
-        textureHash: Math.abs(hashString(id)),
+        textureHash: Math.abs(hash31(id)),
         row: spawner.row,
         x: spawner.speed > 0 ? -1 : ROADIE_GRID_WIDTH,
         speed: spawner.speed,

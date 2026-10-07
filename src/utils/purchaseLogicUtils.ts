@@ -271,8 +271,9 @@ export const applyInventoryAdd = (
     )
   }
 
-  const parsedAddend = Number(effect.value ?? 0)
-  if (!Number.isFinite(parsedAddend)) {
+  // No `Number()` coercion: booleans, arrays and numeric strings are invalid.
+  const parsedAddend = effect.value ?? 0
+  if (!isFiniteNumber(parsedAddend)) {
     throw new StateError(
       `Invalid inventory_add value for "${effect.item}": ${String(effect.value)}`
     )
@@ -303,7 +304,7 @@ export const applyStatModifier = (
   player: PlayerState,
   band: BandState
 ): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
-  const val = finiteNumberOr(Number(effect.value), 0)
+  const val = finiteNumberOr(effect.value, 0)
   const nextPlayerPatch: PlayerPatch = { ...playerPatch }
   let nextBandPatch: BandPatch = null
 

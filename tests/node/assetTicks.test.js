@@ -7,6 +7,7 @@ import {
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { LIABILITY_DEFAULT_DAYS } from '../../src/utils/assetConfig.ts'
 import { calculateFameLevel } from '../../src/utils/gameState/index.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
@@ -117,6 +118,34 @@ test('processLiabilityTick - liability default counter increment and trigger at 
     calculateFameLevel(next.player.fame)
   )
   assert.deepStrictEqual(foreclosedKinds, ['tourbus_chassis'])
+})
+
+test('processLiabilityTick - defaults exactly at LIABILITY_DEFAULT_DAYS, one day earlier it only counts', () => {
+  assert.strictEqual(LIABILITY_DEFAULT_DAYS, 7)
+  const build = defaultCounter => ({
+    assets: [{ id: 'a1', kind: 'tourbus_chassis', condition: 100, slots: [] }],
+    liabilities: {
+      l1: {
+        id: 'l1',
+        assetId: 'a1',
+        dailyPayment: 50,
+        principalRemaining: 1000,
+        termDaysRemaining: 20,
+        defaultCounter
+      }
+    },
+    player: { money: 10, fame: 50 }
+  })
+  const early = processLiabilityTick(build(LIABILITY_DEFAULT_DAYS - 2)).state
+  assert.strictEqual(early.assets.length, 1)
+  assert.strictEqual(
+    early.liabilities.l1.defaultCounter,
+    LIABILITY_DEFAULT_DAYS - 1
+  )
+  const defaulted = processLiabilityTick(
+    build(LIABILITY_DEFAULT_DAYS - 1)
+  ).state
+  assert.strictEqual(defaulted.assets.length, 0)
 })
 
 test('processLiabilityTick - splits payment into interest and principal', () => {

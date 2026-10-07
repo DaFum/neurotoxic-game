@@ -5,6 +5,7 @@ import { hashExpeditionRoute } from './map'
 import { deriveExpeditionOverlayTarget } from './routeOverlay'
 import type { ExpeditionMap } from '../../types/expedition'
 import { mulberry32 } from '../../utils/seededRng'
+import { pickWeighted } from '../../utils/selectionUtils'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionRoutePressureProfile } from './routeProfile'
@@ -249,12 +250,14 @@ export const selectPressureEvent = (
       16
     )
   )
-  let roll = rng() * total
-  for (const item of weighted) {
-    roll -= item.weight
-    if (roll <= 0) return item.event
-  }
-  return weighted.at(-1)?.event ?? null
+  return (
+    pickWeighted(
+      weighted.map(item => ({ value: item.event, weight: item.weight })),
+      rng
+    ) ??
+    weighted.at(-1)?.event ??
+    null
+  )
 }
 /**
  * Runs one Director step for the route step the run has just entered.

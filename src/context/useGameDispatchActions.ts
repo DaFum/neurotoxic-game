@@ -37,8 +37,14 @@ import {
   createBeginExpeditionUnlockPurchaseAction,
   createCommitExpeditionLegendaryRewardAction,
   createCompleteExpeditionUnlockPurchaseAction,
+  createPurchaseExpeditionHqFacilityAction,
   createRollbackExpeditionUnlockPurchaseAction
 } from './careerActionCreators'
+import {
+  getExpeditionHqFacilityPurchaseBlocker,
+  getExpeditionUnlockSetPurchaseBlocker,
+  type ExpeditionCareerPurchaseBlocker
+} from '../domain/expedition/meta'
 import type { ExpeditionLegendaryClaim } from '../types/expedition'
 import { getExpeditionLegendaryMarkerId } from '../data/expedition/legendaries'
 import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
@@ -260,7 +266,7 @@ type BaseGameDispatchActions = {
   acceptExpeditionFailure: () => void
   prepareNextExpedition: () => void
   resolveExpeditionCrisis: (
-    choice: 'refuel' | 'tow' | 'insurance_claim'
+    choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
   ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent
@@ -277,14 +283,47 @@ type BaseGameDispatchActions = {
     sourceType: import('../types/expedition').ExpeditionCrewStressSourceType,
     sourceId: string
   ) => void
+  /**
+   * Typed G3 intent for a Crew-event relationship change.
+   *
+   * @remarks
+   * Composition-only in play: the reducer applies this inside
+   * `applyResolvedCrewEventOutcome` in the same commit that resolves the Crew
+   * event, then drops that event's proof. A standalone dispatch is therefore
+   * refused by design (`hasResolvedEventProof`); no UI should call it.
+   */
   recordExpeditionRelationshipOutcome: (
     input: Omit<
       import('../types/expedition').ExpeditionRelationshipOutcomeIntent,
       'expectedRouteStep'
     >
   ) => void
+  /**
+   * Typed G3 intent for a Crew injury advance.
+   *
+   * @remarks
+   * Composition-only, like {@link GameDispatchActions.recordExpeditionRelationshipOutcome}:
+   * applied inside `applyResolvedCrewEventOutcome`; a standalone dispatch is
+   * refused by `hasResolvedEventProof`.
+   */
   advanceExpeditionCrewInjury: (crewId: string, sourceId: string) => void
+  /**
+   * Typed G3 intent for a Band injury advance.
+   *
+   * @remarks
+   * Composition-only: applied inside `applyResolvedCrewEventOutcome`; a
+   * standalone dispatch is refused by `hasResolvedEventProof`.
+   */
   advanceExpeditionBandInjury: (memberId: string, sourceId: string) => void
+  /**
+   * Typed G3 intent for a Contact intel grant.
+   *
+   * @remarks
+   * Composition-only: the resolved Contact event creates the grant inside
+   * `applyResolvedCrewEventOutcome`; a standalone dispatch is refused by
+   * `hasResolvedEventProof`. Players spend the grant through
+   * `revealExpeditionNodeIntel`.
+   */
   createContactIntelGrant: (
     eventId: string,
     optionId: string,
@@ -316,11 +355,31 @@ type BaseGameDispatchActions = {
   ) => void
   settleExpeditionCrewCareer: (runId: string) => void
   settleExpeditionCareerResult: (runId: string) => void
+  /**
+   * Raises one HQ facility by a level.
+   *
+   * @param facilityId - Facility to build.
+   * @param expectedLevel - The level the caller saw, used as the stale guard.
+   * @returns True when the reducer accepted the purchase and it was dispatched.
+   *
+   * @remarks
+   * Legality is asked of the reducer itself, as `purchaseExpeditionUnlockSet`
+   * does. A refusal toasts its reason and saves nothing; a purchase persists
+   * itself, because no scene transition will carry it.
+   */
   purchaseExpeditionHqFacility: (
     facilityId: string,
     expectedLevel: number
-  ) => void
+  ) => boolean
   unlockExpeditionAscension: (runId: string) => void
+  /**
+   * Typed G5 intent for one Archive discovery.
+   *
+   * @remarks
+   * The START and terminal transitions already sweep every provable
+   * observation through the same handler (`recordExpeditionArchiveObservations`),
+   * so a standalone dispatch is a redundant no-op for anything the run has met.
+   */
   recordExpeditionArchiveDiscovery: (
     category: string,
     id: string,
@@ -352,8 +411,10 @@ type BaseGameDispatchActions = {
    *
    * The marker is written from the committed post-debit state, so the grant
    * lands one commit after this returns. `false` still means nothing was
-   * taken; `true` means the sequence is under way and will finish by granting
-   * or refunding.
+   * taken - the refusal's reason is toasted - and `true` means the sequence
+   * is under way and will finish by granting or refunding. The command toasts
+   * that outcome itself once the marker write settles, so a caller must not
+   * announce the purchase on `true`.
    */
   purchaseExpeditionUnlockSet: (setId: string) => boolean
   /**
@@ -643,9 +704,49 @@ export function useGameDispatchActions({
   // `stateRef` still holds that same state releases on its own at the next
   // commit.
   const lastUnlockPurchaseBaseRef = useRef<GameState | null>(null)
+
+  // The Career purchases' failure toast: the same `<prefix>.<reason>` shape the
+  // asset `dispatchWithFailureToast` uses. Career actions have no typed
+  // `*_FAILED` variant - the reducer refuses by returning the identical state -
+  // so the reason is named by the domain blocker, and `stale` covers a refusal
+  // none of them explains.
+  const toastCareerPurchaseFailure = useCallback(
+    (blocker: ExpeditionCareerPurchaseBlocker | null) => {
+      addToast(
+        tRef.current(`ui:expedition.meta.purchaseFailed.${blocker ?? 'stale'}`),
+        'error'
+      )
+    },
+    [addToast, tRef]
+  )
+
+  const purchaseExpeditionHqFacility = useCallback(
+    (facilityId: string, expectedLevel: number): boolean => {
+      const base = stateRef.current
+      const action = createPurchaseExpeditionHqFacilityAction(
+        facilityId,
+        expectedLevel
+      )
+      // Asked of the reducer, as the unlock purchase does: a refused purchase
+      // returns the identical state.
+      if (gameReducer(base, action) === base) {
+        toastCareerPurchaseFailure(
+          getExpeditionHqFacilityPurchaseBlocker(base.career, facilityId)
+        )
+        return false
+      }
+      dispatch(action)
+      saveGameAfterStateCommit()
+      return true
+    },
+    [dispatch, saveGameAfterStateCommit, stateRef, toastCareerPurchaseFailure]
+  )
+
   const purchaseExpeditionUnlockSet = useCallback(
     (setId: string): boolean => {
       const base = stateRef.current
+      // A repeat within the same batch (a double click) is not a refusal the
+      // player needs explained: the first click is already being honoured.
       if (lastUnlockPurchaseBaseRef.current === base) return false
       const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
       // The reducer is the authority on whether this purchase is legal, so the
@@ -654,7 +755,12 @@ export function useGameDispatchActions({
       // ask before dispatching; nothing but that answer is read off the
       // result.
       const opened = gameReducer(base, beginAction)
-      if (opened.career.pendingUnlockPurchase?.setId !== setId) return false
+      if (opened.career.pendingUnlockPurchase?.setId !== setId) {
+        toastCareerPurchaseFailure(
+          getExpeditionUnlockSetPurchaseBlocker(base.career, setId)
+        )
+        return false
+      }
 
       lastUnlockPurchaseBaseRef.current = base
       dispatch(beginAction)
@@ -669,19 +775,39 @@ export function useGameDispatchActions({
       // journal: a process that dies in this window leaves a save saying
       // precisely what was taken and what for, and the load path settles it
       // rather than losing the balance.
+      //
+      // The outcome is toasted here, once it is known: a success toast at
+      // dispatch time would announce a set the rollback may still take back.
       saveGameAfterStateCommit(saved => {
-        dispatch(
-          saved
-            ? createCompleteExpeditionUnlockPurchaseAction(setId)
-            : createRollbackExpeditionUnlockPurchaseAction(setId)
+        if (!saved) {
+          dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
+          addToast(
+            tRef.current('ui:expedition.meta.purchaseFailed.persistence'),
+            'error'
+          )
+          return
+        }
+        dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
+        addToast(
+          tRef.current('ui:expedition.meta.setPurchased', {
+            name: tRef.current(`ui:expedition.meta.set.${setId}`)
+          }),
+          'success'
         )
         // The granted state replaces the marker in storage at the next commit,
         // so an open entry is never left behind for the load path to settle.
-        if (saved) saveGameAfterStateCommit()
+        saveGameAfterStateCommit()
       })
       return true
     },
-    [dispatch, saveGameAfterStateCommit, stateRef]
+    [
+      addToast,
+      dispatch,
+      saveGameAfterStateCommit,
+      stateRef,
+      tRef,
+      toastCareerPurchaseFailure
+    ]
   )
 
   const claimExpeditionLegendaryReward = useCallback(
@@ -734,6 +860,7 @@ export function useGameDispatchActions({
       ...expeditionActions,
       ...careerActions,
       resolveExpeditionBetweenTourDecision,
+      purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
       claimExpeditionLegendaryReward
     }),
@@ -760,6 +887,7 @@ export function useGameDispatchActions({
       expeditionActions,
       careerActions,
       resolveExpeditionBetweenTourDecision,
+      purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
       claimExpeditionLegendaryReward
     ]
