@@ -1,10 +1,10 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteCompression from 'vite-plugin-compression'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+const baseConfig = {
   plugins: [
     react(),
     VitePWA({
@@ -110,4 +110,16 @@ export default defineConfig({
       }
     }
   }
-})
+}
+
+export default defineConfig(({ mode }) => ({
+  ...baseConfig,
+  define: {
+    // Vercel provides the Pollinations image key as `Flux` (locally it can come
+    // from `.env.local`). Vite only exposes VITE_* variables to the client, so
+    // hand this one over explicitly.
+    'import.meta.env.VITE_FLUX_KEY': JSON.stringify(
+      loadEnv(mode, process.cwd(), '').Flux ?? ''
+    )
+  }
+}))

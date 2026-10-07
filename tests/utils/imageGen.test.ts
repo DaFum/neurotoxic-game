@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest'
+import { afterEach, describe, test, vi } from 'vitest'
 import { expect } from 'vitest'
 import {
   getGenImageUrl,
@@ -18,28 +18,34 @@ import {
 
 describe('imageGen utilities', () => {
   describe('getGenImageUrl', () => {
-    test('generates correct url for simple description', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    test('adds the Vercel-provided key between seed and the trailing "&="', () => {
+      vi.stubEnv('VITE_FLUX_KEY', 'pk_test_key')
       const url = getGenImageUrl('cyber punk')
       expect(url).toBe(
-        'https://gen.pollinations.ai/image/cyber%20punk?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
+        'https://gen.pollinations.ai/image/cyber%20punk?model=flux&seed=666&key=pk_test_key&='
       )
     })
 
-    test('generates correct url for complex description with special characters', () => {
+    test('encodes the description and the key', () => {
+      vi.stubEnv('VITE_FLUX_KEY', 'pk/a&b')
       const url = getGenImageUrl('hello world / ? & =')
       expect(url).toBe(
-        'https://gen.pollinations.ai/image/hello%20world%20%2F%20%3F%20%26%20%3D?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
+        'https://gen.pollinations.ai/image/hello%20world%20%2F%20%3F%20%26%20%3D?model=flux&seed=666&key=pk%2Fa%26b&='
       )
     })
 
-    test('generates correct url for empty description', () => {
+    test('omits the key parameter when no key is configured', () => {
+      vi.stubEnv('VITE_FLUX_KEY', '')
       const url = getGenImageUrl('')
       expect(url).toBe(
-        'https://gen.pollinations.ai/image/?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
+        'https://gen.pollinations.ai/image/?model=flux&seed=666&='
       )
     })
   })
-
   describe('appendImageSize', () => {
     test('appends size correctly to url with existing query params', () => {
       const url = 'https://example.com/image?model=flux'
