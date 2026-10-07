@@ -17,6 +17,7 @@
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { mulberry32 } from '../../utils/seededRng'
+import { pickIndex } from '../../utils/selectionUtils'
 import { buildExpeditionMap, hashExpeditionRoute } from './map'
 import { hasExpeditionCareerRank } from './meta'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
@@ -189,7 +190,7 @@ const resolveFamiliarNodeIds = (
   )
   const picked: string[] = []
   while (picked.length < capacity && pool.length > 0) {
-    const [nodeId] = pool.splice(Math.floor(rng() * pool.length), 1)
+    const [nodeId] = pool.splice(pickIndex(pool, rng), 1)
     if (nodeId !== undefined) picked.push(nodeId)
   }
   return picked

@@ -40,6 +40,37 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
+    it('rejects accessor-bearing updates without invoking their getters', () => {
+      const initialState = {
+        player: { money: 100, day: 1, van: { fuel: 50, condition: 80 } }
+      }
+      let getterCalls = 0
+      const throwingGetter = () => {
+        getterCalls++
+        throw new Error('getter must not run')
+      }
+      const van = { condition: 70 }
+      Object.defineProperty(van, 'fuel', {
+        enumerable: true,
+        get: throwingGetter
+      })
+      const topLevel = { day: 2 }
+      Object.defineProperty(topLevel, 'money', {
+        enumerable: true,
+        get: throwingGetter
+      })
+
+      assert.strictEqual(
+        handleUpdatePlayer(initialState, { van }),
+        initialState
+      )
+      assert.strictEqual(
+        handleUpdatePlayer(initialState, topLevel),
+        initialState
+      )
+      assert.strictEqual(getterCalls, 0)
+    })
+
     it('should preserve properties not updated', () => {
       const initialState = {
         otherProp: 'test',
@@ -161,6 +192,109 @@ describe('playerReducer', () => {
           newState.player.fameLevel,
           initialState.player.fameLevel
         )
+      })
+    })
+
+    describe('re-clamping of van, day, time and location', () => {
+      const baseState = () => ({
+        player: {
+          money: 100,
+          fame: 50,
+          day: 4,
+          time: 9,
+          location: 'berlin',
+          van: { fuel: 60, condition: 70, upgrades: [], breakdownChance: 0.05 }
+        }
+      })
+
+      it('clamps van fuel and condition into their ranges', () => {
+        const high = handleUpdatePlayer(baseState(), {
+          van: { ...baseState().player.van, fuel: 900, condition: 250 }
+        })
+        assert.strictEqual(high.player.van.fuel, 100)
+        assert.strictEqual(high.player.van.condition, 100)
+
+        const low = handleUpdatePlayer(baseState(), {
+          van: { ...baseState().player.van, fuel: -20, condition: -5 }
+        })
+        assert.strictEqual(low.player.van.fuel, 0)
+        assert.strictEqual(low.player.van.condition, 0)
+      })
+
+      it('keeps the prior van fuel and condition for non-finite or non-numeric values', () => {
+        for (const bad of [Number.NaN, Infinity, -Infinity, '90', true, null]) {
+          const next = handleUpdatePlayer(baseState(), {
+            van: { upgrades: [], fuel: bad, condition: bad }
+          })
+          assert.strictEqual(next.player.van.fuel, 60)
+          assert.strictEqual(next.player.van.condition, 70)
+        }
+      })
+
+      it('ignores a van payload that is not a record', () => {
+        for (const bad of ['van', 7, null, [1, 2]]) {
+          const next = handleUpdatePlayer(baseState(), { van: bad })
+          assert.deepStrictEqual(next.player.van, baseState().player.van)
+        }
+      })
+
+      it('floors day and keeps it at 1 or above', () => {
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { day: 7.9 }).player.day,
+          7
+        )
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { day: 0 }).player.day,
+          1
+        )
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { day: -12 }).player.day,
+          1
+        )
+      })
+
+      it('keeps the prior day and time for non-finite or non-numeric values', () => {
+        for (const bad of [Number.NaN, Infinity, '8', false, null]) {
+          const next = handleUpdatePlayer(baseState(), { day: bad, time: bad })
+          assert.strictEqual(next.player.day, 4)
+          assert.strictEqual(next.player.time, 9)
+        }
+      })
+
+      it('wraps time into the 0..23 clock range', () => {
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { time: 26 }).player.time,
+          2
+        )
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { time: -1 }).player.time,
+          23
+        )
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { time: 15 }).player.time,
+          15
+        )
+      })
+
+      it('accepts only string locations', () => {
+        assert.strictEqual(
+          handleUpdatePlayer(baseState(), { location: 'hamburg' }).player
+            .location,
+          'hamburg'
+        )
+        for (const bad of [42, null, {}, ['x'], true]) {
+          const next = handleUpdatePlayer(baseState(), { location: bad })
+          assert.strictEqual(next.player.location, 'berlin')
+        }
+      })
+
+      it('applies the same clamps to functional updaters', () => {
+        const next = handleUpdatePlayer(baseState(), prev => ({
+          day: prev.day - 100,
+          van: { ...prev.van, fuel: prev.van.fuel + 500 }
+        }))
+        assert.strictEqual(next.player.day, 1)
+        assert.strictEqual(next.player.van.fuel, 100)
       })
     })
 

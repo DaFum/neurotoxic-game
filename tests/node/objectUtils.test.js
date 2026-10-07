@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   deepFreeze,
+  findUnsafeKeyDeep,
   hasForbiddenKeysDeep,
   isLooseRecord,
   isPlainRecord,
@@ -56,6 +57,27 @@ test('hasForbiddenKeysDeep inspects non-enumerable own properties', () => {
 
   // Array `length` is non-enumerable but benign.
   assert.equal(hasForbiddenKeysDeep({ list: [1, 2, 3] }), false)
+})
+
+test('findUnsafeKeyDeep names the offending key or flags an unsafe structure', () => {
+  assert.equal(findUnsafeKeyDeep({ list: [{ ok: 1 }] }), null)
+  assert.equal(
+    findUnsafeKeyDeep(JSON.parse('{"a":{"constructor":1}}')),
+    'constructor'
+  )
+  assert.equal(findUnsafeKeyDeep([JSON.parse('{"prototype":1}')]), 'prototype')
+
+  const cyclic = {}
+  cyclic.self = cyclic
+  assert.equal(findUnsafeKeyDeep(cyclic), '[unsafe structure]')
+
+  const tooDeep = {}
+  let node = tooDeep
+  for (let i = 0; i < 200; i++) {
+    node.next = {}
+    node = node.next
+  }
+  assert.equal(findUnsafeKeyDeep(tooDeep), '[unsafe structure]')
 })
 
 test('sanitizeTraversableValue applies shared recursion rules', () => {

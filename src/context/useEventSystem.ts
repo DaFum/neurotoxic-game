@@ -9,6 +9,7 @@ import { addUnlock } from '../utils/unlockManager'
 import { KNOWN_EVENT_IDS } from '../data/events'
 import { eventEngine } from '../utils/eventEngine'
 import { logger } from '../utils/logger'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { isDevEventsDisabled } from '../utils/devSeedOverride'
 import { GAME_PHASES } from './gameConstants'
 import { gameReducer } from './gameReducer'
@@ -213,9 +214,15 @@ export function useEventSystem({
       // the per-day cap that gate every other event.
       const isGigTrigger =
         triggerPoint === 'gig_intro' || triggerPoint === 'gig_mid'
+      // `NaN >= 2` is false and `NaN + 1` stays NaN, so a corrupt counter read
+      // with `?? 0` would disable the 2-per-day cap for the rest of the day.
+      const eventsTriggeredToday = finiteNumberOr(
+        currentState.player?.eventsTriggeredToday,
+        0
+      )
       if (!isGigTrigger) {
         if (currentState.currentScene === GAME_PHASES.GIG) return false
-        if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
+        if (eventsTriggeredToday >= 2) return false
       }
 
       // Drain orphaned queue heads: an id that exists in no event pool can
@@ -253,8 +260,7 @@ export function useEventSystem({
       if (!isGigTrigger) {
         dispatch(
           createUpdatePlayerAction({
-            eventsTriggeredToday:
-              (currentState.player?.eventsTriggeredToday ?? 0) + 1
+            eventsTriggeredToday: eventsTriggeredToday + 1
           })
         )
       }

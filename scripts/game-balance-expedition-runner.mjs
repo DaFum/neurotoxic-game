@@ -12,6 +12,7 @@ import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { getEffectiveExpeditionRoute } from '../src/domain/expedition/routeOverlay.ts'
 import { resolveExpeditionTravelCost } from '../src/domain/expedition/travel.ts'
 import {
+  EXPEDITION_CONDITION_GROUPS,
   getExpeditionTechnicalCondition,
   getExpeditionConditionSummary
 } from '../src/domain/expedition/condition.ts'
@@ -31,6 +32,7 @@ import {
 import { calculatePostGigStateUpdates } from '../src/utils/postGig/socialResolution.ts'
 import {
   deriveExpeditionPendingFailure,
+  getAvailableTechnicalRecoveryControls,
   EXPEDITION_TOW_COST
 } from '../src/domain/expedition/failure.ts'
 import {
@@ -66,6 +68,7 @@ import {
   extractExpedition,
   completeExpedition,
   acceptExpeditionFailure,
+  acceptExpeditionTechnicalFailure,
   prepareNextExpedition,
   resolveExpeditionCrisis,
   executeExpeditionRepair,
@@ -407,12 +410,19 @@ export const verifyHardCorrectnessGates = (
   // A wiped technical Condition or a live crisis must always leave the run a
   // way out: either the crisis offers a recovery, or accepting failure is
   // available. A state with neither is a run the player cannot leave.
+  //
+  // A dead technical group never derives a crisis on its own: improvise keeps
+  // it recoverable, so ending the run is the player's explicit
+  // `ACCEPT_EXPEDITION_TECHNICAL_FAILURE`. That action is therefore a valid way
+  // out for a zero-Condition state with no pending crisis.
   if (state.expedition.status === 'active') {
     const conditionSummary = getExpeditionConditionSummary(state)
     const pending = deriveExpeditionPendingFailure(state)
     if (conditionSummary <= 0 || pending !== null) {
       const hasRecovery = (pending?.choices?.length ?? 0) > 0
-      const canAcceptFailure = acceptExpeditionFailure(state) !== null
+      const canAcceptFailure =
+        acceptExpeditionFailure(state) !== null ||
+        acceptExpeditionTechnicalFailure(state) !== null
       if (!hasRecovery && !canAcceptFailure) {
         throw new Error(
           `[HardGate10] Softlock at stage ${stage}: condition ${conditionSummary} with no recovery and no acceptable failure`
@@ -1339,9 +1349,11 @@ export const explainExtractionDecision = (state, profile) => {
   const pressures = {
     // Only the axes that can actually end a run.
     //
-    // Production has exactly three lethal paths: `technical_shutdown` when a
-    // technical group hits 0 with no legal recovery, `fuel_stranded` from the
-    // mobility softlock, and `bankruptcy`. Van condition is on none of them -
+    // Production has exactly three lethal paths: `technical_shutdown` when the
+    // player explicitly accepts a dead technical group (improvise keeps every
+    // zero-Condition group recoverable, so it never fires on its own),
+    // `fuel_stranded` from the mobility softlock, and `bankruptcy`. Van
+    // condition is on none of them -
     // spec 11.10 has condition zero disable an asset for the run rather than
     // end it. Folding `100 - vanCondition` in here made the policy bail on a
     // threat the game does not implement, and it dominated: all 129 regretted
@@ -1641,6 +1653,42 @@ export const runExpeditionSimulation = (
           state = gameReducer(state, failAction)
           telemetry.terminalKind = 'failed'
           telemetry.terminalSource = pendingFailure.reason
+          break
+        }
+      }
+    }
+
+    // A2: A dead technical group the policy cannot pay to repair.
+    //
+    // Production never derives a technical crisis for a zero-Condition group
+    // while improvise is on offer, so ending the run there is the player's
+    // explicit `accept_failure` (ExpeditionServicePanel). The policy makes that
+    // choice when no spare part, service-stop repair, donor group or insurance
+    // claim can recover the group; improvise is the free fallback it declines,
+    // which is what the old derived shutdown meant by "no legal recovery".
+    const deadGroup = EXPEDITION_CONDITION_GROUPS.find(
+      group => getExpeditionTechnicalCondition(state)[group] === 0
+    )
+    if (deadGroup) {
+      const controls = getAvailableTechnicalRecoveryControls(state, deadGroup)
+      const hasPaidRecovery =
+        controls.fieldRepair ||
+        controls.professionalRepair ||
+        controls.cannibalize ||
+        controls.insuranceClaim
+      const acceptTechnical = hasPaidRecovery
+        ? null
+        : acceptExpeditionTechnicalFailure(state)
+      if (acceptTechnical) {
+        state = gameReducer(state, acceptTechnical)
+        const failAction = acceptExpeditionFailure(state)
+        if (failAction) {
+          const reason =
+            deriveExpeditionPendingFailure(state)?.reason ??
+            'technical_shutdown'
+          state = gameReducer(state, failAction)
+          telemetry.terminalKind = 'failed'
+          telemetry.terminalSource = reason
           break
         }
       }

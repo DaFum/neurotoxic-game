@@ -172,6 +172,29 @@ test('Heat production updates pressure and the canonical HUD reader', () => {
   assert.strictEqual(applyExpeditionEventHeat(next, Number.NaN), next)
 })
 
+test('Heat production caps an overflowing sum at 100 instead of resetting to 0', () => {
+  const state = activeState()
+  const hot = {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, heat: Number.MAX_VALUE }
+    }
+  }
+  const capped = applyExpeditionEventHeat(hot, Number.MAX_VALUE)
+  assert.equal(capped.expedition.pressure.heat, 100)
+
+  const cold = {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, heat: -Number.MAX_VALUE }
+    }
+  }
+  const floored = applyExpeditionEventHeat(cold, -Number.MAX_VALUE)
+  assert.equal(floored.expedition.pressure.heat, 0)
+})
+
 test('Authority crew exits use canonical crew roles and hidden compartments', () => {
   const state = activeState()
   state.expedition.loadout = { crewIds: ['yara'], nativeContracts: [] }

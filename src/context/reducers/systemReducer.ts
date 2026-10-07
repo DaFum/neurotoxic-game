@@ -9,7 +9,6 @@ import {
   sanitizeActiveQuests,
   sanitizeQuestCooldowns,
   sanitizeQuestScopes,
-  sanitizeNpcs,
   sanitizeGigModifiers,
   sanitizeVenue,
   sanitizeLastGigStats,
@@ -67,6 +66,10 @@ import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { createInitialState } from '../initialState'
 import { sanitizeCareerState } from './careerSanitizers'
 import {
+  buildDeterministicToastId,
+  sanitizeLoadedToast
+} from './toastSanitizers'
+import {
   reconcileExpeditionAscensionOnLoad,
   settleExpeditionUnlockJournalOnLoad
 } from '../../domain/expedition/meta'
@@ -92,6 +95,7 @@ import {
 } from '../../domain/expedition/loadout'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { isFiniteNumber } from '../../utils/finiteNumber'
+import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
@@ -248,7 +252,6 @@ export const handleLoadGame = (
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
     completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
     completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),
-    npcs: sanitizeNpcs(loadedState.npcs),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
     currentScene: GAME_PHASES.OVERWORLD,
     currentGig: sanitizeVenue(loadedState.currentGig),
@@ -452,6 +455,15 @@ export const handleUpdateSettings = (
 /**
  * Stores the generated map or records a null map fallback.
  *
+ * @remarks
+ * Structural gate only: payloads that are not a `nodes` record plus a
+ * `connections` array (the shape `OverworldMap` and the route readers
+ * dereference unguarded), and payloads carrying prototype-polluting keys at any
+ * depth, are rejected (state returned unchanged). Generator quality rules
+ * (`validateGeneratedMap` diversity checks) stay at the generation boundary in
+ * `useMapGeneration`; applying them here would reject legitimate small
+ * seed/test maps.
+ *
  * @param state - Current game state before map replacement.
  * @param payload - Generated game map, or null when generation failed safely.
  * @returns Updated state with `gameMap` replaced.
@@ -460,6 +472,18 @@ export const handleSetMap = (
   state: GameState,
   payload: GameMap | null
 ): GameState => {
+  // The deep scan runs before any field read so it rejects own accessors
+  // without invoking them.
+  if (
+    payload !== null &&
+    (!isLooseRecord(payload) ||
+      hasForbiddenKeysDeep(payload) ||
+      !isLooseRecord(payload.nodes) ||
+      !Array.isArray(payload.connections))
+  ) {
+    logger.warn('GameState', 'Rejected malformed SET_MAP payload')
+    return state
+  }
   if (payload) {
     logger.info('GameState', 'Map Generated')
   } else {
@@ -471,15 +495,23 @@ export const handleSetMap = (
 /**
  * Appends a toast payload to the active toast queue.
  *
+ * @remarks
+ * The payload is re-validated with the shared toast sanitizer, so a raw
+ * dispatch cannot smuggle non-primitive `options` or forbidden keys into
+ * state. A payload without a valid id and message/messageKey is dropped.
+ *
  * @param state - Current game state before adding the toast.
  * @param payload - Toast payload prepared by the caller.
- * @returns Updated state with the toast appended.
+ * @returns Updated state with the sanitized toast appended, or the original
+ * state when the payload is not a valid toast.
  */
 export const handleAddToast = (
   state: GameState,
   payload: ToastPayload
 ): GameState => {
-  return { ...state, toasts: [...state.toasts, payload] }
+  const safeToast = sanitizeLoadedToast(payload)
+  if (!safeToast) return state
+  return { ...state, toasts: [...state.toasts, safeToast] }
 }
 
 /**
@@ -716,7 +748,10 @@ export const handleAdvanceDay = (
         if (seen.has(dedupKey)) continue
         seen.add(dedupKey)
         newToasts.push({
-          id: `risk_${ev.assetId}_${ev.eventType}_${state.player.day ?? 0}`,
+          id: buildDeterministicToastId('risk-toast', [
+            ...(nextStatePre.toasts ?? []),
+            ...newToasts
+          ]),
           type: 'warning',
           messageKey: `assets:risk.event.${ev.eventType}`,
           options: { assetId: ev.assetId }

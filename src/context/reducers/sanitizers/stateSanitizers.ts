@@ -1,4 +1,7 @@
-import { sanitizeTraversableValue } from '../../../utils/objectUtils'
+import {
+  hasForbiddenOwnKeys,
+  sanitizeTraversableValue
+} from '../../../utils/objectUtils'
 import {
   getCityKeyFromVenueId,
   deriveCityTraits
@@ -38,6 +41,8 @@ import {
   sanitizeStringArray,
   finiteNumberOr,
   clampNonNegative,
+  clampToNonNegativeInt,
+  clampPercent,
   clampVanFuel,
   clampVanCondition,
   clampVanBreakdownChance,
@@ -54,7 +59,8 @@ import {
   clampBandHarmony,
   clampReputation,
   clampBandStress,
-  wrapClockHour
+  wrapClockHour,
+  MAX_BANTER_EVENTS
 } from '../../../utils/gameState'
 import { MINIGAME_TYPES } from '../../gameConstants'
 import type { MinigameType } from '../../../types/game'
@@ -70,7 +76,8 @@ import type {
   ActiveBrandDeal,
   ToastPayload,
   GameMap,
-  GamePhase
+  GamePhase,
+  GigModifiers
 } from '../../../types'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
@@ -683,27 +690,37 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       playerData.lastGigNodeId === null
         ? playerData.lastGigNodeId
         : DEFAULT_PLAYER_STATE.lastGigNodeId,
-    tutorialStep: finiteNumberOr(
-      playerData.tutorialStep,
-      DEFAULT_PLAYER_STATE.tutorialStep
+    // -1 is the "tutorial dismissed" marker (`useTutorial`), so the floor is -1,
+    // not 0; anything lower is corrupt.
+    tutorialStep: Math.max(
+      -1,
+      Math.floor(
+        finiteNumberOr(
+          playerData.tutorialStep,
+          DEFAULT_PLAYER_STATE.tutorialStep
+        )
+      )
     ),
-    score: finiteNumberOr(playerData.score, DEFAULT_PLAYER_STATE.score),
+    score: clampNonNegative(
+      finiteNumberOr(playerData.score, DEFAULT_PLAYER_STATE.score)
+    ),
     fame: finiteNumberOr(playerData.fame, DEFAULT_PLAYER_STATE.fame),
     fameLevel: DEFAULT_PLAYER_STATE.fameLevel,
-    eventsTriggeredToday: finiteNumberOr(
-      playerData.eventsTriggeredToday,
-      DEFAULT_PLAYER_STATE.eventsTriggeredToday
+    eventsTriggeredToday: clampToNonNegativeInt(
+      finiteNumberOr(
+        playerData.eventsTriggeredToday,
+        DEFAULT_PLAYER_STATE.eventsTriggeredToday
+      )
     ),
-    totalTravels: finiteNumberOr(
-      playerData.totalTravels,
-      DEFAULT_PLAYER_STATE.totalTravels
+    totalTravels: clampToNonNegativeInt(
+      finiteNumberOr(playerData.totalTravels, DEFAULT_PLAYER_STATE.totalTravels)
     ),
     hqUpgrades: migrateLegacyHqUpgradeIds(
       sanitizeStringArray(playerData.hqUpgrades)
     ),
-    clinicVisits: finiteNumberOr(
-      playerData.clinicVisits,
-      DEFAULT_PLAYER_STATE.clinicVisits
+    // A negative count would lower the clinic cost curve (clinicReducer).
+    clinicVisits: clampToNonNegativeInt(
+      finiteNumberOr(playerData.clinicVisits, DEFAULT_PLAYER_STATE.clinicVisits)
     ),
     van: {
       fuel: finiteNumberOr(vanData.fuel, EXPENSE_CONSTANTS.transport.maxFuel),
@@ -719,9 +736,11 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         DEFAULT_PLAYER_STATE.van.breakdownChance
       )
     },
-    passiveFollowers: finiteNumberOr(
-      playerData.passiveFollowers,
-      DEFAULT_PLAYER_STATE.passiveFollowers
+    passiveFollowers: clampToNonNegativeInt(
+      finiteNumberOr(
+        playerData.passiveFollowers,
+        DEFAULT_PLAYER_STATE.passiveFollowers
+      )
     ),
     stats: {
       // Stats feed >= milestone/unlock checks; clamp corrupted negative
@@ -805,6 +824,63 @@ const parseNumericStats = (
 }
 
 /**
+ * How many trailing entries of an untrusted banter log are inspected on load.
+ * The margin over {@link MAX_BANTER_EVENTS} absorbs malformed tail entries,
+ * while a huge hostile array still costs only a bounded scan.
+ */
+const BANTER_SCAN_WINDOW = MAX_BANTER_EVENTS * 4
+
+/**
+ * Reads an own data property of an untrusted record without invoking an
+ * accessor; an accessor or a missing key yields `undefined`.
+ */
+const readOwnDataValue = (
+  record: Record<string, unknown>,
+  key: string
+): unknown => {
+  const descriptor = Object.getOwnPropertyDescriptor(record, key)
+  return descriptor && Object.hasOwn(descriptor, 'value')
+    ? descriptor.value
+    : undefined
+}
+
+/**
+ * Rebuilds the persisted banter log from whitelisted fields only.
+ *
+ * @param value - The raw untrusted `band.banterEvents` payload
+ * @returns At most {@link MAX_BANTER_EVENTS} well-formed entries, newest last
+ */
+const sanitizeBanterEvents = (
+  value: unknown
+): NonNullable<BandState['banterEvents']> => {
+  if (!Array.isArray(value)) return []
+  const events: NonNullable<BandState['banterEvents']> = []
+  for (const entry of value.slice(-BANTER_SCAN_WINDOW)) {
+    if (!isLooseRecord(entry)) continue
+    // Read through descriptors: a raw LOAD_GAME entry may carry throwing
+    // getters, and an accessor field leaves the entry malformed (skipped).
+    const member1 = readOwnDataValue(entry, 'member1')
+    const member2 = readOwnDataValue(entry, 'member2')
+    const delta = readOwnDataValue(entry, 'delta')
+    const timestamp = readOwnDataValue(entry, 'timestamp')
+    if (
+      typeof member1 !== 'string' ||
+      typeof member2 !== 'string' ||
+      !isFiniteNumber(delta)
+    ) {
+      continue
+    }
+    events.push({
+      member1,
+      member2,
+      delta,
+      timestamp: finiteNumberOr(timestamp, 0)
+    })
+  }
+  return events.slice(-MAX_BANTER_EVENTS)
+}
+
+/**
  * Sanitizes a raw band configuration payload into a stable band state object.
  *
  * @remarks
@@ -825,9 +901,8 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       typeof bandData.harmonyRegenTravel === 'boolean'
         ? bandData.harmonyRegenTravel
         : DEFAULT_BAND_STATE.harmonyRegenTravel,
-    inventorySlots: finiteNumberOr(
-      bandData.inventorySlots,
-      DEFAULT_BAND_STATE.inventorySlots
+    inventorySlots: clampToNonNegativeInt(
+      finiteNumberOr(bandData.inventorySlots, DEFAULT_BAND_STATE.inventorySlots)
     ),
     luck: clampLuck(finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck)),
     performance: {
@@ -869,7 +944,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           const itemObj = item as Record<string, unknown>
           const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
-          if (Object.hasOwn(item, '__proto__')) continue
+          if (hasForbiddenOwnKeys(item)) continue
           const copy = sanitizeStashItem(
             itemObj,
             baseItem,
@@ -891,7 +966,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           if (!baseItem) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           const itemObj = item as Record<string, unknown>
-          if (Object.hasOwn(item, '__proto__')) continue
+          if (hasForbiddenOwnKeys(item)) continue
           const copy = sanitizeStashItem(itemObj, baseItem, id)
           migrated[id] = copy
         }
@@ -936,8 +1011,22 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
     'crowdControl'
   ]) {
     const value = finiteOptionalNumber(bandData[key])
-    if (value !== undefined) rawBand[key] = value
+    if (value === undefined) continue
+    if (key === 'tempo') {
+      // Same 0..100 range as `handleUpdateBand`, but not floored: contraband
+      // tempo effects are fractional (+0.15) and reverted by an exact additive
+      // inverse, so flooring on load would leave the revert below zero.
+      rawBand[key] = clampPercent(value)
+    } else if (key === 'style' || key === 'crit') {
+      // No reducer-side rule exists; the invariant is finite and non-negative.
+      // Effects stack above 1, so there is deliberately no upper bound.
+      rawBand[key] = clampNonNegative(value)
+    } else {
+      rawBand[key] = value
+    }
   }
+
+  rawBand.banterEvents = sanitizeBanterEvents(bandData.banterEvents)
 
   const loadedStress = finiteOptionalNumber(bandData.stress)
   if (loadedStress !== undefined) {
@@ -1511,46 +1600,50 @@ export const sanitizeActiveEvent = (
   return event
 }
 
+// Canonical gig modifier keys: the pre-gig toggles from DEFAULT_GIG_MODIFIERS
+// plus the runtime `damaged_gear` flag set by botched setup minigames.
+const ALLOWED_GIG_MODIFIER_KEYS: ReadonlySet<string> = new Set([
+  ...Object.keys(DEFAULT_GIG_MODIFIERS),
+  'damaged_gear'
+])
+
 /**
- * Sanitizes the state tracking persistent NPCs and relationships.
+ * Keeps only whitelisted boolean gig-modifier fields from an untrusted patch.
  *
  * @remarks
- * Validates that each NPC has a known ID, and clamps their relationship metrics to allowed bounds.
+ * Single whitelist shared by the `SET_GIG_MODIFIERS` action creator
+ * (normalization), the reducer (final authority) and the load sanitizer, so a
+ * runtime flag such as `damaged_gear` cannot be accepted by one layer and
+ * dropped by another.
  *
- * @param value - The raw untrusted NPC tracking state
- * @returns A sanitized mapping of NPC identifiers to their corresponding states
+ * @param updates - The raw untrusted gig modifiers patch
+ * @returns A partial modifier map holding only whitelisted boolean entries
  */
-export const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
-  if (!isLooseRecord(value)) return {}
-  const sanitized: GameState['npcs'] = {}
-  for (const key in value) {
-    if (!Object.hasOwn(value, key)) continue
-    if (isForbiddenKey(key)) continue
-    const npc = value[key]
-    if (!isLooseRecord(npc) || typeof npc.id !== 'string') continue
-    if (isForbiddenKey(npc.id)) continue
-    sanitized[key] = {
-      id: npc.id,
-      ...(typeof npc.name === 'string' ? { name: npc.name } : {}),
-      ...(typeof npc.role === 'string' ? { role: npc.role } : {}),
-      ...(Array.isArray(npc.traits)
-        ? { traits: sanitizeStringArray(npc.traits) }
-        : {}),
-      ...(typeof npc.relationship === 'number' &&
-      Number.isFinite(npc.relationship)
-        ? { relationship: clampRelationship(npc.relationship) }
-        : {})
+export const sanitizeGigModifierUpdates = (
+  updates: unknown
+): Partial<GigModifiers> => {
+  if (!isLooseRecord(updates)) return {}
+  const out: Partial<GigModifiers> = {}
+  for (const key of ALLOWED_GIG_MODIFIER_KEYS) {
+    if (
+      Object.hasOwn(updates, key) &&
+      typeof (updates as Record<string, unknown>)[key] === 'boolean'
+    ) {
+      out[key as keyof GigModifiers] = (updates as Record<string, unknown>)[
+        key
+      ] as boolean
     }
   }
-  return sanitized
+  return out
 }
 
 /**
  * Sanitizes modifiers applied to upcoming or active gigs.
  *
  * @remarks
- * Iterates through allowed gig modifiers, preserving valid boolean flags and handling legacy
- * aliases (e.g., merging `energy` flags into `catering`).
+ * Starts from the defaults, overlays the shared whitelist
+ * ({@link sanitizeGigModifierUpdates}), and handles legacy aliases (e.g.,
+ * merging `energy` flags into `catering`) as a load-only step.
  *
  * @param value - The raw untrusted gig modifiers mapping
  * @returns A sanitized object containing valid gig modifiers
@@ -1558,18 +1651,9 @@ export const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
 export const sanitizeGigModifiers = (
   value: unknown
 ): GameState['gigModifiers'] => {
-  const sanitized = { ...DEFAULT_GIG_MODIFIERS }
+  const sanitized: GameState['gigModifiers'] = { ...DEFAULT_GIG_MODIFIERS }
   if (!isLooseRecord(value)) return sanitized
-  for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
-    if (
-      Object.hasOwn(value, key) &&
-      typeof (value as Record<string, unknown>)[key] === 'boolean'
-    ) {
-      sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = (
-        value as Record<string, unknown>
-      )[key] as boolean
-    }
-  }
+  Object.assign(sanitized, sanitizeGigModifierUpdates(value))
   // Legacy `energy` → `catering` migration: only applies when the save does
   // not already carry the current key, so `catering` always wins over the
   // stale alias.

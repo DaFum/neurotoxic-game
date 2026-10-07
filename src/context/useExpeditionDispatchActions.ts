@@ -101,15 +101,15 @@ export function useExpeditionDispatchActions({
         regionId?: string,
         tourTypeId?: string,
         starterPerkId?: string | null
-      ) =>
-        dispatch(
-          prepareExpeditionSponsorOffersAction(
-            stateRef.current,
-            regionId,
-            tourTypeId,
-            starterPerkId
-          )
-        ),
+      ) => {
+        const action = prepareExpeditionSponsorOffersAction(
+          stateRef.current,
+          regionId,
+          tourTypeId,
+          starterPerkId
+        )
+        if (action) dispatch(action)
+      },
       startExpedition: (loadout: ExpeditionLoadout) =>
         dispatch(startExpeditionAction(stateRef.current, loadout)),
       advanceExpeditionRoute: (nodeId: string) =>

@@ -19,12 +19,9 @@ import type {
   ExpeditionLoadout,
   ExpeditionMerchSelection
 } from '../../types/expedition'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { isFiniteNumber, isNonNegativeInteger } from '../../utils/finiteNumber'
 import { getExpeditionChassisProfile } from './chassis'
 import { aggregateExpeditionModuleProfiles } from './modules'
-
-const isNonNegativeInteger = (value: unknown): value is number =>
-  isFiniteNumber(value) && Number.isInteger(value) && value >= 0
 
 export type {
   ExpeditionCargoCapacity,

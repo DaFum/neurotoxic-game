@@ -67,6 +67,39 @@ describe('DetailedStatsTab', () => {
     expect(screen.getByText('Standard Gear')).toBeInTheDocument()
   })
 
+  test('lists the most recent banter outcomes, newest first, only when present', () => {
+    const { rerender } = render(
+      <DetailedStatsTab
+        player={mockPlayer}
+        band={mockBand}
+        social={mockSocial}
+      />
+    )
+    expect(screen.queryByText('Recent Banter')).not.toBeInTheDocument()
+
+    const banterEvents = Array.from({ length: 7 }, (_, i) => ({
+      member1: `Left${i}`,
+      member2: `Right${i}`,
+      delta: i % 2 === 0 ? 10 : -15,
+      timestamp: 1000 + i
+    }))
+    rerender(
+      <DetailedStatsTab
+        player={mockPlayer}
+        band={{ ...mockBand, banterEvents }}
+        social={mockSocial}
+      />
+    )
+
+    expect(screen.getByText('Recent Banter')).toBeInTheDocument()
+    // Only the 5 newest entries are shown, newest first.
+    expect(screen.getByText('Left6 ↔ Right6')).toBeInTheDocument()
+    expect(screen.getByText('Left2 ↔ Right2')).toBeInTheDocument()
+    expect(screen.queryByText('Left1 ↔ Right1')).not.toBeInTheDocument()
+    expect(screen.getAllByText('+10').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/-15/).length).toBeGreaterThan(0)
+  })
+
   test('renders Member equipment correctly', () => {
     const bandWithEquipment = {
       ...mockBand,

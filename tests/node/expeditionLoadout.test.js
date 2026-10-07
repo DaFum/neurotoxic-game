@@ -437,10 +437,29 @@ describe('later-gate axes stay neutral in G1A', () => {
     )
   })
 
-  it('rejects crew before G3 defines a roster', () => {
+  it('rejects an unknown crew member as unavailable, not duplicate', () => {
     expectReason(
       validate(createInitialState(), { crewIds: ['crew_scout'] }),
+      'CREW_UNAVAILABLE'
+    )
+  })
+
+  it('maps every crew-selection rule onto its own rejection code', () => {
+    const fresh = createInitialState()
+    // Cap (3): shared with validateExpeditionCrewSelection.
+    expectReason(
+      validate(fresh, { crewIds: ['mika', 'tom', 'ines', 'noah'] }),
+      'MALFORMED_CANDIDATE'
+    )
+    expectReason(
+      validate(fresh, { crewIds: ['mika', 'mika'] }),
       'CREW_DUPLICATE'
+    )
+    // Manager is locked behind a capability set on a fresh Career.
+    expectReason(validate(fresh, { crewIds: ['yara'] }), 'CREW_UNAVAILABLE')
+    assert.equal(
+      validate(fresh, { crewIds: ['mika', 'tom', 'ines'] }).valid,
+      true
     )
   })
 

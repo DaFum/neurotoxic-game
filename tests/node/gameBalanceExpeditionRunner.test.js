@@ -91,6 +91,65 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     )
   })
 
+  it('HardGate10 treats explicit technical failure as a way out of a dead state', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // Every group dead and the van at zero: improvise keeps the groups
+    // recoverable, so no crisis is derived and only the explicit technical
+    // acceptance is left. That must not read as a softlock.
+    const dead = {
+      ...state,
+      player: { ...state.player, van: { ...state.player.van, condition: 0 } },
+      expedition: {
+        ...state.expedition,
+        technicalCondition: {
+          ...state.expedition.technicalCondition,
+          pa: 0,
+          instruments: 0,
+          stageGear: 0
+        }
+      }
+    }
+    assert.doesNotThrow(() =>
+      verifyHardCorrectnessGates(dead, map, profile, 'step')
+    )
+  })
+
+  it('accepts technical failure when a dead group has no paid recovery', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const base = buildProductionSimulationLoadout(undefined, profile, 4242)
+    // No spare part, no cash for the service stop, no insurance and no healthy
+    // donor group: only improvise is left, which the policy declines.
+    const stranded = {
+      ...base,
+      // Barely more than the protected Career slice: far below the price of a
+      // professional repair.
+      player: {
+        ...base.player,
+        money: base.expedition.protectedCareerCash + 10
+      },
+      expedition: {
+        ...base.expedition,
+        insurancePolicyId: null,
+        loadout: { ...base.expedition.loadout, insurancePolicyId: null },
+        cargo: { ...base.expedition.cargo, spareParts: 0 },
+        technicalCondition: {
+          ...base.expedition.technicalCondition,
+          pa: 0,
+          instruments: 0,
+          stageGear: 0
+        }
+      }
+    }
+    const result = runExpeditionSimulation(stranded, profile, 4242)
+    assert.equal(result.outcome, 'failed')
+    assert.equal(result.terminalSource, 'technical_shutdown')
+  })
   it('evaluates candidate nodes with profile-specific decision policies', () => {
     const cleanProfile = EXPEDITION_BALANCE_PROFILES.find(
       p => p.id === 'clean_sponsor'

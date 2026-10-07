@@ -268,6 +268,17 @@ test('applyEventDelta normalizes day arithmetic and non-negative counters', () =
   assert.equal(nextState.player.stats.failedStageDives, 0)
 })
 
+test('applyEventDelta and the preview keep the base day when the day sum overflows', () => {
+  const state = { player: { day: Number.MAX_VALUE } }
+  const delta = { player: { day: Number.MAX_VALUE } }
+
+  const nextState = applyEventDelta(state, delta)
+  assert.equal(nextState.player.day, Math.floor(Number.MAX_VALUE))
+
+  const applied = calculateAppliedDelta(state, delta)
+  assert.equal(applied.player.day, 0)
+})
+
 test('applyEventDelta ignores non-finite luck/skill deltas and sanitizes non-finite member skill base', () => {
   const state = {
     band: {

@@ -194,7 +194,8 @@ export const prepareExpeditionRun = (
  * @param regionId - Optional candidate Region id.
  * @param tourTypeId - Optional candidate Tour Type id.
  * @param starterPerkId - Optional candidate starter perk id.
- * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action.
+ * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action, or `null` when the
+ * seed is not a finite number so there is nothing valid to dispatch.
  */
 export const createPrepareExpeditionSponsorOffersAction = (
   expectedRunSeed: unknown,
@@ -204,14 +205,12 @@ export const createPrepareExpeditionSponsorOffersAction = (
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS }
-> => {
-  if (!isFiniteNumber(expectedRunSeed)) {
-    throw new TypeError('Expected runSeed must be a finite number')
-  }
+> | null => {
+  if (!isFiniteNumber(expectedRunSeed)) return null
   return {
     type: ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS,
     payload: {
-      expectedRunSeed: Number(expectedRunSeed),
+      expectedRunSeed,
       regionId: typeof regionId === 'string' ? regionId : undefined,
       tourTypeId: typeof tourTypeId === 'string' ? tourTypeId : undefined,
       starterPerkId: typeof starterPerkId === 'string' ? starterPerkId : null
@@ -226,7 +225,8 @@ export const createPrepareExpeditionSponsorOffersAction = (
  * @param regionId - Candidate region id.
  * @param tourTypeId - Candidate tour type id.
  * @param starterPerkId - Candidate starter perk id.
- * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action.
+ * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action, or `null` when the
+ * state carries no usable run seed.
  */
 export const prepareExpeditionSponsorOffers = (
   state: GameState,
@@ -236,7 +236,7 @@ export const prepareExpeditionSponsorOffers = (
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS }
-> =>
+> | null =>
   createPrepareExpeditionSponsorOffersAction(
     state.runSeed,
     regionId,
@@ -274,6 +274,11 @@ export const startExpedition = (
  * @param state - Current game state, read for the stale-guard route step.
  * @param nodeId - Target node.
  * @returns Typed `ADVANCE_EXPEDITION_ROUTE` action.
+ *
+ * @remarks
+ * Travel arrival already advances the route automatically through
+ * `applyExpeditionRouteAdvance`, and the reducer for this action delegates to
+ * that same helper, so dispatching it is only needed outside the arrival flow.
  */
 export const advanceExpeditionRoute = (
   state: GameState,

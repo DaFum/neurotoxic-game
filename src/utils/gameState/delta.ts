@@ -6,6 +6,7 @@ import {
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
+  MAX_BANTER_EVENTS,
   RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER,
   RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER,
   RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER,
@@ -17,6 +18,7 @@ import {
   clampPlayerFame,
   clampBandHarmony,
   clampMemberMood,
+  clampMemberSkill,
   clampMemberStamina,
   clampRelationship,
   clampNonNegative,
@@ -88,6 +90,49 @@ const calculateClampedStatDelta = (
   const baseValue = finiteNumberOr(currentValue, 0)
   const nextValue = addClampedNonNegative(baseValue, deltaValue)
   return nextValue - baseValue
+}
+
+/**
+ * Shared player.day step used by BOTH `calculateAppliedDelta` (preview) and
+ * `applyEventDelta` (apply) so the preview cannot drift from the stored result.
+ * `player.day` is a positive integer: the stored value is recovered, the sum
+ * is floored, and the result never drops below 1.
+ *
+ * @param currentDay - Stored day, possibly malformed.
+ * @param deltaDay - Finite day delta.
+ * @returns The recovered base day and the resulting day.
+ */
+const resolveDayDelta = (
+  currentDay: unknown,
+  deltaDay: number
+): { base: number; next: number } => {
+  const base = Math.max(1, Math.floor(finiteNumberOr(currentDay, 1)))
+  const sum = base + deltaDay
+  // Two finite values can still overflow; keep the recovered base rather than
+  // persisting `Infinity`, matching `resolveStatDelta`.
+  return {
+    base,
+    next: Number.isFinite(sum) ? Math.max(1, Math.floor(sum)) : base
+  }
+}
+
+/**
+ * Shared non-negative `player.stats` numeric step used by both walkers.
+ *
+ * @param currentStat - Stored stat, possibly malformed or non-numeric.
+ * @param deltaStat - Finite stat delta.
+ * @returns The finite stored value (`0` when not a finite number) and the
+ * resulting clamped value. A sum that overflows leaves the base unchanged.
+ */
+const resolveStatDelta = (
+  currentStat: unknown,
+  deltaStat: number
+): { current: number; next: number } => {
+  const current = finiteNumberOr(currentStat, 0)
+  return {
+    current,
+    next: addClampedNonNegative(clampNonNegative(current), deltaStat)
+  }
 }
 
 const calculateBoundedSocialDelta = (
@@ -260,10 +305,35 @@ export const calculateAppliedDelta = (
       }
     }
     if (isFiniteNumber(delta.player.day)) {
-      applied.player.day = delta.player.day
+      const { base, next } = resolveDayDelta(
+        state.player?.day,
+        delta.player.day
+      )
+      applied.player.day = next - base
     }
     if (delta.player.stats) {
-      applied.player.stats = copyFilteredProperties(delta.player.stats)
+      // Mirror the apply walker per key: numeric deltas report the clamped
+      // change, strings/booleans overwrite, anything else is ignored.
+      const statsDelta = delta.player.stats
+      const appliedStats: FilteredRecord = Object.create(null)
+      for (const key in statsDelta) {
+        if (!Object.hasOwn(statsDelta, key)) continue
+        if (isForbiddenKey(key)) continue
+        const statDelta = statsDelta[key]
+        if (isFiniteNumber(statDelta)) {
+          const { current, next } = resolveStatDelta(
+            state.player?.stats?.[key],
+            statDelta
+          )
+          appliedStats[key] = next - current
+        } else if (
+          typeof statDelta === 'string' ||
+          typeof statDelta === 'boolean'
+        ) {
+          appliedStats[key] = statDelta
+        }
+      }
+      applied.player.stats = appliedStats
     }
   }
 
@@ -419,10 +489,7 @@ export const calculateAppliedDelta = (
         const member = members[i]
         if (!member) continue
         const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-        const nextSkill = Math.max(
-          1,
-          Math.min(10, currentSkill + delta.band.skill)
-        )
+        const nextSkill = clampMemberSkill(currentSkill + delta.band.skill)
         const memberDelta = nextSkill - currentSkill
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
@@ -565,12 +632,10 @@ export const applyEventDelta = (
 
         const statDelta = statsDelta[key]
         if (isFiniteNumber(statDelta)) {
-          const currentStat =
-            typeof nextPlayer.stats[key] === 'number'
-              ? nextPlayer.stats[key]
-              : 0
-          const boundedStat = clampNonNegative(currentStat)
-          nextPlayer.stats[key] = clampNonNegative(boundedStat + statDelta)
+          nextPlayer.stats[key] = resolveStatDelta(
+            nextPlayer.stats[key],
+            statDelta
+          ).next
         } else if (
           typeof statDelta === 'string' ||
           typeof statDelta === 'boolean'
@@ -595,15 +660,20 @@ export const applyEventDelta = (
       }
       nextPlayer.van = nextVan
     }
-    if (delta.player.location) nextPlayer.location = delta.player.location
-    if (delta.player.currentNodeId)
+    if (
+      typeof delta.player.location === 'string' &&
+      delta.player.location.length > 0
+    ) {
+      nextPlayer.location = delta.player.location
+    }
+    if (
+      typeof delta.player.currentNodeId === 'string' &&
+      delta.player.currentNodeId.length > 0
+    ) {
       nextPlayer.currentNodeId = delta.player.currentNodeId
+    }
     if (isFiniteNumber(delta.player.day)) {
-      const currentDay = Math.max(
-        1,
-        Math.floor(finiteNumberOr(nextPlayer.day, 1))
-      )
-      nextPlayer.day = Math.max(1, Math.floor(currentDay + delta.player.day))
+      nextPlayer.day = resolveDayDelta(nextPlayer.day, delta.player.day).next
     }
 
     nextState.player = nextPlayer
@@ -655,7 +725,7 @@ export const applyEventDelta = (
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
           ...newBanterEvents
-        ].slice(-50)
+        ].slice(-MAX_BANTER_EVENTS)
       }
     } else if (isRelationshipChange(rawRC) && isNotSelfRelationship(rawRC)) {
       relationshipChange.push(rawRC)
@@ -669,7 +739,7 @@ export const applyEventDelta = (
             delta: rcr.change,
             timestamp: finiteNumberOr(rcr.timestamp, 0)
           }
-        ].slice(-50)
+        ].slice(-MAX_BANTER_EVENTS)
       }
     }
     const rawSkillDelta = delta.band.skill
@@ -780,7 +850,7 @@ export const applyEventDelta = (
         // 3. Skill
         if (skillDelta !== null && skillDelta !== 0) {
           const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
-          const newSkill = Math.max(1, Math.min(10, currentSkill + skillDelta))
+          const newSkill = clampMemberSkill(currentSkill + skillDelta)
 
           if (newSkill !== currentSkill) {
             if (nextMember === member) nextMember = { ...member }

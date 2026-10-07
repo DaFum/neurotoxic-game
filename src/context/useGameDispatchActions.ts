@@ -119,6 +119,13 @@ type BaseGameDispatchActions = {
   setActiveEvent: (
     event: Parameters<typeof createSetActiveEventAction>[0]
   ) => void
+  /**
+   * Suppresses random scene-mount events so captures stay clean. Runtime-only
+   * (`handleLoadGame` resets it). Supported API for in-app toggling; the
+   * Playwright screenshot skill drives it through the DEV-only
+   * `window.gameState.setScreenshotMode(true)` exposure
+   * (`screenshot-state-inject.js`, `navigateToFixtureScene`).
+   */
   setScreenshotMode: (enabled: boolean) => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   resolveEvent: (choice: Record<string, unknown> | null) => {

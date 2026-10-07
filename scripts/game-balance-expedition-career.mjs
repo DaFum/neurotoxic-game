@@ -608,15 +608,13 @@ export const runFreshCareerSequence = (
 
     // 2. Build legal approximation of loadout
     let legalLoadout = buildLegalLoadoutApproximation(state, profile)
-    state = gameReducer(
+    const stageOffersAction = prepareExpeditionSponsorOffers(
       state,
-      prepareExpeditionSponsorOffers(
-        state,
-        legalLoadout.regionId,
-        legalLoadout.tourTypeId,
-        legalLoadout.starterPerkId
-      )
+      legalLoadout.regionId,
+      legalLoadout.tourTypeId,
+      legalLoadout.starterPerkId
     )
+    if (stageOffersAction) state = gameReducer(state, stageOffersAction)
     metrics.sponsorOffersStaged += state.expedition.preparedSponsorOffers.length
     const sponsor =
       profile.sponsorPolicy === 'none'

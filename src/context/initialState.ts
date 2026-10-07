@@ -5,7 +5,6 @@
 
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
-import { isLooseRecord } from '../utils/gameState'
 import { getSecureRandomUint32 } from '../utils/crypto'
 import { readGlobalSettings, defaultStorageAdapter } from '../utils/storage'
 import type { IStorageAdapter } from '../utils/storageAdapter'
@@ -19,7 +18,6 @@ import type {
   GameState,
   GameSettings,
   BandState,
-  GigModifiers,
   RivalBandState
 } from '../types'
 
@@ -190,36 +188,6 @@ export const DEFAULT_GIG_MODIFIERS = {
   guestlist: false
 }
 
-// Canonical gig modifier keys: the pre-gig toggles from DEFAULT_GIG_MODIFIERS
-// plus the runtime `damaged_gear` flag set by botched setup minigames.
-const ALLOWED_GIG_MODIFIER_KEYS = new Set([
-  ...Object.keys(DEFAULT_GIG_MODIFIERS),
-  'damaged_gear'
-])
-
-/**
- * Keeps only whitelisted boolean gig-modifier fields from an untrusted patch.
- * Shared by the SET_GIG_MODIFIERS action creator (normalization) and reducer
- * (final authority) per the two-layer payload-safety rule.
- */
-export const sanitizeGigModifierUpdates = (
-  updates: unknown
-): Partial<GigModifiers> => {
-  if (!isLooseRecord(updates)) return {}
-  const out: Partial<GigModifiers> = {}
-  for (const key of ALLOWED_GIG_MODIFIER_KEYS) {
-    if (
-      Object.hasOwn(updates, key) &&
-      typeof (updates as Record<string, unknown>)[key] === 'boolean'
-    ) {
-      out[key as keyof GigModifiers] = (updates as Record<string, unknown>)[
-        key
-      ] as boolean
-    }
-  }
-  return out
-}
-
 /**
  * Default settings configuration
  */
@@ -267,7 +235,6 @@ const initialState: GameState = {
   completedQuestScopes: [],
   reputationByRegion: {},
   settings: { ...DEFAULT_SETTINGS },
-  npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   gigEventScoreDelta: 0,
   minigame: { ...DEFAULT_MINIGAME_STATE },
@@ -281,8 +248,9 @@ const initialState: GameState = {
   liabilities: {},
   crowdfundCampaigns: [],
   // Seeded RNG for deterministic asset ticks. Replaced by sanitizer on load
-  // when missing; falls back to Date.now() & 0xFFFFFFFF on fresh start.
-  rngSeed: Date.now() >>> 0,
+  // when missing; crypto-derived on fresh start so two sessions started in the
+  // same millisecond do not share an asset-tick timeline.
+  rngSeed: getSecureRandomUint32(),
   // Stable map seed for this run. Crypto-derived so two sessions started in the
   // same millisecond do not share a map.
   runSeed: getSecureRandomUint32(),
@@ -352,7 +320,7 @@ export const createInitialState = (
   assets: [],
   liabilities: {},
   crowdfundCampaigns: [],
-  rngSeed: Date.now() >>> 0,
+  rngSeed: getSecureRandomUint32(),
   runSeed: getSecureRandomUint32(),
   expedition: createDefaultExpeditionState(),
   career: createInitialCareerState()

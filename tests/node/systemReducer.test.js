@@ -506,6 +506,23 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'gigModifiers hydration: damaged_gear survives LOAD_GAME and bad values are dropped',
+    () => {
+      const kept = handleLoadGame(createInitialState(), {
+        gigModifiers: { promo: true, damaged_gear: true }
+      })
+      assert.equal(kept.gigModifiers.damaged_gear, true)
+      assert.equal(kept.gigModifiers.promo, true)
+
+      const dropped = handleLoadGame(createInitialState(), {
+        gigModifiers: { damaged_gear: 'yes', unknown_flag: true }
+      })
+      assert.equal(Object.hasOwn(dropped.gigModifiers, 'damaged_gear'), false)
+      assert.equal(Object.hasOwn(dropped.gigModifiers, 'unknown_flag'), false)
+    }
+  )
+
   await t.test('hydrates array-based contraband stash (migration)', () => {
     const initialState = createInitialState()
     const loadedState = {
@@ -1000,11 +1017,6 @@ test('systemReducer - LOAD_GAME', async t => {
         void: Number.NaN,
         bad: 'high'
       },
-      npcs: {
-        n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm', 4] },
-        bad: { name: 'No Id' },
-        primitive: 5
-      },
       gigModifiers: {
         promo: true,
         merch: 'yes',
@@ -1044,9 +1056,6 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
     assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
-    assert.deepEqual(nextState.npcs, {
-      n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm'] }
-    })
     assert.equal(nextState.gigModifiers.promo, true)
     assert.equal(nextState.gigModifiers.merch, false)
     assert.equal(nextState.gigModifiers.catering, true)
@@ -1066,6 +1075,19 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
     assert.deepEqual(nextState.unlocks, ['u1'])
   })
+
+  await t.test(
+    'strips the retired npcs field from old saves while loading the rest',
+    () => {
+      const nextState = handleLoadGame(createInitialState(), {
+        player: { money: 777 },
+        npcs: { n1: { id: 'n1', name: 'Nina', role: 'booker' } }
+      })
+
+      assert.equal(nextState.player.money, 777)
+      assert.equal(Object.hasOwn(nextState, 'npcs'), false)
+    }
+  )
 
   await t.test('normalizes a legacy bare-string setlist on load', () => {
     const nextState = handleLoadGame(createInitialState(), {
@@ -1606,18 +1628,107 @@ test('systemReducer - UPDATE_SETTINGS', () => {
 
 test('systemReducer - SET_MAP', () => {
   const state = { gameMap: null }
-  const newMap = { nodes: [] }
+  const newMap = { nodes: {}, connections: [] }
 
   assert.deepEqual(handleSetMap(state, newMap), { gameMap: newMap })
 })
 
+test('systemReducer - SET_MAP rejects payloads that break the GameMap contract', () => {
+  const state = { gameMap: { nodes: {}, connections: [] } }
+
+  for (const malformed of [
+    {},
+    { nodes: {}, connections: 'bad' },
+    { nodes: {} },
+    { connections: [] },
+    { nodes: [], connections: [] },
+    { nodes: null, connections: [] },
+    { nodes: 'x', connections: [] },
+    { nodes: {}, connections: {} }
+  ]) {
+    assert.equal(handleSetMap(state, malformed), state)
+  }
+})
+
+test('systemReducer - SET_MAP rejects non-object and hostile payloads', () => {
+  const state = { gameMap: { nodes: {}, connections: [] } }
+
+  assert.equal(handleSetMap(state, 'not a map'), state)
+  assert.equal(handleSetMap(state, 42), state)
+  assert.equal(handleSetMap(state, []), state)
+  assert.equal(
+    handleSetMap(
+      state,
+      JSON.parse('{"nodes":{"a":{"__proto__":{"x":1}}},"connections":[]}')
+    ),
+    state
+  )
+  // null stays a valid "generation failed" fallback.
+  assert.deepEqual(handleSetMap(state, null), { gameMap: null })
+})
+
+test('systemReducer - SET_MAP rejects accessor-bearing maps without invoking their getters', () => {
+  const state = { gameMap: { nodes: {}, connections: [] } }
+  let getterCalls = 0
+  const throwingGetter = () => {
+    getterCalls++
+    throw new Error('getter must not run')
+  }
+  const withNodesGetter = { connections: [] }
+  Object.defineProperty(withNodesGetter, 'nodes', {
+    enumerable: true,
+    get: throwingGetter
+  })
+  const withConnectionsGetter = { nodes: {} }
+  Object.defineProperty(withConnectionsGetter, 'connections', {
+    enumerable: true,
+    get: throwingGetter
+  })
+
+  for (const hostile of [withNodesGetter, withConnectionsGetter]) {
+    assert.equal(handleSetMap(state, hostile), state)
+  }
+  assert.equal(getterCalls, 0)
+})
+
 test('systemReducer - ADD_TOAST', () => {
   const state = { toasts: [{ id: '1' }] }
-  const newToast = { id: '2', message: 'Hello' }
+  const newToast = { id: '2', type: 'info', message: 'Hello' }
 
   assert.deepEqual(handleAddToast(state, newToast), {
-    toasts: [{ id: '1' }, { id: '2', message: 'Hello' }]
+    toasts: [{ id: '1' }, { id: '2', type: 'info', message: 'Hello' }]
   })
+})
+
+test('systemReducer - ADD_TOAST keeps only primitive options and drops invalid toasts', () => {
+  const state = { toasts: [] }
+  const result = handleAddToast(state, {
+    id: 't1',
+    type: 'warning',
+    messageKey: 'ui:toast.test',
+    options: {
+      count: 3,
+      label: 'ok',
+      ok: true,
+      nothing: null,
+      nested: { deep: 1 },
+      list: [1, 2],
+      fn: () => 1
+    }
+  })
+
+  assert.deepEqual(result.toasts[0].options, {
+    count: 3,
+    label: 'ok',
+    ok: true,
+    nothing: null
+  })
+
+  // Missing id or missing message/messageKey: dropped, same state reference.
+  assert.equal(handleAddToast(state, { type: 'info', message: 'x' }), state)
+  assert.equal(handleAddToast(state, { id: 't2', type: 'info' }), state)
+  assert.equal(handleAddToast(state, null), state)
+  assert.equal(handleAddToast(state, 'toast'), state)
 })
 
 test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {

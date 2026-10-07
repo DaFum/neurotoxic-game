@@ -9,12 +9,13 @@ import { StateError } from './errorHandler'
 import { parseSaveVersion } from './saveVersion'
 import {
   clampBandHarmony,
+  clampMemberMood,
   clampPlayerMoney,
   clampNonNegative,
   clampVanCondition,
   clampVanBreakdownChance
 } from './gameState'
-import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
+import { findUnsafeKeyDeep, isForbiddenKey, isLooseRecord } from './objectUtils'
 import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
 
 const PLAYER_NUMERIC_FIELDS = [
@@ -131,16 +132,8 @@ const validatePlayer = (player: unknown): void => {
     }
   }
 
-  // Backfill/Validate clinicVisits
-  if (
-    p.clinicVisits === undefined ||
-    typeof p.clinicVisits !== 'number' ||
-    !Number.isFinite(p.clinicVisits as number)
-  ) {
-    p.clinicVisits = 0
-  } else {
-    p.clinicVisits = clampNonNegative(Math.floor(p.clinicVisits as number))
-  }
+  // `clinicVisits` and the other count fields are clamped by `sanitizePlayer`
+  // (the load authority), so this validator stays structural for them.
 
   if (
     p.playerId !== undefined &&
@@ -155,29 +148,14 @@ const validatePlayer = (player: unknown): void => {
   }
 }
 
+/**
+ * Rejects saves carrying prototype-polluting keys at any depth, plus cyclic,
+ * over-deep or accessor-bearing payloads that the shared scan treats as unsafe.
+ */
 const checkPrototypePollution = (obj: unknown): void => {
-  if (typeof obj !== 'object' || obj === null) return
-
-  // Explicitly reject forbidden own-properties before iterating because
-  // non-enumerable keys are not guaranteed to be visited by the for...in loop below.
-  // Iterate the canonical FORBIDDEN_KEYS set so this stays in sync as it grows.
-  for (const forbidden of FORBIDDEN_KEYS) {
-    if (Object.hasOwn(obj, forbidden)) {
-      throw new StateError(`Prototype pollution detected: ${forbidden}`)
-    }
-  }
-
-  // Iterate over properties to recursively check nested objects
-  const asObj = obj as Record<string, unknown>
-  for (const key in asObj) {
-    if (!Object.hasOwn(asObj, key)) continue
-    if (isForbiddenKey(key)) {
-      throw new StateError(`Prototype pollution detected: ${key}`)
-    }
-    const nested = asObj[key]
-    if (typeof nested === 'object' && nested !== null) {
-      checkPrototypePollution(nested)
-    }
+  const offender = findUnsafeKeyDeep(obj)
+  if (offender !== null) {
+    throw new StateError(`Prototype pollution detected: ${offender}`)
   }
 }
 
@@ -222,7 +200,7 @@ const validateBand = (band: unknown): void => {
           }
           m[stat] =
             stat === 'mood'
-              ? Math.min(100, clampNonNegative(val as number))
+              ? clampMemberMood(val as number)
               : Math.min(staminaMax, clampNonNegative(val as number))
         }
       }

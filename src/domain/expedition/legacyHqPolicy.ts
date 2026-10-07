@@ -100,12 +100,20 @@ const EXPEDITION_TOUCHING_STATS = new Set([
   'passiveFollowers'
 ])
 
-/** HQ unlocks that a daily tick or a gig actually reads. */
+/**
+ * HQ unlock items that a daily tick or a gig actually reads.
+ *
+ * @remarks
+ * Keyed on the catalog item id, which is what `applyUnlockHQ` stores in
+ * `player.hqUpgrades` and what the daily tick reads. The `effect.id` carried by
+ * an `unlock_hq` entry is never stored, so it cannot identify an owned upgrade.
+ */
 const EXPEDITION_TOUCHING_HQ_UNLOCKS = new Set([
-  'hq_coffee',
-  'hq_sofa',
-  'hq_cheap_beer_fridge',
-  'hq_old_couch',
+  'hq_room_coffee',
+  'hq_room_sofa',
+  'hq_room_cheap_beer_fridge',
+  'hq_room_old_couch',
+  'hq_room_diy_soundproofing',
   'pr_manager_contract'
 ])
 
@@ -131,7 +139,7 @@ export const doesLegacyHqItemTouchExpedition = (item: CatalogItem): boolean => {
       case 'passive':
         return true
       case 'unlock_hq':
-        if (EXPEDITION_TOUCHING_HQ_UNLOCKS.has(String(effect.id))) return true
+        if (EXPEDITION_TOUCHING_HQ_UNLOCKS.has(String(item.id))) return true
         break
       case 'unlock_upgrade':
         return true

@@ -102,6 +102,9 @@ export const handlePurchaseChassis = (
   // other mode (e.g. 'crowdfund') would fall through both payment branches
   // below and mint a free asset; crowdfund materializes via its tick instead.
   if (mode !== 'cash' && mode !== 'loan') return state
+  // Mirror the creator's loan gates: banks don't underwrite DIY squats and
+  // a raw dispatch must not bypass profile eligibility.
+  if (flavor === 'diy' && mode === 'loan') return state
   if (
     mode === 'cash' &&
     (!Number.isFinite(state.player.money) ||
@@ -150,6 +153,14 @@ export const handlePurchaseChassis = (
         loanProfileId as import('../../utils/loanProfiles').LoanProfileId
       ]
     if (!profile) return state
+    if (
+      !isLoanProfileEligible(profile, {
+        fame: state.player.fame,
+        scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
+      })
+    ) {
+      return state
+    }
     const dailyPayment = computeAmortization(
       configTier.price,
       profile.interestRate,
@@ -619,7 +630,7 @@ export const handleRefinanceLiability = (
   if (
     !isLoanProfileEligible(profile, {
       fame: state.player.fame,
-      scenePresence: state.social?.scenePresence ?? 0
+      scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
     })
   ) {
     return state

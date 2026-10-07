@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../data/expedition/pressureEvents'
 import { hashExpeditionRoute } from './map'
 import { deriveExpeditionOverlayTarget } from './routeOverlay'
@@ -50,8 +51,6 @@ export interface ExpeditionPressureEvent {
 export const isExpeditionPressureEventId = (value: unknown): value is string =>
   typeof value === 'string' &&
   EXPEDITION_PRESSURE_EVENTS.some(event => event.id === value)
-const bounded = (value: unknown): number =>
-  Math.max(0, Math.min(100, finiteNumberOr(value, 0)))
 export const derivePressureDirectorContext = (
   state: GameState
 ): PressureDirectorContext => {
@@ -87,21 +86,21 @@ export const derivePressureDirectorContext = (
   }
 
   return {
-    heat: bounded(state.expedition.pressure.heat),
-    exposure: bounded(state.expedition.pressure.exposure),
+    heat: clampPercent(state.expedition.pressure.heat),
+    exposure: clampPercent(state.expedition.pressure.exposure),
     // What the scene expects of a band this well known. Read from the one
     // Fame owner rather than recomputed, so every consumer moves together.
-    fameExpectationPressure: bounded(
+    fameExpectationPressure: clampPercent(
       getExpeditionFameProfile(state).expectationPressure
     ),
-    cashPressure: bounded(
+    cashPressure: clampPercent(
       state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
     ),
-    technicalConditionPressure: bounded(100 - conditionAverage),
-    crewStressPressure: bounded(maxCrewStress),
-    activeObligationPressure: bounded(activeObligationsCount * 25),
-    rivalPressure: bounded(state.rivalBand?.powerLevel ?? 0),
-    routeDepthPressure: bounded(state.expedition.routeStep * 10)
+    technicalConditionPressure: clampPercent(100 - conditionAverage),
+    crewStressPressure: clampPercent(maxCrewStress),
+    activeObligationPressure: clampPercent(activeObligationsCount * 25),
+    rivalPressure: clampPercent(state.rivalBand?.powerLevel ?? 0),
+    routeDepthPressure: clampPercent(state.expedition.routeStep * 10)
   }
 }
 /**
@@ -385,21 +384,23 @@ export const applyExpeditionPressureDelta = (
 ): GameState['expedition']['pressure'] => {
   const pressure = state.expedition.pressure
   const effective = getEffectiveExpeditionRules(state).numeric
-  const clamp = (value: number) => Math.max(0, Math.min(100, value))
   const heatDelta = finiteNumberOr(delta.heat, 0)
   const exposureDelta = finiteNumberOr(delta.exposure, 0)
   return {
     ...pressure,
-    heat: clamp(
-      pressure.heat +
-        (heatDelta > 0 ? heatDelta * effective.heatGainMultiplier : heatDelta)
+    heat: addClampedPercent(
+      pressure.heat,
+      heatDelta > 0 ? heatDelta * effective.heatGainMultiplier : heatDelta
     ),
-    exposure: clamp(
-      pressure.exposure +
-        (exposureDelta > 0
-          ? exposureDelta * effective.exposureGainMultiplier
-          : exposureDelta)
+    exposure: addClampedPercent(
+      pressure.exposure,
+      exposureDelta > 0
+        ? exposureDelta * effective.exposureGainMultiplier
+        : exposureDelta
     ),
-    crowdHype: clamp(pressure.crowdHype + finiteNumberOr(delta.crowdHype, 0))
+    crowdHype: addClampedPercent(
+      pressure.crowdHype,
+      finiteNumberOr(delta.crowdHype, 0)
+    )
   }
 }

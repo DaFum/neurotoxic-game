@@ -18,6 +18,15 @@ import { getExpeditionTechnicalCondition } from './condition'
 import { canSpendExpeditionCash } from './loadout'
 
 /**
+ * Lowest Condition a donor group may have to be cannibalized for parts.
+ *
+ * @remarks
+ * Read through `resolveExpeditionRepair` everywhere, including the failure
+ * shell's recovery controls, so the threshold has a single owner.
+ */
+const EXPEDITION_CANNIBALIZE_MIN_SOURCE_CONDITION = 55
+
+/**
  * Pure resolution outcome of a repair intent.
  */
 export type ExpeditionRepairResolution =
@@ -202,7 +211,7 @@ export const resolveExpeditionRepair = (
       }
 
       const sourceCondition = tc[sourceGroup]
-      if (sourceCondition < 55) {
+      if (sourceCondition < EXPEDITION_CANNIBALIZE_MIN_SOURCE_CONDITION) {
         return { ok: false, reason: 'SOURCE_CONDITION_TOO_LOW' }
       }
 

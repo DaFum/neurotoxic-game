@@ -87,7 +87,11 @@ export function useAssetDispatchActions({
           'assets:upgradeFailed'
         ),
       sellChassis: (assetId: string) =>
-        dispatch(sellChassisAction(assetId, stateRef.current)),
+        dispatchWithFailureToast(
+          sellChassisAction(assetId, stateRef.current),
+          ActionTypes.SELL_CHASSIS_FAILED,
+          'assets:sellFailed'
+        ),
       repairChassis: (assetId: string) =>
         dispatchWithFailureToast(
           repairChassisAction(assetId, stateRef.current),

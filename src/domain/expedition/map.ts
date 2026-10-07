@@ -18,6 +18,8 @@
 import { ALL_VENUES } from '../../data/venues'
 import { EXPEDITION_ROUTE_RARE_REWARD_IDS } from './rewardLedger'
 import { mulberry32 } from '../../utils/seededRng'
+import { clampUnit } from '../../utils/numberUtils'
+import { pickBoundedIndex } from '../../utils/selectionUtils'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
   MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
@@ -62,16 +64,6 @@ const NODE_TYPE_BY_CLASS: Record<ExpeditionNodeClass, MapNodeType> = {
 const VENUE_CLASSES: ReadonlySet<ExpeditionNodeClass> =
   new Set<ExpeditionNodeClass>(['START', 'CLUB_GIG', 'FESTIVAL', 'FINALE'])
 
-/**
- * Earliest `routeStep` at which voluntary extraction is offered.
- *
- * @remarks
- * The design requires early mistakes to stay recoverable, so the first two
- * steps are a commitment rather than a decision point; from here on the
- * push-your-luck choice is live at every non-finale node.
- */
-export const FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP = 3 as const
-
 const clampInt = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, Math.trunc(value)))
 
@@ -115,7 +107,7 @@ const pickRouteRareReward = (
   // The Region/Tour multiplier scales the *chance* and nothing else: which
   // rare the pool yields is still the same draw, so `underground_scene` at 1.2
   // is a better shot at a rare rather than a better rare or more of them.
-  const chance = Math.max(0, Math.min(1, RARE_REWARD_CHANCE * chanceMultiplier))
+  const chance = clampUnit(RARE_REWARD_CHANCE * chanceMultiplier)
   if (chance <= 0 || roll >= chance) return null
   const pool = EXPEDITION_ROUTE_RARE_REWARD_IDS
   if (pool.length === 0) return null
@@ -238,9 +230,11 @@ const planLayers = (
   // Layers 1..n-1 are the branching middle; the last meaningful layer is the
   // single Finale, so it is always reachable from every surviving route.
   for (let layer = 1; layer < meaningfulNodeCount; layer++) {
-    const width =
-      MIN_LAYER_WIDTH +
-      Math.floor(rng() * (MAX_LAYER_WIDTH - MIN_LAYER_WIDTH + 1))
+    const width = pickBoundedIndex(
+      MAX_LAYER_WIDTH - MIN_LAYER_WIDTH + 1,
+      rng,
+      MIN_LAYER_WIDTH
+    )
     plans.push({
       layer,
       width: clampInt(width, MIN_LAYER_WIDTH, MAX_LAYER_WIDTH)
@@ -262,7 +256,8 @@ const nodeId = (layer: number, index: number): string => `exp_${layer}_${index}`
 const pickVenue = (roll: number, offset: number): Venue | undefined => {
   const pool = ALL_VENUES.filter(venue => venue.type !== 'HOME')
   if (pool.length === 0) return undefined
-  const index = (Math.floor(roll * pool.length) + offset) % pool.length
+  const index =
+    (pickBoundedIndex(pool.length, () => roll) + offset) % pool.length
   return pool[index] as Venue | undefined
 }
 
@@ -350,12 +345,12 @@ export const buildExpeditionMap = (
   // below rather than by rigging this roll.
   const middleLayerCount = meaningfulNodeCount - 1
   const presenceChance = (weight: number): number =>
-    Math.max(0, Math.min(1, BASE_SPECIAL_ROUTE_CHANCE * Math.max(0, weight)))
+    clampUnit(BASE_SPECIAL_ROUTE_CHANCE * Math.max(0, weight))
 
   const rivalLayer =
     rng() < presenceChance(routeProfile.rivalWeight)
       ? clampInt(
-          1 + Math.floor(rng() * Math.max(1, middleLayerCount - 2)),
+          pickBoundedIndex(Math.max(1, middleLayerCount - 2), rng, 1),
           1,
           middleLayerCount
         )
@@ -364,7 +359,7 @@ export const buildExpeditionMap = (
   if (rng() < presenceChance(routeProfile.undergroundWeight)) {
     for (let attempt = 0; attempt < 8; attempt++) {
       const candidate = clampInt(
-        2 + Math.floor(rng() * Math.max(1, middleLayerCount - 1)),
+        pickBoundedIndex(Math.max(1, middleLayerCount - 1), rng, 2),
         1,
         middleLayerCount
       )

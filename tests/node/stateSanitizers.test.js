@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import {
   sanitizeActiveEvent,
   normalizeLoadedGameMap,
-  sanitizeBand
+  sanitizeBand,
+  sanitizePlayer
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { calculateAppliedDelta } from '../../src/utils/gameState'
@@ -317,6 +318,211 @@ describe('stateSanitizers', () => {
 
       assert.strictEqual(preview.band.luck, 5) // Was previously computing 0, violating lockstep
       assert.strictEqual(sanitizedState.luck, 0)
+    })
+
+    it('clamps band tempo into 0..100 without flooring fractional effects', () => {
+      assert.strictEqual(sanitizeBand({ tempo: 250 }).tempo, 100)
+      assert.strictEqual(sanitizeBand({ tempo: -5 }).tempo, 0)
+      // Contraband tempo effects are fractional (e.g. +0.15) and are reverted by
+      // an exact additive inverse, so the load clamp must not floor them.
+      assert.strictEqual(sanitizeBand({ tempo: 0.15 }).tempo, 0.15)
+      assert.strictEqual(
+        Object.hasOwn(sanitizeBand({ tempo: Number.NaN }), 'tempo'),
+        false
+      )
+    })
+
+    it('clamps band style and crit to a finite non-negative value', () => {
+      for (const key of ['style', 'crit']) {
+        assert.strictEqual(sanitizeBand({ [key]: -3 })[key], 0)
+        assert.strictEqual(sanitizeBand({ [key]: 0.2 })[key], 0.2)
+        assert.strictEqual(sanitizeBand({ [key]: 7 })[key], 7)
+        assert.strictEqual(
+          Object.hasOwn(sanitizeBand({ [key]: Number.POSITIVE_INFINITY }), key),
+          false
+        )
+        assert.strictEqual(
+          Object.hasOwn(sanitizeBand({ [key]: '3' }), key),
+          false
+        )
+      }
+    })
+
+    it('clamps inventorySlots to a non-negative integer', () => {
+      assert.strictEqual(sanitizeBand({ inventorySlots: -4 }).inventorySlots, 0)
+      assert.strictEqual(
+        sanitizeBand({ inventorySlots: 2.9 }).inventorySlots,
+        2
+      )
+      assert.strictEqual(sanitizeBand({ inventorySlots: 3 }).inventorySlots, 3)
+      assert.strictEqual(
+        sanitizeBand({ inventorySlots: Number.NaN }).inventorySlots,
+        DEFAULT_BAND_STATE.inventorySlots
+      )
+    })
+
+    it('floors and clamps member mood like clampMemberMood', () => {
+      const band = sanitizeBand({
+        members: [
+          { name: 'A', mood: 80.9 },
+          { name: 'B', mood: -20 },
+          { name: 'C', mood: 400 }
+        ]
+      })
+      assert.deepStrictEqual(
+        band.members.map(m => m.mood),
+        [80, 0, 100]
+      )
+    })
+
+    it('preserves and bounds banterEvents', () => {
+      const entry = i => ({
+        member1: 'Matze',
+        member2: 'Lars',
+        delta: i,
+        timestamp: 1000 + i
+      })
+      const many = Array.from({ length: 60 }, (_, i) => entry(i))
+      const band = sanitizeBand({
+        banterEvents: [
+          ...many,
+          { member1: 'x', member2: 'y', delta: Number.NaN, timestamp: 1 },
+          { member1: 1, member2: 'y', delta: 1, timestamp: 1 },
+          'junk',
+          null
+        ]
+      })
+      assert.strictEqual(band.banterEvents.length, 50)
+      assert.deepStrictEqual(band.banterEvents[49], entry(59))
+      assert.deepStrictEqual(band.banterEvents[0], entry(10))
+
+      assert.deepStrictEqual(sanitizeBand({}).banterEvents, [])
+      assert.deepStrictEqual(
+        sanitizeBand({ banterEvents: 'nope' }).banterEvents,
+        []
+      )
+    })
+
+    it('only inspects a bounded tail of an oversized banterEvents array', () => {
+      const entry = i => ({
+        member1: 'Matze',
+        member2: 'Lars',
+        delta: i,
+        timestamp: 1000 + i
+      })
+      const huge = Array.from({ length: 100_000 }, (_, i) => entry(i))
+      const band = sanitizeBand({ banterEvents: huge })
+      assert.strictEqual(band.banterEvents.length, 50)
+      assert.deepStrictEqual(band.banterEvents[49], entry(99_999))
+
+      // Valid entries buried before a long malformed tail fall outside the
+      // scan window, so the load cost stays bounded.
+      const buried = [
+        ...Array.from({ length: 50 }, (_, i) => entry(i)),
+        ...Array.from({ length: 1000 }, () => 'junk')
+      ]
+      assert.deepStrictEqual(
+        sanitizeBand({ banterEvents: buried }).banterEvents,
+        []
+      )
+    })
+
+    it('rebuilds banter entries from whitelisted fields so hostile keys are dropped', () => {
+      const hostile = JSON.parse(
+        '{"member1":"a","member2":"b","delta":1,"timestamp":1,"__proto__":{"x":1}}'
+      )
+      const band = sanitizeBand({ banterEvents: [hostile] })
+      assert.strictEqual(band.banterEvents.length, 1)
+      assert.strictEqual(
+        Object.hasOwn(band.banterEvents[0], '__proto__'),
+        false
+      )
+    })
+
+    it('skips accessor-bearing banter entries without invoking their getters', () => {
+      let getterCalls = 0
+      const hostile = { member2: 'b', delta: 1, timestamp: 1 }
+      Object.defineProperty(hostile, 'member1', {
+        enumerable: true,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const valid = { member1: 'c', member2: 'd', delta: 2, timestamp: 2 }
+
+      const band = sanitizeBand({ banterEvents: [hostile, valid] })
+
+      assert.strictEqual(getterCalls, 0)
+      assert.deepStrictEqual(band.banterEvents, [valid])
+    })
+  })
+
+  describe('forbidden own keys on stash items', () => {
+    for (const poison of ['__proto__', 'constructor', 'prototype']) {
+      it(`skips a stash item carrying an own ${poison} key (array and map shapes)`, () => {
+        const hostile = JSON.parse(
+          `{"id":"c_neon_patch","${poison}":{"x":1},"stacks":2}`
+        )
+        const clean = { id: 'c_neon_patch', stacks: 2 }
+
+        const fromArray = sanitizeBand({ stash: [hostile] })
+        assert.strictEqual(
+          Object.hasOwn(fromArray.stash, 'c_neon_patch'),
+          false
+        )
+        const fromMap = sanitizeBand({ stash: { c_neon_patch: hostile } })
+        assert.strictEqual(Object.hasOwn(fromMap.stash, 'c_neon_patch'), false)
+
+        // Control: the same item without the hostile key is kept.
+        const kept = sanitizeBand({ stash: [clean] })
+        assert.strictEqual(Object.hasOwn(kept.stash, 'c_neon_patch'), true)
+      })
+    }
+  })
+
+  describe('sanitizePlayer', () => {
+    it('clamps clinicVisits to a non-negative integer', () => {
+      assert.strictEqual(sanitizePlayer({ clinicVisits: -3 }).clinicVisits, 0)
+      assert.strictEqual(sanitizePlayer({ clinicVisits: 2.7 }).clinicVisits, 2)
+      assert.strictEqual(sanitizePlayer({ clinicVisits: 4 }).clinicVisits, 4)
+      assert.strictEqual(
+        sanitizePlayer({ clinicVisits: Number.NaN }).clinicVisits,
+        0
+      )
+      assert.strictEqual(sanitizePlayer({ clinicVisits: '5' }).clinicVisits, 0)
+    })
+
+    it('clamps counters to non-negative integers', () => {
+      for (const key of [
+        'eventsTriggeredToday',
+        'totalTravels',
+        'passiveFollowers'
+      ]) {
+        assert.strictEqual(sanitizePlayer({ [key]: -9 })[key], 0)
+        assert.strictEqual(sanitizePlayer({ [key]: 3.8 })[key], 3)
+        assert.strictEqual(sanitizePlayer({ [key]: 12 })[key], 12)
+        assert.strictEqual(
+          sanitizePlayer({ [key]: Number.POSITIVE_INFINITY })[key],
+          0
+        )
+      }
+    })
+
+    it('clamps score to non-negative and keeps its fractional part', () => {
+      assert.strictEqual(sanitizePlayer({ score: -500 }).score, 0)
+      assert.strictEqual(sanitizePlayer({ score: 1234.5 }).score, 1234.5)
+      assert.strictEqual(sanitizePlayer({ score: Number.NaN }).score, 0)
+    })
+
+    it('clamps tutorialStep to an integer of at least -1 (dismissed marker)', () => {
+      assert.strictEqual(sanitizePlayer({ tutorialStep: -99 }).tutorialStep, -1)
+      assert.strictEqual(sanitizePlayer({ tutorialStep: -1 }).tutorialStep, -1)
+      assert.strictEqual(sanitizePlayer({ tutorialStep: 2.6 }).tutorialStep, 2)
+      assert.strictEqual(
+        sanitizePlayer({ tutorialStep: Number.NaN }).tutorialStep,
+        0
+      )
     })
   })
 })

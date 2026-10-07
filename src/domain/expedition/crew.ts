@@ -55,13 +55,29 @@ export const isCrewAvailable = (state: GameState, crewId: string): boolean => {
   )
 }
 
+/** Most Crew members one Expedition run can commit to. */
+export const MAX_EXPEDITION_CREW = 3
+
+/**
+ * Validates a candidate Crew selection.
+ *
+ * @param state - Current game state.
+ * @param crewIds - Candidate crew ids, in selection order.
+ * @returns The copied selection, or the first rule it breaks (cap, duplicate,
+ * availability, checked in that order).
+ *
+ * @remarks
+ * The single selection authority: build-commitment validation maps these
+ * reasons onto its own rejection codes rather than re-implementing the rules.
+ */
 export const validateExpeditionCrewSelection = (
   state: GameState,
   crewIds: readonly string[]
 ):
   | { valid: true; crewIds: string[] }
   | { valid: false; reason: 'TOO_MANY' | 'DUPLICATE' | 'UNAVAILABLE' } => {
-  if (crewIds.length > 3) return { valid: false, reason: 'TOO_MANY' }
+  if (crewIds.length > MAX_EXPEDITION_CREW)
+    return { valid: false, reason: 'TOO_MANY' }
   if (new Set(crewIds).size !== crewIds.length)
     return { valid: false, reason: 'DUPLICATE' }
   if (crewIds.some(id => !isCrewAvailable(state, id)))

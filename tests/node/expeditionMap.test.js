@@ -9,7 +9,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP,
   buildExpeditionMap,
   getExpeditionNodePublicFacts,
   hashExpeditionRoute,
@@ -361,10 +360,12 @@ describe('standard route shape', () => {
 })
 
 describe('extraction windows', () => {
-  it('offers no extraction before the recoverable opening steps', () => {
+  it('opens extraction windows only inside the route profile range', () => {
+    const [first, last] = NEUTRAL_EXPEDITION_ROUTE_PROFILE.extractionWindowRange
+    assert.ok(first >= 1, 'the opening step is a commitment, not a decision')
     for (const seed of SEEDS) {
       for (const entry of Object.values(build(seed).meta)) {
-        if (entry.routeStep < FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP) {
+        if (entry.routeStep < first || entry.routeStep > last) {
           assert.equal(entry.isExtractionWindow, false)
         }
       }

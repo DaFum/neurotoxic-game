@@ -197,7 +197,6 @@ export const BASE_STATE = {
   completedQuestIds: [],
   completedQuestScopes: [],
   reputationByRegion: {},
-  npcs: {},
   unlocks: [],
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,

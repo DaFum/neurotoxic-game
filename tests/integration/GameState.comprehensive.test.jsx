@@ -166,6 +166,58 @@ describe('GameState Context - Core Actions', () => {
   })
 })
 
+describe('GameState Context - setGameMap test seam', () => {
+  const MapProbe = ({ nextMap }) => {
+    const { setGameMap } = useGameActions()
+    const nodeIds = useGameSelector(s => Object.keys(s.gameMap?.nodes ?? {}))
+    return (
+      <div>
+        <div data-testid='map-node-ids'>{nodeIds.join(',')}</div>
+        <button type='button' onClick={() => setGameMap(nextMap)}>
+          Set map
+        </button>
+      </div>
+    )
+  }
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  test('setGameMap commits a structurally valid map through the reducer', () => {
+    const nextMap = {
+      nodes: {
+        seam_start: { id: 'seam_start', type: 'START', layer: 0, x: 0, y: 0 }
+      },
+      connections: []
+    }
+    render(
+      <GameStateProvider>
+        <MapProbe nextMap={nextMap} />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set map').click())
+
+    expect(screen.getByTestId('map-node-ids')).toHaveTextContent('seam_start')
+  })
+
+  test('setGameMap rejects a map carrying prototype-polluting keys', () => {
+    const hostile = JSON.parse(
+      '{"nodes":{"seam_bad":{"id":"seam_bad","__proto__":{"evil":1}}},"connections":[]}'
+    )
+    render(
+      <GameStateProvider>
+        <MapProbe nextMap={hostile} />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set map').click())
+
+    expect(screen.getByTestId('map-node-ids')).not.toHaveTextContent('seam_bad')
+  })
+})
+
 describe('GameState Context - Event System', () => {
   let TestComponent
 
@@ -829,7 +881,9 @@ describe('GameState Context - Gig Management', () => {
 
           <button
             type='button'
-            onClick={() => gameState.startGig({ name: 'Test Venue' })}
+            onClick={() =>
+              gameState.startGig({ id: 'test_venue', name: 'Test Venue' })
+            }
           >
             Start
           </button>

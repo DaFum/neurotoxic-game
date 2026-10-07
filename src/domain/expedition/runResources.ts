@@ -16,19 +16,14 @@
  */
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
+import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
 import { getExpeditionSpendableCash } from './loadout'
-import { getExpeditionConditionSummary } from './condition'
+import {
+  getExpeditionConditionSummary,
+  getExpeditionConditionTier
+} from './condition'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
-
-/**
- * Condition bands the design specifies for decision-level readouts.
- */
-const EXPEDITION_CONDITION_BANDS = {
-  good: 70,
-  worn: 40,
-  critical: 20
-} as const
 
 /**
  * Semantic condition band shown next to the numeric value.
@@ -40,14 +35,17 @@ type ExpeditionConditionBand = 'good' | 'worn' | 'critical' | 'breaking'
  *
  * @param condition - Condition value in `0..100`.
  * @returns The band label.
+ *
+ * @remarks
+ * Thresholds come from `getExpeditionConditionTier`; the HUD does not tell a
+ * nearly dead group from a dead one, so `breaking` covers both of those tiers.
  */
 const getExpeditionConditionBand = (
   condition: number
 ): ExpeditionConditionBand => {
-  const value = finiteNumberOr(condition, 0)
-  if (value >= EXPEDITION_CONDITION_BANDS.good) return 'good'
-  if (value >= EXPEDITION_CONDITION_BANDS.worn) return 'worn'
-  if (value >= EXPEDITION_CONDITION_BANDS.critical) return 'critical'
+  const tier = getExpeditionConditionTier(condition)
+  if (tier === 'healthy') return 'good'
+  if (tier === 'worn' || tier === 'critical') return tier
   return 'breaking'
 }
 
@@ -96,7 +94,7 @@ export const applyExpeditionEventHeat = (
           )
         )
       : 1
-  const heat = Math.max(0, Math.min(100, current + heatDelta * multiplier))
+  const heat = addClampedPercent(current, heatDelta * multiplier)
   if (heat === current) return state
   return {
     ...state,
@@ -157,14 +155,11 @@ export const getExpeditionRunResources = (
       state.expedition?.status === 'active'
         ? Math.max(0, finiteNumberOr(state.expedition.protectedCareerCash, 0))
         : 0,
-    fuel: Math.max(0, Math.min(100, finiteNumberOr(state.player.van?.fuel, 0))),
+    fuel: clampPercent(state.player.van?.fuel),
     stamina: getExpeditionStamina(state),
-    harmony: Math.max(
-      0,
-      Math.min(100, isFiniteNumber(state.band.harmony) ? state.band.harmony : 0)
-    ),
+    harmony: clampPercent(state.band.harmony),
     condition,
     conditionBand: getExpeditionConditionBand(condition),
-    heat: Math.max(0, Math.min(100, getExpeditionHeat(state)))
+    heat: clampPercent(getExpeditionHeat(state))
   }
 }

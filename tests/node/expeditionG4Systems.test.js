@@ -46,6 +46,42 @@ const activeState = () => {
   }
 }
 
+test('pressure deltas cap an overflowing sum at the bounds instead of resetting', () => {
+  const state = activeState()
+  const withPressure = pressure => ({
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, ...pressure }
+    }
+  })
+  const MAX = Number.MAX_VALUE
+  const overflowed = applyExpeditionPressureDelta(
+    withPressure({ heat: MAX, exposure: MAX, crowdHype: MAX }),
+    { heat: MAX, exposure: MAX, crowdHype: MAX }
+  )
+  assert.equal(overflowed.heat, 100)
+  assert.equal(overflowed.exposure, 100)
+  assert.equal(overflowed.crowdHype, 100)
+
+  const underflowed = applyExpeditionPressureDelta(
+    withPressure({ heat: -MAX, exposure: -MAX, crowdHype: -MAX }),
+    { heat: -MAX, exposure: -MAX, crowdHype: -MAX }
+  )
+  assert.equal(underflowed.heat, 0)
+  assert.equal(underflowed.exposure, 0)
+  assert.equal(underflowed.crowdHype, 0)
+
+  // A corrupt stored base is recovered before the addition, not summed as NaN.
+  const recovered = applyExpeditionPressureDelta(
+    withPressure({ heat: Number.NaN, exposure: 'x', crowdHype: Infinity }),
+    { heat: 5, exposure: 6, crowdHype: 7 }
+  )
+  assert.equal(recovered.heat, 5)
+  assert.equal(recovered.exposure, 6)
+  assert.equal(recovered.crowdHype, 7)
+})
+
 test('staged sponsor offers are deterministic and side-effect free', () => {
   const state = activeState()
   const before = JSON.stringify(state)

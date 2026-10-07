@@ -82,6 +82,59 @@ describe('saveValidator', () => {
     }
   })
 
+  describe('prototype pollution scan', () => {
+    it('rejects a cyclic save with a StateError instead of overflowing the stack', () => {
+      const data = getValidData()
+      data.band.self = data.band
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /Prototype pollution detected/
+      })
+    })
+
+    it('rejects a very deeply nested save with a StateError instead of overflowing the stack', () => {
+      const data = getValidData()
+      let node = data.social
+      for (let i = 0; i < 50000; i++) {
+        node.next = {}
+        node = node.next
+      }
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /Prototype pollution detected/
+      })
+    })
+
+    it('accepts a shared (non-cyclic) child reference', () => {
+      const data = getValidData()
+      const shared = { note: 'shared' }
+      data.gameMap = { a: shared, b: shared }
+      assert.strictEqual(validateSaveData(data), true)
+    })
+    ;['__proto__', 'constructor', 'prototype'].forEach(poisonKey => {
+      it(`rejects an own ${poisonKey} key at the root, nested and inside arrays`, () => {
+        const parse = json => JSON.parse(json)
+        const root = getValidData()
+        Object.defineProperty(root, poisonKey, {
+          value: { x: 1 },
+          enumerable: true,
+          configurable: true
+        })
+        const nested = getValidData()
+        nested.gameMap = { deep: { deeper: parse(`{"${poisonKey}": 1}`) } }
+        const inArray = getValidData()
+        inArray.gameMap = { list: [{ ok: 1 }, parse(`{"${poisonKey}": 1}`)] }
+
+        for (const data of [root, nested, inArray]) {
+          assert.throws(() => validateSaveData(data), {
+            name: 'StateError',
+            message: new RegExp(`Prototype pollution detected: ${poisonKey}`)
+          })
+        }
+      })
+    })
+  })
+
   describe('root object validation', () => {
     ;[null, 'invalid', []].forEach(input => {
       it(`throws if data is ${JSON.stringify(input)}`, () => {
@@ -180,6 +233,30 @@ describe('saveValidator', () => {
 
       assert.equal(validateSaveData(data), true)
       assert.equal(data.band.members[0].stamina, 110)
+    })
+
+    it('floors member mood exactly like clampMemberMood', () => {
+      const data = getValidData()
+      data.band.members = [
+        { name: 'A', mood: 80.9 },
+        { name: 'B', mood: -0.5 },
+        { name: 'C', mood: 100.7 }
+      ]
+
+      assert.equal(validateSaveData(data), true)
+      assert.deepEqual(
+        data.band.members.map(m => m.mood),
+        [80, 0, 100]
+      )
+    })
+
+    it('clamps a negative clinicVisits in the load sanitizer, not the validator', () => {
+      const data = getValidData()
+      data.player.clinicVisits = -7
+      assert.equal(validateSaveData(data), true)
+      assert.equal(data.player.clinicVisits, -7)
+      const loaded = handleLoadGame(createInitialState(), data)
+      assert.equal(loaded.player.clinicVisits, 0)
     })
 
     it('persists the fallback for invalid member staminaMax values', () => {

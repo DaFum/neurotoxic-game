@@ -5,7 +5,8 @@ import {
   handleSetGig,
   handleStartGig,
   handleSetGigModifiers,
-  handleSetLastGigStats
+  handleSetLastGigStats,
+  handleSettleSoldMerch
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
 import {
@@ -53,9 +54,72 @@ describe('gigReducer', () => {
 
       assert.deepStrictEqual(nextState.currentGig, payload)
     })
+
+    it('accepts null to clear the current gig', () => {
+      baseState.currentGig = { id: 'gig1', name: 'Test Gig' }
+      assert.strictEqual(handleSetGig(baseState, null).currentGig, null)
+    })
+
+    it('rejects non-object and hostile payloads with the same state reference', () => {
+      for (const hostile of [
+        undefined,
+        'gig',
+        7,
+        true,
+        [],
+        JSON.parse('{"id":"g","__proto__":{"evil":1}}'),
+        JSON.parse('{"id":"g","nested":{"constructor":{"x":1}}}')
+      ]) {
+        assert.strictEqual(handleSetGig(baseState, hostile), baseState)
+      }
+    })
   })
 
   describe('handleStartGig', () => {
+    it('returns state unchanged for payloadless dispatches', () => {
+      for (const hostile of [undefined, null, 'gig', 7]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+    })
+
+    it('rejects malformed and hostile venues before any transition side effect', () => {
+      for (const hostile of [
+        [],
+        {},
+        { id: 'g' },
+        { name: 'No id' },
+        { id: '', name: 'Empty id' },
+        { id: 'g', name: 42 },
+        JSON.parse('{"id":"g","name":"G","__proto__":{"evil":1}}'),
+        JSON.parse('{"id":"g","name":"G","nested":{"constructor":{"x":1}}}')
+      ]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+    })
+
+    it('rejects accessor-bearing venues without invoking their getters', () => {
+      let getterCalls = 0
+      const throwingGetter = () => {
+        getterCalls++
+        throw new Error('getter must not run')
+      }
+      const withIdGetter = { name: 'G' }
+      Object.defineProperty(withIdGetter, 'id', {
+        enumerable: true,
+        get: throwingGetter
+      })
+      const withNameGetter = { id: 'g' }
+      Object.defineProperty(withNameGetter, 'name', {
+        enumerable: true,
+        get: throwingGetter
+      })
+
+      for (const hostile of [withIdGetter, withNameGetter]) {
+        assert.strictEqual(handleStartGig(baseState, hostile), baseState)
+      }
+      assert.strictEqual(getterCalls, 0)
+    })
+
     it('should initialize gig state and transition to PRE_GIG', () => {
       const payload = { id: 'gig2', name: 'Starting Gig' }
       const nextState = handleStartGig(baseState, payload)
@@ -430,6 +494,35 @@ describe('gigReducer', () => {
       baseState.currentGig = { isPractice: true }
       const nextState = handleSetLastGigStats(baseState, { score: 70 })
       assert.strictEqual(nextState.band.stress, undefined)
+    })
+  })
+
+  describe('handleSettleSoldMerch', () => {
+    it('rejects accessor-bearing sold counts without invoking their getters', () => {
+      let getterCalls = 0
+      const soldMerch = {}
+      Object.defineProperty(soldMerch, 'shirts', {
+        enumerable: true,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const bandState = { band: { inventory: { shirts: 10 } } }
+      const expeditionState = {
+        band: { inventory: { shirts: 10 } },
+        expedition: {
+          status: 'active',
+          cargo: { merch: [{ inventoryKey: 'shirts', quantity: 10 }] }
+        }
+      }
+
+      assert.strictEqual(handleSettleSoldMerch(bandState, soldMerch), bandState)
+      assert.strictEqual(
+        handleSettleSoldMerch(expeditionState, soldMerch),
+        expeditionState
+      )
+      assert.strictEqual(getterCalls, 0)
     })
   })
 })

@@ -24,7 +24,8 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => actions
 }))
 
-vi.mock('../../src/utils/numberUtils', () => ({
+vi.mock('../../src/utils/numberUtils', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../src/utils/numberUtils')>()),
   formatCurrency: (value: number) => `${value} EUR`
 }))
 

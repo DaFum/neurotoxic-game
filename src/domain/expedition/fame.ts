@@ -22,6 +22,16 @@ export interface ExpeditionFameProfile {
   highProfileNodeWeightMultiplier: number
 }
 
+/** The baseline band, which is also the lookup's fallback. */
+const UNKNOWN_FAME_PROFILE: ExpeditionFameProfile = {
+  band: 'unknown',
+  accessTier: 0,
+  expectationPressure: 0,
+  sponsorQualityBias: 0,
+  rivalAttentionMultiplier: 1.0,
+  highProfileNodeWeightMultiplier: 0.9
+}
+
 /**
  * The bands in descending order of the Fame they need.
  *
@@ -76,15 +86,7 @@ const FAME_BANDS: readonly (ExpeditionFameProfile & { minimumFame: number })[] =
       rivalAttentionMultiplier: 1.05,
       highProfileNodeWeightMultiplier: 1.0
     },
-    {
-      minimumFame: 0,
-      band: 'unknown',
-      accessTier: 0,
-      expectationPressure: 0,
-      sponsorQualityBias: 0,
-      rivalAttentionMultiplier: 1.0,
-      highProfileNodeWeightMultiplier: 0.9
-    }
+    { minimumFame: 0, ...UNKNOWN_FAME_PROFILE }
   ]
 
 /**
@@ -108,14 +110,8 @@ export const getExpeditionFameProfile = (
     }
   }
   // Unreachable in practice: the last band starts at 0 and Fame is clamped
-  // non-negative. Spelled out rather than asserted so a future table edit that
-  // removes the 0 band degrades to the baseline instead of throwing.
-  return {
-    band: 'unknown',
-    accessTier: 0,
-    expectationPressure: 0,
-    sponsorQualityBias: 0,
-    rivalAttentionMultiplier: 1,
-    highProfileNodeWeightMultiplier: 1
-  }
+  // non-negative. Falls back to the table's own baseline row rather than
+  // asserting, so a future table edit that removes the 0 band degrades to the
+  // baseline instead of throwing.
+  return { ...UNKNOWN_FAME_PROFILE }
 }

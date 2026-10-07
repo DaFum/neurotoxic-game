@@ -10,6 +10,8 @@
 - Prototype-pollution rejection in reducers must return the **identical memory reference** (`nextState === baseState`), not just a deep-equal copy. `{ ...state }` "safe copy" still fails `tests/node/reducerInvariants.test.js` and `tests/node/bandReducer.security.test.js` — the forbidden-key branch must short-circuit before any state copy.
 - Stash hydration in `sanitizeBand` spreads the canonical `CONTRABAND_BY_ID` definition LAST (`{ ...itemObj, ...baseItem }`) so save data can never override definition fields (`value`, `effectType`, `duration`, `type`, `maxStacks`); only per-instance runtime fields (`instanceId`, `applied`, `stacks`) survive from the save, and `stacks` is sanitized to a positive integer. Do not flip the spread order back.
 - Legacy-key migrations in sanitizers (e.g. `energy → catering` in `sanitizeGigModifiers`) must only apply when the save lacks the current key — the current key always wins over a stale alias.
+- `sanitizePlayer`/`sanitizeBand` own value clamping on load (a direct `LOAD_GAME` bypasses `saveValidator.ts`); the validator stays structural (type/shape rejection). Clamp new persisted numeric fields in the sanitizer, not the validator.
+- Gig-modifier keys have one whitelist, `sanitizeGigModifierUpdates` (`stateSanitizers.ts`), shared by the `SET_GIG_MODIFIERS` creator, `gigReducer` and `sanitizeGigModifiers`. A runtime flag such as `damaged_gear` must be added there, never to a second list.
 
 ## Band Effects
 
@@ -37,7 +39,8 @@
 
 - `assetReducer.ts` handlers are pure: no RNG calls, no UUID generation, no side effects. `*_FAILED` actions (`PURCHASE_CHASSIS_FAILED`, `INSTALL_MODULE_FAILED`, `SELL_CHASSIS_FAILED`) are reducer no-ops; toast dispatching belongs in a middleware/UI layer.
 - Purchase, sell, and asset-materialization reducers must read `CHASSIS_CONFIG[kind][flavor][tier]` directly. `buildDiyTier` belongs in `assetConfig.ts` config construction only; consumers must not recompute DIY tiers from legit tiers.
-- `handlePurchaseChassis`: loan-mode payload without a valid `loanProfileId` returns state unchanged (defense against free-chassis exploits via malformed dispatch).
+- `handlePurchaseChassis`: loan-mode payload without a valid `loanProfileId` returns state unchanged (defense against free-chassis exploits via malformed dispatch). It also re-checks the creator's loan gates (DIY + loan rejected, `isLoanProfileEligible` against `player.fame` and `social.scenePresence`) so a raw dispatch cannot bypass them.
+- `handleAddToast`, `handleSetGig` and `handleSetMap` re-validate their payloads (shared toast sanitizer with primitive-only options; non-object / forbidden-key payloads return the identical state reference). `handleSetMap` additionally requires a `nodes` record plus a `connections` array, and `handleStartGig` requires a deep-clean venue with non-empty string `id` and `name` before any transition side effect. `handleSetMap` is a structural gate only; `validateGeneratedMap` diversity rules stay at the generation boundary.
 - `handleInstallModule`: tracks an `installed` flag so cost is deducted only when a slot actually transitioned from `null` to the new module — stale replays no longer charge the player for non-ops.
 - `handleUpgradeChassisTier` / `handleRepairChassis`: early-return state when the target `assetId` doesn't match an existing asset.
 - `handleRemoveModule`: rejects the removal (state unchanged) if any slot the module added via `addsSlots` still has an `installedModuleId`. Players must uninstall the children first; the reducer never silently destroys child modules or their refund eligibility.

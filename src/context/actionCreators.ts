@@ -13,7 +13,8 @@ import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
-import { sanitizeGigModifierUpdates } from './initialState'
+import { sanitizeGigModifierUpdates } from './reducers/sanitizers/stateSanitizers'
+import { sanitizeLoadedToast } from './reducers/toastSanitizers'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {
@@ -83,10 +84,7 @@ const sanitizeNonNegativePayload = <
   }
   for (const key of numericKeys) {
     const raw = payload[key] as unknown
-    const numeric = Number(raw)
-    sanitized[key] = clampNonNegative(
-      Number.isFinite(numeric) ? numeric : 0
-    ) as T[typeof key]
+    sanitized[key] = clampNonNegative(finiteNumberOr(raw, 0)) as T[typeof key]
   }
   // Omit the key rather than assigning `undefined`: an explicit `undefined`
   // member is dropped by `JSON.stringify`, so the payload would not survive a
@@ -156,10 +154,11 @@ export const createUpdatePlayerAction = (
 }
 
 /**
- * Creates an update-band action and clamps hostile harmony payloads.
+ * Creates an action that settles merch units sold during a gig.
  *
- * @param updates - Partial band update object or updater callback.
- * @returns UPDATE_BAND action with sanitized payload.
+ * @param soldMerch - Units sold keyed by merch item id. Non-objects are
+ * dispatched as an empty record.
+ * @returns SETTLE_SOLD_MERCH action with a shallow copy of the sold counts.
  */
 export const createSettleSoldMerchAction = (
   soldMerch: Record<string, number>
@@ -168,6 +167,12 @@ export const createSettleSoldMerchAction = (
   payload: soldMerch && typeof soldMerch === 'object' ? { ...soldMerch } : {}
 })
 
+/**
+ * Creates an update-band action and clamps hostile harmony payloads.
+ *
+ * @param updates - Partial band update object or updater callback.
+ * @returns UPDATE_BAND action with sanitized payload.
+ */
 export const createUpdateBandAction = (
   updates: UpdateBandPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {
@@ -449,7 +454,24 @@ export const createAddToastActionWithId = (
 })
 
 /**
+ * Runs a raw toast through the shared toast sanitizer (primitive-only options,
+ * allow-listed type, trimmed message). A toast with neither a message nor a
+ * message key sanitizes to nothing; it is replaced by an empty `info` toast
+ * that `handleAddToast` re-validates and drops, so the action stays well-formed.
+ */
+const sanitizeToastForAction = (
+  raw: Record<string, unknown>,
+  id: string
+): ToastPayload =>
+  sanitizeLoadedToast({ ...raw, id }) ?? { id, type: 'info', message: '' }
+
+/**
  * Creates a toast addition action
+ *
+ * The payload is sanitized with the shared toast sanitizer: `options` keep only
+ * primitive values (`string | number | boolean | null`) and forbidden keys are
+ * dropped. `handleAddToast` re-validates, so a raw dispatch cannot bypass this.
+ *
  * @param messageOrPayload - Toast message string or structured payload
  * @param type - Toast type (info, success, error, warning)
  * @returns Action object with generated ID
@@ -471,17 +493,19 @@ export const createAddToastAction = (
       Partial<Pick<ToastPayload, 'id'>>
     return {
       type: ActionTypes.ADD_TOAST,
-      payload: {
-        id: getSafeUUID(),
-        type: payloadType ?? type,
-        ...restPayload
-      }
+      payload: sanitizeToastForAction(
+        { ...restPayload, type: payloadType ?? type },
+        getSafeUUID()
+      )
     }
   }
 
   return {
     type: ActionTypes.ADD_TOAST,
-    payload: { id: getSafeUUID(), message: messageOrPayload, type }
+    payload: sanitizeToastForAction(
+      { message: messageOrPayload, type },
+      getSafeUUID()
+    )
   }
 }
 
@@ -666,13 +690,10 @@ export const createCompleteTravelMinigameAction = (
   GameAction,
   { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }
 > => {
-  const numericDamage = Number(damageTaken)
   return {
     type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
     payload: {
-      damageTaken: Number.isFinite(numericDamage)
-        ? Math.max(0, numericDamage)
-        : 0,
+      damageTaken: Math.max(0, finiteNumberOr(damageTaken, 0)),
       itemsCollected: Array.isArray(itemsCollected) ? itemsCollected : [],
       rngValue: clampUnitRandom(rngValue)
     }
@@ -949,16 +970,21 @@ export const createAddQuestAction = (
 
 /**
  * Creates an action to advance a quest's progress.
+ *
+ * @internal Test-only entry point. Production quest progress flows through
+ * `QuestEvents`; this creator and `advanceQuest` exist so tests can drive
+ * `ADVANCE_QUEST` directly.
  * @param questId - Id of the quest whose progress advances.
- * @param amount - The amount to advance progress by. Defaults to `1`.
+ * @param amount - The amount to advance progress by. Defaults to `1`; values
+ * that are not finite numbers (numeric strings, booleans, arrays) become `0`.
+ * @param randomIdx - Optional random index for quests that pick a variant.
  */
 export const createAdvanceQuestAction = (
   questId: string,
   amount = 1,
   randomIdx: number | undefined = undefined
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => {
-  const raw = Number(amount)
-  const safeAmount = clampNonNegative(raw)
+  const safeAmount = clampNonNegative(finiteNumberOr(amount, 0))
   // Drop non-finite indices locally; the reducer/domain layer re-validates
   // with isFiniteNumber and remains the final authority.
   const safeRandomIdx = isFiniteNumber(randomIdx) ? randomIdx : undefined

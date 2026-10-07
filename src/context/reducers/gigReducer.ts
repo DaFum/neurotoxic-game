@@ -2,14 +2,17 @@ import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
-import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
+import { isFiniteNumber } from '../../utils/finiteNumber'
+import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
+import {
+  hasForbiddenKeysDeep,
+  hasForbiddenOwnKeys
+} from '../../utils/objectUtils'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
-import {
-  DEFAULT_GIG_MODIFIERS,
-  sanitizeGigModifierUpdates
-} from '../initialState'
+import { DEFAULT_GIG_MODIFIERS } from '../initialState'
+import { sanitizeGigModifierUpdates } from './sanitizers/stateSanitizers'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
@@ -71,6 +74,15 @@ export const handleSetGig = (
   state: GameState,
   payload: Venue | null
 ): GameState => {
+  if (
+    payload !== null &&
+    (typeof payload !== 'object' ||
+      Array.isArray(payload) ||
+      hasForbiddenKeysDeep(payload))
+  ) {
+    logger.warn('GameState', 'Rejected malformed SET_GIG payload')
+    return state
+  }
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }
@@ -90,6 +102,21 @@ export const handleSetGig = (
  * @returns Updated state ready for pre-gig setup.
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
+  // Same hostile-payload gate as SET_GIG, plus the venue's mandatory identity:
+  // a raw dispatch must not move to PRE_GIG with an invalid `currentGig`.
+  // The deep scan runs before any field read so it rejects own accessors
+  // without invoking them.
+  if (
+    !isLooseRecord(payload) ||
+    hasForbiddenKeysDeep(payload) ||
+    typeof payload.id !== 'string' ||
+    payload.id === '' ||
+    typeof payload.name !== 'string' ||
+    payload.name === ''
+  ) {
+    logger.warn('GameState', 'Rejected malformed START_GIG payload')
+    return state
+  }
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
   // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
   // it has to resolve before the screen derives its performance profile —
@@ -600,4 +627,67 @@ export const handleSetLastGigStats = (
   }
 
   return nextState
+}
+
+/**
+ * Settles merch sold during a gig against the stock it came from.
+ *
+ * @param state - Current game state before the sale is deducted.
+ * @param soldMerch - Sold quantity per inventory key.
+ * @returns Updated state, or the identical reference for a malformed,
+ * forbidden-key or accessor-bearing payload.
+ *
+ * @remarks
+ * During an active Expedition the sold stock is the run cargo, so the quantities
+ * are deducted there; otherwise they come out of the band's ordinary inventory.
+ */
+export const handleSettleSoldMerch = (
+  state: GameState,
+  soldMerch: Record<string, number>
+): GameState => {
+  if (
+    !soldMerch ||
+    typeof soldMerch !== 'object' ||
+    Array.isArray(soldMerch) ||
+    // Descriptor-safe: rejects accessor-bearing counts before the reads below.
+    hasForbiddenKeysDeep(soldMerch)
+  ) {
+    return state
+  }
+  if (
+    state.expedition?.status === 'active' &&
+    Array.isArray(state.expedition.cargo?.merch)
+  ) {
+    const currentCargo = state.expedition.cargo
+    const nextMerch = currentCargo.merch.map(item => {
+      const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
+        ? soldMerch[item.inventoryKey]
+        : 0
+      const soldQty = isFiniteNumber(rawSold)
+        ? Math.max(0, Math.floor(rawSold))
+        : 0
+      return {
+        ...item,
+        quantity: Math.max(0, item.quantity - soldQty)
+      }
+    })
+    return {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        cargo: {
+          ...currentCargo,
+          merch: nextMerch
+        }
+      }
+    }
+  }
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      inventory: buildSoldMerchInventory(state.band.inventory, soldMerch)
+    }
+  }
 }
