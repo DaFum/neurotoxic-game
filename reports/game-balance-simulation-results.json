@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-06T18:29:21.906Z",
+  "generatedAt": "2026-10-07T08:50:52.326Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "ca0c1e91bacb1c028feb5c6d5e772e37cd37e91dbf70b80d504607c88197cb9f",
-    "generatorFingerprint": "77aad6c189f1c07f6c0cea4e9584a16a9e583e8bcd7ae2ac31ea0dec35ce4aa1",
+    "sourceFingerprint": "06609b8e5994adaf4324048385a7e9ff29fa16eb0c87603556c8af0fa8efa24f",
+    "generatorFingerprint": "073962daf7339e5e7dc01fc732e601d1a086f266ba52d9b36037c42c5cd62f4a",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": false,
@@ -13968,16 +13968,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-10-06T17:57:29.244Z",
-      "sourceFingerprint": "8b2b28fbaab856029fb3f4d90672a84308216558cba334483ca7a586e9190cbd",
+      "generatedAt": "2026-10-06T18:29:21.906Z",
+      "sourceFingerprint": "ca0c1e91bacb1c028feb5c6d5e772e37cd37e91dbf70b80d504607c88197cb9f",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-10-06T18:29:21.906Z",
-      "sourceFingerprint": "ca0c1e91bacb1c028feb5c6d5e772e37cd37e91dbf70b80d504607c88197cb9f",
+      "generatedAt": "2026-10-07T08:50:52.326Z",
+      "sourceFingerprint": "06609b8e5994adaf4324048385a7e9ff29fa16eb0c87603556c8af0fa8efa24f",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
