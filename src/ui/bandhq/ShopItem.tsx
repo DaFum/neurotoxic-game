@@ -96,11 +96,16 @@ export const ShopItem = React.memo(
     const isLockedState = isDisabled || isPurchased
     const isOtherProcessing = isAnyProcessing && !isProcessingThis
 
+    const buttonAriaLabel = isPurchased
+      ? `${displayName}: ${t('ui:hq.owned', { defaultValue: 'OWNED' })}`
+      : `${t('ui:hq.buy', { defaultValue: 'BUY' })} ${displayName} (${formatPrice(priceValue)})`
+
     const button = (
       <GlitchButton
         onClick={handlePurchase}
         disabled={isOtherProcessing}
         aria-disabled={isLockedState || isAnyProcessing}
+        aria-label={buttonAriaLabel}
         variant={isPurchased ? 'owned' : 'primary'}
         isLoading={isProcessingThis}
         size='sm'

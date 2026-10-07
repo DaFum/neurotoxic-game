@@ -7,13 +7,14 @@
  * skip button never appearing, and the tutorial overlay being absent.
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
- * @param {{ navigate?: boolean }} [options] - Navigation options.
- * @param {boolean} [options.navigate=true] - Whether to navigate to the app root first. Pass `false` when the caller already reloaded the page.
+ * @param {{ navigate?: boolean, url?: string }} [options] - Navigation options.
+ * @param {boolean} [options.navigate=true] - Whether to navigate to the app first. Pass `false` when the caller already reloaded the page.
+ * @param {string} [options.url='/'] - The app URL to navigate to, e.g. `/?seed=2` to pin the DEV map seed.
  */
-export async function skipToMenu(page, { navigate = true } = {}) {
+export async function skipToMenu(page, { navigate = true, url = '/' } = {}) {
   try {
     if (navigate) {
-      await page.goto('/', { waitUntil: 'domcontentloaded' })
+      await page.goto(url, { waitUntil: 'domcontentloaded' })
     }
 
     // Try to skip intro if button appears

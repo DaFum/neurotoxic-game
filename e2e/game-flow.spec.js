@@ -138,19 +138,15 @@ test.describe('Game Flow', () => {
     // This test goes through rhythm game and minigames, so it needs extra time.
     test.setTimeout(180000)
 
-    await page.addInitScript(mapSeed => {
-      const realDateNow = Date.now
-      Date.now = () => mapSeed
-      Object.defineProperty(globalThis, '__restoreGoldenPathClock', {
-        configurable: true,
-        value: () => {
-          Date.now = realDateNow
-          delete globalThis.__restoreGoldenPathClock
-        }
-      })
-    }, 1)
+    // The run seed and event rolls use the secure RNG, so pin both through the
+    // DEV-only URL switches in src/utils/devSeedOverride.ts. Map seed 2 connects
+    // the start node to exactly one GIG, Leipzig in layer 1, so travel always
+    // has the same target and still goes through the Tourbus minigame.
+    // `events=off` stops travel, gig and post-gig events, so no random event
+    // dialog can sit over a scene the test is waiting for.
+    const SEEDED_URL = '/?seed=2&events=off'
 
-    await skipToMenu(page)
+    await skipToMenu(page, { url: SEEDED_URL })
     const startBtn = page.getByRole('button', { name: /start tour/i })
     const identityDialog = page.getByRole('dialog')
     const tourPlanHeading = page.getByRole('heading', { name: /tour plan/i })
@@ -228,7 +224,7 @@ test.describe('Game Flow', () => {
       }
 
       // Hard recovery: reset to menu and retry once from a clean state.
-      await skipToMenu(page)
+      await skipToMenu(page, { url: SEEDED_URL })
       await expect(startBtn).toBeVisible({ timeout: 10000 })
       await expect(startBtn).toBeEnabled({ timeout: 15000 })
       await startBtn.click()
@@ -255,6 +251,24 @@ test.describe('Game Flow', () => {
       await page.getByRole('button', { name: /leave \[esc\]/i }).click()
       await hqHeading.waitFor({ state: 'hidden' })
     }
+
+    // The unplayed show's payout still depends on how the rhythm game goes, and
+    // a poor result can bankrupt the starting 500 and end the run on the SOLD
+    // OUT screen instead of returning to the overworld. Give the band
+    // a cash buffer through the DEV-only `window.gameState` dispatchers, which
+    // run the normal UPDATE_PLAYER action creator and reducer.
+    const SEEDED_MONEY = 5000
+    await page.waitForFunction(
+      () => typeof window.gameState?.updatePlayer === 'function'
+    )
+    await page.evaluate(
+      money => window.gameState.updatePlayer({ money }),
+      SEEDED_MONEY
+    )
+    await page.waitForFunction(
+      money => window.gameState?.player?.money === money,
+      SEEDED_MONEY
+    )
 
     const dismissTopEventDialog = async () => {
       const eventDialog = page.getByRole('dialog').first()
@@ -307,7 +321,7 @@ test.describe('Game Flow', () => {
         )
         .toBe(true)
     }
-    // Seed 1 exposes a reachable GIG in layer 1. Match the semantic marker
+    // Map seed 2 exposes one reachable GIG in layer 1. Match the semantic marker
     // rather than venue names, because a venue can be assigned another node type.
     const getTravelNode = () =>
       page
@@ -344,7 +358,6 @@ test.describe('Game Flow', () => {
     // day-start event dialog can be sitting on top. A fixed 5s wait made this
     // the only step in the flow without slack and flaked on contended runners.
     await waitForUnblockedTarget(getTravelNode(), 20000)
-    await page.evaluate(() => globalThis.__restoreGoldenPathClock?.())
 
     // Retry the whole select -> CONFIRM? -> confirm handshake until the scene
     // actually changes. On a contended runner the node re-animates under the

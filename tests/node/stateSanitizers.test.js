@@ -438,6 +438,24 @@ describe('stateSanitizers', () => {
         false
       )
     })
+
+    it('skips accessor-bearing banter entries without invoking their getters', () => {
+      let getterCalls = 0
+      const hostile = { member2: 'b', delta: 1, timestamp: 1 }
+      Object.defineProperty(hostile, 'member1', {
+        enumerable: true,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const valid = { member1: 'c', member2: 'd', delta: 2, timestamp: 2 }
+
+      const band = sanitizeBand({ banterEvents: [hostile, valid] })
+
+      assert.strictEqual(getterCalls, 0)
+      assert.deepStrictEqual(band.banterEvents, [valid])
+    })
   })
 
   describe('forbidden own keys on stash items', () => {
