@@ -68,6 +68,26 @@
   background: var(--color-void-black);
 }
 
+/* An Expedition stacks its route panels under the map, which outgrows a laptop
+   viewport. Scroll instead of clipping the top of the route, start the map
+   below the header stack (HUD, radio, title) so the first route layers stay
+   visible and clickable, and keep the event log in flow under the panels
+   instead of over them. Phones already scroll (see the max-width query). */
+@media (min-width: 641px) {
+  .scene.scene--expedition {
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 190px;
+    gap: 8px;
+  }
+  .scene--expedition .event-log {
+    position: static;
+    width: 100%;
+    max-width: 1152px;
+  }
+}
+
 /* Radio */
 
 /* OW Header */
