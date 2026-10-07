@@ -412,7 +412,9 @@ type BaseGameDispatchActions = {
    * The marker is written from the committed post-debit state, so the grant
    * lands one commit after this returns. `false` still means nothing was
    * taken - the refusal's reason is toasted - and `true` means the sequence
-   * is under way and will finish by granting or refunding.
+   * is under way and will finish by granting or refunding. The command toasts
+   * that outcome itself once the marker write settles, so a caller must not
+   * announce the purchase on `true`.
    */
   purchaseExpeditionUnlockSet: (setId: string) => boolean
   /**
@@ -773,19 +775,39 @@ export function useGameDispatchActions({
       // journal: a process that dies in this window leaves a save saying
       // precisely what was taken and what for, and the load path settles it
       // rather than losing the balance.
+      //
+      // The outcome is toasted here, once it is known: a success toast at
+      // dispatch time would announce a set the rollback may still take back.
       saveGameAfterStateCommit(saved => {
-        dispatch(
-          saved
-            ? createCompleteExpeditionUnlockPurchaseAction(setId)
-            : createRollbackExpeditionUnlockPurchaseAction(setId)
+        if (!saved) {
+          dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
+          addToast(
+            tRef.current('ui:expedition.meta.purchaseFailed.persistence'),
+            'error'
+          )
+          return
+        }
+        dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
+        addToast(
+          tRef.current('ui:expedition.meta.setPurchased', {
+            name: tRef.current(`ui:expedition.meta.set.${setId}`)
+          }),
+          'success'
         )
         // The granted state replaces the marker in storage at the next commit,
         // so an open entry is never left behind for the load path to settle.
-        if (saved) saveGameAfterStateCommit()
+        saveGameAfterStateCommit()
       })
       return true
     },
-    [dispatch, saveGameAfterStateCommit, stateRef, toastCareerPurchaseFailure]
+    [
+      addToast,
+      dispatch,
+      saveGameAfterStateCommit,
+      stateRef,
+      tRef,
+      toastCareerPurchaseFailure
+    ]
   )
 
   const claimExpeditionLegendaryReward = useCallback(

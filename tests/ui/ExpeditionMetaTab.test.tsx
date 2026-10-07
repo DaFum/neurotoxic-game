@@ -90,13 +90,12 @@ describe('ExpeditionMetaTab', () => {
     expect(actions.purchaseExpeditionUnlockSet).toHaveBeenCalledWith(
       'mechanic_network'
     )
-    expect(actions.addToast).toHaveBeenCalledWith(
-      'ui:expedition.meta.setPurchased',
-      'success'
-    )
+    // `true` only means the journal opened; the command announces the
+    // outcome once the marker write settles, so the tab must not.
+    expect(actions.addToast).not.toHaveBeenCalled()
   })
 
-  it('leaves a refused set to the command, with no success toast', () => {
+  it('leaves a refused set to the command, with no toast of its own', () => {
     actions.purchaseExpeditionUnlockSet.mockReturnValueOnce(false)
     state.current = withCareer({
       tourTokens: 5,

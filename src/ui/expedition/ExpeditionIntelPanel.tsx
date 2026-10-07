@@ -21,6 +21,7 @@ import {
   resolveExpeditionIntelReveal
 } from '../../domain/expedition/nodeIntel'
 import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
+import { translateLocation } from '../../utils/locationI18n'
 import type { GameState } from '../../types'
 import type {
   ExpeditionNodeClass,
@@ -32,6 +33,10 @@ import type {
 /** One onward node and what the run may reveal about it right now. */
 interface IntelCandidate {
   nodeId: string
+  /** The venue name the route map labels this node with, when it has one. */
+  venueName: string | null
+  /** 1-based left-to-right position among its route step's nodes on the map. */
+  lane: number
   nodeClass: ExpeditionNodeClass
   specialSubtype: ExpeditionSpecialNodeSubtype | null
   level: NodeIntelLevel
@@ -124,8 +129,16 @@ const selectIntelView = (state: GameState): IntelView => {
         map,
         capability
       ).ok
+    const venueName = map.nodes[edge.to]?.venue?.name
     candidates.push({
       nodeId: edge.to,
+      venueName: typeof venueName === 'string' ? venueName : null,
+      // `nodeOrder` lists a step's nodes in build order, which is also their
+      // left-to-right order on the map.
+      lane:
+        map.nodeOrder
+          .filter(id => map.meta[id]?.routeStep === meta.routeStep)
+          .indexOf(edge.to) + 1,
       nodeClass: meta.nodeClass,
       specialSubtype: meta.specialSubtype,
       level,
@@ -247,6 +260,15 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
             className='flex flex-wrap items-center gap-2 border border-steel-gray bg-void-black px-2 py-1 text-star-white'
             data-testid={`expedition-intel-node-${candidate.nodeId}`}
           >
+            <span
+              className='text-toxic-green'
+              data-testid={`expedition-intel-node-label-${candidate.nodeId}`}
+            >
+              {candidate.venueName
+                ? `${translateLocation(t, candidate.venueName, t('ui:map.unknown'))} · `
+                : null}
+              {t('ui:expedition.intel.lane', { lane: candidate.lane })}
+            </span>
             <span className='uppercase'>
               {candidate.specialSubtype
                 ? t(`ui:expedition.node.subtype.${candidate.specialSubtype}`)

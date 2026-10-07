@@ -23,7 +23,12 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ i18n: { language: 'en' }, t: (key: string) => key })
+  useTranslation: () => ({
+    i18n: { language: 'en' },
+    // Echoes `lane` so rows that differ only by map position stay tellable.
+    t: (key: string, options?: { lane?: number }) =>
+      options?.lane === undefined ? key : `${key}:${options.lane}`
+  })
 }))
 
 const RUN_SEED = 4242
@@ -98,6 +103,37 @@ describe('ExpeditionIntelPanel', () => {
         nodeId,
         source: 'scout_passive'
       })
+    }
+  })
+
+  it('labels each onward node the way the route map does', () => {
+    state.current = buildState({ crewIds: ['noah'] })
+    render(<ExpeditionIntelPanel />)
+    const labels = onward.map(
+      nodeId =>
+        screen.getByTestId(`expedition-intel-node-label-${nodeId}`).textContent
+    )
+    // Rows of the same class and intel level would otherwise read the same.
+    expect(new Set(labels).size).toBe(onward.length)
+    for (const nodeId of onward) {
+      const label = screen.getByTestId(`expedition-intel-node-label-${nodeId}`)
+      const sameStep = map.nodeOrder.filter(
+        id => map.meta[id]?.routeStep === map.meta[nodeId]?.routeStep
+      )
+      // Left-to-right position among the step's nodes, as the map draws them.
+      expect(label).toHaveTextContent(
+        `ui:expedition.intel.lane:${sameStep.indexOf(nodeId) + 1}`
+      )
+      const venueName = map.nodes[nodeId]?.venue?.name
+      if (venueName) {
+        // The map's own label: the venue name through translateLocation.
+        expect(label).toHaveTextContent(
+          venueName
+            .replace(/^venues:/, '')
+            .replace(/\.name$/, '')
+            .replace(/_/g, ' ')
+        )
+      }
     }
   })
 

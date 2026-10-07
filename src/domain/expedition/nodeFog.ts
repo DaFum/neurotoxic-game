@@ -10,6 +10,7 @@
 
 import { buildExpeditionMap, getExpeditionNodePublicFacts } from './map'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { getEffectiveExpeditionRoute } from './routeOverlay'
 import {
   getExpeditionIntelCapability,
   getExpeditionNodeIntelLevel
@@ -48,6 +49,14 @@ export const getExpeditionNodeFogByNodeId = (
   // draw, which must not be redrawn per node.
   const capability = getExpeditionIntelCapability(state)
 
+  // Onward routes come from the effective route travel authorizes, so an
+  // overlay edge (Underground invite, Nemesis shortcut, Legendaries) counts.
+  const onwardRouteCountByNodeId: Record<string, number> = Object.create(null)
+  for (const edge of getEffectiveExpeditionRoute(state, map).connections) {
+    onwardRouteCountByNodeId[edge.from] =
+      (onwardRouteCountByNodeId[edge.from] ?? 0) + 1
+  }
+
   const out: Record<string, ExpeditionNodeFog> = {}
   for (const nodeId of map.nodeOrder) {
     const entry = map.meta[nodeId]
@@ -58,7 +67,7 @@ export const getExpeditionNodeFogByNodeId = (
     const intelLevel = getExpeditionNodeIntelLevel(state, nodeId, capability)
     out[nodeId] = {
       routeStep: facts.routeStep,
-      onwardRouteCount: facts.edges.length,
+      onwardRouteCount: onwardRouteCountByNodeId[nodeId] ?? 0,
       nodeClass: facts.nodeClass,
       specialSubtype: facts.specialSubtype,
       dangerTier: facts.dangerTier,

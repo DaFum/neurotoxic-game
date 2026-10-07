@@ -36,11 +36,8 @@ import type { ExpeditionUnlockSetId } from '../../types/career'
 export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
   const { t } = useTranslation('ui')
   const career = useGameSelector(state => state.career)
-  const {
-    purchaseExpeditionHqFacility,
-    purchaseExpeditionUnlockSet,
-    addToast
-  } = useGameActions()
+  const { purchaseExpeditionHqFacility, purchaseExpeditionUnlockSet } =
+    useGameActions()
 
   const tokens = Math.max(0, finiteNumberOr(career.tourTokens, 0))
   const rank = deriveExpeditionCareerRank(career)
@@ -55,18 +52,11 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
 
   const buySet = useCallback(
     (setId: ExpeditionUnlockSetId) => {
-      // The command persists its own journal and toasts its own refusal;
-      // `false` means nothing was taken.
-      if (purchaseExpeditionUnlockSet(setId)) {
-        addToast(
-          t('ui:expedition.meta.setPurchased', {
-            name: t(`ui:expedition.meta.set.${setId}`)
-          }),
-          'success'
-        )
-      }
+      // The command persists its own journal and toasts the outcome once the
+      // marker write settles - success, refusal or rollback alike.
+      purchaseExpeditionUnlockSet(setId)
     },
-    [addToast, purchaseExpeditionUnlockSet, t]
+    [purchaseExpeditionUnlockSet]
   )
 
   return (

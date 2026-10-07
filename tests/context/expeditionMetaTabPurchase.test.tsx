@@ -128,6 +128,46 @@ describe('ExpeditionMetaTab through the real reducer', () => {
       screen.queryByTestId('expedition-meta-unlock-mechanic_network')
     ).toBeNull()
     expect(probe.toasts.some(toast => toast.type === 'error')).toBe(false)
+    // Announced by the command once the grant landed, and only once.
+    expect(
+      probe.toasts.filter(
+        toast => toast.message === 'ui:expedition.meta.setPurchased'
+      )
+    ).toEqual([expect.objectContaining({ type: 'success' })])
+  })
+
+  it('rolls back and says so when the purchase marker cannot be saved', () => {
+    const adapter = mountWithCareer({
+      tourTokens: 5,
+      hqFacilityLevels: Object.assign(Object.create(null), { workshop: 1 })
+    })
+    // Every later write fails, so the marker write the grant waits on fails.
+    vi.spyOn(adapter, 'set').mockImplementation(() => {
+      throw new Error('quota exceeded')
+    })
+
+    let bought = false
+    act(() => {
+      bought =
+        probe.actions?.purchaseExpeditionUnlockSet('mechanic_network') ?? false
+    })
+
+    // The sequence started, but nothing may be announced as bought.
+    expect(bought).toBe(true)
+    expect(probe.career?.unlockedSetIds).not.toContain('mechanic_network')
+    expect(probe.career?.pendingUnlockPurchase).toBeNull()
+    expect(probe.career?.tourTokens).toBe(5)
+    expect(
+      probe.toasts.some(
+        toast => toast.message === 'ui:expedition.meta.setPurchased'
+      )
+    ).toBe(false)
+    expect(probe.toasts).toContainEqual(
+      expect.objectContaining({
+        message: 'ui:expedition.meta.purchaseFailed.persistence',
+        type: 'error'
+      })
+    )
   })
 
   it('saves an accepted build', () => {
