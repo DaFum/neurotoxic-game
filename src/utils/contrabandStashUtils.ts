@@ -63,7 +63,7 @@ export const getStashItemUseMessage = (
     options: {
       itemName: translatedName,
       action: messageAction,
-      defaultValue: `${messageAction} ${translatedName}!`
+      defaultValue: '{{action}} {{itemName}}!'
     }
   }
 }

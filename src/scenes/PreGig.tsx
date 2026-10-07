@@ -50,6 +50,7 @@ export const PreGig = () => {
     assetModifiers,
     handleBandMeeting,
     toggleSong,
+    canAffordModifier,
     toggleModifier,
     handleStartShow
   } = usePreGigLogic()
@@ -120,6 +121,7 @@ export const PreGig = () => {
             t={t}
             gigModifierOptions={GIG_MODIFIER_OPTIONS}
             gigModifiers={gigModifiers}
+            canAffordModifier={canAffordModifier}
             toggleModifier={toggleModifier}
             handleBandMeeting={handleBandMeeting}
             bandMeetingCost={bandMeetingCost}

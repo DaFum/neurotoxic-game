@@ -3,11 +3,19 @@ import assert from 'node:assert/strict'
 import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createTradeVoidItemAction } from '../../src/context/actionCreators'
+import {
+  VOID_TRADER_CONTROVERSY_THRESHOLD,
+  VOID_TRADER_COSTS
+} from '../../src/data/contraband'
 
 describe('Trade Reducer', () => {
-  const makeState = fame => ({
+  const makeState = (
+    fame,
+    controversyLevel = VOID_TRADER_CONTROVERSY_THRESHOLD
+  ) => ({
     player: { fame },
     band: { stash: {} },
+    social: { controversyLevel },
     toasts: []
   })
 
@@ -38,6 +46,38 @@ describe('Trade Reducer', () => {
     }
   })
 
+  it('rejects a raw dispatch while controversy is below the unlock threshold', () => {
+    const payload = {
+      contrabandId: 'c_phantom_strings',
+      fameCost: 1000,
+      instanceId: '123'
+    }
+
+    for (const controversyLevel of [
+      VOID_TRADER_CONTROVERSY_THRESHOLD - 1,
+      0,
+      Number.NaN,
+      null
+    ]) {
+      const initialState = makeState(2000, controversyLevel)
+      assert.strictEqual(
+        handleTradeVoidItem(initialState, payload),
+        initialState
+      )
+    }
+
+    const noSocial = { ...makeState(2000), social: undefined }
+    assert.strictEqual(handleTradeVoidItem(noSocial, payload), noSocial)
+  })
+
+  it('allows the trade exactly at the unlock threshold', () => {
+    const nextState = handleTradeVoidItem(
+      makeState(2000, VOID_TRADER_CONTROVERSY_THRESHOLD),
+      { contrabandId: 'c_phantom_strings', fameCost: 1000, instanceId: '123' }
+    )
+    assert.strictEqual(nextState.player.fame, 1000)
+  })
+
   it('should deduct fame and add item to stash on successful trade', () => {
     const initialState = makeState(2000)
 
@@ -66,8 +106,8 @@ describe('Trade Reducer', () => {
     const initialState = makeState(1200)
 
     const payload = {
-      contrabandId: 'c_phantom_strings',
-      fameCost: 300,
+      contrabandId: 'c_cursed_pick',
+      fameCost: VOID_TRADER_COSTS.rare,
       instanceId: 'structured-1',
       successToast: {
         messageKey: 'ui:toast.void_trade_success',
@@ -77,7 +117,7 @@ describe('Trade Reducer', () => {
     }
 
     const nextState = handleTradeVoidItem(initialState, payload)
-    assert.strictEqual(nextState.player.fame, 900)
+    assert.strictEqual(nextState.player.fame, 800)
     assert.strictEqual(nextState.toasts.length, 1)
     assert.strictEqual(
       nextState.toasts[0].messageKey,
@@ -87,15 +127,15 @@ describe('Trade Reducer', () => {
       nextState.toasts[0].options.itemName,
       payload.successToast.options.itemName
     )
-    assert.strictEqual(nextState.toasts[0].options.fame, 300)
+    assert.strictEqual(nextState.toasts[0].options.fame, 400)
   })
 
   it('should preserve legacy pipe-message enrichment fallback', () => {
     const initialState = makeState(950)
 
     const payload = {
-      contrabandId: 'c_phantom_strings',
-      fameCost: 250,
+      contrabandId: 'c_cursed_pick',
+      fameCost: VOID_TRADER_COSTS.rare,
       instanceId: 'legacy-1',
       successToast: {
         message:
@@ -105,7 +145,7 @@ describe('Trade Reducer', () => {
     }
 
     const nextState = handleTradeVoidItem(initialState, payload)
-    assert.strictEqual(nextState.player.fame, 700)
+    assert.strictEqual(nextState.player.fame, 550)
     assert.strictEqual(nextState.toasts.length, 1)
 
     const toastMessage = nextState.toasts[0].message
@@ -113,11 +153,55 @@ describe('Trade Reducer', () => {
     const jsonStr = toastMessage.slice(pipeIdx + 1)
     const parsedContext = JSON.parse(jsonStr)
 
-    assert.strictEqual(parsedContext.fame, 250)
+    assert.strictEqual(parsedContext.fame, 400)
     assert.strictEqual(
       parsedContext.itemName,
       'items:contraband.c_phantom_strings.name'
     )
+  })
+
+  it('charges the canonical rarity price and rejects any other payload cost', () => {
+    // The price is derived from the catalogue, never trusted from the payload:
+    // a raw TRADE_VOID_ITEM with fameCost 0 must not hand out the item.
+    for (const [contrabandId, fameCost] of [
+      ['c_phantom_strings', 0],
+      ['c_phantom_strings', VOID_TRADER_COSTS.rare],
+      ['c_cursed_pick', VOID_TRADER_COSTS.epic],
+      ['c_cursed_pick', 1]
+    ]) {
+      const initialState = makeState(5000)
+      assert.strictEqual(
+        handleTradeVoidItem(initialState, {
+          contrabandId,
+          fameCost,
+          instanceId: 'x'
+        }),
+        initialState
+      )
+    }
+
+    const nextState = handleTradeVoidItem(makeState(5000), {
+      contrabandId: 'c_cursed_pick',
+      fameCost: VOID_TRADER_COSTS.rare,
+      instanceId: 'x'
+    })
+    assert.strictEqual(nextState.player.fame, 5000 - VOID_TRADER_COSTS.rare)
+    assert.ok(nextState.band.stash['c_cursed_pick'])
+  })
+
+  it('rejects items the Void Trader does not sell', () => {
+    // Unknown ids and rarities without a trader price (common/uncommon).
+    for (const contrabandId of ['c_void_energy', 'c_unknown_item']) {
+      const initialState = makeState(5000)
+      assert.strictEqual(
+        handleTradeVoidItem(initialState, {
+          contrabandId,
+          fameCost: VOID_TRADER_COSTS.rare,
+          instanceId: 'x'
+        }),
+        initialState
+      )
+    }
   })
 
   it('action creator formats payload correctly', () => {

@@ -5,6 +5,7 @@ import { AmpHUD } from '../../src/components/minigames/amp/AmpHUD'
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
+    i18n: { language: 'en' },
     t: (key, options) => options?.defaultValue ?? key
   })
 }))
@@ -52,5 +53,11 @@ describe('AmpHUD meters', () => {
       'aria-valuenow',
       '40'
     )
+  })
+
+  it('shows the remaining time with one locale-formatted decimal', () => {
+    render(<AmpHUD {...baseProps} timeLeft={12.34} />)
+
+    expect(screen.getByText('12.3s')).toBeInTheDocument()
   })
 })

@@ -2,11 +2,10 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../utils/numberUtils'
 
-type GigModifierItem = {
-  key: string
-  label: string
+import type { ModifierOption } from '../hooks/usePreGigLogic'
+
+type GigModifierItem = Pick<ModifierOption, 'key' | 'label' | 'cost'> & {
   desc?: string
-  cost: number
 }
 
 type GigModifierButtonProps = {

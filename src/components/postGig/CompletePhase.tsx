@@ -106,7 +106,7 @@ export const CompletePhase = ({
             ⚠️{' '}
             {t('ui:postGig.pedalHarmonyWarning', {
               penalty: pedalHarmonyPenalty,
-              defaultValue: `NEUROTOXIC PEDAL: -${pedalHarmonyPenalty} Harmony on continue`
+              defaultValue: 'NEUROTOXIC PEDAL: -{{penalty}} Harmony on continue'
             })}
           </div>
         ) : null}
@@ -132,7 +132,8 @@ export const CompletePhase = ({
                   'always'
                 ),
                 controversy: SPIN_STORY_CONTROVERSY_REDUCTION,
-                defaultValue: `Spin Story (${formatCurrency(-SPIN_STORY_MONEY_COST, i18n.language, 'always')}, -${SPIN_STORY_CONTROVERSY_REDUCTION} Controversy)`
+                defaultValue:
+                  'Spin Story ({{cost}}, -{{controversy}} Controversy)'
               })}
             </ActionButton>
           )}

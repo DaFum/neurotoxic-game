@@ -94,4 +94,50 @@ describe('usePreGigHandlers', () => {
 
     sessionStorage.setItem = originalSetItem
   })
+
+  describe('modifier affordability', () => {
+    it('canAffordModifier compares the projected budget with the player money', () => {
+      const { result: cheap } = renderHook(() =>
+        usePreGigHandlers({
+          ...mockProps,
+          player: { money: 1_000_000 },
+          calculatedBudget: 0
+        })
+      )
+      expect(cheap.current.canAffordModifier('catering')).toBe(true)
+
+      const { result: broke } = renderHook(() =>
+        usePreGigHandlers({
+          ...mockProps,
+          player: { money: 0 },
+          calculatedBudget: 0
+        })
+      )
+      expect(broke.current.canAffordModifier('catering')).toBe(false)
+    })
+
+    it('toggleModifier refuses an unaffordable activation but still switches an active one off', () => {
+      const { result: broke } = renderHook(() =>
+        usePreGigHandlers({ ...mockProps, player: { money: 0 } })
+      )
+      act(() => broke.current.toggleModifier('catering'))
+      expect(mockProps.setGigModifiers).not.toHaveBeenCalled()
+      expect(mockProps.addToast).toHaveBeenCalledWith(
+        'ui:pregig.toasts.noMoneyUpgrade',
+        'error'
+      )
+
+      const { result: active } = renderHook(() =>
+        usePreGigHandlers({
+          ...mockProps,
+          player: { money: 0 },
+          gigModifiers: { catering: true }
+        })
+      )
+      act(() => active.current.toggleModifier('catering'))
+      expect(mockProps.setGigModifiers).toHaveBeenCalledWith({
+        catering: false
+      })
+    })
+  })
 })

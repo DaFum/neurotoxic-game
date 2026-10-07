@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUnifiedUpgradeCatalog } from '../../data/upgradeCatalog'
+import { isVoidTraderUnlocked } from '../../data/contraband'
 import { isExpeditionLegacyHqPurchaseAllowed } from '../../domain/expedition/legacyHqPolicy'
 import type { CatalogItem } from '../../types/components'
 import type { PurchaseDecision } from '../../types/purchase'
@@ -22,21 +23,17 @@ import { BrandDealsTab } from './BrandDealsTab.tsx'
 import { ExpeditionMetaTab } from '../expedition/ExpeditionMetaTab'
 
 /**
- * Active tab id and unlock threshold used to choose the Band HQ tab panel.
+ * Active tab id used to choose the Band HQ tab panel.
  */
 export interface BandHQContentAreaProps {
   currentTab: string
-  VOID_TRADER_CONTROVERSY_THRESHOLD: number
 }
 
 /**
  * Selects and renders the active Band HQ tab panel.
- * @param props - Active Band HQ tab and void-trader threshold used to choose the tab panel.
+ * @param props - Active Band HQ tab used to choose the tab panel.
  */
-export const BandHQContentArea = ({
-  currentTab,
-  VOID_TRADER_CONTROVERSY_THRESHOLD
-}: BandHQContentAreaProps) => {
+export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
   const { t } = useTranslation()
 
   const player = useGameSelector(state => state.player)
@@ -183,7 +180,7 @@ export const BandHQContentArea = ({
         {currentTab === 'LEADERBOARD' && <LeaderboardTab />}
 
         {currentTab === 'VOID' &&
-          social.controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD && (
+          isVoidTraderUnlocked(social.controversyLevel) && (
             <VoidTraderTab
               player={player}
               handleTrade={(

@@ -92,6 +92,26 @@ describe('useTourbusLogic', () => {
     mock.clearAllMocks()
   })
 
+  test('obstacle ids are UUIDs, unique even when spawned in one burst', () => {
+    const { result } = renderHook(() => useTourbusLogic())
+    const game = result.current.gameStateRef.current
+    game.obstacles = []
+    game.lastSpawnTime = SPAWN_RATE_MS * 5
+
+    act(() => {
+      result.current.update(1)
+    })
+
+    expect(game.obstacles.length).toBeGreaterThan(1)
+    const ids = game.obstacles.map(obstacle => obstacle.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const id of ids) {
+      expect(id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      )
+    }
+  })
+
   test('spawn rate maintains constant density and movements clamp correctly', () => {
     const { result, unmount } = renderHook(() => useTourbusLogic())
     const game = result.current.gameStateRef.current

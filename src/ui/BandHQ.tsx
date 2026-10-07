@@ -4,11 +4,10 @@ import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
 import { useGameSelector } from '../context/GameState.tsx'
 import { useModalBehavior } from './shared/useModalBehavior'
+import { isVoidTraderUnlocked } from '../data/contraband'
 
 import { BandHQTabsList } from './bandhq/BandHQTabsList.tsx'
 import { BandHQContentArea } from './bandhq/BandHQContentArea.tsx'
-
-const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
 
 /**
  * Close behavior and optional wrapper styling for the Band HQ modal.
@@ -29,13 +28,12 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
   const [activeTab, setActiveTab] = useState('STATS')
 
   const playerDay = useGameSelector(state => state.player.day)
-  const social = useGameSelector(state => state.social)
+  const voidTraderUnlocked = useGameSelector(state =>
+    isVoidTraderUnlocked(state.social?.controversyLevel)
+  )
 
   const currentTab =
-    activeTab === 'VOID' &&
-    (social?.controversyLevel ?? 0) < VOID_TRADER_CONTROVERSY_THRESHOLD
-      ? 'STATS'
-      : activeTab
+    activeTab === 'VOID' && !voidTraderUnlocked ? 'STATS' : activeTab
 
   return (
     <div
@@ -94,14 +92,10 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
         <BandHQTabsList
           currentTab={currentTab}
           setActiveTab={setActiveTab}
-          controversyLevel={social.controversyLevel}
-          VOID_TRADER_CONTROVERSY_THRESHOLD={VOID_TRADER_CONTROVERSY_THRESHOLD}
+          isVoidTraderUnlocked={voidTraderUnlocked}
         />
 
-        <BandHQContentArea
-          currentTab={currentTab}
-          VOID_TRADER_CONTROVERSY_THRESHOLD={VOID_TRADER_CONTROVERSY_THRESHOLD}
-        />
+        <BandHQContentArea currentTab={currentTab} />
       </div>
     </div>
   )

@@ -100,7 +100,7 @@ export const TutorialManager = () => {
               {t('ui:tutorial.header', {
                 current: step + 1,
                 total: TOTAL_STEPS,
-                defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}`
+                defaultValue: 'TUTORIAL {{current}}/{{total}}'
               })}
             </div>
 

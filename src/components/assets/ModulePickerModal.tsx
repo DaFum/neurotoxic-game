@@ -5,6 +5,7 @@ import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { getModuleDescription } from './moduleDescription'
 import {
@@ -23,13 +24,16 @@ interface Props extends AssetConfirmModalProps {
 
 const formatLockReason = (
   reason: LockReason,
-  t: TFunction<readonly ['assets'], undefined>
+  t: TFunction<readonly ['assets'], undefined>,
+  language: string
 ): string => {
   switch (reason.kind) {
     case 'fame':
       return t('assets:module.unlock.fame', { amount: reason.amount })
     case 'money':
-      return t('assets:module.unlock.money', { amount: reason.amount })
+      return t('assets:module.unlock.money', {
+        amount: formatCurrency(finiteNumberOr(reason.amount, 0), language)
+      })
     case 'scene':
       return t('assets:module.unlock.scene', { amount: reason.amount })
     case 'chassisTier':
@@ -248,7 +252,7 @@ export const ModulePickerModal = memo(
                             <li
                               key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
                             >
-                              {formatLockReason(r, t)}
+                              {formatLockReason(r, t, i18n.language)}
                             </li>
                           ))}
                         </ul>

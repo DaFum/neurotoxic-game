@@ -10,11 +10,23 @@ import i18n from '../i18n'
 import { GAME_PHASES } from '../context/gameConstants'
 import type { GamePhase, Venue } from '../types'
 
+/**
+ * Optional overrides for `useArrivalLogic`.
+ *
+ * @remarks
+ * Test seams: production (`TourbusScene`) calls the hook with no options, so
+ * every field is only ever supplied by tests. They stay so arrival can be
+ * exercised without the default pending-modal dispatches and with a
+ * deterministic rng; do not wire production callers to them.
+ */
 type UseArrivalLogicOptions = {
+  /** Test seam: replaces the default `setPendingBandHQOpen(true)` on HQ arrival. */
   onShowHQ?: () => void
+  /** Test seam: replaces the default `setPendingSupplyStopInventory` on a supply stop. */
   onShowSupplyStop?: (
     inventory: import('../types/components').PurchaseItem[]
   ) => void
+  /** Test seam: deterministic random source forwarded to `handleNodeArrival`. */
   rng?: () => number
 }
 

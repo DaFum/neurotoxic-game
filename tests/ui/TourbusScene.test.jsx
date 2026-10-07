@@ -9,7 +9,12 @@ const handleArrivalSequence = vi.fn()
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (_k, o) => (_k === 'ui:continue' ? 'WEITER' : (o?.defaultValue ?? _k))
+    t: (_k, o) =>
+      _k === 'ui:continue'
+        ? 'WEITER'
+        : (o?.defaultValue ?? _k).replace(/\{\{(\w+)\}\}/g, (_m, name) =>
+            String(o?.[name])
+          )
   })
 }))
 
@@ -43,6 +48,10 @@ vi.mock('../../src/components/MinigameSceneFrame', () => ({
         {completionButtonText}
       </button>
       <div>{renderCompletionStats({ damage: 40 })}</div>
+      <div data-testid='hostile-stats'>
+        {renderCompletionStats({ damage: '40' })}
+        {renderCompletionStats({ damage: Number.NaN })}
+      </div>
       {children}
     </div>
   )
@@ -56,6 +65,10 @@ describe('TourbusScene', () => {
     expect(screen.getByText(/DISTANCE:/)).toBeInTheDocument()
     expect(screen.getByText(/DAMAGE:/)).toBeInTheDocument()
     expect(screen.getByText('Condition Loss: 20%')).toBeInTheDocument()
+    // Numeric strings and NaN are not coerced: both fall back to zero damage.
+    expect(screen.getByTestId('hostile-stats')).toHaveTextContent(
+      'Condition Loss: 0%Condition Loss: 0%'
+    )
     const completionButton = screen.getByRole('button', { name: 'WEITER' })
     expect(completionButton).toBeInTheDocument()
 

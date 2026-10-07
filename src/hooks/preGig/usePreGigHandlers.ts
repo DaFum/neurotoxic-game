@@ -75,6 +75,7 @@ export interface UsePreGigHandlersReturn {
   handleRestockMerch: (merchKey: string) => void
   handleBandMeeting: () => void
   toggleSong: (song: Song) => void
+  canAffordModifier: (key: keyof typeof MODIFIER_COSTS) => boolean
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
   handleStartShow: () => Promise<void>
 }
@@ -244,30 +245,31 @@ export const usePreGigHandlers = ({
     [selectedSongIds, setSetlist, setlist]
   )
 
+  // Single affordability rule for enabling a modifier: the projected budget
+  // (current selections plus this one) must fit the player's money. Shared by
+  // the toggle guard and the button's disabled state.
+  const canAffordModifier = useCallback(
+    (key: keyof typeof MODIFIER_COSTS) =>
+      canAfford(
+        { currency: 'money' },
+        player,
+        calculatedBudget + calculateGigModifierCost(key, assetModifiers)
+      ),
+    [player, calculatedBudget, assetModifiers]
+  )
+
   const toggleModifier = useCallback(
     (key: keyof typeof MODIFIER_COSTS) => {
       const isActive = gigModifiers[key]
-      const cost = calculateGigModifierCost(key, assetModifiers)
 
-      if (!isActive) {
-        const projectedTotal = calculatedBudget + cost
-        if (!canAfford({ currency: 'money' }, player, projectedTotal)) {
-          addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
-          return
-        }
+      if (!isActive && !canAffordModifier(key)) {
+        addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
+        return
       }
 
       setGigModifiers({ [key]: !isActive })
     },
-    [
-      gigModifiers,
-      assetModifiers,
-      calculatedBudget,
-      player,
-      addToast,
-      setGigModifiers,
-      typedT
-    ]
+    [gigModifiers, canAffordModifier, addToast, setGigModifiers, typedT]
   )
 
   const handleStartShow = useCallback(async () => {
@@ -343,6 +345,7 @@ export const usePreGigHandlers = ({
     handleRestockMerch,
     handleBandMeeting,
     toggleSong,
+    canAffordModifier,
     toggleModifier,
     handleStartShow
   }

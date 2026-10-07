@@ -89,7 +89,7 @@ export const useVanMaintenance = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, updatePlayer, addToast, isTravelingRef])
+  }, [player.van, player.money, updatePlayer, addToast, isTravelingRef])
 
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return
@@ -144,7 +144,7 @@ export const useVanMaintenance = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, updatePlayer, addToast, isTravelingRef])
+  }, [player.van, player.money, updatePlayer, addToast, isTravelingRef])
 
   const handleRestInVan = useCallback(() => {
     if (isTravelingRef.current) return

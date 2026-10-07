@@ -195,7 +195,8 @@ const requireBandMembers = (
         throw new Error(
           i18n.t('ui:postOptions.errors.missingBandMembers', {
             postId,
-            defaultValue: `Post option ${postId} requires at least one band member.`
+            defaultValue:
+              'Post option {{postId}} requires at least one band member.'
           })
         )
       }
@@ -205,7 +206,7 @@ const requireBandMembers = (
   throw new Error(
     i18n.t('ui:postOptions.errors.missingBandMembers', {
       postId,
-      defaultValue: `Post option ${postId} requires at least one band member.`
+      defaultValue: 'Post option {{postId}} requires at least one band member.'
     })
   )
 }

@@ -6,6 +6,7 @@ import {
   LOAN_PROFILES_ARRAY,
   type LoanProfileId
 } from '../../utils/loanProfiles'
+import { formatPercent } from '../../utils/numberUtils'
 import type { BaseModalProps } from '../../types/ui'
 
 interface Props extends BaseModalProps {
@@ -26,7 +27,7 @@ export const LoanProfileChoiceGrid = ({
   value,
   onSelect
 }: LoanProfileChoiceGridProps) => {
-  const { t } = useTranslation(['assets'])
+  const { t, i18n } = useTranslation(['assets'])
   return (
     <div className='grid grid-cols-1 gap-3 font-mono text-sm sm:grid-cols-2'>
       {LOAN_PROFILES_ARRAY.map(profile => {
@@ -58,7 +59,10 @@ export const LoanProfileChoiceGrid = ({
               <span className='text-xs opacity-60'>
                 {t('assets:loan.profileMeta', {
                   days: profile.termDays,
-                  rate: (profile.interestRate * 100).toFixed(1)
+                  rate: formatPercent(profile.interestRate, i18n.language, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1
+                  })
                 })}
               </span>
             </div>

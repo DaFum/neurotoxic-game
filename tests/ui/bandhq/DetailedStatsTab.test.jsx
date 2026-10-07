@@ -16,7 +16,10 @@ vi.mock('react-i18next', () => ({
         'ui:stats.active_quests': 'Aktive Quests',
         'ui:ui.day': 'Tag'
       }
-      return translations[key] ?? options?.defaultValue ?? key
+      const template = translations[key] ?? options?.defaultValue ?? key
+      return template.replace(/\{\{(\w+)\}\}/g, (_m, name) =>
+        String(options?.[name] ?? '')
+      )
     },
     i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   })

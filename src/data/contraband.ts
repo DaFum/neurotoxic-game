@@ -9,6 +9,7 @@ import {
   type SanitizedContrabandItem
 } from '../schemas/contraband'
 import { logger } from '../utils/logger'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import type { Rarity } from '../types'
 
 const CONTRABAND_DB = [
@@ -540,6 +541,18 @@ export const VOID_TRADER_COSTS = {
   rare: 400
 }
 
+/** Minimum controversy level that unlocks the Void Trader. */
+export const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
+
+/**
+ * Whether a controversy level unlocks the Void Trader.
+ *
+ * @param controversyLevel - Raw controversy value; non-finite input counts as 0.
+ * @returns True when the level meets {@link VOID_TRADER_CONTROVERSY_THRESHOLD}.
+ */
+export const isVoidTraderUnlocked = (controversyLevel: unknown): boolean =>
+  finiteNumberOr(controversyLevel, 0) >= VOID_TRADER_CONTROVERSY_THRESHOLD
+
 /** Lookup map of contraband definition by item id. */
 export const CONTRABAND_BY_ID = new Map<string, SanitizedContrabandItem>()
 
@@ -585,4 +598,19 @@ for (const item of CONTRABAND_DB) {
       `Unknown rarity "${sanitizedItem.rarity}" for item ${sanitizedItem.id}`
     )
   }
+}
+
+/**
+ * Canonical Void Trader Fame price of a catalogue item.
+ *
+ * @param contrabandId - Catalogue id of the item being traded.
+ * @returns The price for the item's rarity from {@link VOID_TRADER_COSTS}, or
+ * `null` when the trader does not sell it (unknown id, or a rarity without a
+ * trader price).
+ */
+export const getVoidTraderFameCost = (contrabandId: string): number | null => {
+  const rarity = CONTRABAND_BY_ID.get(contrabandId)?.rarity
+  return rarity !== undefined && Object.hasOwn(VOID_TRADER_COSTS, rarity)
+    ? VOID_TRADER_COSTS[rarity as keyof typeof VOID_TRADER_COSTS]
+    : null
 }

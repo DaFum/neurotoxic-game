@@ -3,6 +3,7 @@ import {
   clampUnit,
   formatNumber,
   formatCurrency,
+  formatPercent,
   formatSignedFinancialAmount
 } from '../../src/utils/numberUtils'
 import { finiteNumberOr } from '../../src/utils/finiteNumber'
@@ -45,6 +46,58 @@ describe('numberUtils', () => {
       )
       expect(formatNumber(null as unknown as number, 'en')).toBe('0')
       expect(formatNumber(undefined as unknown as number, 'en')).toBe('NaN')
+    })
+  })
+
+  describe('formatNumber fraction digits', () => {
+    it('renders an exact number of fractional digits with a locale separator', () => {
+      expect(formatNumber(12.34, 'en', 1)).toBe('12.3')
+      expect(formatNumber(12.34, 'de', 1)).toBe('12,3')
+      expect(formatNumber(5, 'de', 1)).toBe('5,0')
+    })
+  })
+
+  describe('formatPercent', () => {
+    const normalize = (value: string) => value.replace(/\s/g, ' ')
+
+    it('formats a fraction as a whole percent by default', () => {
+      expect(formatPercent(0.2, 'en')).toBe('20%')
+      expect(formatPercent(0.426, 'en')).toBe('43%')
+      expect(formatPercent(1, 'en')).toBe('100%')
+    })
+
+    it('honours fraction digit options', () => {
+      expect(
+        formatPercent(0.0512, 'en', {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        })
+      ).toBe('5.1%')
+      expect(formatPercent(0.05, 'en', { minimumFractionDigits: 1 })).toBe(
+        '5.0%'
+      )
+    })
+
+    it('uses the German decimal comma and spacing', () => {
+      expect(
+        normalize(
+          formatPercent(0.0512, 'de', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          })
+        )
+      ).toBe('5,1 %')
+      expect(normalize(formatPercent(0.25, 'de'))).toBe('25 %')
+    })
+
+    it('supports an explicit sign policy', () => {
+      expect(formatPercent(0.1, 'en', { signDisplay: 'always' })).toBe('+10%')
+    })
+
+    it('renders non-finite input and negative zero as plain zero', () => {
+      expect(formatPercent(NaN, 'en')).toBe('0%')
+      expect(formatPercent(Infinity, 'en')).toBe('0%')
+      expect(formatPercent(-0, 'en')).toBe('0%')
     })
   })
 

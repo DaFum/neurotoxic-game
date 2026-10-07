@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
 import { VanStatusBars } from './VanStatusBars'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/gameState'
 
 type StatsTabProps = {
@@ -64,7 +64,12 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
             {t('ui:stats.breakdown_chance', {
               defaultValue: 'Breakdown Chance'
             })}
-            : {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
+            :{' '}
+            {formatPercent(
+              finiteNumberOr(player.van?.breakdownChance, 0),
+              i18n.language,
+              { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+            )}
           </div>
         </div>
       </div>

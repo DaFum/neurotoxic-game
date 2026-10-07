@@ -48,6 +48,7 @@ interface PreGigLogicReturn {
   bandMeetingCost: number
   handleBandMeeting: () => void
   toggleSong: (song: Song) => void
+  canAffordModifier: (key: keyof typeof MODIFIER_COSTS) => boolean
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
   handleStartShow: () => Promise<void>
 }
@@ -120,6 +121,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     handleRestockMerch,
     handleBandMeeting,
     toggleSong,
+    canAffordModifier,
     toggleModifier,
     handleStartShow
   } = usePreGigHandlers({
@@ -187,6 +189,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     bandMeetingCost: adjustedBandMeetingCost,
     handleBandMeeting,
     toggleSong,
+    canAffordModifier,
     toggleModifier,
     handleStartShow
   }

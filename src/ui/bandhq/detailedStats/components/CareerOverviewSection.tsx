@@ -60,7 +60,7 @@ export const CareerOverviewSection = ({
         label={t('ui:detailedStats.hqUpgrades.count')}
         value={t('ui:detailedStats.hqUpgrades.installed', {
           count: (player.hqUpgrades || []).length,
-          defaultValue: `${(player.hqUpgrades || []).length} Installed`
+          defaultValue: '{{count}} Installed'
         })}
         subtext={
           player.hqUpgrades?.join(', ') ||

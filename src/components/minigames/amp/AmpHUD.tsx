@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar } from '../../../ui/shared/ProgressBar'
+import { formatNumber } from '../../../utils/numberUtils'
 import type { AmpHUDProps } from '../../../types/components'
 import type { TranslationCallback } from '../../../types/callbacks'
 
@@ -179,7 +180,7 @@ export const AmpHUD = memo(function AmpHUD({
   isFeedbackLoopActive = false,
   feedbackLoopsDampened = 0
 }: AmpHUDProps) {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
 
   return (
     <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
@@ -198,7 +199,7 @@ export const AmpHUD = memo(function AmpHUD({
                 : 'text-toxic-green'
             }
           >
-            {timeLeft.toFixed(1)}s
+            {formatNumber(timeLeft, i18n.language, 1)}s
           </span>
         </div>
         <div className='flex justify-between w-48'>

@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { Modal } from '../../ui/shared/Modal'
 import { GlitchButton } from '../../ui/GlitchButton'
+import { NEURO_OVERCLOCK_GRAFT_COST } from '../../context/gameConstants'
+import { getNeuroOverclockEffects } from '../../utils/traitUtils'
 
 /**
  * Configuration properties for the experimental graft confirmation modal.
@@ -23,8 +25,10 @@ interface GraftModalProps {
  * Renders a modal prompting the user to confirm an experimental neuro-overclocking mutation.
  *
  * @remarks
- * This component displays critical warnings regarding irreversible stat changes, including
- * health decay and stress accumulation, alongside the required financial cost.
+ * This component displays critical warnings regarding irreversible changes: the one-off stamina
+ * and stress cost, the per-gig stamina and stress cost, and the required financial cost. The
+ * figures come from the same constants and trait definition the reducers apply, so the text
+ * cannot drift from the real cost.
  *
  * @returns The rendered confirmation modal component.
  */
@@ -36,6 +40,7 @@ export const GraftModal = ({
   cost
 }: GraftModalProps) => {
   const { t, i18n } = useTranslation(['ui'])
+  const { stressPerGig, staminaPerGig } = getNeuroOverclockEffects()
 
   return (
     <Modal
@@ -65,12 +70,17 @@ export const GraftModal = ({
           </li>
           <li>
             {t('ui:clinic.graft_stat2', {
-              defaultValue: 'Stress Accumulation: Severe (+30 Base)'
+              now: NEURO_OVERCLOCK_GRAFT_COST.STRESS,
+              perGig: stressPerGig,
+              defaultValue:
+                'Band Stress: +{{now}} now, +{{perGig}} after every gig'
             })}
           </li>
           <li>
             {t('ui:clinic.graft_stat3', {
-              defaultValue: 'Health Decay: Invasive (-20 HP)'
+              now: NEURO_OVERCLOCK_GRAFT_COST.STAMINA,
+              perGig: Math.abs(staminaPerGig),
+              defaultValue: 'Stamina: -{{now}} now, -{{perGig}} after every gig'
             })}
           </li>
         </ul>
