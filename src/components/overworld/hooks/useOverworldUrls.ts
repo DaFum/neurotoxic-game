@@ -6,6 +6,7 @@ import {
   isImageGenerationAvailable,
   getGeneratedImageFallbackUrl
 } from '../../../utils/imageGen'
+import { escapeHtml } from '../../../utils/stringUtils'
 import type { TranslationCallback } from '../../../types/callbacks'
 
 const SVG_TOKEN_NAMES = [
@@ -94,22 +95,6 @@ const createSvgTokenStyle = (): string => {
   return `<defs><style>:root{${tokenDefinitions.join(';')}}</style></defs>`
 }
 
-const escapeSvgText = (value: string): string =>
-  value.replace(/[&<>"']/g, char => {
-    switch (char) {
-      case '&':
-        return '&amp;'
-      case '<':
-        return '&lt;'
-      case '>':
-        return '&gt;'
-      case '"':
-        return '&quot;'
-      default:
-        return '&#39;'
-    }
-  })
-
 /**
  * Resolves online generated images or offline SVG fallbacks for overworld map art.
  * @param isOnlineNetwork - Current online/offline state used when choosing URLs.
@@ -127,22 +112,22 @@ export const useOverworldUrls = (
       `data:image/svg+xml;utf8,${encodeURIComponent(svgMarkup)}`
     const createOfflinePinUrl = (label: string, symbol: string) =>
       createOfflineSvgUrl(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeSvgText(label)}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeHtml(label)}">
           ${svgTokenStyle}
           <circle cx="32" cy="24" r="16" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
           <path d="M32 58 21 34h22L32 58Z" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3" stroke-linejoin="round"/>
-          <text x="32" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="var(--color-void-black)">${escapeSvgText(symbol)}</text>
+          <text x="32" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="var(--color-void-black)">${escapeHtml(symbol)}</text>
         </svg>
       `)
     const createOfflineVanUrl = (label: string, text: string) =>
       createOfflineSvgUrl(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeSvgText(label)}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeHtml(label)}">
           ${svgTokenStyle}
           <rect x="10" y="20" width="34" height="20" rx="4" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
           <path d="M44 26h10l4 8v6H44Z" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3" stroke-linejoin="round"/>
           <circle cx="22" cy="44" r="5" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
           <circle cx="48" cy="44" r="5" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
-          <text x="31" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="var(--color-void-black)">${escapeSvgText(text)}</text>
+          <text x="31" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="var(--color-void-black)">${escapeHtml(text)}</text>
         </svg>
       `)
     const offlineCopy = {
@@ -183,13 +168,13 @@ export const useOverworldUrls = (
     }
     const offlineAssets = {
       mapBgUrl: createOfflineSvgUrl(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="${escapeSvgText(offlineCopy.mapAria)}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="${escapeHtml(offlineCopy.mapAria)}">
           ${svgTokenStyle}
           <rect width="800" height="450" fill="var(--color-star-white)"/>
           <path d="M40 360C140 320 220 330 320 290S520 210 620 230s100 40 140 20" fill="none" stroke="var(--color-void-black)" stroke-width="10" stroke-linecap="round"/>
           <path d="M90 110c40 10 70 40 120 30s90-50 150-30 100 70 170 60 110-60 170-50" fill="none" stroke="var(--color-toxic-green)" stroke-width="6" stroke-dasharray="18 12" stroke-linecap="round"/>
-          <text x="400" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="var(--color-void-black)">${escapeSvgText(offlineCopy.mapTitle)}</text>
-          <text x="400" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="var(--color-void-black)">${escapeSvgText(offlineCopy.mapDescription)}</text>
+          <text x="400" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="var(--color-void-black)">${escapeHtml(offlineCopy.mapTitle)}</text>
+          <text x="400" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="var(--color-void-black)">${escapeHtml(offlineCopy.mapDescription)}</text>
         </svg>
       `),
       vanUrl: createOfflineVanUrl(

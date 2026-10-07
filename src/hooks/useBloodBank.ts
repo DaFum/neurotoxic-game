@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
+import { useDisclosure } from './useDisclosure'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import {
   calculateBloodBankPayout,
@@ -36,10 +37,11 @@ export const useBloodBank = () => {
   const band = useGameSelector(state => state.band)
   const { bloodBankDonate } = useGameActions()
 
-  const [showBloodBank, setShowBloodBank] = useState(false)
-
-  const openBloodBank = useCallback(() => setShowBloodBank(true), [])
-  const closeBloodBank = useCallback(() => setShowBloodBank(false), [])
+  const {
+    isOpen: showBloodBank,
+    open: openBloodBank,
+    close: closeBloodBank
+  } = useDisclosure()
 
   const { config, marrowConfig } = useMemo(() => {
     const buildConfig = (variant: typeof DONATION_VARIANTS.blood) => ({

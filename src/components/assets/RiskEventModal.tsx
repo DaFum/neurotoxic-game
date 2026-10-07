@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRiskEventImagePrompt } from '../../utils/imageGen'
+import { ConfirmButton } from './shared/ConfirmButton'
 import type { RiskEventType } from '../../types/assets'
 import type { BaseModalProps } from '../../types/ui'
 
@@ -36,17 +37,9 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
         />
         <p>{t(`assets:risk.event.${eventType}`)}</p>
         <div className='flex justify-end'>
-          <button
-            type='button'
-            onClick={onClose}
-            className='border-2 px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-            style={{
-              background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void-black)'
-            }}
-          >
+          <ConfirmButton onClick={onClose}>
             {t('ui:action_close', { defaultValue: 'Close' })}
-          </button>
+          </ConfirmButton>
         </div>
       </div>
     </Modal>

@@ -37,11 +37,20 @@ describe('BloodBankModal', () => {
     )
     const closeButton = screen.getByRole('button', { name: /leave/i })
 
-    expect(dialog).toHaveClass('p-2')
+    expect(dialog.parentElement).toHaveClass('p-2')
+    expect(sheet).toBe(dialog)
     expect(sheet).toHaveClass('max-h-[calc(100svh-1rem)]')
     expect(content).toHaveClass('overflow-y-auto')
     expect(closeButton).toHaveClass('w-full')
     expect(closeButton).toHaveClass('sm:w-auto')
+  })
+
+  it('closes once on Escape through the shared modal stack', () => {
+    const onClose = vi.fn()
+    render(<BloodBankModal {...baseProps} onClose={onClose} />)
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('wraps disabled donation action buttons in a Tooltip explaining why it is disabled and keeps it focusable', () => {

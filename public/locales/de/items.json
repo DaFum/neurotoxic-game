@@ -203,6 +203,8 @@
   "contraband.c_blood_pick.description": "Ein Plektrum, das zurückbeißt. Extremer Genauigkeits-Boost, aber das Spielen damit schmerzt.",
   "contraband.c_abyssal_pendant.name": "Abgründiges Amulett",
   "contraband.c_abyssal_pendant.description": "Ein schweres Eisenamulett. Es zu tragen fühlt sich an wie Ertrinken. Reduziert dauerhaft Harmonie.",
+  "contraband.c_diy_overdrive.name": "DIY-Overdrive-Pedal",
+  "contraband.c_diy_overdrive.description": "Ein handgelötetes Pedal aus einem Kofferraum voller gemoddeter Elektronik. +3% kritische Performance-Würfe, wenn ausgerüstet.",
   "hq_room_void_altar.name": "Altar der Leere",
   "hq_room_void_altar.description": "Ein beunruhigender Monolith, der summt. (+10 Glück Sofort).",
   "lucky_pick.name": "Plektrum des Schicksals",

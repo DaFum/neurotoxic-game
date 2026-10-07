@@ -3,8 +3,7 @@ import { ActionButton } from './shared/ActionButton'
 import { Tooltip } from './shared/Tooltip'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { formatCurrency } from '../utils/numberUtils'
-
-import { useEffect, useRef, type KeyboardEvent } from 'react'
+import { useModalBehavior } from './shared/useModalBehavior'
 
 type BloodBankConfig = {
   moneyGain: number
@@ -213,30 +212,14 @@ export const BloodBankModal = ({
   marrowConfig: BloodBankConfig
 }) => {
   const { t, i18n } = useTranslation(['ui'])
-  const modalRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (modalRef.current) {
-      modalRef.current.focus()
-    }
-  }, [])
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation()
-      onClose()
-    }
-  }
+  const { overlayRef, dialogRef } = useModalBehavior(true, onClose)
 
   return (
     <div
-      ref={modalRef}
-      className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4 outline-none focus-visible:outline-none'
-      role='dialog'
-      aria-modal='true'
-      aria-labelledby='blood-bank-title'
-      tabIndex={-1}
-      onKeyDown={handleKeyDown}
+      ref={overlayRef}
+      data-modal-overlay=''
+      role='presentation'
+      className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4'
     >
       {/* Backdrop */}
       <div
@@ -246,8 +229,13 @@ export const BloodBankModal = ({
       />
 
       <div
+        ref={dialogRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='blood-bank-title'
+        tabIndex={-1}
         data-testid='blood-bank-sheet'
-        className='relative z-(--z-modal) w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[4px_4px_0px_var(--color-blood-red)] sm:shadow-[8px_8px_0px_var(--color-blood-red)] overflow-hidden p-3 sm:p-6'
+        className='focus:outline-none relative z-(--z-modal) w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[4px_4px_0px_var(--color-blood-red)] sm:shadow-[8px_8px_0px_var(--color-blood-red)] overflow-hidden p-3 sm:p-6'
       >
         {/* Background Image */}
         <div
@@ -323,7 +311,7 @@ export const BloodBankModal = ({
               onClick={onClose}
               className='w-full sm:w-auto min-w-32 border-ash-gray text-ash-gray hover:text-void-black hover:bg-ash-gray'
             >
-              {t('ui:cancel', { defaultValue: 'CANCEL' })}
+              {t('ui:action_cancel', { defaultValue: 'CANCEL' })}
             </ActionButton>
           </div>
         </div>

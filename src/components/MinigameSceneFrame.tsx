@@ -1,6 +1,5 @@
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
-import { useGameSelector } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import type { MinigameSceneFrameProps } from '../types/components'
@@ -29,7 +28,6 @@ export const MinigameSceneFrame = <TState,>({
   children
 }: MinigameSceneFrameProps<TState>) => {
   const { t } = useTranslation(['ui'])
-  const settings = useGameSelector(state => state.settings)
 
   const { continueButtonRef, handleSkip, canSkip } = useMinigameSceneLogic({
     logic,
@@ -46,10 +44,6 @@ export const MinigameSceneFrame = <TState,>({
           controllerFactory={controllerFactory}
         />
       </div>
-
-      {settings?.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt)' />
-      )}
 
       {/* Player-initiated exit: forfeits the run and continues. Offered only for
           pre-gig setup minigames, and hidden once the completion overlay is

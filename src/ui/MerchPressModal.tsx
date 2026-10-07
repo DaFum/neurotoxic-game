@@ -291,7 +291,7 @@ function MerchPressActions({
         onClick={onClose}
         className='w-full sm:w-auto uppercase'
       >
-        [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
+        [ {t('ui:action_cancel', { defaultValue: 'CANCEL' })} ]
       </GlitchButton>
       {!canPress ? (
         <Tooltip content={disabledReason}>{confirmBtn}</Tooltip>

@@ -1,8 +1,10 @@
-import { useState, useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
 import { handleError, GameError, StateError } from '../../../utils/errorHandler'
 import { isStashEntry } from '../../../utils/gameState'
+import { finiteNumberOr } from '../../../utils/finiteNumber'
+import { usePurchaseLock } from './usePurchaseLock'
 import type {
   BandState,
   PlayerState,
@@ -10,6 +12,14 @@ import type {
   TradeVoidItemPayload
 } from '../../../types'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
+
+const DEFAULT_VOID_FAME_COST = 1000
+
+const getVoidFameCost = (item: VoidTraderItem): number =>
+  finiteNumberOr(
+    item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined,
+    DEFAULT_VOID_FAME_COST
+  )
 
 type BandHQLogicParams = {
   player: PlayerState
@@ -47,40 +57,34 @@ export const useBandHQLogic = ({
   addToast
 }: BandHQLogicParams): BandHQLogicResult => {
   const { t } = useTranslation()
-  const [processingItemId, setProcessingItemId] = useState<string | null>(null)
-  const processingItemIdRef = useRef<string | null>(null)
+  const { processingItemId, runWithLock } = usePurchaseLock()
 
   const handleVoidTrade = useCallback(
     (item: VoidTraderItem) => {
-      if (processingItemIdRef.current !== null) return
-      processingItemIdRef.current = item.id
-      setProcessingItemId(item.id)
-      try {
-        const fameCost =
-          (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
-        if (player.fame < fameCost) {
-          throw new GameError(
-            t('ui:error.insufficient_fame', {
-              defaultValue: `Not enough fame. You need ${fameCost} fame.`,
-              cost: fameCost
-            }),
-            { context: { cost: fameCost } }
-          )
+      void runWithLock(item.id, () => {
+        try {
+          const fameCost = getVoidFameCost(item)
+          if (player.fame < fameCost) {
+            throw new GameError(
+              t('ui:error.insufficient_fame', {
+                defaultValue: `Not enough fame. You need ${fameCost} fame.`,
+                cost: fameCost
+              }),
+              { context: { cost: fameCost } }
+            )
+          }
+          const successToast: Omit<ToastPayload, 'id'> = {
+            messageKey: 'ui:toast.void_trade_success',
+            options: { itemName: t(`items:contraband.${item.id}.name`) },
+            type: 'success'
+          }
+          tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+        } catch (err) {
+          handleError(err, { addToast })
         }
-        const successToast: Omit<ToastPayload, 'id'> = {
-          messageKey: 'ui:toast.void_trade_success',
-          options: { itemName: t(`items:contraband.${item.id}.name`) },
-          type: 'success'
-        }
-        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
-      } catch (err) {
-        handleError(err, { addToast })
-      } finally {
-        processingItemIdRef.current = null
-        setProcessingItemId(null)
-      }
+      })
     },
-    [player.fame, tradeVoidItem, addToast, t]
+    [player.fame, tradeVoidItem, addToast, t, runWithLock]
   )
 
   const isVoidItemOwned = useCallback(
@@ -93,8 +97,7 @@ export const useBandHQLogic = ({
 
   const isVoidItemDisabled = useCallback(
     (item: VoidTraderItem) => {
-      const fameCost =
-        (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
+      const fameCost = getVoidFameCost(item)
       const hasStashOwn = !!(band.stash && Object.hasOwn(band.stash, item.id))
       const stashEntry = hasStashOwn ? band.stash[item.id] : undefined
       const currentQuantity = isStashEntry(stashEntry)
@@ -116,7 +119,6 @@ export const useBandHQLogic = ({
 
   const handleBuyWithLock = useCallback(
     async (item: PurchaseItem) => {
-      if (processingItemIdRef.current !== null) return
       if (item.id == null) {
         handleError(new StateError('Invalid purchase item id', { item }), {
           addToast
@@ -124,35 +126,31 @@ export const useBandHQLogic = ({
         return
       }
 
-      const itemId = String(item.id)
-      processingItemIdRef.current = itemId
-      setProcessingItemId(itemId)
-      try {
-        await handleBuy(item)
-      } catch (err) {
-        if (err instanceof GameError || err instanceof StateError) {
-          handleError(err, { addToast })
-        } else {
-          handleError(
-            new GameError(
-              t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }),
-              {
-                context: {
-                  originalError:
-                    err instanceof Error ? err.message : String(err),
-                  stack: err instanceof Error ? err.stack : undefined
+      await runWithLock(String(item.id), async () => {
+        try {
+          await handleBuy(item)
+        } catch (err) {
+          if (err instanceof GameError || err instanceof StateError) {
+            handleError(err, { addToast })
+          } else {
+            handleError(
+              new GameError(
+                t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }),
+                {
+                  context: {
+                    originalError:
+                      err instanceof Error ? err.message : String(err),
+                    stack: err instanceof Error ? err.stack : undefined
+                  }
                 }
-              }
-            ),
-            { addToast }
-          )
+              ),
+              { addToast }
+            )
+          }
         }
-      } finally {
-        processingItemIdRef.current = null
-        setProcessingItemId(null)
-      }
+      })
     },
-    [handleBuy, addToast, t]
+    [handleBuy, addToast, t, runWithLock]
   )
 
   return {

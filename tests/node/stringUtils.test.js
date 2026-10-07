@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { fnv1a32, hash31 } from '../../src/utils/stringUtils'
+import { escapeHtml, fnv1a32, hash31 } from '../../src/utils/stringUtils'
 
 test('hash31 calculates correct 32-bit integer hashes', async t => {
   await t.test('returns 0 for empty string', () => {
@@ -82,4 +82,47 @@ test('fnv1a32 reproduces the three retired FNV-1a copies byte for byte', () => {
   assert.equal(fnv1a32('hello world', 12345), 816770563)
   assert.equal(fnv1a32('a', -7), 2550094920)
   assert.equal(fnv1a32('a', 4294967295), 2650760634)
+})
+
+test('escapeHtml escapes the five markup characters and leaves other text alone', () => {
+  assert.equal(
+    escapeHtml(`<a href="x">Tom & 'Jerry'</a>`),
+    '&lt;a href=&quot;x&quot;&gt;Tom &amp; &#39;Jerry&#39;&lt;/a&gt;'
+  )
+  assert.equal(escapeHtml('plain text 123'), 'plain text 123')
+  assert.equal(escapeHtml(''), '')
+})
+
+test('escapeHtml escapes ampersands first-pass only (no double escaping of its own output)', () => {
+  assert.equal(escapeHtml('&amp;'), '&amp;amp;')
+})
+
+test('escapeHtml matches the retired SVG and trade-context escapers for every special character', () => {
+  const legacySvg = value =>
+    value.replace(/[&<>"']/g, char => {
+      switch (char) {
+        case '&':
+          return '&amp;'
+        case '<':
+          return '&lt;'
+        case '>':
+          return '&gt;'
+        case '"':
+          return '&quot;'
+        default:
+          return '&#39;'
+      }
+    })
+  for (const sample of [
+    '&',
+    '<',
+    '>',
+    '"',
+    "'",
+    '<&>"\'',
+    'a&b<c>d"e\'f',
+    'ünï & çøde'
+  ]) {
+    assert.equal(escapeHtml(sample), legacySvg(sample), sample)
+  }
 })

@@ -15,29 +15,35 @@ interface FrameCornersProps {
    * decided by stylesheet order rather than by the caller.
    */
   topLeftClassName?: string
+  /**
+   * Shifts the corners 4px past the parent's padding box so they sit on the
+   * outer edge of a `border-4` frame instead of inside it.
+   */
+  outset?: boolean
 }
 
 /**
  * Renders the four rotated corner markers flush to the parent's edges.
- * @param props - Shared corner classes and an optional top-left override for accent corners.
+ * @param props - Shared corner classes, an optional top-left override for accent corners, and an outset flag for bordered frames.
  */
 export const FrameCorners = memo(function FrameCorners({
   className = '',
-  topLeftClassName
+  topLeftClassName,
+  outset = false
 }: FrameCornersProps) {
   return (
     <>
       <UIFrameCorner
-        className={`absolute top-0 left-0 ${topLeftClassName ?? className}`}
+        className={`absolute ${outset ? '-top-1 -left-1' : 'top-0 left-0'} ${topLeftClassName ?? className}`}
       />
       <UIFrameCorner
-        className={`absolute top-0 right-0 rotate-90 ${className}`}
+        className={`absolute ${outset ? '-top-1 -right-1' : 'top-0 right-0'} rotate-90 ${className}`}
       />
       <UIFrameCorner
-        className={`absolute bottom-0 right-0 rotate-180 ${className}`}
+        className={`absolute ${outset ? '-bottom-1 -right-1' : 'bottom-0 right-0'} rotate-180 ${className}`}
       />
       <UIFrameCorner
-        className={`absolute bottom-0 left-0 -rotate-90 ${className}`}
+        className={`absolute ${outset ? '-bottom-1 -left-1' : 'bottom-0 left-0'} -rotate-90 ${className}`}
       />
     </>
   )

@@ -17,6 +17,7 @@ import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
 import { SONGS_DB } from '../../src/data/songs'
+import { FLAGS } from '../../src/data/flags.registry'
 
 // Loaded setlists are validated against the song catalog, so these tests must
 // use real ids rather than placeholders.
@@ -256,7 +257,7 @@ test('systemReducer - LOAD_GAME', async t => {
           controversyLevel: 10
         },
         setlist: [CATALOG_SONG_A],
-        activeStoryFlags: ['flag1'],
+        activeStoryFlags: [FLAGS.COMEBACK_TRIGGERED],
         pendingEvents: ['event1'],
         eventCooldowns: ['cooldown1'],
         toasts: [{ id: '1', message: 'Hello', type: 'info' }],
@@ -287,7 +288,7 @@ test('systemReducer - LOAD_GAME', async t => {
       })
       assert.equal(nextState.social.controversyLevel, 10)
       assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
-      assert.deepEqual(nextState.activeStoryFlags, ['flag1'])
+      assert.deepEqual(nextState.activeStoryFlags, [FLAGS.COMEBACK_TRIGGERED])
       assert.deepEqual(nextState.pendingEvents, ['event1'])
       assert.deepEqual(nextState.eventCooldowns, ['cooldown1'])
       assert.deepEqual(nextState.toasts, [
@@ -1003,7 +1004,7 @@ test('systemReducer - LOAD_GAME', async t => {
     const initialState = createInitialState()
     const loadedState = {
       setlist: [CATALOG_SONG_A, 7, { songId: CATALOG_SONG_B }, null],
-      activeStoryFlags: ['flag-a', 4],
+      activeStoryFlags: [FLAGS.SAW_CRISIS_50, 4],
       pendingEvents: ['event-a', {}],
       pendingForeclosureNotices: [
         'tourbus_chassis',
@@ -1051,7 +1052,7 @@ test('systemReducer - LOAD_GAME', async t => {
     // Sanitized entries are normalized to the canonical save-path shape;
     // `{ songId }` carries no valid string `id`, so it is dropped.
     assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
-    assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
+    assert.deepEqual(nextState.activeStoryFlags, [FLAGS.SAW_CRISIS_50])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
     assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])

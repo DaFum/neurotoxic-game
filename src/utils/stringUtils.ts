@@ -36,3 +36,21 @@ export const fnv1a32 = (
   }
   return hash
 }
+
+const HTML_ESCAPE_MAP: Readonly<Record<string, string>> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+}
+
+/**
+ * Escapes the five HTML/SVG-significant characters (`& < > " '`) so a string
+ * can be interpolated into markup or an attribute value.
+ *
+ * @param value - Raw text.
+ * @returns The text with each of those characters replaced by its entity.
+ */
+export const escapeHtml = (value: string): string =>
+  value.replace(/[&<>"']/g, char => HTML_ESCAPE_MAP[char] ?? char)

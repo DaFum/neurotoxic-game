@@ -24,6 +24,7 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
+import { isStoryFlag } from '../../data/flags.registry'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './migrations'
 import { parseSaveVersion } from '../../utils/saveVersion'
 import { createRngStream, nextSeed } from '../../utils/seededRng'
@@ -234,7 +235,11 @@ export const handleLoadGame = (
         ? null
         : (normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap),
     setlist: sanitizeSetlist(loadedState.setlist),
-    activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
+    // Every flag any writer or reader uses is registered (`flagRegistry` test),
+    // so a flag outside the registry is stale save data nothing can read.
+    activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags).filter(
+      isStoryFlag
+    ),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
     pendingForeclosureNotices: sanitizeAssetKinds(
       loadedState.pendingForeclosureNotices

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { AssetKind } from '../../types/assets'
+import { useRovingTabs } from '../../ui/shared/useRovingTabs'
 import { ASSET_SECTION_TABS } from './sectionTabs'
 
 /**
@@ -28,6 +29,11 @@ export const AssetsBottomTabs = ({
   onSelect
 }: AssetsBottomTabsProps) => {
   const { t } = useTranslation(['assets'])
+  const { getTabProps } = useRovingTabs({
+    ids: ASSET_SECTION_TABS.map(tab => tab.key),
+    activeId: active,
+    onSelect: onSelect
+  })
 
   return (
     <nav className='assets-bottom-tabs sticky bottom-0 z-20 px-2 pt-2'>
@@ -47,6 +53,7 @@ export const AssetsBottomTabs = ({
               role='tab'
               aria-selected={isActive}
               aria-controls={`assets-panel-${tab.key}`}
+              {...getTabProps(tab.key)}
               onClick={() => onSelect(tab.key)}
               className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-bottom-tab flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 border-2 px-1 py-2 text-xs uppercase leading-none transition-transform active:scale-[0.98] sm:flex-row sm:text-xs'
               style={{

@@ -1,5 +1,7 @@
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
+import { finiteNumberOr } from './finiteNumber'
+import { clampBandStress, clampMemberStamina } from './gameState/clamps'
 import type { GameState, BandMember, BandState, ToastPayload } from '../types'
 import { buildDeterministicToastId } from '../context/reducers/toastSanitizers'
 
@@ -117,6 +119,65 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
 export const getTraitById = (traitId: string): TraitDef | null => {
   if (!traitId) return null
   return TRAIT_DEFS_BY_ID.get(traitId) ?? null
+}
+
+/** Id of the Void Clinic graft trait. */
+export const NEURO_OVERCLOCK_TRAIT_ID = 'neuro_overclock'
+
+/**
+ * Reads the Neuro-Overclock tuning from its canonical trait definition (never
+ * from a member's saved copy, which can be stale).
+ *
+ * @returns `rhythmMultiplier` (hit-window multiplier, `1` = no change),
+ * `stressPerGig` (band stress added per carrier per real gig) and
+ * `staminaPerGig` (signed stamina change per carrier per real gig).
+ */
+export const getNeuroOverclockEffects = (): {
+  rhythmMultiplier: number
+  stressPerGig: number
+  staminaPerGig: number
+} => {
+  const raw = getTraitById(NEURO_OVERCLOCK_TRAIT_ID)?.effects
+  const effects =
+    raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  return {
+    rhythmMultiplier: finiteNumberOr(effects.rhythmMultiplier, 1),
+    stressPerGig: finiteNumberOr(effects.stressPerGig, 0),
+    staminaPerGig: finiteNumberOr(effects.staminaPerGig, 0)
+  }
+}
+
+/**
+ * Applies the Neuro-Overclock per-gig cost: each carrier adds `stressPerGig`
+ * to band stress and changes its own stamina by `staminaPerGig`.
+ *
+ * @param band - Band after a real (non-practice) gig.
+ * @returns A new band with the cost applied, or the identical `band` when no
+ * member carries the trait.
+ */
+export const applyNeuroOverclockGigCost = (band: BandState): BandState => {
+  if (!Array.isArray(band.members)) return band
+  const { stressPerGig, staminaPerGig } = getNeuroOverclockEffects()
+  let carriers = 0
+  const members = band.members.map(member => {
+    if (!hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)) return member
+    carriers += 1
+    return {
+      ...member,
+      stamina: clampMemberStamina(
+        finiteNumberOr(member.stamina, 0) + staminaPerGig,
+        finiteNumberOr(member.staminaMax, 100)
+      )
+    }
+  })
+  if (carriers === 0) return band
+  return {
+    ...band,
+    members,
+    stress: clampBandStress(
+      finiteNumberOr(band.stress, 0) + stressPerGig * carriers
+    )
+  }
 }
 
 /**

@@ -31,7 +31,7 @@ export function stopAudioInternal(): void {
 /**
  * Stops ambient OGG playback and clears ambient state.
  */
-export function stopAmbientPlayback(): void {
+function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
   }

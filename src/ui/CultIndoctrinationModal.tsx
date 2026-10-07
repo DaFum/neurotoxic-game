@@ -55,7 +55,7 @@ export const CultIndoctrinationModal = ({
         alreadyRanToday: t('ui:cult_indoctrination.indoctrinated_today', {
           defaultValue: 'Followers already indoctrinated today.'
         }),
-        cancel: t('ui:cult_indoctrination.cancel', { defaultValue: 'CANCEL' }),
+        cancel: t('ui:action_cancel', { defaultValue: 'CANCEL' }),
         execute: t('ui:cult_indoctrination.execute', {
           defaultValue: 'EXECUTE INDOCTRINATION'
         })

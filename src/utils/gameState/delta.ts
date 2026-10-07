@@ -3,6 +3,7 @@ import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../contrabandEffects'
+import { addContrabandToBand } from '../contrabandStashUtils'
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
@@ -934,6 +935,26 @@ export const applyEventDelta = (
           }
           delete nextBand.stash[itemId]
         }
+      }
+    }
+
+    // Event-granted contraband goes through the same stash-add path as drops
+    // and trades, so stacking, uniqueness and apply-on-add rules all hold.
+    if (Array.isArray(delta.band.stashAdd)) {
+      for (const entry of delta.band.stashAdd) {
+        if (!isLooseRecord(entry) || typeof entry.contrabandId !== 'string') {
+          continue
+        }
+        Object.assign(
+          nextBand,
+          addContrabandToBand(nextBand, {
+            contrabandId: entry.contrabandId,
+            instanceId:
+              typeof entry.instanceId === 'string'
+                ? entry.instanceId
+                : undefined
+          })
+        )
       }
     }
 

@@ -2,6 +2,10 @@ import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import { getFinancialColors } from '../../utils/financialColors'
+import {
+  isRegisteredBreakdownLabelKey,
+  UNKNOWN_BREAKDOWN_LABEL_KEY
+} from '../../utils/economy/breakdownLabelKeys'
 import type { FinancialListProps } from '../../types/components'
 
 /**
@@ -24,7 +28,16 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             className='flex items-start justify-between gap-3'
           >
             <span className='min-w-0 text-star-white/70 break-words'>
-              {t(item.labelKey)}
+              {t(
+                isRegisteredBreakdownLabelKey(item.labelKey)
+                  ? item.labelKey
+                  : UNKNOWN_BREAKDOWN_LABEL_KEY
+              )}
+              {item.detailKey ? (
+                <span className='block text-xs text-star-white/40'>
+                  {t(item.detailKey, item.detailParams)}
+                </span>
+              ) : null}
             </span>
             <span
               className={`${getFinancialColors(type).text} shrink-0 text-right font-bold tabular-nums`}

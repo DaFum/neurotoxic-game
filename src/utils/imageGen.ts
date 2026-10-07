@@ -300,6 +300,8 @@ export const IMG_PROMPTS = {
     'pixel art literal silver metallic tongue dripping black liquid dark icon',
   ITEM_BROKEN_COMPASS:
     'pixel art shattered compass with a wildly spinning needle glowing icon',
+  ITEM_DIY_OVERDRIVE:
+    'pixel art hand-soldered guitar overdrive pedal with exposed wires and a duct-tape knob grunge icon',
 
   ITEM_NEURO_MOLD:
     'A glowing, toxic green cluster of neuro-mold spores in a dark, brutalist metal container, cyber-grime aesthetic, hyper-detailed, dramatic lighting --ar 1:1 --v 6.0',

@@ -233,6 +233,17 @@ const FIELD_CASES = [
     expect: 'applyOnly'
   },
   {
+    // Event-granted contraband is apply-side only; the preview UI never
+    // surfaces stash changes.
+    name: 'band.stashAdd',
+    delta: withDelta({
+      band: {
+        stashAdd: [{ contrabandId: 'c_diy_overdrive', instanceId: 'inst_1' }]
+      }
+    }),
+    expect: 'applyOnly'
+  },
+  {
     name: 'social.controversyLevel',
     delta: withDelta({ social: { controversyLevel: 5 } }),
     expect: 'both',

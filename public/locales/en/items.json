@@ -203,6 +203,8 @@
   "contraband.c_blood_pick.description": "A guitar pick that bites back. Extreme accuracy boost, but playing with it hurts.",
   "contraband.c_abyssal_pendant.name": "Abyssal Pendant",
   "contraband.c_abyssal_pendant.description": "A heavy iron pendant. Wearing it feels like drowning. Permanently reduces harmony.",
+  "contraband.c_diy_overdrive.name": "DIY Overdrive Pedal",
+  "contraband.c_diy_overdrive.description": "A hand-soldered pedal from a trunk full of modded electronics. +3% critical performance rolls while equipped.",
   "hq_room_void_altar.name": "Altar of the Void",
   "hq_room_void_altar.description": "An unsettling monolith that hums. (+10 Luck immediate).",
   "lucky_pick.name": "Pick of Destiny",

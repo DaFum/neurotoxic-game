@@ -18,6 +18,7 @@ import { handleLoadGame } from '../../src/context/reducers/systemReducer'
 import { createFixedClock } from '../../src/utils/clock'
 import { buildExpeditionMap } from '../../src/domain/expedition/map'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { FLAGS } from '../../src/data/flags.registry'
 
 /**
  * The fixture seed, shared by the persisted state and the route derived from
@@ -73,7 +74,7 @@ const buildPopulatedState = () => {
     failed: true
   }
   state.activeEvent = { id: 'evt_1', type: 'flavor', titleKey: 'events:evt_1' }
-  state.activeStoryFlags = ['flag_a', 'flag_b']
+  state.activeStoryFlags = [FLAGS.COMEBACK_TRIGGERED, FLAGS.SAW_CRISIS_50]
   state.eventCooldowns = [{ eventId: 'evt_1', until: 18 }]
   state.pendingEvents = ['evt_2']
   state.venueBlacklist = ['venue_9']

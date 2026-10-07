@@ -1,4 +1,4 @@
-import { clamp0to100 } from '../../../utils/gameState'
+import { ProgressBar } from '../../../ui/shared/ProgressBar'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'
 import { SocketList } from './SocketList.tsx'
@@ -70,10 +70,19 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
             {t('ui:minigames.kabelsalat.voidSurge')}: {Math.floor(voidSurge)}%
           </div>
-          <div className='w-48 h-4 bg-void-black border-2 border-concrete-gray p-0.5'>
-            <div
-              className={`h-full transition-all duration-300 ${voidSurge > 80 ? 'bg-error-red animate-pulse' : 'bg-cosmic-purple'}`}
-              style={{ width: `${clamp0to100(voidSurge)}%` }}
+          <div className='w-48'>
+            <ProgressBar
+              value={voidSurge}
+              max={100}
+              showValue={false}
+              aria-label={t('ui:minigames.kabelsalat.voidSurge')}
+              color={
+                voidSurge > 80
+                  ? 'bg-error-red animate-pulse'
+                  : 'bg-cosmic-purple'
+              }
+              trackClassName='w-full h-4 bg-void-black border-2 border-concrete-gray p-0.5'
+              fillClassName='transition-all duration-300'
             />
           </div>
           {voidSurge > 0 && (

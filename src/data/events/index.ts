@@ -21,8 +21,6 @@ import { logger } from '../../utils/logger'
 import { validateGameEvent } from '../../utils/eventValidator'
 import { EVENT_CATEGORIES, type EventCategory } from './categories'
 
-export { EVENT_CATEGORIES, type EventCategory } from './categories'
-
 const VALID_CATEGORIES = new Set<EventCategory>(EVENT_CATEGORIES)
 
 /** Aggregate raw event definitions from every event domain file before validation. */

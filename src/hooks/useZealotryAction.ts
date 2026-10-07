@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react'
 import { useGameSelector } from '../context/GameState'
+import { useDisclosure } from './useDisclosure'
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 import {
@@ -25,9 +25,11 @@ export const useZealotryAction = (
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
 
-  const [showModal, setShowModal] = useState(false)
-  const openModal = useCallback(() => setShowModal(true), [])
-  const closeModal = useCallback(() => setShowModal(false), [])
+  const {
+    isOpen: showModal,
+    open: openModal,
+    close: closeModal
+  } = useDisclosure()
 
   const hasRunToday = hasZealotryActionRunToday(
     social,

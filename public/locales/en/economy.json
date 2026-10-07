@@ -1,5 +1,6 @@
 {
   "cultDonations": "Cult Donations",
+  "unknownBreakdownLabel": "Other",
   "gigExpenses.catering.detail": "Counters Tired Band Penalty",
   "gigExpenses.catering.label": "Catering / Energy",
   "gigExpenses.demandSaturation.detail": "Recent regional shows reduced demand",
@@ -20,6 +21,7 @@
   "gigExpenses.socialAds.label": "Social Ads",
   "gigExpenses.soundcheck.detail": "Prep Time",
   "gigExpenses.soundcheck.label": "Soundcheck",
+  "gigExpenses.swingDampener.detail": "Soft ceiling on an exceptionally high payout",
   "gigExpenses.venueSplit.detail": "{{rate}}% of Door",
   "gigExpenses.venueSplit.label": "Venue Split",
   "gigIncome.badShow.detail": "Crowd left early...",
@@ -49,6 +51,7 @@
   "gigIncome.merchSales.patches.label": "Patches",
   "gigIncome.merchSales.shirts.label": "Shirts",
   "gigIncome.merchSales.vinyl.label": "Vinyl",
+  "gigIncome.swingBoost.detail": "Soft floor cushions a very bad night",
   "gigIncome.techSponsor.detail": "Perfect Set (0 Misses)",
   "gigIncome.techSponsor.label": "Tech Sponsor",
   "gigIncome.ticketSales.detail": "{{sold}} / {{capacity}} sold",

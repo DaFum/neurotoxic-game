@@ -2,12 +2,11 @@ import { memo, useMemo } from 'react'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
-import { Map as MapIcon, DollarSign, Skull } from 'lucide-react'
-import { formatCurrency } from '../utils/numberUtils'
+import { Skull } from 'lucide-react'
 import { Tooltip } from './shared'
 import {
   BandStatusPanel,
-  VanStatusMiniBars
+  PlayerStatusCard
 } from './hud/shared/SharedHUDComponents'
 import { GigControlsCluster } from '../components/hud/GigControlsCluster'
 import { translateLocation } from '../utils/locationI18n'
@@ -59,36 +58,15 @@ export const HUD = memo(() => {
       {/* Left Panel - Player Info (hidden during gigs) */}
       <div className='flex flex-col gap-2'>
         {!isGigScene && (
-          <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
-            <div className='flex items-center gap-2 mb-1.5'>
-              <DollarSign
-                size={14}
-                className={
-                  playerMoney < 40 ? 'text-blood-red' : 'text-warning-yellow'
-                }
-                aria-hidden='true'
-              />
-              <span
-                className={`text-sm font-bold tabular-nums ${playerMoney < 40 ? 'text-blood-red' : ''}`}
-              >
-                {formatCurrency(playerMoney, i18n.language)}
-              </span>
-            </div>
-            <div className='flex items-center gap-2 mb-2'>
-              <MapIcon size={14} aria-hidden='true' />
-              <span className='text-star-white/80'>
-                {t('ui:hud.day', { defaultValue: 'Day' })} {playerDay} —{' '}
-                {locationName}
-              </span>
-            </div>
-
-            {/* Van Status Mini Bars */}
-            <VanStatusMiniBars
-              fuel={playerVanFuel}
-              condition={playerVanCondition}
-              t={t}
-            />
-          </div>
+          <PlayerStatusCard
+            money={playerMoney}
+            day={playerDay}
+            locationName={locationName}
+            fuel={playerVanFuel}
+            condition={playerVanCondition}
+            language={i18n.language}
+            t={t}
+          />
         )}
 
         {/* During gigs these controls live in the GigHUD's collapsed

@@ -104,3 +104,29 @@ test('ProgressBar: keeps aria-valuenow within the reported range when value exce
   expect(progressBar.getAttribute('aria-valuenow')).toBe('100')
   expect(progressBar.getAttribute('aria-valuemax')).toBe('100')
 })
+
+test('ProgressBar: trackClassName and fillClassName replace the default chrome', () => {
+  const { getByRole } = render(
+    <ProgressBar
+      value={150}
+      max={100}
+      showValue={false}
+      aria-label='Heat'
+      color='bg-electric-blue'
+      trackClassName='h-2 border border-electric-blue'
+      fillClassName='transition-all duration-100'
+    />
+  )
+
+  const bar = getByRole('progressbar', { name: 'Heat' })
+  const track = bar.firstElementChild
+  const fill = track.firstElementChild
+
+  expect(track.className).toBe('h-2 border border-electric-blue')
+  expect(track.className).not.toContain('border-toxic-green')
+  expect(fill.className).toContain('bg-electric-blue')
+  expect(fill.className).toContain('duration-100')
+  expect(fill.className).not.toContain('duration-500')
+  // Out-of-range values are clamped to the track.
+  expect(fill.style.width).toBe('100%')
+})

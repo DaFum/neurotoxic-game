@@ -55,37 +55,23 @@ describe('MinigameSceneFrame', () => {
     expect(screen.getByTestId('pixi-stage-mock')).toBeTruthy()
   })
 
-  test('does not show CRT overlay when crtEnabled is false', async () => {
-    mockGameState.settings.crtEnabled = false
+  test.each([false, true])(
+    'never renders its own CRT overlay (App owns the single global one), crtEnabled=%s',
+    async crtEnabled => {
+      mockGameState.settings.crtEnabled = crtEnabled
 
-    const { container } = render(
-      <MinigameSceneFrame
-        controllerFactory={mockControllerFactory}
-        logic={mockLogic}
-        uiState={{ isGameOver: false }}
-        onComplete={mockOnComplete}
-      />
-    )
+      const { container } = render(
+        <MinigameSceneFrame
+          controllerFactory={mockControllerFactory}
+          logic={mockLogic}
+          uiState={{ isGameOver: false }}
+          onComplete={mockOnComplete}
+        />
+      )
 
-    const crtOverlay = container.querySelector('.crt-overlay')
-    expect(crtOverlay).toBeFalsy()
-  })
-
-  test('shows CRT overlay when crtEnabled is true', async () => {
-    mockGameState.settings.crtEnabled = true
-
-    const { container } = render(
-      <MinigameSceneFrame
-        controllerFactory={mockControllerFactory}
-        logic={mockLogic}
-        uiState={{ isGameOver: false }}
-        onComplete={mockOnComplete}
-      />
-    )
-
-    const crtOverlay = container.querySelector('.crt-overlay')
-    expect(crtOverlay).toBeTruthy()
-  })
+      expect(container.querySelector('.crt-overlay')).toBeNull()
+    }
+  )
 
   test('does not show completion overlay when game is not over', async () => {
     render(

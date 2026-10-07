@@ -53,6 +53,8 @@ export type EventDelta = {
     luck?: number
     skill?: number
     stashRemove?: string[]
+    /** Catalogue contraband to add to the stash, with a pre-generated instance id. */
+    stashAdd?: Array<{ contrabandId: string; instanceId?: string }>
   }
   social: Record<string, unknown> & {
     controversyLevel?: number

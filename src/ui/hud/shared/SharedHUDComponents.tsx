@@ -1,10 +1,11 @@
-import { memo } from 'react'
-import { Fuel, Wrench } from 'lucide-react'
+import { memo, type ReactNode } from 'react'
+import { DollarSign, Fuel, Map as MapIcon, Wrench } from 'lucide-react'
 import { ProgressBar, StatMiniBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
 import { finiteNumberOr } from '../../../utils/gameState'
+import { formatCurrency } from '../../../utils/numberUtils'
 
 export const VanStatusMiniBars = memo(
   ({
@@ -25,10 +26,8 @@ export const VanStatusMiniBars = memo(
           variant='stacked'
           value={safeFuel}
           threshold={20}
-          color='bg-warning-yellow'
-          icon={
-            <Fuel size={12} className='text-warning-yellow shrink-0 mb-0.5' />
-          }
+          color='bg-fuel-yellow'
+          icon={<Fuel size={12} className='text-fuel-yellow shrink-0 mb-0.5' />}
           label={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
           ariaLabel={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
         />
@@ -45,6 +44,117 @@ export const VanStatusMiniBars = memo(
             defaultValue: 'Van Condition'
           })}
         />
+      </div>
+    )
+  }
+)
+
+/** Money below this amount is shown in the danger colour. */
+const LOW_MONEY_THRESHOLD = 40
+
+interface PlayerStatusCardVariantConfig {
+  wrapperClassName: string
+  moneyRowClassName: string
+  dollarSize: number
+  moneyTextClassName: string
+  dayRowClassName: string
+  mapIconSize: number
+  mapIconClassName: string
+}
+
+const PLAYER_STATUS_CARD_VARIANTS = {
+  hud: {
+    wrapperClassName:
+      'bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-50 pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none',
+    moneyRowClassName: 'flex items-center gap-2 mb-2 max-sm:flex-wrap',
+    dollarSize: 16,
+    moneyTextClassName: 'text-base font-bold tabular-nums',
+    dayRowClassName: 'flex items-center gap-2 mb-3 text-star-white/90',
+    mapIconSize: 14,
+    mapIconClassName: 'text-toxic-green/70'
+  },
+  compact: {
+    wrapperClassName:
+      'bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]',
+    moneyRowClassName: 'flex items-center gap-2 mb-1.5',
+    dollarSize: 14,
+    moneyTextClassName: 'text-sm font-bold tabular-nums',
+    dayRowClassName: 'flex items-center gap-2 mb-2 text-star-white/80',
+    mapIconSize: 14,
+    mapIconClassName: 'text-toxic-green'
+  }
+} as const satisfies Record<'hud' | 'compact', PlayerStatusCardVariantConfig>
+
+interface PlayerStatusCardProps {
+  money: number
+  day: number
+  locationName: string
+  fuel?: number | null
+  condition?: number | null
+  /** Active i18n language for currency formatting. */
+  language: string
+  t: TFunction
+  variant?: 'hud' | 'compact'
+  /** Extra content rendered at the end of the money row (e.g. career stats). */
+  moneyRowAccessory?: ReactNode
+}
+
+/**
+ * Player status card: money with low-funds warning, day/location line, and van mini bars.
+ * Shared by the global HUD (`compact`) and the Overworld HUD (`hud`).
+ * @param props - Money, day, resolved location name, van readings, formatting language, translator, variant, and an optional money-row accessory.
+ */
+export const PlayerStatusCard = memo(
+  ({
+    money,
+    day,
+    locationName,
+    fuel,
+    condition,
+    language,
+    t,
+    variant = 'compact',
+    moneyRowAccessory
+  }: PlayerStatusCardProps) => {
+    const {
+      wrapperClassName,
+      moneyRowClassName,
+      dollarSize,
+      moneyTextClassName,
+      dayRowClassName,
+      mapIconSize,
+      mapIconClassName
+    } = PLAYER_STATUS_CARD_VARIANTS[variant]
+    const isLowMoney = money < LOW_MONEY_THRESHOLD
+
+    return (
+      <div className={wrapperClassName}>
+        <div className={moneyRowClassName}>
+          <DollarSign
+            size={dollarSize}
+            className={isLowMoney ? 'text-blood-red' : 'text-warning-yellow'}
+            aria-hidden='true'
+          />
+          <span
+            className={`${moneyTextClassName} ${isLowMoney ? 'text-blood-red' : ''}`}
+          >
+            {formatCurrency(money, language)}
+          </span>
+          {moneyRowAccessory}
+        </div>
+        <div className={dayRowClassName}>
+          <MapIcon
+            size={mapIconSize}
+            className={mapIconClassName}
+            aria-hidden='true'
+          />
+          <span>
+            {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
+          </span>
+        </div>
+
+        {/* Van Status Mini Bars */}
+        <VanStatusMiniBars fuel={fuel} condition={condition} t={t} />
       </div>
     )
   }

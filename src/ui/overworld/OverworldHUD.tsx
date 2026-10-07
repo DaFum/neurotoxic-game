@@ -1,7 +1,6 @@
 import { useState, memo } from 'react'
-import { Map as MapIcon, DollarSign, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency } from '../../utils/numberUtils'
 import type { PlayerState } from '../../types/player'
 import type { BandState } from '../../types/band'
 import {
@@ -11,7 +10,7 @@ import {
 } from '../shared'
 import {
   BandStatusPanel,
-  VanStatusMiniBars
+  PlayerStatusCard
 } from '../hud/shared/SharedHUDComponents'
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
@@ -47,18 +46,16 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
     <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative max-sm:order-2 max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2'>
       {/* Left Panel - Player Status */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-50 pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
-          <div className='flex items-center gap-2 mb-2 max-sm:flex-wrap'>
-            <DollarSign
-              size={16}
-              className={money < 40 ? 'text-blood-red' : 'text-warning-yellow'}
-              aria-hidden='true'
-            />
-            <span
-              className={`text-base font-bold tabular-nums ${money < 40 ? 'text-blood-red' : ''}`}
-            >
-              {formatCurrency(money, i18n.language)}
-            </span>
+        <PlayerStatusCard
+          variant='hud'
+          money={money}
+          day={day}
+          locationName={locationName}
+          fuel={fuel}
+          condition={condition}
+          language={i18n.language}
+          t={t}
+          moneyRowAccessory={
             <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
               <span className='text-xxs tracking-widest text-ash-gray/70'>
                 {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
@@ -79,21 +76,8 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
                 {player?.stats?.totalDistance ?? 0}
               </span>
             </div>
-          </div>
-          <div className='flex items-center gap-2 mb-3 text-star-white/90'>
-            <MapIcon
-              size={14}
-              className='text-toxic-green/70'
-              aria-hidden='true'
-            />
-            <span>
-              {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
-            </span>
-          </div>
-
-          {/* Van Status Mini Bars */}
-          <VanStatusMiniBars fuel={fuel} condition={condition} t={t} />
-        </div>
+          }
+        />
 
         <div className='flex gap-2'>
           <Tooltip

@@ -1,7 +1,7 @@
 import { describe, expect, test, vi, beforeAll, afterEach } from 'vitest'
 
 import React from 'react'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 vi.mock('../../src/context/GameState.tsx', () => ({
@@ -124,6 +124,45 @@ describe('BandHQ UI tests', () => {
     expect(leaveButton).toHaveClass('sm:w-auto')
     expect(tablist).toHaveClass('shrink-0')
     expect(tablist).toHaveClass('scrollbar-hidden')
+  })
+
+  test('joins the shared modal stack: single Escape close, Tab trap and focus restore', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    const Harness = ({ open }) => (
+      <>
+        <button type='button'>Open HQ</button>
+        {open && <BandHQ onClose={onClose} />}
+      </>
+    )
+
+    const { rerender } = render(<Harness open={false} />)
+    const opener = screen.getByRole('button', { name: 'Open HQ' })
+    opener.focus()
+    rerender(<Harness open={true} />)
+
+    const dialog = screen.getByRole('dialog', { name: /band hq/i })
+    await waitFor(() => expect(dialog).toHaveFocus())
+    expect(dialog.parentElement).toHaveAttribute('data-modal-overlay')
+    expect(opener).toHaveAttribute('inert')
+
+    // Tab wraps inside the dialog in both directions.
+    const focusable = Array.from(
+      dialog.querySelectorAll('button:not([disabled]), [tabindex="0"]')
+    )
+    focusable[focusable.length - 1].focus()
+    await user.tab()
+    expect(focusable[0]).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(focusable[focusable.length - 1]).toHaveFocus()
+
+    // One Escape closes exactly once (no second window-level listener).
+    await user.keyboard('{Escape}')
+    expect(onClose).toHaveBeenCalledTimes(1)
+
+    rerender(<Harness open={false} />)
+    expect(opener).not.toHaveAttribute('inert')
+    expect(opener).toHaveFocus()
   })
 
   test('supports roving tabIndex and keyboard arrow navigation between tabs', async () => {

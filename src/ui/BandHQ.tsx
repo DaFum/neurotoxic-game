@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
 import { useGameSelector } from '../context/GameState.tsx'
+import { useModalBehavior } from './shared/useModalBehavior'
 
 import { BandHQTabsList } from './bandhq/BandHQTabsList.tsx'
 import { BandHQContentArea } from './bandhq/BandHQContentArea.tsx'
@@ -22,13 +23,7 @@ interface BandHQProps {
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
  */
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [onClose])
+  const { overlayRef, dialogRef } = useModalBehavior(true, onClose)
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState('STATS')
@@ -44,6 +39,9 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
 
   return (
     <div
+      ref={overlayRef}
+      data-modal-overlay=''
+      role='presentation'
       className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4 ${className}`}
     >
       {/* Backdrop */}
@@ -62,7 +60,9 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
       />
 
       <div
-        className='relative z-(--z-modal) w-full max-w-4xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
+        ref={dialogRef}
+        tabIndex={-1}
+        className='relative z-(--z-modal) w-full max-w-4xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] focus:outline-none'
         role='dialog'
         aria-modal='true'
         aria-labelledby='band-hq-title'

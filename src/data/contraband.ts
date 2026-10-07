@@ -507,6 +507,22 @@ const CONTRABAND_DB = [
     stackable: false,
     maxStacks: 1,
     applyOnAdd: true
+  },
+  // Sold by the `reststop_trunk_dealer` event (granted through the stash path);
+  // it also joins the uncommon drop pool like any other catalogue entry.
+  {
+    id: 'c_diy_overdrive',
+    imagePrompt: 'ITEM_DIY_OVERDRIVE',
+    name: 'items:contraband.c_diy_overdrive.name',
+    type: 'equipment',
+    effectType: 'crit',
+    value: 0.03,
+    description: 'items:contraband.c_diy_overdrive.description',
+    rarity: 'uncommon',
+    icon: 'icon_overdrive',
+    stackable: false,
+    maxStacks: 1,
+    applyOnAdd: true
   }
 ]
 

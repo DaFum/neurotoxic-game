@@ -6,7 +6,8 @@ import type { BandMember } from '../../types'
 import {
   CLINIC_CONFIG,
   calculateClinicCost,
-  CLINIC_GRAFT_COST
+  CLINIC_GRAFT_COST,
+  NEURO_OVERCLOCK_GRAFT_COST
 } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {
@@ -16,12 +17,14 @@ import {
   clampMemberStamina,
   calculateFameLevel,
   clampBandHarmony,
+  clampBandStress,
   clampControversyLevel,
   finiteNumberOr,
   isFiniteNumber
 } from '../../utils/gameState'
 import {
   getTraitById,
+  NEURO_OVERCLOCK_TRAIT_ID,
   normalizeTraitMap,
   hasTrait,
   removeExclusiveTraits
@@ -386,7 +389,7 @@ export const handleBloodBankDonate = (
  * Handles grafting the Neuro-Overclock trait onto a band member.
  *
  * @remarks
- * Costs money and permanently mutates the member's traits by reducing health, increasing stress, and adding the neuro_overclock trait. Enforces state safety boundaries to ensure the player can afford the cost and the member exists.
+ * Costs money, drains the member's stamina, adds band stress and permanently grafts the neuro_overclock trait (whose per-gig cost and hit-window bonus are read from the canonical trait definition). Enforces state safety boundaries to ensure the player can afford the cost and the member exists.
  *
  * @param state - Game state before the enhancement.
  * @param payload - Request payload containing the target member ID.
@@ -427,27 +430,32 @@ export const handleGraftNeuroOverclock = (
   }
 
   const member = state.band.members[memberIndex]
-  if (member.traits && member.traits['neuro_overclock']) {
+  if (hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)) {
     return state // Already grafted
+  }
+
+  const traitDef = getTraitById(NEURO_OVERCLOCK_TRAIT_ID)
+  if (!traitDef) {
+    logger.warn(
+      'ClinicReducer',
+      'handleGraftNeuroOverclock: trait definition missing'
+    )
+    return state
   }
 
   const members = [...state.band.members]
   members[memberIndex] = {
     ...member,
-    health: Math.max(1, finiteNumberOr(member.health, 100) - 20),
-    stress: Math.min(100, finiteNumberOr(member.stress, 0) + 30),
+    stamina: clampMemberStamina(
+      Math.max(
+        1,
+        finiteNumberOr(member.stamina, 100) - NEURO_OVERCLOCK_GRAFT_COST.STAMINA
+      ),
+      finiteNumberOr(member.staminaMax, 100)
+    ),
     traits: {
       ...(member.traits || {}),
-      neuro_overclock: getTraitById('neuro_overclock') || {
-        id: 'neuro_overclock',
-        name: 'traits:neuro_overclock.name',
-        description: 'traits:neuro_overclock.description',
-        effects: {
-          rhythmMultiplier: 1.5,
-          stressPerGig: 5,
-          healthPerGig: -10
-        }
-      }
+      [NEURO_OVERCLOCK_TRAIT_ID]: traitDef
     }
   }
 
@@ -461,7 +469,10 @@ export const handleGraftNeuroOverclock = (
     },
     band: {
       ...state.band,
-      members
+      members,
+      stress: clampBandStress(
+        finiteNumberOr(state.band.stress, 0) + NEURO_OVERCLOCK_GRAFT_COST.STRESS
+      )
     },
     toasts: [
       ...(state.toasts || []),
@@ -492,6 +503,13 @@ export const handleClinicEnhance = (
 
   if (!trait) {
     logger.warn('ClinicReducer', 'Missing trait')
+    return state
+  }
+
+  // The graft has its own price and body cost (`handleGraftNeuroOverclock`);
+  // the enhance fee must not be a cheaper way to the same trait.
+  if (trait === NEURO_OVERCLOCK_TRAIT_ID) {
+    logger.warn('ClinicReducer', 'Neuro-Overclock is graft-only, not enhance')
     return state
   }
 
