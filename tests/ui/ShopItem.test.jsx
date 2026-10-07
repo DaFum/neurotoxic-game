@@ -71,10 +71,12 @@ describe('ShopItem', () => {
     expect(getByText('€100')).toHaveClass('line-through')
   })
 
-  it('calls onBuy when clicking Buy button', () => {
+  it('calls onBuy when clicking Buy button and renders accessible aria-label', () => {
     const onBuy = vi.fn()
     const { getByText } = render(<ShopItem {...defaultProps} onBuy={onBuy} />)
-    fireEvent.click(getByText('BUY'))
+    const button = getByText('BUY').closest('button')
+    expect(button).toHaveAttribute('aria-label', 'BUY Test Item (€100)')
+    fireEvent.click(button)
     expect(onBuy).toHaveBeenCalledWith(mockItem)
   })
 
@@ -90,7 +92,7 @@ describe('ShopItem', () => {
     expect(onBuy).not.toHaveBeenCalled()
   })
 
-  it('shows OWNED when isOwned is true and item is not consumable', () => {
+  it('shows OWNED when isOwned is true and item is not consumable, with accessible aria-label', () => {
     const ownedDecision = {
       ...mockDecision,
       isOwned: true,
@@ -99,6 +101,8 @@ describe('ShopItem', () => {
     const { getByText } = render(
       <ShopItem {...defaultProps} decision={ownedDecision} />
     )
+    const button = getByText('OWNED').closest('button')
+    expect(button).toHaveAttribute('aria-label', 'Test Item: OWNED')
     expect(getByText('OWNED')).toBeInTheDocument()
   })
 

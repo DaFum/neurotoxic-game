@@ -56,9 +56,7 @@ export class AmpWaveManager {
 
     if (jitter !== 0) {
       const firstY =
-        centerY +
-        Math.sin(time) * amplitude +
-        (Math.random() - 0.5) * jitter
+        centerY + Math.sin(time) * amplitude + (Math.random() - 0.5) * jitter
       this.waveGraphics.moveTo(0, firstY)
 
       for (let x = 5; x < width; x += 5) {
