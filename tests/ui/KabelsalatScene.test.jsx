@@ -403,8 +403,11 @@ describe('KabelsalatScene - shared minigame exit controls', () => {
       fireEvent.keyDown(window, { key: 'P', shiftKey: true })
     })
 
+    // Completes once through the scene's forceAdvance (which reports the purge
+    // count), not through a generic hook-level dispatch.
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteMinigame).toHaveBeenCalledWith(
-      expect.objectContaining({ isPoweredOn: true })
+      expect.objectContaining({ isPoweredOn: true, voidSurgesPurged: 0 })
     )
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })

@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createInitialState } from '../../src/context/initialState.ts'
-import {
-  getExpeditionPerformanceProfile,
-  canPerformExpeditionGig
-} from '../../src/domain/expedition/injuries.ts'
+import { getExpeditionPerformanceProfile } from '../../src/domain/expedition/injuries.ts'
+import { canPerformExpeditionGig } from '../../src/domain/expedition/injuryGate.ts'
 
 test('band injury composes once with condition performance and critical blocks the required band path', () => {
   const base = createInitialState()

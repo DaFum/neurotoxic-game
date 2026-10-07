@@ -6,6 +6,7 @@ import {
   handleConsumeItem,
   handleUnlockTrait
 } from '../../src/context/reducers/bandReducer'
+import { sanitizeBand } from '../../src/context/reducers/sanitizers/stateSanitizers'
 
 describe('bandReducer', () => {
   /** @type {import('../../src/types').GameState} */
@@ -49,6 +50,33 @@ describe('bandReducer', () => {
       payload = { harmony: -50 }
       nextState = handleUpdateBand(baseState, payload)
       assert.strictEqual(nextState.band.harmony, 1)
+    })
+
+    it('clamps tempo into 0..100 without flooring fractional effects', () => {
+      // Contraband tempo effects are fractional (+0.15); flooring would erase
+      // them and leave the exact additive revert below zero.
+      assert.strictEqual(
+        handleUpdateBand(baseState, { tempo: 0.15 }).band.tempo,
+        0.15
+      )
+      assert.strictEqual(
+        handleUpdateBand(baseState, { tempo: 250 }).band.tempo,
+        100
+      )
+      assert.strictEqual(
+        handleUpdateBand(baseState, { tempo: -5 }).band.tempo,
+        0
+      )
+    })
+
+    it('applies the same tempo rule as the load sanitizer', () => {
+      for (const tempo of [0, 0.15, 0.3, 42.7, 100, 250, -5]) {
+        assert.strictEqual(
+          handleUpdateBand(baseState, { tempo }).band.tempo,
+          sanitizeBand({ tempo }).tempo,
+          `tempo ${tempo}`
+        )
+      }
     })
 
     it('should retain existing member numeric values for non-finite patches', () => {

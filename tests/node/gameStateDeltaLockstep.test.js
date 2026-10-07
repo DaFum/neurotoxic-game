@@ -622,6 +622,44 @@ test('preview equals the apply diff when day and stats start from the floor', ()
   )
 })
 
+test('preview and apply classify every player.stats entry kind the same way', () => {
+  const state = buildState()
+  state.player.stats = {
+    gigsPlayed: 2,
+    corrupt: 'not a number',
+    label: 'old',
+    flag: false
+  }
+  const statsDelta = JSON.parse(
+    '{"gigsPlayed":3,"corrupt":4,"fresh":-2,"label":"new","flag":true,' +
+      '"nested":{"x":1},"list":[1],"nothing":null,"__proto__":{"evil":1}}'
+  )
+  statsDelta.notFinite = Number.NaN
+  const delta = withDelta({ player: { stats: statsDelta } })
+
+  const preview = calculateAppliedDelta(state, delta)
+  const applied = applyEventDelta(state, delta)
+
+  // Numeric: preview reports the change apply actually stored.
+  assert.equal(preview.player.stats.gigsPlayed, 3)
+  assert.equal(applied.player.stats.gigsPlayed, 5)
+  // A non-numeric stored value is recovered as 0 by both walkers.
+  assert.equal(preview.player.stats.corrupt, 4)
+  assert.equal(applied.player.stats.corrupt, 4)
+  assert.equal(preview.player.stats.fresh, 0)
+  assert.equal(applied.player.stats.fresh, 0)
+  // Strings and booleans overwrite in both.
+  assert.equal(preview.player.stats.label, 'new')
+  assert.equal(applied.player.stats.label, 'new')
+  assert.equal(preview.player.stats.flag, true)
+  assert.equal(applied.player.stats.flag, true)
+  // Everything else is ignored by both.
+  for (const key of ['nested', 'list', 'nothing', 'notFinite', '__proto__']) {
+    assert.equal(Object.hasOwn(preview.player.stats, key), false, key)
+    assert.equal(Object.hasOwn(applied.player.stats, key), false, key)
+  }
+})
+
 test('empty location / currentNodeId deltas never overwrite the stored values', () => {
   for (const player of [
     { location: '', currentNodeId: '' },
@@ -643,8 +681,9 @@ test('EventDelta rejects sums that overflow to Infinity', () => {
   state.band.luck = 1e308
   state.band.inventory.sticker = 1e308
   state.social.viral = 1e308
+  state.player.stats.gigsPlayed = 1e308
   const delta = withDelta({
-    player: { score: 1e308 },
+    player: { score: 1e308, stats: { gigsPlayed: 1e308 } },
     band: { luck: 1e308, inventory: { sticker: 1e308 } },
     social: { viral: 1e308 }
   })
@@ -654,10 +693,13 @@ test('EventDelta rejects sums that overflow to Infinity', () => {
 
   // The unrepresentable addend is dropped; the stored value is untouched.
   assert.equal(preview.score, 0)
+  assert.equal(preview.player.stats.gigsPlayed, 0)
   assert.equal(preview.band.luck, 0)
   assert.equal(preview.social.viral, 0)
   assert.equal(preview.band.inventory.sticker, undefined)
   assert.equal(applied.player.score, 1e308)
+  // An overflowing stat sum keeps the stored value instead of resetting to 0.
+  assert.equal(applied.player.stats.gigsPlayed, 1e308)
   assert.equal(applied.band.luck, 1e308)
   assert.equal(applied.social.viral, 1e308)
   assert.equal(applied.band.inventory.sticker, 1e308)

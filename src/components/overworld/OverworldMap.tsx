@@ -38,6 +38,11 @@ interface OverworldMapProps {
    * outside a run, which keeps the Career map readout unchanged.
    */
   expeditionFogByNodeId?: Record<string, ExpeditionNodeFog> | null
+  /**
+   * Fame a Festival booking needs while the band is below its access tier;
+   * `null` when Festival bookings are open or no run is active.
+   */
+  festivalBookingMinimumFame?: number | null
   getNodeVisibility: (nodeLayer: number, currentLayer: number) => NodeVisibility
   isConnected: (nodeId: string) => boolean
   handleTravel: (node: GameMapNode) => void
@@ -89,7 +94,8 @@ export const OverworldMap = React.memo(
     activeStoryFlags,
     rivalBand,
     band,
-    expeditionFogByNodeId
+    expeditionFogByNodeId,
+    festivalBookingMinimumFame = null
   }: OverworldMapProps) => {
     const isOnlineNetwork = useNetworkStatus()
 
@@ -175,6 +181,9 @@ export const OverworldMap = React.memo(
                   ? expeditionFogByNodeId[node.id]
                   : undefined
               }
+              bookingLockMinimumFame={
+                node.type === 'FESTIVAL' ? festivalBookingMinimumFame : null
+              }
             />
             {hasRival && visibility !== 'hidden' && (
               <RivalMarker
@@ -207,6 +216,7 @@ export const OverworldMap = React.memo(
       band.harmony,
       band.tourSuccess,
       expeditionFogByNodeId,
+      festivalBookingMinimumFame,
       t
     ])
 

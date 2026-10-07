@@ -3,7 +3,12 @@ import type { RawGameSettings, ToastPayload, UnknownRecord } from './game'
 import type { PlayerState } from './player'
 import type { BandState } from './band'
 import type { RivalBandState } from './social'
-import type { ExpeditionRepairIntent, HiddenDefectTrigger } from './expedition'
+import type {
+  ExpeditionFailureChoiceId,
+  ExpeditionInspectionIntent,
+  ExpeditionRepairIntent,
+  HiddenDefectTrigger
+} from './expedition'
 
 /**
  * Payload produced when the tourbus travel minigame finishes.
@@ -414,7 +419,8 @@ export interface PrepareNextExpeditionPayload {
  */
 export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
-  choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
+  /** Every crisis choice except `accept_failure`, which has its own action. */
+  choice: Exclude<ExpeditionFailureChoiceId, 'accept_failure'>
   expectedRouteStep: number
 }
 
@@ -425,9 +431,15 @@ export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent
 
 /**
  * Payload revealing a hidden equipment defect during an active Expedition run.
+ *
+ * @remarks
+ * `source` is the inspection that finds the defect. The reducer runs that
+ * inspection with its own gates and fee, and refuses unless it reveals
+ * `defectId`.
  */
 export interface RevealExpeditionDefectPayload {
   defectId: string
+  source: Pick<ExpeditionInspectionIntent, 'mode' | 'crewId'>
   expectedRouteStep: number
 }
 
@@ -442,9 +454,14 @@ export interface TriggerExpeditionDefectPayload {
 
 /**
  * Payload resolving an equipment defect during an active Expedition run.
+ *
+ * @remarks
+ * `repair` is the repair that fixes the defect. The reducer runs that repair
+ * with its own gates and costs, and refuses unless it resolves `defectId`.
  */
 export interface ResolveExpeditionDefectPayload {
   defectId: string
+  repair: Omit<ExpeditionRepairIntent, 'expectedRouteStep'>
   expectedRouteStep: number
 }
 

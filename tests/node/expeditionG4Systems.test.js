@@ -228,12 +228,14 @@ test('rival selection and quest/event seams are deterministic production data', 
     'expedition.rivalOutcome'
   )
   // The performance-Contract pool is sold by `festival_network`, so a fresh
-  // Career sees strictly fewer templates than one that has bought it.
-  const freeTemplates = getAvailableNativeContractTemplateIds(state, map)
+  // Career sees strictly fewer templates than one that has bought it. Fame is
+  // held at the showcase access tier so only the pool varies.
+  const known = { ...state, player: { ...state.player, fame: 1000 } }
+  const freeTemplates = getAvailableNativeContractTemplateIds(known, map)
   const pooledTemplates = getAvailableNativeContractTemplateIds(
     {
-      ...state,
-      career: { ...state.career, unlockedSetIds: ['festival_network'] }
+      ...known,
+      career: { ...known.career, unlockedSetIds: ['festival_network'] }
     },
     map
   )

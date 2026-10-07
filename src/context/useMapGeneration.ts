@@ -133,16 +133,14 @@ export function useMapGeneration({
               { seed: baseSeed, signature: failure.signature }
             )
             dispatch(createSetMapAction(fallbackMap))
-            dispatch(
-              createAddToastAction({
-                id: getSafeUUID(),
-                message: tRef.current('ui:error.mapGenerationUsedFallback', {
-                  defaultValue:
-                    'Map generation failed. Loaded a backup tour map.'
-                }),
-                type: 'warning'
-              })
-            )
+            const fallbackToast = createAddToastAction({
+              id: getSafeUUID(),
+              message: tRef.current('ui:error.mapGenerationUsedFallback', {
+                defaultValue: 'Map generation failed. Loaded a backup tour map.'
+              }),
+              type: 'warning'
+            })
+            if (fallbackToast) dispatch(fallbackToast)
             return clearMapRetryTimeout
           }
 
@@ -155,19 +153,15 @@ export function useMapGeneration({
             { source: 'GameState.generateMap' }
           )
           dispatch(createSetMapAction(null))
-          dispatch(
-            createAddToastAction({
-              id: getSafeUUID(),
-              message: tRef.current(
-                'ui:error.mapGenerationFailedReturnToMenu',
-                {
-                  defaultValue:
-                    'Map generation failed. Returning to menu for recovery.'
-                }
-              ),
-              type: 'error'
-            })
-          )
+          const failureToast = createAddToastAction({
+            id: getSafeUUID(),
+            message: tRef.current('ui:error.mapGenerationFailedReturnToMenu', {
+              defaultValue:
+                'Map generation failed. Returning to menu for recovery.'
+            }),
+            type: 'error'
+          })
+          if (failureToast) dispatch(failureToast)
           dispatch(createChangeSceneAction(GAME_PHASES.MENU))
         }
       }

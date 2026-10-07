@@ -7,7 +7,7 @@ import {
   test,
   vi
 } from 'vitest'
-import { render, cleanup, screen } from '@testing-library/react'
+import { render, cleanup, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
@@ -312,6 +312,115 @@ describe('TutorialManager', () => {
     expect(
       document.documentElement.style.getPropertyValue('--tutorial-inset')
     ).toBe('')
+  })
+
+  test('stays interactive while a modal mutes the rest of the page', async () => {
+    const user = userEvent.setup()
+    const { Modal } = await import('../../src/ui/shared/Modal.tsx')
+
+    render(
+      <>
+        <main data-testid='background-content'>
+          <button type='button'>Background action</button>
+        </main>
+        <TutorialManager />
+        <Modal isOpen={true} onClose={() => {}} title='Event'>
+          Modal content
+        </Modal>
+      </>
+    )
+
+    const background = screen.getByTestId('background-content')
+    expect(background).toHaveAttribute('inert')
+    expect(background).toHaveAttribute('aria-hidden', 'true')
+
+    const tutorialRegion = screen.getByRole('region', { name: /tutorial/i })
+    expect(tutorialRegion).not.toHaveAttribute('inert')
+    expect(tutorialRegion).not.toHaveAttribute('aria-hidden')
+
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: 1 })
+  })
+
+  describe('Tab order while a modal is open', () => {
+    const renderWithModal = async ({ withTutorial }) => {
+      const { Modal } = await import('../../src/ui/shared/Modal.tsx')
+      render(
+        <>
+          <main>
+            <button type='button'>Background action</button>
+          </main>
+          {withTutorial && <TutorialManager />}
+          <Modal isOpen={true} onClose={() => {}} title='Event'>
+            <button type='button'>Alpha</button>
+            <button type='button'>Omega</button>
+          </Modal>
+        </>
+      )
+      const dialogButtons = within(screen.getByRole('dialog')).getAllByRole(
+        'button'
+      )
+      return {
+        dialogFirst: dialogButtons[0],
+        dialogLast: screen.getByRole('button', { name: 'Omega' })
+      }
+    }
+    const tutorialButtons = () =>
+      within(screen.getByRole('region', { name: /tutorial/i })).getAllByRole(
+        'button'
+      )
+
+    test('Tab moves from the dialog into the tutorial card and wraps back', async () => {
+      const user = userEvent.setup()
+      const { dialogFirst, dialogLast } = await renderWithModal({
+        withTutorial: true
+      })
+      const [tutorialFirst, tutorialLast] = [
+        tutorialButtons()[0],
+        tutorialButtons().at(-1)
+      ]
+
+      dialogLast.focus()
+      await user.tab()
+      expect(tutorialFirst).toHaveFocus()
+
+      tutorialLast.focus()
+      await user.tab()
+      expect(dialogFirst).toHaveFocus()
+    })
+
+    test('Shift+Tab mirrors the cycle', async () => {
+      const user = userEvent.setup()
+      const { dialogFirst, dialogLast } = await renderWithModal({
+        withTutorial: true
+      })
+      const [tutorialFirst, tutorialLast] = [
+        tutorialButtons()[0],
+        tutorialButtons().at(-1)
+      ]
+
+      dialogFirst.focus()
+      await user.tab({ shift: true })
+      expect(tutorialLast).toHaveFocus()
+
+      tutorialFirst.focus()
+      await user.tab({ shift: true })
+      expect(dialogLast).toHaveFocus()
+    })
+
+    test('a modal without a tutorial card keeps the dialog-only trap', async () => {
+      const user = userEvent.setup()
+      const { dialogFirst, dialogLast } = await renderWithModal({
+        withTutorial: false
+      })
+
+      dialogLast.focus()
+      await user.tab()
+      expect(dialogFirst).toHaveFocus()
+
+      await user.tab({ shift: true })
+      expect(dialogLast).toHaveFocus()
+    })
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {

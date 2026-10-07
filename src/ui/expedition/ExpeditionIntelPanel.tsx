@@ -10,7 +10,7 @@
  * reducer re-validates the dispatch regardless.
  */
 
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { ActionButton } from '../shared/ActionButton'
@@ -49,6 +49,8 @@ interface IntelCandidate {
 /** Everything the panel renders, derived in one selector pass. */
 interface IntelView {
   isActive: boolean
+  /** The run the view belongs to; node ids repeat between runs on one seed. */
+  runId: string | null
   hasScout: boolean
   reconLeft: number
   candidates: IntelCandidate[]
@@ -59,6 +61,7 @@ interface IntelView {
 
 const INACTIVE_VIEW: IntelView = {
   isActive: false,
+  runId: null,
   hasScout: false,
   reconLeft: 0,
   candidates: [],
@@ -167,33 +170,41 @@ const selectIntelView = (state: GameState): IntelView => {
 
   return {
     isActive: true,
+    runId: expedition.runId,
     hasScout: capability.hasScout,
     reconLeft: Math.max(
       0,
       capability.reconCharges - expedition.scoutReconUsedRouteSteps.length
     ),
-    candidates: reuseCandidates(candidates),
+    candidates,
     socialPostOptionId: hasSocialTip ? proof.postOptionId : null,
     socialResultId: hasSocialTip ? proof.resultId : null
   }
 }
 
-/** The last candidate list handed out, and its content key. */
-let lastCandidates: { key: string; value: IntelCandidate[] } | null = null
-
 /**
- * Returns the previous candidate array when its content is unchanged.
+ * Creates one panel instance's view selector.
+ *
+ * @returns A selector that hands back the previous candidate array while the
+ * run and the candidates' content are unchanged.
  *
  * @remarks
  * `useGameSelector` compares the view shallowly, so a fresh array on every
  * store change would re-render the panel - and re-run its passive-read effect
- * - for state that has nothing to do with intel.
+ * - for state that has nothing to do with intel. The cache lives in the
+ * closure, one per mounted panel, and is keyed by run as well as content, so
+ * neither another panel nor the next run on the same route can be handed a
+ * stale list.
  */
-const reuseCandidates = (candidates: IntelCandidate[]): IntelCandidate[] => {
-  const key = JSON.stringify(candidates)
-  if (lastCandidates?.key === key) return lastCandidates.value
-  lastCandidates = { key, value: candidates }
-  return candidates
+const createIntelViewSelector = (): ((state: GameState) => IntelView) => {
+  let last: { key: string; value: IntelCandidate[] } | null = null
+  return state => {
+    const view = selectIntelView(state)
+    const key = JSON.stringify([view.runId, view.candidates])
+    if (last?.key === key) return { ...view, candidates: last.value }
+    last = { key, value: view.candidates }
+    return view
+  }
 }
 
 /**
@@ -201,25 +212,35 @@ const reuseCandidates = (candidates: IntelCandidate[]): IntelCandidate[] => {
  */
 export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
   const { t } = useTranslation('ui')
-  const view = useGameSelector(selectIntelView)
+  const [selectView] = useState(createIntelViewSelector)
+  const view = useGameSelector(selectView)
   const { revealExpeditionNodeIntel, createSocialIntelGrant } = useGameActions()
 
   // A Scout reads the road continuously, so the passive level-1 reveal is not
   // a button: it is spent as soon as the run stands next to a node it has not
   // read. Remembered per node id - a node is an onward candidate at exactly
-  // one route step - so a refused reveal is not retried on every render.
-  const passiveAttemptsRef = useRef(new Set<string>())
+  // one route step of a run - so a refused reveal is not retried on every
+  // render. The memory is per run: the next run on the same seed reuses the
+  // node ids.
+  const passiveAttemptsRef = useRef<{
+    runId: string | null
+    nodeIds: Set<string>
+  }>({ runId: null, nodeIds: new Set() })
   useEffect(() => {
+    if (passiveAttemptsRef.current.runId !== view.runId) {
+      passiveAttemptsRef.current = { runId: view.runId, nodeIds: new Set() }
+    }
+    const attempted = passiveAttemptsRef.current.nodeIds
     for (const candidate of view.candidates) {
       if (!candidate.canPassive) continue
-      if (passiveAttemptsRef.current.has(candidate.nodeId)) continue
-      passiveAttemptsRef.current.add(candidate.nodeId)
+      if (attempted.has(candidate.nodeId)) continue
+      attempted.add(candidate.nodeId)
       revealExpeditionNodeIntel({
         nodeId: candidate.nodeId,
         source: 'scout_passive'
       })
     }
-  }, [revealExpeditionNodeIntel, view.candidates])
+  }, [revealExpeditionNodeIntel, view.candidates, view.runId])
 
   if (!view.isActive || view.candidates.length === 0) return null
   const hasGrant = view.candidates.some(

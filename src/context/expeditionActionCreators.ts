@@ -498,11 +498,14 @@ export const executeExpeditionRepair = (
  *
  * @param state - Current game state.
  * @param defectId - Target defect id.
+ * @param source - Inspection that reveals the defect; only its mode and crew
+ * are carried, so a reveal can never smuggle in a repair.
  * @returns Typed `REVEAL_EXPEDITION_DEFECT` action, or `null` when run is not active.
  */
 export const revealExpeditionDefect = (
   state: GameState,
-  defectId: string
+  defectId: string,
+  source: Pick<ExpeditionInspectionIntent, 'mode' | 'crewId'>
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.REVEAL_EXPEDITION_DEFECT }
@@ -512,6 +515,10 @@ export const revealExpeditionDefect = (
     type: ActionTypes.REVEAL_EXPEDITION_DEFECT,
     payload: {
       defectId,
+      source: {
+        mode: source.mode,
+        ...(source.crewId ? { crewId: source.crewId } : {})
+      },
       expectedRouteStep: state.expedition.routeStep
     }
   }
@@ -549,11 +556,14 @@ export const triggerExpeditionDefect = (
  *
  * @param state - Current game state.
  * @param defectId - Target defect id.
+ * @param repair - Repair that resolves the defect; its route step is always
+ * the current one.
  * @returns Typed `RESOLVE_EXPEDITION_DEFECT` action, or `null` when run is not active.
  */
 export const resolveExpeditionDefect = (
   state: GameState,
-  defectId: string
+  defectId: string,
+  repair: Omit<ExpeditionRepairIntent, 'expectedRouteStep'>
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RESOLVE_EXPEDITION_DEFECT }
@@ -563,6 +573,12 @@ export const resolveExpeditionDefect = (
     type: ActionTypes.RESOLVE_EXPEDITION_DEFECT,
     payload: {
       defectId,
+      repair: {
+        mode: repair.mode,
+        targetGroup: repair.targetGroup,
+        ...(repair.sourceGroup ? { sourceGroup: repair.sourceGroup } : {}),
+        ...(repair.quality !== undefined ? { quality: repair.quality } : {})
+      },
       expectedRouteStep: state.expedition.routeStep
     }
   }

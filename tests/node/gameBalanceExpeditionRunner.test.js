@@ -3,7 +3,7 @@
  */
 
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { describe, it, mock } from 'node:test'
 
 import {
   CALIBRATION_COHORT_NAMESPACE,
@@ -20,6 +20,8 @@ import {
   buildProductionSimulationLoadout
 } from '../../scripts/game-balance-expedition-profiles.mjs'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../src/domain/expedition/runDrafts.ts'
+import { BALANCE_SOURCE_FILES } from '../../scripts/utils/balance-report-metadata.mjs'
 
 describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
   it('generates provably disjoint seeds between calibration and holdout cohorts', () => {
@@ -120,6 +122,58 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     )
   })
 
+  it('HardGate10 fails when the reducer accepts no way out of a blocked PreGig', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // One dead group and a corrupted route step: every repair, claim and the
+    // technical failure carry that step as their stale guard, so the reducer
+    // refuses all of them. The Condition summary is still 75, which is why
+    // the old summary-based trigger never even looked at this state.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*PreGig is blocked/
+    )
+  })
+
+  it('HardGate10 fails when a pending crisis offers no choice the reducer accepts', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // An accepted technical failure derives a `technical_shutdown` crisis, so
+    // `acceptExpeditionFailure` returns an action - which is all the old gate
+    // asked. The reducer still refuses it here, so the crisis is a dead end.
+    const stuck = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        routeStep: Number.NaN,
+        technicalFailureAccepted: true,
+        technicalCondition: { ...state.expedition.technicalCondition, pa: 0 }
+      }
+    }
+    assert.throws(
+      () => verifyHardCorrectnessGates(stuck, map, profile, 'step'),
+      /HardGate10.*crisis technical_shutdown/
+    )
+  })
+
   it('accepts technical failure when a dead group has no paid recovery', () => {
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const base = buildProductionSimulationLoadout(undefined, profile, 4242)
@@ -150,6 +204,94 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     assert.equal(result.outcome, 'failed')
     assert.equal(result.terminalSource, 'technical_shutdown')
   })
+
+  /**
+   * A run whose PA is dead with no spare part and no cash for the service
+   * stop, so only a donor group or the insurance claim can bring it back.
+   *
+   * @param {number} donorCondition - Condition of the two healthy groups.
+   */
+  const deadPaWithoutPaidRepair = donorCondition => {
+    // `clean_sponsor` carries the `touring` policy, which covers technical
+    // claims.
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const base = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const state = {
+      ...base,
+      player: {
+        ...base.player,
+        money: base.expedition.loadout.build.protectedCareerCash + 10
+      },
+      expedition: {
+        ...base.expedition,
+        cargo: { ...base.expedition.cargo, spareParts: 0 },
+        technicalCondition: {
+          ...base.expedition.technicalCondition,
+          pa: 0,
+          instruments: donorCondition,
+          stageGear: donorCondition
+        }
+      }
+    }
+    return { profile, state }
+  }
+
+  it('cannibalizes a healthy donor when that is the recovery for a dead group', () => {
+    const { profile, state } = deadPaWithoutPaidRepair(100)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'cannibalize',
+      sourceGroup: 'instruments'
+    })
+    // The free donor repair comes before the one-shot claim.
+    assert.equal(result.telemetry.insuranceClaimed, false)
+  })
+
+  it('claims insurance for a dead group when no donor is healthy enough', () => {
+    // 50 is below the cannibalize donor floor, so the claim is the only
+    // recovery left besides the improvise the policy declines.
+    const { profile, state } = deadPaWithoutPaidRepair(50)
+    const result = runExpeditionSimulation(state, profile, 4242)
+    assert.deepEqual(result.telemetry.deadGroupRecoveries[0], {
+      routeStep: 0,
+      group: 'pa',
+      mode: 'insurance_claim'
+    })
+    assert.equal(result.telemetry.insuranceClaimed, true)
+  })
+
+  it('accepts technical failure when the listed recovery is refused', async () => {
+    // Production's reducer and recovery controls share one resolver, so a
+    // refusal cannot be staged through state alone: the claim builder is
+    // mocked to refuse, and a fresh runner instance picks the mock up.
+    const actionCreators =
+      await import('../../src/context/expeditionActionCreators.ts')
+    const refusedClaim = mock.module(
+      '../../src/context/expeditionActionCreators.ts',
+      {
+        namedExports: {
+          ...actionCreators,
+          claimExpeditionInsurance: () => null
+        }
+      }
+    )
+    try {
+      const { runExpeditionSimulation: runWithRefusedClaim } =
+        await import('../../scripts/game-balance-expedition-runner.mjs?refused-claim')
+      // The claim is the only listed recovery: donors sit below the floor.
+      const { profile, state } = deadPaWithoutPaidRepair(50)
+      const result = runWithRefusedClaim(state, profile, 4242)
+      assert.deepEqual(result.telemetry.deadGroupRecoveries, [])
+      assert.equal(result.telemetry.insuranceClaimed, false)
+      assert.equal(result.outcome, 'failed')
+      assert.equal(result.terminalSource, 'technical_shutdown')
+    } finally {
+      refusedClaim.restore()
+    }
+  })
+
   it('evaluates candidate nodes with profile-specific decision policies', () => {
     const cleanProfile = EXPEDITION_BALANCE_PROFILES.find(
       p => p.id === 'clean_sponsor'
@@ -207,6 +349,65 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
 
       // Verify that final state terminal status matches
       assert.equal(result.finalState.expedition.status, result.outcome)
+    }
+  })
+
+  it('drafts a Run Draft trait after a completed Festival gig', () => {
+    // Production offers a `major_gig` Run Draft after every completed,
+    // non-failed Festival gig (`useContinueHandler`), and a pending offer holds
+    // the route. A runner that settles the Festival and moves on never drafts,
+    // so every cohort ran without road-wear, repair or Finale-reward traits.
+    const profile = EXPEDITION_BALANCE_PROFILES.find(
+      candidate => candidate.id === 'clean_sponsor'
+    )
+    assert.ok(profile)
+    const result = runExpeditionSimulation(undefined, profile, 5002)
+    const finalState = result.finalState
+    const map = buildExpeditionMap(
+      finalState.runSeed,
+      finalState.expedition.loadout.tourTypeId,
+      finalState.expedition.loadout.regionId
+    )
+    const festivalsVisited = finalState.expedition.visitedNodeIds.filter(
+      nodeId => map.meta[nodeId]?.nodeClass === 'FESTIVAL'
+    )
+    assert.ok(festivalsVisited.length > 0, 'fixture must reach a Festival')
+    assert.equal(result.telemetry.fameLockedBookings, 0)
+
+    const drafted = finalState.expedition.runDraftTraitIds
+    assert.ok(drafted.length >= 1, 'a completed Festival gig must draft')
+    assert.ok(drafted.length <= 2)
+    for (const traitId of drafted) {
+      assert.ok(EXPEDITION_RUN_DRAFT_TRAITS.includes(traitId))
+    }
+    assert.equal(finalState.expedition.pendingRunDraftOffer, null)
+  })
+
+  it('fingerprints the post-Gig owner that offers the Festival draft', () => {
+    // The runner mirrors `useContinueHandler`'s draft offer, so an edit there
+    // can move the reports and must move `sourceFingerprint` with it.
+    assert.ok(
+      BALANCE_SOURCE_FILES.includes(
+        'src/hooks/postGig/handlers/useContinueHandler.ts'
+      )
+    )
+  })
+
+  it('keeps repairSpend a finite cash total once the runner repairs', () => {
+    // The step-B repair read a non-existent `cashCost`, turning repairSpend
+    // into NaN after the first repair; ExpeditionRepairResult carries moneyCost.
+    const repairedRuns = []
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      for (let seed = 5001; seed <= 5012 && repairedRuns.length < 3; seed++) {
+        const result = runExpeditionSimulation(undefined, profile, seed)
+        if (result.telemetry.repairsCount > 0) repairedRuns.push(result)
+      }
+    }
+
+    assert.ok(repairedRuns.length > 0, 'expected at least one repairing run')
+    for (const result of repairedRuns) {
+      assert.ok(Number.isFinite(result.telemetry.repairSpend))
+      assert.ok(result.telemetry.repairSpend >= 0)
     }
   })
 

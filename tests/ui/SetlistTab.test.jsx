@@ -4,7 +4,7 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 
 import { SONGS_DB } from '../../src/data/songs'
 
-// Mock useGameState before importing component
+// Mock useGameActions/useGameSelector before importing component
 const mockSetCurrentGig = vi.fn()
 const mockChangeScene = vi.fn()
 

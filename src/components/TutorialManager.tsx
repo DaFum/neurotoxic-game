@@ -29,6 +29,7 @@ const getStepColorClass = (stepId: number, currentStep: number): string => {
  * here would block the minigame it is explaining. It is announced as a live
  * region instead; do not restore `role='dialog'`/`aria-modal`, which previously
  * hid the rest of the scene from assistive tech while leaving it Tab-reachable.
+ * `data-modal-keep-interactive` keeps an open modal from inerting the card.
  *
  * @returns The animated tutorial region, or null if the tutorial is hidden or empty
  */
@@ -88,6 +89,7 @@ export const TutorialManager = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           role='region'
+          data-modal-keep-interactive=''
           aria-label={t('ui:tutorial.ariaLabel', { defaultValue: 'Tutorial' })}
           aria-live='polite'
           className='fixed inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-full sm:max-w-md z-(--z-tutorial)'

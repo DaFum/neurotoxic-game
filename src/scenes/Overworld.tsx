@@ -22,6 +22,7 @@ import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
 import { getExpeditionNodeFogByNodeId } from '../domain/expedition/nodeFog'
+import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import { ExpeditionStatusStrip } from '../ui/expedition/ExpeditionStatusStrip'
 import { ExpeditionCrewStatus } from '../ui/expedition/ExpeditionCrewStatus'
 import { ExpeditionRunControls } from '../ui/expedition/ExpeditionRunControls'
@@ -43,6 +44,13 @@ export const Overworld = () => {
   const venueBlacklist = useGameSelector(state => state.venueBlacklist)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const rivalBand = useGameSelector(state => state.rivalBand)
+  const expeditionStatus = useGameSelector(state => state.expedition?.status)
+  // The Fame a Festival booking needs, or `null` when it is open (always
+  // `null` outside a run). A number, so the selector stays stable.
+  const festivalBookingMinimumFame = useGameSelector(
+    state =>
+      getExpeditionNodeBookingLock(state, 'FESTIVAL')?.minimumFame ?? null
+  )
   const {
     startGig,
     updatePlayer,
@@ -83,6 +91,7 @@ export const Overworld = () => {
     gameMap,
     reputationByRegion,
     venueBlacklist,
+    expeditionStatus,
     updatePlayer,
     updateBand,
     saveGame,
@@ -175,6 +184,7 @@ export const Overworld = () => {
         currentNode={currentNode ?? null}
         activeStoryFlags={activeStoryFlags}
         expeditionFogByNodeId={expeditionFogByNodeId}
+        festivalBookingMinimumFame={festivalBookingMinimumFame}
       />
 
       <ExpeditionStatusStrip />

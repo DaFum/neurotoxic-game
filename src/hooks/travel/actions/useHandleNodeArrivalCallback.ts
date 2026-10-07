@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import type { MapNode } from '../../../types'
 import { handleNodeArrival } from '../../../utils/arrivalUtils'
+import { getExpeditionNodeBookingLock } from '../../../domain/expedition/fame'
 import type { TravelActionsParams } from '../types'
 
 /**
@@ -29,12 +30,22 @@ export const useHandleNodeArrivalCallback = ({
     addToast,
     onShowHQ,
     onShowSupplyStop,
-    changeScene
+    changeScene,
+    expeditionStatus
   } = params
 
   return useCallback(
     (node: MapNode, travelEventActive = false) => {
       const result = handleNodeArrival({
+        // Same lock `handleStartGig` re-checks: without it a refused re-entry
+        // would report `gigStarted` and the click would silently do nothing.
+        bookingLock: getExpeditionNodeBookingLock(
+          {
+            player: refs.playerRef.current,
+            expedition: expeditionStatus ? { status: expeditionStatus } : null
+          },
+          node.type
+        ),
         node,
         band: refs.bandRef.current,
         player: refs.playerRef.current,
@@ -76,7 +87,8 @@ export const useHandleNodeArrivalCallback = ({
       addToast,
       onShowHQ,
       onShowSupplyStop,
-      changeScene
+      changeScene,
+      expeditionStatus
     ]
   )
 }

@@ -24,6 +24,8 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/utils/postGig/socialResolution.ts',
   'src/types/social.d.ts',
   'src/hooks/postGig/usePostGigDerivations.ts',
+  // Owns the post-Gig Festival Run Draft offer the Expedition runner mirrors.
+  'src/hooks/postGig/handlers/useContinueHandler.ts',
   'src/context/initialState.ts',
   'src/context/reducers/sanitizers/stateSanitizers.ts',
   'src/utils/saveValidator.ts',
@@ -122,6 +124,7 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/domain/expedition/fame.ts',
   'src/domain/expedition/finales.ts',
   'src/domain/expedition/injuries.ts',
+  'src/domain/expedition/injuryGate.ts',
   'src/domain/expedition/inspections.ts',
   'src/domain/expedition/insurance.ts',
   'src/domain/expedition/legacyHqPolicy.ts',

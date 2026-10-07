@@ -503,7 +503,8 @@ export const handleSetMap = (
  * @remarks
  * The payload is re-validated with the shared toast sanitizer, so a raw
  * dispatch cannot smuggle non-primitive `options` or forbidden keys into
- * state. A payload without a valid id and message/messageKey is dropped.
+ * state. A payload without a valid id and message/messageKey is dropped and
+ * logged.
  *
  * @param state - Current game state before adding the toast.
  * @param payload - Toast payload prepared by the caller.
@@ -515,7 +516,10 @@ export const handleAddToast = (
   payload: ToastPayload
 ): GameState => {
   const safeToast = sanitizeLoadedToast(payload)
-  if (!safeToast) return state
+  if (!safeToast) {
+    logger.warn('GameState', 'Rejected malformed ADD_TOAST payload')
+    return state
+  }
   return { ...state, toasts: [...state.toasts, safeToast] }
 }
 

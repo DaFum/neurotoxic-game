@@ -53,6 +53,9 @@ describe('ExpeditionNodeFogBadge', () => {
     expect(route.textContent).toContain(
       `ui:expedition.node.onwardRoutes:${facts.edges.length}`
     )
+    // The joiner between depth and onward routes is localized copy too.
+    expect(route.textContent).toContain('ui:expedition.node.routeFacts')
+    expect(route.textContent).not.toContain('·')
   })
 
   it('omits the onward count on the Finale, which has no exits', () => {

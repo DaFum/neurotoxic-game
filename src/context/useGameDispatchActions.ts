@@ -266,7 +266,7 @@ type BaseGameDispatchActions = {
   acceptExpeditionFailure: () => void
   prepareNextExpedition: () => void
   resolveExpeditionCrisis: (
-    choice: 'refuel' | 'tow' | 'insurance_claim' | 'extract'
+    choice: import('../types/actions').ResolveExpeditionCrisisPayload['choice']
   ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent
@@ -505,7 +505,10 @@ export function useGameDispatchActions({
     (
       message: Parameters<typeof createAddToastAction>[0],
       type: Parameters<typeof createAddToastAction>[1] = 'info'
-    ) => dispatch(createAddToastAction(message, type)),
+    ) => {
+      const action = createAddToastAction(message, type)
+      if (action) dispatch(action)
+    },
     [dispatch]
   )
 

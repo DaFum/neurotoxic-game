@@ -23,6 +23,7 @@ import {
   isFiniteNumber
 } from '../../utils/gameState'
 import {
+  applyNeuroOverclockStaminaCost,
   getTraitById,
   NEURO_OVERCLOCK_TRAIT_ID,
   normalizeTraitMap,
@@ -438,11 +439,9 @@ export const handleGraftNeuroOverclock = (
   const members = [...state.band.members]
   members[memberIndex] = {
     ...member,
-    stamina: clampMemberStamina(
-      Math.max(
-        1,
-        finiteNumberOr(member.stamina, 100) - NEURO_OVERCLOCK_GRAFT_COST.STAMINA
-      ),
+    stamina: applyNeuroOverclockStaminaCost(
+      finiteNumberOr(member.stamina, 100),
+      -NEURO_OVERCLOCK_GRAFT_COST.STAMINA,
       finiteNumberOr(member.staminaMax, 100)
     ),
     traits: {

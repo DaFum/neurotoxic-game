@@ -17,6 +17,7 @@ import { describe, it } from 'node:test'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createRecordExpeditionArchiveDiscoveryAction } from '../../src/context/careerActionCreators'
+import { createUpdateSocialAction } from '../../src/context/actionCreators'
 import {
   EXPEDITION_ARCHIVE_CATEGORIES,
   getExpeditionArchiveChassisId,
@@ -331,6 +332,44 @@ describe('G5 — the Archive is written by the run, not by a caller', () => {
         `${claim.category}/${claim.id} was swept but is not recordable`
       )
     }
+  })
+
+  it('logs a Sponsor deal signed mid-run even when it ends before the finalizer', () => {
+    // START and the terminal sweep see only the deals active at those two
+    // moments; a deal signed and finished in between was never observed.
+    const started = startedState({ money: 5000 })
+    const dealId = [...BRAND_DEALS_BY_ID.keys()][0]
+    assert.deepEqual(archived(started, 'sponsor'), [])
+    const signed = gameReducer(
+      started,
+      createUpdateSocialAction({
+        activeDeals: [{ id: dealId, remainingGigs: 1 }]
+      })
+    )
+    assert.deepEqual(archived(signed, 'sponsor'), [dealId])
+    const ended = gameReducer(
+      signed,
+      createUpdateSocialAction({ activeDeals: [] })
+    )
+    assert.deepEqual(ended.social.activeDeals, [])
+    assert.deepEqual(archived(ended, 'sponsor'), [dealId])
+  })
+
+  it('does not log a deal signed while no run is active', () => {
+    const started = startedState({ money: 5000 })
+    const idle = {
+      ...started,
+      expedition: { ...started.expedition, status: 'completed' }
+    }
+    const dealId = [...BRAND_DEALS_BY_ID.keys()][0]
+    const signed = gameReducer(
+      idle,
+      createUpdateSocialAction({
+        activeDeals: [{ id: dealId, remainingGigs: 1 }]
+      })
+    )
+    assert.equal(signed.social.activeDeals.length, 1)
+    assert.deepEqual(archived(signed, 'sponsor'), [])
   })
 
   it('sweeps nothing when there is no run to observe', () => {

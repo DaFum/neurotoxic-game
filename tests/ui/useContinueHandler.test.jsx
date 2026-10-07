@@ -340,6 +340,59 @@ describe('useContinueHandler hook', () => {
     expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
   })
 
+  describe('major-gig Run Draft', () => {
+    const activeExpedition = {
+      status: 'active',
+      routeStep: 2,
+      loadout: { crewIds: [] },
+      finaleType: null
+    }
+
+    it('offers the major_gig draft after a completed Expedition gig', () => {
+      const dispatchers = {
+        ...makeDispatchers(),
+        offerExpeditionDraft: vi.fn()
+      }
+      const props = makeProps({
+        dispatchers,
+        expedition: activeExpedition,
+        lastGigStats: { misses: 1, accuracy: 70, failed: false }
+      })
+      const { result } = renderHook(() => useContinueHandler(props))
+      act(() => {
+        result.current()
+      })
+      // The reducer proves the node is a major gig; the handler only names
+      // the qualifying moment.
+      expect(dispatchers.offerExpeditionDraft).toHaveBeenCalledWith(
+        'major_gig',
+        'venue_1'
+      )
+    })
+
+    it('offers nothing for a failed gig, the Finale or outside a run', () => {
+      for (const overrides of [
+        {
+          expedition: activeExpedition,
+          lastGigStats: { misses: 9, accuracy: 20, failed: true }
+        },
+        { expedition: activeExpedition, isFinaleGig: true },
+        {}
+      ]) {
+        const dispatchers = {
+          ...makeDispatchers(),
+          offerExpeditionDraft: vi.fn()
+        }
+        const props = makeProps({ dispatchers, ...overrides })
+        const { result } = renderHook(() => useContinueHandler(props))
+        act(() => {
+          result.current()
+        })
+        expect(dispatchers.offerExpeditionDraft).not.toHaveBeenCalled()
+      }
+    })
+  })
+
   it('catches errors and releases guard', () => {
     calculateContinueStats.mockImplementation(() => {
       throw new Error('Test error')

@@ -60,9 +60,12 @@ export const KabelsalatScene = () => {
   // clears minigame.active, so the reducer would drop the purge stress.
   const handleSkip = useCallback(() => forceAdvance(false), [forceAdvance])
 
+  // pt-16 keeps the header clear of the absolutely positioned SKIP button
+  // (top-4, ~2rem tall): once the content outgrows the viewport, centering
+  // leaves no slack and the title would otherwise sit underneath it.
   return (
     <div
-      className={`flex flex-col items-center justify-center w-full min-h-[100svh] relative p-4 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
+      className={`flex flex-col items-center justify-center w-full min-h-[100svh] relative p-4 pt-16 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
       style={
         bgTextureUrl
           ? { backgroundImage: `url(${bgTextureUrl})`, backgroundSize: 'cover' }

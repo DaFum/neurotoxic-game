@@ -56,6 +56,30 @@ describe('MapNodeView', () => {
     expect(text).toContain(formatCurrency(25, i18n.language))
   })
 
+  test('shows the Fame booking lock only when one is passed', () => {
+    const festival = { ...mockNode, type: 'FESTIVAL' }
+    const props = {
+      node: festival,
+      isCurrent: false,
+      isTraveling: false,
+      visibility: 'visible',
+      isReachable: true,
+      isPendingConfirm: true,
+      handleTravel: mockHandleTravel,
+      setHoveredNode: mockSetHoveredNode,
+      iconUrl,
+      vanUrl
+    }
+    const { rerender } = render(<MapNodeView {...props} />)
+    expect(screen.queryByTestId('map-node-booking-locked')).toBeNull()
+
+    rerender(<MapNodeView {...props} bookingLockMinimumFame={250} />)
+    expect(screen.getByTestId('map-node-booking-locked')).toBeInTheDocument()
+
+    rerender(<MapNodeView {...props} bookingLockMinimumFame={null} />)
+    expect(screen.queryByTestId('map-node-booking-locked')).toBeNull()
+  })
+
   test('renders visual states appropriately (position, current, travel, pending, unreachable, ticketPrice)', async () => {
     const { container, rerender } = render(
       <MapNodeView

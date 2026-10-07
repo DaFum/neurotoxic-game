@@ -25,9 +25,9 @@ import {
 import {
   deriveExpeditionCareerRank,
   getExpeditionHqFacilityLevel,
+  getExpeditionTourTokenBalance,
   getExpeditionUnlockSetPurchaseBlocker
 } from '../../domain/expedition/meta'
-import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { ExpeditionUnlockSetId } from '../../types/career'
 
 /**
@@ -39,7 +39,7 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
   const { purchaseExpeditionHqFacility, purchaseExpeditionUnlockSet } =
     useGameActions()
 
-  const tokens = Math.max(0, finiteNumberOr(career.tourTokens, 0))
+  const tokens = getExpeditionTourTokenBalance(career)
   const rank = deriveExpeditionCareerRank(career)
 
   const buildFacility = useCallback(

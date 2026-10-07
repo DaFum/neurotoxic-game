@@ -17,7 +17,7 @@ import { normalizeVenueId } from '../../../utils/mapUtils'
 import { isMapNodeType } from '../../../utils/mapNodeTypes'
 import type { MapNodeType } from '../../../utils/mapNodeTypes'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
-import { normalizeTraitMap } from '../../../utils/traitUtils'
+import { rehydrateTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
   clampMemberMood,
@@ -1012,9 +1012,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
     const value = finiteOptionalNumber(bandData[key])
     if (value === undefined) continue
     if (key === 'tempo') {
-      // Same 0..100 range as `handleUpdateBand`, but not floored: contraband
+      // Same rule as `handleUpdateBand`: 0..100, not floored. Contraband
       // tempo effects are fractional (+0.15) and reverted by an exact additive
-      // inverse, so flooring on load would leave the revert below zero.
+      // inverse, so flooring would leave the revert below zero.
       rawBand[key] = clampPercent(value)
     } else if (key === 'style' || key === 'crit') {
       // No reducer-side rule exists; the invariant is finite and non-negative.
@@ -1085,7 +1085,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           : undefined
       const member: BandMember = {
         id,
-        traits: normalizeTraitMap(m.traits),
+        traits: rehydrateTraitMap(m.traits),
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {

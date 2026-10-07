@@ -1,10 +1,5 @@
 import type { QuestDefinition } from '../types/quest'
 import {
-  QUEST_EXPEDITION_META_UNLOCK,
-  QUEST_EXPEDITION_NEMESIS,
-  QUEST_EXPEDITION_RUN_GOAL
-} from './questsConstants'
-import {
   quest_prove_yourself,
   quest_apology_tour,
   quest_ego_management,
@@ -78,9 +73,9 @@ export const QUEST_REGISTRY = {
   quest_venue_regular,
   quest_brand_ambassador,
   quest_alchemist,
-  [QUEST_EXPEDITION_RUN_GOAL]: quest_expedition_run_goal,
-  [QUEST_EXPEDITION_NEMESIS]: quest_expedition_nemesis,
-  [QUEST_EXPEDITION_META_UNLOCK]: quest_expedition_meta_unlock
+  quest_expedition_run_goal,
+  quest_expedition_nemesis,
+  quest_expedition_meta_unlock
 } as const satisfies Record<string, QuestDefinition>
 
 /**

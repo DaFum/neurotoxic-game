@@ -118,22 +118,38 @@ const resolveDayDelta = (
 }
 
 /**
- * Shared non-negative `player.stats` numeric step used by both walkers.
+ * Outcome of one `player.stats` delta entry; see {@link resolveStatEntry}.
+ */
+type StatEntryStep =
+  | { kind: 'numeric'; current: number; next: number }
+  | { kind: 'overwrite'; next: string | boolean }
+
+/**
+ * Shared per-key `player.stats` step used by BOTH walkers, so the preview
+ * classifies every entry exactly as the apply stores it.
  *
  * @param currentStat - Stored stat, possibly malformed or non-numeric.
- * @param deltaStat - Finite stat delta.
- * @returns The finite stored value (`0` when not a finite number) and the
- * resulting clamped value. A sum that overflows leaves the base unchanged.
+ * @param statDelta - Raw delta entry for the same key.
+ * @returns A numeric step (finite stored value, `0` when not a finite number,
+ * and the clamped result; an overflowing sum leaves the base unchanged), an
+ * overwrite for strings and booleans, or `null` when the entry is ignored.
  */
-const resolveStatDelta = (
+const resolveStatEntry = (
   currentStat: unknown,
-  deltaStat: number
-): { current: number; next: number } => {
-  const current = finiteNumberOr(currentStat, 0)
-  return {
-    current,
-    next: addClampedNonNegative(clampNonNegative(current), deltaStat)
+  statDelta: unknown
+): StatEntryStep | null => {
+  if (isFiniteNumber(statDelta)) {
+    const current = finiteNumberOr(currentStat, 0)
+    return {
+      kind: 'numeric',
+      current,
+      next: addClampedNonNegative(clampNonNegative(current), statDelta)
+    }
   }
+  if (typeof statDelta === 'string' || typeof statDelta === 'boolean') {
+    return { kind: 'overwrite', next: statDelta }
+  }
+  return null
 }
 
 const calculateBoundedSocialDelta = (
@@ -313,26 +329,19 @@ export const calculateAppliedDelta = (
       applied.player.day = next - base
     }
     if (delta.player.stats) {
-      // Mirror the apply walker per key: numeric deltas report the clamped
-      // change, strings/booleans overwrite, anything else is ignored.
+      // Numeric deltas report the clamped change, overwrites the new value.
       const statsDelta = delta.player.stats
       const appliedStats: FilteredRecord = Object.create(null)
       for (const key in statsDelta) {
         if (!Object.hasOwn(statsDelta, key)) continue
         if (isForbiddenKey(key)) continue
-        const statDelta = statsDelta[key]
-        if (isFiniteNumber(statDelta)) {
-          const { current, next } = resolveStatDelta(
-            state.player?.stats?.[key],
-            statDelta
-          )
-          appliedStats[key] = next - current
-        } else if (
-          typeof statDelta === 'string' ||
-          typeof statDelta === 'boolean'
-        ) {
-          appliedStats[key] = statDelta
-        }
+        const step = resolveStatEntry(
+          state.player?.stats?.[key],
+          statsDelta[key]
+        )
+        if (step === null) continue
+        appliedStats[key] =
+          step.kind === 'numeric' ? step.next - step.current : step.next
       }
       applied.player.stats = appliedStats
     }
@@ -631,18 +640,8 @@ export const applyEventDelta = (
         if (!Object.hasOwn(statsDelta, key)) continue
         if (isForbiddenKey(key)) continue
 
-        const statDelta = statsDelta[key]
-        if (isFiniteNumber(statDelta)) {
-          nextPlayer.stats[key] = resolveStatDelta(
-            nextPlayer.stats[key],
-            statDelta
-          ).next
-        } else if (
-          typeof statDelta === 'string' ||
-          typeof statDelta === 'boolean'
-        ) {
-          nextPlayer.stats[key] = statDelta
-        }
+        const step = resolveStatEntry(nextPlayer.stats[key], statsDelta[key])
+        if (step !== null) nextPlayer.stats[key] = step.next
       }
     }
 

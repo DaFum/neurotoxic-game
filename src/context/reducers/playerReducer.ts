@@ -87,8 +87,12 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     }
   }
   if (Object.hasOwn(safeUpdates, 'day')) {
-    const nextDay = finiteNumberOr(safeUpdates.day, state.player.day)
-    safeUpdates.day = Math.max(1, Math.floor(finiteNumberOr(nextDay, 1)))
+    safeUpdates.day = Math.max(
+      1,
+      Math.floor(
+        finiteNumberOr(safeUpdates.day, finiteNumberOr(state.player.day, 1))
+      )
+    )
   }
   if (Object.hasOwn(safeUpdates, 'time')) {
     safeUpdates.time = wrapClockHour(

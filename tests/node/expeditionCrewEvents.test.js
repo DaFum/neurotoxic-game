@@ -8,6 +8,7 @@ import { gameReducer } from '../../src/context/gameReducer.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
 import { addExpeditionReward } from '../../src/context/expeditionActionCreators.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 
 test('crew events validate and resolve canonical G3 actions through the real pipeline', () => {
   for (const event of EXPEDITION_CREW_EVENTS)
@@ -52,6 +53,46 @@ test('breakthrough produces one source-proven Contact Intel grant', () => {
   assert.equal(next.expedition.intelGrants[0].source, 'contact')
   const replayed = resolution.actions.reduce(gameReducer, next)
   assert.equal(replayed.expedition.intelGrants.length, 1)
+})
+
+test('the Contact grant skips an onward node already at full intel', () => {
+  // Plan 03 Task 10: the grant needs a reachable future node whose Intel is
+  // still below the target. Aiming only at the first onward connection lost
+  // the grant whenever that one node was already fully read.
+  const event = EXPEDITION_CREW_EVENTS.find(
+    candidate => candidate.id === 'expedition_crew_breakthrough'
+  )
+  assert.ok(event)
+  const started = startedState(
+    { unlockedSetIds: ['industry_network'] },
+    { crewIds: ['noah', 'yara'] }
+  )
+  const loadout = started.expedition.loadout
+  const map = buildExpeditionMap(
+    started.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const currentNodeId = started.expedition.visitedNodeIds.at(-1)
+  const onward = map.connections
+    .filter(edge => edge.from === currentNodeId)
+    .map(edge => edge.to)
+  assert.ok(onward.length >= 2, 'fixture start needs two onward routes')
+  const [readNodeId, openNodeId] = onward
+  const state = {
+    ...started,
+    activeEvent: event,
+    expedition: {
+      ...started.expedition,
+      intelByNodeId: { ...started.expedition.intelByNodeId, [readNodeId]: 2 }
+    }
+  }
+  const next = resolveEvent(event.options[0], state).actions.reduce(
+    gameReducer,
+    state
+  )
+  assert.equal(next.expedition.intelGrants.length, 1)
+  assert.equal(next.expedition.intelGrants[0].nodeId, openNodeId)
 })
 
 test('a resolved Contact banks the secured Crew-contact reward once', () => {
