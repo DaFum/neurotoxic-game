@@ -681,6 +681,76 @@ test('defect reducers refuse raw dispatches the inspection/repair paths would re
   )
 
   await t.test(
+    'throwing payload getters are refused without being read',
+    () => {
+      let reads = 0
+      const withThrowingGetter = (record, key) =>
+        Object.defineProperty(record, key, {
+          enumerable: true,
+          get() {
+            reads += 1
+            throw new Error(`hostile ${key} getter`)
+          }
+        })
+      const hiddenState = buildState([makeDefect('d1')], { crew: true })
+      const knownState = buildState([makeDefect('d1', { status: 'revealed' })])
+      const cases = [
+        [
+          'reveal defectId',
+          handleRevealExpeditionDefect,
+          hiddenState,
+          withThrowingGetter(
+            { source: { mode: 'crew_inspection' }, expectedRouteStep: 2 },
+            'defectId'
+          )
+        ],
+        [
+          'reveal expectedRouteStep',
+          handleRevealExpeditionDefect,
+          hiddenState,
+          withThrowingGetter(
+            { defectId: 'd1', source: { mode: 'crew_inspection' } },
+            'expectedRouteStep'
+          )
+        ],
+        [
+          'reveal source.mode',
+          handleRevealExpeditionDefect,
+          hiddenState,
+          {
+            defectId: 'd1',
+            source: withThrowingGetter({}, 'mode'),
+            expectedRouteStep: 2
+          }
+        ],
+        [
+          'resolve repair.mode',
+          handleResolveExpeditionDefect,
+          knownState,
+          {
+            defectId: 'd1',
+            repair: withThrowingGetter({ targetGroup: 'pa' }, 'mode'),
+            expectedRouteStep: 2
+          }
+        ],
+        [
+          'trigger trigger',
+          handleTriggerExpeditionDefect,
+          hiddenState,
+          withThrowingGetter(
+            { defectId: 'd1', expectedRouteStep: 2 },
+            'trigger'
+          )
+        ]
+      ]
+      for (const [label, handler, state, payload] of cases) {
+        assert.equal(handler(state, payload), state, label)
+      }
+      assert.equal(reads, 0)
+    }
+  )
+
+  await t.test(
     'creators carry only the authorising source and repair fields',
     () => {
       const state = buildState([makeDefect('d1')])

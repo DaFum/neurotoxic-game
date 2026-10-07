@@ -13,7 +13,11 @@
 
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import {
+  hasForbiddenKeysDeep,
+  isForbiddenKey,
+  isLooseRecord
+} from '../../utils/objectUtils'
 import { logger } from '../../utils/logger'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
@@ -1712,7 +1716,10 @@ export const handleExecuteExpeditionRepair = (
 
 /**
  * Shared guard of the three defect handlers: an active run, a record payload
- * naming a string `defectId`, and a current `expectedRouteStep`.
+ * naming a string `defectId`, and a current `expectedRouteStep`. The whole
+ * payload (including `source`, `repair` and `trigger`) is scanned by
+ * descriptor first, so an accessor or forbidden key is refused before any
+ * field read could invoke it.
  *
  * @param state - Current game state.
  * @param payload - Raw dispatched payload.
@@ -1723,7 +1730,11 @@ const findDispatchedDefect = (
   payload: unknown
 ): HiddenDefectState | null => {
   if (state.expedition.status !== 'active') return null
-  if (!isLooseRecord(payload) || typeof payload.defectId !== 'string') {
+  if (
+    !isLooseRecord(payload) ||
+    hasForbiddenKeysDeep(payload) ||
+    typeof payload.defectId !== 'string'
+  ) {
     return null
   }
   if (
