@@ -1,10 +1,12 @@
 import type { GameState, ToastPayload, TradeVoidItemPayload } from '../../types'
 import { logger } from '../../utils/logger'
-import { isVoidTraderUnlocked } from '../../data/contraband'
+import {
+  getVoidTraderFameCost,
+  isVoidTraderUnlocked
+} from '../../data/contraband'
 import {
   clampPlayerFame,
   calculateFameLevel,
-  clampNonNegative,
   isForbiddenKey,
   finiteNumberOr,
   isFiniteNumber
@@ -38,7 +40,8 @@ const sanitizeContextValue = (value: unknown): unknown => {
  * @param payload - Contraband id, fame cost, generated instance id, and optional
  * success toast.
  * @returns State with fame deducted and contraband added, or the original state
- * when validation fails or the Void Trader is still locked by controversy.
+ * when validation fails, the Void Trader is still locked by controversy, or the
+ * payload cost differs from the item's canonical rarity price.
  */
 export const handleTradeVoidItem = (
   state: GameState,
@@ -66,7 +69,16 @@ export const handleTradeVoidItem = (
     logger.warn('GameState', 'Invalid fameCost for void trade', fameCost)
     return state
   }
-  const cost = clampNonNegative(fameCost)
+  // The price is canonical: derived from the item's rarity, never taken from
+  // the payload. The payload cost only guards against a stale UI price.
+  const cost = getVoidTraderFameCost(contrabandId)
+  if (cost === null || cost !== fameCost) {
+    logger.warn(
+      'GameState',
+      'Rejected void trade: price mismatch or unsold item'
+    )
+    return state
+  }
   const currentFame = finiteNumberOr(state.player.fame, 0)
 
   if (currentFame < cost) {
