@@ -61,11 +61,15 @@ export async function pauseAudio(): Promise<void> {
   // Invalidate any resume still waiting on the audio-context gate.
   audioState.transportPauseGeneration++
   try {
-    if (Tone.getTransport().state === 'started') {
+    // A pending lead-in start is cancelled first, even while the transport
+    // runs (a resume can restart it before the lead-in ends): `pause()` leaves
+    // that scheduled start in Tone's timeline, so the transport would start by
+    // itself under the pause and the paused gig playback would never resume.
+    if (
+      !deferScheduledTransportStart() &&
+      Tone.getTransport().state === 'started'
+    ) {
       await Tone.getTransport().pause()
-    } else {
-      // A lead-in start is still pending; Tone reports it as stopped.
-      deferScheduledTransportStart()
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to pause audio transport', err)
@@ -129,8 +133,13 @@ export async function resumeAudio(): Promise<boolean> {
 
 /**
  * Returns the current Tone transport state.
+ *
+ * @remarks
+ * A start deferred by {@link pauseAudio} reports as `paused`: Tone says
+ * `stopped`, and callers only resume a paused transport.
  */
 export function getTransportState(): 'started' | 'stopped' | 'paused' {
+  if (audioState.transportDeferredStart) return 'paused'
   return Tone.getTransport().state
 }
 
