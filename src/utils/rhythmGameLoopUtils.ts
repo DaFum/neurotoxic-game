@@ -229,7 +229,7 @@ const processMissedNotes = (
  * successful `triggerEvent` consumes the song's slot, so a missed chance roll
  * does not block the other event from attempting in the same song. Nothing
  * fires during song transitions (progress is stale from the previous song
- * there) or after the gig has been finalized.
+ * there), after the last song, or after the gig has been finalized.
  *
  * @param stateRef - High-frequency rhythm game state carrying progress and guards.
  * @param triggerEvent - Event-system dispatcher for the `gig` category.
@@ -238,7 +238,12 @@ export const maybeFireGigProgressEvent = (
   stateRef: RhythmGameRefState,
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
 ): void => {
-  if (stateRef.hasSubmittedResults || stateRef.songTransitioning) return
+  if (
+    stateRef.hasSubmittedResults ||
+    stateRef.songTransitioning ||
+    stateRef.setlistCompleted
+  )
+    return
   const currentSongIndex = finiteNumberOr(stateRef.lastEndedSongIndex, -1) + 1
   if (stateRef.lastGigEventSongIndex === currentSongIndex) return
   if (!stateRef.gigIntroFired && stateRef.progress > 0) {

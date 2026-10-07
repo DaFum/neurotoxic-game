@@ -103,6 +103,21 @@ describe('maybeFireGigProgressEvent', () => {
     assert.deepStrictEqual(calls, [])
   })
 
+  test('does not fire after the last song while the gig awaits finalization', () => {
+    const calls = []
+    const ref = makeRef({
+      progress: 97,
+      lastEndedSongIndex: 2,
+      gigIntroFired: true,
+      lastGigEventSongIndex: 0,
+      setlistCompleted: true
+    })
+
+    maybeFireGigProgressEvent(ref, makeTrigger(calls))
+
+    assert.deepStrictEqual(calls, [])
+  })
+
   test('single-song setlist: gig_mid does not fire after the gig is finalized', () => {
     const calls = []
     const trigger = makeTrigger(calls)
