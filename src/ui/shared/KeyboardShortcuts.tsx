@@ -117,7 +117,16 @@ export function KeyboardShortcutsPanel({
             <X size={14} aria-hidden='true' />
           </button>
         ) : (
-          <X size={14} className='opacity-50' aria-hidden='true' />
+          <button
+            type='button'
+            disabled
+            aria-label={t('ui:shortcuts.closeAria', {
+              defaultValue: 'Close keyboard shortcuts'
+            })}
+            className='opacity-50 cursor-not-allowed p-0.5'
+          >
+            <X size={14} aria-hidden='true' />
+          </button>
         )}
       </div>
       <div className='flex flex-col gap-1.5'>
