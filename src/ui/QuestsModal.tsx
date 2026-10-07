@@ -23,7 +23,7 @@ import {
   getQuestScopeHint,
   type QuestDisplayState
 } from './questHintViewModel'
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
@@ -104,21 +104,31 @@ const getPenaltyTexts = (
   quest: QuestDisplayState,
   t: (key: string, options?: Record<string, unknown>) => string
 ): string[] => {
-  return getQuestPenalties(quest)
-    .map(penalty => {
-      if (!('amount' in penalty) || penalty.amount === 0) return ''
-      switch (penalty.type) {
-        case 'band.harmony':
-          return t('ui:quests.penalty.harmony', { count: penalty.amount })
-        case 'social.controversy':
-          return t('ui:quests.penalty.controversy', { count: penalty.amount })
-        case 'social.loyalty':
-          return t('ui:quests.penalty.loyalty', { count: penalty.amount })
-        default:
-          return ''
-      }
-    })
-    .filter(Boolean)
+  // ⚡ BOLT OPTIMIZATION: Replaced .map().filter(Boolean) with single-pass procedural loop
+  // to avoid intermediate array allocations and closure creation.
+  const penalties = getQuestPenalties(quest)
+  const results: string[] = []
+  for (const penalty of penalties) {
+    if (!('amount' in penalty) || penalty.amount === 0) continue
+    let text = ''
+    switch (penalty.type) {
+      case 'band.harmony':
+        text = t('ui:quests.penalty.harmony', { count: penalty.amount })
+        break
+      case 'social.controversy':
+        text = t('ui:quests.penalty.controversy', { count: penalty.amount })
+        break
+      case 'social.loyalty':
+        text = t('ui:quests.penalty.loyalty', { count: penalty.amount })
+        break
+      default:
+        break
+    }
+    if (text) {
+      results.push(text)
+    }
+  }
+  return results
 }
 
 // Display order: story first, then by ascending deadline (no deadline last),
@@ -402,10 +412,17 @@ export const QuestsModal = ({
   player: PlayerState
 }) => {
   const { t } = useTranslation(['ui', 'events'])
-  const displayQuests = activeQuests.map(quest => {
-    const definition = getQuestDefinition(quest.id)
-    return definition ? { ...definition, ...quest } : quest
-  })
+  // ⚡ BOLT OPTIMIZATION: Memoized quest definition mapping and sorting to prevent
+  // unnecessary array allocations and sorting passes on every QuestsModal re-render.
+  // Replaced .map() with a single-pass procedural loop.
+  const sortedDisplayQuests = useMemo(() => {
+    const displayQuests: QuestDisplayState[] = []
+    for (const quest of activeQuests) {
+      const definition = getQuestDefinition(quest.id)
+      displayQuests.push(definition ? { ...definition, ...quest } : quest)
+    }
+    return sortQuests(displayQuests)
+  }, [activeQuests])
 
   return (
     <Modal
@@ -422,7 +439,7 @@ export const QuestsModal = ({
       </div>
 
       {/* Quests List */}
-      {displayQuests.length === 0 ? (
+      {sortedDisplayQuests.length === 0 ? (
         <div className='text-center py-12 flex flex-col items-center'>
           <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
           <p className='text-ash-gray font-mono italic mb-6'>
@@ -434,7 +451,7 @@ export const QuestsModal = ({
         </div>
       ) : (
         <div className='space-y-6'>
-          {sortQuests(displayQuests).map(
+          {sortedDisplayQuests.map(
             (quest: QuestDisplayState, index: number) => (
               <QuestItem
                 key={quest.id}
