@@ -2,6 +2,7 @@ import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
+import { MinigameSkipButton } from './MinigameSkipButton'
 import type { MinigameSceneFrameProps } from '../types/components'
 import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
 
@@ -22,9 +23,9 @@ export const MinigameSceneFrame = <TState,>({
   logic,
   uiState,
   onComplete,
-  completionTitle = 'COMPLETE',
+  completionTitle,
   renderCompletionStats,
-  completionButtonText = 'CONTINUE',
+  completionButtonText,
   children
 }: MinigameSceneFrameProps<TState>) => {
   const { t } = useTranslation(['ui'])
@@ -48,15 +49,7 @@ export const MinigameSceneFrame = <TState,>({
       {/* Player-initiated exit: forfeits the run and continues. Offered only for
           pre-gig setup minigames, and hidden once the completion overlay is
           shown (CONTINUE owns that path). */}
-      {canSkip && (
-        <button
-          type='button'
-          onClick={handleSkip}
-          className='absolute top-4 right-4 z-(--z-modal) pointer-events-auto border-2 border-toxic-green/60 bg-void-black/70 px-3 py-1 text-sm text-toxic-green hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-        >
-          {t('ui:minigames.skip', { defaultValue: 'SKIP' })}
-        </button>
-      )}
+      {canSkip && <MinigameSkipButton onClick={handleSkip} />}
 
       {/* Custom UI Elements (HUD, Controls) */}
       {children}
@@ -75,13 +68,13 @@ export const MinigameSceneFrame = <TState,>({
             id='completion-title'
             className='text-4xl text-toxic-green font-bold mb-4'
           >
-            {completionTitle}
+            {completionTitle ?? t('ui:minigames.complete')}
           </h1>
           <div className='text-star-white mb-8'>
             {renderCompletionStats ? renderCompletionStats(uiState) : null}
           </div>
           <ActionButton ref={continueButtonRef} onClick={onComplete}>
-            {completionButtonText}
+            {completionButtonText ?? t('ui:continue')}
           </ActionButton>
         </m.div>
       )}

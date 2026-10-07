@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../shared/Tooltip.tsx'
-import { useRovingTabs } from '../shared/useRovingTabs.ts'
+import { createRovingTabs } from '../shared/rovingTabs.ts'
 import { type HQTabDef } from './HQTabButton.tsx'
 import { HQTabButton } from './HQTabButton.tsx'
 
@@ -45,7 +45,7 @@ export const BandHQTabsList = ({
     }
   ]
 
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: tabs.map(tab => tab.id),
     activeId: currentTab,
     onSelect: setActiveTab,

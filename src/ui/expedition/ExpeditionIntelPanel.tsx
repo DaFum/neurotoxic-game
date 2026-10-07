@@ -279,8 +279,8 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
             </span>
             {candidate.canRecon ? (
               <ActionButton
-                variant='secondary'
-                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                variant='custom'
+                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green focus-visible:ring-4 focus-visible:ring-toxic-green-20'
                 data-testid={`expedition-intel-recon-${candidate.nodeId}`}
                 onClick={() =>
                   revealExpeditionNodeIntel({
@@ -295,8 +295,8 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
             {candidate.usableGrants.map(grant => (
               <ActionButton
                 key={grant.id}
-                variant='secondary'
-                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                variant='custom'
+                className='px-3 py-1 text-xs border border-toxic-green text-toxic-green focus-visible:ring-4 focus-visible:ring-toxic-green-20'
                 data-testid={`expedition-intel-grant-${grant.source}-${candidate.nodeId}`}
                 onClick={() =>
                   revealExpeditionNodeIntel({
@@ -320,8 +320,8 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
             socialPostOptionId !== null &&
             socialResultId !== null ? (
               <ActionButton
-                variant='secondary'
-                className='px-3 py-1 text-xs border border-steel-gray text-ash-gray'
+                variant='custom'
+                className='px-3 py-1 text-xs border border-steel-gray text-ash-gray focus-visible:ring-4 focus-visible:ring-toxic-green-20'
                 data-testid={`expedition-intel-social-tip-${candidate.nodeId}`}
                 onClick={() =>
                   createSocialIntelGrant(

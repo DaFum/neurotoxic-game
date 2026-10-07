@@ -143,3 +143,15 @@ describe('RoadieControls touch input', () => {
     ).toHaveClass('md:grid')
   })
 })
+
+describe('RoadieControls layout', () => {
+  test('keeps the controls toggle below the frame SKIP button (top-4)', () => {
+    setup()
+
+    const toggle = screen.getByRole('button', {
+      name: 'ui:roadieRun.controls.toggleAria'
+    })
+    expect(toggle).toHaveClass('top-16', 'right-4')
+    expect(toggle).not.toHaveClass('top-4')
+  })
+})

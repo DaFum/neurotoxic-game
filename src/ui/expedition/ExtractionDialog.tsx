@@ -220,9 +220,9 @@ export const ExtractionDialog = memo(function ExtractionDialog({
           </ActionButton>
           <ActionButton
             onClick={onClose}
-            variant='secondary'
+            variant='custom'
             data-testid='expedition-extraction-cancel'
-            className='flex-1 px-8 py-4 border-2 border-steel-gray text-ash-gray'
+            className='flex-1 px-8 py-4 border-2 border-steel-gray text-ash-gray focus-visible:ring-4 focus-visible:ring-toxic-green-20'
           >
             {t('ui:expedition.extraction.cancel')}
           </ActionButton>

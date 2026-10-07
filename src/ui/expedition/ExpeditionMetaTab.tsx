@@ -106,8 +106,8 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
                   </span>
                 ) : (
                   <ActionButton
-                    variant='secondary'
-                    className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                    variant='custom'
+                    className='px-3 py-1 text-xs border border-toxic-green text-toxic-green focus-visible:ring-4 focus-visible:ring-toxic-green-20'
                     disabled={!canBuild}
                     data-testid={`expedition-meta-build-${facilityId}`}
                     onClick={() => buildFacility(facilityId, level)}
@@ -162,8 +162,8 @@ export const ExpeditionMetaTab = memo(function ExpeditionMetaTab() {
                       </span>
                     ) : null}
                     <ActionButton
-                      variant='secondary'
-                      className='px-3 py-1 text-xs border border-toxic-green text-toxic-green'
+                      variant='custom'
+                      className='px-3 py-1 text-xs border border-toxic-green text-toxic-green focus-visible:ring-4 focus-visible:ring-toxic-green-20'
                       disabled={blocker !== null}
                       data-testid={`expedition-meta-unlock-${setId}`}
                       onClick={() => buySet(setId)}

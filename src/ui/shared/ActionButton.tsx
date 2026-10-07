@@ -9,10 +9,16 @@ import {
   type Ref
 } from 'react'
 
+/**
+ * Visual variants `ActionButton` styles. `custom` applies no variant chrome and
+ * no default focus ring: the caller supplies both through `className`.
+ */
+type ActionButtonVariant = 'primary' | 'secondary' | 'danger' | 'custom'
+
 type ActionButtonProps = ComponentPropsWithoutRef<'button'> & {
   children: ReactNode
   ref?: Ref<HTMLButtonElement>
-  variant?: string
+  variant?: ActionButtonVariant
 }
 
 /**
@@ -42,7 +48,13 @@ export const ActionButton = memo(
       variant === 'primary'
         ? `px-8 py-4 bg-toxic-green text-void-black
                 enabled:hover:translate-x-1 enabled:hover:-translate-y-1 enabled:hover:shadow-[4px_4px_0px_var(--color-toxic-green-bright)]`
-        : ''
+        : variant === 'secondary'
+          ? `border-2 border-steel-gray text-toxic-green
+                enabled:hover:border-toxic-green enabled:hover:bg-toxic-green enabled:hover:text-void-black`
+          : variant === 'danger'
+            ? `border-2 border-blood-red text-star-white
+                enabled:hover:bg-blood-red enabled:hover:text-void-black`
+            : ''
 
     return (
       <button

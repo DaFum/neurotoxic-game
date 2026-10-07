@@ -1,5 +1,5 @@
 import { GlitchButton } from '../../../GlitchButton'
-import { useRovingTabs } from '../../../shared/useRovingTabs'
+import { createRovingTabs } from '../../../shared/rovingTabs'
 import type { LeaderboardView } from '../types'
 
 interface LeaderboardTabsProps {
@@ -13,7 +13,7 @@ export const LeaderboardTabs = ({
   setView,
   views
 }: LeaderboardTabsProps) => {
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: views.map(({ id }) => id),
     activeId: view,
     onSelect: setView

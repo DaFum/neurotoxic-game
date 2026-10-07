@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { AssetKind } from '../../types/assets'
-import { useRovingTabs } from '../../ui/shared/useRovingTabs'
+import { createRovingTabs } from '../../ui/shared/rovingTabs'
 import { ASSET_SECTION_TABS } from './sectionTabs'
 
 /**
@@ -29,7 +29,7 @@ export const AssetsBottomTabs = ({
   onSelect
 }: AssetsBottomTabsProps) => {
   const { t } = useTranslation(['assets'])
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: ASSET_SECTION_TABS.map(tab => tab.key),
     activeId: active,
     onSelect: onSelect

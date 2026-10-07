@@ -7,7 +7,7 @@ import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { ExpeditionServicePanel } from '../ui/expedition/ExpeditionServicePanel'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
-import { useRovingTabs } from '../ui/shared/useRovingTabs'
+import { createRovingTabs } from '../ui/shared/rovingTabs'
 
 const PREGIG_TABS = ['logistics', 'merch'] as const
 
@@ -25,7 +25,7 @@ export const PreGig = () => {
   const [activeTab, setActiveTab] =
     useState<(typeof PREGIG_TABS)[number]>('logistics')
 
-  const { getTabProps } = useRovingTabs({
+  const { getTabProps } = createRovingTabs({
     ids: PREGIG_TABS,
     activeId: activeTab,
     onSelect: setActiveTab

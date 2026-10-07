@@ -6,12 +6,10 @@ import type { MinigameLogicBase } from '../types/components'
 
 /**
  * Configuration properties for the core minigame scene logic hook.
- *
- * @typeParam TState - The internal state structure of the specific minigame logic.
  */
-interface UseMinigameSceneLogicProps<TState> {
-  /** The core game logic instance handling the minigame state */
-  logic: MinigameLogicBase<TState>
+interface UseMinigameSceneLogicProps {
+  /** Minigame logic; only its optional `finishMinigame` is read (the DEV backdoor prefers it). */
+  logic: Pick<MinigameLogicBase, 'finishMinigame'>
   /** The current UI state from the React component, determining completion and focus */
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
   /** Callback triggered on escape (exit), skipped, or dev auto-completion. This is not triggered on normal minigame finish. */
@@ -32,15 +30,14 @@ interface UseMinigameSceneLogicProps<TState> {
  * @param props - Configuration containing the minigame logic and UI state bindings
  * @returns Ref objects for managing focus and callbacks/flags for skip functionality
  */
-export const useMinigameSceneLogic = <TState>({
+export const useMinigameSceneLogic = ({
   logic,
   uiState,
   onComplete
-}: UseMinigameSceneLogicProps<TState>) => {
+}: UseMinigameSceneLogicProps) => {
   const band = useGameSelector(state => state?.band)
   const minigameType = useGameSelector(state => state?.minigame?.type)
   const {
-    completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
     completeAmpCalibration
@@ -85,12 +82,10 @@ export const useMinigameSceneLogic = <TState>({
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
           const currentLogic = logicRef.current
+          // Tourbus always exposes finishMinigame, so only the minigames
+          // without one need a direct completion dispatch below.
           if (currentLogic?.finishMinigame) {
             currentLogic.finishMinigame()
-          } else if (minigameType === MINIGAME_TYPES.TOURBUS) {
-            completeTravelMinigame(0, [])
-            onCompleteRef.current()
-            return
           } else if (minigameType === MINIGAME_TYPES.ROADIE) {
             completeRoadieMinigame(0)
             onCompleteRef.current()
@@ -119,7 +114,6 @@ export const useMinigameSceneLogic = <TState>({
   }, [
     uiState?.isGameOver,
     minigameType,
-    completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
     completeAmpCalibration

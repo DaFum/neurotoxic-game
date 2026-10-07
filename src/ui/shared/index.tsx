@@ -5,7 +5,6 @@
 
 // Shared UI supports both barrel imports for common primitives and direct leaf imports for focused component tests/mocks.
 // Export components
-export { SettingsPanel } from '../settings/SettingsPanel'
 export { Tooltip } from './Tooltip'
 export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'

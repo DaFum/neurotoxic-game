@@ -17,7 +17,6 @@ vi.mock('../../src/ui/shared/index.tsx', () => ({
     </div>
   ),
   Tooltip: ({ children }) => <div data-testid='tooltip'>{children}</div>,
-  SettingsPanel: () => <div />,
   VolumeSlider: () => <div />,
   Modal: () => <div />,
   ActionButton: () => <button type='button' />
