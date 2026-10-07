@@ -63,8 +63,7 @@ vi.mock('../../src/utils/errorHandler', () => {
   return {
     handleError: mockHandleError,
     StorageError: MockStorageError,
-    runSafeStorageOperation,
-    safeStorageOperation: runSafeStorageOperation
+    runSafeStorageOperation
   }
 })
 describe('MainMenu Identity Flow', () => {

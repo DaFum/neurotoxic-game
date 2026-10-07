@@ -29,7 +29,6 @@ const mockUseGameActions = () => {
 }
 
 mock.mock('../../src/context/GameState', () => ({
-  useGameState: mockUseGameState,
   useGameActions: mockUseGameActions,
   useGameSelector: selector => selector(mockUseGameState())
 }))

@@ -19,10 +19,8 @@ const mockGameActions = {
   addToast: mockGameState.addToast,
   loadGame: mockGameState.loadGame
 }
-const useGameState = vi.fn(() => mockGameState)
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState,
   useGameActions: () => mockGameActions,
   useGameSelector: selector => selector(mockGameState)
 }))
@@ -79,8 +77,7 @@ vi.mock('../../src/utils/errorHandler', () => {
   return {
     handleError: mockHandleError,
     StorageError: MockStorageError,
-    runSafeStorageOperation,
-    safeStorageOperation: runSafeStorageOperation
+    runSafeStorageOperation
   }
 })
 

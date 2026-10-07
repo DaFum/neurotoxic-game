@@ -16,7 +16,6 @@ const mockGameState = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => mockGameState,
   useGameActions: () => mockGameState,
   useGameSelector: selector => selector(mockGameState)
 }))
@@ -85,8 +84,7 @@ vi.mock('../../src/utils/errorHandler', () => {
   return {
     handleError: mockHandleError,
     StorageError: MockStorageError,
-    runSafeStorageOperation,
-    safeStorageOperation: runSafeStorageOperation
+    runSafeStorageOperation
   }
 })
 // Dynamic import

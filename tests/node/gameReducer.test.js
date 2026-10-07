@@ -5,15 +5,7 @@
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import {
-  applyNeuroOverclockGigCost,
-  bandHasTrait,
-  getNeuroOverclockEffects,
-  hasTrait,
-  NEURO_OVERCLOCK_TRAIT_ID,
-  normalizeTraitMap,
-  removeExclusiveTraits
-} from '../../src/utils/traitUtils'
+import * as traitUtils from '../../src/utils/traitUtils'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
@@ -21,7 +13,7 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   // Deep copy members to avoid mutation issues in test
   band.members = band.members.map(m => ({
     ...m,
-    traits: normalizeTraitMap(m.traits)
+    traits: traitUtils.normalizeTraitMap(m.traits)
   }))
 
   unlocks.forEach(u => {
@@ -56,15 +48,9 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 
 mock.module(new URL('../../src/utils/traitUtils.ts', import.meta.url).href, {
   namedExports: {
-    applyNeuroOverclockGigCost,
+    ...traitUtils,
     applyTraitUnlocks: mockApplyTraitUnlocks,
-    bandHasTrait,
-    getNeuroOverclockEffects,
-    getTraitById: mock.fn(traitId => ({ id: traitId })),
-    hasTrait,
-    NEURO_OVERCLOCK_TRAIT_ID,
-    normalizeTraitMap,
-    removeExclusiveTraits
+    getTraitById: mock.fn(traitId => ({ id: traitId }))
   }
 })
 

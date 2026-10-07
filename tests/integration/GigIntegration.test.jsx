@@ -120,11 +120,7 @@ vi.mock('../../src/utils/audio/audioEngine', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
-    initializeAudio: vi.fn().mockResolvedValue(undefined),
     getGigTimeMs: vi.fn().mockReturnValue(0),
-    isAudioReady: vi.fn().mockReturnValue(true),
-    setupMasterChain: vi.fn(),
-    getCurrentPlayhead: vi.fn().mockReturnValue(0),
     stopAudio: vi.fn()
   }
 })
@@ -187,7 +183,6 @@ vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   }
   return {
     ...actual,
-    useGameState: () => mockGameState,
     useGameActions: () => mockGameState,
     useGameSelector: selector => selector(mockGameState)
   }

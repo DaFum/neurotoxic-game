@@ -61,35 +61,34 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
-  // We need to return a mutable object for useGameState so we can update it in tests if needed,
-  // but for these tests a static return is fine, or we can use a mock function.
-  // Using a mock function allows for flexibility.
+  // Single state source behind both useGameActions and useGameSelector.
+  // Tests swap it with mockGameStateSource.mock.mockImplementation(...).
   const sharedState = createMockGameState({ canLoad: true })
 
-  const mockUseGameState = mock.fn(() => sharedState)
+  const mockGameStateSource = mock.fn(() => sharedState)
   const mockUseGameDispatch = mock.fn(() => {
+    const state = mockGameStateSource()
     // Return only the dispatch functions, filtering out actual state values
     return {
-      changeScene: sharedState.changeScene,
-      loadGame: sharedState.loadGame,
-      addToast: sharedState.addToast,
-      updatePlayer: sharedState.updatePlayer,
-      updateBand: sharedState.updateBand,
-      updateSettings: sharedState.updateSettings,
-      deleteSave: sharedState.deleteSave,
-      setSetlist: sharedState.setSetlist,
-      resetState: sharedState.resetState,
+      changeScene: state.changeScene,
+      loadGame: state.loadGame,
+      addToast: state.addToast,
+      updatePlayer: state.updatePlayer,
+      updateBand: state.updateBand,
+      updateSettings: state.updateSettings,
+      deleteSave: state.deleteSave,
+      setSetlist: state.setSetlist,
+      resetState: state.resetState,
       setPendingBandHQOpen: () => {}
     }
   })
 
   const mockUseGameSelector = mock.fn(selector => {
-    return selector(sharedState)
+    return selector(mockGameStateSource())
   })
 
   mock.module('../src/context/GameState.tsx', {
     namedExports: {
-      useGameState: mockUseGameState,
       useGameSelector: mockUseGameSelector,
       useGameActions: mockUseGameDispatch
     }
@@ -97,5 +96,5 @@ export const setupMainMenuAudioTest = async () => {
 
   const { MainMenu } = await import('../src/scenes/MainMenu.tsx')
 
-  return { MainMenu, mockUseGameState }
+  return { MainMenu, mockGameStateSource }
 }

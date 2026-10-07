@@ -13,10 +13,6 @@ const canonicalSelectorState = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    completeAmpCalibration: mockCompleteAmpCalibration,
-    changeScene: mockChangeScene
-  }),
   useGameActions: () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene

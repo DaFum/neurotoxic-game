@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { derivePostOptions } from '../../../src/utils/postGig/derivations'
 import * as socialEngine from '../../../src/utils/socialEngine'
 import type { GameState } from '../../../src/types/game'
+import type { SocialPostOption } from '../../../src/types/social'
 
 vi.mock('../../../src/utils/socialEngine', async importOriginal => {
   const actual =
@@ -17,7 +18,7 @@ describe('derivePostOptions', () => {
     const mockOptions = [{ id: 'opt1' }]
     const activeQuests = [{ id: 'quest_apology_tour' }]
     vi.mocked(socialEngine.generatePostOptions).mockReturnValue(
-      mockOptions as unknown as socialEngine.SocialPostOption[]
+      mockOptions as unknown as SocialPostOption[]
     )
 
     const result = derivePostOptions({

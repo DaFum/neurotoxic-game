@@ -4,11 +4,10 @@ import { useBloodBank } from '../../src/hooks/useBloodBank'
 import * as GameStateContext from '../../src/context/GameState'
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -19,7 +18,7 @@ describe('useBloodBank', () => {
     vi.clearAllMocks()
     mockBloodBankDonate = vi.fn()
 
-    GameStateContext.useGameState.mockReturnValue({
+    GameStateContext.useGameActions.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,
       player: {
         fameLevel: 1
@@ -53,7 +52,7 @@ describe('useBloodBank', () => {
   })
 
   it('determines canDonate to be false when harmony equals the cost boundary exactly', () => {
-    GameStateContext.useGameState.mockReturnValue({
+    GameStateContext.useGameActions.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,
       player: { fameLevel: 1 },
       band: {
@@ -67,7 +66,7 @@ describe('useBloodBank', () => {
   })
 
   it('determines canDonate to be false when harmony is too low', () => {
-    GameStateContext.useGameState.mockReturnValue({
+    GameStateContext.useGameActions.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,
       player: { fameLevel: 1 },
       band: {
@@ -81,7 +80,7 @@ describe('useBloodBank', () => {
   })
 
   it('determines canDonate to be false when a member has too little stamina', () => {
-    GameStateContext.useGameState.mockReturnValue({
+    GameStateContext.useGameActions.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,
       player: { fameLevel: 1 },
       band: {
@@ -143,7 +142,7 @@ describe('useBloodBank', () => {
   })
 
   it('does not trigger donation if canDonate is false', () => {
-    GameStateContext.useGameState.mockReturnValue({
+    GameStateContext.useGameActions.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,
       player: { fameLevel: 1 },
       band: { harmony: 10, members: [{ id: 'm1', stamina: 100 }] } // canDonate false

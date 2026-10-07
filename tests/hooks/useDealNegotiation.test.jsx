@@ -16,7 +16,6 @@ let mockAddToast
 let mockGameState
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => mockGameState,
   useGameActions: () => mockGameState,
   useGameSelector: selector => selector(mockGameState)
 }))

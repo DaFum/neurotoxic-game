@@ -7,23 +7,8 @@ let mockPendingBandHQOpen = false
 const mockSetPendingBandHQOpen = mock.fn()
 
 // Mock context to prevent errors during render
-const mockUseGameState = mock.fn(() => ({
-  player: {},
-  band: {},
-  social: {},
-  settings: {},
-  setlist: [],
-  updatePlayer: mock.fn(),
-  updateBand: mock.fn(),
-  addToast: mock.fn(),
-  updateSettings: mock.fn(),
-  deleteSave: mock.fn(),
-  setSetlist: mock.fn()
-}))
-
 mock.module('../../src/context/GameState', {
   namedExports: {
-    useGameState: mockUseGameState,
     useGameSelector: mock.fn(selector =>
       selector({ pendingBandHQOpen: mockPendingBandHQOpen })
     ),
