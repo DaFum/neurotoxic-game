@@ -39,6 +39,7 @@ describe('usePreGigHandlers', () => {
       player: { money: 100 },
       currentGig: null,
       setlist: [],
+      setlistMax: 3,
       gigModifiers: {},
       assetModifiers: {
         merchCostMultiplier: 1,

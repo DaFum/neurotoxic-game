@@ -90,6 +90,12 @@ export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.transport.maxFuel
 const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
+ * Songs a Tour Prep build may commit. The run plays this set at every gig, so
+ * PreGig counts against it rather than the three-song Career setlist.
+ */
+export const EXPEDITION_MAX_SETLIST_SONGS = 4
+
+/**
  * Cash the player may spend inside an active Expedition.
  *
  * @param state - Current game state.

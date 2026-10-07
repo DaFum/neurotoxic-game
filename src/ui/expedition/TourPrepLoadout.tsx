@@ -27,7 +27,8 @@ import {
   getAvailableNativeContractTemplateIds,
   getExpeditionFameLockedContractTemplateIds,
   getExpeditionFuelTopUpCost,
-  validateExpeditionBuildCommitment
+  validateExpeditionBuildCommitment,
+  EXPEDITION_MAX_SETLIST_SONGS
 } from '../../domain/expedition/loadout'
 import {
   areExpeditionContractsCompatible,
@@ -63,8 +64,6 @@ import type {
   ExpeditionLoadout,
   ExpeditionMerchSelection
 } from '../../types/expedition'
-
-const MAX_SETLIST_SONGS = 4
 
 type BuildTabCategory =
   | 'route_performance'
@@ -405,7 +404,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
 
   const toggleSong = useCallback((songId: string) => {
     setSetlistSongIds(current =>
-      toggleBounded(current, songId, MAX_SETLIST_SONGS)
+      toggleBounded(current, songId, EXPEDITION_MAX_SETLIST_SONGS)
     )
   }, [])
 
@@ -572,7 +571,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
                 {t('ui:expedition.prep.setlist', {
                   count: setlistSongIds.length,
-                  max: MAX_SETLIST_SONGS
+                  max: EXPEDITION_MAX_SETLIST_SONGS
                 })}
               </legend>
               <div className='flex flex-wrap gap-2'>

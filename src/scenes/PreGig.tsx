@@ -36,6 +36,7 @@ export const PreGig = () => {
     currentGig,
     player,
     setlist,
+    setlistMax,
     gigModifiers,
     currentModifiers,
     band,
@@ -129,6 +130,7 @@ export const PreGig = () => {
           />
           <SetlistBlock
             setlist={setlist}
+            maxSongs={setlistMax}
             songsDb={SONGS_DB}
             songsDict={SONGS_DICT}
             selectedSongIds={selectedSongIds}
