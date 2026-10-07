@@ -1,6 +1,7 @@
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { BRAND_COLOR_HEX, HEX_COLOR_PATTERN } from '../../utils/brandColors'
+import { clearEdgeBackground } from '../../utils/backgroundKey'
 
 // getPixiColorFromToken accepts both `--token` and `--color-token` forms
 // (see CSS-property derivation below). Mirror both keys here so the SSR/test
@@ -371,6 +372,67 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
   }
 
   return _loadWithImageFallback(url)
+}
+
+const _edgeKeyedTextureCache = new WeakMap<Texture, Texture>()
+
+/** Sprites are drawn small, so keying a downscaled copy keeps the fill cheap. */
+const EDGE_KEY_MAX_SIZE = 256
+
+/**
+ * Returns a copy of a generated sprite texture with its flat background made
+ * transparent (see {@link clearEdgeBackground}).
+ *
+ * @param texture - Loaded sprite texture backed by an image.
+ * @returns The keyed texture, cached per source texture; the original texture
+ * when its pixels cannot be read (no DOM canvas, or a cross-origin image served
+ * without CORS headers).
+ */
+export const createEdgeKeyedTexture = (texture: Texture): Texture => {
+  const cached = _edgeKeyedTextureCache.get(texture)
+  if (cached) return cached
+  const resource: unknown = texture.source?.resource
+  const isDrawable =
+    (typeof HTMLImageElement !== 'undefined' &&
+      resource instanceof HTMLImageElement) ||
+    (typeof ImageBitmap !== 'undefined' && resource instanceof ImageBitmap)
+  const sourceWidth = texture.source?.pixelWidth ?? 0
+  const sourceHeight = texture.source?.pixelHeight ?? 0
+  if (
+    typeof document === 'undefined' ||
+    !isDrawable ||
+    sourceWidth <= 0 ||
+    sourceHeight <= 0
+  ) {
+    return texture
+  }
+  try {
+    const scale = Math.min(
+      1,
+      EDGE_KEY_MAX_SIZE / Math.max(sourceWidth, sourceHeight)
+    )
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale))
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale))
+    const context = canvas.getContext('2d', { willReadFrequently: true })
+    if (!context) return texture
+    context.drawImage(
+      resource as CanvasImageSource,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    )
+    const image = context.getImageData(0, 0, canvas.width, canvas.height)
+    clearEdgeBackground(image.data, canvas.width, canvas.height)
+    context.putImageData(image, 0, 0)
+    const keyed = Texture.from(canvas)
+    _edgeKeyedTextureCache.set(texture, keyed)
+    return keyed
+  } catch (error) {
+    logger.warn('createEdgeKeyedTexture', 'Could not key sprite', error)
+    return texture
+  }
 }
 
 /**

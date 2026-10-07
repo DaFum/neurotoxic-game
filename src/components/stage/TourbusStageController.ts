@@ -5,7 +5,11 @@ import {
   TourbusObstacleManager,
   type TourbusRenderState
 } from './TourbusObstacleManager'
-import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
+import {
+  createEdgeKeyedTexture,
+  getPixiColorFromToken,
+  loadTextures
+} from './stageRenderUtils'
 import { logger } from '../../utils/logger'
 import {
   IMG_PROMPTS,
@@ -159,7 +163,12 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       for (let i = 0, len = keys.length; i < len; i++) {
         const key = keys[i] as keyof TourbusTextures | undefined
         if (!key) continue
-        if (loaded[key]) this.textures[key] = loaded[key]
+        const texture = loaded[key]
+        if (!texture) continue
+        // Generated sprites are opaque images on a flat field; only the road
+        // is meant to fill its tile edge to edge.
+        this.textures[key] =
+          online && key !== 'road' ? createEdgeKeyedTexture(texture) : texture
       }
     } catch (e) {
       logger.warn('TourbusStageController', 'Failed to load assets', e)
