@@ -40,7 +40,7 @@ export const TourPrep = () => {
   return (
     // The top padding keeps the build card below the global HUD, whose band
     // panel would otherwise cover the header and the last build tab.
-    <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8 pt-28 sm:pt-32 lg:pt-32'>
+    <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8 pt-28 sm:pt-44 lg:pt-44'>
       <div className='z-10 w-full max-w-4xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 flex flex-col gap-4'>
         <header className='flex flex-wrap items-baseline justify-between gap-2 border-b border-toxic-green/30 pb-4'>
           <h2 className='text-2xl font-bold uppercase tracking-widest text-toxic-green'>
