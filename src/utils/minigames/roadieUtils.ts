@@ -16,7 +16,7 @@ export type RoadieCarryingItem = {
  * Moving traffic obstacle in the roadie grid.
  */
 export type RoadieTrafficCar = {
-  id: string
+  id: string | number
   textureHash: number
   row: number
   x: number
@@ -43,6 +43,7 @@ export type RoadieLogicState = RoadieRenderState & {
   itemsDelivered: RoadieCarryingItem[]
   contrabandCount: number
   traffic: RoadieTrafficCar[]
+  nextTrafficId: number
   /** Monotonic gameplay time accumulated from ticker deltas, in milliseconds. */
   elapsedMS: number
   /** `elapsedMS` at the last accepted move; `-Infinity` before the first one. */

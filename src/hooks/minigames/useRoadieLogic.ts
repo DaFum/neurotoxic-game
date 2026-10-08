@@ -15,9 +15,6 @@ import {
   ROADIE_GRID_HEIGHT,
   ROADIE_MOVE_COOLDOWN_BASE
 } from './minigameConstants'
-import { hash31 } from '../../utils/stringUtils'
-import { getSafeUUID } from '../../utils/crypto'
-
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
 // Fast cars: 0.015
@@ -25,6 +22,9 @@ const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.01]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
+// ⚡ BOLT OPTIMIZATION: Replaced getSafeUUID() and hash31() string allocations with a monotonic integer ID and deterministic texture hash.
+// Why: spawnTraffic runs inside the 60 FPS update tick during Roadie gameplay. Calling getSafeUUID() allocated a 36-char string and crypto entropy on every car spawn, then iterated all 36 chars in hash31.
+// Impact: Eliminates Web Crypto calls, string allocations, and 36-char string iterations per traffic spawn, enabling O(1) numeric Map lookups in RoadieTrafficManager.
 function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
   for (let i = 0, len = game.spawners.length; i < len; i++) {
     const spawner = game.spawners[i]
@@ -33,11 +33,11 @@ function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
     while (spawner.timer > spawner.rate) {
       spawner.timer -= spawner.rate
 
-      const id = getSafeUUID()
+      const id = ++game.nextTrafficId
 
       game.traffic.push({
         id,
-        textureHash: Math.abs(hash31(id)),
+        textureHash: spawner.row * 7 + id,
         row: spawner.row,
         x: spawner.speed > 0 ? -1 : ROADIE_GRID_WIDTH,
         speed: spawner.speed,
@@ -106,6 +106,7 @@ function getInitialGameState(stashItemId: string | null): RoadieLogicState {
     itemsDelivered: [],
     contrabandCount: 0,
     traffic: [],
+    nextTrafficId: 0,
     elapsedMS: 0,
     lastMoveTime: Number.NEGATIVE_INFINITY,
     equipmentDamage: 0,
