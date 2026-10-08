@@ -2,13 +2,16 @@ import type { ComponentType } from 'react'
 import { Bus, House, Shirt, SlidersHorizontal } from 'lucide-react'
 import type { AssetKind } from '../../types/assets'
 
+/**
+ * Defines the expected property structure for SVG icon components rendered within navigation tabs.
+ */
 type TabIcon = ComponentType<{
   className?: string
   'aria-hidden'?: boolean
 }>
 
 /**
- * Asset section tab metadata rendered by the assets navigation.
+ * Represents the configuration metadata for a single category tab in the asset hub navigation.
  */
 interface AssetSectionTab {
   key: AssetKind
@@ -17,7 +20,7 @@ interface AssetSectionTab {
 }
 
 /**
- * Navigation tab definitions for the asset hub sections.
+ * Contains the ordered sequence of available category tabs displayed in the asset hub navigation bar.
  */
 export const ASSET_SECTION_TABS = [
   { key: 'tourbus_chassis', shortLabel: 'tourbus', Icon: Bus },
@@ -34,10 +37,11 @@ for (let i = 0; i < ASSET_SECTION_TABS.length; i++) {
 }
 
 /**
- * Optimized record lookup for active asset tab resolution.
+ * Provides an optimized key-value mapping for rapid retrieval of asset tab metadata.
  *
  * @remarks
- * Skip satisfies pattern here: TS1360 prevents "as const satisfies" on mapped `Record<string, T>` outputs from dynamic loops without casting.
+ * Skips the TypeScript `satisfies` operator directly on the export.
+ * TS1360 prevents `as const satisfies` on dynamically mapped outputs from loops without explicit casting.
  */
 export const ASSET_SECTION_TABS_MAP: Readonly<
   Record<AssetKind, AssetSectionTab>
