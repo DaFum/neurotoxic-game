@@ -47,4 +47,19 @@ describe('VolumeSlider', () => {
     expect(handleChange).toHaveBeenCalled()
     expect(document.activeElement).toBe(input)
   })
+
+  test('forwards ariaDescribedBy prop to underlying range input', () => {
+    const handleChange = () => {}
+    const { getByLabelText } = render(
+      React.createElement(VolumeSlider, {
+        label: 'Music Volume',
+        value: 0.5,
+        ariaDescribedBy: 'volume-desc-id',
+        onChange: handleChange
+      })
+    )
+
+    const input = getByLabelText('Music Volume')
+    expect(input.getAttribute('aria-describedby')).toBe('volume-desc-id')
+  })
 })

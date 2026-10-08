@@ -62,16 +62,28 @@ export const AudioSettings = memo(function AudioSettings({
         {t('ui:audio_protocols')}
       </h2>
       <div className='space-y-6'>
-        <VolumeSlider
-          label={t('ui:music_volume')}
-          value={musicVol}
-          onChange={handleMusicChange}
-        />
-        <VolumeSlider
-          label={t('ui:sfx_volume')}
-          value={sfxVol}
-          onChange={handleSfxChange}
-        />
+        <div>
+          <VolumeSlider
+            label={t('ui:music_volume')}
+            value={musicVol}
+            ariaDescribedBy='music-volume-desc'
+            onChange={handleMusicChange}
+          />
+          <span id='music-volume-desc' className='sr-only'>
+            {t('ui:music_volume_desc')}
+          </span>
+        </div>
+        <div>
+          <VolumeSlider
+            label={t('ui:sfx_volume')}
+            value={sfxVol}
+            ariaDescribedBy='sfx-volume-desc'
+            onChange={handleSfxChange}
+          />
+          <span id='sfx-volume-desc' className='sr-only'>
+            {t('ui:sfx_volume_desc')}
+          </span>
+        </div>
         <div className='flex items-center justify-between'>
           <ToggleSwitch
             isOn={isMuted}

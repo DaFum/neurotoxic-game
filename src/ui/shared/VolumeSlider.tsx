@@ -6,18 +6,20 @@ import { clampUnit } from '../../utils/numberUtils'
 
 /**
  * Displays one labeled volume slider with percentage output.
- * @param props - Slider label, normalized volume value, and change handler.
+ * @param props - Slider label, normalized volume value, change handler, and optional ARIA description ID.
  */
 export const VolumeSlider = memo(function VolumeSlider({
   label,
   value,
-  onChange
+  onChange,
+  ariaDescribedBy
 }: {
   label: string
   value: number
   onChange: (
     e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
   ) => void
+  ariaDescribedBy?: string
 }) {
   const clampedValue = Number.isFinite(value) ? clampUnit(value) : 0
   const max = 10
@@ -34,6 +36,7 @@ export const VolumeSlider = memo(function VolumeSlider({
       activeSegments={val}
       segmentCount={max}
       valueLabel={`${pct}%`}
+      ariaDescribedBy={ariaDescribedBy}
       onInputChange={onChange}
       onSegmentSelect={segment =>
         onChange({ target: { value: segment / max } })
