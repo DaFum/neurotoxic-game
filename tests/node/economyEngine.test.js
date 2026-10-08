@@ -1308,6 +1308,21 @@ test('economy calculators keep hostile numeric input off their outputs', async t
     }
   )
 
+  await t.test('calculateGigFinancials handles null parameters safely', () => {
+    const report = calculateGigFinancials({
+      gigData: buildGigData(),
+      performanceScore: 50,
+      modifiers: null,
+      bandInventory: null,
+      playerState: null,
+      gigStats: buildGigStats(),
+      context: null
+    })
+    assert.ok(Number.isFinite(report.income.total), 'income.total')
+    assert.ok(Number.isFinite(report.expenses.total), 'expenses.total')
+    assert.ok(Number.isFinite(report.net), 'net')
+  })
+
   await t.test('calculateGuaranteedDailyCost stays finite', () => {
     for (const fameLevel of HOSTILE) {
       const cost = calculateGuaranteedDailyCost(
