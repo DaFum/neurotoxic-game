@@ -1,5 +1,4 @@
-export type ExpeditionSocialResultId =
-  'push' | 'monetize' | 'suppress' | 'weaponize'
+import type { ExpeditionSocialResultId } from '../../types/expedition'
 export interface ExpeditionSocialResult {
   money: number
   fame: number

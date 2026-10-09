@@ -105,6 +105,9 @@ import {
 import { calculateRefuelCost } from '../../utils/economy'
 import { calculateFameLevel } from '../../utils/gameState/calculations'
 import {
+  addClampedPercent,
+  addClampedNonNegative,
+  clampToNonNegativeInt,
   clampControversyLevel,
   clampVanCondition,
   clampVanFuel
@@ -1298,8 +1301,11 @@ export const handleCompleteExpedition = (
       record &&
       record.history.lastNemesisAdvanceRunId !== state.expedition.runId
     ) {
-      const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
-        0 | 1 | 2 | 3 | 4
+      const nemesisLevel = Math.min(
+        4,
+        clampToNonNegativeInt(finiteNumberOr(record.history.nemesisLevel, 0)) +
+          1
+      ) as 0 | 1 | 2 | 3 | 4
       completionState = {
         ...state,
         career: {
@@ -2464,9 +2470,9 @@ export const handleRecordExpeditionObligationSignal = (
         : state.expedition.activeObligations,
       pressure: {
         ...state.expedition.pressure,
-        heat: Math.max(
-          0,
-          Math.min(100, state.expedition.pressure.heat + heatDelta)
+        heat: addClampedPercent(
+          finiteNumberOr(state.expedition.pressure.heat, 0),
+          heatDelta
         )
       },
       resolvedObligationSignalIds: [
@@ -2755,8 +2761,10 @@ export const handleResolveExpeditionSocialResult = (
       record.history.lastNemesisAdvanceRunId === runId
     )
       return null
-    const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
-      0 | 1 | 2 | 3 | 4
+    const nemesisLevel = Math.min(
+      4,
+      clampToNonNegativeInt(finiteNumberOr(record.history.nemesisLevel, 0)) + 1
+    ) as 0 | 1 | 2 | 3 | 4
     return {
       rivalId,
       career: {
@@ -2771,7 +2779,12 @@ export const handleResolveExpeditionSocialResult = (
                 ? 'nemesis'
                 : 'rival') as CareerRivalRecord['history']['relationship'],
               nemesisLevel,
-              encounterCount: record.history.encounterCount + 1,
+              encounterCount: addClampedNonNegative(
+                clampToNonNegativeInt(
+                  finiteNumberOr(record.history.encounterCount, 0)
+                ),
+                1
+              ),
               lastOutcome:
                 'hostile_win' as CareerRivalRecord['history']['lastOutcome'],
               lastSeenRunId: runId,
@@ -2821,7 +2834,10 @@ export const handleResolveExpeditionSocialResult = (
             ...state.rivalBand,
             powerLevel: Math.max(
               1,
-              state.rivalBand.powerLevel + Math.round(result.rivalPressure / 10)
+              addClampedNonNegative(
+                finiteNumberOr(state.rivalBand.powerLevel, 1),
+                Math.round(result.rivalPressure / 10)
+              )
             )
           }
         : state.rivalBand,

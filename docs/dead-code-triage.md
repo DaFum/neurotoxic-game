@@ -217,6 +217,15 @@ observation through `recordExpeditionArchiveObservations`, so a standalone
 dispatch is a redundant no-op for anything the run has met. It stays as the
 typed intent surface for Archive discoveries.
 
+### Standalone defect action constructors
+
+`revealExpeditionDefect`, `triggerExpeditionDefect`, and
+`resolveExpeditionDefect` (`src/context/expeditionActionCreators.ts`) remain
+as a typed standalone action API, exercised by `tests/node/expeditionDefects.test.js`.
+Production inspection, gig, and repair owners compose `applyExpeditionDefectReveal`,
+`evaluateExpeditionDefectTriggers`, and `applyExpeditionDefectResolution` directly.
+The unused constructors do not imply missing defect gameplay or require UI wrappers.
+
 ### `audioEngine.ts` barrel re-exports
 
 `src/utils/audio/audioEngine.ts` is the declared public facade of the audio

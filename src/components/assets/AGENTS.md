@@ -32,6 +32,7 @@
 - `sections/TourbusVehicleView.tsx` renders a 16:9 `GeneratedImagePanel` background with absolutely-positioned hotspot buttons sourced from `TOURBUS_SLOT_POSITIONS`. Slots whose `slotType` has no position entry are skipped (sanity guard).
 - `tb_trailer_addon` slots are NOT rendered on the van — they belong to `sections/TourbusTrailerOverlay.tsx`, which mounts only when `tb_trailer_hitch` is installed. On `md+` it docks left of the van as an absolute overlay; under `md` it flows below the van so it doesn't overflow narrow viewports.
 - All hotspot borders/buttons use `var(--section-accent, var(--color-toxic-green))` for consistent fallback when the scene root is absent. Hotspot size scales `w-9/h-9 → sm:w-12 → md:w-16` so hotspots stay reachable on phones without dominating the 16:9 background.
+- Trailer addon controls must depend on a compatible production registry pool. When none exist, show the localized unavailable label instead of opening an empty picker; retain controls for saved installed modules. Do not invent addon balance values to fill the pool.
 
 ## Studio
 

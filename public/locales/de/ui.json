@@ -17,6 +17,7 @@
   "assets.tourbus.slotType.tb_trailer_addon": "Anhänger-Addon",
   "assets.tourbus.trailer_alt": "Anhänger",
   "assets.tourbus.trailer_slot": "Anhänger-Slot {{slotType}}",
+  "assets.tourbus.addons_unavailable": "Anhänger-Erweiterungen sind noch nicht verfügbar.",
   "audio_protocols": "AUDIO PROTOKOLLE",
   "bandStatus": "BANDSTATUS",
   "band_hq": "Band HQ",

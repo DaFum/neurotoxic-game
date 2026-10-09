@@ -2174,3 +2174,116 @@ test('the Expedition quest families are registered against real events', () => {
     assert.ok(quest.rewards.length > 0)
   }
 })
+
+test('obligation settlement recovers malformed stored heat without rescaling penalties', () => {
+  for (const stored of [NaN, Infinity, -Infinity, '7', undefined]) {
+    const state = activeState()
+    state.player.currentNodeId = 'rest-node'
+    state.expedition.pressure.heat = stored
+    state.expedition.activeObligations[0].constraints = []
+    state.expedition.activeObligations[0].progressByConstraintId = {}
+    state.expedition.activeObligations[0].doubleDown = {
+      acceptedOfferId: 'accepted',
+      derivationKey: 'stored',
+      addedConstraint: { kind: 'no_more_rest' },
+      rewardMultiplier: 1.25,
+      failureHeatBonus: 8,
+      acceptedAtRouteStep: 0
+    }
+    const settled = handleRecordExpeditionObligationSignal(state, {
+      signalType: 'rest',
+      sourceId: 'rest-node',
+      expectedRouteStep: 1
+    })
+    assert.equal(settled.expedition.pressure.heat, 16, String(stored))
+    assert.strictEqual(
+      handleRecordExpeditionObligationSignal(settled, {
+        signalType: 'rest',
+        sourceId: 'rest-node',
+        expectedRouteStep: 1
+      }),
+      settled
+    )
+  }
+})
+
+test('rival social settlement normalizes persisted progression and preserves the per-run guard', () => {
+  const rivalPost = POST_OPTIONS.find(
+    option => deriveExpeditionSocialResultId(option) === 'weaponize'
+  )
+  assert.ok(rivalPost)
+  for (const [stored, level, count, power] of [
+    [NaN, 1, 1, 4],
+    [Infinity, 1, 1, 4],
+    [-Infinity, 1, 1, 4],
+    ['3', 1, 1, 4],
+    [-2, 1, 1, 1],
+    [2.8, 3, 3, 5.8],
+    [4, 4, 5, 7]
+  ]) {
+    const state = startedState()
+    assert.ok(state.rivalBand)
+    const rivalId = state.rivalBand.id
+    state.rivalBand = { ...state.rivalBand, powerLevel: stored }
+    const record = state.career.rivalsById[rivalId]
+    assert.ok(record)
+    state.career = {
+      ...state.career,
+      rivalsById: {
+        ...state.career.rivalsById,
+        [rivalId]: {
+          ...record,
+          history: {
+            ...record.history,
+            nemesisLevel: stored,
+            encounterCount: stored,
+            lastNemesisAdvanceRunId: null
+          }
+        }
+      }
+    }
+    state.lastGigStats = { score: 1000, accuracy: 80, failed: false }
+    state.social = { ...state.social, pendingSocialOptionId: rivalPost.id }
+    state.expedition = {
+      ...state.expedition,
+      lastSocialResult: null,
+      pendingSocialSettlement: {
+        routeStep: state.expedition.routeStep,
+        gigId: null
+      }
+    }
+    const payload = {
+      resultId: 'weaponize',
+      postOptionId: rivalPost.id,
+      expectedRouteStep: state.expedition.routeStep
+    }
+    const settled = handleResolveExpeditionSocialResult(state, payload)
+    assert.notStrictEqual(settled, state)
+    const history = settled.career.rivalsById[rivalId].history
+    assert.equal(history.nemesisLevel, level, String(stored))
+    assert.equal(history.encounterCount, count, String(stored))
+    assert.equal(settled.rivalBand.powerLevel, power, String(stored))
+    assert.equal(history.lastNemesisAdvanceRunId, state.expedition.runId)
+    assert.strictEqual(
+      handleResolveExpeditionSocialResult(settled, payload),
+      settled
+    )
+    const anotherPost = {
+      ...settled,
+      social: { ...settled.social, pendingSocialOptionId: rivalPost.id },
+      expedition: {
+        ...settled.expedition,
+        routeStep: settled.expedition.routeStep + 1,
+        pendingSocialSettlement: {
+          routeStep: settled.expedition.routeStep + 1,
+          gigId: null
+        }
+      }
+    }
+    const again = handleResolveExpeditionSocialResult(anotherPost, {
+      ...payload,
+      expectedRouteStep: anotherPost.expedition.routeStep
+    })
+    assert.strictEqual(again.career, settled.career)
+  }
+})

@@ -30,13 +30,15 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getRawAudioContext: () => rawContext,
-    getAudioContextTimeSec: () => rawContext.currentTime
+    getAudioContextTimeSec: () => rawContext.currentTime,
+    getToneStartTimeSec: time => time
   }
 })
 
 mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
-    loadAudioBuffer: mockLoadAudioBuffer
+    loadAudioBuffer: mockLoadAudioBuffer,
+    hasAudioAsset: () => true
   }
 })
 
@@ -73,6 +75,24 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
     }
   }
 })
+
+const mockMidi = mock.fn(async () => true)
+const mockNotes = mock.fn(async () => true)
+const mockMetal = mock.fn(async () => true)
+mock.module(
+  new URL('../../src/utils/audio/midiPlayback.ts', import.meta.url).href,
+  {
+    namedExports: { playMidiFile: mockMidi, playSongFromData: mockNotes }
+  }
+)
+mock.module(
+  new URL('../../src/utils/audio/proceduralMetal.ts', import.meta.url).href,
+  {
+    namedExports: { startMetalGenerator: mockMetal }
+  }
+)
+const { playAudioForSong } =
+  await import('../../src/utils/audio/playbackStrategies')
 
 const { startGigClock, startGigPlayback, stopGigPlayback } =
   await import('../../src/utils/audio/gigPlayback')
@@ -174,4 +194,103 @@ test('gig playback aborts when stopped while its buffer is loading', async () =>
 
   assert.strictEqual(await pendingPlayback, false)
   assert.strictEqual(sources.length, 0)
+})
+
+const authoredSong = {
+  id: 'test',
+  name: 'Test',
+  bpm: 120,
+  duration: 30,
+  difficulty: 1,
+  sourceOgg: 'test.ogg',
+  sourceMid: 'test.mid'
+}
+const authoredNotes = [{ time: 1000, lane: 0 }]
+
+for (const phase of ['context', 'buffer', 'midi', 'notes']) {
+  test(`stopping a pending ${phase} start prevents every later fallback`, async () => {
+    resetGigState()
+    sources.length = 0
+    for (const fn of [mockMidi, mockNotes, mockMetal]) fn.mock.resetCalls()
+    let release
+    let signal
+    const entered = new Promise(resolve => {
+      signal = resolve
+    })
+    const deferred = () =>
+      new Promise(resolve => {
+        release = resolve
+        signal()
+      })
+    if (phase === 'context')
+      mockEnsureAudioContext.mock.mockImplementationOnce(deferred)
+    if (phase === 'buffer')
+      mockLoadAudioBuffer.mock.mockImplementationOnce(deferred)
+    if (phase === 'midi') {
+      mockLoadAudioBuffer.mock.mockImplementationOnce(async () => null)
+      mockMidi.mock.mockImplementationOnce(() => {
+        audioState.playRequestId++
+        return deferred()
+      })
+    }
+    if (phase === 'notes')
+      mockNotes.mock.mockImplementationOnce(() => {
+        audioState.playRequestId++
+        return deferred()
+      })
+    const song =
+      phase === 'notes'
+        ? { ...authoredSong, sourceOgg: undefined, sourceMid: undefined }
+        : authoredSong
+    const pending = playAudioForSong(
+      song,
+      authoredNotes,
+      () => {},
+      () => 0.5
+    )
+    let watchdog
+    try {
+      await Promise.race([
+        entered,
+        new Promise((_, reject) => {
+          watchdog = setTimeout(
+            () => reject(new Error('strategy never started')),
+            5000
+          )
+        })
+      ])
+    } finally {
+      clearTimeout(watchdog)
+    }
+    stopGigPlayback()
+    release(
+      phase === 'buffer'
+        ? {
+            duration: 30,
+            length: 30000,
+            numberOfChannels: 2,
+            sampleRate: 44100
+          }
+        : false
+    )
+    await pending
+    assert.equal(mockMidi.mock.callCount(), phase === 'midi' ? 1 : 0)
+    assert.equal(mockNotes.mock.callCount(), phase === 'notes' ? 1 : 0)
+    assert.equal(mockMetal.mock.callCount(), 0)
+    assert.equal(sources.length, 0)
+  })
+}
+
+test('an unavailable OGG still falls back to MIDI when the request is current', async () => {
+  resetGigState()
+  mockMidi.mock.resetCalls()
+  mockLoadAudioBuffer.mock.mockImplementationOnce(async () => null)
+  await playAudioForSong(
+    authoredSong,
+    authoredNotes,
+    () => {},
+    () => 0.5
+  )
+  assert.equal(mockMidi.mock.callCount(), 1)
+  stopGigPlayback()
 })
