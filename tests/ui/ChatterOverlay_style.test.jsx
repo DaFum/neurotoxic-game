@@ -13,9 +13,7 @@ const readZIndexToken = (css, token) => {
 
 // Mock data to prevent network or other issues
 vi.mock('../../src/data/chatter', () => ({
-  getRandomChatter: () => null,
-  CHATTER_DB: [],
-  ALLOWED_DEFAULT_SCENES: ['GIG']
+  getRandomChatter: () => null
 }))
 
 vi.mock('../../src/hooks/useChatterLogic', () => ({

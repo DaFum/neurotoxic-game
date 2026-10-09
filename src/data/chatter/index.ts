@@ -4,8 +4,6 @@ import { getSafeRandom } from '../../utils/crypto'
 import { pickWeighted } from '../../utils/selectionUtils'
 import type { ChatterGameState } from '../../types/components'
 
-export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
-
 const ALLOWED_DEFAULT_SCENES_SET = new Set<string>(ALLOWED_DEFAULT_SCENES)
 
 type ChatterScene =

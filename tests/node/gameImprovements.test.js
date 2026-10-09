@@ -7,7 +7,8 @@ import {
   calculateGigFinancials,
   EXPENSE_CONSTANTS
 } from '../../src/utils/economy'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { applyEventDelta } from '../../src/utils/gameState'
 import { getEarlyGameObligationMultiplier } from '../../src/utils/balanceTuning'
 

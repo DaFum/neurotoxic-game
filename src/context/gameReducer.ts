@@ -140,8 +140,6 @@ import {
   handleCheckRivalEncounter
 } from './reducers/rivalReducer'
 
-export { ActionTypes }
-
 /**
  * Utility type to extract the payload type from a GameAction union.
  */

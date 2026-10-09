@@ -1,7 +1,8 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { validateSaveData } from '../../src/utils/saveValidator'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 test('validateSaveData rejects non-objects', () => {

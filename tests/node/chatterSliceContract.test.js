@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CHATTER_DB, getRandomChatter } from '../../src/data/chatter/index.ts'
+import { getRandomChatter } from '../../src/data/chatter/index.ts'
+import { CHATTER_DB } from '../../src/data/chatter/standardChatter.ts'
 import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 
 // Companion to tests/ui/ChatterOverlay.test.jsx. ChatterOverlay forwards a
