@@ -220,7 +220,8 @@ export const applyQuestRewards = (
         toasts.push({
           id: `${quest.id}-item`,
           messageKey: 'ui:toast.quest_complete_item',
-          options: { name: questName },
+          // Namespaced key; ToastOverlay translates it via translateContextKeys.
+          options: { name: questName, item: `items:${reward.itemId}.name` },
           type: 'success'
         })
         break

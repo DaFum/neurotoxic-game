@@ -2141,7 +2141,7 @@
   "toast.quest_complete_fame": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Ruhm",
   "toast.quest_complete_fans": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Fans",
   "toast.quest_complete_harmony": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Harmonie",
-  "toast.quest_complete_item": "[{{name}}]: ABGESCHLOSSEN +Item",
+  "toast.quest_complete_item": "[{{name}}]: ABGESCHLOSSEN +{{item}}",
   "toast.quest_complete_loyalty": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Loyalität",
   "toast.quest_complete_money": "[{{name}}]: ABGESCHLOSSEN {{amount}}",
   "toast.quest_complete_skill": "[{{name}}]: ABGESCHLOSSEN +1 Skill ({{member}})",
