@@ -46,7 +46,11 @@ const mockState = {
       }
     }
   },
-  career: { betweenTourByRunId: {} }
+  band: { members: [{ id: 'matze', name: 'Matze' }] },
+  career: {
+    betweenTourByRunId: {} as Record<string, unknown>,
+    rivalsById: {}
+  }
 }
 
 vi.mock('../../src/context/GameState', () => ({
@@ -78,7 +82,8 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'en' },
-    t: (key: string) => key
+    t: (key: string, options?: { target?: string }) =>
+      options?.target === undefined ? key : `${key}|${options.target}`
   })
 }))
 
@@ -152,5 +157,52 @@ describe('the Legendary claim gates the whole settlement', () => {
       screen.queryByTestId('expedition-legendary-claim-blocked')
     ).toBeNull()
     expect(addToast).not.toHaveBeenCalled()
+  })
+})
+
+describe('Between-Tour decisions name their target', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    claimResult = 'not_applicable'
+    owesLegendary = false
+  })
+
+  it('renders a display label instead of the raw target id', () => {
+    mockState.career.betweenTourByRunId = {
+      [RUN_ID]: {
+        runId: RUN_ID,
+        decisions: [
+          {
+            id: `${RUN_ID}:injury_rehab`,
+            type: 'injury_rehab',
+            target: { kind: 'band', id: 'matze' },
+            optionIds: ['pay_rehab']
+          },
+          {
+            id: `${RUN_ID}:sponsor_follow_up`,
+            type: 'sponsor_follow_up',
+            target: { kind: 'sponsor', id: 'energy_drink_cx' },
+            optionIds: ['keep_relationship']
+          }
+        ],
+        resolvedOptionByDecisionId: {}
+      }
+    }
+    try {
+      render(<RunSummary />)
+      const panel = screen.getByTestId('expedition-between-tour')
+      expect(panel).toHaveTextContent(
+        'ui:expedition.betweenTour.injury_rehab|Matze'
+      )
+      expect(panel).toHaveTextContent(
+        'ui:expedition.betweenTour.sponsor_follow_up|economy:brandDeals.energy_drink_cx.name'
+      )
+      expect(panel).not.toHaveTextContent('|energy_drink_cx')
+      expect(panel).not.toHaveTextContent('|matze')
+      // Retention renders through the locale-aware percent formatter.
+      expect(screen.getByText('100%')).toBeInTheDocument()
+    } finally {
+      mockState.career.betweenTourByRunId = {}
+    }
   })
 })

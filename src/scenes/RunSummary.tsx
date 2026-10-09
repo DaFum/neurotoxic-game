@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { ActionButton } from '../ui/shared/ActionButton'
-import { formatCurrency } from '../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../utils/numberUtils'
 import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
+import { getBetweenTourTargetLabel } from '../utils/betweenTourTargetLabel'
 
 /**
  * Reports a finalized run's settlement and returns the player to the hub.
@@ -35,6 +36,8 @@ export const RunSummary = () => {
       ? state.career.betweenTourByRunId[outcome.runId]
       : undefined
   )
+  const bandMembers = useGameSelector(state => state.band.members)
+  const rivalsById = useGameSelector(state => state.career.rivalsById)
 
   // Whether this run still owes an unclaimed Legendary, read from the Career
   // rather than tracked locally: a successful claim records the run id, so the
@@ -143,7 +146,7 @@ export const RunSummary = () => {
             {t('ui:expedition.summary.retention')}
           </dt>
           <dd className='text-star-white'>
-            {Math.round(settlement.retentionRate * 100)}%
+            {formatPercent(settlement.retentionRate, i18n.language)}
           </dd>
           <dt className='text-ash-gray uppercase'>
             {t('ui:expedition.extraction.cashRetained')}
@@ -198,7 +201,10 @@ export const RunSummary = () => {
               <div key={decision.id} className='flex flex-col gap-2'>
                 <p className='text-xs font-mono text-ash-gray'>
                   {t(`ui:expedition.betweenTour.${decision.type}`, {
-                    target: decision.target.id
+                    target: getBetweenTourTargetLabel(decision.target, t, {
+                      members: bandMembers,
+                      rivalsById
+                    })
                   })}
                 </p>
                 <div className='flex flex-wrap gap-2'>

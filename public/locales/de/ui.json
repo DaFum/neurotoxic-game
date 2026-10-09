@@ -643,6 +643,7 @@
   "expedition.betweenTour.sponsor_follow_up": "Bei {{target}} nachhaken?",
   "expedition.betweenTour.vehicle_repair": "Den Van reparieren?",
   "expedition.betweenTour.network_contact": "Einen Kontakt aus {{target}} anspielen?",
+  "expedition.betweenTour.unknownTarget": "einen unbekannten Kontakt",
   "expedition.betweenTour.option.take_advance": "Vorschuss annehmen",
   "expedition.betweenTour.option.decline_advance": "Vorschuss ablehnen",
   "expedition.betweenTour.option.pay_rehab": "Reha bezahlen",

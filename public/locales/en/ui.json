@@ -643,6 +643,7 @@
   "expedition.betweenTour.sponsor_follow_up": "Follow up with {{target}}?",
   "expedition.betweenTour.vehicle_repair": "Repair the van?",
   "expedition.betweenTour.network_contact": "Work a contact from {{target}}?",
+  "expedition.betweenTour.unknownTarget": "an unknown contact",
   "expedition.betweenTour.option.take_advance": "Take the advance",
   "expedition.betweenTour.option.decline_advance": "Decline the advance",
   "expedition.betweenTour.option.pay_rehab": "Pay for rehab",
