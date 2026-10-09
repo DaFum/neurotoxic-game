@@ -266,7 +266,9 @@ export const CRISIS_EVENTS = [
     tags: ['crisis', 'charity', 'recovery'],
     title: 'events:crisis_redemption_charity.title',
     description: 'events:crisis_redemption_charity.desc',
-    trigger: 'travel',
+    // Post-gig is where 'special' events are rolled outside SPECIAL nodes
+    // (usePostGigDerivations); arrival only rolls transport/band on travel.
+    trigger: 'post_gig',
     chance: 0.3,
     condition: (gs: GameState) =>
       isHighControversy(gs.social?.controversyLevel) &&

@@ -2,6 +2,8 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { CRISIS_EVENTS } from '../../src/data/events/crisis'
 import { validateCrisisEvent } from '../../src/utils/eventValidator'
+import { EVENTS_DB } from '../../src/data/events/index'
+import { filterEvents } from '../../src/utils/eventEngine/filterEvents'
 
 describe('CRISIS_EVENTS', () => {
   const getCrisisEvent = id => {
@@ -21,6 +23,23 @@ describe('CRISIS_EVENTS', () => {
       false
     )
     assert.strictEqual(evt.condition({}), false)
+  })
+
+  test('crisis_redemption_charity is reachable from the post-gig special roll', () => {
+    // Arrival rolls only ('transport'|'band', 'travel'); the post-gig scene
+    // rolls ('special', 'post_gig'), so a 'travel' trigger was unreachable
+    // outside SPECIAL map nodes.
+    const evt = getCrisisEvent('crisis_redemption_charity')
+    assert.strictEqual(evt.category, 'special')
+    assert.strictEqual(evt.trigger, 'post_gig')
+    const state = { social: { controversyLevel: 45 }, eventCooldowns: [] }
+    const eligible = filterEvents(EVENTS_DB.special, 'post_gig', state)
+    assert.ok(eligible.some(e => e.id === 'crisis_redemption_charity'))
+    const calm = filterEvents(EVENTS_DB.special, 'post_gig', {
+      social: { controversyLevel: 10 },
+      eventCooldowns: []
+    })
+    assert.ok(!calm.some(e => e.id === 'crisis_redemption_charity'))
   })
 
   test('crisis_sponsor_ultimatum conditions logic', () => {
