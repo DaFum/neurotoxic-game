@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next'
 
 /**
- * Player-initiated exit control shared by every pre-gig minigame scene.
+ * Provides a player-initiated exit control shared by every pre-gig minigame scene.
  *
  * @remarks
  * Positioned in the top-right corner of the nearest positioned ancestor. Other
  * top-right controls (for example the Roadie controls toggle) must sit below it.
  *
- * @param props - Click handler that forfeits the run and continues.
- * @returns A SKIP button.
+ * @param props - The component properties, including the click handler that forfeits the run and continues.
+ * @returns A JSX element representing the SKIP button.
  */
 export const MinigameSkipButton = ({ onClick }: { onClick: () => void }) => {
   const { t } = useTranslation(['ui'])
