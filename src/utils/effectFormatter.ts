@@ -2,7 +2,7 @@ import type { TranslationCallback } from '../types/callbacks'
 import type { UnknownRecord } from '../types'
 import { formatCurrency } from './numberUtils'
 import { isFiniteNumber } from './finiteNumber'
-import { getQuestDefinition } from '../data/questRegistry'
+import { getQuestDisplayLabel } from './questLabel'
 import { CONTRABAND_BY_ID } from '../data/contraband'
 
 type EffectDelta = {
@@ -63,40 +63,6 @@ export const generateEffectText = (
         `${t(tKey, { defaultValue })}: ${formatCurrency(value, language, 'always')}`
       )
     }
-  }
-
-  const translateMaybeKey = (value: string, fallback: string) =>
-    t(value, { defaultValue: fallback })
-
-  const getQuestLabel = (quest: unknown) => {
-    if (!quest || typeof quest !== 'object') {
-      const raw = String(quest)
-      // A bare quest id (e.g. 'quest_region_takeover') has no direct i18n key;
-      // resolve its display label from the quest registry (an i18n key like
-      // 'ui:quests.regionTakeover.title') so the effect shows a translated name.
-      const registryLabel = getQuestDefinition(raw)?.label
-      return registryLabel
-        ? translateMaybeKey(registryLabel, raw)
-        : translateMaybeKey(raw, raw)
-    }
-
-    const record = quest as UnknownRecord
-    const rawTitle = typeof record.title === 'string' ? record.title : ''
-    const rawLabel = typeof record.label === 'string' ? record.label : ''
-    const id = typeof record.id === 'string' ? record.id : 'ui:quest.unknown'
-    // When the object carries no explicit title/label, fall back to the
-    // registry label for its id rather than rendering the raw id.
-    const registryLabel =
-      !rawTitle && !rawLabel ? getQuestDefinition(id)?.label : undefined
-    const labelSource = rawTitle || rawLabel || registryLabel || id
-    const fallback =
-      rawTitle && !rawTitle.includes(':')
-        ? rawTitle
-        : rawLabel && !rawLabel.includes(':')
-          ? rawLabel
-          : id
-
-    return translateMaybeKey(labelSource, fallback)
   }
 
   // Player
@@ -203,7 +169,7 @@ export const generateEffectText = (
         ? delta.flags.addQuest
         : [delta.flags.addQuest]
       quests.forEach((q: unknown) => {
-        const questLabel = getQuestLabel(q)
+        const questLabel = getQuestDisplayLabel(t, q)
         lines.push(
           `${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`
         )

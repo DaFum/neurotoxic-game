@@ -28,6 +28,7 @@ import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
 import { getQuestRewards } from '../domain/questRewards'
+import { getQuestDisplayLabel } from '../utils/questLabel'
 import type { Variants } from 'motion/react'
 import type { PlayerState, QuestReward } from '../types'
 
@@ -183,6 +184,7 @@ const QuestItem = memo(
 
     const nextStepHint = getQuestNextStepHint(quest, t)
     const scopeHint = getQuestScopeHint(quest, player, currentVenueId)
+    const questLabel = getQuestDisplayLabel(t, quest)
     const primaryHint = getQuestPrimaryHint({
       deadlineView,
       scopeHint,
@@ -209,7 +211,7 @@ const QuestItem = memo(
         <div className='flex justify-between items-start'>
           <div className='flex flex-col gap-1'>
             <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
-              {quest.label ? t(quest.label) : ''}
+              {questLabel}
             </h3>
             <div className='flex flex-wrap gap-1'>
               {quest.kind && (
@@ -280,9 +282,8 @@ const QuestItem = memo(
             size='md'
             showValue={false}
             aria-label={t('ui:quests.progressAria', {
-              quest: quest.label ? t(quest.label) : '',
-              defaultValue:
-                (quest.label ? t(quest.label) : 'Quest') + ' progress'
+              quest: questLabel,
+              defaultValue: questLabel + ' progress'
             })}
           />
         </div>
@@ -332,16 +333,12 @@ const QuestItem = memo(
             aria-label={
               showDetails
                 ? t('ui:quests.details.hideAria', {
-                    quest: quest.label ? t(quest.label) : '',
-                    defaultValue:
-                      'Hide details for ' +
-                      (quest.label ? t(quest.label) : 'quest')
+                    quest: questLabel,
+                    defaultValue: 'Hide details for ' + questLabel
                   })
                 : t('ui:quests.details.showAria', {
-                    quest: quest.label ? t(quest.label) : '',
-                    defaultValue:
-                      'Show details for ' +
-                      (quest.label ? t(quest.label) : 'quest')
+                    quest: questLabel,
+                    defaultValue: 'Show details for ' + questLabel
                   })
             }
             className='min-w-11 min-h-11 text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'

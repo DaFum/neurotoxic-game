@@ -59,9 +59,12 @@ describe('QuestsModal', () => {
       />
     )
 
+    // Without loaded locale resources the shared getQuestDisplayLabel policy
+    // falls back to the quest id instead of rendering the raw i18n key.
+    expect(screen.getByText('quest_apology_tour')).toBeInTheDocument()
     expect(
-      screen.getByText('ui:quests.postgig.apologyTour.title')
-    ).toBeInTheDocument()
+      screen.queryByText('ui:quests.postgig.apologyTour.title')
+    ).not.toBeInTheDocument()
     // Details hidden by default
     expect(
       screen.queryByText('ui:quests.postgig.apologyTour.description')
