@@ -88,6 +88,30 @@ describe('minigameReducer', () => {
   })
 
   describe('handleCompleteTravelMinigame', () => {
+    it('recovers malformed travel counters and settles each trip once', () => {
+      for (const [stored, expected] of [
+        [NaN, 1],
+        [Infinity, 1],
+        [-Infinity, 1],
+        ['3', 1],
+        [undefined, 1],
+        [-4, 1],
+        [3.7, 4],
+        [7, 8]
+      ]) {
+        const active = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+        active.player = { ...active.player, totalTravels: stored }
+        active.minigame.targetDestination = 'node2'
+        const payload = { damageTaken: 0, itemsCollected: 0 }
+        const settled = handleCompleteTravelMinigame(active, payload)
+        assert.equal(settled.player.totalTravels, expected, String(stored))
+        assert.strictEqual(
+          handleCompleteTravelMinigame(settled, payload),
+          settled
+        )
+      }
+    })
+
     it('should update state properly on valid target', () => {
       const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
       activeState.minigame.targetDestination = 'node2'

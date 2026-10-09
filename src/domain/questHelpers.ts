@@ -2,6 +2,10 @@ import type { ActiveQuestState, GameState, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { clamp0to100, finiteNumberOr } from '../utils/gameState'
 
+/** Checks an optional string field without coercing supplied values. */
+export const isOptionalString = (value: unknown): boolean =>
+  value === undefined || typeof value === 'string'
+
 /**
  * Checks whether an asset-targeting quest effect names something to act on.
  *

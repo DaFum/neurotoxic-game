@@ -496,6 +496,11 @@ export const executeExpeditionRepair = (
 /**
  * Builds the action revealing a hidden equipment defect.
  *
+ * @remarks
+ * Retained standalone action API, covered by expeditionDefects tests.
+ * Production inspections, gig boundaries, and repairs compose the shared
+ * defect transitions directly; these constructors do not need UI wrappers.
+ *
  * @param state - Current game state.
  * @param defectId - Target defect id.
  * @param source - Inspection that reveals the defect; only its mode and crew
@@ -527,6 +532,11 @@ export const revealExpeditionDefect = (
 /**
  * Builds the action triggering an equipment defect.
  *
+ * @remarks
+ * Retained standalone action API, covered by expeditionDefects tests.
+ * Production inspections, gig boundaries, and repairs compose the shared
+ * defect transitions directly; these constructors do not need UI wrappers.
+ *
  * @param state - Current game state.
  * @param defectId - Target defect id.
  * @param trigger - Trigger phase.
@@ -553,6 +563,11 @@ export const triggerExpeditionDefect = (
 
 /**
  * Builds the action resolving an equipment defect.
+ *
+ * @remarks
+ * Retained standalone action API, covered by expeditionDefects tests.
+ * Production inspections, gig boundaries, and repairs compose the shared
+ * defect transitions directly; these constructors do not need UI wrappers.
  *
  * @param state - Current game state.
  * @param defectId - Target defect id.

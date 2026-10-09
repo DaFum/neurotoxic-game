@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TourbusTrailerOverlay } from '../../src/components/assets/sections/TourbusTrailerOverlay'
+import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
 import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
@@ -10,7 +11,8 @@ vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
 }))
 
 vi.mock('../../src/utils/imageGen', () => ({
-  getTrailerImagePrompt: vi.fn((flavor: string) => `trailer:${flavor}`)
+  getTrailerImagePrompt: vi.fn((flavor: string) => `trailer:${flavor}`),
+  getModuleImagePrompt: vi.fn(() => 'module image')
 }))
 
 const mockAsset = (
@@ -43,28 +45,65 @@ describe('TourbusTrailerOverlay', () => {
     vi.clearAllMocks()
   })
 
-  it('renders one hotspot button per tb_trailer_addon slot', () => {
+  it('labels empty addon slots unavailable with the production registry', () => {
     const asset = mockAsset([
       { id: 'slot-1', slotType: 'tb_trailer_addon', installedModuleId: null },
       { id: 'slot-2', slotType: 'tb_trailer_addon', installedModuleId: null }
     ])
     render(<TourbusTrailerOverlay asset={asset} onSlotClick={vi.fn()} />)
-    expect(screen.getAllByRole('button')).toHaveLength(2)
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(
+      screen.getByText('Trailer addons are not available yet.')
+    ).toBeDefined()
   })
 
-  it('calls onSlotClick with the slot id when a hotspot is clicked', () => {
+  it('keeps saved installations manageable even without addon definitions', () => {
     const onSlotClick = vi.fn()
     const asset = mockAsset([
       {
         id: 'trailer-slot-abc',
         slotType: 'tb_trailer_addon',
-        installedModuleId: null
+        installedModuleId: 'retired-addon'
       }
     ])
     render(<TourbusTrailerOverlay asset={asset} onSlotClick={onSlotClick} />)
     const button = screen.getByRole('button', { name: 'slot tb trailer addon' })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('trailer-slot-abc')
+  })
+
+  const testModuleId = 'test_trailer_overlay_addon'
+  const originalModule = MODULE_REGISTRY[testModuleId]
+  afterEach(() => {
+    if (originalModule === undefined) delete MODULE_REGISTRY[testModuleId]
+    else MODULE_REGISTRY[testModuleId] = originalModule
+  })
+
+  it('enables empty addon controls when a compatible module is registered', () => {
+    MODULE_REGISTRY[testModuleId] = {
+      ...MODULE_REGISTRY.tb_trailer_hitch,
+      id: testModuleId,
+      slotType: 'tb_trailer_addon',
+      addsSlots: undefined
+    }
+    const onSlotClick = vi.fn()
+    render(
+      <TourbusTrailerOverlay
+        asset={mockAsset([
+          {
+            id: 'empty-slot',
+            slotType: 'tb_trailer_addon',
+            installedModuleId: null
+          }
+        ])}
+        onSlotClick={onSlotClick}
+      />
+    )
+    expect(
+      screen.queryByText('Trailer addons are not available yet.')
+    ).toBeNull()
+    fireEvent.click(screen.getByRole('button'))
+    expect(onSlotClick).toHaveBeenCalledWith('empty-slot')
   })
 
   it('renders zero hotspot buttons when asset has no addon slots', () => {

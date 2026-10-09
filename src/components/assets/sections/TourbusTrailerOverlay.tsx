@@ -3,6 +3,7 @@ import { getTrailerImagePrompt } from '../../../utils/imageGen'
 import type { LongTermAsset } from '../../../types/assets'
 import { useTranslation } from 'react-i18next'
 import { TourbusSlotButton } from './TourbusSlotButton'
+import { hasCompatibleModuleForSlot } from '../../../utils/assetSelectors/moduleUnlock'
 
 interface Props {
   asset: LongTermAsset
@@ -17,6 +18,7 @@ interface Props {
 export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation('ui')
   const addonSlots = asset.slots.filter(s => s.slotType === 'tb_trailer_addon')
+  const hasAddonModules = hasCompatibleModuleForSlot(asset, 'tb_trailer_addon')
   return (
     <div className='relative w-full md:absolute md:-left-1/3 md:top-1/5 md:w-1/3'>
       <GeneratedImagePanel
@@ -27,7 +29,17 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
         aspectRatio='16:9'
         sizeHint={{ width: 640, height: 360 }}
       />
+      {!hasAddonModules &&
+        addonSlots.some(slot => slot.installedModuleId === null) && (
+          <p className='mt-2 text-sm text-[var(--color-ash-gray)]'>
+            {t('ui:assets.tourbus.addons_unavailable', {
+              defaultValue: 'Trailer addons are not available yet.'
+            })}
+          </p>
+        )}
       {addonSlots.map((slot, i) => {
+        // Retain management of saved installations, even if their registry entry is gone.
+        if (slot.installedModuleId === null && !hasAddonModules) return null
         const translatedSlotType = t(
           `ui:assets.tourbus.slotType.${slot.slotType}`,
           {

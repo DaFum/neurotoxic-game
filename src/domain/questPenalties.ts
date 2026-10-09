@@ -15,6 +15,7 @@ import {
 } from './questEffects'
 import {
   hasAssetTarget,
+  isOptionalString,
   updateFirstMatchingAssetCondition
 } from './questHelpers'
 
@@ -26,12 +27,6 @@ interface QuestPenaltyResult {
   flagsToAdd: string[]
   cooldownsToAdd: GameState['questCooldowns']
 }
-
-/**
- * Returns declarative failure penalties.
- */
-const isOptionalString = (value: unknown): boolean =>
-  value === undefined || typeof value === 'string'
 
 const isQuestPenalty = (value: unknown): value is QuestPenalty => {
   if (!isLooseRecord(value) || typeof value.type !== 'string') return false

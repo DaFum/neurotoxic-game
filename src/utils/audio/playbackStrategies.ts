@@ -4,6 +4,7 @@ import { startGigClock, startGigPlayback } from './gigPlayback'
 import { getAudioContextTimeSec, getToneStartTimeSec } from './context'
 import { handleError, AudioError } from '../errorHandler'
 import { hasAudioAsset } from './assets'
+import { audioState } from './state'
 import { logger } from '../logger'
 import { generateNotesForSong } from '../rhythmUtils'
 import { resolveSongPlaybackWindow } from './songUtils'
@@ -16,6 +17,16 @@ import {
 import type { Song } from '../../types/audio'
 import type { RhythmNote } from '../../types/rhythmGame'
 import type { RandomFn } from '../../types/callbacks'
+
+/**
+ * Captures the generation claimed synchronously by a playback backend.
+ * The coordinator checks it immediately after awaiting the pending attempt,
+ * before another strategy can claim a new generation.
+ */
+const beginPlaybackAttempt = (start: () => Promise<boolean>) => {
+  const pending = start()
+  return { pending, requestId: audioState.playRequestId }
+}
 
 const playOggBuffer = async (
   currentSong: ActiveSong,
@@ -198,19 +209,27 @@ const playAudioForSong = async (
   let bgAudioStarted = false
 
   if (currentSong.sourceOgg || currentSong.sourceMid) {
-    bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
+    const attempt = beginPlaybackAttempt(() =>
+      playOggBuffer(currentSong, notes, onSongEnded)
+    )
+    bgAudioStarted = await attempt.pending
+    if (attempt.requestId !== audioState.playRequestId) return [...notes]
   }
 
   if (!bgAudioStarted && currentSong.sourceMid) {
-    bgAudioStarted = await playMidiSynthesis(currentSong, notes, onSongEnded)
+    const attempt = beginPlaybackAttempt(() =>
+      playMidiSynthesis(currentSong, notes, onSongEnded)
+    )
+    bgAudioStarted = await attempt.pending
+    if (attempt.requestId !== audioState.playRequestId) return [...notes]
   }
 
   if (!bgAudioStarted && notes.length > 0) {
-    bgAudioStarted = await playNoteDataSynthesis(
-      currentSong,
-      notes,
-      onSongEnded
+    const attempt = beginPlaybackAttempt(() =>
+      playNoteDataSynthesis(currentSong, notes, onSongEnded)
     )
+    bgAudioStarted = await attempt.pending
+    if (attempt.requestId !== audioState.playRequestId) return [...notes]
   }
 
   let finalNotes = [...notes]
@@ -228,7 +247,11 @@ const playAudioForSong = async (
     }
 
     if (!bgAudioStarted) {
-      await playProceduralMetal(currentSong, onSongEnded, rng)
+      const attempt = beginPlaybackAttempt(() =>
+        playProceduralMetal(currentSong, onSongEnded, rng)
+      )
+      await attempt.pending
+      if (attempt.requestId !== audioState.playRequestId) return finalNotes
     }
   }
 

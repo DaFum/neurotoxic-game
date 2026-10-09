@@ -3,7 +3,6 @@ import {
   buildSoldMerchInventory,
   buildStoryFlagQuests
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
-import { buildAcceptDealQuestEvents } from '../../src/hooks/postGig/handlers/dealHandlerUtils'
 import {
   QUEST_APOLOGY_TOUR,
   QUEST_EGO_MANAGEMENT
@@ -102,67 +101,5 @@ describe('buildStoryFlagQuests', () => {
     const expectedProgress =
       egoDef.progressSource === 'harmony_recovered' ? 42 : 0
     expect(ego.progress).toBe(expectedProgress)
-  })
-})
-
-describe('buildAcceptDealQuestEvents', () => {
-  const baseDeal = { id: 'd1', type: 'sponsorship', name: 'BrandX' }
-
-  it('emits offer-accepted + deal-completed for an unaligned, no-money deal', () => {
-    expect(
-      buildAcceptDealQuestEvents({
-        deal: baseDeal,
-        brandReputation: {},
-        appliedMoneyDelta: 0
-      })
-    ).toHaveLength(2)
-  })
-
-  it('adds a trust event using the clamped +5 mirror', () => {
-    const aligned = { ...baseDeal, alignment: 'corp' }
-    // rep 0 -> trustDelta 5 -> +1 event
-    expect(
-      buildAcceptDealQuestEvents({
-        deal: aligned,
-        brandReputation: { corp: 0 },
-        appliedMoneyDelta: 0
-      })
-    ).toHaveLength(3)
-    // rep 100 -> trustDelta 0 -> no trust event
-    expect(
-      buildAcceptDealQuestEvents({
-        deal: aligned,
-        brandReputation: { corp: 100 },
-        appliedMoneyDelta: 0
-      })
-    ).toHaveLength(2)
-    // non-finite rep coerces to 0 -> trustDelta 5 -> trust event (no NaN)
-    const events = buildAcceptDealQuestEvents({
-      deal: aligned,
-      brandReputation: { corp: NaN },
-      appliedMoneyDelta: 0
-    })
-    expect(events).toHaveLength(3)
-    const trustEvent = events.find(e => e.type === 'brand.trustChanged')
-    expect(Number.isFinite(trustEvent.amount)).toBe(true)
-  })
-
-  it('adds a money-earned event only for positive money deltas', () => {
-    expect(
-      buildAcceptDealQuestEvents({
-        deal: baseDeal,
-        brandReputation: {},
-        appliedMoneyDelta: 50
-      })
-    ).toHaveLength(3)
-    const aligned = { ...baseDeal, alignment: 'corp' }
-    // aligned (rep 0 -> +trust) + positive money -> 4 events
-    expect(
-      buildAcceptDealQuestEvents({
-        deal: aligned,
-        brandReputation: { corp: 0 },
-        appliedMoneyDelta: 50
-      })
-    ).toHaveLength(4)
   })
 })

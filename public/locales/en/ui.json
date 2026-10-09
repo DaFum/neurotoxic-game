@@ -17,6 +17,7 @@
   "assets.tourbus.slotType.tb_trailer_addon": "trailer add-on",
   "assets.tourbus.trailer_alt": "Trailer",
   "assets.tourbus.trailer_slot": "Trailer slot {{slotType}}",
+  "assets.tourbus.addons_unavailable": "Trailer addons are not available yet.",
   "audio_protocols": "AUDIO PROTOCOLS",
   "bandStatus": "BAND STATUS",
   "band_hq": "Band HQ",

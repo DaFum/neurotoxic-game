@@ -8,7 +8,12 @@ import type {
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../assetConfig'
 import { finiteNumberOr } from '../finiteNumber'
-import { BROKEN_THRESHOLD } from './constants'
+import {
+  BROKEN_THRESHOLD,
+  ADDITIVE_MODIFIER_KEYS,
+  MULTIPLIER_MODIFIER_KEYS,
+  FLAG_MODIFIER_KEYS
+} from './constants'
 
 export const calculateChassisGrossSaleValue = (
   asset: LongTermAsset,
@@ -62,32 +67,13 @@ const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
 const ADDITIVE_BONI_KEYS = [
   'baseDailyRevenueDelta',
   'upkeepDelta',
-  'staminaRegenBonusPerDay',
-  'travelStaminaRegen',
-  'merchCapacityBonus',
-  'songQualityBonus',
-  'avgMerchSalePriceBonus',
-  'famePassivePerDay',
-  'bandMoodPerDay',
-  'tipBonusGigs'
+  ...ADDITIVE_MODIFIER_KEYS
 ] as const satisfies readonly (keyof AssetBoni)[]
 
 /** Boni multiplied across modules, identity 1.0. */
 const MULTIPLICATIVE_BONI_KEYS = [
-  'fuelMultiplier',
-  'merchCostMultiplier',
-  'songCostMultiplier',
-  'trainingCostMultiplier',
-  'baseRiskChanceMultiplier',
+  ...MULTIPLIER_MODIFIER_KEYS,
   'diyRiskMultiplier'
-] as const satisfies readonly (keyof AssetBoni)[]
-
-/** Boolean flags OR-ed across modules, identity false. */
-const FLAG_BONI_KEYS = [
-  'infightingDamper',
-  'enablesReRecording',
-  'enablesLimitedEditions',
-  'reducesTheftRiskTravel'
 ] as const satisfies readonly (keyof AssetBoni)[]
 
 /**
@@ -115,7 +101,7 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
       const value = b[key]
       if (value !== undefined) agg[key] = (agg[key] ?? 1.0) * value
     }
-    for (const key of FLAG_BONI_KEYS) {
+    for (const key of FLAG_MODIFIER_KEYS) {
       const value = b[key]
       if (value !== undefined) agg[key] = agg[key] || value
     }

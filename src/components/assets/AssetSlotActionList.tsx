@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { LongTermAsset } from '../../types/assets'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { hasCompatibleModuleForSlot } from '../../utils/assetSelectors/moduleUnlock'
 import { getModuleDescription } from './moduleDescription'
 
 /**
@@ -37,14 +38,19 @@ export const AssetSlotActionList = ({
   asset,
   onSlotClick
 }: AssetSlotActionListProps) => {
-  const { t, i18n } = useTranslation(['assets'])
+  const { t, i18n } = useTranslation(['assets', 'ui'])
   const conditionState = getConditionState(asset.condition)
   const isDamaged = conditionState !== 'good'
+  const hasAddonModules = hasCompatibleModuleForSlot(asset, 'tb_trailer_addon')
 
   return (
     <div className='assets-hub-reveal flex flex-col gap-2'>
       {asset.slots.map(slot => {
         const installed = slot.installedModuleId
+        const addonUnavailable =
+          slot.slotType === 'tb_trailer_addon' &&
+          installed === null &&
+          !hasAddonModules
         const module = installed ? MODULE_REGISTRY[installed] : undefined
         const slotName = t(`assets:slot.${slot.slotType}`)
         const moduleName =
@@ -96,27 +102,35 @@ export const AssetSlotActionList = ({
                 </p>
               )}
             </div>
-            <button
-              type='button'
-              aria-label={buttonLabel}
-              onClick={() => onSlotClick(slot.id)}
-              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${
-                moduleName === null
-                  ? 'assets-hub-primary-button'
-                  : 'assets-hub-secondary-button'
-              } min-h-11 self-center border-2 px-3 py-2 text-xs uppercase`}
-              style={{
-                borderColor: 'var(--section-accent)',
-                background:
-                  moduleName === null ? 'var(--section-accent)' : 'transparent',
-                color:
-                  moduleName === null ? 'var(--color-void-black)' : 'inherit'
-              }}
-            >
-              {moduleName === null
-                ? t('assets:actions.install')
-                : t('assets:hub.actions.manageSlot')}
-            </button>
+            {addonUnavailable ? (
+              <p className='self-center text-xs text-[var(--color-ash-gray)]'>
+                {t('ui:assets.tourbus.addons_unavailable')}
+              </p>
+            ) : (
+              <button
+                type='button'
+                aria-label={buttonLabel}
+                onClick={() => onSlotClick(slot.id)}
+                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${
+                  moduleName === null
+                    ? 'assets-hub-primary-button'
+                    : 'assets-hub-secondary-button'
+                } min-h-11 self-center border-2 px-3 py-2 text-xs uppercase`}
+                style={{
+                  borderColor: 'var(--section-accent)',
+                  background:
+                    moduleName === null
+                      ? 'var(--section-accent)'
+                      : 'transparent',
+                  color:
+                    moduleName === null ? 'var(--color-void-black)' : 'inherit'
+                }}
+              >
+                {moduleName === null
+                  ? t('assets:actions.install')
+                  : t('assets:hub.actions.manageSlot')}
+              </button>
+            )}
           </div>
         )
       })}

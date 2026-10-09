@@ -7,6 +7,7 @@ import {
   getAcceptDealMoneyUpdate,
   getAcceptDealSocialUpdateFactory
 } from '../../utils/postGig'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { mulberry32 } from '../../utils/seededRng'
 import { hashExpeditionRoute } from './map'
 import type { GameState } from '../../types'
@@ -259,15 +260,22 @@ export const resolveBrandDealAcceptance = (
     createBrandOfferAcceptedQuestEvent(deal),
     createBrandDealCompletedQuestEvent(deal)
   ]
-  const currentRep = state.social.brandReputation?.[deal.alignment] ?? 0
-  const trustDelta = Math.min(100, currentRep + 5) - currentRep
-  if (trustDelta !== 0)
-    questEvents.push(
-      createBrandTrustChangedQuestEvent({
-        brandId: deal.alignment,
-        amount: trustDelta
-      })
+  if (deal.alignment) {
+    const currentRep = finiteNumberOr(
+      state.social.brandReputation?.[deal.alignment],
+      0
     )
+    const trustDelta =
+      finiteNumberOr(nextSocial.brandReputation?.[deal.alignment], currentRep) -
+      currentRep
+    if (trustDelta !== 0)
+      questEvents.push(
+        createBrandTrustChangedQuestEvent({
+          brandId: deal.alignment,
+          amount: trustDelta
+        })
+      )
+  }
   if (appliedMoneyDelta > 0)
     questEvents.push(
       createMoneyEarnedQuestEvent({

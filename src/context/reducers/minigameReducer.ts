@@ -1,6 +1,8 @@
 import type { BandMember, GameState } from '../../types'
 import { logger } from '../../utils/logger'
 import {
+  addClampedNonNegative,
+  clampToNonNegativeInt,
   clampVanCondition,
   clampPlayerMoney,
   clampBandHarmony,
@@ -232,7 +234,10 @@ export const handleCompleteTravelMinigame = (
     money: nextMoney,
     location: nextLocation,
     currentNodeId: targetNode.id,
-    totalTravels: state.player.totalTravels + 1,
+    totalTravels: addClampedNonNegative(
+      clampToNonNegativeInt(finiteNumberOr(state.player.totalTravels, 0)),
+      1
+    ),
     van: {
       ...state.player.van,
       fuel: nextFuel,

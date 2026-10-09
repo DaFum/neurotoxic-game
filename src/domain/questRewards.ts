@@ -24,6 +24,7 @@ import { applyTraitUnlocks } from '../utils/traitUtils'
 import {
   getQuestToastName,
   hasAssetTarget,
+  isOptionalString,
   updateFirstMatchingAssetCondition
 } from './questHelpers'
 import {
@@ -40,12 +41,6 @@ interface QuestRewardResult {
   state: GameState
   toasts: ToastPayload[]
 }
-
-/**
- * Returns declarative quest rewards.
- */
-const isOptionalString = (value: unknown): boolean =>
-  value === undefined || typeof value === 'string'
 
 const FOLLOWER_PLATFORMS = new Set([
   'instagram',
