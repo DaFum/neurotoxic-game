@@ -171,14 +171,14 @@ export const generateEffectText = (
       const qty = inventory[key]
       if (isFiniteNumber(qty) && qty !== 0) {
         lines.push(
-          `${t(`items:${key}`, { defaultValue: key })}: ${
+          `${t(`items:${key}.name`, { defaultValue: key })}: ${
             qty > 0 ? '+' : ''
           }${qty}`
         )
       } else if (qty === true) {
-        lines.push(`+${t(`items:${key}`, { defaultValue: key })}`)
+        lines.push(`+${t(`items:${key}.name`, { defaultValue: key })}`)
       } else if (qty === false) {
-        lines.push(`-${t(`items:${key}`, { defaultValue: key })}`)
+        lines.push(`-${t(`items:${key}.name`, { defaultValue: key })}`)
       }
     }
   }

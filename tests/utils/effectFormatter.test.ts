@@ -131,6 +131,18 @@ describe('generateEffectText', () => {
     )
   })
 
+  it('resolves inventory item names via the flat items:<id>.name key', () => {
+    const tItems = (key: string, options?: { defaultValue?: string }) =>
+      key === 'items:golden_pick.name'
+        ? 'Golden Pick'
+        : (options?.defaultValue ?? key)
+    const delta = { band: { inventory: { golden_pick: true, unknown_x: 2 } } }
+    assert.equal(
+      generateEffectText(delta, tItems, 'en'),
+      'Effects: +Golden Pick, unknown_x: +2'
+    )
+  })
+
   it('formats flags (addQuest as string)', () => {
     const delta = {
       flags: {
