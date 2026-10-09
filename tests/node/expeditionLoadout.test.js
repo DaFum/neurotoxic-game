@@ -419,6 +419,45 @@ describe('merch and contraband drawn from owned stock', () => {
     )
   })
 
+  it('packs an owned non-stackable item (stacks: null) as one unit', () => {
+    const state = createInitialState()
+    state.band.stash.c_rusty_strings = { stacks: null, instanceId: 'inst_r' }
+    const result = validate(state, {
+      build: {
+        contraband: [
+          { stashKey: 'c_rusty_strings', instanceId: 'inst_r', stacks: 1 }
+        ]
+      }
+    })
+    assert.equal(result.valid, true)
+    assert.deepEqual(result.normalized.build.contraband, [
+      { stashKey: 'c_rusty_strings', instanceId: 'inst_r', stacks: 1 }
+    ])
+    expectReason(
+      validate(state, {
+        build: {
+          contraband: [
+            { stashKey: 'c_rusty_strings', instanceId: 'inst_r', stacks: 2 }
+          ]
+        }
+      }),
+      'CONTRABAND_NOT_OWNED'
+    )
+  })
+
+  it('treats a non-finite stash stack count as nothing owned', () => {
+    const state = createInitialState()
+    state.band.stash[CONTRABAND_A] = { stacks: Number.NaN, instanceId: null }
+    expectReason(
+      validate(state, {
+        build: {
+          contraband: [{ stashKey: CONTRABAND_A, instanceId: null, stacks: 1 }]
+        }
+      }),
+      'CONTRABAND_NOT_OWNED'
+    )
+  })
+
   it('rejects an unknown contraband id', () => {
     const state = createInitialState()
     state.band.stash.not_real = { stacks: 5 }

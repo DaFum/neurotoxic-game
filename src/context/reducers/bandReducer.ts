@@ -21,7 +21,10 @@ import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../../utils/contrabandEffects'
-import { addContrabandToBand } from '../../utils/contrabandStashUtils'
+import {
+  addContrabandToBand,
+  getStashStackCount
+} from '../../utils/contrabandStashUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createItemUsedQuestEvent,
@@ -327,18 +330,6 @@ export const addContrabandHelper = (
   return nextBand === state.band ? state : { ...state, band: nextBand }
 }
 
-/** Stack count of a stash entry (non-stackable owned items count as 1). */
-const getStashCount = (
-  stash: Record<string, unknown> | undefined,
-  itemId: string
-): number => {
-  if (!stash || !Object.hasOwn(stash, itemId)) return 0
-  const entry = stash[itemId] as Record<string, unknown> | undefined
-  if (!entry) return 0
-  const stacks = entry.stacks
-  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 1
-}
-
 /**
  * Crafts a contraband recipe by consuming stash inputs and adding the recipe output.
  *
@@ -371,7 +362,7 @@ export const handleCraftItem = (
     if (
       typeof qty !== 'number' ||
       Number.isNaN(qty) ||
-      getStashCount(stash, itemId) < qty
+      getStashStackCount(stash, itemId) < qty
     ) {
       return {
         ...state,
@@ -396,7 +387,7 @@ export const handleCraftItem = (
     if (!Object.hasOwn(recipe.inputs, itemId)) continue
     const qty = recipe.inputs[itemId] as number
     const entry = newStash[itemId] as Record<string, unknown>
-    const current = getStashCount(newStash, itemId)
+    const current = getStashStackCount(newStash, itemId)
 
     // Revert apply-on-add equipment effects if the item is being fully deleted
     if (current - qty <= 0) {

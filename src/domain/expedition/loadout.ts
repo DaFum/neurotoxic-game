@@ -30,6 +30,7 @@ import {
   isNonNegativeInteger
 } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import { getStashStackCount } from '../../utils/contrabandStashUtils'
 import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
 import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
 import {
@@ -652,9 +653,8 @@ export const validateExpeditionBuildCommitment = (
       ? state.band.stash[stashKey]
       : undefined
     if (!isLooseRecord(stashEntry)) return reject('CONTRABAND_NOT_OWNED')
-    const ownedStacks = isFiniteNumber(stashEntry.stacks)
-      ? stashEntry.stacks
-      : 0
+    // A non-stackable item (`stacks: null`) is one owned, packable unit.
+    const ownedStacks = getStashStackCount(state.band.stash, stashKey)
     if (stacks > ownedStacks) return reject('CONTRABAND_NOT_OWNED')
     if (
       instanceId !== null &&
