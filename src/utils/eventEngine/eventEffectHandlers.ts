@@ -124,7 +124,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.player.van.condition =
         asNumber(delta.player.van.condition) + asNumber(eff.value)
     }
-    if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
+    if (eff.stat === 'hype')
       delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
     if (eff.stat === 'viral')
       delta.social.viral = asNumber(delta.social.viral) + asNumber(eff.value)
