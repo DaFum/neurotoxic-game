@@ -2,7 +2,6 @@ import { useMemo, type Dispatch } from 'react'
 import type { GameAction } from '../types'
 import {
   createAddQuestAction,
-  createAdvanceQuestAction,
   createApplyQuestEventAction
 } from './actionCreators'
 
@@ -11,15 +10,6 @@ import {
  */
 export interface QuestDispatchActions {
   addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
-  /**
-   * Advances a quest's progress directly.
-   *
-   * @internal Test-only. Production progress flows through `applyQuestEvent`.
-   */
-  advanceQuest: (
-    questId: Parameters<typeof createAdvanceQuestAction>[0],
-    progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
-  ) => void
   applyQuestEvent: (
     event: Parameters<typeof createApplyQuestEventAction>[0]
   ) => void
@@ -37,8 +27,6 @@ export function useQuestDispatchActions(
   return useMemo(
     () => ({
       addQuest: payload => dispatch(createAddQuestAction(payload)),
-      advanceQuest: (questId, progressAmount) =>
-        dispatch(createAdvanceQuestAction(questId, progressAmount)),
       applyQuestEvent: event => dispatch(createApplyQuestEventAction(event))
     }),
     [dispatch]

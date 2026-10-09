@@ -960,8 +960,8 @@ export const createAddQuestAction = (
  * Creates an action to advance a quest's progress.
  *
  * @internal Test-only entry point. Production quest progress flows through
- * `QuestEvents`; this creator and `advanceQuest` exist so tests can drive
- * `ADVANCE_QUEST` directly.
+ * `QuestEvents`; this creator exists so tests can drive `ADVANCE_QUEST`
+ * directly (no `GameDispatchActions` member wraps it).
  * @param questId - Id of the quest whose progress advances.
  * @param amount - The amount to advance progress by. Defaults to `1`; values
  * that are not finite numbers (numeric strings, booleans, arrays) become `0`.
