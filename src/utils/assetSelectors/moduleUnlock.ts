@@ -15,6 +15,25 @@ export interface ModuleUnlockState {
   assets: readonly LongTermAsset[]
 }
 
+/**
+ * Checks whether the registry contains a module matching an asset and slot.
+ *
+ * @remarks
+ * Locked modules still make a picker meaningful: it displays their lock reasons.
+ * This checks catalog compatibility, not purchase or installation eligibility.
+ *
+ * @param asset - Asset kind whose module catalog should be searched.
+ * @param slotType - Required installation slot type.
+ * @returns Whether at least one compatible module is registered.
+ */
+export const hasCompatibleModuleForSlot = (
+  asset: Pick<LongTermAsset, 'kind'>,
+  slotType: SlotType
+): boolean =>
+  Object.values(MODULE_REGISTRY).some(
+    module => module.ownerKind === asset.kind && module.slotType === slotType
+  )
+
 const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
 }
