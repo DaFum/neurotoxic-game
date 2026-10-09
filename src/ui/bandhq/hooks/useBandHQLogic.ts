@@ -121,7 +121,10 @@ export const useBandHQLogic = ({
     async (item: PurchaseItem) => {
       if (item.id == null) {
         handleError(new StateError('Invalid purchase item id', { item }), {
-          addToast
+          addToast,
+          fallbackMessage: t('ui:shop.messages.purchaseFailed', {
+            defaultValue: 'Purchase failed!'
+          })
         })
         return
       }

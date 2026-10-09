@@ -356,11 +356,16 @@ describe('handleNodeArrival', () => {
     })
 
     assert.strictEqual(mocks.startGig.mock.calls.length, 1)
-    // handleError should be called and it should call addToast
+    // handleError toasts the localized fallback; the raw Error message is
+    // developer text and stays in the log.
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+    const toastMessage = mocks.addToast.mock.calls[0].arguments[0]
     assert.ok(
-      mocks.addToast.mock.calls[0].arguments[0].includes('Failed to load song')
+      toastMessage === 'Failed to start Gig.' ||
+        toastMessage === 'ui:arrival.failedToStartGig',
+      toastMessage
     )
+    assert.ok(!toastMessage.includes('Failed to load song'))
   })
 })
 

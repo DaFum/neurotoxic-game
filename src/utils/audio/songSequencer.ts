@@ -171,7 +171,11 @@ export const playSongSequence = async (
     ).catch(err => {
       handleError(err, {
         addToast,
-        fallbackMessage: 'Failed to start next song!'
+        fallbackMessage: t
+          ? t('ui:gig.errors.nextSongFailed', {
+              defaultValue: 'Failed to start next song!'
+            })
+          : 'Failed to start next song!'
       })
       if (gameStateRef.current) {
         gameStateRef.current.setlistCompleted = true
