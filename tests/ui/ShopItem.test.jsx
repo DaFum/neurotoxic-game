@@ -1,6 +1,7 @@
 import { render, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ShopItem } from '../../src/ui/bandhq/ShopItem'
+import { IMG_PROMPTS } from '../../src/utils/imageGen'
 
 vi.mock('../../src/utils/purchaseLogicUtils', () => ({
   LABEL_CONTRACT_ADVANCE: 500
@@ -51,6 +52,21 @@ describe('ShopItem', () => {
     expect(getByText('Test Item')).toBeInTheDocument()
     expect(getByText('Test Description')).toBeInTheDocument()
     expect(getByText('€100')).toBeInTheDocument()
+  })
+
+  it('falls back to the generic item prompt, never the i18n name key', () => {
+    const item = { ...mockItem, name: 'items:missing.name', img: 'NOT_A_KEY' }
+    const { container } = render(<ShopItem {...defaultProps} item={item} />)
+    const src = container.querySelector('img')?.getAttribute('src') ?? ''
+    expect(src).toContain(encodeURIComponent(IMG_PROMPTS.ITEM_UNKNOWN))
+    expect(src).not.toContain(encodeURIComponent('items:missing.name'))
+  })
+
+  it('uses the catalogue prompt for a known image key', () => {
+    const item = { ...mockItem, img: 'ITEM_HQ_VOID_ALTAR' }
+    const { container } = render(<ShopItem {...defaultProps} item={item} />)
+    const src = container.querySelector('img')?.getAttribute('src') ?? ''
+    expect(src).toContain(encodeURIComponent(IMG_PROMPTS.ITEM_HQ_VOID_ALTAR))
   })
 
   it('renders fame currency correctly', () => {

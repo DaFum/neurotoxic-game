@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { ALL_HQ_ITEMS, HQ_ITEMS } from '../../src/data/hqItems'
+import { IMG_PROMPTS } from '../../src/utils/imageGen'
 
 describe('HQ Items Data Integrity', () => {
   const itemIds = new Set()
@@ -28,6 +29,10 @@ describe('HQ Items Data Integrity', () => {
     )
     assert.ok(item.description, `Item ${item.id} missing description`)
     assert.ok(item.img, `Item ${item.id} missing img key`)
+    assert.ok(
+      Object.hasOwn(IMG_PROMPTS, item.img),
+      `Item ${item.id} img key ${item.img} is not in IMG_PROMPTS`
+    )
 
     // 3. Effect Structure
     assert.ok(item.effect, `Item ${item.id} missing effect`)
