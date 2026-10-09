@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { BRAND_DEALS } from '../../src/data/brandDeals'
+import { ALLOWED_TRENDS_SET } from '../../src/data/socialTrends'
 
 describe('Brand Deals Data', () => {
   it('should be an array of deal objects', () => {
@@ -39,6 +40,17 @@ describe('Brand Deals Data', () => {
         `Deal ${deal.id} missing offer`
       )
     })
+  })
+
+  it('requires only trends the social engine can actually roll', () => {
+    for (const deal of BRAND_DEALS) {
+      for (const trend of deal.requirements.trend ?? []) {
+        assert.ok(
+          ALLOWED_TRENDS_SET.has(trend),
+          `Deal ${deal.id} requires unknown trend ${trend}`
+        )
+      }
+    }
   })
 
   it('should have unique deal IDs', () => {

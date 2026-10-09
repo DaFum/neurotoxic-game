@@ -34,7 +34,7 @@ describe('isCatalogEffect', () => {
       true
     )
     assert.equal(isCatalogEffect({ type: 'unlock_upgrade', id: 'amp' }), true)
-    assert.equal(isCatalogEffect({ type: 'unlock_hq', id: 'cellar' }), true)
+    assert.equal(isCatalogEffect({ type: 'unlock_hq' }), true)
   })
 
   test('rejects malformed or unsupported effect shapes', () => {
@@ -112,6 +112,15 @@ describe('normalizeCatalogEffect', () => {
       stat: 'fame',
       value: 100
     })
+  })
+
+  test('drops the unread id from unlock_hq effects', () => {
+    const result = normalizeCatalogEffect(
+      { type: 'unlock_hq', id: 'hq_coffee' },
+      'hq_room_coffee'
+    )
+    assert.deepEqual(result, { type: 'unlock_hq' })
+    assert.equal(Object.hasOwn(result, 'id'), false)
   })
 
   test('preserves optional `value` on passive when present', () => {

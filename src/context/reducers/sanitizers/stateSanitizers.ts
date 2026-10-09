@@ -280,7 +280,7 @@ const VALIDATE_EFFECT_REQUIREMENTS: Record<
   },
   inventory_set: effectObj => typeof effectObj.item === 'string',
   unlock_upgrade: effectObj => typeof effectObj.id === 'string',
-  unlock_hq: effectObj => typeof effectObj.id === 'string',
+  unlock_hq: () => true,
   stat_modifier: effectObj => typeof effectObj.key === 'string',
   passive: effectObj => typeof effectObj.key === 'string'
 }

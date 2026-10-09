@@ -14,7 +14,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_COFFEE',
     description: 'items:hq_room_coffee.description',
-    effect: { type: 'unlock_hq', id: 'hq_coffee' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_sofa',
@@ -24,7 +24,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_SOFA',
     description: 'items:hq_room_sofa.description',
-    effect: { type: 'unlock_hq', id: 'hq_sofa' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_marketing',
@@ -51,7 +51,7 @@ export const hq = [
     requiresReputation: true,
     img: 'ITEM_HQ_LABEL',
     description: 'items:hq_room_label.description',
-    effect: { type: 'unlock_hq', id: 'hq_label' }
+    effect: { type: 'unlock_hq' }
   },
   // Gritty HQ Items
   {
@@ -62,7 +62,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_OLD_COUCH',
     description: 'items:hq_room_old_couch.description',
-    effect: { type: 'unlock_hq', id: 'hq_old_couch' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_poster_wall',
@@ -72,7 +72,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_POSTERS',
     description: 'items:hq_room_poster_wall.description',
-    effect: { type: 'unlock_hq', id: 'hq_poster_wall' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_cheap_beer_fridge',
@@ -82,7 +82,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_FRIDGE',
     description: 'items:hq_room_cheap_beer_fridge.description',
-    effect: { type: 'unlock_hq', id: 'hq_cheap_beer_fridge' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_diy_soundproofing',
@@ -92,7 +92,7 @@ export const hq = [
     currency: 'money',
     img: 'ITEM_HQ_EGGS',
     description: 'items:hq_room_diy_soundproofing.description',
-    effect: { type: 'unlock_hq', id: 'hq_diy_soundproofing' }
+    effect: { type: 'unlock_hq' }
   },
   // Bizarre HQ Items
   {
@@ -133,7 +133,7 @@ export const hq = [
     currency: 'fame',
     img: 'ITEM_HQ_SHRINE',
     description: 'items:hq_room_shrine.description',
-    effect: { type: 'unlock_hq', id: 'hq_room_shrine' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_skull',
@@ -159,7 +159,7 @@ export const hq = [
     requiresReputation: true,
     img: 'ITEM_HQ_PR_CONTRACT',
     description: 'items:pr_manager_contract.description',
-    effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
+    effect: { type: 'unlock_hq' }
   },
   {
     id: 'hq_room_void_altar',
@@ -169,6 +169,6 @@ export const hq = [
     currency: 'fame',
     img: 'ITEM_HQ_VOID_ALTAR',
     description: 'items:hq_room_void_altar.description',
-    effect: { type: 'unlock_hq', id: 'hq_room_void_altar' }
+    effect: { type: 'unlock_hq' }
   }
 ] as const

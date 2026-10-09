@@ -46,7 +46,7 @@ describe('usePurchaseLogic Integration', () => {
       name: 'Label',
       cost: 5000,
       currency: 'fame',
-      effects: [{ type: 'unlock_hq', id: 'hq_room_label' }]
+      effects: [{ type: 'unlock_hq' }]
     }
 
     let success

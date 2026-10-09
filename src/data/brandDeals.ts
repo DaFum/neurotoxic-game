@@ -118,7 +118,7 @@ export const BRAND_DEALS = [
     alignment: 'INDIE',
     requirements: {
       followers: 1200,
-      trend: ['GRUNGE', 'PUNK']
+      trend: ['DRAMA', 'MUSIC']
     },
     offer: {
       upfront: 100,
@@ -197,7 +197,7 @@ export const BRAND_DEALS = [
     alignment: 'GOOD',
     requirements: {
       followers: 2000,
-      trend: ['MUSIC', 'PUNK']
+      trend: ['MUSIC', 'WHOLESOME']
     },
     offer: {
       upfront: 50,
@@ -380,7 +380,7 @@ export const BRAND_DEALS = [
     alignment: 'INDIE',
     requirements: {
       followers: 5500,
-      trend: ['MUSIC', 'GRUNGE']
+      trend: ['MUSIC']
     },
     offer: {
       upfront: 500,
@@ -582,7 +582,7 @@ export const BRAND_DEALS = [
     alignment: 'NEUTRAL',
     requirements: {
       followers: 8000,
-      trend: ['TECH', 'SYNTH']
+      trend: ['TECH', 'MUSIC']
     },
     offer: {
       upfront: 800,
@@ -602,7 +602,7 @@ export const BRAND_DEALS = [
     alignment: 'NEUTRAL',
     requirements: {
       followers: 9000,
-      trend: ['TECH', 'PUNK']
+      trend: ['TECH', 'DRAMA']
     },
     offer: {
       upfront: 500,

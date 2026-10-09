@@ -105,8 +105,8 @@ const EXPEDITION_TOUCHING_STATS = new Set([
  *
  * @remarks
  * Keyed on the catalog item id, which is what `applyUnlockHQ` stores in
- * `player.hqUpgrades` and what the daily tick reads. The `effect.id` carried by
- * an `unlock_hq` entry is never stored, so it cannot identify an owned upgrade.
+ * `player.hqUpgrades` and what the daily tick reads; an `unlock_hq` effect
+ * carries no id of its own.
  */
 const EXPEDITION_TOUCHING_HQ_UNLOCKS = new Set([
   'hq_room_coffee',

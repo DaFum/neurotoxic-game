@@ -3,112 +3,11 @@ import { normalizeCatalogEffect } from '../utils/catalogEffectUtils'
 import type { CatalogInputItem, CatalogItem } from '../types/components'
 
 /**
- * Legacy fame-based upgrades, previously in upgrades.js.
- * Definitions stay available for compatibility, but aliases already represented
- * by canonical HQ items are excluded from the active upgrades tab below.
+ * Legacy fame-based upgrades, previously in upgrades.js, that have no
+ * canonical HQ item. Legacy aliases of canonical HQ items survive only as the
+ * id map below, which migrates old saves onto the canonical ids.
  */
 const LEGACY_UPGRADES = [
-  {
-    id: 'van_suspension',
-    name: 'Reinforced Suspension',
-    category: 'VAN',
-    cost: 270,
-    currency: 'fame',
-    description: 'Reduces chance of breakdowns by 20%.',
-    requirements: {},
-    effects: [
-      {
-        type: 'stat_modifier',
-        target: 'van',
-        stat: 'breakdownChance',
-        value: -0.01
-      }
-    ],
-    oneTime: true
-  },
-  {
-    id: 'van_sound_system',
-    name: 'Mobile Studio',
-    category: 'VAN',
-    cost: 540,
-    currency: 'fame',
-    description: 'Band recovers Harmony while traveling.',
-    requirements: {},
-    effects: [{ type: 'passive', key: 'harmony_regen_travel' }],
-    oneTime: true
-  },
-  {
-    id: 'van_storage',
-    name: 'Extra Storage',
-    category: 'VAN',
-    cost: 440,
-    currency: 'fame',
-    description: 'Inventory slots +2.',
-    requirements: {},
-    effects: [
-      {
-        type: 'stat_modifier',
-        target: 'band',
-        stat: 'inventorySlots',
-        value: 2
-      }
-    ],
-    oneTime: true
-  },
-  {
-    id: 'guitar_custom',
-    name: 'Custom 8-String',
-    category: 'GEAR',
-    cost: 810,
-    currency: 'fame',
-    description: 'Guitar notes are 15% easier to hit.',
-    requirements: {},
-    effects: [
-      {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'guitarDifficulty',
-        value: -0.15
-      }
-    ],
-    oneTime: true
-  },
-  {
-    id: 'drum_trigger',
-    name: 'Axis Pedals',
-    category: 'GEAR',
-    cost: 810,
-    currency: 'fame',
-    description: 'Drum blast beats score +20% more.',
-    requirements: {},
-    effects: [
-      {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'drumMultiplier',
-        value: 0.2
-      }
-    ],
-    oneTime: true
-  },
-  {
-    id: 'bass_sansamp',
-    name: 'SansAmp Driver',
-    category: 'GEAR',
-    cost: 650,
-    currency: 'fame',
-    description: 'Crowd energy decays 10% slower.',
-    requirements: {},
-    effects: [
-      {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'crowdDecay',
-        value: -0.1
-      }
-    ],
-    oneTime: true
-  },
   {
     id: 'social_bot',
     name: 'items:social_bot.name',
@@ -190,15 +89,11 @@ const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
 /**
  * Returns the active purchase catalog for the BandHQ upgrades tab.
  * Shop-only gear and instruments remain in the SHOP tab; this selector merges
- * canonical van/HQ upgrades with the remaining unique legacy upgrades.
+ * canonical van/HQ upgrades with the unique legacy upgrades.
  *
  * @returns Unified list of upgrade/shop entries.
  */
 export const getUnifiedUpgradeCatalog = (): CatalogItem[] =>
-  [
-    ...HQ_ITEMS.van,
-    ...HQ_ITEMS.hq,
-    ...LEGACY_UPGRADES.filter(
-      item => !Object.hasOwn(HQ_DUPLICATE_LEGACY_IDS, item.id)
-    )
-  ].map(normalizeUpgradeShape)
+  [...HQ_ITEMS.van, ...HQ_ITEMS.hq, ...LEGACY_UPGRADES].map(
+    normalizeUpgradeShape
+  )

@@ -4,6 +4,7 @@ import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
 import { QUEST_EVENTS } from '../../src/data/events/quests.ts'
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 import { QuestProgress } from '../../src/utils/questProgress.ts'
+import { POST_OPTIONS } from '../../src/data/postOptions.ts'
 const getBaseState = () => ({
   player: { day: 1, location: 'test_city' },
   activeQuests: [],
@@ -660,6 +661,22 @@ describe('Quest System Registry Validation', () => {
   // the quest domain is the failure mode the redesign is preventing — every
   // system growing its own quest switch. The single legitimate call site is
   // questReducer.ts's handleAdvanceQuest action wiring.
+  it('postCategory matches only name categories a post option can resolve to', () => {
+    const categories = new Set(POST_OPTIONS.map(option => option.category))
+    for (const [questId, quest] of Object.entries(QUEST_REGISTRY)) {
+      for (const rule of quest.progressRules ?? []) {
+        const wanted = rule.match?.postCategory
+        if (wanted === undefined) continue
+        for (const category of Array.isArray(wanted) ? wanted : [wanted]) {
+          assert.ok(
+            categories.has(category),
+            `${questId} matches unknown post category ${category}`
+          )
+        }
+      }
+    }
+  })
+
   it('production code does not call QuestLifecycle.advanceQuest directly', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')

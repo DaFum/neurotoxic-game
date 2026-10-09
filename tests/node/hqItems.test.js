@@ -61,6 +61,14 @@ describe('HQ Items Data Integrity', () => {
         `Item ${item.id} passive effect missing key`
       )
     }
+    if (item.effect.type === 'unlock_hq') {
+      // Ownership is keyed on the item id; an effect-level id is never read.
+      assert.equal(
+        Object.hasOwn(item.effect, 'id'),
+        false,
+        `Item ${item.id} unlock_hq effect must not carry an unread id`
+      )
+    }
   }
 
   it('validates all gear items', () => {
