@@ -218,3 +218,8 @@
 
 **Learning:** Checking the number of keys on an object using `Object.keys(obj).length` creates an array, which could be seen as overhead. However, replacing it with a manual `for...in` loop in user-land JavaScript degrades performance in modern engines (like V8) where `Object.keys` is heavily optimized in native C++. Refactoring this solely for counting properties fails code review as an anti-pattern.
 **Action:** Never refactor `Object.keys(obj).length` into a manual user-land `for...in` loop solely to count properties. Native engine methods are generally faster. Instead, use the centralized `isEmptyObject(obj)` or `countKeys(obj)` helpers from `src/utils/gameState/checks.ts` when available.
+
+## 2026-10-08 - Avoid crypto UUID generation and string hashing in tick loops
+
+**Learning:** Calling `getSafeUUID()` (which accesses Web Crypto and formats UUID string buffers) and running `hash31` string polynomial hashing inside 60 FPS update tick routines (such as minigame obstacle spawning in `spawnTraffic`) allocates strings, arrays, and entropy on every spawn. Using a simple monotonic integer ID (`nextTrafficId`) on the simulation state bypasses all crypto calls and string allocations while enabling fast numeric Map/Set lookups.
+**Action:** Store a monotonic counter on simulation state for entity generation during game loop updates instead of generating random UUID strings or hashing strings on hot paths.
