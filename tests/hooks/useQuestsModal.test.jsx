@@ -102,4 +102,29 @@ describe('useQuestsModal', () => {
       activeQuests: []
     })
   })
+
+  it('passes the canonical current venue id for perVenue scope hints', () => {
+    setMockState({
+      ...DEFAULT_STATE,
+      player: { name: 'Test Player', currentNodeId: 'node_1_0' },
+      currentGig: null,
+      gameMap: {
+        nodes: {
+          node_1_0: {
+            id: 'node_1_0',
+            type: 'GIG',
+            venue: { id: 'berlin_so36' }
+          }
+        }
+      }
+    })
+
+    const { result } = renderHook(() => useQuestsModal())
+    expect(result.current.questsProps.currentVenueId).toBe('berlin_so36')
+  })
+
+  it('reports no venue id away from a gig node', () => {
+    const { result } = renderHook(() => useQuestsModal())
+    expect(result.current.questsProps.currentVenueId).toBeUndefined()
+  })
 })

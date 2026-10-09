@@ -175,19 +175,34 @@ describe('QuestModal Helper Functions', () => {
       expect(hint.options.scope).toBe('Hamburg')
     })
 
-    it('handles matching perVenue', () => {
+    it('handles matching perVenue against the canonical venue id', () => {
       const hint = getQuestScopeHint(
-        { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' },
-        { ...player, location: 'SO36' }
+        { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'berlin_so36' },
+        {
+          ...player,
+          currentNodeId: 'node_2_1',
+          location: 'venues:berlin_so36.name'
+        },
+        'berlin_so36'
       )
       expect(hint.matching).toBe(true)
       expect(hint.text).toBe('ui:quests.hint.scope.venue.only')
     })
 
+    it('does not treat a node id or location display key as the venue', () => {
+      const hint = getQuestScopeHint(
+        { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'node_2_1' },
+        { ...player, currentNodeId: 'node_2_1', location: 'node_2_1' },
+        undefined
+      )
+      expect(hint.matching).toBe(false)
+    })
+
     it('handles mismatching perVenue', () => {
       const hint = getQuestScopeHint(
         { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' },
-        { ...player, location: 'Astra' }
+        { ...player, location: 'SO36' },
+        'Astra'
       )
       expect(hint.matching).toBe(false)
       expect(hint.text).toBe('ui:quests.hint.scope.venue.mismatch')

@@ -159,11 +159,13 @@ const QuestItem = memo(
     quest,
     index,
     player,
+    currentVenueId,
     variants
   }: {
     quest: QuestDisplayState
     index: number
     player: PlayerState
+    currentVenueId?: string
     variants: Variants
   }) => {
     const { t, i18n } = useTranslation(['ui', 'events'])
@@ -180,7 +182,7 @@ const QuestItem = memo(
     const penaltyTexts = getPenaltyTexts(quest, t)
 
     const nextStepHint = getQuestNextStepHint(quest, t)
-    const scopeHint = getQuestScopeHint(quest, player)
+    const scopeHint = getQuestScopeHint(quest, player, currentVenueId)
     const primaryHint = getQuestPrimaryHint({
       deadlineView,
       scopeHint,
@@ -400,16 +402,19 @@ const QuestItem = memo(
 
 /**
  * Displays active quest progress, deadlines, rewards, and close controls.
- * @param props - Quest list, player context, and close handler for the quest modal.
+ * @param props - Quest list, player context, current venue id, and close handler for the quest modal.
  */
 export const QuestsModal = ({
   onClose,
   activeQuests,
-  player
+  player,
+  currentVenueId
 }: {
   onClose: () => void
   activeQuests: QuestDisplayState[]
   player: PlayerState
+  /** Canonical venue id of the current gig context, for perVenue scope hints. */
+  currentVenueId?: string
 }) => {
   const { t } = useTranslation(['ui', 'events'])
   // ⚡ BOLT OPTIMIZATION: Memoized quest definition mapping and sorting to prevent
@@ -458,6 +463,7 @@ export const QuestsModal = ({
                 quest={quest}
                 index={index}
                 player={player}
+                currentVenueId={currentVenueId}
                 variants={questItemVariants}
               />
             )
