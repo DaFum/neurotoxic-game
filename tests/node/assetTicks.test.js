@@ -258,6 +258,77 @@ test('processCrowdfundTick - failed resolution subtracts fameStake', () => {
   assert.strictEqual(next.assets.length, 0, 'no asset created on fail')
 })
 
+test('processCrowdfundTick - surfaces the resolved outcome as deterministic toasts', () => {
+  const campaign = (id, kind, roll, fameStake) => ({
+    id,
+    daysRemaining: 1,
+    plannedSuccessRoll: roll,
+    plannedSuccessProbability: 0.5,
+    materializedAssetId: `mat_${id}`,
+    materializedSlotIds: [],
+    targetAmount: 4000,
+    fameStake,
+    assetSpec: { kind, flavor: 'legit', chassisTier: 1 }
+  })
+  const state = {
+    crowdfundCampaigns: [
+      campaign('win', 'tourbus_chassis', 0.1, 40),
+      // Stake larger than current fame: the toast reports what was lost.
+      campaign('lose', 'studio_chassis', 0.9, 500),
+      { ...campaign('pending', 'bandhaus_chassis', 0.1, 10), daysRemaining: 3 }
+    ],
+    player: { money: 100, fame: 30, day: 5 },
+    assets: [],
+    toasts: [{ id: 'crowdfund-toast-1', messageKey: 'ui:x', type: 'info' }]
+  }
+
+  const next = processCrowdfundTick(state)
+
+  assert.deepStrictEqual(
+    next.toasts.slice(1).map(t => ({ ...t })),
+    [
+      {
+        id: 'crowdfund-toast-2',
+        type: 'success',
+        messageKey: 'assets:crowdfund.success',
+        options: { fame: 40 }
+      },
+      {
+        id: 'crowdfund-toast-3',
+        type: 'warning',
+        messageKey: 'assets:crowdfund.fail',
+        options: { fame: 70 }
+      }
+    ]
+  )
+  assert.strictEqual(next.player.fame, 0)
+  // Re-running on the result must not repeat a toast for resolved campaigns.
+  assert.strictEqual(processCrowdfundTick(next).toasts.length, 3)
+})
+
+test('processCrowdfundTick - no toast while campaigns are still running', () => {
+  const state = {
+    crowdfundCampaigns: [
+      {
+        id: 'c1',
+        daysRemaining: 4,
+        plannedSuccessRoll: 0.1,
+        plannedSuccessProbability: 0.9,
+        materializedAssetId: 'mat_c1',
+        materializedSlotIds: [],
+        targetAmount: 4000,
+        fameStake: 10,
+        assetSpec: { kind: 'tourbus_chassis', flavor: 'legit', chassisTier: 1 }
+      }
+    ],
+    player: { money: 100, fame: 30, day: 5 },
+    assets: []
+  }
+  const next = processCrowdfundTick(state)
+  assert.strictEqual(next.toasts, undefined)
+  assert.strictEqual(next.crowdfundCampaigns[0].daysRemaining, 3)
+})
+
 test('processCrowdfundTick - drops campaigns for sections with existing assets', () => {
   const state = {
     crowdfundCampaigns: [

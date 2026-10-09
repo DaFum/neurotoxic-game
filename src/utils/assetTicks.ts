@@ -1,4 +1,4 @@
-import type { GameState } from '../types/game'
+import type { GameState, ToastPayload } from '../types/game'
 import type { BandMember } from '../types/band'
 import type {
   CrowdfundCampaign,
@@ -34,6 +34,7 @@ import {
   getExpeditionDayPolicy,
   settleExpeditionDailyObligation
 } from '../domain/expedition/loadout'
+import { buildDeterministicToastId } from '../context/reducers/toastSanitizers'
 
 /**
  * Success probability for a crowdfund campaign, given current fame, scene
@@ -360,7 +361,9 @@ export const processLiabilityTick = (
  * `targetAmount` pays for the build and is NOT paid out as cash on top (that
  * would double-count the funding versus cash/loan acquisition). On fail: the
  * player loses `fameStake` (clamped at 0). Either way, the campaign is
- * REMOVED from the active list — completed campaigns never linger in state.
+ * REMOVED from the active list — completed campaigns never linger in state,
+ * and a deterministic `assets:crowdfund.success` / `.fail` toast reports the
+ * outcome with the Fame actually applied.
  */
 export const processCrowdfundTick = (state: GameState): GameState => {
   if (!state.crowdfundCampaigns || state.crowdfundCampaigns.length === 0)
@@ -383,6 +386,20 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let fame = state.player.fame
+  const outcomeToasts: ToastPayload[] = []
+  const pushOutcomeToast = (success: boolean, fameDelta: number) => {
+    outcomeToasts.push({
+      id: buildDeterministicToastId('crowdfund-toast', [
+        ...(state.toasts ?? []),
+        ...outcomeToasts
+      ]),
+      type: success ? 'success' : 'warning',
+      messageKey: success
+        ? 'assets:crowdfund.success'
+        : 'assets:crowdfund.fail',
+      options: { fame: fameDelta }
+    })
+  }
   const day = finiteNumberOr(state.player.day, 0)
 
   for (const campaign of state.crowdfundCampaigns) {
@@ -405,6 +422,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
     if (success) {
       fame += campaign.fameStake
+      pushOutcomeToast(true, campaign.fameStake)
       // Materialize the asset deterministically from pre-generated ids
       // (stamped by startCrowdfund at campaign creation). No UUID generation
       // here — the reducer must stay pure.
@@ -438,7 +456,9 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       })
       unavailableKinds.add(kind)
     } else {
+      const fameBefore = fame
       fame = Math.max(0, fame - campaign.fameStake)
+      pushOutcomeToast(false, fameBefore - fame)
     }
   }
 
@@ -450,7 +470,10 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       fameLevel: calculateFameLevel(fame)
     },
     assets: [...(state.assets ?? []), ...newAssets],
-    crowdfundCampaigns: remaining
+    crowdfundCampaigns: remaining,
+    ...(outcomeToasts.length > 0
+      ? { toasts: [...(state.toasts ?? []), ...outcomeToasts] }
+      : {})
   }
 }
 
