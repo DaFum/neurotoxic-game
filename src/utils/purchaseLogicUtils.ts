@@ -18,6 +18,7 @@ import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 import type { PlayerPatch, BandPatch } from '../types/purchase'
 import type { SocialState } from '../types'
+import { SCANDAL_CONTROVERSY_THRESHOLD } from './socialThresholds'
 
 /**
  * Cash advance granted by signing the indie label contract (`hq_room_label`).
@@ -409,7 +410,8 @@ export const getPurchaseDecision = (
 
   const hasValidEffect = !!effect
   const meetsReputation =
-    !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+    !item.requiresReputation ||
+    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
   const canPurchase =
     playerCanAfford &&
     (isConsumable || !isOwned) &&
@@ -447,7 +449,8 @@ export const validatePurchase = (
   const decision = getPurchaseDecision(item, player, band, social)
 
   const meetsReputation =
-    !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+    !item.requiresReputation ||
+    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
   if (!meetsReputation) {
     return { isValid: false, errorType: 'reputation_blocked' }
   }

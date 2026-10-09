@@ -5,6 +5,14 @@ import { isFiniteNumber } from './finiteNumber'
 export const HIGH_CONTROVERSY_THRESHOLD =
   BALANCE_CONFIG.social.highControversyThreshold
 
+/**
+ * Controversy level of the harsher "scandal" tier (above the
+ * high-controversy gate): crisis events, reputation-gated shop items, PR spin,
+ * and daily stress penalties.
+ */
+export const SCANDAL_CONTROVERSY_THRESHOLD =
+  BALANCE_CONFIG.social.scandalThreshold
+
 /** Loyalty a scandal-hit audience still needs to rally behind the band. */
 const CULT_LOYALTY_THRESHOLD = BALANCE_CONFIG.social.cultLoyaltyThreshold
 
@@ -17,6 +25,16 @@ const CULT_LOYALTY_THRESHOLD = BALANCE_CONFIG.social.cultLoyaltyThreshold
 export const isHighControversy = (controversyLevel: unknown): boolean =>
   isFiniteNumber(controversyLevel) &&
   controversyLevel >= HIGH_CONTROVERSY_THRESHOLD
+
+/**
+ * Whether controversy has reached the scandal tier.
+ *
+ * @param controversyLevel - Persisted controversy; non-finite never passes.
+ * @returns True at or above {@link SCANDAL_CONTROVERSY_THRESHOLD}.
+ */
+export const isScandalControversy = (controversyLevel: unknown): boolean =>
+  isFiniteNumber(controversyLevel) &&
+  controversyLevel >= SCANDAL_CONTROVERSY_THRESHOLD
 
 /**
  * Whether a scandal-hit audience still has enough loyalty to rally (the "cult"

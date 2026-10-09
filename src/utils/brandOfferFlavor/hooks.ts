@@ -4,6 +4,7 @@ import type {
   SocialEngineGameState
 } from '../../types/social'
 import { finiteNumberOr } from '../gameState'
+import { SCANDAL_CONTROVERSY_THRESHOLD } from '../socialThresholds'
 
 // ─── Contextual Hooks ────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ export const pickContextualHook = (
   if (isStretched) {
     chosen = totalFollowers < 1500 ? 'newcomer' : 'desperate'
     urgency = 'high'
-  } else if (controversy >= 50) {
+  } else if (controversy >= SCANDAL_CONTROVERSY_THRESHOLD) {
     chosen = 'controversy_high'
     urgency = 'high'
   } else if (fame > 1000 || totalFollowers > 10000) {

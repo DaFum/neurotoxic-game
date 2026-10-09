@@ -4,6 +4,7 @@ import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
 import { getSafeRandom } from './crypto'
+import { SCANDAL_CONTROVERSY_THRESHOLD } from './socialThresholds'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -146,7 +147,8 @@ const updateVanCondition = (
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
     if (controversySnapshot >= 80) conditionMultiplier += 0.5
-    else if (controversySnapshot >= 50) conditionMultiplier += 0.2
+    else if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD)
+      conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
@@ -206,7 +208,7 @@ const updateBandHarmony = (
     }
   }
 
-  if (controversySnapshot >= 50) {
+  if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
     nextBand.harmony = nextHarmonyControversy
@@ -324,7 +326,7 @@ const updatePassiveEffectsAndMembers = (
     mood = clampMemberMood(mood)
 
     // 2b. High Controversy Mood Penalty
-    if (controversySnapshot >= 50) {
+    if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD) {
       mood = clampMemberMood(mood - 1)
     }
 
