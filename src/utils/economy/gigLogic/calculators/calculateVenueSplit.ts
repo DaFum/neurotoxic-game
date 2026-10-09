@@ -19,7 +19,7 @@ export const calculateVenueSplit = (
     diff >= 5
       ? 0.7
       : Object.hasOwn(VENUE_SPLIT_RATES, diff)
-        ? (VENUE_SPLIT_RATES[diff] ?? 0)
+        ? finiteNumberOr(VENUE_SPLIT_RATES[diff], 0)
         : 0
 
   if (splitRate > 0) {
