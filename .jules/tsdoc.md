@@ -92,4 +92,3 @@
 | 2026-10-06 | src/components/stage/CrowdTextureManager.ts | CrowdTextures, CrowdTextureManager |
 | 2026-10-07 | src/context/useCareerDispatchActions.ts | CareerDispatchActions, useCareerDispatchActions |
 | 2026-10-07 | src/components/assets/sectionTabs.ts | TabIcon, AssetSectionTab, ASSET_SECTION_TABS, ASSET_SECTION_TABS_MAP |
-| 2026-10-09 | src/components/MinigameSkipButton.tsx | MinigameSkipButton |
