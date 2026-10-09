@@ -2282,6 +2282,7 @@ export const handleRecordExpeditionObligationSignal = (
     )
   )
     return state
+  const currentHeat = finiteNumberOr(state.expedition.pressure.heat, 0)
   let changed = false
   let moneyDelta = 0
   let fameDelta = 0
@@ -2305,7 +2306,7 @@ export const handleRecordExpeditionObligationSignal = (
             payload.signalType === 'gig'
               ? state.lastGigStats?.accuracy
               : undefined,
-          heat: state.expedition.pressure.heat,
+          heat: currentHeat,
           visitedNodeId:
             payload.signalType === 'arrival'
               ? (state.player.currentNodeId ?? undefined)
@@ -2363,8 +2364,7 @@ export const handleRecordExpeditionObligationSignal = (
           (doubleDown.addedConstraint.kind === 'no_more_rest' &&
             payload.signalType === 'rest') ||
           (doubleDown.addedConstraint.kind === 'heat_cap' &&
-            state.expedition.pressure.heat >
-              doubleDown.addedConstraint.maxHeat) ||
+            currentHeat > doubleDown.addedConstraint.maxHeat) ||
           (doubleDown.addedConstraint.kind === 'social_silence' &&
             payload.signalType === 'social_post')
         if (violated) status = 'failed'
@@ -2470,10 +2470,7 @@ export const handleRecordExpeditionObligationSignal = (
         : state.expedition.activeObligations,
       pressure: {
         ...state.expedition.pressure,
-        heat: addClampedPercent(
-          finiteNumberOr(state.expedition.pressure.heat, 0),
-          heatDelta
-        )
+        heat: addClampedPercent(currentHeat, heatDelta)
       },
       resolvedObligationSignalIds: [
         ...state.expedition.resolvedObligationSignalIds,

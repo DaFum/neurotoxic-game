@@ -2287,3 +2287,74 @@ test('rival social settlement normalizes persisted progression and preserves the
     assert.strictEqual(again.career, settled.career)
   }
 })
+
+for (const capKind of ['native', 'double_down']) {
+  test(`${capKind} heat caps use the same recovered heat as settlement`, () => {
+    for (const stored of [Infinity, -Infinity, NaN, '99', undefined, 60, 61]) {
+      const state = activeState()
+      state.expedition.pressure.heat = stored
+      const obligation = state.expedition.activeObligations[0]
+      if (capKind === 'native') {
+        obligation.constraints = [
+          { id: 'heat-proof', kind: 'max_heat', maxHeat: 60 }
+        ]
+        obligation.progressByConstraintId = {
+          'heat-proof': {
+            constraintId: 'heat-proof',
+            value: 0,
+            satisfied: false,
+            failed: false
+          }
+        }
+      } else {
+        obligation.doubleDown = {
+          acceptedOfferId: 'accepted',
+          derivationKey: 'stored',
+          addedConstraint: { kind: 'heat_cap', maxHeat: 60 },
+          rewardMultiplier: 1.25,
+          failureHeatBonus: 8,
+          acceptedAtRouteStep: 0
+        }
+      }
+      const payload = {
+        signalType: 'gig',
+        sourceId: 'gig-proof',
+        expectedRouteStep: 1
+      }
+      const next = handleRecordExpeditionObligationSignal(state, payload)
+      const recovered = Number.isFinite(stored) ? stored : 0
+      const failed = recovered > 60
+      const result = next.expedition.activeObligations[0]
+      assert.equal(result.status, failed ? 'failed' : 'active', String(stored))
+      assert.equal(result.settled, failed, String(stored))
+      assert.equal(
+        next.expedition.pressure.heat,
+        recovered + (failed ? (capKind === 'native' ? 8 : 16) : 0),
+        String(stored)
+      )
+      if (capKind === 'native') {
+        assert.equal(
+          result.progressByConstraintId['heat-proof'].value,
+          recovered
+        )
+        assert.equal(result.progressByConstraintId['heat-proof'].failed, failed)
+      }
+      assert.equal(next.player.money, state.player.money)
+      assert.equal(
+        next.social.controversyLevel,
+        failed
+          ? state.social.controversyLevel + 3
+          : state.social.controversyLevel
+      )
+      assert.strictEqual(
+        handleRecordExpeditionObligationSignal(next, payload),
+        next
+      )
+      assert.ok(
+        Object.is(state.expedition.pressure.heat, stored),
+        'the input heat is not mutated'
+      )
+      assert.equal(obligation.status, 'active')
+    }
+  })
+}
