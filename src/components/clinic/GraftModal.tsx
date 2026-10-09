@@ -57,7 +57,7 @@ export const GraftModal = ({
         <p>
           {t('ui:clinic.graft_desc', {
             defaultValue:
-              'You are about to graft the Neuro-Overclock module into {{memberName}}s neural pathways. Cost: {{cost}}',
+              "You are about to graft the Neuro-Overclock module into {{memberName}}'s neural pathways. Cost: {{cost}}",
             memberName,
             cost: formatCurrency(cost, i18n.language)
           })}
