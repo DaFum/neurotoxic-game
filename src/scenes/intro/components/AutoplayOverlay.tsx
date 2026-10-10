@@ -13,7 +13,7 @@ export const AutoplayOverlay = ({ onPlay }: AutoplayOverlayProps) => {
   const { t } = useTranslation()
 
   return (
-    <div className='absolute inset-0 z-(--z-overlay) flex items-center justify-center bg-overlay'>
+    <div className='absolute inset-0 z-(--z-overlay) flex items-center justify-center bg-void-black/80'>
       <GlitchButton onClick={onPlay} className='scale-150'>
         {t('ui:intro_play')}
       </GlitchButton>
