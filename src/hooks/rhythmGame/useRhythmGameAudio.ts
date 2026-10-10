@@ -20,6 +20,7 @@ import type { GigAudioStatus } from '../../types/gigAudioStatus'
 import type { ExpeditionConditionPerformanceProfile } from '../../types/expedition'
 
 import type { RhythmStateSetters } from './useRhythmGameState'
+import type { OptionalToastCallback } from '../../types/callbacks'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
@@ -34,7 +35,7 @@ type RhythmGameAudioParams = {
     conditionProfile: ExpeditionConditionPerformanceProfile | null
   }
   contextActions: {
-    addToast: (message: string, type?: string) => void
+    addToast: OptionalToastCallback
     setLastGigStats: SetLastGigStats
     endGig: () => void
     t: TFunction
@@ -49,7 +50,7 @@ type HarmonyGuardParams = {
   setGameOver: (isGameOver: boolean) => void
   setAudioStatus: (status: GigAudioStatus) => void
   currentT: TFunction
-  currentAddToast: (message: string, type?: string) => void
+  currentAddToast: OptionalToastCallback
   currentSetLastGigStats: SetLastGigStats
   currentEndGig: () => void
 }

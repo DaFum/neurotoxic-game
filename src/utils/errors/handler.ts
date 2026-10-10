@@ -11,6 +11,7 @@ import {
   sanitizeContextPayload,
   normalizeSeverity
 } from './types'
+import type { ToastCallback } from '../../types/callbacks'
 
 type ErrorInfoObject = {
   name: string
@@ -221,7 +222,7 @@ export const toastTypeFromSeverity = (
 const showErrorToast = (
   errorInfo: ErrorInfoObject,
   silent: boolean,
-  addToast?: (message: string, type: string) => void
+  addToast?: ToastCallback
 ) => {
   if (!silent && addToast) {
     const toastType = toastTypeFromSeverity(errorInfo.severity)

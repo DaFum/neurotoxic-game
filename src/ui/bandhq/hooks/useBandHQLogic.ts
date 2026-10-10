@@ -12,6 +12,7 @@ import type {
   TradeVoidItemPayload
 } from '../../../types'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
+import type { OptionalToastCallback } from '../../../types/callbacks'
 
 const DEFAULT_VOID_FAME_COST = 1000
 
@@ -27,10 +28,7 @@ type BandHQLogicParams = {
   // Returns false when validation blocks a purchase; successful callers ignore the value.
   handleBuy: (item: PurchaseItem) => Promise<void | boolean> | void | boolean
   tradeVoidItem: (payload: TradeVoidItemPayload) => void
-  addToast: (
-    message: string,
-    type?: 'error' | 'warning' | 'success' | 'info'
-  ) => void
+  addToast: OptionalToastCallback
 }
 
 /**

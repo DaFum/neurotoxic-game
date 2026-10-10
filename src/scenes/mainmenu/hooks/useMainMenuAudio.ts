@@ -3,6 +3,7 @@ import type { MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
+import type { OptionalToastCallback } from '../../../types/callbacks'
 
 /**
  * Creates the fire-and-forget audio initialization handler for the main menu.
@@ -13,7 +14,7 @@ import { audioService } from '../../../utils/audio/audioEngine'
  */
 export const useMainMenuAudio = (
   isMountedRef: MutableRefObject<boolean>,
-  addToast: (message: string, type?: 'info' | 'error' | 'success') => void,
+  addToast: OptionalToastCallback,
   tRef: MutableRefObject<TFunction>
 ) => {
   const reportAudioIssue = useCallback(

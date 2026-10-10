@@ -8,6 +8,7 @@ import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
 import type { TFunction } from 'i18next'
 import type { Song } from '../../types/audio'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
+import type { OptionalToastCallback } from '../../types/callbacks'
 
 type SongRowProps = {
   song: Song
@@ -91,7 +92,7 @@ SongRow.displayName = 'SongRow'
 interface SetlistTabProps {
   setlist: RhythmSetlistEntry[]
   setSetlist: (list: RhythmSetlistEntry[]) => void
-  addToast: (message: string, level?: string) => void
+  addToast: OptionalToastCallback
 }
 
 /**

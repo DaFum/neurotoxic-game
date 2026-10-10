@@ -100,6 +100,7 @@ import {
   installModule as installModuleAction,
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
+import type { ToastType } from '../types/callbacks'
 
 type BaseGameDispatchActions = {
   changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
@@ -141,7 +142,7 @@ type BaseGameDispatchActions = {
   }
   addToast: (
     message: Parameters<typeof createAddToastAction>[0],
-    type?: string
+    type?: ToastType
   ) => void
   removeToast: (id: Parameters<typeof createRemoveToastAction>[0]) => void
   setGigModifiers: (
