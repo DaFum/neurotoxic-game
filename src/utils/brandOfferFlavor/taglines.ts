@@ -3,6 +3,13 @@ import { pickIndex } from '../selectionUtils'
 
 // ─── Taglines ────────────────────────────────────────────────────────────
 
+/**
+ * Defines a static registry mapping brand alignments to pools of marketing taglines.
+ *
+ * @remarks
+ * Taglines provide thematic flavor text for generated brand offers based on the
+ * underlying brand's ethical alignment.
+ */
 const TAGLINES_BY_ALIGNMENT: Record<string, string[]> = {
   EVIL: [
     'Get toxic. Get paid.',
@@ -40,6 +47,17 @@ const TAGLINES_BY_ALIGNMENT: Record<string, string[]> = {
   ]
 }
 
+/**
+ * Selects a random thematic tagline appropriate for the specified brand alignment.
+ *
+ * @remarks
+ * Falls back to the `NEUTRAL` alignment pool if the requested alignment is missing or empty.
+ * Returns an empty string fallback if even the neutral pool is exhausted.
+ *
+ * @param alignment - The ethical alignment key of the brand requesting the tagline.
+ * @param rng - The deterministic random number generator function for procedural selection.
+ * @returns An object containing the localization key and a default english fallback string for the selected tagline.
+ */
 export const pickTagline = (
   alignment: string,
   rng: RandomFn
