@@ -54,4 +54,34 @@ describe('ContrabandStash', () => {
     expect(screen.queryByText('Ghost')).not.toBeInTheDocument()
     expect(screen.queryByText('items:ghost.name')).not.toBeInTheDocument()
   })
+
+  it('renders the item icon as a decorative glyph next to the name', () => {
+    render(
+      <ContrabandStash
+        {...baseProps}
+        members={[{ id: 'member-1', name: 'Matze' }]}
+        stash={[
+          { id: 'c_void_energy', instanceId: 'i1', icon: 'icon_void_energy' }
+        ]}
+      />
+    )
+
+    const icon = screen.getByTestId('contraband-icon-c_void_energy')
+    expect(icon).toHaveAttribute('aria-hidden', 'true')
+    expect(icon.textContent).not.toBe('')
+    expect(screen.getByRole('heading', { level: 4 })).not.toHaveTextContent(
+      icon.textContent
+    )
+  })
+
+  it('renders no icon for an item without a known icon id', () => {
+    render(
+      <ContrabandStash
+        {...baseProps}
+        members={[]}
+        stash={[{ id: 'void-relic', icon: 'icon_nope' }]}
+      />
+    )
+    expect(screen.queryByTestId('contraband-icon-void-relic')).toBeNull()
+  })
 })
