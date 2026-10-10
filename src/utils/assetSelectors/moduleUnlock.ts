@@ -29,10 +29,24 @@ export interface ModuleUnlockState {
 export const hasCompatibleModuleForSlot = (
   asset: Pick<LongTermAsset, 'kind'>,
   slotType: SlotType
-): boolean =>
-  Object.values(MODULE_REGISTRY).some(
-    module => module.ownerKind === asset.kind && module.slotType === slotType
-  )
+): boolean => {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values(MODULE_REGISTRY).some(...) with a procedural for...in loop.
+  // Why: Object.values() creates an intermediate array of all registered modules on every call, and .some() allocates a closure callback.
+  // Impact: Eliminates array and closure allocations during asset UI slot compatibility evaluation, short-circuiting on the first match.
+  for (const key in MODULE_REGISTRY) {
+    if (Object.hasOwn(MODULE_REGISTRY, key)) {
+      const module = MODULE_REGISTRY[key as keyof typeof MODULE_REGISTRY]
+      if (
+        module &&
+        module.ownerKind === asset.kind &&
+        module.slotType === slotType
+      ) {
+        return true
+      }
+    }
+  }
+  return false
+}
 
 const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
@@ -94,10 +108,14 @@ const memberHasSkill = (
   tier: number,
   memberId?: string
 ): boolean => {
-  const candidates = memberId
-    ? state.band.members.filter(m => m.id === memberId)
-    : state.band.members
-  for (const m of candidates) {
+  // ⚡ BOLT OPTIMIZATION: Replaced state.band.members.filter(...) with inline procedural loop filtering.
+  // Why: .filter() allocates an intermediate array and closure callback every time a specific member requirement is checked.
+  // Impact: Eliminates array and closure allocations during member skill unlock evaluations.
+  const members = state.band.members
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (!m) continue
+    if (memberId !== undefined && m.id !== memberId) continue
     if ((readMemberSkillValue(m, skill) ?? 0) >= tier) return true
   }
   return false
