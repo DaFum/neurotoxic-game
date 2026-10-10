@@ -43,6 +43,7 @@ export class NoteManager {
   container: Container | null
   pool: NoteSpritePool | null
   activeEntities: ActiveNoteEntity[]
+  entityPool: ActiveNoteEntity[]
   nextRenderIndex: number
   lastNotesVersion: number | null
   textureManager: NoteTextureManager
@@ -67,6 +68,7 @@ export class NoteManager {
     this.container = null
     this.pool = null
     this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
+    this.entityPool = [] // Pool for active note entity wrappers to avoid allocation on spawn
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.textureManager = new NoteTextureManager()
@@ -105,7 +107,11 @@ export class NoteManager {
       this.lastNotesVersion = notesVersion
       this.nextRenderIndex = 0
       for (let i = 0; i < this.activeEntities.length; i++) {
-        this.pool?.destroyNoteSprite(this.activeEntities[i]?.sprite)
+        const entity = this.activeEntities[i]
+        if (entity) {
+          this.pool?.destroyNoteSprite(entity.sprite)
+          this.entityPool.push(entity)
+        }
       }
       this.activeEntities.length = 0
     }
@@ -126,7 +132,14 @@ export class NoteManager {
             // Impact: Eliminates object allocation and garbage collection pressure for every spawned rhythm note.
             const sprite = this.pool.acquireSpriteFromPool(lane, note.laneIndex)
             this.container.addChild(sprite)
-            this.activeEntities.push({ note, sprite })
+
+            // ⚡ BOLT OPTIMIZATION: Recycle wrapper objects from entityPool instead of instantiating `{ note, sprite }`
+            // Why: Prevents creating fresh wrapper object allocations for every spawned note during 60 FPS gameplay.
+            // Impact: Eliminates object allocation and GC pressure for active note entity tracking during gigs.
+            const entity = this.entityPool.pop() ?? { note, sprite }
+            entity.note = note
+            entity.sprite = sprite
+            this.activeEntities.push(entity)
           }
         }
         this.nextRenderIndex++
@@ -159,11 +172,13 @@ export class NoteManager {
           this.onHit(sprite.x, sprite.y, laneColor)
         }
         this.pool?.destroyNoteSprite(sprite)
+        this.entityPool.push(entity)
         continue
       }
 
       if (!note.visible) {
         this.pool?.destroyNoteSprite(sprite)
+        this.entityPool.push(entity)
         continue
       }
 
@@ -177,6 +192,7 @@ export class NoteManager {
       const lane = state.lanes[note.laneIndex]
       if (!lane) {
         this.pool?.destroyNoteSprite(sprite)
+        this.entityPool.push(entity)
         continue
       }
       sprite.x =
@@ -193,9 +209,13 @@ export class NoteManager {
 
   dispose(): void {
     for (let i = 0; i < this.activeEntities.length; i++) {
-      this.pool?.destroyNoteSprite(this.activeEntities[i]?.sprite)
+      const entity = this.activeEntities[i]
+      if (entity) {
+        this.pool?.destroyNoteSprite(entity.sprite)
+      }
     }
     this.activeEntities = []
+    this.entityPool = []
     this.nextRenderIndex = 0
     this.lastNotesVersion = null
 
