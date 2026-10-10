@@ -1,6 +1,6 @@
 import { useCallback, useMemo, memo } from 'react'
 import type { ContrabandStashItem, UnknownRecord } from '../types'
-import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
+import { Modal, Panel, AnimatedDivider, ActionButton, Tooltip } from './shared/index.tsx'
 import { GeneratedImagePanel } from './shared/GeneratedImagePanel.tsx'
 import { useTranslation } from 'react-i18next'
 
@@ -172,6 +172,33 @@ const StashCardActions = memo(
       onUseItem(item.instanceId ?? item.id, item)
     }, [item, onUseItem])
 
+    const itemName = t(`items:contraband.${item.id}.name`, {
+      defaultValue: t('ui:item.unknown', {
+        defaultValue: 'Unknown Item'
+      })
+    })
+
+    const actionText =
+      item.type === 'consumable'
+        ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
+        : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })
+
+    const buttonAriaLabel = `${actionText}: ${itemName}`
+
+    const isLocked = requiresTarget && !selectedMember
+
+    const button = (
+      <ActionButton
+        onClick={handleUse}
+        aria-disabled={isLocked ? true : undefined}
+        aria-label={buttonAriaLabel}
+        variant='primary'
+        className='w-full text-sm font-bold'
+      >
+        {actionText}
+      </ActionButton>
+    )
+
     return (
       <div className='mt-auto'>
         {requiresTarget &&
@@ -190,16 +217,18 @@ const StashCardActions = memo(
             {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
           </div>
         ) : item.type === 'consumable' || !item.applyOnAdd ? (
-          <ActionButton
-            onClick={handleUse}
-            disabled={requiresTarget && !selectedMember}
-            variant='primary'
-            className='w-full text-sm font-bold'
-          >
-            {item.type === 'consumable'
-              ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
-              : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
-          </ActionButton>
+          isLocked ? (
+            <Tooltip
+              content={t('ui:contraband.requiresTarget', {
+                defaultValue: 'Requires target member.'
+              })}
+              className='w-full'
+            >
+              {button}
+            </Tooltip>
+          ) : (
+            button
+          )
         ) : (
           <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
             {t('ui:contraband.passiveActive', {
