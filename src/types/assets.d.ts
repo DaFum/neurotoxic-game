@@ -8,6 +8,12 @@ export type AssetKind =
   | 'merch_workshop_chassis'
 
 /**
+ * Short section label per `AssetKind`; keys the `assets:section.*` copy.
+ */
+export type AssetSectionShortLabel =
+  'tourbus' | 'studio' | 'bandhaus' | 'workshop'
+
+/**
  * Acquisition flavor for chassis and compatible modules.
  */
 export type AssetFlavor = 'legit' | 'diy'

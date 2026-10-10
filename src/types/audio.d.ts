@@ -1,6 +1,12 @@
 import type * as Tone from 'tone'
 
 /**
+ * Tone transport state as reported by the audio engine; a deferred lead-in
+ * start reports as `paused`.
+ */
+export type AudioTransportState = 'started' | 'stopped' | 'paused'
+
+/**
  * Rhythm-game note categories, including custom string values from song data.
  */
 export type NoteType = 'tap' | 'hold' | 'slide' | 'special' | string
