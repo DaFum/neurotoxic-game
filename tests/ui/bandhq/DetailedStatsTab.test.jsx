@@ -164,4 +164,27 @@ describe('DetailedStatsTab', () => {
       screen.queryByRole('button', { name: 'Use golden_pick' })
     ).not.toBeInTheDocument()
   })
+
+  it('formats float performance multipliers to two locale decimals', () => {
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={{
+          ...band,
+          performance: {
+            guitarDifficulty: 0.7000000000000001,
+            drumMultiplier: 1,
+            crowdDecay: 1.25
+          }
+        }}
+        social={social}
+        onConsumeItem={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('x0.70')).toBeInTheDocument()
+    expect(screen.getByText('x1.00')).toBeInTheDocument()
+    expect(screen.getByText('x1.25')).toBeInTheDocument()
+    expect(screen.queryByText(/0\.7000000000000001/)).not.toBeInTheDocument()
+  })
 })

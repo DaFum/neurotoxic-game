@@ -2203,6 +2203,7 @@
   "ui.owned": "OWNED",
   "ui.time": "Time",
   "unit.km": "km",
+  "unit.minutesShort": "min",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
   "zealotry.not_enough_controversy": "Not enough controversy",
