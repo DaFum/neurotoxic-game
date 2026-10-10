@@ -51,11 +51,11 @@ const TAGLINES_BY_ALIGNMENT: Record<string, string[]> = {
  * Selects a random thematic tagline appropriate for the specified brand alignment.
  *
  * @remarks
- * Falls back to the `NEUTRAL` alignment pool if the requested alignment is missing or empty.
- * Returns an empty string fallback if even the neutral pool is exhausted.
+ * Falls back to the `NEUTRAL` alignment pool if the requested alignment is missing.
+ * If the selected pool is empty, returns the `NEUTRAL.0` key with an empty default string.
  *
  * @param alignment - The ethical alignment key of the brand requesting the tagline.
- * @param rng - The deterministic random number generator function for procedural selection.
+ * @param rng - The caller-supplied random number generator function returning a value in [0, 1).
  * @returns An object containing the localization key and a default english fallback string for the selected tagline.
  */
 export const pickTagline = (
