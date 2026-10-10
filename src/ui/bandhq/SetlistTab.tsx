@@ -4,7 +4,7 @@ import { useGameActions, useGameSelector } from '../../context/GameState'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
-import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
+import { SONGS_DB, SONGS_BY_ID, MAX_SONG_DIFFICULTY } from '../../data/songs'
 import type { TFunction } from 'i18next'
 import type { Song } from '../../types/audio'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
@@ -41,7 +41,7 @@ const SongRow = React.memo(
           <div className='flex gap-4 text-xs font-mono text-ash-gray mt-1'>
             <span>
               {t('ui:bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
-              {song.difficulty}/7
+              {song.difficulty}/{MAX_SONG_DIFFICULTY}
             </span>
             <span>
               {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
