@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
       'ui:minigames.kabelsalat.statusPending': 'CABLE MESS DETECTED',
       'ui:minigames.kabelsalat.tMinus': 'T-MINUS',
       'ui:minigames.kabelsalat.continueButton': 'CONTINUE TO GIG',
-      'ui:minigames.kabelsalat.timeValue': '{{count}}s',
+      'ui:seconds': '{{count}}s',
       'ui:minigames.kabelsalat.rulesTitle': 'RIGGING PROTOCOL',
       'ui:minigames.kabelsalat.pwrLabel': 'PWR',
       'ui:minigames.kabelsalat.cables.midi': 'MIDI',

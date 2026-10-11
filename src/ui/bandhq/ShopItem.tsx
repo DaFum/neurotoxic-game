@@ -82,8 +82,8 @@ export const ShopItem = React.memo(
         ? t('ui:shop.messages.notEnough', {
             currency:
               item.currency === 'fame'
-                ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
-                : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+                ? t('ui:stats.fame', { defaultValue: 'Fame' })
+                : t('ui:stats.money', { defaultValue: 'Money' }),
             itemName: displayName,
             defaultValue: 'Not enough currency.'
           })

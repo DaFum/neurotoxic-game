@@ -21,7 +21,7 @@ export const MemberCard = ({
 
     <div className='space-y-3 mb-4'>
       <ProgressBar
-        label={t('ui:detailedStats.stamina', {
+        label={t('ui:stats.stamina', {
           defaultValue: 'Stamina'
         })}
         value={member?.stamina ?? 0}
@@ -30,7 +30,7 @@ export const MemberCard = ({
         size='sm'
       />
       <ProgressBar
-        label={t('ui:detailedStats.mood', { defaultValue: 'Mood' })}
+        label={t('ui:stats.mood', { defaultValue: 'Mood' })}
         value={member?.mood ?? 0}
         max={100}
         color='bg-mood-pink'

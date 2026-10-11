@@ -55,7 +55,7 @@ export const SideEffectsSummary = ({
 
       {result.harmonyChange != null ? (
         <div className={getDeltaColorClass(result.harmonyChange)}>
-          🎸 {t('ui:postGig.harmony', { defaultValue: 'Harmony' })}{' '}
+          🎸 {t('ui:stats.harmony', { defaultValue: 'Harmony' })}{' '}
           {result.harmonyChange > 0 ? '+' : ''}
           {result.harmonyChange}
         </div>
@@ -100,7 +100,7 @@ export const SideEffectsSummary = ({
             >
               {result.staminaChange > 0 ? '+' : ''}
               {result.staminaChange}{' '}
-              {t('ui:postGig.stamina', { defaultValue: 'Stamina' })}
+              {t('ui:stats.stamina', { defaultValue: 'Stamina' })}
             </span>
           ) : null}
           {result.moodChange != null ? (
@@ -108,8 +108,7 @@ export const SideEffectsSummary = ({
               className={`${getDeltaColorClass(result.moodChange)} ml-2 inline-block`}
             >
               {result.moodChange > 0 ? '+' : ''}
-              {result.moodChange}{' '}
-              {t('ui:postGig.mood', { defaultValue: 'Mood' })}
+              {result.moodChange} {t('ui:stats.mood', { defaultValue: 'Mood' })}
             </span>
           ) : null}
         </div>

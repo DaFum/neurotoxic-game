@@ -28,7 +28,7 @@ export const HeaderTimer: FC<HeaderTimerProps> = React.memo(
         {t('ui:minigames.kabelsalat.tMinus')}
       </span>
       <span className='text-3xl font-bold tracking-widest'>
-        {t('ui:minigames.kabelsalat.timeValue', { count: timeLeft })}
+        {t('ui:seconds', { count: timeLeft })}
       </span>
     </div>
   )
