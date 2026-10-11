@@ -20,6 +20,10 @@ import { SONGS_DB } from '../../src/data/songs'
 import { FLAGS } from '../../src/data/flags.registry'
 import { logger } from '../../src/utils/logger'
 
+// ADVANCE_DAY takes no `rng` function: daily rolls come from `dayRngStream`.
+// A run of neutral mid-range rolls stands in for the old `rng: () => 0.5`.
+const HALF_ROLLS = new Array(256).fill(0.5)
+
 // Loaded setlists are validated against the song catalog, so these tests must
 // use real ids rather than placeholders.
 const [CATALOG_SONG_A, CATALOG_SONG_B] = SONGS_DB.map(song => song.id)
@@ -56,9 +60,8 @@ test('handleAdvanceDay ignores non-finite expired harmony effect values', () => 
   const stateWithExpiredEffect = createState()
   const controlState = createState()
   const payload = {
-    dayRngStream: [],
-    nextRngSeed: stateWithExpiredEffect.rngSeed,
-    rng: () => 0.5
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: stateWithExpiredEffect.rngSeed
   }
   stateWithExpiredEffect.band.activeContrabandEffects = [
     {
@@ -163,9 +166,8 @@ test('handleAdvanceDay ignores non-finite expired additive effect values', () =>
   const stateWithExpiredEffects = createState()
   const controlState = createState()
   const payload = {
-    dayRngStream: [],
-    nextRngSeed: stateWithExpiredEffects.rngSeed,
-    rng: () => 0.5
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: stateWithExpiredEffects.rngSeed
   }
   stateWithExpiredEffects.band.activeContrabandEffects = [
     'guitar_difficulty',
@@ -220,9 +222,8 @@ test('handleAdvanceDay reverts effects on non-finite band stats without persisti
     { effectType: 'tempo', value: 3, remainingDuration: 1 }
   ]
   const payload = {
-    dayRngStream: [],
-    nextRngSeed: state.rngSeed,
-    rng: () => 0.5
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: state.rngSeed
   }
 
   const nextState = handleAdvanceDay(state, payload)
@@ -2001,7 +2002,9 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       }
 
       // We inject a mock random to make social engine deterministic if needed
-      const nextState = handleAdvanceDay(currentState, { rng: () => 0.5 })
+      const nextState = handleAdvanceDay(currentState, {
+        dayRngStream: HALF_ROLLS
+      })
 
       assert.equal(nextState.player.eventsTriggeredToday, 0)
       // calculateDailyUpdates increments day
@@ -2022,7 +2025,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         'expired_event:5'
       ]
     }
-    const next = handleAdvanceDay(state, { rng: () => 0.5 })
+    const next = handleAdvanceDay(state, { dayRngStream: HALF_ROLLS })
     assert.deepEqual(next.eventCooldowns, ['ego_management_retry:10'])
   })
 
@@ -2062,9 +2065,8 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       }
 
       const nextState = handleAdvanceDay(currentState, {
-        dayRngStream: [0],
-        nextRngSeed: initialState.rngSeed,
-        rng: () => 0.5
+        dayRngStream: [0, ...HALF_ROLLS],
+        nextRngSeed: initialState.rngSeed
       })
 
       assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
@@ -2108,9 +2110,8 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         activeQuests: []
       }
       const payload = {
-        dayRngStream: [0, 0, 0, 0],
-        nextRngSeed: initialState.rngSeed,
-        rng: () => 0.5
+        dayRngStream: [0, 0, 0, 0, ...HALF_ROLLS],
+        nextRngSeed: initialState.rngSeed
       }
 
       const first = handleAdvanceDay(currentState, payload)

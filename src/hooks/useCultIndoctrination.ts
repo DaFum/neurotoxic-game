@@ -2,6 +2,7 @@ import type { CultIndoctrinationConfig } from '../types'
 import { useGameActions } from '../context/GameState'
 import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
+import { CULT_INDOCTRINATION_REQUIRED_ZEALOTRY } from '../data/zealotryActionGates'
 
 /** Tuning values for the cult indoctrination social action. */
 const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
@@ -10,7 +11,7 @@ const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
   ZEALOTRY_GAIN: 40,
   CONTROVERSY_GAIN: 50,
   HARMONY_COST: 30,
-  REQUIRED_ZEALOTRY: 50
+  REQUIRED_ZEALOTRY: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY
 }
 
 const CULT_INDOCTRINATION_ACTION: ZealotryActionDescriptor = {

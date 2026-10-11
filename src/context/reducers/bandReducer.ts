@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
+import { hasForbiddenOwnKeys, isLooseRecord } from '../../utils/objectUtils'
 import { assertNever } from '../../utils/assertNever'
 import {
   clampLuck,
@@ -343,19 +343,18 @@ const getStashCount = (
  * Crafts a contraband recipe by consuming stash inputs and adding the recipe output.
  *
  * @param state - Current game state before crafting.
- * @param recipeId - Recipe id to craft.
- * @param instanceId - Instance id assigned to the crafted contraband output.
- * @param toastId - Toast id used for success or failure feedback.
+ * @param payload - Craft request. Non-record payloads leave state unchanged.
+ * - `payload.recipeId` - Recipe id to craft.
+ * - `payload.instanceId` - Instance id assigned to the crafted contraband output.
+ * - `payload.toastId` - Toast id used for success or failure feedback.
  * @returns Updated state with consumed inputs, crafted output, quest progress, and feedback, or the original state when crafting cannot proceed.
  */
 export const handleCraftItem = (
   state: GameState,
-  {
-    recipeId,
-    instanceId,
-    toastId
-  }: { recipeId: string; instanceId: string; toastId: string }
+  payload: { recipeId: string; instanceId: string; toastId: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
+  const { recipeId, instanceId, toastId } = payload
   const recipe = getCraftingRecipe(recipeId)
   if (!recipe) return state
   // Defense in depth: never write malformed ids into state.
@@ -571,6 +570,7 @@ export const handleUseContraband = (
   state: GameState,
   payload: { instanceId: string; contrabandId: string; memberId?: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { instanceId, contrabandId, memberId } = payload
   const stash = state.band.stash || {}
 

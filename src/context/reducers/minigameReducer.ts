@@ -18,6 +18,7 @@ import {
   toBoundedNonNegativeInteger
 } from '../../utils/gameState'
 import { clampUnit } from '../../utils/numberUtils'
+import { isLooseRecord } from '../../utils/objectUtils'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
@@ -59,6 +60,24 @@ import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 
 /**
+ * Reads a non-empty, non-forbidden string id from an untrusted minigame start
+ * payload.
+ *
+ * @param payload - Raw action payload.
+ * @param key - Payload field holding the id.
+ * @returns The id, or null when the payload or field is malformed.
+ */
+const readStartPayloadId = (
+  payload: unknown,
+  key: 'targetNodeId' | 'gigId'
+): string | null => {
+  if (!isLooseRecord(payload) || !Object.hasOwn(payload, key)) return null
+  const value = payload[key]
+  if (typeof value !== 'string' || value.length === 0) return null
+  return isForbiddenKey(value) ? null : value
+}
+
+/**
  * Starts the tourbus travel minigame for a selected destination node.
  *
  * @param state - Current game state before travel starts.
@@ -69,7 +88,11 @@ export const handleStartTravelMinigame = (
   state: GameState,
   payload: { targetNodeId: string }
 ): GameState => {
-  const { targetNodeId } = payload
+  const targetNodeId = readStartPayloadId(payload, 'targetNodeId')
+  if (targetNodeId === null) {
+    logger.warn('GameState', 'Rejected malformed START_TRAVEL_MINIGAME payload')
+    return state
+  }
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
     ...state,
@@ -106,6 +129,7 @@ export const handleCompleteTravelMinigame = (
   ) {
     return state
   }
+  if (!isLooseRecord(payload)) return state
   const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
   const damageTaken = clampNonNegative(rawDamage)
   const itemsCollected = Array.isArray(rawItems) ? rawItems : []
@@ -116,7 +140,11 @@ export const handleCompleteTravelMinigame = (
   const targetDestination = state.minigame.targetDestination
   const targetId =
     typeof targetDestination === 'string' ? targetDestination : null
-  const targetNode = targetId ? state.gameMap?.nodes?.[targetId] : undefined
+  const mapNodes = state.gameMap?.nodes
+  const targetNode =
+    targetId && mapNodes && Object.hasOwn(mapNodes, targetId)
+      ? mapNodes[targetId]
+      : undefined
   const currentNode = state.gameMap?.nodes?.[state.player.currentNodeId]
 
   if (!targetNode) {
@@ -383,7 +411,11 @@ export const handleStartRoadieMinigame = (
   state: GameState,
   payload: { gigId: string }
 ): GameState => {
-  const { gigId } = payload
+  const gigId = readStartPayloadId(payload, 'gigId')
+  if (gigId === null) {
+    logger.warn('GameState', 'Rejected malformed START_ROADIE_MINIGAME payload')
+    return state
+  }
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
   return {
     ...state,
@@ -409,7 +441,11 @@ export const handleStartAmpCalibration = (
   state: GameState,
   payload: { gigId: string }
 ): GameState => {
-  const { gigId } = payload
+  const gigId = readStartPayloadId(payload, 'gigId')
+  if (gigId === null) {
+    logger.warn('GameState', 'Rejected malformed START_AMP_CALIBRATION payload')
+    return state
+  }
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
   return {
     ...state,
@@ -484,6 +520,7 @@ export const handleCompleteAmpCalibration = (
   ) {
     return state
   }
+  if (!isLooseRecord(payload)) return state
   const {
     score,
     voidResonance,
@@ -549,7 +586,14 @@ export const handleStartKabelsalatMinigame = (
   state: GameState,
   payload: { gigId: string }
 ): GameState => {
-  const { gigId } = payload
+  const gigId = readStartPayloadId(payload, 'gigId')
+  if (gigId === null) {
+    logger.warn(
+      'GameState',
+      'Rejected malformed START_KABELSALAT_MINIGAME payload'
+    )
+    return state
+  }
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
   return {
     ...state,
@@ -582,6 +626,7 @@ export const handleCompleteKabelsalatMinigame = (
   ) {
     return state
   }
+  if (!isLooseRecord(payload)) return state
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
@@ -647,6 +692,7 @@ export const handleCompleteRoadieMinigame = (
   ) {
     return state
   }
+  if (!isLooseRecord(payload)) return state
   const { equipmentDamage, contrabandDelivered, deliveredStashItemId } = payload
   const safeEquipmentDamage = toBoundedNonNegativeInteger(equipmentDamage, 1000)
   logger.info('GameState', 'Roadie Minigame Complete', payload)

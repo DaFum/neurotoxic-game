@@ -109,32 +109,48 @@ describe('socialReducer.merchPress', () => {
     assert.strictEqual(result.band.harmony, 70)
   })
 
-  test('rejects non-finite or out-of-range funds without Number() coercion', () => {
+  test('repairs non-finite or out-of-range funds without Number() coercion', () => {
+    // One funds policy for every paid social action: corrupt persisted money
+    // recovers to 0 and corrupt harmony to 1 (`finiteNumberOr`, then the
+    // canonical clamps) instead of rejecting the action outright.
     const payload = {
       cost: 1,
       loyaltyGain: 1,
       controversyGain: 1,
       harmonyCost: 1
     }
-    for (const [money, harmony] of [
-      [Number.NaN, 50],
-      [Number.POSITIVE_INFINITY, 50],
-      [-5, 50],
-      ['1000', 50],
-      [true, 50],
-      [100, '50'],
-      [100, 0],
-      [100, 101]
+    const makeState = (money, harmony) => ({
+      player: { money, fame: 0, fameLevel: 0 },
+      band: { harmony, inventory: {} },
+      social: { loyalty: 10, controversyLevel: 0 }
+    })
+    // Corrupt money repairs to 0, which can never pay a positive cost.
+    for (const money of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      -5,
+      '1000',
+      true
     ]) {
-      const state = {
-        player: { money, fame: 0, fameLevel: 0 },
-        band: { harmony, inventory: {} },
-        social: { loyalty: 10, controversyLevel: 0 }
-      }
+      const state = makeState(money, 50)
       assert.strictEqual(
         handleMerchPress(state, payload),
         state,
-        `money=${String(money)} harmony=${String(harmony)} must be rejected`
+        `money=${String(money)} must not pay`
+      )
+    }
+    // Corrupt harmony repairs into 1..100 and is never written back raw.
+    for (const [harmony, expected] of [
+      ['50', 1],
+      [0, 1],
+      [101, 99]
+    ]) {
+      const result = handleMerchPress(makeState(100, harmony), payload)
+      assert.strictEqual(result.player.money, 99)
+      assert.strictEqual(
+        result.band.harmony,
+        expected,
+        `harmony=${String(harmony)}`
       )
     }
   })
@@ -150,7 +166,8 @@ describe('socialReducer.merchPress', () => {
     const makeState = (money, harmony) => ({
       player: { money, fame: 0, fameLevel: 0, day: 3 },
       band: { harmony, inventory: {} },
-      social: { zealotry: 0, controversyLevel: 0 }
+      // At the dark-web leak's controversy gate, so only funds decide.
+      social: { zealotry: 0, controversyLevel: 40 }
     })
 
     // A numeric string used to pass through Number() and be accepted.
