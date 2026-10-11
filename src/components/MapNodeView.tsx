@@ -14,6 +14,7 @@ import {
   formatPercent
 } from '../utils/numberUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
+import { nodeToPercentPosition } from '../utils/mapUtils'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
@@ -406,7 +407,7 @@ export const MapNodeView = memo(
     const nodeTypeLabel = getNodeTypeLabel(t, node.type)
 
     const positionStyle = useMemo(
-      () => ({ left: `${node.x}%`, top: `${node.y}%` }),
+      () => nodeToPercentPosition({ x: node.x, y: node.y }),
       [node.x, node.y]
     )
 
