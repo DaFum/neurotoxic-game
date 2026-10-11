@@ -250,12 +250,31 @@ type BaseGameDispatchActions = {
   startExpedition: (
     loadout: import('../types/expedition').ExpeditionLoadout
   ) => void
+  /**
+   * Typed G1 intent for a one-step route advance.
+   *
+   * @remarks
+   * Composition-only in play: arrival advances the route inside the travel
+   * reducer through `applyExpeditionRouteAdvance` (`minigameReducer`), in the
+   * same commit that moves the player, so the two can never disagree. This
+   * stale-guarded wrapper stays for scripts and tests; no UI should call it.
+   */
   advanceExpeditionRoute: (nodeId: string) => void
   revealExpeditionNodeIntel: (input: {
     nodeId: string
     source: import('../types/expedition').ExpeditionIntelSource
     grantId?: string
   }) => void
+  /**
+   * Typed G1 intent for banking one source-proven rare reward.
+   *
+   * @remarks
+   * Composition-only in play: every reward source (route nodes, events,
+   * Contacts, Contracts, the Finale) banks its entry through
+   * `resolveExpeditionReward` inside the reducer commit that proves it. A
+   * standalone dispatch is re-validated against the same proof and is a
+   * no-op for anything already banked; no UI should call it.
+   */
   addExpeditionReward: (input: {
     expectedRewardId: string
     sourceType: import('../types/expedition').ExpeditionRewardSourceType
@@ -391,6 +410,16 @@ type BaseGameDispatchActions = {
     decisionId: string,
     optionId: string
   ) => void
+  /**
+   * Typed G3 intent for acquiring a Crew signature trait.
+   *
+   * @remarks
+   * Composition-only in play: the Between-Tour `crew_debrief` decision's
+   * `develop_signature` answer applies `handleAcquireExpeditionCrewSignature`
+   * inside `resolveExpeditionBetweenTourDecision` (plan 03 Task 9). A
+   * standalone dispatch needs the same Career-development proof; no UI should
+   * call it.
+   */
   acquireExpeditionCrewSignature: (
     crewId: string,
     expectedTraitId: string,
