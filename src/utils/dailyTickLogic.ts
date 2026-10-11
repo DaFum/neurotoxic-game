@@ -4,6 +4,7 @@ import { calculateGuaranteedDailyCost } from './economy'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
+import { getActiveDealBenefits } from './brandDealBenefits'
 import { getSafeRandom } from './crypto'
 import {
   clampPlayerMoney,
@@ -315,6 +316,10 @@ const updatePassiveEffectsAndMembers = (
       expeditionPolicy.isActive,
       'hq_van_sleeping_bags'
     )
+  // Brand-deal `staminaRegen` benefit (e.g. sponsored road snacks).
+  const dealStaminaRegen = getActiveDealBenefits(
+    nextSocial.activeDeals
+  ).staminaRegenPerDay
 
   const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
   const nextMembers = new Array(membersArray.length)
@@ -363,9 +368,11 @@ const updatePassiveEffectsAndMembers = (
       stamina = clampMemberStamina(stamina, finiteNumberOr(m.staminaMax, 100))
     }
 
-    if (hasSleepingBags) {
+    if (hasSleepingBags || dealStaminaRegen > 0) {
       stamina = clampMemberStamina(
-        stamina + SLEEPING_BAGS_STAMINA_PER_DAY,
+        stamina +
+          (hasSleepingBags ? SLEEPING_BAGS_STAMINA_PER_DAY : 0) +
+          dealStaminaRegen,
         finiteNumberOr(m.staminaMax, 100)
       )
     }

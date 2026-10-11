@@ -35,7 +35,8 @@ export const BREAKDOWN_LABEL_KEYS = {
   SOCIAL_ADS: 'economy:gigExpenses.socialAds.label',
   MERCH_STAND: 'economy:gigExpenses.merchStand.label',
   SOUNDCHECK: 'economy:gigExpenses.soundcheck.label',
-  GUEST_LIST: 'economy:gigExpenses.guestList.label'
+  GUEST_LIST: 'economy:gigExpenses.guestList.label',
+  LABEL_REVENUE_SHARE: 'economy:gigExpenses.labelRevenueShare.label'
 } as const
 
 /**

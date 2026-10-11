@@ -14,6 +14,7 @@ import {
 import { NEUTRAL_ASSET_MODIFIERS } from '../../assetSelectors'
 import { BALANCE_CONFIG } from '../../../config/balance'
 import type { AssetModifiers } from '../../../types/assets'
+import { getActiveDealBenefits } from '../../brandDealBenefits'
 import {
   calculateTicketIncome,
   calculateMerchIncome,
@@ -151,6 +152,24 @@ export const calculateGigFinancials = (
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
   report.soldMerch = merch.soldItems
+
+  // Record-deal revenue share: the label takes its cut of merch sales as a
+  // visible expense line. Snapshot the fame multiplier here too, so a deal on
+  // its final gig still counts and one signed after the gig does not.
+  const dealBenefits = getActiveDealBenefits(ctxSocial.activeDeals)
+  report.dealFameMultiplier = dealBenefits.fameMultiplier
+  const labelShare = Math.floor(
+    Math.max(0, merch.revenue) * dealBenefits.revenueShare
+  )
+  if (labelShare > 0) {
+    report.expenses.breakdown.push({
+      labelKey: BREAKDOWN_LABEL_KEYS.LABEL_REVENUE_SHARE,
+      value: labelShare,
+      detailKey: 'economy:gigExpenses.labelRevenueShare.detail',
+      detailParams: { rate: Math.round(dealBenefits.revenueShare * 100) }
+    })
+    report.expenses.total += labelShare
+  }
 
   // 5. Bar Cut
   const barCut = calculateBarCut(tickets.ticketsSold, modifiers)

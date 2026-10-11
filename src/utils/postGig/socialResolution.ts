@@ -16,6 +16,7 @@ import {
 } from '../gameState'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import { getActiveDealBenefits } from '../brandDealBenefits'
 import { getRegionKeyForLocation } from '../mapUtils'
 
 const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
@@ -166,8 +167,9 @@ const normalizeResolvedPost = (
 /**
  * Builds the per-gig social bookkeeping that must be applied once for every
  * completed gig, independent of which social post (if any) the player picks:
- * the gig markers, the regional gig history entry, and the active-deal
- * countdown.
+ * the gig markers, the regional gig history entry, the active-deal
+ * countdown, and the per-gig `loyalty` benefit of the active deals (read from
+ * the pre-decrement list, so a deal's final gig still pays it).
  *
  * Pure — callers dispatch the returned patch. `activeDeals` is the decremented
  * list; consumers that price a deal's final gig (for example the
@@ -212,11 +214,20 @@ export const buildPerGigSocialReconciliation = ({
     activeDeals = nextDeals
   }
 
+  const { loyaltyPerGig } = getActiveDealBenefits(social.activeDeals)
+
   return {
     lastGigDay: finiteNumberOr(player.day, 0),
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     regionalGigHistory,
-    activeDeals
+    activeDeals,
+    ...(loyaltyPerGig !== 0
+      ? {
+          loyalty: clampLoyalty(
+            finiteNumberOr(social.loyalty, 0) + loyaltyPerGig
+          )
+        }
+      : {})
   }
 }
 
@@ -378,8 +389,13 @@ export const calculatePostGigStateUpdates = (
       finiteNumberOr(social.controversyLevel, 0) +
         (result.controversyChange ?? 0)
     ),
+    // Starts from the reconciled loyalty so the active-deal benefit stacks
+    // with the post's own loyalty change instead of being overwritten.
     loyalty: clampLoyalty(
-      finiteNumberOr(social.loyalty, 0) + (result.loyaltyChange ?? 0)
+      finiteNumberOr(
+        perGigReconciliation.loyalty,
+        finiteNumberOr(social.loyalty, 0)
+      ) + (result.loyaltyChange ?? 0)
     ),
     zealotry: boundedZealotry,
     scenePresence: clamp0to100(

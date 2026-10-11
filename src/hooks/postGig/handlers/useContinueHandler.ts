@@ -106,6 +106,7 @@ export function useContinueHandler({
         financials,
         misses: lastGigStats?.misses ?? 0,
         bandStyle: finiteNumberOr(band.style, 0),
+        dealFameMultiplier: financials.dealFameMultiplier,
         calculateFameGain,
         calculateFameLevel,
         clampPlayerFame,

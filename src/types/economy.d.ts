@@ -16,6 +16,11 @@ export interface PostGigFinancials {
   expenses: { total: number; breakdown: FinancialBreakdownItem[] }
   net: number
   soldMerch?: Record<string, number>
+  /**
+   * Product of active brand-deal `fameMultiplier` benefits at gig time; the
+   * continue handler applies it to positive fame gains.
+   */
+  dealFameMultiplier?: number
 }
 
 import type { PlayerState, Venue, GigModifiers } from '.'
@@ -53,7 +58,9 @@ export type EconomyContext = {
   cityTraits?: CityTraitState
   social?: {
     zealotry?: number
-    activeDeals?: Pick<ActiveBrandDeal, 'type' | 'offer'>[]
+    activeDeals?: (Pick<ActiveBrandDeal, 'type' | 'offer'> & {
+      id?: string
+    })[]
     [key: string]: unknown
   }
   [key: string]: unknown
