@@ -30,6 +30,7 @@ import {
   getAvailableNativeContractTemplateIds,
   getExpeditionFameLockedContractTemplateIds,
   getExpeditionFuelTopUpCost,
+  getExpeditionUpfrontCost,
   validateExpeditionBuildCommitment,
   EXPEDITION_MAX_SETLIST_SONGS,
   EXPEDITION_MAX_STARTING_FUEL
@@ -427,7 +428,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   // The build may only top the tank up, so a full tank leaves nothing to pick.
   const isTankFull = Math.ceil(currentFuel) >= EXPEDITION_MAX_STARTING_FUEL
   const insurancePremium = getExpeditionInsurancePremium(insurancePolicyId)
-  const upfrontCost = fuelCost + insurancePremium
+  const upfrontCost = getExpeditionUpfrontCost(state, {
+    startingFuelTarget,
+    insurancePolicyId
+  })
   // START pays the chosen sponsor's advance, so the preview has to count it.
   const selectedSponsorDealId = sponsorOffers.find(
     offer => offer.offerId === sponsorOfferId

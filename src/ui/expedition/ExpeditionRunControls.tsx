@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
-import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
 import { ExtractionDialog } from './ExtractionDialog'
@@ -27,13 +27,8 @@ import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
  */
 const useIsAtExtractionWindow = (): boolean =>
   useGameSelector(state => {
-    const loadout = state.expedition?.loadout
-    if (state.expedition?.status !== 'active' || !loadout) return false
-    const map = buildExpeditionMap(
-      state.runSeed,
-      loadout.tourTypeId,
-      loadout.regionId
-    )
+    const map = getActiveExpeditionMap(state)
+    if (!map) return false
     // The same predicate `handleExtractExpedition` applies: a Safe Harbor
     // window the reducer would accept but the control never offers is an
     // opportunity the player cannot take.

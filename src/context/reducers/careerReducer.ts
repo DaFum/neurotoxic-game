@@ -40,19 +40,12 @@ import {
   sweepExpeditionArchiveObservations
 } from '../../domain/expedition/archive'
 import { isExpeditionArchiveCategory } from '../../data/expedition/archive'
+import { EXPEDITION_BAND_INJURY_STAGES } from '../../data/expedition/injuryStages'
 import {
   applyBetweenTourDecisionOption,
   generateBetweenTourDecisions
 } from '../../domain/expedition/betweenTour'
 import { resolveCrewRecoveryDebt } from '../../domain/expedition/injuries'
-
-/** Band consequence stages, weakest first, for keeping only the worse one. */
-const BAND_CONSEQUENCE_SEVERITY = [
-  'none',
-  'light',
-  'serious',
-  'critical'
-] as const
 
 export const handleSettleExpeditionCrewCareer = (
   state: GameState,
@@ -141,8 +134,8 @@ export const handleSettleExpeditionCrewCareer = (
     if (stage === 'none') continue
     const prior = bandConsequenceByMemberId[memberId] ?? 'none'
     if (
-      BAND_CONSEQUENCE_SEVERITY.indexOf(stage) >
-      BAND_CONSEQUENCE_SEVERITY.indexOf(prior)
+      EXPEDITION_BAND_INJURY_STAGES.indexOf(stage) >
+      EXPEDITION_BAND_INJURY_STAGES.indexOf(prior)
     ) {
       bandConsequenceByMemberId[memberId] = stage
     }

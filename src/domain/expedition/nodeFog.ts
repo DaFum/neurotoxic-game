@@ -8,7 +8,7 @@
  * was never earned.
  */
 
-import { buildExpeditionMap, getExpeditionNodePublicFacts } from './map'
+import { getActiveExpeditionMap, getExpeditionNodePublicFacts } from './map'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getEffectiveExpeditionRoute } from './routeOverlay'
 import {
@@ -28,14 +28,8 @@ import type { ExpeditionNodeFog } from '../../types/expedition'
 export const getExpeditionNodeFogByNodeId = (
   state: GameState
 ): Record<string, ExpeditionNodeFog> | null => {
-  const loadout = state.expedition?.loadout
-  if (state.expedition?.status !== 'active' || !loadout) return null
-
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!map) return null
 
   // Resolved once for the whole projection: the travel settlement would
   // otherwise re-aggregate the chassis and module profiles for every node.

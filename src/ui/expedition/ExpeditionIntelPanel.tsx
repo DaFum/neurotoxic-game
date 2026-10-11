@@ -14,7 +14,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { ActionButton } from '../shared/ActionButton'
-import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import {
   getExpeditionIntelCapability,
   getExpeditionNodeIntelLevel,
@@ -83,13 +83,8 @@ const INACTIVE_VIEW: IntelView = {
  */
 const selectIntelView = (state: GameState): IntelView => {
   const expedition = state.expedition
-  const loadout = expedition?.loadout
-  if (expedition?.status !== 'active' || !loadout) return INACTIVE_VIEW
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!expedition || !map) return INACTIVE_VIEW
   const currentNodeId = expedition.visitedNodeIds.at(-1)
   if (typeof currentNodeId !== 'string') return INACTIVE_VIEW
   const capability = getExpeditionIntelCapability(state)

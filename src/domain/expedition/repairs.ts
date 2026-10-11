@@ -27,6 +27,16 @@ import { canSpendExpeditionCash } from './loadout'
 const EXPEDITION_CANNIBALIZE_MIN_SOURCE_CONDITION = 55
 
 /**
+ * Euros per missing Condition point for a professional repair of one
+ * run-equipment group.
+ *
+ * @remarks
+ * Its own rate, separate from van, chassis and Between-Tour repair pricing;
+ * the run's `repairCostMultiplier` scales it.
+ */
+const EXPEDITION_PROFESSIONAL_REPAIR_RATE_PER_POINT = 10
+
+/**
  * Pure resolution outcome of a repair intent.
  */
 export type ExpeditionRepairResolution =
@@ -150,9 +160,9 @@ export const resolveExpeditionRepair = (
 
       const targetCondition = tc[targetGroup]
       const missing = Math.max(0, 100 - targetCondition)
-      // Expedition professional repair of a run-equipment group: its own
-      // 10/pt rate, separate from van, chassis and between-Tour repair pricing.
-      const basePrice = Math.ceil(missing * 10)
+      const basePrice = Math.ceil(
+        missing * EXPEDITION_PROFESSIONAL_REPAIR_RATE_PER_POINT
+      )
       const moneyCost = Math.round(
         basePrice * rules.numeric.repairCostMultiplier
       )

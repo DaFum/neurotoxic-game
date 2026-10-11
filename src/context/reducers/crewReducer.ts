@@ -19,7 +19,7 @@ import {
 } from '../../domain/expedition/relationships'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
-import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionNodeIntelLevel } from '../../domain/expedition/nodeIntel'
 
 const acceptsSource = (
@@ -65,12 +65,8 @@ const hasCanonicalStressSource = (
     )
   }
   if (payload.sourceType === 'rest') {
-    if (!state.expedition.loadout) return false
-    const map = buildExpeditionMap(
-      state.runSeed,
-      state.expedition.loadout.tourTypeId,
-      state.expedition.loadout.regionId
-    )
+    const map = getActiveExpeditionMap(state)
+    if (!map) return false
     return (
       map.meta[currentNodeId]?.nodeClass === 'REST_STOP' &&
       payload.sourceId === `rest:${currentNodeId}:${state.expedition.routeStep}`
@@ -340,13 +336,7 @@ export const handleCreateContactIntelGrant = (
     !acceptsSource(state, sourceId, payload.expectedRouteStep)
   )
     return state
-  const map = state.expedition.loadout
-    ? buildExpeditionMap(
-        state.runSeed,
-        state.expedition.loadout.tourTypeId,
-        state.expedition.loadout.regionId
-      )
-    : null
+  const map = getActiveExpeditionMap(state)
   const meta = map?.meta[payload.nodeId]
   const currentNodeId = state.expedition.visitedNodeIds.at(-1)
   // The effective level - stored intel raised to the familiarity floor - is
@@ -474,17 +464,13 @@ export const applyResolvedCrewEventOutcome = (
       expectedRouteStep: state.expedition.routeStep
     })
   }
-  if (outcome.contactIntel && next.expedition.loadout) {
-    const map = buildExpeditionMap(
-      next.runSeed,
-      next.expedition.loadout.tourTypeId,
-      next.expedition.loadout.regionId
-    )
+  const contactMap = outcome.contactIntel ? getActiveExpeditionMap(next) : null
+  if (contactMap) {
     const currentNodeId = next.expedition.visitedNodeIds.at(-1)
     // One grant (plan 03 Task 10), on the first onward node in route order
     // that can still take it: an onward node already at full intel would
     // refuse the grant while another reachable node is still unread.
-    for (const edge of map.connections) {
+    for (const edge of contactMap.connections) {
       if (edge.from !== currentNodeId) continue
       const granted = handleCreateContactIntelGrant(next, {
         eventId: sourceEventId,

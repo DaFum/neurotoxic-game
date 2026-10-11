@@ -29,7 +29,11 @@ import {
   isFiniteNumber,
   isNonNegativeInteger
 } from '../../utils/finiteNumber'
-import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import {
+  isForbiddenKey,
+  isLooseRecord,
+  isStringArray
+} from '../../utils/objectUtils'
 import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
 import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
 import {
@@ -57,7 +61,10 @@ import type {
   ExpeditionMap,
   ExpeditionSponsorStagingProvenance
 } from '../../types/expedition'
-import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import {
+  EXPEDITION_CONTRACTS_BY_ID,
+  MAX_NATIVE_EXPEDITION_CONTRACTS
+} from '../../data/expedition/contracts'
 import { buildPreparedExpeditionSponsorOffers } from './sponsors'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import {
@@ -107,16 +114,30 @@ export const EXPEDITION_MAX_SETLIST_SONGS = 4
  * safety decision — the design requires Cash to be a tool for controlling risk,
  * not an unlimited rescue. Outside a run the full balance is spendable.
  */
-export const getExpeditionSpendableCash = (state: GameState): number => {
-  const money = finiteNumberOr(state.player.money, 0)
-  if (state.expedition?.status === 'active') {
-    const protectedCash = state.expedition.protectedCareerCash
-    if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
-      return 0
-    }
-    return Math.max(0, money - protectedCash)
+export const getExpeditionSpendableCash = (state: GameState): number =>
+  Math.max(
+    0,
+    finiteNumberOr(state.player.money, 0) - getExpeditionProtectedCash(state)
+  )
+
+/**
+ * Career Cash the active run may not touch.
+ *
+ * @param state - Current game state.
+ * @returns Non-negative protected amount; `0` outside an active run.
+ *
+ * @remarks
+ * A corrupt protected slice (non-finite or negative) fails closed: the whole
+ * balance counts as protected, so {@link getExpeditionSpendableCash} reports
+ * nothing spendable rather than treating the protection as gone.
+ */
+export const getExpeditionProtectedCash = (state: GameState): number => {
+  if (state.expedition?.status !== 'active') return 0
+  const protectedCash = state.expedition.protectedCareerCash
+  if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
+    return Math.max(0, finiteNumberOr(state.player.money, 0))
   }
-  return Math.max(0, money)
+  return protectedCash
 }
 
 /**
@@ -177,11 +198,32 @@ export const getExpeditionFuelTopUpCost = (
   currentFuel: number,
   targetFuel: number
 ): number => {
-  const from = isFiniteNumber(currentFuel) ? currentFuel : 0
-  const to = isFiniteNumber(targetFuel) ? targetFuel : 0
+  const from = finiteNumberOr(currentFuel, 0)
+  const to = finiteNumberOr(targetFuel, 0)
   const missing = Math.max(0, Math.min(MAX_STARTING_FUEL, to) - from)
   return Math.ceil(missing * EXPENSE_CONSTANTS.transport.fuelPrice)
 }
+
+/**
+ * Cash START charges before the run begins.
+ *
+ * @param state - Current game state; the tank level is read from it.
+ * @param build - The committed fuel target and insurance policy.
+ * @returns Fuel top-up plus insurance premium, in euros.
+ *
+ * @remarks
+ * The validator, the START reducer and the Tour Prep preview all compare this
+ * against the protected Career Cash, so it has one owner. The sponsor advance
+ * START pays out is not a cost and stays with the preview.
+ */
+export const getExpeditionUpfrontCost = (
+  state: GameState,
+  build: { startingFuelTarget: number; insurancePolicyId: unknown }
+): number =>
+  getExpeditionFuelTopUpCost(
+    finiteNumberOr(state.player.van?.fuel, 0),
+    build.startingFuelTarget
+  ) + getExpeditionInsurancePremium(build.insurancePolicyId)
 
 /* -------------------------------------------------------------------------- */
 /* Availability resolvers — one per axis owned by a later gate.                */
@@ -317,8 +359,14 @@ export const isExpeditionStagingRouteAvailable = (
 /**
  * Crew ids the player may commit.
  *
- * @remarks G3 owns Crew and extends this in place. No Crew exists in G1A, so
- * the only legal commitment is an empty roster.
+ * @param state - Current game state.
+ * @returns Registry Crew ids that pass {@link isCrewAvailable}, in registry order.
+ *
+ * @remarks
+ * A Crew member is unavailable while their role's capability is not unlocked,
+ * while they carry recovery debt, or while a served-unavailable Tour count is
+ * still pending. Tour Prep's Crew picker and the balance harness both read
+ * this list, so the picker never offers a member the validator would refuse.
  */
 export const getAvailableCrewIds = (state: GameState): readonly string[] =>
   Object.keys(EXPEDITION_CREW_BY_ID).filter(id => isCrewAvailable(state, id))
@@ -449,9 +497,6 @@ const reject = (
 
 const hasDuplicates = (values: readonly string[]): boolean =>
   new Set(values).size !== values.length
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every(entry => typeof entry === 'string')
 
 /**
  * Resolves the committed chassis asset.
@@ -620,7 +665,7 @@ export const validateExpeditionBuildCommitment = (
     const ownedRaw = Object.hasOwn(state.band.inventory, inventoryKey)
       ? state.band.inventory[inventoryKey]
       : 0
-    const owned = isFiniteNumber(ownedRaw) ? ownedRaw : 0
+    const owned = finiteNumberOr(ownedRaw, 0)
     if (quantity > owned) return reject('MERCH_NOT_OWNED')
     seenMerchKeys.add(inventoryKey)
     merch.push({ inventoryKey, quantity })
@@ -691,7 +736,9 @@ export const validateExpeditionBuildCommitment = (
   // ── Native Contracts (G4 registry) ─────────────────────────────────────────
   const nativeContractsRaw = candidate.nativeContracts
   if (!Array.isArray(nativeContractsRaw)) return reject('MALFORMED_CANDIDATE')
-  if (nativeContractsRaw.length > 2) return reject('NATIVE_CONTRACT_INVALID')
+  if (nativeContractsRaw.length > MAX_NATIVE_EXPEDITION_CONTRACTS) {
+    return reject('NATIVE_CONTRACT_INVALID')
+  }
   const availableTemplates = getAvailableNativeContractTemplateIds(
     state,
     preparedMap
@@ -841,9 +888,7 @@ export const validateExpeditionBuildCommitment = (
 
   // ── Fuel target and protected Career Cash ──────────────────────────────────
   const { startingFuelTarget, protectedCareerCash } = build
-  const currentFuel = isFiniteNumber(state.player.van?.fuel)
-    ? state.player.van.fuel
-    : 0
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
   if (
     !isNonNegativeInteger(startingFuelTarget) ||
     startingFuelTarget < currentFuel ||
@@ -851,9 +896,7 @@ export const validateExpeditionBuildCommitment = (
   ) {
     return reject('FUEL_TARGET_OUT_OF_RANGE')
   }
-  const playerMoney = isFiniteNumber(state.player.money)
-    ? state.player.money
-    : 0
+  const playerMoney = finiteNumberOr(state.player.money, 0)
   if (
     !isNonNegativeInteger(protectedCareerCash) ||
     protectedCareerCash > playerMoney
@@ -861,11 +904,11 @@ export const validateExpeditionBuildCommitment = (
     return reject('PROTECTED_CASH_OUT_OF_RANGE')
   }
 
-  const fuelCost = getExpeditionFuelTopUpCost(currentFuel, startingFuelTarget)
-  const insurancePremium = getExpeditionInsurancePremium(
-    normalizedInsurancePolicyId
-  )
-  if (playerMoney - (fuelCost + insurancePremium) < protectedCareerCash) {
+  const upfrontCost = getExpeditionUpfrontCost(state, {
+    startingFuelTarget,
+    insurancePolicyId: normalizedInsurancePolicyId
+  })
+  if (playerMoney - upfrontCost < protectedCareerCash) {
     return reject('UPFRONT_COST_UNAFFORDABLE')
   }
 
@@ -952,18 +995,12 @@ export const enforceExpeditionCashFloor = (
 
   const floor = Math.max(
     0,
-    isFiniteNumber(previousState.expedition.protectedCareerCash)
-      ? previousState.expedition.protectedCareerCash
-      : 0
+    finiteNumberOr(previousState.expedition.protectedCareerCash, 0)
   )
   if (floor === 0) return nextState
 
-  const before = isFiniteNumber(previousState.player.money)
-    ? previousState.player.money
-    : 0
-  const after = isFiniteNumber(nextState.player.money)
-    ? nextState.player.money
-    : 0
+  const before = finiteNumberOr(previousState.player.money, 0)
+  const after = finiteNumberOr(nextState.player.money, 0)
   if (after >= before) return nextState
   if (after >= floor) return nextState
 
@@ -1024,9 +1061,7 @@ export const getExpeditionDayPolicy = (
   return {
     isActive,
     spendableCash: isActive ? getExpeditionSpendableCash(state) : 0,
-    protectedCareerCash: isActive
-      ? Math.max(0, finiteNumberOr(state.expedition.protectedCareerCash, 0))
-      : 0,
+    protectedCareerCash: getExpeditionProtectedCash(state),
     carriedUnpaidObligation: isActive
       ? Math.max(0, finiteNumberOr(state.expedition.unpaidDailyObligation, 0))
       : 0

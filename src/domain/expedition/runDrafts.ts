@@ -10,6 +10,9 @@ export const EXPEDITION_RUN_DRAFT_TRAITS: readonly ExpeditionRunDraftTraitId[] =
     'cold_trail',
     'reckless_encore'
   ]
+/** Traits one Run Draft offer presents; an offer with fewer is not made. */
+export const EXPEDITION_RUN_DRAFT_OFFER_SIZE = 3
+
 export const deriveExpeditionDraftCandidates = (
   runSeed: number,
   sourceKey: string,
@@ -20,6 +23,6 @@ export const deriveExpeditionDraftCandidates = (
   return pool
     .map(id => ({ id, score: rng() }))
     .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
-    .slice(0, 3)
+    .slice(0, EXPEDITION_RUN_DRAFT_OFFER_SIZE)
     .map(entry => entry.id)
 }

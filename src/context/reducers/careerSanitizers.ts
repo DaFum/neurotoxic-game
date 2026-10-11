@@ -32,6 +32,7 @@ import {
 } from '../../data/expedition/hqFacilities'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
+import { isBandInjuryStage } from '../../data/expedition/injuryStages'
 import {
   BETWEEN_TOUR_OPTIONS,
   MAX_BETWEEN_TOUR_DECISIONS,
@@ -493,14 +494,6 @@ const sanitizeBetweenTourByRunId = (
     return { runId: key, decisions, resolvedOptionByDecisionId }
   })
 
-/** The injury stages a carried Band consequence may hold. */
-const BAND_INJURY_STAGES: ReadonlySet<string> = new Set([
-  'none',
-  'light',
-  'serious',
-  'critical'
-])
-
 /**
  * Narrows the Band consequences carried past the run that caused them.
  *
@@ -515,11 +508,7 @@ const BAND_INJURY_STAGES: ReadonlySet<string> = new Set([
 const sanitizeBandConsequences = (
   value: unknown
 ): Record<string, ExpeditionBandInjuryStage> =>
-  safeRecord(value, entry =>
-    typeof entry === 'string' && BAND_INJURY_STAGES.has(entry)
-      ? (entry as ExpeditionBandInjuryStage)
-      : null
-  )
+  safeRecord(value, entry => (isBandInjuryStage(entry) ? entry : null))
 
 /** Narrows a persisted Rival stance to the two the union allows. */
 const asRivalStance = (value: unknown): 'confront' | 'cool_down' | null =>
