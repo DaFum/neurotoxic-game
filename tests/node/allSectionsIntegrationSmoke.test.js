@@ -73,7 +73,7 @@ describe('all long-term asset sections integration smoke', () => {
     assert.deepEqual(registeredKinds, [...ASSET_KINDS].sort())
   })
 
-  it('MODULE_REGISTRY has 63 modules total', () => {
-    assert.equal(Object.keys(MODULE_REGISTRY).length, 63)
+  it('MODULE_REGISTRY has 66 modules total', () => {
+    assert.equal(Object.keys(MODULE_REGISTRY).length, 66)
   })
 })

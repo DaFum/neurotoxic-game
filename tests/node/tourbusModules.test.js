@@ -11,11 +11,11 @@ import {
 } from '../../src/utils/assetSections/tourbusConfig.ts'
 
 describe('tourbus modules registration', () => {
-  it('registers exactly 17 tourbus_chassis modules', () => {
+  it('registers exactly 20 tourbus_chassis modules', () => {
     const count = Object.values(MODULE_REGISTRY).filter(
       m => m.ownerKind === 'tourbus_chassis'
     ).length
-    assert.equal(count, 17)
+    assert.equal(count, 20)
   })
 
   it('tb_trailer_hitch has correct slot/addsSlots/maxPerAsset shape', () => {
@@ -31,13 +31,13 @@ describe('tourbus modules registration', () => {
     assert.equal(m.maxPerAsset, 1)
   })
 
-  it('every chassis slot type (except tb_trailer_addon) has at least one compatible module', () => {
+  it('every chassis and hitch-added slot type has at least one compatible module', () => {
     const allSlots = new Set([
       ...TOURBUS_T1_SLOTS,
       ...TOURBUS_T2_SLOTS,
-      ...TOURBUS_T3_SLOTS
+      ...TOURBUS_T3_SLOTS,
+      ...MODULE_REGISTRY.tb_trailer_hitch.addsSlots.map(slot => slot.slotType)
     ])
-    allSlots.delete('tb_trailer_addon')
 
     const coveredSlots = new Set(
       Object.values(MODULE_REGISTRY)

@@ -45,16 +45,35 @@ describe('TourbusTrailerOverlay', () => {
     vi.clearAllMocks()
   })
 
-  it('labels empty addon slots unavailable with the production registry', () => {
+  it('offers both empty addon slots with the production registry', () => {
     const asset = mockAsset([
       { id: 'slot-1', slotType: 'tb_trailer_addon', installedModuleId: null },
       { id: 'slot-2', slotType: 'tb_trailer_addon', installedModuleId: null }
     ])
     render(<TourbusTrailerOverlay asset={asset} onSlotClick={vi.fn()} />)
-    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(screen.queryAllByRole('button')).toHaveLength(2)
     expect(
-      screen.getByText('Trailer addons are not available yet.')
-    ).toBeDefined()
+      screen.queryByText('Trailer addons are not available yet.')
+    ).toBeNull()
+  })
+
+  it('labels empty addon slots unavailable when no addon is registered', () => {
+    const hidden = Object.entries(MODULE_REGISTRY).filter(
+      ([, module]) => module.slotType === 'tb_trailer_addon'
+    )
+    for (const [id] of hidden) delete MODULE_REGISTRY[id]
+    try {
+      const asset = mockAsset([
+        { id: 'slot-1', slotType: 'tb_trailer_addon', installedModuleId: null }
+      ])
+      render(<TourbusTrailerOverlay asset={asset} onSlotClick={vi.fn()} />)
+      expect(screen.queryAllByRole('button')).toHaveLength(0)
+      expect(
+        screen.getByText('Trailer addons are not available yet.')
+      ).toBeDefined()
+    } finally {
+      for (const [id, module] of hidden) MODULE_REGISTRY[id] = module
+    }
   })
 
   it('keeps saved installations manageable even without addon definitions', () => {

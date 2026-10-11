@@ -217,6 +217,46 @@ const MODULES: readonly AssetModule[] = [
     boni: { famePassivePerDay: 0.3 },
     unlock: { minChassisTier: 2 },
     imagePromptKey: 'tb_side_graphics'
+  },
+  // Trailer addons fill the two `tb_trailer_addon` slots `tb_trailer_hitch`
+  // adds. Each is a modest variant of a cabin/roof bonus, priced below its
+  // chassis-slot counterpart because it already needs the hitch.
+  {
+    id: 'tb_trailer_merch_box',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_trailer_addon',
+    flavor: 'legit',
+    cost: 450,
+    installCost: 50,
+    removalRefundFraction: 0.5,
+    boni: { merchCapacityBonus: 25 },
+    unlock: {},
+    imagePromptKey: 'tb_trailer_merch_box'
+  },
+  {
+    id: 'tb_trailer_bunk_pod',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_trailer_addon',
+    flavor: 'legit',
+    cost: 800,
+    installCost: 100,
+    removalRefundFraction: 0.4,
+    boni: { travelStaminaRegen: 2 },
+    unlock: { minFame: 50 },
+    imagePromptKey: 'tb_trailer_bunk_pod'
+  },
+  {
+    id: 'tb_trailer_generator',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_trailer_addon',
+    flavor: 'diy',
+    cost: 300,
+    installCost: 40,
+    removalRefundFraction: 0.2,
+    boni: { tipBonusGigs: 0.03 },
+    riskEventTypes: ['fire'],
+    unlock: { requiredMemberSkill: { skill: 'tech', tier: 1 } },
+    imagePromptKey: 'tb_trailer_generator'
   }
 ]
 
@@ -249,7 +289,13 @@ const PROMPTS: Record<string, string> = {
   tb_smoke_screen:
     'pixel art tour van smoke screen ejection device fleeing scene',
   tb_side_graphics:
-    'pixel art tour van side panel with large band logo and graphics paint job'
+    'pixel art tour van side panel with large band logo and graphics paint job',
+  tb_trailer_merch_box:
+    'pixel art small trailer stacked with merch crates and band shirts side view',
+  tb_trailer_bunk_pod:
+    'pixel art tiny trailer converted into a sleeping pod with bunk beds cozy',
+  tb_trailer_generator:
+    'pixel art sputtering diy diesel generator strapped to a trailer smoke sparks'
 }
 
 for (const m of MODULES) MODULE_REGISTRY[m.id] = m
