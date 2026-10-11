@@ -211,6 +211,43 @@ describe('TourPrepLoadout', () => {
     ).toBeInTheDocument()
   })
 
+  it('names an owned tourbus by kind/flavor/tier instead of its UUID or raw archetype enum', () => {
+    const assetId = '3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f'
+    state.current = createInitialState()
+    state.current.assets = [
+      {
+        id: assetId,
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'diy',
+        chassisTier: 3,
+        condition: 80,
+        baseUpkeep: 0,
+        baseDailyRevenue: 0,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0
+      }
+    ]
+    render(<TourPrepLoadout />)
+
+    const option = screen.getByTestId(`expedition-prep-tourbus-${assetId}`)
+    expect(option).not.toHaveTextContent(assetId)
+    expect(option).not.toHaveTextContent(/armored_hauler(?!\w)/)
+    expect(option).not.toHaveTextContent('Archetype:')
+    expect(option).toHaveTextContent('assets:kind.tourbus_chassis')
+    expect(option).toHaveTextContent('assets:flavor.diy')
+    expect(option).toHaveTextContent('assets:chassisTier.3')
+    expect(option).toHaveTextContent('ui:expedition.prep.tourbusMeta')
+    const call = tCalls
+      .filter(c => c.key === 'ui:expedition.prep.tourbusMeta')
+      .at(-1)
+    expect(call?.options).toEqual({
+      archetype: 'ui:expedition.chassis.archetype.armored_hauler',
+      cargo: '4'
+    })
+  })
+
   it('labels the merch and protected-cash sliders', () => {
     state.current = createInitialState()
     render(<TourPrepLoadout />)

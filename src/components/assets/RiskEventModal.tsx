@@ -17,7 +17,8 @@ interface Props extends BaseModalProps {
  *
  * Toasts in handleAdvanceDay already announce the event; this modal is for
  * cases where the section view wants to surface the full event card on
- * arrival (post-tick interstitial), reusing the same i18n keys.
+ * arrival (post-tick interstitial). The title reuses the toast's
+ * `assets:risk.event.<type>` name; the body explains it via `.desc`.
  */
 export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
   const { t } = useTranslation(['assets', 'ui'])
@@ -35,7 +36,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
           aspectRatio='16:9'
           sizeHint={{ width: 640, height: 360 }}
         />
-        <p>{t(`assets:risk.event.${eventType}`)}</p>
+        <p>{t(`assets:risk.event.${eventType}.desc`)}</p>
         <div className='flex justify-end'>
           <ConfirmButton onClick={onClose}>
             {t('ui:action_close', { defaultValue: 'Close' })}

@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { AmpHUD } from '../../src/components/minigames/amp/AmpHUD'
 
+const locale = vi.hoisted(() => ({ language: 'en' }))
+
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    i18n: { language: 'en' },
+    i18n: { language: locale.language },
     t: (key, options) => options?.defaultValue ?? key
   })
 }))
@@ -59,5 +61,19 @@ describe('AmpHUD meters', () => {
     render(<AmpHUD {...baseProps} timeLeft={12.34} />)
 
     expect(screen.getByText('12.3s')).toBeInTheDocument()
+  })
+
+  it('renders stability and meter readouts as locale-aware percentages', () => {
+    locale.language = 'de'
+    try {
+      render(<AmpHUD {...baseProps} score={50.9} heat={40} interference={7} />)
+      // German puts a (no-break) space before the percent sign; Testing
+      // Library normalizes it to a plain space.
+      expect(screen.getByText('50 %')).toBeInTheDocument()
+      expect(screen.getByText('40 %')).toBeInTheDocument()
+      expect(screen.getByText('7 %')).toBeInTheDocument()
+    } finally {
+      locale.language = 'en'
+    }
   })
 })

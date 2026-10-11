@@ -465,6 +465,7 @@ describe('MapNodeView', () => {
     expect(
       screen.getByText('ui:map.intel.barSpendingProfile')
     ).toBeInTheDocument()
-    expect(screen.getByText(/45m/)).toBeInTheDocument()
+    expect(screen.getByText(/45 ui:unit.minutesShort/)).toBeInTheDocument()
+    expect(screen.queryByText(/45m/)).not.toBeInTheDocument()
   })
 })

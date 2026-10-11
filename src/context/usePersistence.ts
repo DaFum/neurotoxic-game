@@ -321,7 +321,12 @@ export function usePersistence({
         notifyStorageDegraded()
         logger.warn('System', 'Game saved to in-memory fallback store')
       } else {
-        handleError(new StorageError('Failed to save game'), { addToast })
+        handleError(new StorageError('Failed to save game'), {
+          addToast,
+          fallbackMessage: tRef.current('ui:save.saveFailed', {
+            defaultValue: 'Failed to save game.'
+          })
+        })
       }
       return success === true
     },

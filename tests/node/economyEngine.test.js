@@ -1063,6 +1063,14 @@ test('calculateVenueSplit gracefully handles missing/undefined params', () => {
   assert.ok(result.amount >= 0)
 })
 
+test('calculateVenueSplit reports a whole-number rate for the detail copy', () => {
+  // 0.7 * 100 is 70.00000000000001 in IEEE-754; the "{{rate}}% of Door"
+  // template must never print that.
+  const result = calculateVenueSplit(1000, { diff: 5 })
+  assert.strictEqual(result.expenseItem?.detailParams.rate, 70)
+  assert.ok(Number.isInteger(result.expenseItem?.detailParams.rate))
+})
+
 test('calculateGuarantee handles various pay scenarios', async t => {
   await t.test('gracefully handles missing/undefined params', () => {
     const result = calculateGuarantee(undefined)

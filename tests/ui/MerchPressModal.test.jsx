@@ -15,7 +15,8 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: key => key,
+    t: (key, options) =>
+      options?.risk === undefined ? key : `${key}|risk=${options.risk}`,
     i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
@@ -62,6 +63,23 @@ describe('MerchPressModal', () => {
     band: { harmony: 100 },
     social: { loyalty: 10, controversyLevel: 0 }
   }
+
+  it('rounds the failure chance shown in the risk warning', () => {
+    mockState.current = defaultState
+    render(
+      <MerchPressModal
+        onClose={vi.fn()}
+        onPress={vi.fn()}
+        canPress={true}
+        config={{ ...mockConfig, failChance: 0.07 }}
+      />
+    )
+
+    // 0.07 * 100 is 7.000000000000001 in IEEE-754.
+    expect(
+      screen.getByText('ui:merch_press.risk_warning|risk=7')
+    ).toBeInTheDocument()
+  })
 
   it('renders correctly with sufficient funds', () => {
     mockState.current = defaultState

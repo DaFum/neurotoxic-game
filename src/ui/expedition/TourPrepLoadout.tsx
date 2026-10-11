@@ -840,10 +840,21 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                             : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                       }`}
                     >
-                      <strong>{asset.id}</strong>
+                      <strong>
+                        {t(`assets:kind.${asset.kind}`)} /{' '}
+                        {t(`assets:flavor.${asset.chassisFlavor}`)} /{' '}
+                        {t(`assets:chassisTier.${asset.chassisTier}`)}
+                      </strong>
                       <span className='block normal-case text-ash-gray'>
-                        Archetype: {profile.archetype} | Cargo Bonus: +
-                        {profile.cargoCapacityBonus}
+                        {t('ui:expedition.prep.tourbusMeta', {
+                          archetype: t(
+                            `ui:expedition.chassis.archetype.${profile.archetype}`
+                          ),
+                          cargo: formatNumber(
+                            profile.cargoCapacityBonus,
+                            i18n.language
+                          )
+                        })}
                         {isTierLocked && (
                           <span className='block text-blood-red text-[10px] mt-0.5'>
                             (

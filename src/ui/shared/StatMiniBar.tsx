@@ -3,9 +3,11 @@
  */
 
 import { memo, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ProgressBar } from './ProgressBar'
 import { Tooltip } from './Tooltip'
+import { formatPercent } from '../../utils/numberUtils'
 
 interface StatMiniBarProps {
   value: number
@@ -40,6 +42,7 @@ export const StatMiniBar = memo(function StatMiniBar({
   icon,
   variant
 }: StatMiniBarProps) {
+  const { i18n } = useTranslation()
   const isLow = value < threshold
   const resolvedAriaLabel =
     ariaLabel ?? (typeof label === 'string' ? label : undefined)
@@ -47,7 +50,10 @@ export const StatMiniBar = memo(function StatMiniBar({
   // sanitized value as-is because member stats carry half points (e.g.
   // `bh_zine_library` grants `bandMoodPerDay: 0.5`, which `processAssetTick`
   // preserves through the 0..100 clamp).
-  const readout = variant === 'stacked' ? `${Math.floor(value)}%` : `${value}%`
+  const readout =
+    variant === 'stacked'
+      ? formatPercent(Math.floor(value) / 100, i18n.language)
+      : formatPercent(value / 100, i18n.language, { maximumFractionDigits: 1 })
 
   if (variant === 'stacked') {
     return (

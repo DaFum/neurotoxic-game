@@ -73,19 +73,19 @@ export const BandMetricsSection = ({
           label={t('ui:detailedStats.guitarDiff', {
             defaultValue: 'Guitar Difficulty'
           })}
-          value={`x${band.performance?.guitarDifficulty ?? 1.0}`}
+          value={`x${formatNumber(band.performance?.guitarDifficulty ?? 1.0, i18n.language, 2)}`}
         />
         <DetailRow
           label={t('ui:detailedStats.drumSpeed', {
             defaultValue: 'Drum Speed'
           })}
-          value={`x${band.performance?.drumMultiplier ?? 1.0}`}
+          value={`x${formatNumber(band.performance?.drumMultiplier ?? 1.0, i18n.language, 2)}`}
         />
         <DetailRow
           label={t('ui:detailedStats.crowdDecay', {
             defaultValue: 'Crowd Decay'
           })}
-          value={`x${band.performance?.crowdDecay ?? 1.0}`}
+          value={`x${formatNumber(band.performance?.crowdDecay ?? 1.0, i18n.language, 2)}`}
         />
       </div>
       {recentBanter.length > 0 && (

@@ -125,8 +125,6 @@
   "hq_room_skull.description": "Decor is everything. (+5 Fame immediate).",
   "pr_manager_contract.name": "PR Manager Contract",
   "pr_manager_contract.description": "A contact who can spin any story. Unlocks 'Spin Story' option when controversy is high.",
-  "van_sound_system.name": "Sound System",
-  "van_tuning.name": "Engine Tuning",
   "contraband.c_void_energy.name": "Void Energy Drink",
   "contraband.c_void_energy.description": "A black liquid that tastes like battery acid. Instantly restores 50 Stamina to a band member.",
   "contraband.c_rusty_strings.name": "Rusty Strings",

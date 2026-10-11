@@ -54,7 +54,7 @@ export const BandMemberRow = memo(({ m, t }: BandMemberRowProps) => {
           threshold={50}
           color='bg-mood-pink'
           warnColor='bg-warning-yellow'
-          label={t('ui:hud.mood', { defaultValue: 'Mood' })}
+          label={t('ui:stats.mood', { defaultValue: 'Mood' })}
           ariaLabel={t('ui:hud.memberMood', {
             name: safeName,
             defaultValue: safeName + ' Mood'
@@ -66,7 +66,7 @@ export const BandMemberRow = memo(({ m, t }: BandMemberRowProps) => {
           threshold={35}
           color='bg-stamina-green'
           warnColor='bg-blood-red'
-          label={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
+          label={t('ui:stats.stamina', { defaultValue: 'Stamina' })}
           ariaLabel={t('ui:hud.memberStamina', {
             name: safeName,
             defaultValue: safeName + ' Stamina'

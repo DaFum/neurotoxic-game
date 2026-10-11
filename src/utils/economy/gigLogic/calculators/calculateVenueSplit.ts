@@ -32,7 +32,7 @@ export const calculateVenueSplit = (
         labelKey: BREAKDOWN_LABEL_KEYS.VENUE_SPLIT,
         value: splitAmount,
         detailKey: 'economy:gigExpenses.venueSplit.detail',
-        detailParams: { rate: splitRate * 100 }
+        detailParams: { rate: Math.round(splitRate * 100) }
       }
     }
   }
