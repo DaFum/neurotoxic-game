@@ -15,7 +15,7 @@ const BLACK_MARKET_FAME_LOSS = 5
 /**
  * Supply-stop inventory and close callback for the black-market purchase modal.
  */
-export interface SupplyStopModalProps {
+interface SupplyStopModalProps {
   inventory: PurchaseItem[]
   onClose: () => void
 }

@@ -22,7 +22,7 @@ import type { ExpeditionFailureChoiceId } from '../../types/expedition'
  * prefers the host's confirmation dialog (it owns the rare-reward carry
  * choice); without a host callback the crisis extracts directly.
  */
-export interface FailureCrisisDialogProps {
+interface FailureCrisisDialogProps {
   onExtract?: () => void
 }
 

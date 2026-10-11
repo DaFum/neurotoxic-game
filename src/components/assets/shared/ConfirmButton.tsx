@@ -4,7 +4,7 @@ import { ActionButton } from '../../../ui/shared/ActionButton'
 /**
  * Defines the property structure for the confirmation button by extending the base action button attributes.
  */
-export type ConfirmButtonProps = ComponentPropsWithoutRef<typeof ActionButton>
+type ConfirmButtonProps = ComponentPropsWithoutRef<typeof ActionButton>
 
 /**
  * Renders a primary confirmation button with distinctive styling for affirmative actions.

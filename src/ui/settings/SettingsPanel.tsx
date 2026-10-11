@@ -10,7 +10,7 @@ import type { GameSettings } from '../../types'
 /**
  * Settings, audio state, and callbacks used by the settings control groups.
  */
-export interface SettingsPanelProps {
+interface SettingsPanelProps {
   settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
   musicVol?: number
   sfxVol?: number

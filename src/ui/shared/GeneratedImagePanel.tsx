@@ -8,7 +8,7 @@ import {
 /**
  * Generated-image prompt, layout, fallback, and load-state inputs.
  */
-export interface GeneratedImagePanelProps {
+interface GeneratedImagePanelProps {
   prompt: string
   alt: string
   aspectRatio?: '16:9' | '1:1' | '4:3' | '3:4' | '21:9'

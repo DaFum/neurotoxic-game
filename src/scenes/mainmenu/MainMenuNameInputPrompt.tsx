@@ -7,7 +7,7 @@ import { GlitchButton } from '../../ui/GlitchButton'
 /**
  * Properties for the MainMenuNameInputPrompt component.
  */
-export interface MainMenuNameInputPromptProps {
+interface MainMenuNameInputPromptProps {
   /** The current value of the player name input field. */
   playerNameInput: string
   /** Function to update the player name input state. */

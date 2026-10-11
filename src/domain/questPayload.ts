@@ -58,7 +58,7 @@ type QuestPayloadRejection =
 /**
  * Result of narrowing a raw quest payload.
  */
-export type QuestPayloadResult =
+type QuestPayloadResult =
   | { ok: true; payload: QuestPayload }
   | { ok: false; reason: QuestPayloadRejection }
 

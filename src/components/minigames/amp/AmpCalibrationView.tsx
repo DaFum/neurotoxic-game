@@ -14,7 +14,7 @@ const INACTIVE_UI_STATE = { timeLeft: 0, score: 0, isGameOver: false }
 /**
  * State, callbacks, and Pixi controller factory required to host amp calibration.
  */
-export interface AmpCalibrationViewProps {
+interface AmpCalibrationViewProps {
   t: TFunction<'ui', undefined>
   dialValue: number
   setDialValue: (val: number | ((prev: number) => number)) => void

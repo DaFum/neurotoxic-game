@@ -14,7 +14,7 @@ import type {
 /**
  * Summary rows and the commit control for the constrained Tour Prep build.
  */
-export interface BuildCommitmentPanelProps {
+interface BuildCommitmentPanelProps {
   /** The route the build was assembled against, previewed from the run seed. */
   preparedMap: ExpeditionMap
   /** Verdict from the canonical build validator. */

@@ -4,7 +4,7 @@ import { type TranslationCallback } from '../../types/callbacks'
 /**
  * Localized location and travel state displayed in the overworld header.
  */
-export interface OverworldHeaderProps {
+interface OverworldHeaderProps {
   t: TranslationCallback
   locationName: string
   isTraveling: boolean

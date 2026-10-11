@@ -25,7 +25,7 @@ import { ExpeditionMetaTab } from '../expedition/ExpeditionMetaTab'
 /**
  * Active tab id used to choose the Band HQ tab panel.
  */
-export interface BandHQContentAreaProps {
+interface BandHQContentAreaProps {
   currentTab: string
 }
 
