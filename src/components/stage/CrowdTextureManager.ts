@@ -6,7 +6,7 @@ import { loadTextures } from './stageRenderUtils'
 /**
  * Represents a bundle of textures used for crowd animation states.
  */
-export type CrowdTextures = {
+type CrowdTextures = {
   /** The texture to display when the crowd is in an idle state. */
   idle: Texture | null
   /** The texture to display when the crowd is in an active mosh state. */
@@ -59,10 +59,16 @@ export class CrowdTextureManager {
       )
 
       if (this.isDisposed) {
-        if (loadedTextures.idle && typeof loadedTextures.idle.destroy === 'function') {
+        if (
+          loadedTextures.idle &&
+          typeof loadedTextures.idle.destroy === 'function'
+        ) {
           loadedTextures.idle.destroy(true)
         }
-        if (loadedTextures.mosh && typeof loadedTextures.mosh.destroy === 'function') {
+        if (
+          loadedTextures.mosh &&
+          typeof loadedTextures.mosh.destroy === 'function'
+        ) {
           loadedTextures.mosh.destroy(true)
         }
         return
