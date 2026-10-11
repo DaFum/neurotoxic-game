@@ -44,8 +44,11 @@ export const isCatalogEffect = (value: unknown): value is Effect => {
         Number.isFinite(effect.value)
       )
     case 'unlock_upgrade':
-    case 'unlock_hq':
       return Object.hasOwn(effect, 'id') && typeof effect.id === 'string'
+    case 'unlock_hq':
+      // Ownership is keyed on the catalog item id, so the effect carries no
+      // payload of its own.
+      return true
     case 'passive':
       return Object.hasOwn(effect, 'key') && typeof effect.key === 'string'
     default:
@@ -95,7 +98,7 @@ export const normalizeCatalogEffect = (
     case 'unlock_upgrade':
       return { type: 'unlock_upgrade', id: effect.id as string }
     case 'unlock_hq':
-      return { type: 'unlock_hq', id: effect.id as string }
+      return { type: 'unlock_hq' }
     case 'passive': {
       const out: { type: 'passive'; key: string; value?: unknown } = {
         type: 'passive',

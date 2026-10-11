@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
 import { DetailedStatsTab } from '../../src/ui/bandhq/DetailedStatsTab.tsx'
 import { createApplyEventDeltaAction } from '../../src/context/actionCreators'
@@ -156,6 +156,32 @@ describe('DetailedStatsTab', () => {
     expect(screen.getByText('Recent Banter')).toBeInTheDocument()
     const label = screen.getByText(`${first.name} ↔ ${second.name}`)
     expect(label.nextElementSibling?.textContent).toBe('-12')
+  })
+
+  test('offers a Use button for counted consumables and shows stash slots', () => {
+    const onConsumeItem = vi.fn()
+    render(
+      <DetailedStatsTab
+        player={mockPlayer}
+        band={{
+          ...mockBand,
+          inventorySlots: 10,
+          stash: { c_void_energy: { id: 'c_void_energy', stacks: 2 } },
+          inventory: { canned_food: 3, beer_bulk: 0, cheap_mics: 2 }
+        }}
+        social={mockSocial}
+        onConsumeItem={onConsumeItem}
+      />
+    )
+    const useButtons = screen.getAllByRole('button', { name: 'Use {{item}}' })
+    // Only canned food is usable: beer is empty, spare mics are passive.
+    expect(useButtons).toHaveLength(1)
+    fireEvent.click(useButtons[0])
+    expect(onConsumeItem).toHaveBeenCalledWith('canned_food')
+    expect(
+      screen.getByText('items:canned_food.description')
+    ).toBeInTheDocument()
+    expect(screen.getByText('1/25')).toBeInTheDocument()
   })
 
   test('renders Member equipment correctly', () => {

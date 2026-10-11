@@ -6,6 +6,7 @@ import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { IMG_PROMPTS } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
+import { getActiveDealBenefits } from '../../utils/brandDealBenefits'
 import { isLooseRecord } from '../../utils/objectUtils'
 import type {
   DealImageProps,
@@ -161,6 +162,33 @@ const DealInfo = memo(
     const formattedPenalty = displayDeal.penalty
       ? formatPenalty(displayDeal.penalty as Record<string, unknown>)
       : ''
+    // Same registry-backed terms the post-gig and daily ticks apply.
+    const terms = getActiveDealBenefits([displayDeal])
+    const perks: string[] = []
+    if (terms.loyaltyPerGig !== 0) {
+      perks.push(
+        t('ui:deals.benefit.loyalty', {
+          value: terms.loyaltyPerGig,
+          defaultValue: '+{{value}} Loyalty per gig'
+        })
+      )
+    }
+    if (terms.fameMultiplier > 1) {
+      perks.push(
+        t('ui:deals.benefit.fameMultiplier', {
+          percent: Math.round((terms.fameMultiplier - 1) * 100),
+          defaultValue: '+{{percent}}% Fame from gigs'
+        })
+      )
+    }
+    if (terms.staminaRegenPerDay > 0) {
+      perks.push(
+        t('ui:deals.benefit.staminaRegen', {
+          value: terms.staminaRegenPerDay,
+          defaultValue: '+{{value}} Stamina per day'
+        })
+      )
+    }
 
     return (
       <div className='flex-1 min-w-0'>
@@ -259,6 +287,21 @@ const DealInfo = memo(
             <div>
               🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
               {displayDeal.offer.item}
+            </div>
+          )}
+          {terms.revenueShare > 0 && (
+            <div className='text-warning-yellow'>
+              📉{' '}
+              {t('ui:deals.revenueShare', {
+                percent: Math.round(terms.revenueShare * 100),
+                defaultValue: 'Label cut: {{percent}}% of merch sales'
+              })}
+            </div>
+          )}
+          {perks.length > 0 && (
+            <div className='text-toxic-green'>
+              ✨ {t('ui:deals.perks', { defaultValue: 'Perks' })}:{' '}
+              {perks.join(', ')}
             </div>
           )}
           {formattedPenalty && (

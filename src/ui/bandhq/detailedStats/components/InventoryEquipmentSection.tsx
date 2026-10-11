@@ -4,6 +4,18 @@ import type { BandState } from '../../../../types'
 import { Panel } from '../../../shared'
 import { isUnlocked } from '../helpers'
 import { USABLE_BOOLEAN_INVENTORY_ITEMS } from '../helpers'
+import {
+  INVENTORY_USE_EFFECTS,
+  SPARE_GEAR_ITEM_IDS
+} from '../../../../data/inventoryItems'
+import { isFiniteNumber } from '../../../../utils/gameState'
+
+/** Inventory keys whose locale entry carries an effect description. */
+const DESCRIBED_ITEMS = new Set<string>([
+  ...Object.keys(INVENTORY_USE_EFFECTS),
+  ...SPARE_GEAR_ITEM_IDS,
+  'sleeping_bags'
+])
 
 export const InventoryEquipmentSection = ({
   band,
@@ -25,8 +37,12 @@ export const InventoryEquipmentSection = ({
         for (const key in inv) {
           if (!Object.hasOwn(inv, key)) continue
           const val = inv[key]
-          const isConsumable = USABLE_BOOLEAN_INVENTORY_ITEMS.has(key)
-          const canConsume = val === true && isConsumable
+          const isUsable = Object.hasOwn(INVENTORY_USE_EFFECTS, key)
+          const isConsumable =
+            USABLE_BOOLEAN_INVENTORY_ITEMS.has(key) || isUsable
+          const canConsume =
+            isConsumable &&
+            (val === true || (isUsable && isFiniteNumber(val) && val > 0))
           const itemName = t(`items:${key}.name`, {
             defaultValue: key.replace(/_/g, ' ').toUpperCase()
           })
@@ -38,13 +54,18 @@ export const InventoryEquipmentSection = ({
               : val === false
                 ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
                 : String(val)
+          const subtext = DESCRIBED_ITEMS.has(key)
+            ? t(`items:${key}.description`)
+            : undefined
           const node = (
             <DetailRow
               key={key}
               label={itemName}
+              subtext={subtext}
               value={
                 canConsume ? (
                   <div className='flex items-center justify-end gap-2'>
+                    {typeof val === 'number' && <span>{String(val)}</span>}
                     <button
                       type='button'
                       disabled={!onConsumeItem}

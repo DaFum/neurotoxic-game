@@ -96,7 +96,7 @@ export const van = [
     currency: 'fame',
     img: 'ITEM_SLEEPING_BAGS',
     description: 'items:hq_van_sleeping_bags.description',
-    effect: { type: 'inventory_add', item: 'sleeping_bags', value: 3 }
+    effect: { type: 'inventory_set', item: 'sleeping_bags', value: true }
   },
   {
     id: 'hq_van_tape_glue',

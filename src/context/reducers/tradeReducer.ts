@@ -17,7 +17,7 @@ import {
   safeJsonParse
 } from '../../utils/objectUtils'
 import { escapeHtml } from '../../utils/stringUtils'
-import { addContrabandHelper } from './bandReducer'
+import { addContrabandHelper, buildStashFullToast } from './bandReducer'
 import {
   buildDeterministicToastId,
   sanitizeSuccessToast
@@ -106,10 +106,14 @@ export const handleTradeVoidItem = (
       'GameState',
       'Failed to add void item to stash (max stacks or invalid item)'
     )
-    const failureToast: ToastPayload = {
-      id:
-        instanceId ??
-        buildDeterministicToastId('void-trade-toast', state.toasts),
+    const failureToastId =
+      instanceId ?? buildDeterministicToastId('void-trade-toast', state.toasts)
+    const failureToast: ToastPayload = buildStashFullToast(
+      state.band,
+      contrabandId,
+      failureToastId
+    ) ?? {
+      id: failureToastId,
       messageKey: 'ui:shop.messages.purchaseFailed',
       type: 'error'
     }

@@ -18,7 +18,7 @@ describe('HQ Passive Effects', () => {
       name: 'Label',
       cost: 5000,
       currency: 'fame',
-      effect: { type: 'unlock_hq', id: 'hq_label' }
+      effect: { type: 'unlock_hq' }
     }
 
     const initialPlayerPatch = { fame: 0 }

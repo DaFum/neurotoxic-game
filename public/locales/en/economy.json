@@ -7,6 +7,8 @@
   "gigExpenses.demandSaturation.label": "Regional Demand Saturation",
   "gigExpenses.guestList.detail": "VIP Treatment (+Bar Revenue, +Score)",
   "gigExpenses.guestList.label": "Guest List",
+  "gigExpenses.labelRevenueShare.detail": "{{rate}}% of merch sales (record deal)",
+  "gigExpenses.labelRevenueShare.label": "Label Revenue Share",
   "gigExpenses.managementFee.detail": "{{rate}}% of Gross Income",
   "gigExpenses.managementFee.label": "Management Fee",
   "gigExpenses.merchStand.detail": "Better Display",

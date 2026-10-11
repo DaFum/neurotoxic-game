@@ -103,6 +103,8 @@ export const applyPostGigPerformancePenalty = ({
  * - `params.misses` - Total missed notes.
  * - `params.bandStyle` - Fractional bonus to positive fame gains from
  *   temporary band effects (contraband `style`).
+ * - `params.dealFameMultiplier` - Active brand-deal fame multiplier,
+ *   applied to positive fame gains (defaults to 1).
  * - `params.calculateFameGain` - Applies diminishing returns to raw fame gain.
  * - `params.calculateFameLevel` - Maps total fame to a fame level.
  * - `params.clampPlayerFame` - Clamps fame to valid range.
@@ -117,6 +119,7 @@ export const calculateContinueStats = ({
   financials,
   misses,
   bandStyle,
+  dealFameMultiplier,
   calculateFameGain,
   calculateFameLevel,
   clampPlayerFame,
@@ -128,6 +131,7 @@ export const calculateContinueStats = ({
   financials: PostGigFinancials
   misses?: number
   bandStyle?: number
+  dealFameMultiplier?: number
   calculateFameGain: (a: number, b: number, c: number) => number
   calculateFameLevel: (fame: number) => number
   clampPlayerFame: (n: number) => number
@@ -148,6 +152,11 @@ export const calculateContinueStats = ({
     const styleBonus = Math.max(0, finiteNumberOr(bandStyle, 0))
     if (styleBonus > 0 && finalFameGain > 0) {
       finalFameGain = Math.round(finalFameGain * (1 + styleBonus))
+    }
+    // Brand-deal benefit (e.g. a record deal's fameMultiplier)
+    const dealMultiplier = Math.max(1, finiteNumberOr(dealFameMultiplier, 1))
+    if (dealMultiplier > 1 && finalFameGain > 0) {
+      finalFameGain = Math.round(finalFameGain * dealMultiplier)
     }
   } else {
     // Progressive miss-penalty on bad gigs

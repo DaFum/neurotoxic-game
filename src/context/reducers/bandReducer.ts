@@ -9,6 +9,7 @@ import {
   clampMemberStamina,
   clampRelationship,
   clampPercent,
+  clampVanCondition,
   applyInventoryItemDelta,
   isForbiddenKey,
   finiteNumberOr,
@@ -23,7 +24,10 @@ import {
 } from '../../utils/contrabandEffects'
 import {
   addContrabandToBand,
-  getStashStackCount
+  getStashCapacity,
+  getStashStackCount,
+  getStashUsedSlots,
+  isStashFullFor
 } from '../../utils/contrabandStashUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
@@ -31,11 +35,17 @@ import {
   createItemCraftedQuestEvent
 } from '../../quests/producers/itemQuestEvents'
 import { getCraftingRecipe } from '../../data/craftingRecipes'
+import {
+  INVENTORY_USE_EFFECTS,
+  type InventoryUseEffect
+} from '../../data/inventoryItems'
+import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import type {
   BandMember,
   BandState,
   GameAction,
   GameState,
+  ToastPayload,
   UpdateBandPayload
 } from '../../types'
 
@@ -263,14 +273,85 @@ export const handleUnlockTrait = (
 }
 
 /**
- * Consumes one inventory item or toggles off a boolean inventory flag.
+ * Applies the one-shot effect of a usable inventory item.
+ *
+ * @param state - State in which the item has already been consumed.
+ * @param effect - Effect of one use, from `INVENTORY_USE_EFFECTS`.
+ * @returns State with member, luck and van deltas applied and clamped.
+ */
+const applyInventoryUseEffect = (
+  state: GameState,
+  effect: InventoryUseEffect
+): GameState => {
+  let next = state
+  const moodDelta = finiteNumberOr(effect.memberMood, 0)
+  const staminaDelta = finiteNumberOr(effect.memberStamina, 0)
+  if (moodDelta !== 0 || staminaDelta !== 0) {
+    const members = Array.isArray(next.band.members) ? next.band.members : []
+    const nextMembers: BandMember[] = []
+    for (let i = 0; i < members.length; i++) {
+      const member = members[i]
+      if (!member) continue
+      nextMembers.push({
+        ...member,
+        mood:
+          moodDelta !== 0
+            ? clampMemberMood(
+                finiteNumberOr(member.mood, DEFAULT_MEMBER_MOOD) + moodDelta
+              )
+            : member.mood,
+        stamina:
+          staminaDelta !== 0
+            ? clampMemberStamina(
+                finiteNumberOr(member.stamina, DEFAULT_MEMBER_STAMINA) +
+                  staminaDelta,
+                finiteNumberOr(member.staminaMax, DEFAULT_MEMBER_STAMINA_MAX)
+              )
+            : member.stamina
+      })
+    }
+    next = { ...next, band: { ...next.band, members: nextMembers } }
+  }
+  const luckDelta = finiteNumberOr(effect.luck, 0)
+  if (luckDelta !== 0) {
+    next = {
+      ...next,
+      band: {
+        ...next.band,
+        luck: clampLuck(finiteNumberOr(next.band.luck, 0) + luckDelta)
+      }
+    }
+  }
+  const vanDelta = finiteNumberOr(effect.vanCondition, 0)
+  if (vanDelta !== 0 && next.player.van) {
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        van: {
+          ...next.player.van,
+          condition: clampVanCondition(
+            finiteNumberOr(next.player.van.condition, 100) + vanDelta
+          )
+        }
+      }
+    }
+  }
+  return next
+}
+
+/**
+ * Consumes one inventory item or toggles off a boolean inventory flag, then
+ * applies the item's effect when it has one (`INVENTORY_USE_EFFECTS`).
  *
  * @param state - Game state before inventory consumption.
  * @param payload - Inventory item key to consume. Missing, non-string, or
  * forbidden keys leave the state unchanged.
- * @returns State with the inventory count decremented or boolean item cleared.
- * Unowned or zero-count items return the original state unchanged — no
- * item-used quest event is emitted unless something was actually consumed.
+ * @returns State with the inventory count decremented or boolean item cleared
+ * and its use effect applied. Unowned or zero-count items, and items whose
+ * Expedition policy forbids use during an active run, return the original
+ * state unchanged — no item-used quest event is emitted unless something was
+ * actually consumed.
  */
 export const handleConsumeItem = (
   state: GameState,
@@ -282,6 +363,19 @@ export const handleConsumeItem = (
     typeof itemType !== 'string' ||
     isForbiddenKey(itemType) ||
     itemType.length === 0
+  ) {
+    return state
+  }
+
+  const useEffect = Object.hasOwn(INVENTORY_USE_EFFECTS, itemType)
+    ? INVENTORY_USE_EFFECTS[itemType]
+    : undefined
+  if (
+    useEffect?.expeditionPolicyItemId &&
+    !isExpeditionLegacyHqEffectActive(
+      state.expedition?.status === 'active',
+      useEffect.expeditionPolicyItemId
+    )
   ) {
     return state
   }
@@ -309,11 +403,41 @@ export const handleConsumeItem = (
   // consumed; dispatching for an unowned item must leave state unchanged.
   if (!consumed) return state
 
+  const consumedState: GameState = { ...state, band: nextBand }
   return QuestEvents.emit(
-    { ...state, band: nextBand },
+    useEffect
+      ? applyInventoryUseEffect(consumedState, useEffect)
+      : consumedState,
     createItemUsedQuestEvent({ itemId: itemType })
   )
 }
+
+/**
+ * Builds the error toast shown when a contraband item finds no free stash slot.
+ *
+ * @param band - Band whose stash is full.
+ * @param contrabandId - Catalogue id that could not be added.
+ * @param id - Toast id (deterministic or pre-generated).
+ * @returns Toast naming the item and the used/total slot count, or `null`
+ * when the stash still has room for that item.
+ */
+export const buildStashFullToast = (
+  band: BandState,
+  contrabandId: string,
+  id: string
+): ToastPayload | null =>
+  isStashFullFor(band, contrabandId)
+    ? {
+        id,
+        messageKey: 'ui:stash.full',
+        options: {
+          item: `items:contraband.${contrabandId}.name`,
+          used: getStashUsedSlots(band),
+          total: getStashCapacity(band)
+        },
+        type: 'error'
+      }
+    : null
 
 /**
  * Adds contraband to the band stash while preserving stacking and uniqueness rules.
@@ -425,7 +549,7 @@ export const handleCraftItem = (
       ...state,
       toasts: [
         ...(state.toasts || []),
-        {
+        buildStashFullToast(consumedBand, recipe.output, toastId) ?? {
           id: toastId,
           messageKey: 'ui:toast.craftFailed',
           options: { recipeLabel: recipe.labelKey },
