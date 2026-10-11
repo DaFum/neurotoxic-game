@@ -278,6 +278,11 @@ test('questReducer - Rewards Logic', async t => {
 
     assert.equal(nextState.band.inventory.lucky_pick, true)
     assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_item')
+    // The toast names the granted item through its namespaced items key.
+    assert.deepEqual(nextState.toasts[0].options, {
+      name: 'Item Quest',
+      item: 'items:lucky_pick.name'
+    })
   })
 
   await t.test('grants skill point reward to a random member', () => {

@@ -6,12 +6,16 @@ import { mock, test } from 'node:test'
 mock.module(new URL('../../src/config/balance.ts', import.meta.url).href, {
   namedExports: {
     BALANCE_CONFIG: {
-      social: { highControversyThreshold: 0, cultLoyaltyThreshold: 0 }
+      social: {
+        highControversyThreshold: 0,
+        cultLoyaltyThreshold: 0,
+        scandalThreshold: 0
+      }
     }
   }
 })
 
-const { isCultAudience, isHighControversy } =
+const { isCultAudience, isHighControversy, isScandalControversy } =
   await import('../../src/utils/socialThresholds.ts')
 
 test('a zero high-controversy gate still rejects non-finite controversy', () => {
@@ -27,4 +31,11 @@ test('a zero cult gate still rejects non-finite controversy or loyalty', () => {
   assert.equal(isCultAudience(10, undefined), false)
   assert.equal(isCultAudience(undefined, 10), false)
   assert.equal(isCultAudience(10, Number.NaN), false)
+})
+
+test('a zero scandal gate still rejects non-finite controversy', () => {
+  assert.equal(isScandalControversy(0), true)
+  for (const bad of [undefined, null, Number.NaN, Infinity, '5', true]) {
+    assert.equal(isScandalControversy(bad), false, String(bad))
+  }
 })

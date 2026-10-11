@@ -1059,10 +1059,14 @@ const fameMappingVariants = [
       assert.equal(delta.player.fame, 10, 'hype should map to fame')
   },
   {
-    label: 'crowd_energy → fame',
+    label: 'removed crowd_energy alias (no fame)',
     result: { type: 'stat', stat: 'crowd_energy', value: 5 },
     validate: delta =>
-      assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
+      assert.equal(
+        delta.player.fame,
+        undefined,
+        'crowd_energy is no longer an alias for fame'
+      )
   },
   {
     label: 'score increment',
@@ -1084,13 +1088,12 @@ fameMappingVariants.forEach(variant => {
   })
 })
 
-test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, crowd_energy)', () => {
+test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype)', () => {
   const result = {
     type: 'composite',
     effects: [
       { type: 'stat', stat: 'fame', value: 10 },
-      { type: 'stat', stat: 'hype', value: 5 },
-      { type: 'stat', stat: 'crowd_energy', value: 3 }
+      { type: 'stat', stat: 'hype', value: 5 }
     ]
   }
 
@@ -1099,8 +1102,8 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
   assert.ok(delta, 'Should return delta')
   assert.equal(
     delta.player.fame,
-    18,
-    'Should accumulate all fame-related stats (10 + 5 + 3)'
+    15,
+    'Should accumulate all fame-related stats (10 + 5)'
   )
 })
 

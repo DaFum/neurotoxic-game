@@ -86,11 +86,15 @@ export const deadlineCount = (
  *
  * @param quest - The quest to evaluate.
  * @param player - The current player state containing location and node data.
+ * @param currentVenueId - Canonical venue id of the current gig context
+ * (`getCurrentVenueId(state)`), the same key `addQuest` stamps as a perVenue
+ * `scopeKey`. Map-node ids and `player.location` display keys never match it.
  * @returns A hint configuration object if a scope applies, or null if no scope logic is needed.
  */
 export const getQuestScopeHint = (
   quest: QuestDisplayState,
-  player: PlayerState
+  player: PlayerState,
+  currentVenueId?: string
 ): {
   matching: boolean
   text: string
@@ -113,10 +117,7 @@ export const getQuestScopeHint = (
   }
 
   if (quest.repeatPolicy === 'perVenue') {
-    // Determine the current venue (gig node id takes precedence, falling back to location if it's a venue)
-    const isMatching =
-      player?.currentNodeId === quest.scopeKey ||
-      player?.location === quest.scopeKey
+    const isMatching = currentVenueId === quest.scopeKey
     return {
       matching: isMatching,
       text: isMatching

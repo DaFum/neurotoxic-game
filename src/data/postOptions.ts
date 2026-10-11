@@ -9,7 +9,7 @@ import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
 import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
 import { pickIndex, selectRandomItem } from '../utils/selectionUtils'
-import { isCultAudience } from '../utils/socialThresholds'
+import { isCultAudience, isScandalControversy } from '../utils/socialThresholds'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -304,7 +304,7 @@ export const POST_OPTIONS = [
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
     condition: ({ social }: GameState) =>
-      finiteNumberOr(social?.controversyLevel, 0) >= 50 &&
+      isScandalControversy(social?.controversyLevel) &&
       finiteNumberOr(social?.reputationCooldown, 0) === 0,
     resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
       if (diceRoll < 0.55) {
