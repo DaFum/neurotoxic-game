@@ -13,7 +13,6 @@ export interface GeneratedImagePanelProps {
   alt: string
   aspectRatio?: '16:9' | '1:1' | '4:3' | '3:4' | '21:9'
   className?: string
-  onLoad?: () => void
   variant?: 'card' | 'inline' | 'hotspot'
   sizeHint?: { width: number; height: number }
 }
@@ -31,14 +30,13 @@ const ASPECT_CSS: Record<
 
 /**
  * Displays a generated image with skeleton loading and offline/error fallback handling.
- * @param props - Image prompt, alt text, sizing, variant, load callback, and wrapper styling.
+ * @param props - Image prompt, alt text, sizing, variant, and wrapper styling.
  */
 export const GeneratedImagePanel = ({
   prompt,
   alt,
   aspectRatio = '16:9',
   className = '',
-  onLoad,
   variant = 'card',
   sizeHint
 }: GeneratedImagePanelProps) => {
@@ -98,10 +96,7 @@ export const GeneratedImagePanel = ({
         alt={alt}
         loading='lazy'
         crossOrigin={src.startsWith('data:') ? undefined : 'anonymous'}
-        onLoad={() => {
-          setLoaded(true)
-          onLoad?.()
-        }}
+        onLoad={() => setLoaded(true)}
         onError={() => {
           // If the fallback itself failed, bail to avoid re-rendering with
           // the same broken src and triggering React's onError forever.

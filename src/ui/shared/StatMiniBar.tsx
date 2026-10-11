@@ -9,7 +9,6 @@ import { Tooltip } from './Tooltip'
 
 interface StatMiniBarProps {
   value: number
-  max?: number
   /** Tooltip content. */
   label: ReactNode
   /** Accessible name for the bar; defaults to `label`. */
@@ -27,11 +26,10 @@ interface StatMiniBarProps {
 /**
  * Renders a labelled mini progress bar with its numeric readout.
  *
- * @param props - Value, scale, tooltip/aria labels, warning threshold, colour classes, optional icon, and layout variant.
+ * @param props - Percent value, tooltip/aria labels, warning threshold, colour classes, optional icon, and layout variant.
  */
 export const StatMiniBar = memo(function StatMiniBar({
   value,
-  max = 100,
   label,
   ariaLabel,
   threshold,
@@ -40,6 +38,8 @@ export const StatMiniBar = memo(function StatMiniBar({
   icon,
   variant
 }: StatMiniBarProps) {
+  // Every HUD stat this renders is a 0..100 percentage.
+  const max = 100
   const isLow = value < threshold
   const resolvedAriaLabel =
     ariaLabel ?? (typeof label === 'string' ? label : undefined)
