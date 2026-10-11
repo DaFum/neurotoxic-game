@@ -5,7 +5,7 @@ import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from './contrabandEffects'
-import { isFiniteNumber } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import { isForbiddenKey } from './objectUtils'
 type StashItemLike = {
   id?: string
@@ -69,6 +69,57 @@ export const getStashItemUseMessage = (
 }
 
 /**
+ * Stash slots every band has before storage upgrades. Each distinct stash entry
+ * takes one slot; extra stacks of an owned item take none.
+ */
+export const BASE_STASH_SLOTS = 15
+
+/**
+ * Total stash slots: the base allowance plus `band.inventorySlots` from
+ * storage upgrades (`hq_van_storage`).
+ *
+ * @param band - Band whose storage upgrades raise the capacity.
+ * @returns Whole number of distinct stash entries the band may hold.
+ */
+export const getStashCapacity = (
+  band: Pick<BandState, 'inventorySlots'> | null | undefined
+): number =>
+  BASE_STASH_SLOTS +
+  Math.max(0, Math.floor(finiteNumberOr(band?.inventorySlots, 0)))
+
+/**
+ * Number of stash slots in use (distinct own entries).
+ *
+ * @param band - Band whose stash is counted.
+ * @returns Occupied slot count.
+ */
+export const getStashUsedSlots = (
+  band: Pick<BandState, 'stash'> | null | undefined
+): number => {
+  const stash = band?.stash
+  if (!stash) return 0
+  let used = 0
+  for (const key in stash) {
+    if (Object.hasOwn(stash, key)) used++
+  }
+  return used
+}
+
+/**
+ * Whether adding this item would need a new slot the band does not have.
+ *
+ * @param band - Band receiving the item.
+ * @param contrabandId - Catalogue id to add.
+ * @returns True when the item is not owned yet and every slot is taken.
+ */
+export const isStashFullFor = (
+  band: BandState,
+  contrabandId: string
+): boolean =>
+  !(band.stash && Object.hasOwn(band.stash, contrabandId)) &&
+  getStashUsedSlots(band) >= getStashCapacity(band)
+
+/**
  * Adds a catalogue contraband item to a band's stash, honouring stacking,
  * uniqueness and apply-on-add equipment rules.
  *
@@ -76,7 +127,8 @@ export const getStashItemUseMessage = (
  * @param payload - Catalogue id to add and the instance id stamped on a new entry.
  * @returns A new band with the item added, or the identical `band` reference
  * when the id is forbidden or unknown, a non-stackable duplicate already
- * exists, or the stack is full.
+ * exists, the stack is full, or a new entry would exceed the stash capacity
+ * ({@link getStashCapacity}).
  *
  * @remarks
  * The single stash-add implementation: the `addContrabandHelper` reducer
@@ -115,6 +167,10 @@ export const addContrabandToBand = (
     })
     return newBand
   }
+
+  // A new entry needs a free slot; legacy saves above capacity keep what they
+  // hold but cannot add more distinct items until they make room.
+  if (getStashUsedSlots(band) >= getStashCapacity(band)) return band
 
   const newInstance = {
     ...item,

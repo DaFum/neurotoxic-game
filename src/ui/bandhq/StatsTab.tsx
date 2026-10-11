@@ -5,10 +5,14 @@ import { StatBox, ProgressBar } from '../shared'
 import { VanStatusBars } from './VanStatusBars'
 import { formatCurrency, formatPercent } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/gameState'
+import {
+  getStashCapacity,
+  getStashUsedSlots
+} from '../../utils/contrabandStashUtils'
 
 type StatsTabProps = {
   player: Pick<PlayerState, 'money' | 'fame' | 'day' | 'van'>
-  band: Pick<BandState, 'members' | 'inventorySlots' | 'harmony'>
+  band: Pick<BandState, 'members' | 'inventorySlots' | 'harmony' | 'stash'>
   social: Pick<SocialState, 'instagram' | 'tiktok' | 'youtube' | 'newsletter'>
 }
 
@@ -113,7 +117,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
               :
             </span>
             <span className='text-star-white font-mono'>
-              {band.inventorySlots}
+              {getStashUsedSlots(band)}/{getStashCapacity(band)}
             </span>
           </div>
           <div className='flex justify-between items-center'>

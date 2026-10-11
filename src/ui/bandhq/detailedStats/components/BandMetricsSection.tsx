@@ -4,6 +4,10 @@ import { Panel, ProgressBar } from '../../../shared'
 import { DetailRow } from './DetailRow'
 import type { BandState, SocialState } from '../../../../types'
 import { formatNumber } from '../../../../utils/numberUtils'
+import {
+  getStashCapacity,
+  getStashUsedSlots
+} from '../../../../utils/contrabandStashUtils'
 
 /** Number of most-recent banter outcomes listed in the metrics panel. */
 const VISIBLE_BANTER_EVENTS = 5
@@ -42,7 +46,10 @@ export const BandMetricsSection = ({
         label={t('ui:detailedStats.inventorySlots', {
           defaultValue: 'Inventory Slots'
         })}
-        value={band?.inventorySlots ?? 0}
+        value={`${getStashUsedSlots(band)}/${getStashCapacity(band)}`}
+        subtext={t('ui:detailedStats.inventorySlotsDesc', {
+          defaultValue: 'Contraband stash slots used'
+        })}
       />
       {social.egoFocus && (
         <DetailRow

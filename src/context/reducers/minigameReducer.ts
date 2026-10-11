@@ -1,4 +1,9 @@
-import type { BandMember, GameState } from '../../types'
+import type {
+  BandMember,
+  BandState,
+  GameState,
+  ToastPayload
+} from '../../types'
 import { logger } from '../../utils/logger'
 import {
   addClampedNonNegative,
@@ -30,7 +35,7 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
-import { addContrabandHelper } from './bandReducer'
+import { addContrabandHelper, buildStashFullToast } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
 import { pickIndex } from '../../utils/selectionUtils'
 import {
@@ -57,6 +62,46 @@ import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQu
 import { applyExpeditionRouteAdvance } from './expeditionReducer'
 import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
+import { SPARE_GEAR_ITEM_IDS } from '../../data/inventoryItems'
+import { buildDeterministicToastId } from './toastSanitizers'
+
+/**
+ * Resolves gear damage from a botched setup minigame: the first owned spare in
+ * `SPARE_GEAR_ITEM_IDS` is used up instead of setting `damaged_gear`.
+ *
+ * @param band - Band whose inventory may hold spare gear.
+ * @param toasts - Current toasts, used for the deterministic toast id.
+ * @returns The band with one spare consumed and a toast naming it, or `null`
+ * when no spare is owned and the gear takes the damage.
+ */
+const consumeSpareGear = (
+  band: BandState,
+  toasts: readonly ToastPayload[] | undefined
+): { band: BandState; toast: ToastPayload } | null => {
+  const inventory = band.inventory ?? {}
+  for (const itemId of SPARE_GEAR_ITEM_IDS) {
+    if (!Object.hasOwn(inventory, itemId)) continue
+    const owned = inventory[itemId]
+    let nextValue: boolean | number
+    if (owned === true) {
+      nextValue = false
+    } else if (isFiniteNumber(owned) && owned >= 1) {
+      nextValue = Math.max(0, Math.floor(owned) - 1)
+    } else {
+      continue
+    }
+    return {
+      band: { ...band, inventory: { ...inventory, [itemId]: nextValue } },
+      toast: {
+        id: buildDeterministicToastId('spare-gear-toast', toasts ?? []),
+        messageKey: 'ui:toast.spareGearUsed',
+        options: { item: `items:${itemId}.name` },
+        type: 'info'
+      }
+    }
+  }
+  return null
+}
 
 /**
  * Starts the tourbus travel minigame for a selected destination node.
@@ -321,6 +366,16 @@ export const handleCompleteTravelMinigame = (
           newState,
           createItemCollectedQuestEvent({ itemId: contrabandId })
         )
+      } else {
+        // The drop is lost when no slot is free; say so instead of silence.
+        const fullToast = buildStashFullToast(
+          newState.band,
+          contrabandId,
+          `toast-${instanceId}`
+        )
+        if (fullToast) {
+          newState.toasts = [...newState.toasts, fullToast]
+        }
       }
     }
   }
@@ -445,16 +500,26 @@ const applyPostMinigameResult = (
   )
 
   const nextModifiers = { ...state.gigModifiers }
+  let nextBand: BandState = { ...state.band, harmony: nextHarmony }
+  let nextToasts = state.toasts
   if (!success) {
-    logger.warn('GameState', `${failureLogTag}: damaged_gear active`)
-    nextModifiers.damaged_gear = true
+    const spare = consumeSpareGear(nextBand, state.toasts)
+    if (spare) {
+      logger.info('GameState', `${failureLogTag}: spare gear used`)
+      nextBand = spare.band
+      nextToasts = [...(state.toasts ?? []), spare.toast]
+    } else {
+      logger.warn('GameState', `${failureLogTag}: damaged_gear active`)
+      nextModifiers.damaged_gear = true
+    }
   }
 
   return {
     ...state,
-    band: { ...state.band, harmony: nextHarmony },
+    band: nextBand,
     player: { ...state.player, money: nextMoney },
     gigModifiers: nextModifiers,
+    toasts: nextToasts,
     minigame: { ...state.minigame, active: false }
   }
 }
@@ -735,13 +800,21 @@ export const handleCompleteRoadieMinigame = (
 
   // Pass damage to gig modifiers or stats?
   const nextModifiers = { ...state.gigModifiers }
+  let nextToasts = state.toasts
   if (safeEquipmentDamage > 50) {
-    // Apply a penalty for heavily damaged gear
-    logger.warn(
-      'GameState',
-      'Heavy equipment damage applied: damaged_gear active'
-    )
-    nextModifiers.damaged_gear = true
+    // Heavily damaged gear: a spare stands in, otherwise apply the penalty.
+    const spare = consumeSpareGear(nextBand, state.toasts)
+    if (spare) {
+      logger.info('GameState', 'Heavy equipment damage: spare gear used')
+      nextBand = spare.band
+      nextToasts = [...(state.toasts ?? []), spare.toast]
+    } else {
+      logger.warn(
+        'GameState',
+        'Heavy equipment damage applied: damaged_gear active'
+      )
+      nextModifiers.damaged_gear = true
+    }
   }
 
   let nextState: GameState = {
@@ -749,6 +822,7 @@ export const handleCompleteRoadieMinigame = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
+    toasts: nextToasts,
     minigame: { ...state.minigame, active: false }
   }
 

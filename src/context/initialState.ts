@@ -133,7 +133,17 @@ export const DEFAULT_BAND_STATE: BandState = {
     drum_parts: true,
     golden_pick: false,
     neurotoxicPedal: false,
-    neuroDecimator: false
+    neuroDecimator: false,
+    // HQ shop / quest-reward items; effects live in `data/inventoryItems.ts`.
+    sleeping_bags: false,
+    tape_glue: 0,
+    broken_pedal: false,
+    cheap_mics: 0,
+    diy_patch_kit: false,
+    canned_food: 0,
+    beer_bulk: 0,
+    lucky_pick: false,
+    energy_drink: false
   },
   neuroDecimatorActive: false
 }

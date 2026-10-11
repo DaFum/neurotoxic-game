@@ -220,7 +220,7 @@ export const applyQuestRewards = (
         toasts.push({
           id: `${quest.id}-item`,
           messageKey: 'ui:toast.quest_complete_item',
-          options: { name: questName },
+          options: { name: questName, item: `items:${reward.itemId}.name` },
           type: 'success'
         })
         break
