@@ -18,7 +18,7 @@ import type { ExpeditionRewardLedgerEntry } from '../../types/expedition'
 /**
  * Open state and dismissal for the extraction confirmation.
  */
-export interface ExtractionDialogProps {
+interface ExtractionDialogProps {
   isOpen: boolean
   onClose: () => void
 }

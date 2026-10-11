@@ -307,7 +307,7 @@ import type { GameState, SocialState } from '../types'
 /**
  * Summarized results of a travel cost simulation.
  */
-export interface TravelCostsResult {
+interface TravelCostsResult {
   /** Calculated distance to the destination map node. */
   dist: number
   /** Immediate financial costs associated with travel. */

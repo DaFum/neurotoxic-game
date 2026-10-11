@@ -103,7 +103,7 @@ export type RhythmStateSetters = {
 /**
  * State bundle returned by useRhythmGameState.
  */
-export type RhythmGameStateHookReturn = {
+type RhythmGameStateHookReturn = {
   /** High-frequency mutable state reference avoiding React render cycles. */
   gameStateRef: MutableRefObject<RhythmGameRefState>
   /** React-reactive state exposed for UI rendering updates. */

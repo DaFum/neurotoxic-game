@@ -37,7 +37,7 @@ export type SanitizedContrabandItem = {
   applyOnAdd?: boolean
 }
 
-export interface ContrabandValidationResult {
+interface ContrabandValidationResult {
   ok: boolean
   errors: string[]
   value: SanitizedContrabandItem | null

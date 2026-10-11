@@ -1,9 +1,10 @@
-# Dead-code triage — 2026-08-03, refreshed 2026-10-06
+# Dead-code triage — 2026-08-03, refreshed 2026-10-06 and 2026-10-11
 
 Triage of the 78-finding knip baseline captured on 2026-08-02 (issue #2677).
 After the original pass the report was down to **10 findings**. The 2026-10-06
 code-quality audit pass (`docs/code-quality-audit-2026-10-05.md`) brought it to
-**8**, and `.ci/dead-code-budget.json` `max` is lowered to match.
+**8**. By the 2026-10-11 refresh Knip no longer flags `lint-staged`, so the live
+report is **7**, and `.ci/dead-code-budget.json` `max` is lowered to match.
 
 Everything left in the report is listed below with the reason it stays. There is
 no untriaged remainder. Items knip does not report but that look dead to a
@@ -46,8 +47,33 @@ Since the original pass:
 Count against the 78-finding baseline: the original pass resolved 68 (listed
 below) and left 10. The refresh resolved 3 more of those 10
 (`AudioEngineProvider`, `motion-dom`, `motion-utils`), so 71 of the 78 are
-resolved and 7 remain. `lint-staged` is not part of the baseline; it brings the
-live report to the 8 listed under [Remaining](#remaining-8--intentional-keep).
+resolved and 7 remain. `lint-staged` is not part of the baseline; it brought the
+live report to 8 on 2026-10-06 and dropped out again by 2026-10-11, leaving the
+7 listed under [Remaining](#remaining-7--intentional-keep).
+
+## 2026-10-11 refresh
+
+Cleanup from the 2026-10-09 `src/` findings report (§2.1, §2.4). None of these
+were Knip findings; they were production-only reachability hits.
+
+- Test-convenience re-exports deleted: `ActionTypes` from
+  `src/context/gameReducer.ts` and `CHATTER_DB` / `ALLOWED_DEFAULT_SCENES` from
+  `src/data/chatter/index.ts`. Production already imported the leaf modules;
+  the tests now import `src/context/actionTypes.ts` and
+  `src/data/chatter/standardChatter.ts` directly.
+- `export * from './OverworldModals'` removed from
+  `src/components/overworld/index.ts`; `Overworld.tsx` imports the leaf.
+- `DARK_WEB_LEAK_CONFIG` and `PIRATE_RADIO_CONFIG` are module-private, like
+  `CULT_INDOCTRINATION_CONFIG`: `OverworldModals` and the hook tests read them
+  from the hook's return value.
+- `clampMemberSkill` is production code again: `addClampedMemberSkill` routes
+  its result through it.
+- 33 own-file-only `*Props` / `*Return` / `*Result` types lost their `export`
+  (each checked by name across `src/`, `tests/`, `scripts/`, `api/`, `lib/` and
+  `.claude/skills`; `src/types/**` and `.d.ts` files were left alone), plus
+  `CrowdTextures` once the `CrowdManager.textures` alias was deleted.
+- `DarkWebLeakModal` and `CultIndoctrinationModal` were deleted;
+  `ZealotryActionModal` resolves their labels from an `i18nPrefix`.
 
 ## Resolved in the original pass (68)
 
@@ -130,7 +156,7 @@ Notes:
 - `BreakdownLabelKey` (`src/utils/economy/breakdownLabelKeys.ts`) — derived type
   with no reference anywhere, including its own file.
 
-## Remaining (8) — intentional, keep
+## Remaining (7) — intentional, keep
 
 ### Deliberate exports (2)
 
@@ -148,9 +174,9 @@ Notes:
 `ORIGINAL_CONTROL_BALANCE_TUNING` explicitly as the control arm. Collapsing them
 would erase that distinction.
 
-### Unused dependencies (5)
+### Unused dependencies (4)
 
-`flatted` (`dependencies`); `eslint-plugin-react-refresh`, `lint-staged`,
+`flatted` (`dependencies`); `eslint-plugin-react-refresh`,
 `rollup-plugin-visualizer`, `serialize-javascript` (`devDependencies`).
 
 No source, config, script, or skill references `flatted`, `react-refresh`,
@@ -158,14 +184,13 @@ No source, config, script, or skill references `flatted`, `react-refresh`,
 `react-refresh` and `vite.config.js` does not use `visualizer`. They look like
 transitive packages that were promoted to direct entries by accident.
 
-`lint-staged` is the exception and a false positive: `.husky/pre-commit` runs
-`npx lint-staged` against the config block in `package.json`. Removing it would
-break the pre-commit hook.
+`lint-staged` was listed here on 2026-10-06 as a false positive
+(`.husky/pre-commit` runs `npx lint-staged` against the config block in
+`package.json`); Knip no longer reports it. It is used and stays.
 
 Left in place deliberately: `AGENTS.md` requires dependency changes to be
-discussed first, and these are pinned. Removing the four genuinely unused ones
-would take the report to 4. That is a follow-up decision, not part of this
-triage.
+discussed first, and these are pinned. Removing the four would take the report
+to 3. That is a follow-up decision, not part of this triage.
 
 ## Intentionally kept: test oracles, seams and tooling
 
@@ -179,15 +204,17 @@ recorded here.
 Plan- or script-backed helpers whose only callers are tests or the balance
 scripts in `scripts/`.
 
-| Symbol                                                                                 | Consumer                                                                    |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `findExpeditionRewardsWithUnreachableTarget` (`src/domain/expedition/rewardLedger.ts`) | `tests/node/expeditionRewardLedger.test.js` — reward-ledger oracle          |
-| `getContrabandValidationFailures` (`src/data/contraband.ts`)                           | `tests/node/contraband.schema.test.js` — schema oracle                      |
-| `BASE_EXPEDITION_REGION_ID` (`src/domain/expedition/defaults.ts`)                      | Expedition map and cargo tests                                              |
-| `GIG_CLOCK_DRIFT_TOLERANCE_MS` (`src/utils/audio/constants.ts`)                        | `tests/node/audioEngineGigClock.test.js`                                    |
-| `doesLegacyHqItemTouchExpedition` (`src/domain/expedition/legacyHqPolicy.ts`)          | `scripts/game-balance-expedition-career.mjs` and the legacy-HQ policy tests |
-| `resolveBalanceTuning`, `BALANCE_RECOMMENDATION_HOLD` (`src/utils/balanceTuning.ts`)   | `scripts/game-balance-experiments.mjs` and its tests                        |
-| `CANONICAL_LEADERBOARD_IDS` (`lib/leaderboardSongIds.js`)                              | `tests/api/leaderboard.song.test.js` — pins the canonical song-id list      |
+| Symbol                                                                                 | Consumer                                                                                  |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `findExpeditionRewardsWithUnreachableTarget` (`src/domain/expedition/rewardLedger.ts`) | `tests/node/expeditionRewardLedger.test.js` — reward-ledger oracle                        |
+| `getContrabandValidationFailures` (`src/data/contraband.ts`)                           | `tests/node/contraband.schema.test.js` — schema oracle                                    |
+| `BASE_EXPEDITION_REGION_ID` (`src/domain/expedition/defaults.ts`)                      | Expedition map and cargo tests                                                            |
+| `GIG_CLOCK_DRIFT_TOLERANCE_MS` (`src/utils/audio/constants.ts`)                        | `tests/node/audioEngineGigClock.test.js`                                                  |
+| `doesLegacyHqItemTouchExpedition` (`src/domain/expedition/legacyHqPolicy.ts`)          | `scripts/game-balance-expedition-career.mjs` and the legacy-HQ policy tests               |
+| `resolveBalanceTuning`, `BALANCE_RECOMMENDATION_HOLD` (`src/utils/balanceTuning.ts`)   | `scripts/game-balance-experiments.mjs` and its tests                                      |
+| `CANONICAL_LEADERBOARD_IDS` (`lib/leaderboardSongIds.js`)                              | `tests/api/leaderboard.song.test.js` — pins the canonical song-id list                    |
+| `REGION_FAMILIARITY_REPUTATION` (`src/domain/expedition/nodeIntel.ts`)                 | `scripts/game-balance-expedition-fog-probe.mjs`                                           |
+| `resetSecureRandomBatch` (`src/utils/crypto.ts`)                                       | `scripts/game-balance-simulation.mjs` — required before each reseed (`scripts/AGENTS.md`) |
 
 ### Test seams
 
@@ -200,6 +227,29 @@ Explicit dependency-injection or reset seams. Production uses the defaults.
 - `__testInternals` (`src/utils/crypto.ts`, `src/utils/unlockManager.ts`) — test-only access to module-private state.
 - `resetLastMinigameFallback` (`src/hooks/preGig/preGigUtils.ts`) — resets the pre-gig minigame fallback memo.
 - `useArrivalLogic` options `onShowHQ`, `onShowSupplyStop` and `rng` (`src/hooks/useArrivalLogic.ts`) — production (`TourbusScene`) passes no options; the TSDoc on each marks it a test seam.
+- `migrateLoadedSave` (`src/context/usePersistence.ts`) and `getQuarantineKey` (`src/utils/saveQuarantine.ts`) — used in-module by the load path and `quarantineSave`; exported so `tests/context/saveMigrationRecovery.test.tsx` can drive migration and read the quarantine slot directly.
+- `executeAudioAction` (`src/hooks/audioControlUtils.ts`) — used in-module by `createAudioHandlers`; exported for `tests/ui/audioControlUtils.test.jsx`.
+
+### Blanket rule: test-only value exports
+
+About 116 value exports have no production reference outside their own file and
+are exported only so tests (about 101) or the balance scripts in `scripts/`
+(about 15) can reach them; the largest groups are `failure.ts` (9),
+`assetConfig.ts` (8) and `purchaseLogicUtils.ts` (8). The in-file callers that
+were sampled are all live, so these are test or tooling seams, not dead code.
+
+They are kept and not listed one by one. The rule:
+
+- A value export whose only out-of-file consumers are under `tests/` or
+  `scripts/` is an intentional seam while its own module still uses it (or a
+  sibling module does). Do not demote it just because a production-only scan
+  flags it; that breaks the test or script that reaches it.
+- It becomes dead, and should be deleted with its tests, once nothing in its
+  own module or elsewhere in `src/` uses it any more.
+- A symbol that only exists for a test or script and has no in-module use at
+  all (an oracle or a reset hook) gets its own row in the tables above.
+- Type-only exports referenced only in their own file are not covered by this
+  rule; demote them (see the 2026-10-11 refresh).
 
 ### Composition-only Crew dispatch wrappers
 

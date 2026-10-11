@@ -5,7 +5,7 @@ import { ActionButton } from '../../../ui/shared/ActionButton'
 /**
  * Properties for the CancelButton component, extending ActionButton props but omitting children.
  */
-export type CancelButtonProps = Omit<
+type CancelButtonProps = Omit<
   ComponentPropsWithoutRef<typeof ActionButton>,
   'children'
 >

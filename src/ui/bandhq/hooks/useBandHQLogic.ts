@@ -34,7 +34,7 @@ type BandHQLogicParams = {
 /**
  * State and callbacks returned by the Band HQ orchestration hook.
  */
-export interface BandHQLogicResult {
+interface BandHQLogicResult {
   processingItemId: string | null
   handleVoidTrade: (item: VoidTraderItem) => void
   isVoidItemOwned: (item: VoidTraderItem) => boolean

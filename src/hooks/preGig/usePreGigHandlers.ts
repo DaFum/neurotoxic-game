@@ -71,7 +71,7 @@ export interface UsePreGigHandlersProps {
 /**
  * Return value of the usePreGigHandlers hook exposing state, derived values, and executable handlers.
  */
-export interface UsePreGigHandlersReturn {
+interface UsePreGigHandlersReturn {
   isStarting: boolean
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void

@@ -11,7 +11,7 @@ import {
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */
-export interface UseMinorHandlersProps {
+interface UseMinorHandlersProps {
   player: GameState['player']
   social: GameState['social']
   currentGig: GameState['currentGig']
