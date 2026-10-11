@@ -47,7 +47,12 @@ const EXPEDITION_EVENT_RESULTS: Readonly<
   crew_conflict_separated: {},
   crew_band_tension_heard: {},
   crew_breakthrough_followed: {},
-  crew_injury_scare_pushed: {}
+  crew_injury_scare_pushed: {},
+  crew_conflict_mediated: {},
+  crew_band_tension_dismissed: {},
+  crew_band_grudge_settled: {},
+  crew_route_dispute_settled: {},
+  crew_injury_scare_covered: {}
 }
 
 /**

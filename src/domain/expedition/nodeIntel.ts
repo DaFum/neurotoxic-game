@@ -18,7 +18,7 @@ import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { mulberry32 } from '../../utils/seededRng'
 import { pickIndex } from '../../utils/selectionUtils'
-import { buildExpeditionMap, hashExpeditionRoute } from './map'
+import { getActiveExpeditionMap, hashExpeditionRoute } from './map'
 import { hasExpeditionCareerRank } from './meta'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import type { GameState } from '../../types'
@@ -143,15 +143,8 @@ const resolveFamiliarNodeIds = (
   state: GameState,
   capacity: number
 ): readonly string[] => {
-  const loadout = state.expedition.loadout
-  if (capacity <= 0 || state.expedition.status !== 'active' || !loadout) {
-    return []
-  }
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = capacity > 0 ? getActiveExpeditionMap(state) : null
+  if (!map) return []
   // Reachable, not merely deeper. Once the route branches, the layers the run
   // passed up stay unvisited forever, and a node on a branch the player can no
   // longer take is a dead reveal: it would spend the entitlement showing

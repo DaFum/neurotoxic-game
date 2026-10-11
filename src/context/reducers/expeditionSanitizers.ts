@@ -36,6 +36,10 @@ import {
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
+import {
+  isBandInjuryStage,
+  isCrewInjuryStage
+} from '../../data/expedition/injuryStages'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
@@ -937,11 +941,15 @@ export const sanitizeExpeditionState = (
       stressByCrewId: sanitizeCrewStressMap(
         isLooseRecord(value.crew) ? value.crew.stressByCrewId : undefined
       ),
-      injuryByCrewId: sanitizeCrewInjuryMap(
-        isLooseRecord(value.crew) ? value.crew.injuryByCrewId : undefined
+      injuryByCrewId: sanitizeInjuryMap(
+        isLooseRecord(value.crew) ? value.crew.injuryByCrewId : undefined,
+        isCrewInjuryStage
       )
     },
-    bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
+    bandInjuryByMemberId: sanitizeInjuryMap(
+      value.bandInjuryByMemberId,
+      isBandInjuryStage
+    ),
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
     ...(value.resolvedEventSourceIds !== undefined
       ? {
@@ -1668,39 +1676,14 @@ const sanitizeCrewStressMap = (value: unknown): Record<string, number> => {
   return result
 }
 
-const sanitizeCrewInjuryMap = (
-  value: unknown
-): Record<string, 'none' | 'light' | 'serious'> => {
-  const result = Object.create(null) as Record<
-    string,
-    'none' | 'light' | 'serious'
-  >
+/** Keeps the entries of an injury map whose stage the guard accepts. */
+const sanitizeInjuryMap = <Stage extends string>(
+  value: unknown,
+  isStage: (entry: unknown) => entry is Stage
+): Record<string, Stage> => {
+  const result = Object.create(null) as Record<string, Stage>
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value))
-    if (
-      !isForbiddenKey(key) &&
-      (entry === 'none' || entry === 'light' || entry === 'serious')
-    )
-      result[key] = entry
-  return result
-}
-
-const sanitizeBandInjuryMap = (
-  value: unknown
-): Record<string, 'none' | 'light' | 'serious' | 'critical'> => {
-  const result = Object.create(null) as Record<
-    string,
-    'none' | 'light' | 'serious' | 'critical'
-  >
-  if (!isLooseRecord(value)) return result
-  for (const [key, entry] of Object.entries(value))
-    if (
-      !isForbiddenKey(key) &&
-      (entry === 'none' ||
-        entry === 'light' ||
-        entry === 'serious' ||
-        entry === 'critical')
-    )
-      result[key] = entry
+    if (!isForbiddenKey(key) && isStage(entry)) result[key] = entry
   return result
 }

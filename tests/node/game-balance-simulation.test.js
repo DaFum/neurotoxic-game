@@ -698,7 +698,7 @@ test('feature inventory is finite and matches the application snapshot', () => {
   }
   assert.equal(inventory.socialPlatformsAvailable, 4)
   assert.equal(inventory.questsAvailable, 35)
-  assert.equal(inventory.assetModulesAvailable, 63)
+  assert.equal(inventory.assetModulesAvailable, 66)
   assert.deepEqual(Object.keys(LOAN_PROFILES).sort(), [
     'coop',
     'loanShark',

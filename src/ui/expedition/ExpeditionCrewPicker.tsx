@@ -2,10 +2,8 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
 import { EXPEDITION_CREW } from '../../data/expedition/crew'
-import {
-  MAX_EXPEDITION_CREW,
-  isCrewAvailable
-} from '../../domain/expedition/crew'
+import { MAX_EXPEDITION_CREW } from '../../domain/expedition/crew'
+import { getAvailableCrewIds } from '../../domain/expedition/loadout'
 
 interface ExpeditionCrewPickerProps {
   selectedCrewIds: string[]
@@ -17,11 +15,7 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
   onChange
 }: ExpeditionCrewPickerProps) {
   const { t } = useTranslation('ui')
-  const availability = useGameSelector(state =>
-    Object.fromEntries(
-      EXPEDITION_CREW.map(crew => [crew.id, isCrewAvailable(state, crew.id)])
-    )
-  )
+  const availableCrewIds = useGameSelector(getAvailableCrewIds)
   return (
     <fieldset className='flex flex-col gap-2 border-2 border-steel-gray p-3'>
       <legend className='px-1 text-xs uppercase tracking-widest text-toxic-green'>
@@ -34,7 +28,7 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
         {EXPEDITION_CREW.map(crew => {
           const selected = selectedCrewIds.includes(crew.id)
           const disabled =
-            !availability[crew.id] ||
+            !availableCrewIds.includes(crew.id) ||
             (!selected && selectedCrewIds.length >= MAX_EXPEDITION_CREW)
           return (
             <button

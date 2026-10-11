@@ -121,6 +121,23 @@ export const hasForbiddenKeysDeep = (value: unknown): boolean =>
   findUnsafeKeyDeep(value) !== null
 
 /**
+ * Checks that a value is an array whose every entry is a string.
+ *
+ * Unlike {@link sanitizeStringArray}, this rejects rather than filters: a
+ * single non-string entry makes the whole value invalid.
+ *
+ * @param value - Arbitrary value, typically from an untrusted payload.
+ * @returns True when `value` is a `string[]`.
+ */
+export const isStringArray = (value: unknown): value is string[] => {
+  if (!Array.isArray(value)) return false
+  for (let i = 0, len = value.length; i < len; i++) {
+    if (typeof value[i] !== 'string') return false
+  }
+  return true
+}
+
+/**
  * Filters a value to the subset of its entries that are strings.
  *
  * Non-arrays yield an empty array, so the result is always a safe `string[]`.

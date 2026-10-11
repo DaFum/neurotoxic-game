@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { logger } from '../../utils/logger'
+import { isStringArray } from '../../utils/objectUtils'
 
 type FeatureSection = {
   title: string
@@ -9,14 +10,6 @@ type FeatureSection = {
   items?: string[]
   headers?: string[]
   rows?: string[][]
-}
-
-const isStringArray = (arr: unknown): arr is string[] => {
-  if (!Array.isArray(arr)) return false
-  for (let i = 0; i < arr.length; i++) {
-    if (typeof arr[i] !== 'string') return false
-  }
-  return true
 }
 
 const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {

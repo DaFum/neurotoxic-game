@@ -217,6 +217,17 @@ observation through `recordExpeditionArchiveObservations`, so a standalone
 dispatch is a redundant no-op for anything the run has met. It stays as the
 typed intent surface for Archive discoveries.
 
+`advanceExpeditionRoute`, `addExpeditionReward` and
+`acquireExpeditionCrewSignature` are composition-only the same way. Arrival
+advances the route through `applyExpeditionRouteAdvance` inside the travel
+reducer (`minigameReducer`); every reward source banks its ledger entry through
+`resolveExpeditionReward` in the reducer commit that proves it; and the
+Between-Tour `crew_debrief -> develop_signature` answer applies
+`handleAcquireExpeditionCrewSignature` inside the decision resolution. The
+dispatch methods stay as typed intent surfaces (the `advanceExpeditionRoute`
+creator also backs `scripts/game-balance-expedition-legendary.mjs`) and are
+documented as composition-only in `src/context/useGameDispatchActions.ts`.
+
 ### Standalone defect action constructors
 
 `revealExpeditionDefect`, `triggerExpeditionDefect`, and

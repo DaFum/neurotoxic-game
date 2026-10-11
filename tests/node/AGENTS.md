@@ -28,8 +28,8 @@
 
 ## Tourbus
 
-- `tourbusModules.test.js` enforces: 17 tourbus modules registered, every chassis slot type (except dynamic `tb_trailer_addon`) has at least one compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS`, and `tb_trailer_hitch` anti-stacking shape (`slotType` vs `addsSlots[0].slotType`, `maxPerAsset === 1`).
-- `tourbusAntiStacking.test.js` runs four end-to-end reducer scenarios via real action creators: hitch install grows the slot set by two `tb_trailer_addon` slots; hitch install into an addon slot fails with `SLOT_TYPE_MISMATCH`; a second hitch install on the same mount fails with `SLOT_OCCUPIED`; and stacking remains capped (no recursive expansion). Test stubs two temporary `tb_trailer_addon`-compatible modules in `before()`/`after()` since no production module declares that slotType — preserve the snapshot/restore pattern when adding new tourbus tests.
+- `tourbusModules.test.js` enforces: 20 tourbus modules registered, every chassis slot type plus the hitch-added `tb_trailer_addon` has at least one compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS`, and `tb_trailer_hitch` anti-stacking shape (`slotType` vs `addsSlots[0].slotType`, `maxPerAsset === 1`).
+- `tourbusAntiStacking.test.js` runs four end-to-end reducer scenarios via real action creators: hitch install grows the slot set by two `tb_trailer_addon` slots; hitch install into an addon slot fails with `SLOT_TYPE_MISMATCH`; a second hitch install on the same mount fails with `SLOT_OCCUPIED`; and stacking remains capped (no recursive expansion). The golden-path scenario installs the production addons `tb_trailer_merch_box` and `tb_trailer_bunk_pod`; preserve the snapshot/restore pattern when a new tourbus test mutates the registry.
 
 ## Studio
 
@@ -46,4 +46,4 @@
 
 - `workshopModules.test.js` enforces: 16 workshop modules registered, workshop modules use only workshop slot types, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, `mw_eco_ink_supply` has the print-module OR unlock, and `mw_darkweb_vendor` lists both `scam_or_bust` and `police_check`.
 - `workshopEconomyIntegration.test.js` covers: `mw_eco_ink_supply` OR-unlock through `isModuleUnlocked`, additive `baseDailyRevenueDelta` stacking (mailorder + bandcamp + sticker = 65), `mw_darkweb_vendor` risk selection via pinned `dayRngStream`, `mw_4color_carousel` merch-cost modifier aggregation, and `mw_vinyl_cutter` limited-edition flag aggregation.
-- `allSectionsIntegrationSmoke.test.js` pins the cross-section totals: 63 modules total (17 Tourbus + 14 Studio + 16 Bandhaus + 16 Workshop), all 4 `SECTION_VIEWS` entries registered, and every `SlotType` from the union mapped in at least one section config.
+- `allSectionsIntegrationSmoke.test.js` pins the cross-section totals: 66 modules total (20 Tourbus + 14 Studio + 16 Bandhaus + 16 Workshop), all 4 `SECTION_VIEWS` entries registered, and every `SlotType` from the union mapped in at least one section config.

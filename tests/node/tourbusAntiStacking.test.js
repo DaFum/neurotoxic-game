@@ -1,90 +1,20 @@
-import { describe, it, before, after } from 'node:test'
+import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
-import {
-  MODULE_PROMPTS,
-  MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry'
+import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
 import {
   purchaseChassis,
   installModule
 } from '../../src/context/assetActionCreators'
 
 // Integration tests for tb_trailer_hitch anti-stacking rules.
-// Pattern mirrors assetGoldenPath.test.js: snapshot → mutate → restore.
 
-// Stub module id for tb_trailer_addon slot (no real module uses that slot type yet)
-const ADDON_MODULE_A = 'tb_test_trailer_box_a'
-const ADDON_MODULE_B = 'tb_test_trailer_box_b'
-
-let snapshot
-
-before(() => {
-  snapshot = {
-    addonA: MODULE_REGISTRY[ADDON_MODULE_A],
-    addonB: MODULE_REGISTRY[ADDON_MODULE_B],
-    promptA: MODULE_PROMPTS['tb_test_trailer_box_a'],
-    promptB: MODULE_PROMPTS['tb_test_trailer_box_b']
-  }
-
-  // Register two minimal stub modules for tb_trailer_addon slots.
-  // These are test-only; removed in after().
-  MODULE_REGISTRY[ADDON_MODULE_A] = {
-    id: ADDON_MODULE_A,
-    ownerKind: 'tourbus_chassis',
-    slotType: 'tb_trailer_addon',
-    flavor: 'legit',
-    cost: 100,
-    installCost: 0,
-    removalRefundFraction: 0,
-    boni: { merchCapacityBonus: 10 },
-    unlock: {},
-    imagePromptKey: 'tb_test_trailer_box_a'
-  }
-  MODULE_REGISTRY[ADDON_MODULE_B] = {
-    id: ADDON_MODULE_B,
-    ownerKind: 'tourbus_chassis',
-    slotType: 'tb_trailer_addon',
-    flavor: 'legit',
-    cost: 100,
-    installCost: 0,
-    removalRefundFraction: 0,
-    boni: { merchCapacityBonus: 10 },
-    unlock: {},
-    imagePromptKey: 'tb_test_trailer_box_b'
-  }
-  MODULE_PROMPTS['tb_test_trailer_box_a'] = 'pixel art test trailer box a'
-  MODULE_PROMPTS['tb_test_trailer_box_b'] = 'pixel art test trailer box b'
-})
-
-after(() => {
-  if (snapshot.addonA !== undefined) {
-    MODULE_REGISTRY[ADDON_MODULE_A] = snapshot.addonA
-  } else {
-    delete MODULE_REGISTRY[ADDON_MODULE_A]
-  }
-
-  if (snapshot.addonB !== undefined) {
-    MODULE_REGISTRY[ADDON_MODULE_B] = snapshot.addonB
-  } else {
-    delete MODULE_REGISTRY[ADDON_MODULE_B]
-  }
-
-  if (snapshot.promptA !== undefined) {
-    MODULE_PROMPTS['tb_test_trailer_box_a'] = snapshot.promptA
-  } else {
-    delete MODULE_PROMPTS['tb_test_trailer_box_a']
-  }
-
-  if (snapshot.promptB !== undefined) {
-    MODULE_PROMPTS['tb_test_trailer_box_b'] = snapshot.promptB
-  } else {
-    delete MODULE_PROMPTS['tb_test_trailer_box_b']
-  }
-})
+// Production addons for the two tb_trailer_addon slots the hitch adds.
+const ADDON_MODULE_A = 'tb_trailer_merch_box'
+const ADDON_MODULE_B = 'tb_trailer_bunk_pod'
 
 /**
  * Build a state with a tourbus_chassis tier 3 asset purchased via cash.
@@ -129,6 +59,13 @@ const buildTier3State = () => {
 }
 
 describe('Tourbus anti-stacking — tb_trailer_hitch integration', () => {
+  it('the addon modules are real tb_trailer_addon registrations', () => {
+    for (const id of [ADDON_MODULE_A, ADDON_MODULE_B]) {
+      assert.equal(MODULE_REGISTRY[id]?.slotType, 'tb_trailer_addon')
+      assert.equal(MODULE_REGISTRY[id]?.addsSlots, undefined)
+    }
+  })
+
   it('Test 1: installing tb_trailer_hitch adds exactly 2 tb_trailer_addon slots with addedByModuleId', () => {
     let state = buildTier3State()
     const asset = state.assets[0]
@@ -276,7 +213,7 @@ describe('Tourbus anti-stacking — tb_trailer_hitch integration', () => {
     )
     assert.equal(addonSlots.length, 2, 'exactly 2 addon slots after hitch')
 
-    // Install stub module A into first addon slot
+    // Install addon module A into first addon slot
     const installA = installModule(
       {
         assetId: updatedAsset.id,
@@ -299,7 +236,7 @@ describe('Tourbus anti-stacking — tb_trailer_hitch integration', () => {
       'still exactly 2 addon slots after first addon install (no expansion)'
     )
 
-    // Install stub module B into second addon slot
+    // Install addon module B into second addon slot
     const installB = installModule(
       {
         assetId: updatedAsset.id,

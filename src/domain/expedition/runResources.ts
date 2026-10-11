@@ -17,38 +17,18 @@
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
-import { getExpeditionSpendableCash } from './loadout'
 import {
+  getExpeditionProtectedCash,
+  getExpeditionSpendableCash
+} from './loadout'
+import {
+  EXPEDITION_CONDITION_TIER_LABELS,
   getExpeditionConditionSummary,
   getExpeditionConditionTier
 } from './condition'
 import type { GameState } from '../../types'
+import type { ExpeditionHudConditionBand } from '../../types/expedition'
 import { getEffectiveExpeditionRules } from './effectiveRules'
-
-/**
- * Semantic condition band shown next to the numeric value.
- */
-type ExpeditionConditionBand = 'good' | 'worn' | 'critical' | 'breaking'
-
-/**
- * Resolves a condition value into its semantic band.
- *
- * @param condition - Condition value in `0..100`.
- * @returns The band label.
- *
- * @remarks
- * Thresholds come from `getExpeditionConditionTier`; the HUD does not tell a
- * nearly dead group from a dead one, so `breaking` covers both of those tiers.
- */
-const getExpeditionConditionBand = (
-  condition: number
-): ExpeditionConditionBand => {
-  const tier = getExpeditionConditionTier(condition)
-  if (tier === 'healthy') return 'good'
-  if (tier === 'worn') return 'worn'
-  if (tier === 'damaged') return 'critical'
-  return 'breaking'
-}
 
 /**
  * Negative attention accumulated by the run.
@@ -135,7 +115,7 @@ export interface ExpeditionRunResources {
   stamina: number
   harmony: number
   condition: number
-  conditionBand: ExpeditionConditionBand
+  conditionBand: ExpeditionHudConditionBand
   heat: number
 }
 
@@ -152,15 +132,14 @@ export const getExpeditionRunResources = (
   return {
     cash: getExpeditionSpendableCash(state),
     totalCash: Math.max(0, finiteNumberOr(state.player.money, 0)),
-    protectedCash:
-      state.expedition?.status === 'active'
-        ? Math.max(0, finiteNumberOr(state.expedition.protectedCareerCash, 0))
-        : 0,
+    protectedCash: getExpeditionProtectedCash(state),
     fuel: clampPercent(state.player.van?.fuel),
     stamina: getExpeditionStamina(state),
     harmony: clampPercent(state.band.harmony),
     condition,
-    conditionBand: getExpeditionConditionBand(condition),
+    conditionBand:
+      EXPEDITION_CONDITION_TIER_LABELS[getExpeditionConditionTier(condition)]
+        .hud,
     heat: clampPercent(getExpeditionHeat(state))
   }
 }

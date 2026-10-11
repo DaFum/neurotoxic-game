@@ -34,6 +34,7 @@ import {
   MAX_BETWEEN_TOUR_DECISIONS
 } from '../../data/expedition/betweenTour'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { EXPEDITION_BAND_INJURY_STAGES } from '../../data/expedition/injuryStages'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getEligibleCrewSignatureTrait } from './career'
 import { finiteNumberOr } from '../../utils/finiteNumber'
@@ -49,9 +50,6 @@ import {
   getExpeditionFuelTopUpCost,
   EXPEDITION_MAX_STARTING_FUEL
 } from './loadout'
-
-/** Band consequence stages, weakest first. */
-const BAND_CONSEQUENCE_ORDER = ['none', 'light', 'serious', 'critical'] as const
 
 /**
  * Picks one candidate from a set the design declares equal.
@@ -128,7 +126,7 @@ const resolveInjuryRehabTarget = (
       if (Object.hasOwn(consequenceMap, memberId)) {
         const stage = consequenceMap[memberId]
         if (!stage || stage === 'none') continue
-        const stageIndex = BAND_CONSEQUENCE_ORDER.indexOf(stage)
+        const stageIndex = EXPEDITION_BAND_INJURY_STAGES.indexOf(stage)
         if (stageIndex < 0) continue
         if (
           stageIndex > worstStageIndex ||
@@ -574,9 +572,9 @@ export const applyBetweenTourDecisionOption = (
         const memberId = decision.target.id
         const current =
           state.career.bandConsequenceByMemberId[memberId] ?? 'none'
-        const index = BAND_CONSEQUENCE_ORDER.indexOf(current)
+        const index = EXPEDITION_BAND_INJURY_STAGES.indexOf(current)
         if (index <= 0) return null
-        const reduced = BAND_CONSEQUENCE_ORDER[index - 1] ?? 'none'
+        const reduced = EXPEDITION_BAND_INJURY_STAGES[index - 1] ?? 'none'
         const next = Object.assign(
           Object.create(null),
           paid.career.bandConsequenceByMemberId

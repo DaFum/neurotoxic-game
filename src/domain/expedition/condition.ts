@@ -9,6 +9,8 @@
 import type {
   ConditionGroup,
   ExpeditionConditionPerformanceProfile,
+  ExpeditionHudConditionBand,
+  ExpeditionInspectionConditionBand,
   ExpeditionTechnicalCondition
 } from '../../types/expedition'
 import type { GameState, PostGigSummary } from '../../types'
@@ -47,8 +49,8 @@ export const clampCondition = (value: unknown): number => {
  *
  * @remarks
  * The one band vocabulary. Run HUD and inspection readouts each present a
- * coarser label set over it (see `getExpeditionConditionBand` and
- * `getConditionBand`), but both derive their thresholds from this table.
+ * coarser label set over it (see `EXPEDITION_CONDITION_TIER_LABELS`), but both
+ * derive their thresholds from this table.
  *
  * The 20..39 tier is `damaged`, not `critical`: `critical` already names a
  * presentation label (the HUD's 20..39 band, the inspection readout's 1..39
@@ -57,6 +59,31 @@ export const clampCondition = (value: unknown): number => {
  */
 export type ExpeditionConditionTier =
   'healthy' | 'worn' | 'damaged' | 'breaking' | 'disabled'
+
+/**
+ * The label each surface shows for a condition tier.
+ *
+ * @remarks
+ * One table, so the two readouts' deliberate disagreement is visible in one
+ * place: the run HUD does not tell a nearly dead group from a dead one
+ * (`breaking` covers both), while inspections report a dead group on its own
+ * and collapse the two lowest live tiers into `critical`. The word `critical`
+ * therefore names `damaged` on the HUD and `damaged` + `breaking` in an
+ * inspection.
+ */
+export const EXPEDITION_CONDITION_TIER_LABELS = {
+  healthy: { hud: 'good', inspection: 'optimal' },
+  worn: { hud: 'worn', inspection: 'degraded' },
+  damaged: { hud: 'critical', inspection: 'critical' },
+  breaking: { hud: 'breaking', inspection: 'critical' },
+  disabled: { hud: 'breaking', inspection: 'disabled' }
+} as const satisfies Record<
+  ExpeditionConditionTier,
+  {
+    hud: ExpeditionHudConditionBand
+    inspection: ExpeditionInspectionConditionBand
+  }
+>
 
 /**
  * Inclusive lower bound of each tier above disabled, best first.

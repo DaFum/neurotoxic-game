@@ -9,6 +9,8 @@
  */
 
 import type {
+  ExpeditionBandInjuryStage,
+  ExpeditionCrewInjuryStage,
   ExpeditionRouteProfile,
   ExpeditionState
 } from '../../types/expedition'
@@ -130,12 +132,12 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     stressByCrewId: Object.create(null) as Record<string, number>,
     injuryByCrewId: Object.create(null) as Record<
       string,
-      'none' | 'light' | 'serious'
+      ExpeditionCrewInjuryStage
     >
   },
   bandInjuryByMemberId: Object.create(null) as Record<
     string,
-    'none' | 'light' | 'serious' | 'critical'
+    ExpeditionBandInjuryStage
   >,
   resolvedCrewSourceIds: [],
   resolvedEventSourceIds: [],
