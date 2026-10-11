@@ -36,7 +36,8 @@ vi.mock('react-i18next', () => ({
         return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
           String(options[token] ?? `{{${token}}}`)
         )
-      }
+      },
+      i18n: { language: 'en', changeLanguage: () => {}, options: {} }
     }
   },
   initReactI18next: { type: '3rdParty', init: () => {} }

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar } from '../../../ui/shared/ProgressBar'
-import { formatNumber } from '../../../utils/numberUtils'
+import { formatNumber, formatPercent } from '../../../utils/numberUtils'
 import type { AmpHUDProps } from '../../../types/components'
 import type { TranslationCallback } from '../../../types/callbacks'
 
@@ -9,11 +9,20 @@ type IndicatorProps = {
   t: TranslationCallback
 }
 
+/** Locale-aware whole-percent readout for a 0-100 HUD meter. */
+const formatMeterPercent = (value: number, language: string): string =>
+  formatPercent(Math.floor(value) / 100, language)
+
 function VoidResonanceIndicator({
   voidResonance,
   isAnomalyActive,
+  language,
   t
-}: IndicatorProps & { voidResonance: number; isAnomalyActive: boolean }) {
+}: IndicatorProps & {
+  voidResonance: number
+  isAnomalyActive: boolean
+  language: string
+}) {
   if (voidResonance <= 0 && !isAnomalyActive) return null
 
   return (
@@ -31,7 +40,7 @@ function VoidResonanceIndicator({
               })}
         </span>
         <span className='text-electric-blue text-xs'>
-          {Math.floor(voidResonance)}%
+          {formatMeterPercent(voidResonance, language)}
         </span>
       </div>
       <ProgressBar
@@ -52,8 +61,9 @@ function VoidResonanceIndicator({
 function HeatIndicator({
   heat,
   isOverheat,
+  language,
   t
-}: IndicatorProps & { heat: number; isOverheat: boolean }) {
+}: IndicatorProps & { heat: number; isOverheat: boolean; language: string }) {
   return (
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
@@ -69,7 +79,7 @@ function HeatIndicator({
         <span
           className={`text-xs ${isOverheat ? 'text-error-red' : 'text-warning-yellow'}`}
         >
-          {Math.floor(heat)}%
+          {formatMeterPercent(heat, language)}
         </span>
       </div>
       <ProgressBar
@@ -132,8 +142,9 @@ function HijackIndicator({
 
 function InterferenceIndicator({
   interference,
+  language,
   t
-}: IndicatorProps & { interference: number }) {
+}: IndicatorProps & { interference: number; language: string }) {
   if (interference <= 0) return null
 
   return (
@@ -145,7 +156,7 @@ function InterferenceIndicator({
           })}
         </span>
         <span className='text-error-red text-xs'>
-          {Math.floor(interference)}%
+          {formatMeterPercent(interference, language)}
         </span>
       </div>
       <ProgressBar
@@ -208,16 +219,24 @@ export const AmpHUD = memo(function AmpHUD({
               defaultValue: 'STABILITY:'
             })}
           </span>
-          <span className='text-toxic-green'>{Math.floor(score)}%</span>
+          <span className='text-toxic-green'>
+            {formatMeterPercent(score, i18n.language)}
+          </span>
         </div>
 
         <VoidResonanceIndicator
           voidResonance={voidResonance}
           isAnomalyActive={isAnomalyActive}
+          language={i18n.language}
           t={t}
         />
 
-        <HeatIndicator heat={heat} isOverheat={isOverheat} t={t} />
+        <HeatIndicator
+          heat={heat}
+          isOverheat={isOverheat}
+          language={i18n.language}
+          t={t}
+        />
 
         <HijackIndicator
           isHijackActive={isHijackActive}
@@ -253,7 +272,11 @@ export const AmpHUD = memo(function AmpHUD({
           </div>
         )}
 
-        <InterferenceIndicator interference={interference} t={t} />
+        <InterferenceIndicator
+          interference={interference}
+          language={i18n.language}
+          t={t}
+        />
       </div>
     </div>
   )
