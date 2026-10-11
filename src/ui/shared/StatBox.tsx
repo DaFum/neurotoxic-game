@@ -8,29 +8,25 @@ import { FrameCorners } from './FrameCorners'
 
 /**
  * StatBox - Displays a single statistic with an icon
- * @param props - Statistic label, display value, icon, and optional wrapper classes.
+ * @param props - Statistic label, display value, and icon.
  */
 interface StatBoxProps {
   label: string
   value: string | number
   icon: ReactNode
-  className?: string
 }
 
 /**
  * Displays a labeled stat value with optional icon and color styling.
- * @param props - Statistic label, display value, icon, and optional wrapper classes.
+ * @param props - Statistic label, display value, and icon.
  */
 export const StatBox = memo(function StatBox({
   label,
   value,
-  icon,
-  className = ''
+  icon
 }: StatBoxProps) {
   return (
-    <div
-      className={`relative bg-charcoal-gray p-3 flex flex-col items-center justify-center border border-steel-gray group overflow-hidden ${className}`}
-    >
+    <div className='relative bg-charcoal-gray p-3 flex flex-col items-center justify-center border border-steel-gray group overflow-hidden'>
       <FrameCorners className='w-3 h-3 text-steel-gray opacity-30 transition-opacity group-hover:opacity-60' />
 
       <div className='relative flex flex-col items-center'>

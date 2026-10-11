@@ -4,7 +4,7 @@ import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
 
 /** Tuning values for the pirate-radio social action. */
-export const PIRATE_RADIO_CONFIG: ZealotryActionConfig = {
+const PIRATE_RADIO_CONFIG: ZealotryActionConfig = {
   COST: 200,
   FAME_GAIN: 150,
   ZEALOTRY_GAIN: 15,

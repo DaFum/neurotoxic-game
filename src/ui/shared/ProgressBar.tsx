@@ -25,7 +25,6 @@ interface ProgressBarProps extends Omit<
   size?: ProgressBarSize
   showValue?: boolean
   warn?: boolean
-  className?: string
   /**
    * Replaces the default track chrome (border, background, height) so compact
    * HUD meters keep their own frame while sharing the clamping and ARIA wiring.
@@ -47,7 +46,6 @@ export const ProgressBar = memo(function ProgressBar({
   size = 'md',
   showValue = true,
   warn = false,
-  className = '',
   trackClassName,
   fillClassName = 'transition-all duration-500',
   ...props
@@ -62,7 +60,7 @@ export const ProgressBar = memo(function ProgressBar({
 
   return (
     <div
-      className={`w-full ${className}`}
+      className='w-full'
       role='progressbar'
       aria-valuenow={Math.floor(Math.min(safeValue, safeMax))}
       aria-valuemin={0}

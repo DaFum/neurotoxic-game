@@ -18,6 +18,7 @@ import type {
   SetLastGigStats
 } from '../../../types/rhythmGame'
 import type { RhythmStateSetters } from '../useRhythmGameState'
+import type { OptionalToastCallback } from '../../../types/callbacks'
 
 /**
  * Configuration parameters for the `useHandleMiss` hook.
@@ -36,7 +37,7 @@ type HandleMissParams = {
     | 'setAccuracy'
   >
   contextActions: {
-    addToast: (message: string, type?: string) => void
+    addToast: OptionalToastCallback
     setLastGigStats: SetLastGigStats
     endGig: () => void
   }

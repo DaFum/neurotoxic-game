@@ -1,9 +1,6 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import {
-  usePirateRadio,
-  PIRATE_RADIO_CONFIG
-} from '../../src/hooks/usePirateRadio'
+import { usePirateRadio } from '../../src/hooks/usePirateRadio'
 
 vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: { playSFX: vi.fn() }
@@ -139,6 +136,7 @@ describe('usePirateRadio', () => {
       result.current.triggerBroadcast()
     })
 
+    const { PIRATE_RADIO_CONFIG } = result.current
     expect(audioManager.playSFX).toHaveBeenCalledWith('cash')
     expect(mockGameState.pirateBroadcast).toHaveBeenCalledWith({
       cost: PIRATE_RADIO_CONFIG.COST,

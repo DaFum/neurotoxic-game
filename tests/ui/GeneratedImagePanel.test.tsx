@@ -42,18 +42,13 @@ describe('GeneratedImagePanel', () => {
     )
   })
 
-  it('calls onLoad when image fires onLoad', () => {
-    const onLoadMock = vi.fn()
-    render(
-      <GeneratedImagePanel
-        prompt='test prompt'
-        alt='test'
-        onLoad={onLoadMock}
-      />
+  it('removes the loading skeleton once the image loads', () => {
+    const { container } = render(
+      <GeneratedImagePanel prompt='test prompt' alt='test' />
     )
-    const img = screen.getByRole('img')
-    fireEvent.load(img)
-    expect(onLoadMock).toHaveBeenCalled()
+    expect(container.querySelector('.gen-image-skeleton')).not.toBeNull()
+    fireEvent.load(screen.getByRole('img'))
+    expect(container.querySelector('.gen-image-skeleton')).toBeNull()
   })
 
   it('same prompt yields same URL deterministically', () => {

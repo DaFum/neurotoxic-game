@@ -46,12 +46,10 @@ const LogRow = ({ log }: { log: LogEntry }) => (
 )
 
 const DebugLogViewerContent = ({
-  className,
   onClose,
   filterLevel,
   setFilterLevel
 }: {
-  className: string
   onClose: () => void
   filterLevel: number
   setFilterLevel: (level: number) => void
@@ -64,7 +62,7 @@ const DebugLogViewerContent = ({
 
   return (
     <div
-      className={`fixed inset-0 pointer-events-none flex flex-col justify-end ${className}`}
+      className='fixed inset-0 pointer-events-none flex flex-col justify-end'
       style={{ zIndex: 'var(--z-debug)' }}
     >
       <div className='pointer-events-auto bg-void-black/90 border-t-2 border-toxic-green h-[40svh] flex flex-col font-mono text-xs'>
@@ -158,10 +156,10 @@ const DebugLogViewerContent = ({
 }
 
 /**
- * Displays filtered debug-log entries and viewer controls.
- * @param props - Display data and visual options for the debug log viewer view.
+ * Displays filtered debug-log entries and viewer controls (DEV only, toggled
+ * with Ctrl+`).
  */
-export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
+export const DebugLogViewer = () => {
   const [visible, setVisible] = useState(false)
   const [filterLevel, setFilterLevel] = useState<number>(logger.minLevel)
 
@@ -182,7 +180,6 @@ export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
 
   return (
     <DebugLogViewerContent
-      className={className}
       onClose={() => setVisible(false)}
       filterLevel={filterLevel}
       setFilterLevel={level => {

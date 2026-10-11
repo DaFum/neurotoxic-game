@@ -54,7 +54,7 @@ import {
   dismissForeclosureNotice,
   createSetPendingRiskEventAction
 } from '../../src/context/actionCreators'
-import { ActionTypes } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 
 describe('Action Creators', () => {
   // Hoisted fixtures reused across table entries

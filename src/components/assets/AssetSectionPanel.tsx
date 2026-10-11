@@ -2,7 +2,11 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
 import { Tooltip } from '../../ui/shared'
-import type { AssetKind, LongTermAsset } from '../../types/assets'
+import type {
+  AssetKind,
+  AssetSectionShortLabel,
+  LongTermAsset
+} from '../../types/assets'
 import { AssetSectionDeck } from './AssetSectionDeck'
 import { ChassisAcquisitionModal } from './ChassisAcquisitionModal'
 import { CrowdfundCampaignCard } from './CrowdfundCampaignCard'
@@ -24,10 +28,7 @@ const SECTION_LABELS = {
   studio_chassis: 'studio',
   bandhaus_chassis: 'bandhaus',
   merch_workshop_chassis: 'workshop'
-} as const satisfies Record<
-  AssetKind,
-  'tourbus' | 'studio' | 'bandhaus' | 'workshop'
->
+} as const satisfies Record<AssetKind, AssetSectionShortLabel>
 
 /**
  * Defines the configuration properties for the AssetSectionPanel component.

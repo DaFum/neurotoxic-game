@@ -4,6 +4,7 @@ import { GAME_PHASES } from '../../../context/gameConstants'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { GamePhase } from '../../../types/game'
 import type { TFunction } from 'i18next'
+import type { ToastCallback } from '../../../types/callbacks'
 
 interface UseMainMenuLoadProps {
   setIsLoadingGame: (val: boolean) => void
@@ -11,7 +12,7 @@ interface UseMainMenuLoadProps {
   changeScene: (scene: GamePhase) => void
   initializeAudio: () => void
   setShowExistingSavePrompt: (val: boolean) => void
-  addToast: (msg: string, type: 'error' | 'success' | 'info') => void
+  addToast: ToastCallback
   tRef: MutableRefObject<TFunction>
 }
 

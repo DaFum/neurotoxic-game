@@ -55,8 +55,8 @@ mock.module(new URL('../../src/utils/traitUtils.ts', import.meta.url).href, {
 })
 
 // Import SUT after mocking
-const { gameReducer, ActionTypes } =
-  await import('../../src/context/gameReducer')
+const { gameReducer } = await import('../../src/context/gameReducer')
+const { ActionTypes } = await import('../../src/context/actionTypes')
 const { logger } = await import('../../src/utils/logger')
 
 const { createInitialState } = await import('../../src/context/initialState')

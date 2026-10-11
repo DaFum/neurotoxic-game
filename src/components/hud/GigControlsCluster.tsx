@@ -1,9 +1,10 @@
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Menu, X, Volume2, VolumeX, HelpCircle, Pause } from 'lucide-react'
+import { Menu, X, Volume2, VolumeX, Pause } from 'lucide-react'
 import {
   Tooltip,
   KeyboardShortcutsPanel,
+  ShortcutsToggle,
   useKeyboardShortcuts
 } from '../../ui/shared'
 import { useAudioControl } from '../../hooks/useAudioControl'
@@ -114,29 +115,14 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                 )}
               </button>
             </Tooltip>
-            <Tooltip
-              content={t('ui:button.shortcuts', {
-                defaultValue: 'Shortcuts (?, h)'
-              })}
-            >
-              <button
-                type='button'
-                onClick={() => setShowHelp(prev => !prev)}
-                aria-pressed={showHelp}
-                aria-expanded={showHelp}
-                aria-controls={showHelp ? 'shortcuts-panel' : undefined}
-                aria-label={t('ui:aria.shortcutsHelp', {
-                  defaultValue: 'Toggle keyboard shortcuts help'
-                })}
-                className={`${BUTTON_BASE} ${
-                  showHelp
-                    ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
-                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-                }`}
-              >
-                <HelpCircle size={20} aria-hidden='true' />
-              </button>
-            </Tooltip>
+            <ShortcutsToggle
+              showHelp={showHelp}
+              onToggle={() => setShowHelp(prev => !prev)}
+              className={BUTTON_BASE}
+              activeClassName='border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
+              inactiveClassName='border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
+              iconSize={20}
+            />
             {onTogglePause && (
               <Tooltip
                 content={t('ui:gig.pause', {

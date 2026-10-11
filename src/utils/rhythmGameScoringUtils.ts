@@ -13,6 +13,16 @@ export const LANE_INDICES = {
   BASS: 2
 }
 
+/**
+ * Lanes in display order with their stable ids (the `ui:rhythm.lane_*` key
+ * suffix). Shared by the touch input area and the desktop key hint.
+ */
+export const RHYTHM_LANES = [
+  { index: LANE_INDICES.GUITAR, id: 'guitar' },
+  { index: LANE_INDICES.DRUMS, id: 'drums' },
+  { index: LANE_INDICES.BASS, id: 'bass' }
+] as const
+
 const CONSTANTS = {
   GUITAR_MIN_DIFFICULTY: 0.1,
   BASE_POINTS: 100,

@@ -7,14 +7,9 @@ const getRandomChatterMock = vi.hoisted(() =>
   vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' }))
 )
 
-vi.mock('../../src/data/chatter', async () => {
-  const { GAME_PHASES } = await import('../../src/context/gameConstants')
-  return {
-    getRandomChatter: getRandomChatterMock,
-    CHATTER_DB: [],
-    ALLOWED_DEFAULT_SCENES: [GAME_PHASES.GIG]
-  }
-})
+vi.mock('../../src/data/chatter', () => ({
+  getRandomChatter: getRandomChatterMock
+}))
 
 afterEach(() => {
   vi.useRealTimers()

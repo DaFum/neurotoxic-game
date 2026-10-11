@@ -1,10 +1,8 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import {
-  useDarkWebLeak,
-  DARK_WEB_LEAK_CONFIG
-} from '../../src/hooks/useDarkWebLeak'
+import { useDarkWebLeak } from '../../src/hooks/useDarkWebLeak'
 import { logger } from '../../src/utils/logger'
+import { BALANCE_CONFIG } from '../../src/config/balance'
 
 vi.mock('../../src/utils/audio/audioEngine', () => {
   const playSFX = vi.fn()
@@ -25,6 +23,15 @@ vi.mock('../../src/context/GameState.tsx', () => ({
   useGameActions: () => mockGameState,
   useGameSelector: selector => selector(mockGameState)
 }))
+
+// The tuning constants are module-private; production reads them through the
+// hook's return value, so the tests do the same.
+const readLeakConfig = () => {
+  const { result, unmount } = renderHook(() => useDarkWebLeak())
+  const config = result.current.DARK_WEB_LEAK_CONFIG
+  unmount()
+  return config
+}
 
 describe('useDarkWebLeak', () => {
   beforeEach(() => {
@@ -63,9 +70,15 @@ describe('useDarkWebLeak', () => {
     expect(result.current.canLeak).toBe(false)
   })
 
+  it('gates on the shared high-controversy threshold from BALANCE_CONFIG', () => {
+    expect(readLeakConfig().REQUIRED_CONTROVERSY).toBe(
+      BALANCE_CONFIG.social.highControversyThreshold
+    )
+  })
+
   it('cannot leak below the required controversy threshold', () => {
     mockGameState.social.controversyLevel =
-      DARK_WEB_LEAK_CONFIG.REQUIRED_CONTROVERSY - 1
+      readLeakConfig().REQUIRED_CONTROVERSY - 1
     const { result } = renderHook(() => useDarkWebLeak())
 
     expect(result.current.canLeak).toBe(false)
@@ -103,14 +116,14 @@ describe('useDarkWebLeak', () => {
   })
 
   it('cannot leak without enough money for the cost', () => {
-    mockGameState.player.money = DARK_WEB_LEAK_CONFIG.COST - 1
+    mockGameState.player.money = readLeakConfig().COST - 1
     const { result } = renderHook(() => useDarkWebLeak())
 
     expect(result.current.canLeak).toBe(false)
   })
 
   it('cannot leak without enough harmony', () => {
-    mockGameState.band.harmony = DARK_WEB_LEAK_CONFIG.HARMONY_COST - 1
+    mockGameState.band.harmony = readLeakConfig().HARMONY_COST - 1
     const { result } = renderHook(() => useDarkWebLeak())
 
     expect(result.current.canLeak).toBe(false)
@@ -144,6 +157,7 @@ describe('useDarkWebLeak', () => {
       result.current.triggerLeak()
     })
 
+    const { DARK_WEB_LEAK_CONFIG } = result.current
     expect(audioService.playSFX).toHaveBeenCalledWith('cash')
     expect(mockGameState.darkWebLeak).toHaveBeenCalledWith({
       cost: DARK_WEB_LEAK_CONFIG.COST,

@@ -2,11 +2,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import path from 'node:path'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { getRandomChatter } from '../../src/data/chatter'
 import {
   ALLOWED_DEFAULT_SCENES,
-  CHATTER_DB,
-  getRandomChatter
-} from '../../src/data/chatter'
+  CHATTER_DB
+} from '../../src/data/chatter/standardChatter'
 import { VENUE_CHATTER_DB } from '../../src/data/chatter/venueChatter'
 import { readLocaleJson, resetLocaleJsonCache } from '../utils/localeTestUtils'
 
