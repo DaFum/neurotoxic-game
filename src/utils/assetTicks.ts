@@ -17,6 +17,7 @@ import {
   calculateFameLevel,
   clampMemberMood,
   clampMemberStamina,
+  clampPlayerFame,
   finiteNumberOr,
   isEmptyObject
 } from './gameState'
@@ -57,6 +58,36 @@ export const resolveCrowdfundProbability = (
   const raw =
     0.25 + 0.5 * fameComponent + 0.3 * sceneComponent - 0.4 * difficulty
   return Math.max(0.05, Math.min(0.95, raw))
+}
+
+/**
+ * Absorbs float error in `rate × day` (e.g. `0.29 × 100 = 28.999…`) so a
+ * product that is mathematically an integer floors to that integer.
+ */
+const DAILY_RATE_EPSILON = 1e-9
+
+/**
+ * Whole units of a per-day rate that fall due on `day`.
+ *
+ * @remarks
+ * Fame, mood and stamina are integer stats (their clamps floor), so a
+ * fractional daily bonus added directly is floored away every day. Instead the
+ * tick pays out `floor(rate × (day + 1)) − floor(rate × day)`: a 0.5/day bonus
+ * pays 1 every second day and 0.1/day pays 1 every tenth day. Over any run of
+ * consecutive days the total equals `floor(rate × days)` within one unit, so
+ * the long-run rate is exact without a persisted carry field. Integer rates pay
+ * exactly `rate` every day.
+ *
+ * @param ratePerDay - Finite aggregated daily rate (may be negative).
+ * @param day - Finite current game day.
+ * @returns Integer amount to apply on this day.
+ */
+const wholeUnitsForDay = (ratePerDay: number, day: number): number => {
+  if (ratePerDay === 0) return 0
+  return (
+    Math.floor(ratePerDay * (day + 1) + DAILY_RATE_EPSILON) -
+    Math.floor(ratePerDay * day + DAILY_RATE_EPSILON)
+  )
 }
 
 /**
@@ -101,8 +132,15 @@ export const processAssetTick = (state: GameState): GameState => {
     nextAssets.push({ ...asset, condition })
   }
 
+  // Fractional per-day boni pay out in whole units on a day-indexed schedule
+  // (see wholeUnitsForDay) so the integer clamps below don't floor them away.
+  const day = Math.floor(finiteNumberOr(state.player.day, 0))
+  fameDelta = wholeUnitsForDay(fameDelta, day)
+  moodDelta = wholeUnitsForDay(moodDelta, day)
+  staminaDelta = wholeUnitsForDay(staminaDelta, day)
+
   const currentFame = finiteNumberOr(state.player.fame, 0)
-  const nextFame = Math.max(0, currentFame + fameDelta)
+  const nextFame = clampPlayerFame(currentFame + fameDelta)
 
   let nextMoney =
     finiteNumberOr(state.player.money, 0) + finiteNumberOr(moneyDelta, 0)
