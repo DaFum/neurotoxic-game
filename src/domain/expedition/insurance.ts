@@ -16,6 +16,9 @@
  */
 
 import { EXPEDITION_TOW_FUEL_RESTORED } from './failure'
+import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
+import { finiteNumberOr } from '../../utils/finiteNumber'
+import { readVanCondition } from '../../utils/gameState/clamps'
 import { getExpeditionTechnicalCondition } from './condition'
 import type { GameState } from '../../types'
 import type {
@@ -109,8 +112,14 @@ export const canClaimExpeditionInsurance = (
     if (policy.coverage !== 'vehicle' && policy.coverage !== 'either') {
       return false
     }
-    const fuel = state.player.van?.fuel ?? 0
-    const condition = state.player.van?.condition ?? 0
+    // A corrupt (non-finite) reading recovers to the load-sanitizer default,
+    // never to an empty tank / wrecked van, so it cannot fake a claimable
+    // failure.
+    const fuel = finiteNumberOr(
+      state.player.van?.fuel,
+      EXPENSE_CONSTANTS.transport.maxFuel
+    )
+    const condition = readVanCondition(state.player.van?.condition)
     const isMobilityFailure =
       state.expedition.pendingFailure?.reason === 'fuel_stranded'
     if (fuel > 0 && condition > 0 && !isMobilityFailure) {

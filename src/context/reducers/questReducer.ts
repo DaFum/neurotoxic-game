@@ -6,6 +6,10 @@
  * this reducer layer stays as the integration boundary.
  */
 import { QuestLifecycle } from '../../domain/questLifecycle'
+import { QuestEvents } from '../../utils/questProgress'
+import type { QuestProgressEvent } from '../../utils/questProgress'
+import { isLooseRecord } from '../../utils/objectUtils'
+import type { GameState } from '../../types'
 
 /**
  * Adds a quest by delegating to the domain quest lifecycle service.
@@ -20,6 +24,25 @@ export const handleAddQuest = QuestLifecycle.addQuest
  *
  * @param state - Current game state before progress changes.
  * @param payload - Quest progress payload including quest id, amount, and deterministic random index.
- * @returns Updated state with quest progress, completion, and rewards applied as needed.
+ * @returns Updated state with quest progress, completion, and rewards applied
+ * as needed, or the original state when the payload is not a record.
  */
-export const handleAdvanceQuest = QuestLifecycle.advanceQuest
+export const handleAdvanceQuest = (
+  state: GameState,
+  payload: Parameters<typeof QuestLifecycle.advanceQuest>[1]
+): GameState =>
+  isLooseRecord(payload) ? QuestLifecycle.advanceQuest(state, payload) : state
+
+/**
+ * Applies one quest progress event emitted from a hook.
+ *
+ * @param state - Current game state before the event.
+ * @param payload - Canonical or legacy quest progress event.
+ * @returns Updated state with matching quest progress applied, or the original
+ * state when the payload is not a record.
+ */
+export const handleApplyQuestEvent = (
+  state: GameState,
+  payload: QuestProgressEvent
+): GameState =>
+  isLooseRecord(payload) ? QuestEvents.emit(state, payload) : state

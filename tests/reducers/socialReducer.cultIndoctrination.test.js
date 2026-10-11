@@ -2,6 +2,7 @@ import { describe, it, beforeEach } from 'node:test'
 import { handleCultIndoctrination } from '../../src/context/reducers/socialReducer'
 import { createInitialState } from '../../src/context/initialState'
 import assert from 'node:assert/strict'
+import { CULT_INDOCTRINATION_REQUIRED_ZEALOTRY } from '../../src/data/zealotryActionGates'
 
 describe('socialReducer: handleCultIndoctrination', () => {
   /** @type {import('../../src/types').GameState} */
@@ -41,6 +42,20 @@ describe('socialReducer: handleCultIndoctrination', () => {
     }
     const nextState = handleCultIndoctrination(baseState, payload)
     assert.strictEqual(nextState, baseState)
+  })
+
+  it('rejects payload below the required zealotry (reducer-enforced gate)', () => {
+    const payload = {
+      cost: 1000,
+      fameGain: 500,
+      zealotryGain: 40,
+      controversyGain: 50,
+      harmonyCost: 30
+    }
+    baseState.social.zealotry = CULT_INDOCTRINATION_REQUIRED_ZEALOTRY - 1
+    assert.strictEqual(handleCultIndoctrination(baseState, payload), baseState)
+    baseState.social.zealotry = Number.NaN
+    assert.strictEqual(handleCultIndoctrination(baseState, payload), baseState)
   })
 
   it('applies indoctrination correctly and updates lastCultIndoctrinationDay', () => {

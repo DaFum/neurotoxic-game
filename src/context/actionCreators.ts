@@ -13,7 +13,11 @@ import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
-import { sanitizeGigModifierUpdates } from './reducers/sanitizers/stateSanitizers'
+import {
+  sanitizeGigModifierUpdates,
+  sanitizeRivalBandUpdates,
+  sanitizeSocialUpdates
+} from './reducers/sanitizers/stateSanitizers'
 import { sanitizeLoadedToast } from './reducers/toastSanitizers'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
@@ -216,67 +220,6 @@ export const toggleNeuroDecimator = (
   type: ActionTypes.TOGGLE_NEURO_DECIMATOR,
   payload: { isActive }
 })
-
-const SOCIAL_FIELDS = {
-  instagram: { numeric: true },
-  tiktok: { numeric: true },
-  youtube: { numeric: true },
-  newsletter: { numeric: true },
-  viral: { numeric: true },
-  lastGigDay: { numeric: true, nullable: true },
-  lastGigDifficulty: { numeric: true, nullable: true },
-  lastPirateBroadcastDay: { numeric: true, nullable: true },
-  lastDarkWebLeakDay: { numeric: true, nullable: true },
-  lastCultIndoctrinationDay: { numeric: true, nullable: true },
-  controversyLevel: { numeric: true },
-  loyalty: { numeric: true },
-  zealotry: { numeric: true },
-  reputationCooldown: { numeric: true },
-  egoFocus: {},
-  trend: {},
-  activeDeals: {},
-  brandReputation: {},
-  influencers: {},
-  scenePresence: { numeric: true },
-  regionalGigHistory: {},
-  pendingSocialOptionId: {}
-} as const satisfies Record<
-  keyof SocialState,
-  { numeric?: boolean; nullable?: boolean }
->
-
-const sanitizeSocialUpdates = (
-  updates: Partial<SocialState> | null | undefined
-): Partial<SocialState> => {
-  if (!updates || typeof updates !== 'object') return {}
-  const out: Record<string, unknown> = {}
-  for (const key in updates) {
-    if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
-    const value = (updates as Record<string, unknown>)[key]
-    if (!Object.hasOwn(SOCIAL_FIELDS, key)) continue
-    // Settlement provenance must stay a string option id or null.
-    if (
-      key === 'pendingSocialOptionId' &&
-      value !== null &&
-      typeof value !== 'string'
-    )
-      continue
-
-    const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as {
-      numeric?: boolean
-      nullable?: boolean
-    }
-    if (spec?.numeric) {
-      if (value === null) {
-        if (spec.nullable) out[key] = null
-        continue
-      }
-      if (!isFiniteNumber(value)) continue
-    }
-    out[key] = value
-  }
-  return out as Partial<SocialState>
-}
 
 /**
  * Creates a social update action
@@ -856,22 +799,10 @@ export const createCheckRivalEncounterAction = (): Extract<
  */
 export const createUpdateRivalBandAction = (
   payload: Partial<RivalBandState>
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => {
-  const safeUpdates: Partial<RivalBandState> = {}
-  if (payload.id !== undefined) safeUpdates.id = payload.id
-  if (payload.name !== undefined) safeUpdates.name = payload.name
-  if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
-  if (isFiniteNumber(payload.powerLevel)) {
-    safeUpdates.powerLevel = clampNonNegative(payload.powerLevel)
-  }
-  if (payload.currentLocationId !== undefined)
-    safeUpdates.currentLocationId = payload.currentLocationId
-
-  return {
-    type: ActionTypes.UPDATE_RIVAL_BAND,
-    payload: safeUpdates
-  }
-}
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => ({
+  type: ActionTypes.UPDATE_RIVAL_BAND,
+  payload: sanitizeRivalBandUpdates(payload)
+})
 
 /**
  * Creates the action that unlocks one trait for one band member.

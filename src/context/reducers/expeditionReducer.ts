@@ -109,8 +109,8 @@ import {
   addClampedNonNegative,
   clampToNonNegativeInt,
   clampControversyLevel,
-  clampVanCondition,
-  clampVanFuel
+  clampVanFuel,
+  readVanCondition
 } from '../../utils/gameState/clamps'
 import { QuestEvents } from '../../utils/questProgress'
 import {
@@ -226,9 +226,7 @@ const applyExpeditionInsuranceClaim = (
 
   if (resolution.claimType === 'vehicle') {
     const van = state.player.van
-    const currentCondition = clampVanCondition(
-      finiteNumberOr(van?.condition, 0)
-    )
+    const currentCondition = readVanCondition(van?.condition)
     return {
       ...state,
       player: {

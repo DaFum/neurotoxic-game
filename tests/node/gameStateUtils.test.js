@@ -243,7 +243,9 @@ test('applyEventDelta preserves deltas when persisted numeric bases are stale', 
   assert.equal(nextState.player.fame, 10)
   assert.equal(nextState.player.fameLevel, 0)
   assert.equal(nextState.player.van.fuel, 7)
-  assert.equal(nextState.player.van.condition, 8)
+  // Shared van-condition policy (`readVanCondition`): a corrupt condition
+  // recovers to the load-sanitizer default (100) before the delta applies.
+  assert.equal(nextState.player.van.condition, 100)
   assert.equal(nextState.band.harmony, 5)
   assert.equal(nextState.band.luck, 3)
 })
@@ -614,7 +616,9 @@ test('calculateAppliedDelta falls back from non-finite current numeric state', (
   assert.equal(applied.player.fame, 20)
   assert.equal(applied.score, 10)
   assert.equal(applied.player.van.fuel, 5)
-  assert.equal(applied.player.van.condition, 6)
+  // A non-finite condition recovers to 100 (`readVanCondition`), so the
+  // preview reports the +6 as fully absorbed by the cap.
+  assert.equal(applied.player.van.condition, 0)
   assert.equal(applied.band.harmony, 7)
   assert.equal(applied.band.luck, 2)
   assert.equal(applied.social.controversyLevel, 3)

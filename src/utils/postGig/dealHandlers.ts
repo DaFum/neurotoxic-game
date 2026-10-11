@@ -75,7 +75,7 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
     if (deal.penalty) {
       if (deal.penalty.loyalty) {
         updates.loyalty = clampLoyalty(
-          (prevSocial.loyalty ?? 0) + deal.penalty.loyalty
+          finiteNumberOr(prevSocial.loyalty, 0) + deal.penalty.loyalty
         )
       }
       if (deal.penalty.controversy) {

@@ -40,6 +40,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 import { hashExpeditionRoute } from './map'
 import { resolveCrewRecoveryDebt } from './injuries'
 import {
+  clampCrewLoyalty,
   clampPlayerMoney,
   clampVanCondition
 } from '../../utils/gameState/clamps'
@@ -603,7 +604,7 @@ export const applyBetweenTourDecisionOption = (
               ...state.career.crewById,
               [crewId]: {
                 ...prior,
-                loyalty: Math.min(100, finiteNumberOr(prior.loyalty, 0) + 1)
+                loyalty: clampCrewLoyalty(finiteNumberOr(prior.loyalty, 0) + 1)
               }
             }
           }

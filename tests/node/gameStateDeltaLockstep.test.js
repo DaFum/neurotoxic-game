@@ -272,10 +272,10 @@ const FIELD_CASES = [
     stateDiff: (b, a) => a.social.zealotry - b.social.zealotry
   },
   {
-    // Apply handles ANY numeric social key generically; preview only reports
-    // the three named channels above. Known asymmetry.
-    name: 'social.<generic numeric channel> (followers)',
-    delta: withDelta({ social: { followers: 10 } }),
+    // Apply adds to the known SocialState counters (unknown keys are dropped);
+    // preview only reports the three named channels above. Known asymmetry.
+    name: 'social.<additive counter channel> (instagram)',
+    delta: withDelta({ social: { instagram: 10 } }),
     expect: 'applyOnly'
   },
   {

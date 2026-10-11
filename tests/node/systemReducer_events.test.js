@@ -2,6 +2,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 
+// ADVANCE_DAY takes no `rng` function: daily rolls come from `dayRngStream`.
+// A run of neutral mid-range rolls stands in for the old `rng: () => 0.5`.
+const HALF_ROLLS = new Array(256).fill(0.5)
+
 test('systemReducer - handleAdvanceDay', async t => {
   await t.test('resets eventsTriggeredToday to 0 on advance day', () => {
     const initialState = {
@@ -17,7 +21,9 @@ test('systemReducer - handleAdvanceDay', async t => {
       activeStoryFlags: []
     }
 
-    const nextState = handleAdvanceDay(initialState, { rng: Math.random })
+    const nextState = handleAdvanceDay(initialState, {
+      dayRngStream: HALF_ROLLS
+    })
 
     assert.equal(nextState.player.eventsTriggeredToday, 0)
     assert.notEqual(initialState.player, nextState.player)
@@ -37,7 +43,9 @@ test('systemReducer - handleAdvanceDay', async t => {
       activeStoryFlags: []
     }
 
-    const nextState = handleAdvanceDay(initialState, { rng: Math.random })
+    const nextState = handleAdvanceDay(initialState, {
+      dayRngStream: HALF_ROLLS
+    })
 
     // Daily drift toward 50 costs 2 mood, then floor(50 / 25) = 2 stress
     // penalty on top; stress itself decays by 2.
@@ -59,7 +67,9 @@ test('systemReducer - handleAdvanceDay', async t => {
       activeStoryFlags: []
     }
 
-    const nextState = handleAdvanceDay(initialState, { rng: Math.random })
+    const nextState = handleAdvanceDay(initialState, {
+      dayRngStream: HALF_ROLLS
+    })
 
     // Only the daily drift toward 50 applies (no stress mood penalty < 25)
     assert.equal(nextState.band.members[0].mood, 58)

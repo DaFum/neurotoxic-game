@@ -109,8 +109,8 @@ export const canRecordExpeditionArchiveDiscovery = (
         sourceId === asset.id &&
         getExpeditionArchiveChassisId(
           asset.kind,
-          String(asset.chassisFlavor),
-          Number(asset.chassisTier)
+          asset.chassisFlavor,
+          asset.chassisTier
         ) === id
       )
     }
@@ -200,8 +200,8 @@ export const sweepExpeditionArchiveObservations = (
       category: 'chassis',
       id: getExpeditionArchiveChassisId(
         asset.kind,
-        String(asset.chassisFlavor),
-        Number(asset.chassisTier)
+        asset.chassisFlavor,
+        asset.chassisTier
       ),
       sourceId: asset.id
     })

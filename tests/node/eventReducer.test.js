@@ -132,7 +132,7 @@ describe('eventReducer', () => {
 
   describe('handleSetActiveEvent', () => {
     it('should set the active event', () => {
-      const payload = { title: 'Test Event', type: 'story' }
+      const payload = { id: 'test_event', title: 'Test Event', type: 'story' }
       const nextState = handleSetActiveEvent(baseState, payload)
 
       assert.deepStrictEqual(nextState.activeEvent, payload)

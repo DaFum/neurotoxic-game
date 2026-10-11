@@ -440,7 +440,7 @@ export const calculatePostGigStateUpdates = (
       }
       if (template.penalty.loyalty) {
         updatedSocial.loyalty = clampLoyalty(
-          (updatedSocial.loyalty ?? 0) + template.penalty.loyalty
+          finiteNumberOr(updatedSocial.loyalty, 0) + template.penalty.loyalty
         )
       }
     }
