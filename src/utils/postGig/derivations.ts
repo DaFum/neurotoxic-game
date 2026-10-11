@@ -107,6 +107,24 @@ export const deriveGigContext = (
 }
 
 /**
+ * Reads the player's regional reputation for the gig-financial context.
+ *
+ * @param reputationByRegion - Persisted region-keyed reputation map.
+ * @param location - Player location display key.
+ * @returns The finite reputation for the player's region, or `0` when the
+ * region is unknown, not an own key of the map, or corrupt.
+ */
+const readRegionReputation = (
+  reputationByRegion: GameState['reputationByRegion'],
+  location: GameState['player']['location']
+): number => {
+  const regionKey = getRegionKeyForLocation(location) ?? 'Unknown'
+  return reputationByRegion && Object.hasOwn(reputationByRegion, regionKey)
+    ? finiteNumberOr(reputationByRegion[regionKey], 0)
+    : 0
+}
+
+/**
  * Derives reconciled post-gig financials from current gig state and modifiers.
  *
  * @param params - Current gig, stats, modifiers, inventory, player, social, reputation, and asset context.
@@ -162,13 +180,10 @@ export const deriveFinancials = ({
       playerState: player,
       gigStats: lastGigStats,
       context: {
-        controversyLevel: social.controversyLevel ?? 0,
-        regionRep:
-          reputationByRegion[
-            getRegionKeyForLocation(player.location) ?? 'Unknown'
-          ] ?? 0,
-        loyalty: social.loyalty ?? 0,
-        zealotry: social.zealotry ?? 0,
+        controversyLevel: finiteNumberOr(social.controversyLevel, 0),
+        regionRep: readRegionReputation(reputationByRegion, player.location),
+        loyalty: finiteNumberOr(social.loyalty, 0),
+        zealotry: finiteNumberOr(social.zealotry, 0),
         discountedTickets: activeStoryFlags.includes(
           FLAGS.DISCOUNTED_TICKETS_ACTIVE
         ),

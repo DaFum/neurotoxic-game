@@ -2,7 +2,11 @@ import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import { getSafeRandom } from '../../utils/crypto'
-import { clamp0to100, clampAmpDial } from '../../utils/gameState'
+import {
+  clamp0to100,
+  clampAmpDial,
+  isFiniteNumber
+} from '../../utils/gameState'
 import type {
   StageControllerOptions,
   AmpStageOptions
@@ -103,8 +107,9 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 
       const readNum = (key: string, clampFn: (val: number) => number) => {
         if (Object.hasOwn(state, key)) {
-          const val = Number((state as unknown as Record<string, unknown>)[key])
-          if (Number.isFinite(val)) return clampFn(val)
+          const val = (state as unknown as Record<string, unknown>)[key]
+          // No `Number()` coercion: `true` would read as 1, `'5'` as 5.
+          if (isFiniteNumber(val)) return clampFn(val)
         }
         return undefined
       }

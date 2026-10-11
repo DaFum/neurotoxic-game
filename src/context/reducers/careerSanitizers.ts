@@ -13,7 +13,12 @@ import type {
   ExpeditionBandInjuryStage,
   ExpeditionRelationshipTier
 } from '../../types/expedition'
-import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
+import {
+  clampCrewLoyalty,
+  finiteNumberOr,
+  isFiniteNumber,
+  isLooseRecord
+} from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { createInitialCareerState } from '../../domain/expedition/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
@@ -92,7 +97,7 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     if (!crew) return null
     const canonicalSignature = EXPEDITION_CREW_SIGNATURE_BY_ROLE[crew.role]
     return {
-      loyalty: Math.min(100, boundedInt(entry.loyalty)),
+      loyalty: clampCrewLoyalty(finiteNumberOr(entry.loyalty, 0)),
       storyProgress: boundedInt(entry.storyProgress),
       signatureTraitId:
         entry.signatureTraitId === canonicalSignature

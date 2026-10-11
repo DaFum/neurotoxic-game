@@ -280,6 +280,19 @@ export const clampBandHarmony = (harmony: number): number => {
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
 
 /**
+ * Clamps an Expedition crew member's Career loyalty to its integer 0..100 range.
+ *
+ * @remarks
+ * Shared by the Career settlement reducer, the Career load sanitizer and the
+ * between-tour decisions so the three writers agree on flooring and bounds.
+ *
+ * @param loyalty - Candidate crew loyalty.
+ * @returns Integer loyalty clamped to 0..100; non-finite input becomes 0.
+ */
+export const clampCrewLoyalty = (loyalty: number): number =>
+  clamp0to100(loyalty)
+
+/**
  * Clamps band stress to the canonical 0-100 range.
  *
  * @param stress - Candidate stress value.
@@ -303,6 +316,26 @@ export const clampZealotry = (zealotry: number): number => clamp0to100(zealotry)
  */
 export const clampVanCondition = (condition: number): number =>
   clamp0to100(condition)
+
+/**
+ * Van condition assumed when a stored value is missing or non-finite. Matches
+ * the load sanitizer default (`DEFAULT_PLAYER_STATE.van.condition`).
+ */
+export const DEFAULT_VAN_CONDITION = 100
+
+/**
+ * Reads a persisted van condition with the one shared NaN-recovery policy.
+ *
+ * @remarks
+ * Every reader (reducers, event deltas, travel math, HUDs) recovers a missing
+ * or non-finite condition to {@link DEFAULT_VAN_CONDITION}, the same value a
+ * reload would produce, so the displayed and the simulated van never disagree.
+ *
+ * @param condition - Untrusted stored condition.
+ * @returns The condition clamped to `0..100`.
+ */
+export const readVanCondition = (condition: unknown): number =>
+  clampVanCondition(finiteNumberOr(condition, DEFAULT_VAN_CONDITION))
 
 /**
  * Clamps the van's persisted breakdown probability to its gameplay range.

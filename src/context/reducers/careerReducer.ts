@@ -25,7 +25,10 @@ import {
 } from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getExpeditionMinimumNextStartCost } from '../../domain/expedition/loadout'
-import { clampPlayerMoney } from '../../utils/gameState/clamps'
+import {
+  clampCrewLoyalty,
+  clampPlayerMoney
+} from '../../utils/gameState/clamps'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import {
   getExpeditionHqFacilityLevelCost,
@@ -107,12 +110,8 @@ export const handleSettleExpeditionCrewCareer = (
     })
     crewById[crewId] = {
       ...prior,
-      loyalty: Math.max(
-        0,
-        Math.min(
-          100,
-          finiteNumberOr(prior.loyalty, 0) + loyaltyDelta - crisisPenalty
-        )
+      loyalty: clampCrewLoyalty(
+        finiteNumberOr(prior.loyalty, 0) + loyaltyDelta - crisisPenalty
       ),
       storyProgress:
         Math.max(0, Math.floor(finiteNumberOr(prior.storyProgress, 0))) +

@@ -8,6 +8,8 @@ import {
   clampVanFuel,
   calculateFameLevel,
   finiteNumberOr,
+  isFiniteNumber,
+  readVanCondition,
   wrapClockHour
 } from '../../utils/gameState'
 import type { PlayerState, UpdatePlayerPayload } from '../../types'
@@ -74,12 +76,9 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
         )
       }
       if (Object.hasOwn(nextVan, 'condition')) {
-        nextVan.condition = clampVanCondition(
-          finiteNumberOr(
-            nextVan.condition,
-            finiteNumberOr(prevVan.condition, 0)
-          )
-        )
+        nextVan.condition = isFiniteNumber(nextVan.condition)
+          ? clampVanCondition(nextVan.condition)
+          : readVanCondition(prevVan.condition)
       }
       safeUpdates.van = nextVan
     } else {

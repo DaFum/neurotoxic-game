@@ -96,7 +96,11 @@ export const calculateGigFinancials = (
 
   // 1. Ticket Sales
   // Apply automated promo from zealotry to tickets
-  const zealotry = (context || {}).zealotry ?? ctxSocial.zealotry ?? 0
+  // `??` keeps NaN, and `NaN >= threshold` is silently false; recover it.
+  const zealotry = finiteNumberOr(
+    (context || {}).zealotry,
+    finiteNumberOr(ctxSocial.zealotry, 0)
+  )
   const effectiveModifiers = { ...(modifiers || {}) }
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     effectiveModifiers.promo = true

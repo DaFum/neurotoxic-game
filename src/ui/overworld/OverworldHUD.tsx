@@ -3,6 +3,7 @@ import { HelpCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState } from '../../types/player'
 import type { BandState } from '../../types/band'
+import { readVanCondition } from '../../utils/gameState'
 import {
   Tooltip,
   KeyboardShortcutsPanel,
@@ -32,7 +33,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
   const location = player?.location ?? ''
   const day = player?.day ?? 0
   const fuel = player?.van?.fuel ?? 0
-  const condition = player?.van?.condition ?? 100
+  const condition = readVanCondition(player?.van?.condition)
 
   const locationName = translateLocation(t, location, location)
 

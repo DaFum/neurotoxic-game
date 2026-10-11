@@ -29,9 +29,26 @@ import {
   clampVanCondition,
   clampVanFuel,
   wrapClockHour,
-  clampLuck
+  clampLuck,
+  readVanCondition,
+  addClampedPercent,
+  clamp0to100
 } from './clamps'
 import { calculateFameLevel } from './calculations'
+import { ALLOWED_TRENDS } from '../../data/socialTrends'
+
+/**
+ * Unbounded, non-negative `SocialState` counters an event delta may add to.
+ * Every other numeric key is dropped so a delta cannot invent social fields.
+ */
+const ADDITIVE_SOCIAL_COUNTER_KEYS: ReadonlySet<string> = new Set([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter',
+  'viral',
+  'reputationCooldown'
+])
 
 import {
   hasForbiddenOwnKeys,
@@ -314,7 +331,7 @@ export const calculateAppliedDelta = (
         applied.player.van.fuel = nextFuel - currentFuel
       }
       if (isFiniteNumber(delta.player.van.condition)) {
-        const currentCondition = finiteNumberOr(state.player?.van?.condition, 0)
+        const currentCondition = readVanCondition(state.player?.van?.condition)
         const nextCondition = clampVanCondition(
           currentCondition + delta.player.van.condition
         )
@@ -654,7 +671,7 @@ export const applyEventDelta = (
       }
       if (isFiniteNumber(delta.player.van.condition)) {
         const nextCondition = clampVanCondition(
-          finiteNumberOr(nextVan.condition, 0) + delta.player.van.condition
+          readVanCondition(nextVan.condition) + delta.player.van.condition
         )
         nextVan.condition = nextCondition
       }
@@ -1024,17 +1041,31 @@ export const applyEventDelta = (
           nextSocial[key] = value
         }
       } else if (key === 'trend') {
-        if (typeof value === 'string') {
+        if (
+          typeof value === 'string' &&
+          (ALLOWED_TRENDS as readonly string[]).includes(value)
+        ) {
           nextSocial[key] = value
         }
       } else if (key === 'lastGigDay' || key === 'lastGigDifficulty') {
         if (value === null || isFiniteNumber(value)) {
           nextSocial[key] = value
         }
-      } else if (isFiniteNumber(value)) {
+      } else if (key === 'scenePresence') {
+        if (isFiniteNumber(value)) {
+          // Same 0..100 integer range the reducer and load sanitizer enforce.
+          nextSocial[key] = clamp0to100(
+            addClampedPercent(nextSocial.scenePresence, value)
+          )
+        }
+      } else if (
+        ADDITIVE_SOCIAL_COUNTER_KEYS.has(key) &&
+        isFiniteNumber(value)
+      ) {
         const currentValue = finiteNumberOr(nextSocial[key], 0)
         nextSocial[key] = addClampedNonNegative(currentValue, value)
       }
+      // Any other key is not a `SocialState` counter and is dropped.
     }
     nextState.social = nextSocial
   }

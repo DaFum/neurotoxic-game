@@ -9,6 +9,7 @@ import {
 } from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
+import { readVanCondition } from './gameState/clamps'
 import { getCityPrefix } from './mapGenerator/cityTraits'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
@@ -256,7 +257,7 @@ export const checkSoftlock = (
     fameLevel: finiteNumberOr(player.fameLevel, 0),
     van: {
       fuel: currentFuel,
-      condition: finiteNumberOr(van?.condition, 100),
+      condition: readVanCondition(van?.condition),
       upgrades: (() => {
         if (!Array.isArray(van?.upgrades)) return []
         const upgrades: string[] = []

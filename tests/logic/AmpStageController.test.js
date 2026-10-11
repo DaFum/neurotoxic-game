@@ -112,6 +112,19 @@ describe('AmpStageController', () => {
     expect(controller.currentFreq).toBe(1000)
   })
 
+  it('ignores non-number state values instead of coercing them', async () => {
+    await controller.init()
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.currentFreq).toBe(500)
+
+    // `Number(true)` is 1 and `Number('900')` is 900; neither may be read.
+    gameStateRef.current.dialValue = true
+    gameStateRef.current.targetValue = '900'
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.currentFreq).toBe(500)
+    expect(controller.targetFreq).toBe(600)
+  })
+
   it('dispose destroys bg and waveGraphics and calls super', async () => {
     await controller.init()
 
