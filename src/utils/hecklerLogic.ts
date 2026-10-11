@@ -97,6 +97,23 @@ export const processProjectiles = (
       if (i !== writeIdx) projectiles[writeIdx] = p
       writeIdx++
     } else if (session.pool.length < MAX_PROJECTILE_POOL_SIZE) {
+      // Clean non-canonical extension fields before pooling to prevent stale data inheritance
+      if (Object.keys(p).length > 8) {
+        for (const key in p) {
+          if (
+            key !== 'id' &&
+            key !== 'x' &&
+            key !== 'y' &&
+            key !== 'vx' &&
+            key !== 'vy' &&
+            key !== 'rotation' &&
+            key !== 'vr' &&
+            key !== 'type'
+          ) {
+            delete p[key]
+          }
+        }
+      }
       session.pool.push(p)
     }
   }

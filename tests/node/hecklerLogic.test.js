@@ -767,3 +767,35 @@ test('processProjectiles - maintains correct order after removal', () => {
   assert.equal(projectiles[0].id, 1)
   assert.equal(projectiles[1].id, 3)
 })
+
+test('processProjectiles - cleans extension fields when pooling projectiles', () => {
+  const session = createHecklerSession()
+  const screenHeight = 1000
+  // despawnY = 1100
+  const projectiles = [
+    {
+      id: 1,
+      x: 0,
+      y: 1200, // Will despawn and be pooled
+      vx: 0,
+      vy: 0,
+      vr: 0,
+      rotation: 0,
+      type: 'bottle',
+      customProp: 'staleValue'
+    }
+  ]
+
+  processProjectiles(session, projectiles, 0, screenHeight)
+
+  assert.equal(session.pool.length, 1)
+  const pooled = session.pool[0]
+  assert.equal(pooled.customProp, undefined)
+
+  // Force spawn from pool and verify customProp is not present
+  const stats = { health: 100, combo: 0 }
+  const mockRandom = () => 0.0001 // Trigger spawn
+  const spawned = trySpawnProjectile(session, stats, mockRandom)
+  assert.ok(spawned)
+  assert.equal(spawned.customProp, undefined)
+})
