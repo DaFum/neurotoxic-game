@@ -618,23 +618,28 @@ export const sanitizeCrowdfundCampaigns = (
 }
 
 /**
+ * Coerces a persisted seed into the unsigned 32-bit range.
+ *
+ * @param raw - Raw seed value.
+ * @returns Non-negative UInt32 seed.
+ *
+ * @remarks
+ * The unsigned right-shift coerces to UInt32 (0..2^32-1), which is what
+ * `mulberry32` expects; `| 0` alone would produce a signed, possibly negative
+ * value. A missing or corrupt seed gets a fresh crypto-derived one rather than
+ * a constant, which would make every recovered save share one timeline. That
+ * fallback is a deliberate purity exception, reachable only while hydrating.
+ */
+const sanitizeUint32Seed = (raw: unknown): number =>
+  isFiniteNumber(raw) ? Math.trunc(raw) >>> 0 : getSecureRandomUint32()
+
+/**
  * Sanitizes a persisted RNG seed into the unsigned 32-bit range.
  *
  * @param raw - Raw seed value.
  * @returns Non-negative UInt32 seed suitable for mulberry32.
  */
-export const sanitizeRngSeed = (raw: unknown): number => {
-  // Always return a non-negative 32-bit integer seed. The unsigned right-shift
-  // coerces to UInt32 (0..2^32-1) which is what mulberry32 expects; `| 0` alone
-  // would produce a signed 32-bit (potentially negative) value.
-  if (isFiniteNumber(raw)) {
-    return Math.trunc(raw) >>> 0
-  }
-  // Deliberate purity exception: only reachable when hydrating a save whose
-  // seed is missing/corrupt. A fresh wall-clock seed is preferable to a fixed
-  // constant (which would make every recovered save share one RNG timeline).
-  return Date.now() >>> 0
-}
+export const sanitizeRngSeed = (raw: unknown): number => sanitizeUint32Seed(raw)
 
 /**
  * Sanitizes a persisted run seed into the unsigned 32-bit range.
@@ -643,13 +648,8 @@ export const sanitizeRngSeed = (raw: unknown): number => {
  * @returns Non-negative UInt32 seed used for map generation.
  *
  * @remarks
- * A save that predates `runSeed`, or carries a corrupt one, gets a fresh
- * crypto-derived seed rather than a constant — otherwise every recovered save
- * would generate the same map.
+ * A save that predates `runSeed`, or carries a corrupt one, gets a fresh seed
+ * rather than a constant - otherwise every recovered save would generate the
+ * same map.
  */
-export const sanitizeRunSeed = (raw: unknown): number => {
-  if (isFiniteNumber(raw)) {
-    return Math.trunc(raw) >>> 0
-  }
-  return getSecureRandomUint32()
-}
+export const sanitizeRunSeed = (raw: unknown): number => sanitizeUint32Seed(raw)
