@@ -46,6 +46,7 @@ interface UplinkButtonProps {
 // Local prop types for components in this file (avoid `any`)
 interface DeadmanButtonProps {
   label: string
+  disabled?: boolean
   onConfirm?: () => void
 }
 
@@ -408,7 +409,7 @@ export const CrisisModal = memo(
  * @param props - Button label and confirmation callback.
  */
 export const DeadmanButton = memo(
-  ({ label, onConfirm }: DeadmanButtonProps) => {
+  ({ label, disabled = false, onConfirm }: DeadmanButtonProps) => {
     const { t } = useTranslation()
     const [progress, setProgress] = useState<number>(0)
     const [isHolding, setIsHolding] = useState<boolean>(false)
@@ -420,8 +421,21 @@ export const DeadmanButton = memo(
       progressRef.current = progress
     }, [progress])
 
+    useEffect(() => {
+      if (disabled) {
+        if (intervalRef.current != null) clearInterval(intervalRef.current)
+        if (drainIntervalRef.current != null) clearInterval(drainIntervalRef.current)
+        intervalRef.current = null
+        drainIntervalRef.current = null
+        // eslint-disable-next-line @eslint-react/set-state-in-effect
+        setIsHolding(false)
+        // eslint-disable-next-line @eslint-react/set-state-in-effect
+        setProgress(0)
+      }
+    }, [disabled])
+
     const startHold = () => {
-      if (progressRef.current >= 100) return
+      if (disabled || progressRef.current >= 100) return
       setIsHolding(true)
       if (drainIntervalRef.current != null)
         clearInterval(drainIntervalRef.current)
@@ -462,7 +476,7 @@ export const DeadmanButton = memo(
               }
               return 0
             }
-            return prev - 5
+            return Math.max(0, prev - 5)
           })
         }, 20)
         drainIntervalRef.current = drainId
@@ -479,7 +493,8 @@ export const DeadmanButton = memo(
       }
     }, [])
 
-    const isComplete = progress >= 100
+    const safeProgress = Math.min(100, Math.max(0, progress))
+    const isComplete = safeProgress >= 100
 
     return (
       <div className='w-full flex flex-col gap-1'>
@@ -488,35 +503,47 @@ export const DeadmanButton = memo(
         </span>
         <button
           type='button'
+          disabled={disabled}
+          aria-disabled={disabled}
           aria-label={
             isComplete
               ? t('ui:executed', 'EXECUTED')
-              : `${label} - ${t('ui:holdToOverride', 'HOLD TO OVERRIDE')}`
+              : isHolding && safeProgress > 0
+                ? `${label} - ${Math.round(safeProgress)}%`
+                : `${label} - ${t('ui:holdToOverride', 'HOLD TO OVERRIDE')}`
           }
           onMouseDown={startHold}
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
           onTouchStart={startHold}
           onTouchEnd={stopHold}
+          onTouchCancel={stopHold}
           onKeyDown={e => {
+            if (disabled) return
             if (e.key === 'Enter' || e.key === ' ') {
               if (e.key === ' ') e.preventDefault()
               if (!e.repeat) startHold()
             }
           }}
           onKeyUp={e => {
+            if (disabled) return
             if (e.key === 'Enter' || e.key === ' ') {
               stopHold()
             }
           }}
           onBlur={stopHold}
           className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
-          ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
+          ${disabled ? 'opacity-50 cursor-not-allowed border-ash-gray bg-void-black' : isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
         >
           {/* Progress Fill Background */}
           <div
+            role='progressbar'
+            aria-label={label}
+            aria-valuenow={Math.round(safeProgress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
             className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green-bright'}`}
-            style={{ width: `${progress}%` }}
+            style={{ width: `${safeProgress}%` }}
           ></div>
 
           {/* Scanline FX on fill */}

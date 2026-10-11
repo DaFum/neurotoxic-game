@@ -2,6 +2,12 @@ import type { GameState } from '../../types'
 import type { ExpeditionRelationshipActorRef } from '../../types/expedition'
 import { getExpeditionRelationshipTier } from '../../domain/expedition/relationships'
 
+/**
+ * Generates a condition that checks if specific crew IDs are in the active expedition loadout.
+ *
+ * @param crewIds - The array of crew IDs to check.
+ * @returns A function that accepts the game state and returns a boolean indicating if the condition is met.
+ */
 const activeWithCrew =
   (crewIds: readonly string[]) =>
   (state: GameState): boolean =>
@@ -36,6 +42,9 @@ const tierOf = (
 // - Band<->Crew Matze/Tom: at -1 or worse a grudge event opens; at +1 or better
 //   Tom can cover for Matze during the injury scare; at +2 the band-tension
 //   event closes.
+/**
+ * A collection of randomized expedition events related to crew interactions and conflicts.
+ */
 export const EXPEDITION_CREW_EVENTS = [
   {
     id: 'expedition_crew_conflict_mika_tom',

@@ -55,6 +55,35 @@ describe('ContrabandStash', () => {
     expect(screen.queryByText('items:ghost.name')).not.toBeInTheDocument()
   })
 
+  it('uses aria-disabled and tooltip when targeted consumable lacks selected member', () => {
+    const handleUseItem = vi.fn()
+    render(
+      <ContrabandStash
+        {...baseProps}
+        selectedMember={null}
+        handleUseItem={handleUseItem}
+        members={[{ id: 'member-1', name: 'Matze' }]}
+        stash={[
+          {
+            id: 'c_weekender_coffee',
+            type: 'consumable',
+            effectType: 'stamina'
+          }
+        ]}
+      />
+    )
+
+    const button = screen.getByRole('button', {
+      name: /USE ITEM: Unknown Item/i
+    })
+    expect(button).toBeInTheDocument()
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).not.toBeDisabled()
+
+    button.click()
+    expect(handleUseItem).not.toHaveBeenCalled()
+  })
+
   it('renders the item icon as a decorative glyph next to the name', () => {
     render(
       <ContrabandStash
