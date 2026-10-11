@@ -16,7 +16,7 @@ type RhythmGameInputParams = {
 /**
  * Input controls exposed by the rhythm game input hook.
  */
-export type RhythmGameInputReturn = {
+type RhythmGameInputReturn = {
   registerInput: (laneIndex: number, isDown: boolean) => void
 }
 

@@ -22,7 +22,7 @@ const PixiStage = lazy(async () => {
 /**
  * Rendering inputs and callbacks for the active rhythm gig scene.
  */
-export type GigViewProps = {
+type GigViewProps = {
   chaosContainerRef: RefObject<HTMLDivElement | null>
   chaosStyle: CSSProperties
   isToxicMode: boolean

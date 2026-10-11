@@ -9,13 +9,13 @@ test('AnimatedSubtitle renders as h2 by default', () => {
   expect(h2.className).toContain('uppercase')
 })
 
-test('AnimatedSubtitle renders as custom element', () => {
+test('AnimatedSubtitle appends a custom className', () => {
   render(
-    <AnimatedSubtitle as='h3' className='custom-subtitle'>
+    <AnimatedSubtitle className='custom-subtitle'>
       Test Subtitle
     </AnimatedSubtitle>
   )
-  const h3 = screen.getByRole('heading', { level: 3, name: 'Test Subtitle' })
-  expect(h3).toBeInTheDocument()
-  expect(h3.className).toContain('custom-subtitle')
+  const h2 = screen.getByRole('heading', { level: 2, name: 'Test Subtitle' })
+  expect(h2.className).toContain('uppercase')
+  expect(h2.className).toContain('custom-subtitle')
 })

@@ -2,6 +2,7 @@ import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState, releaseAudioResource } from './state'
 import { withAudioContext } from './context'
+import type { AudioTransportState } from '../../types/audio'
 import {
   pauseGigPlayback,
   resumeGigPlayback,
@@ -138,7 +139,7 @@ export async function resumeAudio(): Promise<boolean> {
  * A start deferred by {@link pauseAudio} reports as `paused`: Tone says
  * `stopped`, and callers only resume a paused transport.
  */
-export function getTransportState(): 'started' | 'stopped' | 'paused' {
+export function getTransportState(): AudioTransportState {
   if (audioState.transportDeferredStart) return 'paused'
   return Tone.getTransport().state
 }

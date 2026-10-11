@@ -13,7 +13,7 @@ import { Tooltip } from '../shared'
 /**
  * Catalog item data, purchase state, and buy callback for one shop row.
  */
-export interface ShopItemProps {
+interface ShopItemProps {
   item: CatalogItem
   decision: PurchaseDecision
   isDisabled: boolean

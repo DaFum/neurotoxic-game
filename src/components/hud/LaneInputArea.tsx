@@ -1,13 +1,7 @@
 import { memo, useCallback } from 'react'
 import type { TouchEvent as ReactTouchEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils'
-
-const LANES = [
-  { index: LANE_INDICES.GUITAR, id: 'guitar' },
-  { index: LANE_INDICES.DRUMS, id: 'drums' },
-  { index: LANE_INDICES.BASS, id: 'bass' }
-]
+import { RHYTHM_LANES } from '../../utils/rhythmGameScoringUtils'
 
 /**
  * Defines the props for the lane input area container.
@@ -97,7 +91,7 @@ export const LaneInputArea = memo(function LaneInputArea({
 
   return (
     <div className='absolute inset-0 z-(--z-stage-controls) flex pb-20 sm:pb-16 pt-28 sm:pt-32 pointer-events-none'>
-      {LANES.map(lane => (
+      {RHYTHM_LANES.map(lane => (
         <LaneInputZone
           key={lane.id}
           laneIndex={lane.index}

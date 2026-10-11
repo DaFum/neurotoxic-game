@@ -34,18 +34,18 @@ test('StatBox renders label, value, and icon correctly', () => {
   expect(getByText('🤘')).toBeInTheDocument()
 })
 
-test('StatBox applies custom className', () => {
+test('StatBox renders its framed root container', () => {
   const props = {
     label: 'FAME',
     value: '1200',
-    icon: '🤘',
-    className: 'custom-class'
+    icon: '🤘'
   }
 
   const { container } = render(<StatBox {...props} />)
   const rootElement = container.firstChild
 
-  expect(rootElement.classList.contains('custom-class')).toBe(true)
+  expect(rootElement.classList.contains('bg-charcoal-gray')).toBe(true)
+  expect(rootElement.classList.contains('border-steel-gray')).toBe(true)
 })
 
 test('StatBox renders four frame corners with correct classes', () => {

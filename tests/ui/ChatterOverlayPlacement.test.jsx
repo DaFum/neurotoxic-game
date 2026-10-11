@@ -3,9 +3,7 @@ import { render } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 vi.mock('../../src/data/chatter', () => ({
-  getRandomChatter: () => null,
-  CHATTER_DB: [],
-  ALLOWED_DEFAULT_SCENES: ['GIG']
+  getRandomChatter: () => null
 }))
 
 vi.mock('../../src/hooks/useChatterLogic', () => ({

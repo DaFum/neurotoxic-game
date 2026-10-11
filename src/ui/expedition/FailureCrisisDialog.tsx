@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
 import { CrisisModal } from '../shared/BrutalistUI'
+import type { CrisisActionVariant } from '../shared/BrutalistUI'
 import { EXPEDITION_TOW_COST } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
 import { getCrisisSourceLabel } from './crisisSourceLabel'
@@ -21,20 +22,18 @@ import type { ExpeditionFailureChoiceId } from '../../types/expedition'
  * prefers the host's confirmation dialog (it owns the rare-reward carry
  * choice); without a host callback the crisis extracts directly.
  */
-export interface FailureCrisisDialogProps {
+interface FailureCrisisDialogProps {
   onExtract?: () => void
 }
 
-const CHOICE_VARIANTS: Record<
-  ExpeditionFailureChoiceId,
-  'safe' | 'risk' | 'danger'
-> = {
-  refuel: 'safe',
-  tow: 'safe',
-  insurance_claim: 'safe',
-  extract: 'risk',
-  accept_failure: 'danger'
-}
+const CHOICE_VARIANTS: Record<ExpeditionFailureChoiceId, CrisisActionVariant> =
+  {
+    refuel: 'safe',
+    tow: 'safe',
+    insurance_claim: 'safe',
+    extract: 'risk',
+    accept_failure: 'danger'
+  }
 
 /**
  * Presents the run's current crisis and its legal responses.

@@ -186,8 +186,8 @@ describe('CrowdManager', () => {
 
     await crowdManager.loadAssets()
 
-    assert.equal(crowdManager.textures.idle, mockTextureIdle)
-    assert.equal(crowdManager.textures.mosh, mockTextureIdle)
+    assert.equal(crowdManager.textureManager.textures.idle, mockTextureIdle)
+    assert.equal(crowdManager.textureManager.textures.mosh, mockTextureIdle)
   })
 
   test('loadAssets loads textures correctly', async () => {
@@ -199,8 +199,8 @@ describe('CrowdManager', () => {
 
     await crowdManager.loadAssets()
 
-    assert.equal(crowdManager.textures.idle, mockTextureIdle)
-    assert.equal(crowdManager.textures.mosh, mockTextureMosh)
+    assert.equal(crowdManager.textureManager.textures.idle, mockTextureIdle)
+    assert.equal(crowdManager.textureManager.textures.mosh, mockTextureMosh)
   })
 
   test('loadAssets reports error when loadTextures returns null', async () => {
@@ -223,8 +223,8 @@ describe('CrowdManager', () => {
 
     await crowdManager.loadAssets()
 
-    assert.equal(crowdManager.textures.idle, null)
-    assert.equal(crowdManager.textures.mosh, null)
+    assert.equal(crowdManager.textureManager.textures.idle, null)
+    assert.equal(crowdManager.textureManager.textures.mosh, null)
     // Should be called twice (idle and mosh)
     assert.equal(mockHandleError.mock.calls.length, 2)
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
@@ -239,20 +239,20 @@ describe('CrowdManager', () => {
   })
 
   test('init creates Sprites when texture is available', () => {
-    crowdManager.textures.idle = { id: 'idle' }
+    crowdManager.textureManager.textures.idle = { id: 'idle' }
     crowdManager.init()
 
     assert.equal(crowdManager.crowdMembers.length, 2)
     const member = crowdManager.crowdMembers[0]
 
     assert.ok(member instanceof PIXI.Sprite)
-    assert.equal(member.texture, crowdManager.textures.idle)
+    assert.equal(member.texture, crowdManager.textureManager.textures.idle)
     // Scale check (width = radius * 2.5)
     assert.ok(member.width > 0)
   })
 
   test('init creates Graphics when texture is missing', () => {
-    crowdManager.textures.idle = null
+    crowdManager.textureManager.textures.idle = null
     crowdManager.init()
 
     assert.equal(crowdManager.crowdMembers.length, 2)
@@ -263,42 +263,42 @@ describe('CrowdManager', () => {
   })
 
   test('update switches texture to MOSH when combo > 20', () => {
-    crowdManager.textures.idle = { id: 'idle' }
-    crowdManager.textures.mosh = { id: 'mosh' }
+    crowdManager.textureManager.textures.idle = { id: 'idle' }
+    crowdManager.textureManager.textures.mosh = { id: 'mosh' }
     crowdManager.init()
     const member = crowdManager.crowdMembers[0]
 
     // Initial state
-    assert.equal(member.texture, crowdManager.textures.idle)
+    assert.equal(member.texture, crowdManager.textureManager.textures.idle)
 
     // High combo -> Mosh
     crowdManager.update(21, false, 1000)
-    assert.equal(member.texture, crowdManager.textures.mosh)
+    assert.equal(member.texture, crowdManager.textureManager.textures.mosh)
 
     // Low combo -> Idle
     crowdManager.update(5, false, 2000)
-    assert.equal(member.texture, crowdManager.textures.idle)
+    assert.equal(member.texture, crowdManager.textureManager.textures.idle)
   })
 
   test('update switches texture to MOSH when toxic mode is on', () => {
-    crowdManager.textures.idle = { id: 'idle' }
-    crowdManager.textures.mosh = { id: 'mosh' }
+    crowdManager.textureManager.textures.idle = { id: 'idle' }
+    crowdManager.textureManager.textures.mosh = { id: 'mosh' }
     crowdManager.init()
     const member = crowdManager.crowdMembers[0]
 
     // Toxic mode -> Mosh (even with low combo)
     crowdManager.update(0, true, 1000)
-    assert.equal(member.texture, crowdManager.textures.mosh)
+    assert.equal(member.texture, crowdManager.textureManager.textures.mosh)
   })
 
   test('update handles missing mosh texture gracefully', () => {
-    crowdManager.textures.idle = { id: 'idle' }
-    crowdManager.textures.mosh = null
+    crowdManager.textureManager.textures.idle = { id: 'idle' }
+    crowdManager.textureManager.textures.mosh = null
     crowdManager.init()
     const member = crowdManager.crowdMembers[0]
 
     // High combo -> Should stay Idle because Mosh texture is missing
     crowdManager.update(21, false, 1000)
-    assert.equal(member.texture, crowdManager.textures.idle)
+    assert.equal(member.texture, crowdManager.textureManager.textures.idle)
   })
 })

@@ -10,18 +10,17 @@ import { BandHQTabsList } from './bandhq/BandHQTabsList.tsx'
 import { BandHQContentArea } from './bandhq/BandHQContentArea.tsx'
 
 /**
- * Close behavior and optional wrapper styling for the Band HQ modal.
+ * Close behavior for the Band HQ modal.
  */
 interface BandHQProps {
   onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
-  className?: string
 }
 
 /**
  * Presents the Band HQ modal with tab routing and void-trader gating.
- * @param props - Close handler and optional wrapper class for the Band HQ modal.
+ * @param props - Close handler for the Band HQ modal.
  */
-export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
+export const BandHQ = ({ onClose }: BandHQProps) => {
   const { overlayRef, dialogRef } = useModalBehavior(true, onClose)
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()
@@ -40,7 +39,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
       ref={overlayRef}
       data-modal-overlay=''
       role='presentation'
-      className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4 ${className}`}
+      className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4'
     >
       {/* Backdrop */}
       <div

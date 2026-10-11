@@ -9,7 +9,7 @@ import type {
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import type { Song } from '../../types/audio'
 import type { AssetModifiers } from '../../types/assets'
-import type { TranslationCallback } from '../../types/callbacks'
+import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
 import type { UpdatePlayerPayload } from '../../types'
 import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import {
@@ -62,7 +62,7 @@ export interface UsePreGigHandlersProps {
     mods:
       Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
   ) => void
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void
+  addToast: ToastCallback
   startRoadieMinigame: (gigId: string) => void
   startKabelsalatMinigame: (gigId: string) => void
   startAmpCalibration: (gigId: string) => void
@@ -71,7 +71,7 @@ export interface UsePreGigHandlersProps {
 /**
  * Return value of the usePreGigHandlers hook exposing state, derived values, and executable handlers.
  */
-export interface UsePreGigHandlersReturn {
+interface UsePreGigHandlersReturn {
   isStarting: boolean
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void

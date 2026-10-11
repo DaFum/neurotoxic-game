@@ -220,7 +220,7 @@ export const validatePreparedExpeditionSponsorOffers = (
   return { offers: canonical, provenance }
 }
 
-export interface BrandDealAcceptanceResult {
+interface BrandDealAcceptanceResult {
   dealId: string
   nextPlayer: GameState['player']
   nextBand: GameState['band']

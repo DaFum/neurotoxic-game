@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 /**
  * State and helper returned by {@link usePurchaseLock}.
  */
-export interface PurchaseLockResult {
+interface PurchaseLockResult {
   /** Id of the item currently being purchased, or `null` when idle. */
   processingItemId: string | null
   /**

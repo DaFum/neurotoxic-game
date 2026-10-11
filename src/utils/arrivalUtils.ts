@@ -19,6 +19,7 @@ import { VENUES_BY_ID } from '../data/venues'
 import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 import type { ExpeditionAccessLock } from '../domain/expedition/fame'
+import type { OptionalToastCallback } from '../types/callbacks'
 
 /**
  * Map-node shape accepted by shared arrival processing.
@@ -140,7 +141,7 @@ type HandleNodeArrivalParams = {
   updatePlayer: (p: Partial<PlayerState>) => void
   triggerEvent: (category: string, triggerPoint?: string) => boolean
   startGig: (venue: Venue) => void
-  addToast: (msg: string, level?: string) => void
+  addToast: OptionalToastCallback
   onShowHQ?: () => void
   onShowSupplyStop?: (
     inventory: import('../types/components').PurchaseItem[]

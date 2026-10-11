@@ -10,6 +10,7 @@ import type {
 import type { RhythmStateSetters } from './useRhythmGameState'
 import { useHandleMiss } from './scoring/useHandleMiss'
 import { useHandleHit } from './scoring/useHandleHit'
+import type { OptionalToastCallback } from '../../types/callbacks'
 
 type RhythmPerformance = {
   crowdDecay?: number
@@ -45,7 +46,7 @@ type RhythmGameScoringParams = {
   >
   performance: RhythmPerformance
   contextActions: {
-    addToast: (message: string, type?: string) => void
+    addToast: OptionalToastCallback
     setLastGigStats: SetLastGigStats
     endGig: () => void
   }
@@ -54,7 +55,7 @@ type RhythmGameScoringParams = {
 /**
  * Scoring controls and timers exposed by the rhythm game scoring hook.
  */
-export type RhythmGameScoringReturn = {
+type RhythmGameScoringReturn = {
   handleHit: (laneIndex: number) => boolean
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
   activateToxicMode: () => void

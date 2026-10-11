@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X } from 'lucide-react'
+import { HelpCircle, X } from 'lucide-react'
+import { Tooltip } from './Tooltip'
 
 // Array of explicit shortcut entries
 const SHORTCUTS = [
@@ -144,5 +145,66 @@ export function KeyboardShortcutsPanel({
         ))}
       </div>
     </div>
+  )
+}
+
+/**
+ * Component properties for the ShortcutsToggle.
+ */
+interface ShortcutsToggleProps {
+  /** Whether the shortcuts panel is currently shown. */
+  showHelp: boolean
+  /** Toggles the shortcuts panel. */
+  onToggle: () => void
+  /** Layout classes applied in both states. */
+  className: string
+  /** Classes applied while the panel is shown. */
+  activeClassName: string
+  /** Classes applied while the panel is hidden. */
+  inactiveClassName: string
+  /** Pixel size of the help icon. */
+  iconSize: number
+}
+
+/**
+ * Tooltip-wrapped button that toggles the {@link KeyboardShortcutsPanel}.
+ *
+ * @remarks
+ * Owns the shared label, tooltip and ARIA wiring (`aria-pressed`,
+ * `aria-expanded`, and `aria-controls` pointing at the panel only while it is
+ * shown). Hosts keep the `showHelp` state and decide where the panel mounts.
+ *
+ * @param props - Panel state, toggle handler, and state-specific classes.
+ */
+export function ShortcutsToggle({
+  showHelp,
+  onToggle,
+  className,
+  activeClassName,
+  inactiveClassName,
+  iconSize
+}: ShortcutsToggleProps) {
+  const { t } = useTranslation(['ui'])
+
+  return (
+    <Tooltip
+      content={t('ui:button.shortcuts', {
+        defaultValue: 'Shortcuts (?, h)'
+      })}
+    >
+      <button
+        type='button'
+        onClick={onToggle}
+        aria-pressed={showHelp}
+        aria-expanded={showHelp}
+        aria-controls={showHelp ? 'shortcuts-panel' : undefined}
+        aria-label={t('ui:aria.shortcutsHelp', {
+          defaultValue: 'Toggle keyboard shortcuts help'
+        })}
+        className={`${className} ${showHelp ? activeClassName : inactiveClassName}`}
+      >
+        <HelpCircle size={iconSize} aria-hidden='true' />
+      </button>
+    </Tooltip>
   )
 }

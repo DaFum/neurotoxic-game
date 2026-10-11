@@ -20,7 +20,7 @@ export interface RivalBandDispatchActions {
 /**
  * Defines the required dependencies to instantiate rival band dispatch actions.
  */
-export interface UseRivalBandDispatchActionsProps {
+interface UseRivalBandDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   stateRef: MutableRefObject<GameState>
 }

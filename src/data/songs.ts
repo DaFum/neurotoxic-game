@@ -3,6 +3,9 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 import type { Note, Song, SongAudioSources } from '../types/audio'
 
+/** Highest song difficulty rank; raw `difficultyRank` values clamp to `1..7`. */
+export const MAX_SONG_DIFFICULTY = 7
+
 type RawNote = {
   t?: number
   timestamp?: number
@@ -96,7 +99,10 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
       name: song.name || key,
       title: song.name || key,
       duration,
-      difficulty: Math.max(1, Math.min(7, song.difficultyRank || 2)),
+      difficulty: Math.max(
+        1,
+        Math.min(MAX_SONG_DIFFICULTY, song.difficultyRank || 2)
+      ),
       intensity:
         (song.difficultyRank || 2) > 5
           ? 'EXTREME'

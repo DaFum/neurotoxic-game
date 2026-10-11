@@ -4,6 +4,7 @@ import type { BasicTProps } from '../types'
 import { useMemo } from 'react'
 import { Tooltip } from '../../../shared'
 import type { CharacterTrait } from '../../../../types'
+import { isEmptyObject } from '../../../../utils/gameState'
 
 export const MemberTraits = ({
   member,
@@ -15,7 +16,7 @@ export const MemberTraits = ({
     const baseTraits = def?.traits || []
     const memberTraits = member?.traits ?? {}
 
-    if (Object.keys(memberTraits).length === 0) return baseTraits
+    if (isEmptyObject(memberTraits)) return baseTraits
 
     const merged: CharacterTrait[] = [...baseTraits]
     const baseIds = new Set(baseTraits.map(t => t.id))

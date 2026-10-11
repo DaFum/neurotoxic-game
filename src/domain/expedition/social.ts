@@ -1,5 +1,5 @@
 import type { ExpeditionSocialResultId } from '../../types/expedition'
-export interface ExpeditionSocialResult {
+interface ExpeditionSocialResult {
   money: number
   fame: number
   heat: number

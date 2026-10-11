@@ -243,12 +243,11 @@ const EventOptionsList = ({
 
 /**
  * Presents the active event narrative, options, and precomputed outcomes.
- * @param props - Active event, option-selection callback, and optional wrapper class.
+ * @param props - Active event and option-selection callback.
  */
 export const EventModal = ({
   event,
-  onOptionSelect,
-  className = ''
+  onOptionSelect
 }: {
   event: EventModalEvent | null
   onOptionSelect: (
@@ -256,7 +255,6 @@ export const EventModal = ({
       _precomputedResult?: EventModalPrecomputedResult
     }
   ) => void
-  className?: string
 }) => {
   const { t, i18n } = useTranslation(['ui', 'events', 'items'])
 
@@ -446,7 +444,7 @@ export const EventModal = ({
     <CriticalDialogShell
       labelledBy='event-title'
       severityLabel={t('ui:event.severity.critical')}
-      overlayClassName={`${isExiting ? 'pointer-events-none' : ''} ${className}`}
+      overlayClassName={isExiting ? 'pointer-events-none' : ''}
       panelClassName='border-4 p-3 sm:p-6 shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
       severityLabelClassName='px-2'
       animation={{ isExiting, onAnimationComplete: handleAnimationComplete }}

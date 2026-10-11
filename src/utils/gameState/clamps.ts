@@ -186,7 +186,9 @@ export const clampMemberSkill = (value: unknown, fallback = 1): number =>
  * Same bug class as {@link addClampedPercent}: `clampMemberSkill` treats a
  * non-finite value as malformed and returns its fallback, so
  * `clampMemberSkill(base + overflowingDelta)` would reset a maxed skill to `1`.
- * No flooring, matching `clampMemberSkill`, so fractional steps survive.
+ * The sum is therefore bounded to the finite range before it reaches
+ * `clampMemberSkill`, which keeps the `1..10` range in one place. No flooring,
+ * matching `clampMemberSkill`, so fractional steps survive.
  *
  * @param base - Stored skill; recovered with `finiteNumberOr` first.
  * @param delta - Finite delta, possibly the result of an overflowing product.
@@ -196,7 +198,10 @@ export const clampMemberSkill = (value: unknown, fallback = 1): number =>
 export const addClampedMemberSkill = (base: unknown, delta: number): number => {
   const safeBase = finiteNumberOr(base, 1)
   const sum = safeBase + delta
-  return Math.max(1, Math.min(10, Number.isNaN(sum) ? safeBase : sum))
+  if (Number.isNaN(sum)) return clampMemberSkill(safeBase)
+  return clampMemberSkill(
+    Math.max(-Number.MAX_VALUE, Math.min(Number.MAX_VALUE, sum))
+  )
 }
 
 /**

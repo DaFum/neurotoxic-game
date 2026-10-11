@@ -5,20 +5,18 @@ import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 /**
  * ToggleSwitch - A standardized toggle switch for binary options.
- * @param props - Toggle state, accessible label, toggle callback, and optional classes.
+ * @param props - Toggle state, accessible label, and toggle callback.
  */
 type ToggleSwitchProps = {
   isOn: boolean
   onToggle: () => void
   ariaLabel: string
-  className?: string
 }
 
 const ToggleSwitchComponent = ({
   isOn,
   onToggle,
-  ariaLabel,
-  className = ''
+  ariaLabel
 }: ToggleSwitchProps) => {
   const { t } = useTranslation()
   const labelId = useId()
@@ -30,9 +28,7 @@ const ToggleSwitchComponent = ({
   }, [onToggle, pulseGlitch])
 
   return (
-    <div
-      className={`flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black ${className}`}
-    >
+    <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
       <span
         id={labelId}
         className='text-sm font-bold tracking-widest uppercase'
@@ -69,7 +65,7 @@ const ToggleSwitchComponent = ({
 
 /**
  * Renders an accessible binary toggle switch with glitch feedback.
- * @param props - Toggle state, accessible label, toggle callback, and optional classes.
+ * @param props - Toggle state, accessible label, and toggle callback.
  */
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'

@@ -8,6 +8,7 @@ import type {
   SocialState,
   Venue
 } from '../../types'
+import type { OptionalToastCallback } from '../../types/callbacks'
 
 /**
  * Inputs to {@link useTravelLogic}: the live game-state slices it reads and the
@@ -42,7 +43,7 @@ export type TravelLogicParams = {
   advanceDay: () => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   startGig: (venue: Venue) => void
-  addToast: (message: string, type?: string) => void
+  addToast: OptionalToastCallback
   changeScene: (scene: GamePhase) => void
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
@@ -130,5 +131,5 @@ export interface VanMaintenanceParams {
   updateBand: (updates: Partial<BandState>) => void
   advanceDay: () => void
   dailyObligations: number
-  addToast: (message: string, type?: string) => void
+  addToast: OptionalToastCallback
 }

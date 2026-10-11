@@ -67,7 +67,7 @@ const hasQuestSlot = (
 /**
  * Result of checking whether the current state can accept a quest.
  */
-export type CanAcceptQuestResult =
+type CanAcceptQuestResult =
   | { ok: true; scopeKey?: string }
   | {
       ok: false

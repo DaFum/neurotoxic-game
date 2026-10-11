@@ -1,3 +1,5 @@
+import { HIGH_CONTROVERSY_THRESHOLD } from '../utils/socialThresholds'
+
 /**
  * Social-state gates for the once-per-day zealotry actions.
  *
@@ -8,8 +10,11 @@
  * dispatch cannot skip the gate.
  */
 
-/** Minimum `social.controversyLevel` required for a dark-web leak. */
-export const DARK_WEB_LEAK_REQUIRED_CONTROVERSY = 40
+/**
+ * Minimum `social.controversyLevel` required for a dark-web leak: the shared
+ * high-controversy tier (`BALANCE_CONFIG.social.highControversyThreshold`).
+ */
+export const DARK_WEB_LEAK_REQUIRED_CONTROVERSY = HIGH_CONTROVERSY_THRESHOLD
 
 /** Minimum `social.zealotry` required for a cult indoctrination. */
 export const CULT_INDOCTRINATION_REQUIRED_ZEALOTRY = 50
