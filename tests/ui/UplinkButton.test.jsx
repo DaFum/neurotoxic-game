@@ -1,6 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { expect, test } from 'vitest'
-import { vi } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import { expect, test, vi } from 'vitest'
 import { UplinkButton, CrisisModal, DeadmanButton } from '../../src/ui/shared/BrutalistUI.tsx'
 
 test('UplinkButton renders correctly and handles hover states properly', () => {
@@ -100,4 +99,43 @@ test('DeadmanButton renders accessibility attributes, progressbar role, and hand
   expect(button).toBeDisabled()
   expect(button).toHaveAttribute('aria-disabled', 'true')
   expect(button).toHaveClass('opacity-50', 'cursor-not-allowed')
+})
+
+test('DeadmanButton cancels hold when disabled mid-hold and clamps progress ARIA value', () => {
+  vi.useFakeTimers()
+  const onConfirm = vi.fn()
+  const { rerender } = render(
+    <DeadmanButton label='OVERRIDE SYSTEM' onConfirm={onConfirm} />
+  )
+
+  const button = screen.getByRole('button')
+  const progressbar = screen.getByRole('progressbar')
+
+  // Start hold
+  fireEvent.mouseDown(button)
+  act(() => {
+    vi.advanceTimersByTime(100)
+  })
+
+  const currentVal = parseInt(progressbar.getAttribute('aria-valuenow') || '0', 10)
+  expect(currentVal).toBeGreaterThan(0)
+
+  // Disable mid-hold
+  act(() => {
+    rerender(
+      <DeadmanButton label='OVERRIDE SYSTEM' disabled onConfirm={onConfirm} />
+    )
+  })
+
+  expect(progressbar).toHaveAttribute('aria-valuenow', '0')
+  expect(onConfirm).not.toHaveBeenCalled()
+
+  // Advance time to verify interval does not continue
+  act(() => {
+    vi.advanceTimersByTime(2000)
+  })
+  expect(onConfirm).not.toHaveBeenCalled()
+  expect(progressbar).toHaveAttribute('aria-valuenow', '0')
+
+  vi.useRealTimers()
 })

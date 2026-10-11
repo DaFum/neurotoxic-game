@@ -418,6 +418,19 @@ export const DeadmanButton = memo(
       progressRef.current = progress
     }, [progress])
 
+    useEffect(() => {
+      if (disabled) {
+        if (intervalRef.current != null) clearInterval(intervalRef.current)
+        if (drainIntervalRef.current != null) clearInterval(drainIntervalRef.current)
+        intervalRef.current = null
+        drainIntervalRef.current = null
+        // eslint-disable-next-line @eslint-react/set-state-in-effect
+        setIsHolding(false)
+        // eslint-disable-next-line @eslint-react/set-state-in-effect
+        setProgress(0)
+      }
+    }, [disabled])
+
     const startHold = () => {
       if (disabled || progressRef.current >= 100) return
       setIsHolding(true)
@@ -460,7 +473,7 @@ export const DeadmanButton = memo(
               }
               return 0
             }
-            return prev - 5
+            return Math.max(0, prev - 5)
           })
         }, 20)
         drainIntervalRef.current = drainId
@@ -477,7 +490,8 @@ export const DeadmanButton = memo(
       }
     }, [])
 
-    const isComplete = progress >= 100
+    const safeProgress = Math.min(100, Math.max(0, progress))
+    const isComplete = safeProgress >= 100
 
     return (
       <div className='w-full flex flex-col gap-1'>
@@ -491,8 +505,8 @@ export const DeadmanButton = memo(
           aria-label={
             isComplete
               ? t('ui:executed', 'EXECUTED')
-              : isHolding && progress > 0
-                ? `${label} - ${Math.round(progress)}%`
+              : isHolding && safeProgress > 0
+                ? `${label} - ${Math.round(safeProgress)}%`
                 : `${label} - ${t('ui:holdToOverride', 'HOLD TO OVERRIDE')}`
           }
           onMouseDown={startHold}
@@ -500,6 +514,7 @@ export const DeadmanButton = memo(
           onMouseLeave={stopHold}
           onTouchStart={startHold}
           onTouchEnd={stopHold}
+          onTouchCancel={stopHold}
           onKeyDown={e => {
             if (disabled) return
             if (e.key === 'Enter' || e.key === ' ') {
@@ -521,11 +536,11 @@ export const DeadmanButton = memo(
           <div
             role='progressbar'
             aria-label={label}
-            aria-valuenow={Math.round(progress)}
+            aria-valuenow={Math.round(safeProgress)}
             aria-valuemin={0}
             aria-valuemax={100}
             className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green-bright'}`}
-            style={{ width: `${progress}%` }}
+            style={{ width: `${safeProgress}%` }}
           ></div>
 
           {/* Scanline FX on fill */}
