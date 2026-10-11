@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { UplinkButton, CrisisModal } from '../../src/ui/shared/BrutalistUI.tsx'
+import { vi } from 'vitest'
+import { UplinkButton, CrisisModal, DeadmanButton } from '../../src/ui/shared/BrutalistUI.tsx'
 
 test('UplinkButton renders correctly and handles hover states properly', () => {
   const DummyIcon = () => <svg data-testid='dummy-icon' />
@@ -75,4 +76,28 @@ test('CrisisModal formats action button ARIA attributes correctly with and witho
     'EMERGENCY LOAN - [HIGH RISK]'
   )
   expect(buttons[1]).not.toHaveAttribute('aria-label')
+})
+
+test('DeadmanButton renders accessibility attributes, progressbar role, and handles disabled state', () => {
+  const onConfirm = vi.fn()
+  const { rerender } = render(
+    <DeadmanButton label='PURGE SAVE' onConfirm={onConfirm} />
+  )
+
+  const button = screen.getByRole('button')
+  expect(button).toHaveAttribute(
+    'aria-label',
+    expect.stringMatching(/^PURGE SAVE - /)
+  )
+
+  const progressbar = screen.getByRole('progressbar')
+  expect(progressbar).toHaveAttribute('aria-valuenow', '0')
+  expect(progressbar).toHaveAttribute('aria-valuemin', '0')
+  expect(progressbar).toHaveAttribute('aria-valuemax', '100')
+
+  // Rerender as disabled
+  rerender(<DeadmanButton label='PURGE SAVE' disabled onConfirm={onConfirm} />)
+  expect(button).toBeDisabled()
+  expect(button).toHaveAttribute('aria-disabled', 'true')
+  expect(button).toHaveClass('opacity-50', 'cursor-not-allowed')
 })
