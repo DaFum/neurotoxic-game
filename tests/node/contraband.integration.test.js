@@ -4,6 +4,7 @@ import {
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY
 } from '../../src/data/contraband'
+import { IMG_PROMPTS } from '../../src/utils/imageGen'
 
 const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
@@ -53,6 +54,10 @@ describe('Contraband Integration Tests', () => {
           Object.hasOwn(item, 'imagePrompt'),
           true,
           `Item ${item.id} should have imagePrompt field`
+        )
+        assert.ok(
+          Object.hasOwn(IMG_PROMPTS, item.imagePrompt),
+          `Item ${item.id} imagePrompt ${item.imagePrompt} is not in IMG_PROMPTS`
         )
       }
     })

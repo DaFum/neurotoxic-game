@@ -9,6 +9,11 @@ type TraitDef = {
   id: string
   name?: string
   desc?: string
+  /**
+   * Descriptive-only tag naming the trait's mechanic (e.g.
+   * `'score_bonus_high_acc'`). Nothing reads it at runtime: gameplay keys on
+   * the trait `id` via {@link hasTrait}, so changing this string has no effect.
+   */
   effect?: string
   unlockHint?: string
   exclusiveWith?: string[]

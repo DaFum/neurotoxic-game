@@ -55,9 +55,7 @@ export const ShopItem = React.memo(
       typeof IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS] ===
         'string'
         ? IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS]
-        : typeof item.name === 'string'
-          ? item.name
-          : localizedUnknownItem
+        : IMG_PROMPTS.ITEM_UNKNOWN
 
     const isProcessingThis =
       processingItemId != null &&

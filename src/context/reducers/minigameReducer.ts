@@ -32,7 +32,8 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
-import { pickRandomContraband } from '../../utils/contrabandUtils'
+import { getStashStackCount } from '../../utils/contrabandStashUtils'
+import { pickContrabandDropFromRoll } from '../../utils/contrabandUtils'
 import { pickIndex } from '../../utils/selectionUtils'
 import {
   applySharedBandEffect,
@@ -301,35 +302,18 @@ export const handleCompleteTravelMinigame = (
   const chance = computeDropChance(undefined, luck)
 
   if (safeRngValue !== undefined && safeRngValue < chance) {
-    // Generate inner random value deterministically based on rngValue
-    // A simple hash function to derive a second deterministic number [0,1)
-    let seedInt = Math.floor(safeRngValue * 4294967296) // 2**32
-    seedInt = (seedInt * 1664525 + 1013904223) >>> 0 // LCG
-    const innerRng = seedInt / 4294967296
-    const mockRng = () => innerRng
-    const contrabandId = pickRandomContraband(mockRng)
+    const contrabandId = pickContrabandDropFromRoll(safeRngValue)
     const instanceId = `drop-${safeRngValue}`
 
     if (contrabandId) {
       // Call addContrabandHelper directly to leverage its logic
       const preStashLength = countKeys(newState.band?.stash)
-      const preStashItem =
-        newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
-          ? (newState.band.stash[contrabandId] as
-              Record<string, unknown> | undefined)
-          : undefined
-      const preStacks = preStashItem
-        ? finiteNumberOr(preStashItem.stacks, 0)
-        : 0
+      const preStacks = getStashStackCount(newState.band?.stash, contrabandId)
 
       newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
       // Determine if item was actually added (length increased, or stacks increased)
-      const postItem =
-        newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
-          ? (newState.band.stash[contrabandId] as Record<string, unknown>)
-          : undefined
-      const postStacks = postItem ? finiteNumberOr(postItem.stacks, 0) : 0
+      const postStacks = getStashStackCount(newState.band?.stash, contrabandId)
       const postStashLength = countKeys(newState.band?.stash)
 
       const wasAdded =

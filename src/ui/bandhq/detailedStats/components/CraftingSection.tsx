@@ -1,4 +1,4 @@
-import { getStashStacks } from '../helpers'
+import { getStashStackCount } from '../../../../utils/contrabandStashUtils'
 import { Panel, Tooltip } from '../../../shared'
 import type { BasicTProps } from '../types'
 import { CRAFTING_RECIPES } from '../../../../data/craftingRecipes'
@@ -23,7 +23,7 @@ export const CraftingSection = ({
               if (
                 typeof qty !== 'number' ||
                 Number.isNaN(qty) ||
-                getStashStacks(stash, itemId) < qty
+                getStashStackCount(stash, itemId) < qty
               )
                 return false
             }

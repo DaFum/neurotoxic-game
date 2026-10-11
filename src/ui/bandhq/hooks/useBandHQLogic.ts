@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
 import { handleError, GameError, StateError } from '../../../utils/errorHandler'
-import { isStashEntry } from '../../../utils/gameState'
+import { getStashStackCount } from '../../../utils/contrabandStashUtils'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
 import { usePurchaseLock } from './usePurchaseLock'
 import type {
@@ -99,10 +99,7 @@ export const useBandHQLogic = ({
     (item: VoidTraderItem) => {
       const fameCost = getVoidFameCost(item)
       const hasStashOwn = !!(band.stash && Object.hasOwn(band.stash, item.id))
-      const stashEntry = hasStashOwn ? band.stash[item.id] : undefined
-      const currentQuantity = isStashEntry(stashEntry)
-        ? (stashEntry.stacks ?? 0)
-        : 0
+      const currentQuantity = getStashStackCount(band.stash, item.id)
       const isMaxStacks =
         item.stackable === true &&
         typeof item.maxStacks === 'number' &&

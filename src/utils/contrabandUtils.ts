@@ -5,6 +5,7 @@ import {
 import { secureRandom } from './crypto'
 import { pickWeighted, selectRandomItem } from './selectionUtils'
 import { finiteNumberOr } from './gameState'
+import { mulberry32 } from './seededRng'
 import type { Rarity } from '../types'
 
 /**
@@ -108,6 +109,22 @@ export function pickRandomContrabandByRarity(
 export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)
   return pickRandomContrabandByRarity(rarity, rng)
+}
+
+/**
+ * Picks the contraband id for a pre-rolled drop.
+ *
+ * @param rngValue - Pre-rolled value in `[0, 1)` from the action payload.
+ * @returns Picked contraband id, or null when no rarity pool is available.
+ *
+ * @remarks
+ * The roll seeds a {@link mulberry32} stream, so the rarity roll and the item
+ * index use independent draws while the result stays deterministic per
+ * `rngValue`. Feeding one constant value to both draws would correlate them
+ * and leave most of each rarity pool unreachable.
+ */
+export function pickContrabandDropFromRoll(rngValue: number) {
+  return pickRandomContraband(mulberry32(Math.floor(rngValue * 2 ** 32)))
 }
 
 /**

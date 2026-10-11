@@ -223,4 +223,24 @@ describe('TourPrepLoadout', () => {
       screen.getByTestId('expedition-prep-protected-cash')
     ).toHaveAccessibleName('ui:expedition.prep.protectedCash')
   })
+
+  it('offers owned non-stackable contraband (stacks: null) as one packable unit', () => {
+    state.current = createInitialState()
+    state.current.band.stash = {
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: null },
+      c_void_energy: { id: 'c_void_energy', stacks: 2 },
+      c_bone_dust: { id: 'c_bone_dust', stacks: Number.NaN }
+    } as unknown as GameState['band']['stash']
+    render(<TourPrepLoadout />)
+
+    expect(
+      screen.getByTestId('expedition-prep-contraband-c_rusty_strings')
+    ).toHaveAttribute('max', '1')
+    expect(
+      screen.getByTestId('expedition-prep-contraband-c_void_energy')
+    ).toHaveAttribute('max', '2')
+    expect(
+      screen.queryByTestId('expedition-prep-contraband-c_bone_dust')
+    ).toBeNull()
+  })
 })
