@@ -11,6 +11,7 @@ export { ActionButton } from './ActionButton'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
 export {
   KeyboardShortcutsPanel,
+  ShortcutsToggle,
   useKeyboardShortcuts
 } from './KeyboardShortcuts'
 export { FrameCorners } from './FrameCorners'

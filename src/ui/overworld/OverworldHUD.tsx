@@ -1,11 +1,10 @@
 import { useState, memo } from 'react'
-import { HelpCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState } from '../../types/player'
 import type { BandState } from '../../types/band'
 import {
-  Tooltip,
   KeyboardShortcutsPanel,
+  ShortcutsToggle,
   useKeyboardShortcuts
 } from '../shared'
 import {
@@ -80,29 +79,14 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
         />
 
         <div className='flex gap-2'>
-          <Tooltip
-            content={t('ui:button.shortcuts', {
-              defaultValue: 'Shortcuts (?, h)'
-            })}
-          >
-            <button
-              type='button'
-              onClick={() => setShowHelp(prev => !prev)}
-              aria-pressed={showHelp}
-              aria-expanded={showHelp}
-              aria-controls={showHelp ? 'shortcuts-panel' : undefined}
-              aria-label={t('ui:aria.shortcutsHelp', {
-                defaultValue: 'Toggle keyboard shortcuts help'
-              })}
-              className={`pointer-events-auto bg-void-black/95 border min-w-12 min-h-12 flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black hover:translate-y-1 hover:translate-x-1 ${
-                showHelp
-                  ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow shadow-none translate-y-1 translate-x-1'
-                  : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] hover:shadow-none'
-              }`}
-            >
-              <HelpCircle size={22} aria-hidden='true' />
-            </button>
-          </Tooltip>
+          <ShortcutsToggle
+            showHelp={showHelp}
+            onToggle={() => setShowHelp(prev => !prev)}
+            className='pointer-events-auto bg-void-black/95 border min-w-12 min-h-12 flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black hover:translate-y-1 hover:translate-x-1'
+            activeClassName='border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow shadow-none translate-y-1 translate-x-1'
+            inactiveClassName='border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] hover:shadow-none'
+            iconSize={22}
+          />
         </div>
 
         <KeyboardShortcutsPanel
