@@ -311,3 +311,36 @@ export const CHASSIS_CONFIG: Record<AssetKind, ChassisKindConfig> = {
     }
   }
 }
+
+/**
+ * Reads one chassis tier from {@link CHASSIS_CONFIG} with own-property checks
+ * at every level.
+ *
+ * @remarks
+ * Plain indexing lets hostile keys such as `'constructor'` or `'__proto__'`
+ * resolve to truthy inherited values that have no `price`. Reducers and
+ * action creators use this instead of `CHASSIS_CONFIG[kind]?.[flavor]?.[tier]`.
+ *
+ * @param kind - Candidate asset kind.
+ * @param flavor - Candidate chassis flavor.
+ * @param tier - Candidate chassis tier.
+ * @returns The configured tier, or `undefined` when any key is not an own entry.
+ */
+export const getChassisTierConfig = (
+  kind: unknown,
+  flavor: unknown,
+  tier: unknown
+): ChassisTierConfig | undefined => {
+  if (typeof kind !== 'string' || !Object.hasOwn(CHASSIS_CONFIG, kind)) {
+    return undefined
+  }
+  const kindConfig = CHASSIS_CONFIG[kind as AssetKind]
+  if (typeof flavor !== 'string' || !Object.hasOwn(kindConfig, flavor)) {
+    return undefined
+  }
+  const flavorConfig = kindConfig[flavor as AssetFlavor]
+  if (typeof tier !== 'number' || !Object.hasOwn(flavorConfig, tier)) {
+    return undefined
+  }
+  return flavorConfig[tier as ChassisTier]
+}

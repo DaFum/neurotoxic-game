@@ -16,7 +16,28 @@
  * avoid circular ESM dependencies. This file is the consumer-facing entry
  * point; importing it triggers all registered section side-effects.
  */
+import type { AssetModule } from '../types/assets'
+import { MODULE_REGISTRY } from './assetRegistryStore'
+
 export { MODULE_REGISTRY, MODULE_PROMPTS } from './assetRegistryStore'
+
+/**
+ * Looks a module up by id, accepting only own registry entries.
+ *
+ * @remarks
+ * Plain `MODULE_REGISTRY[id]` resolves hostile ids such as `'constructor'` or
+ * `'__proto__'` to truthy inherited values with no `cost`. Reducers and action
+ * creators use this for ids that arrive in payloads.
+ *
+ * @param moduleId - Candidate module id.
+ * @returns The registered module, or `undefined` for unknown or inherited keys.
+ */
+export const getRegisteredModule = (
+  moduleId: unknown
+): AssetModule | undefined =>
+  typeof moduleId === 'string' && Object.hasOwn(MODULE_REGISTRY, moduleId)
+    ? MODULE_REGISTRY[moduleId]
+    : undefined
 
 import './assetSections/tourbusModules'
 import './assetSections/studioModules'

@@ -58,6 +58,25 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
 }
 
 /**
+ * Looks a loan profile up by id, accepting only own catalogue entries.
+ *
+ * @remarks
+ * Plain `LOAN_PROFILES[id]` resolves `'constructor'` to an inherited function
+ * that passes {@link isLoanProfileEligible} (its gate fields are undefined) and
+ * prices a zero daily payment. Reducers and action creators use this instead.
+ *
+ * @param loanProfileId - Candidate loan profile id.
+ * @returns The loan profile, or `undefined` for unknown or inherited keys.
+ */
+export const getLoanProfile = (
+  loanProfileId: unknown
+): LoanProfile | undefined =>
+  typeof loanProfileId === 'string' &&
+  Object.hasOwn(LOAN_PROFILES, loanProfileId)
+    ? LOAN_PROFILES[loanProfileId as LoanProfileId]
+    : undefined
+
+/**
  * Flat refinance fee rate applied to remaining principal.
  */
 const REFINANCE_FEE_RATE = 0.02

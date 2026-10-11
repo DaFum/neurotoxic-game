@@ -292,6 +292,39 @@ describe('isModuleUnlocked', () => {
     )
   })
 
+  it('fails closed when fame, money or scenePresence is non-finite', () => {
+    registerTestModule('test_nan_gates', {
+      unlock: { minFame: 10, minMoney: 100, minScenePresence: 20 }
+    })
+    const module = MODULE_REGISTRY.test_nan_gates
+    const ok = { fame: 50, money: 500 }
+    assert.equal(
+      isModuleUnlocked(
+        module,
+        makeState({ player: ok, social: { scenePresence: 30 } })
+      ),
+      true
+    )
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY]) {
+      const cases = [
+        makeState({
+          player: { ...ok, fame: bad },
+          social: { scenePresence: 30 }
+        }),
+        makeState({
+          player: { ...ok, money: bad },
+          social: { scenePresence: 30 }
+        }),
+        makeState({ player: ok, social: { scenePresence: bad } })
+      ]
+      for (const state of cases) {
+        assert.equal(isModuleUnlocked(module, state), false, String(bad))
+      }
+    }
+    // Missing scenePresence still reads as 0 (legacy state), not as a crash.
+    assert.equal(isModuleUnlocked(module, makeState({ player: ok })), false)
+  })
+
   it('checks all story flags AND', () => {
     registerTestModule('test_story', {
       unlock: { requiredStoryFlags: ['a', 'b'] }

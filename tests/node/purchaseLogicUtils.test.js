@@ -409,6 +409,32 @@ describe('purchaseLogicUtils', () => {
       const result = applyStatModifier(effect, {}, player, {})
       assert.equal(result.playerPatch.van.speed, 5)
     })
+
+    test('does not coerce finite numeric-string base stats from persisted state', () => {
+      const vanResult = applyStatModifier(
+        { target: 'van', stat: 'speed', value: 5 },
+        {},
+        { van: { speed: ' 30 ' } },
+        {}
+      )
+      assert.equal(vanResult.playerPatch.van.speed, 5)
+
+      const playerResult = applyStatModifier(
+        { target: 'player', stat: 'hype', value: 5 },
+        {},
+        { hype: '30' },
+        {}
+      )
+      assert.equal(playerResult.playerPatch.hype, 5)
+
+      const bandResult = applyStatModifier(
+        { target: 'band', stat: 'luck', value: 5 },
+        {},
+        {},
+        { luck: '30' }
+      )
+      assert.equal(bandResult.bandPatch.luck, 5)
+    })
   })
 
   describe('applyUnlockUpgrade', () => {
