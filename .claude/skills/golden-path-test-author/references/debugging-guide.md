@@ -229,7 +229,8 @@ Use a consistent import pattern:
 //   ../../src/context/initialState.js (source file: src/context/initialState.ts)
 //   ../../src/context/gameConstants.js (source file: src/context/gameConstants.ts)
 
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
+import { gameReducer } from '../../src/context/gameReducer.js'
+import { ActionTypes } from '../../src/context/actionTypes.js'
 import { createInitialState } from '../../src/context/initialState.js'
 import { GAME_PHASES } from '../../src/context/gameConstants.js'
 ```
