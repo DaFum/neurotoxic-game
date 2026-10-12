@@ -2,7 +2,9 @@ node_modules/
 dist/
 .vite/
 coverage/
-tests/fixtures/**/*.{json,png,wav}
+tests/fixtures/**/*.json
+tests/fixtures/**/*.png
+tests/fixtures/**/*.wav
 .git/
 .env.local
 .turbo/

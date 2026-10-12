@@ -83,7 +83,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Skill Tiers
 
-The `.claude/skills/` catalog contains 53+ skills. Prioritize by tier:
+The `.claude/skills/` catalog contains 53+ skills. Process skills come first: per `using-superpowers`, start new work with `brainstorming` and bugs with `systematic-debugging` before any implementation skill. After that, prioritize by tier:
 
 **Core (reach for these first):**
 
