@@ -13,7 +13,9 @@
 
 import { EVENTS_DB } from '../../data/events'
 import { isExpeditionEventResultId } from './eventDeltas'
-import type { UnknownRecord } from '../../types'
+import type { GameState, UnknownRecord } from '../../types'
+
+type OptionCondition = (state: GameState) => unknown
 
 /**
  * Every option's declared Expedition results, keyed `<eventId>:<optionId>`.
@@ -54,6 +56,35 @@ const buildDeclaredResults = (): ReadonlyMap<string, ReadonlySet<string>> => {
 const DECLARED_RESULTS = buildDeclaredResults()
 
 /**
+ * Every option's own eligibility `condition`, keyed `<eventId>:<optionId>`.
+ * Options without one are absent and always available.
+ */
+const buildOptionConditions = (): ReadonlyMap<string, OptionCondition> => {
+  const conditions = new Map<string, OptionCondition>()
+  for (const pool of Object.values(EVENTS_DB)) {
+    for (const event of pool) {
+      const eventId = event.id
+      if (typeof eventId !== 'string' || !Array.isArray(event.options)) {
+        continue
+      }
+      for (const option of event.options) {
+        if (!option || typeof option !== 'object') continue
+        const optionRecord = option as UnknownRecord
+        const optionId = optionRecord.id
+        const condition = optionRecord.condition
+        if (typeof optionId !== 'string' || typeof condition !== 'function') {
+          continue
+        }
+        conditions.set(`${eventId}:${optionId}`, condition as OptionCondition)
+      }
+    }
+  }
+  return conditions
+}
+
+const OPTION_CONDITIONS = buildOptionConditions()
+
+/**
  * Whether the registry declares this event option as producing this result.
  *
  * @param eventId - Candidate event id.
@@ -70,6 +101,35 @@ export const isDeclaredExpeditionEventResult = (
   typeof optionId === 'string' &&
   typeof resultId === 'string' &&
   (DECLARED_RESULTS.get(`${eventId}:${optionId}`)?.has(resultId) ?? false)
+
+/**
+ * Whether an event option's own `condition` allows choosing it in this state.
+ *
+ * @param state - State the option is being resolved against.
+ * @param eventId - Candidate event id.
+ * @param optionId - Candidate option id.
+ * @returns True when the option declares no condition or its condition passes;
+ * false when it fails or throws.
+ *
+ * @remarks
+ * `EventModal` only disables a locked option. The reducer re-checks the same
+ * condition so a direct dispatch cannot resolve an option the player could not
+ * have picked (for example `tom_covers` below the Matze/Tom trust tier).
+ */
+export const isExpeditionEventOptionAvailable = (
+  state: GameState,
+  eventId: unknown,
+  optionId: unknown
+): boolean => {
+  if (typeof eventId !== 'string' || typeof optionId !== 'string') return false
+  const condition = OPTION_CONDITIONS.get(`${eventId}:${optionId}`)
+  if (!condition) return true
+  try {
+    return Boolean(condition(state))
+  } catch {
+    return false
+  }
+}
 
 /**
  * Whether a persisted `<eventId>:<optionId>:<resultId>:<routeStep>` proof is

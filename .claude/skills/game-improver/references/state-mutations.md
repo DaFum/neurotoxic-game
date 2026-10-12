@@ -99,7 +99,8 @@ function handleRepairVan() {
 ```javascript
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
+import { gameReducer } from '../src/context/gameReducer.js'
+import { ActionTypes } from '../src/context/actionTypes.js'
 import { createInitialState } from '../src/context/initialState.js'
 import { repairVan } from '../src/context/actionCreators.js'
 
