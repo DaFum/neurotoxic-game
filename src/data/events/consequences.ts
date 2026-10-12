@@ -11,9 +11,15 @@ import { FLAGS, type StoryFlag } from '../flags.registry'
 /**
  * Authored chance of a story-arc aftermath beat. Each beat declares its arc
  * outcome as `requiredFlag`, which `selectEvent` multiplies by 5 while the
- * flag is active, for an effective 30% when the beat is rolled.
+ * flag is active, for an effective 10% when the beat is rolled.
+ *
+ * @remarks
+ * Outcome flags persist, so up to four beats can be eligible at the same
+ * trigger at once. Kept low so their combined weight (at most 0.4) leaves the
+ * rest of the pool and the "no event" share intact instead of saturating
+ * `selectEvent`'s roll.
  */
-const STORY_AFTERMATH_CHANCE = 0.06
+const STORY_AFTERMATH_CHANCE = 0.02
 
 /** Days before the same aftermath beat may recur after it resolves. */
 const STORY_AFTERMATH_COOLDOWN_DAYS = 30
