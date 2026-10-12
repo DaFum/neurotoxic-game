@@ -54,7 +54,10 @@ import {
   getExpeditionEventResultEffect,
   sanitizeExpeditionEventResultIds
 } from '../../domain/expedition/eventDeltas'
-import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventProof'
+import {
+  isDeclaredExpeditionEventResult,
+  isExpeditionEventOptionAvailable
+} from '../../domain/expedition/eventProof'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
@@ -1996,6 +1999,17 @@ export const handleApplyExpeditionEventDelta = (
         payload.sourceOptionId,
         resultId
       )
+    )
+  ) {
+    return state
+  }
+  // A locked option (its own `condition` fails) is only disabled in the UI;
+  // refuse it here too so a direct dispatch cannot resolve it.
+  if (
+    !isExpeditionEventOptionAvailable(
+      state,
+      payload.sourceEventId,
+      payload.sourceOptionId
     )
   ) {
     return state
