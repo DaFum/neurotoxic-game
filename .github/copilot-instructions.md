@@ -85,6 +85,38 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
 - After editing this file, run `pnpm run sync:agents`; `tests/node/agentInstructionsSync.test.js` fails when `.github/copilot-instructions.md` drifts from it.
 
+## Skill Tiers
+
+The `.claude/skills/` catalog contains 53+ skills. Process skills come first: per `using-superpowers`, start new work with `brainstorming` and bugs with `systematic-debugging` before any implementation skill. After that, prioritize by tier:
+
+**Core (reach for these first):**
+
+- `game-improver` — Primary game mechanics and feature development
+- `systematic-debugging` — Root-cause analysis and diagnosis
+- `test-driven-development` — Test-first implementation patterns
+
+**Workflow (multi-step coordination):**
+
+- `executing-plans`, `dispatching-parallel-agents`, `requesting-code-review` — Parallel and sequential task management
+- `verification-before-completion`, `receiving-code-review` — QA and feedback loops
+
+**Specialized (domain-specific):**
+
+- `audio-debugger-ambient-vs-gig`, `webaudio-reliability-fixer` — Audio engine work
+- `tailwind-v4-css-variables-enforcer`, `react-performance-optimization` — UI/styling
+- `golden-path-test-author`, `holistic-test-suite-optimizer` — Test suite depth
+- `game-balancing-assistant` — Gameplay tuning and balance adjustments
+
+Use skill names as triggers when planning work (e.g., "I'll use game-improver for this feature").
+
+## Context Management
+
+- **Max CLAUDE.md size:** 8K tokens (currently ~1K, excellent headroom)
+- **Keep AGENTS.md stable:** under 2K tokens (currently ~1.5K after this edit)
+- **Per-skill context budget:** ~500 tokens (on-demand, not always-loaded)
+- **Cache prefix impact:** ~1K tokens for always-loaded files (CLAUDE.md + root instructions)
+- **Skill discovery:** Use skill tiers above to avoid decision paralysis; core skills are discovered first
+
 ## Architecture Constraints
 
 - All state updates go through typed action creators. New actions update `actionTypes`, reducer handling, and `actionCreators` together. Creators sanitize raw payloads; reducers remain authoritative and reject hostile payloads or re-clamp computed state.
