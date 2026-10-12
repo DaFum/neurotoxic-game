@@ -8,6 +8,7 @@ import { createInitialState } from '../../src/context/initialState.ts'
 import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers.ts'
 import { getExpeditionRelationshipPairKey } from '../../src/domain/expedition/relationships.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
+import { applyExpeditionEventDelta } from '../../src/context/expeditionActionCreators.ts'
 
 const crew = id => ({ kind: 'crew', id })
 const MATZE_TOM = getExpeditionRelationshipPairKey(
@@ -207,5 +208,33 @@ describe('resolved Crew events flip later eligibility through the reducer', () =
     const heard = resolve(started, 'expedition_crew_band_tension', 'listen')
     assert.equal(heard.career.expeditionRelationshipByPair[MATZE_TOM], 1)
     assert.equal(cover.condition(heard), true)
+  })
+
+  test('Band<->Crew: the reducer refuses a locked cover option', () => {
+    const started = startedState({}, { crewIds: ['mika', 'tom', 'ines'] })
+    const event = eventById('expedition_crew_injury_scare')
+    const dispatchCover = state => {
+      const withEvent = { ...state, activeEvent: event }
+      const action = applyExpeditionEventDelta(
+        withEvent,
+        ['crew_injury_scare_covered'],
+        { eventId: event.id, optionId: 'tom_covers' }
+      )
+      return gameReducer(withEvent, action).expedition.crew
+    }
+
+    // Below the trust tier the option is locked: a direct dispatch changes nothing.
+    assert.deepEqual(dispatchCover(started), started.expedition.crew)
+
+    const trusted = {
+      ...started,
+      career: {
+        ...started.career,
+        expeditionRelationshipByPair: { [MATZE_TOM]: 1 }
+      }
+    }
+    const covered = dispatchCover(trusted)
+    assert.ok(covered.stressByCrewId.tom > 0)
+    assert.equal(covered.injuryByCrewId.ines, 'light')
   })
 })
