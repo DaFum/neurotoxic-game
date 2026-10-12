@@ -76,16 +76,41 @@ describe('story arc aftermath events', () => {
       assert.ok(ids(stateWith([flag])).includes(event.id))
       assert.ok(!ids(stateWith([])).includes(event.id))
 
-      // Weighting: the authored chance alone would miss a 0.2 roll; the
+      // Weighting: the authored chance alone would miss a 0.05 roll; the
       // requiredFlag x5 boost turns it into an effective 5 * chance.
       const effective = event.chance * 5
-      assert.ok(event.chance < 0.2 && effective > 0.2)
+      assert.ok(event.chance < 0.05 && effective > 0.05)
       const pick = roll =>
         selectEvent([event], stateWith([flag]), event.trigger, () => roll)
-      assert.equal(pick(0.2)?.id, event.id)
+      assert.equal(pick(0.05)?.id, event.id)
       assert.equal(pick(effective + 0.01), null)
     })
   }
+
+  test('aftermath beats cannot saturate a trigger when outcome flags persist', () => {
+    // Worst reachable case: one outcome per arc (an arc ends complete or
+    // failed, never both), all still set. Every beat sharing a trigger is then
+    // eligible together; their boosted weights must leave headroom for the rest
+    // of the pool and the "no event" share of selectEvent.
+    const oneOutcomePerArc = [
+      FLAGS.APOLOGY_TOUR_FAILED,
+      FLAGS.BACK_FROM_PIT_COMPLETE,
+      FLAGS.BAND_PACT_COMPLETE,
+      FLAGS.EGO_CRISIS_RESOLVED,
+      FLAGS.PROVE_YOURSELF_ACTIVE,
+      FLAGS.PROVE_YOURSELF_COMPLETE,
+      FLAGS.SINCERE_REDEMPTION_COMPLETE
+    ]
+    for (const trigger of ['travel', 'post_gig']) {
+      const eligible = filterEvents(
+        aftermathEvents,
+        trigger,
+        stateWith(oneOutcomePerArc)
+      )
+      const weight = eligible.reduce((sum, event) => sum + event.chance * 5, 0)
+      assert.ok(weight <= 0.5, `${trigger} aftermath weight ${weight}`)
+    }
+  })
 
   test('effects stay modest and every option starts the shared cooldown', () => {
     for (const event of aftermathEvents) {
