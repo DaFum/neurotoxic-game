@@ -219,3 +219,8 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
+
+## 2026-10-12 - Control Menu ARIA References & Focus Rings on Overworld Action Buttons
+
+**Learning:** Expandable control toggle buttons (such as in `GigControlsCluster.tsx`) that use `aria-controls` referencing an outer parent container create invalid ARIA circular references for screen reader users. Additionally, interactive action buttons embedded directly within Overworld HUD panels (such as Expedition draft choices and double-down buttons) can lack explicit `focus-visible` ring utilities, preventing keyboard users from tracking their focus location.
+**Action:** When implementing expandable control menus, wrap the conditionally revealed controls in a dedicated sub-container element and bind `aria-controls={isOpen ? subContainerId : undefined}` on the toggle trigger. Ensure all overworld action buttons explicitly include `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`.
