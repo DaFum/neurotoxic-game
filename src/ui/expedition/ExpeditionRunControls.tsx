@@ -130,7 +130,7 @@ const ExpeditionRunDraftPicker = memo(function ExpeditionRunDraftPicker() {
           // candidates, so the UI must not be able to name a different trait.
           onClick={() => selectExpeditionDraft(traitId)}
           data-testid={`expedition-run-draft-${traitId}`}
-          className='min-h-11 px-3 py-2 text-xs font-mono uppercase border border-steel-gray text-ash-gray hover:border-toxic-green transition-colors'
+          className='min-h-11 px-3 py-2 text-xs font-mono uppercase border border-steel-gray text-ash-gray hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
         >
           {t(`ui:expedition.runDraft.trait.${traitId}`, {
             defaultValue: traitId
@@ -199,7 +199,7 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
                   doubleDownExpeditionObligation(item.id, offer.acceptedOfferId)
                 }
                 data-testid={`double-down-${item.id}`}
-                className='text-[0.625rem] bg-toxic-green text-void-black font-bold px-2 py-0.5 rounded hover:brightness-110'
+                className='text-[0.625rem] bg-toxic-green text-void-black font-bold px-2 py-0.5 rounded hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-1 focus-visible:ring-offset-void-black'
               >
                 {t('ui:expedition.obligations.doubleDown', {
                   defaultValue: 'DOUBLE DOWN'

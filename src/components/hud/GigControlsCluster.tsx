@@ -72,7 +72,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
               setShowHelp(false)
             }}
             aria-expanded={isOpen}
-            aria-controls='gig-controls-menu'
+            aria-controls={isOpen ? 'gig-controls-expanded-menu' : undefined}
             aria-label={t('ui:gig.controlsAria', {
               defaultValue: 'Toggle game controls'
             })}
@@ -87,7 +87,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
         </Tooltip>
 
         {isOpen && (
-          <>
+          <div id='gig-controls-expanded-menu' className='flex gap-1.5'>
             <Tooltip
               content={
                 audioState.isMuted
@@ -146,7 +146,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                 </button>
               </Tooltip>
             )}
-          </>
+          </div>
         )}
       </div>
 
