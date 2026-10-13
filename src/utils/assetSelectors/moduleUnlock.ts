@@ -155,6 +155,17 @@ export interface LockReason {
   refs?: string[]
 }
 
+/**
+ * Fails closed on corrupt numbers: `NaN < min` is false, so a bare comparison
+ * would count a NaN stat as meeting an unlock gate.
+ *
+ * @param value - Stat value read from state.
+ * @param min - Required minimum.
+ * @returns Whether the value is finite and at least `min`.
+ */
+const meetsMinimum = (value: unknown, min: number): boolean =>
+  isFiniteNumber(value) && value >= min
+
 const checkCommonUnlockRequirements = (
   module: AssetModule,
   state: ModuleUnlockState,
@@ -178,7 +189,7 @@ const checkCommonUnlockRequirements = (
 
   if (
     u.minFame !== undefined &&
-    state.player.fame < u.minFame &&
+    !meetsMinimum(state.player.fame, u.minFame) &&
     shouldShortCircuit({ kind: 'fame', amount: u.minFame })
   ) {
     return false
@@ -186,16 +197,17 @@ const checkCommonUnlockRequirements = (
 
   if (
     u.minMoney !== undefined &&
-    state.player.money < u.minMoney &&
+    !meetsMinimum(state.player.money, u.minMoney) &&
     shouldShortCircuit({ kind: 'money', amount: u.minMoney })
   ) {
     return false
   }
 
   if (u.minScenePresence !== undefined) {
+    // A missing scenePresence (legacy state) counts as 0; NaN stays locked.
     const scene = state.social.scenePresence ?? 0
     if (
-      scene < u.minScenePresence &&
+      !meetsMinimum(scene, u.minScenePresence) &&
       shouldShortCircuit({ kind: 'scene', amount: u.minScenePresence })
     ) {
       return false

@@ -599,8 +599,10 @@ export const buildExpeditionMap = (
  * @remarks
  * The route is always derived from the canonical root `runSeed` plus the
  * committed Tour/Region rather than stored, and the builder memoizes, so
- * repeated calls are cheap. Existing call sites inline this rebuild; new code
- * should go through here.
+ * repeated calls are cheap. Readers of the active run's route go through
+ * here; Tour Prep (a candidate loadout), START (the validated candidate) and
+ * load hydration build from a loadout that is not active yet, so they call
+ * `buildExpeditionMap` directly.
  */
 export const getActiveExpeditionMap = (
   state: GameState

@@ -9,6 +9,7 @@
 import type {
   ConditionGroup,
   ExpeditionTechnicalCondition,
+  HiddenDefectSource,
   HiddenDefectState,
   HiddenDefectTrigger
 } from '../../types/expedition'
@@ -80,7 +81,7 @@ export const isExpeditionDefectDue = (
 export const createDeterministicHiddenDefect = (
   runSeed: number,
   group: ConditionGroup,
-  source: 'field_repair' | 'improvise' | 'critical_wear',
+  source: HiddenDefectSource,
   routeStep: number,
   severityOverride?: 1 | 2 | 3
 ): HiddenDefectState => {
@@ -126,7 +127,7 @@ export interface VisibleDefectView {
   group: ConditionGroup
   severity: 1 | 2 | 3
   status: 'revealed' | 'triggered'
-  source: 'field_repair' | 'improvise' | 'critical_wear'
+  source: HiddenDefectSource
 }
 
 /**

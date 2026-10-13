@@ -62,6 +62,12 @@ test.after(() => {
   restoreModuleRegistry()
 })
 
+const NON_FINITE_MONEY = [
+  Number.NaN,
+  Number.POSITIVE_INFINITY,
+  Number.NEGATIVE_INFINITY
+]
+
 const mockState = {
   player: { money: 1000, day: 10, fame: 100 },
   band: { fame: 100 },
@@ -343,25 +349,27 @@ test('handleInstallModule - happy path', () => {
   assert.strictEqual(next.assets[0].slots[0].installedModuleId, 'test_mod')
 })
 
-test('handleInstallModule - normalizes non-finite money on successful install', () => {
-  const startState = {
-    ...mockState,
-    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
-    assets: [
-      {
-        id: 'a1',
-        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
-      }
-    ]
+test('handleInstallModule - rejects non-finite money instead of installing for free', () => {
+  for (const money of NON_FINITE_MONEY) {
+    const startState = {
+      ...mockState,
+      player: { ...mockState.player, money },
+      assets: [
+        {
+          id: 'a1',
+          slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+        }
+      ]
+    }
+
+    const next = handleInstallModule(startState, {
+      assetId: 'a1',
+      slotId: 's1',
+      moduleId: 'test_mod'
+    })
+
+    assert.strictEqual(next, startState, String(money))
   }
-
-  const next = handleInstallModule(startState, {
-    assetId: 'a1',
-    slotId: 's1',
-    moduleId: 'test_mod'
-  })
-
-  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleInstallModule - rejects insufficient funds', () => {
@@ -471,7 +479,7 @@ test('handleUpgradeChassisTier - never credits money for inverted tier prices', 
   assert.strictEqual(next.player.money, 0)
 })
 
-test('handleUpgradeChassisTier - normalizes non-finite money on upgrade', () => {
+test('handleUpgradeChassisTier - rejects non-finite money instead of upgrading for free', () => {
   CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
     price: 4000,
     upkeep: 20,
@@ -486,33 +494,35 @@ test('handleUpgradeChassisTier - normalizes non-finite money on upgrade', () => 
     slots: ['tb_roof', 'tb_front'],
     baseRiskEventChance: 0.005
   }
-  const startState = {
-    ...mockState,
-    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
-    assets: [
-      {
-        id: 'a1',
-        kind: 'tourbus_chassis',
-        chassisFlavor: 'legit',
-        chassisTier: 1,
-        condition: 100,
-        baseUpkeep: 20,
-        baseDailyRevenue: 0,
-        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }],
-        acquiredOnDay: 1,
-        acquisitionMode: 'cash',
-        baseRiskEventChance: 0.005
-      }
-    ]
+  for (const money of NON_FINITE_MONEY) {
+    const startState = {
+      ...mockState,
+      player: { ...mockState.player, money },
+      assets: [
+        {
+          id: 'a1',
+          kind: 'tourbus_chassis',
+          chassisFlavor: 'legit',
+          chassisTier: 1,
+          condition: 100,
+          baseUpkeep: 20,
+          baseDailyRevenue: 0,
+          slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }],
+          acquiredOnDay: 1,
+          acquisitionMode: 'cash',
+          baseRiskEventChance: 0.005
+        }
+      ]
+    }
+
+    const next = handleUpgradeChassisTier(startState, {
+      assetId: 'a1',
+      targetTier: 2,
+      newSlotIds: [{ id: 's2', slotType: 'tb_front' }]
+    })
+
+    assert.strictEqual(next, startState, String(money))
   }
-
-  const next = handleUpgradeChassisTier(startState, {
-    assetId: 'a1',
-    targetTier: 2,
-    newSlotIds: [{ id: 's2', slotType: 'tb_front' }]
-  })
-
-  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleUpgradeChassisTier - only adds the slots the target tier introduces', () => {
@@ -598,22 +608,24 @@ test('handleRepairChassis - rejects insufficient funds', () => {
   assert.strictEqual(next, startState)
 })
 
-test('handleRepairChassis - normalizes non-finite money on repair', () => {
-  const startState = {
-    ...mockState,
-    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
-    assets: [
-      {
-        id: 'a1',
-        condition: 50,
-        slots: []
-      }
-    ]
+test('handleRepairChassis - rejects non-finite money instead of repairing for free', () => {
+  for (const money of NON_FINITE_MONEY) {
+    const startState = {
+      ...mockState,
+      player: { ...mockState.player, money },
+      assets: [
+        {
+          id: 'a1',
+          condition: 50,
+          slots: []
+        }
+      ]
+    }
+
+    const next = handleRepairChassis(startState, { assetId: 'a1' })
+
+    assert.strictEqual(next, startState, String(money))
   }
-
-  const next = handleRepairChassis(startState, { assetId: 'a1' })
-
-  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleRemoveModule - cleans up added child slots and refunds', () => {
@@ -876,31 +888,33 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
   assert.ok(Object.values(next.liabilities)[0].dailyPayment < 20)
 })
 
-test('handleRefinanceLiability - normalizes non-finite money on refinance', () => {
-  const startState = {
-    ...mockState,
-    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
-    liabilities: {
-      loan_1: {
-        id: 'loan_1',
-        source: 'loan',
-        assetId: 'asset_1',
-        principalRemaining: 1000,
-        interestRate: 0.08,
-        dailyPayment: 20,
-        termDaysRemaining: 40,
-        defaultCounter: 0
+test('handleRefinanceLiability - rejects non-finite money instead of refinancing for free', () => {
+  for (const money of NON_FINITE_MONEY) {
+    const startState = {
+      ...mockState,
+      player: { ...mockState.player, money },
+      liabilities: {
+        loan_1: {
+          id: 'loan_1',
+          source: 'loan',
+          assetId: 'asset_1',
+          principalRemaining: 1000,
+          interestRate: 0.08,
+          dailyPayment: 20,
+          termDaysRemaining: 40,
+          defaultCounter: 0
+        }
       }
     }
+
+    const next = handleRefinanceLiability(startState, {
+      liabilityId: 'loan_1',
+      loanProfileId: 'longTerm',
+      fee: 20
+    })
+
+    assert.strictEqual(next, startState, String(money))
   }
-
-  const next = handleRefinanceLiability(startState, {
-    liabilityId: 'loan_1',
-    loanProfileId: 'longTerm',
-    fee: 20
-  })
-
-  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleRefinanceLiability - rejects loans already in default countdown', () => {

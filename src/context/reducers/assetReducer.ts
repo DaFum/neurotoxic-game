@@ -12,17 +12,18 @@ import type {
 import {
   calculateChassisRepairCost,
   calculateChassisUpgradeCost,
-  CHASSIS_CONFIG
+  getChassisTierConfig
 } from '../../utils/assetConfig'
 import {
-  LOAN_PROFILES,
   calculateRefinanceFee,
   computeAmortization,
+  getLoanProfile,
   isLoanProfileEligible
 } from '../../utils/loanProfiles'
-import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { getRegisteredModule } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
+import { isLooseRecord } from '../../utils/objectUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
@@ -52,6 +53,18 @@ const findAssetById = (
   }
   return { asset: null, index: -1 }
 }
+
+/**
+ * Checks that the player can pay a debit. Non-finite money never affords
+ * anything: `NaN < cost` is false, so a bare comparison would let the debit
+ * through and `finiteNumberOr(NaN, 0) - cost` would then charge nothing.
+ *
+ * @param state - Current game state.
+ * @param cost - Amount the action would charge.
+ * @returns Whether finite player money covers the cost.
+ */
+const canAffordDebit = (state: GameState, cost: number): boolean =>
+  Number.isFinite(state.player.money) && state.player.money >= cost
 
 /**
  * Rebuilds a liabilities map excluding those attached to a given asset.
@@ -88,15 +101,15 @@ export const handlePurchaseChassis = (
   state: GameState,
   payload: PurchaseChassisPayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { id, kind, flavor, tier, mode, slotIds, loanProfileId, today } =
     payload
 
   if (hasActiveAssetAcquisition(state, kind)) return state
 
-  // CHASSIS_CONFIG is fully typed — Record<AssetKind, ChassisKindConfig> with
-  // ChassisFlavorConfig nested under each flavor. Direct access without
-  // `any` casts; if the action-creator validation passed, the entry exists.
-  const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
+  // Own-property lookup: hostile kind/flavor/tier keys ('constructor',
+  // '__proto__') must not resolve to inherited objects without a price.
+  const configTier = getChassisTierConfig(kind, flavor, tier)
   if (!configTier) return state
   // Final authority: only cash/loan payloads may add a chassis here. Any
   // other mode (e.g. 'crowdfund') would fall through both payment branches
@@ -105,19 +118,16 @@ export const handlePurchaseChassis = (
   // Mirror the creator's loan gates: banks don't underwrite DIY squats and
   // a raw dispatch must not bypass profile eligibility.
   if (flavor === 'diy' && mode === 'loan') return state
-  if (
-    mode === 'cash' &&
-    (!Number.isFinite(state.player.money) ||
-      state.player.money < configTier.price)
-  ) {
+  if (mode === 'cash' && !canAffordDebit(state, configTier.price)) {
     return state
   }
 
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent
   // rather than storing undefined in a string field.
+  const safeSlotIds = Array.isArray(slotIds) ? slotIds : []
   const slots = configTier.slots.map((slotType, i): AssetSlot => ({
-    id: slotIds[i] ?? `${id}_slot_${i}`,
+    id: safeSlotIds[i] ?? `${id}_slot_${i}`,
     slotType,
     position: { x: 0, y: 0 },
     installedModuleId: null
@@ -147,11 +157,9 @@ export const handlePurchaseChassis = (
     // creator already enforces this, but a malformed dispatch (replay tools,
     // hostile inputs) must not be able to mint a free chassis by sending
     // mode: 'loan' without a profile id.
-    if (!loanProfileId) return state
-    const profile =
-      LOAN_PROFILES[
-        loanProfileId as import('../../utils/loanProfiles').LoanProfileId
-      ]
+    // Own-property lookup: 'constructor' would otherwise resolve to an
+    // inherited function that passes eligibility and prices a 0 payment.
+    const profile = getLoanProfile(loanProfileId)
     if (!profile) return state
     if (
       !isLoanProfileEligible(profile, {
@@ -211,6 +219,7 @@ export const handleInstallModule = (
   state: GameState,
   payload: InstallModulePayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { assetId, slotId, moduleId, newSlotIds } = payload
   if (!state.assets) return state
   // An active Expedition freezes the module set of the chassis it committed
@@ -218,10 +227,10 @@ export const handleInstallModule = (
   // was previewed with them installed. Other assets stay serviceable.
   if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
-  const moduleInfo = MODULE_REGISTRY[moduleId]
+  const moduleInfo = getRegisteredModule(moduleId)
   if (!moduleInfo) return state
   const installCost = moduleInfo.cost + moduleInfo.installCost
-  if (state.player.money < installCost) return state
+  if (!canAffordDebit(state, installCost)) return state
 
   // Track whether the install actually landed. If the assetId/slotId in the
   // payload doesn't match anything live (replay against a stale state, hostile
@@ -322,6 +331,7 @@ export const handleRemoveModule = (
   state: GameState,
   payload: { assetId: string; slotId: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { assetId, slotId } = payload
   if (!state.assets) return state
   // An active Expedition freezes the module set of the chassis it committed
@@ -371,7 +381,7 @@ export const handleRemoveModule = (
 
   let refund = 0
   if (targetSlot && targetSlot.installedModuleId) {
-    const moduleInfo = MODULE_REGISTRY[targetSlot.installedModuleId]
+    const moduleInfo = getRegisteredModule(targetSlot.installedModuleId)
     if (moduleInfo) {
       refund = moduleInfo.cost * moduleInfo.removalRefundFraction
     }
@@ -416,6 +426,7 @@ export const handleUpgradeChassisTier = (
   state: GameState,
   payload: UpgradeChassisTierPayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { assetId, targetTier, newSlotIds } = payload
   if (!state.assets) return state
 
@@ -433,18 +444,22 @@ export const handleUpgradeChassisTier = (
   if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
-  const currentConfigTier =
-    CHASSIS_CONFIG[targetAsset.kind]?.[targetAsset.chassisFlavor]?.[
-      targetAsset.chassisTier
-    ]
-  const targetConfigTier =
-    CHASSIS_CONFIG[targetAsset.kind]?.[targetAsset.chassisFlavor]?.[targetTier]
+  const currentConfigTier = getChassisTierConfig(
+    targetAsset.kind,
+    targetAsset.chassisFlavor,
+    targetAsset.chassisTier
+  )
+  const targetConfigTier = getChassisTierConfig(
+    targetAsset.kind,
+    targetAsset.chassisFlavor,
+    targetTier
+  )
   if (!currentConfigTier || !targetConfigTier) return state
   const upgradeCost = calculateChassisUpgradeCost(
     currentConfigTier,
     targetConfigTier
   )
-  if (state.player.money < upgradeCost) return state
+  if (!canAffordDebit(state, upgradeCost)) return state
 
   // Only accept the slots the target tier introduces, mirroring the diff in
   // upgradeChassisTier: a forged payload must not add arbitrary slots.
@@ -516,6 +531,7 @@ export const handleSellChassis = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { assetId } = payload
   if (!state.assets) return state
 
@@ -555,6 +571,7 @@ export const handleRepairChassis = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { assetId } = payload
   if (!state.assets) return state
 
@@ -570,7 +587,7 @@ export const handleRepairChassis = (
   if (!targetAsset) return state
 
   const repairCost = calculateChassisRepairCost(targetAsset.condition)
-  if (repairCost <= 0 || state.player.money < repairCost) return state
+  if (repairCost <= 0 || !canAffordDebit(state, repairCost)) return state
 
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
   // Why: Avoids recreating objects for unmodified items in the array.
@@ -622,10 +639,9 @@ export const handleRefinanceLiability = (
   state: GameState,
   payload: RefinanceLiabilityPayload
 ): GameState => {
-  const profile =
-    LOAN_PROFILES[
-      payload.loanProfileId as import('../../utils/loanProfiles').LoanProfileId
-    ]
+  if (!isLooseRecord(payload)) return state
+  // Own-property lookup: 'constructor' must not re-amortize to a 0 payment.
+  const profile = getLoanProfile(payload.loanProfileId)
   if (!profile) return state
   if (
     !isLoanProfileEligible(profile, {
@@ -645,7 +661,7 @@ export const handleRefinanceLiability = (
     finiteNumberOr(targetLiability.principalRemaining, 0)
   )
   const fee = calculateRefinanceFee(principal)
-  if (state.player.money < fee) return state
+  if (!canAffordDebit(state, fee)) return state
 
   const liabilities = { ...state.liabilities }
   liabilities[payload.liabilityId] = {
@@ -681,6 +697,13 @@ export const handleStartCrowdfund = (
   state: GameState,
   payload: { campaign: import('../../types/assets').CrowdfundCampaign }
 ): GameState => {
+  if (
+    !isLooseRecord(payload) ||
+    !isLooseRecord(payload.campaign) ||
+    !isLooseRecord(payload.campaign.assetSpec)
+  ) {
+    return state
+  }
   if (hasActiveAssetAcquisition(state, payload.campaign.assetSpec.kind)) {
     return state
   }
@@ -701,6 +724,9 @@ export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
+  if (!isLooseRecord(payload) || typeof payload.assetId !== 'string') {
+    return state
+  }
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),

@@ -8,6 +8,7 @@
 
 import type { BandMember, GameState } from '../../types'
 import type {
+  ExpeditionInspectionConditionBand,
   ExpeditionInspectionIntent,
   ExpeditionInspectionResolution,
   ExpeditionInspectionResult
@@ -17,6 +18,7 @@ import { getEffectiveExpeditionRules } from './effectiveRules'
 import { aggregateExpeditionModuleProfiles } from './modules'
 import { isExpeditionServiceLocation, resolveExpeditionRepair } from './repairs'
 import {
+  EXPEDITION_CONDITION_TIER_LABELS,
   getExpeditionConditionTier,
   getExpeditionTechnicalCondition
 } from './condition'
@@ -35,14 +37,9 @@ export const DIAGNOSTIC_FEE_BASE = 150
  */
 export const getConditionBand = (
   condition: number
-): 'optimal' | 'degraded' | 'critical' | 'disabled' => {
-  const tier = getExpeditionConditionTier(condition)
-  if (tier === 'healthy') return 'optimal'
-  if (tier === 'worn') return 'degraded'
-  // Inspections report a dead group on its own, so the two lowest live tiers
-  // collapse into `critical`.
-  return tier === 'disabled' ? 'disabled' : 'critical'
-}
+): ExpeditionInspectionConditionBand =>
+  EXPEDITION_CONDITION_TIER_LABELS[getExpeditionConditionTier(condition)]
+    .inspection
 
 /**
  * Checks whether the active expedition state has an eligible technician or roadie crew member.

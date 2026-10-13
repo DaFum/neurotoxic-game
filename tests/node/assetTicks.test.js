@@ -94,6 +94,117 @@ test('processAssetTick - applies passive fame, mood, and stamina asset boni', ()
   assert.strictEqual(next.band.members[0].stamina, 13)
 })
 
+const makeBandhausWith = (moduleBySlot, overrides = {}) => ({
+  assets: [
+    {
+      id: 'bandhaus_frac',
+      kind: 'bandhaus_chassis',
+      chassisFlavor: 'legit',
+      chassisTier: 3,
+      condition: 100,
+      baseDailyRevenue: 0,
+      baseUpkeep: 0,
+      baseRiskEventChance: 0,
+      acquiredOnDay: 1,
+      acquisitionMode: 'cash',
+      slots: Object.entries(moduleBySlot).map(([slotType, moduleId]) => ({
+        slotType,
+        id: `s_${slotType}`,
+        position: { x: 0, y: 0 },
+        installedModuleId: moduleId
+      }))
+    }
+  ],
+  player: { money: 1000, fame: 0, fameLevel: 0, day: 0 },
+  band: {
+    members: [
+      {
+        id: 'matze',
+        mood: 50,
+        stamina: 50,
+        staminaMax: 100,
+        traits: {},
+        relationships: {}
+      }
+    ]
+  },
+  ...overrides
+})
+
+// Mirrors ADVANCE_DAY: the tick runs on the pre-advance day, then day + 1.
+const runAssetDays = (state, days) => {
+  const history = []
+  let current = state
+  for (let i = 0; i < days; i++) {
+    current = processAssetTick(current)
+    history.push(current)
+    current = {
+      ...current,
+      player: { ...current.player, day: current.player.day + 1 }
+    }
+  }
+  return { state: current, history }
+}
+
+test('processAssetTick - 0.5/day mood bonus raises mood by 1 every 2 days', () => {
+  // bh_zine_library: bandMoodPerDay 0.5, famePassivePerDay 0.1.
+  const { history } = runAssetDays(
+    makeBandhausWith({ bh_lounge: 'bh_zine_library' }),
+    6
+  )
+  assert.deepStrictEqual(
+    history.map(s => s.band.members[0].mood),
+    [50, 51, 51, 52, 52, 53]
+  )
+})
+
+test('processAssetTick - fractional fame passive accrues at its long-run rate', () => {
+  // 0.1/day alone: +1 fame every tenth day.
+  const slow = runAssetDays(
+    makeBandhausWith({ bh_lounge: 'bh_zine_library' }),
+    30
+  )
+  assert.strictEqual(slow.state.player.fame, 3)
+  assert.ok(slow.history.every(s => Number.isInteger(s.player.fame)))
+
+  // 0.1 + 0.5 (bh_wall_mural) = 0.6/day: 6 fame over 10 days.
+  const fast = runAssetDays(
+    makeBandhausWith({
+      bh_lounge: 'bh_zine_library',
+      bh_identity: 'bh_wall_mural'
+    }),
+    10
+  )
+  assert.strictEqual(fast.state.player.fame, 6)
+  assert.strictEqual(
+    fast.state.player.fameLevel,
+    calculateFameLevel(fast.state.player.fame)
+  )
+})
+
+test('processAssetTick - fractional boni are NaN-safe', () => {
+  // A non-finite day schedules as day 0 instead of poisoning the payout.
+  const nanDay = processAssetTick(
+    makeBandhausWith(
+      { bh_lounge: 'bh_zine_library', bh_identity: 'bh_wall_mural' },
+      { player: { money: 1000, fame: 5, fameLevel: 0, day: Number.NaN } }
+    )
+  )
+  assert.strictEqual(nanDay.player.fame, 5)
+  assert.strictEqual(nanDay.band.members[0].mood, 50)
+
+  // On a payout day a NaN stat is repaired from 0, never written as NaN.
+  const state = makeBandhausWith(
+    { bh_lounge: 'bh_zine_library', bh_identity: 'bh_wall_mural' },
+    { player: { money: 1000, fame: Number.NaN, fameLevel: 0, day: 1 } }
+  )
+  state.band.members[0].mood = Number.NaN
+  const next = processAssetTick(state)
+  // Day 1: mood 0.5/day pays 1; fame 0.6/day pays floor(1.2) - floor(0.6) = 1.
+  assert.strictEqual(next.band.members[0].mood, 1)
+  assert.strictEqual(next.player.fame, 1)
+})
+
 test('processLiabilityTick - liability default counter increment and trigger at 7 days', () => {
   const state = {
     assets: [{ id: 'a1', kind: 'tourbus_chassis', condition: 100, slots: [] }],

@@ -11,12 +11,12 @@
  * continuation callback performs the save and scene change.
  */
 
-import { isFiniteNumber } from '../../utils/finiteNumber'
-import { finiteNumberOr } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import {
   hasForbiddenKeysDeep,
   isForbiddenKey,
-  isLooseRecord
+  isLooseRecord,
+  sanitizeStringArray
 } from '../../utils/objectUtils'
 import { logger } from '../../utils/logger'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
@@ -26,13 +26,16 @@ import {
   createDefaultExpeditionState
 } from '../../domain/expedition/defaults'
 import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
-import { buildExpeditionMap } from '../../domain/expedition/map'
+import {
+  buildExpeditionMap,
+  getActiveExpeditionMap
+} from '../../domain/expedition/map'
 import {
   canSpendExpeditionCash,
   getAvailableExpeditionRegionIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableStarterPerkIds,
-  getExpeditionFuelTopUpCost,
+  getExpeditionUpfrontCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
 import {
@@ -51,7 +54,10 @@ import {
   getExpeditionEventResultEffect,
   sanitizeExpeditionEventResultIds
 } from '../../domain/expedition/eventDeltas'
-import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventProof'
+import {
+  isDeclaredExpeditionEventResult,
+  isExpeditionEventOptionAvailable
+} from '../../domain/expedition/eventProof'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
@@ -60,7 +66,6 @@ import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
   EXPEDITION_INSURANCE_RESTORED_CONDITION,
-  getExpeditionInsurancePremium,
   resolveExpeditionInsuranceClaim
 } from '../../domain/expedition/insurance'
 import {
@@ -168,7 +173,10 @@ import type {
 } from '../../types/expedition'
 import type { CareerRivalRecord } from '../../types/career'
 import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
-import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
+import {
+  deriveExpeditionDraftCandidates,
+  EXPEDITION_RUN_DRAFT_OFFER_SIZE
+} from '../../domain/expedition/runDrafts'
 import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
 import {
   EXPEDITION_SOCIAL_RESULTS,
@@ -449,24 +457,17 @@ export const handleStartExpedition = (
   }
 
   const { normalized } = validation
-  const currentFuel = isFiniteNumber(state.player.van?.fuel)
-    ? state.player.van.fuel
-    : 0
-  const fuelCost = getExpeditionFuelTopUpCost(
-    currentFuel,
-    normalized.build.startingFuelTarget
-  )
-  const insurancePremium = getExpeditionInsurancePremium(
-    normalized.insurancePolicyId
-  )
-  const upfrontCost = fuelCost + insurancePremium
-  const money = isFiniteNumber(state.player.money) ? state.player.money : 0
+  const upfrontCost = getExpeditionUpfrontCost(state, {
+    startingFuelTarget: normalized.build.startingFuelTarget,
+    insurancePolicyId: normalized.insurancePolicyId
+  })
+  const money = finiteNumberOr(state.player.money, 0)
   // The protected slice is untouchable from the very first spend, including the
   // pre-run top-up and insurance premium: otherwise the build could protect cash it then spends.
   if (money - upfrontCost < normalized.build.protectedCareerCash) return state
 
   const nextMoney = money - upfrontCost
-  const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
+  const fame = finiteNumberOr(state.player.fame, 0)
   const sponsorOfferId = normalized.build.sponsorOfferId
   // Must exist in the persisted preparedSponsorOffers snapshot staged for
   // this run, verifying root runSeed, canonical terms hash, and exact
@@ -753,14 +754,8 @@ export const applyExpeditionRouteAdvance = (
   // rejects every later OFFER - the Draft system dies for the rest of the run.
   if (state.expedition.pendingRunDraftOffer !== null) return state
 
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
-  if (!Object.hasOwn(map.meta, nodeId)) return state
+  const map = getActiveExpeditionMap(state)
+  if (!map || !Object.hasOwn(map.meta, nodeId)) return state
   const target = map.meta[nodeId]
   // One step, or the two the Nemesis Key jump covers. The edge check below is
   // what actually authorizes the longer move: every base connection spans one
@@ -930,14 +925,8 @@ export const handleRevealExpeditionNodeIntel = (
 ): GameState => {
   if (state.expedition.status !== 'active') return state
   if (payload === null || typeof payload !== 'object') return state
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
-
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!map) return state
   const resolution = resolveExpeditionIntelReveal(state, payload, map)
   if (!resolution.ok) return state
 
@@ -993,14 +982,8 @@ export const handleAddExpeditionReward = (
 ): GameState => {
   if (state.expedition.status !== 'active') return state
   if (payload === null || typeof payload !== 'object') return state
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
-
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!map) return state
   const resolution = resolveExpeditionReward(state, payload, map)
   if (!resolution.ok) return state
 
@@ -1188,8 +1171,6 @@ export const handleExtractExpedition = (
 ): GameState => {
   if (state.expedition.status !== 'active') return state
   if (payload === null || typeof payload !== 'object') return state
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
   if (
     !isFiniteNumber(payload.expectedRouteStep) ||
     payload.expectedRouteStep !== state.expedition.routeStep
@@ -1197,20 +1178,17 @@ export const handleExtractExpedition = (
     return state
   }
 
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
   if (
+    !map ||
     !canExtractExpedition(state, isAtExpeditionExtractionWindow(state, map))
   ) {
     return state
   }
 
-  const explicitRareRewardIds = Array.isArray(payload.explicitRareRewardIds)
-    ? payload.explicitRareRewardIds.filter(id => typeof id === 'string')
-    : []
+  const explicitRareRewardIds = sanitizeStringArray(
+    payload.explicitRareRewardIds
+  )
 
   const extracted = finalizeExpedition(state, 'extracted', {
     reason: null,
@@ -1246,8 +1224,6 @@ export const handleCompleteExpedition = (
 ): GameState => {
   if (state.expedition.status !== 'active') return state
   if (payload === null || typeof payload !== 'object') return state
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
   const { finaleResultId, expectedRouteStep } = payload
   if (typeof finaleResultId !== 'string' || finaleResultId.length === 0) {
     return state
@@ -1259,11 +1235,8 @@ export const handleCompleteExpedition = (
     return state
   }
 
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!map) return state
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (currentNodeId !== map.finaleNodeId) return state
@@ -1523,9 +1496,7 @@ export const handleResolveExpeditionCrisis = (
       : applyExpeditionInsuranceClaim(state, 'vehicle')
   }
 
-  const currentFuel = isFiniteNumber(state.player.van?.fuel)
-    ? state.player.van.fuel
-    : 0
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
   const cost =
     choice === 'refuel' ? calculateRefuelCost(currentFuel) : EXPEDITION_TOW_COST
   if (cost <= 0) return state
@@ -2032,6 +2003,17 @@ export const handleApplyExpeditionEventDelta = (
   ) {
     return state
   }
+  // A locked option (its own `condition` fails) is only disabled in the UI;
+  // refuse it here too so a direct dispatch cannot resolve it.
+  if (
+    !isExpeditionEventOptionAvailable(
+      state,
+      payload.sourceEventId,
+      payload.sourceOptionId
+    )
+  ) {
+    return state
+  }
 
   const wear = { pa: 0, instruments: 0, stageGear: 0 }
   let sparePartsDelta = 0
@@ -2491,17 +2473,11 @@ export const handleRecordExpeditionObligationSignal = (
         obligation.sourceType === 'native' && obligation.status === 'completed'
     )
     .map(obligation => obligation.id)
-  const contractRewardLoadout = state.expedition.loadout
-  if (
-    changed &&
-    completedNativeObligationIds.length > 0 &&
-    contractRewardLoadout
-  ) {
-    const map = buildExpeditionMap(
-      state.runSeed,
-      contractRewardLoadout.tourTypeId,
-      contractRewardLoadout.regionId
-    )
+  const contractRewardMap =
+    changed && completedNativeObligationIds.length > 0
+      ? getActiveExpeditionMap(state)
+      : null
+  if (contractRewardMap) {
     for (const obligationId of completedNativeObligationIds) {
       // A Contract completed at an earlier step already owns its entry, so the
       // derived entry id refuses the duplicate rather than paying twice.
@@ -2513,7 +2489,7 @@ export const handleRecordExpeditionObligationSignal = (
           sourceId: obligationId,
           expectedRouteStep: nextState.expedition.routeStep
         },
-        map
+        contractRewardMap
       )
       if (!resolution.ok) continue
       nextState = {
@@ -2624,13 +2600,8 @@ export const handleOfferExpeditionDraft = (
         )
       }
       case 'rival': {
-        const loadout = state.expedition.loadout
-        if (!loadout || !state.player.currentNodeId) return false
-        const map = buildExpeditionMap(
-          state.runSeed,
-          loadout.tourTypeId,
-          loadout.regionId
-        )
+        const map = getActiveExpeditionMap(state)
+        if (!map || !state.player.currentNodeId) return false
         // The effective route, so a Nemesis shortcut counts: that overlay is
         // the tier-2 rule change, and a Rival encounter it opens is exactly
         // the qualifying moment a Run Draft is meant to fire on.
@@ -2662,7 +2633,7 @@ export const handleOfferExpeditionDraft = (
     occurrenceProof,
     state.expedition.runDraftTraitIds
   )
-  if (candidateTraitIds.length < 3) return state
+  if (candidateTraitIds.length < EXPEDITION_RUN_DRAFT_OFFER_SIZE) return state
   return {
     ...state,
     expedition: {
@@ -2904,13 +2875,8 @@ export const handleCreateSocialIntelGrant = (
     !result?.intelTargetLevel
   )
     return state
-  const loadout = state.expedition.loadout
-  if (!loadout) return state
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
+  const map = getActiveExpeditionMap(state)
+  if (!map) return state
   const currentNodeId = state.player.currentNodeId
   if (
     !currentNodeId ||

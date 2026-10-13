@@ -43,7 +43,9 @@ type EffectHandler = (
     }
   | undefined
 
-// Safely read a numeric property from an unknown object.
+// Safely read a finite numeric property from an unknown object. Numeric
+// strings are not coerced: persisted stats are numbers, and a string value is
+// corrupt data that falls back like any other non-number.
 const getNumericProp = (
   obj: unknown,
   key?: string,
@@ -53,14 +55,7 @@ const getNumericProp = (
   if (obj == null || typeof obj !== 'object') return fallback
   const o = obj as Record<string, unknown>
   const raw = o[key]
-  if (isFiniteNumber(raw)) return raw
-  if (
-    typeof raw === 'string' &&
-    raw.trim() !== '' &&
-    Number.isFinite(Number(raw))
-  )
-    return Number(raw)
-  return fallback
+  return isFiniteNumber(raw) ? raw : fallback
 }
 
 // Safely set a property on an unknown object.

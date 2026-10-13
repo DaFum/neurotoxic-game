@@ -1,4 +1,8 @@
 import type { MapNode } from './map'
+import type {
+  EXPEDITION_BAND_INJURY_STAGES,
+  EXPEDITION_CREW_INJURY_STAGES
+} from '../data/expedition/injuryStages'
 
 /**
  * Lifecycle phase of the Expedition run.
@@ -749,9 +753,10 @@ export interface ExpeditionCrewDefinition {
   role: ExpeditionCrewRole
   displayNameKey: string
 }
-export type ExpeditionCrewInjuryStage = 'none' | 'light' | 'serious'
+export type ExpeditionCrewInjuryStage =
+  (typeof EXPEDITION_CREW_INJURY_STAGES)[number]
 export type ExpeditionBandInjuryStage =
-  'none' | 'light' | 'serious' | 'critical'
+  (typeof EXPEDITION_BAND_INJURY_STAGES)[number]
 export interface ExpeditionCrewRunState {
   stressByCrewId: Record<string, number>
   injuryByCrewId: Record<string, ExpeditionCrewInjuryStage>
@@ -803,6 +808,11 @@ export type HiddenDefectStatus =
 export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
 
 /**
+ * What created a hidden defect.
+ */
+export type HiddenDefectSource = 'field_repair' | 'improvise' | 'critical_wear'
+
+/**
  * State representing an undiscovered or revealed defect on tour equipment.
  */
 export interface HiddenDefectState {
@@ -816,7 +826,7 @@ export interface HiddenDefectState {
   group: ConditionGroup
   severity: 1 | 2 | 3
   status: HiddenDefectStatus
-  source: 'field_repair' | 'improvise' | 'critical_wear'
+  source: HiddenDefectSource
   createdAtRouteStep: number
   triggerAt: HiddenDefectTrigger
   triggerRouteStep: number
@@ -889,15 +899,30 @@ export interface ExpeditionInspectionIntent {
 }
 
 /**
+ * Condition label an inspection reports per equipment group.
+ *
+ * @remarks
+ * Mapped from the canonical tier by `EXPEDITION_CONDITION_TIER_LABELS`.
+ */
+export type ExpeditionInspectionConditionBand =
+  'optimal' | 'degraded' | 'critical' | 'disabled'
+
+/**
+ * Condition label the run HUD shows next to the numeric value.
+ *
+ * @remarks
+ * Mapped from the canonical tier by `EXPEDITION_CONDITION_TIER_LABELS`.
+ */
+export type ExpeditionHudConditionBand =
+  'good' | 'worn' | 'critical' | 'breaking'
+
+/**
  * Pure outcome of an equipment inspection.
  */
 export interface ExpeditionInspectionResult {
   mode: ExpeditionInspectionMode
   diagnosticFee: number
-  conditionBands?: Record<
-    ConditionGroup,
-    'optimal' | 'degraded' | 'critical' | 'disabled'
-  >
+  conditionBands?: Record<ConditionGroup, ExpeditionInspectionConditionBand>
   revealedDefectIds: string[]
   professionalRepair?: ExpeditionRepairResult
 }
@@ -1190,6 +1215,11 @@ export type ExpeditionEventResultId =
   | 'crew_band_tension_heard'
   | 'crew_breakthrough_followed'
   | 'crew_injury_scare_pushed'
+  | 'crew_conflict_mediated'
+  | 'crew_band_tension_dismissed'
+  | 'crew_band_grudge_settled'
+  | 'crew_route_dispute_settled'
+  | 'crew_injury_scare_covered'
 
 /**
  * What one known event result does to the run.

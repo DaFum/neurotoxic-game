@@ -5,21 +5,6 @@ import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import { MINIGAME_TYPES } from '../../src/context/gameConstants'
 
-// Asset reducer guards land in a separate work package. Once that branch is
-// merged these types stop throwing: the coordinator removes this set (and the
-// `continue` below) so every action type is covered without exception.
-const expectedToBeFixedElsewhere = new Set([
-  ActionTypes.PURCHASE_CHASSIS,
-  ActionTypes.UPGRADE_CHASSIS_TIER,
-  ActionTypes.SELL_CHASSIS,
-  ActionTypes.REPAIR_CHASSIS,
-  ActionTypes.REFINANCE_LIABILITY,
-  ActionTypes.INSTALL_MODULE,
-  ActionTypes.REMOVE_MODULE,
-  ActionTypes.START_CROWDFUND,
-  ActionTypes.ASSET_FORECLOSED
-])
-
 /**
  * States that reach the deeper branches: the fresh state, plus one per
  * minigame type with an active rival and a map, so completion handlers and
@@ -56,7 +41,6 @@ const PAYLOAD_SHAPES = [
 
 describe('gameReducer - null and missing payloads', () => {
   for (const type of Object.values(ActionTypes)) {
-    if (expectedToBeFixedElsewhere.has(type)) continue
     it(`${type} does not throw`, () => {
       for (const [stateLabel, state] of buildStates()) {
         for (const [shapeLabel, build] of PAYLOAD_SHAPES) {

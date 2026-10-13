@@ -23,12 +23,12 @@ import { logger } from '../utils/logger'
 import {
   calculateChassisRepairCost,
   calculateChassisUpgradeCost,
-  CHASSIS_CONFIG
+  getChassisTierConfig
 } from '../utils/assetConfig'
-import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
+import { getRegisteredModule } from '../utils/assetModuleRegistry'
 import {
-  LOAN_PROFILES,
   calculateRefinanceFee,
+  getLoanProfile,
   isLoanProfileEligible,
   type LoanProfileId
 } from '../utils/loanProfiles'
@@ -103,12 +103,19 @@ type StartCrowdfundFailedAction = ActionByType<
 type AssetForeclosedAction = ActionByType<typeof ActionTypes.ASSET_FORECLOSED>
 
 /**
+ * Mirrors the reducer's affordability rule: non-finite money never affords a
+ * debit (`NaN < cost` is false, so a bare comparison would let it through).
+ */
+const canAfford = (money: number, cost: number): boolean =>
+  Number.isFinite(money) && money >= cost
+
+/**
  * Composes the pre-generated `NewSlotEntry` array for a module that uses
  * `addsSlots` to dynamically extend the chassis (e.g., a trailer hitch
  * exposing two trailer addon slots).
  */
 const buildAddedSlotEntries = (moduleId: string): NewSlotEntry[] => {
-  const m = MODULE_REGISTRY[moduleId]
+  const m = getRegisteredModule(moduleId)
   if (!m || !m.addsSlots) return []
   const out: NewSlotEntry[] = []
   for (const block of m.addsSlots) {
@@ -177,19 +184,19 @@ export const purchaseChassis = (
   if (raw.mode === 'crowdfund') {
     return fail('CROWDFUND_REQUIRES_CAMPAIGN')
   }
-  const cfg = CHASSIS_CONFIG[raw.kind]?.[raw.flavor]?.[raw.tier]
+  const cfg = getChassisTierConfig(raw.kind, raw.flavor, raw.tier)
   if (!cfg || cfg.price <= 0) {
     return fail('UNKNOWN_KIND_OR_TIER')
   }
   if (hasActiveAssetAcquisition(state, raw.kind)) {
     return fail('ACQUISITION_ALREADY_ACTIVE')
   }
-  if (raw.mode === 'cash' && state.player.money < cfg.price) {
+  if (raw.mode === 'cash' && !canAfford(state.player.money, cfg.price)) {
     return fail('INSUFFICIENT_FUNDS')
   }
   if (raw.mode === 'loan') {
     if (!raw.loanProfileId) return fail('UNKNOWN_KIND_OR_TIER')
-    const profile = LOAN_PROFILES[raw.loanProfileId]
+    const profile = getLoanProfile(raw.loanProfileId)
     if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
     if (
       !isLoanProfileEligible(profile, {
@@ -252,7 +259,7 @@ export const installModule = (
     payload: { reason }
   })
 
-  const module = MODULE_REGISTRY[raw.moduleId]
+  const module = getRegisteredModule(raw.moduleId)
   if (!module) return fail('UNKNOWN_MODULE')
   const asset = selectAssetsMap(state).get(raw.assetId)
   if (!asset) return fail('UNKNOWN_ASSET')
@@ -269,7 +276,7 @@ export const installModule = (
     s => s.installedModuleId === raw.moduleId
   ).length
   if (currentCount >= cap) return fail('MAX_PER_ASSET')
-  if (state.player.money < module.cost + module.installCost) {
+  if (!canAfford(state.player.money, module.cost + module.installCost)) {
     return fail('INSUFFICIENT_FUNDS')
   }
 
@@ -337,14 +344,22 @@ export const upgradeChassisTier = (
     return fail('UNKNOWN_ASSET')
   }
   if (asset.chassisTier >= targetTier) return fail('MAX_TIER_REACHED')
-  const targetCfg =
-    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
+  const targetCfg = getChassisTierConfig(
+    asset.kind,
+    asset.chassisFlavor,
+    targetTier
+  )
   if (!targetCfg) return fail('UNKNOWN_CONFIG')
-  const currentCfg =
-    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  const currentCfg = getChassisTierConfig(
+    asset.kind,
+    asset.chassisFlavor,
+    asset.chassisTier
+  )
   if (!currentCfg) return fail('UNKNOWN_CONFIG')
   const upgradeCost = calculateChassisUpgradeCost(currentCfg, targetCfg)
-  if (state.player.money < upgradeCost) return fail('INSUFFICIENT_FUNDS')
+  if (!canAfford(state.player.money, upgradeCost)) {
+    return fail('INSUFFICIENT_FUNDS')
+  }
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added
   // slots from modules — those don't belong to the chassis layout). Diff
@@ -444,7 +459,9 @@ export const repairChassis = (
   if (!asset) return fail('UNKNOWN_ASSET')
   const repairCost = calculateChassisRepairCost(asset.condition)
   if (repairCost <= 0) return fail('NO_DAMAGE')
-  if (state.player.money < repairCost) return fail('INSUFFICIENT_FUNDS')
+  if (!canAfford(state.player.money, repairCost)) {
+    return fail('INSUFFICIENT_FUNDS')
+  }
   return {
     type: ActionTypes.REPAIR_CHASSIS,
     payload: { assetId }
@@ -479,7 +496,7 @@ export const refinanceLiability = (
     return fail('LOAN_IN_DEFAULT')
   }
 
-  const profile = LOAN_PROFILES[loanProfileId]
+  const profile = getLoanProfile(loanProfileId)
   if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
   if (
     !isLoanProfileEligible(profile, {
@@ -492,7 +509,7 @@ export const refinanceLiability = (
 
   const principal = finiteNumberOr(liability.principalRemaining, 0)
   const fee = calculateRefinanceFee(principal)
-  if (state.player.money < fee) return fail('INSUFFICIENT_FUNDS')
+  if (!canAfford(state.player.money, fee)) return fail('INSUFFICIENT_FUNDS')
 
   return {
     type: ActionTypes.REFINANCE_LIABILITY,
@@ -572,7 +589,7 @@ export const startCrowdfund = (
   // plan hasn't populated CHASSIS_CONFIG yet (foundation phase: cfg.slots
   // empty), the slot-ids list is also empty — the tick will materialize an
   // empty-slot asset, which sanitizer + reducer flows handle gracefully.
-  const cfg = CHASSIS_CONFIG[raw.kind]?.[raw.flavor]?.[raw.tier]
+  const cfg = getChassisTierConfig(raw.kind, raw.flavor, raw.tier)
   const slotCount = cfg?.slots.length ?? 0
   const materializedAssetId = getSafeUUID()
   const materializedSlotIds: string[] = []

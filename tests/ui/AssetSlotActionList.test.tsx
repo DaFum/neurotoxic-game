@@ -92,9 +92,21 @@ vi.mock('../../src/utils/imageGen', () => ({
 
 const addonId = 'test_action_list_trailer_addon'
 const originalAddon = MODULE_REGISTRY[addonId]
+// Production addons hidden by `hideProductionTrailerAddons`, restored after
+// every test so the shared registry never leaks into a sibling suite.
+const hiddenAddons: Array<[string, (typeof MODULE_REGISTRY)[string]]> = []
+const hideProductionTrailerAddons = () => {
+  for (const [id, module] of Object.entries(MODULE_REGISTRY)) {
+    if (module.slotType !== 'tb_trailer_addon' || id === addonId) continue
+    hiddenAddons.push([id, module])
+    delete MODULE_REGISTRY[id]
+  }
+}
 afterEach(() => {
   if (originalAddon === undefined) delete MODULE_REGISTRY[addonId]
   else MODULE_REGISTRY[addonId] = originalAddon
+  for (const [id, module] of hiddenAddons.splice(0))
+    MODULE_REGISTRY[id] = module
 })
 
 const trailerAsset = (
@@ -139,7 +151,20 @@ describe.each(['list', 'deck'] as const)(
         )
       )
 
+    it('offers the production addons through the empty addon row', () => {
+      const onSlotClick = vi.fn()
+      renderSurface(trailerAsset(), onSlotClick)
+      expect(
+        screen.queryByText('Trailer addons are not available yet.')
+      ).toBeNull()
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Trailer addon slot: Empty' })
+      )
+      expect(onSlotClick).toHaveBeenCalledWith('addon-slot')
+    })
+
     it('retains the empty row without any route into an empty addon picker', () => {
+      hideProductionTrailerAddons()
       const onSlotClick = vi.fn()
       renderSurface(trailerAsset(), onSlotClick)
       expect(screen.getByText('Trailer addon')).toBeInTheDocument()
@@ -189,6 +214,7 @@ describe.each(['list', 'deck'] as const)(
     })
 
     it('ignores addon definitions for a different asset kind', () => {
+      hideProductionTrailerAddons()
       MODULE_REGISTRY[addonId] = {
         ...MODULE_REGISTRY.tb_trailer_hitch,
         id: addonId,

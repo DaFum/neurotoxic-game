@@ -4,6 +4,8 @@ import { ExpeditionMetaTab } from '../../src/ui/expedition/ExpeditionMetaTab'
 import { createInitialState } from '../../src/context/initialState'
 import type { GameState } from '../../src/types'
 import type { CareerState } from '../../src/types/career'
+import { createEmptyExpeditionArchive } from '../../src/domain/expedition/archive'
+import { getExpeditionRelationshipPairKey } from '../../src/domain/expedition/relationships'
 
 const state: { current: GameState } = vi.hoisted(
   () => ({ current: null }) as never
@@ -128,6 +130,54 @@ describe('ExpeditionMetaTab', () => {
     expect(
       screen.getByTestId('expedition-meta-unlock-blocker-mechanic_network')
     ).toHaveTextContent('ui:expedition.meta.blocked.tokens')
+  })
+
+  it('lists the Tour Archive by category with localized entry labels', () => {
+    const archive = createEmptyExpeditionArchive()
+    archive.crew = ['tom', 'mika']
+    archive.region = ['home_turf']
+    archive.finale = ['rival_battle']
+    state.current = withCareer({ archiveByCategory: archive })
+    render(<ExpeditionMetaTab />)
+    const crew = screen.getByTestId('expedition-meta-archive-crew')
+    expect(crew).toHaveTextContent('ui:expedition.crew.tom')
+    expect(crew).toHaveTextContent('ui:expedition.crew.mika')
+    expect(
+      screen.getByTestId('expedition-meta-archive-region')
+    ).toHaveTextContent('ui:expedition.region.home_turf')
+    expect(
+      screen.getByTestId('expedition-meta-archive-finale')
+    ).toHaveTextContent('ui:expedition.archive.finale.rival_battle')
+    // A category the Career has not met says so instead of rendering nothing.
+    expect(
+      screen.getByTestId('expedition-meta-archive-rival')
+    ).toHaveTextContent('ui:expedition.archive.empty')
+    // Read-only: the Archive offers no control.
+    expect(
+      screen.getByTestId('expedition-meta-archive').querySelector('button')
+    ).toBeNull()
+  })
+
+  it('shows each relationship pair at its persisted tier', () => {
+    const tom = { kind: 'crew', id: 'tom' } as const
+    state.current = withCareer({
+      expeditionRelationshipByPair: {
+        [getExpeditionRelationshipPairKey({ kind: 'crew', id: 'mika' }, tom)]:
+          -1,
+        [getExpeditionRelationshipPairKey({ kind: 'band', id: 'matze' }, tom)]:
+          2
+      }
+    })
+    render(<ExpeditionMetaTab />)
+    expect(
+      screen.getByTestId('expedition-meta-relationship-crew-mika-crew-tom')
+    ).toHaveTextContent('ui:expedition.relationship.tier.tense')
+    expect(
+      screen.getByTestId('expedition-meta-relationship-band-matze-crew-tom')
+    ).toHaveTextContent('ui:expedition.relationship.tier.close')
+    expect(
+      screen.getByTestId('expedition-meta-relationship-crew-noah-crew-yara')
+    ).toHaveTextContent('ui:expedition.relationship.tier.neutral')
   })
 
   it('shows an owned set instead of a buy control', () => {
