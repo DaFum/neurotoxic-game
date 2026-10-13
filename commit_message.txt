@@ -1,0 +1,6 @@
+docs: add TSDoc to brand offer flavor variants
+
+Adds strict TSDoc comments to the exported constants and functions
+in `src/utils/brandOfferFlavor/variants.ts`.
+
+Removed the ledger modification per PR review, as this was routine bookkeeping.

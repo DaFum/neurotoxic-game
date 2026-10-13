@@ -13,6 +13,13 @@ type VariantMod = {
   forceDuration?: number
 }
 
+/**
+ * Lookup table mapping brand offer variants to their specific numerical modifiers.
+ *
+ * @remarks
+ * These modifiers dictate how a variant scales upfront payments, per-gig payouts,
+ * and duration constraints relative to the baseline standard deal.
+ */
 export const VARIANT_MODS: Record<BrandOfferVariantId, VariantMod> = {
   standard: { upfrontMul: 1.0, perGigMul: 1.0, durationDelta: 0 },
   summer_edition: { upfrontMul: 1.0, perGigMul: 1.1, durationDelta: 0 },
@@ -23,6 +30,9 @@ export const VARIANT_MODS: Record<BrandOfferVariantId, VariantMod> = {
   probe: { upfrontMul: 0.5, perGigMul: 1.0, durationDelta: 0, forceDuration: 1 }
 }
 
+/**
+ * Lookup table for localized or human-readable presentation names of brand offer variants.
+ */
 export const VARIANT_LABELS: Record<BrandOfferVariantId, string> = {
   standard: 'Standard Deal',
   summer_edition: 'Summer Edition',
@@ -44,6 +54,16 @@ const VARIANTS_BY_ALIGNMENT: Record<string, BrandOfferVariantId[]> = {
 
 const DURATION_JITTERS = [-1, 0, 1, 2] as const
 
+/**
+ * Selects a flavor variant for a generated brand deal based on the brand's alignment,
+ * the band's current financial stress, and the deal's tier.
+ *
+ * @param alignment - The brand's corporate alignment category used to resolve their unique variant pool.
+ * @param isStretched - Whether the receiving band is currently financially stretched or desperate.
+ * @param tier - The qualitative tier of the brand deal (0, 1, or 2).
+ * @param rng - A pseudo-random number generator function returning values in `[0, 1)`.
+ * @returns The chosen variant identifier for the brand deal.
+ */
 export const pickVariantId = (
   alignment: string,
   isStretched: boolean,
@@ -62,6 +82,14 @@ export const pickVariantId = (
   return pool[idx] ?? 'standard'
 }
 
+/**
+ * Applies stochastic jitter and variant-specific multiplicative modifiers to a baseline brand deal offer.
+ *
+ * @param offer - The baseline, unmodified brand deal offer object.
+ * @param rng - A pseudo-random number generator function returning values in `[0, 1)`.
+ * @param mods - The variant-specific modifier rules determining how baseline figures are scaled.
+ * @returns A new brand deal offer representing the randomized and scaled figures.
+ */
 export const applyOfferVariance = (
   offer: BrandDealOffer,
   rng: RandomFn,

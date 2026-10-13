@@ -9,6 +9,9 @@ type Projectile = Pick<
   'id' | 'x' | 'y' | 'rotation' | 'type'
 >
 
+const RAD_TO_DEG = 180 / Math.PI
+const EMPTY_PROJECTILES: Projectile[] = []
+
 /**
  * A mutable reference container used to bypass normal React state updates for high-frequency game loop data.
  */
@@ -61,12 +64,13 @@ export const HecklerOverlay = memo(function HecklerOverlay({
     }
   }, [gameStateRef])
 
-  const projectiles = (gameStateRef.current?.projectiles ?? []) as Projectile[]
+  const projectiles = (gameStateRef.current?.projectiles ??
+    EMPTY_PROJECTILES) as Projectile[]
 
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.reduce with a single-pass procedural loop for rendering elements.
+  // ⚡ BOLT OPTIMIZATION: Module-hoisted constants and single-pass loop in 60 FPS update loop.
   // Why: HecklerOverlay re-renders on requestAnimationFrame (~60 FPS) when projectiles are active.
-  // Using Array.reduce allocated a callback closure and accumulator array on every single frame.
-  // Impact: Eliminates ~60 closure allocations per second during heckler projectile rendering.
+  // Hoisting RAD_TO_DEG and EMPTY_PROJECTILES prevents repeated division and array allocations per frame.
+  // Impact: Eliminates per-frame fallback allocations and redundant floating-point math across active heckler projectiles.
   const elements: React.ReactNode[] = []
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
@@ -80,7 +84,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({
           className='absolute text-4xl drop-shadow-lg'
           style={{
             transform: `translate3d(${x}px, ${y}px, 0) rotate(${
-              rotation * (180 / Math.PI)
+              rotation * RAD_TO_DEG
             }deg)`
           }}
         >

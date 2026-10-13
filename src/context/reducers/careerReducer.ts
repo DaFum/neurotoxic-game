@@ -50,6 +50,17 @@ import {
 } from '../../domain/expedition/betweenTour'
 import { resolveCrewRecoveryDebt } from '../../domain/expedition/injuries'
 
+/**
+ * Settles the crew career consequences at the end of an expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the run being settled.
+ * @returns Next state, or the identical reference when nothing changes.
+ *
+ * @remarks
+ * Parses the run outcome to update crew loyalty, story progress, and
+ * records any recovery debts for crew members and band consequence stages.
+ */
 export const handleSettleExpeditionCrewCareer = (
   state: GameState,
   payload: SettleExpeditionCrewCareerPayload
@@ -524,6 +535,17 @@ export const recordExpeditionArchiveObservations = (
   return next
 }
 
+/**
+ * Acquires a signature trait for a crew member during career development.
+ *
+ * @param state - Current game state.
+ * @param payload - Details identifying the crew member and expected trait.
+ * @returns Next state, or the identical reference if eligibility or expected traits fail.
+ *
+ * @remarks
+ * Verifies the `sourceType` and `sourceId` for valid `career_development`,
+ * retrieves the eligible trait dynamically, and updates the crew member's state.
+ */
 export const handleAcquireExpeditionCrewSignature = (
   state: GameState,
   payload: AcquireExpeditionCrewSignaturePayload
