@@ -1,3 +1,5 @@
+import type { ToastPayload } from './game'
+
 /**
  * Synchronous callback with no arguments.
  */
@@ -39,14 +41,19 @@ export type TranslationCallback = (
 ) => string
 
 /**
+ * Toast severity accepted by the toast queue; mirrors `ToastPayload['type']`.
+ */
+export type ToastType = ToastPayload['type']
+
+/**
  * Callback for enqueueing localized toast messages.
  */
-export type ToastCallback = (message: string, type: string) => void
+export type ToastCallback = (message: string, type: ToastType) => void
 
 /**
  * Optional toast callback for utility call sites.
  */
-export type OptionalToastCallback = (message: string, type?: string) => void
+export type OptionalToastCallback = (message: string, type?: ToastType) => void
 
 /**
  * Callback fired when a minigame collision occurs.

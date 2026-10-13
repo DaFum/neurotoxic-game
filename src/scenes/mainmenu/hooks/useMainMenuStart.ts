@@ -11,6 +11,7 @@ import { SAVE_KEY } from '../../../context/usePersistence'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { GamePhase } from '../../../types/game'
 import type { TFunction } from 'i18next'
+import type { ToastCallback } from '../../../types/callbacks'
 
 interface UseMainMenuStartProps {
   setIsStarting: (val: boolean) => void
@@ -21,7 +22,7 @@ interface UseMainMenuStartProps {
   setShowNameInput: (val: boolean) => void
   setShowExistingSavePrompt: (val: boolean) => void
   playerNameInput: string
-  addToast: (msg: string, type: 'error' | 'success' | 'info') => void
+  addToast: ToastCallback
   tRef: MutableRefObject<TFunction>
 }
 

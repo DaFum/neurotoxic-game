@@ -5,7 +5,7 @@ import { useZealotryAction } from './useZealotryAction'
 import { DARK_WEB_LEAK_REQUIRED_CONTROVERSY } from '../data/zealotryActionGates'
 
 /** Tuning values for the dark-web leak social action. */
-export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
+const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   COST: 500,
   FAME_GAIN: 300,
   ZEALOTRY_GAIN: 25,

@@ -4,8 +4,7 @@ import { ContrabandStash } from '../../ui/ContrabandStash'
 import { PirateRadioModal } from '../../ui/PirateRadioModal'
 import { MerchPressModal } from '../../ui/MerchPressModal'
 import { BloodBankModal } from '../../ui/BloodBankModal'
-import { DarkWebLeakModal } from '../../ui/DarkWebLeakModal'
-import { CultIndoctrinationModal } from '../../ui/CultIndoctrinationModal'
+import { ZealotryActionModal } from '../../ui/ZealotryActionModal'
 import { SupplyStopModal } from '../../ui/SupplyStopModal'
 import { useOverworldModals } from '../../hooks/overworld/useOverworldModals'
 
@@ -103,20 +102,22 @@ export const OverworldModals = ({ modals }: OverworldModalsProps) => {
         />
       )}
       {showDarkWebLeak && (
-        <DarkWebLeakModal
+        <ZealotryActionModal
+          i18nPrefix='dark_web_leak'
           onCancel={closeDarkWebLeak}
           onConfirm={triggerLeak}
-          canLeak={canDarkWebLeak}
-          hasLeakedToday={hasLeakedToday}
+          canRun={canDarkWebLeak}
+          hasRunToday={hasLeakedToday}
           config={DARK_WEB_LEAK_CONFIG}
         />
       )}
       {showCultIndoctrination && (
-        <CultIndoctrinationModal
+        <ZealotryActionModal
+          i18nPrefix='cult_indoctrination'
           onCancel={closeCultIndoctrination}
           onConfirm={triggerIndoctrination}
-          canIndoctrinate={canIndoctrinate}
-          hasIndoctrinatedToday={hasIndoctrinatedToday}
+          canRun={canIndoctrinate}
+          hasRunToday={hasIndoctrinatedToday}
           config={CULT_INDOCTRINATION_CONFIG}
         />
       )}

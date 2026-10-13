@@ -49,7 +49,8 @@ Create `tests/golden-path/[name].test.js`:
 ```javascript
 import test from 'node:test' // use async `test()` to group subtests
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
+import { gameReducer } from '../src/context/gameReducer.js'
+import { ActionTypes } from '../src/context/actionTypes.js'
 import { createInitialState } from '../src/context/initialState.js'
 
 const applyAction = (state, type, payload) =>
@@ -84,7 +85,8 @@ If it fails, see **references/debugging-guide.md** for diagnosis steps.
 ```javascript
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
+import { gameReducer } from '../../src/context/gameReducer.js'
+import { ActionTypes } from '../../src/context/actionTypes.js'
 import { createInitialState } from '../../src/context/initialState.js'
 import { GAME_PHASES } from '../../src/context/gameConstants.js'
 

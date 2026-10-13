@@ -21,7 +21,6 @@ export interface SettingsPanelProps {
   onToggleCRT?: () => void
   onLogLevelChange?: (level: number) => void
   onDeleteSave: () => void
-  className?: string
 }
 
 /**
@@ -38,11 +37,10 @@ export const SettingsPanel = memo(function SettingsPanel({
   onToggleMute = () => {},
   onToggleCRT = () => {},
   onLogLevelChange = () => {},
-  onDeleteSave,
-  className = ''
+  onDeleteSave
 }: SettingsPanelProps) {
   return (
-    <div className={`space-y-8 ${className}`}>
+    <div className='space-y-8'>
       {/* Language Settings */}
       <LanguageSettings />
 

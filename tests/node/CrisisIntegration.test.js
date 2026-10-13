@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 import { createInitialState } from '../../src/context/initialState'
 

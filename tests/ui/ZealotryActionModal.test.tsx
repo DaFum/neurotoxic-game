@@ -109,4 +109,20 @@ describe('ZealotryActionModal', () => {
     fireEvent.click(executeButton)
     expect(onConfirm).not.toHaveBeenCalled()
   })
+
+  it.each(['dark_web_leak', 'cult_indoctrination'] as const)(
+    'resolves its labels from the %s locale prefix',
+    prefix => {
+      const { labels: _labels, ...rest } = defaultProps
+      render(
+        <ZealotryActionModal {...rest} i18nPrefix={prefix} hasRunToday={true} />
+      )
+
+      expect(screen.getByText(`ui:${prefix}.description`)).toBeInTheDocument()
+      expect(screen.getByText(`ui:${prefix}.ran_today`)).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: `ui:${prefix}.execute` })
+      ).toHaveAttribute('aria-disabled', 'true')
+    }
+  )
 })

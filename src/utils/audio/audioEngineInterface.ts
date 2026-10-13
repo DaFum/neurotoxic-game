@@ -8,6 +8,7 @@ import type { GigEndInfo } from './state'
 import type { ActiveSong, MutableRef } from './rhythmGameTypes'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
 import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
+import type { AudioTransportState } from '../../types/audio'
 
 /**
  * Parameters accepted by {@link IAudioEngine.startGig}.
@@ -92,7 +93,7 @@ export interface IAudioEngine {
   /** Stops all playback and invalidates in-flight play requests. */
   stopAudio(): void
   /** Current transport state. */
-  getTransportState(): 'started' | 'stopped' | 'paused'
+  getTransportState(): AudioTransportState
   /** Pauses the transport and gig playback. */
   pauseAudio(): Promise<void>
   /** Resumes the transport. Resolves `false` when playback could not resume. */
@@ -163,7 +164,7 @@ export const toneAudioEngine: IAudioEngine = {
   playSongSequence: (index, setlist, gameStateRef, addToast, t) =>
     audioEngineHub.playSongSequence(index, setlist, gameStateRef, addToast, t),
   stopAudio: (): void => audioEngineHub.stopAudio(),
-  getTransportState: (): 'started' | 'stopped' | 'paused' =>
+  getTransportState: (): AudioTransportState =>
     audioEngineHub.getTransportState(),
   pauseAudio: (): Promise<void> => audioEngineHub.pauseAudio(),
   resumeAudio: (): Promise<boolean> => audioEngineHub.resumeAudio(),
@@ -218,7 +219,7 @@ export class NullAudioEngine implements IAudioEngine {
   stopAudio(): void {}
 
   /** {@inheritDoc IAudioEngine} */
-  getTransportState(): 'started' | 'stopped' | 'paused' {
+  getTransportState(): AudioTransportState {
     return 'stopped'
   }
 
@@ -284,7 +285,7 @@ export const createStubAudioEngine = (
     stopAudio: (): void => {
       playRequestId++
     },
-    getTransportState: (): 'started' | 'stopped' | 'paused' => 'started',
+    getTransportState: (): AudioTransportState => 'started',
     pauseAudio: async (): Promise<void> => {},
     resumeAudio: async (): Promise<boolean> => true,
     setCorruptionEffect: (): void => {},

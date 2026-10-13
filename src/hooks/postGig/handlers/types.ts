@@ -9,13 +9,14 @@ import type { BrandDeal } from '../../../types/social'
 import type { QuestProgressEvent } from '../../../utils/questProgress'
 import type { createAddQuestAction } from '../../../context/actionCreators'
 import type { PostGigPhase } from '../usePostGigState'
+import type { ToastCallback } from '../../../types/callbacks'
 
 /**
  * State-mutation and UI callbacks injected into the post-gig handler hooks,
  * decoupling them from the dispatch/action-creator layer.
  */
 export interface HandlerDispatchers {
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void
+  addToast: ToastCallback
   updatePlayer: (updates: UpdatePlayerPayload) => void
   updateBand: (updates: UpdateBandPayload) => void
   updateSocial: (

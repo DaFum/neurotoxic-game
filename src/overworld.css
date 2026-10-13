@@ -261,25 +261,6 @@
 .el-msg.t-travel {
   color: var(--color-toxic-green);
 }
-.el-msg.t-gig {
-  color: var(--color-warning-yellow);
-}
-.el-msg.t-rest {
-  color: var(--color-neon-cyan);
-}
-.el-msg.t-clinic {
-  color: var(--color-blood-red-bright);
-}
-.el-msg.t-special {
-  color: var(--color-electric-blue);
-}
-.el-msg.t-warn {
-  color: var(--color-error-red);
-}
-.el-msg.t-earn {
-  color: var(--color-warning-yellow);
-  font-weight: bold;
-}
 
 /* Menu */
 .ow-menu {

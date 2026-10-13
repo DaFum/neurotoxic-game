@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import { Bus, House, Shirt, SlidersHorizontal } from 'lucide-react'
-import type { AssetKind } from '../../types/assets'
+import type { AssetKind, AssetSectionShortLabel } from '../../types/assets'
 
 /**
  * Defines the expected property structure for SVG icon components rendered within navigation tabs.
@@ -15,7 +15,7 @@ type TabIcon = ComponentType<{
  */
 interface AssetSectionTab {
   key: AssetKind
-  shortLabel: 'tourbus' | 'studio' | 'bandhaus' | 'workshop'
+  shortLabel: AssetSectionShortLabel
   Icon: TabIcon
 }
 

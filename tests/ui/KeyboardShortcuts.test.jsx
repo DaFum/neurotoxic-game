@@ -1,6 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import { KeyboardShortcutsPanel } from '../../src/ui/shared/KeyboardShortcuts'
+import {
+  KeyboardShortcutsPanel,
+  ShortcutsToggle
+} from '../../src/ui/shared/KeyboardShortcuts'
 import { OverworldHUD } from '../../src/ui/overworld/OverworldHUD'
 
 // Mock dependencies for OverworldHUD
@@ -54,5 +57,33 @@ describe('KeyboardShortcutsPanel & HUD shortcuts toggle', () => {
 
     fireEvent.click(helpBtn)
     expect(helpBtn).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('ShortcutsToggle wires the panel ARIA and swaps state classes', () => {
+    const onToggle = vi.fn()
+    const props = {
+      onToggle,
+      className: 'base',
+      activeClassName: 'is-active',
+      inactiveClassName: 'is-idle',
+      iconSize: 20
+    }
+    const { rerender } = render(<ShortcutsToggle {...props} showHelp={false} />)
+
+    const toggle = screen.getByRole('button', {
+      name: /toggle keyboard shortcuts help/i
+    })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(toggle).not.toHaveAttribute('aria-controls')
+    expect(toggle).toHaveClass('base', 'is-idle')
+
+    fireEvent.click(toggle)
+    expect(onToggle).toHaveBeenCalledTimes(1)
+
+    rerender(<ShortcutsToggle {...props} showHelp={true} />)
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    expect(toggle).toHaveAttribute('aria-controls', 'shortcuts-panel')
+    expect(toggle).toHaveClass('base', 'is-active')
+    expect(toggle).not.toHaveClass('is-idle')
   })
 })

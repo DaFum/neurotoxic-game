@@ -3,6 +3,9 @@ import type { MouseEvent, ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CriticalDialogShell } from './CriticalDialogShell'
 
+/** Visual risk treatment of a `CrisisModal` action. */
+export type CrisisActionVariant = 'safe' | 'risk' | 'danger'
+
 const SCANLINE_BACKGROUND_STYLE = {
   backgroundImage:
     'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)'
@@ -58,7 +61,7 @@ interface CrisisModalProps {
     label: string
     meta?: string
     onClick?: () => void
-    variant?: 'safe' | 'risk' | 'danger'
+    variant?: CrisisActionVariant
   }>
 }
 
@@ -337,7 +340,7 @@ export const CrisisModal = memo(
     const titleId = useId()
     if (!isOpen) return null
     const getActionClassName = (
-      variant: 'safe' | 'risk' | 'danger' = 'safe'
+      variant: CrisisActionVariant = 'safe'
     ): string => {
       const baseClass =
         'w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2'

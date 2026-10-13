@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import {
   GAME_PHASES,

@@ -1,11 +1,10 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import { getGeneratedImageFallbackUrl } from '../../utils/imageGen'
 
 interface FallbackImageProps {
   src: string
   alt: string
   className?: string
-  style?: CSSProperties
   fallbackSrc?: string
 }
 
@@ -14,13 +13,12 @@ interface FallbackImageProps {
  * the given source fails to load. Use for pre-resolved generated URLs passed
  * down as props (map icons, vans, band members) where the full
  * `GeneratedImagePanel` chrome (border, skeleton, aspect ratio) is wrong.
- * @param props - Image source URL, alt text, and optional class/style.
+ * @param props - Image source URL, alt text, optional class, and optional fallback URL.
  */
 export const FallbackImage = ({
   src,
   alt,
   className,
-  style,
   fallbackSrc
 }: FallbackImageProps) => {
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
@@ -38,7 +36,6 @@ export const FallbackImage = ({
       aria-hidden={alt === '' ? 'true' : undefined}
       crossOrigin={resolvedSrc.startsWith('data:') ? undefined : 'anonymous'}
       className={className}
-      style={style}
       onError={
         hasFailed
           ? undefined

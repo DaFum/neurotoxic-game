@@ -1,11 +1,13 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RHYTHM_LANES } from '../../utils/rhythmGameScoringUtils'
 
-const LANES = [
-  { id: 'guitar', key: '←' },
-  { id: 'drums', key: '↓' },
-  { id: 'bass', key: '→' }
-] as const
+/** Desktop arrow key bound to each lane. */
+const LANE_KEYS = {
+  guitar: '←',
+  drums: '↓',
+  bass: '→'
+} as const satisfies Record<(typeof RHYTHM_LANES)[number]['id'], string>
 
 /**
  * Properties for the {@link ControlsHint} component.
@@ -48,13 +50,13 @@ export const ControlsHint = memo(function ControlsHint({
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >
-      {LANES.map(({ id, key }) => (
+      {RHYTHM_LANES.map(({ id }) => (
         <div
           key={id}
           className='flex items-center gap-1 sm:gap-1.5 font-mono text-xs sm:text-xs text-ash-gray'
         >
           <kbd className='border px-1.5 py-0.5 text-xs font-sans border-ash-gray/30'>
-            {key}
+            {LANE_KEYS[id]}
           </kbd>
           <span className='uppercase tracking-wider'>
             {t(`ui:rhythm.lane_${id}`)}

@@ -198,8 +198,6 @@
 
   --color-warning-yellow: #ffcc00;
   --color-warning-yellow-rgb: 255 204 0;
-  --color-warning-yellow-50: rgb(255 204 0 / 50%);
-  --color-warning-yellow-30: rgb(255 204 0 / 30%);
   --color-warning-yellow-20: rgb(255 204 0 / 20%);
 
   /* Rhythm Lanes */
@@ -252,7 +250,6 @@
      ========================================= */
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
-  --font-script: 'Brush Script MT', 'Lucida Handwriting', cursive;
   --font-asset-display: 'Staatliches', var(--font-display);
   --font-asset-control: 'Azeret Mono', var(--font-ui);
 
@@ -757,8 +754,6 @@ button:focus-visible {
   .animate-fuel-warning,
   .animate-pulse,
   .animate-spin,
-  .animate-bounce,
-  .animate-ping,
   .animate-doom-zoom,
   .animate-neon-flicker,
   .toxic-border-flash,

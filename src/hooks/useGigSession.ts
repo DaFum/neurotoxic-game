@@ -5,9 +5,10 @@ import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
 import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
 import type { PostGigSummary } from '../types'
+import type { ToastCallback } from '../types/callbacks'
 
 type UseGigSessionProps = {
-  addToast: (message: string, type: 'info' | 'error' | 'success') => void
+  addToast: ToastCallback
   setLastGigStats: (stats: PostGigSummary | null) => void
   endGig: () => void
   tRef: { current: TFunction }
