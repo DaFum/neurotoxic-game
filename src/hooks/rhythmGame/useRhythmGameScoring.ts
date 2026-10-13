@@ -55,7 +55,7 @@ type RhythmGameScoringParams = {
 /**
  * Scoring controls and timers exposed by the rhythm game scoring hook.
  */
-export type RhythmGameScoringReturn = {
+type RhythmGameScoringReturn = {
   handleHit: (laneIndex: number) => boolean
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
   activateToxicMode: () => void

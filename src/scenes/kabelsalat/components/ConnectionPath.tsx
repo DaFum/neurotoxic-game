@@ -8,7 +8,7 @@ import type { SocketId } from '../../../types/kabelsalat'
 /**
  * Socket/cable pairing used to draw one Kabelsalat connection path.
  */
-export type ConnectionPathProps = {
+type ConnectionPathProps = {
   sockId: SocketId
   cabId: CableId
   isPowerConnected: boolean

@@ -15,7 +15,7 @@ interface SlotOverride {
 /**
  * Shared props for rendering an asset's slots as dashed zone hotspots over a hero background.
  */
-export interface SlotZoneButtonsProps {
+interface SlotZoneButtonsProps {
   slots: AssetSlot[]
   zones: Partial<
     Record<SlotType, { x: number; y: number; w: number; h: number }>

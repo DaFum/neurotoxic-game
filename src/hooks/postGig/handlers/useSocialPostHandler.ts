@@ -9,7 +9,7 @@ import type { HandlerDispatchers } from './types'
 import { deriveExpeditionSocialResultId } from '../../../domain/expedition/social'
 
 /** Props for {@link useSocialPostHandler}: state slices, gig context, the processing guard, translator, and dispatchers. */
-export interface UseSocialPostHandlerProps {
+interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']

@@ -97,6 +97,21 @@ describe('addClampedMemberSkill', () => {
     assert.equal(addClampedMemberSkill(6, Number.NaN), 6)
     assert.equal(addClampedMemberSkill(99, Number.NaN), 10)
   })
+
+  it('matches clampMemberSkill for every finite sum', () => {
+    for (const [base, delta] of [
+      [5, 1.5],
+      [9, 3],
+      [2, -5],
+      [99, -5],
+      [-4, 0.5]
+    ]) {
+      assert.equal(
+        addClampedMemberSkill(base, delta),
+        clampMemberSkill(base + delta)
+      )
+    }
+  })
 })
 
 describe('clampMemberSkill', () => {

@@ -1,6 +1,12 @@
 import { useCallback, useMemo, memo } from 'react'
 import type { ContrabandStashItem, UnknownRecord } from '../types'
-import { Modal, Panel, AnimatedDivider, ActionButton, Tooltip } from './shared/index.tsx'
+import {
+  Modal,
+  Panel,
+  AnimatedDivider,
+  ActionButton,
+  Tooltip
+} from './shared/index.tsx'
 import { GeneratedImagePanel } from './shared/GeneratedImagePanel.tsx'
 import { useTranslation } from 'react-i18next'
 

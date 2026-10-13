@@ -7,7 +7,7 @@ import type { SlotType } from '../../../types/assets'
 /**
  * Configures an interactive asset slot hotspot and its optional installed-module image.
  */
-export interface AssetSlotButtonProps {
+interface AssetSlotButtonProps {
   id: string
   slotType: SlotType
   installedModuleId: string | null

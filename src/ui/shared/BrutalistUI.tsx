@@ -424,7 +424,8 @@ export const DeadmanButton = memo(
     useEffect(() => {
       if (disabled) {
         if (intervalRef.current != null) clearInterval(intervalRef.current)
-        if (drainIntervalRef.current != null) clearInterval(drainIntervalRef.current)
+        if (drainIntervalRef.current != null)
+          clearInterval(drainIntervalRef.current)
         intervalRef.current = null
         drainIntervalRef.current = null
         // eslint-disable-next-line @eslint-react/set-state-in-effect
