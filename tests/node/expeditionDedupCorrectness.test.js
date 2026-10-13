@@ -118,7 +118,9 @@ describe('expedition reducer payload guards', () => {
   })
 })
 describe('insurance claim NaN safety', () => {
-  it('repairs NaN van fuel and condition instead of writing them back', () => {
+  it('does not treat a NaN van reading as a claimable failure', () => {
+    // Corrupt fuel/condition recover to the load-sanitizer defaults (full tank,
+    // condition 100), so they cannot fake an empty tank or a wrecked van.
     const state = startedState(
       { money: 1000 },
       { insurancePolicyId: 'roadside' }
@@ -130,11 +132,25 @@ describe('insurance claim NaN safety', () => {
     assert.ok(action)
     const next = gameReducer(state, action)
 
-    assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
-    assert.equal(
-      next.player.van.condition,
-      EXPEDITION_INSURANCE_RESTORED_CONDITION
+    assert.equal(next, state)
+    assert.notEqual(next.expedition.insuranceClaimConsumed, true)
+  })
+
+  it('repairs a NaN condition instead of writing it back on a real fuel claim', () => {
+    const state = startedState(
+      { money: 1000 },
+      { insurancePolicyId: 'roadside' }
     )
+    state.player.van.fuel = 0
+    state.player.van.condition = Number.NaN
+
+    const next = gameReducer(
+      state,
+      claimExpeditionInsurance(state, { claimType: 'vehicle' })
+    )
+
+    assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
+    assert.equal(next.player.van.condition, 100)
     assert.equal(next.expedition.insuranceClaimConsumed, true)
   })
 

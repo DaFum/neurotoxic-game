@@ -11,6 +11,7 @@ import {
 import { GigControlsCluster } from '../components/hud/GigControlsCluster'
 import { translateLocation } from '../utils/locationI18n'
 import { GAME_PHASES } from '../context/gameConstants'
+import { readVanCondition } from '../utils/gameState'
 
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
@@ -20,8 +21,8 @@ export const HUD = memo(() => {
   const playerLocation = useGameSelector(state => state.player.location)
   const playerDay = useGameSelector(state => state.player.day)
   const playerVanFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
-  const playerVanCondition = useGameSelector(
-    state => state.player?.van?.condition ?? 100
+  const playerVanCondition = useGameSelector(state =>
+    readVanCondition(state.player?.van?.condition)
   )
 
   const hasNeuroDecimator = useGameSelector(

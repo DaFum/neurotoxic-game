@@ -9,6 +9,7 @@ import type {
   ExpeditionRelationshipOutcomeIntent
 } from '../../types/expedition'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import {
   applyCrewStressDelta,
   CREW_STRESS_SOURCE_DELTAS
@@ -123,7 +124,8 @@ export const handleRecordExpeditionCrewStressSource = (
     stressByCrewId: {},
     injuryByCrewId: {}
   }
-  const current = crew.stressByCrewId[payload.crewId] ?? 0
+  // `?? 0` would let a persisted NaN through into the stress arithmetic.
+  const current = finiteNumberOr(crew.stressByCrewId[payload.crewId], 0)
   const next = applyCrewStressDelta(
     current,
     CREW_STRESS_SOURCE_DELTAS[payload.sourceType],
@@ -191,7 +193,11 @@ export const handleRecordExpeditionRelationshipOutcome = (
     return state
   const key = getExpeditionRelationshipPairKey(payload.first, payload.second)
   const delta = outcome.relationship.tierDelta
-  const current = state.career.expeditionRelationshipByPair[key] ?? 0
+  const relationships = state.career.expeditionRelationshipByPair
+  const storedTier = Object.hasOwn(relationships, key)
+    ? relationships[key]
+    : undefined
+  const current = isFiniteNumber(storedTier) ? storedTier : 0
   return {
     ...state,
     career: {

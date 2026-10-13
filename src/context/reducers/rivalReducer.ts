@@ -1,27 +1,46 @@
 import type { GameState, RivalBandState, ToastPayload } from '../../types'
 import { buildDeterministicToastId } from './toastSanitizers'
-import { clampNonNegative, isFiniteNumber } from '../../utils/gameState'
+import { isLooseRecord } from '../../utils/objectUtils'
+import {
+  sanitizeRivalBand,
+  sanitizeRivalBandUpdates
+} from './sanitizers/stateSanitizers'
 import type {
   SpawnRivalBandPayload,
   MoveRivalBandPayload
 } from '../../types/actions'
 
 /**
+ * Re-validates a rival band carried by a spawn/move payload.
+ *
+ * @param payload - Untrusted spawn or move payload.
+ * @returns A whitelisted rival band, or null when the payload is malformed.
+ */
+const readPayloadRivalBand = (payload: unknown): RivalBandState | null =>
+  isLooseRecord(payload) && Object.hasOwn(payload, 'rivalBand')
+    ? sanitizeRivalBand(payload.rivalBand)
+    : null
+
+/**
  * Spawns the rival band when no rival is currently active.
  *
  * @param state - Current game state before spawning.
- * @param payload - Sanitized rival band payload from the action creator.
- * @returns Updated state with the rival band, or the original state when one already exists.
+ * @param payload - Rival band payload from the action creator; re-validated
+ * with the load sanitizer's whitelist.
+ * @returns Updated state with the rival band, or the original state when one
+ * already exists or the payload is malformed.
  */
 export const handleSpawnRivalBand = (
   state: GameState,
   payload: SpawnRivalBandPayload
 ): GameState => {
   if (state.rivalBand) return state
+  const rivalBand = readPayloadRivalBand(payload)
+  if (!rivalBand) return state
 
   return {
     ...state,
-    rivalBand: payload.rivalBand
+    rivalBand
   }
 }
 
@@ -29,18 +48,22 @@ export const handleSpawnRivalBand = (
  * Moves the active rival band across the current game map.
  *
  * @param state - Current game state before movement.
- * @param payload - Sanitized rival band state after movement.
- * @returns Updated state with the moved rival, or the original state when no rival or map exists.
+ * @param payload - Rival band state after movement; re-validated with the load
+ * sanitizer's whitelist.
+ * @returns Updated state with the moved rival, or the original state when no
+ * rival or map exists or the payload is malformed.
  */
 export const handleMoveRivalBand = (
   state: GameState,
   payload: MoveRivalBandPayload
 ): GameState => {
   if (!state.rivalBand || !state.gameMap) return state
+  const rivalBand = readPayloadRivalBand(payload)
+  if (!rivalBand) return state
 
   return {
     ...state,
-    rivalBand: payload.rivalBand
+    rivalBand
   }
 }
 
@@ -76,7 +99,9 @@ export const handleCheckRivalEncounter = (state: GameState): GameState => {
  * Merges sanitized rival band updates into the active rival state.
  *
  * @param state - Current game state before the rival update.
- * @param payload - Partial rival state already sanitized by the action creator.
+ * @param payload - Partial rival state. Re-whitelisted with
+ * `sanitizeRivalBandUpdates` (the same helper the action creator uses), so a
+ * raw dispatch cannot add unknown keys or write mistyped fields.
  * @returns Updated state with merged rival data, or the original state when no rival exists.
  */
 export const handleUpdateRivalBand = (
@@ -85,16 +110,7 @@ export const handleUpdateRivalBand = (
 ): GameState => {
   if (!state.rivalBand) return state
 
-  // Sanitized by createUpdateRivalBandAction; re-check powerLevel so a raw
-  // dispatch cannot write NaN/Infinity or a non-number into state.
-  const updates = { ...payload }
-  if (Object.hasOwn(updates, 'powerLevel')) {
-    if (isFiniteNumber(updates.powerLevel)) {
-      updates.powerLevel = clampNonNegative(updates.powerLevel)
-    } else {
-      delete updates.powerLevel
-    }
-  }
+  const updates = sanitizeRivalBandUpdates(payload)
 
   return {
     ...state,

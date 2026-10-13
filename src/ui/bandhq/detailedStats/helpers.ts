@@ -1,5 +1,3 @@
-import { isFiniteNumber } from '../../../utils/gameState'
-
 import { CHARACTERS } from '../../../data/characters'
 
 export const isUnlocked = (val: unknown) => {
@@ -28,21 +26,4 @@ for (const key in CHARACTERS) {
       CHAR_MAP[c.name] = c
     }
   }
-}
-
-export const getStashStacks = (
-  stash: Record<string, unknown> | undefined,
-  itemId: string
-): number => {
-  if (!stash || !Object.hasOwn(stash, itemId)) return 0
-  const entry = stash[itemId]
-  if (!entry || typeof entry !== 'object') return 0
-  const stacks = Object.hasOwn(entry as Record<string, unknown>, 'stacks')
-    ? (entry as Record<string, unknown>).stacks
-    : undefined
-  // Stash entries are always contraband objects (never boolean-owned flags).
-  // A null/absent `stacks` means a non-stackable item that is owned = 1 unit,
-  // mirroring the reducer's getStashCount (the authority on craftability); this
-  // is display-only affordability and must agree with that reducer count.
-  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 1
 }

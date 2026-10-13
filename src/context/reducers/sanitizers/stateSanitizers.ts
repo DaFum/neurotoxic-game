@@ -1482,6 +1482,91 @@ export const sanitizeSocial = (value: unknown): SocialState => {
 }
 
 /**
+ * Field spec for `UPDATE_SOCIAL` patches: `numeric` fields must be finite
+ * numbers (`nullable` ones may also be `null`); `nonNegative` ones are floored
+ * at 0, mirroring the load clamps in {@link sanitizeSocial}.
+ */
+const SOCIAL_UPDATE_FIELDS = {
+  instagram: { numeric: true, nonNegative: true },
+  tiktok: { numeric: true, nonNegative: true },
+  youtube: { numeric: true, nonNegative: true },
+  newsletter: { numeric: true, nonNegative: true },
+  viral: { numeric: true, nonNegative: true },
+  lastGigDay: { numeric: true, nullable: true, nonNegative: true },
+  lastGigDifficulty: { numeric: true, nullable: true },
+  lastPirateBroadcastDay: { numeric: true, nullable: true, nonNegative: true },
+  lastDarkWebLeakDay: { numeric: true, nullable: true, nonNegative: true },
+  lastCultIndoctrinationDay: {
+    numeric: true,
+    nullable: true,
+    nonNegative: true
+  },
+  controversyLevel: { numeric: true },
+  loyalty: { numeric: true },
+  zealotry: { numeric: true },
+  reputationCooldown: { numeric: true, nonNegative: true },
+  egoFocus: {},
+  trend: {},
+  activeDeals: {},
+  brandReputation: {},
+  influencers: {},
+  scenePresence: { numeric: true },
+  regionalGigHistory: {},
+  pendingSocialOptionId: {}
+} as const satisfies Record<
+  keyof SocialState,
+  { numeric?: boolean; nullable?: boolean; nonNegative?: boolean }
+>
+
+/**
+ * Whitelists an `UPDATE_SOCIAL` patch against the `SocialState` keys.
+ *
+ * Shared by `createUpdateSocialAction` and `handleUpdateSocial` so a raw
+ * dispatch gets the same treatment as a creator-built one: unknown and
+ * prototype-polluting keys are dropped, non-finite numerics are dropped (never
+ * coerced), `null` survives only on nullable fields, and follower counts,
+ * `reputationCooldown` and the `last*Day` markers are floored at 0. Range
+ * clamps (`controversyLevel`, `loyalty`, `zealotry`, `scenePresence`), `trend`
+ * and `activeDeals` validation stay in the reducer.
+ *
+ * @param updates - Untrusted partial social patch.
+ * @returns The safe subset of the patch (possibly empty).
+ */
+export const sanitizeSocialUpdates = (
+  updates: unknown
+): Partial<SocialState> => {
+  if (!isLooseRecord(updates)) return {}
+  const out: Record<string, unknown> = {}
+  for (const key in updates) {
+    if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
+    if (!Object.hasOwn(SOCIAL_UPDATE_FIELDS, key)) continue
+    const value = updates[key]
+    // Settlement provenance must stay a string option id or null.
+    if (
+      key === 'pendingSocialOptionId' &&
+      value !== null &&
+      typeof value !== 'string'
+    )
+      continue
+
+    const spec = SOCIAL_UPDATE_FIELDS[
+      key as keyof typeof SOCIAL_UPDATE_FIELDS
+    ] as { numeric?: boolean; nullable?: boolean; nonNegative?: boolean }
+    if (spec.numeric) {
+      if (value === null) {
+        if (spec.nullable) out[key] = null
+        continue
+      }
+      if (!isFiniteNumber(value)) continue
+      out[key] = spec.nonNegative ? Math.max(0, value) : value
+      continue
+    }
+    out[key] = value
+  }
+  return out as Partial<SocialState>
+}
+
+/**
  * Sanitizes the active event option selected during an ongoing game event.
  *
  * @remarks
@@ -1777,6 +1862,54 @@ export const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
     powerLevel,
     currentLocationId
   }
+}
+
+/**
+ * Whitelists and type-checks a partial `RivalBandState` update.
+ *
+ * Shared by `createUpdateRivalBandAction` and `handleUpdateRivalBand` so the
+ * creator and the reducer cannot drift. Unknown and prototype-polluting keys
+ * are dropped; each known field keeps the same rules as
+ * {@link sanitizeRivalBand}, except that an invalid field is omitted from the
+ * update instead of being defaulted.
+ *
+ * @param value - Untrusted partial rival update.
+ * @returns The safe subset of the update (possibly empty).
+ */
+export const sanitizeRivalBandUpdates = (
+  value: unknown
+): Partial<import('../../../types/social').RivalBandState> => {
+  const updates: Partial<import('../../../types/social').RivalBandState> = {}
+  if (!isLooseRecord(value)) return updates
+  if (
+    Object.hasOwn(value, 'id') &&
+    typeof value.id === 'string' &&
+    value.id.length > 0 &&
+    !isForbiddenKey(value.id)
+  ) {
+    updates.id = value.id
+  }
+  if (
+    Object.hasOwn(value, 'name') &&
+    typeof value.name === 'string' &&
+    value.name.length > 0
+  ) {
+    updates.name = value.name
+  }
+  if (Object.hasOwn(value, 'alignment') && isBrandAlignment(value.alignment)) {
+    updates.alignment = value.alignment
+  }
+  if (Object.hasOwn(value, 'powerLevel') && isFiniteNumber(value.powerLevel)) {
+    updates.powerLevel = Math.max(0, value.powerLevel)
+  }
+  if (
+    Object.hasOwn(value, 'currentLocationId') &&
+    (value.currentLocationId === null ||
+      typeof value.currentLocationId === 'string')
+  ) {
+    updates.currentLocationId = value.currentLocationId
+  }
+  return updates
 }
 
 /**

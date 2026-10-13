@@ -321,6 +321,7 @@ export const handleSetLastGigStats = (
       lastGigStats: null
     }
   }
+  if (!isLooseRecord(payload)) return state
 
   const safePayload = {
     ...payload,

@@ -410,14 +410,17 @@ export const handleLoadGame = (
  * Recreates initial game state while preserving allowed persistent settings and unlocks.
  *
  * @param state - Current game state before reset.
- * @param payload - Optional reset overrides for settings and unlocks.
+ * @param rawPayload - Optional reset overrides for settings and unlocks. A
+ * non-record payload (including `null`) is treated as "no overrides", exactly
+ * like an omitted payload.
  * @returns Fresh initial state seeded with the preserved reset data.
  */
 export const handleResetState = (
   state: GameState,
-  payload: ResetStatePayload = {}
+  rawPayload?: ResetStatePayload | null
 ): GameState => {
   logger.info('GameState', 'State Reset (Debug)')
+  const payload: ResetStatePayload = isLooseRecord(rawPayload) ? rawPayload : {}
 
   // Construct the data to preserve across reset
   const persistedData: {
@@ -698,7 +701,6 @@ export const handleAdvanceDay = (
   payload?: {
     dayRngStream?: number[]
     nextRngSeed?: number
-    rng?: () => number
   }
 ): GameState => {
   // Read before the ticks below: asset upkeep and liability instalments are
@@ -805,14 +807,13 @@ export const handleAdvanceDay = (
   const rngSeed = finiteNumberOr(payload?.nextRngSeed, nextSeed(baseSeed)) >>> 0
   state = { ...nextStatePre, rngSeed }
 
-  const rng =
-    typeof payload?.rng === 'function'
-      ? payload.rng
-      : () => {
-          const roll = dayRngStream[dayRngCursor++]
-          if (!Number.isFinite(roll)) return 1
-          return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
-        }
+  // Every daily roll comes from the pre-rolled stream; a payload never
+  // supplies a function for the reducer to run (reducer purity).
+  const rng = () => {
+    const roll = dayRngStream[dayRngCursor++]
+    if (!Number.isFinite(roll)) return 1
+    return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
+  }
   // How far the mandatory upstream ticks pushed the balance past the floor.
   const expeditionUpstreamShortfall = Math.max(
     0,

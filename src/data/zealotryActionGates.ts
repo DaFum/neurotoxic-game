@@ -1,0 +1,15 @@
+/**
+ * Social-state gates for the once-per-day zealotry actions.
+ *
+ * @remarks
+ * Single source of truth shared by the hook configs (`useDarkWebLeak`,
+ * `useCultIndoctrination`), which use them for the UI eligibility check, and by
+ * `applyZealotryAction` in `socialReducer`, which enforces them so a raw
+ * dispatch cannot skip the gate.
+ */
+
+/** Minimum `social.controversyLevel` required for a dark-web leak. */
+export const DARK_WEB_LEAK_REQUIRED_CONTROVERSY = 40
+
+/** Minimum `social.zealotry` required for a cult indoctrination. */
+export const CULT_INDOCTRINATION_REQUIRED_ZEALOTRY = 50

@@ -8,6 +8,7 @@ import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressur
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { getStashStackCount } from '../../utils/contrabandStashUtils'
 import { SONGS_BY_ID } from '../../data/songs'
 import {
   FREE_EXPEDITION_REGION_ID,
@@ -257,17 +258,14 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const ownedContrabandItems = useMemo(() => {
     const stash = state.band?.stash ?? {}
     return [...CONTRABAND_BY_ID.keys()]
-      .filter(key => {
-        const item = stash[key]
-        return item && typeof item.stacks === 'number' && item.stacks > 0
-      })
+      .filter(key => getStashStackCount(stash, key) > 0)
       .map(key => {
         const item = stash[key]!
         return {
           stashKey: key,
           instanceId:
             typeof item.instanceId === 'string' ? item.instanceId : null,
-          ownedStacks: item.stacks as number
+          ownedStacks: getStashStackCount(stash, key)
         }
       })
   }, [state.band?.stash])

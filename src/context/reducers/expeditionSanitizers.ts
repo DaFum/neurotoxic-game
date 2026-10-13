@@ -1295,6 +1295,9 @@ const sanitizeRunDraftTraitIds = (
   ].slice(0, 2)
 }
 
+/** A canonical non-negative integer record key (`'0'`, `'12'`; not `''` or `'01'`). */
+const ROUTE_STEP_KEY = /^(?:0|[1-9]\d*)$/
+
 const sanitizeGigOutcomeMap = (
   value: unknown,
   lastGigStats?: unknown,
@@ -1305,8 +1308,11 @@ const sanitizeGigOutcomeMap = (
     Object.create(null)
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
-    const step = Number(key)
-    if (!Number.isInteger(step) || step < 0) continue
+    // Canonical integer keys only: `Number('')` is 0 and `Number(' 1 ')` is 1,
+    // so a loose parse would map junk keys onto real route steps.
+    if (!ROUTE_STEP_KEY.test(key)) continue
+    const step = Number.parseInt(key, 10)
+    if (!Number.isSafeInteger(step)) continue
     if (!isLooseRecord(entry)) continue
     const venueId = readString(entry, 'venueId')
     const accuracy = readCount(entry, 'accuracy', -1)

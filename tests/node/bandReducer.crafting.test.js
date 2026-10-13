@@ -33,6 +33,21 @@ describe('bandReducer - handleCraftItem', () => {
     assert.ok(Object.hasOwn(next.band.stash, 'c_blood_pick'))
   })
 
+  it('counts a stored non-stackable input (stacks: null) as one owned unit', () => {
+    // Non-stackable contraband is stored with `stacks: null`.
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: null }
+    })
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick-null',
+      toastId: 'craft_toast_blood_pick_null'
+    })
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_rusty_strings'))
+    assert.ok(Object.hasOwn(next.band.stash, 'c_blood_pick'))
+  })
+
   it('consumes inputs and adds the crafted output', () => {
     // recipe_cursed_pick: 2x c_sticky_plectrum -> c_cursed_pick
     const state = makeState({

@@ -28,7 +28,8 @@ describe('rivalReducer', () => {
         { rivalBand }
       )
 
-      assert.equal(next.rivalBand, rivalBand)
+      // The reducer stores a whitelisted copy, not the payload object.
+      assert.deepEqual(next.rivalBand, rivalBand)
     })
 
     it('uses the action payload when moving a rival band', () => {
@@ -45,7 +46,8 @@ describe('rivalReducer', () => {
         { rivalBand: movedRival }
       )
 
-      assert.equal(next.rivalBand, movedRival)
+      // The reducer stores a whitelisted copy, not the payload object.
+      assert.deepEqual(next.rivalBand, movedRival)
     })
   })
 

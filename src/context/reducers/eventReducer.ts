@@ -1,9 +1,11 @@
 import { logger } from '../../utils/logger'
+import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
 import {
   applyEventDelta,
   finiteNumberOr,
   isFiniteNumber,
-  isForbiddenKey
+  isForbiddenKey,
+  isLooseRecord
 } from '../../utils/gameState'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
@@ -25,17 +27,32 @@ import type {
 /**
  * Sets or clears the active event.
  *
+ * @remarks
+ * Like `SET_GIG`/`SET_MAP`, the payload is structurally re-validated: anything
+ * other than `null` or a record with a string `id` and no forbidden key at any
+ * depth returns the identical state reference.
+ *
  * @param state - Current game state.
  * @param payload - Event to activate, or null to clear.
- * @returns State with updated active event.
+ * @returns State with updated active event, or the original state when the
+ * payload is malformed.
  */
 export const handleSetActiveEvent = (
   state: GameState,
   payload: GameEvent | null
 ): GameState => {
-  if (payload) {
-    logger.info('GameState', 'Event Triggered', payload.title)
+  if (payload === null) return { ...state, activeEvent: null }
+  // The deep scan runs before any field read so own accessors are rejected
+  // without being invoked.
+  if (
+    !isLooseRecord(payload) ||
+    hasForbiddenKeysDeep(payload) ||
+    typeof payload.id !== 'string'
+  ) {
+    logger.warn('GameState', 'Rejected malformed SET_ACTIVE_EVENT payload')
+    return state
   }
+  logger.info('GameState', 'Event Triggered', payload.title)
   return { ...state, activeEvent: payload }
 }
 
@@ -76,6 +93,7 @@ export const handleApplyEventDelta = (
   state: GameState,
   payload: EventDeltaPayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   logger.info('GameState', 'Applying Event Delta', payload)
   const appliedState = applyEventDelta(state, payload)
   const currentGigEventScore = finiteNumberOr(state.gigEventScoreDelta, 0)

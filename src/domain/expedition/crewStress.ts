@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { ExpeditionCrewStressSourceType } from '../../types/expedition'
 
 export const CREW_STRESS_SOURCE_DELTAS: Readonly<
@@ -15,14 +16,17 @@ export const applyCrewStressDelta = (
   current: number,
   delta: number,
   positiveMultiplier: number
-): number =>
-  Math.max(
-    0,
-    Math.min(
-      100,
-      Math.round(current + (delta > 0 ? delta * positiveMultiplier : delta))
-    )
-  )
+): number => {
+  // Persisted stress and the rule multiplier are untrusted: a NaN in either
+  // would otherwise survive `Math.max`/`Math.min` and be written back.
+  const safeCurrent = finiteNumberOr(current, 0)
+  const safeDelta = finiteNumberOr(delta, 0)
+  const scaled =
+    safeDelta > 0
+      ? safeDelta * finiteNumberOr(positiveMultiplier, 1)
+      : safeDelta
+  return Math.max(0, Math.min(100, Math.round(safeCurrent + scaled)))
+}
 
 export const getCrewStressBand = (
   stress: number

@@ -8,6 +8,7 @@ import { GlitchButton } from './GlitchButton'
 import { logger } from '../utils/logger'
 import { IMG_PROMPTS } from '../utils/imageGen'
 import { isLooseRecord } from '../utils/objectUtils'
+import { getContrabandIconGlyph } from './contrabandIcons'
 
 /**
  * Contraband Stash Modal Component
@@ -78,17 +79,29 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
     item.type === 'consumable'
       ? 'border-blood-red text-error-red bg-blood-red-20'
       : 'border-electric-blue text-electric-blue bg-electric-blue-20'
+  const iconGlyph = getContrabandIconGlyph(item.id, item.icon)
 
   return (
     <div className='flex justify-between items-start mb-2'>
       <div className='flex flex-col gap-1'>
-        <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
-          {t(`items:contraband.${item.id}.name`, {
-            defaultValue: t('ui:item.unknown', {
-              defaultValue: 'Unknown Item'
-            })
-          })}
-        </h4>
+        <div className='flex items-center gap-2'>
+          {iconGlyph && (
+            <span
+              aria-hidden='true'
+              className='text-lg leading-none'
+              data-testid={`contraband-icon-${item.id}`}
+            >
+              {iconGlyph}
+            </span>
+          )}
+          <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
+            {t(`items:contraband.${item.id}.name`, {
+              defaultValue: t('ui:item.unknown', {
+                defaultValue: 'Unknown Item'
+              })
+            })}
+          </h4>
+        </div>
         <div className='flex gap-2 text-xs font-mono'>
           <span className={getRarityClass(item.rarity)}>
             {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {

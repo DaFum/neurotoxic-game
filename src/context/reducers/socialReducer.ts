@@ -49,8 +49,13 @@ import {
 } from '../../quests/producers/venueQuestEvents'
 import { VENUES_BY_ID } from '../../data/venues'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
-import { isForbiddenKey } from '../../utils/objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import { recordExpeditionArchiveObservations } from './careerReducer'
+import { sanitizeSocialUpdates } from './sanitizers/stateSanitizers'
+import {
+  CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
+  DARK_WEB_LEAK_REQUIRED_CONTROVERSY
+} from '../../data/zealotryActionGates'
 
 /** Controversy at or above this voids active brand deals. */
 const DEAL_BREAK_CONTROVERSY = 85
@@ -158,31 +163,22 @@ const appendDeltaSuccessToast = (
 }
 
 /**
- * Validates state.player.money and state.band.harmony are finite numbers
- * within expected bounds for merch-press and zealotry-style actions. Returns
- * the values normalized to whole units (fractional money/harmony is valid
- * state, not corruption), or null when the state itself is corrupted -
- * callers should bail with unchanged state.
+ * Reads state.player.money and state.band.harmony for the paid social actions
+ * (merch press, zealotry-style actions, venue amends).
+ *
+ * @remarks
+ * One policy for every paid social action: persisted values are untrusted, so
+ * a corrupt value is repaired with `finiteNumberOr` to the most conservative
+ * fallback (money `0`, harmony `1`) and then clamped, never used to reject the
+ * whole action. The fallbacks fail closed — a repaired balance can never pay a
+ * positive cost the real state could not.
  */
 const readPlayerFundsAndHarmony = (
   state: GameState
-): { money: number; harmony: number } | null => {
-  const rawMoney = state.player.money
-  const rawHarmony = state.band.harmony
-  if (
-    !isFiniteNumber(rawMoney) ||
-    !isFiniteNumber(rawHarmony) ||
-    rawMoney < 0 ||
-    rawHarmony < 1 ||
-    rawHarmony > 100
-  ) {
-    return null
-  }
-  return {
-    money: clampPlayerMoney(rawMoney),
-    harmony: clampBandHarmony(rawHarmony)
-  }
-}
+): { money: number; harmony: number } => ({
+  money: clampPlayerMoney(finiteNumberOr(state.player.money, 0)),
+  harmony: clampBandHarmony(finiteNumberOr(state.band?.harmony, 1))
+})
 
 /**
  * Assembles the post-action state shared by merch-press and zealotry-style
@@ -233,7 +229,9 @@ export const handleUpdateSocial = (
 
   if (!updates || typeof updates !== 'object') return state
 
-  updates = { ...updates }
+  // Same whitelist as the action creator: drops unknown/forbidden keys and
+  // non-finite numerics, and floors the unbounded counters at 0.
+  updates = sanitizeSocialUpdates(updates)
 
   // Validate special fields
   if (updates.trend !== undefined) {
@@ -546,23 +544,26 @@ export const getUnblacklistCost = (venueId: string): number => {
  * Pays amends to remove a venue from the blacklist and emits venue quest progress.
  *
  * @param state - Current game state before amends are paid.
- * @param venueId - Venue id to unblacklist.
- * @param toastId - Toast id for feedback.
+ * @param payload - Amends request; non-record payloads leave state unchanged.
+ * - `payload.venueId` - Venue id to unblacklist.
+ * - `payload.toastId` - Toast id for feedback.
  * @returns Updated state with money deducted and venue removed, or feedback when amends are unavailable.
  */
 export const handleUnblacklistVenue = (
   state: GameState,
-  { venueId, toastId }: { venueId: string; toastId: string }
+  payload: { venueId: string; toastId: string }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
+  const { venueId, toastId } = payload
   const blacklist = state.venueBlacklist ?? []
   if (!venueId || !blacklist.includes(venueId)) {
     return state
   }
 
   const cost = getUnblacklistCost(venueId)
-  // Persisted money is untrusted at this boundary: recover from stale saves
-  // with a finite fallback instead of rejecting the whole action.
-  const currentMoney = clampPlayerMoney(finiteNumberOr(state.player.money, 0))
+  // Persisted money is untrusted at this boundary: the shared funds policy
+  // recovers stale saves with a finite fallback instead of rejecting.
+  const currentMoney = readPlayerFundsAndHarmony(state).money
 
   if (currentMoney < cost) {
     return {
@@ -657,10 +658,6 @@ export const handleMerchPress = (
   const successToast = payload.successToast
 
   const funds = readPlayerFundsAndHarmony(state)
-  if (!funds) {
-    logger.warn('GameState', 'Invalid player funds or harmony state')
-    return state
-  }
   const currentMoney = funds.money
   const currentHarmony = funds.harmony
 
@@ -721,6 +718,11 @@ const applyZealotryAction = (
     insufficientLogMessage: string
     invalidLogMessage: string
     invalidPayloadShapeLogMessage?: string
+    gate?: {
+      field: 'controversyLevel' | 'zealotry'
+      required: number
+      logMessage: string
+    }
   }
 ): GameState => {
   const playerDay = Number.isFinite(state.player.day)
@@ -753,14 +755,21 @@ const applyZealotryAction = (
     return state
   }
 
+  // The hook configs gate the UI on the same constants; the reducer enforces
+  // them so a raw dispatch cannot skip the requirement. Corrupt values fail
+  // closed.
+  if (
+    options.gate &&
+    finiteNumberOr(state.social[options.gate.field], 0) < options.gate.required
+  ) {
+    logger.warn('GameState', options.gate.logMessage)
+    return state
+  }
+
   const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
   const successToast = payload.successToast
 
   const funds = readPlayerFundsAndHarmony(state)
-  if (!funds) {
-    logger.warn('GameState', 'Invalid player funds or harmony state')
-    return state
-  }
   const currentMoney = funds.money
   const currentHarmony = funds.harmony
 
@@ -827,7 +836,8 @@ export const handlePirateBroadcast = (
  *
  * @param state - Current game state before the leak.
  * @param payload - Required leak cost and gains, harmony cost, and optional success toast.
- * @returns Updated state with zealotry-style deltas, or the original state when validation or cooldown checks fail.
+ * @returns Updated state with zealotry-style deltas, or the original state when
+ * validation, cooldown, or the `DARK_WEB_LEAK_REQUIRED_CONTROVERSY` gate fails.
  */
 export const handleDarkWebLeak = (
   state: GameState,
@@ -838,7 +848,12 @@ export const handleDarkWebLeak = (
     duplicateLogMessage: 'Dark web leak already triggered today',
     insufficientLogMessage: 'Insufficient funds or harmony for dark web leak',
     invalidLogMessage: 'Invalid dark web leak payload',
-    invalidPayloadShapeLogMessage: 'Invalid payload for DARK_WEB_LEAK'
+    invalidPayloadShapeLogMessage: 'Invalid payload for DARK_WEB_LEAK',
+    gate: {
+      field: 'controversyLevel',
+      required: DARK_WEB_LEAK_REQUIRED_CONTROVERSY,
+      logMessage: 'Controversy too low for dark web leak'
+    }
   })
 
 /**
@@ -846,7 +861,8 @@ export const handleDarkWebLeak = (
  *
  * @param state - Current game state before the indoctrination.
  * @param payload - Required cost and gains, harmony cost, and optional success toast.
- * @returns Updated state with zealotry-style deltas, or the original state when validation or cooldown checks fail.
+ * @returns Updated state with zealotry-style deltas, or the original state when
+ * validation, cooldown, or the `CULT_INDOCTRINATION_REQUIRED_ZEALOTRY` gate fails.
  */
 export const handleCultIndoctrination = (
   state: GameState,
@@ -858,5 +874,10 @@ export const handleCultIndoctrination = (
     insufficientLogMessage:
       'Insufficient funds or harmony for cult indoctrination',
     invalidLogMessage: 'Invalid cult indoctrination payload',
-    invalidPayloadShapeLogMessage: 'Invalid payload for CULT_INDOCTRINATION'
+    invalidPayloadShapeLogMessage: 'Invalid payload for CULT_INDOCTRINATION',
+    gate: {
+      field: 'zealotry',
+      required: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
+      logMessage: 'Zealotry too low for cult indoctrination'
+    }
   })

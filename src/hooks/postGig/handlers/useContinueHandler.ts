@@ -10,6 +10,7 @@ import type { PostGigFinancials } from '../../../types/economy'
 import {
   clampPlayerMoney,
   clampPlayerFame,
+  clampMemberStamina,
   calculateFameLevel,
   calculateFameGain,
   finiteNumberOr,
@@ -207,9 +208,9 @@ export function useContinueHandler({
                   const maxStamina = finiteNumberOr(member.staminaMax, 100)
                   return {
                     ...member,
-                    stamina: Math.max(
-                      0,
-                      Math.min(maxStamina, currentStamina - extraDrain)
+                    stamina: clampMemberStamina(
+                      currentStamina - extraDrain,
+                      maxStamina
                     )
                   }
                 })

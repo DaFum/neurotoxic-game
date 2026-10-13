@@ -20,7 +20,8 @@ import {
   clampBandStress,
   clampControversyLevel,
   finiteNumberOr,
-  isFiniteNumber
+  isFiniteNumber,
+  isLooseRecord
 } from '../../utils/gameState'
 import {
   applyNeuroOverclockStaminaCost,
@@ -172,6 +173,7 @@ export const handleClinicHeal = (
   state: GameState,
   payload: ClinicActionPayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const staminaGain = finiteNumberOr(payload.staminaGain, 0)
   const moodGain = finiteNumberOr(payload.moodGain, 0)
 
@@ -490,6 +492,7 @@ export const handleClinicEnhance = (
   state: GameState,
   payload: ClinicActionPayload
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   const { trait, memberId } = payload
 
   if (!trait) {

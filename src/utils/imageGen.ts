@@ -99,14 +99,11 @@ export const IMG_PROMPTS = {
 
   // Band Members (States)
   // Matze (Guitar)
-  MATZE_IDLE:
-    'pixel art metal guitarist standing idle holding flying v guitar dark moody',
   MATZE_PLAYING:
     'pixel art metal guitarist shredding solo fast fingers lightning effect',
   MATZE_ANGRY: 'pixel art metal guitarist angry shouting smashing guitar',
 
   // Marius (Drums)
-  MARIUS_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
   MARIUS_PLAYING:
     'pixel art metal drummer blast beating fast blur sticks motion',
   MARIUS_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
@@ -149,16 +146,10 @@ export const IMG_PROMPTS = {
   BLOOD_BANK_BG:
     'grimy underground clinic blood bags medical tubes dark scary hospital aesthetic brutalist horror',
 
-  // Events
-  EVENT_POLICE: 'german police car night flashing blue lights pixel art gritty',
-  EVENT_VAN: 'broken down tour van smoke rising highway side night pixel art',
-  EVENT_GIG: 'view from stage mosh pit chaos bright lights pixel art',
-  EVENT_BAND: 'band members arguing backstage silhouettes angry pixel art',
-  EVENT_MONEY: 'stack of euro bills dirty grunge texture pixel art',
-  EVENT_SPECIAL:
-    'cosmic horror void portal swirling purple and green eyes watching pixel art',
-
   // Items - Gear
+  // Generic fallback for catalog items whose own prompt key is missing.
+  ITEM_UNKNOWN:
+    'pixel art battered black flight case covered in band stickers mystery gear icon',
   ITEM_STRINGS: 'pixel art guitar strings pack icon',
   ITEM_CABLES: 'pixel art coiled audio cable icon golden plug',
   ITEM_DRUM_PARTS: 'pixel art drum sticks and drum head icon',
@@ -193,6 +184,8 @@ export const IMG_PROMPTS = {
   ITEM_DRUM_BROKEN: 'pixel art broken drum kit icon',
   ITEM_PEDAL_CHEAP: 'pixel art cheap plastic guitar pedal icon',
   ITEM_NEUROTOXIC_PEDAL: 'pixel art glowing green toxic guitar pedal icon',
+  ITEM_NEURO_DECIMATOR:
+    'pixel art brutal metal distortion pedal with cracked toxic green waveform display icon',
   ITEM_THEREMIN: 'pixel art theremin instrument icon',
   ITEM_DIDGERIDOO: 'pixel art didgeridoo instrument icon',
 
@@ -225,6 +218,8 @@ export const IMG_PROMPTS = {
   ITEM_HQ_PIPELINE: 'pixel art beer tap pipeline icon',
   ITEM_HQ_SHRINE: 'pixel art shrine with candles and whiskey bottle icon',
   ITEM_HQ_SKULL: 'pixel art animal skull decoration icon',
+  ITEM_HQ_VOID_ALTAR:
+    'pixel art humming black stone monolith altar with purple void glow icon',
 
   // Minigame - Tourbus
   MINIGAME_ROAD:
@@ -315,6 +310,18 @@ export const IMG_PROMPTS = {
     'pixel art shattered compass with a wildly spinning needle glowing icon',
   ITEM_DIY_OVERDRIVE:
     'pixel art hand-soldered guitar overdrive pedal with exposed wires and a duct-tape knob grunge icon',
+  ITEM_BONE_DUST:
+    'pixel art small glass vial of pale powdered bone dust occult grunge icon',
+  ITEM_GRIMOIRE_PAGE:
+    'pixel art torn yellowed grimoire page with glowing occult sigils icon',
+  ITEM_VOID_ASH:
+    'pixel art pile of black ash with faint purple embers corrosive void icon',
+  ITEM_CURSED_SETLIST:
+    'pixel art crumpled band setlist written in dripping red blood cursed icon',
+  ITEM_BLOOD_PICK:
+    'pixel art jagged guitar pick stained with fresh red blood sharp edge icon',
+  ITEM_ABYSSAL_PENDANT:
+    'pixel art heavy iron pendant on a chain with a dark abyssal eye gem icon',
 
   ITEM_NEURO_MOLD:
     'A glowing, toxic green cluster of neuro-mold spores in a dark, brutalist metal container, cyber-grime aesthetic, hyper-detailed, dramatic lighting --ar 1:1 --v 6.0',
@@ -334,8 +341,6 @@ export const IMG_PROMPTS = {
     'pixel art cybernetic smartphone interface circuit board green glowing icon',
   SOCIAL_POST_MUSIC:
     'pixel art smartphone playing heavy metal music notes equalizer icon',
-  SOCIAL_POST_WHOLESOME:
-    'pixel art smartphone with heart icons peaceful green glow icon',
   SOCIAL_POST_COMMERCIAL:
     'pixel art smartphone screen displaying stack of euro bills money icon',
   SOCIAL_POST_LIFESTYLE:

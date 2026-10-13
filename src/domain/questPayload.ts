@@ -62,19 +62,29 @@ export type QuestPayloadResult =
   | { ok: true; payload: QuestPayload }
   | { ok: false; reason: QuestPayloadRejection }
 
+/** A whole number of days written as a (sign-prefixed) decimal string. */
+const DEADLINE_OFFSET_STRING = /^[+-]?\d+$/
+
 /**
  * Normalizes a `deadlineOffset` that may arrive as a number or numeric string.
+ *
+ * @remarks
+ * Numeric-string acceptance is intentional: quest payloads come from authored
+ * event data, where an offset written as `'7'` (padding allowed) must still
+ * resolve. The string form is limited to a plain decimal integer, so `Number()`
+ * coercions such as `'0x10'`, `'1e3'` or `'Infinity'` are rejected rather than
+ * read as a day count.
  *
  * @param raw - Raw offset value.
  * @returns The finite offset, or `null` when it cannot be trusted.
  */
 const normalizeDeadlineOffset = (raw: unknown): number | null => {
   if (isFiniteNumber(raw)) return raw
-  if (typeof raw === 'string' && raw.trim().length > 0) {
-    const parsed = Number(raw)
-    return isFiniteNumber(parsed) ? parsed : null
-  }
-  return null
+  if (typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  if (!DEADLINE_OFFSET_STRING.test(trimmed)) return null
+  const parsed = Number.parseInt(trimmed, 10)
+  return Number.isSafeInteger(parsed) ? parsed : null
 }
 
 /**

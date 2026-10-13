@@ -69,6 +69,33 @@ export const getStashItemUseMessage = (
 }
 
 /**
+ * Owned stack count of one stash entry.
+ *
+ * @param stash - `band.stash` dictionary (keyed by contraband id); untrusted.
+ * @param id - Contraband id to count.
+ * @returns `0` when the entry is missing or malformed; `1` for an owned entry
+ * whose `stacks` is `null` or absent (a non-stackable item); the finite
+ * `stacks` value floored at `0` otherwise; `0` for a non-finite `stacks`.
+ *
+ * @remarks
+ * The single stash-count reader shared by Career (crafting, drops, Void
+ * Trader) and Expedition (loadout validation, Tour Prep) code, so a
+ * non-stackable item counts as one owned unit everywhere.
+ */
+export const getStashStackCount = (stash: unknown, id: string): number => {
+  if (!stash || typeof stash !== 'object' || !Object.hasOwn(stash, id)) {
+    return 0
+  }
+  const entry: unknown = (stash as Record<string, unknown>)[id]
+  if (!entry || typeof entry !== 'object') return 0
+  const stacks = Object.hasOwn(entry, 'stacks')
+    ? (entry as Record<string, unknown>).stacks
+    : undefined
+  if (stacks === null || stacks === undefined) return 1
+  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 0
+}
+
+/**
  * Adds a catalogue contraband item to a band's stash, honouring stacking,
  * uniqueness and apply-on-add equipment rules.
  *
@@ -104,7 +131,7 @@ export const addContrabandToBand = (
     if (!item.stackable) {
       return band // Don't add duplicate non-stackable items
     }
-    const currentStacks = (existingItem.stacks as number | undefined) ?? 1
+    const currentStacks = getStashStackCount(currentStash, item.id)
     const max = (item.maxStacks as number) || Infinity
     if (currentStacks >= max) return band // Reached max stacks
     newBand.stash = Object.assign(Object.create(null), currentStash, {

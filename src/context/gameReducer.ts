@@ -4,7 +4,6 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { QuestEvents } from '../utils/questProgress'
 import {
   handlePurchaseChassis,
   handleInstallModule,
@@ -64,7 +63,11 @@ import {
   handleGraftNeuroOverclock,
   handleBloodBankDonate
 } from './reducers/clinicReducer'
-import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
+import {
+  handleAddQuest,
+  handleAdvanceQuest,
+  handleApplyQuestEvent
+} from './reducers/questReducer'
 import {
   handleAcceptExpeditionFailure,
   handleAcceptExpeditionTechnicalFailure,
@@ -228,10 +231,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.UNBLACKLIST_VENUE]: handleUnblacklistVenue,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
-  [ActionTypes.APPLY_QUEST_EVENT]: (
-    state: GameState,
-    payload: import('../utils/questProgress').QuestProgressEvent
-  ) => QuestEvents.emit(state, payload),
+  [ActionTypes.APPLY_QUEST_EVENT]: handleApplyQuestEvent,
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
