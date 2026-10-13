@@ -68,16 +68,19 @@ export const pickWeighted = <T>(
   rng: () => number
 ): T | null => {
   const roll = getFiniteRandomRoll(rng)
-  const weights = entries.map(entry =>
-    Math.max(0, finiteNumberOr(entry.weight, 0))
-  )
-  const total = weights.reduce((sum, weight) => sum + weight, 0)
+
+  // ⚡ BOLT OPTIMIZATION: Compute total weight directly without intermediate array allocation or closure overhead from .map() and .reduce().
+  let total = 0
+  for (const entry of entries) {
+    total += Math.max(0, finiteNumberOr(entry.weight, 0))
+  }
   if (total <= 0) return null
 
   let cursor = roll * total
-  for (let i = 0; i < entries.length; i++) {
-    cursor -= weights[i] ?? 0
-    if (cursor < 0) return entries[i]?.value ?? null
+  for (const entry of entries) {
+    const weight = Math.max(0, finiteNumberOr(entry.weight, 0))
+    cursor -= weight
+    if (cursor < 0) return entry.value ?? null
   }
   return null
 }
