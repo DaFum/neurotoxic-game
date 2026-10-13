@@ -156,7 +156,7 @@ const withMockedCrypto = (getRandomValuesFn, callback) => {
   }
 }
 
-test('getRandomChatter supports legacy lines format', t => {
+test('getRandomChatter ignores the removed legacy lines format', t => {
   const state = buildState({
     currentScene: 'OTHER',
     gameMap: {
@@ -173,8 +173,9 @@ test('getRandomChatter supports legacy lines format', t => {
       arr.fill(0)
     },
     () => {
+      // Only `linesByScene` is read; a bare `lines` array yields no venue pool.
       const result = getRandomChatter(state)
-      assert.strictEqual(result.text, 'Legacy 1')
+      assert.strictEqual(result, null)
     }
   )
 })

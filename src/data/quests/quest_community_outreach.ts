@@ -12,7 +12,7 @@ export const quest_community_outreach = {
       event: 'social.postResolved',
       amount: 'fixed',
       fixedAmount: 1,
-      match: { postCategory: ['Lifestyle', 'Community'], success: true }
+      match: { postCategory: ['Lifestyle'], success: true }
     }
   ],
   required: 4,

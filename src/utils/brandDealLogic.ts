@@ -24,6 +24,12 @@ import type { RandomFn } from '../types/callbacks'
 
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 
+/**
+ * Number of distinct offers the eligibility pool must surface before it stops
+ * widening to the next tier; matches the three offers `selectTop3ByScore` picks.
+ */
+const BRAND_OFFER_POOL_SIZE = 3
+
 type EligibilityTier = 0 | 1 | 2
 
 interface DealMatchContext {
@@ -47,8 +53,7 @@ const matchesStrict = (deal: BrandDeal, ctx: DealMatchContext): boolean => {
   if (ctx.totalFollowers < deal.requirements.followers) return false
 
   if (ctx.trendVal && deal.requirements.trend) {
-    if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(ctx.trendVal))
-      return false
+    if (!ALLOWED_TRENDS_SET.has(ctx.trendVal)) return false
     if (deal.requirements.trendSet) {
       if (!deal.requirements.trendSet.has(ctx.trendVal)) return false
     } else if (!deal.requirements.trend.includes(ctx.trendVal)) {
@@ -119,7 +124,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
       seen.add(deal.id)
     }
   }
-  if (pool.length >= 3) return pool
+  if (pool.length >= BRAND_OFFER_POOL_SIZE) return pool
 
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     if (seen.has(deal.id)) continue
@@ -128,7 +133,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
       seen.add(deal.id)
     }
   }
-  if (pool.length >= 3) return pool
+  if (pool.length >= BRAND_OFFER_POOL_SIZE) return pool
 
   // Tier 2: probe sponsoring — lowest-bar deals regardless of trend/trait.
   // Pick the catalog entries with the smallest follower requirement to keep
@@ -141,7 +146,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
   }
   remaining.sort((a, b) => a.requirements.followers - b.requirements.followers)
   for (const deal of remaining) {
-    if (pool.length >= 3) break
+    if (pool.length >= BRAND_OFFER_POOL_SIZE) break
     pool.push({ deal, tier: 2 })
     seen.add(deal.id)
   }

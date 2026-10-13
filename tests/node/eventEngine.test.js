@@ -663,7 +663,7 @@ test('eventEngine.processOptions returns event when no processing needed', () =>
   assert.ok(result.options, 'Should have options')
 })
 
-test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
+test('eventEngine.processOptions injects no inventory-driven option', () => {
   const event = {
     ...TEST_EVENT_VAN_BREAKDOWN,
     id: 'van_breakdown_tire',
@@ -675,35 +675,9 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
 
   const result = eventEngine.processOptions(event, state)
 
-  assert.ok(result, 'Should return modified event')
-  const spareTireOption = result.options.find(
-    opt => opt.label === 'events:van_breakdown_tire.opt3.label'
-  )
-  assert.ok(
-    spareTireOption,
-    'Should have spare tire option when inventory has it'
-  )
-})
-
-test('eventEngine.processOptions does not add spare tire option without inventory', () => {
-  const event = {
-    ...TEST_EVENT_VAN_BREAKDOWN,
-    id: 'van_breakdown_tire',
-    options: [...TEST_EVENT_VAN_BREAKDOWN.options]
-  }
-  const state = buildGameState({
-    band: { ...buildGameState().band, inventory: { spare_tire: false } }
-  })
-
-  const result = eventEngine.processOptions(event, state)
-
-  const spareTireOption = result.options.find(
-    opt => opt.label === 'Use Spare Tire (Inventory)'
-  )
-  assert.ok(
-    !spareTireOption,
-    'Should not have spare tire option without inventory'
-  )
+  // Nothing grants a spare tire, so the removed quick-fix option must not
+  // come back for a hand-edited inventory key either.
+  assert.deepEqual(result.options, event.options)
 })
 
 test('eventEngine.applyResult treats non-finite numeric effects as zero', () => {
@@ -1059,10 +1033,14 @@ const fameMappingVariants = [
       assert.equal(delta.player.fame, 10, 'hype should map to fame')
   },
   {
-    label: 'crowd_energy → fame',
+    label: 'removed crowd_energy alias (no fame)',
     result: { type: 'stat', stat: 'crowd_energy', value: 5 },
     validate: delta =>
-      assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
+      assert.equal(
+        delta.player.fame,
+        undefined,
+        'crowd_energy is no longer an alias for fame'
+      )
   },
   {
     label: 'score increment',
@@ -1084,13 +1062,12 @@ fameMappingVariants.forEach(variant => {
   })
 })
 
-test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, crowd_energy)', () => {
+test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype)', () => {
   const result = {
     type: 'composite',
     effects: [
       { type: 'stat', stat: 'fame', value: 10 },
-      { type: 'stat', stat: 'hype', value: 5 },
-      { type: 'stat', stat: 'crowd_energy', value: 3 }
+      { type: 'stat', stat: 'hype', value: 5 }
     ]
   }
 
@@ -1099,8 +1076,8 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
   assert.ok(delta, 'Should return delta')
   assert.equal(
     delta.player.fame,
-    18,
-    'Should accumulate all fame-related stats (10 + 5 + 3)'
+    15,
+    'Should accumulate all fame-related stats (10 + 5)'
   )
 })
 

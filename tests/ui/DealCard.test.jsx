@@ -79,6 +79,49 @@ test('DealCard ignores negotiated deals with missing description or non-finite n
   expect(container).toHaveTextContent('3 Gigs')
 })
 
+test('DealCard shows registry perks and the record-label revenue share', () => {
+  const recordDeal = {
+    id: 'indie_cult_label',
+    name: 'Cult Label',
+    description: 'Record deal',
+    type: 'RECORD_DEAL',
+    offer: { upfront: 4000, duration: 10, revenueShare: 0.15 }
+  }
+
+  const { container } = render(
+    <DealCard
+      deal={recordDeal}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  // The i18n mock returns the raw defaultValue template.
+  expect(container).toHaveTextContent('Label cut: {{percent}}% of merch sales')
+  expect(container).toHaveTextContent('Perks')
+  expect(container).toHaveTextContent('+{{value}} Loyalty per gig')
+  expect(container).toHaveTextContent('+{{percent}}% Fame from gigs')
+})
+
+test('DealCard shows no perk row for a deal without benefits', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'corp_fast_food',
+        name: 'Burger',
+        description: 'Slurry',
+        offer: { upfront: 400, duration: 4, perGig: 40 }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+  expect(container).not.toHaveTextContent('Perks')
+  expect(container).not.toHaveTextContent('Label cut')
+})
+
 test('DealCard translates catalog deal names and descriptions', () => {
   render(
     <DealCard

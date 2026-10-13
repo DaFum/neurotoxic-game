@@ -37,11 +37,7 @@ export const useMinigameSceneLogic = ({
 }: UseMinigameSceneLogicProps) => {
   const band = useGameSelector(state => state?.band)
   const minigameType = useGameSelector(state => state?.minigame?.type)
-  const {
-    completeRoadieMinigame,
-    completeKabelsalatMinigame,
-    completeAmpCalibration
-  } = useGameActions()
+  const { completeRoadieMinigame, completeAmpCalibration } = useGameActions()
 
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -118,6 +114,11 @@ export const useMinigameSceneLogic = ({
   // affordance like CLINIC/ASSETS have. Skip is a FORFEIT classified as a failed
   // run (never a perfect/best-case clear), so it can't be used to farm rewards:
   //  - Amp score 0 / Kabelsalat not-powered → stress > 0 → failed run, no bonus.
+  //  - Kabelsalat dispatches nothing here: its onComplete is the scene's
+  //    idempotent forceAdvance(isPoweredOn), and SKIP is only offered while
+  //    not powered, so onComplete forfeits with isPoweredOn:false and reports
+  //    voidSurgesPurged. A dispatch here would clear minigame.active first and
+  //    make the reducer drop the purge stress.
   //  - Roadie max equipment damage (> 50 → failed) AND the escorted contraband
   //    is consumed (stashItemId), so skipping can't dodge damage or keep it.
   // Travel (Tourbus) is deliberately excluded: its arrival continuation reads
@@ -133,7 +134,6 @@ export const useMinigameSceneLogic = ({
         break
       }
       case MINIGAME_TYPES.KABELSALAT:
-        completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
         break
       case MINIGAME_TYPES.AMP_CALIBRATION:
         completeAmpCalibration(0)
@@ -148,7 +148,6 @@ export const useMinigameSceneLogic = ({
     minigameType,
     band,
     completeRoadieMinigame,
-    completeKabelsalatMinigame,
     completeAmpCalibration
   ])
 

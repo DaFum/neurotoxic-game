@@ -11,7 +11,8 @@ import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
  *
  * @remarks
  * Keeps its own SVG layout but shares the minigame exit controls: SKIP
- * visibility and the DEV `Shift+P` backdoor come from `useMinigameSceneLogic`.
+ * (visibility and handler) and the DEV `Shift+P` backdoor come from
+ * `useMinigameSceneLogic`.
  * `forceAdvance` is the single, idempotent completion path, so skip, backdoor,
  * Escape and the auto-advance timer can race safely.
  */
@@ -50,15 +51,13 @@ export const KabelsalatScene = () => {
     () => forceAdvance(isPoweredOn),
     [forceAdvance, isPoweredOn]
   )
-  const { canSkip } = useMinigameSceneLogic({
+  // The shared handleSkip forfeits through onComplete (forceAdvance(false)
+  // while not powered), so the purge count reaches the single completion.
+  const { canSkip, handleSkip } = useMinigameSceneLogic({
     logic,
     uiState,
     onComplete: handleComplete
   })
-  // SKIP forfeits through forceAdvance instead of the shared handleSkip: that
-  // one dispatches a result without voidSurgesPurged, and its first completion
-  // clears minigame.active, so the reducer would drop the purge stress.
-  const handleSkip = useCallback(() => forceAdvance(false), [forceAdvance])
 
   // pt-16 keeps the header clear of the absolutely positioned SKIP button
   // (top-4, ~2rem tall): once the content outgrows the viewport, centering

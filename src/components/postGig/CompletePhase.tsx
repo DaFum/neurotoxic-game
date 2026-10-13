@@ -9,6 +9,7 @@ import {
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../utils/postGig'
 import { SideEffectsSummary } from './SideEffectsSummary'
+import { SCANDAL_CONTROVERSY_THRESHOLD } from '../../utils/socialThresholds'
 import type { CompletePhaseProps } from '../../types/components'
 
 const UNKNOWN_PLATFORM = 'unknown'
@@ -30,7 +31,10 @@ export const CompletePhase = ({
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
-  const isHighControversy = (social?.controversyLevel ?? 0) > 50
+  // Strictly above the scandal tier (legacy `> 50`), unlike the inclusive
+  // `isScandalControversy` gate used by crisis events.
+  const isScandal =
+    (social?.controversyLevel ?? 0) > SCANDAL_CONTROVERSY_THRESHOLD
 
   const getOutcomeImagePrompt = () => {
     if (result.success === true) {
@@ -119,7 +123,7 @@ export const CompletePhase = ({
           transition={{ delay: 0.9 }}
           className='flex w-full flex-col gap-3 sm:gap-4 items-stretch sm:items-center'
         >
-          {hasPR && isHighControversy && onSpinStory && (
+          {hasPR && isScandal && onSpinStory && (
             <ActionButton
               onClick={onSpinStory}
               disabled={isProcessingAction || hasSpun}

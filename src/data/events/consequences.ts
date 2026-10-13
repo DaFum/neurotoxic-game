@@ -6,7 +6,216 @@ import { isHighControversy } from '../../utils/socialThresholds'
 import { QUEST_APOLOGY_TOUR, QUEST_EGO_MANAGEMENT } from '../questsConstants'
 import { QuestOfferEngine } from '../../domain/questOfferEngine'
 import { isOnCooldown } from '../../utils/gameState'
-import { FLAGS } from '../flags.registry'
+import { FLAGS, type StoryFlag } from '../flags.registry'
+
+/**
+ * Authored chance of a story-arc aftermath beat. Each beat declares its arc
+ * outcome as `requiredFlag`, which `selectEvent` multiplies by 5 while the
+ * flag is active, for an effective 10% when the beat is rolled.
+ *
+ * @remarks
+ * Outcome flags persist, so up to four beats can be eligible at the same
+ * trigger at once. Kept low so their combined weight (at most 0.4) leaves the
+ * rest of the pool and the "no event" share intact instead of saturating
+ * `selectEvent`'s roll.
+ */
+const STORY_AFTERMATH_CHANCE = 0.02
+
+/** Days before the same aftermath beat may recur after it resolves. */
+const STORY_AFTERMATH_COOLDOWN_DAYS = 30
+
+type StoryAftermathEffect = { stat: string; value: number }
+
+/**
+ * Builds an aftermath beat that only becomes eligible once its arc outcome
+ * flag is set, so finishing or failing a story arc changes later events.
+ * Effects stay small and non-lethal; every option starts the shared cooldown.
+ */
+const createStoryAftermathEvent = (
+  id: string,
+  flag: StoryFlag,
+  trigger: 'travel' | 'post_gig',
+  options: readonly (readonly StoryAftermathEffect[])[]
+) => ({
+  id,
+  category: 'band',
+  tags: ['story', 'aftermath'],
+  title: `events:${id}.title`,
+  description: `events:${id}.desc`,
+  trigger,
+  chance: STORY_AFTERMATH_CHANCE,
+  requiredFlag: flag,
+  condition: (state: GameState) => hasStateItem(state.activeStoryFlags, flag),
+  options: options.map((effects, index) => ({
+    label: `events:${id}.opt${index + 1}.label`,
+    effect: {
+      type: 'composite',
+      effects: [
+        ...effects.map(({ stat, value }) => ({ type: 'stat', stat, value })),
+        {
+          type: 'cooldown',
+          eventId: id,
+          value: STORY_AFTERMATH_COOLDOWN_DAYS
+        }
+      ]
+    },
+    outcomeText: `events:${id}.opt${index + 1}.outcome`
+  }))
+})
+
+/**
+ * Story-arc aftermath beats: one per quest outcome flag (plus the in-progress
+ * Prove Yourself arc), each gated on and weighted by that flag.
+ */
+const STORY_AFTERMATH_EVENTS = [
+  createStoryAftermathEvent(
+    'aftermath_apology_tour_failed',
+    FLAGS.APOLOGY_TOUR_FAILED,
+    'post_gig',
+    [
+      [
+        { stat: 'controversyLevel', value: -3 },
+        { stat: 'harmony', value: -2 }
+      ],
+      [{ stat: 'loyalty', value: -3 }]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_back_from_pit_complete',
+    FLAGS.BACK_FROM_PIT_COMPLETE,
+    'post_gig',
+    [
+      [
+        { stat: 'loyalty', value: 5 },
+        { stat: 'harmony', value: 2 }
+      ],
+      [{ stat: 'fame', value: 10 }]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_back_from_pit_failed',
+    FLAGS.BACK_FROM_PIT_FAILED,
+    'post_gig',
+    [
+      [
+        { stat: 'harmony', value: -2 },
+        { stat: 'loyalty', value: 3 }
+      ],
+      [{ stat: 'loyalty', value: -4 }]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_band_pact_complete',
+    FLAGS.BAND_PACT_COMPLETE,
+    'travel',
+    [
+      [{ stat: 'harmony', value: 5 }],
+      [
+        { stat: 'mood', value: 5 },
+        { stat: 'harmony', value: 2 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_band_pact_failed',
+    FLAGS.BAND_PACT_FAILED,
+    'travel',
+    [
+      [
+        { stat: 'harmony', value: 3 },
+        { stat: 'mood', value: -3 }
+      ],
+      [{ stat: 'harmony', value: -4 }]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_ego_crisis_resolved',
+    FLAGS.EGO_CRISIS_RESOLVED,
+    'travel',
+    [
+      [{ stat: 'harmony', value: 4 }],
+      [
+        { stat: 'mood', value: 4 },
+        { stat: 'harmony', value: 1 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_ego_crisis_failed',
+    FLAGS.EGO_CRISIS_FAILED,
+    'travel',
+    [
+      [
+        { stat: 'harmony', value: 2 },
+        { stat: 'stamina', value: -5 }
+      ],
+      [
+        { stat: 'harmony', value: -4 },
+        { stat: 'controversyLevel', value: 2 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_prove_yourself_active',
+    FLAGS.PROVE_YOURSELF_ACTIVE,
+    'travel',
+    [
+      [
+        { stat: 'stamina', value: -5 },
+        { stat: 'harmony', value: 2 }
+      ],
+      [
+        { stat: 'viral', value: 1 },
+        { stat: 'controversyLevel', value: 2 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_prove_yourself_complete',
+    FLAGS.PROVE_YOURSELF_COMPLETE,
+    'post_gig',
+    [[{ stat: 'fame', value: 15 }], [{ stat: 'loyalty', value: 5 }]]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_prove_yourself_failed',
+    FLAGS.PROVE_YOURSELF_FAILED,
+    'post_gig',
+    [
+      [{ stat: 'mood', value: -3 }],
+      [
+        { stat: 'controversyLevel', value: 4 },
+        { stat: 'viral', value: 1 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_sincere_redemption_complete',
+    FLAGS.SINCERE_REDEMPTION_COMPLETE,
+    'post_gig',
+    [
+      [
+        { stat: 'loyalty', value: 6 },
+        { stat: 'stamina', value: -5 }
+      ],
+      [
+        { stat: 'loyalty', value: 3 },
+        { stat: 'viral', value: 1 }
+      ]
+    ]
+  ),
+  createStoryAftermathEvent(
+    'aftermath_sincere_redemption_failed',
+    FLAGS.SINCERE_REDEMPTION_FAILED,
+    'post_gig',
+    [
+      [
+        { stat: 'loyalty', value: 2 },
+        { stat: 'harmony', value: -2 }
+      ],
+      [{ stat: 'loyalty', value: -4 }]
+    ]
+  )
+]
 
 /** Raw consequence event definitions consumed by the event registry. */
 export const CONSEQUENCE_EVENTS = [
@@ -380,5 +589,6 @@ export const CONSEQUENCE_EVENTS = [
         outcomeText: 'events:event_bad_press.opt2.outcome'
       }
     ]
-  }
+  },
+  ...STORY_AFTERMATH_EVENTS
 ]

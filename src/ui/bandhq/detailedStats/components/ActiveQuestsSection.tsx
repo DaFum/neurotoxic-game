@@ -1,6 +1,7 @@
 import type { QuestState } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { Panel, ProgressBar } from '../../../shared'
+import { getQuestDisplayLabel } from '../../../../utils/questLabel'
 
 /**
  * Renders a panel displaying the player's currently active quests and their progress.
@@ -16,8 +17,7 @@ export const ActiveQuestsSection = ({
   activeQuests,
   t
 }: { activeQuests: QuestState[] } & BasicTProps) => {
-  const getQuestLabel = (quest: QuestState) =>
-    t(quest.label ?? quest.id, { defaultValue: quest.id })
+  const getQuestLabel = (quest: QuestState) => getQuestDisplayLabel(t, quest)
 
   return (
     <Panel

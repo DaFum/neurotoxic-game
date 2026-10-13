@@ -5,7 +5,10 @@ import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
 import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
-import { isHighControversy } from '../../utils/socialThresholds'
+import {
+  isHighControversy,
+  isScandalControversy
+} from '../../utils/socialThresholds'
 import { FLAGS } from '../flags.registry'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
@@ -100,7 +103,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.6,
     condition: (gs: GameState) =>
-      (gs.social?.controversyLevel ?? 0) >= 50 &&
+      isScandalControversy(gs.social?.controversyLevel) &&
       !hasStateItem(gs.eventCooldowns, 'crisis_online_backlash'),
     options: [
       {
@@ -263,7 +266,9 @@ export const CRISIS_EVENTS = [
     tags: ['crisis', 'charity', 'recovery'],
     title: 'events:crisis_redemption_charity.title',
     description: 'events:crisis_redemption_charity.desc',
-    trigger: 'travel',
+    // Post-gig is where 'special' events are rolled outside SPECIAL nodes
+    // (usePostGigDerivations); arrival only rolls transport/band on travel.
+    trigger: 'post_gig',
     chance: 0.3,
     condition: (gs: GameState) =>
       isHighControversy(gs.social?.controversyLevel) &&
@@ -510,7 +515,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: (gs: GameState) =>
-      (gs.social?.controversyLevel ?? 0) >= 50 &&
+      isScandalControversy(gs.social?.controversyLevel) &&
       !hasStateItem(gs.activeStoryFlags, FLAGS.SAW_CRISIS_50),
     options: [
       {

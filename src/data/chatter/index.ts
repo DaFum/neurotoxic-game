@@ -20,7 +20,6 @@ type ChatterScene =
 type VenueLinesByScene = Partial<Record<ChatterScene, string[]>>
 type VenueChatterEntry = {
   linesByScene?: VenueLinesByScene
-  lines?: string[]
 }
 type ChatterPoolItem = {
   text: string
@@ -41,7 +40,7 @@ const getValidatedVenueChatterLine = (
   line: unknown,
   venueId: string,
   index: number,
-  source: 'linesByScene' | 'lines'
+  source: 'linesByScene'
 ): string => {
   if (typeof line === 'string' && line.trim().length > 0) {
     return line
@@ -85,22 +84,6 @@ const getVenueChatter = (state: ChatterState): ChatterPoolItem[] => {
           venueId,
           i,
           'linesByScene'
-        )
-        pool.push({
-          text,
-          weight: 8,
-          condition: null,
-          speaker: null
-        })
-      }
-    } else if (venueEntry?.lines) {
-      // Backwards compatibility: old "lines" array
-      for (let i = 0; i < venueEntry.lines.length; i++) {
-        const text = getValidatedVenueChatterLine(
-          venueEntry.lines[i],
-          venueId,
-          i,
-          'lines'
         )
         pool.push({
           text,

@@ -1,9 +1,12 @@
 import { CHARACTERS } from '../data/characters'
+import { SLEEPING_BAGS_STAMINA_PER_DAY } from '../data/inventoryItems'
 import { calculateGuaranteedDailyCost } from './economy'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
+import { getActiveDealBenefits } from './brandDealBenefits'
 import { getSafeRandom } from './crypto'
+import { SCANDAL_CONTROVERSY_THRESHOLD } from './socialThresholds'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -146,7 +149,8 @@ const updateVanCondition = (
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
     if (controversySnapshot >= 80) conditionMultiplier += 0.5
-    else if (controversySnapshot >= 50) conditionMultiplier += 0.2
+    else if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD)
+      conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
@@ -206,7 +210,7 @@ const updateBandHarmony = (
     }
   }
 
-  if (controversySnapshot >= 50) {
+  if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
     nextBand.harmony = nextHarmonyControversy
@@ -306,6 +310,18 @@ const updatePassiveEffectsAndMembers = (
   // Sofa & Old Couch: Stamina recovery
   const hasSofa = isOwnedAndActive('hq_room_sofa')
   const hasOldCouch = isOwnedAndActive('hq_room_old_couch')
+  // Sleeping bags are an inventory flag, not an `hqUpgrades` id, but share the
+  // catalog item's `between_tours_only` policy.
+  const hasSleepingBags =
+    nextBand.inventory?.sleeping_bags === true &&
+    isExpeditionLegacyHqEffectActive(
+      expeditionPolicy.isActive,
+      'hq_van_sleeping_bags'
+    )
+  // Brand-deal `staminaRegen` benefit (e.g. sponsored road snacks).
+  const dealStaminaRegen = getActiveDealBenefits(
+    nextSocial.activeDeals
+  ).staminaRegenPerDay
 
   const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
   const nextMembers = new Array(membersArray.length)
@@ -324,7 +340,7 @@ const updatePassiveEffectsAndMembers = (
     mood = clampMemberMood(mood)
 
     // 2b. High Controversy Mood Penalty
-    if (controversySnapshot >= 50) {
+    if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD) {
       mood = clampMemberMood(mood - 1)
     }
 
@@ -352,6 +368,15 @@ const updatePassiveEffectsAndMembers = (
       if (hasSofa) stamina += 3
       if (hasOldCouch) stamina += 1
       stamina = clampMemberStamina(stamina, finiteNumberOr(m.staminaMax, 100))
+    }
+
+    if (hasSleepingBags || dealStaminaRegen > 0) {
+      stamina = clampMemberStamina(
+        stamina +
+          (hasSleepingBags ? SLEEPING_BAGS_STAMINA_PER_DAY : 0) +
+          dealStaminaRegen,
+        finiteNumberOr(m.staminaMax, 100)
+      )
     }
 
     nextMembers[i] = { ...m, mood, stamina }

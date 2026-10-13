@@ -385,6 +385,33 @@ describe('MinigameSceneFrame', () => {
     expect(mockOnComplete).toHaveBeenCalledTimes(1)
   })
 
+  test('SKIP for Kabelsalat delegates the forfeit to onComplete without a hook-level dispatch', async () => {
+    const user = userEvent.setup()
+    const completeKabelsalatMinigame = vi.fn()
+    mockGameState.minigame = { type: 'KABELSALAT' }
+    mockGameState.band = {}
+    mockGameState.completeTravelMinigame = vi.fn()
+    mockGameState.completeRoadieMinigame = vi.fn()
+    mockGameState.completeKabelsalatMinigame = completeKabelsalatMinigame
+    mockGameState.completeAmpCalibration = vi.fn()
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /skip|überspringen/i }))
+
+    // The scene's onComplete (forceAdvance) owns the single completion so the
+    // void-surge purge count is not dropped by an earlier dispatch.
+    expect(completeKabelsalatMinigame).not.toHaveBeenCalled()
+    expect(mockOnComplete).toHaveBeenCalledTimes(1)
+  })
+
   test('does not offer SKIP for the travel (Tourbus) minigame', async () => {
     mockGameState.minigame = { type: 'TOURBUS' }
     mockGameState.band = {}

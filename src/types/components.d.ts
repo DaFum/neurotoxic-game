@@ -553,7 +553,7 @@ export type Effect =
     })
   | (EffectBase & { type: 'unlock_upgrade'; id: string })
   | (EffectBase & { type: 'passive'; key: string; value?: unknown })
-  | (EffectBase & { type: 'unlock_hq'; id: string })
+  | (EffectBase & { type: 'unlock_hq' })
 
 /**
  * Raw catalog effect input before normalization.

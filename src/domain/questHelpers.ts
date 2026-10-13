@@ -1,6 +1,7 @@
 import type { ActiveQuestState, GameState, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { clamp0to100, finiteNumberOr } from '../utils/gameState'
+import { resolveQuestLabelKey } from '../utils/questLabel'
 
 /** Checks an optional string field without coercing supplied values. */
 export const isOptionalString = (value: unknown): boolean =>
@@ -59,9 +60,13 @@ export const createActiveQuestRuntime = (
 
 /**
  * Resolves the display name key or id used in quest toasts.
+ *
+ * @remarks
+ * Uses the shared `resolveQuestLabelKey` policy (label, registry label, id)
+ * and stays untranslated so `ToastOverlay` localizes it at render time.
  */
 export const getQuestToastName = (quest: QuestState): string =>
-  quest.label ?? quest.id
+  resolveQuestLabelKey(quest) ?? quest.id
 
 /**
  * Adds valid story flags while preserving existing entries and order.

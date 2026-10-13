@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useGameSelector } from '../context/GameState.tsx'
+import { getCurrentVenueId } from '../domain/questEffects'
 import { useDisclosure } from './useDisclosure'
 
 /**
@@ -14,14 +15,16 @@ export const useQuestsModal = () => {
   } = useDisclosure()
   const activeQuests = useGameSelector(state => state.activeQuests)
   const player = useGameSelector(state => state.player)
+  const currentVenueId = useGameSelector(state => getCurrentVenueId(state))
 
   const questsProps = useMemo(
     () => ({
       onClose: closeQuests,
       activeQuests: activeQuests ?? [],
-      player
+      player,
+      currentVenueId
     }),
-    [closeQuests, activeQuests, player]
+    [closeQuests, activeQuests, player, currentVenueId]
   )
 
   return {
