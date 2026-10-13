@@ -77,7 +77,7 @@ export function applySocialPostResult(params: {
   if (appliedHarmonyDelta !== 0) {
     const sign = appliedHarmonyDelta > 0 ? '+' : ''
     addToast(
-      `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
+      `${t('ui:stats.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
       appliedHarmonyDelta > 0 ? 'success' : 'error'
     )
   }
@@ -95,7 +95,7 @@ export function applySocialPostResult(params: {
   if (appliedMoneyDelta !== 0) {
     updatePlayer({ money: nextMoney })
     addToast(
-      `${t('ui:postGig.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
+      `${t('ui:stats.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
       appliedMoneyDelta > 0 ? 'success' : 'error'
     )
   } else if (finalResult.moneyChange) {

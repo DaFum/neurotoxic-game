@@ -407,6 +407,31 @@ describe('handleError', () => {
     assert.strictEqual(toastCalled, false)
   })
 
+  it('toasts the localized fallbackMessage and keeps error.message for the log only', () => {
+    const toasts = []
+    const addToast = (message, type) => toasts.push({ message, type })
+
+    const result = handleError(new Error('Audio unlock failed'), {
+      addToast,
+      fallbackMessage: 'Audio-Initialisierung fehlgeschlagen'
+    })
+
+    assert.deepStrictEqual(toasts, [
+      { message: 'Audio-Initialisierung fehlgeschlagen', type: 'warning' }
+    ])
+    assert.strictEqual(result.message, 'Audio unlock failed')
+
+    toasts.length = 0
+    const gameResult = handleError(new StateError('raw state detail'), {
+      addToast,
+      fallbackMessage: 'Speichern fehlgeschlagen'
+    })
+    assert.deepStrictEqual(toasts, [
+      { message: 'Speichern fehlgeschlagen', type: 'error' }
+    ])
+    assert.strictEqual(gameResult.message, 'raw state detail')
+  })
+
   it('should use fallback message for errors without message', () => {
     const error = new Error()
     const result = handleError(error, {

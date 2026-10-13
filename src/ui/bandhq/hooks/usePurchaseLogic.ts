@@ -174,9 +174,7 @@ const handlePurchaseValidationError = (
     const payingWithFame = item.currency === 'fame'
     addToast(
       t('ui:shop.messages.notEnough', {
-        currency: payingWithFame
-          ? t('ui:shop.messages.fame')
-          : t('ui:shop.messages.money'),
+        currency: payingWithFame ? t('ui:stats.fame') : t('ui:stats.money'),
         itemName: getItemToastLabel(item, t)
       }),
       'error'

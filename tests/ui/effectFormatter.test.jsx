@@ -18,9 +18,10 @@ test('generateEffectText formats valid delta inputs properly', () => {
       'ui:stats.score': 'Score',
       'ui:stats.luck': 'Luck',
       'ui:stats.skill': 'Skill',
-      'ui:event.effects_label': 'Effects:'
+      'ui:event.effects_label': 'Effects:',
+      'items:golden_pick.name': 'Golden Pick'
     }
-    return defaultLabels[key] || key.replace('items:', '')
+    return defaultLabels[key] || key.replace('items:', '').replace('.name', '')
   })
 
   const delta = {
@@ -73,8 +74,11 @@ test('generateEffectText formats valid delta inputs properly', () => {
   expect(result).toContain('Stamina: -4')
   expect(result).toContain('guitar_strings: -2')
 
-  // Boolean true should render with a plus sign
-  expect(result).toContain('+golden_pick')
+  // Boolean true should render with a plus sign and the localized item name
+  expect(result).toContain('+Golden Pick')
+  expect(mockT).toHaveBeenCalledWith('items:golden_pick.name', {
+    defaultValue: 'golden_pick'
+  })
 })
 
 test('generateEffectText skips exact zero values to prevent redundant logs', () => {

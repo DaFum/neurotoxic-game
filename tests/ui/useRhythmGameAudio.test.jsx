@@ -62,9 +62,6 @@ vi.mock('../../src/utils/errorHandler', () => ({
     HIGH: 'high',
     CRITICAL: 'critical'
   },
-  toastTypeFromSeverity: vi.fn(severity =>
-    severity === 'critical' || severity === 'high' ? 'error' : 'warning'
-  ),
   AudioError: class AudioError extends Error {}
 }))
 
@@ -231,18 +228,17 @@ describe('useRhythmGameAudio', () => {
       expect(mocks.handleError).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
+          addToast,
           fallbackMessage: 'ui:gig.errors.initFailed'
         })
       )
     })
-    // User-visible behavior: the toast shows the translated text, not the
-    // raw Error message ('boom') that handleError would prefer internally.
-    expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'warning')
-    expect(addToast).not.toHaveBeenCalledWith('boom', 'warning')
+    // handleError owns the toast (it toasts the translated fallback, never the
+    // raw Error message), so the hook must not toast a second time.
+    expect(addToast).not.toHaveBeenCalled()
   })
 
-  it('reports initialization failures with error toast for high severity', async () => {
-    mocks.handleError.mockReturnValueOnce({ severity: 'high' })
+  it('marks audio as failed and stops playback when initialization fails', async () => {
     mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
     const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
@@ -270,15 +266,9 @@ describe('useRhythmGameAudio', () => {
     )
 
     await waitFor(() => {
-      expect(mocks.handleError).toHaveBeenCalledWith(
-        expect.any(Error),
-        expect.objectContaining({
-          fallbackMessage: 'ui:gig.errors.initFailed'
-        })
-      )
+      expect(setAudioStatus).toHaveBeenCalledWith('failed')
     })
-
-    expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'error')
+    expect(mocks.stopAudio).toHaveBeenCalled()
   })
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {

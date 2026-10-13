@@ -106,9 +106,7 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(
-        screen.getByText('ui:minigames.kabelsalat.timeValue:15')
-      ).toBeInTheDocument()
+      expect(screen.getByText('ui:seconds:15')).toBeInTheDocument()
     })
 
     it('renders glitch effect on title when shocked', () => {

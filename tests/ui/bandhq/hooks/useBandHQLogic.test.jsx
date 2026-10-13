@@ -106,6 +106,34 @@ describe('useBandHQLogic sync locking', () => {
     expect(tradeVoidItem).not.toHaveBeenCalled()
   })
 
+  it('handleBuyWithLock toasts localized copy for an item without an id', async () => {
+    const addToast = vi.fn()
+    const handleBuy = vi.fn()
+    const { result } = renderHook(() =>
+      useBandHQLogic({
+        player: { fame: 0 },
+        band: { stash: {} },
+        handleBuy,
+        tradeVoidItem: vi.fn(),
+        addToast
+      })
+    )
+
+    await act(async () => {
+      await result.current.handleBuyWithLock({ id: null })
+    })
+
+    expect(handleBuy).not.toHaveBeenCalled()
+    expect(addToast).toHaveBeenCalledWith(
+      'ui:shop.messages.purchaseFailed',
+      expect.any(String)
+    )
+    expect(addToast).not.toHaveBeenCalledWith(
+      'Invalid purchase item id',
+      expect.anything()
+    )
+  })
+
   it('handleBuyWithLock rapid double-invocation prevents re-entry', async () => {
     const handleBuy = vi.fn().mockResolvedValue()
     const addToast = vi.fn()

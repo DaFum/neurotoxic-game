@@ -183,7 +183,7 @@ function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
     <div className='bg-error-red/20 border border-error-red/20 p-4 mt-4'>
       <p className='text-error-red text-sm text-center font-bold'>
         {t('ui:merch_press.risk_warning', {
-          risk: config.failChance * 100,
+          risk: Math.round(config.failChance * 100),
           harmonyCostOnFail: config.harmonyCostOnFail,
           defaultValue:
             'WARNING: {{risk}}% CHANCE OF EQUIPMENT FAILURE (-{{harmonyCostOnFail}} HARMONY)'

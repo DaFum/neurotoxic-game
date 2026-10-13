@@ -199,6 +199,19 @@ describe('usePersistence', () => {
         })
       })
       expect(refused).toBe(false)
+      // The player sees the localized save-failure copy, not the raw
+      // StorageError message.
+      expect(mockTRef.current).toHaveBeenCalledWith(
+        'ui:save.saveFailed',
+        expect.objectContaining({ defaultValue: 'Failed to save game.' })
+      )
+      expect(handleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          addToast: mockAddToast,
+          fallbackMessage: 'Failed to save game.'
+        })
+      )
     } finally {
       setItemSpy.mockRestore()
     }

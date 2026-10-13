@@ -210,7 +210,7 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject, clock: IClock) => {
   }
 }
 
-export const toastTypeFromSeverity = (
+const toastTypeFromSeverity = (
   severity: ErrorSeverityType
 ): 'error' | 'warning' => {
   return severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH
@@ -218,14 +218,24 @@ export const toastTypeFromSeverity = (
     : 'warning'
 }
 
+/**
+ * Toasts a handled error to the player.
+ *
+ * @remarks
+ * An explicit `fallbackMessage` is the caller's localized, player-facing copy,
+ * so it wins over `errorInfo.message`. The raw error message is often English
+ * developer text ("Audio unlock failed") and stays in the local log and
+ * telemetry only.
+ */
 const showErrorToast = (
   errorInfo: ErrorInfoObject,
   silent: boolean,
+  toastMessage: string | null,
   addToast?: (message: string, type: string) => void
 ) => {
   if (!silent && addToast) {
     const toastType = toastTypeFromSeverity(errorInfo.severity)
-    addToast(errorInfo.message, toastType)
+    addToast(toastMessage ?? errorInfo.message, toastType)
   }
 }
 
@@ -272,10 +282,12 @@ export const handleError = (
       : undefined
   const silent =
     typeof safeOptions.silent === 'boolean' ? safeOptions.silent : false
-  const fallbackMessage =
-    typeof safeOptions.fallbackMessage === 'string'
+  const explicitFallbackMessage =
+    typeof safeOptions.fallbackMessage === 'string' &&
+    safeOptions.fallbackMessage !== ''
       ? safeOptions.fallbackMessage
-      : 'An error occurred'
+      : null
+  const fallbackMessage = explicitFallbackMessage ?? 'An error occurred'
 
   const injectedClock = readClockOption(safeOptions.clock)
   const clock = injectedClock ?? systemClock
@@ -291,7 +303,7 @@ export const handleError = (
 
   logErrorLocally(errorInfo, clock)
   reportErrorRemote(errorInfo, clock)
-  showErrorToast(errorInfo, silent, addToast)
+  showErrorToast(errorInfo, silent, explicitFallbackMessage, addToast)
 
   return errorInfo
 }

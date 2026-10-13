@@ -125,8 +125,6 @@
   "hq_room_skull.description": "Deko ist alles. (+5 Fame Sofort).",
   "pr_manager_contract.name": "PR-Manager-Vertrag",
   "pr_manager_contract.description": "Ein Kontakt, der jede Geschichte zurechtrücken kann. Schaltet die Option „Geschichte drehen“ frei, wenn die Kontroverse hoch ist.",
-  "van_sound_system.name": "Soundsystem",
-  "van_tuning.name": "Motor Tuning",
   "contraband.c_void_energy.name": "Void Energy Drink",
   "contraband.c_void_energy.description": "Eine schwarze Flüssigkeit, die wie Batteriesäure schmeckt. Stellt sofort 50 Ausdauer bei einem Bandmitglied wieder her.",
   "contraband.c_rusty_strings.name": "Rostige Saiten",

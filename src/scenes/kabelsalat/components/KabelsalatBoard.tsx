@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { ProgressBar } from '../../../ui/shared/ProgressBar'
+import { formatPercent } from '../../../utils/numberUtils'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'
 import { SocketList } from './SocketList.tsx'
@@ -51,6 +53,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   voidSurge,
   purgeVoidSurge
 }) => {
+  const { i18n } = useTranslation()
   return (
     <div
       className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
@@ -68,7 +71,8 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
       {!isGameOver && !isPoweredOn && (
         <div className='absolute top-4 right-4 z-(--z-hud) flex flex-col items-end gap-2'>
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
-            {t('ui:minigames.kabelsalat.voidSurge')}: {Math.floor(voidSurge)}%
+            {t('ui:minigames.kabelsalat.voidSurge')}:{' '}
+            {formatPercent(Math.floor(voidSurge) / 100, i18n.language)}
           </div>
           <div className='w-48'>
             <ProgressBar

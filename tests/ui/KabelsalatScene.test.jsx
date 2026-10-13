@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
       'ui:minigames.kabelsalat.statusPending': 'CABLE MESS DETECTED',
       'ui:minigames.kabelsalat.tMinus': 'T-MINUS',
       'ui:minigames.kabelsalat.continueButton': 'CONTINUE TO GIG',
-      'ui:minigames.kabelsalat.timeValue': '{{count}}s',
+      'ui:seconds': '{{count}}s',
       'ui:minigames.kabelsalat.rulesTitle': 'RIGGING PROTOCOL',
       'ui:minigames.kabelsalat.pwrLabel': 'PWR',
       'ui:minigames.kabelsalat.cables.midi': 'MIDI',
@@ -36,7 +36,8 @@ vi.mock('react-i18next', () => ({
         return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
           String(options[token] ?? `{{${token}}}`)
         )
-      }
+      },
+      i18n: { language: 'en', changeLanguage: () => {}, options: {} }
     }
   },
   initReactI18next: { type: '3rdParty', init: () => {} }

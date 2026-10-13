@@ -33,4 +33,13 @@ describe('RiskEventModal', () => {
     fireEvent.click(close)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('renders the event name as title and a distinct description as body', () => {
+    render(<RiskEventModal eventType='fire' isOpen onClose={vi.fn()} />)
+
+    expect(
+      screen.getByRole('heading', { name: 'assets:risk.event.fire' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('assets:risk.event.fire.desc')).toBeInTheDocument()
+  })
 })

@@ -192,6 +192,16 @@ test('Full locale validation tests', async t => {
           assert.ok(section.title)
           assert.ok(section.description)
           assert.ok(section.type)
+          // The modal renders the description under the title, so a copy of
+          // the heading shows the same line twice.
+          const strip = key => key.replace(/^ui:/, '')
+          if (section.description) {
+            assert.notEqual(
+              data[strip(section.description)],
+              data[strip(section.title)],
+              `${locale}: ${section.description} duplicates its title`
+            )
+          }
         })
       }
     }

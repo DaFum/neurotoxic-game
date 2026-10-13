@@ -239,7 +239,7 @@ const MapNodeTooltip = memo(
               <span className='text-star-white'>
                 {t('ui:map.intel.attentionSpan')}
               </span>{' '}
-              {cityTraits.attentionSpan}m
+              {cityTraits.attentionSpan} {t('ui:unit.minutesShort')}
             </div>
             <div>
               <span className='text-star-white'>

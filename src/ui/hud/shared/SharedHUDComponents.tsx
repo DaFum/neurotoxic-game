@@ -1,11 +1,12 @@
 import { memo, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DollarSign, Fuel, Map as MapIcon, Wrench } from 'lucide-react'
 import { ProgressBar, StatMiniBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
 import { finiteNumberOr } from '../../../utils/gameState'
-import { formatCurrency } from '../../../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../../../utils/numberUtils'
 
 const VanStatusMiniBars = memo(
   ({
@@ -207,6 +208,7 @@ interface BandStatusPanelProps {
 
 export const BandStatusPanel = memo(
   ({ band, t, variant = 'compact' }: BandStatusPanelProps) => {
+    const { i18n } = useTranslation()
     const safeHarmony = finiteNumberOr(band?.harmony, 0)
     const {
       wrapperClassName,
@@ -241,7 +243,7 @@ export const BandStatusPanel = memo(
             <div
               className={`${harmonyValueClassName} ${safeHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
             >
-              {Math.floor(safeHarmony)}%
+              {formatPercent(Math.floor(safeHarmony) / 100, i18n.language)}
             </div>
             <ProgressBar
               value={safeHarmony}
