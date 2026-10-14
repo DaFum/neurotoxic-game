@@ -604,6 +604,10 @@ export const OverworldMenu = React.memo(
     useEffect(() => {
       const onKeyDown = (event: KeyboardEvent) => {
         if (!isMenuOpen) return
+        // A dialog opened above the still-open menu (e.g. a risk event after
+        // "crash in van" advances the day) mutes this branch with `inert`;
+        // let the modal stack own Escape and Tab until it closes.
+        if (menuRootRef.current?.closest('[inert]')) return
         if (event.key === 'Escape') {
           event.stopImmediatePropagation()
           event.preventDefault()
