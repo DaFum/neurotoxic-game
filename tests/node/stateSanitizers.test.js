@@ -34,6 +34,17 @@ describe('stateSanitizers', () => {
       assert.strictEqual(low.score, 0)
     })
 
+    it('floors fractional equipmentRemaining to a whole item count', () => {
+      assert.strictEqual(
+        sanitizeMinigameState({ equipmentRemaining: 4.7 }).equipmentRemaining,
+        4
+      )
+      const nonFinite = sanitizeMinigameState({
+        equipmentRemaining: Number.NaN
+      }).equipmentRemaining
+      assert.ok(Number.isFinite(nonFinite))
+    })
+
     it('keeps in-range values unchanged', () => {
       const ok = sanitizeMinigameState({
         equipmentRemaining: 10,

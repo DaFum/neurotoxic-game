@@ -1230,8 +1230,7 @@ export const sanitizeMinigameState = (
     typeof minigameObj.equipmentRemaining === 'number' &&
     Number.isFinite(minigameObj.equipmentRemaining)
   ) {
-    nextMinigame.equipmentRemaining = Math.max(
-      0,
+    nextMinigame.equipmentRemaining = clampToNonNegativeInt(
       minigameObj.equipmentRemaining
     )
   }
