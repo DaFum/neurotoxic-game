@@ -44,6 +44,14 @@ export type QuestProgressSource =
   | 'expedition_node_resolved'
   | 'expedition_rival_outcome'
   | 'expedition_finale_completed'
+  | 'social_stabilized'
+  | 'brand_offer_accepted'
+  | 'item_used'
+  | 'expedition_extracted'
+  | 'asset_acquired'
+  | 'asset_condition_changed'
+  | 'minigame_completed'
+  | 'venue_gig_completed'
 
 /**
  * Canonical quest event identifiers emitted by gameplay systems.

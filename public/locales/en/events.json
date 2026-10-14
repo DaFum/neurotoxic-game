@@ -793,7 +793,7 @@
   "quest_flawless_run.label": "Flawless Run",
   "quest_garage_days.desc": "Buy a chassis, install a module or repair an asset. Three jobs in total.",
   "quest_garage_days.label": "Garage Days",
-  "quest_hard_knocks.desc": "Get through 4 roadie jobs. Botched ones count too.",
+  "quest_hard_knocks.desc": "Get through 4 pre-gig setup jobs (roadie, amp calibration, cables). Botched ones count too.",
   "quest_hard_knocks.label": "School of Hard Knocks",
   "quest_harmony_project.desc": "Successfully complete 1 gig with a high rating to restore harmony.",
   "quest_harmony_project.label": "Harmony Restoration Project",

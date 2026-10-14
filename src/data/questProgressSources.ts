@@ -38,7 +38,15 @@ export const LEGACY_QUEST_EVENT_TYPES: Record<
   story_flag_added: 'story.flagAdded',
   expedition_node_resolved: 'expedition.nodeResolved',
   expedition_rival_outcome: 'expedition.rivalOutcome',
-  expedition_finale_completed: 'expedition.finaleCompleted'
+  expedition_finale_completed: 'expedition.finaleCompleted',
+  social_stabilized: 'social.controversyChanged',
+  brand_offer_accepted: 'brand.offerAccepted',
+  item_used: 'item.used',
+  expedition_extracted: 'expedition.extracted',
+  asset_acquired: 'asset.acquired',
+  asset_condition_changed: 'asset.conditionChanged',
+  minigame_completed: 'minigame.completed',
+  venue_gig_completed: 'venue.gigCompleted'
 }
 
 /** Legacy `progressSource` names accepted by quest rules. */

@@ -1,7 +1,7 @@
 import type { QuestDefinition } from '../../types/quest'
 
 /**
- * Keep the Bandhaus standing before the next disaster knocks it down.
+ * Keep your assets standing before the next disaster knocks them down.
  *
  * @remarks
  * Counts restored condition points: `asset.conditionChanged` is successful
@@ -12,6 +12,7 @@ export const quest_preventive_maintenance = {
   kind: 'repeatable',
   label: 'events:quest_preventive_maintenance.label',
   description: 'events:quest_preventive_maintenance.desc',
+  progressSource: 'asset_condition_changed',
   deadlineOffset: 15,
   repeatPolicy: 'cooldown',
   cooldownDays: 12,
