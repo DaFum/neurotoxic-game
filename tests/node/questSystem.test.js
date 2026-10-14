@@ -132,6 +132,34 @@ const makeProgressEvent = (source, rule) => {
         amount: 10,
         brandId: firstMatchValue(match.brandId) ?? 'test_brand'
       }
+    // Mirror src/quests/producers/socialQuestEvents.ts: loyalty gains and
+    // controversy drops are the successful directions.
+    case 'social.loyaltyChanged':
+      return { type: eventSource, amount: 5, success: true }
+    case 'social.controversyChanged':
+      return { type: eventSource, amount: -5, success: true }
+    case 'social.trendMatched':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        context: { trendId: 'DRAMA' }
+      }
+    case 'brand.offerAccepted':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        dealId: 'test_deal',
+        dealType: firstMatchValue(match.dealType) ?? 'SPONSORSHIP'
+      }
+    case 'item.used':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        itemId: firstMatchValue(match.itemId) ?? 'test_item'
+      }
     case 'expedition.nodeResolved':
     case 'expedition.extracted':
     case 'expedition.rivalOutcome':

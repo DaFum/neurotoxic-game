@@ -30,7 +30,11 @@ import {
   QUEST_ALCHEMIST,
   QUEST_EXPEDITION_RUN_GOAL,
   QUEST_EXPEDITION_NEMESIS,
-  QUEST_EXPEDITION_META_UNLOCK
+  QUEST_EXPEDITION_META_UNLOCK,
+  QUEST_DAMAGE_CONTROL,
+  QUEST_SIGN_HERE,
+  QUEST_BEST_BEFORE,
+  QUEST_EXPEDITION_EXIT_STRATEGY
 } from '../questsConstants'
 
 const defineQuestOfferEvent = <
@@ -570,6 +574,76 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_expedition_meta_unlock.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -2 },
         outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_EXPEDITION_EXIT_STRATEGY, {
+    id: 'quest_trigger_expedition_exit_strategy',
+    title: 'events:quest_trigger_expedition_exit_strategy.title',
+    description: 'events:quest_trigger_expedition_exit_strategy.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_expedition_exit_strategy.opt1.label',
+        effect: { type: 'quest', quest: QUEST_EXPEDITION_EXIT_STRATEGY },
+        outcomeText:
+          'events:quest_trigger_expedition_exit_strategy.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_expedition_exit_strategy.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText:
+          'events:quest_trigger_expedition_exit_strategy.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_DAMAGE_CONTROL, {
+    id: 'quest_trigger_damage_control',
+    title: 'events:quest_trigger_damage_control.title',
+    description: 'events:quest_trigger_damage_control.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_damage_control.opt1.label',
+        effect: { type: 'quest', quest: QUEST_DAMAGE_CONTROL },
+        outcomeText: 'events:quest_trigger_damage_control.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_damage_control.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_damage_control.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_SIGN_HERE, {
+    id: 'quest_trigger_sign_here',
+    title: 'events:quest_trigger_sign_here.title',
+    description: 'events:quest_trigger_sign_here.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_sign_here.opt1.label',
+        effect: { type: 'quest', quest: QUEST_SIGN_HERE },
+        outcomeText: 'events:quest_trigger_sign_here.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_sign_here.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_sign_here.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_BEST_BEFORE, {
+    id: 'quest_trigger_best_before',
+    title: 'events:quest_trigger_best_before.title',
+    description: 'events:quest_trigger_best_before.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_best_before.opt1.label',
+        effect: { type: 'quest', quest: QUEST_BEST_BEFORE },
+        outcomeText: 'events:quest_trigger_best_before.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_best_before.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_best_before.opt2.outcome'
       }
     ]
   })

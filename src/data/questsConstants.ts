@@ -173,3 +173,23 @@ export const QUEST_EXPEDITION_NEMESIS = 'quest_expedition_nemesis'
  * Quest id for playing tours through to their Finale.
  */
 export const QUEST_EXPEDITION_META_UNLOCK = 'quest_expedition_meta_unlock'
+
+/**
+ * Side quest id for calming loyalty and controversy after a scandal.
+ */
+export const QUEST_DAMAGE_CONTROL = 'quest_damage_control'
+
+/**
+ * Corporate quest id for accepting a brand offer.
+ */
+export const QUEST_SIGN_HERE = 'quest_sign_here'
+
+/**
+ * Repeatable quest id for using up inventory items.
+ */
+export const QUEST_BEST_BEFORE = 'quest_best_before'
+
+/**
+ * Quest id for leaving a tour through a voluntary extraction.
+ */
+export const QUEST_EXPEDITION_EXIT_STRATEGY = 'quest_expedition_exit_strategy'

@@ -34,7 +34,11 @@ import {
   quest_alchemist,
   quest_expedition_run_goal,
   quest_expedition_nemesis,
-  quest_expedition_meta_unlock
+  quest_expedition_meta_unlock,
+  quest_damage_control,
+  quest_sign_here,
+  quest_best_before,
+  quest_expedition_exit_strategy
 } from './quests'
 
 /**
@@ -75,7 +79,11 @@ export const QUEST_REGISTRY = {
   quest_alchemist,
   quest_expedition_run_goal,
   quest_expedition_nemesis,
-  quest_expedition_meta_unlock
+  quest_expedition_meta_unlock,
+  quest_damage_control,
+  quest_sign_here,
+  quest_best_before,
+  quest_expedition_exit_strategy
 } as const satisfies Record<string, QuestDefinition>
 
 /**
