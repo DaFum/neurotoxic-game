@@ -1,5 +1,4 @@
 import type { QuestDefinition } from '../../../types/quest'
-import { BRAND_ALIGNMENTS } from '../../../context/initialState'
 
 /**
  * Creates a standard corporate-aligned quest definition.
@@ -42,7 +41,7 @@ export const createCorporateQuest = (
     rewards: [
       {
         type: 'brand.trust',
-        alignment: BRAND_ALIGNMENTS.CORPORATE,
+        alignment: 'CORPORATE',
         amount: 10
       },
       { type: 'fame', amount: 120 }
@@ -50,7 +49,7 @@ export const createCorporateQuest = (
     failurePenalties: [
       {
         type: 'brand.trust',
-        alignment: BRAND_ALIGNMENTS.CORPORATE,
+        alignment: 'CORPORATE',
         amount: -5
       },
       { type: 'social.loyalty', amount: -5 }
