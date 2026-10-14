@@ -161,6 +161,29 @@ describe('useLeaderboardSync', () => {
     expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('5')
   })
 
+  it('sums followers with non-finite platform counts treated as 0', async () => {
+    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
+    mockFetch.mockResolvedValue({ ok: true })
+
+    renderHook(() =>
+      useLeaderboardSync({
+        player: {
+          playerId: 'id-123',
+          playerName: 'Player1',
+          money: 500,
+          fame: 100,
+          day: 5,
+          stats: { totalDistance: 0, conflictsResolved: 0, stageDives: 0 }
+        },
+        social: { instagram: NaN, tiktok: 200, youtube: 300, newsletter: 50 }
+      })
+    )
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.followers).toBe(550)
+  })
+
   it('dedupes concurrent syncs for the same player and day', async () => {
     localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     let resolveFetch

@@ -53,6 +53,25 @@ describe('purchaseLogicUtils', () => {
     })
   })
 
+  describe('NaN controversyLevel', () => {
+    test('is treated as 0 for the reputation gate', () => {
+      const item = {
+        id: 'hq_room_label',
+        requiresReputation: true,
+        cost: 100,
+        currency: 'money',
+        effect: { type: 'stat_modifier' }
+      }
+      const result = validatePurchase(
+        item,
+        { money: 1000 },
+        {},
+        { controversyLevel: NaN }
+      )
+      assert.equal(result.isValid, true)
+    })
+  })
+
   describe('getPrimaryEffect', () => {
     test('returns first effect from effects array', () => {
       const item = { effects: [{ type: 'test' }] }

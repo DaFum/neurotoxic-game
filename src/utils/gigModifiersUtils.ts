@@ -224,7 +224,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
     if (!m) continue
-    totalStamina += m.stamina ?? 0
+    totalStamina += finiteNumberOr(m.stamina, 0)
   }
   const avgStamina = members.length ? totalStamina / members.length : 0
 

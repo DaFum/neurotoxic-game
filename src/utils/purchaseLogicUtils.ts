@@ -7,6 +7,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampMemberMood,
   clampPlayerFame,
   clampLuck,
@@ -421,7 +423,7 @@ export const getPurchaseDecision = (
   const hasValidEffect = !!effect
   const meetsReputation =
     !item.requiresReputation ||
-    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
+    finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
   const canPurchase =
     playerCanAfford &&
     (isConsumable || !isOwned) &&
@@ -460,7 +462,7 @@ export const validatePurchase = (
 
   const meetsReputation =
     !item.requiresReputation ||
-    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
+    finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
   if (!meetsReputation) {
     return { isValid: false, errorType: 'reputation_blocked' }
   }
@@ -722,14 +724,17 @@ export const applyUnlockHQ = (
         case 'hq_room_coffee':
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 20)
+            mood: clampMemberMood(readMemberMood(m.mood) + 20)
           })
           break
         case 'hq_room_sofa':
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              finiteNumberOr(m.stamina, 0) + 30,
+              readMemberStamina(
+                m.stamina,
+                getNumericProp(m, 'staminaMax', 100)
+              ) + 30,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
@@ -738,7 +743,10 @@ export const applyUnlockHQ = (
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              finiteNumberOr(m.stamina, 0) + 10,
+              readMemberStamina(
+                m.stamina,
+                getNumericProp(m, 'staminaMax', 100)
+              ) + 10,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
@@ -748,13 +756,13 @@ export const applyUnlockHQ = (
           // larger morale boost than its recurring daily-tick effect).
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+            mood: clampMemberMood(readMemberMood(m.mood) + 5)
           })
           break
         default:
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+            mood: clampMemberMood(readMemberMood(m.mood) + 5)
           })
       }
       const members = band?.members ?? []

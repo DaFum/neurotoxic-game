@@ -51,6 +51,7 @@ import {
   clampBandHarmony,
   clampBandStress,
   clampMemberMood,
+  readMemberMood,
   isForbiddenKey,
   finiteNumberOr,
   parseCooldownEntry,
@@ -848,7 +849,7 @@ export const handleAdvanceDay = (
         const member = nextBand.members[i] as BandMember
         updatedMembers[i] = {
           ...member,
-          mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
+          mood: clampMemberMood(readMemberMood(member?.mood) - moodPenalty)
         }
       }
       nextBand.members = updatedMembers

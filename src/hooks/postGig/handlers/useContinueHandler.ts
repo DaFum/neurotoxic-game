@@ -11,6 +11,7 @@ import {
   clampPlayerMoney,
   clampPlayerFame,
   clampMemberStamina,
+  readMemberStamina,
   calculateFameLevel,
   calculateFameGain,
   finiteNumberOr,
@@ -205,8 +206,11 @@ export function useContinueHandler({
                 if (!Array.isArray(prevBand.members)) return prevBand
                 const members = prevBand.members.map(member => {
                   if (!member) return member
-                  const currentStamina = finiteNumberOr(member.stamina, 100)
                   const maxStamina = finiteNumberOr(member.staminaMax, 100)
+                  const currentStamina = readMemberStamina(
+                    member.stamina,
+                    maxStamina
+                  )
                   return {
                     ...member,
                     stamina: clampMemberStamina(
