@@ -128,6 +128,11 @@ interface SocialConfig {
    * reputation-gated shop items, PR spin, daily harmony/mood/van penalties.
    */
   readonly scandalThreshold: number
+  /**
+   * Controversy level of the extreme tier above "scandal": the cancel-culture
+   * growth penalty on social posts and the largest van breakdown multiplier.
+   */
+  readonly extremeControversyThreshold: number
 }
 
 /**
@@ -146,7 +151,7 @@ export interface BalanceConfig {
 /**
  * Shape version. Bump when a field is added, removed, or renamed.
  */
-export const BALANCE_CONFIG_VERSION = 6
+export const BALANCE_CONFIG_VERSION = 7
 
 const RAW_DEFAULT_BALANCE_CONFIG = {
   configVersion: BALANCE_CONFIG_VERSION,
@@ -189,7 +194,8 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
   social: {
     highControversyThreshold: 40,
     cultLoyaltyThreshold: 20,
-    scandalThreshold: 50
+    scandalThreshold: 50,
+    extremeControversyThreshold: 80
   },
   expenses: {
     daily: { baseCost: 62 },
@@ -232,6 +238,7 @@ const RANGES = {
   highControversyThreshold: [0, 100],
   cultLoyaltyThreshold: [0, 100],
   scandalThreshold: [0, 100],
+  extremeControversyThreshold: [0, 100],
   dailyBaseCost: [0, 100_000],
   transportFuelPer100km: [0, 100_000],
   transportFuelPrice: [0, 100_000],
@@ -477,7 +484,12 @@ export const parseBalanceConfig = (raw: unknown): Readonly<BalanceConfig> => {
         'social',
         'cultLoyaltyThreshold'
       ),
-      scandalThreshold: readNumber(social, 'social', 'scandalThreshold')
+      scandalThreshold: readNumber(social, 'social', 'scandalThreshold'),
+      extremeControversyThreshold: readNumber(
+        social,
+        'social',
+        'extremeControversyThreshold'
+      )
     },
     expenses: {
       daily: {

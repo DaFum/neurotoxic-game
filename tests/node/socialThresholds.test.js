@@ -3,7 +3,9 @@ import test from 'node:test'
 import {
   HIGH_CONTROVERSY_THRESHOLD,
   SCANDAL_CONTROVERSY_THRESHOLD,
+  EXTREME_CONTROVERSY_THRESHOLD,
   isCultAudience,
+  isExtremeControversy,
   isHighControversy,
   isScandalControversy
 } from '../../src/utils/socialThresholds'
@@ -64,4 +66,20 @@ test('parseBalanceConfig requires the social section and range-checks it', () =>
   const scandalOutOfRange = JSON.parse(JSON.stringify(BALANCE_CONFIG))
   scandalOutOfRange.social.scandalThreshold = -1
   assert.throws(() => parseBalanceConfig(scandalOutOfRange), /scandalThreshold/)
+})
+
+test('extreme tier comes from BALANCE_CONFIG and keeps the legacy 80 value', () => {
+  assert.equal(
+    EXTREME_CONTROVERSY_THRESHOLD,
+    BALANCE_CONFIG.social.extremeControversyThreshold
+  )
+  assert.equal(BALANCE_CONFIG.social.extremeControversyThreshold, 80)
+})
+
+test('isExtremeControversy is inclusive at the gate and rejects non-finite values', () => {
+  assert.equal(isExtremeControversy(79), false)
+  assert.equal(isExtremeControversy(80), true)
+  for (const bad of [Number.NaN, Infinity, undefined, null, '90', true]) {
+    assert.equal(isExtremeControversy(bad), false, String(bad))
+  }
 })

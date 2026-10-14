@@ -7,6 +7,7 @@ import { clampZealotry } from './gameState'
 import { StateError } from './errorHandler'
 import { selectTop3ByScore } from './topSelection'
 import { selectRandomItem } from './selectionUtils'
+import { isExtremeControversy } from './socialThresholds'
 import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
@@ -387,7 +388,7 @@ export const calculateSocialGrowth = (
   let baseGrowth = Math.max(0, effectivePerf - 50) * 0.5 // e.g. 80 score -> 15 base
 
   // Shadowban / Cancel Culture penalty
-  if (controversyLevel >= 80) {
+  if (isExtremeControversy(controversyLevel)) {
     // High controversy leads to negative growth (Cancel Culture)
     // The higher the controversy, the worse it gets.
     const penaltyFactor = (controversyLevel - 70) * 0.05 // e.g. 80 -> 0.5, 100 -> 1.5

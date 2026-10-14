@@ -6,7 +6,10 @@ import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
 import { getActiveDealBenefits } from './brandDealBenefits'
 import { getSafeRandom } from './crypto'
-import { SCANDAL_CONTROVERSY_THRESHOLD } from './socialThresholds'
+import {
+  isExtremeControversy,
+  SCANDAL_CONTROVERSY_THRESHOLD
+} from './socialThresholds'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -149,7 +152,7 @@ const updateVanCondition = (
     }
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
-    if (controversySnapshot >= 80) conditionMultiplier += 0.5
+    if (isExtremeControversy(controversySnapshot)) conditionMultiplier += 0.5
     else if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD)
       conditionMultiplier += 0.2
 
