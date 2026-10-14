@@ -28,7 +28,7 @@ test('isPercussionTrack', async t => {
 test('normalizeMidiPitch', async t => {
   await t.test('normalizes valid MIDI pitches', () => {
     assert.strictEqual(normalizeMidiPitch({ midi: 0 }), 0)
-    assert.strictEqual(normalizeMidiPitch({ midi: '127' }), 127)
+    assert.strictEqual(normalizeMidiPitch({ midi: 127 }), 127)
   })
 
   await t.test(
@@ -90,4 +90,22 @@ test('getNoteName', async t => {
     assert.strictEqual(getNoteName(60.5), 'C4')
     assert.strictEqual(getNoteName(69.9), 'A4')
   })
+})
+
+test('MIDI note boundaries reject coerced numeric fields', () => {
+  for (const invalid of [
+    null,
+    false,
+    true,
+    [],
+    [60],
+    '60',
+    '',
+    NaN,
+    Infinity
+  ]) {
+    assert.equal(normalizeMidiPitch({ midi: invalid }), null)
+    assert.deepEqual(buildMidiTrackEvents([{ time: invalid, midi: 60 }]), [])
+    assert.deepEqual(buildMidiTrackEvents([{ time: 0, midi: invalid }]), [])
+  }
 })

@@ -17,7 +17,8 @@ const VALID_TRIGGERS_SET = new Set(VALID_TRIGGERS)
 const validateEffect = (
   effect: unknown,
   eventId: string,
-  idx: number
+  idx: number,
+  ancestors = new WeakSet<object>()
 ): void => {
   if (!effect || typeof effect !== 'object' || Array.isArray(effect)) {
     const message = Array.isArray(effect)
@@ -28,6 +29,10 @@ const validateEffect = (
       : 'Effect must be an object at index ' + idx + ' for event ' + eventId
     throw new Error(message)
   }
+  if (ancestors.has(effect)) {
+    throw new Error('Cyclic effect at index ' + idx + ' for event ' + eventId)
+  }
+  ancestors.add(effect)
   const ef = effect as Record<string, unknown>
   if (!ef.type) {
     throw new Error(
@@ -47,7 +52,7 @@ const validateEffect = (
     for (let childIdx = 0, len = effects.length; childIdx < len; childIdx++) {
       const childEffect = effects[childIdx]
       try {
-        validateEffect(childEffect, eventId, idx)
+        validateEffect(childEffect, eventId, idx, ancestors)
       } catch (err) {
         const causeMsg = err instanceof Error ? err.message : String(err)
         throw new Error(
@@ -81,7 +86,7 @@ const validateEffect = (
         )
       }
       try {
-        validateEffect(nestedEffect, eventId, idx)
+        validateEffect(nestedEffect, eventId, idx, ancestors)
       } catch (err) {
         const causeMsg = err instanceof Error ? err.message : String(err)
         throw new Error(
@@ -98,6 +103,7 @@ const validateEffect = (
       }
     }
   }
+  ancestors.delete(effect)
 }
 
 /**

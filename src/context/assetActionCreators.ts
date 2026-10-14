@@ -1,3 +1,4 @@
+import { validateModuleInstall } from './moduleInstallValidation'
 /**
  * Action creators for the long-term asset system.
  *
@@ -33,13 +34,9 @@ import {
   type LoanProfileId
 } from '../utils/loanProfiles'
 import {
-  getSlotConflicts,
   hasActiveAssetAcquisition,
-  getLockReasons,
-  isModuleUnlocked,
   calculateChassisGrossSaleValue,
-  selectAssetsMap,
-  selectAssetSlotsMap
+  selectAssetsMap
 } from '../utils/assetSelectors'
 import { finiteNumberOr } from '../utils/gameState'
 import { getSafeUUID } from '../utils/crypto'
@@ -259,26 +256,8 @@ export const installModule = (
     payload: { reason }
   })
 
-  const module = getRegisteredModule(raw.moduleId)
-  if (!module) return fail('UNKNOWN_MODULE')
-  const asset = selectAssetsMap(state).get(raw.assetId)
-  if (!asset) return fail('UNKNOWN_ASSET')
-  const slot = selectAssetSlotsMap(asset).get(raw.slotId)
-  if (!slot) return fail('UNKNOWN_SLOT')
-  if (slot.installedModuleId !== null) return fail('SLOT_OCCUPIED')
-  if (slot.slotType !== module.slotType) return fail('SLOT_TYPE_MISMATCH')
-  if (!isModuleUnlocked(module, state)) return fail('LOCKED')
-  if (getLockReasons(module, state, asset).length > 0) return fail('LOCKED')
-  const conflicts = getSlotConflicts(asset, raw.moduleId)
-  if (!conflicts.canInstall) return fail('EXCLUSIVITY')
-  const cap = module.maxPerAsset ?? 1
-  const currentCount = asset.slots.filter(
-    s => s.installedModuleId === raw.moduleId
-  ).length
-  if (currentCount >= cap) return fail('MAX_PER_ASSET')
-  if (!canAfford(state.player.money, module.cost + module.installCost)) {
-    return fail('INSUFFICIENT_FUNDS')
-  }
+  const reason = validateModuleInstall(raw, state)
+  if (reason !== null) return fail(reason)
 
   const newSlotIds = buildAddedSlotEntries(raw.moduleId)
   return {

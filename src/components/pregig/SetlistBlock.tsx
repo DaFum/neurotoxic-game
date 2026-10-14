@@ -26,7 +26,7 @@ interface SetlistBlockProps {
   /** Most songs the setlist may hold. */
   maxSongs: number
   songsDb: Song[]
-  songsDict: Record<string, Song>
+  songsDict: ReadonlyMap<string, Song>
   player?: SetlistPlayerState
   selectedSongIds: Set<string>
   toggleSong: (song: Song) => void
@@ -136,7 +136,7 @@ export const SetlistBlock = ({
     for (const entry of setlist) {
       const songId = getSongId(entry)
       if (songId) {
-        const song = songsDict[songId]
+        const song = songsDict.get(songId)
         if (song) {
           songs.push(song)
         }

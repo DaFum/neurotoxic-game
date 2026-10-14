@@ -1,3 +1,4 @@
+import { sanitizePlayerUpdates } from '../updateSanitizers'
 import { logger } from '../../utils/logger'
 import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
 import {
@@ -46,7 +47,7 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     return state
   }
 
-  const safeUpdates = { ...updates }
+  const safeUpdates = sanitizePlayerUpdates(updates)
   if (Object.hasOwn(safeUpdates, 'money')) {
     safeUpdates.money = clampPlayerMoney(
       finiteNumberOr(safeUpdates.money, state.player.money)

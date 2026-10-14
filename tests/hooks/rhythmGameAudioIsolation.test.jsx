@@ -31,7 +31,6 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
   getGigTimeMs: forbidden('getGigTimeMs'),
   pauseAudio: forbidden('pauseAudio'),
   resumeAudio: forbidden('resumeAudio'),
-  setCorruptionEffect: forbidden('setCorruptionEffect'),
   enableCorruptionBurstAudio: forbidden('enableCorruptionBurstAudio'),
   disableCorruptionBurstAudio: forbidden('disableCorruptionBurstAudio'),
   getToneAbsoluteTimeMs: forbidden('getToneAbsoluteTimeMs'),
@@ -137,7 +136,6 @@ describe('gig hooks reach no audio hub function under a substituted engine', () 
       pauseAudio: engine.pauseAudio,
       resumeAudio: engine.resumeAudio,
       setCorruptionState: vi.fn(),
-      setCorruptionEffect: engine.setCorruptionEffect,
       disableCorruptionBurstAudio: engine.disableCorruptionBurstAudio
     })
 

@@ -33,17 +33,3 @@ export const disableCorruptionBurstAudio = (): void => {
   audioState.masterCorruptionBypass.gain.rampTo(1, 0.05)
   audioState.masterCorruptionWetGain.gain.rampTo(0, 0.05)
 }
-
-/**
- * Triggers the master corruption effect (distortion)
- * @param active - Whether the effect should be active
- */
-export function setCorruptionEffect(active: boolean): void {
-  if (audioState.masterCorruption) {
-    if (active) {
-      audioState.masterCorruption.wet.rampTo(1, 0.1)
-    } else {
-      audioState.masterCorruption.wet.rampTo(0, 0.5)
-    }
-  }
-}

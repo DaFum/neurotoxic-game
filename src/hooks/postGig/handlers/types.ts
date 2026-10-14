@@ -42,6 +42,7 @@ export interface HandlerDispatchers {
     sourceId: string
   ) => void
   completeExpedition: (finaleResultId: string) => void
+  saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
   recordExpeditionObligationSignal?: (
     signalType: 'gig' | 'finale' | 'arrival' | 'rest' | 'heat' | 'social_post',
     sourceId: string

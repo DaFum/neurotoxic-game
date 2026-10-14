@@ -109,7 +109,6 @@ const { mockAudioEngine, mockTimingUtils, mockGigStats, mockRhythmUtils } =
       getScheduledHitTimeMs: vi.fn(),
       getPlayRequestId: vi.fn(),
       playSFX: vi.fn(),
-      setCorruptionEffect: vi.fn(),
       enableCorruptionBurstAudio: vi.fn(),
       disableCorruptionBurstAudio: vi.fn()
     }

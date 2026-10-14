@@ -8,6 +8,12 @@ import {
   addStoryFlags
 } from './questHelpers'
 import { addQuest } from './questAdd'
+import { QuestEvents } from '../utils/questProgress'
+import { getRegionKeyForLocation } from '../utils/mapUtils'
+import {
+  createMoneyEarnedQuestEvent,
+  createFameGainedQuestEvent
+} from '../quests/producers/economyQuestEvents'
 
 /**
  * Resolves an active quest, applies rewards, and triggers followup logic.
@@ -42,6 +48,12 @@ export const completeQuest = (
 
   const rewardResult = applyQuestRewards(nextState, quest, randomIdx)
   nextState = rewardResult.state
+  const moneyGain =
+    finiteNumberOr(nextState.player?.money, 0) -
+    finiteNumberOr(state.player?.money, 0)
+  const fameGain =
+    finiteNumberOr(nextState.player?.fame, 0) -
+    finiteNumberOr(state.player?.fame, 0)
   const generatedToasts: ToastPayload[] = [...rewardResult.toasts]
 
   if (generatedToasts.length === 0) {
@@ -124,6 +136,28 @@ export const completeQuest = (
         stats: { ...(nextState.player.stats ?? {}), proveYourselfMode: false }
       }
     }
+  }
+
+  // Resolve the source's flags, scope and cooldown before a payout can finish
+  // another quest. Follow-ups are admitted afterwards, so a reward chain only
+  // consumes quests that were already active and cannot re-enter its source.
+  const region =
+    getRegionKeyForLocation(nextState.player?.location) ?? undefined
+  if (moneyGain > 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createMoneyEarnedQuestEvent({ amount: moneyGain, reason: 'quest_reward' })
+    )
+  }
+  if (fameGain > 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createFameGainedQuestEvent({
+        amount: fameGain,
+        region,
+        reason: 'quest_reward'
+      })
+    )
   }
 
   // Story arcs may branch into a follow-up quest declared either inline or in

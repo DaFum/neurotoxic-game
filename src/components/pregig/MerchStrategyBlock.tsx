@@ -21,6 +21,7 @@ interface MerchStrategyBlockProps {
   restockCostMultiplier?: number
   merchCapacityBonus?: number
   playerMoney: number
+  restockingEnabled?: boolean
 }
 
 interface MerchItem {
@@ -41,6 +42,7 @@ interface MerchItemRowProps {
   onRestock: (merchKey: string) => void
   t: ReturnType<typeof useTranslation>['t']
   playerMoney: number
+  restockingEnabled: boolean
 }
 
 const MerchItemRow: React.FC<MerchItemRowProps> = ({
@@ -49,10 +51,13 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   onUpdatePrice,
   onRestock,
   t,
-  playerMoney
+  playerMoney,
+  restockingEnabled
 }) => {
   const restockDisabled =
-    item.restockAmount <= 0 || playerMoney < item.restockCost
+    !restockingEnabled ||
+    item.restockAmount <= 0 ||
+    playerMoney < item.restockCost
 
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
@@ -115,6 +120,11 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
         >
           <button
             type='button'
+            title={
+              restockingEnabled
+                ? undefined
+                : t('ui:pregig.merchStrategy.expeditionRestockLocked')
+            }
             onClick={() => {
               if (restockDisabled) return
               onRestock(item.key)
@@ -142,7 +152,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   onRestock,
   restockCostMultiplier = 1,
   merchCapacityBonus = 0,
-  playerMoney
+  playerMoney,
+  restockingEnabled = true
 }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
@@ -218,6 +229,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             onRestock={onRestock}
             t={t}
             playerMoney={playerMoney}
+            restockingEnabled={restockingEnabled}
           />
         ))}
       </div>

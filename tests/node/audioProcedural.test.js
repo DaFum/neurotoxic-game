@@ -298,6 +298,56 @@ test('playMidiFile Tests', async t => {
     }
   )
 
+  await t.test(
+    'MIDI download timeout stays active while reading the body',
+    async () => {
+      t.mock.timers.enable({ apis: ['setTimeout'] })
+      let signal
+      let bodyStarted
+      const readingBody = new Promise(resolve => {
+        bodyStarted = resolve
+      })
+      global.fetch.mock.mockImplementationOnce(async (_url, options) => {
+        signal = options.signal
+        return {
+          ok: true,
+          arrayBuffer: () =>
+            new Promise((_resolve, reject) => {
+              signal.addEventListener('abort', () =>
+                reject(new DOMException('Aborted', 'AbortError'))
+              )
+              bodyStarted()
+            })
+        }
+      })
+      const playback = playMidiFile('test.mid')
+      await readingBody
+      t.mock.timers.tick(10000)
+      try {
+        assert.equal(signal.aborted, true)
+        assert.equal(await playback, false)
+        assert.equal(mockTransport.start.mock.calls.length, 0)
+      } finally {
+        t.mock.timers.reset()
+      }
+    }
+  )
+
+  await t.test(
+    'MIDI playback stays cancelled when invalidated during the body read',
+    async () => {
+      global.fetch.mock.mockImplementationOnce(async () => ({
+        ok: true,
+        arrayBuffer: async () => {
+          mockAudioState.playRequestId++
+          return new ArrayBuffer(10)
+        }
+      }))
+      assert.equal(await playMidiFile('test.mid'), false)
+      assert.equal(mockTransport.start.mock.calls.length, 0)
+    }
+  )
+
   await t.test('Looping: Sets Transport loop parameters', async () => {
     const result = await playMidiFile('test.mid', 0, true)
 

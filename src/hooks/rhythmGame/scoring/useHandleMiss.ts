@@ -43,7 +43,6 @@ type HandleMissParams = {
   }
   baseCrowdDecay?: number
   missPenaltyMultiplier?: number
-  staminaDrainMultiplier?: number
   /** Mutable reference to store the timer ID for game over delays. */
   gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
 }
@@ -68,7 +67,6 @@ export const useHandleMiss = ({
   contextActions,
   baseCrowdDecay = 1,
   missPenaltyMultiplier = 1,
-  staminaDrainMultiplier: _staminaDrainMultiplier = 1,
   gameOverTimerRef
 }: HandleMissParams) => {
   const audioEngine = useAudioEngine()

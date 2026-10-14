@@ -24,10 +24,7 @@ describe('SetlistBlock', () => {
     }
   ]
 
-  const songsDict = {
-    song1: sampleSongs[0],
-    song2: sampleSongs[1]
-  }
+  const songsDict = new Map(sampleSongs.map(song => [song.id, song]))
 
   test('renders songs and handles selecting unlocked song', () => {
     const toggleSongMock = vi.fn()
@@ -81,6 +78,21 @@ describe('SetlistBlock', () => {
     )
 
     expect(getByText(/4\/4/)).toBeTruthy()
+  })
+
+  test('resolves setlist entries through the canonical song map', () => {
+    const { getByText } = render(
+      <SetlistBlock
+        setlist={[{ id: 'song1' }]}
+        maxSongs={3}
+        songsDb={sampleSongs}
+        songsDict={songsDict}
+        selectedSongIds={new Set(['song1'])}
+        toggleSong={vi.fn()}
+      />
+    )
+
+    expect(getByText('ui:pregig.noteDensity')).toBeTruthy()
   })
 
   test('keeps locked song focusable (tabIndex 0) with aria-disabled="true" and tooltip', () => {

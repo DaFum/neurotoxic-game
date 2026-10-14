@@ -4,7 +4,6 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 import { updateAmpGameState } from './ampLogicUtils'
 import type { AmpStageOptions } from '../../types/components'
-import type { GamePhase } from '../../types/game'
 
 const MINIGAME_DURATION = 15
 const FALLBACK_ADVANCE_DELAY_MS = 10_000
@@ -72,7 +71,7 @@ function useAmpState() {
 function useAmpTimer(
   timeLeft: number,
   isGameOver: boolean,
-  changeScene: (scene: GamePhase) => void
+  onContinue: () => void
 ) {
   const timeLeftRef = useRef(timeLeft)
 
@@ -87,7 +86,7 @@ function useAmpTimer(
 
     fallbackTimeoutRef.current = setTimeout(() => {
       fallbackTimeoutRef.current = null
-      changeScene(GAME_PHASES.GIG)
+      onContinue()
     }, FALLBACK_ADVANCE_DELAY_MS)
 
     return () => {
@@ -96,7 +95,7 @@ function useAmpTimer(
         fallbackTimeoutRef.current = null
       }
     }
-  }, [isGameOver, changeScene])
+  }, [isGameOver, onContinue])
 
   return { timeLeftRef }
 }
@@ -225,10 +224,21 @@ function useAmpHazards(
 /**
  * Owns amp calibration minigame state, update loop entry point, and completion dispatch.
  *
+ * @param options - Optional result/continuation owner for embedded field repairs.
  * @returns Amp calibration state, controls, high-frequency update callback, and stage ref.
  */
-export function useAmpLogic() {
+export function useAmpLogic({
+  onResult,
+  onContinue
+}: {
+  onResult?: (score: number) => void
+  onContinue?: () => void
+} = {}) {
   const { completeAmpCalibration, changeScene } = useGameActions()
+  const continueMinigame = useCallback(() => {
+    if (onContinue) onContinue()
+    else if (!onResult) changeScene(GAME_PHASES.GIG)
+  }, [onContinue, onResult, changeScene])
 
   const ampState = useAmpState()
   const {
@@ -266,7 +276,7 @@ export function useAmpLogic() {
     setInterference
   } = ampState
 
-  const { timeLeftRef } = useAmpTimer(timeLeft, isGameOver, changeScene)
+  const { timeLeftRef } = useAmpTimer(timeLeft, isGameOver, continueMinigame)
 
   const {
     isHijackActiveRef,
@@ -332,15 +342,20 @@ export function useAmpLogic() {
 
     const finalScore =
       accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
-    completeAmpCalibration(
-      finalScore,
-      voidResonanceRef.current,
-      purgesUsedRef.current,
-      hijacksOverriddenRef.current,
-      feedbackLoopsDampenedRef.current
-    )
+    if (onResult) {
+      onResult(finalScore)
+    } else {
+      completeAmpCalibration(
+        finalScore,
+        voidResonanceRef.current,
+        purgesUsedRef.current,
+        hijacksOverriddenRef.current,
+        feedbackLoopsDampenedRef.current
+      )
+    }
   }, [
     completeAmpCalibration,
+    onResult,
     setIsGameOver,
     isCompleteRef,
     accumulatedScoreRef,

@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import * as ToneJsMidi from '@tonejs/midi'
 import { logger } from '../logger'
+import { fetchWithTimeout } from './download'
 import { audioState } from './state'
 import { MIN_NOTE_DURATION, MAX_NOTE_DURATION } from './constants'
 import { ensureAudioContext } from './context'
@@ -504,23 +505,6 @@ function resolveMidiUrl(filename: string): string | null {
   return url
 }
 
-/**
- * Fetches the MIDI file as an ArrayBuffer.
- * @param url - The URL of the MIDI file.
- * @param reqId - The request ID to validate against.
- * @param filename - The filename for logging.
- * @returns The MIDI data or null on failure.
- */
-async function fetchWithTimeout(url: string): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000)
-  try {
-    return await fetch(url, { signal: controller.signal })
-  } finally {
-    clearTimeout(timeoutId)
-  }
-}
-
 function handleFetchError(err: unknown, filename: string): null {
   if (err instanceof Error && err.name === 'AbortError') {
     logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
@@ -530,20 +514,28 @@ function handleFetchError(err: unknown, filename: string): null {
   return null
 }
 
+/**
+ * Fetches the MIDI file as an ArrayBuffer.
+ * @param url - The URL of the MIDI file.
+ * @param reqId - The request ID to validate against.
+ * @param filename - The filename for logging.
+ * @returns The MIDI data or null on failure.
+ */
 async function fetchMidiArrayBuffer(
   url: string,
   reqId: number,
   filename: string
 ): Promise<ArrayBuffer | null> {
   try {
-    const response = await fetchWithTimeout(url)
-    if (reqId !== audioState.playRequestId) return null
-    if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
+    return await fetchWithTimeout(url, async response => {
+      if (reqId !== audioState.playRequestId) return null
+      if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
 
-    const arrayBuffer = await response.arrayBuffer()
-    if (reqId !== audioState.playRequestId) return null
+      const arrayBuffer = await response.arrayBuffer()
+      if (reqId !== audioState.playRequestId) return null
 
-    return arrayBuffer
+      return arrayBuffer
+    })
   } catch (err) {
     return handleFetchError(err, filename)
   }

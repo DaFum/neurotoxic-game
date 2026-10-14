@@ -32,6 +32,8 @@ interface PreGigLogicReturn {
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void
   band: GameState['band']
+  merchInventory: Record<string, unknown>
+  isExpeditionActive: boolean
 
   t: TranslationCallback
   i18n: { language: string }
@@ -79,6 +81,16 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const expedition = useGameSelector(state => state.expedition)
+  const isExpeditionActive = expedition?.status === 'active'
+  const merchInventory = useMemo(() => {
+    if (!isExpeditionActive) return band?.inventory ?? {}
+    return Object.fromEntries(
+      (expedition?.cargo?.merch ?? []).map(({ inventoryKey, quantity }) => [
+        inventoryKey,
+        quantity
+      ])
+    )
+  }, [band?.inventory, expedition?.cargo?.merch, isExpeditionActive])
   // ⚡ BOLT OPTIMIZATION: Eliminate root GameState selector subscription.
   // Why: Subscribing to full GameState via `state => state` causes the pre-gig scene to re-render on EVERY state update across the entire app (ticks, toasts, chatter).
   // Impact: Prevents unnecessary component re-renders when unrelated store slices update during pre-gig setup.
@@ -141,6 +153,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     setlistMax,
     gigModifiers,
     assetModifiers,
+    isExpeditionActive,
     adjustedBandMeetingCost,
     selectedSongIds,
     calculatedBudget,
@@ -183,6 +196,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     handleUpdateMerchPrice,
     handleRestockMerch,
     band,
+    merchInventory,
+    isExpeditionActive,
     t: typedT,
     i18n,
     currentGig,

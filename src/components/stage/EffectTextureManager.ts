@@ -82,14 +82,18 @@ export class EffectTextureManager {
   private app: Application
   private textures: { blood: Texture | null; toxic: Texture | null }
   private genericHitTexture: Texture | null
+  private isDisposed: boolean
 
   constructor(app: Application) {
     this.app = app
     this.textures = { blood: null, toxic: null }
     this.genericHitTexture = null
+    this.isDisposed = false
   }
 
   async loadAssets(): Promise<void> {
+    if (this.isDisposed) return
+
     try {
       const urls = {
         blood: resolveGenImageUrl(IMG_PROMPTS.HIT_BLOOD),
@@ -102,6 +106,10 @@ export class EffectTextureManager {
           logger.warn('EffectTextureManager', fallbackMessage, error)
         }
       )
+
+      // loadTextures returns cache-owned textures shared by other stage users.
+      // A disposed manager must drop the late results without destroying them.
+      if (this.isDisposed) return
 
       if (loadedTextures.blood) this.textures.blood = loadedTextures.blood
       if (loadedTextures.toxic) this.textures.toxic = loadedTextures.toxic
@@ -137,15 +145,9 @@ export class EffectTextureManager {
   }
 
   dispose(): void {
-    const uniqueTextures = new Set<Texture>()
+    this.isDisposed = true
 
-    if (this.genericHitTexture) uniqueTextures.add(this.genericHitTexture)
-    if (this.textures.blood) uniqueTextures.add(this.textures.blood)
-    if (this.textures.toxic) uniqueTextures.add(this.textures.toxic)
-
-    uniqueTextures.forEach(texture => {
-      safeDestroyTexture(texture)
-    })
+    safeDestroyTexture(this.genericHitTexture)
 
     this.genericHitTexture = null
     this.textures = { blood: null, toxic: null }

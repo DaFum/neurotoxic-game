@@ -9,9 +9,11 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
+const playAudioForSong = mock.fn(async () => [])
+
 mock.module(
   new URL('../../src/utils/audio/playbackStrategies.ts', import.meta.url).href,
-  { namedExports: { playAudioForSong: mock.fn(async () => []) } }
+  { namedExports: { playAudioForSong } }
 )
 
 mock.module(
@@ -57,4 +59,38 @@ test('starting the next song resets progress left from the previous one', async 
 
   assert.strictEqual(gameStateRef.current.progress, 0)
   assert.strictEqual(gameStateRef.current.songTransitioning, false)
+})
+
+test('per-song accuracy includes ordinary hits and resets their baseline between songs', async () => {
+  const state = {
+    progress: 0,
+    lastEndedSongIndex: -1,
+    songTransitioning: false,
+    hasSubmittedResults: false,
+    isGameOver: false,
+    setlistCompleted: false,
+    notes: [],
+    nextMissCheckIndex: 0,
+    notesVersion: 0,
+    totalDuration: 0,
+    score: 100,
+    stats: { perfectHits: 1, hits: 8, misses: 1 },
+    songStats: [],
+    currentSongStartScore: 0,
+    currentSongStartPerfectHits: 0,
+    currentSongStartHits: 0,
+    currentSongStartMisses: 0
+  }
+  const ref = { current: state }
+  const setlist = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' }
+  ]
+  await playSongSequence(0, setlist, ref, () => {}, undefined)
+  await playAudioForSong.mock.calls.at(-1).arguments[2]()
+  assert.equal(state.songStats[0].accuracy, 90)
+  assert.equal(state.currentSongStartHits, 8)
+  state.stats = { perfectHits: 1, hits: 9, misses: 2 }
+  await playAudioForSong.mock.calls.at(-1).arguments[2]()
+  assert.equal(state.songStats[1].accuracy, 50)
 })

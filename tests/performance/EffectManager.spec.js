@@ -53,7 +53,7 @@ describe('EffectManager', () => {
       .mockReturnValue(Texture.WHITE)
   })
 
-  test('releaseEffectToPool pools sprites correctly', () => {
+  test('recycles expired effect sprites through spritePool', () => {
     // 1. Spawn a hit effect
     manager.spawnHitEffect(0, 0, 0xff0000)
 
@@ -80,7 +80,7 @@ describe('EffectManager', () => {
     expect(reusedEffect).toBe(effect)
   })
 
-  test('releaseEffectToPool does not pool non-sprites and removes them from container', () => {
+  test('spritePool removes and destroys non-sprites', () => {
     // Construct a non-sprite effect mock
     const nonSpriteEffect = {
       destroy: vi.fn(),
@@ -88,11 +88,11 @@ describe('EffectManager', () => {
       isSprite: false
     }
 
-    // Add to container manually since we're testing releaseEffectToPool directly
+    // Add to container manually to test the sprite pool directly
     manager.container.addChild(nonSpriteEffect)
     expect(manager.container.children.length).toBe(1)
 
-    // Call releaseEffectToPool
+    // Release through the sprite pool
     manager.spritePool.releaseSprite(nonSpriteEffect)
 
     // Assert it was not added to the sprite pool
@@ -108,7 +108,7 @@ describe('EffectManager', () => {
     expect(nonSpriteEffect.visible).toBe(false)
   })
 
-  test('releaseEffectToPool pools non-Sprite instances with isSprite=true', () => {
+  test('spritePool accepts Sprite-like instances with isSprite=true', () => {
     // Create a plain object (not a PIXI.Sprite instance) with isSprite: true
     // but with the Sprite-like surface expected by pooled sprite reuse.
     const plainObjectEffect = {
@@ -125,7 +125,7 @@ describe('EffectManager', () => {
     manager.container.addChild(plainObjectEffect)
     expect(manager.container.children.length).toBe(1)
 
-    // Call releaseEffectToPool
+    // Release through the sprite pool
     manager.spritePool.releaseSprite(plainObjectEffect)
 
     // Assert it WAS added to the sprite pool

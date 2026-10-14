@@ -91,6 +91,22 @@ describe('useTourbusLogic', () => {
     mock.clearAllMocks()
   })
 
+  test('rejects nonfinite deltas and clamps simulation time to 0..100 ms', () => {
+    const { result, unmount } = renderHook(() => useTourbusLogic())
+    const game = result.current.gameStateRef.current
+
+    act(() => {
+      for (const delta of [-100, NaN, Infinity, -Infinity])
+        result.current.update(delta)
+    })
+    expect(game.distance).toBe(0)
+    expect(game.lastSpawnTime).toBe(0)
+    act(() => result.current.update(10000))
+    expect(game.distance).toBeGreaterThan(0)
+    expect(game.distance).toBeLessThanOrEqual(MAX_SPEED * 100)
+    unmount()
+  })
+
   test('obstacle ids are UUIDs, unique even when spawned in one burst', () => {
     const { result } = renderHook(() => useTourbusLogic())
     const game = result.current.gameStateRef.current

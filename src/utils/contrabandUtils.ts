@@ -136,6 +136,8 @@ export function pickContrabandDropFromRoll(rngValue: number) {
  * @returns Probability clamped to `[0, MAX_DROP_CHANCE]`.
  */
 export function computeDropChance(base = DROP_BASE_CHANCE, luck = 0) {
-  const chance = base + finiteNumberOr(luck, 0) * LUCK_MOD_PER_POINT
+  const chance =
+    finiteNumberOr(base, DROP_BASE_CHANCE) +
+    finiteNumberOr(luck, 0) * LUCK_MOD_PER_POINT
   return Math.min(MAX_DROP_CHANCE, Math.max(0, chance))
 }

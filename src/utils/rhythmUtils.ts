@@ -4,17 +4,8 @@ import { isFiniteNumber } from './finiteNumber'
 import { pickBoundedIndex } from './selectionUtils'
 import type { Note, Song } from '../types/audio'
 import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
+import type { RhythmNote } from '../types/rhythmGame'
 import type { RandomFn } from '../types/callbacks'
-
-interface ParsedGameNote {
-  time: number
-  laneIndex: number
-  hit: boolean
-  visible: boolean
-  songId: string
-  originalNote?: Note
-  type: 'note'
-}
 
 /**
  * Generates rhythm game notes for a given song and configuration.
@@ -50,9 +41,9 @@ const shouldSpawnNote = (
 export const generateNotesForSong = (
   song: Pick<Song, 'id' | 'bpm' | 'duration' | 'difficulty'>,
   options: { leadIn?: number; random?: RandomFn } = {}
-): ParsedGameNote[] => {
+): RhythmNote[] => {
   const { leadIn = 2000, random = secureRandom } = options
-  const notes: ParsedGameNote[] = []
+  const notes: RhythmNote[] = []
   const beatInterval = 60000 / Math.max(1, song.bpm || 120)
   const songDurationMs = song.duration * 1000
   // Every beat index below this bound already satisfies
@@ -219,7 +210,7 @@ export const parseSongNotes = (
   song: Song,
   leadIn = 2000,
   { onWarn }: { onWarn?: (message: string) => void } = {}
-): ParsedGameNote[] => {
+): RhythmNote[] => {
   if (!song.notes || !Array.isArray(song.notes)) return []
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
@@ -257,7 +248,7 @@ export const parseSongNotes = (
   const activeTempoMap = useTempoMap ? preprocessTempoMap(rawTempoMap, tpb) : []
 
   // 2. Map and filter in a single pass, processing only every 4th note
-  const gameNotes: ParsedGameNote[] = []
+  const gameNotes: RhythmNote[] = []
   for (let i = 0; i < validNotes.length; i += 4) {
     const n = validNotes[i]
     if (!n) continue
@@ -307,7 +298,7 @@ export const parseSongNotes = (
   }
 
   // 4. Ensure no simultaneous notes (chords) - strictly single lane
-  const uniqueTimeNotes: ParsedGameNote[] = []
+  const uniqueTimeNotes: RhythmNote[] = []
   let lastTime: number | null = null
 
   for (const note of gameNotes) {
@@ -333,11 +324,11 @@ export const parseSongNotes = (
  * @returns The hit note or null.
  */
 export const checkHit = (
-  notes: ParsedGameNote[],
+  notes: RhythmNote[],
   laneIndex: number,
   elapsed: number,
   hitWindow: number
-): ParsedGameNote | null => {
+): RhythmNote | null => {
   if (!Number.isFinite(elapsed)) return null
 
   const windowStart = elapsed - hitWindow

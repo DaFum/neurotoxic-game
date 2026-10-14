@@ -10,10 +10,11 @@
  * dispatch regardless.
  */
 
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
+import { FieldRepairDialog } from './FieldRepairDialog'
 import { ActionButton } from '../shared/ActionButton'
 import {
   EXPEDITION_CONDITION_GROUPS,
@@ -61,6 +62,7 @@ interface RepairOption {
 interface ServiceView {
   isActive: boolean
   routeStep: number
+  runId: string | null
   condition: { pa: number; instruments: number; stageGear: number }
   disabledGroups: ConditionGroup[]
   visibleDefects: ReturnType<typeof getVisibleExpeditionDefects>
@@ -70,7 +72,7 @@ interface ServiceView {
     legal: boolean
     diagnosticFee: number
   }>
-  canClaimTechnicalInsurance: boolean
+  technicalInsuranceGroups: ConditionGroup[]
 }
 
 /**
@@ -136,13 +138,17 @@ const selectServiceView = (state: GameState): ServiceView => {
   return {
     isActive,
     routeStep,
+    runId: state.expedition?.runId ?? null,
     condition,
     disabledGroups,
     visibleDefects: getVisibleExpeditionDefects(state),
     repairOptions,
     inspectionOptions,
-    canClaimTechnicalInsurance:
-      isActive && canClaimExpeditionInsurance(state, 'technical')
+    technicalInsuranceGroups: isActive
+      ? disabledGroups.filter(group =>
+          canClaimExpeditionInsurance(state, 'technical', group)
+        )
+      : []
   }
 }
 
@@ -152,16 +158,18 @@ const selectServiceView = (state: GameState): ServiceView => {
 export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
   const { t, i18n } = useTranslation('ui')
   const view = useGameSelector(selectServiceView)
+  const [fieldRepair, setFieldRepair] = useState<{
+    targetGroup: ConditionGroup
+    routeStep: number
+    runId: string | null
+  } | null>(null)
+  const closeFieldRepair = useCallback(() => setFieldRepair(null), [])
   const {
     executeExpeditionRepair,
     executeExpeditionInspection,
     claimExpeditionInsurance,
     acceptExpeditionTechnicalFailure
   } = useGameActions()
-
-  const claimTechnical = useCallback(() => {
-    claimExpeditionInsurance({ claimType: 'technical' })
-  }, [claimExpeditionInsurance])
 
   if (!view.isActive) return null
   const hasSomethingToDo =
@@ -227,7 +235,15 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
               data-testid={`expedition-repair-${option.mode}-${option.targetGroup}${
                 option.sourceGroup ? `-from-${option.sourceGroup}` : ''
               }`}
-              onClick={() =>
+              onClick={() => {
+                if (option.mode === 'field') {
+                  setFieldRepair({
+                    targetGroup: option.targetGroup,
+                    routeStep: view.routeStep,
+                    runId: view.runId
+                  })
+                  return
+                }
                 executeExpeditionRepair({
                   mode: option.mode,
                   targetGroup: option.targetGroup,
@@ -236,7 +252,7 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
                     : {}),
                   expectedRouteStep: view.routeStep
                 })
-              }
+              }}
             >
               {t(`ui:expedition.repair.mode.${option.mode}`)}{' '}
               {t(`ui:expedition.condition.group.${option.targetGroup}`)}{' '}
@@ -278,16 +294,23 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
             </ActionButton>
           ))}
 
-        {view.canClaimTechnicalInsurance ? (
+        {view.technicalInsuranceGroups.map(group => (
           <ActionButton
+            key={group}
             variant='secondary'
             className='px-3 py-2 text-xs'
-            data-testid='expedition-service-insurance-claim'
-            onClick={claimTechnical}
+            data-testid={`expedition-service-insurance-claim-${group}`}
+            onClick={() =>
+              claimExpeditionInsurance({
+                claimType: 'technical',
+                targetGroup: group
+              })
+            }
           >
-            {t('ui:expedition.crisis.choice.insurance_claim')}
+            {t('ui:expedition.crisis.choice.insurance_claim')}{' '}
+            {t(`ui:expedition.condition.group.${group}`)}
           </ActionButton>
-        ) : null}
+        ))}
       </div>
 
       {view.disabledGroups.length > 0 ? (
@@ -299,6 +322,9 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
         >
           {t('ui:expedition.service.acceptTechnicalFailure')}
         </ActionButton>
+      ) : null}
+      {fieldRepair ? (
+        <FieldRepairDialog {...fieldRepair} onClose={closeFieldRepair} />
       ) : null}
     </section>
   )

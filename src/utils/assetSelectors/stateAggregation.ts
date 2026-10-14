@@ -8,7 +8,6 @@ import {
 } from './assetFinancials'
 import {
   NEUTRAL_ASSET_MODIFIERS,
-  BROKEN_THRESHOLD,
   MULTIPLIER_MODIFIER_KEYS,
   ADDITIVE_MODIFIER_KEYS,
   FLAG_MODIFIER_KEYS
@@ -30,7 +29,6 @@ export const getActiveAssetModifiers = (
     flags: { ...NEUTRAL_ASSET_MODIFIERS.flags }
   }
   for (const a of assets) {
-    if (a.condition < BROKEN_THRESHOLD) continue
     const b = getAssetAggregateBoni(a)
     for (const key of MULTIPLIER_MODIFIER_KEYS) {
       // finiteNumberOr with an identity fallback of 1: a missing or non-finite

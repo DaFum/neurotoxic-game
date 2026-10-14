@@ -1,4 +1,4 @@
-import { SONGS_DB } from '../data/songs'
+import { SONGS_DB, SONGS_BY_ID } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
@@ -10,13 +10,6 @@ import { usePreGigLogic } from '../hooks/usePreGigLogic'
 import { createRovingTabs } from '../ui/shared/rovingTabs'
 
 const PREGIG_TABS = ['logistics', 'merch'] as const
-
-const SONGS_DICT = Object.create(null)
-for (let i = 0; i < SONGS_DB.length; i++) {
-  const song = SONGS_DB[i]
-  if (!song) continue
-  SONGS_DICT[song.id] = song
-}
 
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
@@ -35,6 +28,8 @@ export const PreGig = () => {
     i18n,
     currentGig,
     player,
+    merchInventory,
+    isExpeditionActive,
     setlist,
     setlistMax,
     gigModifiers,
@@ -132,7 +127,7 @@ export const PreGig = () => {
             setlist={setlist}
             maxSongs={setlistMax}
             songsDb={SONGS_DB}
-            songsDict={SONGS_DICT}
+            songsDict={SONGS_BY_ID}
             selectedSongIds={selectedSongIds}
             player={player}
             toggleSong={toggleSong}
@@ -150,13 +145,14 @@ export const PreGig = () => {
           }`}
         >
           <MerchStrategyBlock
-            bandInventory={band?.inventory ?? {}}
+            bandInventory={merchInventory}
             customPrices={band?.merchPrices ?? {}}
             onUpdatePrice={handleUpdateMerchPrice}
             onRestock={handleRestockMerch}
             restockCostMultiplier={assetModifiers.merchCostMultiplier}
             merchCapacityBonus={assetModifiers.merchCapacityBonus}
             playerMoney={player.money ?? 0}
+            restockingEnabled={!isExpeditionActive}
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { isEmptyObject } from '../../utils/gameState'
+import { isEmptyObject, finiteNumberOr } from '../../utils/gameState'
 import {
   checkCollision,
   handleCrash,
@@ -293,7 +293,7 @@ export const useRoadieLogic = () => {
       // drive the whole simulation from it: an unclamped delta would rewind the
       // cooldown clock, heal contraband damage, push spawn timers backwards and
       // send traffic back the way it came.
-      const delta = Math.max(0, deltaMS)
+      const delta = Math.max(0, Math.min(finiteNumberOr(deltaMS, 0), 100))
 
       game.elapsedMS += delta
 

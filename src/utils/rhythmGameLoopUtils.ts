@@ -32,7 +32,6 @@ interface RhythmTickArgs {
   pauseAudio: AsyncVoidCallback
   resumeAudio: AsyncBooleanCallback
   setCorruptionState: (level: number, active: boolean) => void
-  setCorruptionEffect: (active: boolean) => void
   disableCorruptionBurstAudio: () => void
 }
 
@@ -149,7 +148,6 @@ const processCorruptionBurst = (
   now: number,
   setIsCorruptionBurstActive: ToggleBooleanCallback,
   setCorruptionState: (level: number, active: boolean) => void,
-  setCorruptionEffect: (active: boolean) => void,
   disableCorruptionBurstAudio: () => void,
   clockReset: boolean
 ): void => {
@@ -164,7 +162,6 @@ const processCorruptionBurst = (
       finiteNumberOr(stateRef.stats?.corruptionLevel, 0),
       false
     )
-    setCorruptionEffect(false)
     disableCorruptionBurstAudio()
   }
 }
@@ -304,7 +301,6 @@ export const processRhythmGameTick = ({
   pauseAudio,
   resumeAudio,
   setCorruptionState,
-  setCorruptionEffect,
   disableCorruptionBurstAudio
 }: RhythmTickArgs): void => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
@@ -357,7 +353,6 @@ export const processRhythmGameTick = ({
     now,
     setIsCorruptionBurstActive,
     setCorruptionState,
-    setCorruptionEffect,
     disableCorruptionBurstAudio,
     clockReset
   )

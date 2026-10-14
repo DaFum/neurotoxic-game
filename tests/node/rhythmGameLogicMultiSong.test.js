@@ -92,7 +92,6 @@ const mockAudioEngine = {
   getPlayRequestId: mock.fn(() => 1),
   getGigTimeMs: mock.fn(() => 0),
   getTransportState: mock.fn(() => 'started'),
-  setCorruptionEffect: mock.fn(),
   getScheduledHitTimeMs: mock.fn(() => 0),
   setupGigPhysics: mockSetupGigPhysics,
   resolveActiveSetlist: mockResolveActiveSetlist,

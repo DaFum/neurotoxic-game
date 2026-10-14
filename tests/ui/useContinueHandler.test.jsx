@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
@@ -30,7 +31,11 @@ vi.mock('../../src/utils/mapUtils', () => ({
   getRegionKeyForLocation: vi.fn(() => 'test-region')
 }))
 vi.mock('../../src/context/gameConstants', () => ({
-  GAME_PHASES: { OVERWORLD: 'OVERWORLD', GAMEOVER: 'GAMEOVER' },
+  GAME_PHASES: {
+    OVERWORLD: 'OVERWORLD',
+    GAMEOVER: 'GAMEOVER',
+    RUN_SUMMARY: 'RUN_SUMMARY'
+  },
   NEUROTOXIC_PEDAL_HARMONY_PENALTY: 10
 }))
 
@@ -58,7 +63,8 @@ function makeDispatchers() {
     addQuest: vi.fn(),
     applyQuestEvent: vi.fn(),
     recordExpeditionCrewStressSource: vi.fn(),
-    completeExpedition: vi.fn()
+    completeExpedition: vi.fn(),
+    saveGameAfterStateCommit: vi.fn()
   }
 }
 
@@ -80,7 +86,7 @@ function makeProps(overrides = {}) {
     },
     band: { harmony: 80, members: [], inventory: { shirt: 10 } },
     currentGig: { id: 'venue_1' },
-    lastGigStats: { misses: 1 },
+    lastGigStats: { misses: 1, failed: false },
     setlist: [],
     expedition: { status: 'idle', routeStep: 0, loadout: null },
     activeStoryFlags: [],
@@ -310,7 +316,7 @@ describe('useContinueHandler hook', () => {
     expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
   })
 
-  it('handles finale path correctly', async () => {
+  it('handles successful Career finale path correctly', async () => {
     const props = makeProps({ isFinaleGig: true })
     const { result } = renderHook(() => useContinueHandler(props))
 
@@ -331,13 +337,114 @@ describe('useContinueHandler hook', () => {
     )
 
     await flushMicrotasks()
+    expect(props.dispatchers.completeExpedition).not.toHaveBeenCalled()
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
+  })
+
+  it('waits for committed Expedition completion and saved state before Run Summary', async () => {
+    const props = makeProps({
+      isFinaleGig: true,
+      expedition: {
+        status: 'active',
+        runId: 'run-1',
+        routeStep: 4,
+        loadout: null
+      }
+    })
+    const { result } = renderHook(() => {
+      const [expedition, setExpedition] = useState(props.expedition)
+      props.dispatchers.completeExpedition.mockImplementation(() =>
+        setExpedition(prev => ({ ...prev, status: 'completed' }))
+      )
+      return useContinueHandler({ ...props, expedition })
+    })
+    act(() => result.current())
     expect(props.dispatchers.completeExpedition).toHaveBeenCalledWith(
       'gig:venue_1'
     )
-    expect(
-      props.dispatchers.completeExpedition.mock.invocationCallOrder[0]
-    ).toBeLessThan(props.dispatchers.changeScene.mock.invocationCallOrder[0])
-    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
+    expect(props.dispatchers.changeScene).not.toHaveBeenCalled()
+    expect(props.dispatchers.addToast).not.toHaveBeenCalled()
+    expect(props.dispatchers.updatePlayer.mock.calls[0][0]).not.toHaveProperty(
+      'stats'
+    )
+
+    expect(props.dispatchers.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.changeScene).not.toHaveBeenCalled()
+    act(() => props.dispatchers.saveGameAfterStateCommit.mock.calls[0][0](true))
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('RUN_SUMMARY')
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'success'
+    )
+  })
+
+  it('returns a solvent failed Finale to recovery without claiming victory', async () => {
+    const props = makeProps({
+      isFinaleGig: true,
+      expedition: {
+        status: 'active',
+        runId: 'run-1',
+        routeStep: 4,
+        loadout: null
+      },
+      lastGigStats: { misses: 5, failed: true }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+    act(() => result.current())
+    await flushMicrotasks()
+    expect(props.dispatchers.updatePlayer.mock.calls[0][0]).not.toHaveProperty(
+      'stats'
+    )
+    expect(props.dispatchers.completeExpedition).not.toHaveBeenCalled()
+    expect(props.dispatchers.addToast).not.toHaveBeenCalledWith(
+      expect.any(String),
+      'success'
+    )
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('routes rejected completion to recovery after the commit without a victory toast', async () => {
+    const props = makeProps({
+      isFinaleGig: true,
+      expedition: {
+        status: 'active',
+        runId: 'run-1',
+        routeStep: 4,
+        loadout: null
+      }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+    act(() => result.current())
+    await flushMicrotasks()
+    expect(props.dispatchers.completeExpedition).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+    expect(props.dispatchers.addToast).not.toHaveBeenCalledWith(
+      expect.any(String),
+      'success'
+    )
+    expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+  })
+
+  it('retains the actual post-gig Finale stamina adjustment', () => {
+    const props = makeProps({
+      isFinaleGig: true,
+      expedition: {
+        status: 'active',
+        runId: 'run-1',
+        routeStep: 4,
+        loadout: null,
+        finaleType: 'disaster_gig'
+      },
+      band: {
+        harmony: 80,
+        inventory: {},
+        members: [{ id: 'member-1', stamina: 50, staminaMax: 100 }]
+      }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+    act(() => result.current())
+    const staminaUpdater = props.dispatchers.updateBand.mock.calls.at(-1)[0]
+    expect(staminaUpdater(props.band).members[0].stamina).toBe(48)
   })
 
   describe('major-gig Run Draft', () => {

@@ -12,7 +12,7 @@ import {
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
 import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
-import { clamp0to100 } from '../../utils/gameState'
+import { clamp0to100, finiteNumberOr } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
 
@@ -209,7 +209,10 @@ export const useTourbusLogic = () => {
       if (game.isGameOver) return
 
       const currentSpawnRate = updateGameSpeed(game)
-      const clampedDelta = Math.min(deltaMS, 100)
+      const clampedDelta = Math.max(
+        0,
+        Math.min(finiteNumberOr(deltaMS, 0), 100)
+      )
       game.distance += game.speed * clampedDelta
 
       spawnObstacles(game, currentSpawnRate, clampedDelta)

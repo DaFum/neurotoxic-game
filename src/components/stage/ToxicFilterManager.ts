@@ -145,6 +145,8 @@ export class ToxicFilterManager {
     stageContainer: Container
   ): void {
     if (state.isToxicMode) {
+      this.brutalistFilter?.update(elapsed, 1)
+
       if (this.colorMatrix) {
         // Apply Hue change based on time
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)

@@ -42,7 +42,6 @@ export const audioState = {
   musicGain: null as Nullable<Tone.Gain>,
   masterLimiter: null as Nullable<Tone.Limiter>,
   masterComp: null as Nullable<Tone.Compressor>,
-  masterCorruption: null as Nullable<Tone.Distortion>,
   neuroDistortion: null as Nullable<Tone.Chebyshev>,
   reverb: null as Nullable<Tone.Reverb>,
   reverbSend: null as Nullable<Tone.Gain>,

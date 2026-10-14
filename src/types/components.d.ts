@@ -146,6 +146,7 @@ export interface MinigameLogicBase<TState = unknown> {
  * @typeParam TState - Mutable ref state shared by logic and the Pixi controller.
  */
 export interface MinigameSceneFrameProps<TState = unknown> {
+  embedded?: boolean
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
   logic: MinigameLogicBase<TState>
   uiState?: { isGameOver?: boolean; [key: string]: unknown }

@@ -49,6 +49,7 @@ export interface UsePreGigHandlersProps {
   setlistMax: number
   gigModifiers: GigModifiers
   assetModifiers: AssetModifiers
+  isExpeditionActive?: boolean
   adjustedBandMeetingCost: number
   selectedSongIds: Set<string>
   calculatedBudget: number
@@ -101,6 +102,7 @@ export const usePreGigHandlers = ({
   setlistMax,
   gigModifiers,
   assetModifiers,
+  isExpeditionActive = false,
   adjustedBandMeetingCost,
   selectedSongIds,
   calculatedBudget,
@@ -131,6 +133,7 @@ export const usePreGigHandlers = ({
 
   const handleRestockMerch = useCallback(
     (merchKey: string) => {
+      if (isExpeditionActive) return
       const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(merchKey)
       if (!itemDef) return
 
@@ -168,10 +171,7 @@ export const usePreGigHandlers = ({
 
       updateBand((prevBand: BandState) => {
         const currentInventory = prevBand.inventory ?? {}
-        const currentAmount =
-          typeof currentInventory[merchKey] === 'number'
-            ? (currentInventory[merchKey] as number)
-            : 0
+        const currentAmount = finiteNumberOr(currentInventory[merchKey], 0)
         return {
           inventory: {
             ...currentInventory,
@@ -190,6 +190,7 @@ export const usePreGigHandlers = ({
       band?.inventory,
       assetModifiers.merchCapacityBonus,
       assetModifiers.merchCostMultiplier,
+      isExpeditionActive,
       updatePlayer,
       updateBand,
       addToast,

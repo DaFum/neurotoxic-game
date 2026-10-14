@@ -303,7 +303,7 @@ export const applyStatModifier = (
   effect: Effect,
   playerPatch: PlayerPatch,
   player: PlayerState,
-  band: BandState
+  band: BandState | null
 ): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
   const val = finiteNumberOr(effect.value, 0)
   const nextPlayerPatch: PlayerPatch = { ...playerPatch }
@@ -368,6 +368,7 @@ export const applyStatModifier = (
     }
 
     default: {
+      if (!band) break
       const base = getNumericProp(band.performance ?? {}, effect.stat, 0) ?? 0
       nextBandPatch = {
         performance: {
@@ -503,12 +504,7 @@ export const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
   },
 
   stat_modifier: (effect, item, playerPatch, player, band) => {
-    const result = applyStatModifier(
-      effect,
-      playerPatch,
-      player,
-      band as BandState
-    )
+    const result = applyStatModifier(effect, playerPatch, player, band)
     const nextPlayerPatch = result.playerPatch
 
     if (item.oneTime !== false) {
@@ -759,11 +755,6 @@ export const applyUnlockHQ = (
             mood: clampMemberMood(readMemberMood(m.mood) + 5)
           })
           break
-        default:
-          transform = m => ({
-            ...m,
-            mood: clampMemberMood(readMemberMood(m.mood) + 5)
-          })
       }
       const members = band?.members ?? []
       const len = members.length

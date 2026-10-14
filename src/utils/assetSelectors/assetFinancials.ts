@@ -6,7 +6,7 @@ import type {
   LongTermAsset
 } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
-import { CHASSIS_CONFIG } from '../assetConfig'
+import { CHASSIS_CONFIG, getChassisTierConfig } from '../assetConfig'
 import { finiteNumberOr } from '../finiteNumber'
 import {
   BROKEN_THRESHOLD,
@@ -44,16 +44,22 @@ export const calculateChassisGrossSaleValue = (
   return configTier.price * conditionFactor * depreciation + moduleRefunds
 }
 
+type AssetModuleSource = {
+  condition?: number
+  slots?: readonly { installedModuleId?: string | null }[]
+}
+
 /**
  * Reads the installed modules of an asset by resolving slot ids against the registry.
  *
  * @param asset - Asset whose slots should be inspected.
  * @returns Installed module definitions in slot order, excluding unknown module ids.
  */
-const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
+const getInstalledModules = (asset: AssetModuleSource): AssetModule[] => {
   const out: AssetModule[] = []
-  for (const s of asset.slots) {
-    if (s.installedModuleId === null) continue
+  const slots = Array.isArray(asset.slots) ? asset.slots : []
+  for (const s of slots) {
+    if (typeof s?.installedModuleId !== 'string') continue
     // Object.hasOwn guards against hostile module ids like 'hasOwnProperty'
     // or 'constructor' that would otherwise reach prototype properties.
     if (!Object.hasOwn(MODULE_REGISTRY, s.installedModuleId)) continue
@@ -88,8 +94,8 @@ const MULTIPLICATIVE_BONI_KEYS = [
  * @param asset - Asset whose installed modules should be aggregated.
  * @returns Combined boni contributed by active installed modules, or an empty object when the asset is broken.
  */
-export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
-  if (asset.condition < BROKEN_THRESHOLD) return {}
+export const getAssetAggregateBoni = (asset: AssetModuleSource): AssetBoni => {
+  if (finiteNumberOr(asset.condition, 100) < BROKEN_THRESHOLD) return {}
   const agg: AssetBoni = {}
   for (const m of getInstalledModules(asset)) {
     const b = m.boni
@@ -115,8 +121,17 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
  * @param asset - Asset whose upkeep should be calculated.
  * @returns Daily upkeep after installed module boni are applied.
  */
-export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
-  asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
+export const getAssetTotalUpkeep = (asset: LongTermAsset): number => {
+  const config = getChassisTierConfig(
+    asset.kind,
+    asset.chassisFlavor,
+    asset.chassisTier
+  )
+  return (
+    finiteNumberOr(asset.baseUpkeep, config?.upkeep ?? 0) +
+    finiteNumberOr(getAssetAggregateBoni(asset).upkeepDelta, 0)
+  )
+}
 
 /**
  * Daily revenue scaled by condition. A broken asset (condition less than 20) returns
@@ -129,10 +144,22 @@ export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
  * @returns Daily revenue after module deltas and condition scaling.
  */
 export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
-  if (asset.condition < BROKEN_THRESHOLD) return 0
-  const base = asset.baseDailyRevenue
-  const delta = getAssetAggregateBoni(asset).baseDailyRevenueDelta ?? 0
-  return (base + delta) * (asset.condition / 100)
+  const condition = Math.max(
+    0,
+    Math.min(100, finiteNumberOr(asset.condition, 100))
+  )
+  if (condition < BROKEN_THRESHOLD) return 0
+  const config = getChassisTierConfig(
+    asset.kind,
+    asset.chassisFlavor,
+    asset.chassisTier
+  )
+  const base = finiteNumberOr(asset.baseDailyRevenue, config?.revenue ?? 0)
+  const delta = finiteNumberOr(
+    getAssetAggregateBoni(asset).baseDailyRevenueDelta,
+    0
+  )
+  return (base + delta) * (condition / 100)
 }
 
 /**

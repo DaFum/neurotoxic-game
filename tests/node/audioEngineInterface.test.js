@@ -18,7 +18,6 @@ const ENGINE_METHODS = [
   'getTransportState',
   'pauseAudio',
   'resumeAudio',
-  'setCorruptionEffect',
   'enableCorruptionBurstAudio',
   'disableCorruptionBurstAudio',
   'getToneAbsoluteTimeMs',
@@ -78,6 +77,7 @@ describe('IAudioEngine implementations', () => {
       for (const method of ENGINE_METHODS) {
         assert.equal(typeof engine[method], 'function')
       }
+      assert.equal('setCorruptionEffect' in engine, false)
     }
   })
 })
@@ -154,7 +154,6 @@ describe('audio engine injection', () => {
         'getTransportState()',
         'pauseAudio(',
         'resumeAudio(',
-        'setCorruptionEffect(',
         'enableCorruptionBurstAudio(',
         'disableCorruptionBurstAudio(',
         'getToneAbsoluteTimeMs(',

@@ -37,24 +37,8 @@ import type {
   ToastCallback,
   TranslationCallback
 } from '../../../types/callbacks'
-import type { PurchaseItem } from '../../../types/components'
+import type { PurchaseItem, UnlockMessage } from '../../../types/components'
 import type { PlayerPatch, BandPatch } from '../../../types/purchase'
-
-type EffectMessage = {
-  messageKey?: string
-  fallback?: string
-  message?: string
-  options?: Record<string, unknown>
-  type?: ToastPayload['type']
-}
-
-type PurchaseEffectResult = {
-  errorType?: string
-  effectType?: string
-  playerPatch?: PlayerPatch
-  bandPatch?: BandPatch
-  messages?: EffectMessage[]
-}
 
 type ToastFn = (
   message: Parameters<ToastCallback>[0],
@@ -208,17 +192,15 @@ const buildInitialPlayerPatch = (
 }
 
 const processEffectMessages = (
-  messages: EffectMessage[],
+  messages: UnlockMessage[],
   addToast: ToastFn,
   t: TranslateFn
 ) => {
   messages.forEach(msg => {
-    const toastMsg = msg.messageKey
-      ? t(msg.messageKey, {
-          ...(msg.options || {}),
-          defaultValue: msg.fallback || msg.message || msg.messageKey
-        })
-      : msg.message
+    const toastMsg = t(msg.messageKey, {
+      ...(msg.options || {}),
+      defaultValue: msg.fallback || msg.messageKey
+    })
     if (typeof toastMsg === 'string' && toastMsg.trim() !== '') {
       addToast(toastMsg, msg.type)
       return
@@ -365,9 +347,11 @@ export const usePurchaseLogic = ({
           initialPlayerPatch,
           player,
           band
-        ) as PurchaseEffectResult
+        )
 
-        if (effectResult.errorType === 'unknown_effect') {
+        if (!effectResult) return false
+
+        if ('errorType' in effectResult) {
           handleError(
             new StateError(`Unknown effect type: ${effectResult.effectType}`, {
               effectType: effectResult.effectType,

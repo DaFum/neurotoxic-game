@@ -19,12 +19,22 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
 const mockOnUpdatePrice = vi.fn()
 const mockOnRestock = vi.fn()
 vi.mock('../../src/components/pregig/MerchStrategyBlock', () => ({
-  MerchStrategyBlock: ({ onUpdatePrice, onRestock, ...props }) => {
+  MerchStrategyBlock: ({
+    onUpdatePrice,
+    onRestock,
+    restockingEnabled,
+    bandInventory,
+    ...props
+  }) => {
     // store refs so tests can call them
     mockOnUpdatePrice.mockImplementation(onUpdatePrice)
     mockOnRestock.mockImplementation(onRestock)
     return (
-      <div {...props}>
+      <div
+        {...props}
+        data-testid='merch-strategy'
+        data-shirt-stock={bandInventory.shirts}
+      >
         <h3>ui:pregig.merchStrategy.title</h3>
         <button
           type='button'
@@ -40,7 +50,11 @@ vi.mock('../../src/components/pregig/MerchStrategyBlock', () => ({
         >
           +
         </button>
-        <button type='button' onClick={() => onRestock('shirts')}>
+        <button
+          type='button'
+          disabled={restockingEnabled === false}
+          onClick={() => onRestock('shirts')}
+        >
           ui:pregig.merchStrategy.restock
         </button>
       </div>
@@ -116,6 +130,7 @@ const mockUseGameState = {
   triggerEvent: vi.fn(),
   activeEvent: null,
   band: { harmony: 50, inventory: { shirts: 10 }, merchPrices: {} },
+  expedition: null,
   updateBand: vi.fn(),
   addToast: vi.fn(),
   assets: [],
@@ -203,6 +218,12 @@ describe('PreGig', () => {
     mockUseGameState.player = { money: 1000 }
     mockUseGameState.gigModifiers = {}
     mockUseGameState.assets = []
+    mockUseGameState.expedition = null
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 10 },
+      merchPrices: {}
+    }
 
     // Clean up sessionStorage state to ensure isolated tests
     try {
@@ -240,6 +261,35 @@ describe('PreGig', () => {
     const callArgs = mockUseGameState.setGigModifiers.mock.calls[0][0]
     // Expect { soundcheck: true } (toggling from undefined/false)
     expect(callArgs).toEqual({ soundcheck: true })
+  })
+
+  test('shows committed Expedition merch and disables Career restocking', () => {
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 10 },
+      merchPrices: {},
+      members: []
+    }
+    mockUseGameState.expedition = {
+      status: 'active',
+      cargo: { merch: [{ inventoryKey: 'shirts', quantity: 7 }] }
+    }
+
+    const { getByRole, getByTestId } = render(React.createElement(PreGig))
+    fireEvent.click(getByRole('tab', { name: 'ui:pregig.tabs.merch' }))
+
+    expect(getByTestId('merch-strategy')).toHaveAttribute(
+      'data-shirt-stock',
+      '7'
+    )
+    expect(
+      getByRole('button', { name: 'ui:pregig.merchStrategy.restock' })
+    ).toBeDisabled()
+    fireEvent.click(
+      getByRole('button', { name: 'ui:pregig.merchStrategy.restock' })
+    )
+    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
   })
 
   test('gives minigames proper chances to start based on weight', async () => {

@@ -7,6 +7,12 @@ const mockLogger = {
   info: mock.fn()
 }
 
+let loadTexturesImpl = async () => {
+  throw new Error('Test load error')
+}
+
+const mockLoadTextures = mock.fn(async (...args) => loadTexturesImpl(...args))
+
 mock.module(new URL('../../../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger
@@ -20,9 +26,7 @@ mock.module(
   ).href,
   {
     namedExports: {
-      loadTextures: mock.fn(async () => {
-        throw new Error('Test load error')
-      }),
+      loadTextures: mockLoadTextures,
       getPixiColorFromToken: mock.fn(() => 0xffffff),
       getOptimalResolution: mock.fn(() => 1)
     }
@@ -62,6 +66,9 @@ test('EffectTextureManager', async t => {
 
   await t.test('loadAssets - handles error path', async () => {
     mockLogger.warn.mock.resetCalls()
+    loadTexturesImpl = async () => {
+      throw new Error('Test load error')
+    }
 
     const mockApp = {
       renderer: {}
@@ -77,5 +84,39 @@ test('EffectTextureManager', async t => {
     assert.equal(warnCall[1], 'Effect textures failed to load')
     assert.ok(warnCall[2] instanceof Error)
     assert.equal(warnCall[2].message, 'Test load error')
+  })
+
+  await t.test('late cached textures are not retained after disposal', async () => {
+    let resolveTextures
+    loadTexturesImpl = () =>
+      new Promise(resolve => {
+        resolveTextures = resolve
+      })
+
+    const manager = new EffectTextureManager({ renderer: {} })
+    const loading = manager.loadAssets()
+    manager.dispose()
+
+    const blood = { destroy: mock.fn() }
+    const toxic = { destroy: mock.fn() }
+    resolveTextures({ blood, toxic })
+    await loading
+
+    assert.deepEqual(manager.textures, { blood: null, toxic: null })
+    assert.equal(blood.destroy.mock.calls.length, 0)
+    assert.equal(toxic.destroy.mock.calls.length, 0)
+  })
+
+  await t.test('dispose leaves shared cached textures alive', async () => {
+    const blood = { destroy: mock.fn() }
+    const toxic = { destroy: mock.fn() }
+    loadTexturesImpl = async () => ({ blood, toxic })
+
+    const manager = new EffectTextureManager({ renderer: {} })
+    await manager.loadAssets()
+    manager.dispose()
+
+    assert.equal(blood.destroy.mock.calls.length, 0)
+    assert.equal(toxic.destroy.mock.calls.length, 0)
   })
 })
