@@ -143,14 +143,14 @@ test('Task 8: Expedition Inspections', async t => {
 
       const state = createActiveStateWithDefects([defect1, defect2], {
         loadout: {
-          crewIds: ['crew_roadie_bob'],
+          crewIds: ['tom'],
           build: { selectedTourbusModuleIds: [] }
         }
       })
 
       const res = resolveExpeditionInspection(state, {
         mode: 'crew_inspection',
-        crewId: 'crew_roadie_bob',
+        crewId: 'tom',
         expectedRouteStep: 2
       })
 
@@ -174,6 +174,54 @@ test('Task 8: Expedition Inspections', async t => {
     assert.equal(res.ok, false)
     if (!res.ok) {
       assert.equal(res.reason, 'MODULE_INSPECTION_UNAVAILABLE')
+    }
+  })
+
+  await t.test('crew inspection resolves available committed registry roles', () => {
+    for (const id of ['mika', 'tom']) {
+      const state = createActiveStateWithDefects([], {
+        loadout: { crewIds: [id], build: { selectedTourbusModuleIds: [] } }
+      })
+      for (const crewId of [undefined, id]) {
+        assert.equal(
+          resolveExpeditionInspection(state, {
+            mode: 'crew_inspection',
+            crewId,
+            expectedRouteStep: 2
+          }).ok,
+          true
+        )
+      }
+      state.expedition.crew.injuryByCrewId[id] = 'serious'
+      assert.equal(
+        resolveExpeditionInspection(state, {
+          mode: 'crew_inspection',
+          expectedRouteStep: 2
+        }).ok,
+        false
+      )
+    }
+  })
+
+  await t.test('crew inspection refuses recovery debt, uncommitted and invented crew', () => {
+    const state = createActiveStateWithDefects([], {
+      loadout: { crewIds: ['mika'], build: { selectedTourbusModuleIds: [] } }
+    })
+    state.career.crewRecoveryDebtById.mika = {
+      crewId: 'mika',
+      createdFromRunId: 'previous-run',
+      severity: 'serious',
+      toursRemaining: 1
+    }
+    for (const crewId of [undefined, 'mika', 'tom', 'crew_roadie_bob']) {
+      assert.equal(
+        resolveExpeditionInspection(state, {
+          mode: 'crew_inspection',
+          crewId,
+          expectedRouteStep: 2
+        }).ok,
+        false
+      )
     }
   })
 

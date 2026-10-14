@@ -6,7 +6,7 @@
  * module_inspection, full_service) for defect detection and diagnostics.
  */
 
-import type { BandMember, GameState } from '../../types'
+import type { GameState } from '../../types'
 import type {
   ExpeditionInspectionConditionBand,
   ExpeditionInspectionIntent,
@@ -23,6 +23,8 @@ import {
   getExpeditionTechnicalCondition
 } from './condition'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { isCrewAvailable } from './crew'
 
 /**
  * Baseline flat diagnostic fee for professional full service.
@@ -52,35 +54,14 @@ const hasEligibleInspectionCrew = (
   state: GameState,
   crewId?: string
 ): boolean => {
-  const isEligibleRole = (role?: string) =>
-    role === 'technician' || role === 'roadie'
-
-  const isEligibleId = (id?: string) =>
-    typeof id === 'string' &&
-    (id === 'technician' ||
-      id === 'roadie' ||
-      id.includes('technician') ||
-      id.includes('roadie'))
-
-  if (crewId) {
-    const committed = state.expedition?.loadout?.crewIds?.includes(crewId)
-    if (isEligibleId(crewId) && committed) return true
-    const member = state.band?.members?.find((m: BandMember) => m.id === crewId)
-    return Boolean(committed && member && isEligibleRole(member.role))
-  }
-
   const committedCrew = state.expedition?.loadout?.crewIds ?? []
-  for (const id of committedCrew) {
-    if (isEligibleId(id)) return true
-    const member = state.band?.members?.find((m: BandMember) => m.id === id)
-    if (member && isEligibleRole(member.role)) return true
-  }
-
-  return (
-    state.band?.members?.some(
-      (m: BandMember) => isEligibleRole(m.role) || isEligibleId(m.id)
-    ) ?? false
-  )
+  return committedCrew.some(id => {
+    if (crewId && id !== crewId) return false
+    if (!isCrewAvailable(state, id)) return false
+    if (state.expedition.crew?.injuryByCrewId[id] === 'serious') return false
+    const definition = EXPEDITION_CREW_BY_ID[id]
+    return definition?.role === 'technician' || definition?.role === 'roadie'
+  })
 }
 
 /**

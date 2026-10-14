@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import { finiteNumberOr } from '../../utils/finiteNumber'
+
 import type { RivalBandState } from '../../types'
 
 const ENCOUNTER_POWER_GAIN = 5
@@ -30,7 +32,10 @@ export const useRivalEscalation = (
     if (lastEscalatedNodeRef.current === playerNodeId) return
 
     lastEscalatedNodeRef.current = playerNodeId
-    const nextPower = Math.max(0, rivalBand.powerLevel + ENCOUNTER_POWER_GAIN)
+    const nextPower = Math.max(
+      0,
+      finiteNumberOr(rivalBand.powerLevel, 0) + ENCOUNTER_POWER_GAIN
+    )
     updateRivalBand({ powerLevel: nextPower })
   }, [rivalBand, playerNodeId, updateRivalBand])
 }

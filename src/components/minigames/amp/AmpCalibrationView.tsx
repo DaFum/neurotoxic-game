@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import type { MutableRefObject } from 'react'
+import type { MutableRefObject, ReactNode } from 'react'
 import type { TFunction } from 'i18next'
 import { MinigameSceneFrame } from '../../MinigameSceneFrame'
 import { AmpHUD } from './AmpHUD'
@@ -41,9 +41,14 @@ interface AmpCalibrationViewProps {
   ) => AmpStageController
   logic: {
     update: (deltaMS: number) => void
+    finishMinigame?: () => void
     gameStateRef: MutableRefObject<AmpStageOptions>
   }
   onComplete: () => void
+  embedded?: boolean
+  completionTitle?: string
+  completionButtonText?: string
+  completionDetails?: ReactNode
 }
 
 /**
@@ -74,11 +79,16 @@ export const AmpCalibrationView = ({
   feedbackLoopsDampened,
   controllerFactory,
   logic,
-  onComplete
+  onComplete,
+  embedded,
+  completionTitle,
+  completionButtonText,
+  completionDetails
 }: AmpCalibrationViewProps) => {
   const renderCompletionStats = useCallback(
     () => (
       <div className='flex flex-col gap-2'>
+        {completionDetails}
         <div>
           {t('ui:minigames.amp.completion.stability', {
             defaultValue: 'Stability Achieved: {{score}}%',
@@ -112,21 +122,35 @@ export const AmpCalibrationView = ({
         )}
       </div>
     ),
-    [t, score, voidResonance, hijacksOverridden, feedbackLoopsDampened]
+    [
+      t,
+      score,
+      voidResonance,
+      hijacksOverridden,
+      feedbackLoopsDampened,
+      completionDetails
+    ]
   )
 
   return (
     <MinigameSceneFrame
+      embedded={embedded}
       controllerFactory={controllerFactory}
       logic={logic}
       uiState={isGameOver ? { timeLeft, score, isGameOver } : INACTIVE_UI_STATE}
       onComplete={onComplete}
-      completionTitle={t('ui:minigames.amp.completion.title', {
-        defaultValue: 'AMP CALIBRATED'
-      })}
-      completionButtonText={t('ui:minigames.amp.completion.button', {
-        defaultValue: 'START GIG'
-      })}
+      completionTitle={
+        completionTitle ??
+        t('ui:minigames.amp.completion.title', {
+          defaultValue: 'AMP CALIBRATED'
+        })
+      }
+      completionButtonText={
+        completionButtonText ??
+        t('ui:minigames.amp.completion.button', {
+          defaultValue: 'START GIG'
+        })
+      }
       renderCompletionStats={isGameOver ? renderCompletionStats : undefined}
     >
       <AmpHUD

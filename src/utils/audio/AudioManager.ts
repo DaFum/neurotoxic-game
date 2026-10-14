@@ -297,9 +297,9 @@ class AudioSystem {
       }
 
       if (audioEngine.getTransportState() === 'paused') {
-        audioEngine.resumeAudio()
+        const resumed = await audioEngine.resumeAudio()
         this.emitChange()
-        return true
+        return resumed
       }
 
       if (audioEngine.getTransportState() !== 'started') {

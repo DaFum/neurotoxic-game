@@ -77,4 +77,19 @@ describe('AssetSectionDeck', () => {
 
     expect(screen.getByRole('button', { name: 'Upgrade' })).toBeDisabled()
   })
+
+  it('allows repair whenever the canonical repair rule has a positive cost', () => {
+    render(
+      <AssetSectionDeck
+        asset={{ ...makeAsset(2), condition: 75 }}
+        hero={<div />}
+        onSlotClick={vi.fn()}
+        onRepair={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Repair' })).toBeEnabled()
+  })
 })

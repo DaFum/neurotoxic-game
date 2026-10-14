@@ -1,5 +1,6 @@
+import { sanitizeBandUpdates } from '../updateSanitizers'
 import { logger } from '../../utils/logger'
-import { hasForbiddenOwnKeys, isLooseRecord } from '../../utils/objectUtils'
+import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
 import { assertNever } from '../../utils/assertNever'
 import {
   clampLuck,
@@ -8,7 +9,6 @@ import {
   clampMemberMood,
   clampMemberStamina,
   clampRelationship,
-  clampPercent,
   clampVanCondition,
   applyInventoryItemDelta,
   isForbiddenKey,
@@ -104,40 +104,18 @@ export const handleUpdateBand = (
   logger.debug('GameState', 'Update Band', payload)
   const updates = typeof payload === 'function' ? payload(state.band) : payload
 
-  if (
-    !updates ||
-    typeof updates !== 'object' ||
-    Array.isArray(updates) ||
-    hasForbiddenOwnKeys(updates as Record<string, unknown>)
-  ) {
+  if (!isLooseRecord(updates) || hasForbiddenKeysDeep(updates)) {
     return state
   }
 
-  const safeUpdates: Record<string, unknown> = { ...updates }
-  if (Object.hasOwn(safeUpdates, 'harmony')) {
-    safeUpdates.harmony = clampBandHarmony(
-      isFiniteNumber(safeUpdates.harmony)
-        ? safeUpdates.harmony
-        : state.band.harmony
-    )
-  }
-  const sanitizeNumericKey = (
-    key: 'stress' | 'luck' | 'tempo',
-    clamp: (value: number) => number
-  ) => {
-    if (!Object.hasOwn(safeUpdates, key)) return
-    const raw = safeUpdates[key]
-    if (isFiniteNumber(raw)) {
-      safeUpdates[key] = clamp(raw)
-    } else {
-      delete safeUpdates[key]
+  const safeUpdates: Record<string, unknown> = sanitizeBandUpdates(updates)
+
+  if (isLooseRecord(safeUpdates.performance)) {
+    safeUpdates.performance = {
+      ...state.band.performance,
+      ...safeUpdates.performance
     }
   }
-  sanitizeNumericKey('stress', clampBandStress)
-  sanitizeNumericKey('luck', clampLuck)
-  // Not floored: contraband tempo effects are fractional (+0.15), matching the
-  // load sanitizer (`sanitizeBand`).
-  sanitizeNumericKey('tempo', clampPercent)
 
   if (Array.isArray(safeUpdates.members)) {
     // Members come in as partial patches; merge by id against the prior
@@ -198,6 +176,16 @@ export const handleUpdateBand = (
       }
       if (isFiniteNumber(next.mood)) {
         next.mood = clampMemberMood(next.mood)
+      }
+      for (const key of ['traits', 'baseStats', 'equipment'] as const) {
+        if (Object.hasOwn(patch, key) && !isLooseRecord(patch[key])) {
+          if (existing && existing[key] !== undefined) {
+            if (key === 'baseStats') next.baseStats = existing.baseStats
+            else if (key === 'equipment') next.equipment = existing.equipment
+            else next.traits = existing.traits
+          } else if (key === 'traits') next.traits = {}
+          else delete next[key]
+        }
       }
       if (Object.hasOwn(patch, 'relationships')) {
         const rel = patch.relationships

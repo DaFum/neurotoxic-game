@@ -1,4 +1,5 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { GAME_PHASES } from '../../../context/gameConstants'
 import type { RhythmSetlistEntry } from '../../../types/rhythmGame'
 import type {
   BandState,
@@ -42,7 +43,7 @@ interface UseContinueHandlerProps {
   setlist: RhythmSetlistEntry[]
   expedition: GameState['expedition']
   activeStoryFlags?: string[]
-  /** True when the completed gig sits on the FINALE map node — routes to the victory end screen instead of the overworld. */
+  /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
   totalDailyObligations: number
   isProcessingActionRef: React.MutableRefObject<boolean>
@@ -54,7 +55,8 @@ interface UseContinueHandlerProps {
 /**
  * Builds the post-gig "continue" handler: settles merch, fame, harmony, and
  * story-flag quests, submits leaderboard scores, then advances to OVERWORLD or
- * GAMEOVER (on bankruptcy). Guarded against re-entrancy.
+ * RUN_SUMMARY after committed Expedition completion, or GAMEOVER on bankruptcy.
+ * Guarded against re-entrancy.
  */
 export function useContinueHandler({
   financials,
@@ -80,11 +82,52 @@ export function useContinueHandler({
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    saveGameAfterStateCommit,
     recordExpeditionObligationSignal,
     settleSoldMerch,
     offerExpeditionDraft
   }
 }: UseContinueHandlerProps) {
+  const pendingFinaleRef = useRef<{ runId: string | null } | null>(null)
+  const [completionRequest, setCompletionRequest] = useState(0)
+
+  useEffect(() => {
+    const pending = pendingFinaleRef.current
+    if (!pending) return
+    pendingFinaleRef.current = null
+    // Dispatch acceptance is authoritative: even a rejected action needs a
+    // render pass before deciding whether to show the summary or recovery.
+    const matchingRun = expedition?.runId === pending.runId
+    const completed = matchingRun && expedition?.status === 'completed'
+    const finalized =
+      matchingRun &&
+      (completed ||
+        expedition?.status === 'failed' ||
+        expedition?.status === 'extracted')
+    if (!finalized) {
+      changeScene(GAME_PHASES.OVERWORLD)
+      return
+    }
+    saveGameAfterStateCommit(() => {
+      if (completed) {
+        addToast(
+          t('ui:postGig.tourComplete', {
+            defaultValue: 'TOUR COMPLETE: You survived the void tour!'
+          }),
+          'success'
+        )
+      }
+      changeScene(GAME_PHASES.RUN_SUMMARY)
+    })
+  }, [
+    completionRequest,
+    expedition,
+    saveGameAfterStateCommit,
+    changeScene,
+    addToast,
+    t
+  ])
+
   const handleContinue = useCallback(() => {
     if (!financials) return
     if (isProcessingActionRef.current) return
@@ -122,13 +165,23 @@ export function useContinueHandler({
         totalDailyObligations
       )
 
+      const successfulFinale =
+        isFinaleGig &&
+        !bankrupt &&
+        !!currentGig?.id &&
+        !!lastGigStats &&
+        lastGigStats.failed !== true
+      const expeditionFinale =
+        successfulFinale && expedition?.status === 'active'
+      const careerFinale = successfulFinale && expedition?.status === 'idle'
+
       updatePlayer({
         money: stats.newMoney,
         fame: stats.newFame,
         fameLevel: stats.fameLevel,
         // Surviving the FINALE gig completes the tour; the flag persists in
         // the save and drives the victory variant of the game-over screen.
-        ...(isFinaleGig && !bankrupt
+        ...(careerFinale
           ? { stats: { ...player.stats, tourCompleted: true } }
           : {})
       })
@@ -166,7 +219,7 @@ export function useContinueHandler({
       if (expedition?.status === 'active' && currentGig?.id) {
         if (recordExpeditionObligationSignal) {
           recordExpeditionObligationSignal('gig', currentGig.id)
-          if (isFinaleGig) {
+          if (successfulFinale) {
             recordExpeditionObligationSignal('finale', currentGig.id)
           }
         }
@@ -226,13 +279,16 @@ export function useContinueHandler({
         }
       }
 
-      if (isFinaleGig && !bankrupt) {
-        completeExpedition(`gig:${currentGig?.id ?? 'unknown'}`)
+      if (expeditionFinale) {
+        pendingFinaleRef.current = { runId: expedition.runId }
+        setCompletionRequest(request => request + 1)
+        completeExpedition(`gig:${currentGig.id}`)
+        return
       }
 
       handleContinueSceneTransition({
         bankrupt,
-        isFinaleGig,
+        isFinaleGig: careerFinale,
         addToast,
         changeScene,
         t

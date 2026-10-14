@@ -30,42 +30,52 @@ export const translateContextKeys = (
   context: unknown,
   t: (key: string) => string
 ): unknown => {
-  // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
-  if (context === null || typeof context !== 'object') {
-    return context
-  }
+  const ancestors = new WeakSet<object>()
+  const translate = (context: unknown): unknown => {
+    // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
+    if (context === null || typeof context !== 'object') {
+      return context
+    }
 
-  if (Array.isArray(context)) {
-    const len = context.length
-    const result = new Array(len)
-    for (let i = 0; i < len; i++) {
-      if (!Object.hasOwn(context, i)) continue
-      const item = context[i]
-      if (typeof item === 'string') {
-        result[i] = isTranslatableKey(item) ? t(item) : item
+    // Omit only ancestors: a shared non-cyclic subtree is translated at each use.
+    if (ancestors.has(context)) return undefined
+    ancestors.add(context)
+
+    if (Array.isArray(context)) {
+      const len = context.length
+      const result = new Array(len)
+      for (let i = 0; i < len; i++) {
+        if (!Object.hasOwn(context, i)) continue
+        const item = context[i]
+        if (typeof item === 'string') {
+          result[i] = isTranslatableKey(item) ? t(item) : item
+        } else {
+          result[i] = translate(item)
+        }
+      }
+      ancestors.delete(context)
+      return result
+    }
+
+    const translatedContext: Record<string, unknown> = {}
+    const contextRecord = context as Record<string, unknown>
+    for (const prop in contextRecord) {
+      if (!Object.hasOwn(contextRecord, prop)) continue
+      // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
+      if (isForbiddenKey(prop)) continue
+
+      const value = contextRecord[prop]
+      if (typeof value === 'string') {
+        translatedContext[prop] = isTranslatableKey(value) ? t(value) : value
+      } else if (typeof value === 'object' && value !== null) {
+        // SECURITY: Recurse into nested objects to sanitize and translate
+        translatedContext[prop] = translate(value)
       } else {
-        result[i] = translateContextKeys(item, t)
+        translatedContext[prop] = value
       }
     }
-    return result
+    ancestors.delete(context)
+    return translatedContext
   }
-
-  const translatedContext: Record<string, unknown> = {}
-  const contextRecord = context as Record<string, unknown>
-  for (const prop in contextRecord) {
-    if (!Object.hasOwn(contextRecord, prop)) continue
-    // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
-    if (isForbiddenKey(prop)) continue
-
-    const value = contextRecord[prop]
-    if (typeof value === 'string') {
-      translatedContext[prop] = isTranslatableKey(value) ? t(value) : value
-    } else if (typeof value === 'object' && value !== null) {
-      // SECURITY: Recurse into nested objects to sanitize and translate
-      translatedContext[prop] = translateContextKeys(value, t)
-    } else {
-      translatedContext[prop] = value
-    }
-  }
-  return translatedContext
+  return translate(context)
 }

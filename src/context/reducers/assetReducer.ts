@@ -1,3 +1,4 @@
+import { validateModuleInstall } from '../moduleInstallValidation'
 import type { GameState } from '../../types/game'
 import type {
   PurchaseChassisPayload,
@@ -227,6 +228,7 @@ export const handleInstallModule = (
   // was previewed with them installed. Other assets stay serviceable.
   if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
+  if (validateModuleInstall(payload, state) !== null) return state
   const moduleInfo = getRegisteredModule(moduleId)
   if (!moduleInfo) return state
   const installCost = moduleInfo.cost + moduleInfo.installCost

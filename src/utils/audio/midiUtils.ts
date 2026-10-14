@@ -1,3 +1,5 @@
+import { isFiniteNumber } from '../finiteNumber'
+
 /**
  * Determines if a MIDI track should be treated as percussion.
  * @param track - Track metadata from the MIDI parser.
@@ -19,8 +21,8 @@ export const isPercussionTrack = (track: unknown): boolean => {
  */
 export const normalizeMidiPitch = (note: unknown): number | null => {
   const midi = (note as { midi?: unknown })?.midi
-  const midiPitch = Number(midi)
-  if (!Number.isFinite(midiPitch)) return null
+  if (!isFiniteNumber(midi)) return null
+  const midiPitch = midi
   if (midiPitch < 0 || midiPitch > 127) return null
   return midiPitch
 }
@@ -56,8 +58,8 @@ export const buildMidiTrackEvents = (
       duration?: unknown
       velocity?: unknown
     }
-    const time = Number(note?.time)
-    if (!Number.isFinite(time) || time < 0) continue
+    const time = note?.time
+    if (!isFiniteNumber(time) || time < 0) continue
     const midiPitch = normalizeMidiPitch(note)
     if (midiPitch == null) continue
 

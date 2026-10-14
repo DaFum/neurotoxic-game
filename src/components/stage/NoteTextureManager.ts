@@ -1,4 +1,4 @@
-import { Texture } from 'pixi.js'
+import type { Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { loadTextures } from './stageRenderUtils'
@@ -13,12 +13,16 @@ export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
  */
 export class NoteTextureManager {
   noteTextures: NoteTextures
+  private isDisposed: boolean
 
   constructor() {
     this.noteTextures = { skull: null, lightning: null }
+    this.isDisposed = false
   }
 
   async loadAssets(): Promise<void> {
+    if (this.isDisposed) return
+
     try {
       const urls = {
         skull: resolveGenImageUrl(IMG_PROMPTS.NOTE_SKULL),
@@ -31,6 +35,10 @@ export class NoteTextureManager {
           handleError(error, { fallbackMessage })
         }
       )
+
+      // loadTextures returns cache-owned textures shared by other stage users.
+      // A disposed manager must drop the late results without destroying them.
+      if (this.isDisposed) return
 
       if (loadedTextures.skull) {
         this.noteTextures.skull = loadedTextures.skull
@@ -46,11 +54,7 @@ export class NoteTextureManager {
   }
 
   dispose(): void {
-    const uniqueTextures = new Set<Texture>()
-    if (this.noteTextures.skull) uniqueTextures.add(this.noteTextures.skull)
-    if (this.noteTextures.lightning)
-      uniqueTextures.add(this.noteTextures.lightning)
-    uniqueTextures.forEach(t => t.destroy(true))
+    this.isDisposed = true
     this.noteTextures = { skull: null, lightning: null }
   }
 }

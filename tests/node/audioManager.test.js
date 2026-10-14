@@ -14,7 +14,7 @@ test('AudioManager Tests', async t => {
     setMusicVolume: mock.fn(),
     playSFX: mock.fn(),
     stopAudio: mock.fn(),
-    resumeAudio: mock.fn(),
+    resumeAudio: mock.fn(async () => true),
     getTransportState: mock.fn(() => 'stopped'),
     setDestinationMute: mock.fn(() => false),
     setupAudio: mock.fn(),
@@ -74,6 +74,31 @@ test('AudioManager Tests', async t => {
       const result = await audioManager.resumeMusic()
       assert.equal(result, true)
       assert.equal(mockAudioEngine.resumeAudio.mock.calls.length > 0, true)
+    }
+  )
+
+  await t.test(
+    'resumeMusic waits for the backend and emits its settled state',
+    async () => {
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
+      let finishResume
+      mockAudioEngine.resumeAudio.mock.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            finishResume = resolve
+          })
+      )
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      const resume = audioManager.resumeMusic()
+      await Promise.resolve()
+      const emittedEarly = listener.mock.calls.length
+      finishResume(false)
+      const result = await resume
+      unsubscribe()
+      assert.equal(emittedEarly, 0)
+      assert.equal(result, false)
+      assert.equal(listener.mock.calls.length, 1)
     }
   )
 

@@ -34,7 +34,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       routeStep: 2,
       // A committed roadie makes the free crew inspection available, the
       // canonical source a reveal is authorised by.
-      loadout: { ...state.expedition.loadout, crewIds: ['crew_roadie_bob'] },
+      loadout: { ...state.expedition.loadout, crewIds: ['tom'] },
       technicalCondition: {
         pa: 100,
         instruments: 100,
@@ -477,7 +477,7 @@ test('defect reducers refuse raw dispatches the inspection/repair paths would re
       visitedNodeIds: atService ? ['service_node'] : [],
       loadout: {
         ...state.expedition.loadout,
-        crewIds: crew ? ['crew_roadie_bob'] : [],
+        crewIds: crew ? ['tom'] : [],
         build: { selectedTourbusModuleIds: [] }
       },
       technicalCondition: {

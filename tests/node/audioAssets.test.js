@@ -202,6 +202,37 @@ test('Audio Assets Loading Logic', async t => {
     assert.strictEqual(buffer, null, 'Should return null on decode error')
   })
 
+  await t.test(
+    'Download timeout aborts a stalled OGG body before decoding',
+    async context => {
+      context.mock.timers.enable({ apis: ['setTimeout'] })
+      let signal
+      let bodyStarted
+      const readingBody = new Promise(resolve => {
+        bodyStarted = resolve
+      })
+      global.fetch.mock.mockImplementationOnce(async (_url, options) => {
+        signal = options.signal
+        return {
+          ok: true,
+          arrayBuffer: () =>
+            new Promise((_resolve, reject) => {
+              signal.addEventListener('abort', () =>
+                reject(new DOMException('Aborted', 'AbortError'))
+              )
+              bodyStarted()
+            })
+        }
+      })
+      const loading = loadAudioBuffer('stalled-body.ogg')
+      await readingBody
+      context.mock.timers.tick(10000)
+      assert.equal(await loading, null)
+      assert.equal(signal.aborted, true)
+      assert.equal(mockDecodeAudioData.mock.calls.length, 0)
+    }
+  )
+
   // Timeout tests using fake timers
   await t.test(
     'Fetch Timeout: returns null if fetch takes too long',

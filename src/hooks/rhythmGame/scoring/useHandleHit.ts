@@ -207,7 +207,6 @@ export const useHandleHit = ({
               setCorruptionBurstEndTime(burstEndTime)
               setCorruptionState(0, true)
               audioEngine.enableCorruptionBurstAudio()
-              audioEngine.setCorruptionEffect(true)
             }
           }
         } else {

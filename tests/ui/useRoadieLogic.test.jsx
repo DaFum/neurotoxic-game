@@ -59,6 +59,22 @@ describe('useRoadieLogic', () => {
     mock.clearAllMocks()
   })
 
+  test('rejects nonfinite deltas and clamps simulation time to 0..100 ms', () => {
+    const { result, unmount } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    game.carrying = { id: 'stash', type: 'CONTRABAND', weight: 1 }
+    act(() => {
+      for (const delta of [-100, NaN, Infinity, -Infinity])
+        result.current.update(delta)
+    })
+    expect(game.elapsedMS).toBe(0)
+    expect(game.spawners.every(s => s.timer === 0)).toBe(true)
+    act(() => result.current.update(10000))
+    expect(game.elapsedMS).toBe(100)
+    expect(game.equipmentDamage).toBe(0.5)
+    unmount()
+  })
+
   test('handles initialization, movement, interactions, and completion properly', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current
@@ -227,7 +243,8 @@ describe('useRoadieLogic', () => {
     // ...and jumping it backwards must not wedge input either.
     mock.setSystemTime(new Date(Date.now() - 2 * 60 * 60 * 1000))
     act(() => {
-      result.current.update(ROADIE_MOVE_COOLDOWN_BASE)
+      for (let time = 0; time < ROADIE_MOVE_COOLDOWN_BASE; time += 100)
+        result.current.update(Math.min(100, ROADIE_MOVE_COOLDOWN_BASE - time))
       result.current.actions.move(1, 0)
     })
     expect(game.playerPos.x).toBe(8)
@@ -246,9 +263,7 @@ describe('useRoadieLogic', () => {
     // Spawn rates run 1400-2800ms, so one short tick leaves the road empty.
     // The roadie stays on row 0, which carries no traffic, so nothing crashes.
     act(() => {
-      result.current.update(1000)
-      result.current.update(1000)
-      result.current.update(1000)
+      for (let i = 0; i < 30; i++) result.current.update(100)
     })
 
     const before = {

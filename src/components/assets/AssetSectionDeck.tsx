@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LongTermAsset } from '../../types/assets'
-import { getNextChassisTier } from '../../utils/assetConfig'
+import {
+  calculateChassisRepairCost,
+  getNextChassisTier
+} from '../../utils/assetConfig'
 import { AssetSlotActionList } from './AssetSlotActionList'
 import { Tooltip } from '../../ui/shared'
 
@@ -43,7 +46,7 @@ export const AssetSectionDeck = ({
   onSell
 }: AssetSectionDeckProps) => {
   const { t } = useTranslation(['assets'])
-  const needsRepair = asset.condition < 50
+  const needsRepair = calculateChassisRepairCost(asset.condition) > 0
   const canUpgrade = getNextChassisTier(asset.chassisTier) !== null
 
   return (

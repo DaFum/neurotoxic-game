@@ -25,7 +25,6 @@ type RhythmPerformance = {
   comboBonusMultiplier?: number
   timingWindowMultiplier?: number
   missPenaltyMultiplier?: number
-  staminaDrainMultiplier?: number
 }
 
 type RhythmGameScoringParams = {
@@ -102,10 +101,6 @@ export const useRhythmGameScoring = ({
     0,
     finiteNumberOr(performance?.missPenaltyMultiplier, 1)
   )
-  const staminaDrainMultiplier = Math.max(
-    0,
-    finiteNumberOr(performance?.staminaDrainMultiplier, 1)
-  )
 
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -135,7 +130,6 @@ export const useRhythmGameScoring = ({
     contextActions,
     baseCrowdDecay,
     missPenaltyMultiplier,
-    staminaDrainMultiplier,
     gameOverTimerRef
   })
 

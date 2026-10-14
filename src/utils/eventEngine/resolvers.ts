@@ -78,8 +78,10 @@ export const getOptionPreviewMoney = (
   let total = 0
   let found = false
 
+  const ancestors = new WeakSet<object>()
   const visit = (eff: unknown): void => {
-    if (!eff || typeof eff !== 'object') return
+    if (!eff || typeof eff !== 'object' || ancestors.has(eff)) return
+    ancestors.add(eff)
     const e = eff as EffectShape
     if (Array.isArray(e.effects)) {
       for (const child of e.effects) visit(child)
@@ -97,6 +99,7 @@ export const getOptionPreviewMoney = (
       total += clampPercentageAmount(current, e.percentage, e.min, e.max)
       found = true
     }
+    ancestors.delete(eff)
   }
 
   if (Array.isArray(option.effects)) {

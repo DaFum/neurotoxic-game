@@ -72,8 +72,14 @@ export const advanceQuest = (
   {
     questId,
     amount = 1,
-    randomIdx
-  }: { questId: string; amount?: number; randomIdx?: number }
+    randomIdx,
+    deferCompletion = false
+  }: {
+    questId: string
+    amount?: number
+    randomIdx?: number
+    deferCompletion?: boolean
+  }
 ): GameState => {
   const resolved = resolveActiveQuest(state, questId)
   if (!resolved) return state
@@ -105,7 +111,7 @@ export const advanceQuest = (
     progress: newProgress
   }
 
-  if (newProgress >= safeRequired) {
+  if (!deferCompletion && newProgress >= safeRequired) {
     return completeQuest(nextState, { questId, randomIdx })
   }
   return nextState
@@ -126,7 +132,11 @@ export const advanceQuest = (
  */
 export const setQuestProgress = (
   state: GameState,
-  { questId, progress }: { questId: string; progress: number }
+  {
+    questId,
+    progress,
+    deferCompletion = false
+  }: { questId: string; progress: number; deferCompletion?: boolean }
 ): GameState => {
   const resolved = resolveActiveQuest(state, questId)
   if (!resolved) return state
@@ -145,7 +155,7 @@ export const setQuestProgress = (
     progress: capped
   }
 
-  if (hasRequired && capped >= required) {
+  if (!deferCompletion && hasRequired && capped >= required) {
     return completeQuest(nextState, { questId })
   }
   return nextState

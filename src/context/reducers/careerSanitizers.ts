@@ -15,6 +15,7 @@ import type {
 } from '../../types/expedition'
 import {
   clampCrewLoyalty,
+  clampToNonNegativeInt,
   finiteNumberOr,
   isFiniteNumber,
   isLooseRecord
@@ -88,8 +89,6 @@ const sanitizePendingUnlockPurchase = (
 export const sanitizeCareerState = (value: unknown): CareerState => {
   const defaults = createInitialCareerState()
   if (!isLooseRecord(value)) return defaults
-  const boundedInt = (candidate: unknown, fallback = 0): number =>
-    isFiniteNumber(candidate) ? Math.max(0, Math.floor(candidate)) : fallback
   const crewById = safeRecord<CrewCareerState>(value.crewById, (entry, key) => {
     if (!Object.hasOwn(EXPEDITION_CREW_BY_ID, key) || !isLooseRecord(entry)) {
       return null
@@ -99,12 +98,12 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     const canonicalSignature = EXPEDITION_CREW_SIGNATURE_BY_ROLE[crew.role]
     return {
       loyalty: clampCrewLoyalty(finiteNumberOr(entry.loyalty, 0)),
-      storyProgress: boundedInt(entry.storyProgress),
+      storyProgress: clampToNonNegativeInt(entry.storyProgress),
       signatureTraitId:
         entry.signatureTraitId === canonicalSignature
           ? canonicalSignature
           : null,
-      unavailableUntilCompletedRunCount: boundedInt(
+      unavailableUntilCompletedRunCount: clampToNonNegativeInt(
         entry.unavailableUntilCompletedRunCount
       )
     }
@@ -245,9 +244,13 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
         }
       }
     ),
-    tourTokens: boundedInt(value.tourTokens),
-    finalizedExpeditionRuns: boundedInt(value.finalizedExpeditionRuns),
-    completedExpeditionRuns: boundedInt(value.completedExpeditionRuns),
+    tourTokens: clampToNonNegativeInt(value.tourTokens),
+    finalizedExpeditionRuns: clampToNonNegativeInt(
+      value.finalizedExpeditionRuns
+    ),
+    completedExpeditionRuns: clampToNonNegativeInt(
+      value.completedExpeditionRuns
+    ),
     completedExpeditionRegionIds: Array.isArray(
       value.completedExpeditionRegionIds
     )

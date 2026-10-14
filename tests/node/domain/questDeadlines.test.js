@@ -284,3 +284,43 @@ test('checkDeadlines', async t => {
     assert.equal(nextState.toasts.length, 2)
   })
 })
+
+test('Prove Yourself failure clears its mode while preserving other player stats', () => {
+  const stats = Object.freeze({ proveYourselfMode: true, totalGigs: 7 })
+  const player = Object.freeze({ day: 21, stats })
+  const state = Object.freeze({
+    player,
+    band: { harmony: 50 },
+    social: { controversyLevel: 0 },
+    activeStoryFlags: ['prove_yourself_active'],
+    activeQuests: [{ id: 'quest_prove_yourself', deadline: 20 }]
+  })
+  const next = checkDeadlines(state)
+  assert.equal(next.player.stats.proveYourselfMode, false)
+  assert.equal(next.player.stats.totalGigs, 7)
+  assert.equal(next.activeQuests.length, 0)
+  assert.ok(!next.activeStoryFlags.includes('prove_yourself_active'))
+  assert.deepEqual(next.questCooldowns, [
+    { questId: 'quest_prove_yourself', expiresOnDay: 41 }
+  ])
+  assert.equal(stats.proveYourselfMode, true)
+})
+
+test('Prove Yourself mode persists through its deadline and unrelated quest failures', () => {
+  for (const activeQuests of [
+    [{ id: 'quest_prove_yourself', deadline: 20 }],
+    [
+      { id: 'quest_prove_yourself', deadline: 20 },
+      { id: 'unrelated', deadline: 19 }
+    ]
+  ]) {
+    const player = Object.freeze({
+      day: 20,
+      stats: Object.freeze({ proveYourselfMode: true, totalGigs: 7 })
+    })
+    const next = checkDeadlines({ player, activeQuests })
+    assert.equal(next.player, player)
+    assert.equal(next.player.stats.proveYourselfMode, true)
+    assert.ok(next.activeQuests.some(q => q.id === 'quest_prove_yourself'))
+  }
+})

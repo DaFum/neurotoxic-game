@@ -26,14 +26,16 @@ export const MinigameSceneFrame = <TState,>({
   completionTitle,
   renderCompletionStats,
   completionButtonText,
-  children
+  children,
+  embedded = false
 }: MinigameSceneFrameProps<TState>) => {
   const { t } = useTranslation(['ui'])
 
   const { continueButtonRef, handleSkip, canSkip } = useMinigameSceneLogic({
     logic,
     uiState,
-    onComplete
+    onComplete,
+    escapeCompletes: !embedded
   })
 
   return (
@@ -49,19 +51,25 @@ export const MinigameSceneFrame = <TState,>({
       {/* Player-initiated exit: forfeits the run and continues. Offered only for
           pre-gig setup minigames, and hidden once the completion overlay is
           shown (CONTINUE owns that path). */}
-      {canSkip && <MinigameSkipButton onClick={handleSkip} />}
+      {canSkip && !embedded && <MinigameSkipButton onClick={handleSkip} />}
 
       {/* Custom UI Elements (HUD, Controls) */}
-      {children}
+      {embedded && uiState?.isGameOver ? (
+        <div className='contents' inert>
+          {children}
+        </div>
+      ) : (
+        children
+      )}
 
       {/* Game Over / Success Overlay */}
       {uiState?.isGameOver && (
         <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
-          role='dialog'
-          aria-modal='true'
+          className={`${embedded ? 'absolute p-4 text-center' : 'fixed'} inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto`}
+          role={embedded ? undefined : 'dialog'}
+          aria-modal={embedded ? undefined : true}
           aria-labelledby='completion-title'
         >
           <h1

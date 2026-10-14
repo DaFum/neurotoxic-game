@@ -141,4 +141,43 @@ describe('usePreGigHandlers', () => {
       })
     })
   })
+
+  it('does not charge or mutate Career stock during an active Expedition', () => {
+    const { result } = renderHook(() =>
+      usePreGigHandlers({
+        ...mockProps,
+        player: { money: 1_000_000 },
+        isExpeditionActive: true
+      })
+    )
+
+    act(() => result.current.handleRestockMerch('shirts'))
+
+    expect(mockProps.updatePlayer).not.toHaveBeenCalled()
+    expect(mockProps.updateBand).not.toHaveBeenCalled()
+  })
+
+  it('recovers a non-finite stored merch count before adding restock stock', () => {
+    const { result } = renderHook(() =>
+      usePreGigHandlers({
+        ...mockProps,
+        player: { money: 1_000_000 },
+        band: {
+          harmony: 50,
+          inventory: { shirts: Number.NaN },
+          merchPrices: {}
+        }
+      })
+    )
+
+    act(() => result.current.handleRestockMerch('shirts'))
+
+    const updateInventory = mockProps.updateBand.mock.calls[0][0]
+    const patch = updateInventory({
+      harmony: 50,
+      inventory: { shirts: Number.NaN },
+      merchPrices: {}
+    })
+    expect(Number.isFinite(patch.inventory.shirts)).toBe(true)
+  })
 })

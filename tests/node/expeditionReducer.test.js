@@ -438,6 +438,9 @@ describe('committed identity freeze while active', () => {
     const state = createInitialState()
     state.setlist = [{ id: 'song_a' }, { id: 'song_b' }]
     state.player.money = 100000
+    // Meet the module's unlock so only the commitment freeze can refuse it.
+    state.player.fame =
+      MODULE_REGISTRY[FIRST_TOURBUS_MODULE_ID]?.unlock?.minFame ?? 0
     const tier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
     state.assets = [
       {

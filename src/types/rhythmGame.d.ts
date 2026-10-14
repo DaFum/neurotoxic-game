@@ -168,6 +168,7 @@ export type RhythmGameRefState = {
   lastEndedSongIndex: number
   currentSongStartScore: number
   rivalPenaltyActive: boolean
+  currentSongStartHits: number
   currentSongStartPerfectHits: number
   currentSongStartMisses: number
   /** Whether every setlist entry has reached its completion boundary. */

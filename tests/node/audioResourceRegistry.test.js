@@ -42,9 +42,7 @@ const createKit = () => ({
 // Asserted in registry order, not sorted: the order IS the teardown contract.
 // Sources lead so buffer playback stops before the buses feeding it are
 // disposed, and the master chain trails so it outlives everything routed into
-// it. `masterCorruption` is absent on purpose — it is declared on `audioState`
-// and read by `corruptionEffects.ts`, but never assigned anywhere, so there is
-// nothing to release.
+// it.
 const EXPECTED_REGISTRY_KEYS = [
   'gigSource',
   'ambientSource',
@@ -316,4 +314,42 @@ test('gigSource release', async t => {
 
     assertGigStateReset()
   })
+})
+
+test('obsolete corruption slot is absent from audio state', () => {
+  assert.equal(Object.hasOwn(audioState, 'masterCorruption'), false)
+})
+
+test('corruption bursts retain the clean/wet crossfade and restore it on disable', async () => {
+  const { enableCorruptionBurstAudio, disableCorruptionBurstAudio } =
+    await import('../../src/utils/audio/corruptionEffects')
+  const cleanRamp = mock.fn()
+  const wetRamp = mock.fn()
+  audioState.masterCorruptionBypass = { gain: { rampTo: cleanRamp } }
+  audioState.masterCorruptionWetGain = { gain: { rampTo: wetRamp } }
+  audioState.isCorruptionAudioActive = false
+  try {
+    enableCorruptionBurstAudio()
+    enableCorruptionBurstAudio()
+    assert.equal(audioState.isCorruptionAudioActive, true)
+    assert.deepEqual(
+      cleanRamp.mock.calls.map(call => call.arguments),
+      [[0, 0.05]]
+    )
+    assert.deepEqual(
+      wetRamp.mock.calls.map(call => call.arguments),
+      [[1, 0.05]]
+    )
+    disableCorruptionBurstAudio()
+    disableCorruptionBurstAudio()
+    assert.equal(audioState.isCorruptionAudioActive, false)
+    assert.deepEqual(cleanRamp.mock.calls.at(-1).arguments, [1, 0.05])
+    assert.deepEqual(wetRamp.mock.calls.at(-1).arguments, [0, 0.05])
+    assert.equal(cleanRamp.mock.calls.length, 2)
+    assert.equal(wetRamp.mock.calls.length, 2)
+  } finally {
+    audioState.masterCorruptionBypass = null
+    audioState.masterCorruptionWetGain = null
+    audioState.isCorruptionAudioActive = false
+  }
 })

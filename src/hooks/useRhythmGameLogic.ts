@@ -4,6 +4,7 @@ import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { useAudioEngine } from '../context/AudioEngineContext'
 import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
+import { normalizeVenueId } from '../utils/mapUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import {
   bandHasTrait,
@@ -120,12 +121,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       if (!Object.hasOwn(gameMap.nodes, key)) continue
       const node = gameMap.nodes[key] as MapNode | undefined
       if (!node) continue
-      if (node.venueId && node.id) {
-        map.set(node.venueId, node.id)
-      } else if (node.venue?.id && node.id) {
-        // Fallback for some potential older map formats
-        map.set(node.venue.id, node.id)
-      }
+      const venueId =
+        normalizeVenueId(node.venueId) ?? normalizeVenueId(node.venue?.id)
+      if (venueId && node.id) map.set(venueId, node.id)
     }
     return map
   }, [gameMap?.nodes])
@@ -135,7 +133,10 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     if (gameStateRef.current) {
       if (currentGig) {
         // Find the node corresponding to the venue to compare correctly against the rival map node
-        const venueNodeId = venueIdToNodeIdMap.get(currentGig.id)
+        const venueId = normalizeVenueId(currentGig.id)
+        const venueNodeId = venueId
+          ? venueIdToNodeIdMap.get(venueId)
+          : undefined
         gameStateRef.current.rivalPenaltyActive =
           !!rivalBand &&
           !!venueNodeId &&
@@ -165,8 +166,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       comboBonusMultiplier:
         crowdHypeComboMultiplier * (finaleProfile?.comboBonusMultiplier ?? 1),
       timingWindowMultiplier: finaleProfile?.timingWindowMultiplier ?? 1,
-      missPenaltyMultiplier: finaleProfile?.missPenaltyMultiplier ?? 1,
-      staminaDrainMultiplier: finaleProfile?.staminaDrainMultiplier ?? 1
+      missPenaltyMultiplier: finaleProfile?.missPenaltyMultiplier ?? 1
     }
 
     // During an Expedition only the committed gear contributes: the delta

@@ -1,3 +1,4 @@
+import { sanitizeBandUpdates, sanitizePlayerUpdates } from './updateSanitizers'
 import { createRngStream, nextSeed } from '../utils/seededRng'
 import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 /**
@@ -22,10 +23,6 @@ import { sanitizeLoadedToast } from './reducers/toastSanitizers'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {
-  clampPlayerMoney,
-  clampPlayerFame,
-  calculateFameLevel,
-  clampBandHarmony,
   clampNonNegative,
   clampToNonNegativeInt,
   clamp0to100,
@@ -122,38 +119,12 @@ export const createChangeSceneAction = (
 export const createUpdatePlayerAction = (
   updates: UpdatePlayerPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_PLAYER }> => {
-  if (typeof updates === 'function') {
-    return {
-      type: ActionTypes.UPDATE_PLAYER,
-      payload: updates
-    }
-  }
-
-  let safeUpdates = updates
-  if (updates && typeof updates === 'object') {
-    safeUpdates = { ...updates }
-    if (Object.hasOwn(safeUpdates, 'money')) {
-      const moneyValue = (safeUpdates as { money?: unknown }).money
-      if (isFiniteNumber(moneyValue)) {
-        safeUpdates.money = clampPlayerMoney(moneyValue)
-      } else {
-        delete safeUpdates.money
-      }
-    }
-    if (Object.hasOwn(safeUpdates, 'fame')) {
-      const fameValue = (safeUpdates as { fame?: unknown }).fame
-      if (isFiniteNumber(fameValue)) {
-        safeUpdates.fame = clampPlayerFame(fameValue)
-        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
-      } else {
-        delete safeUpdates.fame
-        delete safeUpdates.fameLevel
-      }
-    }
-  }
   return {
     type: ActionTypes.UPDATE_PLAYER,
-    payload: safeUpdates
+    payload:
+      typeof updates === 'function'
+        ? prev => sanitizePlayerUpdates(updates(prev))
+        : sanitizePlayerUpdates(updates)
   }
 }
 
@@ -180,28 +151,12 @@ export const createSettleSoldMerchAction = (
 export const createUpdateBandAction = (
   updates: UpdateBandPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {
-  if (typeof updates === 'function') {
-    return {
-      type: ActionTypes.UPDATE_BAND,
-      payload: updates
-    }
-  }
-
-  let safeUpdates = updates
-  if (updates && typeof updates === 'object') {
-    safeUpdates = { ...updates }
-    if (Object.hasOwn(safeUpdates, 'harmony')) {
-      const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
-      if (isFiniteNumber(harmonyValue)) {
-        safeUpdates.harmony = clampBandHarmony(harmonyValue)
-      } else {
-        delete (safeUpdates as { harmony?: unknown }).harmony
-      }
-    }
-  }
   return {
     type: ActionTypes.UPDATE_BAND,
-    payload: safeUpdates
+    payload:
+      typeof updates === 'function'
+        ? prev => sanitizeBandUpdates(updates(prev))
+        : sanitizeBandUpdates(updates)
   }
 }
 

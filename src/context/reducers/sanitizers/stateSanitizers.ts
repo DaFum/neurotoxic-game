@@ -1,4 +1,8 @@
 import {
+  PLAYER_NUMERIC_NORMALIZERS,
+  BAND_NUMERIC_NORMALIZERS
+} from '../../updateSanitizers'
+import {
   hasForbiddenOwnKeys,
   sanitizeTraversableValue
 } from '../../../utils/objectUtils'
@@ -43,7 +47,6 @@ import {
   finiteNumberOr,
   clampNonNegative,
   clampToNonNegativeInt,
-  clampPercent,
   clampVanFuel,
   clampVanCondition,
   clampVanBreakdownChance,
@@ -692,34 +695,28 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         : DEFAULT_PLAYER_STATE.lastGigNodeId,
     // -1 is the "tutorial dismissed" marker (`useTutorial`), so the floor is -1,
     // not 0; anything lower is corrupt.
-    tutorialStep: Math.max(
-      -1,
-      Math.floor(
-        finiteNumberOr(
-          playerData.tutorialStep,
-          DEFAULT_PLAYER_STATE.tutorialStep
-        )
-      )
+    tutorialStep: PLAYER_NUMERIC_NORMALIZERS.tutorialStep(
+      finiteNumberOr(playerData.tutorialStep, DEFAULT_PLAYER_STATE.tutorialStep)
     ),
-    score: clampNonNegative(
+    score: PLAYER_NUMERIC_NORMALIZERS.score(
       finiteNumberOr(playerData.score, DEFAULT_PLAYER_STATE.score)
     ),
     fame: finiteNumberOr(playerData.fame, DEFAULT_PLAYER_STATE.fame),
     fameLevel: DEFAULT_PLAYER_STATE.fameLevel,
-    eventsTriggeredToday: clampToNonNegativeInt(
+    eventsTriggeredToday: PLAYER_NUMERIC_NORMALIZERS.eventsTriggeredToday(
       finiteNumberOr(
         playerData.eventsTriggeredToday,
         DEFAULT_PLAYER_STATE.eventsTriggeredToday
       )
     ),
-    totalTravels: clampToNonNegativeInt(
+    totalTravels: PLAYER_NUMERIC_NORMALIZERS.totalTravels(
       finiteNumberOr(playerData.totalTravels, DEFAULT_PLAYER_STATE.totalTravels)
     ),
     hqUpgrades: migrateLegacyHqUpgradeIds(
       sanitizeStringArray(playerData.hqUpgrades)
     ),
     // A negative count would lower the clinic cost curve (clinicReducer).
-    clinicVisits: clampToNonNegativeInt(
+    clinicVisits: PLAYER_NUMERIC_NORMALIZERS.clinicVisits(
       finiteNumberOr(playerData.clinicVisits, DEFAULT_PLAYER_STATE.clinicVisits)
     ),
     van: {
@@ -736,7 +733,7 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         DEFAULT_PLAYER_STATE.van.breakdownChance
       )
     },
-    passiveFollowers: clampToNonNegativeInt(
+    passiveFollowers: PLAYER_NUMERIC_NORMALIZERS.passiveFollowers(
       finiteNumberOr(
         playerData.passiveFollowers,
         DEFAULT_PLAYER_STATE.passiveFollowers
@@ -901,7 +898,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       typeof bandData.harmonyRegenTravel === 'boolean'
         ? bandData.harmonyRegenTravel
         : DEFAULT_BAND_STATE.harmonyRegenTravel,
-    inventorySlots: clampToNonNegativeInt(
+    inventorySlots: BAND_NUMERIC_NORMALIZERS.inventorySlots(
       finiteNumberOr(bandData.inventorySlots, DEFAULT_BAND_STATE.inventorySlots)
     ),
     luck: clampLuck(finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck)),
@@ -1012,18 +1009,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
   ]) {
     const value = finiteOptionalNumber(bandData[key])
     if (value === undefined) continue
-    if (key === 'tempo') {
-      // Same rule as `handleUpdateBand`: 0..100, not floored. Contraband
-      // tempo effects are fractional (+0.15) and reverted by an exact additive
-      // inverse, so flooring would leave the revert below zero.
-      rawBand[key] = clampPercent(value)
-    } else if (key === 'style' || key === 'crit') {
-      // No reducer-side rule exists; the invariant is finite and non-negative.
-      // Effects stack above 1, so there is deliberately no upper bound.
-      rawBand[key] = clampNonNegative(value)
-    } else {
-      rawBand[key] = value
-    }
+    const normalizer =
+      BAND_NUMERIC_NORMALIZERS[key as keyof typeof BAND_NUMERIC_NORMALIZERS]
+    rawBand[key] = normalizer(value)
   }
 
   rawBand.banterEvents = sanitizeBanterEvents(bandData.banterEvents)

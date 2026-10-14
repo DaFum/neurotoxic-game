@@ -38,6 +38,31 @@ describe('useAmpLogic (characterization)', () => {
     expect(typeof result.current.update).toBe('function')
   })
 
+  it('reports played calibration to a repair owner without pre-gig side effects', () => {
+    const onResult = vi.fn()
+    const onContinue = vi.fn()
+    const { result } = renderHook(() => useAmpLogic({ onResult, onContinue }))
+    act(() => result.current.setDialValue(result.current.targetValue))
+    act(() => result.current.update(1000))
+    act(() => result.current.update(14000))
+    expect(onResult).toHaveBeenCalledExactlyOnceWith(100)
+    expect(mockCompleteAmpCalibration).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(10_000))
+    expect(onContinue).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).not.toHaveBeenCalled()
+  })
+
+  it('cancels repair continuation on unmount', () => {
+    const onResult = vi.fn()
+    const onContinue = vi.fn()
+    const { result, unmount } = renderHook(() => useAmpLogic({ onResult, onContinue }))
+    act(() => result.current.finishMinigame())
+    unmount()
+    act(() => vi.advanceTimersByTime(10_000))
+    expect(onContinue).not.toHaveBeenCalled()
+    expect(mockChangeScene).not.toHaveBeenCalled()
+  })
+
   it('update() decrements the timer by elapsed seconds', () => {
     const { result } = renderHook(() => useAmpLogic())
     act(() => result.current.update(1000))

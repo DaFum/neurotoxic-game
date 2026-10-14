@@ -75,7 +75,7 @@ export const getStashItemUseMessage = (
  * @param id - Contraband id to count.
  * @returns `0` when the entry is missing or malformed; `1` for an owned entry
  * whose `stacks` is `null` or absent (a non-stackable item); the finite
- * `stacks` value floored at `0` otherwise; `0` for a non-finite `stacks`.
+ * `stacks` value rounded down and floored at `0` otherwise; `0` for a non-finite `stacks`.
  *
  * @remarks
  * The single stash-count reader shared by Career (crafting, drops, Void
@@ -92,7 +92,7 @@ export const getStashStackCount = (stash: unknown, id: string): number => {
     ? (entry as Record<string, unknown>).stacks
     : undefined
   if (stacks === null || stacks === undefined) return 1
-  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 0
+  return isFiniteNumber(stacks) ? Math.max(0, Math.floor(stacks)) : 0
 }
 
 /**

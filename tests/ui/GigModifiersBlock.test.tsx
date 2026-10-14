@@ -128,6 +128,28 @@ describe('GigModifiersBlock', () => {
     })
   })
 
+  it('drops forbidden prototype keys from active effect options', () => {
+    const options = JSON.parse(
+      '{"amount":5,"__proto__":{"polluted":true},"constructor":"bad","prototype":5}'
+    )
+    const props = {
+      ...defaultProps,
+      currentModifiers: {
+        activeEffects: [{ key: 'effect2', fallback: 'Effect Two', options }]
+      }
+    }
+
+    render(<GigModifiersBlock {...props} />)
+
+    const translatedOptions = props.t.mock.calls.find(
+      ([key]) => key === 'effect2'
+    )?.[1]
+    expect(translatedOptions).toEqual({ amount: 5, defaultValue: 'Effect Two' })
+    for (const key of ['__proto__', 'constructor', 'prototype']) {
+      expect(Object.hasOwn(translatedOptions ?? {}, key)).toBe(false)
+    }
+  })
+
   it('renders fallback when no active modifiers are present', () => {
     render(<GigModifiersBlock {...defaultProps} />)
 

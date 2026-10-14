@@ -2,7 +2,7 @@ import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'
 import { formatCurrency } from '../../utils/numberUtils'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { copySafePrimitiveEntries } from '../../utils/objectUtils'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
 import type { ActiveEffectEntry } from '../../types/components'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -18,33 +18,12 @@ type GigModifiersBlockProps = {
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
 }
 
-const sanitizeEffectOptions = (
-  options: Record<string, unknown> | undefined
-): Record<string, string | number | boolean | null> => {
-  if (!options) return {}
-  const sanitized: Record<string, string | number | boolean | null> = {}
-  for (const key in options) {
-    if (Object.hasOwn(options, key)) {
-      const value = options[key]
-      if (
-        typeof value === 'string' ||
-        isFiniteNumber(value) ||
-        typeof value === 'boolean' ||
-        value === null
-      ) {
-        sanitized[key] = value
-      }
-    }
-  }
-  return sanitized
-}
-
 const getEffectLabel = (eff: ActiveEffectEntry, t: TranslationCallback) => {
   if (typeof eff === 'string') {
     return t(eff, { defaultValue: eff })
   }
   return t(eff.key, {
-    ...sanitizeEffectOptions(eff.options),
+    ...copySafePrimitiveEntries(eff.options ?? {}),
     defaultValue: eff.fallback
   })
 }

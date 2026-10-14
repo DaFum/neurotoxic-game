@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../finiteNumber'
+import { calculateAccuracy } from '../gigStats'
 import { getGigTimeMs } from './gigPlayback'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
@@ -27,6 +28,7 @@ const handleSongEnded = (
   )
 
   const currentPerfects = finiteNumberOr(currentState.stats?.perfectHits, 0)
+  const currentHits = finiteNumberOr(currentState.stats?.hits, 0)
   const currentMisses = finiteNumberOr(currentState.stats?.misses, 0)
   const perfectsDelta = Math.max(
     0,
@@ -38,14 +40,11 @@ const handleSongEnded = (
     currentMisses - finiteNumberOr(currentState.currentSongStartMisses, 0)
   )
 
-  const totalDelta = perfectsDelta + missesDelta
-  let songAccuracy = 100
-  if (totalDelta > 0) {
-    songAccuracy = Math.max(
-      0,
-      Math.min(100, Math.round((perfectsDelta / totalDelta) * 100))
-    )
-  }
+  const hitsDelta = Math.max(
+    0,
+    currentHits - finiteNumberOr(currentState.currentSongStartHits, 0)
+  )
+  const songAccuracy = calculateAccuracy(perfectsDelta + hitsDelta, missesDelta)
 
   currentState.songStats.push({
     songId: currentSong.id,
@@ -55,6 +54,7 @@ const handleSongEnded = (
   })
 
   currentState.currentSongStartScore = currentScore
+  currentState.currentSongStartHits = currentHits
   currentState.currentSongStartPerfectHits = currentPerfects
   currentState.currentSongStartMisses = currentMisses
 }
@@ -131,7 +131,7 @@ export const playSongSequence = async (
   if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
     const parsedNotes = parseSongNotes(currentSong as Song, NOTE_LEAD_IN_MS, {
       onWarn: msg => logger.warn('RhythmGame', msg)
-    }) as RhythmNote[]
+    })
     if (parsedNotes.length > 0) {
       notes = notes.concat(parsedNotes)
     }
@@ -241,6 +241,7 @@ export const resetGigStateTracking = (
     gameStateRef.current.lastEndedSongIndex = -1
     gameStateRef.current.songStats = []
     gameStateRef.current.currentSongStartScore = 0
+    gameStateRef.current.currentSongStartHits = 0
     gameStateRef.current.currentSongStartPerfectHits = 0
     gameStateRef.current.currentSongStartMisses = 0
     gameStateRef.current.songTransitioning = false

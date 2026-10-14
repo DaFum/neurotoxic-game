@@ -1,7 +1,7 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { finiteNumberOr, parseCooldownEntry } from '../gameState'
-import { MODULE_REGISTRY } from '../assetModuleRegistry'
+import { getAssetAggregateBoni } from '../assetSelectors/assetFinancials'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
 import { resolveTemplateString } from './templateResolver'
@@ -34,26 +34,12 @@ const hasInstalledAssetFlag = (
   flag: 'infightingDamper'
 ): boolean => {
   const assets = Array.isArray(gameState.assets) ? gameState.assets : []
-  for (const asset of assets) {
-    if (!asset || typeof asset !== 'object') continue
-    if (
-      typeof asset.condition === 'number' &&
-      Number.isFinite(asset.condition) &&
-      asset.condition < 20
-    ) {
-      continue
-    }
-
-    const slots = Array.isArray(asset.slots) ? asset.slots : []
-    for (const slot of slots) {
-      const moduleId = slot?.installedModuleId
-      if (typeof moduleId !== 'string') continue
-      if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) continue
-      const module = MODULE_REGISTRY[moduleId]
-      if (module?.boni?.[flag] === true) return true
-    }
-  }
-  return false
+  return assets.some(
+    asset =>
+      asset &&
+      typeof asset === 'object' &&
+      getAssetAggregateBoni(asset)[flag] === true
+  )
 }
 
 const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {

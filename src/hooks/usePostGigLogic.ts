@@ -35,8 +35,8 @@ export const usePostGigLogic = () => {
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const activeQuests = useGameSelector(state => state.activeQuests)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)
-  // FINALE detection: the finale node has no outgoing connections, so the
-  // continue handler ends the run on the victory screen instead.
+  // The continue handler routes completed Expedition Finales to Run Summary
+  // and successful Career Finales to the victory screen.
   const isFinaleGig = useGameSelector(
     state =>
       state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
@@ -78,6 +78,7 @@ export const usePostGigLogic = () => {
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    saveGameAfterStateCommit,
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
     settleSoldMerch,
@@ -152,6 +153,7 @@ export const usePostGigLogic = () => {
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    saveGameAfterStateCommit,
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
     settleSoldMerch,

@@ -1,4 +1,5 @@
 import { logger } from '../logger'
+import { fetchWithTimeout } from './download'
 import {
   buildAssetUrlMap,
   resolveAssetUrl,
@@ -8,7 +9,6 @@ import {
 import { getRawAudioContext } from './context'
 import { audioState } from './state'
 import {
-  AUDIO_BUFFER_LOAD_TIMEOUT_MS,
   AUDIO_BUFFER_DECODE_TIMEOUT_MS,
   MAX_AUDIO_BUFFER_CACHE_SIZE,
   MAX_AUDIO_BUFFER_BYTE_SIZE
@@ -182,13 +182,7 @@ async function fetchAudioArrayBuffer(
   url: string,
   filename: string
 ): Promise<ArrayBuffer | null> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    AUDIO_BUFFER_LOAD_TIMEOUT_MS
-  )
-  try {
-    const response = await fetch(url, { signal: controller.signal })
+  return fetchWithTimeout(url, async response => {
     if (!response.ok) {
       logger.warn(
         'AudioEngine',
@@ -197,9 +191,7 @@ async function fetchAudioArrayBuffer(
       return null
     }
     return await response.arrayBuffer()
-  } finally {
-    clearTimeout(timeoutId)
-  }
+  })
 }
 
 /**

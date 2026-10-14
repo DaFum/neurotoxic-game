@@ -14,6 +14,7 @@ interface UseMinigameSceneLogicProps {
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
   /** Callback triggered on escape (exit), skipped, or dev auto-completion. This is not triggered on normal minigame finish. */
   onComplete: () => void
+  escapeCompletes?: boolean
 }
 
 /**
@@ -33,7 +34,8 @@ interface UseMinigameSceneLogicProps {
 export const useMinigameSceneLogic = ({
   logic,
   uiState,
-  onComplete
+  onComplete,
+  escapeCompletes = true
 }: UseMinigameSceneLogicProps) => {
   const band = useGameSelector(state => state?.band)
   const minigameType = useGameSelector(state => state?.minigame?.type)
@@ -68,7 +70,7 @@ export const useMinigameSceneLogic = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (uiState?.isGameOver && e.key === 'Escape') {
+      if (escapeCompletes && uiState?.isGameOver && e.key === 'Escape') {
         onCompleteRef.current()
       } else if (
         import.meta.env?.DEV &&
@@ -105,6 +107,7 @@ export const useMinigameSceneLogic = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
     uiState?.isGameOver,
+    escapeCompletes,
     minigameType,
     completeRoadieMinigame,
     completeAmpCalibration

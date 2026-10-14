@@ -117,7 +117,10 @@ export const processAssetTick = (state: GameState): GameState => {
     const boni = getAssetAggregateBoni(asset)
     const condition = Math.max(
       0,
-      Math.min(100, asset.condition - CONDITION_DECAY_PER_DAY)
+      Math.min(
+        100,
+        finiteNumberOr(asset.condition, 100) - CONDITION_DECAY_PER_DAY
+      )
     )
     moneyDelta += finiteNumberOr(
       getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset),

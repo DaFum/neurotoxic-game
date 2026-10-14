@@ -261,6 +261,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   lastEndedSongIndex: -1,
   currentSongStartScore: 0,
   rivalPenaltyActive: false,
+  currentSongStartHits: 0,
   currentSongStartPerfectHits: 0,
   currentSongStartMisses: 0,
   // Replaces audioPlaybackEnded; signals multi-song setlist completion

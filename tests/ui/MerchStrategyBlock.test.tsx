@@ -73,4 +73,30 @@ describe('MerchStrategyBlock', () => {
 
     expect(screen.getByText('Cost: 0 EUR (+0)')).toBeInTheDocument()
   })
+
+  it('disables Career restocking when the run has committed its cargo', () => {
+    const onRestock = vi.fn()
+
+    render(
+      <MerchStrategyBlock
+        bandInventory={{ shirts: 7 }}
+        customPrices={{}}
+        onUpdatePrice={vi.fn()}
+        onRestock={onRestock}
+        restockCostMultiplier={1}
+        merchCapacityBonus={0}
+        playerMoney={1000}
+        restockingEnabled={false}
+      />
+    )
+
+    const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
+    expect(restockButtons[0]).toBeDisabled()
+    expect(restockButtons[0]).toHaveAttribute(
+      'title',
+      'ui:pregig.merchStrategy.expeditionRestockLocked'
+    )
+    fireEvent.click(restockButtons[0])
+    expect(onRestock).not.toHaveBeenCalled()
+  })
 })

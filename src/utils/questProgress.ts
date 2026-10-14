@@ -1,5 +1,6 @@
 import type {
   GameState,
+  ActiveQuestState,
   QuestEvent,
   QuestEventContext,
   QuestEventType,
@@ -10,7 +11,8 @@ import type {
   QuestState,
   BrandDealType
 } from '../types'
-import { QuestLifecycle } from '../domain/questLifecycle'
+import { advanceQuest, setQuestProgress } from '../domain/questAdvance'
+import { completeQuest } from '../domain/questComplete'
 import { getQuestDefinition } from '../data/questRegistry'
 import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
 import { LEGACY_QUEST_EVENT_TYPES } from '../data/questProgressSources'
@@ -415,6 +417,8 @@ export const QuestProgress = {
     const normalizedEvent = normalizeQuestEvent(event)
     if (!normalizedEvent) return nextState
 
+    const pendingCompletions: ActiveQuestState[] = []
+
     for (const activeQuest of nextState.activeQuests) {
       if (!activeQuest) continue
       const registryEntry = getQuestDefinition(activeQuest.id)
@@ -433,17 +437,40 @@ export const QuestProgress = {
         const amount = calculateProgressAmount(rule, normalizedEvent)
         if (rule.amount === 'threshold') {
           if (!Number.isFinite(amount)) break
-          nextState = QuestLifecycle.setQuestProgress(nextState, {
+          nextState = setQuestProgress(nextState, {
             questId: quest.id,
-            progress: amount
+            progress: amount,
+            deferCompletion: true
           })
         } else if (amount > 0) {
-          nextState = QuestLifecycle.advanceQuest(nextState, {
+          nextState = advanceQuest(nextState, {
             questId: quest.id,
-            amount
+            amount,
+            deferCompletion: true
           })
         }
+        const updated = nextState.activeQuests.find(q => q?.id === quest.id)
+        if (
+          updated &&
+          updated !== activeQuest &&
+          isFiniteNumber(updated.required) &&
+          updated.required > 0 &&
+          finiteNumberOr(updated.progress, 0) >= updated.required
+        ) {
+          pendingCompletions.push(updated)
+        }
         break
+      }
+    }
+
+    // Credit every consumer before rewards emit nested events. A nested payout
+    // may already resolve a pending quest; identity keeps its replacement or
+    // follow-up from being completed from this event's stale snapshot.
+    for (const quest of pendingCompletions) {
+      if (nextState.activeQuests.includes(quest)) {
+        nextState = completeQuest(nextState, {
+          questId: quest.id
+        })
       }
     }
 

@@ -2,6 +2,7 @@ import type { GameState, ActiveQuestState, ToastPayload } from '../types'
 import { finiteNumberOr } from '../utils/gameState'
 import { applyQuestFailurePenalties } from './questPenalties'
 import { getQuestWithDefinition, getQuestToastName } from './questHelpers'
+import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 
 export const checkDeadlines = (state: GameState): GameState => {
   let nextState = { ...state }
@@ -31,6 +32,12 @@ export const checkDeadlines = (state: GameState): GameState => {
         currentDay
       )
       nextState = penaltyResult.state
+      if (quest.id === QUEST_PROVE_YOURSELF && nextState.player) {
+        nextState.player = {
+          ...nextState.player,
+          stats: { ...nextState.player.stats, proveYourselfMode: false }
+        }
+      }
       flagsToAdd.push(...penaltyResult.flagsToAdd)
       cooldownsToAdd.push(...penaltyResult.cooldownsToAdd)
 

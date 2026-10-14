@@ -40,8 +40,7 @@ export {
 } from './transportControl'
 export {
   enableCorruptionBurstAudio,
-  disableCorruptionBurstAudio,
-  setCorruptionEffect
+  disableCorruptionBurstAudio
 } from './corruptionEffects'
 
 export { startMetalGenerator } from './proceduralMetal'

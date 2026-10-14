@@ -98,12 +98,6 @@ export interface IAudioEngine {
   pauseAudio(): Promise<void>
   /** Resumes the transport. Resolves `false` when playback could not resume. */
   resumeAudio(): Promise<boolean>
-  /**
-   * Toggles the master corruption effect.
-   *
-   * @param active - `true` to ramp the effect in, `false` to ramp it out.
-   */
-  setCorruptionEffect(active: boolean): void
   /** Arms the corruption-burst audio chain. */
   enableCorruptionBurstAudio(): void
   /**
@@ -168,8 +162,6 @@ export const toneAudioEngine: IAudioEngine = {
     audioEngineHub.getTransportState(),
   pauseAudio: (): Promise<void> => audioEngineHub.pauseAudio(),
   resumeAudio: (): Promise<boolean> => audioEngineHub.resumeAudio(),
-  setCorruptionEffect: (active: boolean): void =>
-    audioEngineHub.setCorruptionEffect(active),
   enableCorruptionBurstAudio: (): void =>
     audioEngineHub.enableCorruptionBurstAudio(),
   disableCorruptionBurstAudio: (): void =>
@@ -232,9 +224,6 @@ export class NullAudioEngine implements IAudioEngine {
   }
 
   /** {@inheritDoc IAudioEngine} */
-  setCorruptionEffect(): void {}
-
-  /** {@inheritDoc IAudioEngine} */
   enableCorruptionBurstAudio(): void {}
 
   /** {@inheritDoc IAudioEngine} */
@@ -288,7 +277,6 @@ export const createStubAudioEngine = (
     getTransportState: (): AudioTransportState => 'started',
     pauseAudio: async (): Promise<void> => {},
     resumeAudio: async (): Promise<boolean> => true,
-    setCorruptionEffect: (): void => {},
     enableCorruptionBurstAudio: (): void => {},
     disableCorruptionBurstAudio: (): void => {},
     getToneAbsoluteTimeMs: getTimeMs,
