@@ -319,10 +319,19 @@ export const handleUpdateSocial = (
   if (updates.brandReputation !== undefined) {
     const rawReputation: unknown = updates.brandReputation
     if (isLooseRecord(rawReputation)) {
+      const previousReputation: Record<string, unknown> =
+        state.social?.brandReputation ?? {}
       const clampedReputation: Record<string, number> = {}
       for (const key of Object.keys(rawReputation)) {
         if (isForbiddenKey(key)) continue
-        clampedReputation[key] = clampBrandReputation(rawReputation[key])
+        const rawValue = rawReputation[key]
+        // A non-finite entry is malformed: keep the stored trust rather than
+        // letting the clamp collapse it to 0.
+        if (isFiniteNumber(rawValue)) {
+          clampedReputation[key] = clampBrandReputation(rawValue)
+        } else if (Object.hasOwn(previousReputation, key)) {
+          clampedReputation[key] = clampBrandReputation(previousReputation[key])
+        }
       }
       updates.brandReputation = clampedReputation
     } else {

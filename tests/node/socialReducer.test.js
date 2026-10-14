@@ -34,10 +34,25 @@ describe('socialReducer', () => {
         brandReputation: { CORPORATE: 500, INDIE: -20, NEUTRAL: Number.NaN }
       })
 
+      // NEUTRAL had no stored trust, so the malformed entry is dropped.
       assert.deepEqual(nextState.social.brandReputation, {
         CORPORATE: 100,
-        INDIE: 0,
-        NEUTRAL: 0
+        INDIE: 0
+      })
+    })
+
+    it('keeps stored brandReputation for non-finite entries', () => {
+      baseState.social.brandReputation = { CORPORATE: 40, INDIE: 25 }
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: {
+          CORPORATE: Number.NaN,
+          INDIE: Number.POSITIVE_INFINITY
+        }
+      })
+
+      assert.deepEqual(nextState.social.brandReputation, {
+        CORPORATE: 40,
+        INDIE: 25
       })
     })
 
