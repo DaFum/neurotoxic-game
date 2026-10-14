@@ -524,6 +524,11 @@ test('applyReputationDecay floors the result', () => {
   assert.equal(applyReputationDecay(105, 3), 103)
 })
 
+test('calculateSocialGrowth flips to cancel-culture growth exactly at controversy 80', () => {
+  assert.equal(calculateSocialGrowth('unknown', 80, 0, false, 79), 15)
+  assert.equal(calculateSocialGrowth('unknown', 80, 0, false, 80), -8)
+})
+
 test('calculateSocialGrowth calculates base growth based on performance', () => {
   // performance 80, no viral, no platform multiplier (1.0)
   // baseGrowth = (80 - 50) * 0.5 = 15

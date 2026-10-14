@@ -474,16 +474,19 @@ const VENUE_DEFENSE_LOYALTY_COST = 15
  */
 export const handleAddVenueBlacklist = (
   state: GameState,
-  { venueId, toastId }: { venueId: string; toastId: string }
+  payload: { venueId: string; toastId: string }
 ): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  const { venueId, toastId } = payload
   const nextState = { ...state }
+  const currentLoyalty = finiteNumberOr(nextState.social.loyalty, 0)
   // Intentional design: when loyalty is high enough, loyal fans defend the
   // band and prevent the venue from blacklisting them, at the cost of some
   // loyalty points.
-  if (nextState.social.loyalty >= VENUE_DEFENSE_LOYALTY_THRESHOLD) {
+  if (currentLoyalty >= VENUE_DEFENSE_LOYALTY_THRESHOLD) {
     nextState.social = {
       ...nextState.social,
-      loyalty: nextState.social.loyalty - VENUE_DEFENSE_LOYALTY_COST
+      loyalty: currentLoyalty - VENUE_DEFENSE_LOYALTY_COST
     }
     nextState.toasts = [
       ...(nextState.toasts || []),

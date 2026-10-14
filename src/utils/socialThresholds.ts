@@ -13,6 +13,13 @@ export const HIGH_CONTROVERSY_THRESHOLD =
 export const SCANDAL_CONTROVERSY_THRESHOLD =
   BALANCE_CONFIG.social.scandalThreshold
 
+/**
+ * Controversy level of the extreme tier above "scandal": cancel-culture growth
+ * penalty on posts and the largest van breakdown multiplier.
+ */
+export const EXTREME_CONTROVERSY_THRESHOLD =
+  BALANCE_CONFIG.social.extremeControversyThreshold
+
 /** Loyalty a scandal-hit audience still needs to rally behind the band. */
 const CULT_LOYALTY_THRESHOLD = BALANCE_CONFIG.social.cultLoyaltyThreshold
 
@@ -35,6 +42,16 @@ export const isHighControversy = (controversyLevel: unknown): boolean =>
 export const isScandalControversy = (controversyLevel: unknown): boolean =>
   isFiniteNumber(controversyLevel) &&
   controversyLevel >= SCANDAL_CONTROVERSY_THRESHOLD
+
+/**
+ * Whether controversy has reached the extreme tier.
+ *
+ * @param controversyLevel - Persisted controversy; non-finite never passes.
+ * @returns True at or above {@link EXTREME_CONTROVERSY_THRESHOLD}.
+ */
+export const isExtremeControversy = (controversyLevel: unknown): boolean =>
+  isFiniteNumber(controversyLevel) &&
+  controversyLevel >= EXTREME_CONTROVERSY_THRESHOLD
 
 /**
  * Whether a scandal-hit audience still has enough loyalty to rally (the "cult"

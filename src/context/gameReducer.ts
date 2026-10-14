@@ -458,17 +458,15 @@ export const gameReducer = (
 
         // Reducers must stay pure, so the toast id is derived from state
         // instead of minted by createAddToastAction.
-        nextState = gameReducer(
-          nextState,
-          createAddToastActionWithId(
-            {
-              type: 'info',
-              messageKey: milestone.labelKey,
-              options: milestone.createLabelOptions?.()
-            },
-            buildDeterministicToastId('milestone-toast', nextState.toasts)
-          )
+        const toastAction = createAddToastActionWithId(
+          {
+            type: 'info',
+            messageKey: milestone.labelKey,
+            options: milestone.createLabelOptions?.()
+          },
+          buildDeterministicToastId('milestone-toast', nextState.toasts)
         )
+        if (toastAction) nextState = gameReducer(nextState, toastAction)
       }
     }
   }

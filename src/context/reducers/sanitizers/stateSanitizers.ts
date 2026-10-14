@@ -1230,21 +1230,24 @@ export const sanitizeMinigameState = (
     typeof minigameObj.equipmentRemaining === 'number' &&
     Number.isFinite(minigameObj.equipmentRemaining)
   ) {
-    nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
+    nextMinigame.equipmentRemaining = Math.max(
+      0,
+      minigameObj.equipmentRemaining
+    )
   }
   if (
     Object.hasOwn(minigameObj, 'accumulatedDamage') &&
     typeof minigameObj.accumulatedDamage === 'number' &&
     Number.isFinite(minigameObj.accumulatedDamage)
   ) {
-    nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
+    nextMinigame.accumulatedDamage = clamp0to100(minigameObj.accumulatedDamage)
   }
   if (
     Object.hasOwn(minigameObj, 'score') &&
     typeof minigameObj.score === 'number' &&
     Number.isFinite(minigameObj.score)
   ) {
-    nextMinigame.score = minigameObj.score
+    nextMinigame.score = clamp0to100(minigameObj.score)
   }
 
   return nextMinigame
