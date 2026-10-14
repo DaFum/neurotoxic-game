@@ -241,6 +241,27 @@ describe('CompletePhase', () => {
     expect(spinButton).toBeFalsy()
   })
 
+  test.each([
+    [50, true],
+    [49, false]
+  ])(
+    'spin story uses the inclusive scandal tier (controversy %i -> shown: %s)',
+    async (controversyLevel, shown) => {
+      render(
+        <CompletePhase
+          result={mockResult}
+          onContinue={vi.fn()}
+          onSpinStory={vi.fn()}
+          player={mockPlayer}
+          social={{ controversyLevel }}
+        />
+      )
+
+      const spinButton = screen.queryByRole('button', { name: /Spin Story/i })
+      expect(Boolean(spinButton)).toBe(shown)
+    }
+  )
+
   test('hides spin story button when controversy is low', async () => {
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()
