@@ -327,8 +327,17 @@ Wherever this report offered DELETE or INTEGRATE, the item was INTEGRATED.
 | §5.1 14 unconsumed quest event types                                        | Integrated: 8 new quests consume them, all offered                                                                                                                                        | `98341a7`, `d7c9cfc` |
 | (found while integrating) `social.trendMatched` never emitted in gameplay   | Now emitted when a resolved social post matches the current trend                                                                                                                         | `d7c9cfc`            |
 
+**Review round** (fresh-context review of `b7fe2d6..b4455bf`, then fixed):
+
+| Review finding                                                                                     | Resolution                                                                                          | Commit               |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
+| New quests had no `progressSource`. The registry test failed, and the quest UI showed no hint line | Eight new source ids were added, with EN/DE `ui:quests.progressSource.*` and `hint.nextStep.*` keys | `3e677d6`            |
+| `quest_hard_knocks` completed from ordinary travel (TOURBUS)                                       | Rules now match only `ROADIE`, `AMP_CALIBRATION` and `KABELSALAT`                                   | `3e677d6`            |
+| `UPDATE_SOCIAL` emitted `social.trendMatched` on every trend rotation                              | Emit removed. The social-post handler is the only producer                                          | `06d0928`            |
+| `createCorporateQuest` rewarded `brandReputation.corporate`, a key nothing reads                   | Keys are now `'CORPORATE'`, which also repairs the existing corporate quests                        | `06d0928`, `1149858` |
+| `quest_preventive_maintenance` comment did not match its rule                                      | Comment fixed; the rule stays broad                                                                 | `3e677d6`            |
+
 **Left for follow-up:**
 
-- The legacy `UPDATE_SOCIAL` trend-change emit in `socialReducer.ts` still treats a trend change as a "match". It is dead in gameplay.
 - `tests/social/extendedSocial.test.js` imports Vitest, but no Vitest include pattern matches `tests/social/`.
-- `reports/game-balance-simulation-baseline.json` still records `questsAvailable: 35`. The quest pool has grown, so the baseline needs regenerating with `pnpm run simulate:balance:baseline`.
+- `reports/game-balance-simulation-baseline.json` still records `questsAvailable: 35`. The quest pool has grown, so regenerate it with `pnpm run simulate:balance:baseline`.
