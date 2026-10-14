@@ -37,6 +37,7 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper, buildStashFullToast } from './bandReducer'
+import { isStashEntry } from '../../utils/gameState/checks'
 import { getStashStackCount } from '../../utils/contrabandStashUtils'
 import { pickContrabandDropFromRoll } from '../../utils/contrabandUtils'
 import { pickIndex } from '../../utils/selectionUtils'
@@ -762,12 +763,9 @@ export const handleCompleteRoadieMinigame = (
       ? (stash[safeItemId] as Record<string, unknown> | undefined)
       : undefined
   // A missing `stacks` field counts as one stack; an explicit non-positive
-  // `stacks` means the item is effectively empty and grants no bonus.
-  const stashStacks = isFiniteNumber(stashEntry?.stacks)
-    ? Math.max(0, stashEntry?.stacks as number)
-    : stashEntry
-      ? 1
-      : 0
+  // `stacks` (or a malformed non-object entry) grants no bonus.
+  const stashStacks =
+    safeItemId !== null ? getStashStackCount(stash, safeItemId) : 0
   const stashItemPresent = stashStacks > 0
 
   // Effective contraband count: only credit a positive, real delivery, clamped
@@ -801,7 +799,7 @@ export const handleCompleteRoadieMinigame = (
     stash != null
   ) {
     const newStash = Object.assign(Object.create(null), stash)
-    if (stashStacks > 1 && isFiniteNumber(stashEntry?.stacks)) {
+    if (stashStacks > 1 && isStashEntry(stashEntry)) {
       newStash[safeItemId] = { ...stashEntry, stacks: stashStacks - 1 }
     } else {
       if (

@@ -20,43 +20,9 @@ const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 /**
  * Runs a storage operation through the shared retry and fallback wrapper.
- *
- * @typeParam T - Operation result and fallback value shape.
- * @param operation - Operation name included in storage diagnostics.
- * @param fn - Storage operation to execute.
- * @param fallbackValue - Value returned after retries fail. Passing
- * `undefined` explicitly still counts as a fallback.
- * @returns Operation result, or the supplied fallback when one is provided.
- *
- * @throws Throws a `StorageError` after all retries fail when no fallback
- * argument is supplied.
+ * Re-exported from the single implementation in `errors/safeStorage.ts`.
  */
-export function safeStorageOperation<T>(operation: string, fn: () => T): T
-export function safeStorageOperation<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: T
-): T
-export function safeStorageOperation<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: undefined
-): T | undefined
-export function safeStorageOperation<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: null
-): T | null
-export function safeStorageOperation<T>(
-  operation: string,
-  fn: () => T,
-  ...fallbackValue: [] | [T | null | undefined]
-): T | null | undefined {
-  if (fallbackValue.length > 0) {
-    return runSafeStorageOperation(operation, fn, fallbackValue[0])
-  }
-  return runSafeStorageOperation(operation, fn)
-}
+export { runSafeStorageOperation as safeStorageOperation }
 
 // Latched by the production reporter so `readStorageItemChecked` can tell an
 // absent key apart from an unreadable store. The adapter contract is

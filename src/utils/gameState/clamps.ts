@@ -125,6 +125,19 @@ export const clamp0to100 = (value: number): number => {
 }
 
 /**
+ * Clamps a number to an integer percentage, rounding to nearest.
+ *
+ * @remarks
+ * Unlike {@link clamp0to100} (floors, and maps `Infinity` to `0`), this rounds
+ * and saturates infinities at the bounds, so an overflowed sum clamps to `100`.
+ *
+ * @param value - Candidate percentage value.
+ * @returns Integer clamped to `0..100`; `NaN` maps to `0`.
+ */
+export const clampPercentRounded = (value: number): number =>
+  Number.isNaN(value) ? 0 : Math.max(0, Math.min(100, Math.round(value)))
+
+/**
  * Clamps unknown input to the 0..100 percentage range without rounding.
  *
  * @remarks
