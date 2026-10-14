@@ -8,7 +8,11 @@ import { formatCurrency } from '../../../utils/numberUtils'
 import { calculatePostGigStateUpdates } from '../../../utils/postGig'
 import { generateBrandOffers } from '../../../utils/brandDealLogic'
 import { createHarmonyChangedQuestEvent } from '../../../quests/producers/gigQuestEvents'
-import { createSocialPostQuestEvents } from '../../../quests/producers/socialQuestEvents'
+import {
+  createSocialPostQuestEvents,
+  createSocialTrendMatchedQuestEvent
+} from '../../../quests/producers/socialQuestEvents'
+import { isPostMatchingTrend } from '../../../utils/socialEngine'
 import { secureRandom } from '../../../utils/crypto'
 import { clampBandHarmony, finiteNumberOr } from '../../../utils/gameState'
 import type { HandlerDispatchers } from './types'
@@ -140,6 +144,17 @@ export function applySocialPostResult(params: {
     followers: followersGained
   })) {
     applyQuestEvent(questEvent)
+  }
+  // A post that rides the current trend is the trend match; the daily trend
+  // rotation itself is not.
+  if (social?.trend && isPostMatchingTrend(social.trend, option)) {
+    applyQuestEvent(
+      createSocialTrendMatchedQuestEvent({
+        trendId: social.trend,
+        platform: option.platform,
+        postCategory: option.category
+      })
+    )
   }
 
   const playerUpdated = { ...player, money: nextMoney }

@@ -34,7 +34,11 @@ import {
   QUEST_DAMAGE_CONTROL,
   QUEST_SIGN_HERE,
   QUEST_BEST_BEFORE,
-  QUEST_EXPEDITION_EXIT_STRATEGY
+  QUEST_EXPEDITION_EXIT_STRATEGY,
+  QUEST_GARAGE_DAYS,
+  QUEST_PREVENTIVE_MAINTENANCE,
+  QUEST_HARD_KNOCKS,
+  QUEST_STAGE_TIME
 } from '../questsConstants'
 
 const defineQuestOfferEvent = <
@@ -644,6 +648,74 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_best_before.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -2 },
         outcomeText: 'events:quest_trigger_best_before.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_GARAGE_DAYS, {
+    id: 'quest_trigger_garage_days',
+    title: 'events:quest_trigger_garage_days.title',
+    description: 'events:quest_trigger_garage_days.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_garage_days.opt1.label',
+        effect: { type: 'quest', quest: QUEST_GARAGE_DAYS },
+        outcomeText: 'events:quest_trigger_garage_days.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_garage_days.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_garage_days.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_PREVENTIVE_MAINTENANCE, {
+    id: 'quest_trigger_preventive_maintenance',
+    title: 'events:quest_trigger_preventive_maintenance.title',
+    description: 'events:quest_trigger_preventive_maintenance.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_preventive_maintenance.opt1.label',
+        effect: { type: 'quest', quest: QUEST_PREVENTIVE_MAINTENANCE },
+        outcomeText: 'events:quest_trigger_preventive_maintenance.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_preventive_maintenance.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_preventive_maintenance.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_HARD_KNOCKS, {
+    id: 'quest_trigger_hard_knocks',
+    title: 'events:quest_trigger_hard_knocks.title',
+    description: 'events:quest_trigger_hard_knocks.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_hard_knocks.opt1.label',
+        effect: { type: 'quest', quest: QUEST_HARD_KNOCKS },
+        outcomeText: 'events:quest_trigger_hard_knocks.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_hard_knocks.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_hard_knocks.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_STAGE_TIME, {
+    id: 'quest_trigger_stage_time',
+    title: 'events:quest_trigger_stage_time.title',
+    description: 'events:quest_trigger_stage_time.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_stage_time.opt1.label',
+        effect: { type: 'quest', quest: QUEST_STAGE_TIME },
+        outcomeText: 'events:quest_trigger_stage_time.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_stage_time.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_stage_time.opt2.outcome'
       }
     ]
   })

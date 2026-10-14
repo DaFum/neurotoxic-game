@@ -193,3 +193,23 @@ export const QUEST_BEST_BEFORE = 'quest_best_before'
  * Quest id for leaving a tour through a voluntary extraction.
  */
 export const QUEST_EXPEDITION_EXIT_STRATEGY = 'quest_expedition_exit_strategy'
+
+/**
+ * Repeatable quest id for buying, upgrading or repairing assets.
+ */
+export const QUEST_GARAGE_DAYS = 'quest_garage_days'
+
+/**
+ * Repeatable quest id for restoring Bandhaus condition points.
+ */
+export const QUEST_PREVENTIVE_MAINTENANCE = 'quest_preventive_maintenance'
+
+/**
+ * Repeatable quest id for minigame attempts, successful or failed.
+ */
+export const QUEST_HARD_KNOCKS = 'quest_hard_knocks'
+
+/**
+ * Repeatable quest id for finished and good venue gigs.
+ */
+export const QUEST_STAGE_TIME = 'quest_stage_time'

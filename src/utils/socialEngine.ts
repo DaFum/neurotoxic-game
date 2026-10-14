@@ -106,6 +106,28 @@ const COOLDOWN_BLOCKED_IDS = new Set([
 ])
 
 /**
+ * Reports whether a post option rides the current social trend.
+ *
+ * @param trend - Current `social.trend` value.
+ * @param option - Post option whose category and badges are compared.
+ * @returns True when the option's category (or safe badge, for WHOLESOME) matches the trend.
+ */
+export const isPostMatchingTrend = (
+  trend: string | undefined,
+  option: Pick<SocialPostOption, 'category' | 'badges'>
+): boolean => {
+  if (!trend || !option.category) return false
+  return (
+    (trend === 'DRAMA' && option.category === 'Drama') ||
+    (trend === 'TECH' && option.category === 'Commercial') ||
+    (trend === 'MUSIC' && option.category === 'Performance') ||
+    (trend === 'WHOLESOME' &&
+      (option.category === 'Lifestyle' ||
+        option.badges?.includes('🛡️') === true))
+  )
+}
+
+/**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  *
@@ -149,16 +171,7 @@ export const generatePostOptions = (
           weight += 50
 
         // Trend Matching Bonus
-        if (currentTrend && opt.category) {
-          const isMatch =
-            (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
-            (currentTrend === 'TECH' && opt.category === 'Commercial') ||
-            (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
-            (currentTrend === 'WHOLESOME' &&
-              (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️')))
-
-          if (isMatch) weight += 10.0
-        }
+        if (isPostMatchingTrend(currentTrend, opt)) weight += 10.0
 
         eligibleOptions.push({ ...opt, _weight: weight * rng() })
         if (opt.id === 'comm_sellout_ad') {
