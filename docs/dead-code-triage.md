@@ -89,6 +89,9 @@ findings; the live report is still **7**.
   `runSafeStorageOperation` rather than a forwarding copy of its overloads.
 - `META_UNLOCK_QUEST_TOKEN` is live: settlement pays it from the run-scoped
   `expedition.metaUnlockQuestCompletedRunId` record.
+- Every canonical quest event type in `src/data/questEventTypes.ts` now has a
+  quest consumer, so the "emitted but unconsumed" list from the 2026-10-05
+  audit (§4) is empty.
 - New seams are recorded under [Test seams](#test-seams): `setGameMap`,
   `setScreenshotMode`, `setActiveEvent`, `createAdvanceQuestAction` /
   `ADVANCE_QUEST`, `getExpeditionAccessLock`.
