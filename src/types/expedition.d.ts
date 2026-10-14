@@ -721,6 +721,17 @@ export interface ExpeditionState {
    */
   blockedTravelAtRouteStep: number | null
   outcome: ExpeditionOutcome | null
+  /**
+   * The run inside which `quest_expedition_meta_unlock` completed, or `null`.
+   *
+   * @remarks
+   * Run-scoped evidence for the Career milestone token. `completedQuestIds`
+   * only ever grows and the quest repeats on a cooldown, so it proves history,
+   * not that the milestone happened in the run being settled. Written only by
+   * the Finale's terminal transition for its own run, and reset with the rest
+   * of the slice by `START_EXPEDITION` and `PREPARE_NEXT_EXPEDITION`.
+   */
+  metaUnlockQuestCompletedRunId: string | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
   insurancePolicyId?: ExpeditionInsurancePolicyId | null

@@ -128,6 +128,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   unpaidDailyObligation: 0,
   blockedTravelAtRouteStep: null,
   outcome: null,
+  metaUnlockQuestCompletedRunId: null,
   crew: {
     stressByCrewId: Object.create(null) as Record<string, number>,
     injuryByCrewId: Object.create(null) as Record<

@@ -252,8 +252,9 @@ export interface ExpeditionCareerSettlement {
  * @returns The settlement, or `null` when the run cannot be settled.
  *
  * @remarks
- * The run's own finalized outcome is the only source: the caller names which
- * run, never what it earned. A run already in `settledExpeditionRunIds` and a
+ * The run's own finalized outcome, plus the meta-unlock completion record the
+ * run itself stamped, are the only sources: the caller names which run, never
+ * what it earned. A run already in `settledExpeditionRunIds` and a
  * run whose outcome does not match both return `null`, so a replay changes
  * nothing.
  */
@@ -284,12 +285,13 @@ export const resolveExpeditionCareerSettlement = (
   // one-off milestone into a permanent +1 per run - and the settled-run guard
   // does not catch it, because it only stops the *same* run paying twice.
   //
-  // Nothing persisted today links a quest completion to the run it happened
-  // in, so the milestone cannot be validated at settlement. The token is
-  // therefore withheld rather than minted on evidence that does not prove it;
-  // awarding it needs a run-scoped completion record, which is a persistence
-  // change this settlement does not own.
-  const hasMetaUnlockMilestone = false
+  // The evidence is the run-scoped record instead: the Finale's terminal
+  // transition stamps `metaUnlockQuestCompletedRunId` with its own run id when
+  // its quest event completes the quest, and every new run starts without one.
+  // A completion in an earlier run, or before this one started, therefore
+  // never names this run, and the settled-run guard above caps it at once.
+  const hasMetaUnlockMilestone =
+    state.expedition.metaUnlockQuestCompletedRunId === runId
 
   return {
     tourTokensAwarded:
