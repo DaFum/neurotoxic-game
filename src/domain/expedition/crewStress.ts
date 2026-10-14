@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { clampPercentRounded } from '../../utils/gameState/clamps'
 import type { ExpeditionCrewStressSourceType } from '../../types/expedition'
 
 export const CREW_STRESS_SOURCE_DELTAS: Readonly<
@@ -25,7 +26,7 @@ export const applyCrewStressDelta = (
     safeDelta > 0
       ? safeDelta * finiteNumberOr(positiveMultiplier, 1)
       : safeDelta
-  return Math.max(0, Math.min(100, Math.round(safeCurrent + scaled)))
+  return clampPercentRounded(safeCurrent + scaled)
 }
 
 export const getCrewStressBand = (

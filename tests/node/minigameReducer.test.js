@@ -553,6 +553,38 @@ describe('minigameReducer', () => {
       )
     })
 
+    it('grants no bonus for a malformed non-object stash entry', () => {
+      const stash = Object.assign(Object.create(null), {
+        c_void_energy: 'junk'
+      })
+      const state = withActiveMinigame(
+        { ...baseState, band: { ...baseState.band, stash } },
+        MINIGAME_TYPES.ROADIE
+      )
+      const nextState = handleCompleteRoadieMinigame(state, {
+        equipmentDamage: 0,
+        contrabandDelivered: 1,
+        deliveredStashItemId: 'c_void_energy'
+      })
+      assert.strictEqual(nextState.player.money, baseState.player.money)
+    })
+
+    it('consumes an entry with a non-integer stack count instead of decrementing it (isStashEntry)', () => {
+      const stash = Object.assign(Object.create(null), {
+        c_void_energy: { id: 'c_void_energy', type: 'consumable', stacks: 2.5 }
+      })
+      const state = withActiveMinigame(
+        { ...baseState, band: { ...baseState.band, stash } },
+        MINIGAME_TYPES.ROADIE
+      )
+      const nextState = handleCompleteRoadieMinigame(state, {
+        equipmentDamage: 0,
+        contrabandDelivered: 1,
+        deliveredStashItemId: 'c_void_energy'
+      })
+      assert.ok(!Object.hasOwn(nextState.band.stash, 'c_void_energy'))
+    })
+
     it('skips contraband bonus when deliveredStashItemId is absent (no real stash item loaded)', () => {
       const stateNoStash = withActiveMinigame(baseState, MINIGAME_TYPES.ROADIE)
       // contrabandDelivered > 0 but no deliveredStashItemId (old synthetic behavior)

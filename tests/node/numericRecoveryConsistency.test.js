@@ -136,6 +136,21 @@ describe('crew loyalty and stress clamps', () => {
     }
   })
 
+  it('applyCrewStressDelta rounds and clamps to 0..100', () => {
+    assert.equal(applyCrewStressDelta(10.4, 5, 1), 15)
+    assert.equal(applyCrewStressDelta(10.6, 0, 1), 11)
+    assert.equal(applyCrewStressDelta(98, 10, 1), 100)
+    assert.equal(applyCrewStressDelta(5, -15, 1), 0)
+    assert.equal(
+      applyCrewStressDelta(Number.MAX_VALUE, Number.MAX_VALUE, 2),
+      100
+    )
+    assert.equal(
+      applyCrewStressDelta(-Number.MAX_VALUE, -Number.MAX_VALUE, 1),
+      0
+    )
+  })
+
   it('applyCrewStressDelta never returns NaN', () => {
     assert.equal(applyCrewStressDelta(Number.NaN, 5, 1), 5)
     assert.equal(applyCrewStressDelta(10, 5, Number.NaN), 15)
