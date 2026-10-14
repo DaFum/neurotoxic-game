@@ -297,7 +297,7 @@ So the 2026-10-05 §5.3 gap is **FIXED**, and `getExpeditionAccessLock` falls un
 
 ## Resolution (branch `claude/blissful-goodall-00ww9s`)
 
-Wherever this report offered DELETE or INTEGRATE, the item was INTEGRATED.
+Wherever this report offered DELETE or INTEGRATE, the item was INTEGRATED. Items whose only options were DELETE or recording a seam (`ADVANCE_QUEST`, `setActiveEvent`) were recorded as seams.
 
 | Finding                                                                     | Resolution                                                                                                                                                                                | Commit               |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |

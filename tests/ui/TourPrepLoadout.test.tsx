@@ -24,7 +24,9 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: unknown) => {
       tCalls.push({ key, options })
-      return key
+      return key === 'items:contraband.c_void_energy.name'
+        ? 'Void Energy Drink'
+        : key
     },
     i18n: { language: 'en' }
   })
@@ -289,7 +291,11 @@ describe('TourPrepLoadout', () => {
     tCalls.length = 0
     render(<TourPrepLoadout />)
 
-    expect(tCalls.map(call => call.key)).toContain(
+    const slider = screen.getByTestId(
+      'expedition-prep-contraband-c_void_energy'
+    )
+    expect(slider.closest('label')).toHaveTextContent('Void Energy Drink')
+    expect(slider.closest('label')).not.toHaveTextContent(
       'items:contraband.c_void_energy.name'
     )
   })
