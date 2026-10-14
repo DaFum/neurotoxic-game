@@ -19,7 +19,18 @@ import {
   resolveExpeditionCareerSettlement
 } from '../../src/domain/expedition/meta.ts'
 import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers.ts'
-import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
+import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
+import {
+  createAddQuestAction,
+  createApplyQuestEventAction
+} from '../../src/context/actionCreators.ts'
+import { QUEST_EXPEDITION_META_UNLOCK } from '../../src/data/questsConstants.ts'
+import { createExpeditionFinaleQuestEvent } from '../../src/quests/producers/expeditionQuestEvents.ts'
+import {
+  startedState,
+  walkTo,
+  walkToFinale
+} from '../expeditionLifecycleFixture.js'
 import { firstExtractionRouteStep } from '../expeditionLifecycleFixture.js'
 
 /** A Career with the counters a caller would need to claim a rank. */
@@ -277,10 +288,8 @@ describe('G5 — Tour Tokens are minted from the run outcome', () => {
     // `completedQuestIds` only ever grows and the meta-unlock quest repeats on
     // a cooldown, so reading it would hand every later run a permanent +1 -
     // the settled-run guard does not catch that, because it only stops the
-    // same run paying twice. The plan wants a *validated* milestone, and
-    // nothing persisted today ties a quest completion to the run it happened
-    // in, so the token is withheld rather than minted on evidence that does
-    // not prove it.
+    // same run paying twice. The plan wants a *validated* milestone, which
+    // only the run-scoped completion record can prove.
     const extracted = extractedRun()
     const runId = extracted.expedition.outcome.runId
     const withMilestone = {
@@ -322,5 +331,131 @@ describe('G5 — Tour Tokens are minted from the run outcome', () => {
     )
     assert.equal(settlement.tourTokensAwarded, 1)
     assert.deepEqual(settlement.completedExpeditionRegionIds, [regionId])
+  })
+})
+
+describe('G5 — the meta-unlock milestone is run-scoped evidence', () => {
+  /**
+   * Plays the fixture run through its Finale. With `questOneFinaleShort`, the
+   * meta-unlock quest is active at 1/2 - an earlier tour's Finale counted - so
+   * this run's Finale is the one that completes it.
+   */
+  const completedRun = ({ questOneFinaleShort = false } = {}) => {
+    let state = walkToFinale(startedState({ money: 5000 }))
+    if (questOneFinaleShort) {
+      state = gameReducer(
+        state,
+        createAddQuestAction({ id: QUEST_EXPEDITION_META_UNLOCK })
+      )
+      state = gameReducer(
+        state,
+        createApplyQuestEventAction(
+          createExpeditionFinaleQuestEvent('regional_headliner', true)
+        )
+      )
+      const quest = state.activeQuests.find(
+        q => q.id === QUEST_EXPEDITION_META_UNLOCK
+      )
+      assert.equal(quest?.progress, 1, 'the quest must be one Finale short')
+    }
+    state = {
+      ...state,
+      currentGig: { id: 'finale_venue' },
+      lastGigStats: { score: 9000, accuracy: 85, failed: false },
+      expedition: {
+        ...state.expedition,
+        finaleType: 'regional_headliner',
+        lastGigResolvedAtRouteStep: state.expedition.routeStep
+      }
+    }
+    const completed = gameReducer(state, {
+      type: ActionTypes.COMPLETE_EXPEDITION,
+      payload: {
+        finaleResultId: 'meta_finale',
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+    assert.equal(completed.expedition.status, 'completed')
+    return completed
+  }
+
+  it('pays the token once for a completion inside the settled run', () => {
+    const run = completedRun({ questOneFinaleShort: true })
+    const runId = run.expedition.outcome.runId
+    assert.ok(run.completedQuestIds.includes(QUEST_EXPEDITION_META_UNLOCK))
+    assert.equal(run.expedition.metaUnlockQuestCompletedRunId, runId)
+
+    // Completed 2 + new Region 1 + milestone 1.
+    assert.equal(
+      resolveExpeditionCareerSettlement(run, runId).tourTokensAwarded,
+      4
+    )
+    const settled = gameReducer(run, {
+      type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
+      payload: { runId }
+    })
+    assert.equal(settled.career.tourTokens, 4)
+    // The settled-run guard still stops a second payout of the same run.
+    assert.strictEqual(
+      gameReducer(settled, {
+        type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
+        payload: { runId }
+      }),
+      settled
+    )
+  })
+
+  it('withholds it for a completion outside the run', () => {
+    // Completed before this run started: history only, no run-scoped record.
+    const earlier = completedRun()
+    const runId = earlier.expedition.outcome.runId
+    const historical = {
+      ...earlier,
+      completedQuestIds: [QUEST_EXPEDITION_META_UNLOCK]
+    }
+    assert.equal(historical.expedition.metaUnlockQuestCompletedRunId, null)
+    assert.equal(
+      resolveExpeditionCareerSettlement(historical, runId).tourTokensAwarded,
+      3
+    )
+
+    // A record that names another run proves nothing about this one.
+    const otherRun = {
+      ...historical,
+      expedition: {
+        ...historical.expedition,
+        metaUnlockQuestCompletedRunId: 'run_earlier'
+      }
+    }
+    assert.equal(
+      resolveExpeditionCareerSettlement(otherRun, runId).tourTokensAwarded,
+      3
+    )
+  })
+
+  it('survives a save only for the completed run it names', () => {
+    const run = completedRun({ questOneFinaleShort: true })
+    const runId = run.expedition.outcome.runId
+    const load = expedition =>
+      sanitizeExpeditionState(
+        JSON.parse(JSON.stringify(expedition)),
+        run.runSeed,
+        run.lastGigStats
+      )
+
+    const loaded = load(run.expedition)
+    assert.equal(loaded.status, 'completed')
+    assert.equal(loaded.metaUnlockQuestCompletedRunId, runId)
+
+    assert.equal(
+      load({ ...run.expedition, metaUnlockQuestCompletedRunId: 'run_earlier' })
+        .metaUnlockQuestCompletedRunId,
+      null
+    )
+    assert.equal(
+      load({ ...run.expedition, metaUnlockQuestCompletedRunId: 7 })
+        .metaUnlockQuestCompletedRunId,
+      null
+    )
   })
 })

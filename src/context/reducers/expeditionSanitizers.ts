@@ -926,6 +926,13 @@ export const sanitizeExpeditionState = (
       ? Math.max(0, Math.floor(value.blockedTravelAtRouteStep))
       : null,
     outcome,
+    // Only a completed run's Finale writes the record, and only for itself, so
+    // one that names another run or a non-completed status is dropped.
+    metaUnlockQuestCompletedRunId:
+      status === 'completed' &&
+      readString(value, 'metaUnlockQuestCompletedRunId') === runId
+        ? runId
+        : null,
     insurancePolicyId:
       getExpeditionInsurancePolicy(
         readString(value, 'insurancePolicyId') ?? loadout?.insurancePolicyId
