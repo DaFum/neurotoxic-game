@@ -386,15 +386,21 @@ export const createSetScreenshotModeAction = (
  *
  * @param payload - Structured toast payload without an id.
  * @param id - Precomputed toast id.
- * @returns ADD_TOAST action carrying `id`.
+ * @returns ADD_TOAST action carrying `id`, or null when the sanitized toast
+ * has neither a message nor a message key (the reducer would drop it).
  */
 export const createAddToastActionWithId = (
   payload: Omit<ToastPayload, 'id'>,
   id: string
-): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> => ({
-  type: ActionTypes.ADD_TOAST,
-  payload: { ...payload, id }
-})
+): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> | null => {
+  const sanitized = sanitizeLoadedToast({ ...payload, id })
+  if (!sanitized) return null
+
+  return {
+    type: ActionTypes.ADD_TOAST,
+    payload: sanitized
+  }
+}
 
 /**
  * Creates a toast addition action
