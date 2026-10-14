@@ -157,7 +157,7 @@ const DebugLogViewerContent = ({
 
 /**
  * Displays filtered debug-log entries and viewer controls (DEV only, toggled
- * with Ctrl+`).
+ * with Ctrl plus the backtick key).
  */
 export const DebugLogViewer = () => {
   const [visible, setVisible] = useState(false)

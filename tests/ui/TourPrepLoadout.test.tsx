@@ -280,4 +280,17 @@ describe('TourPrepLoadout', () => {
       screen.queryByTestId('expedition-prep-contraband-c_bone_dust')
     ).toBeNull()
   })
+
+  it('translates contraband names instead of rendering the raw locale key', () => {
+    state.current = createInitialState()
+    state.current.band.stash = {
+      c_void_energy: { id: 'c_void_energy', stacks: 2 }
+    } as unknown as GameState['band']['stash']
+    tCalls.length = 0
+    render(<TourPrepLoadout />)
+
+    expect(tCalls.map(call => call.key)).toContain(
+      'items:contraband.c_void_energy.name'
+    )
+  })
 })

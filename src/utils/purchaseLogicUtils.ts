@@ -567,7 +567,7 @@ export const applyUnlockUpgrade = (
   playerPatch: PlayerPatch,
   playerVan: Partial<PlayerState['van']> | undefined
 ): PlayerPatch => {
-  const upgradeId = effect.id ? effect.id : item.id
+  const upgradeId = 'id' in effect && effect.id ? effect.id : item.id
   if (upgradeId == null) {
     return playerPatch
   }

@@ -1096,7 +1096,13 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                         className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray border border-steel-gray/40 p-2'
                       >
                         <div className='flex justify-between text-star-white'>
-                          <span>{contrabandInfo?.name ?? item.stashKey}</span>
+                          <span>
+                            {contrabandInfo
+                              ? t(contrabandInfo.name, {
+                                  defaultValue: item.stashKey
+                                })
+                              : item.stashKey}
+                          </span>
                           <span>
                             {currentStacks} / {item.ownedStacks}{' '}
                             {t('ui:expedition.prep.stacks', 'Stacks')}
