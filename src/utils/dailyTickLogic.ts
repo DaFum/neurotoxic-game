@@ -11,6 +11,7 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampVanCondition,
+  clampVanBreakdownChance,
   clampMemberStamina,
   clampMemberMood,
   BALANCE_CONSTANTS,
@@ -154,9 +155,8 @@ const updateVanCondition = (
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
-    nextPlayer.van.breakdownChance = Math.max(
-      0,
-      Math.min(0.5, Math.round(adjustedBreakdownChance * 100) / 100)
+    nextPlayer.van.breakdownChance = clampVanBreakdownChance(
+      Math.round(adjustedBreakdownChance * 100) / 100
     )
   }
 }
