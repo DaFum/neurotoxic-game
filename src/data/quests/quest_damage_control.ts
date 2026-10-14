@@ -13,6 +13,7 @@ export const quest_damage_control = {
   kind: 'repeatable',
   label: 'events:quest_damage_control.label',
   description: 'events:quest_damage_control.desc',
+  progressSource: 'social_stabilized',
   deadlineOffset: 8,
   repeatPolicy: 'cooldown',
   cooldownDays: 10,

@@ -12,6 +12,7 @@ export const quest_garage_days = {
   kind: 'repeatable',
   label: 'events:quest_garage_days.label',
   description: 'events:quest_garage_days.desc',
+  progressSource: 'asset_acquired',
   deadlineOffset: 20,
   repeatPolicy: 'cooldown',
   cooldownDays: 12,

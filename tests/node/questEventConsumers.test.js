@@ -17,6 +17,8 @@ import {
   createAddQuestAction,
   createApplyQuestEventAction,
   createCompleteAmpCalibrationAction,
+  createCompleteRoadieMinigameAction,
+  createCompleteTravelMinigameAction,
   createConsumeItemAction,
   createSetLastGigStatsAction,
   createUpdateSocialAction
@@ -300,6 +302,22 @@ const withAmpMinigame = state => ({
   minigame: { ...state.minigame, active: true, type: 'AMP_CALIBRATION' }
 })
 
+const withMinigame = (state, type, extra = {}) => ({
+  ...state,
+  minigame: { ...state.minigame, active: true, type, ...extra }
+})
+
+const withTravelMap = state => ({
+  ...state,
+  player: { ...state.player, currentNodeId: 'node1' },
+  gameMap: {
+    nodes: {
+      node1: { id: 'node1', venue: { name: 'Node 1 Venue' }, x: 0, y: 0 },
+      node2: { id: 'node2', venue: { name: 'Node 2 Venue' }, x: 100, y: 0 }
+    }
+  }
+})
+
 const gigState = () => {
   const base = createInitialState()
   return {
@@ -425,6 +443,26 @@ describe('quests consuming the asset, minigame and venue events', () => {
       createCompleteAmpCalibrationAction(0)
     )
     assert.equal(activeQuest(state, QUEST_HARD_KNOCKS).progress, 2)
+  })
+
+  it('does not count ordinary travel toward hard knocks, but a roadie job', () => {
+    let state = withTravelMap(
+      withQuest(createInitialState(), QUEST_HARD_KNOCKS)
+    )
+
+    for (const damage of [0, 60]) {
+      state = gameReducer(
+        withMinigame(state, 'TOURBUS', { targetDestination: 'node2' }),
+        createCompleteTravelMinigameAction(damage, [], 0.5)
+      )
+      assert.equal(activeQuest(state, QUEST_HARD_KNOCKS).progress, 0)
+    }
+
+    state = gameReducer(
+      withMinigame(state, 'ROADIE'),
+      createCompleteRoadieMinigameAction(0)
+    )
+    assert.equal(activeQuest(state, QUEST_HARD_KNOCKS).progress, 1)
   })
 
   it('counts every venue gig once and a good gig twice toward stage time', () => {

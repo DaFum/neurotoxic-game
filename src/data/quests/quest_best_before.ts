@@ -11,6 +11,7 @@ export const quest_best_before = {
   kind: 'repeatable',
   label: 'events:quest_best_before.label',
   description: 'events:quest_best_before.desc',
+  progressSource: 'item_used',
   deadlineOffset: 10,
   repeatPolicy: 'cooldown',
   cooldownDays: 10,

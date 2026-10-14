@@ -12,6 +12,7 @@ export const quest_expedition_exit_strategy = {
   kind: 'repeatable',
   label: 'events:quest_expedition_exit_strategy.label',
   description: 'events:quest_expedition_exit_strategy.desc',
+  progressSource: 'expedition_extracted',
   deadlineOffset: 30,
   repeatPolicy: 'cooldown',
   cooldownDays: 15,

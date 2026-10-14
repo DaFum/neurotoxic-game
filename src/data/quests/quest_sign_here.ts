@@ -10,6 +10,7 @@ import { createCorporateQuest } from './utils/createCorporateQuest'
 export const quest_sign_here = createCorporateQuest({
   label: 'events:quest_sign_here.label',
   description: 'events:quest_sign_here.desc',
+  progressSource: 'brand_offer_accepted',
   progressRules: [
     { event: 'brand.offerAccepted', amount: 'fixed', fixedAmount: 1 }
   ],

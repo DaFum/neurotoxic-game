@@ -11,6 +11,7 @@ export const quest_stage_time = {
   kind: 'repeatable',
   label: 'events:quest_stage_time.label',
   description: 'events:quest_stage_time.desc',
+  progressSource: 'venue_gig_completed',
   deadlineOffset: 14,
   repeatPolicy: 'cooldown',
   cooldownDays: 10,
