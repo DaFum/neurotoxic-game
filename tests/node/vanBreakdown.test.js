@@ -56,6 +56,15 @@ describe('Van Breakdown', () => {
     })
   })
 
+  it('keeps breakdownChance inside 0..0.5 under heavy controversy and low condition', () => {
+    const state = makeState(10)
+    state.social = { controversyLevel: 100 }
+    const { player } = calculateDailyUpdates(state)
+    assert.ok(player.van.breakdownChance >= 0)
+    assert.ok(player.van.breakdownChance <= 0.5)
+    assert.equal(player.van.breakdownChance, 0.18)
+  })
+
   it('NO COMPOUNDING - breakdown chance is stable over multiple days with similar condition', () => {
     let currentState = {
       ...BASE_STATE,

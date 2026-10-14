@@ -10,6 +10,9 @@ import {
   clampMemberMood,
   clampPlayerFame,
   clampLuck,
+  clampVanCondition,
+  clampVanFuel,
+  clampVanBreakdownChance,
   calculateFameLevel,
   finiteNumberOr,
   isFiniteNumber
@@ -306,10 +309,22 @@ export const applyStatModifier = (
 
   switch (effect.target) {
     case 'van': {
-      const base = getNumericProp(player.van ?? {}, effect.stat, 0) ?? 0
+      // Chain from the van already accumulated in the patch so two van effects
+      // in one purchase compose instead of overwriting each other.
+      const currentVan = nextPlayerPatch.van ?? player.van ?? {}
+      const base = getNumericProp(currentVan, effect.stat, 0) ?? 0
+      const next = base + val
+      const clampedNext =
+        effect.stat === 'condition'
+          ? clampVanCondition(next)
+          : effect.stat === 'fuel'
+            ? clampVanFuel(next)
+            : effect.stat === 'breakdownChance'
+              ? clampVanBreakdownChance(next)
+              : Math.max(0, next)
       nextPlayerPatch.van = {
-        ...(player.van ?? {}),
-        [effect.stat as string]: Math.max(0, base + val)
+        ...currentVan,
+        [effect.stat as string]: clampedNext
       }
       break
     }
