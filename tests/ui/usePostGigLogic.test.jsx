@@ -427,6 +427,33 @@ describe('usePostGigLogic', () => {
       })
     })
 
+    it('generates brand offers once from the live store state, including rivalBand', async () => {
+      const rivalBand = {
+        id: 'rival_1',
+        currentLocationId: 'node_1',
+        powerLevel: 75
+      }
+      mockGameState(getBaseState({ rivalBand }))
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      await waitFor(() => expect(result.current.phase).toBe('COMPLETE'))
+      expect(brandDealLogic.generateBrandOffers).toHaveBeenCalledTimes(1)
+      expect(brandDealLogic.generateBrandOffers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          player: expect.objectContaining({ money: 500 }),
+          band: expect.objectContaining({ harmony: 50 }),
+          social: expect.objectContaining({ instagram: 100 }),
+          rivalBand
+        }),
+        expect.any(Function)
+      )
+    })
+
     it('handles brand deal acceptance, rejection, and errors', async () => {
       // Each sub-scenario uses its own hook instance because the single-shot guard
       // holds after a successful deal acceptance until the phase changes.

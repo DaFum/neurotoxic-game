@@ -1,19 +1,14 @@
 import type { GameState } from '../../../types'
-import type {
-  SocialEngineGameState,
-  SocialPostOption
-} from '../../../types/social'
+import type { SocialPostOption } from '../../../types/social'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
 import { calculatePostGigStateUpdates } from '../../../utils/postGig'
-import { generateBrandOffers } from '../../../utils/brandDealLogic'
 import { createHarmonyChangedQuestEvent } from '../../../quests/producers/gigQuestEvents'
 import {
   createSocialPostQuestEvents,
   createSocialTrendMatchedQuestEvent
 } from '../../../quests/producers/socialQuestEvents'
 import { isPostMatchingTrend } from '../../../utils/socialEngine'
-import { secureRandom } from '../../../utils/crypto'
 import { clampBandHarmony, finiteNumberOr } from '../../../utils/gameState'
 import type { HandlerDispatchers } from './types'
 
@@ -26,14 +21,14 @@ type SocialPostDispatchers = Pick<
   | 'applyQuestEvent'
   | 'addToast'
   | 'setPostResult'
-  | 'setBrandOffers'
-  | 'setPhase'
+  | 'requestBrandOffers'
 >
 
 /**
  * Applies an already-computed social-post resolution: posts the result, applies
  * band/player/social updates and toasts, unlocks traits, emits quest events,
- * then regenerates brand offers and routes to the DEALS or COMPLETE phase.
+ * then requests brand offers. The owning hook generates them once these
+ * dispatches commit, so quest rewards earned by this post are already applied.
  *
  * Pure orchestration over injected dispatchers (no React state); the heavy math
  * is owned by `calculatePostGigStateUpdates`.
@@ -44,12 +39,10 @@ export function applySocialPostResult(params: {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
-  rivalBand: GameState['rivalBand']
   t: import('i18next').TFunction
   dispatchers: SocialPostDispatchers
 }): void {
-  const { option, updates, player, band, social, rivalBand, t, dispatchers } =
-    params
+  const { option, updates, player, band, social, t, dispatchers } = params
   const {
     updateBand,
     updatePlayer,
@@ -58,8 +51,7 @@ export function applySocialPostResult(params: {
     applyQuestEvent,
     addToast,
     setPostResult,
-    setBrandOffers,
-    setPhase
+    requestBrandOffers
   } = dispatchers
 
   const {
@@ -157,22 +149,7 @@ export function applySocialPostResult(params: {
     )
   }
 
-  const playerUpdated = { ...player, money: nextMoney }
-  // Generate brand offers with UPDATED state (Post-Social-Update)
-  const updatedGameState: SocialEngineGameState = {
-    player: playerUpdated,
-    band: hasBandUpdates ? newBand : band,
-    social: { ...social, ...updatedSocial },
-    rivalBand
-  }
-
-  const offers = generateBrandOffers(updatedGameState, secureRandom)
-  setBrandOffers(offers)
-
-  // If there are brand offers, go to DEALS phase, else COMPLETE
-  if (offers.length > 0) {
-    setPhase('DEALS')
-  } else {
-    setPhase('COMPLETE')
-  }
+  // Offers must see the committed state: the dispatches above can complete a
+  // quest whose rewards change social, money or harmony in the reducer.
+  requestBrandOffers()
 }

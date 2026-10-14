@@ -500,7 +500,6 @@ describe('social.trendMatched from the post-gig social post', () => {
       player: state.player,
       band: state.band,
       social: state.social,
-      rivalBand: state.rivalBand,
       t: (_key, opts) => opts?.defaultValue ?? '',
       dispatchers: {
         updateBand: noop,
@@ -512,8 +511,7 @@ describe('social.trendMatched from the post-gig social post', () => {
         },
         addToast: noop,
         setPostResult: noop,
-        setBrandOffers: noop,
-        setPhase: noop
+        requestBrandOffers: noop
       }
     })
     return next

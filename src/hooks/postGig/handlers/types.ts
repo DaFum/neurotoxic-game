@@ -29,6 +29,11 @@ export interface HandlerDispatchers {
   applyQuestEvent: (event: QuestProgressEvent) => void
   changeScene: (scene: GamePhase) => void
   setBrandOffers: (offers: BrandDeal[]) => void
+  /**
+   * Asks the owning hook to generate brand offers and route to DEALS or
+   * COMPLETE once the post's dispatches (and any quest rewards) have committed.
+   */
+  requestBrandOffers: () => void
   setPostResult: (result: PostResult) => void
   unlockTrait: (memberId: string, traitId: string) => void
   recordExpeditionCrewStressSource: (

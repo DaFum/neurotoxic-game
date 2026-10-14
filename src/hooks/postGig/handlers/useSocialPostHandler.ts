@@ -13,7 +13,6 @@ interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
-  rivalBand: GameState['rivalBand']
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
@@ -26,13 +25,13 @@ interface UseSocialPostHandlerProps {
 /**
  * Builds the social-post selection handler: computes the post outcome via
  * `calculatePostGigStateUpdates`, applies it through {@link applySocialPostResult},
- * and routes to the DEALS or COMPLETE phase. Guarded against re-entrancy.
+ * and requests brand offers; the owning hook routes to DEALS or COMPLETE once
+ * the post has committed. Guarded against re-entrancy.
  */
 export function useSocialPostHandler({
   player,
   band,
   social,
-  rivalBand,
   currentGig,
   perfScore,
   lastGigStats,
@@ -47,8 +46,7 @@ export function useSocialPostHandler({
     applyQuestEvent,
     addToast,
     setPostResult,
-    setBrandOffers,
-    setPhase,
+    requestBrandOffers,
     resolveExpeditionSocialResult
   }
 }: UseSocialPostHandlerProps) {
@@ -86,7 +84,6 @@ export function useSocialPostHandler({
           player,
           band,
           social,
-          rivalBand,
           t,
           dispatchers: {
             updateBand,
@@ -96,8 +93,7 @@ export function useSocialPostHandler({
             applyQuestEvent,
             addToast,
             setPostResult,
-            setBrandOffers,
-            setPhase
+            requestBrandOffers
           }
         })
         if (resolveExpeditionSocialResult && option.id) {
@@ -120,7 +116,6 @@ export function useSocialPostHandler({
       lastGigStats,
       perfScore,
       social,
-      rivalBand,
       player,
       band,
       updateSocial,
@@ -132,8 +127,7 @@ export function useSocialPostHandler({
       currentGig,
       t,
       setPostResult,
-      setBrandOffers,
-      setPhase,
+      requestBrandOffers,
       resolveExpeditionSocialResult,
       isProcessingActionRef,
       setIsProcessingAction
