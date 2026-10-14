@@ -7,9 +7,14 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampMemberMood,
   clampPlayerFame,
   clampLuck,
+  clampVanCondition,
+  clampVanFuel,
+  clampVanBreakdownChance,
   calculateFameLevel,
   finiteNumberOr,
   isFiniteNumber
@@ -306,10 +311,22 @@ export const applyStatModifier = (
 
   switch (effect.target) {
     case 'van': {
-      const base = getNumericProp(player.van ?? {}, effect.stat, 0) ?? 0
+      // Chain from the van already accumulated in the patch so two van effects
+      // in one purchase compose instead of overwriting each other.
+      const currentVan = nextPlayerPatch.van ?? player.van ?? {}
+      const base = getNumericProp(currentVan, effect.stat, 0) ?? 0
+      const next = base + val
+      const clampedNext =
+        effect.stat === 'condition'
+          ? clampVanCondition(next)
+          : effect.stat === 'fuel'
+            ? clampVanFuel(next)
+            : effect.stat === 'breakdownChance'
+              ? clampVanBreakdownChance(next)
+              : Math.max(0, next)
       nextPlayerPatch.van = {
-        ...(player.van ?? {}),
-        [effect.stat as string]: Math.max(0, base + val)
+        ...currentVan,
+        [effect.stat as string]: clampedNext
       }
       break
     }
@@ -339,7 +356,7 @@ export const applyStatModifier = (
     case 'band': {
       if (effect.stat === 'harmony') {
         nextBandPatch = {
-          harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 0) + val)
+          harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 1) + val)
         }
       } else {
         const base = getNumericProp(band, effect.stat, 0) ?? 0
@@ -406,7 +423,7 @@ export const getPurchaseDecision = (
   const hasValidEffect = !!effect
   const meetsReputation =
     !item.requiresReputation ||
-    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
+    finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
   const canPurchase =
     playerCanAfford &&
     (isConsumable || !isOwned) &&
@@ -445,7 +462,7 @@ export const validatePurchase = (
 
   const meetsReputation =
     !item.requiresReputation ||
-    (social?.controversyLevel ?? 0) < SCANDAL_CONTROVERSY_THRESHOLD
+    finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
   if (!meetsReputation) {
     return { isValid: false, errorType: 'reputation_blocked' }
   }
@@ -567,7 +584,7 @@ export const applyUnlockUpgrade = (
   playerPatch: PlayerPatch,
   playerVan: Partial<PlayerState['van']> | undefined
 ): PlayerPatch => {
-  const upgradeId = effect.id ? effect.id : item.id
+  const upgradeId = 'id' in effect && effect.id ? effect.id : item.id
   if (upgradeId == null) {
     return playerPatch
   }
@@ -648,7 +665,7 @@ export const applyUnlockHQ = (
 
     case 'hq_room_diy_soundproofing':
       nextBandPatch = {
-        harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 0) + 5)
+        harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 1) + 5)
       }
       messages.push({
         messageKey: 'ui:shop.messages.soundproofing',
@@ -707,14 +724,17 @@ export const applyUnlockHQ = (
         case 'hq_room_coffee':
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 20)
+            mood: clampMemberMood(readMemberMood(m.mood) + 20)
           })
           break
         case 'hq_room_sofa':
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              finiteNumberOr(m.stamina, 0) + 30,
+              readMemberStamina(
+                m.stamina,
+                getNumericProp(m, 'staminaMax', 100)
+              ) + 30,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
@@ -723,7 +743,10 @@ export const applyUnlockHQ = (
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              finiteNumberOr(m.stamina, 0) + 10,
+              readMemberStamina(
+                m.stamina,
+                getNumericProp(m, 'staminaMax', 100)
+              ) + 10,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
@@ -733,13 +756,13 @@ export const applyUnlockHQ = (
           // larger morale boost than its recurring daily-tick effect).
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+            mood: clampMemberMood(readMemberMood(m.mood) + 5)
           })
           break
         default:
           transform = m => ({
             ...m,
-            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+            mood: clampMemberMood(readMemberMood(m.mood) + 5)
           })
       }
       const members = band?.members ?? []

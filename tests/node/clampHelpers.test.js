@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   addClampedMemberSkill,
   addClampedPercent,
+  clampBrandReputation,
   clampPercent,
   clampMemberSkill
 } from '../../src/utils/gameState/clamps.ts'
@@ -166,6 +167,20 @@ describe('isNonNegativeInteger', () => {
   it('rejects booleans, numeric strings and other non-numbers', () => {
     for (const value of NON_NUMBERS) {
       assert.equal(isNonNegativeInteger(value), false)
+    }
+  })
+})
+
+describe('clampBrandReputation', () => {
+  it('passes in-range values through and clamps out-of-range ones', () => {
+    assert.equal(clampBrandReputation(42.5), 42.5)
+    assert.equal(clampBrandReputation(-5), 0)
+    assert.equal(clampBrandReputation(250), 100)
+  })
+
+  it('maps non-finite and non-numeric input to 0', () => {
+    for (const value of [...NON_FINITE, ...NON_NUMBERS]) {
+      assert.equal(clampBrandReputation(value), 0)
     }
   })
 })

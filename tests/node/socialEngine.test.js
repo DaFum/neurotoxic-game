@@ -524,6 +524,11 @@ test('applyReputationDecay floors the result', () => {
   assert.equal(applyReputationDecay(105, 3), 103)
 })
 
+test('calculateSocialGrowth flips to cancel-culture growth exactly at controversy 80', () => {
+  assert.equal(calculateSocialGrowth('unknown', 80, 0, false, 79), 15)
+  assert.equal(calculateSocialGrowth('unknown', 80, 0, false, 80), -8)
+})
+
 test('calculateSocialGrowth calculates base growth based on performance', () => {
   // performance 80, no viral, no platform multiplier (1.0)
   // baseGrowth = (80 - 50) * 0.5 = 15
@@ -911,4 +916,30 @@ test('generateBrandOffers attaches flavor metadata to every offer', () => {
     assert.match(offer.flavor.taglineKey, /^economy:brandFlavor\.taglines\./)
     assert.ok(['low', 'medium', 'high'].includes(offer.flavor.urgency))
   }
+})
+
+test('resolvePost recovers a NaN band harmony to the clamp floor of 1', () => {
+  const result = resolvePost(
+    {
+      id: 'harmony_nan',
+      platform: 'instagram',
+      resolve: () => ({ success: true, harmonyChange: -5 })
+    },
+    { ...mockGameState, band: { ...mockGameState.band, harmony: NaN } },
+    0.1
+  )
+  // floor 1: prev 1, next clamp(1 - 5) = 1 -> no change (a 0 base gave +1)
+  assert.equal(result.harmonyChange, 0)
+})
+
+test('generatePostOptions treats a NaN reputationCooldown as inactive', () => {
+  const options = generatePostOptions(
+    null,
+    {
+      ...mockGameState,
+      social: { ...mockGameState.social, reputationCooldown: NaN }
+    },
+    () => 0.5
+  )
+  assert.equal(options.length, 3)
 })

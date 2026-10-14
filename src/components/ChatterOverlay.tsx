@@ -247,9 +247,7 @@ const ChatterMessage = memo(
     }, [msg.id, onRemove])
 
     const sceneLabel = t(`ui:chatter_labels.${messageScene}`, {
-      defaultValue: t('ui:chatter_labels.default_fallback', {
-        defaultValue: 'Band Feed'
-      })
+      defaultValue: t('ui:chatter_labels.default_fallback')
     })
 
     const textColorClass = resolveMessageTextColor(msg.type, messageScene)

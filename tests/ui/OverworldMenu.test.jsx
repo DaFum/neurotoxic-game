@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { OverworldMenu } from '../../src/ui/overworld/OverworldMenu.tsx'
+import { Modal } from '../../src/ui/shared/Modal.tsx'
 
 /**
  * @param {string} key
@@ -104,5 +105,59 @@ describe('OverworldMenu', () => {
 
     fireEvent.mouseEnter(refuelBtn.parentElement)
     expect(screen.getByText(/Fuel tank is already full/i)).toBeInTheDocument()
+  })
+})
+
+describe('OverworldMenu with a modal stacked above it', () => {
+  // "Crash in van" keeps the menu open while the day advances, so an event
+  // dialog (useModalBehavior) can open on top of the still-open menu.
+  const StackedHarness = ({ onModalClose }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    return (
+      <>
+        <OverworldMenu
+          t={t}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          isTraveling={false}
+          vanFuel={50}
+          vanCondition={50}
+          isSaving={false}
+          {...defaultActions()}
+        />
+        <button type='button' onClick={() => setIsModalOpen(true)}>
+          open-event
+        </button>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => {
+            onModalClose()
+            setIsModalOpen(false)
+          }}
+          title='Event'
+        >
+          <button type='button'>event-choice</button>
+        </Modal>
+        <span data-testid='menu-state'>{isMenuOpen ? 'open' : 'closed'}</span>
+      </>
+    )
+  }
+
+  it('lets Escape close the topmost modal and leaves the menu open', () => {
+    const onModalClose = vi.fn()
+    render(<StackedHarness onModalClose={onModalClose} />)
+
+    fireEvent.click(screen.getByText('open-event'))
+    expect(screen.getByRole('dialog')).toBeTruthy()
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+
+    expect(onModalClose).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('menu-state').textContent).toBe('open')
+
+    // With the dialog gone the menu owns Escape again.
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(screen.getByTestId('menu-state').textContent).toBe('closed')
   })
 })

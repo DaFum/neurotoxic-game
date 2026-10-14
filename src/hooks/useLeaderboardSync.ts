@@ -86,10 +86,10 @@ const isValidForSync = (
  */
 const calculateTotalFollowers = (social: GameState['social']) => {
   return (
-    (social?.instagram ?? 0) +
-    (social?.tiktok ?? 0) +
-    (social?.youtube ?? 0) +
-    (social?.newsletter ?? 0)
+    finiteNumberOr(social?.instagram, 0) +
+    finiteNumberOr(social?.tiktok, 0) +
+    finiteNumberOr(social?.youtube, 0) +
+    finiteNumberOr(social?.newsletter, 0)
   )
 }
 

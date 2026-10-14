@@ -56,6 +56,25 @@ describe('Van Breakdown', () => {
     })
   })
 
+  it('keeps breakdownChance inside 0..0.5 under heavy controversy and low condition', () => {
+    const state = makeState(10)
+    state.social = { controversyLevel: 100 }
+    const { player } = calculateDailyUpdates(state)
+    assert.ok(player.van.breakdownChance >= 0)
+    assert.ok(player.van.breakdownChance <= 0.5)
+    assert.equal(player.van.breakdownChance, 0.18)
+  })
+
+  it('applies the extreme-controversy multiplier at 80 but only the scandal one at 79', () => {
+    const at79 = makeState(100)
+    at79.social = { controversyLevel: 79 }
+    const at80 = makeState(100)
+    at80.social = { controversyLevel: 80 }
+    // 0.05 * 1.2 vs 0.05 * 1.5, both rounded to 2 decimals
+    assert.equal(calculateDailyUpdates(at79).player.van.breakdownChance, 0.06)
+    assert.equal(calculateDailyUpdates(at80).player.van.breakdownChance, 0.08)
+  })
+
   it('NO COMPOUNDING - breakdown chance is stable over multiple days with similar condition', () => {
     let currentState = {
       ...BASE_STATE,

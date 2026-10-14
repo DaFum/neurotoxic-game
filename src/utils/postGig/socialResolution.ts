@@ -11,6 +11,8 @@ import {
   clampPlayerMoney,
   clampMemberMood,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampBandHarmony,
   appendToRegionalGigHistory
 } from '../gameState'
@@ -333,14 +335,15 @@ export const calculatePostGigStateUpdates = (
       const updatedM = { ...m }
       if (needsMoodUpdate) {
         updatedM.mood = clampMemberMood(
-          finiteNumberOr(updatedM.mood, 0) + finiteNumberOr(moodChange, 0)
+          readMemberMood(updatedM.mood) + finiteNumberOr(moodChange, 0)
         )
       }
       if (needsStaminaUpdate) {
+        const staminaMax = finiteNumberOr(updatedM.staminaMax, 100)
         updatedM.stamina = clampMemberStamina(
-          finiteNumberOr(updatedM.stamina, 0) +
+          readMemberStamina(updatedM.stamina, staminaMax) +
             finiteNumberOr(staminaChange, 0),
-          finiteNumberOr(updatedM.staminaMax, 100)
+          staminaMax
         )
       }
       return updatedM

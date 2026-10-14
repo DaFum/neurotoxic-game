@@ -2358,3 +2358,10 @@ for (const capKind of ['native', 'double_down']) {
     }
   })
 }
+
+test('Authority route_detour treats NaN van fuel as empty', () => {
+  const state = activeState()
+  state.expedition.activeObligations = []
+  state.player.van.fuel = NaN
+  assert.ok(!getAvailableAuthoritySafeExits(state).includes('route_detour'))
+})

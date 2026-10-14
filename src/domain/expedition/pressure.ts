@@ -12,7 +12,7 @@ import { getExpeditionRoutePressureProfile } from './routeProfile'
 import { getExpeditionFameProfile } from './fame'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
-export interface PressureDirectorContext {
+interface PressureDirectorContext {
   heat: number
   exposure: number
   fameExpectationPressure: number

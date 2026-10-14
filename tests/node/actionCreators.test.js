@@ -942,6 +942,33 @@ describe('Action Creators', () => {
       })
     })
 
+    it('createAddToastActionWithId sanitizes hostile payload fields', () => {
+      const options = JSON.parse(
+        '{"ok": 1, "nested": {"a": 1}, "list": [1], "__proto__": {"x": 1}}'
+      )
+      const action = createAddToastActionWithId(
+        {
+          type: 'bogus',
+          messageKey: 'ui:toast.x',
+          options,
+          evil: 'dropped'
+        },
+        'toast-1'
+      )
+      assert.strictEqual(action.payload.id, 'toast-1')
+      assert.strictEqual(action.payload.type, 'info')
+      assert.ok(!('evil' in action.payload))
+      assert.deepStrictEqual(action.payload.options, { ok: 1 })
+      assert.ok(!Object.hasOwn(action.payload.options, '__proto__'))
+    })
+
+    it('createAddToastActionWithId returns null without a message or key', () => {
+      assert.strictEqual(
+        createAddToastActionWithId({ type: 'info' }, 'toast-2'),
+        null
+      )
+    })
+
     it('keeps pendingSocialOptionId so expedition social settlement can match it', () => {
       assert.deepStrictEqual(
         createUpdateSocialAction({ pendingSocialOptionId: 'perf_crowd_surf' })

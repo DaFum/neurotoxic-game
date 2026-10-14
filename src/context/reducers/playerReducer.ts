@@ -6,6 +6,7 @@ import {
   clampPlayerFame,
   clampVanCondition,
   clampVanFuel,
+  clampVanBreakdownChance,
   calculateFameLevel,
   finiteNumberOr,
   isFiniteNumber,
@@ -79,6 +80,14 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
         nextVan.condition = isFiniteNumber(nextVan.condition)
           ? clampVanCondition(nextVan.condition)
           : readVanCondition(prevVan.condition)
+      }
+      if (Object.hasOwn(nextVan, 'breakdownChance')) {
+        nextVan.breakdownChance = clampVanBreakdownChance(
+          finiteNumberOr(
+            nextVan.breakdownChance,
+            finiteNumberOr(prevVan.breakdownChance, 0)
+          )
+        )
       }
       safeUpdates.van = nextVan
     } else {

@@ -30,7 +30,15 @@ import {
   QUEST_ALCHEMIST,
   QUEST_EXPEDITION_RUN_GOAL,
   QUEST_EXPEDITION_NEMESIS,
-  QUEST_EXPEDITION_META_UNLOCK
+  QUEST_EXPEDITION_META_UNLOCK,
+  QUEST_DAMAGE_CONTROL,
+  QUEST_SIGN_HERE,
+  QUEST_BEST_BEFORE,
+  QUEST_EXPEDITION_EXIT_STRATEGY,
+  QUEST_GARAGE_DAYS,
+  QUEST_PREVENTIVE_MAINTENANCE,
+  QUEST_HARD_KNOCKS,
+  QUEST_STAGE_TIME
 } from '../questsConstants'
 
 const defineQuestOfferEvent = <
@@ -570,6 +578,144 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_expedition_meta_unlock.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -2 },
         outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_EXPEDITION_EXIT_STRATEGY, {
+    id: 'quest_trigger_expedition_exit_strategy',
+    title: 'events:quest_trigger_expedition_exit_strategy.title',
+    description: 'events:quest_trigger_expedition_exit_strategy.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_expedition_exit_strategy.opt1.label',
+        effect: { type: 'quest', quest: QUEST_EXPEDITION_EXIT_STRATEGY },
+        outcomeText:
+          'events:quest_trigger_expedition_exit_strategy.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_expedition_exit_strategy.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText:
+          'events:quest_trigger_expedition_exit_strategy.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_DAMAGE_CONTROL, {
+    id: 'quest_trigger_damage_control',
+    title: 'events:quest_trigger_damage_control.title',
+    description: 'events:quest_trigger_damage_control.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_damage_control.opt1.label',
+        effect: { type: 'quest', quest: QUEST_DAMAGE_CONTROL },
+        outcomeText: 'events:quest_trigger_damage_control.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_damage_control.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_damage_control.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_SIGN_HERE, {
+    id: 'quest_trigger_sign_here',
+    title: 'events:quest_trigger_sign_here.title',
+    description: 'events:quest_trigger_sign_here.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_sign_here.opt1.label',
+        effect: { type: 'quest', quest: QUEST_SIGN_HERE },
+        outcomeText: 'events:quest_trigger_sign_here.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_sign_here.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_sign_here.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_BEST_BEFORE, {
+    id: 'quest_trigger_best_before',
+    title: 'events:quest_trigger_best_before.title',
+    description: 'events:quest_trigger_best_before.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_best_before.opt1.label',
+        effect: { type: 'quest', quest: QUEST_BEST_BEFORE },
+        outcomeText: 'events:quest_trigger_best_before.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_best_before.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_best_before.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_GARAGE_DAYS, {
+    id: 'quest_trigger_garage_days',
+    title: 'events:quest_trigger_garage_days.title',
+    description: 'events:quest_trigger_garage_days.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_garage_days.opt1.label',
+        effect: { type: 'quest', quest: QUEST_GARAGE_DAYS },
+        outcomeText: 'events:quest_trigger_garage_days.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_garage_days.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_garage_days.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_PREVENTIVE_MAINTENANCE, {
+    id: 'quest_trigger_preventive_maintenance',
+    title: 'events:quest_trigger_preventive_maintenance.title',
+    description: 'events:quest_trigger_preventive_maintenance.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_preventive_maintenance.opt1.label',
+        effect: { type: 'quest', quest: QUEST_PREVENTIVE_MAINTENANCE },
+        outcomeText: 'events:quest_trigger_preventive_maintenance.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_preventive_maintenance.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_preventive_maintenance.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_HARD_KNOCKS, {
+    id: 'quest_trigger_hard_knocks',
+    title: 'events:quest_trigger_hard_knocks.title',
+    description: 'events:quest_trigger_hard_knocks.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_hard_knocks.opt1.label',
+        effect: { type: 'quest', quest: QUEST_HARD_KNOCKS },
+        outcomeText: 'events:quest_trigger_hard_knocks.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_hard_knocks.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_hard_knocks.opt2.outcome'
+      }
+    ]
+  }),
+  defineQuestOfferEvent(QUEST_STAGE_TIME, {
+    id: 'quest_trigger_stage_time',
+    title: 'events:quest_trigger_stage_time.title',
+    description: 'events:quest_trigger_stage_time.desc',
+    options: [
+      {
+        label: 'events:quest_trigger_stage_time.opt1.label',
+        effect: { type: 'quest', quest: QUEST_STAGE_TIME },
+        outcomeText: 'events:quest_trigger_stage_time.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_stage_time.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_stage_time.opt2.outcome'
       }
     ]
   })

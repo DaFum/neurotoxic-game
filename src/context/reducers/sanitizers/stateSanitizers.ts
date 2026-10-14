@@ -20,7 +20,8 @@ import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { rehydrateTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
-  clampMemberMood,
+  readMemberMood,
+  readMemberStamina,
   normalizeRegionalGigHistory,
   normalizeSetlistForSave
 } from '../../../utils/gameState'
@@ -47,6 +48,7 @@ import {
   clampVanCondition,
   clampVanBreakdownChance,
   clamp0to100,
+  clampBrandReputation,
   clampLuck,
   clampControversyLevel,
   clampLoyalty,
@@ -54,7 +56,6 @@ import {
   clampRelationship,
   calculateFameLevel,
   clampPlayerFame,
-  clampMemberStamina,
   clampPlayerMoney,
   clampBandHarmony,
   clampReputation,
@@ -1086,8 +1087,8 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       const member: BandMember = {
         id,
         traits: rehydrateTraitMap(m.traits),
-        mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
-        stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
+        mood: readMemberMood(m.mood),
+        stamina: readMemberStamina(m.stamina, staminaMax),
         baseStats: (() => {
           const stats = m?.baseStats || {}
           if (!isLooseRecord(stats)) return {}
@@ -1229,21 +1230,23 @@ export const sanitizeMinigameState = (
     typeof minigameObj.equipmentRemaining === 'number' &&
     Number.isFinite(minigameObj.equipmentRemaining)
   ) {
-    nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
+    nextMinigame.equipmentRemaining = clampToNonNegativeInt(
+      minigameObj.equipmentRemaining
+    )
   }
   if (
     Object.hasOwn(minigameObj, 'accumulatedDamage') &&
     typeof minigameObj.accumulatedDamage === 'number' &&
     Number.isFinite(minigameObj.accumulatedDamage)
   ) {
-    nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
+    nextMinigame.accumulatedDamage = clamp0to100(minigameObj.accumulatedDamage)
   }
   if (
     Object.hasOwn(minigameObj, 'score') &&
     typeof minigameObj.score === 'number' &&
     Number.isFinite(minigameObj.score)
   ) {
-    nextMinigame.score = minigameObj.score
+    nextMinigame.score = clamp0to100(minigameObj.score)
   }
 
   return nextMinigame
@@ -1447,7 +1450,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
       if (isForbiddenKey(key)) continue
       const reputation = safeValue.brandReputation[key]
       if (isFiniteNumber(reputation)) {
-        sanitized.brandReputation[key] = reputation
+        sanitized.brandReputation[key] = clampBrandReputation(reputation)
       }
     }
   }

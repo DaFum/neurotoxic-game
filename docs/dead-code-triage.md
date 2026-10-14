@@ -1,4 +1,4 @@
-# Dead-code triage — 2026-08-03, refreshed 2026-10-06 and 2026-10-11
+# Dead-code triage — 2026-08-03, refreshed 2026-10-06, 2026-10-11 and 2026-10-14
 
 Triage of the 78-finding knip baseline captured on 2026-08-02 (issue #2677).
 After the original pass the report was down to **10 findings**. The 2026-10-06
@@ -74,6 +74,27 @@ were Knip findings; they were production-only reachability hits.
   `CrowdTextures` once the `CrowdManager.textures` alias was deleted.
 - `DarkWebLeakModal` and `CultIndoctrinationModal` were deleted;
   `ZealotryActionModal` resolves their labels from an `i18nPrefix`.
+
+## 2026-10-14 refresh
+
+Cleanup from `docs/code-quality-audit-2026-10-14.md` (§2). None were Knip
+findings; the live report is still **7**.
+
+- Six own-file-only type aliases lost their `export`: `NormalizedQuestEvent`,
+  `LogEvent`, `ExpeditionAccessTier`, `ExpeditionLegacyHqPolicy`,
+  `PressureDirectorContext`, `BalanceRecommendationHold`.
+- `isStashEntry` (`src/utils/gameState/checks.ts`) is production code: the
+  Roadie stash decrement in `minigameReducer` gates on it.
+- `safeStorageOperation` (`src/utils/storage.ts`) is now a re-export alias of
+  `runSafeStorageOperation` rather than a forwarding copy of its overloads.
+- `META_UNLOCK_QUEST_TOKEN` is live: settlement pays it from the run-scoped
+  `expedition.metaUnlockQuestCompletedRunId` record.
+- Every canonical quest event type in `src/data/questEventTypes.ts` now has a
+  quest consumer, so the "emitted but unconsumed" list from the 2026-10-05
+  audit (§4) is empty.
+- New seams are recorded under [Test seams](#test-seams): `setGameMap`,
+  `setScreenshotMode`, `setActiveEvent`, `createAdvanceQuestAction` /
+  `ADVANCE_QUEST`, `getExpeditionAccessLock`.
 
 ## Resolved in the original pass (68)
 
@@ -229,6 +250,11 @@ Explicit dependency-injection or reset seams. Production uses the defaults.
 - `useArrivalLogic` options `onShowHQ`, `onShowSupplyStop` and `rng` (`src/hooks/useArrivalLogic.ts`) — production (`TourbusScene`) passes no options; the TSDoc on each marks it a test seam.
 - `migrateLoadedSave` (`src/context/usePersistence.ts`) and `getQuarantineKey` (`src/utils/saveQuarantine.ts`) — used in-module by the load path and `quarantineSave`; exported so `tests/context/saveMigrationRecovery.test.tsx` can drive migration and read the quarantine slot directly.
 - `executeAudioAction` (`src/hooks/audioControlUtils.ts`) — used in-module by `createAudioHandlers`; exported for `tests/ui/audioControlUtils.test.jsx`.
+- `setGameMap` (`src/context/useGameDispatchActions.ts`) — no production caller; `tests/integration/GameState.comprehensive.test.jsx` drives it as a map-injection seam.
+- `setScreenshotMode` (`src/context/useGameDispatchActions.ts`) — no `src/` caller; the Playwright screenshot skill calls it through the DEV-only `window.gameState` exposure.
+- `setActiveEvent` (`src/context/useGameDispatchActions.ts`) — used inside `src/context` by `useEventSystem`; on the public dispatch surface only so tests can stage an event. Marked `@internal`.
+- `createAdvanceQuestAction` / `ADVANCE_QUEST` (`src/context/actionCreators.ts`, `questReducer`) — production quest progress flows through `APPLY_QUEST_EVENT`; the creator is `@internal` and the reducer case is reachable only from tests.
+- `getExpeditionAccessLock` (`src/domain/expedition/fame.ts`) — the in-module body of `getExpeditionNodeBookingLock` and `getExpeditionContractAccessLock`, which production uses; exported for `tests/node/expeditionAccessTier.test.js`.
 
 ### Blanket rule: test-only value exports
 

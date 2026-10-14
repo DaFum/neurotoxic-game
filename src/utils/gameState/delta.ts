@@ -21,6 +21,8 @@ import {
   clampMemberMood,
   addClampedMemberSkill,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampRelationship,
   clampNonNegative,
   clampControversyLevel,
@@ -594,7 +596,10 @@ const calculateMemberRelationshipChange = (
     }
   }
 
-  const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
+  const currentScore = finiteNumberOr(
+    currentRelationships[other],
+    RELATIONSHIP_DEFAULT_SCORE
+  )
   const newScore = clampRelationship(currentScore + amount)
 
   return { other, newScore }
@@ -787,12 +792,13 @@ export const applyEventDelta = (
           const staminaChange = finiteNumberOr(mDelta.staminaChange, 0)
 
           if (moodChange !== 0 || staminaChange !== 0) {
+            const staminaMax = finiteNumberOr(member.staminaMax, 100)
             const newMood = clampMemberMood(
-              finiteNumberOr(member.mood, 0) + moodChange
+              readMemberMood(member.mood) + moodChange
             )
             const newStamina = clampMemberStamina(
-              finiteNumberOr(member.stamina, 0) + staminaChange,
-              finiteNumberOr(member.staminaMax, 100)
+              readMemberStamina(member.stamina, staminaMax) + staminaChange,
+              staminaMax
             )
 
             if (newMood !== member.mood || newStamina !== member.stamina) {

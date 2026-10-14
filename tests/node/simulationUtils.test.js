@@ -662,3 +662,11 @@ test('getGigModifiers without damaged_gear is unaffected', () => {
     'no damaged_gear effect when flag absent'
   )
 })
+
+test('calculateGigPhysics treats NaN member stamina as 0 so low-stamina drag applies', () => {
+  const band = buildBandState()
+  band.members = band.members.map(m => ({ ...m, stamina: NaN }))
+  const physics = calculateGigPhysics(band, { bpm: 140, difficulty: 2 })
+  assert.strictEqual(physics.avgStamina, 0)
+  assert.strictEqual(physics.speedModifier, 0.8)
+})

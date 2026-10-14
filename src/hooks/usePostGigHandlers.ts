@@ -2,8 +2,11 @@ import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { GameState, PostGigSummary, Venue } from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { PostGigFinancials } from '../types/economy'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import i18n from '../i18n'
+import { generateBrandOffers } from '../utils/brandDealLogic'
+import { secureRandom } from '../utils/crypto'
+import { logger } from '../utils/logger'
 import {
   useContinueHandler,
   useSocialPostHandler,
@@ -25,7 +28,10 @@ interface UsePostGigHandlersReturn {
   handleNextPhase: () => void
 }
 /** Props for {@link usePostGigHandlers}: post-gig state slices and the flat dispatcher/UI callbacks it threads into the sub-handlers. */
-interface UsePostGigHandlersProps extends HandlerDispatchers {
+interface UsePostGigHandlersProps extends Omit<
+  HandlerDispatchers,
+  'requestBrandOffers'
+> {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
@@ -101,6 +107,42 @@ export function usePostGigHandlers({
     hasSpunRef.current = false
     setHasSpun(false)
   }
+  // Brand offers after a social post are generated post-commit: the post's
+  // dispatches can complete a quest whose rewards change social, money or
+  // harmony, and offers must see those committed values, not the projection.
+  // Same ref + nonce idiom as useArrivalLogic: the ref is consumed exactly
+  // once, so re-runs from later state changes are no-ops and cannot loop.
+  const brandOffersPendingRef = useRef(false)
+  const [brandOffersNonce, setBrandOffersNonce] = useState(0)
+  const requestBrandOffers = useCallback(() => {
+    brandOffersPendingRef.current = true
+    setBrandOffersNonce(n => n + 1)
+  }, [])
+  useEffect(() => {
+    if (!brandOffersPendingRef.current) return
+    brandOffersPendingRef.current = false
+    let offers: BrandDeal[] = []
+    try {
+      offers = generateBrandOffers(
+        { player, band, social, rivalBand },
+        secureRandom
+      )
+    } catch (e) {
+      // The post has already committed, so do not re-open it: finish without
+      // offers instead of letting the error escape the effect.
+      logger.error('PostGig', 'Failed to generate brand offers', e)
+    }
+    setBrandOffers(offers)
+    setPhase(offers.length > 0 ? 'DEALS' : 'COMPLETE')
+  }, [
+    brandOffersNonce,
+    player,
+    band,
+    social,
+    rivalBand,
+    setBrandOffers,
+    setPhase
+  ])
   const dispatchers = useMemo(
     () => ({
       updatePlayer,
@@ -111,6 +153,7 @@ export function usePostGigHandlers({
       applyQuestEvent,
       changeScene,
       setBrandOffers,
+      requestBrandOffers,
       setPostResult,
       unlockTrait,
       addToast,
@@ -130,6 +173,7 @@ export function usePostGigHandlers({
       applyQuestEvent,
       changeScene,
       setBrandOffers,
+      requestBrandOffers,
       setPostResult,
       unlockTrait,
       addToast,
@@ -162,7 +206,6 @@ export function usePostGigHandlers({
     player,
     band,
     social,
-    rivalBand,
     currentGig,
     perfScore,
     lastGigStats,

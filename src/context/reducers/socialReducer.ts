@@ -26,6 +26,7 @@ import {
   clampControversyLevel,
   clampNonNegative,
   clamp0to100,
+  clampBrandReputation,
   isFiniteNumber,
   finiteNumberOr
 } from '../../utils/gameState'
@@ -36,8 +37,7 @@ import {
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createSocialControversyChangedQuestEvent,
-  createSocialLoyaltyChangedQuestEvent,
-  createSocialTrendMatchedQuestEvent
+  createSocialLoyaltyChangedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
 import {
   createBrandDealFailedQuestEvent,
@@ -316,6 +316,29 @@ export const handleUpdateSocial = (
     }
   }
 
+  if (updates.brandReputation !== undefined) {
+    const rawReputation: unknown = updates.brandReputation
+    if (isLooseRecord(rawReputation)) {
+      const previousReputation: Record<string, unknown> =
+        state.social?.brandReputation ?? {}
+      const clampedReputation: Record<string, number> = {}
+      for (const key of Object.keys(rawReputation)) {
+        if (isForbiddenKey(key)) continue
+        const rawValue = rawReputation[key]
+        // A non-finite entry is malformed: keep the stored trust rather than
+        // letting the clamp collapse it to 0.
+        if (isFiniteNumber(rawValue)) {
+          clampedReputation[key] = clampBrandReputation(rawValue)
+        } else if (Object.hasOwn(previousReputation, key)) {
+          clampedReputation[key] = clampBrandReputation(previousReputation[key])
+        }
+      }
+      updates.brandReputation = clampedReputation
+    } else {
+      delete updates.brandReputation
+    }
+  }
+
   let nextState: GameState = {
     ...state,
     social: { ...state.social, ...updates }
@@ -356,16 +379,6 @@ export const handleUpdateSocial = (
       )
     }
   }
-  if (
-    updates.trend !== undefined &&
-    nextState.social.trend !== state.social.trend
-  ) {
-    nextState = QuestEvents.emit(
-      nextState,
-      createSocialTrendMatchedQuestEvent({ trendId: nextState.social.trend })
-    )
-  }
-
   return breakDealsIfControversyCrossed(
     nextState,
     finiteNumberOr(state.social.controversyLevel, 0)
@@ -400,8 +413,7 @@ const breakDealsIfControversyCrossed = (
     for (const deal of brokenDeals) {
       const alignment = deal.alignment
       if (alignment && !isForbiddenKey(alignment)) {
-        nextBrandReputation[alignment] = Math.max(
-          0,
+        nextBrandReputation[alignment] = clampBrandReputation(
           finiteNumberOr(nextBrandReputation[alignment], 0) -
             DEAL_BREAK_TRUST_PENALTY
         )
@@ -460,16 +472,19 @@ const VENUE_DEFENSE_LOYALTY_COST = 15
  */
 export const handleAddVenueBlacklist = (
   state: GameState,
-  { venueId, toastId }: { venueId: string; toastId: string }
+  payload: { venueId: string; toastId: string }
 ): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  const { venueId, toastId } = payload
   const nextState = { ...state }
+  const currentLoyalty = finiteNumberOr(nextState.social.loyalty, 0)
   // Intentional design: when loyalty is high enough, loyal fans defend the
   // band and prevent the venue from blacklisting them, at the cost of some
   // loyalty points.
-  if (nextState.social.loyalty >= VENUE_DEFENSE_LOYALTY_THRESHOLD) {
+  if (currentLoyalty >= VENUE_DEFENSE_LOYALTY_THRESHOLD) {
     nextState.social = {
       ...nextState.social,
-      loyalty: nextState.social.loyalty - VENUE_DEFENSE_LOYALTY_COST
+      loyalty: currentLoyalty - VENUE_DEFENSE_LOYALTY_COST
     }
     nextState.toasts = [
       ...(nextState.toasts || []),

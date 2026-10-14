@@ -6,12 +6,18 @@ import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
 import { getActiveDealBenefits } from './brandDealBenefits'
 import { getSafeRandom } from './crypto'
-import { SCANDAL_CONTROVERSY_THRESHOLD } from './socialThresholds'
+import {
+  isExtremeControversy,
+  SCANDAL_CONTROVERSY_THRESHOLD
+} from './socialThresholds'
 import {
   clampPlayerMoney,
   clampBandHarmony,
   clampVanCondition,
+  clampVanBreakdownChance,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampMemberMood,
   BALANCE_CONSTANTS,
   finiteNumberOr
@@ -148,15 +154,14 @@ const updateVanCondition = (
     }
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
-    if (controversySnapshot >= 80) conditionMultiplier += 0.5
+    if (isExtremeControversy(controversySnapshot)) conditionMultiplier += 0.5
     else if (controversySnapshot >= SCANDAL_CONTROVERSY_THRESHOLD)
       conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
-    nextPlayer.van.breakdownChance = Math.max(
-      0,
-      Math.min(0.5, Math.round(adjustedBreakdownChance * 100) / 100)
+    nextPlayer.van.breakdownChance = clampVanBreakdownChance(
+      Math.round(adjustedBreakdownChance * 100) / 100
     )
   }
 }
@@ -334,7 +339,7 @@ const updatePassiveEffectsAndMembers = (
     }
 
     // 2a. Base Mood Drift
-    let mood = finiteNumberOr(m.mood, 50)
+    let mood = readMemberMood(m.mood)
     if (mood > 50) mood = Math.max(50, mood - 2)
     else if (mood < 50) mood = Math.min(50, mood + 2)
     mood = clampMemberMood(mood)
@@ -345,7 +350,10 @@ const updatePassiveEffectsAndMembers = (
     }
 
     // 2c. Base Stamina Drift
-    let stamina = finiteNumberOr(m.stamina, 100)
+    let stamina = readMemberStamina(
+      m.stamina,
+      finiteNumberOr(m.staminaMax, 100)
+    )
     let decay = 5
     if (hasTrait(m, 'iron_liver')) decay = Math.max(0, decay - 3)
     stamina = Math.max(0, stamina - decay)

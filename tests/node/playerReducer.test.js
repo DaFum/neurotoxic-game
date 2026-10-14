@@ -231,6 +231,18 @@ describe('playerReducer', () => {
         }
       })
 
+      it('re-clamps van breakdownChance into 0..0.5 and keeps the prior value for non-finite input', () => {
+        const patch = value =>
+          handleUpdatePlayer(baseState(), {
+            van: { upgrades: [], breakdownChance: value }
+          }).player.van.breakdownChance
+        assert.strictEqual(patch(0.9), 0.5)
+        assert.strictEqual(patch(-0.3), 0)
+        for (const bad of [Number.NaN, Infinity, '0.4', true, null]) {
+          assert.strictEqual(patch(bad), 0.05)
+        }
+      })
+
       it('ignores a van payload that is not a record', () => {
         for (const bad of ['van', 7, null, [1, 2]]) {
           const next = handleUpdatePlayer(baseState(), { van: bad })

@@ -1,6 +1,6 @@
 import type { GameState } from '../types'
 import {
-  clamp0to100,
+  clampBrandReputation,
   clampReputation,
   finiteNumberOr,
   isForbiddenKey
@@ -90,7 +90,7 @@ export const applyBrandTrustDelta = (
       ...state.social,
       brandReputation: {
         ...(state.social?.brandReputation ?? {}),
-        [key]: clamp0to100(previous + effect.amount)
+        [key]: clampBrandReputation(previous + effect.amount)
       }
     }
   }

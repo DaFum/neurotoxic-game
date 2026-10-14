@@ -17,6 +17,8 @@ import {
   calculateFameLevel,
   clampMemberMood,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampPlayerFame,
   finiteNumberOr,
   isEmptyObject
@@ -192,13 +194,14 @@ export const processAssetTick = (state: GameState): GameState => {
       const updatedMember = { ...member }
       if (moodDelta !== 0) {
         updatedMember.mood = clampMemberMood(
-          finiteNumberOr(member.mood, 0) + moodDelta
+          readMemberMood(member.mood) + moodDelta
         )
       }
       if (staminaDelta !== 0) {
+        const staminaMax = finiteNumberOr(member.staminaMax, 100)
         updatedMember.stamina = clampMemberStamina(
-          finiteNumberOr(member.stamina, 0) + staminaDelta,
-          finiteNumberOr(member.staminaMax, 100)
+          readMemberStamina(member.stamina, staminaMax) + staminaDelta,
+          staminaMax
         )
       }
       nextMembers.push(updatedMember)

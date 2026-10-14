@@ -113,6 +113,7 @@ import {
   addClampedPercent,
   addClampedNonNegative,
   clampToNonNegativeInt,
+  clampBrandReputation,
   clampControversyLevel,
   clampVanFuel,
   readVanCondition
@@ -190,6 +191,7 @@ import {
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
 import { POST_OPTIONS } from '../../data/postOptions'
+import { QUEST_EXPEDITION_META_UNLOCK } from '../../data/questsConstants'
 import {
   createExpeditionExtractionQuestEvent,
   createExpeditionFinaleQuestEvent,
@@ -1333,15 +1335,30 @@ export const handleCompleteExpedition = (
     finaleResultId,
     explicitRareRewardIds: []
   })
-  return completed === completionState
-    ? completed
-    : QuestEvents.emit(
-        completed,
-        createExpeditionFinaleQuestEvent(
-          completionState.expedition.finaleType ?? 'regional_headliner',
-          true
-        )
-      )
+  if (completed === completionState) return completed
+  const emitted = QuestEvents.emit(
+    completed,
+    createExpeditionFinaleQuestEvent(
+      completionState.expedition.finaleType ?? 'regional_headliner',
+      true
+    )
+  )
+  // The meta-unlock quest progresses only on this Finale event and emitting
+  // never fails a quest, so leaving `activeQuests` here means this run's
+  // Finale completed it. That is the run-scoped record the Career settlement
+  // pays its milestone token from.
+  const isMetaUnlockActive = (s: GameState): boolean =>
+    s.activeQuests.some(q => q?.id === QUEST_EXPEDITION_META_UNLOCK)
+  if (!isMetaUnlockActive(completed) || isMetaUnlockActive(emitted)) {
+    return emitted
+  }
+  return {
+    ...emitted,
+    expedition: {
+      ...emitted.expedition,
+      metaUnlockQuestCompletedRunId: completed.expedition.runId
+    }
+  }
 }
 
 /**
@@ -2783,13 +2800,9 @@ export const handleResolveExpeditionSocialResult = (
       pendingSocialOptionId: null,
       brandReputation: {
         ...state.social.brandReputation,
-        NEUTRAL: Math.max(
-          0,
-          Math.min(
-            100,
-            finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
-              result.sponsorInterest
-          )
+        NEUTRAL: clampBrandReputation(
+          finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
+            result.sponsorInterest
         )
       }
     },

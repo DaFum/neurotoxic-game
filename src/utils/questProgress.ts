@@ -144,7 +144,7 @@ const canonicalizeEventType = (
  * once per emitted event, so rule matching and progress calculation never
  * re-parse untrusted input.
  */
-export type NormalizedQuestEvent = {
+type NormalizedQuestEvent = {
   type: QuestEventType
   context: QuestEventContext
   amount: number | undefined

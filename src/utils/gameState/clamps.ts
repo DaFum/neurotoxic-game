@@ -86,6 +86,29 @@ export const clampMemberStamina = (
 export const clampMemberMood = (mood: number): number => clamp0to100(mood)
 
 /**
+ * Reads a stored member mood, recovering non-finite values to `50` (the load
+ * sanitizer's default) instead of the `0` that clamping `NaN` would give.
+ *
+ * @param value - Stored mood of unknown validity.
+ * @returns Clamped mood in `0..100`.
+ */
+export const readMemberMood = (value: unknown): number =>
+  clampMemberMood(finiteNumberOr(value, 50))
+
+/**
+ * Reads a stored member stamina, recovering non-finite values to `100` (the
+ * load sanitizer's default) instead of the `0` that clamping `NaN` would give.
+ *
+ * @param value - Stored stamina of unknown validity.
+ * @param staminaMax - The member's maximum stamina. Defaults to `100`.
+ * @returns Clamped stamina in `0..staminaMax`.
+ */
+export const readMemberStamina = (
+  value: unknown,
+  staminaMax?: number
+): number => clampMemberStamina(finiteNumberOr(value, 100), staminaMax)
+
+/**
  * Maps a 0..100 percentage onto an N-step integer scale (0..steps).
  * Shared by the brutalist HUD meters which all render block-bar gauges.
  *
@@ -125,6 +148,19 @@ export const clamp0to100 = (value: number): number => {
 }
 
 /**
+ * Clamps a number to an integer percentage, rounding to nearest.
+ *
+ * @remarks
+ * Unlike {@link clamp0to100} (floors, and maps `Infinity` to `0`), this rounds
+ * and saturates infinities at the bounds, so an overflowed sum clamps to `100`.
+ *
+ * @param value - Candidate percentage value.
+ * @returns Integer clamped to `0..100`; `NaN` maps to `0`.
+ */
+export const clampPercentRounded = (value: number): number =>
+  Number.isNaN(value) ? 0 : Math.max(0, Math.min(100, Math.round(value)))
+
+/**
  * Clamps unknown input to the 0..100 percentage range without rounding.
  *
  * @remarks
@@ -139,6 +175,20 @@ export const clamp0to100 = (value: number): number => {
  */
 export const clampPercent = (value: unknown, fallback = 0): number =>
   Math.max(0, Math.min(100, finiteNumberOr(value, fallback)))
+
+/**
+ * Clamps a stored brand reputation entry to the range 0..100.
+ *
+ * @remarks
+ * Single clamp authority for every `social.brandReputation` entry: the load
+ * sanitizer, `UPDATE_SOCIAL` and each writer route through it. Fractional
+ * values are kept because writers add fractional deltas (sponsor interest).
+ *
+ * @param value - Unknown value crossing a state, storage, or payload boundary.
+ * @returns The value clamped to `0..100`; non-finite or non-numeric input maps to `0`.
+ */
+export const clampBrandReputation = (value: unknown): number =>
+  clampPercent(value, 0)
 
 /**
  * Adds a delta to a stored 0..100 percentage and range-clamps the sum.

@@ -193,15 +193,15 @@ test('processAssetTick - fractional boni are NaN-safe', () => {
   assert.strictEqual(nanDay.player.fame, 5)
   assert.strictEqual(nanDay.band.members[0].mood, 50)
 
-  // On a payout day a NaN stat is repaired from 0, never written as NaN.
+  // On a payout day a NaN stat is repaired from its default (mood 50), never written as NaN.
   const state = makeBandhausWith(
     { bh_lounge: 'bh_zine_library', bh_identity: 'bh_wall_mural' },
     { player: { money: 1000, fame: Number.NaN, fameLevel: 0, day: 1 } }
   )
   state.band.members[0].mood = Number.NaN
   const next = processAssetTick(state)
-  // Day 1: mood 0.5/day pays 1; fame 0.6/day pays floor(1.2) - floor(0.6) = 1.
-  assert.strictEqual(next.band.members[0].mood, 1)
+  // Day 1: mood 0.5/day pays 1 on the recovered 50 base; fame 0.6/day pays floor(1.2) - floor(0.6) = 1.
+  assert.strictEqual(next.band.members[0].mood, 51)
   assert.strictEqual(next.player.fame, 1)
 })
 

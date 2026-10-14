@@ -24,7 +24,9 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: unknown) => {
       tCalls.push({ key, options })
-      return key
+      return key === 'items:contraband.c_void_energy.name'
+        ? 'Void Energy Drink'
+        : key
     },
     i18n: { language: 'en' }
   })
@@ -279,5 +281,22 @@ describe('TourPrepLoadout', () => {
     expect(
       screen.queryByTestId('expedition-prep-contraband-c_bone_dust')
     ).toBeNull()
+  })
+
+  it('translates contraband names instead of rendering the raw locale key', () => {
+    state.current = createInitialState()
+    state.current.band.stash = {
+      c_void_energy: { id: 'c_void_energy', stacks: 2 }
+    } as unknown as GameState['band']['stash']
+    tCalls.length = 0
+    render(<TourPrepLoadout />)
+
+    const slider = screen.getByTestId(
+      'expedition-prep-contraband-c_void_energy'
+    )
+    expect(slider.closest('label')).toHaveTextContent('Void Energy Drink')
+    expect(slider.closest('label')).not.toHaveTextContent(
+      'items:contraband.c_void_energy.name'
+    )
   })
 })

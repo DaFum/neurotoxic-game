@@ -472,6 +472,28 @@ test('getAcceptDealSocialUpdateFactory updates brand reputation and opposing ali
   assert.equal(updates.brandReputation.INDIE, 17)
 })
 
+test('getAcceptDealSocialUpdateFactory clamps out-of-range and NaN brand reputation', () => {
+  const deal = { alignment: 'CORPORATE', offer: { duration: 5 } }
+  const updateFactory = getAcceptDealSocialUpdateFactory(deal)
+
+  const high = updateFactory(
+    buildSocial({ brandReputation: { CORPORATE: 250, INDIE: 250 } })
+  )
+  assert.equal(high.brandReputation.CORPORATE, 100)
+  assert.equal(high.brandReputation.INDIE, 100)
+
+  const low = updateFactory(
+    buildSocial({ brandReputation: { CORPORATE: -50, INDIE: -50 } })
+  )
+  assert.equal(low.brandReputation.CORPORATE, 0)
+  assert.equal(low.brandReputation.INDIE, 0)
+
+  const nan = updateFactory(
+    buildSocial({ brandReputation: { CORPORATE: Number.NaN } })
+  )
+  assert.equal(nan.brandReputation.CORPORATE, 5)
+})
+
 test('getAcceptDealSocialUpdateFactory handles missing social state values gracefully', () => {
   const deal = {
     penalty: { loyalty: -10, controversy: 20 },

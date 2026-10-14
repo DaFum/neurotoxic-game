@@ -7,6 +7,7 @@ import { clampZealotry } from './gameState'
 import { StateError } from './errorHandler'
 import { selectTop3ByScore } from './topSelection'
 import { selectRandomItem } from './selectionUtils'
+import { isExtremeControversy } from './socialThresholds'
 import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
@@ -105,6 +106,28 @@ const COOLDOWN_BLOCKED_IDS = new Set([
 ])
 
 /**
+ * Reports whether a post option rides the current social trend.
+ *
+ * @param trend - Current `social.trend` value.
+ * @param option - Post option whose category and badges are compared.
+ * @returns True when the option's category (or safe badge, for WHOLESOME) matches the trend.
+ */
+export const isPostMatchingTrend = (
+  trend: string | undefined,
+  option: Pick<SocialPostOption, 'category' | 'badges'>
+): boolean => {
+  if (!trend || !option.category) return false
+  return (
+    (trend === 'DRAMA' && option.category === 'Drama') ||
+    (trend === 'TECH' && option.category === 'Commercial') ||
+    (trend === 'MUSIC' && option.category === 'Performance') ||
+    (trend === 'WHOLESOME' &&
+      (option.category === 'Lifestyle' ||
+        option.badges?.includes('🛡️') === true))
+  )
+}
+
+/**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  *
@@ -119,7 +142,8 @@ export const generatePostOptions = (
   rng: RandomFn = secureRandom
 ): SocialPostOption[] => {
   // 1. Evaluate and collect eligible options
-  const isCooldownActive = (gameState.social?.reputationCooldown ?? 0) > 0
+  const isCooldownActive =
+    finiteNumberOr(gameState.social?.reputationCooldown, 0) > 0
 
   const eligibleOptions: WeightedPostOption[] = []
   let sponsorIdx = -1
@@ -147,16 +171,7 @@ export const generatePostOptions = (
           weight += 50
 
         // Trend Matching Bonus
-        if (currentTrend && opt.category) {
-          const isMatch =
-            (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
-            (currentTrend === 'TECH' && opt.category === 'Commercial') ||
-            (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
-            (currentTrend === 'WHOLESOME' &&
-              (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️')))
-
-          if (isMatch) weight += 10.0
-        }
+        if (isPostMatchingTrend(currentTrend, opt)) weight += 10.0
 
         eligibleOptions.push({ ...opt, _weight: weight * rng() })
         if (opt.id === 'comm_sellout_ad') {
@@ -281,7 +296,7 @@ export const resolvePost = (
       ? result.harmonyChange
       : undefined
     if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
-      const prevHarmony = finiteNumberOr(gameState.band.harmony, 0)
+      const prevHarmony = finiteNumberOr(gameState.band.harmony, 1)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
     }
@@ -387,7 +402,7 @@ export const calculateSocialGrowth = (
   let baseGrowth = Math.max(0, effectivePerf - 50) * 0.5 // e.g. 80 score -> 15 base
 
   // Shadowban / Cancel Culture penalty
-  if (controversyLevel >= 80) {
+  if (isExtremeControversy(controversyLevel)) {
     // High controversy leads to negative growth (Cancel Culture)
     // The higher the controversy, the worse it gets.
     const penaltyFactor = (controversyLevel - 70) * 0.05 // e.g. 80 -> 0.5, 100 -> 1.5

@@ -62,7 +62,8 @@ vi.mock('../../src/utils/socialEngine', () => ({
   generatePostOptions: vi.fn(),
   resolvePost: vi.fn(),
   checkViralEvent: vi.fn(),
-  calculateSocialGrowth: vi.fn()
+  calculateSocialGrowth: vi.fn(),
+  isPostMatchingTrend: vi.fn(() => false)
 }))
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(),
@@ -424,6 +425,49 @@ describe('usePostGigLogic', () => {
         expect(result.current.phase).toBe('DEALS')
         expect(result.current.brandOffers).toHaveLength(1)
       })
+    })
+
+    it('generates brand offers once from the live store state, including rivalBand', async () => {
+      const rivalBand = {
+        id: 'rival_1',
+        currentLocationId: 'node_1',
+        powerLevel: 75
+      }
+      mockGameState(getBaseState({ rivalBand }))
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      await waitFor(() => expect(result.current.phase).toBe('COMPLETE'))
+      expect(brandDealLogic.generateBrandOffers).toHaveBeenCalledTimes(1)
+      expect(brandDealLogic.generateBrandOffers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          player: expect.objectContaining({ money: 500 }),
+          band: expect.objectContaining({ harmony: 50 }),
+          social: expect.objectContaining({ instagram: 100 }),
+          rivalBand
+        }),
+        expect.any(Function)
+      )
+    })
+
+    it('finishes without offers when brand offer generation throws', async () => {
+      mockGameState(getBaseState())
+      brandDealLogic.generateBrandOffers.mockImplementationOnce(() => {
+        throw new Error('offer pool exploded')
+      })
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      await waitFor(() => expect(result.current.phase).toBe('COMPLETE'))
+      expect(result.current.brandOffers).toEqual([])
     })
 
     it('handles brand deal acceptance, rejection, and errors', async () => {

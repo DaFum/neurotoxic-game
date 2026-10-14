@@ -53,6 +53,25 @@ describe('purchaseLogicUtils', () => {
     })
   })
 
+  describe('NaN controversyLevel', () => {
+    test('is treated as 0 for the reputation gate', () => {
+      const item = {
+        id: 'hq_room_label',
+        requiresReputation: true,
+        cost: 100,
+        currency: 'money',
+        effect: { type: 'stat_modifier' }
+      }
+      const result = validatePurchase(
+        item,
+        { money: 1000 },
+        {},
+        { controversyLevel: NaN }
+      )
+      assert.equal(result.isValid, true)
+    })
+  })
+
   describe('getPrimaryEffect', () => {
     test('returns first effect from effects array', () => {
       const item = { effects: [{ type: 'test' }] }
@@ -401,6 +420,51 @@ describe('purchaseLogicUtils', () => {
         { luck: 10 }
       )
       assert.equal(bandResult.bandPatch.luck, 10)
+    })
+
+    test('clamps van condition, fuel and breakdownChance to their ranges', () => {
+      const player = {
+        van: { condition: 98, fuel: 99, breakdownChance: 0.49 }
+      }
+      const cond = applyStatModifier(
+        { target: 'van', stat: 'condition', value: 5 },
+        {},
+        player,
+        {}
+      )
+      assert.equal(cond.playerPatch.van.condition, 100)
+      const fuel = applyStatModifier(
+        { target: 'van', stat: 'fuel', value: 50 },
+        {},
+        player,
+        {}
+      )
+      assert.equal(fuel.playerPatch.van.fuel, 100)
+      const chance = applyStatModifier(
+        { target: 'van', stat: 'breakdownChance', value: 0.2 },
+        {},
+        player,
+        {}
+      )
+      assert.equal(chance.playerPatch.van.breakdownChance, 0.5)
+    })
+
+    test('chains two van effects from the accumulated patch van', () => {
+      const player = { van: { condition: 50, fuel: 40 } }
+      const first = applyStatModifier(
+        { target: 'van', stat: 'condition', value: 5 },
+        {},
+        player,
+        {}
+      )
+      const second = applyStatModifier(
+        { target: 'van', stat: 'fuel', value: 10 },
+        first.playerPatch,
+        player,
+        {}
+      )
+      assert.equal(second.playerPatch.van.condition, 55)
+      assert.equal(second.playerPatch.van.fuel, 50)
     })
 
     test('falls back when the base stat is a non-finite numeric string', () => {

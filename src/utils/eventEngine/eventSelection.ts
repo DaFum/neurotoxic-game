@@ -288,6 +288,7 @@ const selectEvent = (
 
   if (totalChance <= 0) return null
 
+  // Deliberately not `pickWeighted` (selectionUtils): the roll spans max(1, total) so total chance < 1 keeps "no event" probability mass.
   let roll = rng() * Math.max(1, totalChance)
 
   for (const { eligible, chance } of weighted) {

@@ -29,6 +29,42 @@ describe('socialReducer', () => {
   })
 
   describe('handleUpdateSocial', () => {
+    it('clamps brandReputation entries', () => {
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: { CORPORATE: 500, INDIE: -20, NEUTRAL: Number.NaN }
+      })
+
+      // NEUTRAL had no stored trust, so the malformed entry is dropped.
+      assert.deepEqual(nextState.social.brandReputation, {
+        CORPORATE: 100,
+        INDIE: 0
+      })
+    })
+
+    it('keeps stored brandReputation for non-finite entries', () => {
+      baseState.social.brandReputation = { CORPORATE: 40, INDIE: 25 }
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: {
+          CORPORATE: Number.NaN,
+          INDIE: Number.POSITIVE_INFINITY
+        }
+      })
+
+      assert.deepEqual(nextState.social.brandReputation, {
+        CORPORATE: 40,
+        INDIE: 25
+      })
+    })
+
+    it('drops a non-object brandReputation update', () => {
+      baseState.social.brandReputation = { CORPORATE: 10 }
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: 'oops'
+      })
+
+      assert.deepEqual(nextState.social.brandReputation, { CORPORATE: 10 })
+    })
+
     it('should correctly apply simple object updates', () => {
       const payload = { trend: ALLOWED_TRENDS[0] }
       const nextState = handleUpdateSocial(baseState, payload)
@@ -301,6 +337,29 @@ describe('socialReducer', () => {
           t => t.type === 'error' && t.messageKey === 'ui:toast.blacklisted'
         )
       )
+    })
+
+    it('returns state unchanged for a null or non-object payload', () => {
+      for (const bad of [null, undefined, 'x', 5]) {
+        assert.strictEqual(handleAddVenueBlacklist(baseState, bad), baseState)
+      }
+    })
+
+    it('treats non-finite loyalty as 0: no defense, no NaN/Infinity produced', () => {
+      for (const bad of [Number.NaN, Infinity]) {
+        baseState.social.loyalty = bad
+        const nextState = handleAddVenueBlacklist(baseState, {
+          venueId: 'venue_123',
+          toastId: 'test_toast_id'
+        })
+        assert.ok(nextState.venueBlacklist.includes('venue_123'), String(bad))
+        assert.ok(
+          nextState.toasts.every(
+            t => t.messageKey !== 'ui:toast.fans_defended'
+          ),
+          String(bad)
+        )
+      }
     })
 
     it('should prevent blacklisting and deduct 15 loyalty if loyalty >= 30', () => {

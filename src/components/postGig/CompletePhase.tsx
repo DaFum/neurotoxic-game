@@ -9,7 +9,7 @@ import {
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../utils/postGig'
 import { SideEffectsSummary } from './SideEffectsSummary'
-import { SCANDAL_CONTROVERSY_THRESHOLD } from '../../utils/socialThresholds'
+import { isScandalControversy } from '../../utils/socialThresholds'
 import type { CompletePhaseProps } from '../../types/components'
 
 const UNKNOWN_PLATFORM = 'unknown'
@@ -31,10 +31,8 @@ export const CompletePhase = ({
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
-  // Strictly above the scandal tier (legacy `> 50`), unlike the inclusive
-  // `isScandalControversy` gate used by crisis events.
-  const isScandal =
-    (social?.controversyLevel ?? 0) > SCANDAL_CONTROVERSY_THRESHOLD
+  // Same inclusive scandal tier as the crisis events and post options.
+  const isScandal = isScandalControversy(social?.controversyLevel)
 
   const getOutcomeImagePrompt = () => {
     if (result.success === true) {

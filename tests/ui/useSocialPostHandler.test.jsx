@@ -6,9 +6,6 @@ import { renderHook, act } from '@testing-library/react'
 vi.mock('../../src/utils/postGig', () => ({
   calculatePostGigStateUpdates: vi.fn()
 }))
-vi.mock('../../src/utils/brandDealLogic', () => ({
-  generateBrandOffers: vi.fn(() => [])
-}))
 vi.mock('../../src/quests/producers/gigQuestEvents', () => ({
   createHarmonyChangedQuestEvent: vi.fn(() => ({ type: 'harmony.changed' }))
 }))
@@ -26,7 +23,6 @@ import { useSocialPostHandler } from '../../src/hooks/postGig/handlers/useSocial
 import { applySocialPostResult } from '../../src/hooks/postGig/handlers/socialPostHandlerUtils'
 import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGig'
-import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 import { createSocialPostQuestEvents } from '../../src/quests/producers/socialQuestEvents'
 import { secureRandom } from '../../src/utils/crypto'
 
@@ -43,8 +39,7 @@ function makeDispatchers() {
     applyQuestEvent: vi.fn(),
     addToast: vi.fn(),
     setPostResult: vi.fn(),
-    setBrandOffers: vi.fn(),
-    setPhase: vi.fn()
+    requestBrandOffers: vi.fn()
   }
 }
 
@@ -83,10 +78,9 @@ function makeUpdates(overrides = {}) {
 describe('useSocialPostHandler (characterization)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    generateBrandOffers.mockReturnValue([])
   })
 
-  it('applies updates and routes to COMPLETE when there are no brand offers', () => {
+  it('applies updates and requests brand offers', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
@@ -107,24 +101,26 @@ describe('useSocialPostHandler (characterization)', () => {
     )
     expect(d.applyQuestEvent).toHaveBeenCalledWith({ type: 'harmony.changed' })
     expect(d.applyQuestEvent).toHaveBeenCalledWith({ type: 'social.post' })
-    expect(d.setBrandOffers).toHaveBeenCalledWith([])
-    expect(d.setPhase).toHaveBeenCalledWith('COMPLETE')
+    expect(d.requestBrandOffers).toHaveBeenCalledTimes(1)
     // Guard is held after success — NOT reset until phase change/unmount
     expect(props.isProcessingActionRef.current).toBe(true)
   })
 
-  it('routes to DEALS when brand offers are generated', () => {
+  it('requests brand offers only after the post and its quest events dispatch', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
-    generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
 
     act(() => result.current({ id: 'post_1' }))
 
-    expect(props.dispatchers.setBrandOffers).toHaveBeenCalledWith([
-      { id: 'deal_1' }
-    ])
-    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('DEALS')
+    const d = props.dispatchers
+    const requestedAt = d.requestBrandOffers.mock.invocationCallOrder[0]
+    expect(requestedAt).toBeGreaterThan(
+      Math.max(
+        ...d.updateSocial.mock.invocationCallOrder,
+        ...d.applyQuestEvent.mock.invocationCallOrder
+      )
+    )
   })
 
   it('unlocks a trait when the result carries one', () => {
@@ -218,7 +214,7 @@ describe('useSocialPostHandler (characterization)', () => {
       result.current({ id: 'post_1' })
     })
 
-    expect(props.dispatchers.setPhase).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.requestBrandOffers).toHaveBeenCalledTimes(1)
     expect(calculatePostGigStateUpdates).toHaveBeenCalledTimes(1)
   })
 
@@ -266,7 +262,6 @@ describe('useSocialPostHandler (characterization)', () => {
 describe('applySocialPostResult', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    generateBrandOffers.mockReturnValue([])
   })
 
   function makeApplyProps(overrides = {}) {
@@ -284,14 +279,13 @@ describe('applySocialPostResult', () => {
       },
       band: { harmony: 80, members: [], inventory: {} },
       social: { followers: 500, brandReputation: {} },
-      rivalBand: null,
       t,
       dispatchers,
       ...overrides
     }
   }
 
-  it('fires core dispatchers and routes to COMPLETE when there are no brand offers and hasBandUpdates is true', () => {
+  it('fires core dispatchers and requests brand offers when hasBandUpdates is true', () => {
     const props = makeApplyProps()
     applySocialPostResult(props)
 
@@ -300,8 +294,7 @@ describe('applySocialPostResult', () => {
     expect(d.updateBand).toHaveBeenCalledWith(props.updates.newBand)
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
     expect(d.updateSocial).toHaveBeenCalledWith(props.updates.updatedSocial)
-    expect(d.setBrandOffers).toHaveBeenCalledWith([])
-    expect(d.setPhase).toHaveBeenCalledWith('COMPLETE')
+    expect(d.requestBrandOffers).toHaveBeenCalledTimes(1)
   })
 
   it('does not fire updateBand when hasBandUpdates is false', () => {
@@ -447,39 +440,6 @@ describe('applySocialPostResult', () => {
     expect(createSocialPostQuestEvents).toHaveBeenCalledWith(
       props.option,
       expect.objectContaining({ followers: 125 })
-    )
-  })
-
-  it('routes to DEALS phase when brand offers are generated', () => {
-    generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])
-    const props = makeApplyProps()
-    applySocialPostResult(props)
-
-    const d = props.dispatchers
-    expect(generateBrandOffers).toHaveBeenCalledWith(
-      expect.objectContaining({
-        player: expect.objectContaining({ money: 1100 }),
-        band: expect.objectContaining({ harmony: 85 }),
-        social: expect.objectContaining({ followers: 510 })
-      }),
-      expect.any(Function)
-    )
-    expect(d.setBrandOffers).toHaveBeenCalledWith([{ id: 'deal_1' }])
-    expect(d.setPhase).toHaveBeenCalledWith('DEALS')
-  })
-
-  it('passes rival-band state into post-gig brand offer generation', () => {
-    const rivalBand = {
-      id: 'rival_1',
-      currentLocationId: 'node_1',
-      powerLevel: 75
-    }
-    const props = makeApplyProps({ rivalBand })
-    applySocialPostResult(props)
-
-    expect(generateBrandOffers).toHaveBeenCalledWith(
-      expect.objectContaining({ rivalBand }),
-      expect.any(Function)
     )
   })
 })

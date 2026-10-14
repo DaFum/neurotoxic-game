@@ -39,11 +39,19 @@ export const createCorporateQuest = (
     repeatPolicy: 'cooldown',
     cooldownDays: 8,
     rewards: [
-      { type: 'brand.trust', alignment: 'corporate', amount: 10 },
+      {
+        type: 'brand.trust',
+        alignment: 'CORPORATE',
+        amount: 10
+      },
       { type: 'fame', amount: 120 }
     ],
     failurePenalties: [
-      { type: 'brand.trust', alignment: 'corporate', amount: -5 },
+      {
+        type: 'brand.trust',
+        alignment: 'CORPORATE',
+        amount: -5
+      },
       { type: 'social.loyalty', amount: -5 }
     ]
   }
