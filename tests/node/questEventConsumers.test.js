@@ -161,6 +161,35 @@ describe('quests consuming the social, brand, item and extraction events', () =>
     assert.equal(activeQuest(state, QUEST_DAMAGE_CONTROL).progress, 3)
   })
 
+  it('does not count a trend rotation from UPDATE_SOCIAL as a trend match', () => {
+    const state = gameReducer(
+      withQuest(
+        withSocial(createInitialState(), {
+          controversyLevel: 60,
+          trend: 'TECH'
+        }),
+        QUEST_DAMAGE_CONTROL
+      ),
+      createUpdateSocialAction({ trend: 'DRAMA' })
+    )
+    assert.equal(state.social.trend, 'DRAMA')
+    assert.equal(activeQuest(state, QUEST_DAMAGE_CONTROL).progress, 0)
+  })
+
+  it('credits corporate quest trust to brandReputation.CORPORATE', () => {
+    const state = gameReducer(
+      withQuest(createInitialState(), QUEST_SIGN_HERE),
+      createApplyQuestEventAction(
+        createBrandOfferAcceptedQuestEvent(BRAND_DEALS[0])
+      )
+    )
+    assert.equal(state.social.brandReputation.CORPORATE, 10)
+    assert.equal(
+      Object.hasOwn(state.social.brandReputation, 'corporate'),
+      false
+    )
+  })
+
   it('completes sign-here when a brand offer is accepted', () => {
     const state = gameReducer(
       withQuest(createInitialState(), QUEST_SIGN_HERE),

@@ -37,8 +37,7 @@ import {
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createSocialControversyChangedQuestEvent,
-  createSocialLoyaltyChangedQuestEvent,
-  createSocialTrendMatchedQuestEvent
+  createSocialLoyaltyChangedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
 import {
   createBrandDealFailedQuestEvent,
@@ -371,16 +370,6 @@ export const handleUpdateSocial = (
       )
     }
   }
-  if (
-    updates.trend !== undefined &&
-    nextState.social.trend !== state.social.trend
-  ) {
-    nextState = QuestEvents.emit(
-      nextState,
-      createSocialTrendMatchedQuestEvent({ trendId: nextState.social.trend })
-    )
-  }
-
   return breakDealsIfControversyCrossed(
     nextState,
     finiteNumberOr(state.social.controversyLevel, 0)
