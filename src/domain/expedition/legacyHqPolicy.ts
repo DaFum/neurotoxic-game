@@ -19,7 +19,7 @@ import type { ExpeditionStatus } from '../../types/expedition'
 import type { CatalogItem } from '../../types/components'
 
 /** What an Expedition does with a legacy upgrade the Career owns. */
-export type ExpeditionLegacyHqPolicy =
+type ExpeditionLegacyHqPolicy =
   | { kind: 'unaffected' }
   | { kind: 'between_tours_only' }
   | { kind: 'requires_roadtested' }

@@ -91,7 +91,7 @@ const FAME_BANDS: readonly (ExpeditionFameProfile & { minimumFame: number })[] =
   ]
 
 /** One rung of the Fame access ladder. */
-export type ExpeditionAccessTier = ExpeditionFameProfile['accessTier']
+type ExpeditionAccessTier = ExpeditionFameProfile['accessTier']
 
 /**
  * The minimum `accessTier` each piece of high-profile content requires.

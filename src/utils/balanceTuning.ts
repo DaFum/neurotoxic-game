@@ -58,7 +58,7 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
     }
   })
 
-export interface BalanceRecommendationHold {
+interface BalanceRecommendationHold {
   /** `recommendation.bootstrap` of the report this hold was reviewed against. */
   bootstrap: string
   /** `recommendation.touring` of the report this hold was reviewed against. */

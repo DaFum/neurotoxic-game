@@ -123,6 +123,13 @@ type BaseGameDispatchActions = {
   setLastGigStats: (
     stats: Parameters<typeof createSetLastGigStatsAction>[0]
   ) => void
+  /**
+   * Replaces the active event directly.
+   *
+   * @internal Exposed as a test seam. `useEventSystem` uses it internally;
+   * components go through `triggerEvent` / `resolveEvent`, and tests call it
+   * to stage an event without rolling one.
+   */
   setActiveEvent: (
     event: Parameters<typeof createSetActiveEventAction>[0]
   ) => void
