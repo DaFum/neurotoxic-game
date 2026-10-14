@@ -120,6 +120,44 @@ const makeProgressEvent = (source, rule) => {
         riskType: firstMatchValue(match.riskType) ?? 'fire',
         success: true
       }
+    // Mirror src/quests/producers/assetQuestEvents.ts.
+    case 'asset.acquired':
+    case 'asset.moduleInstalled':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        assetId: 'test_asset',
+        assetKind: firstMatchValue(match.assetKind) ?? 'tourbus_chassis',
+        moduleId: firstMatchValue(match.moduleId) ?? 'test_module'
+      }
+    case 'asset.repaired':
+    case 'asset.conditionChanged':
+      return {
+        type: eventSource,
+        amount: 50,
+        success: true,
+        assetId: 'test_asset',
+        assetKind: firstMatchValue(match.assetKind) ?? 'bandhaus_chassis'
+      }
+    // Mirror src/quests/producers/minigameQuestEvents.ts.
+    case 'minigame.completed':
+    case 'minigame.failed':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: eventSource === 'minigame.completed',
+        minigameId: firstMatchValue(match.minigameId) ?? 'tourbus'
+      }
+    // Mirror src/quests/producers/venueQuestEvents.ts.
+    case 'venue.gigCompleted':
+    case 'venue.goodGig':
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        ...commonGigPayload
+      }
     case 'brand.dealFailed':
       return {
         type: eventSource,
