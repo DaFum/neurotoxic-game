@@ -113,6 +113,7 @@ import {
   addClampedPercent,
   addClampedNonNegative,
   clampToNonNegativeInt,
+  clampBrandReputation,
   clampControversyLevel,
   clampVanFuel,
   readVanCondition
@@ -2783,13 +2784,9 @@ export const handleResolveExpeditionSocialResult = (
       pendingSocialOptionId: null,
       brandReputation: {
         ...state.social.brandReputation,
-        NEUTRAL: Math.max(
-          0,
-          Math.min(
-            100,
-            finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
-              result.sponsorInterest
-          )
+        NEUTRAL: clampBrandReputation(
+          finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
+            result.sponsorInterest
         )
       }
     },

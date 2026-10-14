@@ -47,6 +47,7 @@ import {
   clampVanCondition,
   clampVanBreakdownChance,
   clamp0to100,
+  clampBrandReputation,
   clampLuck,
   clampControversyLevel,
   clampLoyalty,
@@ -1447,7 +1448,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
       if (isForbiddenKey(key)) continue
       const reputation = safeValue.brandReputation[key]
       if (isFiniteNumber(reputation)) {
-        sanitized.brandReputation[key] = reputation
+        sanitized.brandReputation[key] = clampBrandReputation(reputation)
       }
     }
   }

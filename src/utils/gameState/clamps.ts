@@ -141,6 +141,20 @@ export const clampPercent = (value: unknown, fallback = 0): number =>
   Math.max(0, Math.min(100, finiteNumberOr(value, fallback)))
 
 /**
+ * Clamps a stored brand reputation entry to the range 0..100.
+ *
+ * @remarks
+ * Single clamp authority for every `social.brandReputation` entry: the load
+ * sanitizer, `UPDATE_SOCIAL` and each writer route through it. Fractional
+ * values are kept because writers add fractional deltas (sponsor interest).
+ *
+ * @param value - Unknown value crossing a state, storage, or payload boundary.
+ * @returns The value clamped to `0..100`; non-finite or non-numeric input maps to `0`.
+ */
+export const clampBrandReputation = (value: unknown): number =>
+  clampPercent(value, 0)
+
+/**
  * Adds a delta to a stored 0..100 percentage and range-clamps the sum.
  *
  * @remarks

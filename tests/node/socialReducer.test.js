@@ -29,6 +29,27 @@ describe('socialReducer', () => {
   })
 
   describe('handleUpdateSocial', () => {
+    it('clamps brandReputation entries', () => {
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: { CORPORATE: 500, INDIE: -20, NEUTRAL: Number.NaN }
+      })
+
+      assert.deepEqual(nextState.social.brandReputation, {
+        CORPORATE: 100,
+        INDIE: 0,
+        NEUTRAL: 0
+      })
+    })
+
+    it('drops a non-object brandReputation update', () => {
+      baseState.social.brandReputation = { CORPORATE: 10 }
+      const nextState = handleUpdateSocial(baseState, {
+        brandReputation: 'oops'
+      })
+
+      assert.deepEqual(nextState.social.brandReputation, { CORPORATE: 10 })
+    })
+
     it('should correctly apply simple object updates', () => {
       const payload = { trend: ALLOWED_TRENDS[0] }
       const nextState = handleUpdateSocial(baseState, payload)

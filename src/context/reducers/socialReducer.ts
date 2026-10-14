@@ -26,6 +26,7 @@ import {
   clampControversyLevel,
   clampNonNegative,
   clamp0to100,
+  clampBrandReputation,
   isFiniteNumber,
   finiteNumberOr
 } from '../../utils/gameState'
@@ -316,6 +317,20 @@ export const handleUpdateSocial = (
     }
   }
 
+  if (updates.brandReputation !== undefined) {
+    const rawReputation: unknown = updates.brandReputation
+    if (isLooseRecord(rawReputation)) {
+      const clampedReputation: Record<string, number> = {}
+      for (const key of Object.keys(rawReputation)) {
+        if (isForbiddenKey(key)) continue
+        clampedReputation[key] = clampBrandReputation(rawReputation[key])
+      }
+      updates.brandReputation = clampedReputation
+    } else {
+      delete updates.brandReputation
+    }
+  }
+
   let nextState: GameState = {
     ...state,
     social: { ...state.social, ...updates }
@@ -400,8 +415,7 @@ const breakDealsIfControversyCrossed = (
     for (const deal of brokenDeals) {
       const alignment = deal.alignment
       if (alignment && !isForbiddenKey(alignment)) {
-        nextBrandReputation[alignment] = Math.max(
-          0,
+        nextBrandReputation[alignment] = clampBrandReputation(
           finiteNumberOr(nextBrandReputation[alignment], 0) -
             DEAL_BREAK_TRUST_PENALTY
         )
