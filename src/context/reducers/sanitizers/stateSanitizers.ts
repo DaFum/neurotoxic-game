@@ -20,7 +20,8 @@ import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { rehydrateTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
-  clampMemberMood,
+  readMemberMood,
+  readMemberStamina,
   normalizeRegionalGigHistory,
   normalizeSetlistForSave
 } from '../../../utils/gameState'
@@ -54,7 +55,6 @@ import {
   clampRelationship,
   calculateFameLevel,
   clampPlayerFame,
-  clampMemberStamina,
   clampPlayerMoney,
   clampBandHarmony,
   clampReputation,
@@ -1086,8 +1086,8 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       const member: BandMember = {
         id,
         traits: rehydrateTraitMap(m.traits),
-        mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
-        stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
+        mood: readMemberMood(m.mood),
+        stamina: readMemberStamina(m.stamina, staminaMax),
         baseStats: (() => {
           const stats = m?.baseStats || {}
           if (!isLooseRecord(stats)) return {}

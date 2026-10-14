@@ -13,6 +13,8 @@ import {
   clampVanCondition,
   clampVanBreakdownChance,
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampMemberMood,
   BALANCE_CONSTANTS,
   finiteNumberOr
@@ -334,7 +336,7 @@ const updatePassiveEffectsAndMembers = (
     }
 
     // 2a. Base Mood Drift
-    let mood = finiteNumberOr(m.mood, 50)
+    let mood = readMemberMood(m.mood)
     if (mood > 50) mood = Math.max(50, mood - 2)
     else if (mood < 50) mood = Math.min(50, mood + 2)
     mood = clampMemberMood(mood)
@@ -345,7 +347,10 @@ const updatePassiveEffectsAndMembers = (
     }
 
     // 2c. Base Stamina Drift
-    let stamina = finiteNumberOr(m.stamina, 100)
+    let stamina = readMemberStamina(
+      m.stamina,
+      finiteNumberOr(m.staminaMax, 100)
+    )
     let decay = 5
     if (hasTrait(m, 'iron_liver')) decay = Math.max(0, decay - 3)
     stamina = Math.max(0, stamina - decay)

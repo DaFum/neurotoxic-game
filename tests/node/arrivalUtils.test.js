@@ -431,3 +431,23 @@ describe('processTravelEvents', () => {
     assert.strictEqual(triggerEvent.mock.calls.length, 2)
   })
 })
+
+describe('handleNodeArrival NaN recovery', () => {
+  test('REST_STOP recovers corrupt mood/stamina to the sanitizer defaults', () => {
+    const updateBand = mock.fn()
+    handleNodeArrival({
+      node: { type: 'REST_STOP' },
+      band: { members: [{ stamina: NaN, mood: NaN, staminaMax: 100 }] },
+      updateBand,
+      updatePlayer: mock.fn(),
+      triggerEvent: mock.fn(),
+      startGig: mock.fn(),
+      addToast: mock.fn(),
+      onShowHQ: mock.fn()
+    })
+    const [member] = updateBand.mock.calls[0].arguments[0].members
+    // stamina: 100 default + 20 -> clamped 100; mood: 50 default + 10 -> 60
+    assert.strictEqual(member.stamina, 100)
+    assert.strictEqual(member.mood, 60)
+  })
+})

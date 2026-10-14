@@ -222,3 +222,26 @@ test('Relationship Mechanics', async t => {
     assert.ok(matzeUnlock, 'Matze should unlock Grudge Holder')
   })
 })
+
+test('Relationship delta recovers a NaN stored score to the default base', () => {
+  const state = createInitialState()
+  state.band.members[0].relationships.Marius = NaN
+  const nextState = applyEventDelta(state, {
+    band: {
+      relationshipChange: [{ member1: 'Matze', member2: 'Marius', change: 10 }]
+    }
+  })
+  // default 50 + 10, not the delta-dropping clamp(NaN) = 50
+  assert.strictEqual(nextState.band.members[0].relationships.Marius, 60)
+})
+
+test('Member mood/stamina deltas recover NaN bases to 50/100', () => {
+  const state = createInitialState()
+  state.band.members[0].mood = NaN
+  state.band.members[0].stamina = NaN
+  const nextState = applyEventDelta(state, {
+    band: { membersDelta: { moodChange: -5, staminaChange: -10 } }
+  })
+  assert.strictEqual(nextState.band.members[0].mood, 45)
+  assert.strictEqual(nextState.band.members[0].stamina, 90)
+})

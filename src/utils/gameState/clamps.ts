@@ -86,6 +86,29 @@ export const clampMemberStamina = (
 export const clampMemberMood = (mood: number): number => clamp0to100(mood)
 
 /**
+ * Reads a stored member mood, recovering non-finite values to `50` (the load
+ * sanitizer's default) instead of the `0` that clamping `NaN` would give.
+ *
+ * @param value - Stored mood of unknown validity.
+ * @returns Clamped mood in `0..100`.
+ */
+export const readMemberMood = (value: unknown): number =>
+  clampMemberMood(finiteNumberOr(value, 50))
+
+/**
+ * Reads a stored member stamina, recovering non-finite values to `100` (the
+ * load sanitizer's default) instead of the `0` that clamping `NaN` would give.
+ *
+ * @param value - Stored stamina of unknown validity.
+ * @param staminaMax - The member's maximum stamina. Defaults to `100`.
+ * @returns Clamped stamina in `0..staminaMax`.
+ */
+export const readMemberStamina = (
+  value: unknown,
+  staminaMax?: number
+): number => clampMemberStamina(finiteNumberOr(value, 100), staminaMax)
+
+/**
  * Maps a 0..100 percentage onto an N-step integer scale (0..steps).
  * Shared by the brutalist HUD meters which all render block-bar gauges.
  *

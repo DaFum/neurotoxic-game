@@ -912,3 +912,29 @@ test('generateBrandOffers attaches flavor metadata to every offer', () => {
     assert.ok(['low', 'medium', 'high'].includes(offer.flavor.urgency))
   }
 })
+
+test('resolvePost recovers a NaN band harmony to the clamp floor of 1', () => {
+  const result = resolvePost(
+    {
+      id: 'harmony_nan',
+      platform: 'instagram',
+      resolve: () => ({ success: true, harmonyChange: -5 })
+    },
+    { ...mockGameState, band: { ...mockGameState.band, harmony: NaN } },
+    0.1
+  )
+  // floor 1: prev 1, next clamp(1 - 5) = 1 -> no change (a 0 base gave +1)
+  assert.equal(result.harmonyChange, 0)
+})
+
+test('generatePostOptions treats a NaN reputationCooldown as inactive', () => {
+  const options = generatePostOptions(
+    null,
+    {
+      ...mockGameState,
+      social: { ...mockGameState.social, reputationCooldown: NaN }
+    },
+    () => 0.5
+  )
+  assert.equal(options.length, 3)
+})

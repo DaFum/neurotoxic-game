@@ -119,7 +119,8 @@ export const generatePostOptions = (
   rng: RandomFn = secureRandom
 ): SocialPostOption[] => {
   // 1. Evaluate and collect eligible options
-  const isCooldownActive = (gameState.social?.reputationCooldown ?? 0) > 0
+  const isCooldownActive =
+    finiteNumberOr(gameState.social?.reputationCooldown, 0) > 0
 
   const eligibleOptions: WeightedPostOption[] = []
   let sponsorIdx = -1
@@ -281,7 +282,7 @@ export const resolvePost = (
       ? result.harmonyChange
       : undefined
     if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
-      const prevHarmony = finiteNumberOr(gameState.band.harmony, 0)
+      const prevHarmony = finiteNumberOr(gameState.band.harmony, 1)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
     }

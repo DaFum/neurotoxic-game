@@ -3,6 +3,8 @@ import { handleError, StateError } from './errorHandler'
 import { GAME_PHASES } from '../context/gameConstants'
 import {
   clampMemberStamina,
+  readMemberMood,
+  readMemberStamina,
   clampMemberMood,
   clampPlayerFame,
   calculateFameLevel,
@@ -209,11 +211,12 @@ export const handleNodeArrival = (
       for (let i = 0; i < members.length; i++) {
         const m = members[i]
         if (!m) continue
+        const staminaMax = finiteNumberOr(m.staminaMax, 100)
         const newStamina = clampMemberStamina(
-          finiteNumberOr(m.stamina, 0) + 20,
-          finiteNumberOr(m.staminaMax, 100)
+          readMemberStamina(m.stamina, staminaMax) + 20,
+          staminaMax
         )
-        const newMood = clampMemberMood(finiteNumberOr(m.mood, 0) + 10)
+        const newMood = clampMemberMood(readMemberMood(m.mood) + 10)
         newMembers[i] = {
           ...m,
           stamina: newStamina,
