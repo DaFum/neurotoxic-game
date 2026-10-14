@@ -356,7 +356,7 @@ export const applyStatModifier = (
     case 'band': {
       if (effect.stat === 'harmony') {
         nextBandPatch = {
-          harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 0) + val)
+          harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 1) + val)
         }
       } else {
         const base = getNumericProp(band, effect.stat, 0) ?? 0
@@ -665,7 +665,7 @@ export const applyUnlockHQ = (
 
     case 'hq_room_diy_soundproofing':
       nextBandPatch = {
-        harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 0) + 5)
+        harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 1) + 5)
       }
       messages.push({
         messageKey: 'ui:shop.messages.soundproofing',

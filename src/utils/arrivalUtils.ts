@@ -88,7 +88,7 @@ export const processHarmonyRegen = (
       'hq_van_sound_system'
     )
   ) {
-    return clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)
+    return clampBandHarmony(finiteNumberOr(band.harmony, 1) + 5)
   }
   return null
 }
