@@ -454,6 +454,22 @@ describe('usePostGigLogic', () => {
       )
     })
 
+    it('finishes without offers when brand offer generation throws', async () => {
+      mockGameState(getBaseState())
+      brandDealLogic.generateBrandOffers.mockImplementationOnce(() => {
+        throw new Error('offer pool exploded')
+      })
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      await waitFor(() => expect(result.current.phase).toBe('COMPLETE'))
+      expect(result.current.brandOffers).toEqual([])
+    })
+
     it('handles brand deal acceptance, rejection, and errors', async () => {
       // Each sub-scenario uses its own hook instance because the single-shot guard
       // holds after a successful deal acceptance until the phase changes.

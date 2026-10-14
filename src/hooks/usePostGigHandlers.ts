@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import i18n from '../i18n'
 import { generateBrandOffers } from '../utils/brandDealLogic'
 import { secureRandom } from '../utils/crypto'
+import { logger } from '../utils/logger'
 import {
   useContinueHandler,
   useSocialPostHandler,
@@ -120,10 +121,17 @@ export function usePostGigHandlers({
   useEffect(() => {
     if (!brandOffersPendingRef.current) return
     brandOffersPendingRef.current = false
-    const offers = generateBrandOffers(
-      { player, band, social, rivalBand },
-      secureRandom
-    )
+    let offers: BrandDeal[] = []
+    try {
+      offers = generateBrandOffers(
+        { player, band, social, rivalBand },
+        secureRandom
+      )
+    } catch (e) {
+      // The post has already committed, so do not re-open it: finish without
+      // offers instead of letting the error escape the effect.
+      logger.error('PostGig', 'Failed to generate brand offers', e)
+    }
     setBrandOffers(offers)
     setPhase(offers.length > 0 ? 'DEALS' : 'COMPLETE')
   }, [
