@@ -101,6 +101,15 @@ vi.mock('../src/utils/gameState', () => ({
     if (!Number.isFinite(val)) return 0
     return Math.max(0, Math.min(100, Math.floor(val)))
   },
+  readMemberMood: val => {
+    const base = typeof val === 'number' && Number.isFinite(val) ? val : 50
+    return Math.max(0, Math.min(100, Math.floor(base)))
+  },
+  readMemberStamina: (val, max = 100) => {
+    const base = typeof val === 'number' && Number.isFinite(val) ? val : 100
+    const resolvedMax = Number.isFinite(max) ? max : 100
+    return Math.max(0, Math.min(resolvedMax, Math.floor(base)))
+  },
   clampPlayerFame: val => {
     if (!Number.isFinite(val)) return 0
     return Math.max(0, Math.floor(val))

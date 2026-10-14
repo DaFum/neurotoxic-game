@@ -62,7 +62,8 @@ vi.mock('../../src/utils/socialEngine', () => ({
   generatePostOptions: vi.fn(),
   resolvePost: vi.fn(),
   checkViralEvent: vi.fn(),
-  calculateSocialGrowth: vi.fn()
+  calculateSocialGrowth: vi.fn(),
+  isPostMatchingTrend: vi.fn(() => false)
 }))
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(),
