@@ -1,5 +1,6 @@
 import { applyClampedMoneyDelta } from './socialResolution'
 import {
+  clampBrandReputation,
   clampControversyLevel,
   clampLoyalty,
   finiteNumberOr
@@ -92,12 +93,14 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
         updates.brandReputation[deal.alignment],
         0
       )
-      updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
+      updates.brandReputation[deal.alignment] = clampBrandReputation(
+        currentRep + 5
+      )
 
       const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
       if (opposing !== deal.alignment) {
         const oppRep = finiteNumberOr(updates.brandReputation[opposing], 0)
-        updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+        updates.brandReputation[opposing] = clampBrandReputation(oppRep - 3)
       }
     }
 

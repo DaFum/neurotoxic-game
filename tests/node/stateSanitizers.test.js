@@ -5,7 +5,8 @@ import {
   sanitizeActiveEvent,
   normalizeLoadedGameMap,
   sanitizeBand,
-  sanitizePlayer
+  sanitizePlayer,
+  sanitizeSocial
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { calculateAppliedDelta } from '../../src/utils/gameState'
@@ -523,6 +524,26 @@ describe('stateSanitizers', () => {
         sanitizePlayer({ tutorialStep: Number.NaN }).tutorialStep,
         0
       )
+    })
+  })
+
+  describe('sanitizeSocial brandReputation', () => {
+    it('clamps every entry to 0..100 on load', () => {
+      const social = sanitizeSocial({
+        brandReputation: { CORPORATE: 999, INDIE: -40, NEUTRAL: 55 }
+      })
+      assert.deepEqual(social.brandReputation, {
+        CORPORATE: 100,
+        INDIE: 0,
+        NEUTRAL: 55
+      })
+    })
+
+    it('drops non-finite entries', () => {
+      const social = sanitizeSocial({
+        brandReputation: { CORPORATE: Number.NaN, INDIE: Infinity }
+      })
+      assert.deepEqual(social.brandReputation, {})
     })
   })
 })
