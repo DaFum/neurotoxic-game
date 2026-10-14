@@ -5,6 +5,7 @@ import {
   sanitizeActiveEvent,
   normalizeLoadedGameMap,
   sanitizeBand,
+  sanitizeMinigameState,
   sanitizePlayer,
   sanitizeSocial
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
@@ -12,6 +13,39 @@ import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { calculateAppliedDelta } from '../../src/utils/gameState'
 
 describe('stateSanitizers', () => {
+  describe('sanitizeMinigameState numeric clamps', () => {
+    it('clamps out-of-range score and accumulatedDamage to 0..100 and equipmentRemaining to >= 0', () => {
+      const high = sanitizeMinigameState({
+        equipmentRemaining: 999,
+        accumulatedDamage: 5000,
+        score: 1e9
+      })
+      assert.strictEqual(high.accumulatedDamage, 100)
+      assert.strictEqual(high.score, 100)
+      assert.strictEqual(high.equipmentRemaining, 999)
+
+      const low = sanitizeMinigameState({
+        equipmentRemaining: -4,
+        accumulatedDamage: -50,
+        score: -1
+      })
+      assert.strictEqual(low.equipmentRemaining, 0)
+      assert.strictEqual(low.accumulatedDamage, 0)
+      assert.strictEqual(low.score, 0)
+    })
+
+    it('keeps in-range values unchanged', () => {
+      const ok = sanitizeMinigameState({
+        equipmentRemaining: 10,
+        accumulatedDamage: 42,
+        score: 77
+      })
+      assert.strictEqual(ok.equipmentRemaining, 10)
+      assert.strictEqual(ok.accumulatedDamage, 42)
+      assert.strictEqual(ok.score, 77)
+    })
+  })
+
   describe('copySafeEffectPayload (via sanitizeActiveEvent)', () => {
     it('handles primitive effect payloads (returns undefined for non-objects)', () => {
       const e1 = sanitizeActiveEvent({ id: 'test', effects: 'primitive' })
