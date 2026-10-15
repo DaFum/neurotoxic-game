@@ -113,7 +113,8 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:load_game'))
 
       expect(mockLoadGame).toHaveBeenCalled()
-      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      // LOAD_GAME owns the scene; the menu must not override it.
+      expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
     it('shows error toast when no save found', async () => {
@@ -203,7 +204,8 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
 
       expect(mockLoadGame).toHaveBeenCalled()
-      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      // LOAD_GAME owns the scene; the menu must not override it.
+      expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
     it('starts new game when start new button clicked in prompt', async () => {
@@ -569,7 +571,8 @@ describe('MainMenu Component', () => {
       fireEvent.click(loadButton)
       fireEvent.click(startButton)
 
-      expect(mockChangeScene).toHaveBeenCalled()
+      // The load ran; LOAD_GAME owns the resulting scene.
+      expect(mockLoadGame).toHaveBeenCalled()
     })
 
     it('maintains player identity across multiple new game starts', async () => {
@@ -645,7 +648,8 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:load_game'))
 
-      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      // LOAD_GAME owns the scene; the menu must not override it.
+      expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
     it('disables start button while starting', async () => {

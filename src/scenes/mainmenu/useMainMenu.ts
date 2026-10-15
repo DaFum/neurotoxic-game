@@ -63,7 +63,6 @@ export const useMainMenu = () => {
   const { handleLoad, handleLoadExistingFromPrompt } = useMainMenuLoad({
     setIsLoadingGame,
     loadGame,
-    changeScene,
     initializeAudio,
     setShowExistingSavePrompt,
     addToast,
