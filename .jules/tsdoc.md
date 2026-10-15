@@ -94,3 +94,4 @@
 | 2026-10-07 | src/components/assets/sectionTabs.ts | TabIcon, AssetSectionTab, ASSET_SECTION_TABS, ASSET_SECTION_TABS_MAP |
 | 2026-10-12 | src/context/reducers/careerReducer.ts | handleSettleExpeditionCrewCareer, handleAcquireExpeditionCrewSignature |
 | 2026-10-14 | src/utils/mapGenerator/types.ts | MapConnection, GeneratedMapNode, MapGeneratorState, VenuePools |
+| 2026-10-15 | src/components/assets/ForeclosureModal.tsx | Props, ForeclosureModal |
