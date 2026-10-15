@@ -337,3 +337,42 @@ test('load settles an active run under the protected Career Cash floor like Cont
   assert.equal(loaded.player.fame, 100)
   assert.equal(loaded.pendingGigSettlement, null)
 })
+
+test('a tampered record is bounded to what the post-gig screen produces', () => {
+  const baseline = handleLoadGame(createInitialState(), buildPostGigSnapshot())
+  const tampered = handleLoadGame(
+    createInitialState(),
+    buildPostGigSnapshot({
+      perfScore: 1e308,
+      dealFameMultiplier: 1e308,
+      misses: 1e308,
+      net: 1e308
+    })
+  )
+
+  assert.ok(
+    tampered.player.fame > baseline.player.fame,
+    `fame must grow, not wipe: ${tampered.player.fame}`
+  )
+  assert.ok(Number.isFinite(tampered.player.money))
+  assert.ok(tampered.player.money > baseline.player.money)
+
+  const record = {
+    id: 'settlement-1',
+    gigId: 'gig_venue',
+    net: -1e308,
+    perfScore: -5,
+    misses: -3,
+    dealFameMultiplier: 0.5,
+    soldMerch: {}
+  }
+  const action = createRecordPendingGigSettlementAction(record, record.id)
+  assert.ok(action)
+  assert.deepEqual(action.payload, {
+    ...record,
+    net: -Number.MAX_SAFE_INTEGER,
+    perfScore: 30,
+    misses: 0,
+    dealFameMultiplier: 1
+  })
+})

@@ -10,7 +10,12 @@ import {
   clampPlayerMoney,
   finiteNumberOr
 } from '../../utils/gameState'
-import { calculateContinueStats } from '../../utils/postGig/performanceLogic'
+import {
+  PERF_SCORE_MAX,
+  PERF_SCORE_MIN,
+  calculateContinueStats
+} from '../../utils/postGig/performanceLogic'
+import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
 import { shouldTriggerBankruptcy } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
@@ -26,6 +31,9 @@ import {
 } from './expeditionReducer'
 import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
+
+const clampRange = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value))
 
 /**
  * Validates an untrusted pending-settlement record.
@@ -56,13 +64,19 @@ export const sanitizePendingGigSettlement = (
     if (!isFiniteNumber(value) || value < 0) return null
     sold[key] = value
   }
+  // Bound to what the post-gig screen can produce, so a tampered save cannot
+  // overflow the fame or money arithmetic to Infinity (which clamps to 0).
   return {
     id,
     gigId,
-    net,
-    perfScore,
-    misses,
-    dealFameMultiplier,
+    net: clampRange(net, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
+    perfScore: clampRange(perfScore, PERF_SCORE_MIN, PERF_SCORE_MAX),
+    misses: clampRange(misses, 0, Number.MAX_SAFE_INTEGER),
+    dealFameMultiplier: clampRange(
+      dealFameMultiplier,
+      1,
+      MAX_DEAL_FAME_MULTIPLIER
+    ),
     soldMerch: sold
   }
 }
