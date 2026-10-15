@@ -16,8 +16,10 @@ import {
   purchaseChassis,
   refinanceLiability,
   repairChassis,
+  startCrowdfund,
   upgradeChassisTier
 } from '../../src/context/assetActionCreators.ts'
+import { processCrowdfundTick } from '../../src/utils/assetTicks.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
 import {
@@ -354,4 +356,113 @@ test('START_CROWDFUND / ASSET_FORECLOSED - malformed nested payloads return stat
     startState
   )
   assert.strictEqual(handleAssetForeclosed(startState, {}), startState)
+})
+
+// Canonical campaign shape as startCrowdfund stamps it. Resolves on the next
+// daily tick (daysRemaining 1, roll < probability) so a campaign the reducer
+// wrongly admits is materialized immediately.
+const makeRuntimeCampaign = (overrides = {}) => ({
+  id: 'camp_runtime',
+  assetSpec: { kind: 'tourbus_chassis', flavor: 'legit', chassisTier: 1 },
+  targetAmount: 4000,
+  fameStake: 20,
+  daysRemaining: 1,
+  materializedAssetId: 'camp_runtime_asset',
+  materializedSlotIds: [],
+  plannedSuccessRoll: 0.1,
+  plannedSuccessProbability: 0.5,
+  ...overrides
+})
+
+const withoutKey = key => {
+  const campaign = makeRuntimeCampaign()
+  delete campaign[key]
+  return campaign
+}
+
+const INVALID_RUNTIME_CAMPAIGNS = {
+  'unknown kind': makeRuntimeCampaign({
+    assetSpec: { kind: 'not_a_kind', flavor: 'legit', chassisTier: 1 }
+  }),
+  'unknown flavor': makeRuntimeCampaign({
+    assetSpec: { kind: 'tourbus_chassis', flavor: 'bootleg', chassisTier: 1 }
+  }),
+  'unknown tier': makeRuntimeCampaign({
+    assetSpec: { kind: 'tourbus_chassis', flavor: 'legit', chassisTier: 99 }
+  }),
+  'missing id': withoutKey('id'),
+  'NaN targetAmount': makeRuntimeCampaign({ targetAmount: Number.NaN }),
+  'Infinity targetAmount': makeRuntimeCampaign({
+    targetAmount: Number.POSITIVE_INFINITY
+  }),
+  'NaN daysRemaining': makeRuntimeCampaign({ daysRemaining: Number.NaN }),
+  'Infinity fameStake': makeRuntimeCampaign({
+    fameStake: Number.POSITIVE_INFINITY
+  }),
+  'negative fameStake': makeRuntimeCampaign({ fameStake: -5 }),
+  'NaN plannedSuccessRoll': makeRuntimeCampaign({
+    plannedSuccessRoll: Number.NaN
+  }),
+  'plannedSuccessRoll above 1': makeRuntimeCampaign({
+    plannedSuccessRoll: 1.5
+  }),
+  'plannedSuccessProbability above 0.95': makeRuntimeCampaign({
+    plannedSuccessProbability: 2
+  }),
+  'plannedSuccessProbability below 0.05': makeRuntimeCampaign({
+    plannedSuccessProbability: 0
+  }),
+  'missing plannedSuccessProbability': withoutKey('plannedSuccessProbability'),
+  'missing materializedAssetId': withoutKey('materializedAssetId'),
+  'non-string materializedAssetId': makeRuntimeCampaign({
+    materializedAssetId: 42
+  }),
+  'missing materializedSlotIds': withoutKey('materializedSlotIds'),
+  'non-string materializedSlotIds entry': makeRuntimeCampaign({
+    materializedSlotIds: ['slot_ok', 7]
+  })
+}
+
+test('START_CROWDFUND - invalid runtime campaigns return the identical state and cannot poison the daily tick', () => {
+  const startState = makeCreatorState(1000)
+  for (const [label, campaign] of Object.entries(INVALID_RUNTIME_CAMPAIGNS)) {
+    const next = handleStartCrowdfund(startState, { campaign })
+    assert.strictEqual(next, startState, label)
+
+    let ticked
+    assert.doesNotThrow(() => {
+      ticked = processCrowdfundTick(next)
+    }, label)
+    assert.ok(Number.isFinite(ticked.player.fame), `${label}: fame finite`)
+    assert.deepStrictEqual(ticked.assets, [], `${label}: no asset minted`)
+  }
+})
+
+test('START_CROWDFUND - creator-stamped campaign is admitted and resolves on the tick', () => {
+  const startState = makeCreatorState(1000)
+  const action = startCrowdfund(
+    {
+      kind: 'tourbus_chassis',
+      flavor: 'legit',
+      tier: 1,
+      targetAmount: 4000,
+      fameStake: 20,
+      daysRemaining: 1,
+      plannedSuccessRoll: 0.1,
+      plannedSuccessProbability: 0.5
+    },
+    startState
+  )
+  assert.strictEqual(action.type, ActionTypes.START_CROWDFUND)
+
+  const next = handleStartCrowdfund(startState, action.payload)
+  assert.deepStrictEqual(next.crowdfundCampaigns, [action.payload.campaign])
+
+  const ticked = processCrowdfundTick(next)
+  assert.strictEqual(ticked.crowdfundCampaigns.length, 0)
+  assert.strictEqual(ticked.assets.length, 1)
+  assert.strictEqual(
+    ticked.assets[0].id,
+    action.payload.campaign.materializedAssetId
+  )
 })

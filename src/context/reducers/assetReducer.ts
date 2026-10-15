@@ -25,6 +25,7 @@ import { getRegisteredModule } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
 import { isLooseRecord } from '../../utils/objectUtils'
+import { validateRuntimeCrowdfundCampaign } from './assetSanitizers'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
@@ -693,25 +694,21 @@ export const handleRefinanceLiability = (
  *
  * @param state - Current game state before campaign creation.
  * @param payload - Crowdfund campaign prepared by the action creator.
- * @returns Updated state with the campaign queued, or the original state when acquisition is already active.
+ * @returns Updated state with the sanitized campaign queued, or the original state when the
+ *   campaign is invalid (see `validateRuntimeCrowdfundCampaign`) or acquisition is already active.
  */
 export const handleStartCrowdfund = (
   state: GameState,
   payload: { campaign: import('../../types/assets').CrowdfundCampaign }
 ): GameState => {
-  if (
-    !isLooseRecord(payload) ||
-    !isLooseRecord(payload.campaign) ||
-    !isLooseRecord(payload.campaign.assetSpec)
-  ) {
-    return state
-  }
-  if (hasActiveAssetAcquisition(state, payload.campaign.assetSpec.kind)) {
+  if (!isLooseRecord(payload)) return state
+  const campaign = validateRuntimeCrowdfundCampaign(payload.campaign)
+  if (!campaign || hasActiveAssetAcquisition(state, campaign.assetSpec.kind)) {
     return state
   }
   return {
     ...state,
-    crowdfundCampaigns: [...(state.crowdfundCampaigns || []), payload.campaign]
+    crowdfundCampaigns: [...(state.crowdfundCampaigns || []), campaign]
   }
 }
 
