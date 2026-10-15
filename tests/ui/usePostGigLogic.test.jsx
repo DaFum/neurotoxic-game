@@ -112,6 +112,9 @@ describe('usePostGigLogic', () => {
   const mockApplyQuestEvent = vi.fn()
   const mockRecordExpeditionCrewStressSource = vi.fn()
   const mockCompleteExpedition = vi.fn()
+  const mockSaveGameAfterStateCommit = vi.fn()
+  const mockRecordPendingGigSettlement = vi.fn()
+  const mockClearPendingGigSettlement = vi.fn()
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -166,6 +169,9 @@ describe('usePostGigLogic', () => {
     applyQuestEvent: mockApplyQuestEvent,
     recordExpeditionCrewStressSource: mockRecordExpeditionCrewStressSource,
     completeExpedition: mockCompleteExpedition,
+    saveGameAfterStateCommit: mockSaveGameAfterStateCommit,
+    recordPendingGigSettlement: mockRecordPendingGigSettlement,
+    clearPendingGigSettlement: mockClearPendingGigSettlement,
     ...overrides
   })
 
@@ -945,6 +951,58 @@ describe('usePostGigLogic', () => {
       )
       // vi.clearAllMocks() does not undo mockReturnValue; restore the default.
       assetSelectors.getTotalDailyObligations.mockReturnValue(0)
+    })
+
+    it('records the presented settlement exactly once and saves it', async () => {
+      const state = getBaseState({
+        currentGig: { id: 'venue_1', songId: 'test_song', payout: 500 },
+        lastGigStats: { score: 50000, accuracy: 95, misses: 3, events: [] }
+      })
+      mockGameState(state)
+
+      const { result, rerender } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+
+      expect(mockRecordPendingGigSettlement).toHaveBeenCalledTimes(1)
+      expect(mockRecordPendingGigSettlement).toHaveBeenCalledWith({
+        gigId: 'venue_1',
+        net: result.current.financials.net,
+        perfScore: expect.any(Number),
+        misses: 3,
+        dealFameMultiplier: 1,
+        soldMerch: result.current.financials.soldMerch ?? {}
+      })
+      expect(mockSaveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+
+      // Unrelated state changes on the result screen do not record again.
+      mockGameState({
+        ...state,
+        player: { ...state.player, money: 900 },
+        pendingGigSettlement: { id: 'settle-1' }
+      })
+      rerender()
+      rerender()
+      expect(mockRecordPendingGigSettlement).toHaveBeenCalledTimes(1)
+      expect(mockSaveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+    })
+
+    it('Continue clears the recorded settlement by id', async () => {
+      mockGameState(
+        getBaseState({
+          currentGig: { id: 'venue_1', songId: 'test_song', payout: 500 },
+          pendingGigSettlement: { id: 'settle-1' }
+        })
+      )
+
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+
+      act(() => {
+        result.current.handleContinue()
+      })
+
+      expect(mockClearPendingGigSettlement).toHaveBeenCalledTimes(1)
+      expect(mockClearPendingGigSettlement).toHaveBeenCalledWith('settle-1')
     })
 
     it('applies miss penalty on bad gig with excess misses', async () => {

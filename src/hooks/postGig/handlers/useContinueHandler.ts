@@ -45,6 +45,8 @@ interface UseContinueHandlerProps {
   activeStoryFlags?: string[]
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
+  /** Id of the persisted settlement this Continue settles. */
+  pendingSettlementId?: string | null
   totalDailyObligations: number
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
@@ -69,6 +71,7 @@ export function useContinueHandler({
   expedition,
   activeStoryFlags,
   isFinaleGig = false,
+  pendingSettlementId = null,
   totalDailyObligations,
   isProcessingActionRef,
   setIsProcessingAction,
@@ -85,6 +88,7 @@ export function useContinueHandler({
     saveGameAfterStateCommit,
     recordExpeditionObligationSignal,
     settleSoldMerch,
+    clearPendingGigSettlement,
     offerExpeditionDraft
   }
 }: UseContinueHandlerProps) {
@@ -185,6 +189,11 @@ export function useContinueHandler({
           ? { stats: { ...player.stats, tourCompleted: true } }
           : {})
       })
+      // Same commit as the settlement above, so no save holds both the
+      // settled ledger and a record a later load would settle again.
+      if (pendingSettlementId && clearPendingGigSettlement) {
+        clearPendingGigSettlement(pendingSettlementId)
+      }
 
       dispatchEconomyQuests(player, stats, applyQuestEvent)
 
@@ -324,6 +333,8 @@ export function useContinueHandler({
     completeExpedition,
     recordExpeditionObligationSignal,
     settleSoldMerch,
+    clearPendingGigSettlement,
+    pendingSettlementId,
     offerExpeditionDraft,
     setlist,
     expedition,

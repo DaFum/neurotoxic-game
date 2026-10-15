@@ -204,6 +204,9 @@ const createBaseState = (overrides = {}) => ({
   setlist: [],
   addQuest: mockAddQuest,
   applyQuestEvent: mockApplyQuestEvent,
+  saveGameAfterStateCommit: vi.fn(),
+  recordPendingGigSettlement: vi.fn(),
+  clearPendingGigSettlement: vi.fn(),
   ...overrides
 })
 
