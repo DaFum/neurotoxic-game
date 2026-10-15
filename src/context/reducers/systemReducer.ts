@@ -408,13 +408,32 @@ export const handleLoadGame = (
 }
 
 /**
+ * Reads a creator-stamped reset seed, falling back deterministically.
+ *
+ * @param raw - Seed from the reset payload.
+ * @param previous - The outgoing run's seed, stepped once for the fallback.
+ * @returns `raw` when it is an integer in the UInt32 range; otherwise the
+ * outgoing seed advanced one step, so a hostile or legacy payloadless reset
+ * stays replayable without drawing randomness inside the reducer.
+ */
+const resolveResetSeed = (raw: unknown, previous: unknown): number =>
+  isFiniteNumber(raw) && Number.isInteger(raw) && raw >= 0 && raw <= 0xffffffff
+    ? raw
+    : nextSeed(finiteNumberOr(previous, 0) >>> 0)
+
+/**
  * Recreates initial game state while preserving allowed persistent settings and unlocks.
  *
  * @param state - Current game state before reset.
- * @param rawPayload - Optional reset overrides for settings and unlocks. A
- * non-record payload (including `null`) is treated as "no overrides", exactly
- * like an omitted payload.
+ * @param rawPayload - Optional reset overrides for settings and unlocks, plus
+ * the seeds and stored settings `createResetStateAction` stamps. A non-record
+ * payload (including `null`) is treated as "no overrides", exactly like an
+ * omitted payload.
  * @returns Fresh initial state seeded with the preserved reset data.
+ *
+ * @remarks
+ * Pure: builds the new run only from `state` and the payload, never from
+ * storage or a random source.
  */
 export const handleResetState = (
   state: GameState,
@@ -440,7 +459,14 @@ export const handleResetState = (
       : (state.unlocks ?? [])
   }
 
-  return createInitialState(persistedData)
+  return createInitialState({
+    ...persistedData,
+    savedSettings: isLooseRecord(payload.savedSettings)
+      ? payload.savedSettings
+      : {},
+    rngSeed: resolveResetSeed(payload.rngSeed, state.rngSeed),
+    runSeed: resolveResetSeed(payload.runSeed, state.runSeed)
+  })
 }
 
 /**

@@ -654,8 +654,9 @@ export function useGameDispatchActions({
     resetMapGenerationRetries()
     // Same adapter initialization, save/load, and event unlocks use: reading
     // the module default here would let a reset overwrite the injected
-    // backend's unlocks with whatever sits in browser storage.
-    dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }))
+    // backend's unlocks (or stored settings) with whatever sits in browser
+    // storage.
+    dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }, storage))
   }, [dispatch, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {
