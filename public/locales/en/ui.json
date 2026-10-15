@@ -556,6 +556,7 @@
   "expedition.prep.cargoUsage": "Cargo Slots: {{used}}/{{max}} (Hidden Contraband: {{hiddenUsed}}/{{hiddenMax}})",
   "expedition.prep.spareParts": "Spare Parts: {{value}}",
   "expedition.prep.supplies": "Supplies: {{value}}",
+  "expedition.prep.suppliesRestHint": "Each rest stop uses 1 supply: the crew shed {{value}} extra stress.",
   "expedition.prep.insurance": "Insurance Policy",
   "expedition.prep.insuranceHint": "Optional risk coverage against vehicle breakdowns or technical equipment failures.",
   "expedition.prep.insuranceNone": "No Insurance",
