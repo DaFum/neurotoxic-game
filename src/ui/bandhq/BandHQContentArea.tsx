@@ -119,9 +119,14 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
       }
       void handleBuyWithLock(item)
     },
-    isItemDisabled: (item: CatalogItem) =>
+    isItemDisabled: (item: CatalogItem, decision: PurchaseDecision) =>
       !isExpeditionUnlocked(item) ||
-      (isItemDisabled as unknown as (item: CatalogItem) => boolean)(item),
+      (
+        isItemDisabled as unknown as (
+          item: CatalogItem,
+          decision: PurchaseDecision
+        ) => boolean
+      )(item, decision),
     getPurchaseDecision: getPurchaseDecision as unknown as (
       item: CatalogItem
     ) => PurchaseDecision,

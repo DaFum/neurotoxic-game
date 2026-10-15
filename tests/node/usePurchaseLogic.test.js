@@ -5,7 +5,6 @@ import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 mock.module('react-i18next', {
   namedExports: {
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useTranslation: () => ({
       t: (key, options) => options?.defaultValue || key
     }),
@@ -289,5 +288,36 @@ describe('usePurchaseLogic', () => {
       fame: 0,
       fameLevel: 1
     })
+  })
+
+  test('isItemDisabled derives from a supplied decision instead of recomputing it', () => {
+    const { result } = renderHook(() =>
+      purchaseLogicHook({
+        player: { money: 0, fame: 0, van: { upgrades: [] }, hqUpgrades: [] },
+        band: { inventory: {}, performance: {} },
+        social: {},
+        updatePlayer: () => {},
+        updateBand: () => {},
+        addToast: () => {}
+      })
+    )
+    const unaffordable = {
+      id: 'too_expensive',
+      cost: 100,
+      currency: 'money',
+      effect: { type: 'stat_modifier' }
+    }
+    const decision = result.current.getPurchaseDecision(unaffordable)
+
+    assert.equal(decision.canPurchase, false)
+    assert.equal(result.current.isItemDisabled(unaffordable), true)
+    assert.equal(result.current.isItemDisabled(unaffordable, decision), true)
+    assert.equal(
+      result.current.isItemDisabled(unaffordable, {
+        ...decision,
+        canPurchase: true
+      }),
+      false
+    )
   })
 })

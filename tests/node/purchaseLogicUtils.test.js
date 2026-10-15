@@ -51,6 +51,38 @@ describe('purchaseLogicUtils', () => {
       const result = validatePurchase(item, player, band, social)
       assert.equal(result.isValid, true)
     })
+
+    test('reports the highest-priority failure when several apply', () => {
+      // Every gate fails at once: no effect, scandal-blocked, already owned,
+      // unaffordable. Each step clears the winning failure to expose the next.
+      const blocked = { controversyLevel: 99 }
+      const clear = { controversyLevel: 0 }
+      const ownedPoor = { money: 0, van: { upgrades: ['pin_item'] } }
+      const base = {
+        id: 'pin_item',
+        requiresReputation: true,
+        cost: 100,
+        currency: 'money'
+      }
+      const withEffect = { ...base, effect: { type: 'stat_modifier' } }
+
+      assert.deepStrictEqual(validatePurchase(base, ownedPoor, {}, blocked), {
+        isValid: false,
+        errorType: 'missing_effect'
+      })
+      assert.deepStrictEqual(
+        validatePurchase(withEffect, ownedPoor, {}, blocked),
+        { isValid: false, errorType: 'reputation_blocked' }
+      )
+      assert.deepStrictEqual(
+        validatePurchase(withEffect, ownedPoor, {}, clear),
+        { isValid: false, errorType: 'already_owned' }
+      )
+      assert.deepStrictEqual(
+        validatePurchase(withEffect, { money: 0 }, {}, clear),
+        { isValid: false, errorType: 'insufficient_funds' }
+      )
+    })
   })
 
   describe('NaN controversyLevel', () => {

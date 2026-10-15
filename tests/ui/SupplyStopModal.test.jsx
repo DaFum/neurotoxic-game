@@ -6,6 +6,17 @@ import * as GameState from '../../src/context/GameState'
 // We need to simulate the transformPlayerPatch that gets called during handleBuy.
 let mockedTransformPlayerPatch = null
 
+const { mockGetPurchaseDecision, mockIsItemDisabled } = vi.hoisted(() => ({
+  mockGetPurchaseDecision: vi.fn(() => ({
+    cost: 100,
+    canAfford: true,
+    isOwned: false,
+    isConsumable: false,
+    canPurchase: true
+  })),
+  mockIsItemDisabled: vi.fn(() => false)
+}))
+
 // Mocked purchase logic: handleBuy reports a successful purchase synchronously.
 vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
   usePurchaseLogic: params => {
@@ -17,14 +28,8 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
           mockedTransformPlayerPatch({ fame: 100 })
         return true
       },
-      getPurchaseDecision: () => ({
-        cost: 100,
-        canAfford: true,
-        isOwned: false,
-        isConsumable: false,
-        canPurchase: true
-      }),
-      isItemDisabled: () => false
+      getPurchaseDecision: mockGetPurchaseDecision,
+      isItemDisabled: mockIsItemDisabled
     }
   }
 }))
@@ -123,6 +128,23 @@ describe('SupplyStopModal purchase lock', () => {
 
     fireEvent.click(leaveBtn)
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('computes each decision once and hands it to isItemDisabled', () => {
+    const inventory = [
+      { id: 'item_a', name: 'Item A', cost: 100, currency: 'money' },
+      { id: 'item_b', name: 'Item B', cost: 50, currency: 'money' }
+    ]
+
+    render(<SupplyStopModal inventory={inventory} onClose={vi.fn()} />)
+
+    const renders = mockGetPurchaseDecision.mock.calls.length
+    expect(renders).toBeGreaterThan(0)
+    expect(mockIsItemDisabled).toHaveBeenCalledTimes(renders)
+    mockIsItemDisabled.mock.calls.forEach(([item, decision], i) => {
+      expect(mockGetPurchaseDecision.mock.calls[i][0]).toBe(item)
+      expect(decision).toBe(mockGetPurchaseDecision.mock.results[i].value)
+    })
   })
 
   it('renders footer leave button when inventory has items', () => {

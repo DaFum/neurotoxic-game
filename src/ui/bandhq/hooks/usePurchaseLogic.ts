@@ -38,7 +38,11 @@ import type {
   TranslationCallback
 } from '../../../types/callbacks'
 import type { PurchaseItem, UnlockMessage } from '../../../types/components'
-import type { PlayerPatch, BandPatch } from '../../../types/purchase'
+import type {
+  PlayerPatch,
+  BandPatch,
+  PurchaseDecision
+} from '../../../types/purchase'
 
 type ToastFn = (
   message: Parameters<ToastCallback>[0],
@@ -447,13 +451,19 @@ export const usePurchaseLogic = ({
   /**
    * Checks if an item should be disabled
    * @param item - Item to check
+   * @param decision - Decision already computed for this item; derived when omitted
    * @returns True if disabled
    */
   const isItemDisabled = useCallback(
-    (item: PurchaseItem) => {
-      const decision = getPurchaseDecision(item, player, band, social)
-      return !decision.canPurchase
-    },
+    (
+      item: PurchaseItem,
+      decision: PurchaseDecision = getPurchaseDecision(
+        item,
+        player,
+        band,
+        social
+      )
+    ) => !decision.canPurchase,
     [player, band, social]
   )
 
