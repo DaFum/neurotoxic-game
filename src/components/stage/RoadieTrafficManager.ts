@@ -2,22 +2,17 @@ import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { hash31 } from '../../utils/stringUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import type { RoadieTrafficCar } from '../../types/roadie'
 
 /**
- * Represents a runtime vehicle obstacle tracked by the Roadie traffic manager.
+ * Renderer view of the shared Roadie traffic contract.
  *
  * @remarks
- * This type defines the properties of a vehicle obstacle moving across the screen,
- * including its identifier, positional data, movement speed, and a required texture hash.
+ * The texture hash stays optional here because the renderer falls back to a
+ * default texture when a car arrives without one.
  */
-export type RoadieCar = {
-  id: string | number
-  x: number
-  width: number
-  row: number
-  speed: number
-  textureHash?: number
-}
+export type RoadieCar = Omit<RoadieTrafficCar, 'textureHash'> &
+  Partial<Pick<RoadieTrafficCar, 'textureHash'>>
 
 type RoadieTrafficState = {
   traffic?: RoadieCar[]
