@@ -6,6 +6,7 @@ import { clampUnit } from '../numberUtils'
 import { finiteNumberOr } from '../finiteNumber'
 import { getSafeStorageItem, setSafeStorageItem } from '../storage'
 import { audioState } from './state'
+import type { AudioSnapshot } from '../../types/audio'
 
 type AudioListener = () => void
 
@@ -24,13 +25,7 @@ export type AudioSfxType =
   | 'deliver'
   | 'void_hit'
 
-type AudioStateSnapshot = {
-  musicVol: number
-  sfxVol: number
-  isMuted: boolean
-  isPlaying: boolean
-  currentSongId: string | null
-}
+type AudioStateSnapshot = Required<AudioSnapshot>
 
 /**
  * High-level audio facade that wraps audioEngine with user preference persistence.

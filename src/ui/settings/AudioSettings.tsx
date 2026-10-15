@@ -4,11 +4,9 @@ import { VolumeSlider } from '../shared/VolumeSlider'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
 import { clampUnit } from '../../utils/numberUtils'
 import type { ChangeEvent } from 'react'
+import type { AudioState } from '../../types/audio'
 
-type AudioSettingsProps = {
-  musicVol: number
-  sfxVol: number
-  isMuted: boolean
+type AudioSettingsProps = AudioState & {
   onMusicChange: (v: number) => void
   onSfxChange: (v: number) => void
   onToggleMute: () => void
