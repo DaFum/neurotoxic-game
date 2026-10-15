@@ -1,0 +1,76 @@
+/**
+ * The Authority encounter decision surface.
+ */
+
+import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useGameActions, useGameSelector } from '../../context/GameState'
+import { formatCurrency } from '../../utils/numberUtils'
+import { CrisisModal } from '../shared/BrutalistUI'
+import {
+  EXPEDITION_AUTHORITY_DETOUR_FUEL,
+  EXPEDITION_AUTHORITY_EXIT_HEAT_RELIEF,
+  EXPEDITION_AUTHORITY_EXIT_IDS,
+  EXPEDITION_AUTHORITY_PAY_COST,
+  getAuthorityEncounter
+} from '../../domain/expedition/authority'
+import type { ExpeditionAuthorityExitId } from '../../types/expedition'
+
+/**
+ * Presents the live Authority encounter and its executable safe exits.
+ *
+ * @remarks
+ * The exits are read from `getAuthorityEncounter`, the same derivation the
+ * action creator and reducer resolve, so the dialog never offers an exit the
+ * reducer would refuse. A live crisis owns the decision surface, so the
+ * encounter stays hidden while one is pending. The selector returns a joined
+ * string rather than the derived array to keep the snapshot stable.
+ */
+export const AuthorityEncounterDialog = memo(
+  function AuthorityEncounterDialog() {
+    const { t, i18n } = useTranslation('ui')
+    const { resolveExpeditionAuthorityExit } = useGameActions()
+    const exitKey = useGameSelector(state => {
+      if (state.expedition?.pendingFailure) return ''
+      return getAuthorityEncounter(state)?.exits.join(',') ?? ''
+    })
+    const heat = useGameSelector(state => state.expedition?.pressure.heat ?? 0)
+
+    if (!exitKey) return null
+    const exits = EXPEDITION_AUTHORITY_EXIT_IDS.filter(id =>
+      exitKey.split(',').includes(id)
+    )
+
+    const metaFor = (exitId: ExpeditionAuthorityExitId): string => {
+      if (exitId === 'pay') {
+        return formatCurrency(EXPEDITION_AUTHORITY_PAY_COST, i18n.language)
+      }
+      if (exitId === 'route_detour') {
+        return t('ui:expedition.authority.meta.route_detour', {
+          fuel: EXPEDITION_AUTHORITY_DETOUR_FUEL
+        })
+      }
+      return t(`ui:expedition.authority.meta.${exitId}`)
+    }
+
+    return (
+      <div data-testid='expedition-authority-encounter'>
+        <CrisisModal
+          isOpen
+          title={t('ui:expedition.authority.title')}
+          description={t('ui:expedition.authority.description', {
+            heat,
+            relief: EXPEDITION_AUTHORITY_EXIT_HEAT_RELIEF
+          })}
+          actions={exits.map(exitId => ({
+            id: exitId,
+            label: t(`ui:expedition.authority.exit.${exitId}`),
+            meta: metaFor(exitId),
+            variant: 'safe' as const,
+            onClick: () => resolveExpeditionAuthorityExit(exitId)
+          }))}
+        />
+      </div>
+    )
+  }
+)

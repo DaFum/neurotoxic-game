@@ -83,6 +83,7 @@ import {
   handlePrepareExpeditionSponsorOffers,
   handlePrepareNextExpedition,
   handleResolveExpeditionCrisis,
+  handleResolveExpeditionAuthorityExit,
   handleResolveExpeditionDefect,
   handleRevealExpeditionDefect,
   handleRevealExpeditionNodeIntel,
@@ -269,6 +270,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
   [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
   [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis,
+  [ActionTypes.RESOLVE_EXPEDITION_AUTHORITY_EXIT]:
+    handleResolveExpeditionAuthorityExit,
   [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair,
   [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
   [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,

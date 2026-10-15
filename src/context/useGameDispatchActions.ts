@@ -295,6 +295,9 @@ type BaseGameDispatchActions = {
   resolveExpeditionCrisis: (
     choice: import('../types/actions').ResolveExpeditionCrisisPayload['choice']
   ) => void
+  resolveExpeditionAuthorityExit: (
+    exitId: import('../types/expedition').ExpeditionAuthorityExitId
+  ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent
   ) => void

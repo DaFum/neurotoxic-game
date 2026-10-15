@@ -4,6 +4,7 @@ import type { PlayerState } from './player'
 import type { BandState } from './band'
 import type { RivalBandState } from './social'
 import type {
+  ExpeditionAuthorityExitId,
   ExpeditionFailureChoiceId,
   ExpeditionInspectionIntent,
   ExpeditionRepairIntent,
@@ -421,6 +422,14 @@ export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
   /** Every crisis choice except `accept_failure`, which has its own action. */
   choice: Exclude<ExpeditionFailureChoiceId, 'accept_failure'>
+  expectedRouteStep: number
+}
+
+/**
+ * Payload taking one safe exit out of the live Authority encounter.
+ */
+export interface ResolveExpeditionAuthorityExitPayload {
+  exitId: ExpeditionAuthorityExitId
   expectedRouteStep: number
 }
 
