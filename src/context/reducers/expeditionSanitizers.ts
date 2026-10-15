@@ -47,6 +47,8 @@ import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
+  getExpeditionConstraintRunVerdict,
+  hasExpeditionRestSignal,
   materializeContractConstraints
 } from '../../domain/expedition/contracts'
 import type {
@@ -944,6 +946,10 @@ export const sanitizeExpeditionState = (
       readBoolean(value, 'claimConsumed') ||
       readBoolean(value, 'insuranceClaimConsumed'),
     technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
+    authorityHiddenCompartmentUsed: readBoolean(
+      value,
+      'authorityHiddenCompartmentUsed'
+    ),
     crew: {
       stressByCrewId: sanitizeCrewStressMap(
         isLooseRecord(value.crew) ? value.crew.stressByCrewId : undefined
@@ -1499,9 +1505,12 @@ const sanitizeActiveObligations = (
   const hasFinaleSignal = resolvedObligationSignalIds.some(signalId =>
     signalId.startsWith('finale:')
   )
-  const hasRestSignal = resolvedObligationSignalIds.some(signalId =>
-    signalId.startsWith('rest:')
-  )
+  const hasRestSignal = hasExpeditionRestSignal(resolvedObligationSignalIds)
+  const runEvidence = {
+    heat,
+    resolvedObligationSignalIds,
+    visitedNodeIds: validVisitedPath
+  }
 
   const validSocialSignalCount = resolvedObligationSignalIds.filter(
     signalId => {
@@ -1575,6 +1584,10 @@ const sanitizeActiveObligations = (
       let canonicalValue = progress.value
       let canonicalSatisfied = progress.satisfied
       let canonicalFailed = progress.failed
+      const runVerdict = getExpeditionConstraintRunVerdict(
+        constraint,
+        runEvidence
+      )
       if (constraint.kind === 'gig_accuracy_count') {
         const qualifyingCount = countQualifyingGigSignals(
           constraint.minAccuracy
@@ -1582,9 +1595,8 @@ const sanitizeActiveObligations = (
         canonicalValue = Math.min(progress.value, qualifyingCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
       } else if (constraint.kind === 'visit_node') {
-        const visited = validVisitedPath.includes(constraint.targetNodeId)
-        canonicalValue = visited ? 1 : 0
-        canonicalSatisfied = visited
+        canonicalValue = runVerdict.satisfied ? 1 : 0
+        canonicalSatisfied = runVerdict.satisfied
       } else if (constraint.kind === 'social_post_count') {
         canonicalValue = Math.min(progress.value, validSocialSignalCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
@@ -1592,11 +1604,11 @@ const sanitizeActiveObligations = (
         canonicalValue = heat
         canonicalSatisfied =
           progress.satisfied && hasFinaleSignal && heat <= constraint.maxHeat
-        canonicalFailed = progress.failed || heat > constraint.maxHeat
+        canonicalFailed = progress.failed || runVerdict.failed
       } else if (constraint.kind === 'no_rest_before_finale') {
         canonicalValue = hasRestSignal ? 1 : 0
         canonicalSatisfied = hasFinaleSignal && !hasRestSignal
-        canonicalFailed = progress.failed || hasRestSignal
+        canonicalFailed = progress.failed || runVerdict.failed
       } else if (constraint.kind === 'finale_completed') {
         canonicalValue = hasFinaleSignal ? 1 : 0
         canonicalSatisfied = progress.satisfied && hasFinaleSignal

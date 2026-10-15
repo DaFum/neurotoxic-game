@@ -6,7 +6,9 @@ import type { GameState } from '../../types'
 import type {
   ActiveObligationState,
   ExpeditionAuthorityExitId,
-  ExpeditionNativeContractCommitment
+  ExpeditionMap,
+  ExpeditionNativeContractCommitment,
+  ExpeditionNodeClass
 } from '../../types/expedition'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
@@ -14,7 +16,7 @@ import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { getExpeditionCargoView } from './cargo'
 import {
   areExpeditionContractsCompatible,
-  evaluateExpeditionConstraint,
+  getExpeditionConstraintRunVerdict,
   materializeContractConstraints
 } from './contracts'
 import { getActiveExpeditionMap } from './map'
@@ -103,15 +105,64 @@ const resolveCrewExit = (
   return null
 }
 
+/** Node classes whose show banks a `gig` obligation signal. */
+const GIG_NODE_CLASSES: ReadonlySet<ExpeditionNodeClass> = new Set([
+  'CLUB_GIG',
+  'FESTIVAL',
+  'FINALE'
+])
+
+/**
+ * What the route still holds past the node the run stands on.
+ *
+ * @param map - The active route.
+ * @param fromNodeId - The node the run stands on.
+ * @returns Every node still reachable from it, and the most gig nodes any one
+ * remaining path plays. The current node counts toward neither: whether its
+ * show is still to come is not something the route can say.
+ */
+const getRouteAhead = (
+  map: ExpeditionMap,
+  fromNodeId: string
+): { reachable: Set<string>; mostGigs: number } => {
+  const next = new Map<string, string[]>()
+  for (const edge of map.connections) {
+    const list = next.get(edge.from)
+    if (list) list.push(edge.to)
+    else next.set(edge.from, [edge.to])
+  }
+  const reachable = new Set<string>()
+  const mostGigsByNodeId = new Map<string, number>()
+  const mostGigsFrom = (nodeId: string): number => {
+    const known = mostGigsByNodeId.get(nodeId)
+    if (known !== undefined) return known
+    reachable.add(nodeId)
+    let best = 0
+    for (const to of next.get(nodeId) ?? [])
+      best = Math.max(best, mostGigsFrom(to))
+    const nodeClass = map.meta[nodeId]?.nodeClass
+    const result = best + (nodeClass && GIG_NODE_CLASSES.has(nodeClass) ? 1 : 0)
+    mostGigsByNodeId.set(nodeId, result)
+    return result
+  }
+  let mostGigs = 0
+  for (const to of next.get(fromNodeId) ?? [])
+    mostGigs = Math.max(mostGigs, mostGigsFrom(to))
+  return { reachable, mostGigs }
+}
+
 /**
  * The Contract the Authority would accept as a future obligation.
  *
  * @remarks
  * The first native template, in registry order, that the run could still
- * commit: unlocked and materializable on the played route (the Tour Prep
- * gate), compatible with every native Contract the run already holds (which
- * includes the slot limit), with any route target still ahead, and not
- * already failed at the Heat the run is left at once the exit applies.
+ * commit and still meet: unlocked and materializable on the played route (the
+ * Tour Prep gate), compatible with every native Contract the run already holds
+ * (which includes the slot limit), not tour-ending on failure (a safe exit may
+ * not stake the run), with any route target still reachable and enough gigs
+ * still ahead for a gig count, and not already decided by the evidence the
+ * load sanitizer re-derives progress from, at the Heat the run is left at once
+ * the exit applies.
  */
 const resolveFutureObligationExit = (
   state: GameState
@@ -119,33 +170,43 @@ const resolveFutureObligationExit = (
   const runId = state.expedition.runId
   const map = getActiveExpeditionMap(state)
   const loadout = state.expedition.loadout
-  if (typeof runId !== 'string' || !map || !loadout) return null
+  const currentNodeId = state.expedition.visitedNodeIds.at(-1)
+  if (
+    typeof runId !== 'string' ||
+    !map ||
+    !loadout ||
+    currentNodeId === undefined
+  )
+    return null
   const heldIds = state.expedition.activeObligations
     .filter(obligation => obligation.sourceType === 'native')
     .map(obligation => obligation.sourceId)
-  const heatAfter = getHeatAfterRelief(state)
+  const ahead = getRouteAhead(map, currentNodeId)
+  const runEvidence = {
+    heat: getHeatAfterRelief(state),
+    resolvedObligationSignalIds: state.expedition.resolvedObligationSignalIds,
+    visitedNodeIds: state.expedition.visitedNodeIds
+  }
   for (const templateId of getAvailableNativeContractTemplateIds(state, map)) {
+    const template = EXPEDITION_CONTRACTS_BY_ID.get(templateId)
+    if (!template || template.tourEndingOnFailure) continue
     if (!areExpeditionContractsCompatible([...heldIds, templateId])) continue
-    const constraints = materializeContractConstraints(
-      EXPEDITION_CONTRACTS_BY_ID.get(templateId),
-      map
-    )
+    const constraints = materializeContractConstraints(template, map)
     if (!constraints) continue
     let targetNodeId: string | null = null
     let viable = true
     for (const constraint of constraints) {
       if (constraint.kind === 'visit_node') {
         targetNodeId = constraint.targetNodeId
-        const targetStep = map.meta[constraint.targetNodeId]?.routeStep
-        if (
-          targetStep === undefined ||
-          targetStep <= state.expedition.routeStep
-        ) {
-          viable = false
-        }
+        if (!ahead.reachable.has(constraint.targetNodeId)) viable = false
       }
-      if (evaluateExpeditionConstraint(constraint, { heat: heatAfter }).failed)
+      if (
+        constraint.kind === 'gig_accuracy_count' &&
+        ahead.mostGigs < constraint.requiredCount
+      )
         viable = false
+      const verdict = getExpeditionConstraintRunVerdict(constraint, runEvidence)
+      if (verdict.failed || verdict.satisfied) viable = false
     }
     if (!viable) continue
     const progressByConstraintId: ActiveObligationState['progressByConstraintId'] =
@@ -194,7 +255,11 @@ export const resolveAuthoritySafeExit = (
     case 'crew':
       return resolveCrewExit(state)
     case 'hidden_compartment':
-      return getExpeditionCargoView(state).hiddenCapacity > 0
+      // The compartment hides contraband that is actually aboard, and the
+      // trick works once per run: without either gate a build with a hidden
+      // module would hold a free, endless Heat relief.
+      return state.expedition.authorityHiddenCompartmentUsed !== true &&
+        getExpeditionCargoView(state).hiddenSlotsUsed > 0
         ? { exitId }
         : null
     case 'surrender_cargo':

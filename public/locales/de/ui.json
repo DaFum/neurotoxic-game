@@ -352,7 +352,7 @@
   "expedition.authority.exit.route_detour": "Umweg fahren",
   "expedition.authority.exit.surrender_cargo": "Schmuggelware abgeben",
   "expedition.authority.meta.crew": "Erhöht Crew-Stress",
-  "expedition.authority.meta.future_obligation": "Fügt einen Vertrag hinzu",
+  "expedition.authority.meta.future_obligation": "Fügt Vertrag hinzu: {{contract}}",
   "expedition.authority.meta.hidden_compartment": "Nutzt euren Build",
   "expedition.authority.meta.route_detour": "Verbraucht {{fuel}} Treibstoff",
   "expedition.authority.meta.surrender_cargo": "Verliert alle Schmuggelware",
