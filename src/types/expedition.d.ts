@@ -266,7 +266,6 @@ export interface ExpeditionRouteProfile {
  * information a build resource rather than a free readout.
  */
 export interface ExpeditionNodeHiddenDetail {
-  exactPayout: number
   exactWearCost: number
   eventId: string | null
   rivalId: string | null
@@ -1294,8 +1293,16 @@ export interface ExpeditionNodeFog {
   rewardTier: ExpeditionTier
   isExtractionWindow: boolean
   intelLevel: NodeIntelLevel
-  /** Exact payout, only present once intel reaches level 1. */
-  exactPayout: number | null
+  /**
+   * Estimated gig net, only present once intel reaches level 1 and only on a
+   * node that books a real venue gig; `null` everywhere else.
+   *
+   * @remarks
+   * An estimate, not a promise: it is the real gig calculation for the node's
+   * venue at the band's current fame with neutral performance and no pre-gig
+   * spend, merch or sponsor income. Arrival pays whatever the played gig earns.
+   */
+  estimatedPayout: number | null
   /** Exact wear cost, only present once intel reaches level 1. */
   exactWearCost: number | null
   /** Event/rival identity, only present at level 2. */
