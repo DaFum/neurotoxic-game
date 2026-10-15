@@ -24,6 +24,8 @@ import {
   handleCompleteExpedition,
   handleRecordExpeditionObligationSignal
 } from './expeditionReducer'
+import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
+import { ActionTypes } from '../actionTypes'
 
 /**
  * Validates an untrusted pending-settlement record.
@@ -162,18 +164,25 @@ export const settlePendingGigOnLoad = (
   const expeditionFinale =
     successfulFinale && next.expedition.status === 'active'
 
-  next = {
-    ...next,
-    player: {
-      ...player,
-      money: stats.newMoney,
-      fame: stats.newFame,
-      fameLevel: stats.fameLevel,
-      ...(careerFinale
-        ? { stats: { ...player.stats, tourCompleted: true } }
-        : {})
-    }
-  }
+  // Continue applies this ledger as one UPDATE_PLAYER, which an active run's
+  // protected Career Cash floor rejects whole; settle it under the same rule
+  // so a reload cannot spend Cash that Continue would have refused.
+  next = enforceExpeditionCashFloor(
+    next,
+    {
+      ...next,
+      player: {
+        ...player,
+        money: stats.newMoney,
+        fame: stats.newFame,
+        fameLevel: stats.fameLevel,
+        ...(careerFinale
+          ? { stats: { ...player.stats, tourCompleted: true } }
+          : {})
+      }
+    },
+    ActionTypes.UPDATE_PLAYER
+  )
 
   const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
   if (fameGain > 0) {

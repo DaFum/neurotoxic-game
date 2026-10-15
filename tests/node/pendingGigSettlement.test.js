@@ -5,7 +5,19 @@ import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { createRecordPendingGigSettlementAction } from '../../src/context/actionCreators'
+import {
+  createRecordPendingGigSettlementAction,
+  createUpdatePlayerAction
+} from '../../src/context/actionCreators'
+import { calculateContinueStats } from '../../src/utils/postGig/performanceLogic'
+import {
+  BALANCE_CONSTANTS,
+  calculateFameGain,
+  calculateFameLevel,
+  clampPlayerFame,
+  clampPlayerMoney,
+  finiteNumberOr
+} from '../../src/utils/gameState'
 import { createPersistedState } from '../../src/context/usePersistence'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 
@@ -260,4 +272,68 @@ test('a reload on an Expedition Finale result completes the run', async t => {
     )
     assert.ok(signals.includes(`finale:finale_venue:${routeStep}`))
   })
+})
+
+test('load settles an active run under the protected Career Cash floor like Continue', () => {
+  const started = startedState(
+    { money: 5000, fame: 100 },
+    { build: { protectedCareerCash: 4000 } }
+  )
+  const atResult = {
+    ...started,
+    currentScene: GAME_PHASES.POST_GIG,
+    player: { ...started.player, money: 5000, fame: 100 },
+    currentGig: { id: 'floor_venue', name: 'Floor Venue' },
+    lastGigStats: { score: 1000, misses: 0, accuracy: 40, failed: false }
+  }
+  const settlement = {
+    gigId: 'floor_venue',
+    net: -2000,
+    perfScore: 10,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: {}
+  }
+  const action = createRecordPendingGigSettlementAction(settlement)
+  assert.ok(action)
+  const recorded = gameReducer(atResult, action)
+  assert.equal(recorded.expedition.protectedCareerCash, 4000)
+  assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+
+  // Continue: the ledger UPDATE_PLAYER `useContinueHandler` dispatches.
+  const stats = calculateContinueStats({
+    player: recorded.player,
+    perfScore: settlement.perfScore,
+    financials: { net: settlement.net },
+    misses: settlement.misses,
+    bandStyle: finiteNumberOr(recorded.band.style, 0),
+    dealFameMultiplier: settlement.dealFameMultiplier,
+    calculateFameGain,
+    calculateFameLevel,
+    clampPlayerFame,
+    clampPlayerMoney,
+    BALANCE_CONSTANTS
+  })
+  const continued = gameReducer(
+    recorded,
+    createUpdatePlayerAction({
+      money: stats.newMoney,
+      fame: stats.newFame,
+      fameLevel: stats.fameLevel
+    })
+  )
+
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(recorded)))
+  )
+
+  assert.equal(loaded.expedition.status, 'active')
+  assert.equal(loaded.player.money, continued.player.money)
+  assert.equal(loaded.player.fame, continued.player.fame)
+  assert.equal(loaded.player.fameLevel, continued.player.fameLevel)
+  // Continue's update is refused whole: neither Cash nor fame moves.
+  assert.equal(loaded.player.money, 5000)
+  assert.equal(loaded.player.fame, 100)
+  assert.equal(loaded.pendingGigSettlement, null)
 })
