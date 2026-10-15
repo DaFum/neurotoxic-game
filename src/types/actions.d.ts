@@ -135,10 +135,21 @@ export type UpdateBandPayload =
 
 /**
  * Payload used when resetting state while preserving selected settings.
+ *
+ * @remarks
+ * `rngSeed`, `runSeed` and `savedSettings` are stamped by
+ * `createResetStateAction` so the reducer never draws randomness or reads
+ * storage; the reducer re-validates them.
  */
 export interface ResetStatePayload extends UnknownRecord {
   settings?: RawGameSettings
   unlocks?: string[]
+  /** Fresh UInt32 seed for the new run's gameplay RNG. */
+  rngSeed?: number
+  /** Fresh UInt32 seed identifying the new run. */
+  runSeed?: number
+  /** Global settings read from storage at the creator boundary. */
+  savedSettings?: RawGameSettings
 }
 
 /**

@@ -8,7 +8,13 @@ import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
-import { getSafeUUID, secureRandom } from '../utils/crypto'
+import {
+  getSafeUUID,
+  getSecureRandomUint32,
+  secureRandom
+} from '../utils/crypto'
+import { defaultStorageAdapter, readGlobalSettings } from '../utils/storage'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import { systemClock } from '../utils/clock'
 import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
@@ -480,12 +486,25 @@ export const createLoadGameAction = (
 /**
  * Creates a reset state action
  * @param payload - Data to preserve across reset (e.g. settings, unlocks) Defaults to `{}`.
+ * @param storage - Adapter the global-settings read goes through. Defaults to
+ * the production singleton.
+ *
+ * @remarks
+ * Stamps the new run's `rngSeed`/`runSeed` and the stored global settings here,
+ * at the creator boundary, so `handleResetState` neither draws randomness nor
+ * reads storage and the same action replays to the same state.
  */
 export const createResetStateAction = (
-  payload: ResetStatePayload = {}
+  payload: ResetStatePayload = {},
+  storage: IStorageAdapter = defaultStorageAdapter
 ): Extract<GameAction, { type: typeof ActionTypes.RESET_STATE }> => ({
   type: ActionTypes.RESET_STATE,
-  payload
+  payload: {
+    ...payload,
+    savedSettings: sanitizeSettingsPayload(readGlobalSettings(storage)),
+    rngSeed: getSecureRandomUint32(),
+    runSeed: getSecureRandomUint32()
+  }
 })
 
 /**
