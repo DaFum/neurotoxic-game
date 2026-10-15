@@ -156,6 +156,29 @@ describe('gigStats', () => {
       })
     })
 
+    it('defaults every counter to 0 for empty or missing stats (quit-gig path)', () => {
+      const expected = {
+        score: 0,
+        misses: 0,
+        perfectHits: 0,
+        maxCombo: 0,
+        peakHype: 0,
+        corruptionLevel: 0,
+        toxicTimeTotal: 0,
+        accuracy: 100,
+        failed: true,
+        songStats: []
+      }
+
+      expect(buildGigStatsSnapshot(0, {}, 0, undefined, true)).toEqual(expected)
+      expect(buildGigStatsSnapshot(0, undefined, 0, undefined, true)).toEqual(
+        expected
+      )
+      expect(
+        buildGigStatsSnapshot(0, { misses: Number.NaN }, 0, undefined, true)
+      ).toEqual(expected)
+    })
+
     it('marks the snapshot as failed when the fail flag is set', () => {
       const snapshot = buildGigStatsSnapshot(
         1000,

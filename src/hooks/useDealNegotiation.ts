@@ -9,6 +9,7 @@ import type {
   NegotiationResult
 } from '../types/components'
 import type { BrandDeal } from '../types/social'
+import type { ToastType } from '../types/callbacks'
 
 type Deal = BrandDeal
 
@@ -83,32 +84,25 @@ export const useDealNegotiation = ({
 
       setNegotiationResult(result)
 
-      if (result.status === 'REVOKED') {
-        setNegotiatedDeals(prev => ({
-          ...prev,
-          [selectedDeal.id]: { status: 'REVOKED', deal: null }
-        }))
-        addToast(t(result.feedbackKey), 'error')
-      } else if (result.status === 'FAILED') {
-        setNegotiatedDeals(prev => ({
-          ...prev,
-          [selectedDeal.id]: { status: 'FAILED', deal: selectedDeal }
-        }))
-        addToast(t(result.feedbackKey), 'warning')
-      } else if (result.success) {
-        setNegotiatedDeals(prev => ({
-          ...prev,
-          [selectedDeal.id]: { status: 'SUCCESS', deal: result.deal }
-        }))
-        addToast(t(result.feedbackKey), 'success')
-      } else {
-        // Accepted but worse terms (Persuasive fail)
-        setNegotiatedDeals(prev => ({
-          ...prev,
-          [selectedDeal.id]: { status: 'WORSENED', deal: result.deal }
-        }))
-        addToast(t(result.feedbackKey), 'warning')
-      }
+      const [status, deal, toastType]: [
+        NonNullable<DealNegotiationState['status']>,
+        Deal | null,
+        ToastType
+      ] =
+        result.status === 'REVOKED'
+          ? ['REVOKED', null, 'error']
+          : result.status === 'FAILED'
+            ? ['FAILED', selectedDeal, 'warning']
+            : result.success
+              ? ['SUCCESS', result.deal, 'success']
+              : // Accepted but worse terms (Persuasive fail)
+                ['WORSENED', result.deal, 'warning']
+
+      setNegotiatedDeals(prev => ({
+        ...prev,
+        [selectedDeal.id]: { status, deal }
+      }))
+      addToast(t(result.feedbackKey), toastType)
 
       if (negotiationTimerRef.current) {
         clearTimeout(negotiationTimerRef.current)

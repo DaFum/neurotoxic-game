@@ -113,23 +113,7 @@ describe('useGigSession', () => {
     // It should still call setLastGigStats and endGig due to finally block
     expect(mockSetLastGigStats).toHaveBeenCalled()
     expect(mockEndGig).toHaveBeenCalled()
-    expect(buildGigStatsSnapshot).toHaveBeenCalledWith(
-      100,
-      {
-        perfectHits: 0,
-        perfects: 0,
-        hits: 0,
-        misses: 0,
-        earlyHits: 0,
-        lateHits: 0,
-        maxCombo: 0,
-        peakHype: 0,
-        corruptionLevel: 0
-      },
-      0,
-      [],
-      true
-    )
+    expect(buildGigStatsSnapshot).toHaveBeenCalledWith(100, {}, 0, [], true)
     expect(mockGameStateRef.current.hasSubmittedResults).toBe(true)
   })
 
@@ -165,19 +149,9 @@ describe('useGigSession', () => {
     expect(mockEndGig).toHaveBeenCalled()
     expect(buildGigStatsSnapshot).toHaveBeenCalledWith(
       0,
-      {
-        perfectHits: 0,
-        perfects: 0,
-        hits: 0,
-        misses: 0,
-        earlyHits: 0,
-        lateHits: 0,
-        maxCombo: 0,
-        peakHype: 0,
-        corruptionLevel: 0
-      },
+      undefined,
       0,
-      [],
+      undefined,
       true
     )
   })

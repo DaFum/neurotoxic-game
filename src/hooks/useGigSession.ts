@@ -3,7 +3,7 @@ import { TFunction } from 'i18next'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
-import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { PostGigSummary } from '../types'
 import type { ToastCallback } from '../types/callbacks'
 
@@ -116,29 +116,16 @@ export const useGigSession = ({
         })
       })
     } finally {
-      // Use fallback stats if gameStateRef is unavailable or uninitialized
+      // Use fallback values if gameStateRef is unavailable or uninitialized.
+      // buildGigStatsSnapshot defaults missing stats counters and songStats.
       const score = gameStateRef.current?.score ?? 0
-      // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
-      const rawStats =
-        gameStateRef.current?.stats ?? ({} as Partial<RhythmLiveStats>)
-      const statsSnapshot = {
-        perfectHits: rawStats.perfectHits ?? 0,
-        perfects: rawStats.perfects ?? 0, // Alias if used
-        hits: rawStats.hits ?? 0,
-        misses: rawStats.misses ?? 0,
-        earlyHits: rawStats.earlyHits ?? 0,
-        lateHits: rawStats.lateHits ?? 0,
-        maxCombo: rawStats.maxCombo ?? 0,
-        peakHype: rawStats.peakHype ?? 0,
-        corruptionLevel: rawStats.corruptionLevel ?? 0
-      }
       const toxicTime = gameStateRef.current?.toxicTimeTotal ?? 0
 
       const snapshot = buildGigStatsSnapshot(
         score,
-        statsSnapshot,
+        gameStateRef.current?.stats,
         toxicTime,
-        gameStateRef.current?.songStats ?? [],
+        gameStateRef.current?.songStats,
         true
       )
       setLastGigStats(snapshot)
