@@ -233,6 +233,7 @@ const initialState: GameState = {
   currentGig: null,
   setlist: [],
   lastGigStats: null,
+  pendingGigSettlement: null,
   activeEvent: null,
   pendingEvents: [],
   isScreenshotMode: false,

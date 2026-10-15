@@ -84,6 +84,18 @@ const CREATOR_ARGS = {
   createChangeSceneAction: () => [GAME_PHASES.OVERWORLD],
   createUpdatePlayerAction: () => [{ money: 500, fame: 10 }],
   createSettleSoldMerchAction: () => [{ shirts: 5 }],
+  createRecordPendingGigSettlementAction: () => [
+    {
+      gigId: 'venue_1',
+      net: 250,
+      perfScore: 80,
+      misses: 3,
+      dealFameMultiplier: 1,
+      soldMerch: { shirts: 2 }
+    },
+    'settlement_1'
+  ],
+  createClearPendingGigSettlementAction: () => ['settlement_1'],
   createUpdateBandAction: () => [{ harmony: 80 }],
   toggleNeuroDecimator: () => [true],
   createUpdateSocialAction: () => [{ instagram: 1000 }],
