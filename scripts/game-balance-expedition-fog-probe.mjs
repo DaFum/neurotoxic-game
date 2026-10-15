@@ -57,7 +57,7 @@ const inspectedFieldsFor = (fog, nodeIds) => {
     fields.add('nodeClass')
     fields.add('dangerTier')
     fields.add('rewardTier')
-    if (entry.exactPayout !== null) fields.add('exactPayout')
+    if (entry.estimatedPayout !== null) fields.add('estimatedPayout')
     if (entry.exactWearCost !== null) fields.add('exactWearCost')
     if (entry.rareRewardId !== null) fields.add('rareRewardId')
     if (entry.revealedIdentity !== null) fields.add('revealedIdentity')

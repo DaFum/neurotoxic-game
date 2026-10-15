@@ -174,6 +174,7 @@ export const BASE_STATE = {
   },
   gigEventScoreDelta: 0,
   lastGigStats: null,
+  pendingGigSettlement: null,
   activeEvent: null,
   pendingEvents: [],
   isScreenshotMode: false,

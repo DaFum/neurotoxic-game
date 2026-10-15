@@ -2,6 +2,7 @@ import { audioService } from '../audio/audioEngine'
 import { clamp0to100 } from '../gameState'
 import { ROADIE_GRID_HEIGHT } from '../../hooks/minigames/minigameConstants'
 import type { RoadieRenderState } from '../../components/stage/RoadiePlayerManager'
+import type { RoadieTrafficCar } from '../../types/roadie'
 
 /**
  * Deliverable item currently carried or queued in the roadie minigame.
@@ -10,18 +11,6 @@ export type RoadieCarryingItem = {
   id: string
   type: string
   weight: number
-}
-
-/**
- * Moving traffic obstacle in the roadie grid.
- */
-export type RoadieTrafficCar = {
-  id: string | number
-  textureHash: number
-  row: number
-  x: number
-  speed: number
-  width: number
 }
 
 /**

@@ -4,6 +4,7 @@ import type { PlayerState } from './player'
 import type { BandState } from './band'
 import type { RivalBandState } from './social'
 import type {
+  ExpeditionAuthorityExitId,
   ExpeditionFailureChoiceId,
   ExpeditionInspectionIntent,
   ExpeditionRepairIntent,
@@ -134,10 +135,21 @@ export type UpdateBandPayload =
 
 /**
  * Payload used when resetting state while preserving selected settings.
+ *
+ * @remarks
+ * `rngSeed`, `runSeed` and `savedSettings` are stamped by
+ * `createResetStateAction` so the reducer never draws randomness or reads
+ * storage; the reducer re-validates them.
  */
 export interface ResetStatePayload extends UnknownRecord {
   settings?: RawGameSettings
   unlocks?: string[]
+  /** Fresh UInt32 seed for the new run's gameplay RNG. */
+  rngSeed?: number
+  /** Fresh UInt32 seed identifying the new run. */
+  runSeed?: number
+  /** Global settings read from storage at the creator boundary. */
+  savedSettings?: RawGameSettings
 }
 
 /**
@@ -421,6 +433,14 @@ export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
   /** Every crisis choice except `accept_failure`, which has its own action. */
   choice: Exclude<ExpeditionFailureChoiceId, 'accept_failure'>
+  expectedRouteStep: number
+}
+
+/**
+ * Payload taking one safe exit out of the live Authority encounter.
+ */
+export interface ResolveExpeditionAuthorityExitPayload {
+  exitId: ExpeditionAuthorityExitId
   expectedRouteStep: number
 }
 

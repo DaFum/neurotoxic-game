@@ -19,8 +19,8 @@ const assertFiniteNumberAtLeastZero = (value: unknown, label: string) => {
   }
 }
 
-const PERF_SCORE_MIN = 30
-const PERF_SCORE_MAX = 100
+export const PERF_SCORE_MIN = 30
+export const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 150
 
 /**
@@ -128,7 +128,7 @@ export const calculateContinueStats = ({
 }: {
   player: GameState['player']
   perfScore: number
-  financials: PostGigFinancials
+  financials: Pick<PostGigFinancials, 'net'>
   misses?: number
   bandStyle?: number
   dealFameMultiplier?: number

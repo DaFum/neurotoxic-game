@@ -384,6 +384,27 @@ export const applyExpeditionPressureEventResolution = (
   }
 }
 
+/**
+ * Applies a signed Heat change: gains scale by the Heat-gain multiplier
+ * (non-finite treated as 1, floored at 0), losses apply unscaled.
+ *
+ * @param currentHeat - Heat before the change.
+ * @param heatDelta - Signed Heat change.
+ * @param heatGainMultiplier - Effective multiplier for positive changes.
+ * @returns Heat after the change, clamped to `0..100`.
+ */
+export const addExpeditionHeat = (
+  currentHeat: number,
+  heatDelta: number,
+  heatGainMultiplier: number
+): number =>
+  addClampedPercent(
+    currentHeat,
+    heatDelta > 0
+      ? heatDelta * Math.max(0, finiteNumberOr(heatGainMultiplier, 1))
+      : heatDelta
+  )
+
 export const applyExpeditionPressureDelta = (
   state: GameState,
   delta: { heat?: number; exposure?: number; crowdHype?: number }
@@ -394,9 +415,10 @@ export const applyExpeditionPressureDelta = (
   const exposureDelta = finiteNumberOr(delta.exposure, 0)
   return {
     ...pressure,
-    heat: addClampedPercent(
+    heat: addExpeditionHeat(
       pressure.heat,
-      heatDelta > 0 ? heatDelta * effective.heatGainMultiplier : heatDelta
+      heatDelta,
+      effective.heatGainMultiplier
     ),
     exposure: addClampedPercent(
       pressure.exposure,

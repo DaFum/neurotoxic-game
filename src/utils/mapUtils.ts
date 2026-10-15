@@ -107,7 +107,7 @@ export const normalizeVenueId = (venue: unknown): string | null => {
  * modifiers. Callers compute these with `getTotalDailyObligations` /
  * `getActiveAssetModifiers`; mapUtils stays free of those dependencies.
  */
-export interface SoftlockContext {
+interface SoftlockContext {
   /** Total daily obligations added on top of each neighbor's travel cost. */
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */

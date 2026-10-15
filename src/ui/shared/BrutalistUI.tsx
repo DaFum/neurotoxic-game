@@ -443,18 +443,17 @@ export const DeadmanButton = memo(
       if (intervalRef.current != null) clearInterval(intervalRef.current)
 
       const intervalId = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            if (intervalRef.current === intervalId) {
-              clearInterval(intervalId)
-              intervalRef.current = null
-            }
-            setIsHolding(false)
-            if (onConfirm) onConfirm()
-            return 100
-          }
-          return prev + 2 // Speed of fill
-        })
+        progressRef.current = Math.min(100, progressRef.current + 2) // Speed of fill
+        setProgress(progressRef.current)
+        if (progressRef.current >= 100) {
+          // Complete exactly once, on the tick that fills the bar: clear
+          // synchronously, outside any (replayable) state updater, so a
+          // release right after the fill cannot strand the confirmation.
+          clearInterval(intervalId)
+          if (intervalRef.current === intervalId) intervalRef.current = null
+          setIsHolding(false)
+          if (onConfirm) onConfirm()
+        }
       }, 20) // 20ms tick
       intervalRef.current = intervalId
     }

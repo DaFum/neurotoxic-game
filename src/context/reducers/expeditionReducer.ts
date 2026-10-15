@@ -101,6 +101,12 @@ import {
   isExpeditionLegendaryAvailable
 } from '../../domain/expedition/legendaries'
 import {
+  EXPEDITION_AUTHORITY_EXIT_HEAT_RELIEF,
+  EXPEDITION_AUTHORITY_EXIT_IDS,
+  getAuthorityEncounter,
+  resolveAuthoritySafeExit
+} from '../../domain/expedition/authority'
+import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
@@ -149,6 +155,7 @@ import type {
   PrepareExpeditionSponsorOffersPayload,
   PrepareNextExpeditionPayload,
   ResolveExpeditionCrisisPayload,
+  ResolveExpeditionAuthorityExitPayload,
   ResolveExpeditionDefectPayload,
   RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
@@ -1533,6 +1540,134 @@ export const handleResolveExpeditionCrisis = (
       ...state.player,
       money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) - cost),
       van: { ...state.player.van, fuel: nextFuel }
+    }
+  }
+}
+
+/**
+ * Takes one safe exit out of the live Authority encounter.
+ *
+ * @param state - Current game state.
+ * @param payload - The chosen exit and the stale guard.
+ * @returns Next state, or the identical reference when the exit is illegal.
+ *
+ * @remarks
+ * The encounter and the exit's cost are re-resolved here through the same
+ * `resolveAuthoritySafeExit` the availability list uses, so the reducer can
+ * neither execute an exit the encounter does not offer nor charge a price the
+ * payload named. Every exit pays its own cost and then the same Heat relief;
+ * a live crisis owns the decision surface, so no exit is taken under one.
+ */
+export const handleResolveExpeditionAuthorityExit = (
+  state: GameState,
+  payload: ResolveExpeditionAuthorityExitPayload
+): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
+  if (state.expedition.pendingFailure) return state
+  const encounter = getAuthorityEncounter(state)
+  if (!encounter) return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== encounter.expectedRouteStep
+  ) {
+    return state
+  }
+  const { exitId } = payload
+  if (!(EXPEDITION_AUTHORITY_EXIT_IDS as readonly unknown[]).includes(exitId))
+    return state
+  const plan = resolveAuthoritySafeExit(state, exitId)
+  if (!plan) return state
+
+  const relieved: GameState = {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: applyExpeditionPressureDelta(state, {
+        heat: -EXPEDITION_AUTHORITY_EXIT_HEAT_RELIEF
+      })
+    }
+  }
+
+  switch (plan.exitId) {
+    case 'pay':
+      return {
+        ...relieved,
+        player: {
+          ...relieved.player,
+          money: clampPlayerMoney(
+            finiteNumberOr(relieved.player.money, 0) - plan.cost
+          )
+        }
+      }
+    case 'crew': {
+      const crew = relieved.expedition.crew ?? {
+        stressByCrewId: {},
+        injuryByCrewId: {}
+      }
+      return {
+        ...relieved,
+        expedition: {
+          ...relieved.expedition,
+          crew: {
+            ...crew,
+            stressByCrewId: {
+              ...crew.stressByCrewId,
+              [plan.crewId]: plan.nextStress
+            }
+          }
+        }
+      }
+    }
+    case 'hidden_compartment':
+      return {
+        ...relieved,
+        expedition: {
+          ...relieved.expedition,
+          authorityHiddenCompartmentUsed: true
+        }
+      }
+    case 'surrender_cargo': {
+      const cargo = relieved.expedition.cargo
+      if (!cargo) return state
+      return {
+        ...relieved,
+        expedition: {
+          ...relieved.expedition,
+          cargo: { ...cargo, contraband: [] }
+        }
+      }
+    }
+    case 'route_detour':
+      return {
+        ...relieved,
+        player: {
+          ...relieved.player,
+          van: {
+            ...relieved.player.van,
+            fuel: Math.max(
+              0,
+              finiteNumberOr(relieved.player.van?.fuel, 0) - plan.fuelCost
+            )
+          }
+        }
+      }
+    case 'future_obligation': {
+      const loadout = relieved.expedition.loadout
+      if (!loadout) return state
+      return {
+        ...relieved,
+        expedition: {
+          ...relieved.expedition,
+          loadout: {
+            ...loadout,
+            nativeContracts: [...loadout.nativeContracts, plan.commitment]
+          },
+          activeObligations: [
+            ...relieved.expedition.activeObligations,
+            plan.obligation
+          ]
+        }
+      }
     }
   }
 }

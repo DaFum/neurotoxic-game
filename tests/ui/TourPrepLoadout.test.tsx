@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { TourPrepLoadout } from '../../src/ui/expedition/TourPrepLoadout'
 import { createInitialState } from '../../src/context/initialState'
 import type { GameState } from '../../src/types'
+import { EXPEDITION_SUPPLY_REST_STRESS_BONUS } from '../../src/domain/expedition/crewStress'
 
 const state: { current: GameState } = vi.hoisted(
   () => ({ current: null }) as never
@@ -118,6 +119,24 @@ describe('TourPrepLoadout', () => {
       .filter(c => c.key === 'ui:expedition.prep.cargoOverCapacityText')
       .at(-1)
     expect(call?.options).toEqual({ used: 20, max: 8 })
+  })
+
+  it('tells the player what a packed supply is for, next to the supplies slider', () => {
+    state.current = createInitialState()
+    render(<TourPrepLoadout />)
+    fireEvent.click(screen.getAllByRole('tab')[1]!)
+
+    const hint = screen.getByText('ui:expedition.prep.suppliesRestHint')
+    expect(screen.getByTestId('expedition-prep-supplies')).toHaveAttribute(
+      'aria-describedby',
+      hint.id
+    )
+    const call = tCalls
+      .filter(c => c.key === 'ui:expedition.prep.suppliesRestHint')
+      .at(-1)
+    expect(call?.options).toEqual({
+      value: EXPEDITION_SUPPLY_REST_STRESS_BONUS
+    })
   })
 
   it('shows the showcase Contract locked with its Fame floor until the band is known', () => {

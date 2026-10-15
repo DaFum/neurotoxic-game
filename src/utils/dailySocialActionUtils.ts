@@ -10,7 +10,7 @@ import type {
 /**
  * Social-state fields recording the day a zealotry action last ran.
  */
-export type ZealotryActionDayField =
+type ZealotryActionDayField =
   'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
 
 /**

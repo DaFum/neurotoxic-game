@@ -319,10 +319,9 @@ export const getEffectiveExpeditionRules = (
       chassisProfile.crewStressMultiplier *
       (crewProfile.crewStressMultiplier ?? 1) *
       (drafts.has('crew_mediator') ? 0.7 : 1),
-    nodeIntelFloor: Math.max(
-      moduleProfile.authorityIntelBonus,
-      drafts.has('backchannel') ? 1 : 0
-    ) as 0 | 1 | 2,
+    // Only Backchannel sets a node intel floor (plan 04). The jammer's
+    // authorityIntelBonus is Authority-band intel (plan 05), not node fog.
+    nodeIntelFloor: drafts.has('backchannel') ? 1 : 0,
     explicitExtractionRareCarrySlots: Math.max(
       1,
       Math.min(

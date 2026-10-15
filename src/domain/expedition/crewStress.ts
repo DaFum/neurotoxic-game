@@ -13,6 +13,16 @@ export const CREW_STRESS_SOURCE_DELTAS: Readonly<
   successful_gig: -5
 }
 
+/**
+ * Extra Stress a rest recovers when the visit spends one packed supply.
+ *
+ * @remarks
+ * Provisional balance value pending review: it is the only number supplies
+ * contribute, and it was chosen small so packing supplies is a modest trade
+ * against the cargo slots they occupy.
+ */
+export const EXPEDITION_SUPPLY_REST_STRESS_BONUS = 10
+
 export const applyCrewStressDelta = (
   current: number,
   delta: number,

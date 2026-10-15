@@ -86,6 +86,7 @@ const PERSISTED_FIELDS = {
   reputationByRegion: isLooseRecord,
   settings: isLooseRecord,
   gigModifiers: isLooseRecord,
+  pendingGigSettlement: isNullableObject,
   setlist: Array.isArray,
   minigame: isNullableObject,
   completedMilestones: Array.isArray,
@@ -227,7 +228,7 @@ export const createPersistedState = (
 }
 
 /**
- * Creates save, load, and delete-save callbacks plus post-gig autosave behavior.
+ * Creates save, load, and delete-save callbacks plus post-gig exit autosave behavior.
  *
  * @param params - Current scene, state ref, dispatch, toast callback, and translator ref.
  * @returns Persistence actions for deleting, saving, and loading the game.
@@ -361,12 +362,16 @@ export function usePersistence({
     const previousScene = previousSceneRef.current
     previousSceneRef.current = currentScene
 
+    // GIG -> POST_GIG is deliberately not autosaved. The post-gig screen
+    // records the pending gig settlement and requests the first POST_GIG
+    // save itself; a snapshot taken here would land without that record, and
+    // a crash before the record's save would restore a played gig whose
+    // payout nothing can settle. Without it, the last durable save before
+    // the record is the pre-gig one, so that crash replays the gig instead.
     const shouldAutosaveOnTransition =
-      (previousScene === GAME_PHASES.GIG &&
-        currentScene === GAME_PHASES.POST_GIG) ||
-      (previousScene === GAME_PHASES.POST_GIG &&
-        (currentScene === GAME_PHASES.GAMEOVER ||
-          currentScene === GAME_PHASES.OVERWORLD))
+      previousScene === GAME_PHASES.POST_GIG &&
+      (currentScene === GAME_PHASES.GAMEOVER ||
+        currentScene === GAME_PHASES.OVERWORLD)
 
     if (handledSaveRequestRef.current !== saveRequestCount) {
       handledSaveRequestRef.current = saveRequestCount
@@ -468,11 +473,16 @@ export function usePersistence({
         dispatch(
           createLoadGameAction(createRawLoadPayload(migratedObj, mergedUnlocks))
         )
+        // LOAD_GAME consumes a pending gig settlement in memory only; persist
+        // the settled ledger and the cleared record in the same commit.
+        if (isLooseRecord(migratedObj.pendingGigSettlement)) {
+          saveGameAfterStateCommit()
+        }
         return true
       },
       false
     )
-  }, [addToast, dispatch, storage, tRef])
+  }, [addToast, dispatch, saveGameAfterStateCommit, storage, tRef])
 
   return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }

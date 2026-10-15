@@ -21,6 +21,7 @@ import { pickIndex } from '../../utils/selectionUtils'
 import { getActiveExpeditionMap, hashExpeditionRoute } from './map'
 import { hasExpeditionCareerRank } from './meta'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 import type { GameState } from '../../types'
 import type {
   ExpeditionIntelSource,
@@ -218,8 +219,12 @@ export const getExpeditionIntelCapability = (
   const pathfinder =
     state.career.crewById.noah?.signatureTraitId === 'signature_pathfinder'
   const regionId = state.expedition.loadout?.regionId
+  // The composed rule floor (Backchannel draft, GPS jammer) is capped at
+  // level 1 so a passive floor never makes a committed Scout redundant.
+  const ruleFloor = getEffectiveExpeditionRules(state).numeric.nodeIntelFloor
   return {
     ...BASE_EXPEDITION_INTEL_CAPABILITY,
+    passiveLevelFloor: isFiniteNumber(ruleFloor) && ruleFloor >= 1 ? 1 : 0,
     familiarNodeIds: resolveFamiliarNodeIds(
       state,
       hasRegionFamiliarityEntitlement(state) ? 1 : 0

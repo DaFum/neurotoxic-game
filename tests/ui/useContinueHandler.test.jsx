@@ -42,7 +42,7 @@ vi.mock('../../src/context/gameConstants', () => ({
 import { useContinueHandler } from '../../src/hooks/postGig/handlers/useContinueHandler'
 import {
   dispatchEconomyQuests,
-  applyNeurotoxicPenalty,
+  getNeurotoxicPenaltyHarmony,
   handleContinueSceneTransition
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 
@@ -152,31 +152,18 @@ describe('Pure Functions in useContinueHandler.ts', () => {
     })
   })
 
-  describe('applyNeurotoxicPenalty', () => {
-    it('applies penalty and updates band if pedal is in inventory', () => {
-      const updateBand = vi.fn()
+  describe('getNeurotoxicPenaltyHarmony', () => {
+    it('returns the penalised harmony if pedal is in inventory', () => {
       const band = { harmony: 80, inventory: { neurotoxicPedal: true } }
 
       // 80 - 10 (mocked penalty) = 70
-      const result = applyNeurotoxicPenalty(band, updateBand)
-
-      expect(result).toBe(70)
-      expect(updateBand).toHaveBeenCalledTimes(1)
-
-      // Test functional state update
-      const updateFn = updateBand.mock.calls[0][0]
-      const nextBand = updateFn(band)
-      expect(nextBand.harmony).toBe(70)
+      expect(getNeurotoxicPenaltyHarmony(band)).toBe(70)
     })
 
-    it('returns undefined and does not update if pedal is not in inventory', () => {
-      const updateBand = vi.fn()
+    it('returns undefined if pedal is not in inventory', () => {
       const band = { harmony: 80, inventory: {} }
 
-      const result = applyNeurotoxicPenalty(band, updateBand)
-
-      expect(result).toBeUndefined()
-      expect(updateBand).not.toHaveBeenCalled()
+      expect(getNeurotoxicPenaltyHarmony(band)).toBeUndefined()
     })
   })
 
@@ -274,6 +261,60 @@ describe('useContinueHandler hook', () => {
 
     // transition to overworld
     expect(d.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  describe('pending settlement record', () => {
+    const withClear = () => ({
+      ...makeDispatchers(),
+      clearPendingGigSettlement: vi.fn()
+    })
+
+    it('clears the record by id right after settling the player', () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: 'settle-1' })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+      })
+
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledWith(
+        'settle-1'
+      )
+      expect(dispatchers.updatePlayer.mock.invocationCallOrder[0]).toBeLessThan(
+        dispatchers.clearPendingGigSettlement.mock.invocationCallOrder[0]
+      )
+    })
+
+    it('a second Continue press settles and clears nothing more', () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: 'settle-1' })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+        result.current()
+      })
+
+      expect(dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledTimes(1)
+    })
+
+    it('Continue without a record still settles and clears nothing', async () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: null })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+      })
+      await flushMicrotasks()
+
+      expect(dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).not.toHaveBeenCalled()
+      expect(dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+    })
   })
 
   it('no-ops if financials is null', () => {

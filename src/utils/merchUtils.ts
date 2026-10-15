@@ -4,7 +4,7 @@ import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 /**
  * HQ item definition type for merch-backed inventory items.
  */
-export type HQItemDef =
+type HQItemDef =
   typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T> ? T : never
 
 /**

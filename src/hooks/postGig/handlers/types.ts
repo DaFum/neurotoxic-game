@@ -52,6 +52,7 @@ export interface HandlerDispatchers {
     postOptionId: string
   ) => void
   settleSoldMerch?: (soldMerch: Record<string, number>) => void
+  clearPendingGigSettlement?: (id: string) => void
   offerExpeditionDraft?: (
     sourceType: import('../../../types/expedition').ExpeditionRunDraftOffer['sourceType'],
     sourceKey: string

@@ -195,7 +195,10 @@ describe('PostGig Leaderboard Submission', () => {
     assets: [],
     setlist: [],
     addQuest: vi.fn(),
-    applyQuestEvent: vi.fn()
+    applyQuestEvent: vi.fn(),
+    saveGameAfterStateCommit: vi.fn(),
+    recordPendingGigSettlement: vi.fn(),
+    clearPendingGigSettlement: vi.fn()
   })
 
   /**

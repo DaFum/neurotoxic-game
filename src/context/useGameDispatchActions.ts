@@ -65,6 +65,8 @@ import {
   createUpdatePlayerAction,
   createUpdateBandAction,
   createSettleSoldMerchAction,
+  createRecordPendingGigSettlementAction,
+  createClearPendingGigSettlementAction,
   createUpdateSocialAction,
   createUpdateSettingsAction,
   createSetMapAction,
@@ -109,6 +111,10 @@ type BaseGameDispatchActions = {
   ) => void
   updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
   settleSoldMerch: (soldMerch: Record<string, number>) => void
+  recordPendingGigSettlement: (
+    settlement: Parameters<typeof createRecordPendingGigSettlementAction>[0]
+  ) => void
+  clearPendingGigSettlement: (id: string) => void
   toggleNeuroDecimator: (
     isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]
   ) => void
@@ -294,6 +300,9 @@ type BaseGameDispatchActions = {
   prepareNextExpedition: () => void
   resolveExpeditionCrisis: (
     choice: import('../types/actions').ResolveExpeditionCrisisPayload['choice']
+  ) => void
+  resolveExpeditionAuthorityExit: (
+    exitId: import('../types/expedition').ExpeditionAuthorityExitId
   ) => void
   executeExpeditionRepair: (
     intent: import('../types/expedition').ExpeditionRepairIntent
@@ -489,6 +498,8 @@ type SimpleDispatchActions = Pick<
   | 'updatePlayer'
   | 'updateBand'
   | 'settleSoldMerch'
+  | 'recordPendingGigSettlement'
+  | 'clearPendingGigSettlement'
   | 'toggleNeuroDecimator'
   | 'updateSocial'
   | 'setGameMap'
@@ -576,6 +587,12 @@ export function useGameDispatchActions({
         dispatch(createUpdateBandAction(updates)),
       settleSoldMerch: (soldMerch: Record<string, number>) =>
         dispatch(createSettleSoldMerchAction(soldMerch)),
+      recordPendingGigSettlement: settlement => {
+        const action = createRecordPendingGigSettlementAction(settlement)
+        if (action) dispatch(action)
+      },
+      clearPendingGigSettlement: (id: string) =>
+        dispatch(createClearPendingGigSettlementAction(id)),
       toggleNeuroDecimator: isActive =>
         dispatch(createToggleNeuroDecimatorAction(isActive)),
       updateSocial: (
@@ -654,8 +671,9 @@ export function useGameDispatchActions({
     resetMapGenerationRetries()
     // Same adapter initialization, save/load, and event unlocks use: reading
     // the module default here would let a reset overwrite the injected
-    // backend's unlocks with whatever sits in browser storage.
-    dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }))
+    // backend's unlocks (or stored settings) with whatever sits in browser
+    // storage.
+    dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }, storage))
   }, [dispatch, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {

@@ -74,13 +74,76 @@ describe('ExpeditionNodeFogBadge', () => {
     // Route wear times fractional chassis and crew multipliers.
     render(
       <ExpeditionNodeFogBadge
-        fog={{ ...fog, exactPayout: 195, exactWearCost: 12.0703 }}
+        fog={{
+          ...fog,
+          intelLevel: 1,
+          estimatedPayout: 195,
+          exactWearCost: 12.0703
+        }}
         t={t}
       />
     )
 
     expect(document.body.textContent).toContain('ui:expedition.node.wear 12')
     expect(document.body.textContent).not.toContain('12.07')
+  })
+
+  it('labels the scouted gig payout as an estimate, gated on intel level 1', () => {
+    const state = startedState() as GameState
+    const fog =
+      getExpeditionNodeFogByNodeId(state)?.[
+        buildExpeditionMap(
+          state.runSeed,
+          state.expedition.loadout?.tourTypeId ?? '',
+          state.expedition.loadout?.regionId ?? ''
+        ).finaleNodeId
+      ]
+    if (!fog) throw new Error('Finale has no fog projection')
+
+    const { rerender } = render(
+      <ExpeditionNodeFogBadge
+        fog={{ ...fog, intelLevel: 0, estimatedPayout: null }}
+        t={t}
+      />
+    )
+    expect(screen.getByTestId('expedition-node-fog-hidden')).toBeTruthy()
+    expect(document.body.textContent).not.toContain(
+      'ui:expedition.node.estimatedPayout'
+    )
+
+    rerender(
+      <ExpeditionNodeFogBadge
+        fog={{ ...fog, intelLevel: 1, estimatedPayout: 640, exactWearCost: 7 }}
+        t={t}
+      />
+    )
+    const exact = screen.getByTestId('expedition-node-fog-exact')
+    expect(exact.textContent).toBe(
+      'ui:expedition.node.estimatedPayout 640 EUR | ui:expedition.node.wear 7'
+    )
+  })
+
+  it('shows only the wear on a scouted node that books no gig', () => {
+    const state = startedState() as GameState
+    const loadout = state.expedition.loadout
+    if (!loadout) throw new Error('fixture run has no loadout')
+    const map = buildExpeditionMap(
+      state.runSeed,
+      loadout.tourTypeId,
+      loadout.regionId
+    )
+    const fog = getExpeditionNodeFogByNodeId(state)?.[map.finaleNodeId]
+    if (!fog) throw new Error('Finale has no fog projection')
+
+    render(
+      <ExpeditionNodeFogBadge
+        fog={{ ...fog, intelLevel: 1, estimatedPayout: null, exactWearCost: 5 }}
+        t={t}
+      />
+    )
+
+    const exact = screen.getByTestId('expedition-node-fog-exact')
+    expect(exact.textContent).toBe('ui:expedition.node.wear 5')
   })
 
   it('omits the onward count on the Finale, which has no exits', () => {

@@ -8,7 +8,13 @@ import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
-import { getSafeUUID, secureRandom } from '../utils/crypto'
+import {
+  getSafeUUID,
+  getSecureRandomUint32,
+  secureRandom
+} from '../utils/crypto'
+import { defaultStorageAdapter, readGlobalSettings } from '../utils/storage'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import { systemClock } from '../utils/clock'
 import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
@@ -20,6 +26,7 @@ import {
   sanitizeSocialUpdates
 } from './reducers/sanitizers/stateSanitizers'
 import { sanitizeLoadedToast } from './reducers/toastSanitizers'
+import { sanitizePendingGigSettlement } from './reducers/pendingGigSettlementReducer'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {
@@ -40,6 +47,7 @@ import type {
   GameMap,
   GameEvent,
   GigModifiers,
+  PendingGigSettlement,
   PostGigSummary,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -140,6 +148,43 @@ export const createSettleSoldMerchAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.SETTLE_SOLD_MERCH }> => ({
   type: ActionTypes.SETTLE_SOLD_MERCH,
   payload: soldMerch && typeof soldMerch === 'object' ? { ...soldMerch } : {}
+})
+
+/**
+ * Creates an action recording the settlement the post-gig report presented.
+ *
+ * @param settlement - Settlement inputs for the gig on the post-gig screen.
+ * @param id - Stable settlement id; generated when omitted.
+ * @returns RECORD_PENDING_GIG_SETTLEMENT action, or `null` when the inputs
+ * are malformed.
+ */
+export const createRecordPendingGigSettlementAction = (
+  settlement: Omit<PendingGigSettlement, 'id'>,
+  id: string = getSafeUUID()
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_PENDING_GIG_SETTLEMENT }
+> | null => {
+  const payload = sanitizePendingGigSettlement({ ...settlement, id })
+  return payload
+    ? { type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT, payload }
+    : null
+}
+
+/**
+ * Creates an action dropping a pending settlement after Continue settled it.
+ *
+ * @param id - Id of the settled record.
+ * @returns CLEAR_PENDING_GIG_SETTLEMENT action.
+ */
+export const createClearPendingGigSettlementAction = (
+  id: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CLEAR_PENDING_GIG_SETTLEMENT }
+> => ({
+  type: ActionTypes.CLEAR_PENDING_GIG_SETTLEMENT,
+  payload: { id }
 })
 
 /**
@@ -441,12 +486,25 @@ export const createLoadGameAction = (
 /**
  * Creates a reset state action
  * @param payload - Data to preserve across reset (e.g. settings, unlocks) Defaults to `{}`.
+ * @param storage - Adapter the global-settings read goes through. Defaults to
+ * the production singleton.
+ *
+ * @remarks
+ * Stamps the new run's `rngSeed`/`runSeed` and the stored global settings here,
+ * at the creator boundary, so `handleResetState` neither draws randomness nor
+ * reads storage and the same action replays to the same state.
  */
 export const createResetStateAction = (
-  payload: ResetStatePayload = {}
+  payload: ResetStatePayload = {},
+  storage: IStorageAdapter = defaultStorageAdapter
 ): Extract<GameAction, { type: typeof ActionTypes.RESET_STATE }> => ({
   type: ActionTypes.RESET_STATE,
-  payload
+  payload: {
+    ...payload,
+    savedSettings: sanitizeSettingsPayload(readGlobalSettings(storage)),
+    rngSeed: getSecureRandomUint32(),
+    runSeed: getSecureRandomUint32()
+  }
 })
 
 /**

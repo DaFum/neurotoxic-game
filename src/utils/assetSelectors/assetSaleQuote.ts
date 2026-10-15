@@ -1,13 +1,13 @@
 import type { LongTermAsset, Liability } from '../../types/assets'
 import { calculateChassisGrossSaleValue } from './assetFinancials'
-import { finiteNumberOr } from '../finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 
 /**
  * Net-proceeds quote for selling a chassis. `gross` is `null` when the asset
  * has no computable sale value (e.g. missing config); callers decide how to
  * surface that (the modal treats it as 0, the reducer rejects the sale).
  */
-export interface AssetSaleQuote {
+interface AssetSaleQuote {
   /** Gross depreciated sale value, or null when uncomputable. */
   gross: number | null
   /** Sanitized sum of principal remaining across the asset's liabilities. */
@@ -43,7 +43,9 @@ export const getAssetSaleQuote = (
       }
     }
   }
-  const debt = Math.max(0, finiteNumberOr(rawDebt, 0))
+  // Finite principals can still sum past Number.MAX_VALUE; an overflowing
+  // total saturates (and so blocks the sale) instead of reading as no debt.
+  const debt = isFiniteNumber(rawDebt) ? Math.max(0, rawDebt) : Number.MAX_VALUE
   const gross = calculateChassisGrossSaleValue(asset, day)
   const net = (gross ?? 0) - debt
   // A null gross means the sale is uncomputable — the reducer rejects it, so

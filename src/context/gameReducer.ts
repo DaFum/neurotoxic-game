@@ -41,6 +41,10 @@ import {
   handleSettleSoldMerch
 } from './reducers/gigReducer'
 import {
+  handleRecordPendingGigSettlement,
+  handleClearPendingGigSettlement
+} from './reducers/pendingGigSettlementReducer'
+import {
   handleSetActiveEvent,
   handleApplyEventDelta,
   handlePopPendingEvent,
@@ -83,6 +87,7 @@ import {
   handlePrepareExpeditionSponsorOffers,
   handlePrepareNextExpedition,
   handleResolveExpeditionCrisis,
+  handleResolveExpeditionAuthorityExit,
   handleResolveExpeditionDefect,
   handleRevealExpeditionDefect,
   handleRevealExpeditionNodeIntel,
@@ -269,6 +274,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
   [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
   [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis,
+  [ActionTypes.RESOLVE_EXPEDITION_AUTHORITY_EXIT]:
+    handleResolveExpeditionAuthorityExit,
   [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair,
   [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
   [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,
@@ -302,6 +309,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD]:
     handleCommitExpeditionLegendaryReward,
   [ActionTypes.SETTLE_SOLD_MERCH]: handleSettleSoldMerch,
+  [ActionTypes.RECORD_PENDING_GIG_SETTLEMENT]: handleRecordPendingGigSettlement,
+  [ActionTypes.CLEAR_PENDING_GIG_SETTLEMENT]: handleClearPendingGigSettlement,
   [ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY]:
     handleRecordExpeditionArchiveDiscovery,
   [ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS]:

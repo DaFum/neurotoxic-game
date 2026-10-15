@@ -11,8 +11,6 @@ import type { PostGigFinancials } from '../../../types/economy'
 import {
   clampPlayerMoney,
   clampPlayerFame,
-  clampMemberStamina,
-  readMemberStamina,
   calculateFameLevel,
   calculateFameGain,
   finiteNumberOr,
@@ -23,13 +21,12 @@ import { calculateContinueStats } from '../../../utils/postGig'
 import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import {
-  applyNeurotoxicPenalty,
   buildSoldMerchInventory,
-  buildStoryFlagQuests,
+  derivePostGigContinueEffects,
   dispatchEconomyQuests,
+  drainBandStamina,
   handleContinueSceneTransition
 } from './continueHandlerUtils'
-import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
@@ -45,6 +42,8 @@ interface UseContinueHandlerProps {
   activeStoryFlags?: string[]
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
+  /** Id of the persisted settlement this Continue settles. */
+  pendingSettlementId?: string | null
   totalDailyObligations: number
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
@@ -69,6 +68,7 @@ export function useContinueHandler({
   expedition,
   activeStoryFlags,
   isFinaleGig = false,
+  pendingSettlementId = null,
   totalDailyObligations,
   isProcessingActionRef,
   setIsProcessingAction,
@@ -85,6 +85,7 @@ export function useContinueHandler({
     saveGameAfterStateCommit,
     recordExpeditionObligationSignal,
     settleSoldMerch,
+    clearPendingGigSettlement,
     offerExpeditionDraft
   }
 }: UseContinueHandlerProps) {
@@ -185,21 +186,55 @@ export function useContinueHandler({
           ? { stats: { ...player.stats, tourCompleted: true } }
           : {})
       })
+      // Same commit as the settlement above, so no save holds both the
+      // settled ledger and a record a later load would settle again.
+      if (pendingSettlementId && clearPendingGigSettlement) {
+        clearPendingGigSettlement(pendingSettlementId)
+      }
 
       dispatchEconomyQuests(player, stats, applyQuestEvent)
 
-      const postPenaltyHarmony = applyNeurotoxicPenalty(band, updateBand)
-
-      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY;
-      // buildStoryFlagQuests assembles the payloads from registry definitions
-      // (no inline duplication) and the reducer re-merges defaults defensively.
-      for (const quest of buildStoryFlagQuests({
-        activeStoryFlags,
+      // The same ordered effects a load replays when it settles a record
+      // saved before Continue (`settlePendingGigOnLoad`).
+      for (const effect of derivePostGigContinueEffects({
+        band,
         day: player.day,
-        bandHarmony: band.harmony,
-        postPenaltyHarmony
+        activeStoryFlags,
+        expedition,
+        gigId: currentGig?.id,
+        lastGigStats,
+        isFinaleGig,
+        successfulFinale
       })) {
-        addQuest(quest)
+        switch (effect.kind) {
+          case 'harmony':
+            updateBand(() => ({ harmony: effect.harmony }))
+            break
+          case 'addQuest':
+            addQuest(effect.quest)
+            break
+          case 'obligationSignal':
+            recordExpeditionObligationSignal?.(
+              effect.signalType,
+              effect.sourceId
+            )
+            break
+          case 'offerMajorGigDraft':
+            offerExpeditionDraft?.('major_gig', effect.sourceKey)
+            break
+          case 'crewStress':
+            recordExpeditionCrewStressSource(
+              effect.crewId,
+              effect.sourceType,
+              effect.sourceId
+            )
+            break
+          case 'staminaDrain':
+            updateBand((prevBand: BandState) =>
+              drainBandStamina(prevBand, effect.amount)
+            )
+            break
+        }
       }
 
       submitLeaderboardScores({
@@ -214,70 +249,6 @@ export function useContinueHandler({
           currentGig
         })
       )
-
-      const accuracy = lastGigStats?.accuracy
-      if (expedition?.status === 'active' && currentGig?.id) {
-        if (recordExpeditionObligationSignal) {
-          recordExpeditionObligationSignal('gig', currentGig.id)
-          if (successfulFinale) {
-            recordExpeditionObligationSignal('finale', currentGig.id)
-          }
-        }
-        // A completed major gig is a Run Draft moment (spec §9). The reducer
-        // proves the node is a Festival and the gig did not fail, so this only
-        // names the moment; the Finale ends the run, so no draft follows it.
-        if (
-          offerExpeditionDraft &&
-          !isFinaleGig &&
-          lastGigStats?.failed !== true
-        ) {
-          offerExpeditionDraft('major_gig', currentGig.id)
-        }
-        if (
-          typeof accuracy === 'number' &&
-          Number.isFinite(accuracy) &&
-          (accuracy < 60 || accuracy >= 80)
-        ) {
-          const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
-          const sourceId = `gig:${currentGig.id}:${expedition.routeStep}`
-          for (const crewId of expedition.loadout?.crewIds ?? []) {
-            recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
-          }
-        }
-
-        // Apply Finale stamina multiplier to member stamina
-        if (isFinaleGig && Array.isArray(band.members)) {
-          const finaleProfile = getExpeditionFinaleProfile(
-            expedition.finaleType
-          )
-          const staminaMultiplier = finaleProfile?.staminaDrainMultiplier ?? 1
-          if (staminaMultiplier > 1) {
-            const baseDrain = 15
-            const extraDrain = Math.round(baseDrain * (staminaMultiplier - 1))
-            if (extraDrain > 0) {
-              updateBand((prevBand: BandState) => {
-                if (!Array.isArray(prevBand.members)) return prevBand
-                const members = prevBand.members.map(member => {
-                  if (!member) return member
-                  const maxStamina = finiteNumberOr(member.staminaMax, 100)
-                  const currentStamina = readMemberStamina(
-                    member.stamina,
-                    maxStamina
-                  )
-                  return {
-                    ...member,
-                    stamina: clampMemberStamina(
-                      currentStamina - extraDrain,
-                      maxStamina
-                    )
-                  }
-                })
-                return { ...prevBand, members }
-              })
-            }
-          }
-        }
-      }
 
       if (expeditionFinale) {
         pendingFinaleRef.current = { runId: expedition.runId }
@@ -324,6 +295,8 @@ export function useContinueHandler({
     completeExpedition,
     recordExpeditionObligationSignal,
     settleSoldMerch,
+    clearPendingGigSettlement,
+    pendingSettlementId,
     offerExpeditionDraft,
     setlist,
     expedition,

@@ -121,7 +121,7 @@ export const getLocationName = (
 
 const BOOKING_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
-export interface VenueAccessParams {
+interface VenueAccessParams {
   node: MapNode & { type?: string; venue?: VenueLike | string }
   player: PlayerState
   reputationByRegion?: Record<string, number>

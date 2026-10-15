@@ -16,8 +16,38 @@ import {
   getExpeditionNodeIntelLevel
 } from './nodeIntel'
 import { resolveExpeditionTravelCost } from './travel'
-import type { GameState } from '../../types'
+import { calculateGigFinancials } from '../../utils/economy'
+import { isGigNode } from '../../utils/arrivalUtils'
+import type { GameState, PlayerState } from '../../types'
+import type { Venue } from '../../types/map'
 import type { ExpeditionNodeFog } from '../../types/expedition'
+
+/**
+ * Estimates what a gig at `venue` nets, from the real gig calculation.
+ *
+ * @param venue - The venue the node books.
+ * @param player - Supplies the band's current fame, which drives the draw.
+ * @returns The `net` of {@link calculateGigFinancials} for neutral inputs.
+ *
+ * @remarks
+ * The Fog may only reveal a number the economy can actually produce, so this
+ * calls the authoritative calculation rather than a parallel formula. Inputs
+ * the player has not decided yet stay neutral: a mid-range performance, no
+ * pre-gig modifiers, no merch stock and no performance bonuses. That is why the
+ * UI labels it an estimate - the played gig settles the real amount.
+ */
+const estimateExpeditionGigPayout = (
+  venue: Venue,
+  player: Pick<PlayerState, 'fame'>
+): number =>
+  calculateGigFinancials({
+    gigData: venue,
+    performanceScore: 50,
+    modifiers: {},
+    bandInventory: {},
+    playerState: player,
+    gigStats: {}
+  }).net
 
 /**
  * Builds the per-node fog projection for the active run.
@@ -59,6 +89,7 @@ export const getExpeditionNodeFogByNodeId = (
     const facts = getExpeditionNodePublicFacts(map, nodeId)
     if (!entry || !facts) continue
     const intelLevel = getExpeditionNodeIntelLevel(state, nodeId, capability)
+    const node = map.nodes[nodeId]
     out[nodeId] = {
       routeStep: facts.routeStep,
       onwardRouteCount: onwardRouteCountByNodeId[nodeId] ?? 0,
@@ -68,7 +99,10 @@ export const getExpeditionNodeFogByNodeId = (
       rewardTier: facts.rewardTier,
       isExtractionWindow: facts.isExtractionWindow,
       intelLevel,
-      exactPayout: intelLevel >= 1 ? entry.hidden.exactPayout : null,
+      estimatedPayout:
+        intelLevel >= 1 && isGigNode(node) && node.venue
+          ? estimateExpeditionGigPayout(node.venue, state.player)
+          : null,
       // The *effective* cost, not the route's raw declaration. Revealing the
       // pre-multiplier number would make the Fog lie: a chassis with a
       // road-wear multiplier would quietly charge more than the intel promised,

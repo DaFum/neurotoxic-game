@@ -214,6 +214,14 @@ test('Authority crew exits use canonical crew roles and hidden compartments', ()
     }
   ]
   state.expedition.loadout.activeTourbusAssetId = 'bus'
+  // The compartment only hides contraband that is actually aboard.
+  state.expedition.cargo = {
+    spareParts: 0,
+    supplies: 0,
+    technicalGearItemIds: [],
+    merch: [],
+    contraband: [{ stashKey: 'stash_a', instanceId: null, stacks: 1 }]
+  }
   assert.ok(
     getAvailableAuthoritySafeExits(state).includes('hidden_compartment')
   )

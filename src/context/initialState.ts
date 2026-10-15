@@ -17,6 +17,7 @@ import { createInitialCareerState } from '../domain/expedition/career'
 import type {
   GameState,
   GameSettings,
+  RawGameSettings,
   BandState,
   RivalBandState
 } from '../types'
@@ -232,6 +233,7 @@ const initialState: GameState = {
   currentGig: null,
   setlist: [],
   lastGigStats: null,
+  pendingGigSettlement: null,
   activeEvent: null,
   pendingEvents: [],
   isScreenshotMode: false,
@@ -272,18 +274,28 @@ const initialState: GameState = {
  * Creates a fresh copy of the initial state
  * @param persistedData - Persisted data to inject (e.g. unlocks, settings) Defaults to `{}`.
  * @returns A new initial state object
+ *
+ * @remarks
+ * Omitted `rngSeed`/`runSeed` are drawn fresh and omitted `savedSettings` are
+ * read from storage. The `RESET_STATE` reducer passes all three so its
+ * reduction stays pure and replayable.
  */
 export const createInitialState = (
   persistedData: {
     settings?: Partial<GameSettings>
     unlocks?: string[]
     /**
-     * Adapter the global-settings read goes through. Defaults to
-     * `defaultStorageAdapter` so the pure `RESET_STATE` reducer path -- which
-     * has no access to the storage context -- keeps working unchanged; the
-     * provider passes the injected adapter on first mount.
+     * Adapter the global-settings read goes through when `savedSettings` is
+     * omitted. Defaults to `defaultStorageAdapter`; the provider passes the
+     * injected adapter on first mount.
      */
     storage?: IStorageAdapter
+    /** Pre-read global settings; skips the storage read when provided. */
+    savedSettings?: RawGameSettings
+    /** Pre-drawn gameplay RNG seed; drawn fresh when omitted. */
+    rngSeed?: number
+    /** Pre-drawn run seed; drawn fresh when omitted. */
+    runSeed?: number
   } = {}
 ): GameState => ({
   ...initialState,
@@ -316,7 +328,8 @@ export const createInitialState = (
   settings: {
     ...DEFAULT_SETTINGS,
     ...sanitizeSettingsPayload(
-      getSavedSettings(persistedData.storage ?? defaultStorageAdapter)
+      persistedData.savedSettings ??
+        getSavedSettings(persistedData.storage ?? defaultStorageAdapter)
     ),
     ...sanitizeSettingsPayload(persistedData.settings ?? {})
   },
@@ -330,8 +343,8 @@ export const createInitialState = (
   assets: [],
   liabilities: {},
   crowdfundCampaigns: [],
-  rngSeed: getSecureRandomUint32(),
-  runSeed: getSecureRandomUint32(),
+  rngSeed: persistedData.rngSeed ?? getSecureRandomUint32(),
+  runSeed: persistedData.runSeed ?? getSecureRandomUint32(),
   expedition: createDefaultExpeditionState(),
   career: createInitialCareerState()
 })

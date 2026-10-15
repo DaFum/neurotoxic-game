@@ -501,6 +501,146 @@ export const sanitizeLiabilities = (
 }
 
 /**
+ * Sanitizes one crowdfund campaign record: chassis spec, campaign numerics,
+ * probability clamps and materialization ids. Collection-level rules (unique
+ * ids, one campaign per kind) stay with the caller.
+ *
+ * @param item - Raw campaign record.
+ * @param fallbackLabel - Drop-report label for a record without a string id.
+ * @param dropped - Collects the reason when the record is rejected.
+ * @returns Sanitized campaign, or null when the record is invalid.
+ */
+const sanitizeCrowdfundCampaign = (
+  item: unknown,
+  fallbackLabel: string,
+  dropped: Map<string, string>
+): CrowdfundCampaign | null => {
+  if (!isLooseRecord(item)) {
+    dropped.set(fallbackLabel, 'not an object')
+    return null
+  }
+  const clean = stripHostileKeys(item)
+  if (typeof clean.id !== 'string') {
+    dropped.set(fallbackLabel, 'missing or duplicate id')
+    return null
+  }
+  const label = clean.id
+  if (!isLooseRecord(clean.assetSpec)) {
+    dropped.set(label, 'missing assetSpec')
+    return null
+  }
+  const rawSpec = stripHostileKeys(clean.assetSpec)
+  const spec = validateChassisKindFlavorTier(
+    rawSpec.kind,
+    rawSpec.flavor,
+    rawSpec.chassisTier,
+    label,
+    dropped,
+    'assetSpec.'
+  )
+  if (!spec) return null
+
+  const targetAmount = finiteNumberOr(clean.targetAmount, 0)
+  const fameStake = finiteNumberOr(clean.fameStake, 0)
+  const daysRemaining = finiteNumberOr(clean.daysRemaining, 0)
+  if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
+    dropped.set(label, 'malformed targetAmount/daysRemaining/fameStake')
+    return null
+  }
+
+  const outcome = clean.resolvedOutcome
+  // Materialized ids are required fields on the type (so processCrowdfundTick
+  // can consume them without runtime UUID generation). On a save from a
+  // pre-materialized-ids build, we synthesize stable fallback ids from the
+  // campaign id so loaded campaigns still resolve deterministically.
+  const rawAssetId =
+    typeof clean.materializedAssetId === 'string'
+      ? clean.materializedAssetId
+      : `${clean.id}_materialized_asset`
+  const rawSlotIds = Array.isArray(clean.materializedSlotIds)
+    ? clean.materializedSlotIds.filter(
+        (s: unknown): s is string => typeof s === 'string'
+      )
+    : []
+
+  const result: CrowdfundCampaign = {
+    id: clean.id,
+    assetSpec: {
+      kind: spec.kind as CrowdfundCampaign['assetSpec']['kind'],
+      flavor: spec.flavor as AssetFlavor,
+      chassisTier: spec.chassisTier
+    },
+    targetAmount,
+    fameStake,
+    daysRemaining,
+    // Clamp to [0, 1] so a hostile/legacy save can't plant a roll outside
+    // the mulberry32 output range and skew tick resolution.
+    plannedSuccessRoll: Math.max(
+      0,
+      Math.min(1, finiteNumberOr(clean.plannedSuccessRoll, 0))
+    ),
+    // Re-clamp into the same [0.05, 0.95] window the action creator enforces
+    // so legacy saves (pre-`plannedSuccessProbability`) get a 50/50 default.
+    plannedSuccessProbability: Math.max(
+      0.05,
+      Math.min(0.95, finiteNumberOr(clean.plannedSuccessProbability, 0.5))
+    ),
+    materializedAssetId: rawAssetId,
+    materializedSlotIds: rawSlotIds
+  }
+  if (typeof outcome === 'string' && VALID_OUTCOMES.has(outcome)) {
+    result.resolvedOutcome = outcome as CrowdfundCampaign['resolvedOutcome']
+  }
+  return result
+}
+
+/**
+ * Validates a campaign from a runtime `START_CROWDFUND` dispatch with the
+ * load sanitizer's rules.
+ *
+ * @remarks
+ * A runtime campaign must already be canonical, exactly what `startCrowdfund`
+ * stamps. The load sanitizer's legacy repairs (zeroing a non-finite numeric,
+ * clamping the roll or probability, defaulting a missing probability,
+ * synthesizing missing materialization ids, filtering non-string slot ids)
+ * are rejections here.
+ *
+ * @param raw - Campaign from the action payload.
+ * @returns Sanitized campaign, or null when the campaign must be rejected.
+ */
+export const validateRuntimeCrowdfundCampaign = (
+  raw: unknown
+): CrowdfundCampaign | null => {
+  const campaign = sanitizeCrowdfundCampaign(raw, 'runtime', new Map())
+  if (!campaign || !isLooseRecord(raw)) return null
+  if (
+    // An active campaign has no outcome yet; only the tick resolves one.
+    Object.hasOwn(raw, 'resolvedOutcome') ||
+    raw.targetAmount !== campaign.targetAmount ||
+    raw.fameStake !== campaign.fameStake ||
+    raw.daysRemaining !== campaign.daysRemaining ||
+    raw.plannedSuccessRoll !== campaign.plannedSuccessRoll ||
+    raw.plannedSuccessProbability !== campaign.plannedSuccessProbability ||
+    raw.materializedAssetId !== campaign.materializedAssetId ||
+    campaign.materializedAssetId.length === 0 ||
+    !Array.isArray(raw.materializedSlotIds) ||
+    raw.materializedSlotIds.length !== campaign.materializedSlotIds.length ||
+    // One non-empty, distinct slot id per configured slot, exactly as the
+    // creator stamps them: slots are addressed by id once materialized.
+    campaign.materializedSlotIds.length !==
+      (CHASSIS_CONFIG[campaign.assetSpec.kind]?.[campaign.assetSpec.flavor]?.[
+        campaign.assetSpec.chassisTier
+      ]?.slots.length ?? 0) ||
+    campaign.materializedSlotIds.some(id => id.length === 0) ||
+    new Set(campaign.materializedSlotIds).size !==
+      campaign.materializedSlotIds.length
+  ) {
+    return null
+  }
+  return campaign
+}
+
+/**
  * Sanitizes persisted crowdfund campaigns and filters duplicate active acquisitions.
  *
  * @param raw - Raw campaign collection from loaded state.
@@ -528,89 +668,19 @@ export const sanitizeCrowdfundCampaigns = (
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   const dropped = new Map<string, string>()
   for (const [index, item] of raw.entries()) {
-    if (!isLooseRecord(item)) {
-      dropped.set(`#${index}`, 'not an object')
+    const campaign = sanitizeCrowdfundCampaign(item, `#${index}`, dropped)
+    if (!campaign) continue
+    if (seenIds.has(campaign.id)) {
+      dropped.set(campaign.id, 'missing or duplicate id')
       continue
     }
-    const clean = stripHostileKeys(item)
-    const label = typeof clean.id === 'string' ? clean.id : `#${index}`
-    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) {
-      dropped.set(label, 'missing or duplicate id')
-      continue
-    }
-    if (!isLooseRecord(clean.assetSpec)) {
-      dropped.set(label, 'missing assetSpec')
-      continue
-    }
-    const rawSpec = stripHostileKeys(clean.assetSpec)
-    const spec = validateChassisKindFlavorTier(
-      rawSpec.kind,
-      rawSpec.flavor,
-      rawSpec.chassisTier,
-      label,
-      dropped,
-      'assetSpec.'
-    )
-    if (!spec) continue
-    const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
+    const kind = campaign.assetSpec.kind
     if (unavailableKinds.has(kind) || seenKinds.has(kind)) {
-      dropped.set(label, `kind ${kind} already owned or campaigned`)
+      dropped.set(campaign.id, `kind ${kind} already owned or campaigned`)
       continue
     }
-
-    const targetAmount = finiteNumberOr(clean.targetAmount, 0)
-    const fameStake = finiteNumberOr(clean.fameStake, 0)
-    const daysRemaining = finiteNumberOr(clean.daysRemaining, 0)
-    if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
-      dropped.set(label, 'malformed targetAmount/daysRemaining/fameStake')
-      continue
-    }
-
-    const outcome = clean.resolvedOutcome
-    // Materialized ids are required fields on the type (so processCrowdfundTick
-    // can consume them without runtime UUID generation). On a save from a
-    // pre-materialized-ids build, we synthesize stable fallback ids from the
-    // campaign id so loaded campaigns still resolve deterministically.
-    const rawAssetId =
-      typeof clean.materializedAssetId === 'string'
-        ? clean.materializedAssetId
-        : `${clean.id}_materialized_asset`
-    const rawSlotIds = Array.isArray(clean.materializedSlotIds)
-      ? clean.materializedSlotIds.filter(
-          (s: unknown): s is string => typeof s === 'string'
-        )
-      : []
-
-    const result: CrowdfundCampaign = {
-      id: clean.id,
-      assetSpec: {
-        kind,
-        flavor: spec.flavor as AssetFlavor,
-        chassisTier: spec.chassisTier
-      },
-      targetAmount,
-      fameStake,
-      daysRemaining,
-      // Clamp to [0, 1] so a hostile/legacy save can't plant a roll outside
-      // the mulberry32 output range and skew tick resolution.
-      plannedSuccessRoll: Math.max(
-        0,
-        Math.min(1, finiteNumberOr(clean.plannedSuccessRoll, 0))
-      ),
-      // Re-clamp into the same [0.05, 0.95] window the action creator enforces
-      // so legacy saves (pre-`plannedSuccessProbability`) get a 50/50 default.
-      plannedSuccessProbability: Math.max(
-        0.05,
-        Math.min(0.95, finiteNumberOr(clean.plannedSuccessProbability, 0.5))
-      ),
-      materializedAssetId: rawAssetId,
-      materializedSlotIds: rawSlotIds
-    }
-    if (typeof outcome === 'string' && VALID_OUTCOMES.has(outcome)) {
-      result.resolvedOutcome = outcome as CrowdfundCampaign['resolvedOutcome']
-    }
-    out.push(result)
-    seenIds.add(clean.id)
+    out.push(campaign)
+    seenIds.add(campaign.id)
     seenKinds.add(kind)
   }
   reportDroppedEntries('crowdfund campaign', dropped)

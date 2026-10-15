@@ -134,6 +134,22 @@ export interface ToastPayload {
 }
 
 /**
+ * Post-gig settlement the report presented, persisted until Continue settles
+ * it so a save taken on the result screen is settled once on load.
+ */
+export interface PendingGigSettlement {
+  /** Stable id stamped by the action creator. */
+  id: string
+  /** `currentGig.id` the settlement belongs to. */
+  gigId: string
+  net: number
+  perfScore: number
+  misses: number
+  dealFameMultiplier: number
+  soldMerch: Record<string, number>
+}
+
+/**
  * Top-level persisted and runtime game state.
  */
 export interface GameState {
@@ -166,6 +182,8 @@ export interface GameState {
   gigModifiers: GigModifiers
   /** Cumulative raw score adjustment emitted by events during the active gig. */
   gigEventScoreDelta: number
+  /** Unsettled post-gig result; cleared by Continue or by the next load. */
+  pendingGigSettlement?: PendingGigSettlement | null
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
@@ -233,6 +251,11 @@ export type GameAction =
     >
   | Action<(typeof ActionTypes)['UPDATE_BAND'], UpdateBandPayload>
   | Action<(typeof ActionTypes)['SETTLE_SOLD_MERCH'], Record<string, number>>
+  | Action<
+      (typeof ActionTypes)['RECORD_PENDING_GIG_SETTLEMENT'],
+      PendingGigSettlement
+    >
+  | Action<(typeof ActionTypes)['CLEAR_PENDING_GIG_SETTLEMENT'], { id: string }>
   | Action<(typeof ActionTypes)['UPDATE_SOCIAL'], UpdateSocialPayload>
   | Action<(typeof ActionTypes)['UPDATE_SETTINGS'], UnknownRecord>
   | Action<(typeof ActionTypes)['SET_MAP'], GameMap | null>
@@ -447,6 +470,10 @@ export type GameAction =
   | Action<
       (typeof ActionTypes)['RESOLVE_EXPEDITION_CRISIS'],
       import('./actions').ResolveExpeditionCrisisPayload
+    >
+  | Action<
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_AUTHORITY_EXIT'],
+      import('./actions').ResolveExpeditionAuthorityExitPayload
     >
   | Action<
       (typeof ActionTypes)['EXECUTE_EXPEDITION_REPAIR'],

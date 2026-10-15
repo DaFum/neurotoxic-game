@@ -52,7 +52,7 @@ export const getActiveAssetModifiers = (
  * `GameState` so callers can assemble the five slices directly instead of
  * casting a partial object.
  */
-export type DailyObligationsState = Pick<
+type DailyObligationsState = Pick<
   GameState,
   'player' | 'band' | 'social' | 'assets' | 'liabilities'
 >

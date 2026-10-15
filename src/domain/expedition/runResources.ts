@@ -16,7 +16,7 @@
  */
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
-import { addClampedPercent, clampPercent } from '../../utils/gameState/clamps'
+import { clampPercent } from '../../utils/gameState/clamps'
 import {
   getExpeditionProtectedCash,
   getExpeditionSpendableCash
@@ -29,6 +29,7 @@ import {
 import type { GameState } from '../../types'
 import type { ExpeditionHudConditionBand } from '../../types/expedition'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { addExpeditionHeat } from './pressure'
 
 /**
  * Negative attention accumulated by the run.
@@ -65,17 +66,11 @@ export const applyExpeditionEventHeat = (
 ): GameState => {
   if (!isFiniteNumber(heatDelta) || heatDelta === 0) return state
   const current = getExpeditionHeat(state)
-  const multiplier =
-    heatDelta > 0
-      ? Math.max(
-          0,
-          finiteNumberOr(
-            getEffectiveExpeditionRules(state).numeric.heatGainMultiplier,
-            1
-          )
-        )
-      : 1
-  const heat = addClampedPercent(current, heatDelta * multiplier)
+  const heat = addExpeditionHeat(
+    current,
+    heatDelta,
+    getEffectiveExpeditionRules(state).numeric.heatGainMultiplier
+  )
   if (heat === current) return state
   return {
     ...state,

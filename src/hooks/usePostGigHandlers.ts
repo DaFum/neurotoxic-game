@@ -46,6 +46,8 @@ interface UsePostGigHandlersProps extends Omit<
   expedition: GameState['expedition']
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
+  /** Id of the persisted settlement Continue settles. */
+  pendingSettlementId?: string | null
   totalDailyObligations: number
   phase: PostGigPhase
   t?: import('i18next').TFunction
@@ -69,6 +71,7 @@ export function usePostGigHandlers({
   setlist,
   expedition,
   isFinaleGig,
+  pendingSettlementId,
   totalDailyObligations,
   updatePlayer,
   updateBand,
@@ -84,6 +87,7 @@ export function usePostGigHandlers({
   recordExpeditionObligationSignal,
   resolveExpeditionSocialResult,
   settleSoldMerch,
+  clearPendingGigSettlement,
   offerExpeditionDraft,
   phase,
   setPhase,
@@ -164,6 +168,7 @@ export function usePostGigHandlers({
       recordExpeditionObligationSignal,
       resolveExpeditionSocialResult,
       settleSoldMerch,
+      clearPendingGigSettlement,
       offerExpeditionDraft
     }),
     [
@@ -185,6 +190,7 @@ export function usePostGigHandlers({
       recordExpeditionObligationSignal,
       resolveExpeditionSocialResult,
       settleSoldMerch,
+      clearPendingGigSettlement,
       offerExpeditionDraft
     ]
   )
@@ -199,6 +205,7 @@ export function usePostGigHandlers({
     expedition,
     activeStoryFlags,
     isFinaleGig,
+    pendingSettlementId,
     totalDailyObligations,
     isProcessingActionRef,
     setIsProcessingAction,

@@ -11,7 +11,7 @@ const MAX_REVENUE_SHARE = 0.5
 /**
  * Aggregated perks and costs of the band's active brand deals.
  */
-export interface ActiveDealBenefits {
+interface ActiveDealBenefits {
   /** Loyalty added after every gig played under the deal(s). */
   loyaltyPerGig: number
   /** Multiplier on positive post-gig fame gains (1 = none). */
@@ -81,3 +81,11 @@ export const getActiveDealBenefits = (
   result.revenueShare = Math.min(MAX_REVENUE_SHARE, result.revenueShare)
   return result
 }
+
+/**
+ * Largest fame multiplier the deal catalog can grant: every deal active at
+ * once. Bounds untrusted multipliers read back from a save.
+ */
+export const MAX_DEAL_FAME_MULTIPLIER = getActiveDealBenefits(
+  Array.from(BRAND_DEALS_BY_ID.keys(), id => ({ id }))
+).fameMultiplier

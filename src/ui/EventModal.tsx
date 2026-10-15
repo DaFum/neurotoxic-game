@@ -13,11 +13,21 @@ import { translateContextKeys } from '../utils/translationUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
 import type { EngineGameState } from '../utils/eventEngine'
+import type { GameState } from '../types'
 import type {
   EventModalEvent,
   EventModalOption,
   EventModalPrecomputedResult
 } from '../types/components'
+
+/**
+ * The whole game state as the event engine's input. Option conditions and
+ * resolutions read arbitrary slices (e.g. `tom_covers` reads `expedition` and
+ * `career`), so nothing is projected away. The shallow copy gives the
+ * `GameState` interface the index signature `EngineGameState` declares, keeping
+ * the field types checked; `useGameSelector`'s shallow compare keeps it stable.
+ */
+const selectEngineState = (state: GameState): EngineGameState => ({ ...state })
 
 type EventOutcome = {
   option: EventModalOption
@@ -258,20 +268,7 @@ export const EventModal = ({
 }) => {
   const { t, i18n } = useTranslation(['ui', 'events', 'items'])
 
-  const player = useGameSelector(state => state.player)
-  const band = useGameSelector(state => state.band)
-  const activeEvent = useGameSelector(state => state.activeEvent)
-  const social = useGameSelector(state => state.social) // resolveEventChoice sometimes needs social
-
-  const gameState = useMemo(
-    () => ({
-      player,
-      band,
-      activeEvent,
-      social
-    }),
-    [player, band, activeEvent, social]
-  ) as unknown as EngineGameState
+  const gameState = useGameSelector(selectEngineState)
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)

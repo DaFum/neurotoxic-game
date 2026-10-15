@@ -4,6 +4,7 @@ import type {
   ExpeditionInjurySourcePayload
 } from '../../types/actions'
 import type {
+  ExpeditionCargoState,
   ExpeditionCrewStressIntent,
   ExpeditionEventResultId,
   ExpeditionRelationshipOutcomeIntent
@@ -12,13 +13,16 @@ import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import {
   applyCrewStressDelta,
-  CREW_STRESS_SOURCE_DELTAS
+  CREW_STRESS_SOURCE_DELTAS,
+  EXPEDITION_SUPPLY_REST_STRESS_BONUS
 } from '../../domain/expedition/crewStress'
+import { getExpeditionCargoView } from '../../domain/expedition/cargo'
 import {
   applyRelationshipTierDelta,
   getExpeditionRelationshipPairKey
 } from '../../domain/expedition/relationships'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { aggregateExpeditionModuleProfiles } from '../../domain/expedition/modules'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionNodeIntelLevel } from '../../domain/expedition/nodeIntel'
@@ -92,6 +96,45 @@ const hasCanonicalStressSource = (
 }
 
 /**
+ * Resolves whether a rest-stop visit is deepened by a packed supply.
+ *
+ * @remarks
+ * A visit spends at most one supply, however many crew members rest there:
+ * the first rest record of the visit pays for it and leaves a marker in
+ * `resolvedCrewSourceIds` (persisted and sanitized on load), and every later
+ * record of the same visit reads the marker instead of spending again.
+ *
+ * @param state - The current game state
+ * @param sourceId - The canonical `rest:<nodeId>:<routeStep>` source id
+ * @returns `null` when the visit has no supply; otherwise the marker id and,
+ * when this record is the one that spends it, the cargo after spending
+ */
+const spendRestSupply = (
+  state: GameState,
+  sourceId: string
+): { markerId: string; cargo: ExpeditionCargoState | null } | null => {
+  const markerId = `${sourceId}:supply`
+  if ((state.expedition.resolvedCrewSourceIds ?? []).includes(markerId)) {
+    return { markerId, cargo: null }
+  }
+  const view = getExpeditionCargoView(state)
+  const supplies = finiteNumberOr(view.supplies, 0)
+  if (supplies < 1) return null
+  // Listed field by field: the view also carries derived capacity numbers,
+  // which must not be folded into the persisted cargo.
+  return {
+    markerId,
+    cargo: {
+      spareParts: view.spareParts,
+      supplies: supplies - 1,
+      technicalGearItemIds: view.technicalGearItemIds,
+      merch: view.merch,
+      contraband: view.contraband
+    }
+  }
+}
+
+/**
  * Records a stress source outcome onto an active expedition crew member.
  *
  * @remarks
@@ -122,11 +165,30 @@ export const handleRecordExpeditionCrewStressSource = (
   }
   // `?? 0` would let a persisted NaN through into the stress arithmetic.
   const current = finiteNumberOr(crew.stressByCrewId[payload.crewId], 0)
+  const baseDelta = CREW_STRESS_SOURCE_DELTAS[payload.sourceType]
+  const supply =
+    payload.sourceType === 'rest'
+      ? spendRestSupply(state, payload.sourceId)
+      : null
+  // Rest is the one recovery source a committed module (sleeping bunks) and a
+  // packed supply improve; both deepen the recovery, never turn it into Stress.
+  const delta =
+    payload.sourceType === 'rest'
+      ? baseDelta -
+        Math.max(
+          0,
+          aggregateExpeditionModuleProfiles(
+            state.expedition.loadout?.build?.selectedTourbusModuleIds ?? []
+          ).restStressRecoveryBonus
+        ) -
+        (supply ? EXPEDITION_SUPPLY_REST_STRESS_BONUS : 0)
+      : baseDelta
   const next = applyCrewStressDelta(
     current,
-    CREW_STRESS_SOURCE_DELTAS[payload.sourceType],
+    delta,
     getEffectiveExpeditionRules(state).numeric.crewStressMultiplier
   )
+  const resolvedCrewSourceIds = rememberSource(state, replayId)
   return {
     ...state,
     expedition: {
@@ -135,7 +197,10 @@ export const handleRecordExpeditionCrewStressSource = (
         ...crew,
         stressByCrewId: { ...crew.stressByCrewId, [payload.crewId]: next }
       },
-      resolvedCrewSourceIds: rememberSource(state, replayId)
+      ...(supply?.cargo ? { cargo: supply.cargo } : {}),
+      resolvedCrewSourceIds: supply?.cargo
+        ? [...resolvedCrewSourceIds, supply.markerId]
+        : resolvedCrewSourceIds
     }
   }
 }

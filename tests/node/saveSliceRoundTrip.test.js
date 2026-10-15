@@ -265,6 +265,7 @@ const buildPopulatedState = () => {
     insuranceClaimConsumed: false,
     claimConsumed: false,
     technicalFailureAccepted: false,
+    authorityHiddenCompartmentUsed: false,
     crew: {
       stressByCrewId: Object.create(null),
       injuryByCrewId: Object.create(null)

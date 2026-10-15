@@ -1,4 +1,4 @@
-import type { BandState, GameState } from '../../../types'
+import type { BandState, GameState, PostGigSummary } from '../../../types'
 import {
   GAME_PHASES,
   NEUROTOXIC_PEDAL_HARMONY_PENALTY
@@ -8,7 +8,13 @@ import {
   QUEST_EGO_MANAGEMENT
 } from '../../../data/questsConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
-import { clampBandHarmony, finiteNumberOr } from '../../../utils/gameState'
+import {
+  clampBandHarmony,
+  clampMemberStamina,
+  finiteNumberOr,
+  readMemberStamina
+} from '../../../utils/gameState'
+import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import {
   createFameGainedQuestEvent,
   createMoneyEarnedQuestEvent
@@ -134,24 +140,153 @@ export function dispatchEconomyQuests(
 }
 
 /**
- * Applies the neurotoxic pedal harmony penalty, returning the post-penalty harmony level.
+ * Harmony after the Neurotoxic Pedal penalty, or `undefined` without the pedal (pure).
  */
-export function applyNeurotoxicPenalty(
-  band: GameState['band'],
-  updateBand: HandlerDispatchers['updateBand']
+export function getNeurotoxicPenaltyHarmony(
+  band: GameState['band']
 ): number | undefined {
-  if (band.inventory?.neurotoxicPedal) {
-    const nextHarmony = clampBandHarmony(
-      finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
-    )
-    updateBand((_prevBand: BandState) => {
-      return {
-        harmony: nextHarmony
-      }
-    })
-    return nextHarmony
+  if (!band.inventory?.neurotoxicPedal) return undefined
+  return clampBandHarmony(
+    finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+  )
+}
+
+/** Base stamina a Finale drains; the Finale profile multiplier scales the extra. */
+const FINALE_BASE_STAMINA_DRAIN = 15
+
+/**
+ * Lowers every member's stamina by `amount`, clamped to each member's range (pure).
+ * @returns A band patch replacing `members`, or the band unchanged without members.
+ */
+export function drainBandStamina(
+  band: BandState,
+  amount: number
+): Partial<BandState> {
+  if (!Array.isArray(band.members)) return band
+  const members = band.members.map(member => {
+    if (!member) return member
+    const maxStamina = finiteNumberOr(member.staminaMax, 100)
+    const currentStamina = readMemberStamina(member.stamina, maxStamina)
+    return {
+      ...member,
+      stamina: clampMemberStamina(currentStamina - amount, maxStamina)
+    }
+  })
+  return { ...band, members }
+}
+
+/**
+ * One state change Continue applies after the money/fame ledger, in order.
+ * Continue dispatches each through its action creator; a load that settles a
+ * pending record applies each through the matching reducer handler.
+ */
+export type PostGigContinueEffect =
+  | { kind: 'harmony'; harmony: number }
+  | { kind: 'addQuest'; quest: AddQuestInput }
+  | {
+      kind: 'obligationSignal'
+      signalType: 'gig' | 'finale'
+      sourceId: string
+    }
+  | { kind: 'offerMajorGigDraft'; sourceKey: string }
+  | {
+      kind: 'crewStress'
+      crewId: string
+      sourceType: 'poor_gig' | 'successful_gig'
+      sourceId: string
+    }
+  | { kind: 'staminaDrain'; amount: number }
+
+/**
+ * Derives the ordered post-gig effects that follow the ledger: the Neurotoxic
+ * Pedal penalty, story-flag quests, Expedition Contract signals, the Festival
+ * Run Draft offer, accuracy-based crew Stress and the extra Finale stamina
+ * drain (pure). Reads the state the post-gig screen shows, before Continue.
+ */
+export function derivePostGigContinueEffects(params: {
+  band: GameState['band']
+  day: number
+  activeStoryFlags: string[] | undefined
+  expedition: GameState['expedition'] | undefined
+  gigId: string | undefined
+  lastGigStats: PostGigSummary | null
+  isFinaleGig: boolean
+  successfulFinale: boolean
+}): PostGigContinueEffect[] {
+  const {
+    band,
+    day,
+    activeStoryFlags,
+    expedition,
+    gigId,
+    lastGigStats,
+    isFinaleGig,
+    successfulFinale
+  } = params
+  const effects: PostGigContinueEffect[] = []
+
+  const postPenaltyHarmony = getNeurotoxicPenaltyHarmony(band)
+  if (postPenaltyHarmony !== undefined) {
+    effects.push({ kind: 'harmony', harmony: postPenaltyHarmony })
   }
-  return undefined
+
+  // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY;
+  // buildStoryFlagQuests assembles the payloads from registry definitions
+  // (no inline duplication) and the reducer re-merges defaults defensively.
+  for (const quest of buildStoryFlagQuests({
+    activeStoryFlags,
+    day,
+    bandHarmony: band.harmony,
+    postPenaltyHarmony
+  })) {
+    effects.push({ kind: 'addQuest', quest })
+  }
+
+  if (expedition?.status !== 'active' || !gigId) return effects
+
+  effects.push({ kind: 'obligationSignal', signalType: 'gig', sourceId: gigId })
+  if (successfulFinale) {
+    effects.push({
+      kind: 'obligationSignal',
+      signalType: 'finale',
+      sourceId: gigId
+    })
+  }
+  // A completed major gig is a Run Draft moment (spec §9). The reducer
+  // proves the node is a Festival and the gig did not fail, so this only
+  // names the moment; the Finale ends the run, so no draft follows it.
+  if (!isFinaleGig && lastGigStats?.failed !== true) {
+    effects.push({ kind: 'offerMajorGigDraft', sourceKey: gigId })
+  }
+  const accuracy = lastGigStats?.accuracy
+  if (
+    typeof accuracy === 'number' &&
+    Number.isFinite(accuracy) &&
+    (accuracy < 60 || accuracy >= 80)
+  ) {
+    const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
+    const sourceId = `gig:${gigId}:${expedition.routeStep}`
+    for (const crewId of expedition.loadout?.crewIds ?? []) {
+      effects.push({ kind: 'crewStress', crewId, sourceType, sourceId })
+    }
+  }
+
+  // Apply Finale stamina multiplier to member stamina
+  if (isFinaleGig && Array.isArray(band.members)) {
+    const staminaMultiplier =
+      getExpeditionFinaleProfile(expedition.finaleType)
+        ?.staminaDrainMultiplier ?? 1
+    if (staminaMultiplier > 1) {
+      const extraDrain = Math.round(
+        FINALE_BASE_STAMINA_DRAIN * (staminaMultiplier - 1)
+      )
+      if (extraDrain > 0) {
+        effects.push({ kind: 'staminaDrain', amount: extraDrain })
+      }
+    }
+  }
+
+  return effects
 }
 
 /**

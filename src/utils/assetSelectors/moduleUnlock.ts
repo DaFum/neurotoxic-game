@@ -345,7 +345,7 @@ export const getSlotConflicts = (
 /**
  * Module entry annotated with unlock reasons for asset module UI.
  */
-export interface ModulePoolEntry {
+interface ModulePoolEntry {
   module: AssetModule
   unlocked: boolean
   lockReasons: LockReason[]

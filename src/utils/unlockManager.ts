@@ -165,7 +165,7 @@ export const getUnlocks = (
  * that as success, because the marker stays readable for the session. A caller
  * that grants something irreversible against the marker cannot.
  */
-export type UnlockMarkerPersistence = 'persisted' | 'session_only' | 'failed'
+type UnlockMarkerPersistence = 'persisted' | 'session_only' | 'failed'
 
 type UnlockMarkerWrite = {
   /** Whether this call put a new id into the unlock set. */

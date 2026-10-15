@@ -12,6 +12,7 @@ import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
+import { AuthorityEncounterDialog } from './AuthorityEncounterDialog'
 import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
 import { isAtExpeditionExtractionWindow } from '../../domain/expedition/extraction'
 import { BRAND_DEALS } from '../../data/brandDeals'
@@ -96,6 +97,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
           extraction escape has an owner: it opens the same confirmation the
           extraction button does, instead of rendering a dead button. */}
       <FailureCrisisDialog onExtract={openDialog} />
+
+      {/* Cornered by the Authority with a way out: the decision the crisis
+          would otherwise be. Hidden while a crisis is pending. */}
+      <AuthorityEncounterDialog />
 
       <ExtractionDialog isOpen={isDialogOpen} onClose={closeDialog} />
     </div>

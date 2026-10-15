@@ -68,7 +68,7 @@ export type EngineGameState = {
     fame?: number
     day?: number
     van?: Record<string, unknown>
-    stats?: Record<string, number>
+    stats?: Record<string, unknown>
     [key: string]: unknown
   }
   band?: {
@@ -86,7 +86,7 @@ export type EngineGameState = {
     id?: string
     tags?: string[]
     context?: Record<string, unknown>
-  }
+  } | null
   assets?: Array<{
     condition?: number
     slots?: Array<{ installedModuleId?: string | null }>

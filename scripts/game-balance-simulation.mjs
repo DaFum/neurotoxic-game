@@ -80,9 +80,9 @@ import {
 } from '../src/context/gameConstants.js'
 import { handleSetLastGigStats } from '../src/context/reducers/gigReducer.js'
 import {
-  applyNeurotoxicPenalty,
   buildStoryFlagQuests,
-  dispatchEconomyQuests
+  dispatchEconomyQuests,
+  getNeurotoxicPenaltyHarmony
 } from '../src/hooks/postGig/handlers/continueHandlerUtils.ts'
 import {
   purchaseChassis,
@@ -2458,15 +2458,10 @@ export const applyPostGigState = (
     }
   })
 
-  const postPenaltyHarmony = applyNeurotoxicPenalty(
-    state.band,
-    updateBandFn => {
-      const patch = updateBandFn(state.band)
-      if (patch) {
-        state.band = { ...state.band, ...patch }
-      }
-    }
-  )
+  const postPenaltyHarmony = getNeurotoxicPenaltyHarmony(state.band)
+  if (postPenaltyHarmony !== undefined) {
+    state.band = { ...state.band, harmony: postPenaltyHarmony }
+  }
 
   const storyQuests = buildStoryFlagQuests({
     activeStoryFlags: state.activeStoryFlags,

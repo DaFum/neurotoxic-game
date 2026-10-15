@@ -15,7 +15,7 @@ import type { AssetModifiers } from '../../types/assets'
 import type { BalanceTuning } from '../balanceTuning'
 import { FLAGS } from '../../data/flags.registry'
 
-export interface RepeatDemandContext {
+interface RepeatDemandContext {
   day: number
   regionId: string
   regionalGigHistory?: Readonly<Record<string, readonly number[]>>

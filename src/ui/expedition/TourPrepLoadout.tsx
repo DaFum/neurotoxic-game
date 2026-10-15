@@ -50,6 +50,7 @@ import {
   EXPEDITION_INSURANCE_POLICIES
 } from '../../domain/expedition/insurance'
 import { getExpeditionChassisProfile } from '../../domain/expedition/chassis'
+import { EXPEDITION_SUPPLY_REST_STRESS_BONUS } from '../../domain/expedition/crewStress'
 import { MERCH_PROFILES } from '../../data/merch'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
@@ -956,11 +957,20 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     max={10}
                     step={1}
                     value={supplies}
+                    aria-describedby='expedition-prep-supplies-hint'
                     data-testid='expedition-prep-supplies'
                     onChange={e => setSupplies(Number(e.currentTarget.value))}
                   />
                 </label>
               </div>
+              <p
+                id='expedition-prep-supplies-hint'
+                className='text-xs text-ash-gray'
+              >
+                {t('ui:expedition.prep.suppliesRestHint', {
+                  value: EXPEDITION_SUPPLY_REST_STRESS_BONUS
+                })}
+              </p>
             </fieldset>
 
             <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>

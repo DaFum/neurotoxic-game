@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { NEUROTOXIC_PEDAL_HARMONY_PENALTY } from '../context/gameConstants'
@@ -42,6 +43,9 @@ export const usePostGigLogic = () => {
       state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
   )
   const setlist = useGameSelector(state => state.setlist)
+  const pendingSettlementId = useGameSelector(
+    state => state.pendingGigSettlement?.id ?? null
+  )
   const expedition = useGameSelector(state => state.expedition)
   const finaleRewardMultiplier = useGameSelector(state => {
     if (state.expedition?.status !== 'active') return 1
@@ -82,6 +86,8 @@ export const usePostGigLogic = () => {
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
     settleSoldMerch,
+    recordPendingGigSettlement,
+    clearPendingGigSettlement,
     offerExpeditionDraft
   } = useGameActions()
 
@@ -118,6 +124,34 @@ export const usePostGigLogic = () => {
       expedition
     })
 
+  // Continue settles the gig, but the player can reload before pressing it.
+  // Persist the presented settlement once per gig so a reload on this screen
+  // settles it on load instead of losing it. This save is the first POST_GIG
+  // save: `usePersistence` does not autosave GIG -> POST_GIG, so no durable
+  // snapshot of a played gig exists without its settlement record.
+  const recordedFinancialsRef = useRef<typeof financials>(null)
+  useEffect(() => {
+    if (!financials || !currentGig || !lastGigStats) return
+    if (recordedFinancialsRef.current === financials) return
+    recordedFinancialsRef.current = financials
+    recordPendingGigSettlement({
+      gigId: currentGig.id,
+      net: financials.net,
+      perfScore,
+      misses: finiteNumberOr(lastGigStats.misses, 0),
+      dealFameMultiplier: finiteNumberOr(financials.dealFameMultiplier, 1),
+      soldMerch: financials.soldMerch ?? {}
+    })
+    saveGameAfterStateCommit()
+  }, [
+    financials,
+    currentGig,
+    lastGigStats,
+    perfScore,
+    recordPendingGigSettlement,
+    saveGameAfterStateCommit
+  ])
+
   // 3. Handlers
   const {
     isProcessingAction,
@@ -142,6 +176,7 @@ export const usePostGigLogic = () => {
     setlist,
     expedition,
     isFinaleGig,
+    pendingSettlementId,
     totalDailyObligations,
     updatePlayer,
     updateBand,
@@ -157,6 +192,7 @@ export const usePostGigLogic = () => {
     recordExpeditionObligationSignal,
     resolveExpeditionSocialResult,
     settleSoldMerch,
+    clearPendingGigSettlement,
     offerExpeditionDraft,
     phase,
     setPhase,

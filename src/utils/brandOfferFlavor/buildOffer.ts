@@ -22,7 +22,7 @@ import {
 /**
  * Context used to add procedural flavor and variance to a brand deal offer.
  */
-export interface BuildBrandOfferContext {
+interface BuildBrandOfferContext {
   tier: 0 | 1 | 2
   isStretched: boolean
   gameState: SocialEngineGameState

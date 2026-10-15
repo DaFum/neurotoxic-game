@@ -186,6 +186,49 @@ describe('ExpeditionIntelPanel', () => {
     }
   })
 
+  it('lists an overlay-only destination for passive and explicit recon', () => {
+    // exp_1_1 reaches only exp_2_1 on the base route; an Underground invite
+    // opens exp_2_0 as an extra edge that travel and the resolver authorize.
+    const from = 'exp_1_1'
+    const overlayOnly = 'exp_2_0'
+    expect(
+      map.connections.filter(edge => edge.from === from).map(e => e.to)
+    ).toEqual(['exp_2_1'])
+    const base = buildState({ crewIds: ['noah'] })
+    state.current = {
+      ...base,
+      player: { ...base.player, currentNodeId: from },
+      expedition: {
+        ...base.expedition,
+        routeStep: 1,
+        visitedNodeIds: [startNodeId, from],
+        pressure: {
+          ...base.expedition.pressure,
+          temporaryRouteOpportunity: {
+            id: 'intel-overlay-test',
+            subtype: 'UNDERGROUND_MARKET',
+            targetNodeId: overlayOnly,
+            createdAtRouteStep: 1
+          }
+        }
+      }
+    }
+    render(<ExpeditionIntelPanel />)
+    expect(actions.revealExpeditionNodeIntel).toHaveBeenCalledWith({
+      nodeId: overlayOnly,
+      source: 'scout_passive'
+    })
+    // The overlay's subtype, not the base node class, labels the row.
+    expect(
+      screen.getByTestId(`expedition-intel-node-${overlayOnly}`)
+    ).toHaveTextContent('ui:expedition.node.subtype.UNDERGROUND_MARKET')
+    fireEvent.click(screen.getByTestId(`expedition-intel-recon-${overlayOnly}`))
+    expect(actions.revealExpeditionNodeIntel).toHaveBeenLastCalledWith({
+      nodeId: overlayOnly,
+      source: 'scout_recon'
+    })
+  })
+
   it('dispatches a Scout recon for the chosen node', () => {
     state.current = buildState({ crewIds: ['noah'] })
     render(<ExpeditionIntelPanel />)

@@ -140,6 +140,60 @@ export const evaluateExpeditionConstraint = (
 }
 
 /**
+ * Whether the run's resolved obligation signals prove a rest stop.
+ *
+ * @param resolvedObligationSignalIds - The run's banked signal ids.
+ * @returns True when any `rest:` signal was banked this run.
+ */
+export const hasExpeditionRestSignal = (
+  resolvedObligationSignalIds: readonly string[]
+): boolean =>
+  resolvedObligationSignalIds.some(signalId => signalId.startsWith('rest:'))
+
+/** The persisted run evidence a constraint's progress is re-derived from. */
+export interface ExpeditionRunConstraintEvidence {
+  heat: number
+  resolvedObligationSignalIds: readonly string[]
+  visitedNodeIds: readonly string[]
+}
+
+/**
+ * What the run's persisted evidence alone already decides about a constraint.
+ *
+ * @param constraint - A materialized constraint.
+ * @param evidence - Current Heat, banked signals and the walked path.
+ * @returns Whether the evidence already satisfies or already breaks it.
+ *
+ * @remarks
+ * The load sanitizer re-derives these verdicts on every load instead of
+ * trusting persisted progress, so anything that creates an obligation mid-run
+ * must refuse a constraint this already decides: one created `active` would
+ * otherwise turn `failed` (or `completed`) on the next load, and run on
+ * unchanged without one.
+ */
+export const getExpeditionConstraintRunVerdict = (
+  constraint: ExpeditionContractConstraint,
+  evidence: ExpeditionRunConstraintEvidence
+): { satisfied: boolean; failed: boolean } => {
+  switch (constraint.kind) {
+    case 'max_heat':
+      return { satisfied: false, failed: evidence.heat > constraint.maxHeat }
+    case 'no_rest_before_finale':
+      return {
+        satisfied: false,
+        failed: hasExpeditionRestSignal(evidence.resolvedObligationSignalIds)
+      }
+    case 'visit_node':
+      return {
+        satisfied: evidence.visitedNodeIds.includes(constraint.targetNodeId),
+        failed: false
+      }
+    default:
+      return { satisfied: false, failed: false }
+  }
+}
+
+/**
  * Resolves the route node a template must commit, if it needs one.
  *
  * @param templateId - Canonical contract template id.

@@ -57,6 +57,12 @@ const { usePersistence, SAVE_KEY, createRawLoadPayload } =
   await import('../../src/context/usePersistence')
 const { handleError, StateError } = await import('../../src/utils/errorHandler')
 const { safeStorageOperation } = await import('../../src/utils/storage')
+const gameStateModule = await import('../../src/utils/gameState')
+const { writeStorageItem } = await import('../../src/utils/storage')
+const { getUnlocks } = await import('../../src/utils/unlockManager')
+const { CURRENT_SAVE_VERSION } =
+  await import('../../src/context/reducers/migrations/index')
+const { GAME_PHASES } = await import('../../src/context/gameConstants')
 
 describe('usePersistence', () => {
   let mockStateRef: { current: unknown }
@@ -165,6 +171,103 @@ describe('usePersistence', () => {
     } finally {
       setItemSpy.mockRestore()
     }
+  })
+
+  it('writes no POST_GIG save until the gig settlement record requests one', () => {
+    const { result, rerender } = renderHook(
+      ({ currentScene }) =>
+        usePersistence({
+          currentScene,
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        }),
+      { initialProps: { currentScene: GAME_PHASES.GIG as string } }
+    )
+    const savedState = () => JSON.parse(localStorage.getItem(SAVE_KEY) ?? '{}')
+    const preGigSave = { currentScene: GAME_PHASES.PRE_GIG, marker: 'pre_gig' }
+    writeStorageItem(SAVE_KEY, JSON.stringify(preGigSave))
+
+    // The gig finishes: the scene flips before PostGig mounts and records the
+    // settlement. A snapshot here would be a played gig with nothing to settle
+    // on load, so a crash now must reload the pre-gig save instead.
+    mockStateRef.current = {
+      currentScene: GAME_PHASES.POST_GIG,
+      lastGigStats: { score: 7100, accuracy: 80 },
+      pendingGigSettlement: null
+    }
+    rerender({ currentScene: GAME_PHASES.POST_GIG })
+    expect(safeStorageOperation).not.toHaveBeenCalled()
+    expect(savedState()).toEqual(preGigSave)
+
+    // PostGig's mount effect records the settlement and requests the save:
+    // the first durable POST_GIG snapshot carries the record.
+    const settlement = { id: 'settlement_1', gigId: 'venue_1', net: 250 }
+    act(() => {
+      mockStateRef.current = {
+        ...(mockStateRef.current as Record<string, unknown>),
+        pendingGigSettlement: settlement
+      }
+      result.current.saveGameAfterStateCommit()
+    })
+    expect(safeStorageOperation).toHaveBeenCalledTimes(1)
+    expect(savedState()).toMatchObject({
+      currentScene: GAME_PHASES.POST_GIG,
+      pendingGigSettlement: settlement
+    })
+
+    // Leaving POST_GIG still autosaves, which covers screens that never record.
+    mockStateRef.current = { currentScene: GAME_PHASES.OVERWORLD }
+    rerender({ currentScene: GAME_PHASES.OVERWORLD })
+    expect(safeStorageOperation).toHaveBeenCalledTimes(2)
+    expect(savedState()).toMatchObject({ currentScene: GAME_PHASES.OVERWORLD })
+  })
+
+  it('persists the settled state when a load consumes a pending gig settlement', () => {
+    const { isLooseRecord } = vi.mocked(gameStateModule)
+    vi.mocked(getUnlocks).mockReturnValue([])
+    isLooseRecord.mockImplementation(
+      (value: unknown) =>
+        typeof value === 'object' && value !== null && !Array.isArray(value)
+    )
+    const loadSave = (save: Record<string, unknown>) => {
+      writeStorageItem(SAVE_KEY, JSON.stringify(save))
+      const { result } = renderHook(() =>
+        usePersistence({
+          currentScene: 'MOCK_SCENE',
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        })
+      )
+      vi.mocked(safeStorageOperation).mockClear()
+      let loaded = false
+      act(() => {
+        loaded = result.current.loadGame()
+      })
+      expect(loaded).toBe(true)
+      return vi
+        .mocked(safeStorageOperation)
+        .mock.calls.map(([operation]) => operation)
+    }
+    const baseSave = {
+      version: CURRENT_SAVE_VERSION,
+      player: {},
+      band: {},
+      unlocks: []
+    }
+
+    expect(
+      loadSave({
+        ...baseSave,
+        pendingGigSettlement: { id: 'settlement_1', gigId: 'venue_1' }
+      })
+    ).toContain('saveGame')
+    expect(loadSave({ ...baseSave, pendingGigSettlement: null })).not.toContain(
+      'saveGame'
+    )
   })
 
   it('reports the write outcome to a caller waiting on it', () => {

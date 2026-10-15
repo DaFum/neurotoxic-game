@@ -7,10 +7,7 @@ import { finiteNumberOr } from './gameState'
 /**
  * Per-song score payload accepted by the song leaderboard endpoint.
  */
-export type SongStat = Pick<
-  RhythmSongStatsEntry,
-  'songId' | 'score' | 'accuracy'
->
+type SongStat = Pick<RhythmSongStatsEntry, 'songId' | 'score' | 'accuracy'>
 
 /**
  * Builds a leaderboard score entry for a song, resolving its leaderboard id.
