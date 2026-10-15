@@ -748,6 +748,13 @@ export interface ExpeditionState {
   insuranceClaimConsumed?: boolean
   claimConsumed?: boolean
   technicalFailureAccepted?: boolean
+  /**
+   * Whether this run already used the hidden compartment as an Authority exit.
+   *
+   * @remarks
+   * Run-scoped and reset by `START_EXPEDITION`: the exit works once per run.
+   */
+  authorityHiddenCompartmentUsed?: boolean
   crew?: ExpeditionCrewRunState
   bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
   resolvedCrewSourceIds?: string[]

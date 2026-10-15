@@ -1619,7 +1619,13 @@ export const handleResolveExpeditionAuthorityExit = (
       }
     }
     case 'hidden_compartment':
-      return relieved
+      return {
+        ...relieved,
+        expedition: {
+          ...relieved.expedition,
+          authorityHiddenCompartmentUsed: true
+        }
+      }
     case 'surrender_cargo': {
       const cargo = relieved.expedition.cargo
       if (!cargo) return state

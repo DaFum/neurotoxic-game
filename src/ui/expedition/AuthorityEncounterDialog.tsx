@@ -12,7 +12,8 @@ import {
   EXPEDITION_AUTHORITY_EXIT_HEAT_RELIEF,
   EXPEDITION_AUTHORITY_EXIT_IDS,
   EXPEDITION_AUTHORITY_PAY_COST,
-  getAuthorityEncounter
+  getAuthorityEncounter,
+  resolveAuthoritySafeExit
 } from '../../domain/expedition/authority'
 import type { ExpeditionAuthorityExitId } from '../../types/expedition'
 
@@ -35,6 +36,15 @@ export const AuthorityEncounterDialog = memo(
       return getAuthorityEncounter(state)?.exits.join(',') ?? ''
     })
     const heat = useGameSelector(state => state.expedition?.pressure.heat ?? 0)
+    // The Contract the obligation would add, named so the player sees what
+    // they are signing before they sign it.
+    const obligationTemplateId = useGameSelector(state => {
+      if (!exitKey.split(',').includes('future_obligation')) return null
+      const plan = resolveAuthoritySafeExit(state, 'future_obligation')
+      return plan?.exitId === 'future_obligation'
+        ? plan.commitment.templateId
+        : null
+    })
 
     if (!exitKey) return null
     const exits = EXPEDITION_AUTHORITY_EXIT_IDS.filter(id =>
@@ -48,6 +58,13 @@ export const AuthorityEncounterDialog = memo(
       if (exitId === 'route_detour') {
         return t('ui:expedition.authority.meta.route_detour', {
           fuel: EXPEDITION_AUTHORITY_DETOUR_FUEL
+        })
+      }
+      if (exitId === 'future_obligation') {
+        return t('ui:expedition.authority.meta.future_obligation', {
+          contract: t(`ui:expedition.contract.${obligationTemplateId}`, {
+            defaultValue: obligationTemplateId
+          })
         })
       }
       return t(`ui:expedition.authority.meta.${exitId}`)

@@ -10,6 +10,10 @@ import {
   getAvailableAuthoritySafeExits,
   resolveAuthoritySafeExit
 } from '../../src/domain/expedition/authority.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
+
+const ROUTE = buildExpeditionMap(123, 'standard_tour', 'industrial_belt')
 
 /** The audit fixture: Heat 100, no cash, no fuel, no obligations. */
 const cornered = (overrides = {}) => {
@@ -43,6 +47,10 @@ const onRoute = state => ({
   ...state,
   expedition: {
     ...state.expedition,
+    visitedNodeIds:
+      state.expedition.visitedNodeIds.length > 0
+        ? state.expedition.visitedNodeIds
+        : [ROUTE.startNodeId],
     loadout: {
       tourTypeId: 'standard_tour',
       regionId: 'industrial_belt',
@@ -201,4 +209,163 @@ test('the creator only builds an offered exit', () => {
     payload: { exitId: 'pay', expectedRouteStep: 0 }
   })
   assert.equal(resolveExpeditionAuthorityExit(state, 'route_detour'), null)
+})
+
+/** A walked path on the fixture route, standing on its last node. */
+const walked = (path, overrides = {}) =>
+  onRoute(
+    cornered({
+      routeStep: path.length - 1,
+      visitedNodeIds: path,
+      ...overrides
+    })
+  )
+
+/** Native obligations the run already holds, keyed by template id. */
+const holding = sourceIds =>
+  sourceIds.map(sourceId => ({
+    id: `run-1:${sourceId}`,
+    sourceType: 'native',
+    sourceId,
+    constraints: [],
+    progressByConstraintId: {},
+    status: 'active',
+    settled: false,
+    doubleDown: null
+  }))
+
+// Rested at exp_2_1 (a REST_STOP), standing at step 4.
+const RESTED_PATH = ['exp_0_0', 'exp_1_0', 'exp_2_1', 'exp_3_1', 'exp_4_1']
+const restedRun = () =>
+  walked(RESTED_PATH, { resolvedObligationSignalIds: ['rest:exp_2_1:2'] })
+
+test('future_obligation never picks a Contract the run already broke by resting', () => {
+  assert.equal(ROUTE.meta.exp_2_1.nodeClass, 'REST_STOP')
+  const plan = resolveAuthoritySafeExit(restedRun(), 'future_obligation')
+  assert.notEqual(plan?.commitment.templateId, 'contract_no_rest_finale')
+})
+
+test('a created obligation keeps its status across a load round trip', () => {
+  for (const state of [onRoute(cornered()), restedRun()]) {
+    if (!resolveAuthoritySafeExit(state, 'future_obligation')) continue
+    const next = gameReducer(state, exitAction(state, 'future_obligation'))
+    const loaded = sanitizeExpeditionState(
+      JSON.parse(JSON.stringify(next.expedition)),
+      next.runSeed,
+      next.lastGigStats
+    )
+    assert.equal(loaded.status, 'active')
+    assert.deepEqual(
+      loaded.activeObligations.map(o => [o.id, o.status]),
+      next.expedition.activeObligations.map(o => [o.id, o.status])
+    )
+  }
+})
+
+test('future_obligation never stakes the tour on a tour-ending Contract', () => {
+  // Heat 88 breaks Keep It Clean and No Rest is held, so the showcase is the
+  // only template left once the Fame gate is met.
+  const state = onRoute(
+    cornered({ activeObligations: holding(['contract_no_rest_finale']) })
+  )
+  state.player.fame = 5000
+  const plan = resolveAuthoritySafeExit(state, 'future_obligation')
+  assert.notEqual(plan?.commitment.templateId, 'contract_all_in')
+})
+
+test('future_obligation skips a gig count the remaining route cannot play', () => {
+  // Standing at exp_6_1: one gig (the Finale) is left on any path.
+  const state = walked([
+    'exp_0_0',
+    'exp_1_0',
+    'exp_2_0',
+    'exp_3_1',
+    'exp_4_1',
+    'exp_5_1',
+    'exp_6_1'
+  ])
+  state.career = { ...state.career, unlockedSetIds: ['festival_network'] }
+  const plan = resolveAuthoritySafeExit(state, 'future_obligation')
+  assert.ok(plan, 'No Rest Till Finale is still on offer')
+  assert.equal(plan.commitment.templateId, 'contract_no_rest_finale')
+
+  // The same build at the start of the route has gigs enough for three.
+  const fresh = onRoute(cornered())
+  fresh.career = { ...fresh.career, unlockedSetIds: ['festival_network'] }
+  assert.equal(
+    resolveAuthoritySafeExit(fresh, 'future_obligation')?.commitment.templateId,
+    'contract_three_good_gigs'
+  )
+})
+
+/** A DIY chassis with a hidden slot, so the run has hidden capacity. */
+const withCompartment = (state, contraband) => ({
+  ...state,
+  assets: [
+    {
+      id: 'bus',
+      kind: 'tourbus_chassis',
+      chassisFlavor: 'diy',
+      chassisTier: 1,
+      slots: [{ id: 'hidden', slotType: 'tb_hidden', installedModuleId: null }]
+    }
+  ],
+  expedition: {
+    ...state.expedition,
+    loadout: { ...state.expedition.loadout, activeTourbusAssetId: 'bus' },
+    cargo: {
+      spareParts: 0,
+      supplies: 0,
+      technicalGearItemIds: [],
+      merch: [],
+      contraband
+    }
+  }
+})
+
+const reheat = state => ({
+  ...state,
+  expedition: {
+    ...state.expedition,
+    pressure: { ...state.expedition.pressure, heat: 100 }
+  }
+})
+
+test('hidden_compartment needs contraband aboard', () => {
+  const empty = withCompartment(onRoute(cornered()), [])
+  assert.equal(resolveAuthoritySafeExit(empty, 'hidden_compartment'), null)
+  assert.ok(
+    !getAvailableAuthoritySafeExits(empty).includes('hidden_compartment')
+  )
+})
+
+test('hidden_compartment works once per run, across a save/load', () => {
+  const state = withCompartment(onRoute(cornered()), [
+    { stashKey: 'stash_a', instanceId: null, stacks: 1 }
+  ])
+  assert.deepEqual(resolveAuthoritySafeExit(state, 'hidden_compartment'), {
+    exitId: 'hidden_compartment'
+  })
+  const used = gameReducer(state, exitAction(state, 'hidden_compartment'))
+  assert.equal(used.expedition.pressure.heat, 88)
+
+  // Cornered again in the same run: the trick is spent.
+  const again = reheat(used)
+  assert.equal(resolveAuthoritySafeExit(again, 'hidden_compartment'), null)
+  assert.strictEqual(
+    gameReducer(again, exitAction(again, 'hidden_compartment')),
+    again
+  )
+
+  const loaded = sanitizeExpeditionState(
+    JSON.parse(JSON.stringify(used.expedition)),
+    used.runSeed,
+    used.lastGigStats
+  )
+  assert.equal(loaded.authorityHiddenCompartmentUsed, true)
+  const reloaded = reheat({
+    ...used,
+    expedition: { ...loaded, cargo: used.expedition.cargo }
+  })
+  assert.equal(resolveAuthoritySafeExit(reloaded, 'hidden_compartment'), null)
 })

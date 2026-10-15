@@ -15,7 +15,23 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({ resolveExpeditionAuthorityExit })
 }))
 
-vi.mock('../../src/utils/numberUtils', () => ({
+// Local i18n mock that renders interpolation values, so the Contract named in
+// a meta line stays assertable.
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    i18n: { language: 'en' },
+    t: (key: string, options?: Record<string, unknown>) =>
+      options?.contract === undefined
+        ? key
+        : `${key}(${String(options.contract)})`
+  })
+}))
+
+// The future-obligation derivation reaches the real numeric helpers, so only
+// the currency formatter is replaced.
+vi.mock('../../src/utils/numberUtils', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../src/utils/numberUtils')>()),
   formatCurrency: (value: number) => `${value} EUR`
 }))
 
@@ -117,5 +133,30 @@ describe('AuthorityEncounterDialog', () => {
 
     fireEvent.click(screen.getByTestId('authority-exit-route_detour'))
     expect(resolveExpeditionAuthorityExit).toHaveBeenCalledWith('route_detour')
+  })
+
+  it('names the Contract a future obligation would add', () => {
+    const base = buildState(95, 0, 0)
+    state.current = {
+      ...base,
+      runSeed: 123,
+      expedition: {
+        ...base.expedition,
+        activeObligations: [],
+        visitedNodeIds: ['exp_0_0'],
+        loadout: {
+          tourTypeId: 'standard_tour',
+          regionId: 'industrial_belt',
+          crewIds: [],
+          nativeContracts: []
+        } as never
+      }
+    }
+    render(<AuthorityEncounterDialog />)
+    expect(
+      screen.getByTestId('authority-exit-future_obligation')
+    ).toHaveTextContent(
+      'ui:expedition.authority.meta.future_obligation(ui:expedition.contract.contract_no_rest_finale)'
+    )
   })
 })
