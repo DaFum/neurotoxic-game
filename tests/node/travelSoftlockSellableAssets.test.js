@@ -30,8 +30,7 @@ test('getSellableAssets agrees with the canonical sale quote', () => {
   const assets = [makeAsset('a_free'), makeAsset('a_debt'), makeAsset('a_huge')]
   const liabilities = {
     l1: { id: 'l1', assetId: 'a_debt', principalRemaining: 1000 },
-    // Two finite principals whose sum overflows to Infinity: the canonical
-    // quote normalizes the aggregate, so the reducer would permit this sale.
+    // Two finite principals whose sum overflows to Infinity.
     l2: { id: 'l2', assetId: 'a_huge', principalRemaining: Number.MAX_VALUE },
     l3: { id: 'l3', assetId: 'a_huge', principalRemaining: Number.MAX_VALUE }
   }
@@ -39,6 +38,18 @@ test('getSellableAssets agrees with the canonical sale quote', () => {
   const expected = expectedFromQuote(assets, liabilities, 30)
   assert.ok(expected.length > 0, 'fixture must produce sellable assets')
   assert.deepStrictEqual(getSellableAssets(assets, liabilities, 30), expected)
+  assert.ok(!expected.some(({ id }) => id === 'a_huge'))
+})
+
+test('getAssetSaleQuote blocks a sale whose debt total overflows', () => {
+  const liabilities = {
+    l1: { id: 'l1', assetId: 'a_huge', principalRemaining: Number.MAX_VALUE },
+    l2: { id: 'l2', assetId: 'a_huge', principalRemaining: Number.MAX_VALUE }
+  }
+  const quote = getAssetSaleQuote(makeAsset('a_huge'), liabilities, 30)
+  assert.equal(quote.blocked, true)
+  assert.ok(Number.isFinite(quote.debt))
+  assert.ok(Number.isFinite(quote.net) && quote.net < 0)
 })
 
 test('getSellableAssets skips assets the quote blocks or values at zero', () => {

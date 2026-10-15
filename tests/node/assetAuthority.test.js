@@ -420,6 +420,9 @@ const INVALID_RUNTIME_CAMPAIGNS = {
   'missing materializedSlotIds': withoutKey('materializedSlotIds'),
   'non-string materializedSlotIds entry': makeRuntimeCampaign({
     materializedSlotIds: ['slot_ok', 7]
+  }),
+  'already resolved outcome': makeRuntimeCampaign({
+    resolvedOutcome: 'success'
   })
 }
 

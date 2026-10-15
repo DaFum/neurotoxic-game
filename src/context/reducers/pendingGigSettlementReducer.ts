@@ -168,7 +168,7 @@ export const settlePendingGigOnLoad = (
   const bankrupt = shouldTriggerBankruptcy(
     stats.newMoney,
     record.net,
-    getTotalDailyObligations(state)
+    getTotalDailyObligations(next)
   )
   const successfulFinale =
     next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE' &&

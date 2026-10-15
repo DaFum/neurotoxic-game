@@ -102,7 +102,7 @@ test('surrender_cargo empties the contraband manifest', () => {
       supplies: 0,
       technicalGearItemIds: [],
       merch: [],
-      contraband: [{ id: 'c1', quantity: 1 }]
+      contraband: [{ stashKey: 'stash_a', instanceId: null, stacks: 1 }]
     }
   })
   assert.ok(getAvailableAuthoritySafeExits(state).includes('surrender_cargo'))

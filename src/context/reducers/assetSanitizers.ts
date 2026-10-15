@@ -614,6 +614,8 @@ export const validateRuntimeCrowdfundCampaign = (
   const campaign = sanitizeCrowdfundCampaign(raw, 'runtime', new Map())
   if (!campaign || !isLooseRecord(raw)) return null
   if (
+    // An active campaign has no outcome yet; only the tick resolves one.
+    Object.hasOwn(raw, 'resolvedOutcome') ||
     raw.targetAmount !== campaign.targetAmount ||
     raw.fameStake !== campaign.fameStake ||
     raw.daysRemaining !== campaign.daysRemaining ||

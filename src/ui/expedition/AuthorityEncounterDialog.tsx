@@ -62,9 +62,11 @@ export const AuthorityEncounterDialog = memo(
       }
       if (exitId === 'future_obligation') {
         return t('ui:expedition.authority.meta.future_obligation', {
-          contract: t(`ui:expedition.contract.${obligationTemplateId}`, {
-            defaultValue: obligationTemplateId
-          })
+          contract: obligationTemplateId
+            ? t(`ui:expedition.contract.${obligationTemplateId}`, {
+                defaultValue: obligationTemplateId
+              })
+            : t('ui:expedition.contract.unknown')
         })
       }
       return t(`ui:expedition.authority.meta.${exitId}`)

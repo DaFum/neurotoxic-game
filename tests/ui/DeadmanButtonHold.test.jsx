@@ -56,3 +56,27 @@ test('DeadmanButton releasing before completion does not confirm', () => {
   expect(onConfirm).not.toHaveBeenCalled()
   expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0')
 })
+
+test('DeadmanButton confirms on the tick that fills it, even if released right after', () => {
+  vi.useFakeTimers()
+  const onConfirm = vi.fn()
+  render(
+    <StrictMode>
+      <DeadmanButton label='PURGE SAVE' onConfirm={onConfirm} />
+    </StrictMode>
+  )
+  const button = screen.getByRole('button')
+
+  fireEvent.mouseDown(button)
+  for (let i = 0; i < 50; i++) {
+    act(() => {
+      vi.advanceTimersByTime(20)
+    })
+  }
+  fireEvent.mouseUp(button)
+  act(() => {
+    vi.advanceTimersByTime(2000)
+  })
+
+  expect(onConfirm).toHaveBeenCalledTimes(1)
+})
