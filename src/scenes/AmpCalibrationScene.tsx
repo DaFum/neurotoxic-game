@@ -13,14 +13,16 @@ export const AmpCalibrationScene = () => {
   const { t } = useTranslation(['ui'])
   const { changeScene } = useGameActions()
 
-  const { update, gameStateRef, ...ampLogicProps } = useAmpLogic()
+  const { update, gameStateRef, finishMinigame, ...ampLogicProps } =
+    useAmpLogic()
 
   const logic = useMemo(
     () => ({
       update,
-      gameStateRef
+      gameStateRef,
+      finishMinigame
     }),
-    [update, gameStateRef]
+    [update, gameStateRef, finishMinigame]
   )
 
   const onComplete = useCallback(() => {
