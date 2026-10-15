@@ -24,11 +24,19 @@ import {
   createMoneyEarnedQuestEvent
 } from '../../quests/producers/economyQuestEvents'
 import { handleSettleSoldMerch } from './gigReducer'
-import { handleApplyQuestEvent } from './questReducer'
+import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
   handleCompleteExpedition,
+  handleOfferExpeditionDraft,
   handleRecordExpeditionObligationSignal
 } from './expeditionReducer'
+import { handleUpdateBand } from './bandReducer'
+import { handleRecordExpeditionCrewStressSource } from './crewReducer'
+import {
+  derivePostGigContinueEffects,
+  drainBandStamina,
+  type PostGigContinueEffect
+} from '../../hooks/postGig/handlers/continueHandlerUtils'
 import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
 
@@ -127,6 +135,45 @@ export const handleClearPendingGigSettlement = (
 }
 
 /**
+ * Applies one Continue effect through the reducer handler its action reaches.
+ */
+const applyPostGigContinueEffect = (
+  state: GameState,
+  effect: PostGigContinueEffect
+): GameState => {
+  const expectedRouteStep = state.expedition.routeStep
+  switch (effect.kind) {
+    case 'harmony':
+      return handleUpdateBand(state, { harmony: effect.harmony })
+    case 'addQuest':
+      return handleAddQuest(state, effect.quest)
+    case 'obligationSignal':
+      return handleRecordExpeditionObligationSignal(state, {
+        signalType: effect.signalType,
+        sourceId: effect.sourceId,
+        expectedRouteStep
+      })
+    case 'offerMajorGigDraft':
+      return handleOfferExpeditionDraft(state, {
+        sourceType: 'major_gig',
+        sourceKey: effect.sourceKey,
+        expectedRouteStep
+      })
+    case 'crewStress':
+      return handleRecordExpeditionCrewStressSource(state, {
+        crewId: effect.crewId,
+        sourceType: effect.sourceType,
+        sourceId: effect.sourceId,
+        expectedRouteStep
+      })
+    case 'staminaDrain':
+      return handleUpdateBand(state, prevBand =>
+        drainBandStamina(prevBand, effect.amount)
+      )
+  }
+}
+
+/**
  * Settles a gig whose save was written before Continue ran.
  *
  * @param state - Fully sanitized loaded state.
@@ -134,9 +181,10 @@ export const handleClearPendingGigSettlement = (
  * @returns The loaded state with the record applied once and cleared.
  *
  * @remarks
- * Mirrors the ledger of `useContinueHandler`: sold merch, money, fame, the
- * post-gig economy quest events, the Expedition `gig`/`finale` obligation
- * signals, Finale completion, and the bankruptcy and
+ * Mirrors `useContinueHandler`: sold merch, money, fame, the post-gig economy
+ * quest events, every {@link derivePostGigContinueEffects} effect (pedal
+ * penalty, story quests, Contract signals, Festival Run Draft, crew Stress,
+ * Finale stamina drain), Finale completion, and the bankruptcy and
  * Career-victory routing. The scene never reopens GIG or POST_GIG.
  */
 export const settlePendingGigOnLoad = (
@@ -170,10 +218,10 @@ export const settlePendingGigOnLoad = (
     record.net,
     getTotalDailyObligations(next)
   )
+  const isFinaleGig =
+    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
   const successfulFinale =
-    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE' &&
-    !bankrupt &&
-    state.lastGigStats.failed !== true
+    isFinaleGig && !bankrupt && state.lastGigStats.failed !== true
   const careerFinale = successfulFinale && next.expedition.status === 'idle'
   const expeditionFinale =
     successfulFinale && next.expedition.status === 'active'
@@ -217,21 +265,21 @@ export const settlePendingGigOnLoad = (
     )
   }
 
-  // Contract evidence Continue records before completing the run; without it
-  // a Finale settled here would fail Contracts the gig actually satisfied.
-  if (next.expedition.status === 'active') {
-    next = handleRecordExpeditionObligationSignal(next, {
-      signalType: 'gig',
-      sourceId: record.gigId,
-      expectedRouteStep: next.expedition.routeStep
-    })
-    if (successfulFinale) {
-      next = handleRecordExpeditionObligationSignal(next, {
-        signalType: 'finale',
-        sourceId: record.gigId,
-        expectedRouteStep: next.expedition.routeStep
-      })
-    }
+  // Continue's remaining effects, derived from the state its screen showed
+  // and applied in its dispatch order. The Contract signals among them must
+  // land before completion, or a Finale settled here would fail Contracts the
+  // gig actually satisfied.
+  for (const effect of derivePostGigContinueEffects({
+    band: state.band,
+    day: state.player.day,
+    activeStoryFlags: state.activeStoryFlags,
+    expedition: state.expedition,
+    gigId: record.gigId,
+    lastGigStats: state.lastGigStats,
+    isFinaleGig,
+    successfulFinale
+  })) {
+    next = applyPostGigContinueEffect(next, effect)
   }
 
   if (expeditionFinale) {

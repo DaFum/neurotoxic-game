@@ -42,7 +42,7 @@ vi.mock('../../src/context/gameConstants', () => ({
 import { useContinueHandler } from '../../src/hooks/postGig/handlers/useContinueHandler'
 import {
   dispatchEconomyQuests,
-  applyNeurotoxicPenalty,
+  getNeurotoxicPenaltyHarmony,
   handleContinueSceneTransition
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 
@@ -152,31 +152,18 @@ describe('Pure Functions in useContinueHandler.ts', () => {
     })
   })
 
-  describe('applyNeurotoxicPenalty', () => {
-    it('applies penalty and updates band if pedal is in inventory', () => {
-      const updateBand = vi.fn()
+  describe('getNeurotoxicPenaltyHarmony', () => {
+    it('returns the penalised harmony if pedal is in inventory', () => {
       const band = { harmony: 80, inventory: { neurotoxicPedal: true } }
 
       // 80 - 10 (mocked penalty) = 70
-      const result = applyNeurotoxicPenalty(band, updateBand)
-
-      expect(result).toBe(70)
-      expect(updateBand).toHaveBeenCalledTimes(1)
-
-      // Test functional state update
-      const updateFn = updateBand.mock.calls[0][0]
-      const nextBand = updateFn(band)
-      expect(nextBand.harmony).toBe(70)
+      expect(getNeurotoxicPenaltyHarmony(band)).toBe(70)
     })
 
-    it('returns undefined and does not update if pedal is not in inventory', () => {
-      const updateBand = vi.fn()
+    it('returns undefined if pedal is not in inventory', () => {
       const band = { harmony: 80, inventory: {} }
 
-      const result = applyNeurotoxicPenalty(band, updateBand)
-
-      expect(result).toBeUndefined()
-      expect(updateBand).not.toHaveBeenCalled()
+      expect(getNeurotoxicPenaltyHarmony(band)).toBeUndefined()
     })
   })
 
