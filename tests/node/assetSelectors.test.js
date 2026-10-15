@@ -516,3 +516,30 @@ describe('getModulePoolForAsset', () => {
     assert.equal(lockedEntry.lockReasons[0].kind, 'fame')
   })
 })
+
+describe('registry lookups reject inherited keys', () => {
+  const HOSTILE_IDS = ['constructor', '__proto__', 'hasOwnProperty']
+  const hostileSlots = HOSTILE_IDS.map((id, i) => ({
+    id: `slot_${i}`,
+    slotType: 'tb_trailer_addon',
+    position: { x: i, y: 0 },
+    installedModuleId: id
+  }))
+
+  it('getAssetAggregateBoni ignores hostile installed ids', () => {
+    assert.deepEqual(
+      getAssetAggregateBoni(makeAsset({ slots: hostileSlots })),
+      {}
+    )
+  })
+
+  it('getSlotConflicts ignores hostile target and installed ids', () => {
+    const asset = makeAsset({ slots: hostileSlots })
+    for (const id of HOSTILE_IDS) {
+      assert.deepEqual(getSlotConflicts(asset, id), {
+        canInstall: true,
+        conflictingModuleIds: []
+      })
+    }
+  })
+})

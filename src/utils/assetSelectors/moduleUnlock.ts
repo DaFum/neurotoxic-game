@@ -1,6 +1,6 @@
 import type { BandState } from '../../types'
 import type { AssetModule, LongTermAsset, SlotType } from '../../types/assets'
-import { MODULE_REGISTRY } from '../assetModuleRegistry'
+import { getRegisteredModule, MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
 
 /**
@@ -322,10 +322,7 @@ export const getSlotConflicts = (
   asset: LongTermAsset,
   moduleId: string
 ): { canInstall: boolean; conflictingModuleIds: string[] } => {
-  if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) {
-    return { canInstall: true, conflictingModuleIds: [] }
-  }
-  const target = MODULE_REGISTRY[moduleId]
+  const target = getRegisteredModule(moduleId)
   if (!target || target.exclusiveWithGroup === undefined) {
     return { canInstall: true, conflictingModuleIds: [] }
   }
@@ -333,8 +330,7 @@ export const getSlotConflicts = (
   for (const s of asset.slots) {
     if (s.installedModuleId === null) continue
     if (s.installedModuleId === moduleId) continue
-    if (!Object.hasOwn(MODULE_REGISTRY, s.installedModuleId)) continue
-    const m = MODULE_REGISTRY[s.installedModuleId]
+    const m = getRegisteredModule(s.installedModuleId)
     if (m && m.exclusiveWithGroup === target.exclusiveWithGroup) {
       conflicts.push(m.id)
     }

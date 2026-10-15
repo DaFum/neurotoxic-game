@@ -5,7 +5,7 @@ import type {
   AssetModule,
   LongTermAsset
 } from '../../types/assets'
-import { MODULE_REGISTRY } from '../assetModuleRegistry'
+import { getRegisteredModule } from '../assetModuleRegistry'
 import { CHASSIS_CONFIG, getChassisTierConfig } from '../assetConfig'
 import { finiteNumberOr } from '../finiteNumber'
 import {
@@ -33,8 +33,7 @@ export const calculateChassisGrossSaleValue = (
   let moduleRefunds = 0
   for (const slot of asset.slots) {
     if (!slot.installedModuleId) continue
-    if (!Object.hasOwn(MODULE_REGISTRY, slot.installedModuleId)) continue
-    const moduleInfo = MODULE_REGISTRY[slot.installedModuleId]
+    const moduleInfo = getRegisteredModule(slot.installedModuleId)
     if (!moduleInfo) continue
     moduleRefunds +=
       finiteNumberOr(moduleInfo.cost, 0) *
@@ -60,10 +59,9 @@ const getInstalledModules = (asset: AssetModuleSource): AssetModule[] => {
   const slots = Array.isArray(asset.slots) ? asset.slots : []
   for (const s of slots) {
     if (typeof s?.installedModuleId !== 'string') continue
-    // Object.hasOwn guards against hostile module ids like 'hasOwnProperty'
+    // Own-property lookup rejects hostile module ids like 'hasOwnProperty'
     // or 'constructor' that would otherwise reach prototype properties.
-    if (!Object.hasOwn(MODULE_REGISTRY, s.installedModuleId)) continue
-    const m = MODULE_REGISTRY[s.installedModuleId]
+    const m = getRegisteredModule(s.installedModuleId)
     if (m) out.push(m)
   }
   return out

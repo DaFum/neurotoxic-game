@@ -23,7 +23,7 @@ import {
   finiteNumberOr,
   isEmptyObject
 } from './gameState'
-import { MODULE_REGISTRY } from './assetModuleRegistry'
+import { getRegisteredModule } from './assetModuleRegistry'
 import { clampUnit } from './numberUtils'
 import { pickIndex } from './selectionUtils'
 import {
@@ -586,8 +586,7 @@ export const rollAssetRiskEvents = (
     const riskEventTypes = new Set<RiskEventType>()
     for (const slot of asset.slots) {
       if (!slot.installedModuleId) continue
-      if (!Object.hasOwn(MODULE_REGISTRY, slot.installedModuleId)) continue
-      const mod = MODULE_REGISTRY[slot.installedModuleId]
+      const mod = getRegisteredModule(slot.installedModuleId)
       if (mod?.riskEventTypes) {
         for (const t of mod.riskEventTypes) riskEventTypes.add(t)
       }

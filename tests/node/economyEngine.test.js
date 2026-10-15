@@ -1131,6 +1131,39 @@ test('calculateGigExpenses gracefully handles missing/undefined params', () => {
   assert.ok(result.total >= 0)
 })
 
+test('calculateGigExpenses itemizes every budget modifier in fixed order', () => {
+  const result = calculateGigExpenses({
+    guestlist: true,
+    soundcheck: true,
+    merch: true,
+    promo: true,
+    catering: true
+  })
+  assert.deepEqual(
+    result.breakdown.map(item => [item.labelKey, item.detailKey]),
+    [
+      ['catering', 'catering'],
+      ['socialAds', 'socialAds'],
+      ['merchStand', 'merchStand'],
+      ['soundcheck', 'soundcheck'],
+      ['guestList', 'guestList']
+    ].map(([label, detail]) => [
+      `economy:gigExpenses.${label}.label`,
+      `economy:gigExpenses.${detail}.detail`
+    ])
+  )
+  assert.equal(
+    result.total,
+    result.breakdown.reduce((sum, item) => sum + item.value, 0)
+  )
+  assert.deepEqual(
+    calculateGigExpenses({ promo: true, catering: false }).breakdown.map(
+      item => item.labelKey
+    ),
+    ['economy:gigExpenses.socialAds.label']
+  )
+})
+
 test('calculateFuelCost handles edge cases for distance', async t => {
   await t.test('returns zero for distance = 0', () => {
     const result = calculateFuelCost(0)
