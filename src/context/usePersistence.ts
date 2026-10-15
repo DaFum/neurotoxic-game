@@ -86,6 +86,7 @@ const PERSISTED_FIELDS = {
   reputationByRegion: isLooseRecord,
   settings: isLooseRecord,
   gigModifiers: isLooseRecord,
+  pendingGigSettlement: isNullableObject,
   setlist: Array.isArray,
   minigame: isNullableObject,
   completedMilestones: Array.isArray,

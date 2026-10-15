@@ -76,6 +76,7 @@ import {
   settleExpeditionUnlockJournalOnLoad
 } from '../../domain/expedition/meta'
 import { GAME_PHASES } from '../gameConstants'
+import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
 import { applySharedBandEffect } from '../../utils/contrabandEffects'
@@ -404,7 +405,12 @@ export const handleLoadGame = (
   // Last, because it reads Career *and* quest evidence that the steps above
   // sanitize: a persisted Ascension boolean is re-earned or dropped here, and
   // Tour Pressure goes with it.
-  return reconcileExpeditionAscensionOnLoad(migratedState)
+  // A save written on the post-gig screen predates Continue; settle it here
+  // once, on the fully sanitized state, rather than reopening POST_GIG.
+  return settlePendingGigOnLoad(
+    reconcileExpeditionAscensionOnLoad(migratedState),
+    loadedState.pendingGigSettlement
+  )
 }
 
 /**

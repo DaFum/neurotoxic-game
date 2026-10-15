@@ -128,7 +128,7 @@ export const calculateContinueStats = ({
 }: {
   player: GameState['player']
   perfScore: number
-  financials: PostGigFinancials
+  financials: Pick<PostGigFinancials, 'net'>
   misses?: number
   bandStyle?: number
   dealFameMultiplier?: number
