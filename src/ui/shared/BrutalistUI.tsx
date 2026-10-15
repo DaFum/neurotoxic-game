@@ -443,18 +443,17 @@ export const DeadmanButton = memo(
       if (intervalRef.current != null) clearInterval(intervalRef.current)
 
       const intervalId = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            if (intervalRef.current === intervalId) {
-              clearInterval(intervalId)
-              intervalRef.current = null
-            }
-            setIsHolding(false)
-            if (onConfirm) onConfirm()
-            return 100
-          }
-          return prev + 2 // Speed of fill
-        })
+        if (progressRef.current >= 100) {
+          // Complete exactly once: clear synchronously, outside any
+          // (replayable) state updater.
+          clearInterval(intervalId)
+          if (intervalRef.current === intervalId) intervalRef.current = null
+          setIsHolding(false)
+          if (onConfirm) onConfirm()
+          return
+        }
+        progressRef.current += 2 // Speed of fill
+        setProgress(progressRef.current)
       }, 20) // 20ms tick
       intervalRef.current = intervalId
     }
