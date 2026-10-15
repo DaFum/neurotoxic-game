@@ -57,6 +57,11 @@ const { usePersistence, SAVE_KEY, createRawLoadPayload } =
   await import('../../src/context/usePersistence')
 const { handleError, StateError } = await import('../../src/utils/errorHandler')
 const { safeStorageOperation } = await import('../../src/utils/storage')
+const gameStateModule = await import('../../src/utils/gameState')
+const { writeStorageItem } = await import('../../src/utils/storage')
+const { getUnlocks } = await import('../../src/utils/unlockManager')
+const { CURRENT_SAVE_VERSION } =
+  await import('../../src/context/reducers/migrations/index')
 
 describe('usePersistence', () => {
   let mockStateRef: { current: unknown }
@@ -165,6 +170,52 @@ describe('usePersistence', () => {
     } finally {
       setItemSpy.mockRestore()
     }
+  })
+
+  it('persists the settled state when a load consumes a pending gig settlement', () => {
+    const { isLooseRecord } = vi.mocked(gameStateModule)
+    vi.mocked(getUnlocks).mockReturnValue([])
+    isLooseRecord.mockImplementation(
+      (value: unknown) =>
+        typeof value === 'object' && value !== null && !Array.isArray(value)
+    )
+    const loadSave = (save: Record<string, unknown>) => {
+      writeStorageItem(SAVE_KEY, JSON.stringify(save))
+      const { result } = renderHook(() =>
+        usePersistence({
+          currentScene: 'MOCK_SCENE',
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        })
+      )
+      vi.mocked(safeStorageOperation).mockClear()
+      let loaded = false
+      act(() => {
+        loaded = result.current.loadGame()
+      })
+      expect(loaded).toBe(true)
+      return vi
+        .mocked(safeStorageOperation)
+        .mock.calls.map(([operation]) => operation)
+    }
+    const baseSave = {
+      version: CURRENT_SAVE_VERSION,
+      player: {},
+      band: {},
+      unlocks: []
+    }
+
+    expect(
+      loadSave({
+        ...baseSave,
+        pendingGigSettlement: { id: 'settlement_1', gigId: 'venue_1' }
+      })
+    ).toContain('saveGame')
+    expect(loadSave({ ...baseSave, pendingGigSettlement: null })).not.toContain(
+      'saveGame'
+    )
   })
 
   it('reports the write outcome to a caller waiting on it', () => {

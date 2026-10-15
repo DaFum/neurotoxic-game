@@ -469,11 +469,16 @@ export function usePersistence({
         dispatch(
           createLoadGameAction(createRawLoadPayload(migratedObj, mergedUnlocks))
         )
+        // LOAD_GAME consumes a pending gig settlement in memory only; persist
+        // the settled ledger and the cleared record in the same commit.
+        if (isLooseRecord(migratedObj.pendingGigSettlement)) {
+          saveGameAfterStateCommit()
+        }
         return true
       },
       false
     )
-  }, [addToast, dispatch, storage, tRef])
+  }, [addToast, dispatch, saveGameAfterStateCommit, storage, tRef])
 
   return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }
