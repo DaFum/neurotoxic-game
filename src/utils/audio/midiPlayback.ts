@@ -11,7 +11,7 @@ import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
 import { clampUnit } from '../numberUtils'
 import { isFiniteNumber } from '../finiteNumber'
 import { startTransportAt } from './transportStart'
-import type { ProcessedTempoMapEntry } from '../../types/rhythm'
+import type { ProcessedTempoMapEntry, TempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
   resolveAssetUrl,
@@ -356,10 +356,8 @@ function isTempoEvent(e: unknown): e is Record<string, unknown> {
   return typeof e === 'object' && e !== null && 'tick' in e && 'usPerBeat' in e
 }
 
-function sanitizeTempoEvents(
-  rawTempo: unknown[]
-): { tick: number; usPerBeat: number }[] {
-  const result: { tick: number; usPerBeat: number }[] = []
+function sanitizeTempoEvents(rawTempo: unknown[]): TempoMapEntry[] {
+  const result: TempoMapEntry[] = []
   for (let i = 0; i < rawTempo.length; i++) {
     const e = rawTempo[i]
     if (isTempoEvent(e)) {
