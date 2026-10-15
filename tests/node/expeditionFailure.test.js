@@ -531,6 +531,17 @@ describe('ACCEPT_EXPEDITION_FAILURE', () => {
     assert.equal(gameReducer(state, action).expedition.status, 'failed')
   })
 
+  it('compares against a caller-supplied derivation without re-deriving', () => {
+    const state = bankruptRun()
+    const derived = deriveExpeditionPendingFailure(state)
+    assert.ok(derived)
+    assert.ok(isCurrentExpeditionFailureId(state, derived.id, derived))
+    assert.equal(isCurrentExpeditionFailureId(state, derived.id, null), false)
+    assert.ok(
+      isCurrentExpeditionFailureId(state, 'other', { ...derived, id: 'other' })
+    )
+  })
+
   it('is idempotent: a replayed accept changes nothing', () => {
     const state = bankruptRun()
     const payload = {

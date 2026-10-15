@@ -232,6 +232,38 @@ test('handleAdvanceDay reverts effects on non-finite band stats without persisti
   assert.ok(Number.isFinite(nextState.band.tempo))
 })
 
+test('handleAdvanceDay floors every reverted zero-floor additive field at zero', () => {
+  const state = createInitialState()
+  state.player.money = 10000
+  state.rngSeed = 123
+  const fields = {
+    luck: 'luck',
+    style: 'style',
+    tour_success: 'tourSuccess',
+    gig_modifier: 'gigModifier',
+    tempo: 'tempo',
+    practice_gain: 'practiceGain',
+    crit: 'crit',
+    affinity: 'affinity',
+    crowd_control: 'crowdControl'
+  }
+  for (const field of Object.values(fields)) state.band[field] = 1
+  state.band.activeContrabandEffects = Object.keys(fields).map(effectType => ({
+    effectType,
+    value: 5,
+    remainingDuration: 1
+  }))
+
+  const nextState = handleAdvanceDay(state, {
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: state.rngSeed
+  })
+
+  for (const field of Object.values(fields)) {
+    assert.equal(nextState.band[field], 0, `${field} must be floored at 0`)
+  }
+})
+
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
     'loads game and sanitizes player, band, and social state',

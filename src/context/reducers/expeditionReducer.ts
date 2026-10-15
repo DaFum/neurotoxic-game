@@ -1394,7 +1394,7 @@ export const handleAcceptExpeditionFailure = (
   }
   const derived = deriveExpeditionPendingFailure(state)
   if (!derived) return state
-  if (!isCurrentExpeditionFailureId(state, payload.pendingFailureId)) {
+  if (!isCurrentExpeditionFailureId(state, payload.pendingFailureId, derived)) {
     return state
   }
 
@@ -1483,7 +1483,7 @@ export const handleResolveExpeditionCrisis = (
 
   const pending = deriveExpeditionPendingFailure(state)
   if (!pending) return state
-  if (!isCurrentExpeditionFailureId(state, payload.pendingFailureId)) {
+  if (!isCurrentExpeditionFailureId(state, payload.pendingFailureId, pending)) {
     return state
   }
 

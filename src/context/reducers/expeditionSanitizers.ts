@@ -747,6 +747,22 @@ export const sanitizeExpeditionState = (
   // obligation that earned it, and only the *sanitized* obligations count -
   // validating against the raw persisted ones would let a forged obligation
   // vouch for a forged reward.
+  // Each proof is sanitized once and shared by the obligation check and the
+  // returned slice; none of the sanitizers below mutates its inputs.
+  const resolvedObligationSignalIds = sanitizeUniqueStrings(
+    value.resolvedObligationSignalIds
+  )
+  const lastSocialResult = sanitizeSocialResultProof(
+    value.lastSocialResult,
+    routeStep,
+    resolvedObligationSignalIds
+  )
+  const gigOutcomeByStep = sanitizeGigOutcomeMap(
+    value.gigOutcomeByStep,
+    lastGigStats,
+    routeStep,
+    resolvedObligationSignalIds
+  )
   const sanitizedObligations = sanitizeActiveObligations(
     value.activeObligations,
     runId,
@@ -754,20 +770,11 @@ export const sanitizeExpeditionState = (
     routeStep,
     loadout,
     preparedMap,
-    sanitizeUniqueStrings(value.resolvedObligationSignalIds),
+    resolvedObligationSignalIds,
     validVisitedPath,
-    sanitizeSocialResultProof(
-      value.lastSocialResult,
-      routeStep,
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-    ),
-    sanitizeGigOutcomeMap(
-      value.gigOutcomeByStep,
-      lastGigStats,
-      routeStep,
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-    ),
-    sanitizeExpeditionPressure(value.pressure).heat,
+    lastSocialResult,
+    gigOutcomeByStep,
+    pressure.heat,
     sanitizeFinaleType(value.finaleType)
   )
 
@@ -980,9 +987,7 @@ export const sanitizeExpeditionState = (
           ).filter(isValidExpeditionEventProofId)
         }
       : {}),
-    resolvedObligationSignalIds: sanitizeUniqueStrings(
-      value.resolvedObligationSignalIds
-    ),
+    resolvedObligationSignalIds,
     pressure,
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
@@ -1004,11 +1009,7 @@ export const sanitizeExpeditionState = (
       : {}),
     pendingRunDraftOffer: sanitizePendingRunDraftOffer(value, status, runSeed),
     finaleType: sanitizeFinaleType(value.finaleType),
-    lastSocialResult: sanitizeSocialResultProof(
-      value.lastSocialResult,
-      readCount(value, 'routeStep', 0),
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-    ),
+    lastSocialResult,
     pendingSocialSettlement: sanitizePendingSocialSettlement(
       value.pendingSocialSettlement,
       readCount(value, 'routeStep', 0)
@@ -1017,12 +1018,7 @@ export const sanitizeExpeditionState = (
       value.lastGigResolvedAtRouteStep,
       readCount(value, 'routeStep', 0)
     ),
-    gigOutcomeByStep: sanitizeGigOutcomeMap(
-      value.gigOutcomeByStep,
-      lastGigStats,
-      readCount(value, 'routeStep', 0),
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-    ),
+    gigOutcomeByStep,
     activeObligations: sanitizedObligations,
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }

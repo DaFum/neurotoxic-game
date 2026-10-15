@@ -706,3 +706,30 @@ test('band skill delta caps an overflowing sum at 10 instead of resetting to 1',
   const preview = calculateAppliedDelta(state, delta)
   assert.strictEqual(preview.band.members[0].skill, 10 - Number.MAX_VALUE)
 })
+
+test('band member deltas copy the members list only when a member changes', () => {
+  const state = {
+    player: { money: 0 },
+    band: {
+      members: [
+        { id: 'a', name: 'A', mood: 50, stamina: 50, staminaMax: 100 },
+        { id: 'b', name: 'B', mood: 50, stamina: 50, staminaMax: 100 },
+        { id: 'c', name: 'C', mood: 50, stamina: 50, staminaMax: 100 }
+      ]
+    }
+  }
+
+  const unchanged = applyEventDelta(state, {
+    band: { members: [{ moodChange: 0 }, { moodChange: 0 }, {}] }
+  })
+  assert.strictEqual(unchanged.band.members, state.band.members)
+
+  const changed = applyEventDelta(state, {
+    band: { members: [{}, { moodChange: 5 }, {}] }
+  })
+  assert.notStrictEqual(changed.band.members, state.band.members)
+  assert.strictEqual(changed.band.members[0], state.band.members[0])
+  assert.strictEqual(changed.band.members[1].mood, 55)
+  assert.strictEqual(changed.band.members[2], state.band.members[2])
+  assert.strictEqual(state.band.members[1].mood, 50)
+})

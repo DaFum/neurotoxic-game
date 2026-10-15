@@ -106,8 +106,11 @@ export const appendToRegionalGigHistory = (
     }
   }
 
-  return normalizeRegionalGigHistory({
-    ...normalized,
-    [regionId]: [...currentDays, day]
-  })
+  // `normalized` is a fresh, already-bounded copy, so only the touched entry
+  // needs the per-region dedupe/sort/cap; re-normalizing the whole map is a no-op.
+  normalized[regionId] = Array.from(new Set([...currentDays, day]))
+    .sort((left, right) => left - right)
+    .slice(-256)
+
+  return normalized
 }

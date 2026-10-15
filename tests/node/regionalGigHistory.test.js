@@ -60,6 +60,22 @@ test('appendToRegionalGigHistory appends and bounds', () => {
   )
 })
 
+test('appendToRegionalGigHistory dedupes and sorts the appended region only', () => {
+  const history = { region1: [5, 3, 3], region2: [9, 'x', 2] }
+
+  assert.deepEqual(appendToRegionalGigHistory(history, 'region1', 4), {
+    region1: [3, 4, 5],
+    region2: [2, 9]
+  })
+  assert.deepEqual(appendToRegionalGigHistory(history, 'region1', 5), {
+    region1: [3, 5],
+    region2: [2, 9]
+  })
+  const appended = appendToRegionalGigHistory(history, 'region3', 1)
+  assert.deepEqual(Object.keys(appended), ['region1', 'region2', 'region3'])
+  assert.notEqual(appended.region1, history.region1)
+})
+
 test('normalizeRegionalGigHistory limits to 100 regions', () => {
   const history = {}
   for (let i = 0; i < 150; i++) {
