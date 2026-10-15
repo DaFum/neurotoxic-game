@@ -8,6 +8,8 @@ describe('ActionTypes', () => {
       'UPDATE_PLAYER',
       'UPDATE_BAND',
       'SETTLE_SOLD_MERCH',
+      'RECORD_PENDING_GIG_SETTLEMENT',
+      'CLEAR_PENDING_GIG_SETTLEMENT',
       'TOGGLE_NEURO_DECIMATOR',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',
