@@ -17,8 +17,8 @@ type CrowdTextures = {
  * Manages PixiJS texture lifecycles for crowd rendering.
  *
  * @remarks
- * This manager isolates texture loading and cleanup from the main crowd controller,
- * ensuring that resources are reliably loaded and safely destroyed without leaking.
+ * This manager isolates texture loading and cleanup from the main crowd controller.
+ * Loaded textures are owned by the shared texture cache and are never destroyed here.
  */
 export class CrowdTextureManager {
   /** The current bundle of managed crowd textures. */
@@ -40,7 +40,7 @@ export class CrowdTextureManager {
    * @remarks
    * Failures during the loading process are caught and sent to the error handler silently,
    * leaving the target textures as null. If the manager is disposed while assets are loading,
-   * the newly loaded textures are immediately destroyed to guarantee leak-free cleanup.
+   * the late results are dropped; they are owned by the shared texture cache.
    *
    * @returns A promise that resolves when texture loading is complete.
    */
@@ -58,21 +58,9 @@ export class CrowdTextureManager {
         }
       )
 
-      if (this.isDisposed) {
-        if (
-          loadedTextures.idle &&
-          typeof loadedTextures.idle.destroy === 'function'
-        ) {
-          loadedTextures.idle.destroy(true)
-        }
-        if (
-          loadedTextures.mosh &&
-          typeof loadedTextures.mosh.destroy === 'function'
-        ) {
-          loadedTextures.mosh.destroy(true)
-        }
-        return
-      }
+      // loadTextures returns cache-owned textures shared by other stage users.
+      // A disposed manager must drop the late results without destroying them.
+      if (this.isDisposed) return
 
       if (loadedTextures.idle) this.textures.idle = loadedTextures.idle
       if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh
@@ -97,29 +85,14 @@ export class CrowdTextureManager {
   }
 
   /**
-   * Safely destroys all managed textures to free GPU memory.
+   * Releases the borrowed crowd textures.
    *
    * @remarks
-   * Uses a Set to ensure that if multiple states map to the same underlying texture,
-   * it is only destroyed once.
+   * Textures come from the shared texture cache and may be held by another
+   * mounted stage, so they are dropped here rather than destroyed.
    */
   dispose(): void {
     this.isDisposed = true
-    const uniqueTextures = new Set<Texture>()
-
-    if (this.textures.idle) {
-      uniqueTextures.add(this.textures.idle)
-    }
-    if (this.textures.mosh) {
-      uniqueTextures.add(this.textures.mosh)
-    }
-
-    uniqueTextures.forEach(texture => {
-      if (typeof texture.destroy === 'function') {
-        texture.destroy(true)
-      }
-    })
-
     this.textures = { idle: null, mosh: null }
   }
 }

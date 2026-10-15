@@ -85,36 +85,57 @@ test('CrowdTextureManager', async t => {
     assert.equal(manager.textures.mosh, mockTextures.mosh)
   })
 
-  await t.test('dispose - destroys textures and clears state', async () => {
-    const manager = new CrowdTextureManager()
-    const mockIdleDestroy = mock.fn()
-    const mockMoshDestroy = mock.fn()
+  await t.test(
+    'dispose - releases borrowed cache textures without destroying them',
+    async () => {
+      const manager = new CrowdTextureManager()
+      const mockIdleDestroy = mock.fn()
+      const mockMoshDestroy = mock.fn()
 
-    manager.textures = {
-      idle: { destroy: mockIdleDestroy },
-      mosh: { destroy: mockMoshDestroy }
+      manager.textures = {
+        idle: { destroy: mockIdleDestroy },
+        mosh: { destroy: mockMoshDestroy }
+      }
+
+      manager.dispose()
+
+      assert.equal(mockIdleDestroy.mock.calls.length, 0)
+      assert.equal(mockMoshDestroy.mock.calls.length, 0)
+      assert.equal(manager.textures.idle, null)
+      assert.equal(manager.textures.mosh, null)
     }
+  )
 
-    manager.dispose()
+  await t.test(
+    'overlapping loads - disposed manager leaves shared textures intact for the live one',
+    async () => {
+      mockHandleError.mock.resetCalls()
+      const sharedTextures = {
+        idle: { destroy: mock.fn() },
+        mosh: { destroy: mock.fn() }
+      }
+      let resolveShared = () => {}
+      const pending = new Promise(resolve => {
+        resolveShared = () => resolve(sharedTextures)
+      })
+      _loadTexturesImpl = () => pending
 
-    assert.equal(mockIdleDestroy.mock.calls.length, 1)
-    assert.equal(mockMoshDestroy.mock.calls.length, 1)
-    assert.equal(manager.textures.idle, null)
-    assert.equal(manager.textures.mosh, null)
-  })
+      const oldManager = new CrowdTextureManager()
+      const oldLoad = oldManager.loadAssets()
+      oldManager.dispose()
 
-  await t.test('dispose - handles duplicate textures uniquely', async () => {
-    const manager = new CrowdTextureManager()
-    const mockDestroy = mock.fn()
-    const sharedTexture = { destroy: mockDestroy }
+      const liveManager = new CrowdTextureManager()
+      const liveLoad = liveManager.loadAssets()
 
-    manager.textures = {
-      idle: sharedTexture,
-      mosh: sharedTexture
+      resolveShared()
+      await Promise.all([oldLoad, liveLoad])
+
+      assert.equal(sharedTextures.idle.destroy.mock.calls.length, 0)
+      assert.equal(sharedTextures.mosh.destroy.mock.calls.length, 0)
+      assert.equal(oldManager.textures.idle, null)
+      assert.equal(oldManager.textures.mosh, null)
+      assert.equal(liveManager.textures.idle, sharedTextures.idle)
+      assert.equal(liveManager.textures.mosh, sharedTextures.mosh)
     }
-
-    manager.dispose()
-
-    assert.equal(mockDestroy.mock.calls.length, 1)
-  })
+  )
 })
