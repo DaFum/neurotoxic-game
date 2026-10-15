@@ -71,7 +71,7 @@ export const useHandleNodeArrivalCallback = ({
       //
       // Unlike `useArrivalLogic`, this path queues no save: OVERWORLD → PRE_GIG
       // is not an autosave transition, so a re-entry gig start persists only at
-      // the GIG → POST_GIG autosave. Harmless — a reload puts the band back on
+      // the post-gig settlement-record save. Harmless — a reload puts the band back on
       // the node with the click still available — but keep it in mind if this
       // path ever gains state worth losing.
       if (!result.gigStarted) {

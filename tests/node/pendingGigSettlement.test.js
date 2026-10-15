@@ -21,7 +21,7 @@ import {
 import { createPersistedState } from '../../src/context/usePersistence'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 
-// A save written by the GIG -> POST_GIG autosave, before Continue settled it.
+// A save written by the post-gig record save, before Continue settled it.
 const buildPostGigSnapshot = (settlement = {}) => {
   const base = createInitialState()
   return {

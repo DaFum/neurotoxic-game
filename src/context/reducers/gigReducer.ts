@@ -378,11 +378,11 @@ export const handleSetLastGigStats = (
     ...state,
     lastGigStats: safePayload,
     // Stamp the node as played out here, not in the post-gig continue
-    // handler: `usePersistence` autosaves on GIG -> POST_GIG, so a reload
-    // before the player presses Continue would otherwise restore a save
-    // whose `lastGigNodeId` still points at the previous gig, and the
-    // current-node branch in `useHandleTravel` would let the same gig be
-    // replayed. Practice returns earlier, so it never reaches this.
+    // handler: the post-gig screen saves on mount (with its settlement
+    // record), so a reload before the player presses Continue would otherwise
+    // restore a save whose `lastGigNodeId` still points at the previous gig,
+    // and the current-node branch in `useHandleTravel` would let the same gig
+    // be replayed. Practice returns earlier, so it never reaches this.
     player: {
       ...state.player,
       lastGigNodeId: state.player?.currentNodeId ?? state.player?.lastGigNodeId
