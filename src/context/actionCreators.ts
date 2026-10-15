@@ -20,6 +20,7 @@ import {
   sanitizeSocialUpdates
 } from './reducers/sanitizers/stateSanitizers'
 import { sanitizeLoadedToast } from './reducers/toastSanitizers'
+import { sanitizePendingGigSettlement } from './reducers/pendingGigSettlementReducer'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {
@@ -40,6 +41,7 @@ import type {
   GameMap,
   GameEvent,
   GigModifiers,
+  PendingGigSettlement,
   PostGigSummary,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -140,6 +142,43 @@ export const createSettleSoldMerchAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.SETTLE_SOLD_MERCH }> => ({
   type: ActionTypes.SETTLE_SOLD_MERCH,
   payload: soldMerch && typeof soldMerch === 'object' ? { ...soldMerch } : {}
+})
+
+/**
+ * Creates an action recording the settlement the post-gig report presented.
+ *
+ * @param settlement - Settlement inputs for the gig on the post-gig screen.
+ * @param id - Stable settlement id; generated when omitted.
+ * @returns RECORD_PENDING_GIG_SETTLEMENT action, or `null` when the inputs
+ * are malformed.
+ */
+export const createRecordPendingGigSettlementAction = (
+  settlement: Omit<PendingGigSettlement, 'id'>,
+  id: string = getSafeUUID()
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_PENDING_GIG_SETTLEMENT }
+> | null => {
+  const payload = sanitizePendingGigSettlement({ ...settlement, id })
+  return payload
+    ? { type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT, payload }
+    : null
+}
+
+/**
+ * Creates an action dropping a pending settlement after Continue settled it.
+ *
+ * @param id - Id of the settled record.
+ * @returns CLEAR_PENDING_GIG_SETTLEMENT action.
+ */
+export const createClearPendingGigSettlementAction = (
+  id: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CLEAR_PENDING_GIG_SETTLEMENT }
+> => ({
+  type: ActionTypes.CLEAR_PENDING_GIG_SETTLEMENT,
+  payload: { id }
 })
 
 /**
