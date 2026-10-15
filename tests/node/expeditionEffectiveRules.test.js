@@ -131,8 +131,8 @@ test('Task 3: Single Effective-Rules Entrypoint', async t => {
       assert.equal(rules.numeric.roadWearMultiplier, 0.85)
       // Coach field repair efficiency = 0.05
       assert.equal(rules.numeric.fieldRepairEfficiency, 0.05)
-      // Jammer grants nodeIntelFloor 1
-      assert.equal(rules.numeric.nodeIntelFloor, 1)
+      // The jammer's Authority intel is not a node intel floor
+      assert.equal(rules.numeric.nodeIntelFloor, 0)
     }
   )
 
