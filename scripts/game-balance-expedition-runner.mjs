@@ -1066,8 +1066,8 @@ export const evaluateCandidateNode = (
       if (isRevealed) {
         score += 40
         if (fog?.rareRewardId) score += 60
-        if (isFiniteNumber(fog?.exactPayout)) {
-          score += Math.min(40, fog.exactPayout / 25)
+        if (isFiniteNumber(fog?.estimatedPayout)) {
+          score += Math.min(40, fog.estimatedPayout / 25)
         }
         if (isFiniteNumber(fog?.exactWearCost)) {
           score -= Math.min(30, fog.exactWearCost)

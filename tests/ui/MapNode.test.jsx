@@ -79,7 +79,7 @@ describe('MapNodeView', () => {
           rewardTier: 'medium',
           isExtractionWindow: false,
           intelLevel: 0,
-          exactPayout: null,
+          estimatedPayout: null,
           exactWearCost: null
         }}
       />

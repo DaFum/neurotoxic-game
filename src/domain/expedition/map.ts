@@ -414,6 +414,12 @@ export const buildExpeditionMap = (
         ...(venue ? { venue, venueId: venue.id } : {})
       }
 
+      // Retired draw: this roll once produced a random `exactPayout` that no
+      // arrival ever paid out. The draw is still consumed so every later roll
+      // - wear, events, rares - stays on the seeded stream existing runs and
+      // saves were built from; the Fog now estimates gig pay from the venue.
+      rng()
+
       meta[id] = {
         nodeId: id,
         routeStep: plan.layer,
@@ -430,9 +436,6 @@ export const buildExpeditionMap = (
           plan.layer >= routeProfile.extractionWindowRange[0] &&
           plan.layer <= routeProfile.extractionWindowRange[1],
         hidden: {
-          exactPayout: Math.round(
-            (40 + rng() * 260) * (1 + depthRatio) * (isFinale ? 2.5 : 1)
-          ),
           exactWearCost: Math.round((2 + rng() * 10) * (1 + depthRatio)),
           eventId: rng() < 0.45 ? `exp_event_${plan.layer}_${index}` : null,
           rivalId:

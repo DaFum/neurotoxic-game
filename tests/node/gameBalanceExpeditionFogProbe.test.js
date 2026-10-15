@@ -68,8 +68,11 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
 
       // Reported fields must come from the production projection. Level 1
       // exposes payout/wear/rare; `exactDanger` is not a field the Fog has.
-      assert.equal(pair.inspectedFieldsA.includes('exactPayout'), false)
-      assert.ok(pair.inspectedFieldsB.includes('exactPayout'))
+      // The payout estimate only exists on gig nodes (audit M9), and this
+      // seed's scouted candidate is a Supply stop, so it must stay absent.
+      assert.equal(pair.inspectedFieldsA.includes('estimatedPayout'), false)
+      assert.deepEqual(pair.revealedCandidateIds, ['exp_1_0'])
+      assert.equal(pair.inspectedFieldsB.includes('estimatedPayout'), false)
       assert.ok(pair.inspectedFieldsB.includes('exactWearCost'))
       for (const fields of [pair.inspectedFieldsA, pair.inspectedFieldsB]) {
         assert.equal(fields.includes('exactDanger'), false)

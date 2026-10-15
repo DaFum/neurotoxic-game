@@ -488,8 +488,9 @@ describe('hybrid fog projection', () => {
   it('keeps every hidden detail deterministic and finite', () => {
     for (const seed of SEEDS) {
       for (const entry of Object.values(build(seed).meta)) {
-        assert.ok(Number.isFinite(entry.hidden.exactPayout))
-        assert.ok(entry.hidden.exactPayout >= 0)
+        // The random payout roll is retired: the Fog estimates gig pay from
+        // the venue's real economy instead (audit M9).
+        assert.equal(Object.hasOwn(entry.hidden, 'exactPayout'), false)
         assert.ok(Number.isFinite(entry.hidden.exactWearCost))
         assert.ok(entry.hidden.authorityRisk >= 0)
         assert.ok(entry.hidden.authorityRisk <= 1)

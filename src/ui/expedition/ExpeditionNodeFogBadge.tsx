@@ -76,19 +76,23 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
           {t('ui:expedition.node.extractionWindow')}
         </div>
       ) : null}
-      {fog.exactPayout === null ? (
+      {fog.intelLevel < 1 ? (
         <div className='text-ash-gray' data-testid='expedition-node-fog-hidden'>
           {t('ui:expedition.node.unknownDetail')}
         </div>
       ) : (
         <div data-testid='expedition-node-fog-exact'>
-          <span className='text-star-white'>
-            {t('ui:expedition.node.payout')}
-          </span>{' '}
-          {formatCurrency(fog.exactPayout, i18n.language)}
+          {fog.estimatedPayout === null ? null : (
+            <>
+              <span className='text-star-white'>
+                {t('ui:expedition.node.estimatedPayout')}
+              </span>{' '}
+              {formatCurrency(fog.estimatedPayout, i18n.language)}
+              {fog.exactWearCost === null ? null : ' | '}
+            </>
+          )}
           {fog.exactWearCost === null ? null : (
             <>
-              {' | '}
               <span className='text-star-white'>
                 {t('ui:expedition.node.wear')}
               </span>{' '}
