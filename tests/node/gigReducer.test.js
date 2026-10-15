@@ -221,9 +221,9 @@ describe('gigReducer', () => {
       assert.strictEqual(nextState.reputationByRegion.some, 0) // no rep change
     })
 
-    it('stamps the played node before the POST_GIG autosave can run', () => {
-      // `usePersistence` autosaves on GIG -> POST_GIG, i.e. before the player
-      // presses Continue. If the stamp only landed in the continue handler, a
+    it('stamps the played node before the first POST_GIG save can run', () => {
+      // The post-gig screen saves on mount, i.e. before the player presses
+      // Continue. If the stamp only landed in the continue handler, a
       // reload at that point would restore a save whose lastGigNodeId still
       // points at the previous gig, and useHandleTravel's current-node branch
       // (`node.id === player.lastGigNodeId`) would let the same gig be

@@ -124,11 +124,11 @@ export const usePostGigLogic = () => {
       expedition
     })
 
-  // The GIG -> POST_GIG autosave lands before Continue settles anything.
+  // Continue settles the gig, but the player can reload before pressing it.
   // Persist the presented settlement once per gig so a reload on this screen
-  // settles it on load instead of losing it.
-  // Known gap: that autosave runs before this record exists, so a crash
-  // between it and the record-then-save below still loses the settlement.
+  // settles it on load instead of losing it. This save is the first POST_GIG
+  // save: `usePersistence` does not autosave GIG -> POST_GIG, so no durable
+  // snapshot of a played gig exists without its settlement record.
   const recordedFinancialsRef = useRef<typeof financials>(null)
   useEffect(() => {
     if (!financials || !currentGig || !lastGigStats) return
