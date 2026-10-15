@@ -556,6 +556,7 @@
   "expedition.prep.cargoUsage": "Frachtslots: {{used}}/{{max}} (Versteckter Schmuggel: {{hiddenUsed}}/{{hiddenMax}})",
   "expedition.prep.spareParts": "Ersatzteile: {{value}}",
   "expedition.prep.supplies": "Proviant: {{value}}",
+  "expedition.prep.suppliesRestHint": "Jeder Rastplatz verbraucht 1 Proviant: Die Crew baut {{value}} zusätzlichen Stress ab.",
   "expedition.prep.insurance": "Versicherungspolice",
   "expedition.prep.insuranceHint": "Optionale Risikoabdeckung gegen Fahrzeugpannen oder Equipmentausfälle.",
   "expedition.prep.insuranceNone": "Keine Versicherung",
