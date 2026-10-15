@@ -223,3 +223,8 @@
 
 **Learning:** Calling `getSafeUUID()` (which accesses Web Crypto and formats UUID string buffers) and running `hash31` string polynomial hashing inside 60 FPS update tick routines (such as minigame obstacle spawning in `spawnTraffic`) allocates strings, arrays, and entropy on every spawn. Using a simple monotonic integer ID (`nextTrafficId`) on the simulation state bypasses all crypto calls and string allocations while enabling fast numeric Map/Set lookups.
 **Action:** Store a monotonic counter on simulation state for entity generation during game loop updates instead of generating random UUID strings or hashing strings on hot paths.
+
+## 2026-10-15 - Non-allocating key count in projectile pooling
+
+**Learning:** `Object.keys(p).length` allocates a new array of key strings on every projectile despawn in `processProjectiles`. Replacing it with a short-circuiting `for...in` counter loop avoids intermediate array allocations during 60 FPS update loops.
+**Action:** Use a short-circuiting `for...in` key counter loop instead of `Object.keys(obj).length` when checking if an object exceeds a threshold property count on hot update paths.
