@@ -67,4 +67,74 @@ describe('GeneratedImagePanel', () => {
     fireEvent.error(img)
     expect(img).toHaveAttribute('src', 'http://mock.gen/fallback.svg')
   })
+
+  it('retries the generated image when only the size hint changes after an error', () => {
+    const { rerender } = render(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 100, height: 200 }}
+      />
+    )
+    fireEvent.error(screen.getByRole('img'))
+    expect(screen.getByRole('img').getAttribute('src')).toContain(
+      'fallback.svg'
+    )
+
+    rerender(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 300, height: 400 }}
+      />
+    )
+
+    const src = screen.getByRole('img').getAttribute('src')
+    expect(src).toContain('test%20prompt')
+    expect(src).toContain('width=300&height=400')
+    expect(src).not.toContain('fallback.svg')
+  })
+
+  it('shows the loading skeleton again when only the size hint changes', () => {
+    const { container, rerender } = render(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 100, height: 200 }}
+      />
+    )
+    fireEvent.load(screen.getByRole('img'))
+    expect(container.querySelector('.gen-image-skeleton')).toBeNull()
+
+    rerender(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 300, height: 400 }}
+      />
+    )
+
+    expect(container.querySelector('.gen-image-skeleton')).not.toBeNull()
+  })
+
+  it('keeps the loaded state when an equal size hint is passed as a new object', () => {
+    const { container, rerender } = render(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 100, height: 200 }}
+      />
+    )
+    fireEvent.load(screen.getByRole('img'))
+
+    rerender(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 100, height: 200 }}
+      />
+    )
+
+    expect(container.querySelector('.gen-image-skeleton')).toBeNull()
+  })
 })

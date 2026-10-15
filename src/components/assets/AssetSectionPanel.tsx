@@ -44,6 +44,20 @@ interface AssetSectionPanelProps {
 }
 
 /**
+ * The single dialog the section panel may show at a time.
+ *
+ * @remarks
+ * Asset-bound dialogs keep the asset as it was when the dialog opened, so an
+ * open confirm modal is not re-rendered or unmounted by later state changes.
+ */
+type SectionDialog =
+  | { kind: 'acquire' }
+  | { kind: 'picker'; asset: LongTermAsset; slotId: string }
+  | { kind: 'repair'; asset: LongTermAsset }
+  | { kind: 'upgrade'; asset: LongTermAsset }
+  | { kind: 'sell'; asset: LongTermAsset }
+
+/**
  * Provides the shared structural shell for rendering a specific long-term asset section.
  *
  * @remarks
@@ -69,16 +83,25 @@ export const AssetSectionPanel = ({
     () => campaigns.filter(campaign => campaign.assetSpec.kind === kind),
     [campaigns, kind]
   )
-  const [picker, setPicker] = useState<{
-    asset: LongTermAsset
-    slotId: string
-  } | null>(null)
-  const [repairAsset, setRepairAsset] = useState<LongTermAsset | null>(null)
-  const [upgradeAsset, setUpgradeAsset] = useState<LongTermAsset | null>(null)
-  const [sellAsset, setSellAsset] = useState<LongTermAsset | null>(null)
-  const [acquireOpen, setAcquireOpen] = useState(false)
+  const [dialog, setDialog] = useState<SectionDialog | null>(null)
+  const closeDialog = () => setDialog(null)
   const acquisitionBlocked =
     sectionAssets.length > 0 || sectionCampaigns.length > 0
+  const acquireButton = (
+    <button
+      type='button'
+      onClick={() => setDialog({ kind: 'acquire' })}
+      disabled={acquisitionBlocked}
+      className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
+      style={{
+        borderColor: 'var(--section-accent, var(--color-toxic-green))',
+        background: 'var(--section-accent, var(--color-toxic-green))',
+        color: 'var(--color-void-black)'
+      }}
+    >
+      {t('assets:hub.actions.acquire')}
+    </button>
+  )
 
   return (
     <div className='flex flex-col gap-4 pb-24 sm:pb-4'>
@@ -94,34 +117,10 @@ export const AssetSectionPanel = ({
             <Tooltip
               content={t('assets:purchaseFailed.acquisition_already_active')}
             >
-              <button
-                type='button'
-                disabled={true}
-                className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
-                style={{
-                  borderColor:
-                    'var(--section-accent, var(--color-toxic-green))',
-                  background: 'var(--section-accent, var(--color-toxic-green))',
-                  color: 'var(--color-void-black)'
-                }}
-              >
-                {t('assets:hub.actions.acquire')}
-              </button>
+              {acquireButton}
             </Tooltip>
           ) : (
-            <button
-              type='button'
-              onClick={() => setAcquireOpen(true)}
-              disabled={false}
-              className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
-              style={{
-                borderColor: 'var(--section-accent, var(--color-toxic-green))',
-                background: 'var(--section-accent, var(--color-toxic-green))',
-                color: 'var(--color-void-black)'
-              }}
-            >
-              {t('assets:hub.actions.acquire')}
-            </button>
+            acquireButton
           )}
           {acquisitionBlocked && (
             <p
@@ -137,11 +136,13 @@ export const AssetSectionPanel = ({
           <AssetSectionDeck
             key={asset.id}
             asset={asset}
-            hero={renderHero(asset, slotId => setPicker({ asset, slotId }))}
-            onSlotClick={slotId => setPicker({ asset, slotId })}
-            onRepair={() => setRepairAsset(asset)}
-            onUpgrade={() => setUpgradeAsset(asset)}
-            onSell={() => setSellAsset(asset)}
+            hero={renderHero(asset, slotId =>
+              setDialog({ kind: 'picker', asset, slotId })
+            )}
+            onSlotClick={slotId => setDialog({ kind: 'picker', asset, slotId })}
+            onRepair={() => setDialog({ kind: 'repair', asset })}
+            onUpgrade={() => setDialog({ kind: 'upgrade', asset })}
+            onSell={() => setDialog({ kind: 'sell', asset })}
           />
         ))
       )}
@@ -166,37 +167,29 @@ export const AssetSectionPanel = ({
 
       <ChassisAcquisitionModal
         kind={kind}
-        isOpen={acquireOpen}
-        onClose={() => setAcquireOpen(false)}
+        isOpen={dialog?.kind === 'acquire'}
+        onClose={closeDialog}
       />
-      {picker && (
+      {dialog?.kind === 'picker' && (
         <ModulePickerModal
-          asset={picker.asset}
-          slotId={picker.slotId}
+          asset={dialog.asset}
+          slotId={dialog.slotId}
           isOpen
-          onClose={() => setPicker(null)}
+          onClose={closeDialog}
         />
       )}
-      {repairAsset && (
-        <RepairConfirmModal
-          asset={repairAsset}
-          isOpen
-          onClose={() => setRepairAsset(null)}
-        />
+      {dialog?.kind === 'repair' && (
+        <RepairConfirmModal asset={dialog.asset} isOpen onClose={closeDialog} />
       )}
-      {upgradeAsset && (
+      {dialog?.kind === 'upgrade' && (
         <UpgradeConfirmModal
-          asset={upgradeAsset}
+          asset={dialog.asset}
           isOpen
-          onClose={() => setUpgradeAsset(null)}
+          onClose={closeDialog}
         />
       )}
-      {sellAsset && (
-        <SellConfirmModal
-          asset={sellAsset}
-          isOpen
-          onClose={() => setSellAsset(null)}
-        />
+      {dialog?.kind === 'sell' && (
+        <SellConfirmModal asset={dialog.asset} isOpen onClose={closeDialog} />
       )}
     </div>
   )
