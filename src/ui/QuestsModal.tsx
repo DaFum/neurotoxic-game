@@ -14,6 +14,7 @@ import * as m from 'motion/react-m'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { Modal } from './shared/Modal'
+import { Tooltip } from './shared/Tooltip'
 import { useTranslation } from 'react-i18next'
 import {
   deadlineCount,
@@ -293,33 +294,32 @@ const QuestItem = memo(
           {rewardChips.map((reward, rewardIndex) => {
             const rewardText = getRewardText(reward, t, i18n.language)
             return (
-              <span
+              <Tooltip
                 key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
-                title={rewardText}
-                className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono'
+                content={rewardText}
               >
-                <span className='sr-only'>
-                  {t('ui:rewards.prefix', { defaultValue: 'Reward:' })}{' '}
+                <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono'>
+                  <span className='sr-only'>
+                    {t('ui:rewards.prefix', { defaultValue: 'Reward:' })}{' '}
+                  </span>
+                  {getRewardIcon(reward.type)}
+                  {rewardText}
                 </span>
-                {getRewardIcon(reward.type)}
-                {rewardText}
-              </span>
+              </Tooltip>
             )
           })}
 
           {penaltyTexts.map(text => (
-            <span
-              key={text}
-              title={text}
-              className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
-            >
-              <span className='sr-only'>
-                {t('ui:quests.penalty.prefix', {
-                  defaultValue: 'Penalty:'
-                })}{' '}
+            <Tooltip key={text} content={text}>
+              <span className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'>
+                <span className='sr-only'>
+                  {t('ui:quests.penalty.prefix', {
+                    defaultValue: 'Penalty:'
+                  })}{' '}
+                </span>
+                {text}
               </span>
-              {text}
-            </span>
+            </Tooltip>
           ))}
         </div>
 

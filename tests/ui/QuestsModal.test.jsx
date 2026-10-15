@@ -72,7 +72,8 @@ describe('QuestsModal', () => {
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })
 
-  it('renders structured rewards and failure penalties with accessible sr-only prefixes and tooltip title attributes', () => {
+  it('renders structured rewards and failure penalties with accessible sr-only prefixes and custom Tooltip support', async () => {
+    const user = userEvent.setup()
     render(
       <QuestsModal
         onClose={vi.fn()}
@@ -93,11 +94,16 @@ describe('QuestsModal', () => {
 
     const rewardChip = screen.getByText('ui:rewards.fameWithAmount')
     expect(rewardChip).toBeInTheDocument()
-    expect(rewardChip).toHaveAttribute('title', 'ui:rewards.fameWithAmount')
+    expect(rewardChip).not.toHaveAttribute('title')
 
     const penaltyChip = screen.getByText('ui:quests.penalty.harmony')
     expect(penaltyChip).toBeInTheDocument()
-    expect(penaltyChip).toHaveAttribute('title', 'ui:quests.penalty.harmony')
+    expect(penaltyChip).not.toHaveAttribute('title')
+
+    // Hover over reward chip to reveal custom Tooltip
+    await user.hover(rewardChip)
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('ui:rewards.fameWithAmount')
 
     expect(screen.getByText('Reward:')).toHaveClass('sr-only')
     expect(screen.getByText('Penalty:')).toHaveClass('sr-only')
