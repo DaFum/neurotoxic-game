@@ -5,6 +5,9 @@ import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { createRecordPendingGigSettlementAction } from '../../src/context/actionCreators'
+import { createPersistedState } from '../../src/context/usePersistence'
+import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 
 // A save written by the GIG -> POST_GIG autosave, before Continue settled it.
 const buildPostGigSnapshot = (settlement = {}) => {
@@ -200,5 +203,61 @@ test('pending gig settlement actions', async t => {
       player: { ...cleared.player, money: 800 }
     })
     assert.equal(loaded.player.money, 800)
+  })
+})
+
+test('a reload on an Expedition Finale result completes the run', async t => {
+  // The real save path: the post-gig screen records the settlement, the
+  // record-then-save writes the whitelisted slice, and the load settles it.
+  const finaleSave = () => {
+    const walked = walkToFinale(startedState({ money: 5000, fame: 100 }))
+    const routeStep = walked.expedition.routeStep
+    const atResult = {
+      ...walked,
+      currentScene: GAME_PHASES.POST_GIG,
+      currentGig: { id: 'finale_venue', name: 'Finale Venue' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+      expedition: {
+        ...walked.expedition,
+        lastGigResolvedAtRouteStep: routeStep
+      }
+    }
+    const action = createRecordPendingGigSettlementAction({
+      gigId: 'finale_venue',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    })
+    assert.ok(action)
+    const recorded = gameReducer(atResult, action)
+    assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+    return {
+      routeStep,
+      save: JSON.parse(JSON.stringify(createPersistedState(recorded)))
+    }
+  }
+
+  await t.test('completes the run with the gig as Finale proof', () => {
+    const { save } = finaleSave()
+    const loaded = handleLoadGame(createInitialState(), save)
+
+    assert.equal(loaded.expedition.status, 'completed')
+    assert.equal(loaded.expedition.outcome?.finaleResultId, 'gig:finale_venue')
+    assert.equal(loaded.pendingGigSettlement, null)
+    assert.notEqual(loaded.currentScene, GAME_PHASES.POST_GIG)
+  })
+
+  await t.test('records the gig and finale Contract signals first', () => {
+    const { save, routeStep } = finaleSave()
+    const loaded = handleLoadGame(createInitialState(), save)
+    const signals = loaded.expedition.resolvedObligationSignalIds
+
+    assert.ok(
+      signals.some(id => id.startsWith(`gig:finale_venue:${routeStep}:`)),
+      `gig signal missing from ${JSON.stringify(signals)}`
+    )
+    assert.ok(signals.includes(`finale:finale_venue:${routeStep}`))
   })
 })

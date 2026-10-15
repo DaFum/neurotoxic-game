@@ -276,6 +276,60 @@ describe('useContinueHandler hook', () => {
     expect(d.changeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
+  describe('pending settlement record', () => {
+    const withClear = () => ({
+      ...makeDispatchers(),
+      clearPendingGigSettlement: vi.fn()
+    })
+
+    it('clears the record by id right after settling the player', () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: 'settle-1' })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+      })
+
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledWith(
+        'settle-1'
+      )
+      expect(dispatchers.updatePlayer.mock.invocationCallOrder[0]).toBeLessThan(
+        dispatchers.clearPendingGigSettlement.mock.invocationCallOrder[0]
+      )
+    })
+
+    it('a second Continue press settles and clears nothing more', () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: 'settle-1' })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+        result.current()
+      })
+
+      expect(dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).toHaveBeenCalledTimes(1)
+    })
+
+    it('Continue without a record still settles and clears nothing', async () => {
+      const dispatchers = withClear()
+      const props = makeProps({ dispatchers, pendingSettlementId: null })
+      const { result } = renderHook(() => useContinueHandler(props))
+
+      act(() => {
+        result.current()
+      })
+      await flushMicrotasks()
+
+      expect(dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+      expect(dispatchers.clearPendingGigSettlement).not.toHaveBeenCalled()
+      expect(dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+    })
+  })
+
   it('no-ops if financials is null', () => {
     const props = makeProps({ financials: null })
     const { result } = renderHook(() => useContinueHandler(props))

@@ -20,7 +20,10 @@ import {
 } from '../../quests/producers/economyQuestEvents'
 import { handleSettleSoldMerch } from './gigReducer'
 import { handleApplyQuestEvent } from './questReducer'
-import { handleCompleteExpedition } from './expeditionReducer'
+import {
+  handleCompleteExpedition,
+  handleRecordExpeditionObligationSignal
+} from './expeditionReducer'
 
 /**
  * Validates an untrusted pending-settlement record.
@@ -116,7 +119,8 @@ export const handleClearPendingGigSettlement = (
  *
  * @remarks
  * Mirrors the ledger of `useContinueHandler`: sold merch, money, fame, the
- * post-gig economy quest events, Finale completion, and the bankruptcy and
+ * post-gig economy quest events, the Expedition `gig`/`finale` obligation
+ * signals, Finale completion, and the bankruptcy and
  * Career-victory routing. The scene never reopens GIG or POST_GIG.
  */
 export const settlePendingGigOnLoad = (
@@ -188,6 +192,23 @@ export const settlePendingGigOnLoad = (
       next,
       createMoneyEarnedQuestEvent({ amount: moneyGain })
     )
+  }
+
+  // Contract evidence Continue records before completing the run; without it
+  // a Finale settled here would fail Contracts the gig actually satisfied.
+  if (next.expedition.status === 'active') {
+    next = handleRecordExpeditionObligationSignal(next, {
+      signalType: 'gig',
+      sourceId: record.gigId,
+      expectedRouteStep: next.expedition.routeStep
+    })
+    if (successfulFinale) {
+      next = handleRecordExpeditionObligationSignal(next, {
+        signalType: 'finale',
+        sourceId: record.gigId,
+        expectedRouteStep: next.expedition.routeStep
+      })
+    }
   }
 
   if (expeditionFinale) {
