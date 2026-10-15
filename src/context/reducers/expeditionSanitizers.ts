@@ -33,7 +33,11 @@ import {
   getCanonicalBrandDealTermsHash,
   MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS
 } from '../../domain/expedition/sponsors'
-import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
+import {
+  EXPEDITION_RUN_DRAFT_OFFER_SIZE,
+  EXPEDITION_RUN_DRAFT_TRAITS,
+  deriveExpeditionDraftCandidates
+} from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
 import {
@@ -66,6 +70,7 @@ import type {
   ExpeditionOutcome,
   ExpeditionRewardLedgerEntry,
   ExpeditionSettlement,
+  ExpeditionRunDraftOffer,
   ExpeditionState,
   ExpeditionStatus,
   ExpeditionTechnicalCondition,
@@ -997,7 +1002,7 @@ export const sanitizeExpeditionState = (
           )
         }
       : {}),
-    pendingRunDraftOffer: null,
+    pendingRunDraftOffer: sanitizePendingRunDraftOffer(value, status, runSeed),
     finaleType: sanitizeFinaleType(value.finaleType),
     lastSocialResult: sanitizeSocialResultProof(
       value.lastSocialResult,
@@ -1314,6 +1319,77 @@ const sanitizeRunDraftTraitIds = (
       )
     )
   ].slice(0, 2)
+}
+
+const RUN_DRAFT_SOURCE_TYPES: ReadonlySet<string> = new Set([
+  'major_gig',
+  'rare_event',
+  'rival',
+  'supply',
+  'crew'
+])
+/** Traits one run may draft; mirrors the reducer's SELECT cap. */
+const MAX_RUN_DRAFT_TRAITS = 2
+
+/**
+ * Keeps an unresolved Run Draft offer across a load when it is still one SELECT
+ * could resolve: an active run, offered at the current route step, from a known
+ * source occurrence not already consumed, with draft room left. The candidates
+ * are re-derived from the run seed rather than trusted from the save, so a
+ * crafted save cannot offer traits the occurrence never rolled.
+ */
+const sanitizePendingRunDraftOffer = (
+  value: Record<string, unknown>,
+  status: ExpeditionStatus,
+  runSeed: number | undefined
+): ExpeditionState['pendingRunDraftOffer'] => {
+  const raw = value.pendingRunDraftOffer
+  if (status !== 'active' || !isFiniteNumber(runSeed) || !isLooseRecord(raw)) {
+    return null
+  }
+  const sourceType = readString(raw, 'sourceType')
+  const sourceKey = readString(raw, 'sourceKey')
+  const offeredAtRouteStep = raw.offeredAtRouteStep
+  const routeStep = readCount(value, 'routeStep', 0)
+  if (
+    !sourceType ||
+    !RUN_DRAFT_SOURCE_TYPES.has(sourceType) ||
+    !sourceKey ||
+    offeredAtRouteStep !== routeStep
+  ) {
+    return null
+  }
+  const owned = sanitizeRunDraftTraitIds(value.runDraftTraitIds)
+  const occurrenceProof = `${sourceType}:${sourceKey}:${routeStep}`
+  if (
+    owned.length >= MAX_RUN_DRAFT_TRAITS ||
+    sanitizeUniqueStrings(value.consumedRunDraftSourceKeys).includes(
+      occurrenceProof
+    )
+  ) {
+    return null
+  }
+  const candidateTraitIds = deriveExpeditionDraftCandidates(
+    runSeed,
+    occurrenceProof,
+    owned
+  )
+  const rawCandidates = Array.isArray(raw.candidateTraitIds)
+    ? raw.candidateTraitIds
+    : []
+  if (
+    candidateTraitIds.length < EXPEDITION_RUN_DRAFT_OFFER_SIZE ||
+    rawCandidates.length !== candidateTraitIds.length ||
+    candidateTraitIds.some((id, index) => rawCandidates[index] !== id)
+  ) {
+    return null
+  }
+  return {
+    sourceType: sourceType as ExpeditionRunDraftOffer['sourceType'],
+    sourceKey,
+    offeredAtRouteStep: routeStep,
+    candidateTraitIds
+  }
 }
 
 /** A canonical non-negative integer record key (`'0'`, `'12'`; not `''` or `'01'`). */

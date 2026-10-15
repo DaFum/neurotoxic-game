@@ -337,13 +337,10 @@ test('a settled reload applies the Continue effects exactly once', () => {
   assert.notEqual(loaded.currentScene, GAME_PHASES.POST_GIG)
 
   // A second load of the settled save, and a late Continue clear for the
-  // consumed record, re-apply nothing. (Every load drops an unresolved Run
-  // Draft offer, settled or not, so that slice is left out here.)
-  const withoutOffer = state => ({
-    ...gameplaySlices(state),
-    pendingRunDraftOffer: null
-  })
-  assert.deepEqual(withoutOffer(reload(loaded)), withoutOffer(loaded))
+  // consumed record, re-apply nothing; the unresolved Run Draft offer the
+  // settlement produced survives that second load.
+  assert.ok(loaded.expedition.pendingRunDraftOffer)
+  assert.deepEqual(gameplaySlices(reload(loaded)), gameplaySlices(loaded))
   assert.equal(
     gameReducer(
       loaded,
