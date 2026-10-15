@@ -20,7 +20,10 @@ import type {
   ExpeditionMerchSelection
 } from '../../types/expedition'
 import { isFiniteNumber, isNonNegativeInteger } from '../../utils/finiteNumber'
-import { getExpeditionChassisProfile } from './chassis'
+import {
+  getCommittedExpeditionTourbusAsset,
+  getExpeditionChassisProfile
+} from './chassis'
 import { aggregateExpeditionModuleProfiles } from './modules'
 
 /**
@@ -164,11 +167,8 @@ export const getExpeditionCargoView = (
   state: GameState
 ): ExpeditionCargoView => {
   const activeTourbusAssetId = state.expedition?.loadout?.activeTourbusAssetId
-  const assets = Array.isArray(state.assets) ? state.assets : []
   const chassisAsset = activeTourbusAssetId
-    ? (assets.find(
-        a => a.id === activeTourbusAssetId && a.kind === 'tourbus_chassis'
-      ) ?? null)
+    ? getCommittedExpeditionTourbusAsset(state)
     : null
 
   const moduleIds =

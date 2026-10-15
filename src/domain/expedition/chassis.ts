@@ -8,6 +8,7 @@
  * ownership and configuration source — no purchasable chassis registry is created.
  */
 
+import type { GameState } from '../../types'
 import type { LongTermAsset } from '../../types/assets'
 import type {
   ExpeditionChassisArchetype,
@@ -142,3 +143,48 @@ export const getExpeditionChassisProfile = (
   )
   return EXPEDITION_CHASSIS_PROFILES[archetype]
 }
+
+/**
+ * Finds an owned Tourbus chassis by a candidate asset id.
+ *
+ * @param state - Current game state.
+ * @param assetId - Candidate id, e.g. from a build being validated or a
+ * normalized loadout. Any string is looked up exactly, including `''`.
+ * @returns The asset whose id matches and whose kind is `tourbus_chassis`, or
+ * `null` when `assetId` is not a string, `state.assets` is not an array, or no
+ * such asset exists.
+ *
+ * @remarks
+ * Callers that treat an empty id as "no chassis" must check that themselves
+ * before calling; this helper never interprets the id.
+ */
+export const findExpeditionTourbusAsset = (
+  state: GameState,
+  assetId: unknown
+): LongTermAsset | null => {
+  if (typeof assetId !== 'string' || !Array.isArray(state.assets)) return null
+  return (
+    state.assets.find(
+      asset => asset.id === assetId && asset.kind === 'tourbus_chassis'
+    ) ?? null
+  )
+}
+
+/**
+ * Resolves the Tourbus chassis committed to the active Expedition run.
+ *
+ * @param state - Current game state.
+ * @returns The asset named by `state.expedition.loadout.activeTourbusAssetId`,
+ * resolved with {@link findExpeditionTourbusAsset}, or `null`.
+ *
+ * @remarks
+ * Reads the committed id from state rather than taking a candidate. The same
+ * lookup contract applies: an empty-string id is looked up as-is.
+ */
+export const getCommittedExpeditionTourbusAsset = (
+  state: GameState
+): LongTermAsset | null =>
+  findExpeditionTourbusAsset(
+    state,
+    state.expedition?.loadout?.activeTourbusAssetId
+  )

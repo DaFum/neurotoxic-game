@@ -44,6 +44,7 @@ import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
 } from '../../domain/expedition/cargo'
+import { findExpeditionTourbusAsset } from '../../domain/expedition/chassis'
 import {
   applyTechnicalWear,
   clampCondition,
@@ -636,12 +637,10 @@ export const handleStartExpedition = (
           Math.floor(finiteNumberOr(startRules.startingSpareParts, 0))
         )
         if (granted === 0) return packed
-        const chassisAsset =
-          (Array.isArray(state.assets) ? state.assets : []).find(
-            asset =>
-              asset.id === normalized.activeTourbusAssetId &&
-              asset.kind === 'tourbus_chassis'
-          ) ?? null
+        const chassisAsset = findExpeditionTourbusAsset(
+          state,
+          normalized.activeTourbusAssetId
+        )
         const usage = calculateExpeditionCargoUsage(
           packed,
           calculateExpeditionCargoCapacity(
