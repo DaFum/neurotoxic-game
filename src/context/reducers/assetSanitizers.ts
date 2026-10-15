@@ -622,8 +622,18 @@ export const validateRuntimeCrowdfundCampaign = (
     raw.plannedSuccessRoll !== campaign.plannedSuccessRoll ||
     raw.plannedSuccessProbability !== campaign.plannedSuccessProbability ||
     raw.materializedAssetId !== campaign.materializedAssetId ||
+    campaign.materializedAssetId.length === 0 ||
     !Array.isArray(raw.materializedSlotIds) ||
-    raw.materializedSlotIds.length !== campaign.materializedSlotIds.length
+    raw.materializedSlotIds.length !== campaign.materializedSlotIds.length ||
+    // One non-empty, distinct slot id per configured slot, exactly as the
+    // creator stamps them: slots are addressed by id once materialized.
+    campaign.materializedSlotIds.length !==
+      (CHASSIS_CONFIG[campaign.assetSpec.kind]?.[campaign.assetSpec.flavor]?.[
+        campaign.assetSpec.chassisTier
+      ]?.slots.length ?? 0) ||
+    campaign.materializedSlotIds.some(id => id.length === 0) ||
+    new Set(campaign.materializedSlotIds).size !==
+      campaign.materializedSlotIds.length
   ) {
     return null
   }

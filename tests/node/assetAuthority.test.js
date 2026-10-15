@@ -441,6 +441,49 @@ test('START_CROWDFUND - invalid runtime campaigns return the identical state and
   }
 })
 
+// tourbus_chassis legit tier 1 has four slots, so a canonical campaign stamps
+// four distinct slot ids.
+const SLOT_IDS = ['slot_a', 'slot_b', 'slot_c', 'slot_d']
+
+test('START_CROWDFUND - colliding or malformed materialization ids return the identical state', () => {
+  const otherKindAsset = makeTourbus({ id: 'taken', kind: 'bandhaus_chassis' })
+  const pendingOtherKind = makeRuntimeCampaign({
+    id: 'camp_pending',
+    assetSpec: { kind: 'bandhaus_chassis', flavor: 'legit', chassisTier: 1 },
+    materializedAssetId: 'taken_pending',
+    materializedSlotIds: []
+  })
+  const startState = makeCreatorState(1000, {
+    assets: [otherKindAsset],
+    crowdfundCampaigns: [pendingOtherKind]
+  })
+  const valid = makeRuntimeCampaign({ materializedSlotIds: SLOT_IDS })
+
+  // Sanity: the canonical shape is admitted, so each rejection below is the
+  // collision or malformation under test and nothing else.
+  assert.notStrictEqual(
+    handleStartCrowdfund(startState, { campaign: valid }),
+    startState
+  )
+
+  const cases = {
+    'duplicate slot ids': { materializedSlotIds: ['s', 's', 'c', 'd'] },
+    'empty slot id': { materializedSlotIds: ['', 'b', 'c', 'd'] },
+    'too few slot ids': { materializedSlotIds: ['a', 'b'] },
+    'empty asset id': { materializedAssetId: '' },
+    'asset id of an existing asset': { materializedAssetId: 'taken' },
+    'asset id of a pending campaign': { materializedAssetId: 'taken_pending' }
+  }
+  for (const [label, overrides] of Object.entries(cases)) {
+    const campaign = { ...valid, ...overrides }
+    assert.strictEqual(
+      handleStartCrowdfund(startState, { campaign }),
+      startState,
+      label
+    )
+  }
+})
+
 test('START_CROWDFUND - creator-stamped campaign is admitted and resolves on the tick', () => {
   const startState = makeCreatorState(1000)
   const action = startCrowdfund(

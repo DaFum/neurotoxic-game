@@ -706,6 +706,17 @@ export const handleStartCrowdfund = (
   if (!campaign || hasActiveAssetAcquisition(state, campaign.assetSpec.kind)) {
     return state
   }
+  // The materialized id becomes an asset id on resolution; a collision would
+  // mint a duplicate that load sanitization later drops.
+  const assetId = campaign.materializedAssetId
+  if (
+    (state.assets || []).some(asset => asset.id === assetId) ||
+    (state.crowdfundCampaigns || []).some(
+      pending => pending.materializedAssetId === assetId
+    )
+  ) {
+    return state
+  }
   return {
     ...state,
     crowdfundCampaigns: [...(state.crowdfundCampaigns || []), campaign]
