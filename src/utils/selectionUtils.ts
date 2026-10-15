@@ -42,7 +42,7 @@ export const pickBoundedIndex = (
 }
 
 /** A weighted candidate for {@link pickWeighted}. */
-export interface WeightedEntry<T> {
+interface WeightedEntry<T> {
   value: T
   weight: number
 }

@@ -4,7 +4,7 @@ import type { GigHUDStats } from '../types/rhythmGame'
 /**
  * Represents the derived visual danger and highlight states for the Gig HUD.
  */
-export type GigVisualStatus = {
+type GigVisualStatus = {
   healthDanger: boolean
   overloadDanger: boolean
   overloadCritical: boolean

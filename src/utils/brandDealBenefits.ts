@@ -11,7 +11,7 @@ const MAX_REVENUE_SHARE = 0.5
 /**
  * Aggregated perks and costs of the band's active brand deals.
  */
-export interface ActiveDealBenefits {
+interface ActiveDealBenefits {
   /** Loyalty added after every gig played under the deal(s). */
   loyaltyPerGig: number
   /** Multiplier on positive post-gig fame gains (1 = none). */

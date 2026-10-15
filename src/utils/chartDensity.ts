@@ -5,7 +5,7 @@ import type { Song } from '../types/audio'
 /**
  * Aggregated note density for one chart timeline bucket.
  */
-export interface ChartDensityBar {
+interface ChartDensityBar {
   /** Bucket start time in seconds. */
   timestamp: number
   /** Number of note events inside the bucket. */

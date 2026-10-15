@@ -7,7 +7,7 @@ import { finiteNumberOr } from '../finiteNumber'
  * has no computable sale value (e.g. missing config); callers decide how to
  * surface that (the modal treats it as 0, the reducer rejects the sale).
  */
-export interface AssetSaleQuote {
+interface AssetSaleQuote {
   /** Gross depreciated sale value, or null when uncomputable. */
   gross: number | null
   /** Sanitized sum of principal remaining across the asset's liabilities. */
