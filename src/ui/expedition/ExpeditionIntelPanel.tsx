@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { ActionButton } from '../shared/ActionButton'
 import { getActiveExpeditionMap } from '../../domain/expedition/map'
+import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
 import {
   getExpeditionIntelCapability,
   getExpeditionNodeIntelLevel,
@@ -77,7 +78,8 @@ const INACTIVE_VIEW: IntelView = {
  * @returns The panel's view model.
  *
  * @remarks
- * Candidates are the base-route neighbours of the node the run stands on: the
+ * Candidates are the effective-route neighbours (base edges plus overlay
+ * shortcuts) of the node the run stands on, so travel and Scout agree: the
  * Contact and Social grant producers both target that same set, so a grant
  * always names a node this panel lists.
  */
@@ -104,7 +106,8 @@ const selectIntelView = (state: GameState): IntelView => {
       : null
 
   const candidates: IntelCandidate[] = []
-  for (const edge of map.connections) {
+  const effectiveRoute = getEffectiveExpeditionRoute(state, map)
+  for (const edge of effectiveRoute.connections) {
     if (edge.from !== currentNodeId) continue
     const meta = Object.hasOwn(map.meta, edge.to) ? map.meta[edge.to] : null
     if (!meta) continue
@@ -138,7 +141,8 @@ const selectIntelView = (state: GameState): IntelView => {
           .filter(id => map.meta[id]?.routeStep === meta.routeStep)
           .indexOf(edge.to) + 1,
       nodeClass: meta.nodeClass,
-      specialSubtype: meta.specialSubtype,
+      specialSubtype:
+        effectiveRoute.subtypeByNodeId[edge.to] ?? meta.specialSubtype,
       level,
       canPassive: ask('scout_passive'),
       canRecon: ask('scout_recon'),
