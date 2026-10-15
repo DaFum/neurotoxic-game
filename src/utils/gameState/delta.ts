@@ -773,7 +773,6 @@ export const applyEventDelta = (
       const isArrayDelta = Array.isArray(membersDelta)
       const memberCount = nextBand.members.length
       let updatedMembers: BandMember[] | null = null
-      let bandChanged = false
 
       for (let i = 0; i < memberCount; i++) {
         const member = nextBand.members[i]
@@ -886,22 +885,14 @@ export const applyEventDelta = (
         }
 
         if (memberHasChanges) {
-          if (!bandChanged) {
-            bandChanged = true
-            updatedMembers = [...nextBand.members]
-          }
-          // updatedMembers is initialized above when bandChanged flips to true
-          if (updatedMembers) {
-            updatedMembers[i] = nextMember
-          }
-        } else if (bandChanged) {
-          // If bandChanged already true, ensure updatedMembers exists then assign
+          // Copied lazily on the first changed member; unchanged members are
+          // already in place in the copy.
           if (!updatedMembers) updatedMembers = [...nextBand.members]
-          updatedMembers[i] = member
+          updatedMembers[i] = nextMember
         }
       }
 
-      if (bandChanged && updatedMembers) {
+      if (updatedMembers) {
         nextBand.members = updatedMembers
       }
     }

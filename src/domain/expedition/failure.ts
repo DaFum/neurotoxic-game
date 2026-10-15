@@ -558,6 +558,9 @@ export const syncExpeditionPendingFailure = (state: GameState): GameState => {
  *
  * @param state - Current game state.
  * @param pendingFailureId - Id from an untrusted dispatch.
+ * @param derived - The crisis already derived from `state` by
+ * {@link deriveExpeditionPendingFailure}, so a caller that holds it does not
+ * pay for a second derivation. Derived here when omitted.
  * @returns True when the id matches the live derivation.
  *
  * @remarks
@@ -566,11 +569,13 @@ export const syncExpeditionPendingFailure = (state: GameState): GameState => {
  */
 export const isCurrentExpeditionFailureId = (
   state: GameState,
-  pendingFailureId: unknown
+  pendingFailureId: unknown,
+  derived?: PendingExpeditionFailure | null
 ): boolean => {
   if (typeof pendingFailureId !== 'string') return false
-  const derived = deriveExpeditionPendingFailure(state)
-  return derived !== null && derived.id === pendingFailureId
+  const current =
+    derived === undefined ? deriveExpeditionPendingFailure(state) : derived
+  return current !== null && current.id === pendingFailureId
 }
 
 /**

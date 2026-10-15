@@ -203,6 +203,27 @@ export const useTourbusLogic = () => {
     upgradesRef.current = player.van?.upgrades || []
   }, [player.van?.upgrades])
 
+  // Shared completion path for the natural finish (update loop) and the forced
+  // finish. The update loop syncs stats/UI itself right afterwards, so only the
+  // forced finish requests the immediate sync.
+  const endRun = useCallback(
+    (syncImmediately: boolean) => {
+      const game = gameStateRef.current
+      if (finishCalledRef.current || game.isGameOver) return
+      finishCalledRef.current = true
+      game.isGameOver = true
+      completeTravelMinigame(game.damage, game.itemsCollected)
+      if (!syncImmediately) return
+      statsRef.current.health = Math.max(0, 100 - game.damage)
+      statsRef.current.isGameOver = true
+      setUiState(prev => ({
+        ...prev,
+        isGameOver: true
+      }))
+    },
+    [completeTravelMinigame]
+  )
+
   const update = useCallback(
     (deltaMS: number) => {
       const game = gameStateRef.current
@@ -219,14 +240,8 @@ export const useTourbusLogic = () => {
       processObstacles(game, clampedDelta, upgradesRef.current)
 
       // Check Win/Loss
-      if (
-        game.distance >= TOURBUS_TARGET_DISTANCE &&
-        !game.isGameOver &&
-        !finishCalledRef.current
-      ) {
-        finishCalledRef.current = true
-        game.isGameOver = true
-        completeTravelMinigame(game.damage, game.itemsCollected)
+      if (game.distance >= TOURBUS_TARGET_DISTANCE) {
+        endRun(false)
       }
 
       // Update stats ref for Pixi
@@ -235,7 +250,7 @@ export const useTourbusLogic = () => {
 
       syncUiState(game, setUiState)
     },
-    [completeTravelMinigame]
+    [endRun]
   )
 
   // Setup keyboard controls
@@ -260,21 +275,6 @@ export const useTourbusLogic = () => {
     update, // Passed to Pixi
     uiState,
     actions: { moveLeft, moveRight },
-    finishMinigame: useCallback(() => {
-      if (finishCalledRef.current || gameStateRef.current.isGameOver) return
-      finishCalledRef.current = true
-
-      gameStateRef.current.isGameOver = true
-      completeTravelMinigame(
-        gameStateRef.current.damage,
-        gameStateRef.current.itemsCollected
-      )
-      statsRef.current.health = Math.max(0, 100 - gameStateRef.current.damage)
-      statsRef.current.isGameOver = true
-      setUiState(prev => ({
-        ...prev,
-        isGameOver: true
-      }))
-    }, [completeTravelMinigame])
+    finishMinigame: useCallback(() => endRun(true), [endRun])
   }
 }

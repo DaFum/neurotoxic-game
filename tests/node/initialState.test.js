@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createInitialState } from '../../src/context/initialState'
+import { handleResetState } from '../../src/context/reducers/systemReducer'
 
 test('initialState module keeps the base singleton internal', async () => {
   const moduleExports = await import('../../src/context/initialState')
@@ -24,6 +25,53 @@ test('createInitialState does not share social.influencers references', () => {
       `influencer entry "${key}" must be a fresh object per state`
     )
   }
+})
+
+const collectSharedObjectPaths = (
+  a,
+  b,
+  path = 'state',
+  seen = new WeakSet()
+) => {
+  if (a === null || typeof a !== 'object') return []
+  if (b === null || typeof b !== 'object') return []
+  if (a === b) return [path]
+  if (seen.has(a)) return []
+  seen.add(a)
+  const shared = []
+  for (const key of Object.keys(a)) {
+    if (!Object.hasOwn(b, key)) continue
+    shared.push(
+      ...collectSharedObjectPaths(a[key], b[key], `${path}.${key}`, seen)
+    )
+  }
+  return shared
+}
+
+test('createInitialState does not share social.regionalGigHistory references', () => {
+  const stateA = createInitialState()
+  const stateB = createInitialState()
+
+  assert.deepEqual(stateA.social.regionalGigHistory, {})
+  assert.notEqual(
+    stateA.social.regionalGigHistory,
+    stateB.social.regionalGigHistory
+  )
+})
+
+test('createInitialState shares no nested object references between states', () => {
+  assert.deepEqual(
+    collectSharedObjectPaths(createInitialState(), createInitialState()),
+    []
+  )
+})
+
+test('RESET_STATE results share no nested object references', () => {
+  const base = createInitialState()
+  const resetA = handleResetState(base, {})
+  const resetB = handleResetState(base, {})
+
+  assert.deepEqual(collectSharedObjectPaths(resetA, resetB), [])
 })
 
 test('createInitialState accepts persistedData', () => {

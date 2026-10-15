@@ -116,9 +116,12 @@ type PhysicsSetupParams = {
   currentPlayer: PlayerState
   currentSetlist: RhythmSetlistEntry[]
   gameStateRef: { current: RhythmGameRefState }
-  setAudioStatus: (status: GigAudioStatus) => void
 }
 
+/**
+ * Applies gig physics to the rhythm state ref.
+ * @returns `false` on any setup failure; the caller owns the resulting status update.
+ */
 const applyGigPhysicsSetup = ({
   currentBand,
   currentGigModifiers,
@@ -127,8 +130,7 @@ const applyGigPhysicsSetup = ({
   currentGameMap,
   currentPlayer,
   currentSetlist,
-  gameStateRef,
-  setAudioStatus
+  gameStateRef
 }: PhysicsSetupParams): boolean => {
   const setlistFirstId =
     typeof currentSetlist?.[0] === 'string'
@@ -140,7 +142,6 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Missing band, gameMap nodes, or current player node before gig physics setup'
     )
-    setAudioStatus('failed')
     return false
   }
 
@@ -154,7 +155,6 @@ const applyGigPhysicsSetup = ({
     currentConditionProfile
   )
   if (!physicsSetup) {
-    setAudioStatus('failed')
     return false
   }
 
@@ -167,7 +167,6 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Rhythm game lanes are not initialized correctly'
     )
-    setAudioStatus('failed')
     return false
   }
   if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
@@ -175,7 +174,6 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Gig physics hit windows are not initialized correctly'
     )
-    setAudioStatus('failed')
     return false
   }
   const lane0 = lanes[0]
@@ -186,7 +184,6 @@ const applyGigPhysicsSetup = ({
   const hitWindow2 = hitWindows[2]
   if (!lane0 || !lane1 || !lane2) {
     logger.error('RhythmGame', 'Rhythm game lane entries are missing')
-    setAudioStatus('failed')
     return false
   }
   if (
@@ -198,7 +195,6 @@ const applyGigPhysicsSetup = ({
     !Number.isFinite(hitWindow2)
   ) {
     logger.error('RhythmGame', 'Gig physics hit window values are invalid')
-    setAudioStatus('failed')
     return false
   }
   lane0.hitWindow = hitWindow0
@@ -380,11 +376,11 @@ export const useRhythmGameAudio = ({
         currentGameMap,
         currentPlayer,
         currentSetlist,
-        gameStateRef,
-        setAudioStatus
+        gameStateRef
       })
 
       if (!physicsSuccess) {
+        setAudioStatus('failed')
         currentStatusRef.current = 'failed'
         return
       }

@@ -79,7 +79,10 @@ import { GAME_PHASES } from '../gameConstants'
 import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
-import { applySharedBandEffect } from '../../utils/contrabandEffects'
+import {
+  ADDITIVE_BAND_EFFECT_FIELDS,
+  applySharedBandEffect
+} from '../../utils/contrabandEffects'
 import {
   sanitizeAssets,
   sanitizeAssetKinds,
@@ -619,34 +622,25 @@ const processContrabandExpiry = (band: BandState): BandState => {
 
     if (applied) {
       // Re-clamp bounds for stats that cannot drop below zero
-      if (
-        effectType === 'luck' ||
-        effectType === 'style' ||
-        effectType === 'tour_success' ||
-        effectType === 'gig_modifier' ||
-        effectType === 'tempo' ||
-        effectType === 'practice_gain' ||
-        effectType === 'crit' ||
-        effectType === 'affinity' ||
-        effectType === 'crowd_control'
-      ) {
-        // We know from applySharedBandEffect which property maps to the effectType
-        // All of these map directly or to camelCase variants
-        const key = effectType.replace(/_([a-z])/g, (_, letter) =>
-          letter.toUpperCase()
-        )
+      if (effectType === 'harmony') {
+        // Harmony has a dedicated 0-100 clamp
+        nextBand.harmony = clampBandHarmony(finiteNumberOr(nextBand.harmony, 1))
+      } else if (effectType === 'stress') {
+        // Stress has a dedicated 0-100 clamp
+        nextBand.stress = clampBandStress(finiteNumberOr(nextBand.stress, 0))
+      } else if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
+        // Every other additive field is floored at zero, keyed through the
+        // same field map applySharedBandEffect wrote it with.
+        const key =
+          ADDITIVE_BAND_EFFECT_FIELDS[
+            effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
+          ]
         const bandRecord = nextBand as unknown as Record<
           string,
           number | undefined
         >
         const val = finiteNumberOr(bandRecord[key], 0)
         bandRecord[key] = Math.max(0, val)
-      } else if (effectType === 'harmony') {
-        // Harmony has a dedicated 0-100 clamp
-        nextBand.harmony = clampBandHarmony(finiteNumberOr(nextBand.harmony, 1))
-      } else if (effectType === 'stress') {
-        // Stress has a dedicated 0-100 clamp
-        nextBand.stress = clampBandStress(finiteNumberOr(nextBand.stress, 0))
       } else if (effectType === 'stamina_max') {
         // Members' staminaMax clamp
         if (nextBand.members) {

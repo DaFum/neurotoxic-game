@@ -300,6 +300,12 @@ export const createInitialState = (
 ): GameState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
+  setlist: [],
+  pendingEvents: [],
+  toasts: [],
+  activeStoryFlags: [],
+  eventCooldowns: [],
+  completedMilestones: [],
   venueBlacklist: [],
   reputationByRegion: {},
   activeQuests: [],
@@ -310,6 +316,8 @@ export const createInitialState = (
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({
       ...m,
+      ...(m.baseStats && { baseStats: { ...m.baseStats } }),
+      ...(m.equipment && { equipment: { ...m.equipment } }),
       traits: normalizeTraitMap(m.traits),
       relationships: { ...m.relationships }
     })),
@@ -321,6 +329,7 @@ export const createInitialState = (
   rivalBand: null,
   social: {
     ...DEFAULT_SOCIAL_STATE,
+    regionalGigHistory: {},
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
     influencers: cloneDefaultInfluencers()

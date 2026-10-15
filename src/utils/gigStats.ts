@@ -44,14 +44,15 @@ export const updateGigPerformanceStats = (
 /**
  * Builds a gig stats snapshot for post-gig economy calculations.
  * @param score - Final score.
- * @param stats - Performance stats accumulated during the gig.
+ * @param stats - Performance stats accumulated during the gig. May be partial or
+ *   absent: every counter read here falls back to `0` when missing or non-finite.
  * @param toxicTimeTotal - Total time spent in toxic mode.
  * @param songStats - Array of stats for individual songs completed in the gig. Defaults to `[]`.
  * @returns Gig stats snapshot.
  */
 export const buildGigStatsSnapshot = (
   score: number,
-  stats: RhythmLiveStats,
+  stats: Partial<RhythmLiveStats> | undefined,
   toxicTimeTotal: number,
   songStats: readonly RhythmSongStatsEntry[] = [],
   failed: boolean
