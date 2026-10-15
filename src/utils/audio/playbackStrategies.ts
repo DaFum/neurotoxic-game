@@ -7,13 +7,12 @@ import { hasAudioAsset } from './assets'
 import { audioState } from './state'
 import { logger } from '../logger'
 import { generateNotesForSong } from '../rhythmUtils'
-import { resolveSongPlaybackWindow } from './songUtils'
-import type { ActiveSong } from './rhythmGameTypes'
 import {
-  GIG_LEAD_IN_MS,
-  NOTE_LEAD_IN_MS,
-  NOTE_TAIL_MS
-} from './rhythmGameTypes'
+  resolveNoteCappedPlaybackMs,
+  resolveSongPlaybackWindow
+} from './songUtils'
+import type { ActiveSong } from './rhythmGameTypes'
+import { GIG_LEAD_IN_MS, NOTE_LEAD_IN_MS } from './rhythmGameTypes'
 import type { Song } from '../../types/audio'
 import type { RhythmNote } from '../../types/rhythmGame'
 import type { RandomFn } from '../../types/callbacks'
@@ -56,14 +55,7 @@ const playOggBuffer = async (
     return false
   }
 
-  const lastNote = notes[notes.length - 1]
-  const maxNoteTimeSoFar = lastNote?.time ?? 0
-  const oggDurationMs =
-    maxNoteTimeSoFar > 0
-      ? maxNoteTimeSoFar + NOTE_TAIL_MS
-      : excerptDurationMs > 0
-        ? excerptDurationMs
-        : null
+  const oggDurationMs = resolveNoteCappedPlaybackMs(notes, excerptDurationMs)
 
   const success = await startGigPlayback({
     filename: oggFilename,
@@ -94,14 +86,7 @@ const playMidiSynthesis = async (
     { defaultDurationMs: 0 }
   )
   const offsetSeconds = Math.max(0, excerptStartMs / 1000)
-  const lastNote = notes[notes.length - 1]
-  const maxNoteTimeSoFar = lastNote?.time ?? 0
-  const midiDurationMs =
-    maxNoteTimeSoFar > 0
-      ? maxNoteTimeSoFar + NOTE_TAIL_MS
-      : excerptDurationMs > 0
-        ? excerptDurationMs
-        : null
+  const midiDurationMs = resolveNoteCappedPlaybackMs(notes, excerptDurationMs)
   const gigPlaybackSeconds =
     midiDurationMs !== null ? midiDurationMs / 1000 : null
 

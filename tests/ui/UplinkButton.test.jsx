@@ -1,8 +1,12 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import { UplinkButton, CrisisModal, DeadmanButton } from '../../src/ui/shared/BrutalistUI.tsx'
+import {
+  UplinkButton,
+  CrisisModal,
+  DeadmanButton
+} from '../../src/ui/shared/BrutalistUI.tsx'
 
-test('UplinkButton renders correctly and handles hover states properly', () => {
+test('UplinkButton renders correctly and applies hover styling through CSS', () => {
   const DummyIcon = () => <svg data-testid='dummy-icon' />
   const { container } = render(
     <UplinkButton
@@ -23,22 +27,16 @@ test('UplinkButton renders correctly and handles hover states properly', () => {
   expect(screen.getByText('Test Subtitle')).toBeInTheDocument()
   expect(screen.getByTestId('dummy-icon')).toBeInTheDocument()
 
-  // Before hover, no glitch effect div
-  expect(
-    container.querySelector('.bg-toxic-green\\/10')
-  ).not.toBeInTheDocument()
+  // Hover styling is pure CSS: the glitch layer is always mounted but only
+  // displayed while the link (the `group`) is hovered.
+  expect(link).toHaveClass('group')
+  const glitchLayer = container.querySelector('.bg-toxic-green\\/10')
+  expect(glitchLayer).toHaveClass('hidden', 'group-hover:block')
 
+  // Pointer events do not toggle any React state.
   fireEvent.mouseEnter(link)
-
-  // After hover, glitch effect div appears
-  expect(container.querySelector('.bg-toxic-green\\/10')).toBeInTheDocument()
-
-  fireEvent.mouseLeave(link)
-
-  // Gone again
-  expect(
-    container.querySelector('.bg-toxic-green\\/10')
-  ).not.toBeInTheDocument()
+  expect(glitchLayer).toHaveClass('hidden', 'group-hover:block')
+  expect(container.querySelectorAll('.bg-toxic-green\\/10')).toHaveLength(1)
 
   // Focus-visible ring utilities present
   expect(link).toHaveClass(
@@ -117,7 +115,10 @@ test('DeadmanButton cancels hold when disabled mid-hold and clamps progress ARIA
     vi.advanceTimersByTime(100)
   })
 
-  const currentVal = parseInt(progressbar.getAttribute('aria-valuenow') || '0', 10)
+  const currentVal = parseInt(
+    progressbar.getAttribute('aria-valuenow') || '0',
+    10
+  )
   expect(currentVal).toBeGreaterThan(0)
 
   // Disable mid-hold

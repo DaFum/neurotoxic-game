@@ -49,8 +49,7 @@ vi.mock('../../src/hooks/useLeaderboardSync', () => ({
 
 vi.mock('../../src/utils/eventEngine', () => ({
   eventEngine: {
-    checkEvent: vi.fn(),
-    processOptions: vi.fn(event => event)
+    checkEvent: vi.fn()
   },
   resolveEventChoice: vi.fn(choice => ({
     result: 'success',
