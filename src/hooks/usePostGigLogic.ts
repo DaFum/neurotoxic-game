@@ -127,6 +127,8 @@ export const usePostGigLogic = () => {
   // The GIG -> POST_GIG autosave lands before Continue settles anything.
   // Persist the presented settlement once per gig so a reload on this screen
   // settles it on load instead of losing it.
+  // Known gap: that autosave runs before this record exists, so a crash
+  // between it and the record-then-save below still loses the settlement.
   const recordedFinancialsRef = useRef<typeof financials>(null)
   useEffect(() => {
     if (!financials || !currentGig || !lastGigStats) return

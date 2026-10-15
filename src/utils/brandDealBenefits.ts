@@ -81,3 +81,11 @@ export const getActiveDealBenefits = (
   result.revenueShare = Math.min(MAX_REVENUE_SHARE, result.revenueShare)
   return result
 }
+
+/**
+ * Largest fame multiplier the deal catalog can grant: every deal active at
+ * once. Bounds untrusted multipliers read back from a save.
+ */
+export const MAX_DEAL_FAME_MULTIPLIER = getActiveDealBenefits(
+  Array.from(BRAND_DEALS_BY_ID.keys(), id => ({ id }))
+).fameMultiplier

@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 import type { MutableRefObject } from 'react'
-import { GAME_PHASES } from '../../../context/gameConstants'
 import { enterFullscreen } from '../../../utils/fullscreen'
-import type { GamePhase } from '../../../types/game'
 import type { TFunction } from 'i18next'
 import type { ToastCallback } from '../../../types/callbacks'
 
 interface UseMainMenuLoadProps {
   setIsLoadingGame: (val: boolean) => void
   loadGame: () => boolean
-  changeScene: (scene: GamePhase) => void
   initializeAudio: () => void
   setShowExistingSavePrompt: (val: boolean) => void
   addToast: ToastCallback
@@ -18,13 +15,12 @@ interface UseMainMenuLoadProps {
 
 /**
  * Builds handlers for loading an existing save from the main menu.
- * @param params - Loading-state setter, load action, scene change callback, audio initializer, existing-save prompt setter, toast callback, and translator ref.
+ * @param params - Loading-state setter, load action, audio initializer, existing-save prompt setter, toast callback, and translator ref.
  * @returns Load handlers for the direct load button and existing-save prompt.
  */
 export const useMainMenuLoad = ({
   setIsLoadingGame,
   loadGame,
-  changeScene,
   initializeAudio,
   setShowExistingSavePrompt,
   addToast,
@@ -48,12 +44,13 @@ export const useMainMenuLoad = ({
     }
 
     void enterFullscreen()
-    // State transitions (batched automatically by React 18+)
-    changeScene(GAME_PHASES.OVERWORLD)
+    // LOAD_GAME owns the scene: OVERWORLD, or GAMEOVER when settling a
+    // pending gig bankrupts the band or wins the Career Finale. Navigating
+    // here would override that terminal scene.
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
     initializeAudio()
-  }, [loadGame, addToast, changeScene, initializeAudio, setIsLoadingGame, tRef])
+  }, [loadGame, addToast, initializeAudio, setIsLoadingGame, tRef])
 
   const handleLoadExistingFromPrompt = useCallback(() => {
     setShowExistingSavePrompt(false)
