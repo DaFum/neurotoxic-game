@@ -19,6 +19,7 @@ import {
   getExpeditionRelationshipPairKey
 } from '../../domain/expedition/relationships'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { aggregateExpeditionModuleProfiles } from '../../domain/expedition/modules'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionNodeIntelLevel } from '../../domain/expedition/nodeIntel'
@@ -122,9 +123,22 @@ export const handleRecordExpeditionCrewStressSource = (
   }
   // `?? 0` would let a persisted NaN through into the stress arithmetic.
   const current = finiteNumberOr(crew.stressByCrewId[payload.crewId], 0)
+  const baseDelta = CREW_STRESS_SOURCE_DELTAS[payload.sourceType]
+  // Rest is the one recovery source a committed module improves (sleeping
+  // bunks); the bonus deepens the recovery, it never turns rest into Stress.
+  const delta =
+    payload.sourceType === 'rest'
+      ? baseDelta -
+        Math.max(
+          0,
+          aggregateExpeditionModuleProfiles(
+            state.expedition.loadout?.build?.selectedTourbusModuleIds ?? []
+          ).restStressRecoveryBonus
+        )
+      : baseDelta
   const next = applyCrewStressDelta(
     current,
-    CREW_STRESS_SOURCE_DELTAS[payload.sourceType],
+    delta,
     getEffectiveExpeditionRules(state).numeric.crewStressMultiplier
   )
   return {
