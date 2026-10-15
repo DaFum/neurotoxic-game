@@ -11,8 +11,8 @@ import type { BalanceConfig } from '../../../../config/balance'
  */
 interface ModifierExpense {
   readonly modifier: keyof BalanceConfig['modifiers']
-  readonly labelKey: string
-  readonly detailKey: string
+  readonly label: string
+  readonly detail: string
 }
 
 /**
@@ -21,28 +21,28 @@ interface ModifierExpense {
 const MODIFIER_EXPENSES: readonly ModifierExpense[] = [
   {
     modifier: 'catering',
-    labelKey: BREAKDOWN_LABEL_KEYS.CATERING,
-    detailKey: 'economy:gigExpenses.catering.detail'
+    label: BREAKDOWN_LABEL_KEYS.CATERING,
+    detail: 'economy:gigExpenses.catering.detail'
   },
   {
     modifier: 'promo',
-    labelKey: BREAKDOWN_LABEL_KEYS.SOCIAL_ADS,
-    detailKey: 'economy:gigExpenses.socialAds.detail'
+    label: BREAKDOWN_LABEL_KEYS.SOCIAL_ADS,
+    detail: 'economy:gigExpenses.socialAds.detail'
   },
   {
     modifier: 'merch',
-    labelKey: BREAKDOWN_LABEL_KEYS.MERCH_STAND,
-    detailKey: 'economy:gigExpenses.merchStand.detail'
+    label: BREAKDOWN_LABEL_KEYS.MERCH_STAND,
+    detail: 'economy:gigExpenses.merchStand.detail'
   },
   {
     modifier: 'soundcheck',
-    labelKey: BREAKDOWN_LABEL_KEYS.SOUNDCHECK,
-    detailKey: 'economy:gigExpenses.soundcheck.detail'
+    label: BREAKDOWN_LABEL_KEYS.SOUNDCHECK,
+    detail: 'economy:gigExpenses.soundcheck.detail'
   },
   {
     modifier: 'guestlist',
-    labelKey: BREAKDOWN_LABEL_KEYS.GUEST_LIST,
-    detailKey: 'economy:gigExpenses.guestList.detail'
+    label: BREAKDOWN_LABEL_KEYS.GUEST_LIST,
+    detail: 'economy:gigExpenses.guestList.detail'
   }
 ]
 
@@ -67,7 +67,11 @@ export const calculateGigExpenses = (
   // Transport and subsistence are now exclusively handled during travel phase.
 
   // Modifiers (Budget items)
-  for (const { modifier, labelKey, detailKey } of MODIFIER_EXPENSES) {
+  for (const {
+    modifier,
+    label: labelKey,
+    detail: detailKey
+  } of MODIFIER_EXPENSES) {
     if (!modifiers[modifier]) continue
     const cost = calculateGigModifierCost(modifier, assetModifiers)
     expenses.breakdown.push({ labelKey, value: cost, detailKey })
