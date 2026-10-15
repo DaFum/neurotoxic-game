@@ -1,9 +1,8 @@
 import {
-  calculateChassisGrossSaleValue,
   getTotalDailyObligations,
   getActiveAssetModifiers
 } from './assetSelectors'
-import { finiteNumberOr } from './finiteNumber'
+import { getAssetSaleQuote } from './assetSelectors/assetSaleQuote'
 import type { GameState, PlayerState, BandState, SocialState } from '../types'
 
 /**
@@ -29,28 +28,9 @@ export const getSellableAssets = (
 
   if (assets) {
     for (const asset of assets) {
-      const gross = calculateChassisGrossSaleValue(asset, playerDay)
-      if (gross !== null) {
-        let rawTotalPrincipalRemaining = 0
-        if (liabilities) {
-          for (const key in liabilities) {
-            if (Object.hasOwn(liabilities, key)) {
-              const l = liabilities[key]
-              if (l && l.assetId === asset.id) {
-                rawTotalPrincipalRemaining += Math.max(
-                  0,
-                  finiteNumberOr(l.principalRemaining, 0)
-                )
-              }
-            }
-          }
-        }
-        if (gross >= rawTotalPrincipalRemaining) {
-          const net = gross - rawTotalPrincipalRemaining
-          if (net > 0) {
-            sellableAssets.push({ id: asset.id, net })
-          }
-        }
+      const { net, blocked } = getAssetSaleQuote(asset, liabilities, playerDay)
+      if (!blocked && net > 0) {
+        sellableAssets.push({ id: asset.id, net })
       }
     }
   }
