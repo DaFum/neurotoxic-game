@@ -2,6 +2,7 @@ import type {
   BandMember,
   BandState,
   GameState,
+  MinigameType,
   ToastPayload
 } from '../../types'
 import { logger } from '../../utils/logger'
@@ -546,6 +547,37 @@ const applyPostMinigameResult = (
 }
 
 /**
+ * Emits the Completed, then Perfect (success with zero stress) or Failed quest
+ * events shared by the Amp Calibration and Kabelsalat completion handlers.
+ * Callers invoke it only after their replay guard passed and the result was
+ * applied, so events fire only when the state actually changed.
+ */
+const emitPostMinigameQuestEvents = (
+  state: GameState,
+  minigameId: MinigameType,
+  success: boolean,
+  stress: number,
+  score?: number
+): GameState => {
+  let nextState = QuestEvents.emit(
+    state,
+    createMinigameCompletedQuestEvent({ minigameId, success, score })
+  )
+  if (success && stress === 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createMinigamePerfectQuestEvent({ minigameId })
+    )
+  }
+  return !success
+    ? QuestEvents.emit(
+        nextState,
+        createMinigameFailedQuestEvent({ minigameId, damage: stress })
+      )
+    : nextState
+}
+
+/**
  * Applies amp calibration results while leaving the current scene under overlay continuation control.
  *
  * Returns unchanged state when no matching minigame is active (replay guard).
@@ -591,38 +623,20 @@ export const handleCompleteAmpCalibration = (
     toBoundedNonNegativeInteger(feedbackLoopsDampened ?? 0, 100)
   )
 
-  let nextState = applyPostMinigameResult(
+  const nextState = applyPostMinigameResult(
     state,
     success,
     stress,
     reward,
     'Amp Calibration failed'
   )
-  nextState = QuestEvents.emit(
+  return emitPostMinigameQuestEvents(
     nextState,
-    createMinigameCompletedQuestEvent({
-      minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
-      success,
-      score: safeScore
-    })
+    MINIGAME_TYPES.AMP_CALIBRATION,
+    success,
+    stress,
+    safeScore
   )
-  if (success && stress === 0) {
-    nextState = QuestEvents.emit(
-      nextState,
-      createMinigamePerfectQuestEvent({
-        minigameId: MINIGAME_TYPES.AMP_CALIBRATION
-      })
-    )
-  }
-  return !success
-    ? QuestEvents.emit(
-        nextState,
-        createMinigameFailedQuestEvent({
-          minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
-          damage: stress
-        })
-      )
-    : nextState
 }
 
 /**
@@ -686,37 +700,19 @@ export const handleCompleteKabelsalatMinigame = (
     state.band
   )
 
-  let nextState = applyPostMinigameResult(
+  const nextState = applyPostMinigameResult(
     state,
     success,
     stress,
     reward,
     'Kabelsalat failed'
   )
-  nextState = QuestEvents.emit(
+  return emitPostMinigameQuestEvents(
     nextState,
-    createMinigameCompletedQuestEvent({
-      minigameId: MINIGAME_TYPES.KABELSALAT,
-      success
-    })
+    MINIGAME_TYPES.KABELSALAT,
+    success,
+    stress
   )
-  if (success && stress === 0) {
-    nextState = QuestEvents.emit(
-      nextState,
-      createMinigamePerfectQuestEvent({
-        minigameId: MINIGAME_TYPES.KABELSALAT
-      })
-    )
-  }
-  return !success
-    ? QuestEvents.emit(
-        nextState,
-        createMinigameFailedQuestEvent({
-          minigameId: MINIGAME_TYPES.KABELSALAT,
-          damage: stress
-        })
-      )
-    : nextState
 }
 
 /**

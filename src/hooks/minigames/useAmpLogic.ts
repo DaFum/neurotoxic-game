@@ -332,11 +332,8 @@ export function useAmpLogic({
     hijacksOverridden
   })
 
-  const finishCalledRef = useRef(false)
-
   const finishMinigame = useCallback(() => {
-    if (finishCalledRef.current) return
-    finishCalledRef.current = true
+    if (isCompleteRef.current) return
     isCompleteRef.current = true
     setIsGameOver(true)
 
@@ -366,12 +363,6 @@ export function useAmpLogic({
     feedbackLoopsDampenedRef
   ])
 
-  const handleComplete = useCallback(() => {
-    if (isCompleteRef.current) return
-
-    finishMinigame()
-  }, [finishMinigame, isCompleteRef])
-
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
     (deltaMS: number) => {
@@ -395,7 +386,7 @@ export function useAmpLogic({
         },
         {
           setTimeLeft,
-          handleComplete,
+          handleComplete: finishMinigame,
           setIsOverdriveActive,
           setIsOverheat,
           setHeat,
@@ -409,7 +400,7 @@ export function useAmpLogic({
       )
     },
     [
-      handleComplete,
+      finishMinigame,
       setTimeLeft,
       setIsOverdriveActive,
       setIsOverheat,
