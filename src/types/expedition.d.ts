@@ -416,6 +416,17 @@ export type ExpeditionFailureReason =
   | 'critical_contract_breach'
 
 /**
+ * Safe ways out of a live Authority encounter.
+ */
+export type ExpeditionAuthorityExitId =
+  | 'pay'
+  | 'crew'
+  | 'hidden_compartment'
+  | 'surrender_cargo'
+  | 'route_detour'
+  | 'future_obligation'
+
+/**
  * Legal responses a failure crisis may expose.
  */
 export type ExpeditionFailureChoiceId =

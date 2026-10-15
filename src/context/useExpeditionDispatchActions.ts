@@ -2,6 +2,7 @@ import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState } from '../types'
 import type { ResolveExpeditionCrisisPayload } from '../types/actions'
 import type {
+  ExpeditionAuthorityExitId,
   ExpeditionInspectionIntent,
   ExpeditionInsuranceClaimInput,
   ExpeditionIntelSource,
@@ -23,6 +24,7 @@ import {
   prepareExpeditionSponsorOffers as prepareExpeditionSponsorOffersAction,
   prepareNextExpedition as prepareNextExpeditionAction,
   resolveExpeditionCrisis as resolveExpeditionCrisisAction,
+  resolveExpeditionAuthorityExit as resolveExpeditionAuthorityExitAction,
   revealExpeditionNodeIntel as revealExpeditionNodeIntelAction,
   startExpedition as startExpeditionAction,
   recordExpeditionCrewStressSource as recordExpeditionCrewStressSourceAction,
@@ -56,6 +58,7 @@ type ExpeditionDispatchActions = Pick<
   | 'acceptExpeditionFailure'
   | 'prepareNextExpedition'
   | 'resolveExpeditionCrisis'
+  | 'resolveExpeditionAuthorityExit'
   | 'executeExpeditionRepair'
   | 'executeExpeditionInspection'
   | 'claimExpeditionInsurance'
@@ -153,6 +156,13 @@ export function useExpeditionDispatchActions({
         choice: ResolveExpeditionCrisisPayload['choice']
       ) => {
         const action = resolveExpeditionCrisisAction(stateRef.current, choice)
+        if (action) dispatch(action)
+      },
+      resolveExpeditionAuthorityExit: (exitId: ExpeditionAuthorityExitId) => {
+        const action = resolveExpeditionAuthorityExitAction(
+          stateRef.current,
+          exitId
+        )
         if (action) dispatch(action)
       },
       executeExpeditionRepair: (intent: ExpeditionRepairIntent) => {

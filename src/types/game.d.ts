@@ -472,6 +472,10 @@ export type GameAction =
       import('./actions').ResolveExpeditionCrisisPayload
     >
   | Action<
+      (typeof ActionTypes)['RESOLVE_EXPEDITION_AUTHORITY_EXIT'],
+      import('./actions').ResolveExpeditionAuthorityExitPayload
+    >
+  | Action<
       (typeof ActionTypes)['EXECUTE_EXPEDITION_REPAIR'],
       import('./actions').ExecuteExpeditionRepairPayload
     >

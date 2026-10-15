@@ -12,11 +12,13 @@ import { getSafeUUID } from '../utils/crypto'
 import { nextSeed } from '../utils/seededRng'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import { ActionTypes } from './actionTypes'
+import { getAuthorityEncounter } from '../domain/expedition/authority'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import { getExpeditionNodeIntelLevel } from '../domain/expedition/nodeIntel'
 import type { GameAction, GameState } from '../types'
 import type { ResolveExpeditionCrisisPayload } from '../types/actions'
 import type {
+  ExpeditionAuthorityExitId,
   ExpeditionEventResultId,
   ExpeditionInspectionIntent,
   ExpeditionIntelSource,
@@ -463,6 +465,33 @@ export const resolveExpeditionCrisis = (
       choice,
       expectedRouteStep: state.expedition.routeStep
     }
+  }
+}
+
+/**
+ * Builds the action taking one safe exit out of the Authority encounter.
+ *
+ * @param state - Current game state, read for the encounter and route step.
+ * @param exitId - The exit the player picked.
+ * @returns Typed `RESOLVE_EXPEDITION_AUTHORITY_EXIT` action, or `null` when no
+ * encounter is live or it does not offer that exit.
+ *
+ * @remarks
+ * The reducer re-resolves the encounter and the exit's cost regardless; the
+ * payload names only the exit and the stale guard, never a price.
+ */
+export const resolveExpeditionAuthorityExit = (
+  state: GameState,
+  exitId: ExpeditionAuthorityExitId
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_AUTHORITY_EXIT }
+> | null => {
+  const encounter = getAuthorityEncounter(state)
+  if (!encounter || !encounter.exits.includes(exitId)) return null
+  return {
+    type: ActionTypes.RESOLVE_EXPEDITION_AUTHORITY_EXIT,
+    payload: { exitId, expectedRouteStep: encounter.expectedRouteStep }
   }
 }
 
