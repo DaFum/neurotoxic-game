@@ -223,3 +223,8 @@
 
 **Learning:** Calling `getSafeUUID()` (which accesses Web Crypto and formats UUID string buffers) and running `hash31` string polynomial hashing inside 60 FPS update tick routines (such as minigame obstacle spawning in `spawnTraffic`) allocates strings, arrays, and entropy on every spawn. Using a simple monotonic integer ID (`nextTrafficId`) on the simulation state bypasses all crypto calls and string allocations while enabling fast numeric Map/Set lookups.
 **Action:** Store a monotonic counter on simulation state for entity generation during game loop updates instead of generating random UUID strings or hashing strings on hot paths.
+
+## 2026-10-16 - Precompute bitmasks for exponential combination loops
+
+**Learning:** In permutation / combination loops (such as evaluating softlock avoidance scenarios up to 1,023 iterations in `getPostSaleScenarios`), creating temporary string arrays (`comboAssetIds`) and running linear `.includes()` array scans inside the loop produces ~1,000 array allocations and ~40,000+ linear scans per call. Precomputing a bitmask lookup object (`sellableBitMap`) outside the loop replaces array allocations and linear searches with O(1) bitwise AND checks (`(i & bit) === 0`), speeding up scenario evaluation by ~1.6x.
+**Action:** When iterating bitmask combinations ($2^N$), map string keys to bit positions before the loop to evaluate set membership with O(1) bitwise operations instead of array `.includes()`.

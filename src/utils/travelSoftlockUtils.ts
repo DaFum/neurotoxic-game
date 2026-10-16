@@ -78,24 +78,36 @@ export const getPostSaleScenarios = (
     // coderabbit:ignore - The 10-asset cap intentionally bounds the exponential combination cost to 1023 iterations, which is acceptable on the travel path.
     const numAssets = Math.min(sellableAssets.length, 10)
     const numCombinations = 1 << numAssets
+
+    // ⚡ BOLT OPTIMIZATION: Precompute bitmasks and net values for sellable assets
+    // to eliminate up to 1,023 `comboAssetIds` array allocations and O(N) `.includes()`
+    // linear array scans per iteration (~40k+ total array lookups eliminated per scenario evaluation).
+    const sellableBitMap = Object.create(null) as Record<string, number>
+    const assetNetValues = new Float64Array(numAssets)
+    for (let j = 0; j < numAssets; j++) {
+      const sa = sellableAssets[j]
+      if (sa) {
+        sellableBitMap[sa.id] = 1 << j
+        assetNetValues[j] = sa.net
+      }
+    }
+
     for (let i = 1; i < numCombinations; i++) {
-      const comboAssetIds: string[] = []
       let comboProceeds = 0
       for (let j = 0; j < numAssets; j++) {
         if ((i & (1 << j)) !== 0) {
-          const assetToSell = sellableAssets[j]
-          if (assetToSell) {
-            comboAssetIds.push(assetToSell.id)
-            comboProceeds += assetToSell.net
-          }
+          comboProceeds += assetNetValues[j] ?? 0
         }
       }
 
       const retainedAssets: typeof assets = []
       for (let k = 0, len = assets.length; k < len; k++) {
         const a = assets[k]
-        if (a && !comboAssetIds.includes(a.id)) {
-          retainedAssets.push(a)
+        if (a) {
+          const bit = sellableBitMap[a.id]
+          if (bit === undefined || (i & bit) === 0) {
+            retainedAssets.push(a)
+          }
         }
       }
 
@@ -106,8 +118,11 @@ export const getPostSaleScenarios = (
         for (const key in liabilities) {
           if (Object.hasOwn(liabilities, key)) {
             const l = liabilities[key]
-            if (l && !comboAssetIds.includes(l.assetId)) {
-              retainedLiabilities[key] = l
+            if (l) {
+              const bit = sellableBitMap[l.assetId]
+              if (bit === undefined || (i & bit) === 0) {
+                retainedLiabilities[key] = l
+              }
             }
           }
         }
