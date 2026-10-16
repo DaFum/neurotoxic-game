@@ -164,36 +164,28 @@ const resolveCrewDebriefDecision = (
   if (selected.length === 0) return null
   const loyaltyOf = (crewId: string): number =>
     finiteNumberOr(state.career.crewById[crewId]?.loyalty, 0)
-  const byLoyaltyThenId = (pool: readonly string[]): string[] =>
-    [...pool].sort((a, b) => {
-      const byLoyalty = loyaltyOf(a) - loyaltyOf(b)
-      return byLoyalty !== 0 ? byLoyalty : a.localeCompare(b)
-    })
 
   const eligible = selected.filter(
     crewId => getEligibleCrewSignatureTrait(state, crewId) !== null
   )
-  if (eligible.length > 0) {
-    const sorted = byLoyaltyThenId(eligible)
-    const chosen = pickTied(
-      sorted.map(crewId => ({ key: String(loyaltyOf(crewId)), value: crewId })),
-      state.runSeed,
-      'between-tour:crew_debrief'
-    )
-    if (chosen === undefined) return null
-    return {
-      target: { kind: 'crew', id: chosen },
-      optionIds: [...BETWEEN_TOUR_OPTIONS.crew_debrief]
-    }
-  }
-  const sorted = byLoyaltyThenId(selected)
+  const pool = eligible.length > 0 ? eligible : selected
+  const sorted = [...pool].sort((a, b) => {
+    const byLoyalty = loyaltyOf(a) - loyaltyOf(b)
+    return byLoyalty !== 0 ? byLoyalty : a.localeCompare(b)
+  })
   const chosen = pickTied(
     sorted.map(crewId => ({ key: String(loyaltyOf(crewId)), value: crewId })),
     state.runSeed,
     'between-tour:crew_debrief'
   )
   if (chosen === undefined) return null
-  return { target: { kind: 'crew', id: chosen }, optionIds: ['rest_band'] }
+  return {
+    target: { kind: 'crew', id: chosen },
+    optionIds:
+      eligible.length > 0
+        ? [...BETWEEN_TOUR_OPTIONS.crew_debrief]
+        : ['rest_band']
+  }
 }
 
 // ⚡ BOLT OPTIMIZATION: Single-pass procedural scan for rival response target.

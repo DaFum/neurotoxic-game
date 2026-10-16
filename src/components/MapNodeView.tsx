@@ -547,44 +547,6 @@ export const MapNodeView = memo(
         />
       </div>
     )
-  },
-  (prev: Readonly<MapNodeProps>, next: Readonly<MapNodeProps>) => {
-    return (
-      prev.node.id === next.node.id &&
-      prev.node.x === next.node.x &&
-      prev.node.y === next.node.y &&
-      prev.isCurrent === next.isCurrent &&
-      prev.isTraveling === next.isTraveling &&
-      prev.visibility === next.visibility &&
-      prev.isReachable === next.isReachable &&
-      prev.isPendingConfirm === next.isPendingConfirm &&
-      prev.iconUrl === next.iconUrl &&
-      prev.vanUrl === next.vanUrl &&
-      prev.handleTravel === next.handleTravel &&
-      prev.setHoveredNode === next.setHoveredNode &&
-      prev.ticketPrice === next.ticketPrice &&
-      prev.node.type === next.node.type &&
-      prev.node.venue?.capacity === next.node.venue?.capacity &&
-      prev.node.venue?.name === next.node.venue?.name &&
-      prev.node.venue?.pay === next.node.venue?.pay &&
-      prev.node.venue?.diff === next.node.venue?.diff &&
-      prev.node.venue?.price === next.node.venue?.price &&
-      prev.harmony === next.harmony &&
-      prev.tourSuccess === next.tourSuccess &&
-      // cityTraits entries are stable references owned by gameMap.cityStates,
-      // so reference equality covers all current and future trait fields.
-      prev.cityTraits === next.cityTraits &&
-      // The fog projection is rebuilt per render, so identity comparison would
-      // defeat the memo; the intel level plus the reward band is what actually
-      // changes what the tooltip shows.
-      prev.expeditionFog?.intelLevel === next.expeditionFog?.intelLevel &&
-      prev.expeditionFog?.nodeClass === next.expeditionFog?.nodeClass &&
-      prev.expeditionFog?.specialSubtype ===
-        next.expeditionFog?.specialSubtype &&
-      prev.expeditionFog?.rewardTier === next.expeditionFog?.rewardTier &&
-      prev.expeditionFog?.dangerTier === next.expeditionFog?.dangerTier &&
-      prev.bookingLockMinimumFame === next.bookingLockMinimumFame
-    )
   }
 )
 

@@ -25,6 +25,7 @@ export const NODE_TEST_FILE_PATTERN = /\.(?:test|spec)\.js$/
 /** Node-owned suites whose primary subject is repository tooling. */
 export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/agentInstructionsSync.test.js',
+  'tests/node/analyzeDuplicates.test.js',
   'tests/node/balanceSourceFiles.test.js',
   'tests/node/game-balance-cadence-probe.test.js',
   'tests/node/game-balance-experiments.test.js',

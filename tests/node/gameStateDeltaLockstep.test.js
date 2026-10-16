@@ -704,3 +704,123 @@ test('EventDelta rejects sums that overflow to Infinity', () => {
   assert.equal(applied.social.viral, 1e308)
   assert.equal(applied.band.inventory.sticker, 1e308)
 })
+
+test('member previews use the same recovered baselines and bounds as application', async t => {
+  const cases = [
+    ...[Number.NaN, Infinity, -Infinity, undefined].flatMap(value => [
+      {
+        name: `${value} bases with gains`,
+        member: { mood: value, stamina: value },
+        changes: { moodChange: 60, staminaChange: 5 },
+        next: [100, 100],
+        preview: [50, 0]
+      },
+      {
+        name: `${value} bases with costs`,
+        member: { mood: value, stamina: value },
+        changes: { moodChange: -60, staminaChange: -110 },
+        next: [0, 0],
+        preview: [-50, -100]
+      }
+    ]),
+    {
+      name: 'above maximum bases',
+      member: { mood: 130, stamina: 120, staminaMax: 80 },
+      changes: { moodChange: -10, staminaChange: -10 },
+      next: [90, 70],
+      preview: [-10, -10]
+    },
+    {
+      name: 'below minimum bases',
+      member: { mood: -20, stamina: -10 },
+      changes: { moodChange: 5, staminaChange: 5 },
+      next: [5, 5],
+      preview: [5, 5]
+    },
+    {
+      name: 'fractional bases',
+      member: { mood: 50.9, stamina: 30.9 },
+      changes: { moodChange: 1, staminaChange: 1 },
+      next: [51, 31],
+      preview: [1, 1]
+    },
+    {
+      name: 'gains absorbed by caps',
+      member: { mood: 99, stamina: 79, staminaMax: 80 },
+      changes: { moodChange: 5, staminaChange: 5 },
+      next: [100, 80],
+      preview: [1, 1]
+    },
+    {
+      name: 'costs absorbed by floors',
+      member: { mood: 1, stamina: 1 },
+      changes: { moodChange: -5, staminaChange: -5 },
+      next: [0, 0],
+      preview: [-1, -1]
+    },
+    {
+      name: 'invalid stamina maximum',
+      member: { mood: 90, stamina: Infinity, staminaMax: Infinity },
+      changes: { moodChange: 5, staminaChange: 5 },
+      next: [95, 100],
+      preview: [5, 0]
+    }
+  ]
+
+  for (const shape of ['members', 'membersDelta']) {
+    for (const entry of cases) {
+      await t.test(`${shape}: ${entry.name}`, () => {
+        const state = buildState()
+        state.band.members = [{ ...state.band.members[0], ...entry.member }]
+        const before = structuredClone(state)
+        const delta = withDelta({
+          band: {
+            [shape]: shape === 'members' ? entry.changes : [entry.changes]
+          }
+        })
+
+        const preview = calculateAppliedDelta(state, delta)
+        const applied = applyEventDelta(state, delta)
+        const nextMember = applied.band.members[0]
+        const memberPreview = preview.band.membersDelta[0]
+
+        assert.deepEqual([nextMember.mood, nextMember.stamina], entry.next)
+        assert.deepEqual(
+          [memberPreview.moodChange, memberPreview.staminaChange],
+          entry.preview
+        )
+        assert.deepEqual(state, before, 'neither walker mutates its input')
+      })
+    }
+  }
+})
+
+test('zero and malformed member deltas preserve member references and report no numeric change', () => {
+  for (const member of [
+    { mood: NaN, stamina: Infinity },
+    { mood: 130, stamina: -10 }
+  ]) {
+    for (const changes of [
+      {},
+      { moodChange: 0, staminaChange: 0 },
+      { moodChange: NaN, staminaChange: Infinity },
+      { moodChange: '5', staminaChange: true }
+    ]) {
+      const state = buildState()
+      state.band.members = [{ ...state.band.members[0], ...member }]
+      const delta = withDelta({ band: { membersDelta: [changes] } })
+
+      const preview = calculateAppliedDelta(state, delta)
+      const applied = applyEventDelta(state, delta)
+
+      assert.strictEqual(applied.band.members, state.band.members)
+      assert.strictEqual(applied.band.members[0], state.band.members[0])
+      for (const key of ['moodChange', 'staminaChange']) {
+        assert.equal(
+          preview.band.membersDelta[0][key],
+          typeof changes[key] === 'number' ? 0 : changes[key]
+        )
+      }
+    }
+  }
+})
