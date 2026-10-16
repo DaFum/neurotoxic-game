@@ -95,4 +95,3 @@
 | 2026-10-12 | src/context/reducers/careerReducer.ts | handleSettleExpeditionCrewCareer, handleAcquireExpeditionCrewSignature |
 | 2026-10-14 | src/utils/mapGenerator/types.ts | MapConnection, GeneratedMapNode, MapGeneratorState, VenuePools |
 | 2026-10-15 | src/components/assets/ForeclosureModal.tsx | Props, ForeclosureModal |
-| 2026-10-16 | src/context/reducers/careerSanitizers.ts | sanitizeCareerState |
