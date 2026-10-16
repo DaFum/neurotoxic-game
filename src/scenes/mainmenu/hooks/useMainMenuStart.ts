@@ -43,33 +43,20 @@ export const useMainMenuStart = ({
   addToast,
   tRef
 }: UseMainMenuStartProps) => {
-  const proceedToTour = useCallback(() => {
-    setIsStarting(true)
+  const proceedToTour = useCallback(
+    (identity: Parameters<UseMainMenuStartProps['updatePlayer']>[0]) => {
+      setIsStarting(true)
 
-    // Capture identity before reset
-    const savedPlayerId = safeStorageOperation('getPlayerId', () =>
-      readStorageItem('neurotoxic_player_id')
-    )
-    const savedPlayerName = safeStorageOperation('getPlayerName', () =>
-      readStorageItem('neurotoxic_player_name')
-    )
+      // Keep the resolved identity even when storage becomes unavailable.
+      resetState()
+      updatePlayer(identity)
+      changeScene(GAME_PHASES.OVERWORLD)
 
-    // State transitions (batched automatically by React 18+)
-    resetState()
-
-    // Re-apply identity unconditionally (protects against storage failure but valid in-memory session)
-    if (savedPlayerId && savedPlayerName) {
-      updatePlayer({
-        playerId: savedPlayerId,
-        playerName: savedPlayerName
-      })
-    }
-
-    changeScene(GAME_PHASES.OVERWORLD)
-
-    // Audio setup is fire-and-forget — never blocks scene transitions.
-    initializeAudio()
-  }, [resetState, changeScene, initializeAudio, updatePlayer, setIsStarting])
+      // Audio setup is fire-and-forget — never blocks scene transitions.
+      initializeAudio()
+    },
+    [resetState, changeScene, initializeAudio, updatePlayer, setIsStarting]
+  )
 
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
@@ -85,12 +72,11 @@ export const useMainMenuStart = ({
       return
     }
 
-    updatePlayer({
+    proceedToTour({
       playerId: savedPlayerId,
       playerName: savedPlayerName
     })
-    proceedToTour()
-  }, [proceedToTour, updatePlayer, setShowNameInput])
+  }, [proceedToTour, setShowNameInput])
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
@@ -127,22 +113,13 @@ export const useMainMenuStart = ({
         writeStorageItem('neurotoxic_player_name', resolvedName)
       )
 
-      updatePlayer({
+      setShowNameInput(false)
+      proceedToTour({
         playerId: newId,
         playerName: resolvedName
       })
-
-      setShowNameInput(false)
-      proceedToTour()
     },
-    [
-      playerNameInput,
-      addToast,
-      proceedToTour,
-      updatePlayer,
-      setShowNameInput,
-      tRef
-    ]
+    [playerNameInput, addToast, proceedToTour, setShowNameInput, tRef]
   )
 
   const closeNameInput = useCallback(

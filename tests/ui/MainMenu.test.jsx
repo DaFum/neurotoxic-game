@@ -579,15 +579,17 @@ describe('MainMenu Component', () => {
       localStorage.setItem('neurotoxic_player_id', 'test-id')
       localStorage.setItem('neurotoxic_player_name', 'TestPlayer')
 
-      render(<MainMenu />)
+      const { unmount } = render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
+      expect(mockUpdatePlayer).toHaveBeenCalledExactlyOnceWith({
         playerId: 'test-id',
         playerName: 'TestPlayer'
       })
 
+      unmount()
+      render(<MainMenu />)
       fireEvent.click(screen.getByText('ui:start_game'))
 
       expect(mockUpdatePlayer).toHaveBeenCalledTimes(2)

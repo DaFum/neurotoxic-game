@@ -271,6 +271,32 @@ const copyFilteredProperties = (source: unknown): FilteredRecord => {
 const asMemberDelta = (value: unknown): MemberDelta | null =>
   isLooseRecord(value) ? value : null
 
+/** Resolves member changes from the same recovered baseline in both walkers. */
+const resolveMemberDelta = (
+  member: Partial<BandMember>,
+  delta: MemberDelta
+): {
+  currentMood: number
+  currentStamina: number
+  nextMood: number
+  nextStamina: number
+} | null => {
+  const moodChange = finiteNumberOr(delta.moodChange, 0)
+  const staminaChange = finiteNumberOr(delta.staminaChange, 0)
+  // A zero or malformed request must not normalize an otherwise untouched member.
+  if (moodChange === 0 && staminaChange === 0) return null
+
+  const staminaMax = finiteNumberOr(member.staminaMax, 100)
+  const currentMood = readMemberMood(member.mood)
+  const currentStamina = readMemberStamina(member.stamina, staminaMax)
+  return {
+    currentMood,
+    currentStamina,
+    nextMood: clampMemberMood(currentMood + moodChange),
+    nextStamina: clampMemberStamina(currentStamina + staminaChange, staminaMax)
+  }
+}
+
 const isRelationshipChange = (value: unknown): value is RelationshipChange => {
   if (!isLooseRecord(value)) return false
   return (
@@ -467,28 +493,16 @@ export const calculateAppliedDelta = (
           ? copyFilteredProperties(memberDelta)
           : Object.create(null)
 
-        const moodChange = finiteNumberOr(mDelta.moodChange, 0)
-        const staminaChange = finiteNumberOr(mDelta.staminaChange, 0)
-
-        const currentMood = finiteNumberOr(member.mood, 0)
-        const currentStamina = finiteNumberOr(member.stamina, 0)
-        const staminaMax = finiteNumberOr(member.staminaMax, 100)
-
-        const newMood = clampMemberMood(currentMood + moodChange)
-        const newStamina = clampMemberStamina(
-          currentStamina + staminaChange,
-          staminaMax
-        )
-
-        const actualMoodChange = newMood - currentMood
-        const actualStaminaChange = newStamina - currentStamina
+        const step = resolveMemberDelta(member, mDelta)
 
         // Keep all other properties of the original delta, override only mood and stamina if they exist
         const newDelta = copyFilteredProperties(mDelta)
         if (typeof mDelta.moodChange === 'number')
-          newDelta.moodChange = actualMoodChange
+          newDelta.moodChange = step ? step.nextMood - step.currentMood : 0
         if (typeof mDelta.staminaChange === 'number')
-          newDelta.staminaChange = actualStaminaChange
+          newDelta.staminaChange = step
+            ? step.nextStamina - step.currentStamina
+            : 0
 
         computedMembersDelta.push(newDelta)
       }
@@ -787,23 +801,19 @@ export const applyEventDelta = (
         ) {
           const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
           const mDelta = asMemberDelta(rawMemberDelta) ?? Object.create(null)
-          const moodChange = finiteNumberOr(mDelta.moodChange, 0)
-          const staminaChange = finiteNumberOr(mDelta.staminaChange, 0)
+          const step = resolveMemberDelta(member, mDelta)
 
-          if (moodChange !== 0 || staminaChange !== 0) {
-            const staminaMax = finiteNumberOr(member.staminaMax, 100)
-            const newMood = clampMemberMood(
-              readMemberMood(member.mood) + moodChange
-            )
-            const newStamina = clampMemberStamina(
-              readMemberStamina(member.stamina, staminaMax) + staminaChange,
-              staminaMax
-            )
-
-            if (newMood !== member.mood || newStamina !== member.stamina) {
-              nextMember = { ...nextMember, mood: newMood, stamina: newStamina }
-              memberHasChanges = true
+          if (
+            step &&
+            (step.nextMood !== member.mood ||
+              step.nextStamina !== member.stamina)
+          ) {
+            nextMember = {
+              ...nextMember,
+              mood: step.nextMood,
+              stamina: step.nextStamina
             }
+            memberHasChanges = true
           }
         }
 
