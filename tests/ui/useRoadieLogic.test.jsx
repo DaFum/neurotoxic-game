@@ -59,6 +59,31 @@ describe('useRoadieLogic', () => {
     mock.clearAllMocks()
   })
 
+  for (const band of [undefined, null]) {
+    test(`initializes an empty stash when band is ${String(band)}`, () => {
+      const originalImplementation = mockUseGameState.getMockImplementation()
+      mockUseGameState.mockImplementation(() => ({
+        completeRoadieMinigame: mockCompleteRoadieMinigame,
+        currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+        band,
+        changeScene: mockChangeScene
+      }))
+      try {
+        const { result, unmount } = renderHook(() => useRoadieLogic())
+        const game = result.current.gameStateRef.current
+        expect(game.carrying).toMatchObject({ id: 'amp', type: 'AMP' })
+        expect(game.itemsToDeliver.map(item => item.type)).toEqual([
+          'DRUMS',
+          'GUITAR'
+        ])
+        expect(game.contrabandCount).toBe(0)
+        unmount()
+      } finally {
+        mockUseGameState.mockImplementation(originalImplementation)
+      }
+    })
+  }
+
   test('rejects nonfinite deltas and clamps simulation time to 0..100 ms', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current

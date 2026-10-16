@@ -170,7 +170,7 @@ C01–C05 have their own status above.
 | S05 | `src/hooks/useContrabandStash.ts:18`                                             | Reuse existing `useDisclosure` for modal state.                                                                                                                                                     | Implemented — smaller-cleanup follow-up |
 | S06 | `src/hooks/useLeaderboardSync.ts:20`                                             | Use one endpoint-unavailable flag for disabling requests and logging once. Check it before logging, then set it; preserve in-flight deduplication and HMR reset.                                    | Implemented — smaller-cleanup follow-up |
 | S07 | `src/hooks/rhythmGame/useRhythmGameAudio.ts:181,400`                             | Validate lane/window pairs in one indexed pass before mutation, retaining strict finite checks. Remove the immediately repeated abort check with no intervening await.                              | Implemented — smaller-cleanup follow-up |
-| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                     | Implemented — smaller-cleanup follow-up |
+| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band?.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                    | Implemented — smaller-cleanup follow-up |
 | S09 | `src/hooks/rhythmGame/scoring/useHandleMiss.ts:125`                              | Remove the field copied unchanged from the object already spread above it.                                                                                                                          | Implemented — smaller-cleanup follow-up |
 | S10 | `src/utils/mapGenerator/mathUtils.ts:86`                                         | Return the selected slice directly. Previous validated swaps guarantee completed entries; retain sparse-array defenses, RNG draws, and deterministic branches.                                      | Implemented — smaller-cleanup follow-up |
 | S11 | `src/utils/postGig/storySpinHandlers.ts:41`                                      | Replace the argument-free, zero-capture updater factory with its updater. Preserve finite-number and controversy clamps. Other factories capture inputs and should remain factories.                | Implemented — smaller-cleanup follow-up |
@@ -323,3 +323,18 @@ Verification for the smaller-cleanup follow-up:
 - Knip remains at seven baseline findings within budget seven; no-check guard,
   Markdownlint, Prettier, and `git diff --check` passed.
 - Independent review found no remaining S01–S16 findings.
+
+## S08 review correction — 2026-10-16
+
+Review of PR #3140 found that S08 had dropped the original missing-band guard.
+`Object.keys(band?.stash ?? {})[0] ?? null` restores initialization with an empty
+stash when the band is nullish. The regular `test:all` gate does not include the
+separate performance suite; its existing Roadie fixture exposed the regression.
+
+The added `undefined` and `null` band cases both failed before the fix and passed
+afterward (6 Roadie UI tests total). The existing Roadie performance test also
+failed before and passed after the fix. The added cases assert normal equipment
+initialization without a contraband item.
+
+The complete local performance suite passed: 18 files / 22 tests. Core typecheck,
+scoped ESLint, Prettier, Markdownlint, and `git diff --check` also passed.

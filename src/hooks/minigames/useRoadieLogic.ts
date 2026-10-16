@@ -205,7 +205,7 @@ export const useRoadieLogic = () => {
     null as unknown as RoadieLogicState
   )
   if (!gameStateRef.current) {
-    const stashItemId = Object.keys(band.stash ?? {})[0] ?? null
+    const stashItemId = Object.keys(band?.stash ?? {})[0] ?? null
     stashItemIdRef.current = stashItemId
     gameStateRef.current = getInitialGameState(stashItemId)
   }
