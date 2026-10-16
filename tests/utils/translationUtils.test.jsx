@@ -108,3 +108,33 @@ test('translateContextKeys handles arrays at top level', () => {
   const result = translateContextKeys(context, t)
   expect(result).toEqual(['translated:ui:key', 'normal'])
 })
+
+test('recognized top-level strings pass through while nested strings translate', () => {
+  const t = vi.fn(key => `translated:${key}`)
+  expect(translateContextKeys('ui:key', t)).toBe('ui:key')
+  expect(t).not.toHaveBeenCalled()
+  expect(translateContextKeys({ nested: ['ui:key'] }, t)).toEqual({
+    nested: ['translated:ui:key']
+  })
+  expect(t).toHaveBeenCalledExactlyOnceWith('ui:key')
+})
+
+test('sparse arrays preserve holes and skip inherited entries while cutting cycles', () => {
+  const array = new Array(4)
+  const prototype = Object.create(Array.prototype)
+  prototype[0] = 'ui:inherited'
+  Object.setPrototypeOf(array, prototype)
+  array[2] = 'ui:own'
+  array[3] = array
+  const result = translateContextKeys(
+    Object.freeze(array),
+    key => `translated:${key}`
+  )
+
+  expect(result.length).toBe(4)
+  expect(Object.hasOwn(result, 0)).toBe(false)
+  expect(Object.hasOwn(result, 1)).toBe(false)
+  expect(result[2]).toBe('translated:ui:own')
+  expect(Object.hasOwn(result, 3)).toBe(true)
+  expect(result[3]).toBeUndefined()
+})

@@ -2562,6 +2562,38 @@ const GROSS_SPEND_SOURCES = [
   'otherGrossSpend'
 ]
 
+const createExecutionCoverage = () => ({
+  brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+  postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+  socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+  contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+  minigamesTravel: { attempts: 0, completions: 0 },
+  minigamesRoadie: { attempts: 0, completions: 0 },
+  minigamesKabelsalat: { attempts: 0, completions: 0 },
+  minigamesAmp: { attempts: 0, completions: 0 },
+  sponsorship: { attempts: 0, successes: 0 },
+  restStops: { evaluations: 0, activations: 0 },
+  eventTriggers: {
+    travel: { evaluations: 0, activations: 0 },
+    preGig: { evaluations: 0, activations: 0 },
+    gigMoments: { evaluations: 0, activations: 0 },
+    postGig: { evaluations: 0, activations: 0 }
+  },
+  quests: {
+    status: 'insufficient_evidence',
+    offers: 0,
+    activations: 0,
+    progress: 0,
+    completions: 0,
+    failures: 0,
+    rewards: 0,
+    availableIds: Object.keys(QUEST_REGISTRY).length,
+    uniqueQuestIdsOffered: new Set(),
+    uniqueQuestIdsActivated: new Set(),
+    uniqueQuestIdsCompleted: new Set()
+  }
+})
+
 export const runSingleSimulation = (
   scenario,
   seed,
@@ -2659,41 +2691,7 @@ export const runSingleSimulation = (
     postPulses: 0,
     contrabandDrops: 0,
     catalogUpgrades: 0,
-    executionCoverage: {
-      brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-      postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-      socialTrends: {
-        evaluations: 0,
-        activations: 0,
-        uniqueIdsSeen: new Set()
-      },
-      contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-      minigamesTravel: { attempts: 0, completions: 0 },
-      minigamesRoadie: { attempts: 0, completions: 0 },
-      minigamesKabelsalat: { attempts: 0, completions: 0 },
-      minigamesAmp: { attempts: 0, completions: 0 },
-      sponsorship: { attempts: 0, successes: 0 },
-      restStops: { evaluations: 0, activations: 0 },
-      eventTriggers: {
-        travel: { evaluations: 0, activations: 0 },
-        preGig: { evaluations: 0, activations: 0 },
-        gigMoments: { evaluations: 0, activations: 0 },
-        postGig: { evaluations: 0, activations: 0 }
-      },
-      quests: {
-        status: 'insufficient_evidence',
-        offers: 0,
-        activations: 0,
-        progress: 0,
-        completions: 0,
-        failures: 0,
-        rewards: 0,
-        availableIds: Object.keys(QUEST_REGISTRY).length,
-        uniqueQuestIdsOffered: new Set(),
-        uniqueQuestIdsActivated: new Set(),
-        uniqueQuestIdsCompleted: new Set()
-      }
-    },
+    executionCoverage: createExecutionCoverage(),
     harmonyRecovery: {
       evaluations: 0,
       activations: 0,
@@ -3764,37 +3762,7 @@ const COVERAGE_ID_INVENTORY = {
 }
 
 export const mergeExecutionCoverage = sources => {
-  const coverage = {
-    brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    minigamesTravel: { attempts: 0, completions: 0 },
-    minigamesRoadie: { attempts: 0, completions: 0 },
-    minigamesKabelsalat: { attempts: 0, completions: 0 },
-    minigamesAmp: { attempts: 0, completions: 0 },
-    sponsorship: { attempts: 0, successes: 0 },
-    restStops: { evaluations: 0, activations: 0 },
-    eventTriggers: {
-      travel: { evaluations: 0, activations: 0 },
-      preGig: { evaluations: 0, activations: 0 },
-      gigMoments: { evaluations: 0, activations: 0 },
-      postGig: { evaluations: 0, activations: 0 }
-    },
-    quests: {
-      status: 'insufficient_evidence',
-      offers: 0,
-      activations: 0,
-      progress: 0,
-      completions: 0,
-      failures: 0,
-      rewards: 0,
-      availableIds: Object.keys(QUEST_REGISTRY).length,
-      uniqueQuestIdsOffered: new Set(),
-      uniqueQuestIdsActivated: new Set(),
-      uniqueQuestIdsCompleted: new Set()
-    }
-  }
+  const coverage = createExecutionCoverage()
 
   for (const source of sources) {
     if (!source) continue
@@ -4050,101 +4018,18 @@ export const summarizeScenario = runs => {
       daysSurvived: popAll.daysSurvived,
       gigNet: popAll.gigNet,
       performanceScore: popAll.performanceScore,
-      lowestMoney: {
-        mean: Math.round(mean(runs.map(r => r.lowestMoney))),
-        median: Math.round(median(runs.map(r => r.lowestMoney))),
-        stdDev: Math.round(standardDeviation(runs.map(r => r.lowestMoney))),
-        min: Math.round(minimum(runs.map(r => r.lowestMoney))),
-        p10: Math.round(
-          quantile(
-            runs.map(r => r.lowestMoney),
-            0.1
-          )
-        ),
-        p25: Math.round(
-          quantile(
-            runs.map(r => r.lowestMoney),
-            0.25
-          )
-        ),
-        p75: Math.round(
-          quantile(
-            runs.map(r => r.lowestMoney),
-            0.75
-          )
-        ),
-        p90: Math.round(
-          quantile(
-            runs.map(r => r.lowestMoney),
-            0.9
-          )
-        ),
-        max: Math.round(maximum(runs.map(r => r.lowestMoney)))
-      },
-      peakMoney: {
-        mean: Math.round(mean(runs.map(r => r.peakMoney))),
-        median: Math.round(median(runs.map(r => r.peakMoney))),
-        stdDev: Math.round(standardDeviation(runs.map(r => r.peakMoney))),
-        min: Math.round(minimum(runs.map(r => r.peakMoney))),
-        p10: Math.round(
-          quantile(
-            runs.map(r => r.peakMoney),
-            0.1
-          )
-        ),
-        p25: Math.round(
-          quantile(
-            runs.map(r => r.peakMoney),
-            0.25
-          )
-        ),
-        p75: Math.round(
-          quantile(
-            runs.map(r => r.peakMoney),
-            0.75
-          )
-        ),
-        p90: Math.round(
-          quantile(
-            runs.map(r => r.peakMoney),
-            0.9
-          )
-        ),
-        max: Math.round(maximum(runs.map(r => r.peakMoney)))
-      },
-      maxDrawdownPct: {
-        mean: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
-        median: Number(median(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
-        stdDev: Number(
-          standardDeviation(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)
-        ),
-        min: Number(minimum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
-        p10: Number(
-          quantile(
-            runs.map(r => r.maxPeakToTroughDrop),
-            0.1
-          ).toFixed(2)
-        ),
-        p25: Number(
-          quantile(
-            runs.map(r => r.maxPeakToTroughDrop),
-            0.25
-          ).toFixed(2)
-        ),
-        p75: Number(
-          quantile(
-            runs.map(r => r.maxPeakToTroughDrop),
-            0.75
-          ).toFixed(2)
-        ),
-        p90: Number(
-          quantile(
-            runs.map(r => r.maxPeakToTroughDrop),
-            0.9
-          ).toFixed(2)
-        ),
-        max: Number(maximum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2))
-      },
+      lowestMoney: describe(
+        runs.map(run => run.lowestMoney),
+        roundInteger
+      ),
+      peakMoney: describe(
+        runs.map(run => run.peakMoney),
+        roundInteger
+      ),
+      maxDrawdownPct: describe(
+        runs.map(run => run.maxPeakToTroughDrop),
+        roundTwo
+      ),
       finalHarmony: popAll.finalHarmony,
       eventsApplied: {
         mean: avgEventsApplied,

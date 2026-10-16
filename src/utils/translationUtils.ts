@@ -25,13 +25,18 @@ const isTranslatableKey = (key: unknown): boolean => {
  * @param context - Raw context value, including nested arrays or objects.
  * @param t - Translation callback for recognized namespaced keys.
  * @returns A sanitized copy with recognized keys translated, preserving non-object values.
+ * @remarks Top-level strings pass through; only strings nested in context objects or arrays are translated.
  */
 export const translateContextKeys = (
   context: unknown,
   t: (key: string) => string
 ): unknown => {
+  if (typeof context === 'string') return context
   const ancestors = new WeakSet<object>()
   const translate = (context: unknown): unknown => {
+    if (typeof context === 'string') {
+      return isTranslatableKey(context) ? t(context) : context
+    }
     // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
     if (context === null || typeof context !== 'object') {
       return context
@@ -46,12 +51,7 @@ export const translateContextKeys = (
       const result = new Array(len)
       for (let i = 0; i < len; i++) {
         if (!Object.hasOwn(context, i)) continue
-        const item = context[i]
-        if (typeof item === 'string') {
-          result[i] = isTranslatableKey(item) ? t(item) : item
-        } else {
-          result[i] = translate(item)
-        }
+        result[i] = translate(context[i])
       }
       ancestors.delete(context)
       return result
@@ -64,15 +64,7 @@ export const translateContextKeys = (
       // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
       if (isForbiddenKey(prop)) continue
 
-      const value = contextRecord[prop]
-      if (typeof value === 'string') {
-        translatedContext[prop] = isTranslatableKey(value) ? t(value) : value
-      } else if (typeof value === 'object' && value !== null) {
-        // SECURITY: Recurse into nested objects to sanitize and translate
-        translatedContext[prop] = translate(value)
-      } else {
-        translatedContext[prop] = value
-      }
+      translatedContext[prop] = translate(contextRecord[prop])
     }
     ancestors.delete(context)
     return translatedContext

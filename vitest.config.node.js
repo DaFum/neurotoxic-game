@@ -1,21 +1,9 @@
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import { commonTestSettings } from './vitest.config.shared.js'
 
 export default defineConfig({
   test: {
-    alias: {
-      'virtual:pwa-register/react': fileURLToPath(
-        new URL('./tests/mocks/virtual-pwa.js', import.meta.url)
-      )
-    },
-    silent: 'passed-only',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html']
-    },
-    testTimeout: 5000,
-    isolate: true,
-    pool: 'threads',
+    ...commonTestSettings,
     environment: 'node',
     include: [
       'tests/api/**/*.test.js',

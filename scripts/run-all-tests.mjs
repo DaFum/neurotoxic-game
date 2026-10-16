@@ -19,8 +19,8 @@
  * gain. On high-core machines, test:ui also runs in Phase A with a smaller
  * worker budget. Set NODE_ALL_PARALLEL=0 to force the phase split.
  */
-import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
+import { runPnpmScript } from './utils/run-pnpm-script.mjs'
 import {
   computeProcessWorkerCount,
   computeWorkerCount
@@ -84,21 +84,6 @@ const uiWorkersForLog = computeWorkerCount(
   uiWorkersDefault
 )
 
-// ---------------------------------------------------------------------------
-// Spawn helper
-// ---------------------------------------------------------------------------
-const isWindows = process.platform === 'win32'
-const command = isWindows ? 'cmd.exe' : 'pnpm'
-const mkArgs = script =>
-  isWindows ? ['/c', 'pnpm', 'run', script] : ['run', script]
-
-const runScript = (script, env = baseEnv) =>
-  new Promise(resolve => {
-    const child = spawn(command, mkArgs(script), { stdio: 'inherit', env })
-    child.on('error', error => resolve({ script, code: 1, error }))
-    child.on('close', code => resolve({ script, code: code ?? 1 }))
-  })
-
 const bail = result => {
   if (result.error) console.error(result.error)
   if (result.code !== 0) {
@@ -130,9 +115,9 @@ if (fullyParallel) {
     `[run-all-tests] Fully parallel (${parallelModeReason}): test:node (${nodeWorkersForLog}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkersForLog})`
   )
   const [nodeResult, logicResult, uiResult] = await Promise.all([
-    runScript('test:node', baseEnv),
-    runScript('test:vitest:logic', logicEnv),
-    runScript('test:ui', baseEnv)
+    runPnpmScript('test:node', baseEnv),
+    runPnpmScript('test:vitest:logic', logicEnv),
+    runPnpmScript('test:ui', baseEnv)
   ])
   if (bail(nodeResult) | bail(logicResult) | bail(uiResult)) {
     process.exit(process.exitCode ?? 1)
@@ -143,8 +128,8 @@ if (fullyParallel) {
     `[run-all-tests] Phase A: test:node (${nodeWorkersForLog} workers) + test:vitest:logic (${logicWorkers} vitest worker, overlapped)`
   )
   const [nodeResult, logicResult] = await Promise.all([
-    runScript('test:node', baseEnv),
-    runScript('test:vitest:logic', logicEnv)
+    runPnpmScript('test:node', baseEnv),
+    runPnpmScript('test:vitest:logic', logicEnv)
   ])
   if (bail(nodeResult) | bail(logicResult)) {
     // bitwise OR intentional: report both failures before exiting
@@ -155,7 +140,7 @@ if (fullyParallel) {
   console.log(
     `[run-all-tests] Phase B: test:ui (${uiWorkersForLog} workers, sequential)`
   )
-  const uiResult = await runScript('test:ui', baseEnv)
+  const uiResult = await runPnpmScript('test:ui', baseEnv)
   if (bail(uiResult)) {
     process.exit(process.exitCode ?? 1)
   }

@@ -45,37 +45,10 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
   }
 }))
 
-vi.mock('../../src/utils/errorHandler', () => {
-  const mockHandleError = vi.fn()
-  class MockStorageError extends Error {
-    constructor(message, options) {
-      super(message)
-      this.name = 'StorageError'
-      this.originalError = options?.originalError
-    }
-  }
-  const runSafeStorageOperation = vi.fn((op, fn, ...fallbackValue) => {
-    try {
-      return fn()
-    } catch (error) {
-      const storageError = new MockStorageError(
-        `Storage operation failed after retries: ${op}`,
-        {
-          originalError: error instanceof Error ? error.message : String(error)
-        }
-      )
-      if (fallbackValue.length === 0) {
-        throw storageError
-      }
-      mockHandleError(storageError, { silent: true })
-      return fallbackValue[0]
-    }
-  })
-  return {
-    handleError: mockHandleError,
-    StorageError: MockStorageError,
-    runSafeStorageOperation
-  }
+vi.mock('../../src/utils/errorHandler', async () => {
+  const { createStorageErrorMock } =
+    await import('../mocks/storageErrorMock.js')
+  return createStorageErrorMock()
 })
 
 vi.mock('../../src/ui/BandHQ', () => ({

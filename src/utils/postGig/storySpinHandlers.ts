@@ -35,14 +35,12 @@ export const getSpinStoryMoneyUpdate = ({
 }
 
 /**
- * Returns a social-state updater that reduces controversy by
+ * Reduces social-state controversy by
  * {@link SPIN_STORY_CONTROVERSY_REDUCTION} (clamped) for a story spin.
  */
-export const getSpinStorySocialUpdateFactory = () => {
-  return (prevSocial: GameState['social']) => ({
-    controversyLevel: clampControversyLevel(
-      finiteNumberOr(prevSocial.controversyLevel, 0) -
-        SPIN_STORY_CONTROVERSY_REDUCTION
-    )
-  })
-}
+export const getSpinStorySocialUpdate = (prevSocial: GameState['social']) => ({
+  controversyLevel: clampControversyLevel(
+    finiteNumberOr(prevSocial.controversyLevel, 0) -
+      SPIN_STORY_CONTROVERSY_REDUCTION
+  )
+})

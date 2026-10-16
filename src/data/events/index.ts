@@ -44,6 +44,7 @@ export const EVENTS_DB = Object.fromEntries(
 ) as Record<EventCategory, UnknownRecord[]>
 
 const seenIds = new Set<string>()
+const knownEventIds = new Set<string>()
 
 // Single validation and routing pass
 for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
@@ -96,6 +97,7 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
   }
 
   EVENTS_DB[category].push(eObj as UnknownRecord)
+  knownEventIds.add(eObj.id)
 }
 
 /**
@@ -106,20 +108,4 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
  * queue head is never returned by event selection and would otherwise block
  * the queue forever.
  */
-export const KNOWN_EVENT_IDS: ReadonlySet<string> = new Set(
-  (() => {
-    const ids: string[] = []
-    const pools = Object.values(EVENTS_DB)
-    for (let i = 0; i < pools.length; i++) {
-      const pool = pools[i]
-      if (!pool) continue
-      for (let j = 0; j < pool.length; j++) {
-        const id = pool[j]?.id
-        if (typeof id === 'string') {
-          ids.push(id)
-        }
-      }
-    }
-    return ids
-  })()
-)
+export const KNOWN_EVENT_IDS: ReadonlySet<string> = knownEventIds

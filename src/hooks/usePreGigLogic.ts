@@ -130,8 +130,6 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     gigModifiers,
     setlist,
     typedT,
-    technicalCondition:
-      expedition?.status === 'active' ? expedition.technicalCondition : null,
     canStartShow,
     expeditionState
   })

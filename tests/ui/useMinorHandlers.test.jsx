@@ -7,7 +7,7 @@ vi.mock('../../src/utils/postGig', () => ({
     nextMoney: 900,
     appliedDelta: -100
   })),
-  getSpinStorySocialUpdateFactory: vi.fn(() => prev => prev),
+  getSpinStorySocialUpdate: vi.fn(prev => prev),
   buildPerGigSocialReconciliation: vi.fn(() => ({
     lastGigDay: 7,
     lastGigDifficulty: 3,

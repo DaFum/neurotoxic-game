@@ -1,10 +1,11 @@
 import client from '../../lib/redis.js'
+import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import {
-  normalizeIp,
-  hasPrototypePollution,
-  sanitizePlayerName,
-  toPublicPlayerRef
-} from '../../lib/apiUtils.js'
+  parseLeaderboardLimit,
+  isLeaderboardRateLimited,
+  validateLeaderboardPlayer,
+  fetchLeaderboard
+} from '../../lib/leaderboard.js'
 
 const VALID_STATS = [
   'balance',
@@ -45,14 +46,7 @@ export default async function handler(req, res) {
         await client.connect()
       }
 
-      // Rate Limiting (5 requests per 60s)
-      const ip = normalizeIp(req)
-      const rateLimitKey = `rate_limit:stats:${ip}`
-      const requests = await client.incr(rateLimitKey)
-      if (requests === 1) {
-        await client.expire(rateLimitKey, 60)
-      }
-      if (requests > 5) {
+      if (await isLeaderboardRateLimited(req, 'stats')) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -95,16 +89,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
 
-      // Length-validate the sanitized/trimmed name (what actually gets
-      // persisted), not the raw input, so the bound applies to the stored value.
-      const trimmedName = sanitizePlayerName(playerName).trim()
-      if (trimmedName.length < 1 || trimmedName.length > 100) {
-        return res.status(400).json({ error: 'Invalid playerName length' })
-      }
-
-      // Basic sanitization/validation for playerId key
-      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(playerId)) {
-        return res.status(400).json({ error: 'Invalid playerId format' })
+      const player = validateLeaderboardPlayer(playerId, playerName)
+      if ('error' in player) {
+        return res.status(400).json(player)
       }
 
       // Safe numbers for stats (clamped 0 to MAX)
@@ -115,7 +102,7 @@ export default async function handler(req, res) {
       const safeStageDives = clampStat(stageDives)
 
       // v4: hSet accepts object
-      await client.hSet('players', { [playerId]: trimmedName })
+      await client.hSet('players', { [playerId]: player.playerName })
 
       // v4: zAdd(key, { score, value })
       // Update multiple sorted sets
@@ -143,13 +130,7 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      const limitParam = req.query?.limit
-      let limit =
-        typeof limitParam === 'string'
-          ? Number.parseInt(limitParam, 10)
-          : Number.NaN
-      if (Number.isNaN(limit)) limit = 100
-      limit = Math.min(Math.max(1, limit), 100)
+      const limit = parseLeaderboardLimit(req.query?.limit)
 
       const requestedStat = req.query?.stat
       // Treat an empty value the same as absent, matching the pre-hardening
@@ -167,31 +148,7 @@ export default async function handler(req, res) {
         await client.connect()
       }
 
-      const sortedSetKey = `lb:${stat}`
-
-      // v4: zRangeWithScores returns [{ score: number, value: string }]
-      // REV: true for descending
-      const range = await client.zRangeWithScores(sortedSetKey, 0, limit - 1, {
-        REV: true
-      })
-
-      if (!range.length) return res.status(200).json([])
-
-      // range is [{ value: 'id', score: 100 }, ...]
-      const playerIds = range.map(entry => entry.value)
-
-      // v4: hmGet returns string[] (aligned with keys)
-      const names = await client.hmGet('players', playerIds)
-
-      // hmGet returns array of values corresponding to keys
-      // playerId is the write credential and the raw Redis member key — never
-      // publish it. See toPublicPlayerRef.
-      const leaderboard = range.map((entry, index) => ({
-        rank: index + 1,
-        playerRef: toPublicPlayerRef(entry.value),
-        playerName: names[index] || 'Unknown',
-        score: entry.score
-      }))
+      const leaderboard = await fetchLeaderboard(`lb:${stat}`, limit)
 
       return res.status(200).json(leaderboard)
     } catch (error) {

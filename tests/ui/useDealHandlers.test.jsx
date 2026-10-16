@@ -13,7 +13,7 @@ vi.mock('../../src/utils/postGig', () => ({
     nextMoney: 900,
     appliedDelta: -100
   })),
-  getSpinStorySocialUpdateFactory: vi.fn(() => prev => prev)
+  getSpinStorySocialUpdate: vi.fn(prev => prev)
 }))
 vi.mock('../../src/quests/producers/brandQuestEvents', () => ({
   createBrandOfferAcceptedQuestEvent: vi.fn(() => ({

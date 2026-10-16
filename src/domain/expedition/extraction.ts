@@ -43,6 +43,12 @@ export const BASE_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS = 1 as const
  */
 export const MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS = 3 as const
 
+const clampRareCarrySlots = (slots: number): number =>
+  Math.max(
+    BASE_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS,
+    Math.min(MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS, slots)
+  )
+
 /**
  * Resolves how many unsecured rare rewards a voluntary extraction may carry.
  *
@@ -52,22 +58,13 @@ export const MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS = 3 as const
  * @remarks
  * G2 introduces `getEffectiveExpeditionRules(state)` and G5 the Legendary and
  * Region effects that raise
- * `numeric.explicitExtractionRareCarrySlots`. This function is the single place
- * that reads it, so those gates extend it in place rather than adding a second
- * source for the cap.
+ * `numeric.explicitExtractionRareCarrySlots`. This reader and settlement share
+ * the same cap; settlement reuses its already-resolved effective rules.
  */
-export const getExplicitExtractionRareCarrySlots = (
-  state: GameState
-): number => {
-  const rules = getEffectiveExpeditionRules(state)
-  return Math.max(
-    BASE_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS,
-    Math.min(
-      MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS,
-      rules.numeric.explicitExtractionRareCarrySlots
-    )
+export const getExplicitExtractionRareCarrySlots = (state: GameState): number =>
+  clampRareCarrySlots(
+    getEffectiveExpeditionRules(state).numeric.explicitExtractionRareCarrySlots
   )
-}
 
 /**
  * Kinds of terminal transition a settlement can describe.
@@ -106,14 +103,10 @@ export const splitExpeditionRewardLedger = (
     )
   )
 
-  // Deduplicated, order-preserving: a caller repeating one id must not consume
-  // two carry slots, and must not be able to carry the same reward twice.
-  const requested: string[] = []
-  const seenRequested = new Set<string>()
+  // A repeated id must not consume two slots. The ledger determines carry order.
+  const requested = new Set<string>()
   for (const id of explicitRareRewardIds) {
-    if (typeof id !== 'string' || seenRequested.has(id)) continue
-    seenRequested.add(id)
-    requested.push(id)
+    if (typeof id === 'string') requested.add(id)
   }
 
   let carried = 0
@@ -122,7 +115,7 @@ export const splitExpeditionRewardLedger = (
       retained.push(entry.id)
       continue
     }
-    if (kind === 'extracted' && carried < cap && requested.includes(entry.id)) {
+    if (kind === 'extracted' && carried < cap && requested.has(entry.id)) {
       carried += 1
       retained.push(entry.id)
       continue
@@ -155,6 +148,7 @@ export const settleExpedition = (
   kind: ExpeditionTerminalKind,
   explicitRareRewardIds: readonly string[] = []
 ): ExpeditionSettlement => {
+  const { numeric } = getEffectiveExpeditionRules(state)
   // Voluntary extraction is the only terminal kind the run-draft retention
   // modifier touches: `reckless_encore` trades a richer Finale for a worse
   // bail-out, so a completed or failed run keeps its canonical base rate.
@@ -165,8 +159,7 @@ export const settleExpedition = (
           Math.min(
             1,
             EXPEDITION_BASE_RETENTION[kind] *
-              getEffectiveExpeditionRules(state).numeric
-                .extractionRetentionMultiplier
+              numeric.extractionRetentionMultiplier
           )
         )
       : EXPEDITION_BASE_RETENTION[kind]
@@ -177,13 +170,7 @@ export const settleExpedition = (
   // a blitz Tour's x0.95 is not a penalty on runs that never completed.
   const completionMultiplier =
     kind === 'completed'
-      ? Math.max(
-          0,
-          finiteNumberOr(
-            getEffectiveExpeditionRules(state).numeric.completionMultiplier,
-            1
-          )
-        )
+      ? Math.max(0, finiteNumberOr(numeric.completionMultiplier, 1))
       : 1
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
@@ -204,13 +191,7 @@ export const settleExpedition = (
   const pressureRewardMultiplier =
     kind === 'failed'
       ? 1
-      : Math.max(
-          0,
-          finiteNumberOr(
-            getEffectiveExpeditionRules(state).numeric.pressureRewardMultiplier,
-            1
-          )
-        )
+      : Math.max(0, finiteNumberOr(numeric.pressureRewardMultiplier, 1))
   const moneyRetained = Math.floor(
     moneyEarned *
       retentionRate *
@@ -226,7 +207,7 @@ export const settleExpedition = (
       state.expedition.rewardLedger,
       kind,
       explicitRareRewardIds,
-      getExplicitExtractionRareCarrySlots(state)
+      clampRareCarrySlots(numeric.explicitExtractionRareCarrySlots)
     )
 
   return {

@@ -265,11 +265,7 @@ export const useHandleTravel = ({
         'warning'
       )
 
-      refs.pendingTimeoutRef.current = setTimeout(() => {
-        setters.setPendingTravelNode(null)
-        refs.pendingTravelNodeRef.current = null
-        refs.pendingTimeoutRef.current = null
-      }, 5000)
+      refs.pendingTimeoutRef.current = setTimeout(clearPendingTravel, 5000)
     },
     [
       refs,

@@ -1,13 +1,9 @@
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import { testAliases } from './vitest.config.shared.js'
 
 export default defineConfig({
   test: {
-    alias: {
-      'virtual:pwa-register/react': fileURLToPath(
-        new URL('./tests/mocks/virtual-pwa.js', import.meta.url)
-      )
-    },
+    alias: testAliases,
     environment: 'node',
     include: ['tests/utils/scenario-seeds.test.js']
   }

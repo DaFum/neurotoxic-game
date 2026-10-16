@@ -104,8 +104,10 @@ all thirty were implemented:
 
 Thus 25 of B01–B30 are implemented, and B01, B09, B12, B18, and B24 remain open.
 B33 is implemented in this PR as part of the duplicate-report follow-up. The
-remaining B31–B45 entries, S01–S16, and H01 remain follow-up work. C01–C05 have
-their own status above.
+B31–B45 entries other than B33 were implemented in the subsequent follow-up
+described below. S01–S16 are implemented in the smaller-cleanup follow-up.
+B01, B09, B12, B18, B24, and H01 remain open.
+C01–C05 have their own status above.
 
 ## Other substantial opportunities
 
@@ -141,42 +143,42 @@ their own status above.
 | B28 | `src/utils/audio/playbackStrategies.ts:38,92`                                                                                                                                                      | Share pure OGG/MIDI excerpt and note-tail duration calculation. Preserve last-note/excerpt fallback priority, backend lifecycle, per-await cancellation, timing, and unit conversion. Do not apply authored excerpt rules to procedural playback.                                                                                                                    | Implemented — [#3121](https://github.com/DaFum/neurotoxic-game/pull/3121) |
 | B29 | `src/domain/expedition/condition.ts:155`                                                                                                                                                           | Cache by condition buckets instead of exact values. Integer-value keys allow 1,030,301 entries although output depends on at most 64 bucket combinations. Consumers use profile values, not identity.                                                                                                                                                                | Implemented — [#3121](https://github.com/DaFum/neurotoxic-game/pull/3121) |
 | B30 | `src/domain/expedition/effectiveRules.ts:73`; `archive.ts:33`; `cargo.ts:166`; `loadout.ts:509`                                                                                                    | Share chassis lookup, accepting an explicit asset ID for committed and candidate loadouts. Preserve boundary guards and ID/kind checks; avoid circular imports.                                                                                                                                                                                                      | Implemented — [#3121](https://github.com/DaFum/neurotoxic-game/pull/3121) |
-| B31 | `src/domain/expedition/eventProof.ts:23`                                                                                                                                                           | Build result and condition indexes together instead of traversing/narrowing the registry twice. Preserve conditions on options without Expedition results.                                                                                                                                                                                                           | Open                                                                      |
-| B32 | `src/data/events/index.ts:109`                                                                                                                                                                     | Populate `KNOWN_EVENT_IDS` after successful validation/insertion. Remove the IIFE and second traversal. Do not reuse `seenIds`, which deliberately includes rejected IDs.                                                                                                                                                                                            | Open                                                                      |
+| B31 | `src/domain/expedition/eventProof.ts:23`                                                                                                                                                           | Build result and condition indexes together instead of traversing/narrowing the registry twice. Preserve conditions on options without Expedition results.                                                                                                                                                                                                           | Implemented — subsequent follow-up                                        |
+| B32 | `src/data/events/index.ts:109`                                                                                                                                                                     | Populate `KNOWN_EVENT_IDS` after successful validation/insertion. Remove the IIFE and second traversal. Do not reuse `seenIds`, which deliberately includes rejected IDs.                                                                                                                                                                                            | Implemented — subsequent follow-up                                        |
 | B33 | `src/domain/expedition/betweenTour.ts:176`                                                                                                                                                         | Choose the eligible-or-fallback pool once, then share sorting, seeded selection, and guards. Preserve order, RNG salt, and branch-specific option IDs.                                                                                                                                                                                                               | Implemented in this PR — duplicate-report follow-up                       |
-| B34 | `src/domain/expedition/extraction.ts:111`                                                                                                                                                          | Replace the parallel requested-ID array and set with one filtered set. Ledger order determines carry selection; preserve malformed-entry filtering.                                                                                                                                                                                                                  | Open                                                                      |
-| B35 | `src/domain/expedition/pressure.ts:173,195`; `src/domain/expedition/extraction.ts:168,183,210`                                                                                                     | Resolve effective rules once per operation and reuse numeric/flag values instead of rebuilding the capability graph. Include carry-slot resolution in settlement reuse.                                                                                                                                                                                              | Open                                                                      |
-| B36 | `src/components/stage/TourbusStageController.ts:118`                                                                                                                                               | Load independent controller/effect assets concurrently with `Promise.all`, following Roadie. Capture manager ownership and retain the final disposal check before drawing.                                                                                                                                                                                           | Open                                                                      |
-| B37 | `src/components/stage/NoteSpritePool.ts:37,68,146,154`                                                                                                                                             | Fold the single-consumer sprite factory into the pool and configure each acquired sprite once. Preserve external texture ownership, jitter, dimensions, anchor, and pooling.                                                                                                                                                                                         | Open                                                                      |
-| B38 | `scripts/game-balance-simulation.mjs:4058`                                                                                                                                                         | Reuse existing `describe(values, format)` for lowest money, peak money, and drawdown statistics instead of repeating full statistic objects. Preserve output/rounding semantics; percentile methods elsewhere differ and are not interchangeable.                                                                                                                    | Open                                                                      |
-| B39 | `scripts/game-balance-simulation.mjs:2667,3772`                                                                                                                                                    | Create execution-coverage objects through one factory. Every call must create independent sets and counters.                                                                                                                                                                                                                                                         | Open                                                                      |
-| B40 | `api/leaderboard/song.js`; `api/leaderboard/stats.js`                                                                                                                                              | Share limit parsing, rate-limit mechanics, player validation, and leaderboard response assembly. Keep endpoint-specific errors, opaque public references, song allowlisting, batch validation, and the deliberate `GT` difference.                                                                                                                                   | Open                                                                      |
-| B41 | `scripts/run-fast-tests.mjs:16`; `scripts/run-all-tests.mjs:112`                                                                                                                                   | Share the identical cross-platform pnpm spawn/result helper. Keep worker allocation, overrides, and execution policies distinct.                                                                                                                                                                                                                                     | Open                                                                      |
-| B42 | `vitest.config*.js`                                                                                                                                                                                | Share common test settings and aliases. The performance config already inherits the alias and need not rebuild it. Preserve runner environments and suite ownership.                                                                                                                                                                                                 | Open                                                                      |
-| B43 | `scripts/lint-fix-preview.sh:44`                                                                                                                                                                   | Remove the unused base-branch fetch and full-history fallback. The actual formatter preview compares with `HEAD`.                                                                                                                                                                                                                                                    | Open                                                                      |
-| B44 | `scripts/check-dead-code-budget.mjs:16`; `.github/workflows/dead-code-report.yml:85`                                                                                                               | Let the budget checker consume CI's already-generated report instead of running Knip twice. Preserve parse-error handling and local CLI behavior.                                                                                                                                                                                                                    | Open                                                                      |
-| B45 | `tests/performance/MainMenuStability.test.jsx:58`; `proceedToTour.bench.jsx:51`; `proceedToTourTime.bench.test.jsx:48`; `tests/ui/MainMenu.identity.test.jsx:37`; `useLeaderboardSync.test.jsx:14` | Extract the approximately 32-line storage-error mock repeated five times. Create independent mock instances per suite and respect mock hoisting.                                                                                                                                                                                                                     | Open                                                                      |
+| B34 | `src/domain/expedition/extraction.ts:111`                                                                                                                                                          | Replace the parallel requested-ID array and set with one filtered set. Ledger order determines carry selection; preserve malformed-entry filtering.                                                                                                                                                                                                                  | Implemented — subsequent follow-up                                        |
+| B35 | `src/domain/expedition/pressure.ts:173,195`; `src/domain/expedition/extraction.ts:168,183,210`                                                                                                     | Resolve effective rules once per operation and reuse numeric/flag values instead of rebuilding the capability graph. Include carry-slot resolution in settlement reuse.                                                                                                                                                                                              | Implemented — subsequent follow-up                                        |
+| B36 | `src/components/stage/TourbusStageController.ts:118`                                                                                                                                               | Load independent controller/effect assets concurrently with `Promise.all`, following Roadie. Capture manager ownership and retain the final disposal check before drawing.                                                                                                                                                                                           | Implemented — subsequent follow-up                                        |
+| B37 | `src/components/stage/NoteSpritePool.ts:37,68,146,154`                                                                                                                                             | Fold the single-consumer sprite factory into the pool and configure each acquired sprite once. Preserve external texture ownership, jitter, dimensions, anchor, and pooling.                                                                                                                                                                                         | Implemented — subsequent follow-up                                        |
+| B38 | `scripts/game-balance-simulation.mjs:4058`                                                                                                                                                         | Reuse existing `describe(values, format)` for lowest money, peak money, and drawdown statistics instead of repeating full statistic objects. Preserve output/rounding semantics; percentile methods elsewhere differ and are not interchangeable.                                                                                                                    | Implemented — subsequent follow-up                                        |
+| B39 | `scripts/game-balance-simulation.mjs:2667,3772`                                                                                                                                                    | Create execution-coverage objects through one factory. Every call must create independent sets and counters.                                                                                                                                                                                                                                                         | Implemented — subsequent follow-up                                        |
+| B40 | `api/leaderboard/song.js`; `api/leaderboard/stats.js`                                                                                                                                              | Share limit parsing, rate-limit mechanics, player validation, and leaderboard response assembly. Keep endpoint-specific errors, opaque public references, song allowlisting, batch validation, and the deliberate `GT` difference.                                                                                                                                   | Implemented — subsequent follow-up                                        |
+| B41 | `scripts/run-fast-tests.mjs:16`; `scripts/run-all-tests.mjs:112`                                                                                                                                   | Share the identical cross-platform pnpm spawn/result helper. Keep worker allocation, overrides, and execution policies distinct.                                                                                                                                                                                                                                     | Implemented — subsequent follow-up                                        |
+| B42 | `vitest.config*.js`                                                                                                                                                                                | Share common test settings and aliases. The performance config already inherits the alias and need not rebuild it. Preserve runner environments and suite ownership.                                                                                                                                                                                                 | Implemented — subsequent follow-up                                        |
+| B43 | `scripts/lint-fix-preview.sh:44`                                                                                                                                                                   | Remove the unused base-branch fetch and full-history fallback. The actual formatter preview compares with `HEAD`.                                                                                                                                                                                                                                                    | Implemented — subsequent follow-up                                        |
+| B44 | `scripts/check-dead-code-budget.mjs:16`; `.github/workflows/dead-code-report.yml:85`                                                                                                               | Let the budget checker consume CI's already-generated report instead of running Knip twice. Preserve parse-error handling and local CLI behavior.                                                                                                                                                                                                                    | Implemented — subsequent follow-up                                        |
+| B45 | `tests/performance/MainMenuStability.test.jsx:58`; `proceedToTour.bench.jsx:51`; `proceedToTourTime.bench.test.jsx:48`; `tests/ui/MainMenu.identity.test.jsx:37`; `useLeaderboardSync.test.jsx:14` | Extract the approximately 32-line storage-error mock repeated five times. Create independent mock instances per suite and respect mock hoisting.                                                                                                                                                                                                                     | Implemented — subsequent follow-up                                        |
 
 ## Smaller cleanups
 
-| ID  | Original location                                                                | Cleanup and constraints                                                                                                                                                                             |
-| --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S01 | `src/hooks/useGigInput.ts:116`                                                   | Collapse touch-start/end wrappers into lane input. Preserve audio-unlock, input registration, and animation ordering.                                                                               |
-| S02 | `src/hooks/preGig/usePreGigDerivations.ts:29`; `src/hooks/usePreGigLogic.ts:143` | Remove unused `technicalCondition` input and its computation. The actual profile comes from Expedition state.                                                                                       |
-| S03 | `src/hooks/travel/actions/useHandleTravel.ts:268`                                | Reuse `clearPendingTravel` as the timeout callback instead of repeating resets.                                                                                                                     |
-| S04 | `src/hooks/travel/actions/useGetLocationName.ts:23`                              | Replace the hook with a stable module-level resolver; it has no reactive dependencies and resolves current i18n when invoked.                                                                       |
-| S05 | `src/hooks/useContrabandStash.ts:18`                                             | Reuse existing `useDisclosure` for modal state.                                                                                                                                                     |
-| S06 | `src/hooks/useLeaderboardSync.ts:20`                                             | Use one endpoint-unavailable flag for disabling requests and logging once. Check it before logging, then set it; preserve in-flight deduplication and HMR reset.                                    |
-| S07 | `src/hooks/rhythmGame/useRhythmGameAudio.ts:181,400`                             | Validate lane/window pairs in one indexed pass before mutation, retaining strict finite checks. Remove the immediately repeated abort check with no intervening await.                              |
-| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                     |
-| S09 | `src/hooks/rhythmGame/scoring/useHandleMiss.ts:125`                              | Remove the field copied unchanged from the object already spread above it.                                                                                                                          |
-| S10 | `src/utils/mapGenerator/mathUtils.ts:86`                                         | Return the selected slice directly. Previous validated swaps guarantee completed entries; retain sparse-array defenses, RNG draws, and deterministic branches.                                      |
-| S11 | `src/utils/postGig/storySpinHandlers.ts:41`                                      | Replace the argument-free, zero-capture updater factory with its updater. Preserve finite-number and controversy clamps. Other factories capture inputs and should remain factories.                |
-| S12 | `src/domain/questAdvance.ts:46`                                                  | Avoid cloning the target quest before both callers immediately clone it again. Retain the array/state copies and treat the original quest as read-only.                                             |
-| S13 | `src/domain/questAdd.ts:82`                                                      | Remove the size-dependent Set/IIFE branch. Do not blindly substitute `addStoryFlags`, which handles empty strings and duplicate additions differently.                                              |
-| S14 | `src/domain/expedition/modules.ts:72`                                            | Spread the neutral profile plus authored overrides rather than repeating defaults. Preserve the invariant that unset overrides are omitted, not explicitly `undefined`.                             |
-| S15 | `src/domain/expedition/condition.ts:330`                                         | Use existing `ActiveEffect[]` instead of repeating its anonymous shape twice.                                                                                                                       |
-| S16 | `src/utils/translationUtils.ts:49,67`                                            | Optionally handle translated string leaves once inside recursion. Preserve top-level string passthrough, own/forbidden-key checks, cycle handling, sparse arrays, and repeated non-cyclic children. |
+| ID  | Original location                                                                | Cleanup and constraints                                                                                                                                                                             | Status                                  |
+| --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| S01 | `src/hooks/useGigInput.ts:116`                                                   | Collapse touch-start/end wrappers into lane input. Preserve audio-unlock, input registration, and animation ordering.                                                                               | Implemented — smaller-cleanup follow-up |
+| S02 | `src/hooks/preGig/usePreGigDerivations.ts:29`; `src/hooks/usePreGigLogic.ts:143` | Remove unused `technicalCondition` input and its computation. The actual profile comes from Expedition state.                                                                                       | Implemented — smaller-cleanup follow-up |
+| S03 | `src/hooks/travel/actions/useHandleTravel.ts:268`                                | Reuse `clearPendingTravel` as the timeout callback instead of repeating resets.                                                                                                                     | Implemented — smaller-cleanup follow-up |
+| S04 | `src/hooks/travel/actions/useGetLocationName.ts:23`                              | Replace the hook with a stable module-level resolver; it has no reactive dependencies and resolves current i18n when invoked.                                                                       | Implemented — smaller-cleanup follow-up |
+| S05 | `src/hooks/useContrabandStash.ts:18`                                             | Reuse existing `useDisclosure` for modal state.                                                                                                                                                     | Implemented — smaller-cleanup follow-up |
+| S06 | `src/hooks/useLeaderboardSync.ts:20`                                             | Use one endpoint-unavailable flag for disabling requests and logging once. Check it before logging, then set it; preserve in-flight deduplication and HMR reset.                                    | Implemented — smaller-cleanup follow-up |
+| S07 | `src/hooks/rhythmGame/useRhythmGameAudio.ts:181,400`                             | Validate lane/window pairs in one indexed pass before mutation, retaining strict finite checks. Remove the immediately repeated abort check with no intervening await.                              | Implemented — smaller-cleanup follow-up |
+| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band?.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                    | Implemented — smaller-cleanup follow-up |
+| S09 | `src/hooks/rhythmGame/scoring/useHandleMiss.ts:125`                              | Remove the field copied unchanged from the object already spread above it.                                                                                                                          | Implemented — smaller-cleanup follow-up |
+| S10 | `src/utils/mapGenerator/mathUtils.ts:86`                                         | Return the selected slice directly. Previous validated swaps guarantee completed entries; retain sparse-array defenses, RNG draws, and deterministic branches.                                      | Implemented — smaller-cleanup follow-up |
+| S11 | `src/utils/postGig/storySpinHandlers.ts:41`                                      | Replace the argument-free, zero-capture updater factory with its updater. Preserve finite-number and controversy clamps. Other factories capture inputs and should remain factories.                | Implemented — smaller-cleanup follow-up |
+| S12 | `src/domain/questAdvance.ts:46`                                                  | Avoid cloning the target quest before both callers immediately clone it again. Retain the array/state copies and treat the original quest as read-only.                                             | Implemented — smaller-cleanup follow-up |
+| S13 | `src/domain/questAdd.ts:82`                                                      | Remove the size-dependent Set/IIFE branch. Do not blindly substitute `addStoryFlags`, which handles empty strings and duplicate additions differently.                                              | Implemented — smaller-cleanup follow-up |
+| S14 | `src/domain/expedition/modules.ts:72`                                            | Spread the neutral profile plus authored overrides rather than repeating defaults. Preserve the invariant that unset overrides are omitted, not explicitly `undefined`.                             | Implemented — smaller-cleanup follow-up |
+| S15 | `src/domain/expedition/condition.ts:330`                                         | Use existing `ActiveEffect[]` instead of repeating its anonymous shape twice.                                                                                                                       | Implemented — smaller-cleanup follow-up |
+| S16 | `src/utils/translationUtils.ts:49,67`                                            | Optionally handle translated string leaves once inside recursion. Preserve top-level string passthrough, own/forbidden-key checks, cycle handling, sparse arrays, and repeated non-cyclic children. | Implemented — smaller-cleanup follow-up |
 
 ## Candidate requiring a contract decision
 
@@ -228,3 +230,111 @@ selection, deterministic tie choices for seeds 0 and 1, and reversed source orde
 Asset-tab shadow expressions were compared before/after custom-property expansion;
 selected and focus-visible values are unchanged. Focused tests, style/type checks,
 and build results are recorded in the PR.
+
+## Subsequent simplification follow-up — 2026-10-16
+
+This working-tree pass starts from merged `main` at `c0d1df5cf` (PR #3137) and
+implements B31–B45 except the already-completed B33:
+
+- **B31, B32:** Build option-result and condition indexes in one registry pass,
+  and collect playable event IDs during successful admission. Rejected IDs
+  remain separate from playable IDs; conditions on ordinary options remain
+  enforced.
+- **B34, B35:** Use a filtered Set for requested carry IDs, preserving ledger
+  order, and resolve effective rules once for each pressure/settlement operation,
+  including the shared rare-carry cap.
+- **B36, B37:** Load independent Tourbus assets concurrently with disposal guards;
+  fold note-sprite construction into the pool while preserving shared-texture
+  ownership, dimensions, anchor, jitter, and reuse.
+- **B38, B39:** Reuse the existing summary-statistics helper and create independent
+  execution-coverage sets/counters through one factory.
+- **B40:** Share leaderboard limit parsing, rate buckets, player validation, and
+  public response assembly. Endpoint validation/error contracts and song-only
+  Redis `GT` remain intact.
+- **B41, B42:** Share cross-platform pnpm spawning and common Vitest settings,
+  preserving worker policies, environments, and suite ownership.
+- **B43, B44:** Remove unused lint-preview branch fetching and let the dead-code
+  budget checker reuse CI's existing JSON report. Its no-argument local scan and
+  report/error handling remain available.
+- **B45:** Share the storage-error mock factory, creating a separate instance for
+  each suite through its mock factory.
+
+The 48-run deterministic simulator comparison (four runs in each of 12 scenarios)
+produced byte-identical run data, summaries, and merged coverage before and after
+B38/B39. Focused tests cover event admission/option conditions, ledger ordering,
+Tourbus loading/disposal, note pooling, leaderboard contracts, runner policies,
+and storage fallback behavior.
+
+Verification for this follow-up:
+
+- Production Node suite: 5,507 tests passed.
+- Full logic suite: 47 files / 841 tests passed.
+- Full UI suite: 232 files / 1,458 tests passed.
+- Tooling suite: 400 Node tests and 5 Vitest tests passed.
+- Affected performance suites: 2 files / 2 tests passed; the standalone
+  `proceedToTour.bench.jsx` check also passed.
+- Core, reducer, and server typechecks passed.
+- Build, no-check guard, Markdownlint, Prettier, and `git diff --check` passed.
+- Lint passed with no errors and five existing warnings in unchanged tests.
+- Knip reported the same seven baseline findings within budget seven; the budget
+  checker successfully consumed that existing report.
+
+The initial combined `test:all` invocation hit a five-second dynamic-import
+timeout in `tests/security/randomness.test.js` while other verification jobs ran.
+Its Node phase completed successfully. Without changing code or timeout settings,
+the isolated security suite passed all three tests and the entire logic suite
+passed on rerun. The UI suite was run separately after the failed combined
+invocation skipped its UI phase.
+
+## Smaller-cleanup follow-up — 2026-10-16
+
+This pass builds on `41d9620e6` (PR #3139) and implements all sixteen S01–S16
+entries. H01 remains a separate contract decision.
+
+- **S01–S09:** Remove redundant wrappers, unused input, duplicated pending-travel
+  resets, and duplicated modal/endpoint flags. The location resolver is a stable
+  module function using the current i18n context. Rhythm initialization validates
+  all three lane/window pairs before changing lane windows and retains its
+  cancellation guards; Roadie completion still uses its one-shot guard.
+- **S10, S11, S16:** Return the already-validated sampled slice, pass the story-spin
+  social updater directly, and translate nested string leaves in one recursion
+  path. Sampling preserves its RNG draws and sparse-entry checks; translation
+  preserves top-level string passthrough, own/forbidden-key checks, sparse holes,
+  ancestor-cycle handling, and repeated non-cyclic descendants.
+- **S12–S15:** Read the original quest without an intermediate clone, retain the
+  existing empty/duplicate start-flag semantics, compose module defaults with
+  authored overrides, and reuse the shared `ActiveEffect[]` type.
+
+Targeted characterization covers gesture ordering, rejected lane/window pairs,
+cancellation, current-language resolution, travel timeout/ref cleanup, stable
+stash callbacks, concurrent 404 responses, seeded sampling, sparse/cyclic
+translation, immutable quest progress, and empty/duplicate start flags.
+
+Verification for the smaller-cleanup follow-up:
+
+- Production Node suite: 5,522 tests passed.
+- Full logic suite: 47 files / 841 tests passed.
+- Full UI suite: 233 files / 1,482 tests passed.
+- The combined `NODE_TEST_CONCURRENCY=8 VITEST_MAX_WORKERS=2 pnpm run test:all`
+  command passed all three production tiers.
+- Core, reducer, and server typechecks passed.
+- Lint and build passed; lint reports only the same five warnings in unchanged
+  tests.
+- Knip remains at seven baseline findings within budget seven; no-check guard,
+  Markdownlint, Prettier, and `git diff --check` passed.
+- Independent review found no remaining S01–S16 findings.
+
+## S08 review correction — 2026-10-16
+
+Review of PR #3140 found that S08 had dropped the original missing-band guard.
+`Object.keys(band?.stash ?? {})[0] ?? null` restores initialization with an empty
+stash when the band is nullish. The regular `test:all` gate does not include the
+separate performance suite; its existing Roadie fixture exposed the regression.
+
+The added `undefined` and `null` band cases both failed before the fix and passed
+afterward (6 Roadie UI tests total). The existing Roadie performance test also
+failed before and passed after the fix. The added cases assert normal equipment
+initialization without a contraband item.
+
+The complete local performance suite passed: 18 files / 22 tests. Core typecheck,
+scoped ESLint, Prettier, Markdownlint, and `git diff --check` also passed.

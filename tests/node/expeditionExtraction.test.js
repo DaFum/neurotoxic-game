@@ -141,6 +141,17 @@ describe('ledger split', () => {
     assert.deepEqual(split.retainedRewardEntryIds, ['a', 'b', 'c'])
   })
 
+  it('uses ledger order rather than request order to fill carry slots', () => {
+    const split = splitExpeditionRewardLedger(
+      ledger,
+      'extracted',
+      ['d', null, 'b', 'a', 'd'],
+      2
+    )
+    assert.deepEqual(split.retainedRewardEntryIds, ['a', 'b', 'c'])
+    assert.deepEqual(split.abandonedRewardEntryIds, ['d'])
+  })
+
   it('clamps a hostile slot count', () => {
     for (const slots of [99, Number.NaN, -5, Number.POSITIVE_INFINITY]) {
       const split = splitExpeditionRewardLedger(
