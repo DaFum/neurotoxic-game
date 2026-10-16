@@ -15,7 +15,10 @@ import type {
   ExpeditionNumericRules,
   ExpeditionRuleFlags
 } from '../../types/expedition'
-import { getExpeditionChassisProfile } from './chassis'
+import {
+  getCommittedExpeditionTourbusAsset,
+  getExpeditionChassisProfile
+} from './chassis'
 import { aggregateExpeditionModuleProfiles } from './modules'
 import { getCrewRuleContribution } from './crew'
 import { getExpeditionRegion } from '../../data/expedition/regions'
@@ -70,14 +73,10 @@ const BASE_EXPEDITION_RULE_FLAGS: Readonly<ExpeditionRuleFlags> = {
 /**
  * Resolves the committed tourbus asset, if any.
  */
-const resolveCommittedTourbus = (state: GameState): LongTermAsset | null => {
-  const assetId = state.expedition?.loadout?.activeTourbusAssetId
-  if (!assetId || !Array.isArray(state.assets)) return null
-  return (
-    state.assets.find(a => a.id === assetId && a.kind === 'tourbus_chassis') ??
-    null
-  )
-}
+const resolveCommittedTourbus = (state: GameState): LongTermAsset | null =>
+  state.expedition?.loadout?.activeTourbusAssetId
+    ? getCommittedExpeditionTourbusAsset(state)
+    : null
 
 /**
  * Reads one numeric field's contribution from a Region or Tour profile.

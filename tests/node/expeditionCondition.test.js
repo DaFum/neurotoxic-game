@@ -291,3 +291,86 @@ test('Task 5: Expedition Technical Condition and Performance Profile', async t =
     )
   })
 })
+
+test('performance profile cache keys on condition class, not raw value', async t => {
+  // Raw values per profile class: 0, 1..39, 40..69, 70..100 (after clamping).
+  const CLASS_SAMPLES = {
+    disabled: [0, -5, 0.4, NaN],
+    severe: [1, 20, 39, 39.4],
+    degraded: [39.5, 40, 55, 69],
+    baseline: [70, 85, 100, 150]
+  }
+  const classes = Object.keys(CLASS_SAMPLES)
+
+  await t.test('raw values in the same class share one cached profile', () => {
+    for (const paClass of classes) {
+      for (const instClass of classes) {
+        for (const stageClass of classes) {
+          const profiles = CLASS_SAMPLES[paClass].map((pa, i) =>
+            getExpeditionConditionPerformanceProfile({
+              pa,
+              instruments: CLASS_SAMPLES[instClass][i],
+              stageGear: CLASS_SAMPLES[stageClass][3 - i],
+              defects: []
+            })
+          )
+          for (const profile of profiles) {
+            assert.equal(
+              profile,
+              profiles[0],
+              `${paClass}:${instClass}:${stageClass} must reuse one cache entry`
+            )
+          }
+        }
+      }
+    }
+  })
+
+  await t.test('profile values follow the documented thresholds', () => {
+    const severity = value => {
+      const clamped = clampCondition(value)
+      if (clamped === 0) return 'disabled'
+      if (clamped <= 39) return 'severe'
+      return clamped <= 69 ? 'degraded' : 'baseline'
+    }
+    const low = cls => cls === 'disabled' || cls === 'severe'
+    for (let pa = 0; pa <= 100; pa += 1) {
+      for (const instruments of [0, 1, 39, 40, 69, 70, 100]) {
+        for (const stageGear of [0, 1, 39, 40, 69, 70, 100]) {
+          const p = severity(pa)
+          const i = severity(instruments)
+          const s = severity(stageGear)
+          const paTiming = low(p) ? 0.96 : 1
+          const instTiming = low(i) ? 0.93 : i === 'degraded' ? 0.98 : 1
+          assert.deepEqual(
+            getExpeditionConditionPerformanceProfile({
+              pa,
+              instruments,
+              stageGear,
+              defects: []
+            }),
+            {
+              audioHazardLevel: Math.max(
+                low(p) ? 2 : p === 'degraded' ? 1 : 0,
+                low(s) ? 1 : 0
+              ),
+              timingMultiplier: Number((paTiming * instTiming).toFixed(4)),
+              missStaminaMultiplier: low(i) ? 1.15 : 1,
+              comboRecoveryMultiplier: low(s)
+                ? 0.85
+                : s === 'degraded'
+                  ? 0.95
+                  : 1,
+              disabledGroups: [
+                ...(p === 'disabled' ? ['pa'] : []),
+                ...(i === 'disabled' ? ['instruments'] : []),
+                ...(s === 'disabled' ? ['stageGear'] : [])
+              ]
+            },
+            `pa=${pa} instruments=${instruments} stageGear=${stageGear}`
+          )
+        }
+      }
+    }
+  })
+})

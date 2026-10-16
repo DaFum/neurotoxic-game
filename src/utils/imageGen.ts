@@ -4,7 +4,7 @@ import type {
   ChassisTier,
   RiskEventType
 } from '../types/assets'
-import { MODULE_REGISTRY, MODULE_PROMPTS } from './assetModuleRegistry'
+import { getRegisteredModule, MODULE_PROMPTS } from './assetModuleRegistry'
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
@@ -418,12 +418,9 @@ const defaultModulePrompt = (id: string) =>
  * @returns Module-specific prompt or a safe fallback prompt.
  */
 export const getModuleImagePrompt = (moduleId: string): string => {
-  // Object.hasOwn guards against hostile module ids that would otherwise hit
+  // Own-property lookup rejects hostile module ids that would otherwise hit
   // prototype properties (e.g., 'hasOwnProperty', 'constructor').
-  if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) {
-    return defaultModulePrompt(moduleId)
-  }
-  const m = MODULE_REGISTRY[moduleId]
+  const m = getRegisteredModule(moduleId)
   if (!m) return defaultModulePrompt(moduleId)
   if (!Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey)) {
     return defaultModulePrompt(moduleId)

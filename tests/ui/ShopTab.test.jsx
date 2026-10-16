@@ -134,6 +134,24 @@ describe('ShopTab', () => {
     expect(screen.getByTestId('processing')).toBeInTheDocument()
   })
 
+  test('computes each decision once and hands it to isItemDisabled', () => {
+    render(
+      <ShopTab
+        player={player}
+        handleBuy={handleBuy}
+        getPurchaseDecision={getPurchaseDecision}
+        isItemDisabled={isItemDisabled}
+      />
+    )
+
+    expect(getPurchaseDecision).toHaveBeenCalledTimes(4)
+    expect(isItemDisabled).toHaveBeenCalledTimes(4)
+    isItemDisabled.mock.calls.forEach(([item, decision], i) => {
+      expect(getPurchaseDecision.mock.calls[i][0]).toBe(item)
+      expect(decision).toBe(getPurchaseDecision.mock.results[i].value)
+    })
+  })
+
   test('calls handleBuy when Buy is clicked on ShopItem', () => {
     render(
       <ShopTab

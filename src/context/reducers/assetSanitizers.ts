@@ -7,7 +7,7 @@ import {
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { logger } from '../../utils/logger'
 import { getSecureRandomUint32 } from '../../utils/crypto'
-import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { getRegisteredModule } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import {
   VALID_ASSET_ACQUISITION_MODES,
@@ -207,12 +207,8 @@ const sanitizeSlot = (
   // and match the slot type, and it must not already be installed in another
   // slot of the same asset.
   let validModuleId: string | null = null
-  if (
-    moduleId !== null &&
-    !seenModuleIds.has(moduleId) &&
-    Object.hasOwn(MODULE_REGISTRY, moduleId)
-  ) {
-    const moduleEntry = MODULE_REGISTRY[moduleId]
+  if (moduleId !== null && !seenModuleIds.has(moduleId)) {
+    const moduleEntry = getRegisteredModule(moduleId)
     if (moduleEntry && moduleEntry.slotType === clean.slotType) {
       validModuleId = moduleId
       seenModuleIds.add(moduleId)
@@ -229,7 +225,7 @@ const sanitizeSlot = (
   if (clean.addedByModuleId !== undefined) {
     if (
       typeof clean.addedByModuleId !== 'string' ||
-      !Object.hasOwn(MODULE_REGISTRY, clean.addedByModuleId)
+      !getRegisteredModule(clean.addedByModuleId)
     ) {
       // Orphaned dynamic slot — drop it entirely.
       return null

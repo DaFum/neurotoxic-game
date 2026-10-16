@@ -1,5 +1,7 @@
 import type { Song } from '../../types/audio'
+import type { RhythmNote } from '../../types/rhythmGame'
 import { isFiniteNumber } from '../finiteNumber'
+import { NOTE_TAIL_MS } from './rhythmGameTypes'
 
 /**
  * Normalizes a song entry to its ID string.
@@ -53,4 +55,21 @@ export const resolveSongPlaybackWindow = (
     defaultDurationMs) as number
 
   return { excerptStartMs, excerptEndMs, excerptDurationMs }
+}
+
+/**
+ * Resolves how long OGG buffer or MIDI synthesis playback runs before it is cut.
+ *
+ * @param notes - Notes scheduled for the song, ordered by time; the last one sets the cap.
+ * @param excerptDurationMs - Resolved excerpt duration, used when no note is timed after `0`.
+ * @returns The last note time plus `NOTE_TAIL_MS` when that note is after `0`,
+ *   otherwise the excerpt duration when positive, otherwise `null` (no cap).
+ */
+export const resolveNoteCappedPlaybackMs = (
+  notes: ReadonlyArray<Pick<RhythmNote, 'time'>>,
+  excerptDurationMs: number
+): number | null => {
+  const maxNoteTime = notes[notes.length - 1]?.time ?? 0
+  if (maxNoteTime > 0) return maxNoteTime + NOTE_TAIL_MS
+  return excerptDurationMs > 0 ? excerptDurationMs : null
 }

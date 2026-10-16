@@ -49,6 +49,7 @@ import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
 } from './cargo'
+import { findExpeditionTourbusAsset } from './chassis'
 import {
   getAvailableInsurancePolicyIds,
   getExpeditionInsurancePremium
@@ -500,23 +501,6 @@ const hasDuplicates = (values: readonly string[]): boolean =>
   new Set(values).size !== values.length
 
 /**
- * Resolves the committed chassis asset.
- *
- * @param state - Current game state.
- * @param assetId - Committed `activeTourbusAssetId`.
- * @returns The owned tourbus chassis, or `null`.
- */
-const resolveCommittedChassis = (
-  state: GameState,
-  assetId: string
-): LongTermAsset | null => {
-  const assets = Array.isArray(state.assets) ? state.assets : []
-  const asset = assets.find(entry => entry.id === assetId)
-  if (!asset || asset.kind !== 'tourbus_chassis') return null
-  return asset
-}
-
-/**
  * Reads the exact module ids installed on one chassis.
  */
 const getInstalledModuleIds = (asset: LongTermAsset): string[] => {
@@ -620,7 +604,7 @@ export const validateExpeditionBuildCommitment = (
     // installation on a specific owned chassis.
     if (selectedTourbusModuleIds.length > 0) return reject('MODULES_DRIFT')
   } else {
-    const chassis = resolveCommittedChassis(state, activeTourbusAssetId)
+    const chassis = findExpeditionTourbusAsset(state, activeTourbusAssetId)
     if (!chassis) return reject('MODULES_DRIFT')
     // Owning the bus is not the same as being allowed to tour in it. A tier
     // above the free ceiling is what `chassis_higher_tier` is sold for, so the
@@ -865,7 +849,7 @@ export const validateExpeditionBuildCommitment = (
   }
 
   const chassis = activeTourbusAssetId
-    ? resolveCommittedChassis(state, activeTourbusAssetId)
+    ? findExpeditionTourbusAsset(state, activeTourbusAssetId)
     : null
   const cargoCapacity = calculateExpeditionCargoCapacity(
     chassis,

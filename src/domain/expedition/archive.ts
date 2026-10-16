@@ -20,6 +20,7 @@ import {
   getExpeditionArchiveChassisId,
   isCanonicalExpeditionArchiveEntry
 } from '../../data/expedition/archive'
+import { getCommittedExpeditionTourbusAsset } from './chassis'
 
 /** An Archive with every category present and empty. */
 export const createEmptyExpeditionArchive =
@@ -28,19 +29,6 @@ export const createEmptyExpeditionArchive =
     for (const category of EXPEDITION_ARCHIVE_CATEGORIES) archive[category] = []
     return archive
   }
-
-/** The committed tourbus asset of the active run, when there is one. */
-const activeTourbusAsset = (
-  state: GameState
-): GameState['assets'][number] | null => {
-  const assetId = state.expedition?.loadout?.activeTourbusAssetId
-  if (typeof assetId !== 'string') return null
-  return (
-    (Array.isArray(state.assets) ? state.assets : []).find(
-      asset => asset.id === assetId && asset.kind === 'tourbus_chassis'
-    ) ?? null
-  )
-}
 
 /**
  * Whether one discovery may be recorded against the current state.
@@ -95,7 +83,7 @@ export const canRecordExpeditionArchiveDiscovery = (
     case 'module': {
       // The asset is the proof: a module the Career owns on some other bus is
       // not one this run met.
-      const asset = activeTourbusAsset(state)
+      const asset = getCommittedExpeditionTourbusAsset(state)
       return (
         asset !== null &&
         sourceId === asset.id &&
@@ -103,7 +91,7 @@ export const canRecordExpeditionArchiveDiscovery = (
       )
     }
     case 'chassis': {
-      const asset = activeTourbusAsset(state)
+      const asset = getCommittedExpeditionTourbusAsset(state)
       return (
         asset !== null &&
         sourceId === asset.id &&
@@ -194,7 +182,7 @@ export const sweepExpeditionArchiveObservations = (
       sourceId: runId
     })
   }
-  const asset = activeTourbusAsset(state)
+  const asset = getCommittedExpeditionTourbusAsset(state)
   if (asset) {
     claims.push({
       category: 'chassis',

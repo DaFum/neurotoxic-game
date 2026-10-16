@@ -131,8 +131,8 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
                   id: item.id,
                   cost: item.cost ?? 0
                 }
-                const disabled = purchaseLogic.isItemDisabled(item)
                 const decision = purchaseLogic.getPurchaseDecision(item)
+                const disabled = purchaseLogic.isItemDisabled(item, decision)
 
                 return (
                   <ShopItem

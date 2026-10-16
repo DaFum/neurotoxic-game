@@ -249,13 +249,9 @@ export function useEventSystem({
       const event = eventEngine.checkEvent(category, currentState, triggerPoint)
       if (!event) return false
 
-      const processedEvent = eventEngine.processOptions(event, currentState)
-      if (!processedEvent) return false
+      const eventId = typeof event.id === 'string' ? event.id : undefined
 
-      const processedEventId =
-        typeof processedEvent.id === 'string' ? processedEvent.id : undefined
-
-      setActiveEvent(processedEvent)
+      setActiveEvent(event)
       // Gig events are exempt from the daily budget, so they don't consume it.
       if (!isGigTrigger) {
         dispatch(
@@ -268,10 +264,10 @@ export function useEventSystem({
       // Selection may skip an ineligible head, so the played event is not
       // necessarily the head — remove it by id wherever it sits.
       if (
-        typeof processedEventId === 'string' &&
-        currentState.pendingEvents.includes(processedEventId)
+        typeof eventId === 'string' &&
+        currentState.pendingEvents.includes(eventId)
       ) {
-        dispatch(createPopPendingEventAction(processedEventId))
+        dispatch(createPopPendingEventAction(eventId))
       }
       return true
     },

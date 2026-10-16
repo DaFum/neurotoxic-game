@@ -48,6 +48,40 @@ describe('VolumeSlider', () => {
     expect(document.activeElement).toBe(input)
   })
 
+  test('delivers range input changes as a clamped number', () => {
+    const handleChange = vi.fn()
+    const { getByLabelText } = render(
+      React.createElement(VolumeSlider, {
+        label: 'Music Volume',
+        value: 0.5,
+        onChange: handleChange
+      })
+    )
+
+    fireEvent.change(getByLabelText('Music Volume'), {
+      target: { value: '0.7' }
+    })
+
+    expect(handleChange).toHaveBeenCalledTimes(1)
+    expect(handleChange).toHaveBeenCalledWith(0.7)
+  })
+
+  test('delivers segment selection as the segment fraction', () => {
+    const handleChange = vi.fn()
+    const { container } = render(
+      React.createElement(VolumeSlider, {
+        label: 'Music Volume',
+        value: 0.5,
+        onChange: handleChange
+      })
+    )
+
+    fireEvent.click(container.querySelectorAll('button')[2])
+
+    expect(handleChange).toHaveBeenCalledTimes(1)
+    expect(handleChange).toHaveBeenCalledWith(0.3)
+  })
+
   test('forwards ariaDescribedBy prop to underlying range input', () => {
     const handleChange = () => {}
     const { getByLabelText } = render(

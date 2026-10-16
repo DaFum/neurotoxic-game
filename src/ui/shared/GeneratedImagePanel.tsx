@@ -43,15 +43,19 @@ export const GeneratedImagePanel = ({
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
 
-  // Reset load/error state whenever the prompt changes — otherwise a previously
-  // successful image keeps `opacity: 1` during the new image's network round-trip
-  // (flicker), or a previously errored image stays on the fallback forever.
+  // Reset load/error state whenever the image URL inputs (prompt or size hint)
+  // change — otherwise a previously successful image keeps `opacity: 1` during
+  // the new image's network round-trip (flicker), or a previously errored image
+  // stays on the fallback forever. The size hint is tracked by its dimensions,
+  // not its object identity, because callers pass inline literals.
+  const sizeHintWidth = sizeHint?.width
+  const sizeHintHeight = sizeHint?.height
   useEffect(() => {
     // eslint-disable-next-line @eslint-react/set-state-in-effect
     setLoaded(false)
     // eslint-disable-next-line @eslint-react/set-state-in-effect
     setErrored(false)
-  }, [prompt])
+  }, [prompt, sizeHintWidth, sizeHintHeight])
 
   // resolveGenImageUrl already checks navigator.onLine and returns the
   // fallback SVG when offline — no double-check needed here. Only the

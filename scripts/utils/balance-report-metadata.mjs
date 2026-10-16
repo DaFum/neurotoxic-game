@@ -58,7 +58,6 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/utils/eventEngine/filterEvents.ts',
   'src/utils/eventEngine/helpers.ts',
   'src/utils/eventEngine/index.ts',
-  'src/utils/eventEngine/processOptions.ts',
   'src/utils/eventEngine/resolveChoice.ts',
   'src/utils/eventEngine/resolvers.ts',
   'src/utils/eventEngine/templateResolver.ts',

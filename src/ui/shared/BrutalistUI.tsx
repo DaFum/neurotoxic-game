@@ -71,8 +71,6 @@ interface CrisisModalProps {
  */
 export const UplinkButton = memo(
   ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
-    const [isHovered, setIsHovered] = useState(false)
-
     // Only absolute http(s) URLs navigate; unsafe values render inertly.
     const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
     const safeUrl = isSafeUrl ? url.trim() : '#'
@@ -86,36 +84,26 @@ export const UplinkButton = memo(
       [isSafeUrl]
     )
 
-    const handleMouseEnter = useCallback(() => setIsHovered(true), [])
-    const handleMouseLeave = useCallback(() => setIsHovered(false), [])
-
     return (
       <a
         href={safeUrl}
         target={isSafeUrl ? '_blank' : undefined}
         rel={isSafeUrl ? 'noopener noreferrer' : undefined}
         onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
       >
         {/* Glitch Background on Hover */}
-        {isHovered && (
-          <div className='absolute inset-0 bg-toxic-green/10 z-0'>
-            <div
-              className='absolute inset-0 opacity-50'
-              style={SCANLINE_BACKGROUND_STYLE}
-            ></div>
-            <div className='w-full h-1 bg-toxic-green absolute top-1/2 motion-safe:animate-[scan_0.5s_linear_infinite]'></div>
-          </div>
-        )}
+        <div className='absolute inset-0 bg-toxic-green/10 z-0 hidden group-hover:block'>
+          <div
+            className='absolute inset-0 opacity-50'
+            style={SCANLINE_BACKGROUND_STYLE}
+          ></div>
+          <div className='w-full h-1 bg-toxic-green absolute top-1/2 motion-safe:animate-[scan_0.5s_linear_infinite]'></div>
+        </div>
 
         <div className='relative z-10 flex items-start gap-3 sm:gap-0 p-3 sm:p-4'>
           {/* Icon Block */}
-          <div
-            className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
-          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[4px_4px_0px_var(--color-toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
-          >
+          <div className='w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors border-toxic-green/50 text-toxic-green group-hover:border-toxic-green group-hover:bg-toxic-green group-hover:text-void-black group-hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'>
             {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
           </div>
 
@@ -128,9 +116,7 @@ export const UplinkButton = memo(
               >
                 {title}
               </h2>
-              <span
-                className={`text-[8px] sm:text-xxs tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal wrap-break-word max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
-              >
+              <span className='text-[8px] sm:text-xxs tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal wrap-break-word max-w-full border-transparent text-toxic-green/50 group-hover:border-toxic-green group-hover:text-toxic-green'>
                 {type}
               </span>
             </div>
@@ -140,9 +126,7 @@ export const UplinkButton = memo(
           </div>
 
           {/* External Link Indicator */}
-          <div
-            className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-star-white' : 'text-toxic-green/30'}`}
-          >
+          <div className='shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 text-toxic-green/30 group-hover:translate-x-1 group-hover:text-star-white'>
             <svg
               width='24'
               height='24'

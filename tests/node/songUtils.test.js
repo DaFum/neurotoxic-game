@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { resolveSongPlaybackWindow } from '../../src/utils/audio/songUtils'
+import {
+  resolveNoteCappedPlaybackMs,
+  resolveSongPlaybackWindow
+} from '../../src/utils/audio/songUtils'
+import { NOTE_TAIL_MS } from '../../src/utils/audio/rhythmGameTypes'
 
 test('resolveSongPlaybackWindow prefers excerpt end-start duration when available', () => {
   const window = resolveSongPlaybackWindow({
@@ -56,4 +60,18 @@ test('resolveSongPlaybackWindow defaults to an unbounded duration when no metada
     excerptEndMs: null,
     excerptDurationMs: 0
   })
+})
+
+test('resolveNoteCappedPlaybackMs caps playback at the last note plus the note tail', () => {
+  const notes = [{ time: 500 }, { time: 12000 }]
+  assert.equal(resolveNoteCappedPlaybackMs(notes, 30000), 12000 + NOTE_TAIL_MS)
+})
+
+test('resolveNoteCappedPlaybackMs falls back to the excerpt duration without timed notes', () => {
+  assert.equal(resolveNoteCappedPlaybackMs([], 30000), 30000)
+  assert.equal(resolveNoteCappedPlaybackMs([{ time: 0 }], 30000), 30000)
+})
+
+test('resolveNoteCappedPlaybackMs returns null when neither notes nor excerpt bound playback', () => {
+  assert.equal(resolveNoteCappedPlaybackMs([], 0), null)
 })

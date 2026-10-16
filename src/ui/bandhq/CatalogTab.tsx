@@ -80,16 +80,19 @@ export const CatalogTab = ({
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
-        {items.map(item => (
-          <ShopItem
-            key={item.id}
-            item={item}
-            isDisabled={isItemDisabledCallback(item)}
-            decision={getPurchaseDecisionCallback(item)}
-            onBuy={handleBuyCallback}
-            processingItemId={processingItemId}
-          />
-        ))}
+        {items.map(item => {
+          const decision = getPurchaseDecisionCallback(item)
+          return (
+            <ShopItem
+              key={item.id}
+              item={item}
+              isDisabled={isItemDisabledCallback(item, decision)}
+              decision={decision}
+              onBuy={handleBuyCallback}
+              processingItemId={processingItemId}
+            />
+          )
+        })}
       </div>
     </div>
   )

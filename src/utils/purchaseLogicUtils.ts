@@ -403,21 +403,19 @@ export type PurchaseValidationResult =
 import type { PurchaseDecision } from '../types/purchase'
 
 /**
- * Derives all upgrade-purchase state variables in a single calculation.
- * @param item - Item to purchase
- * @param player - Player state
- * @param band - Band state
- * @returns Decision variables (cost, affordability, ownership, etc)
+ * Shared decision derivation for `getPurchaseDecision` and `validatePurchase`,
+ * taking the already-resolved primary effect so neither caller resolves it twice.
+ * @returns The public decision plus the reputation gate result.
  */
-export const getPurchaseDecision = (
+const derivePurchaseDecision = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState,
-  social: SocialState
-): PurchaseDecision => {
+  social: SocialState,
+  effect: Effect | undefined
+): { decision: PurchaseDecision; meetsReputation: boolean } => {
   const cost = getAdjustedCost(item, band)
   const isOwned = isItemOwned(item, player, band)
-  const effect = getPrimaryEffect(item)
   const isConsumable = effect?.type === 'inventory_add'
   const playerCanAfford = canAfford(item, player, cost)
 
@@ -432,13 +430,32 @@ export const getPurchaseDecision = (
     meetsReputation
 
   return {
-    cost,
-    canAfford: playerCanAfford,
-    isOwned,
-    isConsumable,
-    canPurchase
+    decision: {
+      cost,
+      canAfford: playerCanAfford,
+      isOwned,
+      isConsumable,
+      canPurchase
+    },
+    meetsReputation
   }
 }
+
+/**
+ * Derives all upgrade-purchase state variables in a single calculation.
+ * @param item - Item to purchase
+ * @param player - Player state
+ * @param band - Band state
+ * @returns Decision variables (cost, affordability, ownership, etc)
+ */
+export const getPurchaseDecision = (
+  item: PurchaseItem,
+  player: PlayerState,
+  band: BandState,
+  social: SocialState
+): PurchaseDecision =>
+  derivePurchaseDecision(item, player, band, social, getPrimaryEffect(item))
+    .decision
 
 /**
  * Validates whether the item can be purchased.
@@ -459,11 +476,14 @@ export const validatePurchase = (
     return { isValid: false, errorType: 'missing_effect' }
   }
 
-  const decision = getPurchaseDecision(item, player, band, social)
+  const { decision, meetsReputation } = derivePurchaseDecision(
+    item,
+    player,
+    band,
+    social,
+    effect
+  )
 
-  const meetsReputation =
-    !item.requiresReputation ||
-    finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
   if (!meetsReputation) {
     return { isValid: false, errorType: 'reputation_blocked' }
   }

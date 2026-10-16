@@ -45,18 +45,6 @@ const { StateError } = await import('../../src/utils/errorHandler.ts')
 const { eventEngine, resolveEventChoice } =
   await import('../../src/utils/eventEngine/index.ts')
 
-const TEST_EVENT_VAN_BREAKDOWN = {
-  id: 'van_breakdown',
-  options: [
-    {
-      label: 'Spare Tire',
-      requirements: { item: 'spare_tire' },
-      effect: { type: 'stat', stat: 'time', value: -1 }
-    },
-    { label: 'Wait', effect: { type: 'stat', stat: 'time', value: -3 } }
-  ]
-}
-
 // Helpers
 const buildGameState = (overrides = {}) => ({
   player: { day: 1, money: 100, fame: 50, time: 0 },
@@ -646,38 +634,6 @@ test('eventEngine.resolveChoice sets nextEventId', () => {
   }
   const result = eventEngine.resolveChoice(option, {})
   assert.equal(result.nextEventId, 'next_event', 'Should propagate nextEventId')
-})
-
-test('eventEngine.processOptions returns event when no processing needed', () => {
-  const event = {
-    id: 'simple_event',
-    options: [
-      { label: 'Continue', effect: { type: 'stat', stat: 'time', value: -1 } }
-    ]
-  }
-  const state = buildGameState()
-
-  const result = eventEngine.processOptions(event, state)
-
-  assert.ok(result, 'Should return event')
-  assert.ok(result.options, 'Should have options')
-})
-
-test('eventEngine.processOptions injects no inventory-driven option', () => {
-  const event = {
-    ...TEST_EVENT_VAN_BREAKDOWN,
-    id: 'van_breakdown_tire',
-    options: [...TEST_EVENT_VAN_BREAKDOWN.options]
-  }
-  const state = buildGameState({
-    band: { ...buildGameState().band, inventory: { spare_tire: true } }
-  })
-
-  const result = eventEngine.processOptions(event, state)
-
-  // Nothing grants a spare tire, so the removed quick-fix option must not
-  // come back for a hand-edited inventory key either.
-  assert.deepEqual(result.options, event.options)
 })
 
 test('eventEngine.applyResult treats non-finite numeric effects as zero', () => {

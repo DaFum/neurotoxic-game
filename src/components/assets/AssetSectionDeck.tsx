@@ -27,6 +27,58 @@ interface AssetSectionDeckProps {
 }
 
 /**
+ * Properties for one lifecycle action button in the asset deck.
+ */
+interface DeckActionButtonProps {
+  /** The localized button label. */
+  label: string
+  /** The callback invoked when the enabled button is clicked. */
+  onClick: () => void
+  /** Whether the action is currently unavailable. */
+  disabled: boolean
+  /** The localized tooltip explaining why the action is unavailable. */
+  disabledReason: string
+}
+
+/**
+ * Renders a deck action as a primary button, or as a muted secondary button
+ * wrapped in an explanatory tooltip while the action is unavailable.
+ *
+ * @param props - The component properties.
+ * @returns The rendered action button.
+ */
+const DeckActionButton = ({
+  label,
+  onClick,
+  disabled,
+  disabledReason
+}: DeckActionButtonProps) => {
+  const button = (
+    <button
+      type='button'
+      onClick={onClick}
+      disabled={disabled}
+      className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${disabled ? 'assets-hub-secondary-button' : 'assets-hub-primary-button'} min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40`}
+      style={{
+        borderColor: 'var(--section-accent, var(--color-toxic-green))',
+        background: disabled
+          ? 'transparent'
+          : 'var(--section-accent, var(--color-toxic-green))',
+        color: disabled ? 'inherit' : 'var(--color-void-black)'
+      }}
+    >
+      {label}
+    </button>
+  )
+
+  return disabled ? (
+    <Tooltip content={disabledReason}>{button}</Tooltip>
+  ) : (
+    button
+  )
+}
+
+/**
  * Renders the shared hero and deck area for an asset section.
  *
  * @remarks
@@ -72,70 +124,18 @@ export const AssetSectionDeck = ({
 
       <div className='flex min-w-0 flex-col gap-3'>
         <div className='assets-hub-reveal grid grid-cols-3 gap-2'>
-          {!needsRepair ? (
-            <Tooltip content={t('assets:actions.notDamaged')}>
-              <button
-                type='button'
-                onClick={onRepair}
-                disabled={!needsRepair}
-                className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-                style={{
-                  borderColor:
-                    'var(--section-accent, var(--color-toxic-green))',
-                  background: 'transparent',
-                  color: 'inherit'
-                }}
-              >
-                {t('assets:actions.repair')}
-              </button>
-            </Tooltip>
-          ) : (
-            <button
-              type='button'
-              onClick={onRepair}
-              disabled={!needsRepair}
-              className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-              style={{
-                borderColor: 'var(--section-accent, var(--color-toxic-green))',
-                background: 'var(--section-accent, var(--color-toxic-green))',
-                color: 'var(--color-void-black)'
-              }}
-            >
-              {t('assets:actions.repair')}
-            </button>
-          )}
-          {!canUpgrade ? (
-            <Tooltip content={t('assets:actions.maxTier')}>
-              <button
-                type='button'
-                onClick={onUpgrade}
-                disabled={!canUpgrade}
-                className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-                style={{
-                  borderColor:
-                    'var(--section-accent, var(--color-toxic-green))',
-                  background: 'transparent',
-                  color: 'inherit'
-                }}
-              >
-                {t('assets:actions.upgrade')}
-              </button>
-            </Tooltip>
-          ) : (
-            <button
-              type='button'
-              onClick={onUpgrade}
-              disabled={!canUpgrade}
-              className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-              style={{
-                borderColor: 'var(--section-accent, var(--color-toxic-green))',
-                background: 'var(--section-accent, var(--color-toxic-green))',
-                color: 'var(--color-void-black)'
-              }}
-            >
-              {t('assets:actions.upgrade')}
-            </button>
-          )}
+          <DeckActionButton
+            label={t('assets:actions.repair')}
+            onClick={onRepair}
+            disabled={!needsRepair}
+            disabledReason={t('assets:actions.notDamaged')}
+          />
+          <DeckActionButton
+            label={t('assets:actions.upgrade')}
+            onClick={onUpgrade}
+            disabled={!canUpgrade}
+            disabledReason={t('assets:actions.maxTier')}
+          />
           <button
             type='button'
             onClick={onSell}

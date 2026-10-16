@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import type { ChangeEvent } from 'react'
 
 import { SegmentedSlider } from './SegmentedSlider'
@@ -6,7 +6,7 @@ import { clampUnit } from '../../utils/numberUtils'
 
 /**
  * Displays one labeled volume slider with percentage output.
- * @param props - Slider label, normalized volume value, change handler, and optional ARIA description ID.
+ * @param props - Slider label, normalized volume value, numeric change handler, and optional ARIA description ID.
  */
 export const VolumeSlider = memo(function VolumeSlider({
   label,
@@ -16,15 +16,28 @@ export const VolumeSlider = memo(function VolumeSlider({
 }: {
   label: string
   value: number
-  onChange: (
-    e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
-  ) => void
+  /** Receives the new volume, always finite and clamped to `0..1`. */
+  onChange: (value: number) => void
   ariaDescribedBy?: string
 }) {
   const clampedValue = Number.isFinite(value) ? clampUnit(value) : 0
   const max = 10
   const val = Math.round(clampedValue * max)
   const pct = Math.round(clampedValue * 100)
+
+  const handleInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const parsed = parseFloat(e.target.value)
+      if (!Number.isFinite(parsed)) return
+      onChange(clampUnit(parsed))
+    },
+    [onChange]
+  )
+
+  const handleSegmentSelect = useCallback(
+    (segment: number) => onChange(clampUnit(segment / max)),
+    [onChange]
+  )
 
   return (
     <SegmentedSlider
@@ -37,10 +50,8 @@ export const VolumeSlider = memo(function VolumeSlider({
       segmentCount={max}
       valueLabel={`${pct}%`}
       ariaDescribedBy={ariaDescribedBy}
-      onInputChange={onChange}
-      onSegmentSelect={segment =>
-        onChange({ target: { value: segment / max } })
-      }
+      onInputChange={handleInputChange}
+      onSegmentSelect={handleSegmentSelect}
     />
   )
 })

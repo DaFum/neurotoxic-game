@@ -626,7 +626,8 @@ export interface CatalogConsumerProps {
   items: CatalogItem[]
   processingItemId?: string | number
   handleBuy: (item: CatalogItem) => void
-  isItemDisabled: (item: CatalogItem) => boolean
+  /** Receives the item's already-computed decision so it is not re-derived. */
+  isItemDisabled: (item: CatalogItem, decision: PurchaseDecision) => boolean
   getPurchaseDecision: (item: CatalogItem) => PurchaseDecision
 }
 
@@ -641,7 +642,10 @@ export interface CatalogTabProps {
    * Do not pass raw utility functions that require player/band arguments.
    */
   handleBuyCallback: (item: CatalogItem) => void
-  isItemDisabledCallback: (item: CatalogItem) => boolean
+  isItemDisabledCallback: (
+    item: CatalogItem,
+    decision: PurchaseDecision
+  ) => boolean
   getPurchaseDecisionCallback: (item: CatalogItem) => PurchaseDecision
   processingItemId?: string | number
 }

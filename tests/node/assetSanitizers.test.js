@@ -136,6 +136,35 @@ describe('sanitizeAssets', () => {
     // child slot was added by a now-uninstalled parent → removed
     assert.equal(out[0].slots.length, 0)
   })
+
+  it('treats inherited registry keys as unknown module ids', () => {
+    for (const hostileId of ['constructor', '__proto__', 'hasOwnProperty']) {
+      const out = sanitizeAssets([
+        validAsset({
+          slots: [
+            {
+              id: 'slot_installed',
+              slotType: CHASSIS_CONFIG.tourbus_chassis.legit[1].slots[0],
+              position: { x: 0, y: 0 },
+              installedModuleId: hostileId
+            },
+            {
+              id: 'slot_child',
+              slotType: 'tb_trailer_addon',
+              position: { x: 1, y: 0 },
+              installedModuleId: null,
+              addedByModuleId: hostileId
+            }
+          ]
+        })
+      ])
+      assert.deepEqual(
+        out[0].slots.map(slot => [slot.id, slot.installedModuleId]),
+        [['slot_installed', null]],
+        hostileId
+      )
+    }
+  })
 })
 
 describe('sanitizeLiabilities', () => {

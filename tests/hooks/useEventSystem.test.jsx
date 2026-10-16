@@ -94,7 +94,6 @@ describe('useEventSystem.triggerEvent daily cap with a corrupt counter', () => {
 
   const setup = eventsTriggeredToday => {
     vi.spyOn(eventEngine, 'checkEvent').mockReturnValue(fakeEvent)
-    vi.spyOn(eventEngine, 'processOptions').mockReturnValue(fakeEvent)
     const dispatch = vi.fn()
     const params = {
       stateRef: {

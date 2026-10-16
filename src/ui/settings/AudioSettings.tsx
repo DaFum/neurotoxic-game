@@ -1,9 +1,7 @@
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from '../shared/VolumeSlider'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
-import { clampUnit } from '../../utils/numberUtils'
-import type { ChangeEvent } from 'react'
 import type { AudioState } from '../../types/audio'
 
 type AudioSettingsProps = AudioState & {
@@ -26,34 +24,6 @@ export const AudioSettings = memo(function AudioSettings({
 }: AudioSettingsProps) {
   const { t } = useTranslation()
 
-  const handleVolumeChange = useCallback(
-    (
-      cb: (v: number) => void,
-      e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
-    ) => {
-      const raw = e.target.value
-      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
-      if (!Number.isFinite(parsed)) return
-      // Normalize at the UI boundary to match the slider's max='1' contract;
-      // AudioManager re-clamps downstream but defensive clamping here keeps
-      // out-of-range numeric inputs from propagating through state.
-      cb(clampUnit(parsed))
-    },
-    []
-  )
-
-  const handleMusicChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) =>
-      handleVolumeChange(onMusicChange, e),
-    [onMusicChange, handleVolumeChange]
-  )
-
-  const handleSfxChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) =>
-      handleVolumeChange(onSfxChange, e),
-    [onSfxChange, handleVolumeChange]
-  )
-
   return (
     <div>
       <h2 className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
@@ -65,7 +35,7 @@ export const AudioSettings = memo(function AudioSettings({
             label={t('ui:music_volume')}
             value={musicVol}
             ariaDescribedBy='music-volume-desc'
-            onChange={handleMusicChange}
+            onChange={onMusicChange}
           />
           <span id='music-volume-desc' className='sr-only'>
             {t('ui:music_volume_desc')}
@@ -76,7 +46,7 @@ export const AudioSettings = memo(function AudioSettings({
             label={t('ui:sfx_volume')}
             value={sfxVol}
             ariaDescribedBy='sfx-volume-desc'
-            onChange={handleSfxChange}
+            onChange={onSfxChange}
           />
           <span id='sfx-volume-desc' className='sr-only'>
             {t('ui:sfx_volume_desc')}

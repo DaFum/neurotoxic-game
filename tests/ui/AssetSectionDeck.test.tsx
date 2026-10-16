@@ -92,4 +92,44 @@ describe('AssetSectionDeck', () => {
 
     expect(screen.getByRole('button', { name: 'Repair' })).toBeEnabled()
   })
+
+  it('styles unavailable actions as muted secondary buttons and available ones as primary', () => {
+    render(
+      <AssetSectionDeck
+        asset={makeAsset(3)}
+        hero={<div />}
+        onSlotClick={vi.fn()}
+        onRepair={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />
+    )
+
+    for (const name of ['Repair', 'Upgrade']) {
+      const button = screen.getByRole('button', { name })
+      expect(button).toHaveClass('assets-hub-secondary-button')
+      expect(button).not.toHaveClass('assets-hub-primary-button')
+      expect(button).toHaveStyle({ background: 'transparent' })
+    }
+
+    render(
+      <AssetSectionDeck
+        asset={{ ...makeAsset(1), id: 'asset-2', condition: 50 }}
+        hero={<div />}
+        onSlotClick={vi.fn()}
+        onRepair={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />
+    )
+
+    const enabled = screen
+      .getAllByRole('button', { name: /^(Repair|Upgrade)$/ })
+      .filter(button => !(button as HTMLButtonElement).disabled)
+    expect(enabled).toHaveLength(2)
+    for (const button of enabled) {
+      expect(button).toHaveClass('assets-hub-primary-button')
+      expect(button).not.toHaveClass('assets-hub-secondary-button')
+    }
+  })
 })

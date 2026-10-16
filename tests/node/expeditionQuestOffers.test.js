@@ -58,10 +58,8 @@ const acceptOfferThroughEventPipeline = (
   }
   assert.ok(selected, `${eventId} was never selected from the ${category} pool`)
 
-  const processed = eventEngine.processOptions(selected, state)
-  assert.ok(processed)
-  let next = gameReducer(state, createSetActiveEventAction(processed))
-  const accept = processed.options[0]
+  let next = gameReducer(state, createSetActiveEventAction(selected))
+  const accept = selected.options[0]
   const resolution = resolveEvent(accept, next)
   for (const action of resolution.actions) next = gameReducer(next, action)
   return next

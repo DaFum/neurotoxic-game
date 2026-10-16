@@ -147,19 +147,44 @@ export const getExpeditionTechnicalCondition = (
 }
 
 /**
+ * The condition bands the performance profile distinguishes per group.
+ *
+ * @remarks
+ * Coarser than {@link ExpeditionConditionTier}: the profile treats `damaged`
+ * and `breaking` alike. The profile reads a group only through this class, so
+ * it is also the profile cache key: at most `4^3 = 64` entries.
+ */
+type ProfileConditionClass = 'disabled' | 'severe' | 'degraded' | 'baseline'
+
+/**
+ * Classifies one group's condition for the performance profile.
+ *
+ * @param value - Raw condition; clamped with {@link clampCondition} first.
+ * @returns `disabled` at 0, `severe` at 1..39, `degraded` at 40..69,
+ * `baseline` at 70..100.
+ */
+const getProfileConditionClass = (value: unknown): ProfileConditionClass => {
+  const condition = clampCondition(value)
+  if (condition === 0) return 'disabled'
+  if (condition <= 39) return 'severe'
+  if (condition <= 69) return 'degraded'
+  return 'baseline'
+}
+
+const profileCache = new Map<string, ExpeditionConditionPerformanceProfile>()
+
+/**
  * Evaluates active gameplay performance modifiers from technical condition.
  *
  * @param condition - Equipment condition or null/undefined.
  * @returns Performance profile with audio hazards, timing, stamina, and disabled groups.
  */
-const profileCache = new Map<string, ExpeditionConditionPerformanceProfile>()
-
 export const getExpeditionConditionPerformanceProfile = (
   condition: ExpeditionTechnicalCondition | null | undefined
 ): ExpeditionConditionPerformanceProfile => {
-  const pa = clampCondition(condition?.pa ?? 100)
-  const instruments = clampCondition(condition?.instruments ?? 100)
-  const stageGear = clampCondition(condition?.stageGear ?? 100)
+  const pa = getProfileConditionClass(condition?.pa ?? 100)
+  const instruments = getProfileConditionClass(condition?.instruments ?? 100)
+  const stageGear = getProfileConditionClass(condition?.stageGear ?? 100)
   const cacheKey = `${pa}:${instruments}:${stageGear}`
 
   const cached = profileCache.get(cacheKey)
@@ -172,34 +197,40 @@ export const getExpeditionConditionPerformanceProfile = (
   // 40..69: audioHazardLevel 1
   // 1..39: audioHazardLevel 2; timing x0.96
   // 0: disabledGroups includes pa
-  if (pa === 0) {
+  if (pa === 'disabled') {
     disabledGroups.push('pa')
   }
-  const paHazard = pa <= 39 ? 2 : pa <= 69 ? 1 : 0
-  const paTiming = pa <= 39 ? 0.96 : 1.0
+  const paSevere = pa === 'disabled' || pa === 'severe'
+  const paHazard = paSevere ? 2 : pa === 'degraded' ? 1 : 0
+  const paTiming = paSevere ? 0.96 : 1.0
 
   // Instruments Profile:
   // 70..100: baseline
   // 40..69: timing x0.98
   // 1..39: timing x0.93; miss stamina x1.15
   // 0: disabledGroups includes instruments
-  if (instruments === 0) {
+  if (instruments === 'disabled') {
     disabledGroups.push('instruments')
   }
-  const instTiming = instruments <= 39 ? 0.93 : instruments <= 69 ? 0.98 : 1.0
-  const instMissStamina = instruments <= 39 ? 1.15 : 1.0
+  const instSevere = instruments === 'disabled' || instruments === 'severe'
+  const instTiming = instSevere ? 0.93 : instruments === 'degraded' ? 0.98 : 1.0
+  const instMissStamina = instSevere ? 1.15 : 1.0
 
   // Stage Gear Profile:
   // 70..100: baseline
   // 40..69: combo recovery x0.95
   // 1..39: combo recovery x0.85; audioHazardLevel >= 1
   // 0: disabledGroups includes stageGear
-  if (stageGear === 0) {
+  if (stageGear === 'disabled') {
     disabledGroups.push('stageGear')
   }
-  const stageComboRecovery =
-    stageGear <= 39 ? 0.85 : stageGear <= 69 ? 0.95 : 1.0
-  const stageHazard = stageGear <= 39 ? 1 : 0
+  const stageSevere = stageGear === 'disabled' || stageGear === 'severe'
+  const stageComboRecovery = stageSevere
+    ? 0.85
+    : stageGear === 'degraded'
+      ? 0.95
+      : 1.0
+  const stageHazard = stageSevere ? 1 : 0
 
   Object.freeze(disabledGroups)
   const profile: ExpeditionConditionPerformanceProfile = Object.freeze({

@@ -2,6 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   EXPEDITION_CHASSIS_PROFILES,
+  findExpeditionTourbusAsset,
+  getCommittedExpeditionTourbusAsset,
   getExpeditionChassisArchetype,
   getExpeditionChassisProfile
 } from '../../src/domain/expedition/chassis'
@@ -151,4 +153,85 @@ test('Task 1: Expedition Chassis Archetypes and Profiles', async t => {
       )
     }
   )
+})
+
+test('findExpeditionTourbusAsset resolves candidate ids', async t => {
+  const bus = { id: 'bus-1', kind: 'tourbus_chassis' }
+  const studio = { id: 'studio-1', kind: 'studio_chassis' }
+  const emptyIdBus = { id: '', kind: 'tourbus_chassis' }
+  const state = { assets: [studio, bus, emptyIdBus] }
+
+  await t.test('returns the matching tourbus asset', () => {
+    assert.equal(findExpeditionTourbusAsset(state, 'bus-1'), bus)
+  })
+
+  await t.test('rejects an asset of another kind', () => {
+    assert.equal(findExpeditionTourbusAsset(state, 'studio-1'), null)
+  })
+
+  await t.test('returns null for an unknown id', () => {
+    assert.equal(findExpeditionTourbusAsset(state, 'missing'), null)
+  })
+
+  await t.test('returns null for non-string ids', () => {
+    for (const id of [null, undefined, 1, true, ['bus-1'], { id: 'bus-1' }]) {
+      assert.equal(findExpeditionTourbusAsset(state, id), null)
+    }
+  })
+
+  await t.test('looks up an empty-string id exactly', () => {
+    assert.equal(findExpeditionTourbusAsset(state, ''), emptyIdBus)
+  })
+
+  await t.test('returns null when assets is not an array', () => {
+    for (const assets of [undefined, null, {}, 'bus-1']) {
+      assert.equal(findExpeditionTourbusAsset({ assets }, 'bus-1'), null)
+    }
+  })
+})
+
+test('getCommittedExpeditionTourbusAsset resolves the committed id', async t => {
+  const bus = { id: 'bus-1', kind: 'tourbus_chassis' }
+  const studio = { id: 'studio-1', kind: 'studio_chassis' }
+  const withCommitted = activeTourbusAssetId => ({
+    assets: [studio, bus],
+    expedition: { loadout: { activeTourbusAssetId } }
+  })
+
+  await t.test('returns the committed tourbus asset', () => {
+    assert.equal(
+      getCommittedExpeditionTourbusAsset(withCommitted('bus-1')),
+      bus
+    )
+  })
+
+  await t.test('rejects a committed id naming another kind', () => {
+    assert.equal(
+      getCommittedExpeditionTourbusAsset(withCommitted('studio-1')),
+      null
+    )
+  })
+
+  await t.test('returns null for a non-string committed id', () => {
+    assert.equal(getCommittedExpeditionTourbusAsset(withCommitted(null)), null)
+    assert.equal(getCommittedExpeditionTourbusAsset(withCommitted(7)), null)
+  })
+
+  await t.test('returns null without an expedition or loadout', () => {
+    assert.equal(getCommittedExpeditionTourbusAsset({ assets: [bus] }), null)
+    assert.equal(
+      getCommittedExpeditionTourbusAsset({ assets: [bus], expedition: {} }),
+      null
+    )
+  })
+
+  await t.test('returns null when assets is not an array', () => {
+    assert.equal(
+      getCommittedExpeditionTourbusAsset({
+        assets: null,
+        expedition: { loadout: { activeTourbusAssetId: 'bus-1' } }
+      }),
+      null
+    )
+  })
 })
