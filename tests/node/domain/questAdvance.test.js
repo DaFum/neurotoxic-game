@@ -2,6 +2,27 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { QuestLifecycle } from '../../../src/domain/questLifecycle.js'
 
+test('quest progress updates copy the target without mutating input quests', () => {
+  const quest = Object.freeze({ id: 'q1', required: 10, progress: 2 })
+  const otherQuest = Object.freeze({ id: 'q2', required: 10, progress: 0 })
+  const state = Object.freeze({
+    activeQuests: Object.freeze([quest, otherQuest])
+  })
+
+  const nextStates = [
+    QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 3 }),
+    QuestLifecycle.setQuestProgress(state, { questId: 'q1', progress: 5 })
+  ]
+  for (const nextState of nextStates) {
+    assert.notEqual(nextState, state)
+    assert.notEqual(nextState.activeQuests, state.activeQuests)
+    assert.notEqual(nextState.activeQuests[0], quest)
+    assert.equal(nextState.activeQuests[0].progress, 5)
+    assert.equal(nextState.activeQuests[1], otherQuest)
+  }
+  assert.equal(quest.progress, 2)
+})
+
 test('advanceQuest', async t => {
   await t.test('returns original state if activeQuests is missing', () => {
     const state = {}

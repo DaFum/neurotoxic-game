@@ -18,7 +18,6 @@ type LeaderboardStatsPayload = {
 }
 
 let leaderboardStatsEndpointUnavailable = false
-let hasLoggedUnavailableEndpoint = false
 // Dedupes concurrent syncs: the effect fires per stat change and the
 // last-synced-day marker is only written after the fetch resolves, so without
 // this every stat change within one day launched another POST.
@@ -27,7 +26,6 @@ const inFlightSyncs = new Set<string>()
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
-    hasLoggedUnavailableEndpoint = false
     inFlightSyncs.clear()
   })
 }
@@ -150,14 +148,13 @@ const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
   })
 
   if (response.status === 404) {
-    leaderboardStatsEndpointUnavailable = true
-    if (!hasLoggedUnavailableEndpoint) {
-      hasLoggedUnavailableEndpoint = true
+    if (!leaderboardStatsEndpointUnavailable) {
       logger.info(
         'Leaderboard',
         'Stats endpoint unavailable (404). Disabling stat sync for this session.'
       )
     }
+    leaderboardStatsEndpointUnavailable = true
     return false
   }
 

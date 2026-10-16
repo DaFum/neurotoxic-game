@@ -71,13 +71,8 @@ export const getExpeditionModuleProfile = (
 
   const overrides = EXPEDITION_MODULE_PROFILES[moduleId]
   return {
-    cargoCapacityBonus: overrides?.cargoCapacityBonus ?? 0,
-    fuelConsumptionMultiplier: overrides?.fuelConsumptionMultiplier ?? 1.0,
-    roadWearMultiplier: overrides?.roadWearMultiplier ?? 1.0,
-    inspectionLevel: (overrides?.inspectionLevel ?? 0) as 0 | 1 | 2,
-    authorityIntelBonus: (overrides?.authorityIntelBonus ?? 0) as 0 | 1,
-    hiddenContrabandCapacity: overrides?.hiddenContrabandCapacity ?? 0,
-    restStressRecoveryBonus: overrides?.restStressRecoveryBonus ?? 0
+    ...NEUTRAL_EXPEDITION_MODULE_PROFILE,
+    ...overrides
   }
 }
 

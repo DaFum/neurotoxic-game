@@ -1,5 +1,5 @@
 import type { TravelActionsParams } from './types'
-import { useGetLocationName } from './actions/useGetLocationName'
+import { getLocationName } from './actions/getLocationName'
 import { useClearPendingTravel } from './actions/useClearPendingTravel'
 import { useHandleNodeArrivalCallback } from './actions/useHandleNodeArrivalCallback'
 import { useStartTravelSequence } from './actions/useStartTravelSequence'
@@ -32,7 +32,6 @@ export const useTravelActions = ({
   setters,
   params
 }: Pick<TravelActionsParams, 'refs' | 'setters' | 'params'>) => {
-  const getLocationName = useGetLocationName()
   const clearPendingTravel = useClearPendingTravel({ refs, setters })
   const handleNodeArrivalCallback = useHandleNodeArrivalCallback({
     refs,

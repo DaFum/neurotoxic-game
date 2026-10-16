@@ -13,6 +13,7 @@ import { buildGigStatsSnapshot } from '../../utils/gigStats'
 import type { GameMap, GameState, GigModifiers, PlayerState } from '../../types'
 import type {
   RhythmGameRefState,
+  RhythmLane,
   RhythmSetlistEntry,
   SetLastGigStats
 } from '../../types/rhythmGame'
@@ -176,30 +177,23 @@ const applyGigPhysicsSetup = ({
     )
     return false
   }
-  const lane0 = lanes[0]
-  const lane1 = lanes[1]
-  const lane2 = lanes[2]
-  const hitWindow0 = hitWindows[0]
-  const hitWindow1 = hitWindows[1]
-  const hitWindow2 = hitWindows[2]
-  if (!lane0 || !lane1 || !lane2) {
-    logger.error('RhythmGame', 'Rhythm game lane entries are missing')
-    return false
+  const laneWindows: { lane: RhythmLane; hitWindow: number }[] = []
+  for (let index = 0; index < 3; index++) {
+    const lane = lanes[index]
+    const hitWindow = hitWindows[index]
+    if (!lane) {
+      logger.error('RhythmGame', 'Rhythm game lane entries are missing')
+      return false
+    }
+    if (typeof hitWindow !== 'number' || !Number.isFinite(hitWindow)) {
+      logger.error('RhythmGame', 'Gig physics hit window values are invalid')
+      return false
+    }
+    laneWindows.push({ lane, hitWindow })
   }
-  if (
-    typeof hitWindow0 !== 'number' ||
-    !Number.isFinite(hitWindow0) ||
-    typeof hitWindow1 !== 'number' ||
-    !Number.isFinite(hitWindow1) ||
-    typeof hitWindow2 !== 'number' ||
-    !Number.isFinite(hitWindow2)
-  ) {
-    logger.error('RhythmGame', 'Gig physics hit window values are invalid')
-    return false
+  for (const { lane, hitWindow } of laneWindows) {
+    lane.hitWindow = hitWindow
   }
-  lane0.hitWindow = hitWindow0
-  lane1.hitWindow = hitWindow1
-  lane2.hitWindow = hitWindow2
 
   return true
 }
@@ -393,17 +387,15 @@ export const useRhythmGameAudio = ({
         return
       }
 
-      if (!isAborted()) {
-        setAudioStatus('ready')
-        currentStatusRef.current = 'ready'
-        await audioEngine.playSongSequence(
-          0,
-          activeSetlist,
-          gameStateRef,
-          currentAddToast,
-          currentT
-        )
-      }
+      setAudioStatus('ready')
+      currentStatusRef.current = 'ready'
+      await audioEngine.playSongSequence(
+        0,
+        activeSetlist,
+        gameStateRef,
+        currentAddToast,
+        currentT
+      )
     } catch (error) {
       if (isAborted()) {
         return

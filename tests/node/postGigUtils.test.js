@@ -9,7 +9,7 @@ import {
   buildPerGigSocialReconciliation,
   getAcceptDealMoneyUpdate,
   getAcceptDealSocialUpdateFactory,
-  getSpinStorySocialUpdateFactory,
+  getSpinStorySocialUpdate,
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGig'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
@@ -376,22 +376,20 @@ test('calculateContinueStats boosts positive fame gain by bandStyle', () => {
   assert.equal(styledGain, Math.round(baseGain * 1.5))
 })
 
-test('getSpinStorySocialUpdateFactory decreases controversyLevel correctly', () => {
-  const updateFactory = getSpinStorySocialUpdateFactory()
-
+test('getSpinStorySocialUpdate decreases controversyLevel correctly', () => {
   // Case 1: normal reduction when above SPIN_STORY_CONTROVERSY_REDUCTION
   const prevSocial1 = buildSocial({ controversyLevel: 50 })
-  const result1 = updateFactory(prevSocial1)
+  const result1 = getSpinStorySocialUpdate(prevSocial1)
   assert.equal(result1.controversyLevel, 50 - SPIN_STORY_CONTROVERSY_REDUCTION)
 
   // Case 2: clamped to 0 when below SPIN_STORY_CONTROVERSY_REDUCTION
   const prevSocial2 = buildSocial({ controversyLevel: 10 })
-  const result2 = updateFactory(prevSocial2)
+  const result2 = getSpinStorySocialUpdate(prevSocial2)
   assert.equal(result2.controversyLevel, 0)
 
   // Case 3: defaults to 0 when controversyLevel is undefined
   const prevSocial3 = buildSocial({ controversyLevel: undefined })
-  const result3 = updateFactory(prevSocial3)
+  const result3 = getSpinStorySocialUpdate(prevSocial3)
   assert.equal(result3.controversyLevel, 0)
 })
 

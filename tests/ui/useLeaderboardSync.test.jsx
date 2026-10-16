@@ -1,6 +1,7 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useLeaderboardSync } from '../../src/hooks/useLeaderboardSync'
+import { logger } from '../../src/utils/logger'
 
 // Mock Logger
 vi.mock('../../src/utils/logger', () => ({
@@ -290,5 +291,46 @@ describe('useLeaderboardSync', () => {
 
     // Should still be 4 because sync failed
     expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('4')
+  })
+
+  it('logs concurrent 404 responses once and disables later session syncs', async () => {
+    vi.resetModules()
+    const { useLeaderboardSync: useSessionLeaderboardSync } =
+      await import('../../src/hooks/useLeaderboardSync')
+    const resolvers = []
+    mockFetch.mockImplementation(
+      () => new Promise(resolve => resolvers.push(resolve))
+    )
+    const makeState = day => ({
+      player: {
+        playerId: 'missing-endpoint-player',
+        playerName: 'Player',
+        money: 500,
+        fame: 100,
+        day,
+        stats: { totalDistance: 0, conflictsResolved: 0, stageDives: 0 }
+      },
+      social: {}
+    })
+    const { rerender } = renderHook(state => useSessionLeaderboardSync(state), {
+      initialProps: makeState(5)
+    })
+    rerender(makeState(6))
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+
+    await act(async () => {
+      for (const resolve of resolvers) resolve({ status: 404, ok: false })
+    })
+    expect(logger.info).toHaveBeenCalledExactlyOnceWith(
+      'Leaderboard',
+      'Stats endpoint unavailable (404). Disabling stat sync for this session.'
+    )
+    expect(
+      localStorage.getItem('neurotoxic_last_synced_day:missing-endpoint-player')
+    ).toBeNull()
+
+    rerender(makeState(7))
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(logger.warn).not.toHaveBeenCalled()
   })
 })

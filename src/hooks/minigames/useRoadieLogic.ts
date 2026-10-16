@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { isEmptyObject, finiteNumberOr } from '../../utils/gameState'
+import { finiteNumberOr } from '../../utils/gameState'
 import {
   checkCollision,
   handleCrash,
@@ -205,11 +205,7 @@ export const useRoadieLogic = () => {
     null as unknown as RoadieLogicState
   )
   if (!gameStateRef.current) {
-    const stashItemId: string | null = (() => {
-      if (!band?.stash || isEmptyObject(band.stash)) return null
-      const keys = Object.keys(band.stash)
-      return keys[0] ?? null
-    })()
+    const stashItemId = Object.keys(band.stash ?? {})[0] ?? null
     stashItemIdRef.current = stashItemId
     gameStateRef.current = getInitialGameState(stashItemId)
   }
@@ -270,7 +266,7 @@ export const useRoadieLogic = () => {
       game.lastMoveTime = now
 
       handlePickup(game)
-      handleDelivery(game, (dmg, cnt) => finishRoadie(dmg, cnt))
+      handleDelivery(game, finishRoadie)
 
       // Update UI immediately for responsiveness
       setUiState(prev => ({

@@ -666,6 +666,54 @@ describe('useTravelLogic', () => {
     unmount()
   })
 
+  test('expires confirmation after five seconds and clears the ref before another click', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const props = createTravelLogicProps()
+    const { result } = renderHook(() => useTravelLogic(props))
+    const targetNode = props.gameMap.nodes.node_target
+    const handleTravel = result.current.handleTravel
+
+    act(() => handleTravel(targetNode))
+    act(() => t.mock.timers.tick(4999))
+    assert.equal(result.current.pendingTravelNode, targetNode)
+
+    // Click in the same batch as expiry, before React mirrors state to refs.
+    act(() => {
+      t.mock.timers.tick(1)
+      handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.pendingTravelNode, targetNode)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+    assert.equal(props.addToast.mock.calls.length, 2)
+    assert.equal(result.current.handleTravel, handleTravel)
+
+    act(() => t.mock.timers.tick(5000))
+    assert.equal(result.current.pendingTravelNode, null)
+  })
+
+  test('replacing a pending destination cancels its previous expiry', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const props = createTravelLogicProps()
+    const firstNode = props.gameMap.nodes.node_target
+    const nextNode = { ...firstNode, id: 'node_next' }
+    props.gameMap.nodes.node_next = nextNode
+    props.gameMap.connections.push({ from: 'node_start', to: 'node_next' })
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => result.current.handleTravel(firstNode))
+    act(() => t.mock.timers.tick(3000))
+    act(() => result.current.handleTravel(nextNode))
+
+    act(() => t.mock.timers.tick(2000))
+    assert.equal(result.current.pendingTravelNode, nextNode)
+    act(() => t.mock.timers.tick(2999))
+    assert.equal(result.current.pendingTravelNode, nextNode)
+    act(() => t.mock.timers.tick(1))
+    assert.equal(result.current.pendingTravelNode, null)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+  })
+
   // A stranded player is one who cannot reach any connected node (insufficient
   // fuel) and cannot afford to refuel. calculateTravelExpenses is mocked to
   // require 10L per hop, so fuel < 10 with money below the refuel cost at a

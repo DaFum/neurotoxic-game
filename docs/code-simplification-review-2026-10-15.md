@@ -105,7 +105,8 @@ all thirty were implemented:
 Thus 25 of B01–B30 are implemented, and B01, B09, B12, B18, and B24 remain open.
 B33 is implemented in this PR as part of the duplicate-report follow-up. The
 B31–B45 entries other than B33 were implemented in the subsequent follow-up
-described below. B01, B09, B12, B18, B24, S01–S16, and H01 remain open.
+described below. S01–S16 are implemented in the smaller-cleanup follow-up.
+B01, B09, B12, B18, B24, and H01 remain open.
 C01–C05 have their own status above.
 
 ## Other substantial opportunities
@@ -160,24 +161,24 @@ C01–C05 have their own status above.
 
 ## Smaller cleanups
 
-| ID  | Original location                                                                | Cleanup and constraints                                                                                                                                                                             |
-| --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S01 | `src/hooks/useGigInput.ts:116`                                                   | Collapse touch-start/end wrappers into lane input. Preserve audio-unlock, input registration, and animation ordering.                                                                               |
-| S02 | `src/hooks/preGig/usePreGigDerivations.ts:29`; `src/hooks/usePreGigLogic.ts:143` | Remove unused `technicalCondition` input and its computation. The actual profile comes from Expedition state.                                                                                       |
-| S03 | `src/hooks/travel/actions/useHandleTravel.ts:268`                                | Reuse `clearPendingTravel` as the timeout callback instead of repeating resets.                                                                                                                     |
-| S04 | `src/hooks/travel/actions/useGetLocationName.ts:23`                              | Replace the hook with a stable module-level resolver; it has no reactive dependencies and resolves current i18n when invoked.                                                                       |
-| S05 | `src/hooks/useContrabandStash.ts:18`                                             | Reuse existing `useDisclosure` for modal state.                                                                                                                                                     |
-| S06 | `src/hooks/useLeaderboardSync.ts:20`                                             | Use one endpoint-unavailable flag for disabling requests and logging once. Check it before logging, then set it; preserve in-flight deduplication and HMR reset.                                    |
-| S07 | `src/hooks/rhythmGame/useRhythmGameAudio.ts:181,400`                             | Validate lane/window pairs in one indexed pass before mutation, retaining strict finite checks. Remove the immediately repeated abort check with no intervening await.                              |
-| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                     |
-| S09 | `src/hooks/rhythmGame/scoring/useHandleMiss.ts:125`                              | Remove the field copied unchanged from the object already spread above it.                                                                                                                          |
-| S10 | `src/utils/mapGenerator/mathUtils.ts:86`                                         | Return the selected slice directly. Previous validated swaps guarantee completed entries; retain sparse-array defenses, RNG draws, and deterministic branches.                                      |
-| S11 | `src/utils/postGig/storySpinHandlers.ts:41`                                      | Replace the argument-free, zero-capture updater factory with its updater. Preserve finite-number and controversy clamps. Other factories capture inputs and should remain factories.                |
-| S12 | `src/domain/questAdvance.ts:46`                                                  | Avoid cloning the target quest before both callers immediately clone it again. Retain the array/state copies and treat the original quest as read-only.                                             |
-| S13 | `src/domain/questAdd.ts:82`                                                      | Remove the size-dependent Set/IIFE branch. Do not blindly substitute `addStoryFlags`, which handles empty strings and duplicate additions differently.                                              |
-| S14 | `src/domain/expedition/modules.ts:72`                                            | Spread the neutral profile plus authored overrides rather than repeating defaults. Preserve the invariant that unset overrides are omitted, not explicitly `undefined`.                             |
-| S15 | `src/domain/expedition/condition.ts:330`                                         | Use existing `ActiveEffect[]` instead of repeating its anonymous shape twice.                                                                                                                       |
-| S16 | `src/utils/translationUtils.ts:49,67`                                            | Optionally handle translated string leaves once inside recursion. Preserve top-level string passthrough, own/forbidden-key checks, cycle handling, sparse arrays, and repeated non-cyclic children. |
+| ID  | Original location                                                                | Cleanup and constraints                                                                                                                                                                             | Status                                  |
+| --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| S01 | `src/hooks/useGigInput.ts:116`                                                   | Collapse touch-start/end wrappers into lane input. Preserve audio-unlock, input registration, and animation ordering.                                                                               | Implemented — smaller-cleanup follow-up |
+| S02 | `src/hooks/preGig/usePreGigDerivations.ts:29`; `src/hooks/usePreGigLogic.ts:143` | Remove unused `technicalCondition` input and its computation. The actual profile comes from Expedition state.                                                                                       | Implemented — smaller-cleanup follow-up |
+| S03 | `src/hooks/travel/actions/useHandleTravel.ts:268`                                | Reuse `clearPendingTravel` as the timeout callback instead of repeating resets.                                                                                                                     | Implemented — smaller-cleanup follow-up |
+| S04 | `src/hooks/travel/actions/useGetLocationName.ts:23`                              | Replace the hook with a stable module-level resolver; it has no reactive dependencies and resolves current i18n when invoked.                                                                       | Implemented — smaller-cleanup follow-up |
+| S05 | `src/hooks/useContrabandStash.ts:18`                                             | Reuse existing `useDisclosure` for modal state.                                                                                                                                                     | Implemented — smaller-cleanup follow-up |
+| S06 | `src/hooks/useLeaderboardSync.ts:20`                                             | Use one endpoint-unavailable flag for disabling requests and logging once. Check it before logging, then set it; preserve in-flight deduplication and HMR reset.                                    | Implemented — smaller-cleanup follow-up |
+| S07 | `src/hooks/rhythmGame/useRhythmGameAudio.ts:181,400`                             | Validate lane/window pairs in one indexed pass before mutation, retaining strict finite checks. Remove the immediately repeated abort check with no intervening await.                              | Implemented — smaller-cleanup follow-up |
+| S08 | `src/hooks/minigames/useRoadieLogic.ts:208,273`                                  | Replace the stash-selection IIFE with `Object.keys(band.stash ?? {})[0] ?? null`; pass `finishRoadie` directly.                                                                                     | Implemented — smaller-cleanup follow-up |
+| S09 | `src/hooks/rhythmGame/scoring/useHandleMiss.ts:125`                              | Remove the field copied unchanged from the object already spread above it.                                                                                                                          | Implemented — smaller-cleanup follow-up |
+| S10 | `src/utils/mapGenerator/mathUtils.ts:86`                                         | Return the selected slice directly. Previous validated swaps guarantee completed entries; retain sparse-array defenses, RNG draws, and deterministic branches.                                      | Implemented — smaller-cleanup follow-up |
+| S11 | `src/utils/postGig/storySpinHandlers.ts:41`                                      | Replace the argument-free, zero-capture updater factory with its updater. Preserve finite-number and controversy clamps. Other factories capture inputs and should remain factories.                | Implemented — smaller-cleanup follow-up |
+| S12 | `src/domain/questAdvance.ts:46`                                                  | Avoid cloning the target quest before both callers immediately clone it again. Retain the array/state copies and treat the original quest as read-only.                                             | Implemented — smaller-cleanup follow-up |
+| S13 | `src/domain/questAdd.ts:82`                                                      | Remove the size-dependent Set/IIFE branch. Do not blindly substitute `addStoryFlags`, which handles empty strings and duplicate additions differently.                                              | Implemented — smaller-cleanup follow-up |
+| S14 | `src/domain/expedition/modules.ts:72`                                            | Spread the neutral profile plus authored overrides rather than repeating defaults. Preserve the invariant that unset overrides are omitted, not explicitly `undefined`.                             | Implemented — smaller-cleanup follow-up |
+| S15 | `src/domain/expedition/condition.ts:330`                                         | Use existing `ActiveEffect[]` instead of repeating its anonymous shape twice.                                                                                                                       | Implemented — smaller-cleanup follow-up |
+| S16 | `src/utils/translationUtils.ts:49,67`                                            | Optionally handle translated string leaves once inside recursion. Preserve top-level string passthrough, own/forbidden-key checks, cycle handling, sparse arrays, and repeated non-cyclic children. | Implemented — smaller-cleanup follow-up |
 
 ## Candidate requiring a contract decision
 
@@ -284,3 +285,41 @@ Its Node phase completed successfully. Without changing code or timeout settings
 the isolated security suite passed all three tests and the entire logic suite
 passed on rerun. The UI suite was run separately after the failed combined
 invocation skipped its UI phase.
+
+## Smaller-cleanup follow-up — 2026-10-16
+
+This pass builds on `41d9620e6` (PR #3139) and implements all sixteen S01–S16
+entries. H01 remains a separate contract decision.
+
+- **S01–S09:** Remove redundant wrappers, unused input, duplicated pending-travel
+  resets, and duplicated modal/endpoint flags. The location resolver is a stable
+  module function using the current i18n context. Rhythm initialization validates
+  all three lane/window pairs before changing lane windows and retains its
+  cancellation guards; Roadie completion still uses its one-shot guard.
+- **S10, S11, S16:** Return the already-validated sampled slice, pass the story-spin
+  social updater directly, and translate nested string leaves in one recursion
+  path. Sampling preserves its RNG draws and sparse-entry checks; translation
+  preserves top-level string passthrough, own/forbidden-key checks, sparse holes,
+  ancestor-cycle handling, and repeated non-cyclic descendants.
+- **S12–S15:** Read the original quest without an intermediate clone, retain the
+  existing empty/duplicate start-flag semantics, compose module defaults with
+  authored overrides, and reuse the shared `ActiveEffect[]` type.
+
+Targeted characterization covers gesture ordering, rejected lane/window pairs,
+cancellation, current-language resolution, travel timeout/ref cleanup, stable
+stash callbacks, concurrent 404 responses, seeded sampling, sparse/cyclic
+translation, immutable quest progress, and empty/duplicate start flags.
+
+Verification for the smaller-cleanup follow-up:
+
+- Production Node suite: 5,522 tests passed.
+- Full logic suite: 47 files / 841 tests passed.
+- Full UI suite: 233 files / 1,482 tests passed.
+- The combined `NODE_TEST_CONCURRENCY=8 VITEST_MAX_WORKERS=2 pnpm run test:all`
+  command passed all three production tiers.
+- Core, reducer, and server typechecks passed.
+- Lint and build passed; lint reports only the same five warnings in unchanged
+  tests.
+- Knip remains at seven baseline findings within budget seven; no-check guard,
+  Markdownlint, Prettier, and `git diff --check` passed.
+- Independent review found no remaining S01–S16 findings.

@@ -7,6 +7,7 @@ import {
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
 import type { ContrabandStashItem, StashItem } from '../types'
+import { useDisclosure } from './useDisclosure'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
@@ -15,12 +16,13 @@ import type { ContrabandStashItem, StashItem } from '../types'
 export const useContrabandStash = () => {
   const band = useGameSelector(state => state.band)
   const { useContraband: dispatchUseContraband, addToast } = useGameActions()
-  const [showStash, setShowStash] = useState(false)
+  const {
+    isOpen: showStash,
+    open: openStash,
+    close: closeStash
+  } = useDisclosure()
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])
-
-  const openStash = useCallback(() => setShowStash(true), [])
-  const closeStash = useCallback(() => setShowStash(false), [])
 
   const stashArray = useMemo<StashItem[]>(
     () => Object.values(band.stash ?? {}) as StashItem[],
