@@ -16,7 +16,8 @@ current code before implementation.
 ## Five simplifications that also address correctness
 
 This PR adds C01, C03, C04, and C05 and verifies the existing C02 fix.
-The upstream status of the other findings is tracked separately below.
+Its duplicate-report follow-up also implements B33 and shares the selected asset
+tab shadow. The upstream status of the other findings is tracked below.
 
 ### C01 — Remove the incomplete map-node comparison
 
@@ -102,7 +103,9 @@ all thirty were implemented:
   Recheck the exact target and callback-identity contract before deciding on it.
 
 Thus 25 of B01–B30 are implemented, and B01, B09, B12, B18, and B24 remain open.
-B31–B45, S01–S16, and H01 remain follow-up work. C01–C05 have their own status above.
+B33 is implemented in this PR as part of the duplicate-report follow-up. The
+remaining B31–B45 entries, S01–S16, and H01 remain follow-up work. C01–C05 have
+their own status above.
 
 ## Other substantial opportunities
 
@@ -140,7 +143,7 @@ B31–B45, S01–S16, and H01 remain follow-up work. C01–C05 have their own st
 | B30 | `src/domain/expedition/effectiveRules.ts:73`; `archive.ts:33`; `cargo.ts:166`; `loadout.ts:509`                                                                                                    | Share chassis lookup, accepting an explicit asset ID for committed and candidate loadouts. Preserve boundary guards and ID/kind checks; avoid circular imports.                                                                                                                                                                                                      | Implemented — [#3121](https://github.com/DaFum/neurotoxic-game/pull/3121) |
 | B31 | `src/domain/expedition/eventProof.ts:23`                                                                                                                                                           | Build result and condition indexes together instead of traversing/narrowing the registry twice. Preserve conditions on options without Expedition results.                                                                                                                                                                                                           | Open                                                                      |
 | B32 | `src/data/events/index.ts:109`                                                                                                                                                                     | Populate `KNOWN_EVENT_IDS` after successful validation/insertion. Remove the IIFE and second traversal. Do not reuse `seenIds`, which deliberately includes rejected IDs.                                                                                                                                                                                            | Open                                                                      |
-| B33 | `src/domain/expedition/betweenTour.ts:176`                                                                                                                                                         | Choose the eligible-or-fallback pool once, then share sorting, seeded selection, and guards. Preserve order, RNG salt, and branch-specific option IDs.                                                                                                                                                                                                               | Open                                                                      |
+| B33 | `src/domain/expedition/betweenTour.ts:176`                                                                                                                                                         | Choose the eligible-or-fallback pool once, then share sorting, seeded selection, and guards. Preserve order, RNG salt, and branch-specific option IDs.                                                                                                                                                                                                               | Implemented in this PR — duplicate-report follow-up                       |
 | B34 | `src/domain/expedition/extraction.ts:111`                                                                                                                                                          | Replace the parallel requested-ID array and set with one filtered set. Ledger order determines carry selection; preserve malformed-entry filtering.                                                                                                                                                                                                                  | Open                                                                      |
 | B35 | `src/domain/expedition/pressure.ts:173,195`; `src/domain/expedition/extraction.ts:168,183,210`                                                                                                     | Resolve effective rules once per operation and reuse numeric/flag values instead of rebuilding the capability graph. Include carry-slot resolution in settlement reuse.                                                                                                                                                                                              | Open                                                                      |
 | B36 | `src/components/stage/TourbusStageController.ts:118`                                                                                                                                               | Load independent controller/effect assets concurrently with `Promise.all`, following Roadie. Capture manager ownership and retain the final disposal check before drawing.                                                                                                                                                                                           | Open                                                                      |
@@ -198,3 +201,30 @@ invalid-data contract before introducing a shared selector.
   tables, the contraband schema, or the short explicit quest producer contracts.
 - The original review changed no repository files and did not run the full test
   suite. Implementation verification is recorded in the accompanying PR.
+
+## Duplicate-report follow-up — 2026-10-16
+
+The CI scan on `461824a80` was reproduced with the workflow's exact thresholds:
+`jscpd src --min-lines 8 --min-tokens 60` and the workflow ignore list. It reports
+10 clusters; the user-facing summary displays only the largest eight. This
+follow-up inspected all ten, including the two omitted from that summary.
+
+| Original cluster | Location on `461824a80`                                                         | Decision                                                                                                                                                                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1                | `src/data/questRegistry.ts:2–46,51–95`                                          | Retain. Named imports and explicit registry membership serve different purposes. A namespace spread would automatically register future barrel exports and change the membership contract.                                                                                                                                            |
+| 2                | `src/hooks/usePostGigHandlers.ts:60–93`; `src/hooks/usePostGigLogic.ts:165–198` | Retain. This is the typed dependency-injection boundary: one call passes the values that the other function receives. It is not duplicated processing, and it is separate from B12's local dispatcher memo.                                                                                                                           |
+| 3, 4, 5, 7       | `src/index.css:18–82`                                                           | Retain the Azeret faces for weights 500/700/800 and Latin/Latin Extended subsets. Both shipped fonts support a 100–900 axis, but advertising that entire range changes matching: ordinary buttons inherit weight 400, which currently matches the declared 500 face. Deduplication through a continuous range would change rendering. |
+| 6                | `src/context/reducers/careerReducer.ts:340–350,370–380`                         | Retain separate completion/rollback handlers. Their short shared receipt guard precedes distinct operations: grant without refund versus refund the receipted debit without granting. A helper adds indirection without removing duplicate business logic.                                                                            |
+| 8                | `src/domain/expedition/betweenTour.ts:177–186,189–196`                          | Implemented as B33. Choose the eligible-or-fallback pool once, then share sorting, mapping, seeded selection, and the undefined guard. Preserve option eligibility and the RNG salt.                                                                                                                                                  |
+| 9                | `src/components/assets/assetsHub.css:234–242,246–254`                           | Implemented. Define the selected-tab shadow once in a local custom property; the focus-visible state adds its two focus rings to the same shadow. Expanded shadow values remain identical in both states.                                                                                                                             |
+| 10               | `src/ui/shared/BrutalistUI.tsx:165–173,197–205`                                 | Retain. Two SVG icons share their title/accessibility scaffolding but have different graphics and view boxes. A generic wrapper solely for these few attributes would add another component/API without simplifying their behavior.                                                                                                   |
+
+The identical scan after these changes reports **8 clusters**, down from 10. No
+scanner exclusions, thresholds, or source comments were added to hide findings.
+The remaining eight clusters are the intentional overlaps explained above.
+
+Characterization coverage now explicitly exercises both Crew pools, least-loyal
+selection, deterministic tie choices for seeds 0 and 1, and reversed source order.
+Asset-tab shadow expressions were compared before/after custom-property expansion;
+selected and focus-visible values are unchanged. Focused tests, style/type checks,
+and build results are recorded in the PR.

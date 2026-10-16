@@ -269,18 +269,100 @@ describe('G5 — targets are deterministic and exact', () => {
     assert.deepEqual(decision.target, { kind: 'band', id: 'alpha' })
   })
 
-  it('offers develop_signature only on a Crew that is eligible', () => {
+  it('falls back to the least loyal Crew without signature access', () => {
     const base = settled()
     const decision = decisionOf(base, 'crew_debrief')
     assert.equal(decision, undefined, 'nothing is stored before generation')
-    const generated = generate(base)
+    const generated = generate({
+      ...base,
+      career: {
+        ...base.career,
+        crewById: {
+          ...base.career.crewById,
+          mika: { ...base.career.crewById.mika, loyalty: 80 },
+          tom: { ...base.career.crewById.tom, loyalty: 20 }
+        }
+      }
+    })
     const debrief = decisionOf(generated, 'crew_debrief')
-    if (debrief) {
-      // A fresh Career owns no `crew_signature_traits` set, so the option that
-      // cannot be taken is not offered.
-      assert.deepEqual(debrief.optionIds, ['rest_band'])
-    }
+    assert.ok(debrief)
+    assert.deepEqual(debrief.target, { kind: 'crew', id: 'tom' })
+    assert.deepEqual(debrief.optionIds, ['rest_band'])
   })
+
+  it('prefers signature-eligible Crew over a less loyal ineligible Crew', () => {
+    const base = settled()
+    const generated = generate({
+      ...base,
+      career: {
+        ...base.career,
+        unlockedSetIds: ['crew_network'],
+        hqFacilityLevels: { crew_lounge: 1 },
+        crewById: {
+          ...base.career.crewById,
+          mika: {
+            ...base.career.crewById.mika,
+            loyalty: 80,
+            storyProgress: 3
+          },
+          tom: { ...base.career.crewById.tom, loyalty: 20 }
+        }
+      }
+    })
+    const debrief = decisionOf(generated, 'crew_debrief')
+    assert.ok(debrief)
+    assert.deepEqual(debrief.target, { kind: 'crew', id: 'mika' })
+    assert.deepEqual(debrief.optionIds, BETWEEN_TOUR_OPTIONS.crew_debrief)
+  })
+
+  for (const signatureAccess of [false, true]) {
+    it(`preserves seeded Crew ties regardless of input order (signature access: ${signatureAccess})`, () => {
+      const base = settled()
+      const career = {
+        ...base.career,
+        unlockedSetIds: signatureAccess ? ['crew_network'] : [],
+        hqFacilityLevels: signatureAccess ? { crew_lounge: 1 } : {},
+        crewById: Object.fromEntries(
+          FIXTURE_CREW_IDS.map(crewId => [
+            crewId,
+            {
+              ...base.career.crewById[crewId],
+              loyalty: 60,
+              storyProgress: 3
+            }
+          ])
+        )
+      }
+      for (const crewIds of [
+        FIXTURE_CREW_IDS,
+        [...FIXTURE_CREW_IDS].reverse()
+      ]) {
+        for (const [runSeed, expectedCrewId] of [
+          [0, 'tom'],
+          [1, 'mika']
+        ]) {
+          const debrief = decisionOf(
+            generate({
+              ...base,
+              runSeed,
+              career,
+              expedition: {
+                ...base.expedition,
+                loadout: { ...base.expedition.loadout, crewIds }
+              }
+            }),
+            'crew_debrief'
+          )
+          assert.ok(debrief)
+          assert.deepEqual(debrief.target, { kind: 'crew', id: expectedCrewId })
+          assert.deepEqual(
+            debrief.optionIds,
+            signatureAccess ? BETWEEN_TOUR_OPTIONS.crew_debrief : ['rest_band']
+          )
+        }
+      }
+    })
+  }
 
   it('offers the van only while it is actually damaged', () => {
     const intact = settled()

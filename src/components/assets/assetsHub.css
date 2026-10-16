@@ -232,7 +232,7 @@
 }
 
 .assets-bottom-tab[aria-selected='true'] {
-  box-shadow:
+  --asset-selected-tab-shadow:
     0 0 1rem
       color-mix(
         in srgb,
@@ -240,18 +240,14 @@
         transparent
       ),
     0 0 0 1px rgb(var(--color-void-black-rgb) / 40%) inset;
+
+  box-shadow: var(--asset-selected-tab-shadow);
   outline: none;
 }
 
 .assets-bottom-tab[aria-selected='true']:focus-visible {
   box-shadow:
-    0 0 1rem
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 38%,
-        transparent
-      ),
-    0 0 0 1px rgb(var(--color-void-black-rgb) / 40%) inset,
+    var(--asset-selected-tab-shadow),
     0 0 0 2px rgb(var(--color-void-black-rgb)),
     0 0 0 4px var(--section-accent, var(--color-toxic-green));
 }
