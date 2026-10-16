@@ -242,6 +242,62 @@ test('addQuest', async t => {
     assert.deepEqual(nextState.activeStoryFlags, ['valid'])
   })
 
+  await t.test('preserves duplicate and empty start flags in order', () => {
+    for (const extraFlags of [[], ['last']]) {
+      const activeStoryFlags = Object.freeze(['existing', 'existing'])
+      const state = Object.freeze({ activeQuests: [], activeStoryFlags })
+      const startFlags = Object.freeze([
+        'existing',
+        '',
+        'new',
+        '',
+        'new',
+        ...extraFlags
+      ])
+      const quest = Object.freeze({ id: 'test1', startFlags })
+      const nextState = addQuest(state, quest)
+
+      assert.deepEqual(nextState.activeStoryFlags, [
+        'existing',
+        'existing',
+        '',
+        'new',
+        '',
+        'new',
+        ...extraFlags
+      ])
+      assert.deepEqual(activeStoryFlags, ['existing', 'existing'])
+      assert.equal(quest.startFlags, startFlags)
+    }
+  })
+
+  await t.test(
+    'keeps the flag array when all start flags already exist',
+    () => {
+      const activeStoryFlags = Object.freeze(['', 'existing', 'existing'])
+      const state = { activeQuests: [], activeStoryFlags }
+      const nextState = addQuest(state, {
+        id: 'test1',
+        startFlags: ['', 'existing', '', 'existing']
+      })
+
+      assert.equal(nextState.activeStoryFlags, activeStoryFlags)
+    }
+  )
+
+  await t.test(
+    'retains repeated and empty flags when no flag array exists',
+    () => {
+      const state = { activeQuests: [] }
+      const nextState = addQuest(state, {
+        id: 'test1',
+        startFlags: ['', 'new', '', 'new']
+      })
+
+      assert.deepEqual(nextState.activeStoryFlags, ['', 'new', '', 'new'])
+    }
+  )
+
   await t.test(
     'creates the active quest runtime via createActiveQuestRuntime',
     () => {

@@ -110,6 +110,26 @@ describe('useContrabandStash', () => {
     expect(result.current.showStash).toBe(false)
   })
 
+  it('keeps stash disclosure actions stable across visibility and member changes', () => {
+    const { result } = renderHook(() => useContrabandStash())
+    const { openStash, closeStash } = result.current
+
+    act(() => openStash())
+    act(() => result.current.stashProps.setSelectedMember('member2'))
+
+    expect(result.current.showStash).toBe(true)
+    expect(result.current.openStash).toBe(openStash)
+    expect(result.current.closeStash).toBe(closeStash)
+    expect(result.current.stashProps.onClose).toBe(closeStash)
+
+    act(() => result.current.stashProps.onClose())
+
+    expect(result.current.showStash).toBe(false)
+    expect(result.current.stashProps.selectedMember).toBe('member2')
+    expect(result.current.openStash).toBe(openStash)
+    expect(result.current.closeStash).toBe(closeStash)
+  })
+
   it('allows changing selected member', () => {
     const { result } = renderHook(() => useContrabandStash())
 

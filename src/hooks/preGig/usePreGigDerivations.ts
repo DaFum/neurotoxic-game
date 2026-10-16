@@ -5,7 +5,6 @@ import type { ActiveEffectEntry } from '../../types/components'
 import type { AssetModifiers } from '../../types/assets'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { ModifierOption } from '../usePreGigLogic'
-import type { ExpeditionTechnicalCondition } from '../../types/expedition'
 import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import { getGigModifiers } from '../../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
@@ -26,7 +25,6 @@ interface UsePreGigDerivationsProps {
   gigModifiers: GigModifiers
   setlist: RhythmSetlistEntry[]
   typedT: TranslationCallback
-  technicalCondition?: ExpeditionTechnicalCondition | null
   /** `canStartExpeditionPreGig` for the current state. */
   canStartShow: boolean
   expeditionState: Pick<GameState, 'expedition' | 'band'>

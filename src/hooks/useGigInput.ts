@@ -110,33 +110,17 @@ export const useGigInput = ({
 
   // Touch/Mouse Input Handlers for Columns
   /**
-   * Handles touch/mouse down on a lane column.
-   * @param laneIndex - Lane that should receive the pressed input state.
+   * Handles touch/mouse input on a lane column.
+   * @param index - Lane that should receive the input state.
+   * @param active - Whether the lane is pressed or released.
    */
-  const handleTouchStart = useCallback(
-    (laneIndex: number) => {
-      ensureAudioFromGesture()
-      actions.registerInput(laneIndex, true)
-      triggerBandAnimation(laneIndex)
+  const handleLaneInput = useCallback(
+    (index: number, active: boolean) => {
+      if (active) ensureAudioFromGesture()
+      actions.registerInput(index, active)
+      if (active) triggerBandAnimation(index)
     },
     [ensureAudioFromGesture, actions, triggerBandAnimation]
-  )
-
-  /**
-   * Handles touch/mouse up on a lane column.
-   * @param laneIndex - Lane that should receive the released input state.
-   */
-  const handleTouchEnd = useCallback(
-    (laneIndex: number) => {
-      actions.registerInput(laneIndex, false)
-    },
-    [actions]
-  )
-
-  const handleLaneInput = useCallback(
-    (index: number, active: boolean) =>
-      active ? handleTouchStart(index) : handleTouchEnd(index),
-    [handleTouchStart, handleTouchEnd]
   )
 
   return { handleLaneInput }

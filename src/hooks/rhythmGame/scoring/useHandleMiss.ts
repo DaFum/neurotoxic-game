@@ -121,8 +121,7 @@ export const useHandleMiss = ({
       const updatedStats = updateGigPerformanceStats(
         {
           ...gameStateRef.current.stats,
-          misses: gameStateRef.current.stats.misses + count,
-          corruptionLevel: gameStateRef.current.stats.corruptionLevel
+          misses: gameStateRef.current.stats.misses + count
         },
         { combo: 0, overload: nextOverload }
       )

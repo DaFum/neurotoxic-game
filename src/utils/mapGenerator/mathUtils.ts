@@ -83,16 +83,5 @@ export function pickRandomSubset<T>(
     shuffled[i] = valueJ
     shuffled[j] = valueI
   }
-  const rawResult = shuffled.slice(0, k)
-  const result: T[] = []
-  for (let i = 0; i < rawResult.length; i++) {
-    const value = rawResult[i]
-    if (value === undefined) {
-      throw new StateError(
-        `Sparse array invariant violated in pickRandomSubset(result-slice) at i=${i}`
-      )
-    }
-    result.push(value)
-  }
-  return result
+  return shuffled.slice(0, k)
 }

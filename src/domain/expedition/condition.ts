@@ -13,7 +13,7 @@ import type {
   ExpeditionInspectionConditionBand,
   ExpeditionTechnicalCondition
 } from '../../types/expedition'
-import type { GameState, PostGigSummary } from '../../types'
+import type { ActiveEffect, GameState, PostGigSummary } from '../../types'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { canPerformExpeditionGig } from './injuryGate'
 
@@ -357,16 +357,8 @@ export const applyTechnicalWear = (
  */
 export const getExpeditionConditionActiveEffects = (
   profile: ExpeditionConditionPerformanceProfile
-): Array<{
-  key: string
-  fallback?: string
-  options?: Record<string, unknown>
-}> => {
-  const effects: Array<{
-    key: string
-    fallback?: string
-    options?: Record<string, unknown>
-  }> = []
+): ActiveEffect[] => {
+  const effects: ActiveEffect[] = []
 
   if (profile.audioHazardLevel === 1) {
     effects.push({

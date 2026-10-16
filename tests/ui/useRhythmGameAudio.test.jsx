@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
   stopMusic: vi.fn(),
@@ -304,6 +304,150 @@ describe('useRhythmGameAudio', () => {
     await waitFor(() => {
       expect(mocks.playSongSequence).toHaveBeenCalled()
     })
+  })
+
+  it.each([
+    ['NaN', [100, 100, NaN]],
+    ['infinity', [100, 100, Infinity]],
+    ['a numeric string', [100, 100, '100']],
+    ['null', [100, 100, null]],
+    ['a sparse entry', Object.assign(new Array(3), { 0: 100, 2: 100 })],
+    ['a short array', [100, 100]]
+  ])(
+    'rejects %s hit windows without partially updating lanes',
+    async (_, hitWindows) => {
+      mocks.setupGigPhysics.mockReturnValueOnce({
+        mergedModifiers: {},
+        speed: 500,
+        hitWindows
+      })
+      const lanes = [{ hitWindow: 10 }, { hitWindow: 20 }, { hitWindow: 30 }]
+      const setAudioStatus = vi.fn()
+
+      renderHook(() =>
+        useRhythmGameAudio({
+          gameStateRef: { current: { lanes } },
+          setters: { setAudioStatus, setIsGameOver: vi.fn() },
+          contextState: baseState,
+          contextActions: {
+            addToast: vi.fn(),
+            t: vi.fn(key => key),
+            setLastGigStats: vi.fn(),
+            endGig: vi.fn()
+          }
+        })
+      )
+
+      await waitFor(() => {
+        expect(setAudioStatus).toHaveBeenCalledWith('failed')
+      })
+      expect(lanes.map(lane => lane.hitWindow)).toEqual([10, 20, 30])
+      expect(mocks.playSongSequence).not.toHaveBeenCalled()
+      expect(mocks.stopAudio).toHaveBeenCalled()
+    }
+  )
+
+  it.each([
+    ['a missing lane', [{ hitWindow: 10 }, { hitWindow: 20 }]],
+    ['a null lane', [{ hitWindow: 10 }, { hitWindow: 20 }, null]],
+    [
+      'a sparse lane',
+      Object.assign(new Array(3), {
+        0: { hitWindow: 10 },
+        2: { hitWindow: 30 }
+      })
+    ]
+  ])('rejects %s without updating the remaining lanes', async (_, lanes) => {
+    const initialLanes = structuredClone(lanes)
+    const setAudioStatus = vi.fn()
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: { current: { lanes } },
+        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    await waitFor(() => {
+      expect(setAudioStatus).toHaveBeenCalledWith('failed')
+    })
+    expect(lanes).toEqual(initialLanes)
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it('applies all validated hit windows before starting playback', async () => {
+    mocks.setupGigPhysics.mockReturnValueOnce({
+      mergedModifiers: {},
+      speed: 500,
+      hitWindows: [0, 120, 150]
+    })
+    const gameStateRef = { current: { lanes: [{}, {}, {}] } }
+    mocks.playSongSequence.mockImplementationOnce(async () => {
+      expect(gameStateRef.current.lanes.map(lane => lane.hitWindow)).toEqual([
+        0, 120, 150
+      ])
+    })
+    const setAudioStatus = vi.fn()
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef,
+        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    await waitFor(() => {
+      expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+    })
+    expect(setAudioStatus).toHaveBeenCalledWith('ready')
+    expect(mocks.handleError).not.toHaveBeenCalled()
+  })
+
+  it('does not initialize or start playback if unmounted while audio unlock is pending', async () => {
+    const audioUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+    const setAudioStatus = vi.fn()
+    const gameStateRef = { current: { lanes: [{}, {}, {}] } }
+
+    const { unmount } = renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef,
+        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    unmount()
+    await act(async () => {
+      audioUnlock.resolve(true)
+      await audioUnlock.promise
+    })
+
+    expect(mocks.resetGigStateTracking).not.toHaveBeenCalled()
+    expect(mocks.setupGigPhysics).not.toHaveBeenCalled()
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+    expect(setAudioStatus).not.toHaveBeenCalled()
+    expect(mocks.stopAudio).toHaveBeenCalled()
   })
 
   it('updates currentStatusRef to failed if physics setup fails and allows retry', async () => {

@@ -109,6 +109,55 @@ describe('useGigInput', () => {
     assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
   })
 
+  test('unlocks audio before registering a press and animates after registration', () => {
+    const events = []
+    mockAudioManager.ensureAudioContext.mock.mockImplementationOnce(() => {
+      events.push('unlock')
+      return Promise.resolve(true)
+    })
+    actions.registerInput = mock.fn((index, active) => {
+      events.push(['input', index, active])
+    })
+    triggerBandAnimation = mock.fn(index => {
+      events.push(['animation', index])
+    })
+    const { result } = renderUseGigInput()
+
+    act(() => {
+      result.current.handleLaneInput(1, true)
+      result.current.handleLaneInput(1, false)
+    })
+
+    assert.deepEqual(events, [
+      'unlock',
+      ['input', 1, true],
+      ['animation', 1],
+      ['input', 1, false]
+    ])
+  })
+
+  test('releasing a lane before a press does not unlock audio or animate', () => {
+    const { result } = renderUseGigInput()
+
+    act(() => {
+      result.current.handleLaneInput(0, false)
+    })
+
+    assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [0, false])
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 0)
+    assert.equal(triggerBandAnimation.mock.calls.length, 0)
+  })
+
+  test('keeps the lane handler stable when only the pause callback changes', () => {
+    const { result, rerender } = renderUseGigInput()
+    const handleLaneInput = result.current.handleLaneInput
+
+    onTogglePause = mock.fn()
+    rerender()
+
+    assert.equal(result.current.handleLaneInput, handleLaneInput)
+  })
+
   test('Escape key toggles pause menu', () => {
     renderUseGigInput()
 

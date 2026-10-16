@@ -6,7 +6,7 @@ import { formatCurrency } from '../../../utils/numberUtils'
 import {
   buildPerGigSocialReconciliation,
   getSpinStoryMoneyUpdate,
-  getSpinStorySocialUpdateFactory
+  getSpinStorySocialUpdate
 } from '../../../utils/postGig'
 import type { HandlerDispatchers } from './types'
 
@@ -101,8 +101,7 @@ export function useMinorHandlers({
 
     updatePlayer({ money: updates.nextMoney })
 
-    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
-    updateSocial(socialUpdateFactory)
+    updateSocial(getSpinStorySocialUpdate)
 
     hasSpunRef.current = true
     setHasSpun(true)

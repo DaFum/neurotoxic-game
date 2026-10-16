@@ -23,19 +23,18 @@ const findActiveQuestIndex = (
 
 /**
  * Locates an active quest and resolves the pieces both progress mutators share:
- * a next state with a freshly-cloned `activeQuests` array holding a cloned copy
- * of the target quest, the quest index, and the raw `required` threshold
- * (instance value falling back to the definition). Cloning the array and the
- * quest here means callers can update the returned `q`/array without mutating
- * the original state. Returns null when the quest is absent, so callers bail
- * with unchanged state.
+ * a next state with a freshly-cloned `activeQuests` array, the read-only target
+ * quest, the quest index, and the raw `required` threshold (instance value
+ * falling back to the definition). Callers replace the target entry with an
+ * updated copy. Returns null when the quest is absent, so callers bail with
+ * unchanged state.
  */
 const resolveActiveQuest = (
   state: GameState,
   questId: string
 ): {
   nextState: GameState
-  q: ActiveQuestState
+  q: Readonly<ActiveQuestState>
   questIndex: number
   rawRequired: number | undefined
 } | null => {
@@ -44,10 +43,8 @@ const resolveActiveQuest = (
   if (questIndex === -1) return null
 
   const nextActiveQuests = [...state.activeQuests]
-  const original = nextActiveQuests[questIndex]
-  if (!original) return null
-  const q = { ...original }
-  nextActiveQuests[questIndex] = q
+  const q = nextActiveQuests[questIndex]
+  if (!q) return null
   const nextState = { ...state, activeQuests: nextActiveQuests }
 
   const questConfig = getQuestWithDefinition(q)
