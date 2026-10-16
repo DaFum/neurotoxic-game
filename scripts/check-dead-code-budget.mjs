@@ -6,6 +6,7 @@
  * Modelled on `check-ts-nocheck-budget.mjs`: the budget starts at the captured
  * baseline so the check is report-only today, and promotion to a blocking gate is
  * a matter of lowering `max` after triage.
+ * Pass an existing JSON report as argv[2] to reuse a prior Knip run.
  */
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -37,7 +38,9 @@ function runKnip() {
 
 function main() {
   const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'))
-  const findings = collectFindings(JSON.parse(runKnip()))
+  const reportPath = process.argv[2]
+  const report = reportPath ? fs.readFileSync(reportPath, 'utf8') : runKnip()
+  const findings = collectFindings(JSON.parse(report))
 
   const rows = [...findings]
     .map(([category, entries]) => [category, entries.length])

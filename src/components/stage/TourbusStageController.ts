@@ -105,23 +105,20 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     this.container.addChild(this.obstacleContainer)
 
     // Initialize Effect Manager (on top of obstacles)
-    this.effectManager = new EffectManager(this.app, this.container)
-    this.effectManager.init()
+    const effectManager = new EffectManager(this.app, this.container)
+    this.effectManager = effectManager
+    effectManager.init()
 
     this.obstacleManager = new TourbusObstacleManager(
       this.obstacleContainer,
-      this.effectManager,
+      effectManager,
       this.textures,
       this.colors
     )
 
     // Load Assets
-    await this.loadAssets()
-    // dispose() can run while the awaits above are pending (fast scene exit);
-    // it nulls effectManager and destroys the containers, so bail out instead
-    // of dereferencing torn-down state.
-    if (this.isDisposed || !this.effectManager) return
-    await this.effectManager.loadAssets()
+    await Promise.all([this.loadAssets(), effectManager.loadAssets()])
+    // dispose() can destroy the containers while either load is pending.
     if (this.isDisposed) return
 
     // Initial Draw

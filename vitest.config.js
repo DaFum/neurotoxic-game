@@ -1,25 +1,11 @@
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import { commonTestSettings } from './vitest.config.shared.js'
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    alias: {
-      'virtual:pwa-register/react': fileURLToPath(
-        new URL('./tests/mocks/virtual-pwa.js', import.meta.url)
-      )
-    },
-    silent: 'passed-only',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html']
-    },
-    // Keep test timeout at the vitest 5s default (fail fast on slow tests)
-    testTimeout: 5000,
-    // Isolate each test to prevent state pollution
-    isolate: true,
-    pool: 'threads',
+    ...commonTestSettings,
     globals: true, // Need this for jest-dom expect to work
     environment: 'jsdom',
     setupFiles: ['./tests/vitest.setup.js'],

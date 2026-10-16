@@ -63,9 +63,10 @@ mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   }
 })
 
+const getSafeRandom = mock.fn(() => 0.5)
 mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
   namedExports: {
-    getSafeRandom: mock.fn(() => 0.5)
+    getSafeRandom
   }
 })
 
@@ -89,26 +90,40 @@ describe('NoteSpritePool', () => {
     container = new PIXI.Container()
     pool = new NoteSpritePool(container)
     mockHandleError.mock.resetCalls()
+    getSafeRandom.mock.resetCalls()
+    getSafeRandom.mock.mockImplementation(() => 0.5)
   })
 
-  test('_getEffectiveTexture returns the correct texture based on lane index', () => {
+  test('acquireSpriteFromPool selects lane textures and the available fallback', () => {
     pool.noteTextures.skull = { id: 'skull' }
     pool.noteTextures.lightning = { id: 'lightning' }
 
     // Skull lane
-    assert.equal(pool.factory._getEffectiveTexture(0).id, 'skull')
+    assert.equal(
+      pool.acquireSpriteFromPool({ color: 0 }, 0).texture.id,
+      'skull'
+    )
 
     // Lightning lane
-    assert.equal(pool.factory._getEffectiveTexture(1).id, 'lightning')
+    assert.equal(
+      pool.acquireSpriteFromPool({ color: 0 }, 1).texture.id,
+      'lightning'
+    )
 
     // Missing lightning falls back to skull
     pool.noteTextures.lightning = null
-    assert.equal(pool.factory._getEffectiveTexture(1).id, 'skull')
+    assert.equal(
+      pool.acquireSpriteFromPool({ color: 0 }, 1).texture.id,
+      'skull'
+    )
 
     // Missing skull falls back to lightning
     pool.noteTextures.lightning = { id: 'lightning' }
     pool.noteTextures.skull = null
-    assert.equal(pool.factory._getEffectiveTexture(0).id, 'lightning')
+    assert.equal(
+      pool.acquireSpriteFromPool({ color: 0 }, 0).texture.id,
+      'lightning'
+    )
   })
 
   afterEach(() => {
@@ -155,27 +170,23 @@ describe('NoteSpritePool', () => {
     assert.equal(sprite.scale.set.mock.calls.length, 0)
   })
 
-  test('createNoteSprite creates a fallback Sprite with WHITE texture if texture is missing', () => {
+  test('acquireSpriteFromPool creates a centered fallback Sprite with WHITE texture', () => {
     pool.noteTextures = { skull: null, lightning: null }
 
-    const sprite = pool.factory.createNoteSprite(0)
+    const sprite = pool.acquireSpriteFromPool({ color: 0 }, 0)
 
     assert.ok(sprite instanceof PIXI.Sprite)
     assert.equal(sprite.texture.id, 'white')
     assert.equal(sprite.isFallback, true)
 
-    // Position is set in initialize, not create. But anchor should be set.
-    assert.equal(sprite.anchor.set.mock.calls.length, 1)
+    assert.deepEqual(sprite.anchor.set.mock.calls[0].arguments, [0.5])
+    assert.equal(sprite.x, 50)
   })
 
-  test('initializeNoteSprite sets properties correctly for fallback sprite', () => {
+  test('acquireSpriteFromPool sets properties correctly for fallback sprite', () => {
     const lane = { color: 0x0000ff, renderX: 300 }
 
-    // Create a sprite that mimics what createNoteSprite returns for fallback
-    const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-    sprite.isFallback = true
-
-    pool.factory.initializeNoteSprite(sprite, lane, 0)
+    const sprite = pool.acquireSpriteFromPool(lane, 0)
 
     assert.equal(sprite.x, 350) // 300 + 50
     assert.equal(sprite.y, -50)
@@ -189,7 +200,7 @@ describe('NoteSpritePool', () => {
     assert.equal(sprite.texture.id, 'white')
   })
 
-  // Parametrized: initializeNoteSprite texture selection by lane
+  // Parametrized: acquired sprite texture selection by lane
   const laneTextureVariants = [
     {
       label: 'sets correct texture for lightning lane [index: 1]',
@@ -204,15 +215,13 @@ describe('NoteSpritePool', () => {
   ]
 
   laneTextureVariants.forEach(variant => {
-    test(`initializeNoteSprite ${variant.label}`, () => {
+    test(`acquireSpriteFromPool ${variant.label}`, () => {
       const lane = { color: 0x0000ff, renderX: 300 }
       // Ensure textures are set up
       pool.noteTextures.skull = { id: 'skull' }
       pool.noteTextures.lightning = { id: 'lightning' }
 
-      const sprite = new PIXI.Sprite()
-
-      pool.factory.initializeNoteSprite(sprite, lane, variant.laneIndex)
+      const sprite = pool.acquireSpriteFromPool(lane, variant.laneIndex)
 
       assert.equal(
         sprite.texture.id,
@@ -248,16 +257,62 @@ describe('NoteSpritePool', () => {
     assert.equal(sprite.isFallback, true)
   })
 
-  test('initializeNoteSprite sets jitterOffset property', () => {
+  test('acquireSpriteFromPool draws one fresh jitter value for new and reused sprites', () => {
     pool.noteTextures.skull = { id: 'skull' }
     const lane = { color: 0x00ff00, renderX: 100 }
-    const sprite = new PIXI.Sprite()
+    getSafeRandom.mock.mockImplementationOnce(() => 0.25, 0)
+    getSafeRandom.mock.mockImplementationOnce(() => 0.75, 1)
 
-    pool.factory.initializeNoteSprite(sprite, lane, 0)
+    const sprite = pool.acquireSpriteFromPool(lane, 0)
+    assert.equal(sprite.jitterOffset, -2.5)
+    assert.equal(getSafeRandom.mock.calls.length, 1)
 
-    assert.equal(typeof sprite.jitterOffset, 'number')
-    // NOTE_JITTER_RANGE is 10, so range is -5 to 5
-    assert.ok(sprite.jitterOffset >= -5 && sprite.jitterOffset <= 5)
+    pool.releaseSpriteToPool(sprite)
+    const reused = pool.acquireSpriteFromPool(lane, 0)
+    assert.equal(reused, sprite)
+    assert.equal(reused.jitterOffset, 2.5)
+    assert.equal(getSafeRandom.mock.calls.length, 2)
+  })
+
+  test('reused sprites adapt to changed shared textures without destroying them', () => {
+    const skull = { id: 'skull', destroy: mock.fn() }
+    const lightning = { id: 'lightning', destroy: mock.fn() }
+    pool.noteTextures = { skull, lightning }
+
+    const sprite = pool.acquireSpriteFromPool({ color: 0x00ff00 }, 0)
+    assert.equal(sprite.texture, skull)
+    assert.deepEqual(sprite.anchor.set.mock.calls[0].arguments, [0.5])
+
+    pool.destroyNoteSprite(sprite)
+    assert.equal(
+      pool.acquireSpriteFromPool({ color: 0x0000ff, renderX: 300 }, 1),
+      sprite
+    )
+    assert.equal(sprite.texture, lightning)
+    assert.equal(sprite.tint, 0x0000ff)
+    assert.equal(sprite.x, 350)
+
+    pool.destroyNoteSprite(sprite)
+    pool.noteTextures = { skull: null, lightning: null }
+    assert.equal(pool.acquireSpriteFromPool({ color: 0 }, 0), sprite)
+    assert.equal(sprite.texture, PIXI.Texture.WHITE)
+    assert.equal(sprite.isFallback, true)
+    assert.equal(sprite.width, 90)
+    assert.equal(sprite.height, 20)
+
+    pool.destroyNoteSprite(sprite)
+    pool.noteTextures = { skull, lightning }
+    assert.equal(pool.acquireSpriteFromPool({ color: 0 }, 0), sprite)
+    assert.equal(sprite.texture, skull)
+    assert.equal(sprite.isFallback, false)
+    assert.equal(sprite.width, 80)
+    assert.equal(sprite.height, 80)
+
+    pool.destroyNoteSprite(sprite)
+    pool.dispose()
+    assert.equal(skull.destroy.mock.calls.length, 0)
+    assert.equal(lightning.destroy.mock.calls.length, 0)
+    assert.deepEqual(sprite.destroy.mock.calls[0].arguments, [])
   })
 
   test('releaseSpriteToPool respects MAX_POOL_SIZE', () => {

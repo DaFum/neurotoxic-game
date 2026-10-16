@@ -27,6 +27,8 @@ let currentTickerAdd
 let currentTickerRemove
 let currentAppDestroy
 let currentLoad
+let currentEffectLoad
+let currentEffectDispose
 
 mock.module('pixi.js', {
   namedExports: {
@@ -105,11 +107,13 @@ mock.module(
         constructor() {}
         init() {}
         loadAssets() {
-          return Promise.resolve()
+          return currentEffectLoad()
         }
         update() {}
         spawnHitEffect() {}
-        dispose() {}
+        dispose() {
+          currentEffectDispose()
+        }
       }
     }
   }
@@ -241,6 +245,8 @@ describe('TourbusStageController', () => {
     currentAppDestroy = mock.fn()
     // Ensure promise resolves to texture-like object
     currentLoad = mock.fn(() => Promise.resolve({ width: 100, height: 100 }))
+    currentEffectLoad = mock.fn(() => Promise.resolve())
+    currentEffectDispose = mock.fn()
 
     // Create new controller
     controller = createTourbusStageController({
@@ -404,6 +410,97 @@ describe('TourbusStageController', () => {
     await assert.doesNotReject(setupPromise)
     assert.strictEqual(controller.effectManager, null)
   })
+
+  it('loads controller and effect assets concurrently before drawing', async () => {
+    let resolveControllerLoad
+    let resolveEffectLoad
+    controller.loadAssets = mock.fn(
+      () =>
+        new Promise(resolve => {
+          resolveControllerLoad = resolve
+        })
+    )
+    currentEffectLoad = mock.fn(
+      () =>
+        new Promise(resolve => {
+          resolveEffectLoad = resolve
+        })
+    )
+    controller.drawRoad = mock.fn()
+    controller.createBus = mock.fn()
+
+    const setupPromise = controller.setup()
+    assert.equal(controller.loadAssets.mock.calls.length, 1)
+    assert.equal(currentEffectLoad.mock.calls.length, 1)
+
+    resolveControllerLoad()
+    await Promise.resolve()
+    assert.equal(controller.drawRoad.mock.calls.length, 0)
+    assert.equal(controller.createBus.mock.calls.length, 0)
+
+    resolveEffectLoad()
+    await setupPromise
+    assert.equal(controller.drawRoad.mock.calls.length, 1)
+    assert.equal(controller.createBus.mock.calls.length, 1)
+  })
+
+  for (const pendingLoad of ['controller', 'effect']) {
+    it(`skips drawing after disposal with the ${pendingLoad} asset load pending`, async () => {
+      let resolveControllerLoad
+      let resolveEffectLoad
+      controller.loadAssets = () =>
+        new Promise(resolve => {
+          resolveControllerLoad = resolve
+        })
+      currentEffectLoad = mock.fn(
+        () =>
+          new Promise(resolve => {
+            resolveEffectLoad = resolve
+          })
+      )
+      controller.drawRoad = mock.fn()
+      controller.createBus = mock.fn()
+
+      const setupPromise = controller.setup()
+      if (pendingLoad === 'controller') resolveEffectLoad()
+      else resolveControllerLoad()
+      await Promise.resolve()
+      controller.dispose()
+      resolveControllerLoad()
+      resolveEffectLoad()
+
+      await assert.doesNotReject(setupPromise)
+      assert.equal(currentEffectDispose.mock.calls.length, 1)
+      assert.equal(controller.effectManager, null)
+      assert.equal(controller.drawRoad.mock.calls.length, 0)
+      assert.equal(controller.createBus.mock.calls.length, 0)
+    })
+  }
+
+  for (const failedLoad of ['controller', 'effect']) {
+    it(`cleans up initialization when the ${failedLoad} asset load rejects`, async () => {
+      const error = new Error(`${failedLoad} load failed`)
+      controller.loadAssets = mock.fn(() =>
+        failedLoad === 'controller' ? Promise.reject(error) : Promise.resolve()
+      )
+      currentEffectLoad = mock.fn(() =>
+        failedLoad === 'effect' ? Promise.reject(error) : Promise.resolve()
+      )
+      controller.drawRoad = mock.fn()
+      controller.createBus = mock.fn()
+      controller.initPromise = null
+
+      await assert.rejects(controller.init(), error)
+
+      assert.equal(controller.isDisposed, true)
+      assert.equal(controller.effectManager, null)
+      assert.equal(currentEffectDispose.mock.calls.length, 1)
+      assert.equal(currentAppDestroy.mock.calls.length, 1)
+      assert.equal(currentTickerAdd.mock.calls.length, 0)
+      assert.equal(controller.drawRoad.mock.calls.length, 0)
+      assert.equal(controller.createBus.mock.calls.length, 0)
+    })
+  }
 
   it('should survive dispose while effect manager assets are loading', async () => {
     let resolveEffectLoad

@@ -18,10 +18,15 @@ import type { GameState, UnknownRecord } from '../../types'
 type OptionCondition = (state: GameState) => unknown
 
 /**
- * Every option's declared Expedition results, keyed `<eventId>:<optionId>`.
+ * Declared Expedition results and eligibility conditions, keyed
+ * `<eventId>:<optionId>`.
  */
-const buildDeclaredResults = (): ReadonlyMap<string, ReadonlySet<string>> => {
+const buildOptionIndexes = (): {
+  declaredResults: ReadonlyMap<string, ReadonlySet<string>>
+  conditions: ReadonlyMap<string, OptionCondition>
+} => {
   const declared = new Map<string, Set<string>>()
+  const conditions = new Map<string, OptionCondition>()
   const collect = (effect: unknown, into: Set<string>): void => {
     if (!effect || typeof effect !== 'object') return
     if (Array.isArray(effect)) {
@@ -43,46 +48,22 @@ const buildDeclaredResults = (): ReadonlyMap<string, ReadonlySet<string>> => {
         const optionRecord = option as UnknownRecord
         const optionId = optionRecord.id
         if (typeof optionId !== 'string') continue
+        const key = `${eventId}:${optionId}`
+        if (typeof optionRecord.condition === 'function') {
+          conditions.set(key, optionRecord.condition as OptionCondition)
+        }
         const results = new Set<string>()
         collect(optionRecord.effect, results)
         collect(optionRecord.effects, results)
-        if (results.size > 0) declared.set(`${eventId}:${optionId}`, results)
+        if (results.size > 0) declared.set(key, results)
       }
     }
   }
-  return declared
+  return { declaredResults: declared, conditions }
 }
 
-const DECLARED_RESULTS = buildDeclaredResults()
-
-/**
- * Every option's own eligibility `condition`, keyed `<eventId>:<optionId>`.
- * Options without one are absent and always available.
- */
-const buildOptionConditions = (): ReadonlyMap<string, OptionCondition> => {
-  const conditions = new Map<string, OptionCondition>()
-  for (const pool of Object.values(EVENTS_DB)) {
-    for (const event of pool) {
-      const eventId = event.id
-      if (typeof eventId !== 'string' || !Array.isArray(event.options)) {
-        continue
-      }
-      for (const option of event.options) {
-        if (!option || typeof option !== 'object') continue
-        const optionRecord = option as UnknownRecord
-        const optionId = optionRecord.id
-        const condition = optionRecord.condition
-        if (typeof optionId !== 'string' || typeof condition !== 'function') {
-          continue
-        }
-        conditions.set(`${eventId}:${optionId}`, condition as OptionCondition)
-      }
-    }
-  }
-  return conditions
-}
-
-const OPTION_CONDITIONS = buildOptionConditions()
+const { declaredResults: DECLARED_RESULTS, conditions: OPTION_CONDITIONS } =
+  buildOptionIndexes()
 
 /**
  * Whether the registry declares this event option as producing this result.

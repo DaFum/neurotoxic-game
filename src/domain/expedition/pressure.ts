@@ -160,6 +160,7 @@ const weighExpeditionPressureEvents = (
   events: readonly ExpeditionPressureEvent[]
 ): Array<{ event: ExpeditionPressureEvent; weight: number }> => {
   const context = derivePressureDirectorContext(state)
+  const rules = getEffectiveExpeditionRules(state)
   const relief =
     state.expedition.pressure.severeReliefUntilRouteStep !== null &&
     state.expedition.routeStep <=
@@ -168,9 +169,7 @@ const weighExpeditionPressureEvents = (
   // `no_safety_net`, which is exactly what that modifier's extra reward buys.
   // The bypass only removes the relief damping; it never raises severe weight,
   // so the worst it can do is put the run back on the undamped curve.
-  const bypass =
-    context.heat >= 90 ||
-    getEffectiveExpeditionRules(state).flags.severeReliefBypass
+  const bypass = context.heat >= 90 || rules.flags.severeReliefBypass
   // Cash and route depth are run-wide rather than per-family, so they cannot
   // simply scale every weight - that cancels out in a weighted draw and would
   // leave both inputs derived but inert. A run out of spendable Cash feels it
@@ -192,7 +191,7 @@ const weighExpeditionPressureEvents = (
   // The composed rules publish per-family event weighting, so the Director has
   // to consume it: without this a jammer, `cold_trail`, a Security/Manager
   // crew or a Nemesis level changes nothing about which family the run draws.
-  const effective = getEffectiveExpeditionRules(state).numeric
+  const effective = rules.numeric
   // The route-pressure profile is the second axis: it decides how often the
   // run is *offered* a family, where the numeric rules decide what it is
   // worth. Both compose here so a corporate Tour leans on Contract pressure

@@ -2,11 +2,10 @@
 set -euo pipefail
 
 # lint-fix-preview.sh
-# Usage: ./scripts/lint-fix-preview.sh <base_ref>
+# Usage: ./scripts/lint-fix-preview.sh
 # Produces comment.md and writes outputs to $GITHUB_OUTPUT for GitHub Actions.
 
 marker='<!-- lint-fix-preview: do-not-edit -->'
-base_ref="${1:-main}"
 
 # Detect roots: prefer src/app, then src, then repo root
 if [[ -d "src/app" ]]; then
@@ -39,14 +38,6 @@ if pnpm exec prettier --version >/dev/null 2>&1; then
 fi
 if pnpm exec eslint --version >/dev/null 2>&1; then
 	has_eslint=1
-fi
-
-# Ensure origin/<base_ref> exists locally (still needed for context, not for diff)
-git fetch --no-tags --prune origin "+refs/heads/${base_ref}:refs/remotes/origin/${base_ref}" || true
-
-if ! git rev-parse --verify "origin/${base_ref}" >/dev/null 2>&1; then
-	echo "Warning: origin/${base_ref} not found after targeted fetch — fetching origin full history as fallback"
-	git fetch --no-tags --prune origin || true
 fi
 
 # Build pathspecs for diff

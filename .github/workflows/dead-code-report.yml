@@ -71,7 +71,7 @@ jobs:
           cat dead-code-comment.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Print budget status
-        run: pnpm run deadcode:budget || true
+        run: pnpm run deadcode:budget knip-report.json || true
 
       - name: Post dead-code report to PR
         # Forks cannot be commented on with the read-only token they receive.
