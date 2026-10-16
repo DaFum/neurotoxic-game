@@ -51,7 +51,7 @@ jobs:
 
       - name: Upload test log artifact (node)
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-output-node-shard-${{ matrix.shard }}
           path: test-output-node-${{ matrix.shard }}.txt
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload test log artifact (vitest-logic)
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-output-vitest-logic
           path: test-output-vitest-logic.txt
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload test log artifact (vitest-ui)
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-output-vitest-ui
           path: test-output-vitest-ui.txt
