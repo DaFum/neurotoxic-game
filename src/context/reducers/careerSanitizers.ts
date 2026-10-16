@@ -86,6 +86,12 @@ const sanitizePendingUnlockPurchase = (
   return { setId: set.id, debitedTokens: Math.min(set.cost, debited) }
 }
 
+/**
+ * Narrows a persisted career state candidate to a valid career state object.
+ *
+ * @param value - The raw persisted career state candidate.
+ * @returns The sanitized career state object.
+ */
 export const sanitizeCareerState = (value: unknown): CareerState => {
   const defaults = createInitialCareerState()
   if (!isLooseRecord(value)) return defaults
