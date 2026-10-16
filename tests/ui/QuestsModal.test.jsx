@@ -302,9 +302,13 @@ describe('QuestItem rendering interactions', () => {
     const toggle = screen.getByRole('button', {
       name: /Show details for Label/i
     })
+    expect(toggle).toHaveAttribute('id', 'quest-details-toggle-q1')
     await user.click(toggle)
 
-    // Now it is visible
+    // Now it is visible with region role and aria-labelledby pointing to toggle
+    const region = screen.getByRole('region')
+    expect(region).toHaveAttribute('id', 'quest-details-q1')
+    expect(region).toHaveAttribute('aria-labelledby', 'quest-details-toggle-q1')
     expect(screen.getByText('My Description')).toBeInTheDocument()
   })
 })

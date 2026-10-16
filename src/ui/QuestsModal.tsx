@@ -327,6 +327,7 @@ const QuestItem = memo(
         <div className='mt-2'>
           <button
             type='button'
+            id={`quest-details-toggle-${quest.id}`}
             onClick={() => setShowDetails(!showDetails)}
             aria-expanded={showDetails}
             aria-controls={`quest-details-${quest.id}`}
@@ -357,6 +358,8 @@ const QuestItem = memo(
             {showDetails && (
               <m.div
                 id={`quest-details-${quest.id}`}
+                role='region'
+                aria-labelledby={`quest-details-toggle-${quest.id}`}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
