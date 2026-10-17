@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { getSellableAssets } from '../../src/utils/travelSoftlockUtils.ts'
+import { getSellableAssets, getPostSaleScenarios } from '../../src/utils/travelSoftlockUtils.ts'
 import { getAssetSaleQuote } from '../../src/utils/assetSelectors/assetSaleQuote.ts'
 
 const makeAsset = id => ({
@@ -61,4 +61,45 @@ test('getSellableAssets skips assets the quote blocks or values at zero', () => 
     l1: { id: 'l1', assetId: 'a_blocked', principalRemaining: 1e12 }
   }
   assert.deepStrictEqual(getSellableAssets(assets, liabilities, 30), [])
+})
+
+test('getPostSaleScenarios evaluates combinations correctly and accurately calculates retained assets and proceeds', () => {
+  const sellableAssets = [
+    { id: 'a1', net: 100 },
+    { id: 'a2', net: 200 }
+  ]
+  const assets = [
+    makeAsset('a1'),
+    makeAsset('a2'),
+    makeAsset('a3')
+  ]
+  const liabilities = {
+    l1: { id: 'l1', assetId: 'a1', dailyPayment: 10 },
+    l2: { id: 'l2', assetId: 'a3', dailyPayment: 15 }
+  }
+  const player = { money: 500 }
+  const band = { reputation: 10 }
+  const social = {}
+
+  const scenarios = getPostSaleScenarios(
+    sellableAssets,
+    assets,
+    liabilities,
+    player,
+    band,
+    social
+  )
+
+  // 2 sellable assets -> 2^2 - 1 = 3 combinations: [a1], [a2], [a1, a2]
+  assert.strictEqual(scenarios.length, 3)
+
+  // Note: sellableAssets is sorted descending by net yield, so index 0 is a2 (net 200) and index 1 is a1 (net 100)
+  // Combination 1 (binary 01: selling a2)
+  assert.strictEqual(scenarios[0].assetProceeds, 200)
+
+  // Combination 2 (binary 10: selling a1)
+  assert.strictEqual(scenarios[1].assetProceeds, 100)
+
+  // Combination 3 (binary 11: selling a1 and a2)
+  assert.strictEqual(scenarios[2].assetProceeds, 300)
 })
