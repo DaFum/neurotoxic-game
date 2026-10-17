@@ -2359,6 +2359,13 @@ export const handleApplyExpeditionEventDelta = (
   return withRewards
 }
 
+/**
+ * Processes a signal against all active expedition obligations and attempts to progress their resolution.
+ *
+ * @param state - The current game state object
+ * @param payload - The event provenance including signal type, source identifier, and route step
+ * @returns A new state with all applicable obligations updated and potential rewards applied
+ */
 export const handleRecordExpeditionObligationSignal = (
   state: GameState,
   payload: RecordExpeditionObligationSignalPayload
@@ -2665,6 +2672,17 @@ export const handleRecordExpeditionObligationSignal = (
   return nextState
 }
 
+/**
+ * Processes a double-down attempt on an existing expedition obligation.
+ *
+ * @remarks
+ * Verifies the derivation logic and commits to higher stakes or new constraints
+ * for an active contract. A double-down can only happen once per obligation.
+ *
+ * @param state - The current game state object
+ * @param payload - The specific offer identifier, target obligation, and stale-step proof
+ * @returns A new state reflecting the increased risk and rewards for the obligation
+ */
 export const handleDoubleDownExpeditionObligation = (
   state: GameState,
   payload: DoubleDownExpeditionObligationPayload
@@ -2707,6 +2725,18 @@ export const handleDoubleDownExpeditionObligation = (
 /** Traits one run may draft; SELECT refuses a pick beyond it. */
 const MAX_RUN_DRAFT_TRAITS = 2
 
+/**
+ * Instantiates a pending draft offer that halts expedition route progression until resolved.
+ *
+ * @remarks
+ * Occurs when reaching a drafted node. Determines valid trait candidates deterministically
+ * via `deriveExpeditionDraftCandidates` using the active run seed and source details.
+ * Refuses the offer if the maximum run traits have already been reached or if an offer is already pending.
+ *
+ * @param state - The current game state object
+ * @param payload - The draft source details
+ * @returns A new state holding the pending draft choices
+ */
 export const handleOfferExpeditionDraft = (
   state: GameState,
   payload: OfferExpeditionDraftPayload
@@ -2798,6 +2828,13 @@ export const handleOfferExpeditionDraft = (
     }
   }
 }
+/**
+ * Resolves a pending expedition draft offer by confirming the selected trait.
+ *
+ * @param state - The current game state object
+ * @param payload - The chosen trait and verification context
+ * @returns A new state with the newly acquired trait and consumed source key
+ */
 export const handleSelectExpeditionDraft = (
   state: GameState,
   payload: SelectExpeditionDraftPayload
@@ -2827,6 +2864,18 @@ export const handleSelectExpeditionDraft = (
   }
 }
 
+/**
+ * Finalizes the outcome of a social post during an active expedition.
+ *
+ * @remarks
+ * Converts a pending social interaction into immediate material outcomes (fame, money, rival encounters,
+ * pressure deltas, brand reputation). Verifies against the canonical pending social post and handles
+ * potential rival progression paths based on the exact result definition. Emits appropriate quest events.
+ *
+ * @param state - The current game state object
+ * @param payload - The specific social result choice identifiers
+ * @returns A new state modified by the social resolution
+ */
 export const handleResolveExpeditionSocialResult = (
   state: GameState,
   payload: ResolveExpeditionSocialResultPayload
@@ -2999,6 +3048,18 @@ export const handleResolveExpeditionSocialResult = (
   })
 }
 
+/**
+ * Consumes an unconsumed social post result to produce map intelligence for a specific node.
+ *
+ * @remarks
+ * Validates that the intended social result produced an intel target level precisely one step above
+ * the node's current intel level. If successful, records an unconsumed intelligence grant matching
+ * the social interaction and target node.
+ *
+ * @param state - The current game state object
+ * @param payload - The target node and validating social result proof
+ * @returns A new state with an added intel grant and the underlying social proof marked consumed
+ */
 export const handleCreateSocialIntelGrant = (
   state: GameState,
   payload: CreateSocialIntelGrantPayload
