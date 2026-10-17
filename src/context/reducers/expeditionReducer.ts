@@ -2360,11 +2360,11 @@ export const handleApplyExpeditionEventDelta = (
 }
 
 /**
- * Processes a signal targeting an active expedition obligation and attempts to progress its resolution.
+ * Processes a signal against all active expedition obligations and attempts to progress their resolution.
  *
  * @param state - The current game state object
- * @param payload - The signal details including target obligation and route step
- * @returns A new state with updated obligations and potential rewards applied
+ * @param payload - The event provenance including signal type, source identifier, and route step
+ * @returns A new state with all applicable obligations updated and potential rewards applied
  */
 export const handleRecordExpeditionObligationSignal = (
   state: GameState,
@@ -2680,7 +2680,7 @@ export const handleRecordExpeditionObligationSignal = (
  * for an active contract. A double-down can only happen once per obligation.
  *
  * @param state - The current game state object
- * @param payload - The double down offer details including proof and multipliers
+ * @param payload - The specific offer identifier, target obligation, and stale-step proof
  * @returns A new state reflecting the increased risk and rewards for the obligation
  */
 export const handleDoubleDownExpeditionObligation = (
@@ -3049,7 +3049,7 @@ export const handleResolveExpeditionSocialResult = (
 }
 
 /**
- * Converts a consumed social post result into map intelligence for a specific node.
+ * Consumes an unconsumed social post result to produce map intelligence for a specific node.
  *
  * @remarks
  * Validates that the intended social result produced an intel target level precisely one step above
