@@ -219,3 +219,8 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
+
+## 2026-09-22 - Dynamic Tooltips and Removing Native Title Collisions
+
+**Learning:** Combining native browser `title="..."` attributes on buttons with wrapped `<Tooltip>` components causes conflicting, unstyled hover tooltips to fight for visibility. Additionally, static tooltip text on action buttons (like merch restock) fails to inform users *why* an action is disabled when the button is locked, maxed out, or unaffordable.
+**Action:** Remove native `title` attributes on elements wrapped by `<Tooltip>`. Calculate dynamic, context-specific tooltip messages based on component state (`expeditionRestockLocked`, `maxCapacity`, `unaffordable`, or standard cost/amount) so hover and keyboard focus explicitly communicate the precise state.

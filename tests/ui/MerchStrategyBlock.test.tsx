@@ -15,6 +15,15 @@ vi.mock('react-i18next', () => ({
       if (key === 'ui:pregig.merchStrategy.restockCost') {
         return `Cost: ${opts?.cost} (+${opts?.amount})`
       }
+      if (key === 'ui:pregig.merchStrategy.maxCapacity') {
+        return 'Max merch capacity reached'
+      }
+      if (key === 'ui:pregig.merchStrategy.unaffordable') {
+        return `Insufficient funds (${opts?.cost})`
+      }
+      if (key === 'ui:pregig.merchStrategy.expeditionRestockLocked') {
+        return 'Expedition stock is committed before the run.'
+      }
       if (key === 'ui:pregig.merchStrategy.stock') {
         return `Stock: ${opts?.count}`
       }
@@ -43,7 +52,7 @@ describe('MerchStrategyBlock', () => {
     expect(screen.getByText('Cost: 30 EUR (+5)')).toBeInTheDocument()
   })
 
-  it('disables restock controls when no capacity remains', () => {
+  it('disables restock controls and shows capacity tooltip when no capacity remains', () => {
     const onRestock = vi.fn()
 
     render(
@@ -66,15 +75,40 @@ describe('MerchStrategyBlock', () => {
 
     expect(onRestock).not.toHaveBeenCalled()
 
-    // The disabled button triggers tooltip via its parent span wrapper. Since it's a DOM event,
-    // we must dispatch the event on the wrapper.
     const wrapper = restockButtons[0].parentElement
     if (wrapper) fireEvent.mouseEnter(wrapper)
 
-    expect(screen.getByText('Cost: 0 EUR (+0)')).toBeInTheDocument()
+    expect(screen.getByText('Max merch capacity reached')).toBeInTheDocument()
   })
 
-  it('disables Career restocking when the run has committed its cargo', () => {
+  it('shows unaffordable tooltip when player funds are insufficient', () => {
+    const onRestock = vi.fn()
+
+    render(
+      <MerchStrategyBlock
+        bandInventory={{ shirts: 0 }}
+        customPrices={{}}
+        onUpdatePrice={vi.fn()}
+        onRestock={onRestock}
+        restockCostMultiplier={1}
+        merchCapacityBonus={0}
+        playerMoney={0}
+      />
+    )
+
+    const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
+    expect(restockButtons[0]).toBeDisabled()
+
+    fireEvent.click(restockButtons[0])
+    expect(onRestock).not.toHaveBeenCalled()
+
+    const wrapper = restockButtons[0].parentElement
+    if (wrapper) fireEvent.mouseEnter(wrapper)
+
+    expect(screen.getByText('Insufficient funds (50 EUR)')).toBeInTheDocument()
+  })
+
+  it('disables Career restocking and shows locked tooltip when the run has committed its cargo', () => {
     const onRestock = vi.fn()
 
     render(
@@ -92,11 +126,16 @@ describe('MerchStrategyBlock', () => {
 
     const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
     expect(restockButtons[0]).toBeDisabled()
-    expect(restockButtons[0]).toHaveAttribute(
-      'title',
-      'ui:pregig.merchStrategy.expeditionRestockLocked'
-    )
+    expect(restockButtons[0]).not.toHaveAttribute('title')
+
     fireEvent.click(restockButtons[0])
     expect(onRestock).not.toHaveBeenCalled()
+
+    const wrapper = restockButtons[0].parentElement
+    if (wrapper) fireEvent.mouseEnter(wrapper)
+
+    expect(
+      screen.getByText('Expedition stock is committed before the run.')
+    ).toBeInTheDocument()
   })
 })
