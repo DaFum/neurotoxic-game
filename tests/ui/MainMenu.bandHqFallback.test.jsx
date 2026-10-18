@@ -27,12 +27,13 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' }
 }))
 
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: {
+vi.mock('../../src/utils/audio/audioEngine', () => {
+  const audioManager = {
     startAmbient: vi.fn().mockResolvedValue(),
     ensureAudioContext: vi.fn().mockResolvedValue()
   }
-}))
+  return { audioManager, audioService: audioManager }
+})
 
 // The lazy Band HQ chunk never resolves, so the Suspense fallback stays up.
 vi.mock('../../src/ui/BandHQ', () => new Promise(() => {}))
