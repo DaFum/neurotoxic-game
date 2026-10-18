@@ -56,6 +56,12 @@ interface MapNodeTooltipProps {
    * exact payout and wear behind earned intel.
    */
   expeditionFog?: ExpeditionNodeFog
+  /**
+   * Subtype an overlay destination advertises. Arrival converts the base gig
+   * into this encounter, so the gig-only readouts (payout, cancellation risk,
+   * booking lock) are suppressed for it.
+   */
+  overlaySubtype?: ExpeditionSpecialNodeSubtype
   /** Fame this node's booking needs; set only while the band is below it. */
   bookingLockMinimumFame?: number | null
 }
@@ -203,10 +209,27 @@ const MapNodeTooltip = memo(
     cityTraits,
     isPendingConfirm,
     expeditionFog,
+    overlaySubtype,
     bookingLockMinimumFame
   }: MapNodeTooltipProps) => {
     const isGigLike =
-      node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
+      !overlaySubtype &&
+      (node.type === 'GIG' ||
+        node.type === 'FESTIVAL' ||
+        node.type === 'FINALE')
+    // The fog projection describes the base node. For an overlay destination
+    // it names the advertised encounter and drops the base gig's payout.
+    const fog = useMemo(
+      () =>
+        expeditionFog && overlaySubtype
+          ? {
+              ...expeditionFog,
+              specialSubtype: overlaySubtype,
+              estimatedPayout: null
+            }
+          : expeditionFog,
+      [expeditionFog, overlaySubtype]
+    )
     // During an Expedition the fog badge owns the numeric readout, so the
     // Career venue block is suppressed rather than shown alongside it —
     // otherwise the exact payout would leak at intel level 0.
@@ -261,9 +284,9 @@ const MapNodeTooltip = memo(
           </div>
         )}
 
-        {expeditionFog && <ExpeditionNodeFogBadge fog={expeditionFog} t={t} />}
+        {fog && <ExpeditionNodeFogBadge fog={fog} t={t} />}
 
-        {isFiniteNumber(bookingLockMinimumFame) && (
+        {!overlaySubtype && isFiniteNumber(bookingLockMinimumFame) && (
           <div
             className='text-xs text-blood-red font-mono font-bold mt-1'
             data-testid='map-node-booking-locked'
@@ -554,6 +577,7 @@ export const MapNodeView = memo(
           cityTraits={cityTraits}
           isPendingConfirm={isPendingConfirm}
           expeditionFog={expeditionFog}
+          overlaySubtype={overlaySubtype}
           bookingLockMinimumFame={bookingLockMinimumFame}
         />
       </div>
