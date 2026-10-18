@@ -37,6 +37,12 @@ const cornered = (overrides = {}) => {
   }
 }
 
+/** Manager/Security members are only fieldable once their network is unlocked. */
+const withCrewNetwork = state => ({
+  ...state,
+  career: { ...state.career, unlockedSetIds: ['industry_network'] }
+})
+
 const exitAction = (state, exitId) => ({
   type: ActionTypes.RESOLVE_EXPEDITION_AUTHORITY_EXIT,
   payload: { exitId, expectedRouteStep: state.expedition.routeStep }
@@ -112,20 +118,44 @@ test('surrender_cargo empties the contraband manifest', () => {
 })
 
 test('crew sends a Manager/Security member and charges Authority stress', () => {
-  const state = cornered({
-    loadout: { crewIds: ['yara'], nativeContracts: [] },
-    crew: { stressByCrewId: { yara: 10 }, injuryByCrewId: {} }
-  })
+  const state = withCrewNetwork(
+    cornered({
+      loadout: { crewIds: ['yara'], nativeContracts: [] },
+      crew: { stressByCrewId: { yara: 10 }, injuryByCrewId: {} }
+    })
+  )
   const next = gameReducer(state, exitAction(state, 'crew'))
   assert.ok(next.expedition.crew.stressByCrewId.yara >= 22)
   assert.equal(next.expedition.pressure.heat, 88)
 
   // An exit that would collapse the talker is not a safe exit.
-  const strained = cornered({
-    loadout: { crewIds: ['yara'], nativeContracts: [] },
-    crew: { stressByCrewId: { yara: 95 }, injuryByCrewId: {} }
-  })
+  const strained = withCrewNetwork(
+    cornered({
+      loadout: { crewIds: ['yara'], nativeContracts: [] },
+      crew: { stressByCrewId: { yara: 95 }, injuryByCrewId: {} }
+    })
+  )
   assert.equal(resolveAuthoritySafeExit(strained, 'crew'), null)
+})
+
+test('a seriously injured Manager/Security member cannot take the crew exit', () => {
+  const injured = withCrewNetwork(
+    cornered({
+      loadout: { crewIds: ['yara'], nativeContracts: [] },
+      crew: {
+        stressByCrewId: { yara: 10 },
+        injuryByCrewId: { yara: 'serious' }
+      }
+    })
+  )
+  assert.equal(resolveAuthoritySafeExit(injured, 'crew'), null)
+
+  // Without the network unlock the member is not available at all.
+  const locked = cornered({
+    loadout: { crewIds: ['yara'], nativeContracts: [] },
+    crew: { stressByCrewId: { yara: 10 }, injuryByCrewId: {} }
+  })
+  assert.equal(resolveAuthoritySafeExit(locked, 'crew'), null)
 })
 
 test('future_obligation creates a real Contract only when a slot permits', () => {

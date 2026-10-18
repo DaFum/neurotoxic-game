@@ -234,6 +234,8 @@ test('Heat production caps an overflowing sum at 100 instead of resetting to 0',
 
 test('Authority crew exits use canonical crew roles and hidden compartments', () => {
   const state = activeState()
+  // Manager/Security members are only fieldable once their network is unlocked.
+  state.career = { ...state.career, unlockedSetIds: ['industry_network'] }
   state.expedition.loadout = { crewIds: ['yara'], nativeContracts: [] }
   state.expedition.activeObligations = []
   state.player.money = 0

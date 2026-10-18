@@ -1847,9 +1847,22 @@ export const handleExecuteExpeditionRepair = (
       state.expedition.routeStep,
       payload.mode === 'improvise' ? 1 : 2
     )
-    const alreadyExists = updatedTc.defects.some(d => d.id === defect.id)
-    if (!alreadyExists) {
-      updatedTc.defects = [...updatedTc.defects, defect]
+    // A repeat poor repair at the same step stacks a new defect; only a live
+    // one with the same id suppresses it. A resolved one frees the id's slot,
+    // so the new defect gets a numbered suffix.
+    const isTwin = (id: string): boolean =>
+      id === defect.id || id.startsWith(`${defect.id}_`)
+    const sameIdCount = updatedTc.defects.filter(d => isTwin(d.id)).length
+    const hasLiveTwin = updatedTc.defects.some(
+      d => isTwin(d.id) && d.status !== 'resolved'
+    )
+    if (!hasLiveTwin) {
+      updatedTc.defects = [
+        ...updatedTc.defects,
+        sameIdCount > 0
+          ? { ...defect, id: `${defect.id}_${sameIdCount}` }
+          : defect
+      ]
     }
   }
 

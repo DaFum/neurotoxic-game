@@ -317,6 +317,45 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
+    'Repeat low-quality field repairs on one group and step stack defects',
+    () => {
+      const repair = state =>
+        handleExecuteExpeditionRepair(state, {
+          mode: 'field',
+          targetGroup: 'pa',
+          quality: 0.1,
+          expectedRouteStep: 3
+        })
+      const first = repair(createActiveExpeditionState())
+      assert.equal(first.expedition.technicalCondition.defects.length, 1)
+
+      // A live defect with the same id blocks a duplicate.
+      assert.equal(
+        repair(first).expedition.technicalCondition.defects.length,
+        1
+      )
+
+      // Once resolved, the next poor repair is a new defect with a unique id.
+      const resolved = {
+        ...first,
+        expedition: {
+          ...first.expedition,
+          technicalCondition: {
+            ...first.expedition.technicalCondition,
+            defects: first.expedition.technicalCondition.defects.map(d => ({
+              ...d,
+              status: 'resolved'
+            }))
+          }
+        }
+      }
+      const again = repair(resolved).expedition.technicalCondition.defects
+      assert.equal(again.length, 2)
+      assert.equal(new Set(again.map(d => d.id)).size, 2)
+    }
+  )
+
+  await t.test(
     'Condition-0 recovery paths for field, professional, and cannibalize',
     () => {
       // Condition-0 PA
