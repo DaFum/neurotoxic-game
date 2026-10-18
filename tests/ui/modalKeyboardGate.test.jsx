@@ -1,12 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, renderHook, screen } from '@testing-library/react'
 import { Modal } from '../../src/ui/shared/Modal.tsx'
 import { hasActiveModal } from '../../src/ui/shared/useModalBehavior.ts'
 import { useKeyboardShortcuts } from '../../src/ui/shared/KeyboardShortcuts.tsx'
+import { useGigInput } from '../../src/hooks/useGigInput.ts'
 import { ContrabandStash } from '../../src/ui/ContrabandStash.tsx'
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel.tsx', () => ({
   GeneratedImagePanel: ({ alt }) => <img alt={alt} />
+}))
+
+vi.mock('../../src/utils/audio/audioEngine', () => ({
+  audioService: { ensureAudioContext: vi.fn(() => Promise.resolve(true)) },
+  getSongId: vi.fn()
 }))
 
 const ShortcutProbe = ({ onToggleMute, setShowHelp }) => {
@@ -55,5 +61,39 @@ describe('ContrabandStash dialog name', () => {
     expect(
       screen.getByRole('dialog', { name: /contraband/i })
     ).toBeInTheDocument()
+  })
+})
+
+describe('Gig keyboard input behind a dialog', () => {
+  it('ignores pause and lane keys while a dialog is open but still releases lanes', () => {
+    const actions = { registerInput: vi.fn() }
+    const onTogglePause = vi.fn()
+    renderHook(() =>
+      useGigInput({
+        actions,
+        gameStateRef: { current: { lanes: [{ key: 'a' }] } },
+        triggerBandAnimation: vi.fn(),
+        onTogglePause
+      })
+    )
+
+    const { unmount } = render(
+      <Modal isOpen onClose={() => {}} ariaLabel='Event'>
+        <button type='button'>ok</button>
+      </Modal>
+    )
+    fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.keyDown(window, { key: 'a' })
+    expect(onTogglePause).not.toHaveBeenCalled()
+    expect(actions.registerInput).not.toHaveBeenCalled()
+
+    fireEvent.keyUp(window, { key: 'a' })
+    expect(actions.registerInput).toHaveBeenCalledWith(0, false)
+
+    unmount()
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onTogglePause).toHaveBeenCalledTimes(1)
+    fireEvent.keyDown(window, { key: 'a' })
+    expect(actions.registerInput).toHaveBeenCalledWith(0, true)
   })
 })
