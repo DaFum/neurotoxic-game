@@ -5,6 +5,7 @@ import { getSongId } from '../../utils/audio/audioEngine'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { isExpeditionCommitmentFrozen } from '../../domain/expedition/buildCommitment'
 import { ActionButton } from '../shared'
+import { Tooltip } from '../shared/Tooltip'
 import { SONGS_DB, SONGS_BY_ID, MAX_SONG_DIFFICULTY } from '../../data/songs'
 import type { TFunction } from 'i18next'
 import type { Song } from '../../types/audio'
@@ -24,6 +25,42 @@ const SongRow = React.memo(
     const handleToggle = useCallback(() => {
       toggleSongInSetlist(song.id)
     }, [song.id, toggleSongInSetlist])
+
+    const lockedReason = locked
+      ? t('ui:bandhq.setlist.lockedTooltip', {
+          defaultValue: 'Setlist is locked while an Expedition is active.'
+        })
+      : undefined
+
+    const button = (
+      <button
+        type='button'
+        onClick={handleToggle}
+        disabled={locked}
+        aria-pressed={selected}
+        aria-label={
+          selected
+            ? t('ui:hq.song_deselect_aria', {
+                name: song.name,
+                defaultValue: 'Remove {{name}} from setlist'
+              })
+            : t('ui:hq.song_select_aria', {
+                name: song.name,
+                defaultValue: 'Add {{name}} to setlist'
+              })
+        }
+        className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed
+        ${
+          selected
+            ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'
+            : 'border-ash-gray text-ash-gray hover:border-star-white hover:text-star-white'
+        }`}
+      >
+        {selected
+          ? t('ui:hq.song_active', { defaultValue: 'ACTIVE' })
+          : t('ui:hq.song_select', { defaultValue: 'SELECT' })}
+      </button>
+    )
 
     return (
       <div
@@ -55,33 +92,11 @@ const SongRow = React.memo(
             </span>
           </div>
         </div>
-        <button
-          type='button'
-          onClick={handleToggle}
-          disabled={locked}
-          aria-pressed={selected}
-          aria-label={
-            selected
-              ? t('ui:hq.song_deselect_aria', {
-                  name: song.name,
-                  defaultValue: 'Remove {{name}} from setlist'
-                })
-              : t('ui:hq.song_select_aria', {
-                  name: song.name,
-                  defaultValue: 'Add {{name}} to setlist'
-                })
-          }
-          className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed
-          ${
-            selected
-              ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'
-              : 'border-ash-gray text-ash-gray hover:border-star-white hover:text-star-white'
-          }`}
-        >
-          {selected
-            ? t('ui:hq.song_active', { defaultValue: 'ACTIVE' })
-            : t('ui:hq.song_select', { defaultValue: 'SELECT' })}
-        </button>
+        {lockedReason ? (
+          <Tooltip content={lockedReason}>{button}</Tooltip>
+        ) : (
+          button
+        )}
       </div>
     )
   }

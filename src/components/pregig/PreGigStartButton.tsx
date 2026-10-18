@@ -3,6 +3,7 @@ import * as m from 'motion/react-m'
 import { Loader2 } from 'lucide-react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 import { ActionButton } from '../../ui/shared'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import type { TranslationCallback } from '../../types/callbacks'
 
 type PreGigStartButtonProps = {
@@ -25,6 +26,33 @@ export const PreGigStartButton = React.memo(
     isStartBlocked,
     onStartShow
   }: PreGigStartButtonProps) => {
+    const disabledReason = isSetlistEmpty
+      ? t('ui:bandhq.setlist.selectOne', {
+          defaultValue: 'Select at least one song to practice!'
+        })
+      : isStartBlocked
+        ? t('ui:pregig.startBlocked', {
+            defaultValue: 'Band cannot perform gig at this time.'
+          })
+        : undefined
+
+    const isDisabled = isSetlistEmpty || isStarting || Boolean(isStartBlocked)
+
+    const button = (
+      <ActionButton
+        onClick={onStartShow}
+        disabled={isDisabled}
+        aria-busy={isStarting}
+        className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
+      >
+        {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
+        {isStarting && (
+          <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />
+        )}
+        {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
+      </ActionButton>
+    )
+
     return (
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -32,18 +60,11 @@ export const PreGigStartButton = React.memo(
         transition={{ delay: 0.5 }}
         className='relative z-10 mt-4 lg:mt-6 mb-4 lg:mb-0 w-full max-w-[20rem] sm:w-auto'
       >
-        <ActionButton
-          onClick={onStartShow}
-          disabled={isSetlistEmpty || isStarting || Boolean(isStartBlocked)}
-          aria-busy={isStarting}
-          className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
-        >
-          {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
-          {isStarting && (
-            <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />
-          )}
-          {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
-        </ActionButton>
+        {disabledReason && isDisabled ? (
+          <Tooltip content={disabledReason}>{button}</Tooltip>
+        ) : (
+          button
+        )}
       </m.div>
     )
   }

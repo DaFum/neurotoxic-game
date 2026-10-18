@@ -4,12 +4,6 @@ import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStartButton'
 
-// Note: The actual PreGigStartButton component in src/components/pregig/PreGigStartButton.tsx
-// differs from the simplified example snippet in the task description.
-// It uses `t`, `isStarting`, `isSetlistEmpty`, and `onStartShow` as props,
-// and relies on `motion/react`, `ActionButton`, and `RazorPlayIcon`.
-// This test suite correctly tests the actual production component in the repository to ensure no regressions.
-
 vi.mock('motion/react', () => createMotionReactMock())
 
 vi.mock('../../../../src/ui/shared', () => ({
@@ -95,7 +89,7 @@ describe('PreGigStartButton', () => {
     expect(screen.getByText('ui:pregig.initializing')).toBeInTheDocument()
   })
 
-  it('is disabled when isSetlistEmpty is true', () => {
+  it('is disabled and renders tooltip when isSetlistEmpty is true', () => {
     const onStartShow = vi.fn()
     render(
       <PreGigStartButton
@@ -109,5 +103,12 @@ describe('PreGigStartButton', () => {
     const button = screen.getByTestId('action-button')
     expect(button).toBeDisabled()
     expect(button).toHaveAttribute('aria-busy', 'false')
+
+    if (button.parentElement) {
+      fireEvent.mouseEnter(button.parentElement)
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'ui:bandhq.setlist.selectOne'
+      )
+    }
   })
 })
