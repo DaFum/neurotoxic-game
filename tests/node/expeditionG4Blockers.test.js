@@ -1649,6 +1649,60 @@ test('Nemesis advances at most one tier per run and L4 opens the Rival Finale', 
   )
 })
 
+test('a hostile Rival Finale downgrades an allied Rival instead of erasing it', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const rivalId = started.rivalBand.id
+  const allied = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...started.career.rivalsById[rivalId],
+          history: {
+            ...started.career.rivalsById[rivalId].history,
+            relationship: 'alliance',
+            nemesisLevel: 1,
+            lastNemesisAdvanceRunId: null
+          }
+        }
+      }
+    }
+  }
+  const walked = walkToFinale({
+    ...allied,
+    expedition: { ...allied.expedition, finaleType: 'rival_battle' }
+  })
+  const atFinale = {
+    ...walked,
+    currentGig: { id: 'finale-gig' },
+    lastGigStats: { accuracy: 80, failed: false },
+    expedition: {
+      ...walked.expedition,
+      lastGigResolvedAtRouteStep: walked.expedition.routeStep
+    }
+  }
+  const completed = gameReducer(atFinale, {
+    type: ActionTypes.COMPLETE_EXPEDITION,
+    payload: {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    }
+  })
+  const history = completed.career.rivalsById[rivalId].history
+  assert.equal(history.nemesisLevel, 2)
+  assert.equal(history.relationship, 'respect')
+})
+
 test('the four Expedition quest producers fire from their canonical owners', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {

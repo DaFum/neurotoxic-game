@@ -188,7 +188,10 @@ import {
   deriveExpeditionDraftCandidates,
   EXPEDITION_RUN_DRAFT_OFFER_SIZE
 } from '../../domain/expedition/runDrafts'
-import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
+import {
+  getHostileRivalRelationship,
+  selectExpeditionRivalForRun
+} from '../../domain/expedition/rivals'
 import {
   EXPEDITION_SOCIAL_RESULTS,
   deriveExpeditionSocialResultId
@@ -1324,7 +1327,10 @@ export const handleCompleteExpedition = (
               ...record,
               history: {
                 ...record.history,
-                relationship: nemesisLevel >= 4 ? 'nemesis' : 'rival',
+                relationship: getHostileRivalRelationship(
+                  record.history.relationship,
+                  nemesisLevel
+                ),
                 nemesisLevel,
                 lastOutcome: 'hostile_win',
                 lastSeenRunId: state.expedition.runId,
@@ -3019,9 +3025,10 @@ export const handleResolveExpeditionSocialResult = (
             ...record,
             history: {
               ...record.history,
-              relationship: (nemesisLevel >= 4
-                ? 'nemesis'
-                : 'rival') as CareerRivalRecord['history']['relationship'],
+              relationship: getHostileRivalRelationship(
+                record.history.relationship,
+                nemesisLevel
+              ),
               nemesisLevel,
               encounterCount: addClampedNonNegative(
                 clampToNonNegativeInt(

@@ -122,3 +122,25 @@ export const selectExpeditionRivalForRun = (
   }
   return { rivalBand, record, isNew: true }
 }
+
+/**
+ * The relationship a Rival holds after a hostile win against it.
+ *
+ * @param current - Relationship before the win.
+ * @param nemesisLevel - Nemesis level after the win has advanced it.
+ * @returns `nemesis` at level 4, a one-step downgrade for a friendly Rival
+ * (`alliance` to `respect`, `respect` to `rival`), otherwise `rival`.
+ *
+ * @remarks
+ * Overwriting the relationship outright would let one fight erase an Alliance
+ * the player earned; the spec allows a Rival to move toward Respect or
+ * Alliance, so a hostile result walks it back instead.
+ */
+export const getHostileRivalRelationship = (
+  current: CareerRivalRecord['history']['relationship'],
+  nemesisLevel: number
+): CareerRivalRecord['history']['relationship'] => {
+  if (nemesisLevel >= 4) return 'nemesis'
+  if (current === 'alliance') return 'respect'
+  return 'rival'
+}

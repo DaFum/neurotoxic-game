@@ -242,9 +242,6 @@ export const processLiabilityTick = (
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
-  let nextExpedition = state.expedition
-  let additionalUnpaidObligation = 0
-
   // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop.
   // Why: Avoid allocating an intermediate array for GC on every daily tick.
   // Impact: Reduces GC pressure by avoiding array allocation for all liabilities.
@@ -274,8 +271,11 @@ export const processLiabilityTick = (
         currentMoney -= payable
       }
 
+      // An unpaid instalment is answered by the default counter and, in the
+      // end, foreclosure. It is deliberately not carried as unpaid obligation
+      // as well: the instalment is due again tomorrow, so carrying it would
+      // charge the same payment twice once the run recovers.
       if (unpaid > 0) {
-        additionalUnpaidObligation += unpaid
         const defaultCounter = liability.defaultCounter + 1
         if (defaultCounter >= LIABILITY_DEFAULT_DAYS) {
           if (!foreclosedAssetIds.has(liability.assetId)) {
@@ -341,15 +341,6 @@ export const processLiabilityTick = (
     }
   }
 
-  if (nextExpedition && additionalUnpaidObligation > 0) {
-    nextExpedition = {
-      ...nextExpedition,
-      unpaidDailyObligation:
-        finiteNumberOr(nextExpedition.unpaidDailyObligation, 0) +
-        additionalUnpaidObligation
-    }
-  }
-
   // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop to avoid array allocation.
   for (const id in nextLiabilities) {
     if (Object.hasOwn(nextLiabilities, id)) {
@@ -390,10 +381,7 @@ export const processLiabilityTick = (
         fameLevel: calculateFameLevel(nextFame)
       },
       assets: nextAssets,
-      liabilities: finalLiabilities,
-      ...(nextExpedition !== state.expedition
-        ? { expedition: nextExpedition }
-        : {})
+      liabilities: finalLiabilities
     },
     foreclosedKinds
   }
