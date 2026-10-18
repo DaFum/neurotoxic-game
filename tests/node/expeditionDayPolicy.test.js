@@ -238,16 +238,17 @@ describe('the run owns its own insolvency', () => {
     assert.equal(next.currentScene, GAME_PHASES.GAMEOVER)
   })
 
-  it('records what the upstream ticks took out of the protected slice', () => {
-    // Asset upkeep and liability instalments respect protectedCareerCash during active expeditions.
-    // Shortfalls are recorded as unpaid obligations on the expedition slice without spending protected money.
+  it('does not carry an unpaid instalment as debt on top of the liability default', () => {
+    // An unpaid liability instalment is answered by its own default counter
+    // and, in the end, foreclosure. Carrying it as unpaid obligation too would
+    // charge the same instalment twice once the run recovers.
     const run = startedState(
       { money: 5000, fuel: 100 },
       { build: { protectedCareerCash: 4000 } }
     )
+    const atFloor = { ...run, player: { ...run.player, money: 4000 } }
     const withLiability = {
-      ...run,
-      player: { ...run.player, money: 4000 },
+      ...atFloor,
       liabilities: {
         liability_1: {
           id: 'liability_1',
@@ -256,15 +257,20 @@ describe('the run owns its own insolvency', () => {
           principalRemaining: 1000,
           interestRate: 0.01,
           dailyPayment: 120,
-          missedPayments: 0,
-          status: 'active'
+          termDaysRemaining: 60,
+          defaultCounter: 0
         }
       }
     }
+    const without = gameReducer(atFloor, advanceDay(atFloor))
     const next = gameReducer(withLiability, advanceDay(withLiability))
 
     assert.equal(next.player.money, 4000)
-    assert.ok(next.expedition.unpaidDailyObligation >= 120)
+    assert.equal(next.liabilities.liability_1.defaultCounter, 1)
+    assert.equal(
+      next.expedition.unpaidDailyObligation,
+      without.expedition.unpaidDailyObligation
+    )
   })
 })
 

@@ -16,7 +16,7 @@ import type {
   ExpeditionOverlaySource,
   ExpeditionSpecialNodeSubtype
 } from '../../types/expedition'
-import { hashExpeditionRoute } from './map'
+import { buildExpeditionMap, hashExpeditionRoute } from './map'
 import {
   deriveExpeditionGhostRouteTarget,
   deriveExpeditionNemesisKeyTarget
@@ -253,4 +253,53 @@ export const getEffectiveExpeditionRoute = (
     subtypeByNodeId,
     sourceByNodeId
   }
+}
+
+let travelMapCache: {
+  gameMap: GameState['gameMap']
+  key: string
+  value: GameState['gameMap']
+} | null = null
+
+/**
+ * The map the Overworld may travel and draw during an active run.
+ *
+ * @param state - Current game state.
+ * @returns `state.gameMap` unchanged when no overlay edge applies, otherwise a
+ * copy whose connections are the effective route's. A selector: the same
+ * overlay on the same map yields the same reference, so subscribers do not
+ * re-render on every state change.
+ *
+ * @remarks
+ * `state.gameMap` keeps the base edges for the whole run, so reading it alone
+ * hides every overlay edge the travel reducer would authorize.
+ */
+export const getExpeditionTravelMap = (
+  state: GameState
+): GameState['gameMap'] => {
+  const gameMap = state.gameMap
+  if (!gameMap || state.expedition?.status !== 'active') return gameMap
+  const loadout = state.expedition.loadout
+  if (!loadout) return gameMap
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const effective = getEffectiveExpeditionRoute(state, map).connections
+  const base = new Set(
+    gameMap.connections.map(edge => `${edge.from}>${edge.to}`)
+  )
+  const extra = effective.filter(edge => !base.has(`${edge.from}>${edge.to}`))
+  if (extra.length === 0) return gameMap
+  const key = extra.map(edge => `${edge.from}>${edge.to}`).join('|')
+  if (travelMapCache?.gameMap === gameMap && travelMapCache.key === key) {
+    return travelMapCache.value
+  }
+  const value = {
+    ...gameMap,
+    connections: [...gameMap.connections, ...extra]
+  }
+  travelMapCache = { gameMap, key, value }
+  return value
 }

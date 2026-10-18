@@ -975,6 +975,19 @@ export const enforceExpeditionCashFloor = (
 ): GameState => {
   if (nextState === previousState) return previousState
   if (previousState.expedition?.status !== 'active') return nextState
+  // A recorded travel refusal is evidence that Cash could not pay for a leg.
+  // Cash rising again retires it, or the Mobility crisis would stay latched at
+  // that route step after the run can afford to leave.
+  if (
+    nextState.expedition?.blockedTravelAtRouteStep != null &&
+    finiteNumberOr(nextState.player.money, 0) >
+      finiteNumberOr(previousState.player.money, 0)
+  ) {
+    nextState = {
+      ...nextState,
+      expedition: { ...nextState.expedition, blockedTravelAtRouteStep: null }
+    }
+  }
   if (EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS.has(actionType)) return nextState
 
   const floor = Math.max(

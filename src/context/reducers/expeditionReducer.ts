@@ -49,6 +49,7 @@ import {
   applyTechnicalWear,
   clampCondition,
   createDefaultTechnicalCondition,
+  EXPEDITION_CONDITION_GROUPS,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
 import {
@@ -187,7 +188,10 @@ import {
   deriveExpeditionDraftCandidates,
   EXPEDITION_RUN_DRAFT_OFFER_SIZE
 } from '../../domain/expedition/runDrafts'
-import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
+import {
+  getHostileRivalRelationship,
+  selectExpeditionRivalForRun
+} from '../../domain/expedition/rivals'
 import {
   EXPEDITION_SOCIAL_RESULTS,
   deriveExpeditionSocialResultId
@@ -985,7 +989,7 @@ export const handleRevealExpeditionNodeIntel = (
  * before the run that owns it resolves, so the entry is only banked in the
  * ledger; materialization happens once, after terminal settlement succeeds.
  */
-export const handleAddExpeditionReward = (
+const applyExpeditionRewardEntry = (
   state: GameState,
   payload: AddExpeditionRewardPayload
 ): GameState => {
@@ -1003,6 +1007,33 @@ export const handleAddExpeditionReward = (
       rewardLedger: [...state.expedition.rewardLedger, resolution.entry]
     }
   }
+}
+
+/**
+ * Public entry for banking a source-proven rare reward.
+ *
+ * @param state - Current game state.
+ * @param payload - Reward id, source family, source evidence and stale guard.
+ * @returns Next state, or the identical reference when the reward is refused.
+ *
+ * @remarks
+ * `event_rare` and `crew_contact` are proven by the reducer-authored commit
+ * that resolves the event, not by a dispatch: their evidence lists are
+ * save-authored, so accepting them here would let a crafted save mint them.
+ * `handleApplyExpeditionEventDelta` banks both through the inner helper.
+ */
+export const handleAddExpeditionReward = (
+  state: GameState,
+  payload: AddExpeditionRewardPayload
+): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    payload.sourceType === 'event_rare' ||
+    payload.sourceType === 'crew_contact'
+  ) {
+    return state
+  }
+  return applyExpeditionRewardEntry(state, payload)
 }
 
 /**
@@ -1296,7 +1327,10 @@ export const handleCompleteExpedition = (
               ...record,
               history: {
                 ...record.history,
-                relationship: nemesisLevel >= 4 ? 'nemesis' : 'rival',
+                relationship: getHostileRivalRelationship(
+                  record.history.relationship,
+                  nemesisLevel
+                ),
                 nemesisLevel,
                 lastOutcome: 'hostile_win',
                 lastSeenRunId: state.expedition.runId,
@@ -1771,7 +1805,11 @@ export const handleExecuteExpeditionRepair = (
   const { result } = resolution
   const tc = getExpeditionTechnicalCondition(state)
   const targetGroup = payload.targetGroup
-  const sourceGroup = payload.sourceGroup
+  // Only cannibalize names a donor, and only there does the resolver validate
+  // it against the real groups. Any other mode ignores the field, or a hostile
+  // key would be written into the condition record.
+  const sourceGroup =
+    payload.mode === 'cannibalize' ? payload.sourceGroup : undefined
 
   const nextTargetCondition = clampCondition(
     tc[targetGroup] + result.targetRestore
@@ -1836,7 +1874,15 @@ export const handleExecuteExpeditionRepair = (
     expedition: {
       ...state.expedition,
       cargo: nextCargo,
-      technicalCondition: updatedTc
+      technicalCondition: updatedTc,
+      // An accepted shutdown belongs to the group that was dead. Once none is,
+      // the acceptance is spent; left set, the next group to die would end the
+      // run at once, bypassing the rule that a dead group alone never does.
+      technicalFailureAccepted: EXPEDITION_CONDITION_GROUPS.some(
+        group => updatedTc[group] === 0
+      )
+        ? state.expedition.technicalFailureAccepted
+        : false
     }
   }
 }
@@ -2119,7 +2165,7 @@ export const handleAcceptExpeditionTechnicalFailure = (
  * Condition or cargo figures cannot move run state: unknown ids are filtered
  * out, and a payload whose ids are all unknown leaves state untouched.
  */
-export const handleApplyExpeditionEventDelta = (
+const applyExpeditionEventDeltaOnce = (
   state: GameState,
   payload: ApplyExpeditionEventDeltaPayload
 ): GameState => {
@@ -2340,7 +2386,7 @@ export const handleApplyExpeditionEventDelta = (
     }
   }
   // A Contact the run's Crew actually made earns the Crew-contact reward
-  // through the same ADD_EXPEDITION_REWARD handler a dispatch would hit. It is
+  // through the same reward helper `ADD_EXPEDITION_REWARD` wraps. It is
   // composed here, in the commit that resolved the event, because the
   // evidence is the Crew records `applyResolvedCrewEventOutcome` just wrote:
   // a separate dispatch could be missed and leave the reward unearnable, and
@@ -2350,7 +2396,7 @@ export const handleApplyExpeditionEventDelta = (
   // the evidence is the resolved Contact, not the grant.
   const crewSourceId = `${payload.sourceEventId}:${payload.sourceOptionId}`
   if (getCrewEventOutcomeBySourceId(crewSourceId)?.contactIntel === true) {
-    withRewards = handleAddExpeditionReward(withRewards, {
+    withRewards = applyExpeditionRewardEntry(withRewards, {
       expectedRewardId: CREW_CONTACT_REWARD_ID,
       sourceType: 'crew_contact',
       sourceId: crewSourceId,
@@ -2358,6 +2404,27 @@ export const handleApplyExpeditionEventDelta = (
     })
   }
   return withRewards
+}
+
+/**
+ * Applies an event's Expedition results and consumes the resolving event.
+ *
+ * @param state - Current game state.
+ * @param payload - Result ids, their source event/option and the stale guard.
+ * @returns Next state, or the identical reference when the delta is refused.
+ *
+ * @remarks
+ * The event is still on `state.activeEvent` until the resolver's trailing
+ * `SET_ACTIVE_EVENT(null)`, which is the only proof this handler asks for.
+ * Clearing it in the same commit makes a repeated dispatch of the same
+ * resolution fail that proof instead of minting cargo or relieving Heat again.
+ */
+export const handleApplyExpeditionEventDelta = (
+  state: GameState,
+  payload: ApplyExpeditionEventDeltaPayload
+): GameState => {
+  const next = applyExpeditionEventDeltaOnce(state, payload)
+  return next === state ? state : { ...next, activeEvent: null }
 }
 
 /**
@@ -2379,6 +2446,18 @@ export const handleRecordExpeditionObligationSignal = (
     return state
   if (typeof payload.sourceId !== 'string' || payload.sourceId.length === 0)
     return state
+  // A `finale` signal pays Contracts out, so the gig proof alone is not enough:
+  // the run must stand on the route's Finale node and the gig must have passed.
+  // A state without a committed route has no Finale to stand on and keeps the
+  // gig proof as its only evidence.
+  if (payload.signalType === 'finale') {
+    if (state.lastGigStats?.failed === true) return state
+    const finaleMap = getActiveExpeditionMap(state)
+    const visited = state.expedition.visitedNodeIds
+    if (finaleMap && visited[visited.length - 1] !== finaleMap.finaleNodeId) {
+      return state
+    }
+  }
   const canonicalSourceId = (() => {
     switch (payload.signalType) {
       case 'gig':
@@ -2946,9 +3025,10 @@ export const handleResolveExpeditionSocialResult = (
             ...record,
             history: {
               ...record.history,
-              relationship: (nemesisLevel >= 4
-                ? 'nemesis'
-                : 'rival') as CareerRivalRecord['history']['relationship'],
+              relationship: getHostileRivalRelationship(
+                record.history.relationship,
+                nemesisLevel
+              ),
               nemesisLevel,
               encounterCount: addClampedNonNegative(
                 clampToNonNegativeInt(

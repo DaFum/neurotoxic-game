@@ -310,6 +310,35 @@ describe('useTravelLogic', () => {
     assertTravelPrevented(result, props, /Not enough money/)
   })
 
+  test('handleTravel refuses while an Expedition Run Draft is pending', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      expeditionStatus: 'active',
+      expeditionDraftPending: true
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assertTravelPrevented(result, props, /Run Draft/)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+  })
+
+  test('handleTravel refuses an unconnected START node during an Expedition', () => {
+    const base = createTravelLogicProps()
+    const { result, props } = setupTravelScenario(useTravelLogic, {
+      expeditionStatus: 'active',
+      player: { ...base.player, currentNodeId: 'node_target' }
+    })
+
+    act(() => {
+      result.current.handleTravel(props.gameMap.nodes.node_start)
+    })
+
+    assertTravelPrevented(result, props, /not connected/)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+  })
+
   test('handleTravel includes liability payments in affordability check', () => {
     const defaults = createTravelLogicProps()
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {

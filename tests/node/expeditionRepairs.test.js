@@ -373,6 +373,47 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
+    'ignores sourceGroup outside cannibalize so a repair cannot hit other keys',
+    () => {
+      const state = createActiveExpeditionState()
+      const withDefects = {
+        ...state,
+        expedition: {
+          ...state.expedition,
+          technicalCondition: {
+            ...state.expedition.technicalCondition,
+            defects: []
+          }
+        }
+      }
+      const hostile = handleExecuteExpeditionRepair(withDefects, {
+        mode: 'field',
+        targetGroup: 'pa',
+        sourceGroup: 'defects',
+        quality: 1,
+        expectedRouteStep: 3
+      })
+      assert.ok(
+        Array.isArray(hostile.expedition.technicalCondition.defects),
+        'a hostile sourceGroup overwrote the defects list'
+      )
+
+      const same = handleExecuteExpeditionRepair(withDefects, {
+        mode: 'field',
+        targetGroup: 'pa',
+        sourceGroup: 'pa',
+        quality: 1,
+        expectedRouteStep: 3
+      })
+      assert.ok(
+        same.expedition.technicalCondition.pa >
+          withDefects.expedition.technicalCondition.pa,
+        'the repair was paid for but not applied'
+      )
+    }
+  )
+
+  await t.test(
     'executeExpeditionRepair action creator builds typed action handled by gameReducer',
     () => {
       const state = createActiveExpeditionState()

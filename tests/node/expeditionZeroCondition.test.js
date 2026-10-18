@@ -215,6 +215,26 @@ describe('Task 10: PreGig Start Blocking & Unblocking', () => {
   })
 })
 
+describe('a repaired group retires an accepted technical failure', () => {
+  it('clears technicalFailureAccepted once no group is at zero', () => {
+    const state = createZeroConditionState({ spareParts: 1 })
+    const accepted = gameReducer(state, acceptExpeditionTechnicalFailure(state))
+    assert.equal(accepted.expedition.technicalFailureAccepted, true)
+
+    const repaired = gameReducer(
+      accepted,
+      executeExpeditionRepair(accepted, {
+        mode: 'field',
+        targetGroup: 'pa',
+        quality: 0.8,
+        expectedRouteStep: accepted.expedition.routeStep
+      })
+    )
+    assert.ok(repaired.expedition.technicalCondition.pa > 0)
+    assert.equal(repaired.expedition.technicalFailureAccepted, false)
+  })
+})
+
 describe('Task 10: Explicit Technical Failure & Terminal Settlement', () => {
   it('acceptExpeditionTechnicalFailure creates G1 technical_shutdown PendingFailure', () => {
     const state = createZeroConditionState({ spareParts: 1 })
