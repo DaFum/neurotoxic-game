@@ -332,9 +332,13 @@ export const processRhythmGameTick = ({
     )
   }
 
+  // ⚡ BOLT OPTIMIZATION: Pass `stateRef` directly to avoid frame-by-frame object allocation
+  // What: Replaced `{ health: stateRef.health, combo: stateRef.combo }` wrapper allocation with `stateRef`.
+  // Why: Prevents creating ~3,600 temporary object allocations per minute in the 60 FPS rhythm game update loop.
+  // Impact: Eliminates GC allocation pressure and reduces stutter risk during active rhythm minigames.
   const newProjectile = trySpawnProjectile(
     hecklerSessionRef.current,
-    { health: stateRef.health, combo: stateRef.combo },
+    stateRef,
     stateRef.rng,
     currentInnerWidth
   )
