@@ -18,11 +18,6 @@ import {
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
 import { shouldTriggerBankruptcy } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
-import { getRegionKeyForLocation } from '../../utils/mapUtils'
-import {
-  createFameGainedQuestEvent,
-  createMoneyEarnedQuestEvent
-} from '../../quests/producers/economyQuestEvents'
 import { handleSettleSoldMerch } from './gigReducer'
 import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
@@ -34,6 +29,7 @@ import { handleUpdateBand } from './bandReducer'
 import { handleRecordExpeditionCrewStressSource } from './crewReducer'
 import {
   derivePostGigContinueEffects,
+  derivePostGigEconomyQuestEvents,
   drainBandStamina,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
@@ -246,23 +242,8 @@ export const settlePendingGigOnLoad = (
     ActionTypes.UPDATE_PLAYER
   )
 
-  const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
-  if (fameGain > 0) {
-    next = handleApplyQuestEvent(
-      next,
-      createFameGainedQuestEvent({
-        region: getRegionKeyForLocation(player.location) ?? 'Unknown',
-        amount: fameGain,
-        reason: 'post_gig_fame'
-      })
-    )
-  }
-  const moneyGain = stats.newMoney - finiteNumberOr(player.money, 0)
-  if (moneyGain > 0) {
-    next = handleApplyQuestEvent(
-      next,
-      createMoneyEarnedQuestEvent({ amount: moneyGain })
-    )
+  for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
+    next = handleApplyQuestEvent(next, event)
   }
 
   // Continue's remaining effects, derived from the state its screen showed

@@ -9,6 +9,7 @@ import {
 import userEvent from '@testing-library/user-event'
 import { createMotionReactMock } from '../mocks/motionMock'
 import { EventModal } from '../../src/ui/EventModal.tsx'
+import { Modal } from '../../src/ui/shared/Modal.tsx'
 
 vi.mock('motion/react', () => createMotionReactMock())
 
@@ -52,7 +53,8 @@ vi.mock('../../src/ui/shared/BrutalistUI', () => ({
 }))
 
 vi.mock('../../src/ui/shared/Icons', () => ({
-  VoidSkullIcon: () => <svg data-testid='void-skull-icon' />
+  VoidSkullIcon: () => <svg data-testid='void-skull-icon' />,
+  UIFrameCorner: () => null
 }))
 
 import {
@@ -581,4 +583,41 @@ test('EventModal joins the shared modal stack: traps Tab, swallows Escape and re
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(opener).not.toHaveAttribute('inert')
   expect(opener).toHaveFocus()
+})
+
+test('EventModal digit shortcuts only act while it is the topmost dialog and outside inputs', async () => {
+  const mockEvent = {
+    id: 'test_event',
+    title: 'Test Event',
+    description: 'This is a test event.',
+    options: [{ label: 'Option 1', outcomeText: /Good Outcome/ }]
+  }
+  const { rerender } = render(
+    <>
+      <EventModal event={mockEvent} onOptionSelect={vi.fn()} />
+      <Modal isOpen onClose={() => {}} ariaLabel='Overlay'>
+        <input aria-label='note' />
+      </Modal>
+    </>
+  )
+
+  // A dialog above the event swallows the digit.
+  fireEvent.keyDown(window, { key: '1' })
+  expect(screen.queryByText(/Good Outcome/)).not.toBeInTheDocument()
+
+  // Remove the overlay: the event dialog is topmost again, but typing in an
+  // input must still not select an option.
+  rerender(
+    <>
+      <EventModal event={mockEvent} onOptionSelect={vi.fn()} />
+      <input aria-label='note' />
+    </>
+  )
+  fireEvent.keyDown(screen.getByLabelText('note'), { key: '1' })
+  expect(screen.queryByText(/Good Outcome/)).not.toBeInTheDocument()
+
+  fireEvent.keyDown(window, { key: '1' })
+  await waitFor(() => {
+    expect(screen.getByText(/Good Outcome/)).toBeInTheDocument()
+  })
 })

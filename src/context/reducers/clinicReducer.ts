@@ -19,6 +19,7 @@ import {
   clampBandHarmony,
   clampBandStress,
   clampControversyLevel,
+  clampNonNegative,
   finiteNumberOr,
   isFiniteNumber,
   isLooseRecord
@@ -36,6 +37,8 @@ import {
   buildDeterministicToastId
 } from './toastSanitizers'
 import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
+import { QuestEvents } from '../../utils/questProgress'
+import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
 
 type MemberUpdaterResult = { updatedMember: BandMember; toastArgs?: number[] }
 
@@ -174,8 +177,10 @@ export const handleClinicHeal = (
   payload: ClinicActionPayload
 ): GameState => {
   if (!isLooseRecord(payload)) return state
-  const staminaGain = finiteNumberOr(payload.staminaGain, 0)
-  const moodGain = finiteNumberOr(payload.moodGain, 0)
+  // Gains are never negative: a direct dispatch must not turn a paid heal
+  // into damage (the creator applies the same policy).
+  const staminaGain = clampNonNegative(finiteNumberOr(payload.staminaGain, 0))
+  const moodGain = clampNonNegative(finiteNumberOr(payload.moodGain, 0))
 
   // The handler owns the cost type so a missing or forged `type` can't skip the charge.
   return executeClinicAction(state, { ...payload, type: 'heal' }, member => {
@@ -377,7 +382,16 @@ export const handleBloodBankDonate = (
     }
   }
 
-  return nextState
+  const appliedMoneyGain = nextMoney - currentMoney
+  return appliedMoneyGain > 0
+    ? QuestEvents.emit(
+        nextState,
+        createMoneyEarnedQuestEvent({
+          amount: appliedMoneyGain,
+          reason: 'blood_bank'
+        })
+      )
+    : nextState
 }
 
 /**

@@ -126,6 +126,7 @@ import {
   readVanCondition
 } from '../../utils/gameState/clamps'
 import { QuestEvents } from '../../utils/questProgress'
+import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import {
   createFameGainedQuestEvent,
   createMoneyEarnedQuestEvent
@@ -2667,7 +2668,11 @@ export const handleRecordExpeditionObligationSignal = (
   if (fameDelta > 0)
     nextState = QuestEvents.emit(
       nextState,
-      createFameGainedQuestEvent({ amount: fameDelta, reason: 'contract' })
+      createFameGainedQuestEvent({
+        amount: fameDelta,
+        region: getRegionKeyForLocation(state.player.location) ?? 'Unknown',
+        reason: 'contract'
+      })
     )
   return nextState
 }
@@ -3029,6 +3034,7 @@ export const handleResolveExpeditionSocialResult = (
       nextState,
       createFameGainedQuestEvent({
         amount: result.fame,
+        region: getRegionKeyForLocation(state.player.location) ?? 'Unknown',
         reason: 'expedition_social'
       })
     )

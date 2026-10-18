@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HelpCircle, X } from 'lucide-react'
 import { Tooltip } from './Tooltip'
+import { hasActiveModal, isEditableKeyTarget } from './useModalBehavior'
 
 // Array of explicit shortcut entries
 const SHORTCUTS = [
@@ -34,14 +35,11 @@ export function useKeyboardShortcuts({
 }: UseKeyboardShortcutsProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // An open dialog owns the keyboard; background shortcuts stay silent.
+      if (hasActiveModal()) return
+
       // Don't trigger shortcuts when typing in inputs
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        (e.target instanceof HTMLElement && e.target.isContentEditable)
-      ) {
-        return
-      }
+      if (isEditableKeyTarget(e.target)) return
 
       switch (e.key) {
         case '?':

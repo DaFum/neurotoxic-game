@@ -38,6 +38,17 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
+    },
+    // Mobile reflow smoke: Chromium-based Pixel profile, two phone sizes.
+    {
+      name: 'mobile-390',
+      testMatch: /visual\.spec\.js/,
+      use: { ...devices['Pixel 5'], viewport: { width: 390, height: 844 } }
+    },
+    {
+      name: 'mobile-320',
+      testMatch: /visual\.spec\.js/,
+      use: { ...devices['Pixel 5'], viewport: { width: 320, height: 568 } }
     }
   ],
   webServer: {

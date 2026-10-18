@@ -123,6 +123,38 @@ const modalStack: ModalStackEntry[] = []
 const backgroundStates = new Map<Element, BackgroundState>()
 let stackOpener: HTMLElement | null = null
 
+/**
+ * Reports whether any modal dialog is currently open.
+ *
+ * @returns True while at least one dialog is on the modal stack.
+ *
+ * @remarks
+ * Global window key handlers (shortcuts, Gig input) use this as their gate
+ * instead of `defaultPrevented`: window listeners run in registration order,
+ * so a handler may fire before the modal's own listener marks the event.
+ */
+export const hasActiveModal = (): boolean => modalStack.length > 0
+
+/**
+ * Reports whether the given dialog is the topmost open modal.
+ *
+ * @param dialog - The `role='dialog'` element owned by the caller, if mounted.
+ * @returns True only when that dialog is on top of the modal stack.
+ */
+export const isTopmostModalDialog = (dialog: Element | null): boolean =>
+  dialog !== null && modalStack[modalStack.length - 1]?.dialog === dialog
+
+/**
+ * Reports whether a key event originates from a text-entry element.
+ *
+ * @param target - The event target.
+ * @returns True for inputs, textareas and contenteditable elements.
+ */
+export const isEditableKeyTarget = (target: EventTarget | null): boolean =>
+  target instanceof HTMLInputElement ||
+  target instanceof HTMLTextAreaElement ||
+  (target instanceof HTMLElement && target.isContentEditable)
+
 const handleModalKeyDown = (event: KeyboardEvent) => {
   const activeModal = modalStack[modalStack.length - 1]
   if (!activeModal) return

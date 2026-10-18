@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { GAME_PHASES } from '../../context/gameConstants'
+import { isExpeditionCommitmentFrozen } from '../../domain/expedition/buildCommitment'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID, MAX_SONG_DIFFICULTY } from '../../data/songs'
 import type { TFunction } from 'i18next'
@@ -13,12 +14,13 @@ import type { OptionalToastCallback } from '../../types/callbacks'
 type SongRowProps = {
   song: Song
   selected: boolean
+  locked: boolean
   toggleSongInSetlist: (songId: string) => void
   t: TFunction
 }
 
 const SongRow = React.memo(
-  ({ song, selected, toggleSongInSetlist, t }: SongRowProps) => {
+  ({ song, selected, locked, toggleSongInSetlist, t }: SongRowProps) => {
     const handleToggle = useCallback(() => {
       toggleSongInSetlist(song.id)
     }, [song.id, toggleSongInSetlist])
@@ -56,6 +58,7 @@ const SongRow = React.memo(
         <button
           type='button'
           onClick={handleToggle}
+          disabled={locked}
           aria-pressed={selected}
           aria-label={
             selected
@@ -68,7 +71,7 @@ const SongRow = React.memo(
                   defaultValue: 'Add {{name}} to setlist'
                 })
           }
-          className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
+          className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed
           ${
             selected
               ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'
@@ -104,6 +107,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameActions()
   const currentScene = useGameSelector(state => state.currentScene)
+  const setlistLocked = useGameSelector(isExpeditionCommitmentFrozen)
 
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()
@@ -124,6 +128,9 @@ export const SetlistTab = (props: SetlistTabProps) => {
 
   const toggleSongInSetlist = useCallback(
     (songId: string) => {
+      // The reducer rejects committed-setlist drift; skip the edit and its
+      // toast instead of announcing a change that never happens.
+      if (setlistLocked) return
       const songObj = SONGS_BY_ID.get(songId)
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
@@ -157,7 +164,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
 
       setSetlist(nextSetlist)
     },
-    [setSetlist, addToast, t, setlist, selectedSongIds]
+    [setSetlist, addToast, t, setlist, selectedSongIds, setlistLocked]
   )
 
   return (
@@ -196,12 +203,21 @@ export const SetlistTab = (props: SetlistTabProps) => {
           <span className='text-toxic-green'>{setlist.length}</span>
         </div>
       </div>
+      {setlistLocked && (
+        <p role='status' className='mb-4 font-mono text-sm text-warning-yellow'>
+          {t('ui:bandhq.setlist.locked', {
+            defaultValue:
+              'Setlist is locked while an Expedition is active. It was committed at launch.'
+          })}
+        </p>
+      )}
       <div className='space-y-2 pb-4'>
         {SONGS_DB.map(song => (
           <SongRow
             key={song.id}
             song={song}
             selected={isSongSelected(song.id)}
+            locked={setlistLocked}
             toggleSongInSetlist={toggleSongInSetlist}
             t={t}
           />

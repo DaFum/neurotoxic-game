@@ -35,6 +35,7 @@ import {
   buildDeterministicToastId
 } from './toastSanitizers'
 import { QuestEvents } from '../../utils/questProgress'
+import { createFameGainedQuestEvent } from '../../quests/producers/economyQuestEvents'
 import {
   createSocialControversyChangedQuestEvent,
   createSocialLoyaltyChangedQuestEvent
@@ -640,6 +641,26 @@ export const handleUnblacklistVenue = (
 }
 
 /**
+ * Emits a `fame.gained` quest event for an accepted social action's positive
+ * fame delta, keyed to the canonical region of the current location.
+ */
+const emitSocialFameGained = (
+  state: GameState,
+  fameDelta: number,
+  reason: string
+): GameState =>
+  fameDelta > 0
+    ? QuestEvents.emit(
+        state,
+        createFameGainedQuestEvent({
+          amount: fameDelta,
+          region: getRegionKeyForLocation(state.player.location) ?? 'Unknown',
+          reason
+        })
+      )
+    : state
+
+/**
  * Runs a merch press campaign that trades money and harmony for loyalty, fame, and controversy changes.
  *
  * @param state - Current game state before the merch press.
@@ -662,6 +683,10 @@ export const handleMerchPress = (
     !isFiniteNumber(rawFameGain)
   ) {
     logger.warn('GameState', 'Invalid numeric payload for MERCH_PRESS')
+    return state
+  }
+  if (payload.cost < 0 || payload.harmonyCost < 0) {
+    logger.warn('GameState', 'Negative cost rejected for MERCH_PRESS')
     return state
   }
 
@@ -712,7 +737,11 @@ export const handleMerchPress = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
-  return breakDealsIfControversyCrossed(nextState, currentControversy)
+  return emitSocialFameGained(
+    breakDealsIfControversyCrossed(nextState, currentControversy),
+    nextFame - currentFame,
+    'merch_press'
+  )
 }
 
 type ZealotryDayField =
@@ -825,7 +854,11 @@ const applyZealotryAction = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
-  return breakDealsIfControversyCrossed(nextState, currentControversy)
+  return emitSocialFameGained(
+    breakDealsIfControversyCrossed(nextState, currentControversy),
+    nextFame - currentFame,
+    'zealotry_action'
+  )
 }
 
 /**

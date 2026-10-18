@@ -20,7 +20,10 @@ import {
   EXPEDITION_CONDITION_GROUPS,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
-import { getVisibleExpeditionDefects } from '../../domain/expedition/defects'
+import {
+  getVisibleExpeditionDefects,
+  type VisibleDefectView
+} from '../../domain/expedition/defects'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import { canClaimExpeditionInsurance } from '../../domain/expedition/insurance'
@@ -65,7 +68,7 @@ interface ServiceView {
   runId: string | null
   condition: { pa: number; instruments: number; stageGear: number }
   disabledGroups: ConditionGroup[]
-  visibleDefects: ReturnType<typeof getVisibleExpeditionDefects>
+  visibleDefects: VisibleDefectView[]
   repairOptions: RepairOption[]
   inspectionOptions: Array<{
     mode: ExpeditionInspectionMode

@@ -27,7 +27,7 @@ import type { RhythmSetlistEntry } from '../../types/rhythmGame'
  * `prepared` deliberately does not freeze: reopening Tour Prep before START is
  * edit-only by design.
  */
-const isExpeditionCommitmentFrozen = (state: GameState): boolean =>
+export const isExpeditionCommitmentFrozen = (state: GameState): boolean =>
   state.expedition?.status === 'active' && state.expedition.loadout !== null
 
 /**

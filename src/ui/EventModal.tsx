@@ -12,6 +12,10 @@ import { formatCurrency } from '../utils/numberUtils'
 import { translateContextKeys } from '../utils/translationUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
+import {
+  isEditableKeyTarget,
+  isTopmostModalDialog
+} from './shared/useModalBehavior'
 import type { EngineGameState } from '../utils/eventEngine'
 import type { GameState } from '../types'
 import type {
@@ -274,6 +278,7 @@ export const EventModal = ({
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
+  const contentRef = useRef<HTMLDivElement | null>(null)
   const resolvedRef = useRef(false)
   const hasCompletedExitRef = useRef(false)
   const [isResolved, setIsResolved] = useState(false)
@@ -385,6 +390,14 @@ export const EventModal = ({
     if (!event || outcome) return
 
     const handleKey = (e: KeyboardEvent) => {
+      // Only the topmost dialog may consume digits, and never while typing.
+      if (isEditableKeyTarget(e.target)) return
+      if (
+        !isTopmostModalDialog(
+          contentRef.current?.closest('[role="dialog"]') ?? null
+        )
+      )
+        return
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= eventOptions.length) {
         const option = eventOptions[num - 1]
@@ -447,7 +460,10 @@ export const EventModal = ({
       animation={{ isExiting, onAnimationComplete: handleAnimationComplete }}
       focusKey={event}
     >
-      <div className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'>
+      <div
+        ref={contentRef}
+        className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'
+      >
         <EventHeader
           event={event}
           eventContext={eventContext}

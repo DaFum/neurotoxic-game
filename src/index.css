@@ -275,6 +275,16 @@ body {
   color: var(--color-toxic-green);
   font-family: var(--font-ui);
   overflow: hidden;
+}
+
+/* Prose stays selectable for copy/support; only controls and drag surfaces
+   opt out of text selection. */
+button,
+canvas,
+svg,
+[role='button'],
+[draggable='true'],
+.touch-none {
   user-select: none;
 }
 
@@ -747,7 +757,23 @@ button:focus-visible {
   z-index: -1;
 }
 
+.gen-image-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.gen-image-img {
+  transition: opacity 200ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .gen-image-skeleton {
+    animation: none !important;
+  }
+
+  .gen-image-img {
+    transition: none !important;
+  }
+
   .crt-overlay,
   .crt-overlay::after,
   .animate-credits-scroll,
