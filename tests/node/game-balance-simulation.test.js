@@ -52,6 +52,7 @@ import {
   runSimulationSuite,
   runSingleSimulation,
   summarizeCatalogAffordability,
+  summarizeRiskBands,
   summarizeScenario
 } from '../../scripts/game-balance-simulation.mjs'
 
@@ -846,6 +847,37 @@ test('evaluateScenarioRiskStatus requires calibration and holdout to agree', () 
     'insufficient_evidence'
   )
   assert.equal(status('within_target', 'not_evaluated'), 'not_evaluated')
+})
+
+test('summarizeRiskBands keeps the corridor count equal to the table and labels the overall one apart', () => {
+  // The overall status folds in probe metrics, so it can disagree with the
+  // bankruptcy-only status the corridor table lists for the same scenario.
+  const scenarios = [
+    { status: 'healthy', bankruptcy: { riskStatus: 'healthy' } },
+    { status: 'high_risk', bankruptcy: { riskStatus: 'healthy' } },
+    { status: 'low_risk', bankruptcy: { riskStatus: 'low_risk' } },
+    { status: 'unstable', bankruptcy: { riskStatus: 'high_risk' } }
+  ]
+  const bands = summarizeRiskBands(scenarios)
+
+  const tableCounts = {}
+  for (const scenario of scenarios) {
+    const status = scenario.bankruptcy.riskStatus
+    tableCounts[status] = (tableCounts[status] ?? 0) + 1
+  }
+  assert.deepEqual(bands.bankruptcy, tableCounts)
+  assert.deepEqual(bands.overall, {
+    healthy: 1,
+    low_risk: 1,
+    high_risk: 1,
+    unstable: 1
+  })
+  // Fixed label order, independent of scenario order.
+  assert.deepEqual(Object.keys(bands.bankruptcy), [
+    'healthy',
+    'low_risk',
+    'high_risk'
+  ])
 })
 
 test('buildDesignRiskReview stays non-blocking and warns on a below-target scenario', () => {

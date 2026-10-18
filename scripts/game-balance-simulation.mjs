@@ -5477,6 +5477,38 @@ const RISK_STATUS_LABEL = {
   not_evaluated: '⚪ not_evaluated'
 }
 
+/**
+ * Counts scenarios per risk band, in the fixed label order.
+ *
+ * @param {Array<{status: string, bankruptcy: {riskStatus: string}}>} scenarios
+ * The design-risk scenarios.
+ * @returns {{overall: Record<string, number>, bankruptcy: Record<string, number>}}
+ * `overall` counts each scenario's status across every metric (bankruptcy
+ * corridor and probes); `bankruptcy` counts only the bankruptcy corridor
+ * status, which is what the corridor table's Status column shows.
+ */
+export const summarizeRiskBands = scenarios => {
+  const count = pick => {
+    const counts = {}
+    for (const scenario of scenarios) {
+      const status = pick(scenario)
+      counts[status] = (counts[status] ?? 0) + 1
+    }
+    const ordered = {}
+    for (const status of Object.keys(RISK_STATUS_LABEL)) {
+      if (Object.hasOwn(counts, status)) ordered[status] = counts[status]
+    }
+    for (const status of Object.keys(counts)) {
+      if (!Object.hasOwn(ordered, status)) ordered[status] = counts[status]
+    }
+    return ordered
+  }
+  return {
+    overall: count(scenario => scenario.status),
+    bankruptcy: count(scenario => scenario.bankruptcy.riskStatus)
+  }
+}
+
 const formatRiskStreams = ({ calibrationPct, holdoutPct }) =>
   Number.isFinite(holdoutPct)
     ? `Kalibrierung ${calibrationPct}%, Holdout ${holdoutPct}%`
@@ -6906,10 +6938,11 @@ const buildMarkdownReport = payload => {
   // payout raise they answer differently. Reporting only the first would read
   // as "balance is fine" while most scenarios sit below their intended risk.
   if (risk?.scenarios?.length) {
-    const riskCounts = risk.scenarios.reduce((acc, scenario) => {
-      acc[scenario.status] = (acc[scenario.status] ?? 0) + 1
-      return acc
-    }, {})
+    const riskBands = summarizeRiskBands(risk.scenarios)
+    const formatBands = counts =>
+      Object.entries(counts)
+        .map(([status, count]) => `${status} ${count}`)
+        .join(' · ')
     lines.push('### Designrisiko-Zusammenfassung (nicht blockierend)')
     lines.push(
       `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze; ${risk.scenarios.filter(scenario => scenario.status === 'not_evaluated').length} ohne Korridorurteil.`
@@ -6924,10 +6957,14 @@ const buildMarkdownReport = payload => {
           : `- ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (${[safetySummary.failures.map(failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), safetySummary.missingScenarioIds?.length ? `nicht gemessen: ${safetySummary.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' · ') || 'keine Evidenz'}). Keine Produktionsempfehlung.`
       )
     }
+    // Two different questions, so two labelled lines: the overall status folds
+    // in every metric (probes included), the corridor status is bankruptcy
+    // only and is the one the corridor table lists per scenario.
     lines.push(
-      `- Risikobänder: ${Object.entries(riskCounts)
-        .map(([status, count]) => `${status} ${count}`)
-        .join(' · ')}.`
+      `- Risikobänder (Gesamtstatus je Szenario, alle Metriken): ${formatBands(riskBands.overall)}.`
+    )
+    lines.push(
+      `- Risikobänder (nur Insolvenz-Korridor, wie in der Tabelle): ${formatBands(riskBands.bankruptcy)}.`
     )
     // Counted the same way the corridor section splits them: a hard-limit breach
     // is not a soft warning, so it must not be tallied as one here either.
