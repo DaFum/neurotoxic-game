@@ -49,6 +49,8 @@ export type TravelLogicParams = {
   venueBlacklist?: string[]
   /** Expedition run status, so a gig re-entry honours the Fame booking lock. */
   expeditionStatus?: GameState['expedition']['status']
+  /** A Run Draft offer is waiting; the route refuses travel until it is picked. */
+  expeditionDraftPending?: boolean
   onShowHQ?: () => void
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]

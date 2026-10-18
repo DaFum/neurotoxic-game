@@ -53,6 +53,34 @@ describe('expedition travel guard', () => {
     assert.equal(next.expedition.routeStep, drafting.expedition.routeStep)
   })
 
+  it('refuses to complete a leg the route has since started refusing', () => {
+    const run = startedState({ money: 5000, fuel: 100 })
+    const traveling = gameReducer(run, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: firstHop() }
+    })
+    assert.equal(traveling.minigame.active, true)
+    const drafting = {
+      ...traveling,
+      expedition: {
+        ...traveling.expedition,
+        pendingRunDraftOffer: {
+          sourceType: 'major_gig',
+          candidateTraitIds: ['reckless_encore'],
+          routeStep: traveling.expedition.routeStep
+        }
+      }
+    }
+    const next = gameReducer(drafting, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [] }
+    })
+
+    assert.equal(next.player.currentNodeId, run.player.currentNodeId)
+    assert.equal(next.player.money, run.player.money)
+    assert.equal(next.player.van.fuel, run.player.van.fuel)
+  })
+
   it('refuses a raw travel to a node the route does not offer', () => {
     const run = startedState({ money: 5000, fuel: 100 })
     const hop = firstHop()

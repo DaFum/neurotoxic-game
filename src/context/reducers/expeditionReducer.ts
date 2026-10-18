@@ -2380,7 +2380,7 @@ const applyExpeditionEventDeltaOnce = (
     }
   }
   // A Contact the run's Crew actually made earns the Crew-contact reward
-  // through the same ADD_EXPEDITION_REWARD handler a dispatch would hit. It is
+  // through the same reward helper `ADD_EXPEDITION_REWARD` wraps. It is
   // composed here, in the commit that resolved the event, because the
   // evidence is the Crew records `applyResolvedCrewEventOutcome` just wrote:
   // a separate dispatch could be missed and leave the reward unearnable, and

@@ -161,6 +161,18 @@ export const useHandleTravel = ({
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
       const currentLayer = currentStartNode?.layer ?? 0
+      // The route refuses every move while a Run Draft offer is pending, so
+      // starting the leg would only latch `isTraveling` with no scene change.
+      if (params.expeditionDraftPending) {
+        addToast(
+          i18n.t('ui:travel.errors.draftPending', {
+            defaultValue: 'Pick a Run Draft trait before hitting the road.'
+          }),
+          'warning'
+        )
+        return
+      }
+
       const connected = isConnectedUtil(gameMap, player.currentNodeId, node.id)
       // An Expedition overlay edge (the Nemesis Key's two-step jump) reaches a
       // node the layer rule would still dim; the route authorizes the move, so
@@ -275,6 +287,7 @@ export const useHandleTravel = ({
       setters,
       addToast,
       params.expeditionStatus,
+      params.expeditionDraftPending,
       onShowHQ,
       startTravelSequence,
       clearPendingTravel,

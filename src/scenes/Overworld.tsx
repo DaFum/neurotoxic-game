@@ -49,6 +49,9 @@ export const Overworld = () => {
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const rivalBand = useGameSelector(state => state.rivalBand)
   const expeditionStatus = useGameSelector(state => state.expedition?.status)
+  const expeditionDraftPending = useGameSelector(
+    state => state.expedition?.pendingRunDraftOffer != null
+  )
   // The Fame a Festival booking needs, or `null` when it is open (always
   // `null` outside a run). A number, so the selector stays stable.
   const festivalBookingMinimumFame = useGameSelector(
@@ -96,6 +99,7 @@ export const Overworld = () => {
     reputationByRegion,
     venueBlacklist,
     expeditionStatus,
+    expeditionDraftPending,
     updatePlayer,
     updateBand,
     saveGame,

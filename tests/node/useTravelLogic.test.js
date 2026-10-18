@@ -310,6 +310,20 @@ describe('useTravelLogic', () => {
     assertTravelPrevented(result, props, /Not enough money/)
   })
 
+  test('handleTravel refuses while an Expedition Run Draft is pending', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      expeditionStatus: 'active',
+      expeditionDraftPending: true
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assertTravelPrevented(result, props, /Run Draft/)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+  })
+
   test('handleTravel includes liability payments in affordability check', () => {
     const defaults = createTravelLogicProps()
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
