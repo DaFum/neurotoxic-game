@@ -1,4 +1,9 @@
-import type { BandState, GameState, PostGigSummary } from '../../../types'
+import type {
+  BandState,
+  GameState,
+  PostGigSummary,
+  QuestEvent
+} from '../../../types'
 import {
   GAME_PHASES,
   NEUROTOXIC_PEDAL_HARMONY_PENALTY
@@ -108,19 +113,24 @@ export function buildStoryFlagQuests(params: {
 }
 
 /**
- * Evaluates fame and money gains to apply economy quest events.
+ * Derives the ordered fame/money quest events for a settled gig (pure).
+ *
+ * @param player - Player state before the gig's gains were applied.
+ * @param stats - Settled post-gig fame and money totals.
+ * @returns Fame event first, then money, each only for a positive gain.
  */
-export function dispatchEconomyQuests(
+export function derivePostGigEconomyQuestEvents(
   player: GameState['player'],
-  stats: { newFame: number; newMoney: number },
-  applyQuestEvent: HandlerDispatchers['applyQuestEvent']
-): void {
+  stats: { newFame: number; newMoney: number }
+): QuestEvent[] {
+  const events: QuestEvent[] = []
+
   const fameGain = stats.newFame - finiteNumberOr(player?.fame, 0)
   if (fameGain > 0) {
     // Region context lets perRegion fame quests (quest_local_legend)
     // gate progress to the actual region where it was earned. Use the
     // canonical city key so it matches the stamped quest scopeKey.
-    applyQuestEvent(
+    events.push(
       createFameGainedQuestEvent({
         region: getRegionKeyForLocation(player?.location) ?? 'Unknown',
         amount: fameGain,
@@ -131,11 +141,22 @@ export function dispatchEconomyQuests(
 
   const moneyGain = stats.newMoney - finiteNumberOr(player?.money, 0)
   if (moneyGain > 0) {
-    applyQuestEvent(
-      createMoneyEarnedQuestEvent({
-        amount: moneyGain
-      })
-    )
+    events.push(createMoneyEarnedQuestEvent({ amount: moneyGain }))
+  }
+
+  return events
+}
+
+/**
+ * Evaluates fame and money gains to apply economy quest events.
+ */
+export function dispatchEconomyQuests(
+  player: GameState['player'],
+  stats: { newFame: number; newMoney: number },
+  applyQuestEvent: HandlerDispatchers['applyQuestEvent']
+): void {
+  for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
+    applyQuestEvent(event)
   }
 }
 

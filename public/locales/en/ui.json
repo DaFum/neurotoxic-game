@@ -29,6 +29,7 @@
   "bandhq.metadata.diff": "DIFF",
   "bandhq.metadata.dur": "DUR",
   "bandhq.money": "MONEY",
+  "bandhq.setlist.locked": "Setlist is locked while an Expedition is active. It was committed at launch.",
   "bandhq.setlist.selectOne": "Select at least one song to practice!",
   "bandhq.setlist.songRemoved": "Removed {{song}} from {{venue}}.",
   "bandhq.setlist.songSelected": "Selected {{song}} for {{venue}}.",

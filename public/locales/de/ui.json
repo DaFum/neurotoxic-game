@@ -29,6 +29,7 @@
   "bandhq.metadata.diff": "SCHW",
   "bandhq.metadata.dur": "DAUER",
   "bandhq.money": "GELD",
+  "bandhq.setlist.locked": "Die Setlist ist während einer aktiven Expedition gesperrt. Sie wurde beim Start festgelegt.",
   "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
   "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
   "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
