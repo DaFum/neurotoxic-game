@@ -52,16 +52,19 @@ test.describe('Visual smoke tests', () => {
     await skipToMenu(page)
 
     // The first Tab can land on the document before the first control.
-    const tabbedNames = []
-    for (let i = 0; i < 5; i++) {
+    let startTourFocused = false
+    for (let i = 0; i < 5 && !startTourFocused; i++) {
       await page.keyboard.press('Tab')
-      tabbedNames.push(
-        await page.evaluate(() => {
-          const el = document.activeElement
-          return el?.tagName === 'BUTTON' ? el.textContent?.trim() : null
-        })
+      startTourFocused = await page.evaluate(
+        () =>
+          document.activeElement?.tagName === 'BUTTON' &&
+          /start tour/i.test(document.activeElement.textContent ?? '')
       )
     }
-    expect(tabbedNames.some(name => /start tour/i.test(name ?? ''))).toBe(true)
+    expect(startTourFocused).toBe(true)
+
+    // Keyboard activation, not just focus: a fresh profile gets the name prompt.
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog')).toBeVisible()
   })
 })
