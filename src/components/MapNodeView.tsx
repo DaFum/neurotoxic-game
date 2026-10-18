@@ -20,7 +20,10 @@ import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
-import type { ExpeditionNodeFog } from '../types/expedition'
+import type {
+  ExpeditionNodeFog,
+  ExpeditionSpecialNodeSubtype
+} from '../types/expedition'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -77,6 +80,11 @@ interface MapNodeProps {
   cityTraits?: CityTraitState
   /** Hybrid-Fog projection for this node while an Expedition is active. */
   expeditionFog?: ExpeditionNodeFog
+  /**
+   * Subtype an overlay destination advertises. Drawn as the pin and type
+   * chip only; `node.type` stays the base type.
+   */
+  overlaySubtype?: ExpeditionSpecialNodeSubtype
   /**
    * Fame this node's booking needs while the band is below its access tier.
    * The band can still travel here; the promoter just will not book it.
@@ -342,6 +350,7 @@ export const MapNodeView = memo(
     tourSuccess,
     cityTraits,
     expeditionFog,
+    overlaySubtype,
     bookingLockMinimumFame
   }: MapNodeProps) => {
     const { t, i18n } = useTranslation(['venues', 'ui'])
@@ -404,7 +413,9 @@ export const MapNodeView = memo(
       expeditionStopName ?? t('ui:map.unknown')
     )
     // A supply stop named by its class would repeat its type chip verbatim.
-    const nodeTypeLabel = getNodeTypeLabel(t, node.type)
+    const nodeTypeLabel = overlaySubtype
+      ? t(`ui:expedition.node.subtype.${overlaySubtype}`)
+      : getNodeTypeLabel(t, node.type)
 
     const positionStyle = useMemo(
       () => nodeToPercentPosition({ x: node.x, y: node.y }),
@@ -493,7 +504,7 @@ export const MapNodeView = memo(
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
             <FallbackImage
               src={iconUrl}
-              alt={getPinAltText(t, node.type)}
+              alt={getPinAltText(t, overlaySubtype ? 'SPECIAL' : node.type)}
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>

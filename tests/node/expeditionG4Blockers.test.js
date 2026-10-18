@@ -1705,6 +1705,55 @@ test('a hostile Rival Finale downgrades an allied Rival instead of erasing it', 
   assert.equal(history.relationship, 'respect')
 })
 
+test('a settled Rival Social result downgrades an allied Rival instead of erasing it', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const rivalId = started.rivalBand.id
+  const record = started.career.rivalsById[rivalId]
+  const allied = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...record,
+          history: {
+            ...record.history,
+            relationship: 'alliance',
+            nemesisLevel: 1,
+            lastNemesisAdvanceRunId: null
+          }
+        }
+      }
+    },
+    lastGigStats: { score: 1000, accuracy: 80, failed: false },
+    social: { ...started.social, pendingSocialOptionId: 'drama_rival_callout' },
+    expedition: {
+      ...started.expedition,
+      pendingSocialSettlement: { routeStep: 0, gigId: null }
+    }
+  }
+  const payload = {
+    resultId: 'weaponize',
+    postOptionId: 'drama_rival_callout',
+    expectedRouteStep: 0
+  }
+  const resolved = handleResolveExpeditionSocialResult(allied, payload)
+  assert.notStrictEqual(resolved, allied)
+  const history = resolved.career.rivalsById[rivalId].history
+  assert.equal(history.nemesisLevel, 2)
+  assert.equal(history.relationship, 'respect')
+  assert.equal(history.lastNemesisAdvanceRunId, started.expedition.runId)
+})
+
 test('the four Expedition quest producers fire from their canonical owners', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {

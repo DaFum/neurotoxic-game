@@ -22,7 +22,10 @@ import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
 import { getExpeditionNodeFogByNodeId } from '../domain/expedition/nodeFog'
-import { getExpeditionTravelMap } from '../domain/expedition/routeOverlay'
+import {
+  getExpeditionOverlaySubtypeByNodeId,
+  getExpeditionTravelMap
+} from '../domain/expedition/routeOverlay'
 import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import { ExpeditionStatusStrip } from '../ui/expedition/ExpeditionStatusStrip'
 import { ExpeditionCrewStatus } from '../ui/expedition/ExpeditionCrewStatus'
@@ -38,6 +41,10 @@ export const Overworld = () => {
   // The base map plus any overlay edge the run may travel; `gameMap` itself
   // outside a run, so the Career readout is unchanged.
   const travelMap = useGameSelector(getExpeditionTravelMap)
+  // Icon and label only; `travelMap` keeps each node's base type for travel.
+  const overlaySubtypeByNodeId = useGameSelector(
+    getExpeditionOverlaySubtypeByNodeId
+  )
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
   // `null` outside a run, which keeps the Career map readout unchanged.
@@ -182,6 +189,7 @@ export const Overworld = () => {
       <OverworldMap
         t={t}
         gameMap={travelMap}
+        overlaySubtypeByNodeId={overlaySubtypeByNodeId}
         player={player}
         band={band}
         rivalBand={rivalBand}
