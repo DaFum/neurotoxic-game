@@ -1407,6 +1407,8 @@
   "hq.voidTrader.title": "THE VOID TRADER",
   "hq.voidTrader.trade": "BARTER",
   "hq.voidTraderLockedTooltip": "Requires 30 Controversy to unlock",
+  "hud.bandDetailsHide": "Hide band details",
+  "hud.bandDetailsShow": "Show band details",
   "hud.bandHarmony": "Band Harmony",
   "hud.burst_armed": "BURST ARMED",
   "hud.day": "Day",

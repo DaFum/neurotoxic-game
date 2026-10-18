@@ -24,17 +24,17 @@ const ResourceCell = memo(function ResourceCell({
 }) {
   return (
     <div
-      className='flex flex-col items-start border border-steel-gray bg-charcoal-gray px-3 py-2 min-w-0'
+      className='flex flex-col items-start border border-steel-gray bg-charcoal-gray px-2 sm:px-3 py-2 min-w-0'
       data-testid={testId}
     >
-      <span className='text-[0.625rem] uppercase tracking-widest text-ash-gray font-mono'>
+      <span className='text-xs uppercase tracking-widest text-star-white/70 font-mono'>
         {label}
       </span>
       <span className='text-base font-bold font-mono text-star-white truncate w-full'>
         {value}
       </span>
       {meta ? (
-        <span className='text-[0.625rem] uppercase text-toxic-green font-mono truncate w-full'>
+        <span className='text-xs uppercase text-toxic-green font-mono truncate w-full'>
           {meta}
         </span>
       ) : null}
@@ -61,7 +61,7 @@ export const ExpeditionStatusStrip = memo(function ExpeditionStatusStrip() {
 
   return (
     <section
-      className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2'
+      className='grid grid-cols-3 lg:grid-cols-6 gap-2'
       aria-label={t('ui:expedition.hud.label')}
       data-testid='expedition-status-strip'
     >

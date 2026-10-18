@@ -423,7 +423,7 @@ export const MapNodeView = memo(
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
         <div
-          className='absolute w-6 h-6 flex items-center justify-center text-ash-gray pointer-events-none'
+          className='absolute w-6 h-6 flex items-center justify-center text-star-white/60 pointer-events-none'
           style={positionStyle}
         >
           ?
@@ -435,7 +435,7 @@ export const MapNodeView = memo(
       <div
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : 'z-(--z-stage-bg)'}
-          ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
+          ${!isReachable && !isCurrent ? 'opacity-60 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black' : ''}
       `}
         style={positionStyle}
@@ -520,7 +520,7 @@ export const MapNodeView = memo(
         >
           {nodeTypeLabel.toLocaleLowerCase() !==
             nodeLocationName.toLocaleLowerCase() && (
-            <span className='text-xxs font-bold uppercase tracking-wide text-ash-gray px-1 bg-void-black'>
+            <span className='text-xs font-bold uppercase tracking-wide text-star-white/70 px-1 bg-void-black'>
               {nodeTypeLabel}
             </span>
           )}

@@ -248,7 +248,7 @@ export const OverworldMap = React.memo(
           src={mapBgUrl}
           alt=''
           fallbackSrc={mapBgFallbackUrl}
-          className='absolute inset-0 w-full h-full opacity-30 object-cover grayscale invert pointer-events-none'
+          className='absolute inset-0 w-full h-full opacity-20 object-cover grayscale invert pointer-events-none'
         />
 
         {/* Draw Connections */}

@@ -18,12 +18,18 @@ import { useAudioControl } from '../../hooks/useAudioControl'
 interface OverworldHUDProps {
   player?: PlayerState
   band?: BandState
+  /**
+   * While an Expedition runs, the status strip already shows cash, fuel and
+   * condition, so phones get a one-line summary instead of the full card.
+   */
+  expeditionActive?: boolean
 }
 
 /**
  * Top HUD overlay for the Overworld Map showing high-level stats and shortcuts.
  */
-export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
+export const OverworldHUD = memo((props: OverworldHUDProps) => {
+  const { player, band, expeditionActive = false } = props
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const [showHelp, setShowHelp] = useState(false)
   const { handleAudioChange } = useAudioControl()
@@ -46,38 +52,51 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
     <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative max-sm:order-2 max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2'>
       {/* Left Panel - Player Status */}
       <div className='flex flex-col gap-2'>
-        <PlayerStatusCard
-          variant='hud'
-          money={money}
-          day={day}
-          locationName={locationName}
-          fuel={fuel}
-          condition={condition}
-          language={i18n.language}
-          t={t}
-          moneyRowAccessory={
-            <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
-              <span className='text-xxs tracking-widest text-ash-gray/70'>
-                {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
-              </span>
-              <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player?.fame ?? 0}
-              </span>
-              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
-                {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
-              </span>
-              <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player?.fameLevel ?? 1}
-              </span>
-              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
-                {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
-              </span>
-              <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player?.stats?.totalDistance ?? 0}
-              </span>
-            </div>
-          }
-        />
+        {expeditionActive && (
+          <p className='sm:hidden pointer-events-auto bg-void-black/95 border border-toxic-green/40 px-2 py-1.5 text-star-white text-sm'>
+            {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
+            {' · '}
+            {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}{' '}
+            {player?.fame ?? 0}
+            {' · '}
+            {t('ui:overworld.career_level', { defaultValue: 'LVL' })}{' '}
+            {player?.fameLevel ?? 1}
+          </p>
+        )}
+        <div className={expeditionActive ? 'max-sm:hidden' : undefined}>
+          <PlayerStatusCard
+            variant='hud'
+            money={money}
+            day={day}
+            locationName={locationName}
+            fuel={fuel}
+            condition={condition}
+            language={i18n.language}
+            t={t}
+            moneyRowAccessory={
+              <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
+                <span className='text-xxs tracking-widest text-ash-gray/70'>
+                  {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
+                </span>
+                <span className='text-xs font-bold text-star-white tabular-nums'>
+                  {player?.fame ?? 0}
+                </span>
+                <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                  {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
+                </span>
+                <span className='text-xs font-bold text-star-white tabular-nums'>
+                  {player?.fameLevel ?? 1}
+                </span>
+                <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                  {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
+                </span>
+                <span className='text-xs font-bold text-star-white tabular-nums'>
+                  {player?.stats?.totalDistance ?? 0}
+                </span>
+              </div>
+            }
+          />
+        </div>
 
         <div className='flex gap-2'>
           <ShortcutsToggle
@@ -98,7 +117,12 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
       </div>
 
       {/* Right Panel - Band Status */}
-      <BandStatusPanel band={band} t={t} variant='hud' />
+      <BandStatusPanel
+        band={band}
+        t={t}
+        variant='hud'
+        hideSummaryOnPhone={expeditionActive}
+      />
     </div>
   )
 })

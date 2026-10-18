@@ -171,4 +171,104 @@ test.describe('Visual smoke tests', () => {
     expect(covered.insideViewport).toBe(true)
     expect(covered.hidden).toBe(false)
   })
+
+  test('Tour Prep HUD panels do not overlap and band details collapse on phones', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    await page.waitForTimeout(500)
+
+    const rects = await page.evaluate(() => {
+      const panels = [...document.querySelectorAll('div')].filter(el =>
+        el.className.toString().includes('border-2')
+      )
+      const band = panels.find(el =>
+        /BAND STATUS/i.test(el.firstElementChild?.textContent ?? '')
+      )
+      const player = panels.find(
+        el =>
+          /Day \d+/.test(el.textContent ?? '') &&
+          el !== band &&
+          !band?.contains(el)
+      )
+      const box = el => {
+        const r = el?.getBoundingClientRect()
+        return (
+          r && { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
+        )
+      }
+      // Content spilling out of the card is how the readouts got cut off.
+      const spill = player
+        ? Math.max(
+            0,
+            ...[...player.querySelectorAll('*')].map(
+              c =>
+                c.getBoundingClientRect().right -
+                player.getBoundingClientRect().right
+            )
+          )
+        : -1
+      return { band: box(band), player: box(player), spill }
+    })
+    expect(rects.spill).toBeLessThanOrEqual(1)
+    expect(rects.band).toBeTruthy()
+    expect(rects.player).toBeTruthy()
+    const overlaps =
+      rects.player.left < rects.band.right &&
+      rects.band.left < rects.player.right &&
+      rects.player.top < rects.band.bottom &&
+      rects.band.top < rects.player.bottom
+    expect(overlaps).toBe(false)
+
+    const toggle = page.getByRole('button', { name: /band details/i })
+    const member = page.getByText('Matze', { exact: true }).first()
+    const isPhone = page.viewportSize().width < 640
+    if (isPhone) {
+      await expect(member).toBeHidden()
+      await toggle.click()
+      await expect(member).toBeVisible()
+    } else {
+      await expect(toggle).toBeHidden()
+      await expect(member).toBeVisible()
+    }
+  })
+
+  test('Expedition map and resources fit the first screen', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const startTour = page.getByRole('button', { name: /start tour/i })
+    await startTour.scrollIntoViewIfNeeded()
+    await startTour.click()
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await page.waitForTimeout(1500)
+
+    const m = await page.evaluate(() => {
+      const map = document.querySelector('.map-wrap').getBoundingClientRect()
+      const strip = document
+        .querySelector('[data-testid="expedition-status-strip"]')
+        .getBoundingClientRect()
+      const visible = Math.max(
+        0,
+        Math.min(map.bottom, window.innerHeight) - Math.max(map.top, 0)
+      )
+      return { visible, stripBottom: strip.bottom, vh: window.innerHeight }
+    })
+    const { width } = page.viewportSize()
+    if (width >= 1024) {
+      // Desktop: the resource strip is on screen without scrolling.
+      expect(m.stripBottom).toBeLessThanOrEqual(m.vh)
+    } else if (width >= 390 && width < 641) {
+      // Phone: at least a third of the first screen shows the map. (320x568
+      // cannot fit the stacked header and is not asserted.)
+      expect(m.visible).toBeGreaterThanOrEqual(m.vh / 3)
+    }
+  })
 })
