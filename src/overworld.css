@@ -513,6 +513,10 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 8px;
+
+    /* The fixed radio widget (64px tall, top 8px) sits above the stacked
+       content instead of over its first row. */
+    padding-top: 80px;
     padding-bottom: 72px;
     gap: 8px;
   }
