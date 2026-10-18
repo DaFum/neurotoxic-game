@@ -12,6 +12,10 @@ import { formatCurrency } from '../utils/numberUtils'
 import { translateContextKeys } from '../utils/translationUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
+import {
+  isEditableKeyTarget,
+  isTopmostModalDialog
+} from './shared/useModalBehavior'
 import type { EngineGameState } from '../utils/eventEngine'
 import type { GameState } from '../types'
 import type {
@@ -385,6 +389,12 @@ export const EventModal = ({
     if (!event || outcome) return
 
     const handleKey = (e: KeyboardEvent) => {
+      // Only the topmost dialog may consume digits, and never while typing.
+      if (isEditableKeyTarget(e.target)) return
+      const dialog =
+        document.getElementById('event-title')?.closest('[role="dialog"]') ??
+        null
+      if (!isTopmostModalDialog(dialog)) return
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= eventOptions.length) {
         const option = eventOptions[num - 1]

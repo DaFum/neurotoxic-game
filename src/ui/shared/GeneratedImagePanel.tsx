@@ -90,14 +90,14 @@ export const GeneratedImagePanel = ({
             inset: 0,
             background:
               'linear-gradient(90deg, transparent, var(--color-toxic-green) 30%, transparent)',
-            opacity: 0.2,
-            animation: 'pulse 1.5s ease-in-out infinite'
+            opacity: 0.2
           }}
         />
       )}
       <img
         src={src}
         alt={alt}
+        className='gen-image-img'
         loading='lazy'
         crossOrigin={src.startsWith('data:') ? undefined : 'anonymous'}
         onLoad={() => setLoaded(true)}
@@ -113,8 +113,7 @@ export const GeneratedImagePanel = ({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          opacity: loaded ? 1 : 0,
-          transition: 'opacity 200ms'
+          opacity: loaded ? 1 : 0
         }}
       />
     </div>

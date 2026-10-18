@@ -334,6 +334,7 @@ export const ContrabandStash = ({
     <Modal
       isOpen={true}
       onClose={onClose}
+      ariaLabel={t('ui:contraband.title', { defaultValue: 'CONTRABAND STASH' })}
       className='max-w-4xl'
       contentClassName='flex-1 min-h-0 flex flex-col max-h-[calc(100svh-4rem)]'
     >

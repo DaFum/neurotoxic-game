@@ -5,6 +5,7 @@ import {
   handleKeyDownLogic,
   handleKeyUpLogic
 } from '../utils/gigInputUtils'
+import { hasActiveModal } from '../ui/shared/useModalBehavior'
 import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
 import type { RhythmLane } from '../types/rhythmGame'
 
@@ -76,7 +77,10 @@ export const useGigInput = ({
       return keyToLaneMap.get(key)
     }
 
-    const handleKeyDown = (e: KeyboardEvent): void =>
+    // Keyup is intentionally not gated: a lane pressed before a dialog opened
+    // must still release, or it would stay held.
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (hasActiveModal()) return
       handleKeyDownLogic({
         e,
         getLaneIndex,
@@ -85,6 +89,7 @@ export const useGigInput = ({
         onTogglePause,
         ensureAudioFromGesture
       })
+    }
 
     const handleKeyUp = (e: KeyboardEvent): void =>
       handleKeyUpLogic({
