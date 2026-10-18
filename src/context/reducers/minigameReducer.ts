@@ -141,6 +141,16 @@ export const handleStartTravelMinigame = (
     logger.warn('GameState', 'Rejected malformed START_TRAVEL_MINIGAME payload')
     return state
   }
+  // An Expedition leg the route would refuse (a pending Run Draft, a node the
+  // route does not offer) must not start: completing it would charge the trip
+  // and move the player while the run's route step stayed behind.
+  if (
+    state.expedition?.status === 'active' &&
+    applyExpeditionRouteAdvance(state, targetNodeId) === state
+  ) {
+    logger.warn('GameState', 'Rejected START_TRAVEL_MINIGAME: route refuses it')
+    return state
+  }
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
     ...state,
@@ -197,6 +207,24 @@ export const handleCompleteTravelMinigame = (
 
   if (!targetNode) {
     logger.error('GameState', 'Complete Travel: Invalid Target', targetId)
+    return {
+      ...state,
+      minigame: { ...DEFAULT_MINIGAME_STATE }
+    }
+  }
+
+  // Checked before anything is charged: the route advance below is composed in
+  // this same pass, so a refusal there would otherwise leave the player moved
+  // and paid for while `routeStep` stays behind.
+  if (
+    state.expedition?.status === 'active' &&
+    applyExpeditionRouteAdvance(state, targetNode.id) === state
+  ) {
+    logger.warn(
+      'GameState',
+      'Complete Travel: route refuses the move',
+      targetId
+    )
     return {
       ...state,
       minigame: { ...DEFAULT_MINIGAME_STATE }

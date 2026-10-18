@@ -161,7 +161,14 @@ export const useHandleTravel = ({
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
       const currentLayer = currentStartNode?.layer ?? 0
-      const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
+      const connected = isConnectedUtil(gameMap, player.currentNodeId, node.id)
+      // An Expedition overlay edge (the Nemesis Key's two-step jump) reaches a
+      // node the layer rule would still dim; the route authorizes the move, so
+      // a connected node is travelable in a run.
+      const visibility =
+        connected && params.expeditionStatus === 'active'
+          ? 'visible'
+          : getNodeVisibilityUtil(node.layer, currentLayer)
 
       const accessCheck = getNodeAccessStatus({
         node,
@@ -186,11 +193,7 @@ export const useHandleTravel = ({
         return
       }
 
-      const preCheck = checkTravelPrerequisites(
-        node,
-        visibility,
-        isConnectedUtil(gameMap, player.currentNodeId, node.id)
-      )
+      const preCheck = checkTravelPrerequisites(node, visibility, connected)
       if (!preCheck.allowed) {
         addToast(
           i18n.t(preCheck.errorKey ?? 'ui:travel.errors.locationNotConnected', {
@@ -271,6 +274,7 @@ export const useHandleTravel = ({
       refs,
       setters,
       addToast,
+      params.expeditionStatus,
       onShowHQ,
       startTravelSequence,
       clearPendingTravel,
