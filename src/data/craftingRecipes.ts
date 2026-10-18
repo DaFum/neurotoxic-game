@@ -8,6 +8,9 @@
  * the output cannot be added, e.g. a non-stackable already owned).
  */
 
+/**
+ * Defines a crafting recipe to combine contraband items into artifacts.
+ */
 export interface CraftingRecipe {
   id: string
   /** Map of contraband id to required stack count. */

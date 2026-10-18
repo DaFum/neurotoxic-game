@@ -96,3 +96,4 @@
 | 2026-10-14 | src/utils/mapGenerator/types.ts | MapConnection, GeneratedMapNode, MapGeneratorState, VenuePools |
 | 2026-10-15 | src/components/assets/ForeclosureModal.tsx | Props, ForeclosureModal |
 | 2026-10-17 | src/context/reducers/expeditionReducer.ts | handleRecordExpeditionObligationSignal, handleDoubleDownExpeditionObligation, handleOfferExpeditionDraft, handleSelectExpeditionDraft, handleResolveExpeditionSocialResult, handleCreateSocialIntelGrant |
+| 2026-10-18 | src/data/craftingRecipes.ts | CraftingRecipe |
