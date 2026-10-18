@@ -155,7 +155,7 @@ describe('MainMenu Component', () => {
       expect(mockOpenHQ).toHaveBeenCalled()
     })
 
-    it('renders Band HQ component when showHQ is true', () => {
+    it('renders Band HQ component when showHQ is true', async () => {
       const mockCloseHQ = vi.fn()
 
       useBandHQModal.mockReturnValue({
@@ -166,7 +166,8 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      expect(screen.getByTestId('band-hq-modal')).toBeInTheDocument()
+      // Band HQ is lazy loaded, so it appears once its chunk resolves.
+      expect(await screen.findByTestId('band-hq-modal')).toBeInTheDocument()
 
       const expectedCallArgs = BandHQ.mock.calls[0]
       expect(expectedCallArgs[0]).toEqual(

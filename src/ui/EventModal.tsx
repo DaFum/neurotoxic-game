@@ -180,15 +180,19 @@ const EventOutcomeView = ({
         </p>
       )}
     </div>
-    <button
-      type='button'
-      disabled={isResolved}
-      onClick={handleContinue}
-      aria-label={t('ui:continue', { defaultValue: 'CONTINUE' })}
-      className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
-    >
-      [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
-    </button>
+    {/* Pinned to the bottom of the dialog's scroll area so the only way
+        forward stays visible on short viewports (phones, 200% zoom). */}
+    <div className='sticky bottom-0 bg-void-black pt-2'>
+      <button
+        type='button'
+        disabled={isResolved}
+        onClick={handleContinue}
+        aria-label={t('ui:continue', { defaultValue: 'CONTINUE' })}
+        className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
+      >
+        [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
+      </button>
+    </div>
   </m.div>
 )
 

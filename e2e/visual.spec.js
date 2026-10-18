@@ -119,4 +119,56 @@ test.describe('Visual smoke tests', () => {
     })
     expect(covered).toBe(false)
   })
+
+  test('Event outcome keeps CONTINUE visible and clickable', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start tour/i }).click()
+    // A fresh profile gets a name prompt first.
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+
+    // DEV-only hook: open a real, content-heavy event without playing to it.
+    await page.evaluate(async () => {
+      const { EVENTS_DB } = await import('/src/data/events/index.ts')
+      const all = Array.isArray(EVENTS_DB)
+        ? EVENTS_DB.flat()
+        : Object.values(EVENTS_DB).flat()
+      window.gameState.setActiveEvent(
+        all.find(e => e.id === 'consequences_bandmate_scandal')
+      )
+    })
+    const dialog = page.locator(
+      '[role="dialog"][aria-labelledby="event-title"]'
+    )
+    await expect(dialog).toBeVisible()
+    await page.keyboard.press('1')
+
+    const next = dialog.getByRole('button', { name: /continue/i })
+    await expect(next).toBeVisible()
+    await page.waitForTimeout(600)
+
+    const covered = await next.evaluate(el => {
+      const r = el.getBoundingClientRect()
+      const top = document.elementFromPoint(
+        r.left + r.width / 2,
+        r.top + r.height / 2
+      )
+      return {
+        hidden: !(top === el || el.contains(top)),
+        insideViewport: r.top >= 0 && r.bottom <= window.innerHeight
+      }
+    })
+    expect(covered.insideViewport).toBe(true)
+    expect(covered.hidden).toBe(false)
+  })
 })
