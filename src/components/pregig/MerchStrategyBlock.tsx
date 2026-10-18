@@ -59,6 +59,19 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
     item.restockAmount <= 0 ||
     playerMoney < item.restockCost
 
+  const restockTooltip = !restockingEnabled
+    ? t('ui:pregig.merchStrategy.expeditionRestockLocked')
+    : item.restockAmount <= 0
+      ? t('ui:pregig.merchStrategy.maxCapacity')
+      : playerMoney < item.restockCost
+        ? t('ui:pregig.merchStrategy.unaffordable', {
+            cost: formatCurrency(item.restockCost, language)
+          })
+        : t('ui:pregig.merchStrategy.restockCost', {
+            amount: item.restockAmount,
+            cost: formatCurrency(item.restockCost, language)
+          })
+
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
       <div className='flex items-center gap-3'>
@@ -112,19 +125,9 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
           </button>
         </div>
 
-        <Tooltip
-          content={t('ui:pregig.merchStrategy.restockCost', {
-            amount: item.restockAmount,
-            cost: formatCurrency(item.restockCost, language)
-          })}
-        >
+        <Tooltip content={restockTooltip}>
           <button
             type='button'
-            title={
-              restockingEnabled
-                ? undefined
-                : t('ui:pregig.merchStrategy.expeditionRestockLocked')
-            }
             onClick={() => {
               if (restockDisabled) return
               onRestock(item.key)
