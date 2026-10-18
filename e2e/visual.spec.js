@@ -138,15 +138,17 @@ test.describe('Visual smoke tests', () => {
       .waitFor()
 
     // DEV-only hook: open a real, content-heavy event without playing to it.
-    await page.evaluate(async () => {
-      const { EVENTS_DB } = await import('/src/data/events/index.ts')
+    // The module path is passed in, not written as an import literal: only the
+    // dev server can resolve it, so a static scan would flag it as unresolved.
+    await page.evaluate(async eventsModulePath => {
+      const { EVENTS_DB } = await import(eventsModulePath)
       const all = Array.isArray(EVENTS_DB)
         ? EVENTS_DB.flat()
         : Object.values(EVENTS_DB).flat()
       window.gameState.setActiveEvent(
         all.find(e => e.id === 'consequences_bandmate_scandal')
       )
-    })
+    }, '/src/data/events/index.ts')
     const dialog = page.locator(
       '[role="dialog"][aria-labelledby="event-title"]'
     )
