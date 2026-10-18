@@ -799,6 +799,31 @@ describe('protected career cash floor', () => {
     )
   })
 
+  it('clears a recorded travel refusal once Cash rises again', () => {
+    const state = activeRun({ money: 2000, protectedCareerCash: 900 })
+    const blocked = {
+      ...state,
+      expedition: { ...state.expedition, blockedTravelAtRouteStep: 0 }
+    }
+    const earned = { ...blocked, player: { ...blocked.player, money: 2500 } }
+
+    const next = enforceExpeditionCashFloor(
+      blocked,
+      earned,
+      ActionTypes.UPDATE_PLAYER
+    )
+    assert.equal(next.expedition.blockedTravelAtRouteStep, null)
+    assert.equal(next.player.money, 2500)
+
+    const spent = { ...blocked, player: { ...blocked.player, money: 1900 } }
+    assert.equal(
+      enforceExpeditionCashFloor(blocked, spent, ActionTypes.UPDATE_PLAYER)
+        .expedition.blockedTravelAtRouteStep,
+      0,
+      'a spend must not clear the refusal'
+    )
+  })
+
   it('does not guard Career play outside a run', () => {
     const state = createInitialState()
     state.player.money = 1000
