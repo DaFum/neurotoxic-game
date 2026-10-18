@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-10-18T17:49:41.906Z
+Erstellt am: 2026-10-18T20:42:48.043Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: d8f4f4fe8b8dccb2d9af635f18b2ceab101ae37b4b18f94b6f7efabe6d1de432
-- Generator-Fingerprint: 9dfac09a269777b5093fde6729febbb3674e907e7b0d5ecf6d3464df55ec386c
+- Source-Fingerprint: 9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88
+- Generator-Fingerprint: e86470a7e38bee056ba4640df74b809dcb089087f5b11f4a31306082aac0bad9
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -595,7 +595,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `23de417d1d8b58688c042049e0df19b8c2a01ac421b3631cd0fa28a9ac0cf14c` | `d8f4f4fe8b8dccb2d9af635f18b2ceab101ae37b4b18f94b6f7efabe6d1de432` |
+| Source-Fingerprint | `d8f4f4fe8b8dccb2d9af635f18b2ceab101ae37b4b18f94b6f7efabe6d1de432` | `9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
@@ -603,18 +603,18 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | 0.45% | €-8 | 16.56 | -0.04 |
-| Bootstrap Struggle | -0.15% | €37 | -5.69 | 0.04 |
-| Aggressive Marketing | 0.65% | €10 | -13.06 | -0.01 |
-| Scandal Recovery | 0.85% | €-45 | -5.5 | -0.08 |
-| Festival Push | -0.45% | €18 | 25.57 | 0.01 |
-| Chaos Tour | 0.45% | €-21 | 5.27 | -0.05 |
-| Cult Hypergrowth | -0.45% | €33 | -28.28 | 0.02 |
-| No Social (Fame 0-50) | 0% | €-11 | 8.52 | 0.02 |
-| High Controversy | 0.35% | €-20 | 26 | -0.03 |
-| Early Game Probe (Fame 0–50) | 0.9% | €-15 | 11.02 | -0.03 |
-| Mid Game Probe (Fame 60–150) | 0.1% | €-61 | 15.09 | -0.04 |
-| Late Game Probe (Fame 175+) | 0.05% | €-50 | 7.58 | -0.02 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| No Social (Fame 0-50) | 0% | €0 | 0 | 0 |
+| High Controversy | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Kurzfazit
 
@@ -630,7 +630,8 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 ### Designrisiko-Zusammenfassung (nicht blockierend)
 - Sicherheitsgates: 12/12 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.
-- Risikobänder: healthy 8 · low_risk 3 · high_risk 1.
+- Risikobänder (Gesamtstatus je Szenario, alle Metriken): healthy 8 · low_risk 3 · high_risk 1.
+- Risikobänder (nur Insolvenz-Korridor, wie in der Tabelle): healthy 9 · low_risk 1 · high_risk 2.
 - ⚠️ 7 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ❌ KPI-Verstöße: Baseline Touring (Endgeld) · Bootstrap Struggle (Endgeld) · Aggressive Marketing (Endgeld) · Scandal Recovery (Endgeld) · Festival Push (Endgeld) · Chaos Tour (Endgeld) · Cult Hypergrowth (Endgeld) · No Social (Fame 0-50) (Endgeld) · High Controversy (Endgeld) · Early Game Probe (Fame 0–50) (Endgeld) · Mid Game Probe (Fame 60–150) (Endgeld) · Late Game Probe (Fame 175+) (Endgeld)
