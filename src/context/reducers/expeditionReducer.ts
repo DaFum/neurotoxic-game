@@ -1849,19 +1849,22 @@ export const handleExecuteExpeditionRepair = (
     )
     // A repeat poor repair at the same step stacks a new defect; only a live
     // one with the same id suppresses it. A resolved one frees the id's slot,
-    // so the new defect gets a numbered suffix.
+    // so the new defect takes the first unused numbered suffix (a loaded save
+    // may hold gaps, so the count of twins is not a safe suffix).
     const isTwin = (id: string): boolean =>
       id === defect.id || id.startsWith(`${defect.id}_`)
-    const sameIdCount = updatedTc.defects.filter(d => isTwin(d.id)).length
     const hasLiveTwin = updatedTc.defects.some(
       d => isTwin(d.id) && d.status !== 'resolved'
     )
     if (!hasLiveTwin) {
+      const usedIds = new Set(updatedTc.defects.map(d => d.id))
+      let nextId = defect.id
+      for (let n = 1; usedIds.has(nextId); n++) {
+        nextId = `${defect.id}_${n}`
+      }
       updatedTc.defects = [
         ...updatedTc.defects,
-        sameIdCount > 0
-          ? { ...defect, id: `${defect.id}_${sameIdCount}` }
-          : defect
+        nextId === defect.id ? defect : { ...defect, id: nextId }
       ]
     }
   }

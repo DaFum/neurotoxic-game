@@ -75,7 +75,7 @@ export const MainMenu = () => {
           fallback={
             <div
               role='status'
-              className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 font-mono text-toxic-green uppercase tracking-widest animate-pulse'
+              className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 font-mono text-toxic-green uppercase tracking-widest motion-safe:animate-pulse'
             >
               {t('ui:loading')}
             </div>

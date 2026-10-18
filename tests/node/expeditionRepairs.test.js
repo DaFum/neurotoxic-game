@@ -352,6 +352,25 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
       const again = repair(resolved).expedition.technicalCondition.defects
       assert.equal(again.length, 2)
       assert.equal(new Set(again.map(d => d.id)).size, 2)
+
+      // A loaded save may hold a gap in the suffixes: the new id must still
+      // be unused, or load sanitization would drop it as a duplicate.
+      const [base] = first.expedition.technicalCondition.defects
+      const gapped = {
+        ...first,
+        expedition: {
+          ...first.expedition,
+          technicalCondition: {
+            ...first.expedition.technicalCondition,
+            defects: [
+              { ...base, status: 'resolved' },
+              { ...base, id: `${base.id}_2`, status: 'resolved' }
+            ]
+          }
+        }
+      }
+      const filled = repair(gapped).expedition.technicalCondition.defects
+      assert.equal(new Set(filled.map(d => d.id)).size, 3)
     }
   )
 

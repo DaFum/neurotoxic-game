@@ -23,6 +23,12 @@ describe('purchase catalog effect count', () => {
         !Array.isArray(item.effect),
         `${item.id} declares an effect list`
       )
+      if (item.effects != null) {
+        assert.ok(
+          !Array.isArray(item.effects) || item.effects.length <= 1,
+          `${item.id} declares ${item.effects.length} effects`
+        )
+      }
     }
   })
 })
