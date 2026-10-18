@@ -119,4 +119,185 @@ test.describe('Visual smoke tests', () => {
     })
     expect(covered).toBe(false)
   })
+
+  test('Event outcome keeps CONTINUE visible and clickable', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start tour/i }).click()
+    // A fresh profile gets a name prompt first.
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+
+    // DEV-only hook: open a real, content-heavy event without playing to it.
+    // The module path is passed in, not written as an import literal: only the
+    // dev server can resolve it, so a static scan would flag it as unresolved.
+    await page.evaluate(async eventsModulePath => {
+      const { EVENTS_DB } = await import(eventsModulePath)
+      const all = Array.isArray(EVENTS_DB)
+        ? EVENTS_DB.flat()
+        : Object.values(EVENTS_DB).flat()
+      window.gameState.setActiveEvent(
+        all.find(e => e.id === 'consequences_bandmate_scandal')
+      )
+    }, '/src/data/events/index.ts')
+    const dialog = page.locator(
+      '[role="dialog"][aria-labelledby="event-title"]'
+    )
+    await expect(dialog).toBeVisible()
+    await page.keyboard.press('1')
+
+    const next = dialog.getByRole('button', { name: /continue/i })
+    await expect(next).toBeVisible()
+
+    // Poll until the dialog's entry animation settles, rather than a fixed delay.
+    await expect
+      .poll(() =>
+        next.evaluate(el => {
+          const r = el.getBoundingClientRect()
+          const top = document.elementFromPoint(
+            r.left + r.width / 2,
+            r.top + r.height / 2
+          )
+          return {
+            hidden: !(top === el || el.contains(top)),
+            insideViewport: r.top >= 0 && r.bottom <= window.innerHeight
+          }
+        })
+      )
+      .toEqual({ hidden: false, insideViewport: true })
+  })
+
+  test('Tour Prep HUD panels do not overlap and band details collapse on phones', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    await expect(page.getByText(/band status/i).first()).toBeVisible()
+
+    const rects = await page.evaluate(() => {
+      const panels = [...document.querySelectorAll('div')].filter(el =>
+        el.className.toString().includes('border-2')
+      )
+      const band = panels.find(el =>
+        /BAND STATUS/i.test(el.firstElementChild?.textContent ?? '')
+      )
+      const player = panels.find(
+        el =>
+          /Day \d+/.test(el.textContent ?? '') &&
+          el !== band &&
+          !band?.contains(el)
+      )
+      const box = el => {
+        const r = el?.getBoundingClientRect()
+        return (
+          r && { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
+        )
+      }
+      // Content spilling out of the card is how the readouts got cut off.
+      const spill = player
+        ? Math.max(
+            0,
+            ...[...player.querySelectorAll('*')].map(
+              c =>
+                c.getBoundingClientRect().right -
+                player.getBoundingClientRect().right
+            )
+          )
+        : -1
+      return { band: box(band), player: box(player), spill }
+    })
+    expect(rects.spill).toBeLessThanOrEqual(1)
+    expect(rects.band).toBeTruthy()
+    expect(rects.player).toBeTruthy()
+    const overlaps =
+      rects.player.left < rects.band.right &&
+      rects.band.left < rects.player.right &&
+      rects.player.top < rects.band.bottom &&
+      rects.band.top < rects.player.bottom
+    expect(overlaps).toBe(false)
+
+    const toggle = page.getByRole('button', { name: /band details/i })
+    const member = page.getByText('Matze', { exact: true }).first()
+    const isPhone = page.viewportSize().width < 640
+    if (isPhone) {
+      await expect(member).toBeHidden()
+      await toggle.click()
+      await expect(member).toBeVisible()
+    } else {
+      await expect(toggle).toBeHidden()
+      await expect(member).toBeVisible()
+    }
+  })
+
+  test('Expedition map and resources fit the first screen', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const startTour = page.getByRole('button', { name: /start tour/i })
+    await startTour.scrollIntoViewIfNeeded()
+    await startTour.click()
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await expect(page.locator('.map-wrap')).toBeVisible()
+    await expect(page.getByTestId('expedition-status-strip')).toBeVisible()
+
+    const m = await page.evaluate(() => {
+      const map = document.querySelector('.map-wrap').getBoundingClientRect()
+      const strip = document
+        .querySelector('[data-testid="expedition-status-strip"]')
+        .getBoundingClientRect()
+      const visible = Math.max(
+        0,
+        Math.min(map.bottom, window.innerHeight) - Math.max(map.top, 0)
+      )
+      return { visible, stripBottom: strip.bottom, vh: window.innerHeight }
+    })
+    const { width } = page.viewportSize()
+    if (width >= 1024) {
+      // Desktop: the resource strip is on screen without scrolling.
+      expect(m.stripBottom).toBeLessThanOrEqual(m.vh)
+    } else if (width >= 390 && width < 641) {
+      // Phone: at least a third of the first screen shows the map. (320x568
+      // cannot fit the stacked header and is not asserted.)
+      expect(m.visible).toBeGreaterThanOrEqual(m.vh / 3)
+    }
+  })
+
+  test('Expedition cash is never truncated on phones', async ({ page }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const startTour = page.getByRole('button', { name: /start tour/i })
+    await startTour.scrollIntoViewIfNeeded()
+    await startTour.click()
+    await expect(page.getByTestId('expedition-status-strip')).toBeVisible()
+
+    // DEV-only hook: a seven-figure balance is the worst case for the cell.
+    await page.evaluate(() =>
+      window.gameState.updatePlayer({ money: 12345678 })
+    )
+    const cash = page.getByTestId('expedition-hud-cash')
+    await expect(cash).toContainText('12')
+
+    const clipped = await cash.evaluate(el => {
+      const value = el.querySelectorAll('span')[1]
+      return value.scrollWidth > value.clientWidth
+    })
+    const { width } = page.viewportSize()
+    if (width < 641) expect(clipped).toBe(false)
+  })
 })

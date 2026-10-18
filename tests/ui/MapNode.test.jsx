@@ -215,7 +215,7 @@ describe('MapNodeView', () => {
       />
     )
     const newWrapper = container.firstChild
-    expect(newWrapper.className).toContain('opacity-30')
+    expect(newWrapper.className).toContain('opacity-60')
     expect(newWrapper.className).toContain('grayscale')
   })
 

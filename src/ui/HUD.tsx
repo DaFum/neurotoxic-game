@@ -57,7 +57,7 @@ export const HUD = memo(() => {
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
       {/* Left Panel - Player Info (hidden during gigs) */}
-      <div className='flex flex-col gap-2'>
+      <div className='flex flex-col gap-2 min-w-0'>
         {!isGigScene && (
           <PlayerStatusCard
             money={playerMoney}
@@ -80,7 +80,7 @@ export const HUD = memo(() => {
       {/* Right Panel - Band Status. During gigs only the decimator/pedal
           controls stay visible, pushed below the GigHUD top-edge meter bar. */}
       <div
-        className={`flex flex-col gap-2 items-end ${isGigScene ? 'mt-24' : ''}`}
+        className={`flex flex-col gap-2 items-end shrink-0 ${isGigScene ? 'mt-24' : ''}`}
       >
         {hasNeuroDecimator && (
           <Tooltip

@@ -1,5 +1,5 @@
+import { lazy, Suspense } from 'react'
 import { useBandHQModal } from '../hooks/useBandHQModal'
-import { BandHQ } from '../ui/BandHQ'
 import { MainMenuSocials } from './mainmenu/MainMenuSocials.tsx'
 import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.tsx'
 import { MainMenuExistingSavePrompt } from './mainmenu/MainMenuExistingSavePrompt.tsx'
@@ -10,6 +10,12 @@ import { MainMenuHeader } from './mainmenu/MainMenuHeader'
 import { MainMenuActionButtons } from './mainmenu/MainMenuActionButtons'
 import { MainMenuSecondaryButtons } from './mainmenu/MainMenuSecondaryButtons'
 import { MainMenuFooter } from './mainmenu/MainMenuFooter'
+
+// Band HQ and its eleven tabs are only needed once the player opens it, so they
+// stay out of the entry chunk the menu itself loads.
+const BandHQ = lazy(() =>
+  import('../ui/BandHQ').then(m => ({ default: m.BandHQ }))
+)
 
 /**
  * Hosts new-tour, load, Band HQ preview, credits, feature, and social menu flows.
@@ -62,7 +68,11 @@ export const MainMenu = () => {
 
       <MainMenuBackground />
 
-      {showHQ && <BandHQ onClose={closeHQ} />}
+      {showHQ && (
+        <Suspense fallback={null}>
+          <BandHQ onClose={closeHQ} />
+        </Suspense>
+      )}
 
       <div className='relative z-10 flex w-full max-w-md flex-col items-center'>
         <MainMenuHeader />

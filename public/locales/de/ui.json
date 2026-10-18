@@ -1407,6 +1407,8 @@
   "hq.voidTrader.title": "DER LEEREN-HÄNDLER",
   "hq.voidTrader.trade": "TAUSCHEN",
   "hq.voidTraderLockedTooltip": "Benötigt 30 Kontroverse zum Entsperren",
+  "hud.bandDetailsHide": "Banddetails ausblenden",
+  "hud.bandDetailsShow": "Banddetails anzeigen",
   "hud.bandHarmony": "Band Harmonie",
   "hud.burst_armed": "BURST SCHARF",
   "hud.day": "Tag",

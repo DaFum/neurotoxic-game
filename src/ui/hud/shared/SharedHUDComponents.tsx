@@ -1,6 +1,13 @@
-import { memo, type ReactNode } from 'react'
+import { memo, useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DollarSign, Fuel, Map as MapIcon, Wrench } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  DollarSign,
+  Fuel,
+  Map as MapIcon,
+  Wrench
+} from 'lucide-react'
 import { ProgressBar, StatMiniBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
@@ -204,10 +211,20 @@ interface BandStatusPanelProps {
   band?: Pick<BandState, 'harmony' | 'members'>
   t: TFunction
   variant?: 'hud' | 'compact'
+  /**
+   * Drops the harmony summary row on phones while the panel is collapsed, for
+   * screens that already show harmony elsewhere (the Expedition status strip).
+   */
+  hideSummaryOnPhone?: boolean
 }
 
 export const BandStatusPanel = memo(
-  ({ band, t, variant = 'compact' }: BandStatusPanelProps) => {
+  ({
+    band,
+    t,
+    variant = 'compact',
+    hideSummaryOnPhone = false
+  }: BandStatusPanelProps) => {
     const { i18n } = useTranslation()
     const safeHarmony = finiteNumberOr(band?.harmony, 0)
     const {
@@ -220,12 +237,39 @@ export const BandStatusPanel = memo(
       barSize
     } = BAND_STATUS_PANEL_VARIANTS[variant]
 
+    // On phones the member rows start collapsed so the harmony summary is all
+    // that competes with the map for space; from `sm` up they are always shown.
+    const [expanded, setExpanded] = useState(false)
+    const membersId = useId()
+    const toggleLabel = expanded
+      ? t('ui:hud.bandDetailsHide', { defaultValue: 'Hide band details' })
+      : t('ui:hud.bandDetailsShow', { defaultValue: 'Show band details' })
+
     return (
       <div className={wrapperClassName}>
-        <div className={titleClassName}>
-          {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
+        <div
+          className={`${titleClassName} flex items-center justify-end max-sm:justify-between ${expanded ? '' : 'max-sm:mb-0 max-sm:border-b-0 max-sm:pb-0'}`}
+        >
+          <span>{t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}</span>
+          <button
+            type='button'
+            onClick={() => setExpanded(prev => !prev)}
+            aria-expanded={expanded}
+            aria-controls={membersId}
+            aria-label={toggleLabel}
+            className='sm:hidden ml-2 p-1 min-w-8 min-h-8 flex items-center justify-center text-toxic-green focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+          >
+            {expanded ? (
+              <ChevronUp size={16} aria-hidden='true' />
+            ) : (
+              <ChevronDown size={16} aria-hidden='true' />
+            )}
+          </button>
         </div>
-        <div className={membersWrapperClassName}>
+        <div
+          id={membersId}
+          className={`${membersWrapperClassName} ${expanded ? '' : 'max-sm:hidden'}`}
+        >
           {(band?.members ?? []).map((m: BandMember, idx: number) => (
             <BandMemberRow
               // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -235,7 +279,9 @@ export const BandStatusPanel = memo(
             />
           ))}
         </div>
-        <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between'>
+        <div
+          className={`mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between ${hideSummaryOnPhone && !expanded ? 'max-sm:hidden' : ''}`}
+        >
           <span className={harmonyLabelClassName}>
             {t('ui:harmony', { defaultValue: 'HARMONY' })}
           </span>
