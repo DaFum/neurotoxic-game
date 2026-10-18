@@ -33,7 +33,10 @@ import {
   drainBandStamina,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
-import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
+import {
+  capExpeditionSpendAtCashFloor,
+  enforceExpeditionCashFloor
+} from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
 
 const clampRange = (value: number, min: number, max: number): number =>
@@ -222,25 +225,28 @@ export const settlePendingGigOnLoad = (
   const expeditionFinale =
     successfulFinale && next.expedition.status === 'active'
 
-  // Continue applies this ledger as one UPDATE_PLAYER, which an active run's
-  // protected Career Cash floor rejects whole; settle it under the same rule
-  // so a reload cannot spend Cash that Continue would have refused.
-  next = enforceExpeditionCashFloor(
-    next,
-    {
-      ...next,
-      player: {
-        ...player,
-        money: stats.newMoney,
-        fame: stats.newFame,
-        fameLevel: stats.fameLevel,
-        ...(careerFinale
-          ? { stats: { ...player.stats, tourCompleted: true } }
-          : {})
-      }
-    },
-    ActionTypes.UPDATE_PLAYER
-  )
+  // Continue refuses only the Cash an active run's protected Career Cash floor
+  // forbids and still lands the fame; settle under the same rule so a reload
+  // can neither spend that Cash nor lose that fame.
+  const settled: GameState = {
+    ...next,
+    player: {
+      ...player,
+      money: capExpeditionSpendAtCashFloor(
+        next.expedition,
+        finiteNumberOr(player.money, 0),
+        stats.newMoney
+      ),
+      fame: stats.newFame,
+      fameLevel: stats.fameLevel,
+      ...(careerFinale
+        ? { stats: { ...player.stats, tourCompleted: true } }
+        : {})
+    }
+  }
+  // The capped Cash never crosses the floor, so this only runs the floor's
+  // bookkeeping (a rising balance retires a recorded travel refusal).
+  next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
 
   for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
     next = handleApplyQuestEvent(next, event)

@@ -38,7 +38,7 @@ export const EXPEDITION_AUTHORITY_EXIT_IDS: readonly ExpeditionAuthorityExitId[]
   ]
 
 /** Heat at which the Authority corners the run: encounter, or crisis. */
-const EXPEDITION_AUTHORITY_ENCOUNTER_HEAT = 90
+export const EXPEDITION_AUTHORITY_ENCOUNTER_HEAT = 90
 
 /** Cash the `pay` exit costs. */
 export const EXPEDITION_AUTHORITY_PAY_COST = 500

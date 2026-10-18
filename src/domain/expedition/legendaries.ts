@@ -25,7 +25,10 @@ import {
   isExpeditionLegendaryId
 } from '../../data/expedition/legendaries'
 import { hasExpeditionCareerRank } from './meta'
-import { getAvailableAuthoritySafeExits } from './authority'
+import {
+  EXPEDITION_AUTHORITY_ENCOUNTER_HEAT,
+  getAvailableAuthoritySafeExits
+} from './authority'
 import { hashExpeditionRoute } from './map'
 
 /** The Legendaries a Career owns, narrowed to the registry. */
@@ -288,12 +291,12 @@ export const deriveExpeditionNemesisKeyTarget = (
  *
  * @remarks
  * The trigger is the *severe* Authority situation the crisis gate names -
- * Heat at 90 or above with every ordinary way out closed. Below that the run
+ * Heat at the Authority encounter threshold with every ordinary way out closed. Below that the run
  * still has choices and the Legendary is not owed one.
  */
 export const canExpeditionGhostRouteConvert = (state: GameState): boolean =>
   isExpeditionLegendaryAvailable(state, 'ghost_route') &&
-  state.expedition.pressure.heat >= 90 &&
+  state.expedition.pressure.heat >= EXPEDITION_AUTHORITY_ENCOUNTER_HEAT &&
   getAvailableAuthoritySafeExits(state).length === 0
 
 /**

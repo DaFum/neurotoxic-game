@@ -950,6 +950,31 @@ const EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS: ReadonlySet<string> = new Set([
 ])
 
 /**
+ * The balance a spend may leave, under an active run's protected Career Cash.
+ *
+ * @param expedition - The run's state, or `undefined` outside a run.
+ * @param before - Balance before the spend.
+ * @param after - Balance the spend would leave.
+ * @returns `before` when the spend would cross the protected floor, else
+ * `after`.
+ *
+ * @remarks
+ * Same rule as {@link enforceExpeditionCashFloor}, for a caller that bundles
+ * Cash with other gains (the post-gig ledger) and wants to refuse only the
+ * Cash part instead of the whole update.
+ */
+export const capExpeditionSpendAtCashFloor = (
+  expedition: GameState['expedition'] | undefined,
+  before: number,
+  after: number
+): number => {
+  if (expedition?.status !== 'active') return after
+  const floor = Math.max(0, finiteNumberOr(expedition.protectedCareerCash, 0))
+  if (floor === 0 || after >= before || after >= floor) return after
+  return before
+}
+
+/**
  * Rejects any action that would spend past the protected Career Cash slice.
  *
  * @param previousState - State before the action reduced.

@@ -16,6 +16,7 @@ import {
   finiteNumberOr,
   BALANCE_CONSTANTS
 } from '../../../utils/gameState'
+import { capExpeditionSpendAtCashFloor } from '../../../domain/expedition/loadout'
 import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGig'
 import { shouldTriggerBankruptcy } from '../../../utils/economy'
@@ -177,7 +178,13 @@ export function useContinueHandler({
       const careerFinale = successfulFinale && expedition?.status === 'idle'
 
       updatePlayer({
-        money: stats.newMoney,
+        // Under an active run's protected Career Cash floor only the Cash is
+        // refused; the fame the gig earned still lands.
+        money: capExpeditionSpendAtCashFloor(
+          expedition,
+          finiteNumberOr(player.money, 0),
+          stats.newMoney
+        ),
         fame: stats.newFame,
         fameLevel: stats.fameLevel,
         // Surviving the FINALE gig completes the tour; the flag persists in
