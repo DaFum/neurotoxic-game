@@ -39,6 +39,13 @@ describe('SetlistTab during an active Expedition', () => {
     const buttons = screen.getAllByRole('button', { pressed: true })
     expect(buttons[0]).toBeDisabled()
 
+    if (buttons[0].parentElement) {
+      fireEvent.mouseEnter(buttons[0].parentElement)
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Setlist is locked while an Expedition is active.'
+      )
+    }
+
     fireEvent.click(buttons[0])
     expect(setSetlist).not.toHaveBeenCalled()
     expect(addToast).not.toHaveBeenCalled()

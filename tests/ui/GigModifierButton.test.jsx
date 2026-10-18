@@ -63,7 +63,7 @@ test('GigModifierButton applies inactive states correctly', () => {
   expect(shimmer).toBeInTheDocument()
 })
 
-test('GigModifierButton handles disabled state correctly', () => {
+test('GigModifierButton handles disabled state correctly and renders tooltip', () => {
   const handleClick = vi.fn()
   render(
     <GigModifierButton
@@ -78,6 +78,11 @@ test('GigModifierButton handles disabled state correctly', () => {
   expect(button).toBeDisabled()
   expect(button).toHaveClass('disabled:opacity-40')
   expect(button).toHaveClass('disabled:cursor-not-allowed')
+
+  if (button.parentElement) {
+    fireEvent.mouseEnter(button.parentElement)
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Insufficient funds (€50)')
+  }
 
   fireEvent.click(button)
   expect(handleClick).not.toHaveBeenCalled()

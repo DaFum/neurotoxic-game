@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../utils/numberUtils'
+import { Tooltip } from './shared/Tooltip'
 
 import type { ModifierOption } from '../hooks/usePreGigLogic'
 
@@ -21,18 +22,26 @@ type GigModifierButtonProps = {
  */
 const GigModifierButton = memo(
   ({ item, isActive, onClick, disabled = false }: GigModifierButtonProps) => {
-    const { i18n } = useTranslation()
+    const { t, i18n } = useTranslation(['ui'])
     const handleClick = () => {
       if (disabled) return
       onClick(item.key)
     }
-    return (
+
+    const disabledReason = disabled
+      ? t('ui:pregig.merchStrategy.unaffordable', {
+          cost: formatCurrency(item.cost, i18n.language),
+          defaultValue: 'Insufficient funds ({{cost}})'
+        })
+      : undefined
+
+    const button = (
       <button
         type='button'
         onClick={handleClick}
         aria-pressed={isActive}
         disabled={disabled}
-        className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:shadow-[0_0_12px_var(--color-toxic-green-20)] disabled:opacity-40 disabled:cursor-not-allowed
+        className={`w-full flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:shadow-[0_0_12px_var(--color-toxic-green-20)] disabled:opacity-40 disabled:cursor-not-allowed
         ${
           isActive
             ? 'bg-toxic-green text-void-black border-toxic-green shadow-[0_0_10px_var(--color-toxic-green-20)]'
@@ -51,6 +60,12 @@ const GigModifierButton = memo(
         )}
       </button>
     )
+
+    if (disabledReason) {
+      return <Tooltip content={disabledReason}>{button}</Tooltip>
+    }
+
+    return button
   }
 )
 
