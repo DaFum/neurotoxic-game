@@ -108,7 +108,7 @@ measure the subset picker rather than the RNG. It had no registered entry point
 either, so `pnpm run bench:fastPaths` now runs it through `tsx` alongside the
 existing `bench:eventEngine`.
 
-### Config false positives (6)
+### Config false positives (7)
 
 These are real usages that Knip's project globs cannot see. Fixed in `knip.json`:
 
@@ -117,6 +117,7 @@ These are real usages that Knip's project globs cannot see. Fixed in `knip.json`
 | `rg` (unlisted binary)                                          | `scripts/check-ts-nocheck-budget.mjs` shells out to ripgrep behind a `findWithRg()` fallback that returns `null` when it is absent — an optional binary by design. `ignoreBinaries`. |
 | `@iarna/toml`                                                   | Imported by `.claude/skills/skilltest/scripts/skilltest-lib.mjs` and its `.agents/` twin, outside `project`.                                                                         |
 | `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` | Reached through the `typescript-eslint` meta-package in `eslint.config.js` (`tseslint.parser`, `tseslint.plugin`), never imported by name. Kept as pins.                             |
+| `@microsoft/eslint-formatter-sarif`                             | Installed ad hoc by `.github/workflows/eslint.yml` (`pnpm add -D ...@3.1.0`) for the SARIF upload, never listed in `package.json` on purpose. `ignoreDependencies`.                  |
 | `markdownlint-cli2`                                             | Run as a binary by the `mega-lint-snapshot` skill's `MARKDOWN` target.                                                                                                               |
 | `benchmark`                                                     | Required by `tests/performance/filterCars.benchmark.cjs`. The `tests/**` entry glob omitted `cjs`, so Knip never parsed the file; the glob now includes it.                          |
 

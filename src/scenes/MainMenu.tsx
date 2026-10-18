@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { MainMenuSocials } from './mainmenu/MainMenuSocials.tsx'
 import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.tsx'
@@ -21,6 +22,7 @@ const BandHQ = lazy(() =>
  * Hosts new-tour, load, Band HQ preview, credits, feature, and social menu flows.
  */
 export const MainMenu = () => {
+  const { t } = useTranslation('ui')
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
 
   const {
@@ -69,7 +71,16 @@ export const MainMenu = () => {
       <MainMenuBackground />
 
       {showHQ && (
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div
+              role='status'
+              className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 font-mono text-toxic-green uppercase tracking-widest motion-safe:animate-pulse'
+            >
+              {t('ui:loading')}
+            </div>
+          }
+        >
           <BandHQ onClose={closeHQ} />
         </Suspense>
       )}

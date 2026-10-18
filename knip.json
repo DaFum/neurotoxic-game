@@ -24,6 +24,7 @@
     "@iarna/toml",
     "@typescript-eslint/eslint-plugin",
     "@typescript-eslint/parser",
+    "@microsoft/eslint-formatter-sarif",
     "markdownlint-cli2"
   ],
   "ignoreBinaries": ["rg"],

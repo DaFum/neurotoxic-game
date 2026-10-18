@@ -20,7 +20,10 @@ import type {
 import type { TranslationCallback } from '../../types/callbacks'
 import type { NodeVisibility } from '../../types/map'
 import { FLAGS } from '../../data/flags.registry'
-import type { ExpeditionNodeFog } from '../../types/expedition'
+import type {
+  ExpeditionNodeFog,
+  ExpeditionSpecialNodeSubtype
+} from '../../types/expedition'
 
 const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
@@ -38,6 +41,13 @@ interface OverworldMapProps {
    * outside a run, which keeps the Career map readout unchanged.
    */
   expeditionFogByNodeId?: Record<string, ExpeditionNodeFog> | null
+  /**
+   * Subtype an overlay destination advertises, for icon and label only; the
+   * node's own `type` stays the base type so travel keeps its Gig checks.
+   */
+  overlaySubtypeByNodeId?: Readonly<
+    Record<string, ExpeditionSpecialNodeSubtype>
+  > | null
   /**
    * Fame a Festival booking needs while the band is below its access tier;
    * `null` when Festival bookings are open or no run is active.
@@ -95,6 +105,7 @@ export const OverworldMap = React.memo(
     rivalBand,
     band,
     expeditionFogByNodeId,
+    overlaySubtypeByNodeId,
     festivalBookingMinimumFame = null
   }: OverworldMapProps) => {
     const isOnlineNetwork = useNetworkStatus()
@@ -141,7 +152,15 @@ export const OverworldMap = React.memo(
         const visibility = getNodeVisibility(node.layer, currentLayer)
         const isReachable = isConnected(node.id) || node.type === 'START'
 
-        const iconUrl = getNodeIconUrl(node.type, urls)
+        const overlaySubtype =
+          overlaySubtypeByNodeId &&
+          Object.hasOwn(overlaySubtypeByNodeId, node.id)
+            ? overlaySubtypeByNodeId[node.id]
+            : undefined
+        const iconUrl = getNodeIconUrl(
+          overlaySubtype ? 'SPECIAL' : node.type,
+          urls
+        )
 
         const nodeVenueId = normalizeVenueId(node.venueId ?? node.venue)
         const cityKey = nodeVenueId ? getCityKeyFromVenueId(nodeVenueId) : ''
@@ -168,6 +187,7 @@ export const OverworldMap = React.memo(
               handleTravel={handleTravel}
               setHoveredNode={setHoveredNode}
               iconUrl={iconUrl}
+              overlaySubtype={overlaySubtype}
               vanUrl={vanUrl}
               ticketPrice={effectivePrice}
               harmony={
@@ -216,6 +236,7 @@ export const OverworldMap = React.memo(
       band.harmony,
       band.tourSuccess,
       expeditionFogByNodeId,
+      overlaySubtypeByNodeId,
       festivalBookingMinimumFame,
       t
     ])

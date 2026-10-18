@@ -207,6 +207,8 @@ The exact percentages are tuning values, but the initial design target is:
 - run completion multiplier,
 - highest chance for rare/legendary unlocks.
 
+**Finale gate (decided 2026-10-18, issue #3153):** a successful Finale requires no bankruptcy, `lastGigStats.failed !== true` and a gig resolved at this route step. No accuracy floor applies: an accuracy gate would need a retry or extract path so a below-floor Finale cannot strand a run at the Finale node, and the engine's `failed` flag already carries the "did not survive" outcome. Revisit only if balance data shows low-accuracy Finale completions undercut Extract.
+
 ### Failure
 
 Failure still preserves a meaningful portion of ordinary rewards, but loses the main upside of greed: unextracted rare rewards and completion bonuses.

@@ -303,3 +303,42 @@ export const getExpeditionTravelMap = (
   travelMapCache = { gameMap, key, value }
   return value
 }
+
+let overlaySubtypeCache: {
+  key: string
+  value: Readonly<Record<string, ExpeditionSpecialNodeSubtype>>
+} | null = null
+
+/**
+ * The subtype each overlay destination advertises, for drawing only.
+ *
+ * @param state - Current game state.
+ * @returns A node-to-subtype record, or `null` outside a run or when no
+ * overlay applies. The same overlay yields the same reference.
+ *
+ * @remarks
+ * Render-only on purpose: writing a subtype into `gameMap.nodes[...].type`
+ * would turn a Gig node into `SPECIAL` before travel and skip the Gig-only
+ * checks in `useHandleTravel`. Arrival applies the conversion after the move.
+ */
+export const getExpeditionOverlaySubtypeByNodeId = (
+  state: GameState
+): Readonly<Record<string, ExpeditionSpecialNodeSubtype>> | null => {
+  if (!state.gameMap || state.expedition?.status !== 'active') return null
+  const loadout = state.expedition.loadout
+  if (!loadout) return null
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const { subtypeByNodeId } = getEffectiveExpeditionRoute(state, map)
+  const key = Object.keys(subtypeByNodeId)
+    .sort()
+    .map(id => `${id}:${subtypeByNodeId[id]}`)
+    .join('|')
+  if (key === '') return null
+  if (overlaySubtypeCache?.key === key) return overlaySubtypeCache.value
+  overlaySubtypeCache = { key, value: subtypeByNodeId }
+  return subtypeByNodeId
+}

@@ -158,6 +158,12 @@ test.describe('Settings Persistence', () => {
 test.describe('Main Menu Accessibility Gate', () => {
   test('primary action buttons are keyboard focusable', async ({ page }) => {
     await skipToMenu(page)
+    // The intro skip button unmounts while the menu mounts, which drops focus
+    // to `body`; a Tab pressed inside that window finds nothing to land on.
+    // Wait for the menu's own actions to be enabled before tabbing.
+    await expect(
+      page.getByRole('button', { name: /start tour/i })
+    ).toBeEnabled()
 
     // Tab through the page and verify at least one button receives focus
     await page.keyboard.press('Tab')

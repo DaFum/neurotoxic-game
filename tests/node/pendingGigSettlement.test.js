@@ -20,6 +20,7 @@ import {
 } from '../../src/utils/gameState'
 import { createPersistedState } from '../../src/context/usePersistence'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
+import { capExpeditionSpendAtCashFloor } from '../../src/domain/expedition/loadout'
 
 // A save written by the post-gig record save, before Continue settled it.
 const buildPostGigSnapshot = (settlement = {}) => {
@@ -317,7 +318,12 @@ test('load settles an active run under the protected Career Cash floor like Cont
   const continued = gameReducer(
     recorded,
     createUpdatePlayerAction({
-      money: stats.newMoney,
+      // `useContinueHandler` caps the Cash at the floor; fame still lands.
+      money: capExpeditionSpendAtCashFloor(
+        recorded.expedition,
+        recorded.player.money,
+        stats.newMoney
+      ),
       fame: stats.newFame,
       fameLevel: stats.fameLevel
     })
@@ -332,9 +338,10 @@ test('load settles an active run under the protected Career Cash floor like Cont
   assert.equal(loaded.player.money, continued.player.money)
   assert.equal(loaded.player.fame, continued.player.fame)
   assert.equal(loaded.player.fameLevel, continued.player.fameLevel)
-  // Continue's update is refused whole: neither Cash nor fame moves.
+  // Only the Cash is refused; the fame the gig earned still lands.
   assert.equal(loaded.player.money, 5000)
-  assert.equal(loaded.player.fame, 100)
+  assert.notEqual(stats.newFame, 100, 'the fixture must move fame')
+  assert.equal(loaded.player.fame, stats.newFame)
   assert.equal(loaded.pendingGigSettlement, null)
 })
 
@@ -375,4 +382,17 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     misses: 0,
     dealFameMultiplier: 1
   })
+})
+
+test('capExpeditionSpendAtCashFloor refuses only a spend that crosses the floor', () => {
+  const run = { status: 'active', protectedCareerCash: 4000 }
+  assert.equal(capExpeditionSpendAtCashFloor(run, 5000, 3000), 5000)
+  assert.equal(capExpeditionSpendAtCashFloor(run, 5000, 4500), 4500)
+  assert.equal(capExpeditionSpendAtCashFloor(run, 3000, 3500), 3500)
+  assert.equal(capExpeditionSpendAtCashFloor(run, 3000, 2000), 3000)
+  assert.equal(
+    capExpeditionSpendAtCashFloor({ ...run, status: 'idle' }, 5000, 3000),
+    3000
+  )
+  assert.equal(capExpeditionSpendAtCashFloor(undefined, 5000, 3000), 3000)
 })

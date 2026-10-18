@@ -20,7 +20,10 @@ import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
-import type { ExpeditionNodeFog } from '../types/expedition'
+import type {
+  ExpeditionNodeFog,
+  ExpeditionSpecialNodeSubtype
+} from '../types/expedition'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -53,6 +56,12 @@ interface MapNodeTooltipProps {
    * exact payout and wear behind earned intel.
    */
   expeditionFog?: ExpeditionNodeFog
+  /**
+   * Subtype an overlay destination advertises. Arrival converts the base gig
+   * into this encounter, so the gig-only readouts (payout, cancellation risk,
+   * booking lock) are suppressed for it.
+   */
+  overlaySubtype?: ExpeditionSpecialNodeSubtype
   /** Fame this node's booking needs; set only while the band is below it. */
   bookingLockMinimumFame?: number | null
 }
@@ -77,6 +86,11 @@ interface MapNodeProps {
   cityTraits?: CityTraitState
   /** Hybrid-Fog projection for this node while an Expedition is active. */
   expeditionFog?: ExpeditionNodeFog
+  /**
+   * Subtype an overlay destination advertises. Drawn as the pin and type
+   * chip only; `node.type` stays the base type.
+   */
+  overlaySubtype?: ExpeditionSpecialNodeSubtype
   /**
    * Fame this node's booking needs while the band is below its access tier.
    * The band can still travel here; the promoter just will not book it.
@@ -195,10 +209,27 @@ const MapNodeTooltip = memo(
     cityTraits,
     isPendingConfirm,
     expeditionFog,
+    overlaySubtype,
     bookingLockMinimumFame
   }: MapNodeTooltipProps) => {
     const isGigLike =
-      node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
+      !overlaySubtype &&
+      (node.type === 'GIG' ||
+        node.type === 'FESTIVAL' ||
+        node.type === 'FINALE')
+    // The fog projection describes the base node. For an overlay destination
+    // it names the advertised encounter and drops the base gig's payout.
+    const fog = useMemo(
+      () =>
+        expeditionFog && overlaySubtype
+          ? {
+              ...expeditionFog,
+              specialSubtype: overlaySubtype,
+              estimatedPayout: null
+            }
+          : expeditionFog,
+      [expeditionFog, overlaySubtype]
+    )
     // During an Expedition the fog badge owns the numeric readout, so the
     // Career venue block is suppressed rather than shown alongside it —
     // otherwise the exact payout would leak at intel level 0.
@@ -253,9 +284,9 @@ const MapNodeTooltip = memo(
           </div>
         )}
 
-        {expeditionFog && <ExpeditionNodeFogBadge fog={expeditionFog} t={t} />}
+        {fog && <ExpeditionNodeFogBadge fog={fog} t={t} />}
 
-        {isFiniteNumber(bookingLockMinimumFame) && (
+        {!overlaySubtype && isFiniteNumber(bookingLockMinimumFame) && (
           <div
             className='text-xs text-blood-red font-mono font-bold mt-1'
             data-testid='map-node-booking-locked'
@@ -342,6 +373,7 @@ export const MapNodeView = memo(
     tourSuccess,
     cityTraits,
     expeditionFog,
+    overlaySubtype,
     bookingLockMinimumFame
   }: MapNodeProps) => {
     const { t, i18n } = useTranslation(['venues', 'ui'])
@@ -404,7 +436,9 @@ export const MapNodeView = memo(
       expeditionStopName ?? t('ui:map.unknown')
     )
     // A supply stop named by its class would repeat its type chip verbatim.
-    const nodeTypeLabel = getNodeTypeLabel(t, node.type)
+    const nodeTypeLabel = overlaySubtype
+      ? t(`ui:expedition.node.subtype.${overlaySubtype}`)
+      : getNodeTypeLabel(t, node.type)
 
     const positionStyle = useMemo(
       () => nodeToPercentPosition({ x: node.x, y: node.y }),
@@ -493,7 +527,7 @@ export const MapNodeView = memo(
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
             <FallbackImage
               src={iconUrl}
-              alt={getPinAltText(t, node.type)}
+              alt={getPinAltText(t, overlaySubtype ? 'SPECIAL' : node.type)}
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
@@ -543,6 +577,7 @@ export const MapNodeView = memo(
           cityTraits={cityTraits}
           isPendingConfirm={isPendingConfirm}
           expeditionFog={expeditionFog}
+          overlaySubtype={overlaySubtype}
           bookingLockMinimumFame={bookingLockMinimumFame}
         />
       </div>

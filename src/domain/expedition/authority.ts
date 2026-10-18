@@ -14,6 +14,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { getExpeditionCargoView } from './cargo'
+import { isCrewAvailable } from './crew'
 import {
   areExpeditionContractsCompatible,
   getExpeditionConstraintRunVerdict,
@@ -37,7 +38,7 @@ export const EXPEDITION_AUTHORITY_EXIT_IDS: readonly ExpeditionAuthorityExitId[]
   ]
 
 /** Heat at which the Authority corners the run: encounter, or crisis. */
-const EXPEDITION_AUTHORITY_ENCOUNTER_HEAT = 90
+export const EXPEDITION_AUTHORITY_ENCOUNTER_HEAT = 90
 
 /** Cash the `pay` exit costs. */
 export const EXPEDITION_AUTHORITY_PAY_COST = 500
@@ -93,6 +94,9 @@ const resolveCrewExit = (
   for (const crewId of crewIds) {
     const role = EXPEDITION_CREW_BY_ID[crewId]?.role
     if (role !== 'manager' && role !== 'security') continue
+    // An unavailable or seriously injured member cannot talk the run out.
+    if (!isCrewAvailable(state, crewId)) continue
+    if (state.expedition.crew?.injuryByCrewId[crewId] === 'serious') continue
     const nextStress = applyCrewStressDelta(
       finiteNumberOr(state.expedition.crew?.stressByCrewId[crewId], 0),
       CREW_STRESS_SOURCE_DELTAS.authority_event,
