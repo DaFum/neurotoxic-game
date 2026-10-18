@@ -205,7 +205,17 @@ export const useHandleTravel = ({
         return
       }
 
-      const preCheck = checkTravelPrerequisites(node, visibility, connected)
+      // `checkTravelPrerequisites` always allows a START node, but during a run
+      // the route refuses any move it does not offer, so an unconnected START
+      // would latch `isTraveling` with no scene change.
+      const preCheck =
+        params.expeditionStatus === 'active' && !connected
+          ? {
+              allowed: false,
+              errorKey: 'ui:travel.errors.locationNotConnected',
+              defaultMessage: 'Cannot travel: location not connected'
+            }
+          : checkTravelPrerequisites(node, visibility, connected)
       if (!preCheck.allowed) {
         addToast(
           i18n.t(preCheck.errorKey ?? 'ui:travel.errors.locationNotConnected', {

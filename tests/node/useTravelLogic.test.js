@@ -324,6 +324,21 @@ describe('useTravelLogic', () => {
     assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
   })
 
+  test('handleTravel refuses an unconnected START node during an Expedition', () => {
+    const base = createTravelLogicProps()
+    const { result, props } = setupTravelScenario(useTravelLogic, {
+      expeditionStatus: 'active',
+      player: { ...base.player, currentNodeId: 'node_target' }
+    })
+
+    act(() => {
+      result.current.handleTravel(props.gameMap.nodes.node_start)
+    })
+
+    assertTravelPrevented(result, props, /not connected/)
+    assert.equal(props.onStartTravelMinigame.mock.calls.length, 0)
+  })
+
   test('handleTravel includes liability payments in affordability check', () => {
     const defaults = createTravelLogicProps()
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
