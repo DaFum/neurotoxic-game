@@ -67,4 +67,56 @@ test.describe('Visual smoke tests', () => {
     await page.keyboard.press('Enter')
     await expect(page.getByRole('dialog')).toBeVisible()
   })
+
+  test('Tour Prep title is not covered by the HUD', async ({ page }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    const title = page.getByRole('heading', { name: /tour prep/i })
+    await expect(title).toBeVisible()
+    await page.waitForTimeout(500)
+
+    const covered = await title.evaluate(el => {
+      const r = el.getBoundingClientRect()
+      const top = document.elementFromPoint(r.left + 8, r.top + r.height / 2)
+      return !(top === el || el.contains(top))
+    })
+    expect(covered).toBe(false)
+  })
+
+  test('Expedition status tiles are not covered by the radio widget', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const startTour = page.getByRole('button', { name: /start tour/i })
+    await startTour.scrollIntoViewIfNeeded()
+    await startTour.click()
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await page.waitForTimeout(800)
+
+    const covered = await page.evaluate(() => {
+      const label = [...document.querySelectorAll('div,span,p')].find(
+        el => el.children.length === 0 && /^FUEL$/i.test(el.textContent?.trim())
+      )
+      const tile = label?.parentElement
+      if (!tile) return null
+      // Desktop lays the strip below the fold; only scroll when it is off
+      // screen, so the phone layout is measured at its natural position.
+      const first = tile.getBoundingClientRect()
+      if (first.top < 0 || first.bottom > window.innerHeight) {
+        tile.scrollIntoView({ block: 'nearest' })
+      }
+      const r = tile.getBoundingClientRect()
+      const top = document.elementFromPoint(
+        r.left + r.width / 2,
+        r.top + r.height / 2
+      )
+      return !(top === tile || tile.contains(top))
+    })
+    expect(covered).toBe(false)
+  })
 })

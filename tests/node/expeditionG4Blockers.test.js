@@ -52,6 +52,8 @@ import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { calculateFinalScore } from '../../src/utils/rhythmGameScoringUtils.ts'
 import { validatePreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import { migrateLegacyQuestSchema } from '../../src/domain/questLegacyMigration.ts'
+import { getRegionKeyForLocation } from '../../src/utils/mapUtils.ts'
 
 const activeState = () => {
   const state = createInitialState()
@@ -129,6 +131,41 @@ test('completed native obligation settles its reward exactly once', () => {
     handleRecordExpeditionObligationSignal(settled, payload),
     settled
   )
+})
+
+test('completed native obligation credits the regional fame quest only for the current region', () => {
+  const settleWith = scopeKey => {
+    const state = activeState()
+    state.expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value = 2
+    state.activeQuests = [
+      migrateLegacyQuestSchema({
+        id: 'quest_local_legend',
+        scopeKey,
+        progress: 0,
+        required: 100000,
+        repeatPolicy: 'perRegion'
+      })
+    ]
+    state.completedQuestIds = []
+    state.questCooldowns = []
+    const settled = handleRecordExpeditionObligationSignal(state, {
+      signalType: 'gig',
+      sourceId: 'gig-proof',
+      expectedRouteStep: 1
+    })
+    return { state, settled }
+  }
+  const progress = s =>
+    s.activeQuests.find(q => q.id === 'quest_local_legend')?.progress ?? 0
+
+  const region = getRegionKeyForLocation(activeState().player.location)
+  assert.ok(region, 'fixture location resolves to a region')
+
+  const here = settleWith(region)
+  assert.equal(progress(here.settled), 500)
+
+  const elsewhere = settleWith('some_other_region')
+  assert.equal(progress(elsewhere.settled), 0)
 })
 
 test('accepted Double Down rule is enforced from its stored constraint', () => {
