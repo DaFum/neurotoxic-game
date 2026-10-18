@@ -30,7 +30,7 @@ const ResourceCell = memo(function ResourceCell({
       <span className='text-xs uppercase tracking-widest text-star-white/70 font-mono'>
         {label}
       </span>
-      <span className='text-base font-bold font-mono text-star-white truncate w-full'>
+      <span className='text-base font-bold font-mono text-star-white sm:truncate max-sm:break-all w-full'>
         {value}
       </span>
       {meta ? (

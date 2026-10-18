@@ -157,21 +157,23 @@ test.describe('Visual smoke tests', () => {
 
     const next = dialog.getByRole('button', { name: /continue/i })
     await expect(next).toBeVisible()
-    await page.waitForTimeout(600)
 
-    const covered = await next.evaluate(el => {
-      const r = el.getBoundingClientRect()
-      const top = document.elementFromPoint(
-        r.left + r.width / 2,
-        r.top + r.height / 2
+    // Poll until the dialog's entry animation settles, rather than a fixed delay.
+    await expect
+      .poll(() =>
+        next.evaluate(el => {
+          const r = el.getBoundingClientRect()
+          const top = document.elementFromPoint(
+            r.left + r.width / 2,
+            r.top + r.height / 2
+          )
+          return {
+            hidden: !(top === el || el.contains(top)),
+            insideViewport: r.top >= 0 && r.bottom <= window.innerHeight
+          }
+        })
       )
-      return {
-        hidden: !(top === el || el.contains(top)),
-        insideViewport: r.top >= 0 && r.bottom <= window.innerHeight
-      }
-    })
-    expect(covered.insideViewport).toBe(true)
-    expect(covered.hidden).toBe(false)
+      .toEqual({ hidden: false, insideViewport: true })
   })
 
   test('Tour Prep HUD panels do not overlap and band details collapse on phones', async ({
@@ -180,7 +182,7 @@ test.describe('Visual smoke tests', () => {
     await skipToMenu(page)
     await page.getByRole('button', { name: /start expedition/i }).click()
     await page.getByRole('heading', { name: /tour prep/i }).waitFor()
-    await page.waitForTimeout(500)
+    await expect(page.getByText(/band status/i).first()).toBeVisible()
 
     const rects = await page.evaluate(() => {
       const panels = [...document.querySelectorAll('div')].filter(el =>
@@ -250,7 +252,8 @@ test.describe('Visual smoke tests', () => {
       .getByText(/tour plan/i)
       .first()
       .waitFor()
-    await page.waitForTimeout(1500)
+    await expect(page.locator('.map-wrap')).toBeVisible()
+    await expect(page.getByTestId('expedition-status-strip')).toBeVisible()
 
     const m = await page.evaluate(() => {
       const map = document.querySelector('.map-wrap').getBoundingClientRect()
@@ -272,5 +275,29 @@ test.describe('Visual smoke tests', () => {
       // cannot fit the stacked header and is not asserted.)
       expect(m.visible).toBeGreaterThanOrEqual(m.vh / 3)
     }
+  })
+
+  test('Expedition cash is never truncated on phones', async ({ page }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start expedition/i }).click()
+    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const startTour = page.getByRole('button', { name: /start tour/i })
+    await startTour.scrollIntoViewIfNeeded()
+    await startTour.click()
+    await expect(page.getByTestId('expedition-status-strip')).toBeVisible()
+
+    // DEV-only hook: a seven-figure balance is the worst case for the cell.
+    await page.evaluate(() =>
+      window.gameState.updatePlayer({ money: 12345678 })
+    )
+    const cash = page.getByTestId('expedition-hud-cash')
+    await expect(cash).toContainText('12')
+
+    const clipped = await cash.evaluate(el => {
+      const value = el.querySelectorAll('span')[1]
+      return value.scrollWidth > value.clientWidth
+    })
+    const { width } = page.viewportSize()
+    if (width < 641) expect(clipped).toBe(false)
   })
 })
