@@ -98,3 +98,17 @@ describe('Gig keyboard input behind a dialog', () => {
     expect(actions.registerInput).toHaveBeenCalledWith(0, true)
   })
 })
+
+describe('GeneratedImagePanel reduced-motion hooks', () => {
+  it('puts the CSS classes on the skeleton and the image', async () => {
+    vi.doUnmock('../../src/ui/shared/GeneratedImagePanel.tsx')
+    vi.resetModules()
+    const { GeneratedImagePanel } =
+      await import('../../src/ui/shared/GeneratedImagePanel.tsx')
+    const { container } = render(
+      <GeneratedImagePanel src='data:image/png;base64,AA==' alt='probe' />
+    )
+    expect(container.querySelector('.gen-image-skeleton')).not.toBeNull()
+    expect(container.querySelector('img.gen-image-img')).not.toBeNull()
+  })
+})
