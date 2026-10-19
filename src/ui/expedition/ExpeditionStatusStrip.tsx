@@ -7,6 +7,21 @@ import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
 import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import { getExpeditionRunResources } from '../../domain/expedition/runResources'
+import { EXPEDITION_AUTHORITY_ENCOUNTER_HEAT } from '../../domain/expedition/authority'
+
+type ResourceTone = 'ok' | 'warn' | 'risk'
+
+/** Below this a drained resource is worth drawing the eye to. */
+const LOW_RESOURCE_THRESHOLD = 25
+
+const TONE_CLASSES: Record<ResourceTone, string> = {
+  ok: 'border-steel-gray border-l-toxic-green/60',
+  warn: 'border-warning-yellow/60 border-l-warning-yellow',
+  risk: 'border-blood-red border-l-blood-red-bright'
+}
+
+const lowTone = (value: number): ResourceTone =>
+  value <= LOW_RESOURCE_THRESHOLD ? 'warn' : 'ok'
 
 /**
  * One resource readout.
@@ -15,22 +30,25 @@ const ResourceCell = memo(function ResourceCell({
   label,
   value,
   meta,
-  testId
+  testId,
+  tone = 'ok'
 }: {
   label: string
   value: string
   meta?: string
   testId: string
+  tone?: ResourceTone
 }) {
   return (
     <div
-      className='flex flex-col items-start border border-steel-gray bg-charcoal-gray px-2 sm:px-3 py-2 min-w-0'
+      className={`flex flex-col items-start border border-l-4 ${TONE_CLASSES[tone]} bg-charcoal-gray px-2 sm:px-3 py-2 min-w-0`}
       data-testid={testId}
+      data-tone={tone}
     >
       <span className='text-xs uppercase tracking-widest text-star-white/70 font-mono'>
         {label}
       </span>
-      <span className='text-base font-bold font-mono text-star-white sm:truncate max-sm:break-all w-full'>
+      <span className='text-base font-bold font-mono tabular-nums text-star-white sm:truncate max-sm:break-all w-full'>
         {value}
       </span>
       {meta ? (
@@ -79,27 +97,34 @@ export const ExpeditionStatusStrip = memo(function ExpeditionStatusStrip() {
       />
       <ResourceCell
         testId='expedition-hud-fuel'
+        tone={lowTone(resources.fuel)}
         label={t('ui:expedition.hud.fuel')}
         value={formatNumber(resources.fuel, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-stamina'
+        tone={lowTone(resources.stamina)}
         label={t('ui:expedition.hud.stamina')}
         value={formatNumber(resources.stamina, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-harmony'
+        tone={lowTone(resources.harmony)}
         label={t('ui:expedition.hud.harmony')}
         value={formatNumber(resources.harmony, i18n.language)}
       />
       <ResourceCell
         testId='expedition-hud-condition'
+        tone={lowTone(resources.condition)}
         label={t('ui:expedition.hud.condition')}
         value={formatNumber(resources.condition, i18n.language)}
         meta={t(`ui:expedition.condition.${resources.conditionBand}`)}
       />
       <ResourceCell
         testId='expedition-hud-heat'
+        tone={
+          resources.heat >= EXPEDITION_AUTHORITY_ENCOUNTER_HEAT ? 'risk' : 'ok'
+        }
         label={t('ui:expedition.hud.heat')}
         value={formatNumber(resources.heat, i18n.language)}
         meta={t('ui:expedition.hud.routeStep', { step: routeStep })}

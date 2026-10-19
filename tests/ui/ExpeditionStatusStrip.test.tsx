@@ -109,6 +109,28 @@ describe('ExpeditionStatusStrip', () => {
     expect(fuel).not.toHaveTextContent('96.6505')
   })
 
+  it('flags depleted resources and Authority-level heat by tone', () => {
+    state.current = buildState()
+    state.current.player.van = { ...state.current.player.van, fuel: 10 }
+    state.current.expedition.pressure = {
+      ...state.current.expedition.pressure,
+      heat: 95
+    }
+    render(<ExpeditionStatusStrip />)
+    expect(screen.getByTestId('expedition-hud-fuel')).toHaveAttribute(
+      'data-tone',
+      'warn'
+    )
+    expect(screen.getByTestId('expedition-hud-heat')).toHaveAttribute(
+      'data-tone',
+      'risk'
+    )
+    expect(screen.getByTestId('expedition-hud-cash')).toHaveAttribute(
+      'data-tone',
+      'ok'
+    )
+  })
+
   it('renders nothing outside an active run', () => {
     for (const status of [
       'idle',
