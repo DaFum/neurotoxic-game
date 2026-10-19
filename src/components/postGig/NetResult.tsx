@@ -35,7 +35,7 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
       </div>
       <div
         data-testid='post-gig-net-result-value'
-        className={`text-3xl sm:text-5xl font-bold font-display tabular-nums leading-tight break-words ${
+        className={`text-3xl sm:text-5xl font-bold font-mono tabular-nums leading-tight break-words ${
           net >= 0
             ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]'
             : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'

@@ -89,4 +89,12 @@ describe('NetResult', () => {
     // The wrapped component exposes `type` which is the inner function
     expect(typeof NetResult.type).toBe('function')
   })
+
+  it('renders the amount in the mono face so the sign and euro glyphs stay legible', () => {
+    render(<NetResult net={8} />)
+
+    const netEl = screen.getByTestId('post-gig-net-result-value')
+    expect(netEl.className).toContain('font-mono')
+    expect(netEl.className).not.toContain('font-display')
+  })
 })
