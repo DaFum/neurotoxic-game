@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useHandleTravel } from '../../../src/hooks/travel/actions/useHandleTravel'
 import { createInitialState } from '../../../src/context/initialState'
@@ -75,6 +75,17 @@ const toastKeys = addToast =>
   addToast.mock.calls.map(([message]) => String(message))
 
 describe('useHandleTravel overlay override', () => {
+  // A successful call schedules the hook's real five-second confirmation
+  // timeout; fake timers keep it from holding the worker open.
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
   test('a connected node two layers ahead is travelable in an active run', () => {
     const { handleTravel, setPendingTravelNode } = renderTravel('active')
     handleTravel(TWO_STEPS_AHEAD)
