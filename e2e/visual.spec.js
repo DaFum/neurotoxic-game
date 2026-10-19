@@ -264,37 +264,30 @@ test.describe('Visual smoke tests', () => {
         0,
         Math.min(map.bottom, window.innerHeight) - Math.max(map.top, 0)
       )
-      const rect = selector => {
-        const el = document.querySelector(selector)
-        return el ? el.getBoundingClientRect() : null
-      }
-      const help = rect('button[aria-label="Toggle keyboard shortcuts help"]')
-      const menu = [...document.querySelectorAll('button')]
-        .find(b => /open menu/i.test(b.textContent ?? ''))
-        ?.getBoundingClientRect()
-      return {
-        visible,
-        stripBottom: strip.bottom,
-        vh: window.innerHeight,
-        helpBottom: help?.bottom ?? null,
-        menuTop: menu?.top ?? null
-      }
+      return { visible, stripBottom: strip.bottom, vh: window.innerHeight }
     })
     const { width } = page.viewportSize()
-    if (width < 641 && m.helpBottom !== null && m.menuTop !== null) {
-      // Phone: the fixed menu bar never covers the shortcuts help button.
-      expect(m.helpBottom).toBeLessThanOrEqual(m.menuTop)
-    }
     if (width < 390) {
-      // Smallest phones: the map must still peek above the fold.
-      expect(m.visible).toBeGreaterThanOrEqual(100)
+      // Smallest phones: secondary HUD blocks sit below the map, so a real
+      // slice of it is on screen next to the resource strip.
+      expect(m.visible).toBeGreaterThanOrEqual(200)
+    }
+    if (width < 641) {
+      // Phone: the fixed menu bar never covers the shortcuts help button once
+      // it is scrolled to.
+      const help = page.getByRole('button', { name: /keyboard shortcuts/i })
+      await help.scrollIntoViewIfNeeded()
+      const helpBox = await help.boundingBox()
+      const menuBox = await page
+        .getByRole('button', { name: /open menu/i })
+        .boundingBox()
+      expect(helpBox.y + helpBox.height).toBeLessThanOrEqual(menuBox.y)
     }
     if (width >= 1024) {
       // Desktop: the resource strip is on screen without scrolling.
       expect(m.stripBottom).toBeLessThanOrEqual(m.vh)
     } else if (width >= 390 && width < 641) {
-      // Phone: at least a third of the first screen shows the map. (320x568
-      // cannot fit the stacked header and is not asserted.)
+      // Phone: at least a third of the first screen shows the map.
       expect(m.visible).toBeGreaterThanOrEqual(m.vh / 3)
     }
   })
