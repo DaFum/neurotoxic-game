@@ -227,12 +227,12 @@ git add src/components/postGig/NetResult.tsx tests/ui/NetResult.test.jsx
 git commit -m "fix(postgig): render net profit in mono face for legible sign and euro"
 ```
 
-### Task 4: Phone clearance below the global HUD (PostGig, PreGig)
+### Task 4: Phone clearance below the global HUD (PostGig, PreGig, RunSummary)
 
 **Files:**
 
-- Modify: `src/scenes/PostGig.tsx:79` (wrapper), `src/scenes/PreGig.tsx:55` (wrapper)
-- Test: `tests/ui/PostGig.component.test.jsx`
+- Modify: `src/scenes/PostGig.tsx:79` (wrapper), `src/scenes/PreGig.tsx:55` (wrapper), `src/scenes/RunSummary.tsx:130` (wrapper; its class is `w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8`; add `max-sm:pt-44` after `p-3`)
+- Test: `tests/ui/PostGig.component.test.jsx`, and the RunSummary scene test (find with `ls tests/ui | grep -i runsummary`)
 
 `HUD.tsx:58` is `absolute top-0` on every scene. At 390px wide the player card ends about 114px down and the collapsed control button about 171px down. `PostGig`'s wrapper has `p-3` only, so the HUD covers the title and first row; `PreGig` has `pt-28` (112px), which only just touches the card.
 
@@ -447,57 +447,41 @@ git commit -m "fix(pregig): drop phone height caps and fade the desktop scroll e
 
 ## PHASE 2 — Per-scene polish
 
-### Task 7: GameOver final-statistics state
+### Task 7: GameOver final-statistics state — DROPPED after triage
+
+The settled captures (`shots/before/settled/gameover-*`) show a fully populated, readable panel on desktop and phone. The dim/empty look in the first capture was only the entrance animation (rows appear at 1.4s+). No defect; the duplicate toast that covered the title is Task 5.
+
+### Task 8: MainMenu footer overlaps the Features button on short viewports
 
 **Files:**
 
-- Modify: `src/scenes/gameover/GameOverStats.tsx`
-- Test: `tests/ui/` GameOver stats test (`ls tests/ui | grep -i gameover`)
+- Modify: `src/scenes/mainmenu/MainMenuFooter.tsx:11-12`
+- Test: the MainMenu tests (`ls tests/ui | grep -i mainmenu`; add the new test to the file that already renders the footer, or `tests/ui/MainMenuFooter.test.jsx` if none does)
 
-Hypothesis from the phone baseline: rows animate in late (`delay: 1.4 + i * 0.15`) and the label is dim (`text-ash-gray`), leaving an apparently empty panel for about 2 seconds. Confirm with the Task 2 Step 6 re-capture first.
+Confirmed from the settled capture at 1280x720: the footer is `absolute bottom-4 sm:bottom-6`, while the button stack is vertically centered, so the "(c) 2026 ..." line is drawn over the Features button. Subtitle contrast and title spacing are fine once the entrance animation settles (no change there).
 
-- [ ] **Step 1: Write the failing test.** Rows must be present in the DOM with their values immediately (they are today) and the labels must use the readable token:
+- [ ] **Step 1: Write the failing test.** The footer must be in normal flow, not absolutely positioned:
 
 ```jsx
-  it('renders every stat row with a readable label', () => {
-    render(<GameOverStats player={{ day: 14, fame: 350, totalTravels: 9, score: 1200 }} />)
-    const label = screen.getByText(/days survived/i)
-    expect(label.className).toContain('text-star-white')
-    expect(screen.getByText('14')).toBeTruthy()
+  it('sits in normal flow so it can never overlap the buttons above it', () => {
+    const { container } = render(<MainMenuFooter />)
+    const root = container.firstElementChild
+    expect(root.className).not.toContain('absolute')
+    expect(root.className).toContain('mt-')
   })
 ```
 
-Use the label copy from `ui:stats.daysSurvived` in the EN locale file if it differs from the regex.
+Use the file's existing imports and i18n/motion mocks.
 
-- [ ] **Step 2: Run to verify it fails** (label class is `text-ash-gray`).
+- [ ] **Step 2: Run to verify it fails.** Expected: FAIL (`absolute` present).
 
-- [ ] **Step 3: Implement.** In `GameOverStats.tsx`: label `text-ash-gray` → `text-star-white/80`; shorten the animation: `delay: 1.2` → `delay: 0.6` and `delay: 1.4 + i * 0.15` → `delay: 0.8 + i * 0.1`. No copy change.
+- [ ] **Step 3: Implement.** In `MainMenuFooter.tsx` replace `absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-(--z-overlay) px-4` with `mt-8 sm:mt-10 flex w-full flex-col items-center gap-1 z-(--z-overlay) px-4`.
 
-- [ ] **Step 4: Run the test file.** Expected: PASS.
+- [ ] **Step 4: Run** `pnpm exec vitest run tests/ui/MainMenu*.test.jsx`. Expected: PASS, including every existing reachability test for Start Tour, Start Expedition, Load Game, Band HQ, Socials, Credits and Features.
 
-- [ ] **Step 5: Verify visually** (desktop and phone `gameover`, after a 3s settle): all four rows readable.
+- [ ] **Step 5: Verify visually** at 1280x720 and 390x844 with a 4s settle (use the scratch `settled.mjs` approach): footer sits below Features with no overlap, and the page still scrolls to it on short viewports.
 
-- [ ] **Step 6: Commit.**
-
-```bash
-git add src/scenes/gameover/GameOverStats.tsx tests/ui
-git commit -m "feat(gameover): readable, faster final-statistics rows"
-```
-
-### Task 8: MainMenu subtitle contrast and desktop spacing
-
-**Files:**
-
-- Modify: `src/scenes/mainmenu/MainMenuHeader.tsx:52,66-68` and the menu scene wrapper (`src/scenes/MainMenu.tsx`)
-- Test: `tests/ui/` MainMenu tests
-
-Hypothesis: the subtitle is `text-toxic-green/80` over a dark background but animates `opacity` and `letterSpacing`, so a capture mid-animation looks dim; and at 1280×720 the stack is taller than the viewport so the title sits at the top edge. Confirm from the settled re-capture (Task 2 Step 6) before editing.
-
-- [ ] **Step 1: Confirm.** If the settled desktop capture shows adequate subtitle contrast and the title off the edge, mark this task "no defect" in the triage addendum and skip to Task 9.
-- [ ] **Step 2: Write the failing test** for whichever defect is confirmed (class assertion on the subtitle, or on `MainMenu`'s wrapper for top padding), following the pattern in Tasks 3 and 4.
-- [ ] **Step 3: Implement the minimal class change** (subtitle `text-toxic-green/80` → `text-toxic-green`; wrapper `pt-8 sm:pt-12` on short viewports).
-- [ ] **Step 4: Run** `pnpm exec vitest run tests/ui/MainMenu*.test.jsx`. Expected: PASS. Confirm every action button (Start Tour, Start Expedition, Load Game, Band HQ, Socials, Credits, Features) is still found by role and triggers its callback.
-- [ ] **Step 5: Commit** `fix(mainmenu): ...` with the changed files.
+- [ ] **Step 6: Commit** `fix(mainmenu): keep the footer in flow so it cannot overlap Features`.
 
 ### Task 9: Overworld label collisions — from triage addendum
 
@@ -505,11 +489,10 @@ Hypothesis: the subtitle is `text-toxic-green/80` over a dark background but ani
 
 Existing behavior to preserve: labels for non-actionable nodes are already `max-sm:hidden` (`labelMobileHiddenClass`), and the label stack is an opaque chip so overlaps occlude rather than blend. Write this task from the triage addendum after Phase 0. Required shape: failing class/structure test, minimal change, desktop and phone before/after screenshots of `overworld`.
 
-### Task 10: TourPrep and RunSummary — from triage addendum
+### Task 10: TourPrep and RunSummary — resolved by triage
 
-**Files:** `src/scenes/TourPrep.tsx`, `src/scenes/RunSummary.tsx`, `src/ui/expedition/*` only where a defect is found. `TourPrepLoadout.tsx` (1,395 lines) is not restructured.
-
-Known context: `TourPrep` already reserves `pt-48 sm:pt-44 lg:pt-44` below the HUD, so check that padding against the captured phone image before changing it. Write from the triage addendum; same required shape as Task 9.
+- **RunSummary:** on phone the HUD covers the title and the first rows. Same defect as PostGig; fixed in Task 4.
+- **TourPrep:** no defect found on desktop or phone. It already reserves `pt-48 sm:pt-44 lg:pt-44` and its tabs wrap cleanly. No change.
 
 ---
 
@@ -551,3 +534,17 @@ Expected: all green. Report any failure with its output; never weaken a test.
 | Guardrails, verification | Conventions block, 11 |
 
 Spec deviation to confirm: the spec's "collapse Band Status by default on phone" and "compact Overworld HUD strip" are already implemented in `BandStatusPanel` (`expanded` defaults to false below `sm`) and `OverworldHUD` (`expeditionActive` mode), so this plan does not re-implement them.
+
+---
+
+## Triage addendum (from the Phase 0 baselines, 2026-10-19)
+
+| Scene | Finding | Disposition |
+| --- | --- | --- |
+| TourPrep (desktop, phone) | None | No change |
+| RunSummary (desktop) | None | No change |
+| RunSummary (phone) | HUD covers title and first rows | Task 4 |
+| GameOver (settled, both) | Populated and readable | Task 7 dropped; duplicate toast is Task 5 |
+| MainMenu (settled, desktop) | Footer overlaps the Features button | Task 8 |
+| MainMenu subtitle, title spacing | Fine once settled | No change |
+| Overworld | Label pile-up on phone, dense desktop clusters | Task 9, written from the baselines |
