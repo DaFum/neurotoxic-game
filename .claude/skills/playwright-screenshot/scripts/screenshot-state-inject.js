@@ -812,7 +812,7 @@ async function injectAndCapture(fixtureName, outFile) {
  * Call this AFTER page.goto() has established the origin, before your actual navigation.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} fixtureName  One of: menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
+ * @param {string} fixtureName  One of: menu | overworld | pregig | gig | postgig | gameover | clinic | tourprep | runsummary | band-hq | event-modal
  */
 export async function injectSave(page, fixtureName) {
   const fixture = FIXTURES[fixtureName]

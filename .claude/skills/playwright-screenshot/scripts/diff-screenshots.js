@@ -15,12 +15,14 @@
  * Output:
  *   - Console table with file name, diff pixel count, and diff ratio per pair
  *   - Optional diff images saved to diff-dir (requires `pixelmatch` to be installed)
- *   - Exit code 1 if any file exceeds DIFF_THRESHOLD (default 5%)
+ *   - Exit code 1 if any file exceeds DIFF_THRESHOLD (default 5%), or if
+ *     files could not be compared (reported as NOT COMPARED)
  *
  * Requirements:
  *   - Node.js 22+
  *   - Optional: `pnpm add -D pixelmatch pngjs` for visual diff images
- *     (script works without them — only numeric comparison is skipped)
+ *     Without them the script exits non-zero and reports NOT COMPARED
+ *     (nothing is compared, so nothing is reported as passing)
  */
 
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises'
@@ -127,11 +129,12 @@ async function main() {
     if (result.status === 'no-pixelmatch') {
       results.push({
         file,
-        status: 'no-pixelmatch (install pixelmatch+pngjs for pixel diff)',
+        status: 'NOT COMPARED',
         diffPixels: '—',
         ratio: '—',
-        pass: true
+        pass: false
       })
+      hasFailure = true
       continue
     }
 
@@ -178,7 +181,7 @@ async function main() {
   console.log('─'.repeat(80))
   console.log(
     'File'.padEnd(40),
-    'Status'.padEnd(8),
+    'Status'.padEnd(14),
     'Pixels'.padEnd(12),
     'Ratio'
   )
@@ -188,7 +191,7 @@ async function main() {
     const indicator = r.pass ? '✓' : '✗'
     console.log(
       `${indicator} ${r.file}`.padEnd(40),
-      r.status.padEnd(8),
+      r.status.padEnd(14),
       String(r.diffPixels).padEnd(12),
       r.ratio
     )
@@ -201,6 +204,12 @@ async function main() {
   console.log(
     `\nPassed: ${passed}  Failed: ${failed}  Total: ${results.length}`
   )
+
+  if (results.some(r => r.status === 'NOT COMPARED')) {
+    console.log(
+      'NOT COMPARED: pixelmatch and pngjs are not installed, so no pixels were compared. Install them (pnpm add -D pixelmatch pngjs, discuss first) or review the images manually.'
+    )
+  }
 
   if (diffPath) {
     console.log(`\nDiff images saved to: ${diffPath}/`)
