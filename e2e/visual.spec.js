@@ -281,6 +281,9 @@ test.describe('Visual smoke tests', () => {
       const menuBox = await page
         .getByRole('button', { name: /open menu/i })
         .boundingBox()
+      if (helpBox === null || menuBox === null) {
+        throw new Error('Expected both HUD buttons to be visible')
+      }
       expect(helpBox.y + helpBox.height).toBeLessThanOrEqual(menuBox.y)
     }
     if (width >= 1024) {
