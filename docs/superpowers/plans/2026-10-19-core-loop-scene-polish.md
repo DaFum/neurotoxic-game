@@ -548,3 +548,22 @@ Spec deviation to confirm: the spec's "collapse Band Status by default on phone"
 | MainMenu (settled, desktop) | Footer overlaps the Features button | Task 8 |
 | MainMenu subtitle, title spacing | Fine once settled | No change |
 | Overworld | Label pile-up on phone, dense desktop clusters | Task 9, written from the baselines |
+
+---
+
+## Execution status (2026-10-19)
+
+| Task | Status | Commit |
+| --- | --- | --- |
+| 1-2 Fixtures and baselines | Done | 8d76152 |
+| 3 Net profit mono face | Done | 6caf351 |
+| 4 HUD clearance (PostGig, PreGig, RunSummary) | Done | a111ae1 |
+| 5 Single stranded toast | Done | 1d212f5 |
+| 6 PreGig list clipping | Done | dd4d241 |
+| 7 GameOver stats | Dropped (no defect once settled) | - |
+| 8 MainMenu footer overlap | Done, plus safe-centering follow-up | ee4d714, 4b0d4ac |
+| 9 Overworld labels | Deferred: design decision, #3170 | - |
+| 10 TourPrep / RunSummary | Resolved by triage (RunSummary via Task 4) | - |
+| 11 Final verification | Narrow tests and screenshots done locally; full suite is left to CI | - |
+
+Open items filed: #3169 (stranded countdown restarts), #3170 (Overworld label collisions), #3171 (screenshot diff tool compares nothing without pixelmatch), #3172 (Gig phone HUD, Clinic, Credits, Intro, minigames).
