@@ -1366,6 +1366,7 @@
   "gig.lowAcc": "LOW ACC",
   "gig.pause": "Pause Game (ESC)",
   "gig.pauseAria": "Pause Game",
+  "gig.pauseDisabledGameOver": "Game Over - Pause Unavailable",
   "gig.pause_title": "PAUSED",
   "gig.paused": "PAUSED",
   "gig.practiceComplete": "Practice session complete",
@@ -2277,8 +2278,5 @@
   "zealotry.not_enough_controversy": "Not enough controversy",
   "zealotry.not_enough_harmony": "Not enough band harmony",
   "zealotry.not_enough_money": "Not enough money",
-  "zealotry.not_enough_zealotry": "Not enough zealotry",
-  "gig": {
-    "pauseDisabledGameOver": "Game Over - Pause Unavailable"
-  }
+  "zealotry.not_enough_zealotry": "Not enough zealotry"
 }
