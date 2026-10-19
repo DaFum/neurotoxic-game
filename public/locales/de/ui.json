@@ -1366,6 +1366,7 @@
   "gig.lowAcc": "NIEDRIGE GEN.",
   "gig.pause": "Spiel pausieren (ESC)",
   "gig.pauseAria": "Spiel pausieren",
+  "gig.pauseDisabledGameOver": "Spiel vorbei - Pause nicht verfügbar",
   "gig.pause_title": "PAUSIERT",
   "gig.paused": "PAUSIERT",
   "gig.practiceComplete": "Probe abgeschlossen",

@@ -125,20 +125,29 @@ export const GigControlsCluster = memo(function GigControlsCluster({
             />
             {onTogglePause && (
               <Tooltip
-                content={t('ui:gig.pause', {
-                  defaultValue: 'Pause Game (ESC)'
-                })}
+                content={
+                  isGameOver
+                    ? t('ui:gig.pauseDisabledGameOver', {
+                        defaultValue: 'Game Over - Pause Unavailable'
+                      })
+                    : t('ui:gig.pause', {
+                        defaultValue: 'Pause Game (ESC)'
+                      })
+                }
               >
                 <button
                   type='button'
-                  onClick={() => onTogglePause()}
+                  onClick={() => {
+                    if (isGameOver) return
+                    onTogglePause()
+                  }}
                   aria-label={t('ui:gig.pauseAria', {
                     defaultValue: 'Pause Game'
                   })}
-                  disabled={isGameOver}
+                  aria-disabled={isGameOver}
                   className={`${BUTTON_BASE} ${
                     isGameOver
-                      ? 'opacity-50 pointer-events-none border-ash-gray text-ash-gray'
+                      ? 'opacity-50 cursor-not-allowed border-ash-gray text-ash-gray focus-visible:ring-ash-gray'
                       : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
                   }`}
                 >

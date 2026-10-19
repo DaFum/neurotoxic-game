@@ -1366,6 +1366,7 @@
   "gig.lowAcc": "LOW ACC",
   "gig.pause": "Pause Game (ESC)",
   "gig.pauseAria": "Pause Game",
+  "gig.pauseDisabledGameOver": "Game Over - Pause Unavailable",
   "gig.pause_title": "PAUSED",
   "gig.paused": "PAUSED",
   "gig.practiceComplete": "Practice session complete",
