@@ -49,7 +49,7 @@ export const MainMenu = () => {
   } = useMainMenu()
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black relative overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 max-sm:pb-(--tutorial-inset)'>
+    <div className='flex flex-col items-center h-full w-full bg-void-black relative overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 max-sm:pb-(--tutorial-inset)'>
       {showExistingSavePrompt && (
         <MainMenuExistingSavePrompt
           onLoad={handleLoadExistingFromPrompt}
@@ -85,7 +85,7 @@ export const MainMenu = () => {
         </Suspense>
       )}
 
-      <div className='relative z-10 flex w-full max-w-md flex-col items-center'>
+      <div className='relative z-10 my-auto flex w-full max-w-md flex-col items-center'>
         <MainMenuHeader />
 
         <MainMenuActionButtons

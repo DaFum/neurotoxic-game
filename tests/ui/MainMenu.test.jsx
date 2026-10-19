@@ -402,6 +402,19 @@ describe('MainMenu Component', () => {
       expect(footerRoot.className).toContain('mt-8')
     })
 
+    it('centers safely so overflow never clips the title above the scroll origin', () => {
+      render(<MainMenu />)
+
+      const primaryButton = screen.getByText('ui:start_game').closest('button')
+      const sceneContainer = primaryButton.closest('.overflow-y-auto')
+      const contentWrapper = primaryButton.closest('.max-w-md')
+
+      expect(sceneContainer).not.toBeNull()
+      expect(sceneContainer.className).not.toContain('justify-center')
+      expect(contentWrapper).not.toBeNull()
+      expect(contentWrapper.className).toContain('my-auto')
+    })
+
     it('renders primary menu chrome and buttons', () => {
       const { container } = render(<MainMenu />)
 
