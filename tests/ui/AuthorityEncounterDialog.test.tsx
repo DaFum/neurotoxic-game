@@ -72,6 +72,9 @@ vi.mock('../../src/ui/shared/BrutalistUI', () => ({
     ) : null
 }))
 
+// The decline memory is module-scoped, so every state gets its own run.
+let runCounter = 0
+
 const buildState = (heat: number, money: number, fuel: number): GameState => {
   const initial = createInitialState()
   return {
@@ -84,7 +87,7 @@ const buildState = (heat: number, money: number, fuel: number): GameState => {
     expedition: {
       ...initial.expedition,
       status: 'active',
-      runId: 'run-1',
+      runId: `run-${++runCounter}`,
       pressure: { ...initial.expedition.pressure, heat }
     }
   }
@@ -166,6 +169,31 @@ describe('AuthorityEncounterDialog', () => {
       }
     }
     rerender(<AuthorityEncounterDialog suppressed={undefined} />)
+    expect(screen.getByTestId('authority-exit-pay')).toBeTruthy()
+  })
+
+  it('keeps a decline across a remount at the same step', () => {
+    state.current = buildState(95, 1000, 50)
+    const first = render(<AuthorityEncounterDialog />)
+    fireEvent.click(screen.getByTestId('authority-exit-decline'))
+    first.unmount()
+
+    // Investments round-trip: same run, same route step, fresh instance.
+    const second = render(<AuthorityEncounterDialog />)
+    expect(second.container.firstChild).toBeNull()
+  })
+
+  it('waits while an arrival event modal is open', () => {
+    const base = buildState(95, 1000, 50)
+    state.current = {
+      ...base,
+      activeEvent: { id: 'evt', options: [] } as never
+    }
+    const { container, rerender } = render(<AuthorityEncounterDialog />)
+    expect(container.firstChild).toBeNull()
+
+    state.current = base
+    rerender(<AuthorityEncounterDialog suppressed={false} />)
     expect(screen.getByTestId('authority-exit-pay')).toBeTruthy()
   })
 

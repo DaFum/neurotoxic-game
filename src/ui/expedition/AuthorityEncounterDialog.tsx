@@ -18,6 +18,13 @@ import {
 import type { ExpeditionAuthorityExitId } from '../../types/expedition'
 
 /**
+ * The run and route step of the last decline. Module scope so it survives the
+ * scene round-trip through Investments, which unmounts the dialog without
+ * advancing the route; it is not persisted, so a reload asks again.
+ */
+let lastDeclinedKey: string | null = null
+
+/**
  * Presents the live Authority encounter and its executable safe exits.
  *
  * @remarks
@@ -30,7 +37,8 @@ import type { ExpeditionAuthorityExitId } from '../../types/expedition'
  * The player may decline ("Not now"): the encounter is derived from state, so
  * declining only hides it for the current route step, Heat stays where it is,
  * and it asks again at the next step. `suppressed` hides it while another
- * decision dialog (the extraction confirmation) is open, so the two never
+ * decision dialog (the extraction confirmation) is open, and an arrival event
+ * modal (`activeEvent`) likewise owns the decision surface, so they never
  * stack.
  */
 export const AuthorityEncounterDialog = memo(function AuthorityEncounterDialog({
@@ -40,10 +48,12 @@ export const AuthorityEncounterDialog = memo(function AuthorityEncounterDialog({
 }) {
   const { t, i18n } = useTranslation('ui')
   const { resolveExpeditionAuthorityExit } = useGameActions()
-  const [declinedStep, setDeclinedStep] = useState<number | null>(null)
+  const [declinedKey, setDeclinedKey] = useState(lastDeclinedKey)
   const routeStep = useGameSelector(state => state.expedition?.routeStep ?? 0)
+  const runId = useGameSelector(state => state.expedition?.runId ?? '')
+  const stepKey = `${runId}:${routeStep}`
   const exitKey = useGameSelector(state => {
-    if (state.expedition?.pendingFailure) return ''
+    if (state.expedition?.pendingFailure || state.activeEvent) return ''
     return getAuthorityEncounter(state)?.exits.join(',') ?? ''
   })
   const heat = useGameSelector(state => state.expedition?.pressure.heat ?? 0)
@@ -57,7 +67,7 @@ export const AuthorityEncounterDialog = memo(function AuthorityEncounterDialog({
       : null
   })
 
-  if (!exitKey || suppressed || declinedStep === routeStep) return null
+  if (!exitKey || suppressed || declinedKey === stepKey) return null
   const exits = EXPEDITION_AUTHORITY_EXIT_IDS.filter(id =>
     exitKey.split(',').includes(id)
   )
@@ -105,7 +115,10 @@ export const AuthorityEncounterDialog = memo(function AuthorityEncounterDialog({
             label: t('ui:expedition.authority.decline'),
             meta: t('ui:expedition.authority.meta.decline'),
             variant: 'risk' as const,
-            onClick: () => setDeclinedStep(routeStep)
+            onClick: () => {
+              lastDeclinedKey = stepKey
+              setDeclinedKey(stepKey)
+            }
           }
         ]}
       />
