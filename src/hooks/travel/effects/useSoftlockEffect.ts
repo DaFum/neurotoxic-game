@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { checkSoftlock } from '../../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
@@ -49,6 +49,10 @@ export const useSoftlockEffect = ({
     saveGame,
     changeScene
   } = params
+  // One toast per softlock episode: the cleanup below clears `timeoutRef` on
+  // every dependency change, so the timer alone cannot tell a re-run from a
+  // fresh episode.
+  const toastedRef = useRef(false)
 
   useEffect(() => {
     if (!gameMap || state.isTraveling || !player.currentNodeId) {
@@ -95,19 +99,23 @@ export const useSoftlockEffect = ({
     if (checkSoftlock(gameMap, player, band, softlockContext)) {
       if (!refs.timeoutRef.current) {
         logger.error('TravelLogic', 'GAME OVER: Stranded')
-        addToast(
-          i18n.t('ui:travel.errors.gameOverStranded', {
-            defaultValue:
-              'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
-          }),
-          'error'
-        )
+        if (!toastedRef.current) {
+          toastedRef.current = true
+          addToast(
+            i18n.t('ui:travel.errors.gameOverStranded', {
+              defaultValue:
+                'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
+            }),
+            'error'
+          )
+        }
         refs.timeoutRef.current = setTimeout(() => {
           saveGame(false)
           changeScene(GAME_PHASES.GAMEOVER)
         }, 3000)
       }
     } else {
+      toastedRef.current = false
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
