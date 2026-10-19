@@ -407,20 +407,31 @@ const useNonOverlappingPosition = (
         w,
         h
       )
-      const clear = anchors.find(
-        a =>
-          !obstacles.some(o =>
-            rectsIntersect(
-              {
-                left: a.left,
-                top: a.top,
-                right: a.left + w,
-                bottom: a.top + h
-              },
-              o
-            )
-          )
-      )
+      // ⚡ BOLT OPTIMIZATION: Replace anchors.find + obstacles.some callback allocations
+      // with single-pass procedural for loops to eliminate closure allocations and GC pressure on resize/layout recalculation.
+      let clear: Anchor | undefined
+      for (let i = 0; i < anchors.length; i++) {
+        const a = anchors[i]
+        if (!a) continue
+        const candidateRect = {
+          left: a.left,
+          top: a.top,
+          right: a.left + w,
+          bottom: a.top + h
+        }
+        let hasIntersection = false
+        for (let j = 0; j < obstacles.length; j++) {
+          const o = obstacles[j]
+          if (o && rectsIntersect(candidateRect, o)) {
+            hasIntersection = true
+            break
+          }
+        }
+        if (!hasIntersection) {
+          clear = a
+          break
+        }
+      }
       // Default anchor already clear (or nothing fits) → keep the CSS default.
       if (!clear || clear === anchors[0]) return
 
