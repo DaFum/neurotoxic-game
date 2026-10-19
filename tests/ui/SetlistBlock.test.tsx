@@ -132,4 +132,22 @@ describe('SetlistBlock', () => {
     expect(tooltip).not.toBeNull()
     expect(tooltip?.textContent).toContain('ui:pregig.songLockedReason')
   })
+
+  test('is a labelled region without a phone height cap', () => {
+    const { getByRole } = render(
+      <SetlistBlock
+        setlist={[]}
+        maxSongs={3}
+        songsDb={sampleSongs}
+        songsDict={songsDict}
+        selectedSongIds={new Set()}
+        toggleSong={vi.fn()}
+      />
+    )
+
+    const region = getByRole('region')
+    const title = getByRole('heading', { level: 3 }).querySelector('span')
+    expect(region.getAttribute('aria-label')).toBe(title?.textContent)
+    expect(region.className).not.toContain('max-h-[48svh]')
+  })
 })

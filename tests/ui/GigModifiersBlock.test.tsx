@@ -155,4 +155,12 @@ describe('GigModifiersBlock', () => {
 
     expect(screen.getByText('ui:pregig.noModifiers')).toBeInTheDocument()
   })
+
+  it('has no phone height cap and scrolls internally only from lg', () => {
+    render(<GigModifiersBlock {...defaultProps} />)
+
+    const root = screen.getByRole('heading', { level: 3 }).parentElement
+    expect(root?.className).not.toContain('max-h-[38svh]')
+    expect(root?.className).toContain('lg:overflow-y-auto')
+  })
 })
