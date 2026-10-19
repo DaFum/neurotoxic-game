@@ -72,6 +72,9 @@ vi.mock('../../src/ui/shared/BrutalistUI', () => ({
     ) : null
 }))
 
+// The decline memory is module-scoped, so every state gets its own run.
+let runCounter = 0
+
 const buildState = (heat: number, money: number, fuel: number): GameState => {
   const initial = createInitialState()
   return {
@@ -84,7 +87,7 @@ const buildState = (heat: number, money: number, fuel: number): GameState => {
     expedition: {
       ...initial.expedition,
       status: 'active',
-      runId: 'run-1',
+      runId: `run-${++runCounter}`,
       pressure: { ...initial.expedition.pressure, heat }
     }
   }
@@ -133,6 +136,76 @@ describe('AuthorityEncounterDialog', () => {
 
     fireEvent.click(screen.getByTestId('authority-exit-route_detour'))
     expect(resolveExpeditionAuthorityExit).toHaveBeenCalledWith('route_detour')
+  })
+
+  it('lets the player decline without spending an exit', () => {
+    state.current = buildState(95, 1000, 50)
+    const { container } = render(<AuthorityEncounterDialog />)
+
+    fireEvent.click(screen.getByTestId('authority-exit-decline'))
+
+    expect(resolveExpeditionAuthorityExit).not.toHaveBeenCalled()
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('asks again at the next route step after a decline', () => {
+    const base = buildState(95, 1000, 50)
+    state.current = base
+    const { container, rerender } = render(<AuthorityEncounterDialog />)
+    fireEvent.click(screen.getByTestId('authority-exit-decline'))
+    expect(container.firstChild).toBeNull()
+
+    // Same step, re-rendered: still declined. (The mocked selector does not
+    // subscribe, and the component is memoized, so each rerender changes the
+    // `suppressed` prop to force a render pass.)
+    rerender(<AuthorityEncounterDialog suppressed={false} />)
+    expect(container.firstChild).toBeNull()
+
+    state.current = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        routeStep: base.expedition.routeStep + 1
+      }
+    }
+    rerender(<AuthorityEncounterDialog suppressed={undefined} />)
+    expect(screen.getByTestId('authority-exit-pay')).toBeTruthy()
+  })
+
+  it('keeps a decline across a remount at the same step', () => {
+    state.current = buildState(95, 1000, 50)
+    const first = render(<AuthorityEncounterDialog />)
+    fireEvent.click(screen.getByTestId('authority-exit-decline'))
+    first.unmount()
+
+    // Investments round-trip: same run, same route step, fresh instance.
+    const second = render(<AuthorityEncounterDialog />)
+    expect(second.container.firstChild).toBeNull()
+  })
+
+  it('waits while an arrival event modal is open', () => {
+    const base = buildState(95, 1000, 50)
+    state.current = {
+      ...base,
+      activeEvent: { id: 'evt', options: [] } as never
+    }
+    const { container, rerender } = render(<AuthorityEncounterDialog />)
+    expect(container.firstChild).toBeNull()
+
+    state.current = base
+    rerender(<AuthorityEncounterDialog suppressed={false} />)
+    expect(screen.getByTestId('authority-exit-pay')).toBeTruthy()
+  })
+
+  it('stays hidden while another decision dialog is open', () => {
+    state.current = buildState(95, 1000, 50)
+    const { container, rerender } = render(
+      <AuthorityEncounterDialog suppressed />
+    )
+    expect(container.firstChild).toBeNull()
+
+    rerender(<AuthorityEncounterDialog suppressed={false} />)
+    expect(screen.getByTestId('authority-exit-pay')).toBeTruthy()
   })
 
   it('names the Contract a future obligation would add', () => {

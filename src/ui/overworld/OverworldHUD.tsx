@@ -49,11 +49,15 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
   })
 
   return (
-    <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative max-sm:order-2 max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2'>
+    <div
+      className={`absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative ${expeditionActive ? 'max-sm:order-4' : 'max-sm:order-2'} max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2`}
+    >
       {/* Left Panel - Player Status */}
-      <div className='flex flex-col gap-2'>
+      <div
+        className={`flex flex-col gap-2${expeditionActive ? ' max-sm:flex-row max-sm:flex-wrap max-sm:items-start' : ''}`}
+      >
         {expeditionActive && (
-          <p className='sm:hidden pointer-events-auto bg-void-black/95 border border-toxic-green/40 px-2 py-1.5 text-star-white text-sm'>
+          <p className='sm:hidden min-w-0 flex-1 basis-0 pointer-events-auto bg-void-black/95 border border-toxic-green/40 px-2 py-1.5 text-star-white text-sm'>
             {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
             {' · '}
             {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}{' '}
@@ -112,7 +116,7 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
         <KeyboardShortcutsPanel
           showHelp={showHelp}
           onClose={() => setShowHelp(false)}
-          className='w-64 mt-2'
+          className={`w-64 mt-2${expeditionActive ? ' max-sm:basis-full max-sm:w-full' : ''}`}
         />
       </div>
 

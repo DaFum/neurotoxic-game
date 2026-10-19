@@ -100,7 +100,7 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
 
       {/* Cornered by the Authority with a way out: the decision the crisis
           would otherwise be. Hidden while a crisis is pending. */}
-      <AuthorityEncounterDialog />
+      <AuthorityEncounterDialog suppressed={isDialogOpen} />
 
       <ExtractionDialog isOpen={isDialogOpen} onClose={closeDialog} />
     </div>
