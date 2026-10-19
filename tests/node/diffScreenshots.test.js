@@ -16,6 +16,9 @@ const scriptPath = path.resolve(
   '.claude/skills/playwright-screenshot/scripts/diff-screenshots.js'
 )
 
+// Probed by name at runtime: they are optional, so they must not be literal
+// imports that static analysis would report as unlisted dependencies.
+const OPTIONAL_DIFF_DEPENDENCIES = ['pixelmatch', 'pngjs']
 const tempDirs = []
 
 function makeDir() {
@@ -40,15 +43,15 @@ after(() => {
 
 describe('diff-screenshots.js', () => {
   test('reports NOT COMPARED and exits 1 when pixelmatch/pngjs are missing', async t => {
-    const hasPixelmatch = await import('pixelmatch').then(
-      () => true,
-      () => false
+    const installed = await Promise.all(
+      OPTIONAL_DIFF_DEPENDENCIES.map(name =>
+        import(name).then(
+          () => true,
+          () => false
+        )
+      )
     )
-    const hasPngjs = await import('pngjs').then(
-      () => true,
-      () => false
-    )
-    if (hasPixelmatch && hasPngjs) {
+    if (installed.every(Boolean)) {
       t.skip('pixelmatch+pngjs installed')
       return
     }
