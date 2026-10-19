@@ -1,5 +1,12 @@
 import type { ExpeditionContractTemplate } from '../../types/expedition'
 
+/**
+ * The maximum number of native expedition contracts that can be simultaneously active.
+ *
+ * @remarks
+ * This limit prevents the player from accumulating an overwhelming number of obligations,
+ * ensuring UI and economy balance.
+ */
 export const MAX_NATIVE_EXPEDITION_CONTRACTS = 2 as const
 
 const templates = [
@@ -68,6 +75,13 @@ const templates = [
   }
 ] as const satisfies readonly ExpeditionContractTemplate[]
 
+/**
+ * A mapped collection of all available expedition contract templates indexed by their unique identifiers.
+ *
+ * @remarks
+ * Pre-computes a Map during module initialization to guarantee constant-time lookup when offering,
+ * selecting, or validating contract objectives in gameplay systems.
+ */
 export const EXPEDITION_CONTRACTS_BY_ID = new Map<
   string,
   ExpeditionContractTemplate
