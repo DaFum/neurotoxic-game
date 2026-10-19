@@ -264,9 +264,31 @@ test.describe('Visual smoke tests', () => {
         0,
         Math.min(map.bottom, window.innerHeight) - Math.max(map.top, 0)
       )
-      return { visible, stripBottom: strip.bottom, vh: window.innerHeight }
+      const rect = selector => {
+        const el = document.querySelector(selector)
+        return el ? el.getBoundingClientRect() : null
+      }
+      const help = rect('button[aria-label="Toggle keyboard shortcuts help"]')
+      const menu = [...document.querySelectorAll('button')]
+        .find(b => /open menu/i.test(b.textContent ?? ''))
+        ?.getBoundingClientRect()
+      return {
+        visible,
+        stripBottom: strip.bottom,
+        vh: window.innerHeight,
+        helpBottom: help?.bottom ?? null,
+        menuTop: menu?.top ?? null
+      }
     })
     const { width } = page.viewportSize()
+    if (width < 641 && m.helpBottom !== null && m.menuTop !== null) {
+      // Phone: the fixed menu bar never covers the shortcuts help button.
+      expect(m.helpBottom).toBeLessThanOrEqual(m.menuTop)
+    }
+    if (width < 390) {
+      // Smallest phones: the map must still peek above the fold.
+      expect(m.visible).toBeGreaterThanOrEqual(100)
+    }
     if (width >= 1024) {
       // Desktop: the resource strip is on screen without scrolling.
       expect(m.stripBottom).toBeLessThanOrEqual(m.vh)
