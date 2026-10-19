@@ -390,6 +390,18 @@ describe('MainMenu Component', () => {
   })
 
   describe('Modal interactions edge cases', () => {
+    it('keeps the footer in normal flow so it cannot overlap the buttons', () => {
+      render(<MainMenu />)
+
+      const footerRoot = screen
+        .getByText(/DEATH GRINDCORE FROM STENDAL/i)
+        .closest('[class*="z-(--z-overlay)"]')
+
+      expect(footerRoot).not.toBeNull()
+      expect(footerRoot.className).not.toContain('absolute')
+      expect(footerRoot.className).toContain('mt-8')
+    })
+
     it('renders primary menu chrome and buttons', () => {
       const { container } = render(<MainMenu />)
 
