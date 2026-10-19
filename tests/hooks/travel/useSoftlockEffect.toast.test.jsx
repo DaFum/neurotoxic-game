@@ -19,6 +19,7 @@ vi.mock('../../../src/utils/travelUtils', () => ({
 import { checkSoftlock } from '../../../src/utils/mapUtils'
 import { useSoftlockEffect } from '../../../src/hooks/travel/effects/useSoftlockEffect'
 import { GAME_PHASES } from '../../../src/context/gameConstants'
+import { logger } from '../../../src/utils/logger'
 
 // A stranded player gets one "GAME OVER: Stranded!" toast per softlock
 // episode, even when the effect re-runs because a dependency (e.g. a fresh
@@ -42,12 +43,18 @@ const renderSoftlock = () => {
     reputationByRegion: {}
   }
   const makePlayer = () => ({ currentNodeId: 'node_0', day: 1, money: 0 })
-  const { rerender } = renderHook(
-    ({ player }) =>
-      useSoftlockEffect({ refs, state, params: { ...base, player } }),
+  // Rerender props may swap the callbacks to model a parent handing down new
+  // `saveGame` / `changeScene` identities mid-countdown.
+  const { rerender, unmount } = renderHook(
+    ({ player, ...callbacks }) =>
+      useSoftlockEffect({
+        refs,
+        state,
+        params: { ...base, ...callbacks, player }
+      }),
     { initialProps: { player: makePlayer() } }
   )
-  return { addToast, saveGame, changeScene, rerender, makePlayer }
+  return { addToast, saveGame, changeScene, rerender, unmount, makePlayer }
 }
 
 describe('useSoftlockEffect stranded toast', () => {
@@ -93,5 +100,83 @@ describe('useSoftlockEffect stranded toast', () => {
     rerender({ player: makePlayer() })
     expect(addToast).toHaveBeenCalledTimes(2)
     expect(changeScene).not.toHaveBeenCalled()
+  })
+})
+
+// The 3s countdown is anchored to the start of the stranded episode: a
+// dependency change mid-countdown must neither cancel nor restart it.
+describe('useSoftlockEffect stranded countdown', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.mocked(checkSoftlock).mockReturnValue(true)
+    vi.spyOn(logger, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.mocked(logger.error).mockRestore()
+    vi.clearAllMocks()
+  })
+
+  test('a dependency change does not restart the countdown', () => {
+    const { changeScene, rerender, makePlayer } = renderSoftlock()
+    vi.advanceTimersByTime(2000)
+    rerender({ player: makePlayer() })
+    vi.advanceTimersByTime(1000)
+
+    expect(changeScene).toHaveBeenCalledTimes(1)
+    expect(changeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
+  })
+
+  test('unmounting clears the countdown', () => {
+    const { saveGame, changeScene, unmount } = renderSoftlock()
+    unmount()
+    vi.advanceTimersByTime(5000)
+
+    expect(saveGame).not.toHaveBeenCalled()
+    expect(changeScene).not.toHaveBeenCalled()
+  })
+
+  test('recovering clears the countdown', () => {
+    const { changeScene, rerender, makePlayer } = renderSoftlock()
+    vi.mocked(checkSoftlock).mockReturnValue(false)
+    rerender({ player: makePlayer() })
+    vi.advanceTimersByTime(5000)
+
+    expect(changeScene).not.toHaveBeenCalled()
+  })
+
+  test('the countdown calls the latest saveGame and changeScene', () => {
+    const { saveGame, changeScene, rerender, makePlayer } = renderSoftlock()
+    const nextSaveGame = vi.fn()
+    const nextChangeScene = vi.fn()
+    vi.advanceTimersByTime(1000)
+    rerender({
+      player: makePlayer(),
+      saveGame: nextSaveGame,
+      changeScene: nextChangeScene
+    })
+    vi.advanceTimersByTime(2000)
+
+    expect(saveGame).not.toHaveBeenCalled()
+    expect(changeScene).not.toHaveBeenCalled()
+    expect(nextSaveGame).toHaveBeenCalledTimes(1)
+    expect(nextSaveGame).toHaveBeenCalledWith(false)
+    expect(nextChangeScene).toHaveBeenCalledTimes(1)
+    expect(nextChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
+  })
+
+  test('logs the stranded game over once per episode', () => {
+    const { rerender, makePlayer } = renderSoftlock()
+    vi.advanceTimersByTime(1000)
+    rerender({ player: makePlayer() })
+    vi.advanceTimersByTime(1000)
+    rerender({ player: makePlayer() })
+
+    expect(logger.error).toHaveBeenCalledTimes(1)
+    expect(logger.error).toHaveBeenCalledWith(
+      'TravelLogic',
+      'GAME OVER: Stranded'
+    )
   })
 })

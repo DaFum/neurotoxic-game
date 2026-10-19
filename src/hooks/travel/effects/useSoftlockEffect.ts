@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { checkSoftlock } from '../../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
@@ -49,10 +49,29 @@ export const useSoftlockEffect = ({
     saveGame,
     changeScene
   } = params
-  // One toast per softlock episode: the cleanup below clears `timeoutRef` on
-  // every dependency change, so the timer alone cannot tell a re-run from a
-  // fresh episode.
+  // One toast per softlock episode. The early-return branch clears the timer
+  // without ending the episode, so the timer alone cannot tell a resumed
+  // episode from a fresh one.
   const toastedRef = useRef(false)
+  // The countdown outlives effect re-runs, so its callback reads the latest
+  // callbacks instead of the ones captured when it started.
+  const latestCallbacksRef = useRef({ saveGame, changeScene })
+  useLayoutEffect(() => {
+    latestCallbacksRef.current = { saveGame, changeScene }
+  }, [saveGame, changeScene])
+
+  // The countdown is anchored to the episode start, so the main effect has no
+  // cleanup; it clears the timer only on recovery or its early return. This
+  // cleanup covers unmount.
+  useEffect(
+    () => () => {
+      if (refs.timeoutRef.current) {
+        clearTimeout(refs.timeoutRef.current)
+        refs.timeoutRef.current = null
+      }
+    },
+    [refs.timeoutRef]
+  )
 
   useEffect(() => {
     if (!gameMap || state.isTraveling || !player.currentNodeId) {
@@ -110,19 +129,12 @@ export const useSoftlockEffect = ({
           )
         }
         refs.timeoutRef.current = setTimeout(() => {
-          saveGame(false)
-          changeScene(GAME_PHASES.GAMEOVER)
+          latestCallbacksRef.current.saveGame(false)
+          latestCallbacksRef.current.changeScene(GAME_PHASES.GAMEOVER)
         }, 3000)
       }
     } else {
       toastedRef.current = false
-      if (refs.timeoutRef.current) {
-        clearTimeout(refs.timeoutRef.current)
-        refs.timeoutRef.current = null
-      }
-    }
-
-    return () => {
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
@@ -136,8 +148,6 @@ export const useSoftlockEffect = ({
     assets,
     liabilities,
     addToast,
-    saveGame,
-    changeScene,
     state.isTraveling,
     refs.timeoutRef,
     params.venueBlacklist,
