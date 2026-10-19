@@ -290,6 +290,14 @@ describe('PostGig Component - Phase Management', () => {
     expect(screen.getByText('GIG REPORT')).toHaveClass('sm:text-5xl')
   })
 
+  it('reserves phone padding below the global HUD', () => {
+    render(<PostGig />)
+
+    expect(screen.getByTestId('post-gig-screen').className).toContain(
+      'max-sm:pt-44'
+    )
+  })
+
   it('triggers events on mount when no active event', () => {
     render(<PostGig />)
     expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')

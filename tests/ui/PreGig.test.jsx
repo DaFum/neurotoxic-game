@@ -246,6 +246,12 @@ describe('PreGig', () => {
     }
   })
 
+  test('reserves phone padding below the global HUD', () => {
+    const { container } = render(React.createElement(PreGig))
+
+    expect(container.firstElementChild.className).toMatch(/(^| )pt-44( |$)/)
+  })
+
   test('renders modifiers and toggles correctly', async () => {
     const { findByText } = render(React.createElement(PreGig))
 
