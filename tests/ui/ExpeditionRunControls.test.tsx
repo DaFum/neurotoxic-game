@@ -164,6 +164,24 @@ describe('ExpeditionRunControls', () => {
     expect(screen.getByTestId('extraction-dialog-open')).toBeInTheDocument()
   })
 
+  it('keeps the Authority encounter off the extraction confirmation', () => {
+    const base = buildState()
+    base.player = { ...base.player, money: 5000 }
+    base.expedition = {
+      ...base.expedition,
+      pressure: { ...base.expedition.pressure, heat: 95 }
+    }
+    state.current = base
+    render(<ExpeditionRunControls />)
+    expect(
+      screen.getByTestId('expedition-authority-encounter')
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('crisis-extract-escape'))
+    expect(screen.getByTestId('extraction-dialog-open')).toBeInTheDocument()
+    expect(screen.queryByTestId('expedition-authority-encounter')).toBeNull()
+  })
+
   it('renders nothing outside an active run', () => {
     state.current = buildState({ status: 'idle' })
     const { container } = render(<ExpeditionRunControls />)
