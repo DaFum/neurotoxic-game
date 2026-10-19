@@ -2277,5 +2277,8 @@
   "zealotry.not_enough_controversy": "Nicht genug Kontroverse",
   "zealotry.not_enough_harmony": "Nicht genug Bandharmonie",
   "zealotry.not_enough_money": "Nicht genug Geld",
-  "zealotry.not_enough_zealotry": "Nicht genug Fanatismus"
+  "zealotry.not_enough_zealotry": "Nicht genug Fanatismus",
+  "gig": {
+    "pauseDisabledGameOver": "Spiel vorbei - Pause nicht verfügbar"
+  }
 }

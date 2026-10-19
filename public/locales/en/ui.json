@@ -2277,5 +2277,8 @@
   "zealotry.not_enough_controversy": "Not enough controversy",
   "zealotry.not_enough_harmony": "Not enough band harmony",
   "zealotry.not_enough_money": "Not enough money",
-  "zealotry.not_enough_zealotry": "Not enough zealotry"
+  "zealotry.not_enough_zealotry": "Not enough zealotry",
+  "gig": {
+    "pauseDisabledGameOver": "Game Over - Pause Unavailable"
+  }
 }
