@@ -242,6 +242,31 @@ describe('Playwright Screenshot Fixtures', () => {
     )
   })
 
+  test('expedition scene fixtures survive handleLoadGame and name a real scene', () => {
+    for (const name of ['tourprep', 'runsummary']) {
+      ok(Object.hasOwn(FIXTURES, name), `fixture "${name}" is missing`)
+      const scene = FIXTURES[name].state.currentScene
+      ok(
+        ALLOWED_SCENE_VALUES.includes(scene),
+        `fixture "${name}" targets unknown scene "${scene}"`
+      )
+    }
+    strictEqual(FIXTURES.tourprep.state.currentScene, 'TOUR_PREP')
+    strictEqual(FIXTURES.runsummary.state.currentScene, 'RUN_SUMMARY')
+
+    const loaded = handleLoadGame(
+      BASE_STATE,
+      deepMerge(BASE_STATE, FIXTURES.runsummary.state ?? {})
+    )
+    strictEqual(
+      loaded.expedition.outcome?.runId,
+      'fixture-run-1',
+      'runsummary expedition.outcome sanitised away — RUN_SUMMARY has no ' +
+        'settlement to render'
+    )
+    strictEqual(loaded.expedition.outcome?.settlement.moneyRetained, 600)
+  })
+
   test('no duplicate keys would cause issues', () => {
     // This is a meta-test: verify the pattern doesn't have duplicate keys
     const testState = {

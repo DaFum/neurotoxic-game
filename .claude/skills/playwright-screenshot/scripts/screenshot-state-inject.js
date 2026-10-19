@@ -19,7 +19,7 @@
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture> [outfile]
  *
- *   Fixtures:  menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
+ *   Fixtures:  menu | overworld | pregig | gig | postgig | gameover | clinic | tourprep | runsummary | band-hq | event-modal
  *
  * Examples:
  *   node screenshot-state-inject.js gameover screenshots/gameover.png
@@ -557,6 +557,61 @@ export const FIXTURES = {
         await page.waitForLoadState('domcontentloaded')
       }
     }
+  },
+
+  tourprep: {
+    description: 'Expedition TourPrep build screen',
+    state: { currentScene: 'TOUR_PREP' },
+    waitFor: async page =>
+      page.locator('h2').first().waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  runsummary: {
+    description: 'Expedition RunSummary settlement screen (extracted run)',
+    state: {
+      currentScene: 'RUN_SUMMARY',
+      player: { money: 480, fame: 350 },
+      expedition: {
+        status: 'extracted',
+        runId: 'fixture-run-1',
+        // sanitizeExpeditionState drops a terminal run to idle (and its
+        // outcome with it) unless it has a loadout and a visited path that
+        // walks the canonical map for BASE_STATE.runSeed (12345) from its
+        // start node to `routeStep`. exp_6_0 is an extraction window, which
+        // matches `finalizedAtRouteStep: 6` below.
+        loadout: { tourTypeId: 'standard_tour', regionId: 'home_turf' },
+        routeStep: 6,
+        visitedNodeIds: [
+          'exp_0_0',
+          'exp_1_0',
+          'exp_2_0',
+          'exp_3_0',
+          'exp_4_0',
+          'exp_5_0',
+          'exp_6_0'
+        ],
+        outcome: {
+          runId: 'fixture-run-1',
+          kind: 'extracted',
+          reason: null,
+          finalizedAtRouteStep: 6,
+          settlement: {
+            retentionRate: 0.75,
+            moneyEarned: 800,
+            moneyRetained: 600,
+            moneyForfeited: 200,
+            fameEarned: 120,
+            fameRetained: 90,
+            fameForfeited: 30,
+            retainedRewardEntryIds: [],
+            abandonedRewardEntryIds: []
+          },
+          finaleResultId: null
+        }
+      }
+    },
+    waitFor: async page =>
+      page.locator('h2').first().waitFor({ state: 'visible', timeout: 15000 })
   },
 
   'band-hq': {
