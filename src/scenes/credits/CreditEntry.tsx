@@ -15,12 +15,12 @@ export const CreditEntry = ({ role, name, delay }: CreditEntryProps) => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ delay }}
-    className='flex flex-col gap-2'
+    className='flex flex-col gap-2 px-4'
   >
-    <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase'>
+    <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase break-words'>
       {role}
     </span>
-    <span className='text-star-white text-2xl font-bold font-display tracking-wide'>
+    <span className='text-star-white text-xl sm:text-2xl font-bold font-display tracking-wide text-balance break-words'>
       {name}
     </span>
     <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />

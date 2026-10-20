@@ -92,14 +92,27 @@ const CableItemComponent: FC<CableItemProps> = ({
           )}
 
           {!isSelected && !isGameOver && (
-            <rect
-              x='-30'
-              y='-40'
-              width='60'
-              height='80'
-              fill='transparent'
-              className='group-hover:fill-[currentColor] group-hover:opacity-10 transition-colors'
-            />
+            <>
+              {/* Oversized, invisible touch target (≥48px at phone scale). */}
+              <rect
+                data-testid='kabelsalat-cable-hit-area'
+                x='-56'
+                y='-40'
+                width='112'
+                height='150'
+                fill='transparent'
+              />
+              {/* Visible hover tint keeps its original footprint. */}
+              <rect
+                data-testid='kabelsalat-cable-hover-tint'
+                x='-30'
+                y='-40'
+                width='60'
+                height='80'
+                fill='transparent'
+                className='group-hover:fill-[currentColor] group-hover:opacity-10 transition-colors'
+              />
+            </>
           )}
 
           <PlugGraphics type={cable.type} />

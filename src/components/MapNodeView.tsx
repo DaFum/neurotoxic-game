@@ -453,6 +453,14 @@ export const MapNodeView = memo(
         ? ''
         : 'max-sm:hidden'
 
+    // From `sm` up the type chip stays always visible and the location name
+    // shows only for the current, hovered/focused or confirming node, so dense
+    // clusters do not stack overlapping name chips. Never hide the name when
+    // there is no type chip, or the node would have no label at all.
+    const showTypeChip =
+      nodeTypeLabel.toLocaleLowerCase() !== nodeLocationName.toLocaleLowerCase()
+    const nameVisibleOnDesktop = isCurrent || isHoveredLocal || isPendingConfirm
+
     // Determine visuals based on props
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
@@ -552,14 +560,13 @@ export const MapNodeView = memo(
         <div
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
-          {nodeTypeLabel.toLocaleLowerCase() !==
-            nodeLocationName.toLocaleLowerCase() && (
+          {showTypeChip && (
             <span className='text-xs font-bold uppercase tracking-wide text-star-white/70 px-1 bg-void-black'>
               {nodeTypeLabel}
             </span>
           )}
           <span
-            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
+            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
           >
             {nodeLocationName}
           </span>

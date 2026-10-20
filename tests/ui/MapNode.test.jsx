@@ -505,4 +505,67 @@ describe('MapNodeView', () => {
       expect(className).toContain('z-(--z-stage-controls)')
     })
   })
+
+  describe('desktop name chip visibility', () => {
+    const renderNode = (overrides, node = mockNode) => {
+      render(
+        <MapNodeView
+          node={node}
+          isCurrent={false}
+          isTraveling={false}
+          visibility='visible'
+          isReachable={true}
+          handleTravel={mockHandleTravel}
+          setHoveredNode={mockSetHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={vanUrl}
+          {...overrides}
+        />
+      )
+      return screen.getByText(node.venue.name, { selector: '.max-w-28' })
+    }
+
+    test('hides the name from sm up when idle and a type chip is shown', () => {
+      expect(renderNode({}).className).toContain('sm:hidden')
+    })
+
+    test('keeps the name visible for the current node', () => {
+      expect(renderNode({ isCurrent: true }).className).not.toContain(
+        'sm:hidden'
+      )
+    })
+
+    test('keeps the name visible for a node awaiting travel confirmation', () => {
+      expect(renderNode({ isPendingConfirm: true }).className).not.toContain(
+        'sm:hidden'
+      )
+    })
+
+    test('reveals the name on hover and hides it again afterwards', () => {
+      const name = renderNode({})
+      const button = screen.getByRole('button')
+      fireEvent.mouseEnter(button)
+      expect(name.className).not.toContain('sm:hidden')
+      fireEvent.mouseLeave(button)
+      expect(name.className).toContain('sm:hidden')
+    })
+
+    test('reveals the name on keyboard focus and hides it on blur', () => {
+      const name = renderNode({})
+      const button = screen.getByRole('button')
+      fireEvent.focus(button)
+      expect(name.className).not.toContain('sm:hidden')
+      fireEvent.blur(button)
+      expect(name.className).toContain('sm:hidden')
+    })
+
+    test('never hides the only label when the type chip equals the name', () => {
+      const sameNode = {
+        ...mockNode,
+        venue: { ...mockNode.venue, name: 'ui:map.nodeType.gig' }
+      }
+      const name = renderNode({}, sameNode)
+      expect(name.className).not.toContain('sm:hidden')
+    })
+  })
 })

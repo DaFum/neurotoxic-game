@@ -83,7 +83,8 @@ export const useKabelsalatState = (): KabelsalatState => {
     isShocked,
     connections,
     isWinningRef,
-    setSocketOrder
+    setSocketOrder,
+    selectedCable !== null
   )
 
   // 5. Interactions

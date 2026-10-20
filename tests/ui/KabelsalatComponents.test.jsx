@@ -5,6 +5,9 @@ import { Rules } from '../../src/scenes/kabelsalat/components/Rules'
 import { Overlays } from '../../src/scenes/kabelsalat/components/Overlays'
 import { PlugGraphics } from '../../src/scenes/kabelsalat/components/PlugGraphics'
 import { SocketGraphics } from '../../src/scenes/kabelsalat/components/SocketGraphics'
+import { SocketItem } from '../../src/scenes/kabelsalat/components/SocketItem'
+import { CableItem } from '../../src/scenes/kabelsalat/components/CableItem'
+import { CABLES } from '../../src/scenes/kabelsalat/kabelsalatConstants'
 
 const mockT = (key, options) => {
   if (options?.count !== undefined) {
@@ -212,6 +215,26 @@ describe('Kabelsalat Components', () => {
       expect(screen.getByText('Test fault')).toBeInTheDocument()
     })
 
+    it('renders a compact shock overlay on phone and keeps the sm sizes', () => {
+      render(
+        <Overlays
+          t={mockT}
+          isShocked={true}
+          isGameOver={false}
+          isPoweredOn={false}
+          faultReason='Test fault'
+        />
+      )
+
+      const title = screen.getByText('ui:minigames.kabelsalat.systemShock')
+      expect(title.className).toContain('text-3xl')
+      expect(title.className).toContain('sm:text-5xl')
+      const reason = screen.getByText('Test fault')
+      expect(reason.className).toContain('text-sm')
+      expect(reason.className).toContain('sm:text-xl')
+      expect(reason.className).toContain('text-center')
+    })
+
     it('renders game over overlay when time is up', () => {
       render(
         <Overlays
@@ -400,6 +423,86 @@ describe('Kabelsalat Components', () => {
 
       const group = container.querySelector('g')
       expect(group).toBeNull()
+    })
+  })
+
+  describe('Touch hit areas', () => {
+    const renderSocket = props =>
+      render(
+        <svg>
+          <SocketItem
+            t={mockT}
+            socketId='mic'
+            index={0}
+            connections={{}}
+            isPowerConnected={false}
+            selectedCable='midi'
+            isGameOver={false}
+            handleSocketClick={() => {}}
+            {...props}
+          />
+        </svg>
+      )
+
+    it('adds a transparent 112-unit hit area to an interactive socket', () => {
+      const { container } = renderSocket()
+
+      const hitArea = container.querySelector(
+        "[data-testid='kabelsalat-socket-hit-area']"
+      )
+      expect(hitArea).not.toBeNull()
+      expect(hitArea?.getAttribute('width')).toBe('112')
+      expect(hitArea?.getAttribute('height')).toBe('112')
+      expect(hitArea?.getAttribute('fill')).toBe('transparent')
+    })
+
+    it('omits the hit area on a connected socket', () => {
+      const { container } = renderSocket({ connections: { mic: 'xlr' } })
+
+      expect(
+        container.querySelector("[data-testid='kabelsalat-socket-hit-area']")
+      ).toBeNull()
+    })
+
+    it('omits the hit area while no cable is selected', () => {
+      const { container } = renderSocket({ selectedCable: null })
+
+      expect(
+        container.querySelector("[data-testid='kabelsalat-socket-hit-area']")
+      ).toBeNull()
+    })
+
+    it('enlarges the transparent hit area of an unselected cable', () => {
+      const { container } = render(
+        <svg>
+          <CableItem
+            t={mockT}
+            cable={CABLES[0]}
+            isConnected={false}
+            isSelected={false}
+            isShocked={false}
+            isGameOver={false}
+            handleCableClick={() => {}}
+          />
+        </svg>
+      )
+
+      const hitArea = container.querySelector(
+        "[data-testid='kabelsalat-cable-hit-area']"
+      )
+      expect(hitArea).not.toBeNull()
+      expect(hitArea?.getAttribute('width')).toBe('112')
+      expect(hitArea?.getAttribute('height')).toBe('150')
+      expect(hitArea?.getAttribute('fill')).toBe('transparent')
+      // The oversized target must not carry the hover tint, so the desktop
+      // hover footprint stays the original 60x80.
+      expect(hitArea?.getAttribute('class') ?? '').not.toContain('group-hover')
+      const tint = container.querySelector(
+        "[data-testid='kabelsalat-cable-hover-tint']"
+      )
+      expect(tint?.getAttribute('width')).toBe('60')
+      expect(tint?.getAttribute('height')).toBe('80')
+      expect(tint?.getAttribute('class')).toContain('group-hover:fill-')
     })
   })
 })

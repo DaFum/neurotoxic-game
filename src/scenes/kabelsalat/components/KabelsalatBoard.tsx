@@ -55,10 +55,10 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
 }) => {
   const { i18n } = useTranslation()
   return (
-    <div className='relative w-full'>
+    <div className='relative w-full sm:mx-auto [@media(min-height:30rem)]:max-w-[min(100%,calc((100svh-14rem)*4/3))]'>
       {/* Void Surge Meter overlay - autonomous mechanic */}
       {!isGameOver && !isPoweredOn && (
-        <div className='mb-2 flex flex-col items-end gap-2 sm:absolute sm:top-5 sm:right-5 sm:z-(--z-hud) sm:mb-0'>
+        <div className='mb-2 flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3'>
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
             {t('ui:minigames.kabelsalat.voidSurge')}:{' '}
             {formatPercent(Math.floor(voidSurge) / 100, i18n.language)}
@@ -82,7 +82,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
             <button
               type='button'
               onClick={purgeVoidSurge}
-              className='mt-2 px-3 py-1 bg-void-black text-xs text-void-purple border border-void-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
+              className='mt-2 sm:mt-0 px-3 py-1 max-sm:min-h-11 max-sm:px-4 [@media(pointer:coarse)]:min-h-11 bg-void-black text-xs text-void-purple border border-void-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
             >
               {t('ui:minigames.kabelsalat.purgeAnomaly')}
             </button>
