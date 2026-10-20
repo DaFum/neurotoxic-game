@@ -129,6 +129,8 @@
   "contraband.passiveActive": "PASSIVE EFFECT ACTIVE",
   "contraband.requiresTarget": "Requires target member.",
   "contraband.targetMemberLabel": "Target Member:",
+  "contraband.targetMemberSelect": "Select target member: {{name}}",
+  "contraband.targetMemberSelected": "Target member: {{name}} (Selected)",
   "contraband.title": "CONTRABAND STASH",
   "contraband.useItem": "USE ITEM",
   "crafting.craft": "Craft",

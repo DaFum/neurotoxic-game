@@ -219,8 +219,3 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
-
-## 2026-10-20 - Group ARIA Labels and Contextual Descriptions for Selection Buttons
-
-**Learning:** Selection button groups (such as band member target selectors in modals) using plain `<button>` tags with `aria-pressed` often lack screen reader context regarding what the button represents or whether selecting it targets that specific entity. Additionally, disabled or locked action buttons need explicit `aria-describedby` linkage to helper text so screen reader users hear why an action is blocked.
-**Action:** Always wrap selection button lists in a `div` with `role="group"` and `aria-labelledby` referencing the section header. Provide dynamic `aria-label` attributes on selection buttons (e.g. `Target member: Matze (Selected)` vs `Select target member: Susi`). Link locked action buttons to helper text with `aria-describedby`.
