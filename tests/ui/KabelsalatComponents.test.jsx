@@ -507,13 +507,13 @@ describe('Kabelsalat Components', () => {
   })
 
   describe('Selected state exposure', () => {
-    const renderCable = isSelected => {
+    const renderCable = (isSelected, isConnected = false) => {
       const { container } = render(
         <svg>
           <CableItem
             t={mockT}
             cable={CABLES[0]}
-            isConnected={false}
+            isConnected={isConnected}
             isSelected={isSelected}
             isShocked={false}
             isGameOver={false}
@@ -530,6 +530,10 @@ describe('Kabelsalat Components', () => {
 
     it('sets aria-pressed false on an unselected cable', () => {
       expect(renderCable(false)?.getAttribute('aria-pressed')).toBe('false')
+    })
+
+    it('omits aria-pressed on a connected cable (activating it disconnects, not toggles)', () => {
+      expect(renderCable(false, true)?.hasAttribute('aria-pressed')).toBe(false)
     })
   })
 })
