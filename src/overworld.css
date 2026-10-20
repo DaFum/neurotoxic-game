@@ -296,7 +296,13 @@
     -4px 0 20px rgb(var(--color-void-black-rgb) / 60%);
   width: 300px;
   margin-bottom: 6px;
-  overflow: hidden;
+
+  /* Reserve the toggle button and the 32px bottom offset so a tall submenu
+     scrolls inside the panel instead of running off the top of a short
+     (landscape phone) viewport. */
+  max-height: calc(100svh - 8rem);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .menu-panel-hdr {
   display: flex;
@@ -606,7 +612,9 @@
     left: 8px;
     width: auto;
     align-items: stretch;
-    z-index: var(--z-hud);
+
+    /* The stacked HUD shares --z-hud and painted over the panel's header. */
+    z-index: calc(var(--z-hud) + 1);
   }
 
   .menu-panel {
