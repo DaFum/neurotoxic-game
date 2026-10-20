@@ -78,7 +78,13 @@ describe('KabelsalatBoard Layering', () => {
     expect(wrapper).not.toBeNull()
     expect(wrapper?.className).toContain('relative w-full')
     const className = wrapper?.className ?? ''
-    expect(className).toContain('sm:max-w-[min(100%,calc((100svh-14rem)*4/3))]')
+    // The height cap only applies on tall-enough viewports: a landscape phone
+    // (e.g. 844x390) is wide enough for `sm` but would shrink the board to ~221px
+    // and push the touch targets back under 44px.
+    expect(className).toContain(
+      '[@media(min-height:30rem)]:max-w-[min(100%,calc((100svh-14rem)*4/3))]'
+    )
+    expect(className).not.toContain(' sm:max-w-[min(')
     expect(className).toContain('sm:mx-auto')
   })
 
@@ -111,6 +117,8 @@ describe('KabelsalatBoard Layering', () => {
       name: 'ui:minigames.kabelsalat.purgeAnomaly'
     })
     expect(className).toContain('max-sm:min-h-11')
+    // Touch devices keep the 44px target even when `sm` applies (landscape).
+    expect(className).toContain('[@media(pointer:coarse)]:min-h-11')
     expect(className).toContain('max-sm:px-4')
     expect(className).toContain('px-3 py-1')
   })
