@@ -413,46 +413,49 @@ test.describe('Visual smoke tests', () => {
     expect(box.x + box.width).toBeLessThanOrEqual(mapBox.x + mapBox.width)
   })
 
-  test('Phone-only pieces flip at the same width as the phone CSS layout', async ({
-    page
-  }, testInfo) => {
-    test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewports')
-    // 640px is where Tailwind's `sm:` starts; the overworld stylesheet used to
-    // keep its phone layout through 640px, so at exactly 640px the resource
-    // line (and the tooltip clamp) switched off while the phone layout stayed.
-    await page.setViewportSize({ width: 639, height: 360 })
-    await skipToMenu(page, { url: '/?seed=1' })
-    await page.getByRole('button', { name: /start tour/i }).click()
-    const prompt = page.getByRole('dialog')
-    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
-      const input = prompt.getByRole('textbox').first()
-      if (await input.count()) await input.fill('Tester')
-      await prompt.getByRole('button', { name: /confirm/i }).click()
-    }
-    await page
-      .getByText(/tour plan/i)
-      .first()
-      .waitFor()
-    await page.waitForTimeout(800)
+  // 640px is where Tailwind's `sm:` starts; the overworld stylesheet used to
+  // keep its phone layout through 640px, so at exactly 640px the resource line
+  // (and the tooltip clamp) switched off while the phone layout stayed. Each
+  // width gets its own viewport instead of a runtime resize, which the CI
+  // headless shell rejects.
+  for (const width of [639, 640]) {
+    test.describe(`at ${width}px`, () => {
+      test.use({ viewport: { width, height: 360 } })
 
-    for (const width of [639, 640]) {
-      await page.setViewportSize({ width, height: 360 })
-      await page.waitForTimeout(300)
-      const state = await page.evaluate(() => {
-        const menu = document.querySelector('.ow-menu')
-        const strip = document.querySelector(
-          '[data-testid="overworld-phone-resources"]'
-        )
-        return {
-          phoneCss: getComputedStyle(menu).position === 'fixed',
-          stripShown:
-            strip !== null && getComputedStyle(strip).display !== 'none'
+      test('phone-only pieces flip with the phone CSS layout', async ({
+        page
+      }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+        await skipToMenu(page, { url: '/?seed=1' })
+        await page.getByRole('button', { name: /start tour/i }).click()
+        const prompt = page.getByRole('dialog')
+        if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+          const input = prompt.getByRole('textbox').first()
+          if (await input.count()) await input.fill('Tester')
+          await prompt.getByRole('button', { name: /confirm/i }).click()
         }
+        await page
+          .getByText(/tour plan/i)
+          .first()
+          .waitFor()
+        await page.waitForTimeout(800)
+
+        const state = await page.evaluate(() => {
+          const menu = document.querySelector('.ow-menu')
+          const strip = document.querySelector(
+            '[data-testid="overworld-phone-resources"]'
+          )
+          return {
+            phoneCss: getComputedStyle(menu).position === 'fixed',
+            stripShown:
+              strip !== null && getComputedStyle(strip).display !== 'none'
+          }
+        })
+        expect(state.phoneCss).toBe(width < 640)
+        expect(state.stripShown).toBe(state.phoneCss)
       })
-      expect(state.phoneCss).toBe(width < 640)
-      expect(state.stripShown).toBe(state.phoneCss)
-    }
-  })
+    })
+  }
 
   test('Expedition cash is never truncated on phones', async ({ page }) => {
     await skipToMenu(page)
