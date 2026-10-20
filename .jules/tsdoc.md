@@ -98,3 +98,4 @@
 | 2026-10-17 | src/context/reducers/expeditionReducer.ts | handleRecordExpeditionObligationSignal, handleDoubleDownExpeditionObligation, handleOfferExpeditionDraft, handleSelectExpeditionDraft, handleResolveExpeditionSocialResult, handleCreateSocialIntelGrant |
 | 2026-10-18 | src/data/craftingRecipes.ts | CraftingRecipe |
 | 2026-10-19 | src/data/expedition/contracts.ts | MAX_NATIVE_EXPEDITION_CONTRACTS, EXPEDITION_CONTRACTS_BY_ID |
+| 2026-10-20 | src/data/expedition/crew.ts | EXPEDITION_CREW, EXPEDITION_CREW_BY_ID |
