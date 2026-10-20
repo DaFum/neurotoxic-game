@@ -254,6 +254,8 @@ test.describe('Visual smoke tests', () => {
       .waitFor()
     await expect(page.locator('.map-wrap')).toBeVisible()
     await expect(page.getByTestId('expedition-status-strip')).toBeVisible()
+    // The Expedition strip already carries the resources; no second line.
+    await expect(page.getByTestId('overworld-phone-resources')).toHaveCount(0)
 
     const m = await page.evaluate(() => {
       const map = document.querySelector('.map-wrap').getBoundingClientRect()
@@ -352,10 +354,14 @@ test.describe('Visual smoke tests', () => {
           /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
         )
         ?.getBoundingClientRect()
+      const strip = document
+        .querySelector('[data-testid="overworld-phone-resources"]')
+        ?.getBoundingClientRect()
       return {
         usable,
         mapTop: map.top,
         hudTop: hud?.top ?? Infinity,
+        stripBottom: strip?.bottom ?? Infinity,
         overlaps
       }
     })
@@ -363,8 +369,48 @@ test.describe('Visual smoke tests', () => {
     // fold (it used to leave ~100px at 320x568, all of it under the menu bar).
     expect(m.usable).toBeGreaterThanOrEqual(200)
     expect(m.mapTop).toBeLessThan(m.hudTop)
+    // Cash, fuel and condition stay on the first screen, above the map, even
+    // though the full status card now sits below it.
+    expect(m.stripBottom).toBeLessThanOrEqual(m.mapTop)
     // Visible node labels in the start cluster never stack on each other.
     expect(m.overlaps).toBe(0)
+  })
+
+  test('Phone node tooltip stays inside the map', async ({ page }) => {
+    // Seed 1 puts a travel target at the map's left edge, where the centred
+    // tooltip used to run 29-38px out of view.
+    await skipToMenu(page, { url: '/?seed=1' })
+    await page.getByRole('button', { name: /start tour/i }).click()
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await page.waitForTimeout(800)
+
+    const { width } = page.viewportSize()
+    test.skip(width >= 641, 'Phone layout only')
+
+    // The first clickable node is the current one; tapping the next one asks
+    // for travel confirmation and leaves its tooltip open.
+    await page.locator('.map-node.clickable[role="button"]').nth(1).tap()
+    const tooltip = page.locator('.map-node div[class*="bg-void-black/90"]', {
+      hasText: /Cap:|ui:map|Pay:/
+    })
+    await expect(tooltip.first()).toBeVisible()
+
+    const box = await tooltip.first().boundingBox()
+    const mapBox = await page.locator('.map-wrap').boundingBox()
+    if (box === null || mapBox === null) {
+      throw new Error('Expected the tooltip and the map to be visible')
+    }
+    expect(box.x).toBeGreaterThanOrEqual(mapBox.x)
+    expect(box.x + box.width).toBeLessThanOrEqual(mapBox.x + mapBox.width)
   })
 
   test('Expedition cash is never truncated on phones', async ({ page }) => {

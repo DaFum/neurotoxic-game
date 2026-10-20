@@ -16,6 +16,8 @@ import {
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
 import { OverworldHUD } from '../ui/overworld/OverworldHUD'
+import { OverworldPhoneResources } from '../ui/overworld/OverworldPhoneResources'
+import { readVanCondition } from '../utils/gameState'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
@@ -35,7 +37,7 @@ import { ExpeditionRunControls } from '../ui/expedition/ExpeditionRunControls'
  * The map navigation scene where players select their next destination.
  */
 export const Overworld = () => {
-  const { t } = useTranslation(['ui', 'venues'])
+  const { t, i18n } = useTranslation(['ui', 'venues'])
   const player = useGameSelector(state => state.player)
   const gameMap = useGameSelector(state => state.gameMap)
   // The base map plus any overlay edge the run may travel; `gameMap` itself
@@ -146,6 +148,15 @@ export const Overworld = () => {
         locationName={locationName}
         isTraveling={isTraveling}
       />
+      {expeditionStatus !== 'active' && (
+        <OverworldPhoneResources
+          money={player.money}
+          fuel={player.van?.fuel}
+          condition={readVanCondition(player.van?.condition)}
+          language={i18n.language}
+          t={t}
+        />
+      )}
       <OverworldHUD
         player={player}
         band={band}

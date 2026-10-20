@@ -586,6 +586,10 @@
   .map-wrap {
     order: 3;
     width: 100%;
+    /* Lets node tooltips size and align against the map width (`cqw`) instead
+       of the node, so one near an edge is not clipped by the map. */
+    container-type: inline-size;
+
     /* Taller on mobile so percentage-positioned nodes get more vertical
        spread and their labels collide less in the cramped portrait viewport. */
     height: clamp(380px, 64svh, 680px);
