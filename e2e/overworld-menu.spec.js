@@ -43,10 +43,13 @@ test.describe('Overworld menu reachability', () => {
         () => page.getByRole('button', { name: /start tour/i }).click(),
         5000
       )
-      if (result === 'crash' || result === 'timeout') {
+      if (result === 'crash') {
         test.skip(true, 'Chromium crashed on Start Tour (audio init).')
         return
       }
+      // A timeout means the click never landed (e.g. an overlay blocks the
+      // button): that is a real failure, not a crash to skip.
+      expect(result).not.toBe('timeout')
 
       const identityDialog = page.getByRole('dialog')
       const confirmBtn = identityDialog.getByRole('button', {
@@ -75,17 +78,19 @@ test.describe('Overworld menu reachability', () => {
       }
 
       await page.getByRole('button', { name: /open menu/i }).click()
-      await page.locator('.menu-cat-btn').nth(2).click()
+      await page.locator('.menu-cat-btn', { hasText: /logistics/i }).click()
 
       // Logistics is the tallest submenu: its first row is the one that used
       // to be clipped (landscape) or covered by the HUD (portrait).
-      const back = page.locator('.menu-back-btn')
+      const submenu = page.locator('#overworld-menu-submenu')
+      await expect(submenu).toBeVisible()
+      const back = submenu.locator('.menu-back-btn')
       await expect(back).toBeVisible()
       expect(await isReachable(back)).toBe(true)
 
       // Whatever does not fit must scroll inside the panel, so the last row is
       // reachable too once the panel is scrolled to its end.
-      const lastItem = page.locator('.menu-sub-item').last()
+      const lastItem = submenu.locator('.menu-sub-item').last()
       await lastItem.scrollIntoViewIfNeeded()
       expect(await isReachable(lastItem)).toBe(true)
     })

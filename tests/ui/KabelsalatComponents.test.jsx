@@ -507,6 +507,10 @@ describe('Kabelsalat Components', () => {
   })
 
   describe('Selected state exposure', () => {
+    /**
+     * @param {boolean} isSelected
+     * @param {boolean} [isConnected]
+     */
     const renderCable = (isSelected, isConnected = false) => {
       const { container } = render(
         <svg>
