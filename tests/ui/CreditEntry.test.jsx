@@ -26,9 +26,25 @@ describe('CreditEntry Component', () => {
       'text-xl',
       'sm:text-2xl',
       'text-balance',
-      'break-words'
+      'wrap-anywhere'
     )
-    expect(getByText('ANIMATION')).toHaveClass('break-words')
+    expect(getByText('ANIMATION')).toHaveClass('wrap-anywhere')
     expect(container.firstElementChild).toHaveClass('px-4')
+  })
+
+  test('lets a long unbroken word wrap instead of widening the column', () => {
+    const longWord = 'Donaudampfschifffahrtsgesellschaftskapitaensmuetze'
+    const { getAllByText } = render(
+      <CreditEntry role={longWord} name={longWord} delay={0} />
+    )
+
+    // `break-words` keeps the min-content width of the word; only
+    // `overflow-wrap: anywhere` lets it shrink below that.
+    const spans = getAllByText(longWord)
+    expect(spans).toHaveLength(2)
+    for (const span of spans) {
+      expect(span).toHaveClass('wrap-anywhere')
+      expect(span).not.toHaveClass('break-words')
+    }
   })
 })

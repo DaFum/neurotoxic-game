@@ -568,4 +568,94 @@ describe('MapNodeView', () => {
       expect(name.className).not.toContain('sm:hidden')
     })
   })
+
+  describe('phone label visibility', () => {
+    const renderLabel = overrides => {
+      render(
+        <MapNodeView
+          node={mockNode}
+          isCurrent={false}
+          isTraveling={false}
+          visibility='visible'
+          isReachable={true}
+          handleTravel={mockHandleTravel}
+          setHoveredNode={mockSetHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={vanUrl}
+          {...overrides}
+        />
+      )
+      const name = screen.getByText(mockNode.venue.name, {
+        selector: '.max-w-28'
+      })
+      return { stack: name.parentElement, name }
+    }
+
+    test('hides the current node label: its name is the scene title', () => {
+      const { stack } = renderLabel({ isCurrent: true })
+      expect(stack.className).toContain('max-sm:hidden')
+    })
+
+    test('keeps the current label of a venue-less Expedition stop: the title names the previous venue', () => {
+      const supplyStop = { id: 'exp_1_0', type: 'SUPPLY_STOP', x: 40, y: 20 }
+      render(
+        <MapNodeView
+          node={supplyStop}
+          isCurrent={true}
+          isTraveling={false}
+          visibility='visible'
+          isReachable={false}
+          handleTravel={mockHandleTravel}
+          setHoveredNode={mockSetHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={vanUrl}
+          expeditionFog={{
+            routeStep: 1,
+            onwardRouteCount: 2,
+            nodeClass: 'SUPPLY',
+            specialSubtype: null,
+            dangerTier: 'low',
+            rewardTier: 'low',
+            isExtractionWindow: false,
+            estimatedPayout: null
+          }}
+        />
+      )
+      const name = document.querySelector('.map-node .max-w-28')
+      expect(name).not.toBeNull()
+      expect(name.parentElement.className).not.toContain('max-sm:hidden')
+      expect(name.parentElement.className).not.toContain('max-[359px]:hidden')
+    })
+
+    test('hides an unreachable node label on phones', () => {
+      const { stack } = renderLabel({ isReachable: false })
+      expect(stack.className).toContain('max-sm:hidden')
+    })
+
+    test('shows a travel target label from 360px up, tap-only below', () => {
+      const { stack } = renderLabel({})
+      expect(stack.className).toContain('max-[359px]:hidden')
+      expect(stack.className).not.toContain('max-sm:hidden')
+    })
+
+    test('reveals any label on hover, including the current node', () => {
+      const { stack } = renderLabel({ isCurrent: true })
+      fireEvent.mouseEnter(screen.getByRole('button'))
+      expect(stack.className).not.toContain('max-sm:hidden')
+      expect(stack.className).not.toContain('max-[359px]:hidden')
+    })
+
+    test('drops the type chip on phones until the node is touched', () => {
+      const { name } = renderLabel({})
+      const chip = name.previousElementSibling
+      expect(chip.className).toContain('max-sm:hidden')
+      fireEvent.mouseEnter(screen.getByRole('button'))
+      expect(chip.className).not.toContain('max-sm:hidden')
+    })
+
+    test('clamps long names to two lines on phones', () => {
+      const { name } = renderLabel({})
+      expect(name.className).toContain('max-sm:line-clamp-2')
+    })
+  })
 })

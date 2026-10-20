@@ -17,10 +17,10 @@ export const CreditEntry = ({ role, name, delay }: CreditEntryProps) => (
     transition={{ delay }}
     className='flex flex-col gap-2 px-4'
   >
-    <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase break-words'>
+    <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase wrap-anywhere'>
       {role}
     </span>
-    <span className='text-star-white text-xl sm:text-2xl font-bold font-display tracking-wide text-balance break-words'>
+    <span className='text-star-white text-xl sm:text-2xl font-bold font-display tracking-wide text-balance wrap-anywhere'>
       {name}
     </span>
     <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />

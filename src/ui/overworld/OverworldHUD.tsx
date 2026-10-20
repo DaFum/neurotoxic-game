@@ -50,7 +50,7 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
 
   return (
     <div
-      className={`absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative ${expeditionActive ? 'max-sm:order-4' : 'max-sm:order-2'} max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2`}
+      className={`absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative max-sm:order-4 max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2`}
     >
       {/* Left Panel - Player Status */}
       <div

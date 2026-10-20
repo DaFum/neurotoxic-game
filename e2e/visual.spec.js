@@ -295,6 +295,78 @@ test.describe('Visual smoke tests', () => {
     }
   })
 
+  test('Career map is usable on the first phone screen', async ({ page }) => {
+    // Seed 2 has a dense start cluster at 320px (the Distillery and Stendal
+    // Town Festival labels stacked before the phone label rules).
+    await skipToMenu(page, { url: '/?seed=2' })
+    await page.getByRole('button', { name: /start tour/i }).click()
+    // A fresh profile gets a name prompt first.
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await expect(page.locator('.map-wrap')).toBeVisible()
+    await page.waitForTimeout(800)
+
+    const { width } = page.viewportSize()
+    test.skip(width >= 641, 'Phone layout only')
+
+    const m = await page.evaluate(() => {
+      const map = document.querySelector('.map-wrap').getBoundingClientRect()
+      const menuBar = [...document.querySelectorAll('.ow-menu button')]
+        .pop()
+        .getBoundingClientRect()
+      // Map the player can actually see and tap: on screen and above the fixed
+      // OPEN MENU bar.
+      const usable = Math.max(
+        0,
+        Math.min(map.bottom, menuBar.top, window.innerHeight) -
+          Math.max(map.top, 0)
+      )
+      const labels = [...document.querySelectorAll('.map-node span.uppercase')]
+        .map(el => el.getBoundingClientRect())
+        .filter(r => r.width > 0 && r.height > 0)
+      let overlaps = 0
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = i + 1; j < labels.length; j++) {
+          const a = labels[i]
+          const b = labels[j]
+          if (
+            a.left < b.right &&
+            b.left < a.right &&
+            a.top < b.bottom &&
+            b.top < a.bottom
+          ) {
+            overlaps++
+          }
+        }
+      }
+      const hud = [...document.querySelectorAll('button')]
+        .find(b =>
+          /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
+        )
+        ?.getBoundingClientRect()
+      return {
+        usable,
+        mapTop: map.top,
+        hudTop: hud?.top ?? Infinity,
+        overlaps
+      }
+    })
+    // The map comes before the status blocks, so it is not pushed below the
+    // fold (it used to leave ~100px at 320x568, all of it under the menu bar).
+    expect(m.usable).toBeGreaterThanOrEqual(200)
+    expect(m.mapTop).toBeLessThan(m.hudTop)
+    // Visible node labels in the start cluster never stack on each other.
+    expect(m.overlaps).toBe(0)
+  })
+
   test('Expedition cash is never truncated on phones', async ({ page }) => {
     await skipToMenu(page)
     await page.getByRole('button', { name: /start expedition/i }).click()
