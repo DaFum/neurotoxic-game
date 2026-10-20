@@ -446,12 +446,18 @@ export const MapNodeView = memo(
     )
 
     // On the cramped mobile map, labels for distant/unreachable nodes pile up
-    // and collide. Show labels only for actionable nodes there; desktop keeps
-    // all labels. Applied via `max-sm:hidden` so only the small breakpoint hides.
+    // and collide. Show labels only for travel targets there; the current
+    // node's name is already the scene title, and its chip is what covered the
+    // neighbouring start-cluster nodes. Desktop keeps all labels. Applied via
+    // `max-sm:hidden` so only the small breakpoint hides. Below 360px the map
+    // is under 310px wide and even those chips stack, so names appear only on
+    // tap/focus (the tooltip and aria-label carry them).
     const labelMobileHiddenClass =
-      isCurrent || isReachable || isHoveredLocal || isPendingConfirm
+      isHoveredLocal || isPendingConfirm
         ? ''
-        : 'max-sm:hidden'
+        : isReachable && !isCurrent
+          ? 'max-[359px]:hidden'
+          : 'max-sm:hidden'
 
     // From `sm` up the type chip stays always visible and the location name
     // shows only for the current, hovered/focused or confirming node, so dense
@@ -561,12 +567,14 @@ export const MapNodeView = memo(
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           {showTypeChip && (
-            <span className='text-xs font-bold uppercase tracking-wide text-star-white/70 px-1 bg-void-black'>
+            <span
+              className={`text-xs font-bold uppercase tracking-wide text-star-white/70 px-1 bg-void-black${isHoveredLocal || isPendingConfirm ? '' : ' max-sm:hidden'}`}
+            >
               {nodeTypeLabel}
             </span>
           )}
           <span
-            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
+            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 max-sm:line-clamp-2 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
           >
             {nodeLocationName}
           </span>
