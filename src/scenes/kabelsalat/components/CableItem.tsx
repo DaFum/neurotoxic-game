@@ -93,10 +93,11 @@ const CableItemComponent: FC<CableItemProps> = ({
 
           {!isSelected && !isGameOver && (
             <rect
-              x='-30'
+              data-testid='kabelsalat-cable-hit-area'
+              x='-56'
               y='-40'
-              width='60'
-              height='80'
+              width='112'
+              height='150'
               fill='transparent'
               className='group-hover:fill-[currentColor] group-hover:opacity-10 transition-colors'
             />

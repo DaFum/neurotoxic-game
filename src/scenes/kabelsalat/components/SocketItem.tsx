@@ -80,6 +80,17 @@ const SocketItemComponent: FC<SocketItemProps> = ({
         label: t(socket.labelKey)
       })}
     >
+      {isInteractive && (
+        <rect
+          data-testid='kabelsalat-socket-hit-area'
+          x='-56'
+          y='-56'
+          width='112'
+          height='112'
+          fill='transparent'
+        />
+      )}
+
       {selectedCable && !isConnected && !isGameOver && (
         <circle
           cx='0'

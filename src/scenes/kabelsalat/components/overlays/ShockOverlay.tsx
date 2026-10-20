@@ -15,10 +15,10 @@ export const ShockOverlay: FC<ShockOverlayProps> = React.memo(
   ({ t, faultReason }) => {
     return (
       <div className='absolute inset-0 z-(--z-overlay) mix-blend-color-dodge flex flex-col items-center justify-center bg-blood-red/50 backdrop-blur-[2px]'>
-        <div className='bg-warning-yellow text-void-black text-5xl font-bold tracking-[0.3em] px-8 py-4 skew-x-[-15deg] shadow-[0_0_50px_var(--color-warning-yellow)]'>
+        <div className='bg-warning-yellow text-void-black text-3xl sm:text-5xl font-bold tracking-[0.15em] sm:tracking-[0.3em] px-4 py-2 sm:px-8 sm:py-4 skew-x-[-15deg] shadow-[0_0_50px_var(--color-warning-yellow)]'>
           {t('ui:minigames.kabelsalat.systemShock')}
         </div>
-        <div className='mt-6 bg-void-black text-star-white text-xl font-bold tracking-widest uppercase px-6 py-2 border-2 border-star-white'>
+        <div className='mt-3 sm:mt-6 bg-void-black text-star-white text-sm sm:text-xl font-bold tracking-widest uppercase px-3 sm:px-6 py-2 border-2 border-star-white text-center max-w-[90%]'>
           {faultReason}
         </div>
       </div>
