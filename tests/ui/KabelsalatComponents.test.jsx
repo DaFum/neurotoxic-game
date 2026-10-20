@@ -494,6 +494,15 @@ describe('Kabelsalat Components', () => {
       expect(hitArea?.getAttribute('width')).toBe('112')
       expect(hitArea?.getAttribute('height')).toBe('150')
       expect(hitArea?.getAttribute('fill')).toBe('transparent')
+      // The oversized target must not carry the hover tint, so the desktop
+      // hover footprint stays the original 60x80.
+      expect(hitArea?.getAttribute('class') ?? '').not.toContain('group-hover')
+      const tint = container.querySelector(
+        "[data-testid='kabelsalat-cable-hover-tint']"
+      )
+      expect(tint?.getAttribute('width')).toBe('60')
+      expect(tint?.getAttribute('height')).toBe('80')
+      expect(tint?.getAttribute('class')).toContain('group-hover:fill-')
     })
   })
 })
