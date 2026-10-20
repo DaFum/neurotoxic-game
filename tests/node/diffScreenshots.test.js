@@ -75,5 +75,8 @@ describe('diff-screenshots.js', () => {
 
     const res = runDiff(before, after)
     strictEqual(res.status, 1)
+    // An unrelated child-process failure also exits 1; name the diagnostic.
+    const output = `${res.stdout}${res.stderr}`
+    ok(output.includes('missing-after'), output)
   })
 })
