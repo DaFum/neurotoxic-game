@@ -28,8 +28,9 @@ const renderBoard = (voidSurge = 0, purgeVoidSurge: () => void = () => {}) =>
 
 const getSurgeBlock = (): Element => {
   const chip = screen.getByText(/ui:minigames\.kabelsalat\.voidSurge/)
-  const block = chip.closest('[class*="sm:absolute"]')
+  const block = chip.parentElement
   expect(block).not.toBeNull()
+  expect(block?.className).toContain('flex-col')
   return block as Element
 }
 
@@ -56,13 +57,39 @@ describe('KabelsalatBoard Layering', () => {
     ).toBeTruthy()
   })
 
-  it('keeps the void surge block in flow on phone and absolute from sm up', () => {
+  it('keeps the void surge block in flow as a row strip from sm up', () => {
     renderBoard(25)
 
     const { className } = getSurgeBlock()
-    expect(className).not.toMatch(/(^|\s)absolute(\s|$)/)
+    expect(className).not.toMatch(/(^|\s)(sm:)?absolute(\s|$)/)
+    expect(className).not.toContain('sm:top-5')
     expect(className).toContain('mb-2')
-    expect(className).toContain('sm:top-5')
+    expect(className).toContain('sm:flex-row')
+  })
+
+  it('binds the board wrapper width to the viewport height from sm up', () => {
+    const { container } = renderBoard(25)
+
+    const board = (container.querySelector('svg') as Element).closest(
+      '[class*="aspect-[4/3]"]'
+    )
+    expect(board).not.toBeNull()
+    const wrapper = (board as Element).parentElement
+    expect(wrapper).not.toBeNull()
+    expect(wrapper?.className).toContain('relative w-full')
+    const className = wrapper?.className ?? ''
+    expect(className).toContain('sm:max-w-[min(100%,calc((100svh-14rem)*4/3))]')
+    expect(className).toContain('sm:mx-auto')
+  })
+
+  it('drops the purge button top margin in the strip row', () => {
+    renderBoard(25)
+
+    expect(
+      screen.getByRole('button', {
+        name: 'ui:minigames.kabelsalat.purgeAnomaly'
+      }).className
+    ).toContain('sm:mt-0')
   })
 
   it('keeps the purge button reachable with the same callback', () => {
