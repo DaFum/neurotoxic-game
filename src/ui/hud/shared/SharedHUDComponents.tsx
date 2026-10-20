@@ -58,7 +58,7 @@ const VanStatusMiniBars = memo(
 )
 
 /** Money below this amount is shown in the danger colour. */
-const LOW_MONEY_THRESHOLD = 40
+export const LOW_MONEY_THRESHOLD = 40
 
 interface PlayerStatusCardVariantConfig {
   wrapperClassName: string

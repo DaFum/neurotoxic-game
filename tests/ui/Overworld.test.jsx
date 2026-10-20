@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import { Overworld } from '../../src/scenes/Overworld.tsx'
 import { GameStateProvider } from '../../src/context/GameState'
 
@@ -98,6 +98,19 @@ describe('Overworld Component', () => {
     // Check buttons
     // verify the menu is present
     expect(screen.getByText(/MANAGEMENT/i)).toBeInTheDocument()
+  })
+
+  it('shows the phone resource line in a career run', () => {
+    render(
+      <GameStateProvider>
+        <Overworld />
+      </GameStateProvider>
+    )
+
+    const strip = screen.getByTestId('overworld-phone-resources')
+    expect(strip).toHaveClass('sm:hidden')
+    expect(within(strip).getByLabelText(/Fuel Level/i)).toBeInTheDocument()
+    expect(within(strip).getByLabelText(/Van Condition/i)).toBeInTheDocument()
   })
 
   it('triggers save game action when save button is clicked', async () => {
