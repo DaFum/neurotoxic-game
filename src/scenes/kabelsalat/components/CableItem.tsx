@@ -48,6 +48,7 @@ const CableItemComponent: FC<CableItemProps> = ({
       onClick={canClick ? handleClick : undefined}
       onKeyDown={canClick ? handleKeyDown : undefined}
       role='button'
+      aria-pressed={isSelected}
       tabIndex={isInteractive || (isConnected && canClick) ? 0 : -1}
       className={
         isInteractive || (isConnected && canClick)

@@ -505,4 +505,31 @@ describe('Kabelsalat Components', () => {
       expect(tint?.getAttribute('class')).toContain('group-hover:fill-')
     })
   })
+
+  describe('Selected state exposure', () => {
+    const renderCable = isSelected => {
+      const { container } = render(
+        <svg>
+          <CableItem
+            t={mockT}
+            cable={CABLES[0]}
+            isConnected={false}
+            isSelected={isSelected}
+            isShocked={false}
+            isGameOver={false}
+            handleCableClick={() => {}}
+          />
+        </svg>
+      )
+      return container.querySelector("[role='button']")
+    }
+
+    it('sets aria-pressed true on a selected cable', () => {
+      expect(renderCable(true)?.getAttribute('aria-pressed')).toBe('true')
+    })
+
+    it('sets aria-pressed false on an unselected cable', () => {
+      expect(renderCable(false)?.getAttribute('aria-pressed')).toBe('false')
+    })
+  })
 })
