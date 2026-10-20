@@ -55,21 +55,10 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
 }) => {
   const { i18n } = useTranslation()
   return (
-    <div
-      className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
-        ${
-          isShocked
-            ? 'border-error-red motion-safe:animate-[shake_0.1s_infinite]'
-            : isPoweredOn
-              ? 'border-success-green shadow-[0_0_30px_var(--color-success-green)]'
-              : isGameOver
-                ? 'border-blood-red'
-                : 'border-concrete-gray'
-        }`}
-    >
+    <div className='relative w-full'>
       {/* Void Surge Meter overlay - autonomous mechanic */}
       {!isGameOver && !isPoweredOn && (
-        <div className='absolute top-4 right-4 z-(--z-hud) flex flex-col items-end gap-2'>
+        <div className='mb-2 flex flex-col items-end gap-2 sm:absolute sm:top-5 sm:right-5 sm:z-(--z-hud) sm:mb-0'>
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
             {t('ui:minigames.kabelsalat.voidSurge')}:{' '}
             {formatPercent(Math.floor(voidSurge) / 100, i18n.language)}
@@ -101,51 +90,64 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         </div>
       )}
 
-      <Overlays
-        t={t}
-        isShocked={isShocked}
-        isGameOver={isGameOver}
-        isPoweredOn={isPoweredOn}
-        faultReason={faultReason}
-        onAdvance={onAdvance}
-      />
-
-      <svg
-        width='100%'
-        height='100%'
-        viewBox='0 0 800 600'
-        preserveAspectRatio='xMidYMid meet'
-        className='absolute inset-0 z-(--z-stage-bg)'
-        role='img'
-        aria-label={t('ui:minigames.kabelsalat.title')}
+      <div
+        className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
+          ${
+            isShocked
+              ? 'border-error-red motion-safe:animate-[shake_0.1s_infinite]'
+              : isPoweredOn
+                ? 'border-success-green shadow-[0_0_30px_var(--color-success-green)]'
+                : isGameOver
+                  ? 'border-blood-red'
+                  : 'border-concrete-gray'
+          }`}
       >
-        <title>{t('ui:minigames.kabelsalat.title')}</title>
-        <RackPanel />
-        <PowerIndicator t={t} isPowerConnected={isPowerConnected} />
-        <LightningEffects lightningSeeds={lightningSeeds} />
-        <ConnectionPaths
-          connections={connections}
-          isPowerConnected={isPowerConnected}
-          socketOrder={socketOrder}
-        />
-        <SocketList
+        <Overlays
           t={t}
-          socketOrder={socketOrder}
-          connections={connections}
-          isPowerConnected={isPowerConnected}
-          selectedCable={selectedCable}
-          isGameOver={isGameOver}
-          handleSocketClick={handleSocketClick}
-        />
-        <CableList
-          t={t}
-          connections={connections}
-          selectedCable={selectedCable}
           isShocked={isShocked}
           isGameOver={isGameOver}
-          handleCableClick={handleCableClick}
+          isPoweredOn={isPoweredOn}
+          faultReason={faultReason}
+          onAdvance={onAdvance}
         />
-      </svg>
+
+        <svg
+          width='100%'
+          height='100%'
+          viewBox='0 0 800 600'
+          preserveAspectRatio='xMidYMid meet'
+          className='absolute inset-0 z-(--z-stage-bg)'
+          role='img'
+          aria-label={t('ui:minigames.kabelsalat.title')}
+        >
+          <title>{t('ui:minigames.kabelsalat.title')}</title>
+          <RackPanel />
+          <PowerIndicator t={t} isPowerConnected={isPowerConnected} />
+          <LightningEffects lightningSeeds={lightningSeeds} />
+          <ConnectionPaths
+            connections={connections}
+            isPowerConnected={isPowerConnected}
+            socketOrder={socketOrder}
+          />
+          <SocketList
+            t={t}
+            socketOrder={socketOrder}
+            connections={connections}
+            isPowerConnected={isPowerConnected}
+            selectedCable={selectedCable}
+            isGameOver={isGameOver}
+            handleSocketClick={handleSocketClick}
+          />
+          <CableList
+            t={t}
+            connections={connections}
+            selectedCable={selectedCable}
+            isShocked={isShocked}
+            isGameOver={isGameOver}
+            handleCableClick={handleCableClick}
+          />
+        </svg>
+      </div>
     </div>
   )
 }

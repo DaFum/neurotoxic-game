@@ -468,7 +468,7 @@ export const MapNodeView = memo(
     return (
       <div
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
-          ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : 'z-(--z-stage-bg)'}
+          ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : isReachable ? 'z-(--z-stage)' : 'z-(--z-stage-bg)'}
           ${!isReachable && !isCurrent ? 'opacity-60 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black' : ''}
       `}

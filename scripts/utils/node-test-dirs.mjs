@@ -28,6 +28,7 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/analyzeDuplicates.test.js',
   'tests/node/balanceSourceFiles.test.js',
   'tests/node/deadCodeBudget.test.js',
+  'tests/node/diffScreenshots.test.js',
   'tests/node/game-balance-cadence-probe.test.js',
   'tests/node/game-balance-experiments.test.js',
   'tests/node/game-balance-simulation.test.js',

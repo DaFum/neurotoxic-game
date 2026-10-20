@@ -75,7 +75,7 @@ export const PostGig = () => {
   return (
     <div
       data-testid='post-gig-screen'
-      className='w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 lg:p-8 bg-void-black text-star-white relative'
+      className='w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start sm:justify-center p-3 max-sm:pt-44 sm:p-6 lg:p-8 bg-void-black text-star-white relative'
     >
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none'

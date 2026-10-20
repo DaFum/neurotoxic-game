@@ -468,4 +468,41 @@ describe('MapNodeView', () => {
     expect(screen.getByText(/45 ui:unit.minutesShort/)).toBeInTheDocument()
     expect(screen.queryByText(/45m/)).not.toBeInTheDocument()
   })
+
+  describe('node stacking tiers', () => {
+    const renderNode = overrides => {
+      const { container } = render(
+        <MapNodeView
+          node={mockNode}
+          isCurrent={false}
+          isTraveling={false}
+          visibility='visible'
+          isReachable={false}
+          handleTravel={mockHandleTravel}
+          setHoveredNode={mockSetHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={vanUrl}
+          {...overrides}
+        />
+      )
+      return container.querySelector('.map-node').className
+    }
+
+    test('reachable node sits in the middle tier above unreachable nodes', () => {
+      const className = renderNode({ isReachable: true })
+      expect(className).toMatch(/(^|\s)z-\(--z-stage\)(\s|$)/)
+      expect(className).not.toContain('z-(--z-stage-bg)')
+      expect(className).not.toContain('z-(--z-stage-controls)')
+    })
+
+    test('unreachable node stays in the lowest tier', () => {
+      const className = renderNode({ isReachable: false })
+      expect(className).toMatch(/(^|\s)z-\(--z-stage-bg\)(\s|$)/)
+    })
+
+    test('current node stays in the top tier', () => {
+      const className = renderNode({ isCurrent: true })
+      expect(className).toContain('z-(--z-stage-controls)')
+    })
+  })
 })
