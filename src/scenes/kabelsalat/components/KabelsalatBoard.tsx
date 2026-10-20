@@ -82,7 +82,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
             <button
               type='button'
               onClick={purgeVoidSurge}
-              className='mt-2 sm:mt-0 px-3 py-1 max-sm:min-h-11 max-sm:px-4 [@media(pointer:coarse)]:min-h-11 bg-void-black text-xs text-void-purple border border-void-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
+              className='mt-2 sm:mt-0 px-3 py-1 max-sm:min-h-11 max-sm:px-4 [@media(pointer:coarse)]:min-h-11 bg-void-black text-xs text-void-purple border border-void-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green'
             >
               {t('ui:minigames.kabelsalat.purgeAnomaly')}
             </button>

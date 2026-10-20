@@ -122,4 +122,14 @@ describe('KabelsalatBoard Layering', () => {
     expect(className).toContain('max-sm:px-4')
     expect(className).toContain('px-3 py-1')
   })
+
+  it('gives the PURGE ANOMALY button a visible keyboard focus ring', () => {
+    renderBoard(25)
+
+    const { className } = screen.getByRole('button', {
+      name: 'ui:minigames.kabelsalat.purgeAnomaly'
+    })
+    expect(className).toContain('focus-visible:ring-2')
+    expect(className).toContain('focus-visible:ring-toxic-green')
+  })
 })

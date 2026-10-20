@@ -266,6 +266,103 @@ describe('KabelsalatScene - timer and game over', () => {
   })
 })
 
+describe('KabelsalatScene - fully wired win', () => {
+  let mockCompleteMinigame
+  let mockChangeScene
+
+  // Valid order: power first, then amp, then the rest.
+  const WIRING = [
+    ['Cable PWR', 'Socket AC_230V'],
+    ['Cable JACK', 'Socket AMP_IN'],
+    ['Cable XLR', 'Socket MIC_IN'],
+    ['Cable 9V', 'Socket 9V_DC'],
+    ['Cable MIDI', 'Socket MIDI_IN']
+  ]
+
+  // Sockets are re-queried by label each step, so the 2 s reshuffle cannot
+  // send a click to a stale position.
+  const wireEverything = () => {
+    for (const [cable, socket] of WIRING) {
+      fireEvent.click(screen.getByRole('button', { name: cable }))
+      fireEvent.click(screen.getByRole('button', { name: socket }))
+    }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.useFakeTimers()
+    mockCompleteMinigame = vi.fn()
+    mockChangeScene = vi.fn()
+
+    vi.mocked(useGameActions).mockReturnValue({
+      completeKabelsalatMinigame: mockCompleteMinigame,
+      changeScene: mockChangeScene
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('powers on after five real connections and auto-advances to GIG', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    wireEverything()
+
+    await act(async () => {
+      vi.advanceTimersByTime(600)
+    })
+
+    expect(
+      screen.getByText('ui:minigames.kabelsalat.success')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/GIG CANCELLED/)).toBeNull()
+    expect(mockChangeScene).not.toHaveBeenCalled()
+
+    await act(async () => {
+      vi.advanceTimersByTime(2500)
+    })
+
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockCompleteMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('routes to GIG immediately from the powered-on continue button', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    wireEverything()
+
+    await act(async () => {
+      vi.advanceTimersByTime(600)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'CONTINUE TO GIG' }))
+
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockCompleteMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+
+    // The pending auto-advance must not route a second time.
+    await act(async () => {
+      vi.advanceTimersByTime(2500)
+    })
+
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('KabelsalatScene - accessibility', () => {
   it('provides aria-labels for cables', async () => {
     await act(async () => {
