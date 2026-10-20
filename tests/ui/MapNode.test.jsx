@@ -596,6 +596,37 @@ describe('MapNodeView', () => {
       expect(stack.className).toContain('max-sm:hidden')
     })
 
+    test('keeps the current label of a venue-less Expedition stop: the title names the previous venue', () => {
+      const supplyStop = { id: 'exp_1_0', type: 'SUPPLY_STOP', x: 40, y: 20 }
+      render(
+        <MapNodeView
+          node={supplyStop}
+          isCurrent={true}
+          isTraveling={false}
+          visibility='visible'
+          isReachable={false}
+          handleTravel={mockHandleTravel}
+          setHoveredNode={mockSetHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={vanUrl}
+          expeditionFog={{
+            routeStep: 1,
+            onwardRouteCount: 2,
+            nodeClass: 'SUPPLY',
+            specialSubtype: null,
+            dangerTier: 'low',
+            rewardTier: 'low',
+            isExtractionWindow: false,
+            estimatedPayout: null
+          }}
+        />
+      )
+      const name = document.querySelector('.map-node .max-w-28')
+      expect(name).not.toBeNull()
+      expect(name.parentElement.className).not.toContain('max-sm:hidden')
+      expect(name.parentElement.className).not.toContain('max-[359px]:hidden')
+    })
+
     test('hides an unreachable node label on phones', () => {
       const { stack } = renderLabel({ isReachable: false })
       expect(stack.className).toContain('max-sm:hidden')

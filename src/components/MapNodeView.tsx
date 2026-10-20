@@ -447,13 +447,18 @@ export const MapNodeView = memo(
 
     // On the cramped mobile map, labels for distant/unreachable nodes pile up
     // and collide. Show labels only for travel targets there; the current
-    // node's name is already the scene title, and its chip is what covered the
-    // neighbouring start-cluster nodes. Desktop keeps all labels. Applied via
+    // venue's name is already the scene title, and its chip is what covered the
+    // neighbouring start-cluster nodes. A venue-less Expedition stop is the
+    // exception: the title still names the previous venue, so its chip is the
+    // only identification. Desktop keeps all labels. Applied via
     // `max-sm:hidden` so only the small breakpoint hides. Below 360px the map
     // is under 310px wide and even those chips stack, so names appear only on
     // tap/focus (the tooltip and aria-label carry them).
+    const currentNameIsSceneTitle = isCurrent && Boolean(node.venue?.name)
     const labelMobileHiddenClass =
-      isHoveredLocal || isPendingConfirm
+      isHoveredLocal ||
+      isPendingConfirm ||
+      (isCurrent && !currentNameIsSceneTitle)
         ? ''
         : isReachable && !isCurrent
           ? 'max-[359px]:hidden'
