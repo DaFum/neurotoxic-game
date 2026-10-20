@@ -19,6 +19,7 @@ import { shuffleInPlace } from '../../../utils/shuffleUtils'
  * @param connections - Current cable-to-socket connection map.
  * @param isWinningRef - Ref that guards one-shot win transitions.
  * @param setSocketOrder - Setter receiving the next socket order.
+ * @param isCableSelected - Suspends reshuffling while a cable is selected so the target socket stays put; a fresh interval starts after deselection.
  */
 export const useKabelsalatShuffle = (
   isPoweredOn: boolean,
@@ -26,7 +27,8 @@ export const useKabelsalatShuffle = (
   isShocked: boolean,
   connections: Partial<Record<SocketId, CableId>>,
   isWinningRef: MutableRefObject<boolean>,
-  setSocketOrder: Dispatch<SetStateAction<SocketId[]>>
+  setSocketOrder: Dispatch<SetStateAction<SocketId[]>>,
+  isCableSelected: boolean
 ) => {
   const unconnectedIds = useMemo(() => {
     return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
@@ -40,6 +42,7 @@ export const useKabelsalatShuffle = (
       isPoweredOn ||
       isGameOver ||
       isShocked ||
+      isCableSelected ||
       isWinningRef.current ||
       unconnectedIds.length <= 1
     ) {
@@ -71,6 +74,7 @@ export const useKabelsalatShuffle = (
     isPoweredOn,
     isGameOver,
     isShocked,
+    isCableSelected,
     unconnectedIds,
     connections,
     isWinningRef,
