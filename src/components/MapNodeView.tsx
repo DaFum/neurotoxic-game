@@ -254,12 +254,15 @@ const MapNodeTooltip = memo(
            bottom of this box. Above the node there is no label stack, so a
            small gap is enough. */
         /* On phones the tooltip stays centred on its node but its centre is
-           clamped 128px (half of the 15rem cap, plus an 8px margin) inside the
-           map's edges, so a node near either edge cannot push it out of view.
+           clamped inside the map's edges, so a node near either edge cannot
+           push it out of view. Everything is in rem (or map-width `cqw`) so it
+           follows the root font size like the tooltip cap and the node box do:
+           the tooltip is at most min(15rem, map width - 1rem) wide, so its
+           half-width plus a 0.5rem margin is min(8rem, 50cqw) at most.
            `--node-x` is the node's left offset in map-width percent; the
-           trailing 32px is the node box's half-width. */
+           trailing 2rem is the node box's half-width (`w-16` / `-ml-8`). */
         style={TOOLTIP_PHONE_STYLE(node.x)}
-        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} ${flipAbove ? 'bottom-full mb-2' : 'top-full mt-[3.75rem]'} absolute left-1/2 -translate-x-1/2 max-sm:left-[calc(clamp(128px,var(--node-x)*1cqw,100cqw-128px)-var(--node-x)*1cqw+32px)] bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] max-sm:max-w-[min(15rem,calc(100cqw-16px))] whitespace-normal break-words text-left pointer-events-none`}
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} ${flipAbove ? 'bottom-full mb-2' : 'top-full mt-[3.75rem]'} absolute left-1/2 -translate-x-1/2 max-sm:left-[calc(clamp(min(8rem,50cqw),var(--node-x)*1cqw,100cqw-min(8rem,50cqw))-var(--node-x)*1cqw+2rem)] bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] max-sm:max-w-[min(15rem,calc(100cqw-1rem))] whitespace-normal break-words text-left pointer-events-none`}
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 

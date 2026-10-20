@@ -376,42 +376,56 @@ test.describe('Visual smoke tests', () => {
     expect(m.overlaps).toBe(0)
   })
 
-  test('Phone node tooltip stays inside the map', async ({ page }) => {
-    // Seed 1 puts a travel target at the map's left edge, where the centred
-    // tooltip used to run 29-38px out of view.
-    await skipToMenu(page, { url: '/?seed=1' })
-    await page.getByRole('button', { name: /start tour/i }).click()
-    const prompt = page.getByRole('dialog')
-    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
-      const input = prompt.getByRole('textbox').first()
-      if (await input.count()) await input.fill('Tester')
-      await prompt.getByRole('button', { name: /confirm/i }).click()
-    }
-    await page
-      .getByText(/tour plan/i)
-      .first()
-      .waitFor()
-    await page.waitForTimeout(800)
+  // The tooltip cap and the node box are in rem, so enlarged text (a browser or
+  // OS font setting) moves the clamp's bounds; check the default and two larger
+  // root font sizes.
+  for (const fontSize of [16, 20, 24]) {
+    test(`Phone node tooltip stays inside the map at a ${fontSize}px root font`, async ({
+      page
+    }) => {
+      // Seed 1 puts a travel target at the map's left edge, where the centred
+      // tooltip used to run 29-38px out of view.
+      await skipToMenu(page, { url: '/?seed=1' })
+      await page.getByRole('button', { name: /start tour/i }).click()
+      const prompt = page.getByRole('dialog')
+      if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+        const input = prompt.getByRole('textbox').first()
+        if (await input.count()) await input.fill('Tester')
+        await prompt.getByRole('button', { name: /confirm/i }).click()
+      }
+      await page
+        .getByText(/tour plan/i)
+        .first()
+        .waitFor()
+      await page.waitForTimeout(800)
 
-    const { width } = page.viewportSize()
-    test.skip(width >= 641, 'Phone layout only')
+      const { width } = page.viewportSize()
+      test.skip(width >= 641, 'Phone layout only')
 
-    // The first clickable node is the current one; tapping the next one asks
-    // for travel confirmation and leaves its tooltip open.
-    await page.locator('.map-node.clickable[role="button"]').nth(1).tap()
-    const tooltip = page.locator('.map-node div[class*="bg-void-black/90"]', {
-      hasText: /Cap:|ui:map|Pay:/
+      await page.evaluate(size => {
+        document.documentElement.style.fontSize = `${size}px`
+      }, fontSize)
+      await page.waitForTimeout(400)
+
+      // The first clickable node is the current one; tapping the next one asks
+      // for travel confirmation and leaves its tooltip open.
+      await page.locator('.map-node.clickable[role="button"]').nth(1).tap()
+      const tooltip = page.locator('.map-node div[class*="bg-void-black/90"]', {
+        hasText: /Cap:|ui:map|Pay:/
+      })
+      await expect(tooltip.first()).toBeVisible()
+
+      const box = await tooltip.first().boundingBox()
+      const mapBox = await page.locator('.map-wrap').boundingBox()
+      if (box === null || mapBox === null) {
+        throw new Error('Expected the tooltip and the map to be visible')
+      }
+      expect(box.x).toBeGreaterThanOrEqual(mapBox.x)
+      expect(box.x + box.width).toBeLessThanOrEqual(mapBox.x + mapBox.width)
+      expect(box.y).toBeGreaterThanOrEqual(mapBox.y)
+      expect(box.y + box.height).toBeLessThanOrEqual(mapBox.y + mapBox.height)
     })
-    await expect(tooltip.first()).toBeVisible()
-
-    const box = await tooltip.first().boundingBox()
-    const mapBox = await page.locator('.map-wrap').boundingBox()
-    if (box === null || mapBox === null) {
-      throw new Error('Expected the tooltip and the map to be visible')
-    }
-    expect(box.x).toBeGreaterThanOrEqual(mapBox.x)
-    expect(box.x + box.width).toBeLessThanOrEqual(mapBox.x + mapBox.width)
-  })
+  }
 
   // 640px is where Tailwind's `sm:` starts; the overworld stylesheet used to
   // keep its phone layout through 640px, so at exactly 640px the resource line
