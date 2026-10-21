@@ -2359,3 +2359,42 @@ test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
     assert.equal(handleSetTerminalOutcome(state, bad), state)
   }
 })
+
+test('an open supply-stop shop survives a JSON round trip and is capped on load', () => {
+  const items = [
+    {
+      id: 'item_1',
+      name: 'Snack',
+      cost: 5,
+      effect: { type: 'stat', stat: 'mood' }
+    }
+  ]
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify({ pendingSupplyStopInventory: items }))
+  )
+  // The sanitizer's copies are prototype-less; compare by content.
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(loaded.pendingSupplyStopInventory)),
+    items
+  )
+
+  const flood = Array.from({ length: 100 }, (_, i) => ({ id: i, cost: 1 }))
+  const capped = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: [...flood, 'junk', null]
+  })
+  assert.equal(capped.pendingSupplyStopInventory.length, 24)
+})
+
+test('loading a save without a shop closes the live session shop', () => {
+  const live = {
+    ...createInitialState(),
+    pendingSupplyStopInventory: [{ id: 'x', cost: 1 }]
+  }
+  assert.equal(handleLoadGame(live, {}).pendingSupplyStopInventory, null)
+  assert.equal(
+    handleLoadGame(live, { pendingSupplyStopInventory: 'nope' })
+      .pendingSupplyStopInventory,
+    null
+  )
+})

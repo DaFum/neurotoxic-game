@@ -4,6 +4,7 @@ import {
   sanitizeSocial,
   sanitizeSetlist,
   sanitizeActiveEvent,
+  sanitizeSupplyStopInventory,
   sanitizeToasts,
   sanitizeReputationByRegion,
   sanitizeActiveQuests,
@@ -254,6 +255,11 @@ export const handleLoadGame = (
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     terminalOutcome: sanitizeTerminalOutcome(loadedState.terminalOutcome),
+    // Transient, so it is always set from the save (null when absent): a load
+    // over a live session must not keep that session's open shop.
+    pendingSupplyStopInventory: sanitizeSupplyStopInventory(
+      loadedState.pendingSupplyStopInventory
+    ),
     toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion

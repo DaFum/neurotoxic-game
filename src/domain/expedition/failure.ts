@@ -15,6 +15,7 @@
  */
 
 import { checkSoftlock } from '../../utils/mapUtils'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 import {
   calculateRefuelCost,
   shouldTriggerBankruptcy
@@ -173,7 +174,9 @@ export const getExpeditionMobilityFailureSignal = (
   if (
     !travelBlockedHere &&
     !checkSoftlock(state.gameMap, strandedView, state.band, {
-      dailyObligations: getTotalDailyObligations(state)
+      dailyObligations: getTotalDailyObligations(state),
+      fuelMultiplier:
+        getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier
     })
   ) {
     return null

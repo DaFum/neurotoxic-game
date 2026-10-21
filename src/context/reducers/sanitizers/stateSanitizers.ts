@@ -1662,6 +1662,40 @@ const rehydrateRegistryEvent = (event: GameEvent): void => {
     event.tags = sanitizeStringArray(registered.tags)
 }
 
+const MAX_SUPPLY_STOP_ITEMS = 24
+
+/**
+ * Sanitizes the supply-stop shop that was open when the game was saved.
+ *
+ * @remarks
+ * The stock is the node's own `shopInventory`, a plain list of purchasable
+ * items, so each entry is copied through the JSON-safe copier and anything that
+ * is not an object is dropped. The list is capped so a hostile save cannot
+ * inflate state.
+ *
+ * @param value - The raw untrusted saved inventory
+ * @returns The cleaned items, or null when no shop was open
+ */
+export const sanitizeSupplyStopInventory = (
+  value: unknown
+): GameState['pendingSupplyStopInventory'] => {
+  if (!Array.isArray(value)) return null
+  const items: NonNullable<GameState['pendingSupplyStopInventory']> = []
+  for (
+    let i = 0;
+    i < value.length && items.length < MAX_SUPPLY_STOP_ITEMS;
+    i++
+  ) {
+    const copied = copySafeJsonValue(value[i])
+    if (isLooseRecord(copied) && !isEmptyObject(copied)) {
+      items.push(
+        copied as NonNullable<GameState['pendingSupplyStopInventory']>[number]
+      )
+    }
+  }
+  return items
+}
+
 /**
  * Sanitizes the active game event state.
  *

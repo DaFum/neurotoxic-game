@@ -140,6 +140,29 @@ describe('mapUtils', () => {
       assert.equal(checkSoftlock(gameMap, player), true)
     })
 
+    test('prices a leg at the effective expedition fuel multiplier', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 9 }, money: 0 }
+
+      // A 10 L leg is out of reach on 9 L at the neutral rate, but a 0.85
+      // multiplier makes it an 8.5 L leg, matching settlement.
+      assert.equal(checkSoftlock(gameMap, player), true)
+      assert.equal(
+        checkSoftlock(gameMap, player, null, { fuelMultiplier: 0.85 }),
+        false
+      )
+      // A heavier chassis can make a previously reachable leg unreachable.
+      const fuller = { ...player, van: { fuel: 11 } }
+      assert.equal(checkSoftlock(gameMap, fuller), false)
+      assert.equal(
+        checkSoftlock(gameMap, fuller, null, { fuelMultiplier: 1.2 }),
+        true
+      )
+    })
+
     test('treats non-finite fuel as empty when checking reachable neighbors', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 30
