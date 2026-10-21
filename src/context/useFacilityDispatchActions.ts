@@ -35,9 +35,7 @@ export interface FacilityDispatchActions {
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
   darkWebLeak: (payload: Parameters<typeof createDarkWebLeakAction>[0]) => void
-    voidSermon: (
-      payload: Parameters<typeof createVoidSermonAction>[0]
-    ) => void
+  voidSermon: (payload: Parameters<typeof createVoidSermonAction>[0]) => void
   cultIndoctrination: (
     payload: Parameters<typeof createCultIndoctrinationAction>[0]
   ) => void
@@ -83,8 +81,7 @@ export function useFacilityDispatchActions(
       pirateBroadcast: payload =>
         dispatch(createPirateBroadcastAction(payload)),
       darkWebLeak: payload => dispatch(createDarkWebLeakAction(payload)),
-      voidSermon: payload =>
-        dispatch(createVoidSermonAction(payload)),
+      voidSermon: payload => dispatch(createVoidSermonAction(payload)),
       cultIndoctrination: payload =>
         dispatch(createCultIndoctrinationAction(payload)),
       merchPress: payload => dispatch(createMerchPressAction(payload)),

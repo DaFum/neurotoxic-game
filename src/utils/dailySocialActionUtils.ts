@@ -11,7 +11,10 @@ import type {
  * Social-state fields recording the day a zealotry action last ran.
  */
 type ZealotryActionDayField =
-  'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay' | 'lastVoidSermonDay'
+  | 'lastPirateBroadcastDay'
+  | 'lastDarkWebLeakDay'
+  | 'lastCultIndoctrinationDay'
+  | 'lastVoidSermonDay'
 
 /**
  * Static description of one once-per-day zealotry social action.

@@ -552,6 +552,7 @@ export const OverworldMenu = React.memo(
         openClinic,
         openDarkWebLeak,
         openCultIndoctrination,
+        openVoidSermon,
         openHQ,
         openMerchPress,
         openPirateRadio,

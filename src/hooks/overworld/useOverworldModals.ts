@@ -1,4 +1,4 @@
-import { useVoidSermon } from "../useVoidSermon"
+import { useVoidSermon } from '../useVoidSermon'
 import { useBandHQModal } from '../useBandHQModal'
 import { useQuestsModal } from '../useQuestsModal'
 import { useContrabandStash } from '../useContrabandStash'

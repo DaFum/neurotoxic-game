@@ -747,8 +747,10 @@ export const handleMerchPress = (
 }
 
 type ZealotryDayField =
-  'lastVoidSermonDay' |
-  'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
+  | 'lastVoidSermonDay'
+  | 'lastPirateBroadcastDay'
+  | 'lastDarkWebLeakDay'
+  | 'lastCultIndoctrinationDay'
 
 const applyZealotryAction = (
   state: GameState,
@@ -948,8 +950,7 @@ export const handleVoidSermon = (
   applyZealotryAction(state, payload, 'lastVoidSermonDay', {
     optionalGainFields: false,
     duplicateLogMessage: 'Void sermon already triggered today',
-    insufficientLogMessage:
-      'Insufficient funds or harmony for void sermon',
+    insufficientLogMessage: 'Insufficient funds or harmony for void sermon',
     invalidLogMessage: 'Invalid void sermon payload',
     invalidPayloadShapeLogMessage: 'Invalid payload for VOID_SERMON',
     gate: {
