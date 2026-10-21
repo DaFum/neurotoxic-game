@@ -462,6 +462,48 @@ describe('useLeaderboardSync', () => {
     expect(localStorage.getItem(key)).toBe(stored)
   })
 
+  it('resends a snapshot that equals the last confirmed one after a stale response', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue(okResponse())
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'stale-revert', money: 500 })
+    })
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1) // X (500) confirmed
+
+    let resolveY
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise(resolve => {
+          resolveY = () =>
+            resolve({
+              ok: true,
+              status: 200,
+              json: () =>
+                Promise.resolve({ success: true, stale: true, revision: 9e12 })
+            })
+        })
+    )
+    rerender(makeState({ playerId: 'stale-revert', money: 400 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2) // Y (400) in flight
+
+    // Back to X while Y is on the wire; another tab then wrote Z.
+    rerender(makeState({ playerId: 'stale-revert', money: 500 }))
+    resolveY()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    const last = bodies(mockFetch)[2]
+    expect(last.money).toBe(500)
+    expect(last.revision).toBeGreaterThan(9e12)
+  })
+
   it('backs off when the server keeps answering stale', async () => {
     vi.useFakeTimers()
     const stale = revision => ({

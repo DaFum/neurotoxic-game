@@ -334,6 +334,11 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
       // The server holds a newer revision than this client has used. Adopt it
       // and send the snapshot again, or the board would stay on the old one.
       adoptServerRevision(payload.playerId, result.revision)
+      // The server holds a snapshot this client never confirmed, so the last
+      // confirmed key no longer says what is stored: forget it, or a pending
+      // snapshot that equals it would be skipped and the board left behind.
+      slot.lastSentKey = null
+      setSafeStorageItem(lastSyncedKeyStorageKey(payload.playerId), '')
       slot.pending ??= payload
       // The first catch-up goes out at the base interval; if the server is
       // still ahead (a second tab or device), back off like a failure.
