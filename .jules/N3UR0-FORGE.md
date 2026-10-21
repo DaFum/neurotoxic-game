@@ -154,3 +154,16 @@ After travel, the band can acquire an item with special effects to use.
   characters.ts: Added `iron_liver` to the CLINIC traits registry.
   gameConstants.ts: Exposed `IRON_LIVER_TRAIT_ID` in CLINIC_CONFIG.
   ClinicMemberCard.tsx: Added brutalist UI for the new fame-based mutation.
+
+## 2026-10-21 - VOID SERMON (OVERWORLD SIDE HUSTLE)
+
+**Feature:** Void Sermon (Overworld Side Hustle)
+
+**Description:**
+- Lore Integration:
+  The band holds an illegal sermon to the Void, extracting dark donations and brainwashing attendees. It requires significant Zealotry and costs Band Harmony while spiking Controversy, but it generates an immediate burst of Fame and additional Zealotry, perfectly matching the Kranker Schrank lore.
+- State Impact:
+  `actionTypes.ts`: Added `VOID_SERMON`.
+  `socialReducer.ts`: Added `handleVoidSermon`, mapping it safely to the `applyZealotryAction` architecture.
+  `social.d.ts`: Expanded `SocialState` with `lastVoidSermonDay`.
+  `OverworldMenu.tsx` & `OverworldModals.tsx`: Brutalist UI integrated into the hustles section, guarded by daily cooldowns and exact limits.

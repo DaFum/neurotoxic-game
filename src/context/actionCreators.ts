@@ -63,6 +63,7 @@ import type {
   SocialState,
   DarkWebLeakPayload,
   CultIndoctrinationPayload,
+  VoidSermonPayload,
   PurchaseItem
 } from '../types'
 import type { AssetKind, RiskEventDescriptor } from '../types/assets'
@@ -131,7 +132,7 @@ export const createUpdatePlayerAction = (
     type: ActionTypes.UPDATE_PLAYER,
     payload:
       typeof updates === 'function'
-        ? prev => sanitizePlayerUpdates(updates(prev))
+        ? (prev: any) => sanitizePlayerUpdates(updates(prev))
         : sanitizePlayerUpdates(updates)
   }
 }
@@ -200,7 +201,7 @@ export const createUpdateBandAction = (
     type: ActionTypes.UPDATE_BAND,
     payload:
       typeof updates === 'function'
-        ? prev => sanitizeBandUpdates(updates(prev))
+        ? (prev: any) => sanitizeBandUpdates(updates(prev))
         : sanitizeBandUpdates(updates)
   }
 }
@@ -1282,6 +1283,29 @@ export const createCultIndoctrinationAction = (
   payload: CultIndoctrinationPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CULT_INDOCTRINATION }> => ({
   type: ActionTypes.CULT_INDOCTRINATION,
+  payload: sanitizeNonNegativePayload(
+    payload,
+    ['fameGain', 'zealotryGain', 'controversyGain'],
+    ['cost', 'harmonyCost']
+  )
+})
+
+/**
+ * Creates an action to trigger a void sermon.
+ *
+ * @param payload - Sermon cost and reward deltas. Numeric economy/social fields
+ * are normalized as non-negative values before dispatch.
+ * - `payload.cost` - Money cost.
+ * - `payload.fameGain` - Fame gained.
+ * - `payload.zealotryGain` - Zealotry gained.
+ * - `payload.controversyGain` - Controversy gained.
+ * - `payload.harmonyCost` - Band harmony lost.
+ * - `payload.successToast` - Optional. Toast object appended to state on success.
+ */
+export const createVoidSermonAction = (
+  payload: VoidSermonPayload
+): Extract<GameAction, { type: typeof ActionTypes.VOID_SERMON }> => ({
+  type: ActionTypes.VOID_SERMON,
   payload: sanitizeNonNegativePayload(
     payload,
     ['fameGain', 'zealotryGain', 'controversyGain'],

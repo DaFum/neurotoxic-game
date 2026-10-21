@@ -355,6 +355,7 @@ export type GameAction =
   | Action<(typeof ActionTypes)['DARK_WEB_LEAK'], DarkWebLeakPayload>
   | Action<
       (typeof ActionTypes)['CULT_INDOCTRINATION'],
+      (typeof ActionTypes)['VOID_SERMON'],
       CultIndoctrinationPayload
     >
   | Action<(typeof ActionTypes)['SET_PENDING_BANDHQ_OPEN'], boolean>

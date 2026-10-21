@@ -32,7 +32,7 @@ interface ZealotryActionModalLabels {
  * (`title`, `description`, `cost`, `fame`, `zealotry`, `controversy`,
  * `harmony_cost`, `ran_today`, `execute`).
  */
-type ZealotryActionI18nPrefix = 'dark_web_leak' | 'cult_indoctrination'
+type ZealotryActionI18nPrefix = 'dark_web_leak' | 'cult_indoctrination' | 'void_sermon'
 
 /**
  * Either pre-resolved labels (actions with bespoke copy, e.g. Pirate Radio) or

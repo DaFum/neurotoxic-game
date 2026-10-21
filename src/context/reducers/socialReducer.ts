@@ -11,7 +11,8 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
-  CultIndoctrinationPayload
+  CultIndoctrinationPayload,
+  VoidSermonPayload
 } from '../../types'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
@@ -55,7 +56,8 @@ import { recordExpeditionArchiveObservations } from './careerReducer'
 import { sanitizeSocialUpdates } from './sanitizers/stateSanitizers'
 import {
   CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
-  DARK_WEB_LEAK_REQUIRED_CONTROVERSY
+  DARK_WEB_LEAK_REQUIRED_CONTROVERSY,
+  VOID_SERMON_REQUIRED_ZEALOTRY
 } from '../../data/zealotryActionGates'
 
 /** Controversy at or above this voids active brand deals. */
@@ -745,6 +747,7 @@ export const handleMerchPress = (
 }
 
 type ZealotryDayField =
+  'lastVoidSermonDay' |
   'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
 
 const applyZealotryAction = (
@@ -927,5 +930,31 @@ export const handleCultIndoctrination = (
       field: 'zealotry',
       required: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
       logMessage: 'Zealotry too low for cult indoctrination'
+    }
+  })
+
+/**
+ * Applies the once-per-day void sermon social action.
+ *
+ * @param state - Current game state before the sermon.
+ * @param payload - Required cost and gains, harmony cost, and optional success toast.
+ * @returns Updated state with zealotry-style deltas, or the original state when
+ * validation, cooldown, or the `VOID_SERMON_REQUIRED_ZEALOTRY` gate fails.
+ */
+export const handleVoidSermon = (
+  state: GameState,
+  payload: VoidSermonPayload | null | undefined
+): GameState =>
+  applyZealotryAction(state, payload, 'lastVoidSermonDay', {
+    optionalGainFields: false,
+    duplicateLogMessage: 'Void sermon already triggered today',
+    insufficientLogMessage:
+      'Insufficient funds or harmony for void sermon',
+    invalidLogMessage: 'Invalid void sermon payload',
+    invalidPayloadShapeLogMessage: 'Invalid payload for VOID_SERMON',
+    gate: {
+      field: 'zealotry',
+      required: VOID_SERMON_REQUIRED_ZEALOTRY,
+      logMessage: 'Zealotry too low for void sermon'
     }
   })

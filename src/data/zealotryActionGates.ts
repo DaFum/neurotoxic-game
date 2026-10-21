@@ -18,3 +18,6 @@ export const DARK_WEB_LEAK_REQUIRED_CONTROVERSY = HIGH_CONTROVERSY_THRESHOLD
 
 /** Minimum `social.zealotry` required for a cult indoctrination. */
 export const CULT_INDOCTRINATION_REQUIRED_ZEALOTRY = 50
+
+/** Minimum `social.zealotry` required for a void sermon. */
+export const VOID_SERMON_REQUIRED_ZEALOTRY = 30
