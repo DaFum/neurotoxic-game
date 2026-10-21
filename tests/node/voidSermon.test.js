@@ -95,4 +95,67 @@ test('Void Sermon', async t => {
     assert.strictEqual(nextState.player.fame, 100)
     assert.strictEqual(nextState.social.lastVoidSermonDay, null)
   })
+  const baseState = (overrides = {}) => {
+    const initialState = createInitialState()
+    return {
+      ...initialState,
+      player: { ...initialState.player, money: 2000, fame: 100 },
+      band: { ...initialState.band, harmony: 80 },
+      social: {
+        ...initialState.social,
+        zealotry: VOID_SERMON_REQUIRED_ZEALOTRY,
+        controversyLevel: 10,
+        lastVoidSermonDay: null
+      },
+      ...overrides
+    }
+  }
+  const payload = {
+    cost: 750,
+    fameGain: 400,
+    zealotryGain: 25,
+    controversyGain: 40,
+    harmonyCost: 25
+  }
+  const sermon = state =>
+    gameReducer(state, { type: ActionTypes.VOID_SERMON, payload })
+
+  await t.test('accepts zealotry exactly at the gate', () => {
+    const next = sermon(baseState())
+    assert.strictEqual(next.player.money, 1250)
+    assert.strictEqual(next.social.zealotry, VOID_SERMON_REQUIRED_ZEALOTRY + 25)
+  })
+
+  await t.test('rejects a second sermon on the same day', () => {
+    const once = sermon(baseState())
+    const twice = sermon(once)
+    assert.strictEqual(twice, once)
+  })
+
+  await t.test('rejects a non-finite cost payload', () => {
+    const state = baseState()
+    const next = gameReducer(state, {
+      type: ActionTypes.VOID_SERMON,
+      payload: { ...payload, cost: Number.NaN }
+    })
+    assert.strictEqual(next.player.money, state.player.money)
+    assert.strictEqual(next.social.lastVoidSermonDay, null)
+  })
+
+  await t.test(
+    'rejects a spend that crosses the protected expedition cash floor',
+    () => {
+      const state = baseState({
+        player: { ...baseState().player, money: 1000 },
+        expedition: {
+          ...createInitialState().expedition,
+          status: 'active',
+          protectedCareerCash: 500
+        }
+      })
+      const next = sermon(state)
+      assert.strictEqual(next.player.money, 1000)
+      assert.strictEqual(next.social.lastVoidSermonDay, null)
+    }
+  )
 })

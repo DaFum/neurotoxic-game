@@ -835,6 +835,7 @@ describe('Action Creators', () => {
         'lastPirateBroadcastDay',
         'lastDarkWebLeakDay',
         'lastCultIndoctrinationDay',
+        'lastVoidSermonDay',
         'controversyLevel',
         'loyalty',
         'zealotry',
@@ -907,7 +908,8 @@ describe('Action Creators', () => {
         'lastGigDifficulty',
         'lastPirateBroadcastDay',
         'lastDarkWebLeakDay',
-        'lastCultIndoctrinationDay'
+        'lastCultIndoctrinationDay',
+        'lastVoidSermonDay'
       ]
       const expectedNull = {}
       nullableFields.forEach(f => {

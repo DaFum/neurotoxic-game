@@ -133,7 +133,7 @@ describe('ZealotryActionModal', () => {
     }
   })
 
-  it.each(['dark_web_leak', 'cult_indoctrination'] as const)(
+  it.each(['dark_web_leak', 'cult_indoctrination', 'void_sermon'] as const)(
     'resolves its labels from the %s locale prefix',
     prefix => {
       const { labels: _labels, ...rest } = defaultProps
