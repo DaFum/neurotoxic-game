@@ -6,13 +6,23 @@ import { clearEdgeBackground } from '../../utils/backgroundKey'
 // getPixiColorFromToken accepts both `--token` and `--color-token` forms
 // (see CSS-property derivation below). Mirror both keys here so the SSR/test
 // fallback path matches the runtime path.
+// ⚡ BOLT OPTIMIZATION: Built PIXI_TOKEN_FALLBACKS map via procedural for...in loop
+// Why: Object.entries().flatMap() and Object.fromEntries() allocate multiple temporary arrays and closures during module load.
+// Impact: Eliminates ~50+ intermediate array/tuple allocations on module evaluation.
+const buildPixiTokenFallbacks = (): Record<string, string> => {
+  const fallbacks: Record<string, string> = {}
+  for (const name in BRAND_COLOR_HEX) {
+    if (Object.hasOwn(BRAND_COLOR_HEX, name)) {
+      const hex = BRAND_COLOR_HEX[name as keyof typeof BRAND_COLOR_HEX]
+      fallbacks[`--${name}`] = hex
+      fallbacks[`--color-${name}`] = hex
+    }
+  }
+  return fallbacks
+}
+
 const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
-  Object.fromEntries(
-    Object.entries(BRAND_COLOR_HEX).flatMap(([name, hex]) => [
-      [`--${name}`, hex],
-      [`--color-${name}`, hex]
-    ])
-  )
+  buildPixiTokenFallbacks()
 )
 
 const normalizeHexColor = (colorValue: unknown): string | null => {
