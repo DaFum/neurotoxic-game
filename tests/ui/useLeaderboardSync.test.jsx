@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useLeaderboardSync } from '../../src/hooks/useLeaderboardSync'
 import { logger } from '../../src/utils/logger'
+import { resetStorageFallback } from '../../src/utils/storage'
 
 // Mock Logger
 vi.mock('../../src/utils/logger', () => ({
@@ -43,6 +44,9 @@ describe('useLeaderboardSync', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    // The hook writes through the storage helpers, whose degraded-storage flag
+    // survives `clear()` (see tests/AGENTS.md).
+    resetStorageFallback()
     global.fetch = mockFetch
   })
 
@@ -191,6 +195,41 @@ describe('useLeaderboardSync', () => {
     // The intermediate 600 snapshot is skipped; only the latest goes out.
     expect(mockFetch).toHaveBeenCalledTimes(2)
     expect(bodies(mockFetch)[1].money).toBe(700)
+  })
+
+  it('queues a return to the previously synced snapshot while another is in flight', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({ ok: true })
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'revert', money: 500 })
+    })
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1) // X (500) is now on the server
+
+    let resolveA
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise(resolve => {
+          resolveA = () => resolve({ ok: true })
+        })
+    )
+    rerender(makeState({ playerId: 'revert', money: 400 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2) // A (400) is in flight
+
+    // The live state goes back to X while A is still on the wire.
+    rerender(makeState({ playerId: 'revert', money: 500 }))
+    resolveA()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+
+    // The server would otherwise stay on A; X must be sent again.
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    expect(bodies(mockFetch)[2].money).toBe(500)
   })
 
   it('publishes the final-day snapshot without another day tick', async () => {

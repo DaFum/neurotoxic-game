@@ -2347,6 +2347,21 @@ test('terminal outcome survives a JSON round trip and routes load to GAMEOVER', 
   assert.equal(without.terminalOutcome, null)
 })
 
+test('terminal outcome ignores a reason inherited from a polluted prototype', () => {
+  Object.prototype.reason = 'bankruptcy'
+  try {
+    const state = createInitialState()
+    assert.equal(handleSetTerminalOutcome(state, {}), state)
+    assert.equal(
+      handleLoadGame(createInitialState(), { terminalOutcome: {} })
+        .terminalOutcome,
+      null
+    )
+  } finally {
+    delete Object.prototype.reason
+  }
+})
+
 test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
   const state = createInitialState()
   for (const bad of [
@@ -2361,14 +2376,7 @@ test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
 })
 
 test('an open supply-stop shop survives a JSON round trip and is capped on load', () => {
-  const items = [
-    {
-      id: 'item_1',
-      name: 'Snack',
-      cost: 5,
-      effect: { type: 'stat', stat: 'mood' }
-    }
-  ]
+  const items = [{ id: 'item_1', name: 'Snack', cost: 5 }]
   const loaded = handleLoadGame(
     createInitialState(),
     JSON.parse(JSON.stringify({ pendingSupplyStopInventory: items }))
@@ -2384,6 +2392,34 @@ test('an open supply-stop shop survives a JSON round trip and is capped on load'
     pendingSupplyStopInventory: [...flood, 'junk', null]
   })
   assert.equal(capped.pendingSupplyStopInventory.length, 24)
+})
+
+test('restored supply-stop items go through the shop item field schema', () => {
+  const loaded = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: [
+      { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
+      { id: 'bad_cost', cost: 'free' }
+    ]
+  })
+  const [first, second] = loaded.pendingSupplyStopInventory
+  // A negative cost can never turn a purchase into income.
+  assert.equal(first.cost, 0)
+  assert.equal(Object.hasOwn(first, 'secret'), false)
+  // A non-numeric cost is dropped rather than copied.
+  assert.equal(Object.hasOwn(second, 'cost'), false)
+})
+
+test('restored supply-stop items drop forbidden prototype keys', () => {
+  const hostile = JSON.parse(
+    '[{"id":"x","cost":1,"__proto__":{"polluted":true},"constructor":{"x":1}}]'
+  )
+  const loaded = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: hostile
+  })
+  const [item] = loaded.pendingSupplyStopInventory
+  assert.equal(Object.hasOwn(item, '__proto__'), false)
+  assert.equal(Object.hasOwn(item, 'constructor'), false)
+  assert.equal({}.polluted, undefined)
 })
 
 test('loading a save without a shop closes the live session shop', () => {

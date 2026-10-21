@@ -65,6 +65,7 @@ export type TerminalOutcome =
   | { reason: 'event_game_over'; eventId: string }
   | { reason: 'bankruptcy' }
   | { reason: 'career_victory' }
+  | { reason: 'stranded' }
 
 export interface GameSettings {
   crtEnabled: boolean

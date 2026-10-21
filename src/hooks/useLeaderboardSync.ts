@@ -27,6 +27,8 @@ const MIN_SYNC_INTERVAL_MS = 15000
 /** Per-player sync state: at most one request in flight, latest snapshot kept. */
 type SyncSlot = {
   inFlight: boolean
+  /** Snapshot key of the request currently on the wire, if any. */
+  inFlightKey: string | null
   pending: LeaderboardStatsPayload | null
   lastSentKey: string | null
   lastSentAt: number | null
@@ -213,6 +215,7 @@ const getSlot = (playerId: string): SyncSlot => {
   )
   const slot: SyncSlot = {
     inFlight: false,
+    inFlightKey: null,
     pending: null,
     lastSentKey: typeof stored === 'string' ? stored : null,
     lastSentAt: null,
@@ -245,6 +248,7 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
   if (key === slot.lastSentKey) return
 
   slot.inFlight = true
+  slot.inFlightKey = key
   slot.lastSentAt = clock.now()
   try {
     const didSync = await syncLeaderboardStats({
@@ -261,6 +265,7 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
     logger.warn('Leaderboard', 'Stats sync failed', error)
   } finally {
     slot.inFlight = false
+    slot.inFlightKey = null
     // A change that arrived during the request goes out next.
     if (slot.pending && snapshotKey(slot.pending) !== slot.lastSentKey) {
       scheduleFlush(slot, clock)
@@ -324,7 +329,11 @@ export const useLeaderboardSync = (
       totalFollowers
     )
     const slot = getSlot(payload.playerId)
-    if (snapshotKey(payload) === slot.lastSentKey) {
+    // What the server will hold once nothing is pending: the request on the
+    // wire if there is one, else the last confirmed snapshot. Returning to an
+    // older snapshot while a different one is in flight is therefore still a
+    // change and must be queued.
+    if (snapshotKey(payload) === (slot.inFlightKey ?? slot.lastSentKey)) {
       slot.pending = null
       return
     }

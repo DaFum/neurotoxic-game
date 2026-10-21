@@ -167,3 +167,25 @@ test('a costly option is not refused outside a run or without protected cash', (
     true
   )
 })
+
+test('a percentage cost is priced against the real balance', () => {
+  const theft = {
+    label: 'Pay off the thief',
+    effect: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: -40,
+      min: -500
+    }
+  }
+  const walkAway = { label: 'Walk away' }
+  // 40% of €1,000 is €400, far above the €10 that is spendable.
+  const state = eventWith([theft, walkAway], 1000, 990)
+  assert.equal(isOptionAffordable(theft, state), false)
+  assert.equal(resolveEventChoice(theft, state).result.outcome, 'rejected')
+  // With enough spendable cash the same option is fine.
+  assert.equal(
+    isOptionAffordable(theft, eventWith([theft, walkAway], 1000, 500)),
+    true
+  )
+})

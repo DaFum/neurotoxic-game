@@ -1669,8 +1669,8 @@ const MAX_SUPPLY_STOP_ITEMS = 24
  *
  * @remarks
  * The stock is the node's own `shopInventory`, a plain list of purchasable
- * items, so each entry is copied through the JSON-safe copier and anything that
- * is not an object is dropped. The list is capped so a hostile save cannot
+ * items, so each entry goes through the shop-item field schema and anything
+ * that is not an object is dropped. The list is capped so a hostile save cannot
  * inflate state.
  *
  * @param value - The raw untrusted saved inventory
@@ -1686,12 +1686,10 @@ export const sanitizeSupplyStopInventory = (
     i < value.length && items.length < MAX_SUPPLY_STOP_ITEMS;
     i++
   ) {
-    const copied = copySafeJsonValue(value[i])
-    if (isLooseRecord(copied) && !isEmptyObject(copied)) {
-      items.push(
-        copied as NonNullable<GameState['pendingSupplyStopInventory']>[number]
-      )
-    }
+    // The same per-field schema the map's shop stock goes through, so a crafted
+    // save cannot smuggle in a negative cost or an unvalidated effect.
+    const item = sanitizeShopInventoryItem(value[i])
+    if (item && Object.keys(item).length > 0) items.push(item)
   }
   return items
 }

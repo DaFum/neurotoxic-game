@@ -16,8 +16,12 @@ import type { EffectShape, EngineGameState, EventChoice } from './types'
 type MoneyCostOption = { effect?: unknown; effects?: unknown }
 
 /** The money an option's direct effect(s) charge, as a non-negative number. */
-const directMoneyCost = (option: MoneyCostOption): number => {
-  const total = getOptionPreviewMoney(option, null)
+const directMoneyCost = (
+  option: MoneyCostOption,
+  gameState: EngineGameState
+): number => {
+  // Priced against the real balance so a percentage cost is not read as zero.
+  const total = getOptionPreviewMoney(option, gameState)
   return total !== null && total < 0 ? -total : 0
 }
 
@@ -46,7 +50,7 @@ export const isOptionAffordable = (
   option: EventChoice,
   gameState: EngineGameState
 ): boolean => {
-  const cost = directMoneyCost(option)
+  const cost = directMoneyCost(option, gameState)
   if (cost <= 0) return true
   const full = gameState as unknown as GameState
   if (getExpeditionProtectedCash(full) === 0) return true
@@ -63,7 +67,7 @@ export const isOptionAffordable = (
     if (sibling === option) return false
     if (ownKey !== undefined && optionKey(sibling) === ownKey) return false
     if (sibling.condition && !sibling.condition(view)) return false
-    return directMoneyCost(sibling) <= spendable
+    return directMoneyCost(sibling, gameState) <= spendable
   })
 }
 

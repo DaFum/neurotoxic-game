@@ -1047,12 +1047,23 @@ export const handleSetPendingSupplyStopInventory = (
  */
 const sanitizeTerminalOutcome = (value: unknown): TerminalOutcome | null => {
   if (!isLooseRecord(value) || hasForbiddenKeysDeep(value)) return null
-  if (value.reason === 'bankruptcy' || value.reason === 'career_victory') {
-    return { reason: value.reason }
+  // Own-property reads only: an inherited `reason` from a polluted prototype
+  // must never count as save data.
+  if (!Object.hasOwn(value, 'reason')) return null
+  const reason = value.reason
+  if (
+    reason === 'bankruptcy' ||
+    reason === 'career_victory' ||
+    reason === 'stranded'
+  ) {
+    return { reason }
   }
-  if (value.reason !== 'event_game_over') return null
-  if (typeof value.eventId !== 'string' || value.eventId === '') return null
-  return { reason: value.reason, eventId: value.eventId }
+  if (reason !== 'event_game_over' || !Object.hasOwn(value, 'eventId')) {
+    return null
+  }
+  const eventId = value.eventId
+  if (typeof eventId !== 'string' || eventId === '') return null
+  return { reason, eventId }
 }
 
 /**
