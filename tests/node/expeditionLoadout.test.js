@@ -799,6 +799,20 @@ describe('protected career cash floor', () => {
     )
   })
 
+  it('applies a mandatory event delta in full instead of cancelling it at the floor', () => {
+    const state = activeRun({ money: 1000, protectedCareerCash: 900 })
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_EVENT_DELTA,
+      payload: {
+        player: { money: -450, time: -3 },
+        social: { controversyLevel: 30 }
+      }
+    })
+    assert.notEqual(next, state)
+    assert.equal(next.player.money, 550)
+    assert.equal(next.social.controversyLevel, 30)
+  })
+
   it('fails closed on a corrupt protected slice: any spend is refused', () => {
     for (const corrupt of [Number.NaN, -100]) {
       const state = activeRun({ money: 2000, protectedCareerCash: 900 })

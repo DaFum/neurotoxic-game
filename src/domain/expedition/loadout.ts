@@ -933,6 +933,10 @@ export const validateExpeditionBuildCommitment = (
  *   wants unpayable obligations to surface as the bankruptcy crisis, which the
  *   failure shell derives from the same spendable slice. G2 owns the full
  *   active-Expedition day policy.
+ * - `APPLY_EVENT_DELTA` carries an event's mandatory consequences. Cash, time,
+ *   controversy and confiscation arrive bundled, so rejecting the debit would
+ *   also cancel the unrelated penalties while the event still closes. The
+ *   reducer clamps money at zero, so the protected slice absorbs the shortfall.
  * - `LOAD_GAME`/`RESET_STATE` install a state rather than spend from one, so
  *   comparing their result against the previous state's floor is meaningless.
  * - The Expedition terminal actions settle the run. A settlement only ever
@@ -941,6 +945,7 @@ export const validateExpeditionBuildCommitment = (
  */
 const EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS: ReadonlySet<string> = new Set([
   ActionTypes.ADVANCE_DAY,
+  ActionTypes.APPLY_EVENT_DELTA,
   ActionTypes.LOAD_GAME,
   ActionTypes.RESET_STATE,
   ActionTypes.EXTRACT_EXPEDITION,
