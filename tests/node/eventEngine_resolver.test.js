@@ -189,3 +189,11 @@ test('a percentage cost is priced against the real balance', () => {
     true
   )
 })
+
+test('a disabled sibling is not an escape, so the event cannot lock', () => {
+  const repair = paidOption('Pay for repair', 50)
+  const walkAway = { label: 'Walk away', disabled: true }
+  const state = eventWith([repair, walkAway], 1000, 990)
+  // The modal refuses the disabled option, so the paid one must stay payable.
+  assert.equal(isOptionAffordable(repair, state), true)
+})

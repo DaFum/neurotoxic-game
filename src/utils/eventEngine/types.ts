@@ -29,6 +29,8 @@ export type EngineEvent = {
  * Selectable event option with effects, flags, or skill-check data.
  */
 export type EventChoice = {
+  /** The modal refuses a disabled option outright. */
+  disabled?: boolean
   condition?: (gameState: EngineGameState) => boolean
   effect?: EffectShape
   flags?: string[]

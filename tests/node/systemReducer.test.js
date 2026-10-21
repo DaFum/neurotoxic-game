@@ -2434,3 +2434,12 @@ test('loading a save without a shop closes the live session shop', () => {
     null
   )
 })
+
+test('a saved supply-stop list with nothing usable restores no open shop', () => {
+  for (const pendingSupplyStopInventory of [[], ['junk', null, 5]]) {
+    const loaded = handleLoadGame(createInitialState(), {
+      pendingSupplyStopInventory
+    })
+    assert.equal(loaded.pendingSupplyStopInventory, null)
+  }
+})

@@ -23,7 +23,8 @@ import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
   handleCompleteExpedition,
   handleOfferExpeditionDraft,
-  handleRecordExpeditionObligationSignal
+  handleRecordExpeditionObligationSignal,
+  settleExpeditionOnGameOver
 } from './expeditionReducer'
 import { handleUpdateBand } from './bandReducer'
 import { handleRecordExpeditionCrewStressSource } from './crewReducer'
@@ -277,11 +278,13 @@ export const settlePendingGigOnLoad = (
   }
 
   if (!bankrupt && !careerFinale) return next
-  return {
+  const ended: GameState = {
     ...next,
     terminalOutcome: bankrupt
       ? { reason: 'bankruptcy' }
       : { reason: 'career_victory' },
     currentScene: GAME_PHASES.GAMEOVER
   }
+  // A run still active when the Career goes bankrupt ends with it.
+  return bankrupt ? settleExpeditionOnGameOver(ended, 'bankruptcy') : ended
 }

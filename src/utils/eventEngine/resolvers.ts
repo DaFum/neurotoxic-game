@@ -65,6 +65,7 @@ export const isOptionAffordable = (
   ) as EventChoice[]
   return !siblings.some(sibling => {
     if (sibling === option) return false
+    if (sibling.disabled) return false
     if (ownKey !== undefined && optionKey(sibling) === ownKey) return false
     if (sibling.condition && !sibling.condition(view)) return false
     return directMoneyCost(sibling, gameState) <= spendable

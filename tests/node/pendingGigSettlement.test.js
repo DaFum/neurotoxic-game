@@ -416,3 +416,33 @@ test('capExpeditionSpendAtCashFloor refuses only a spend that crosses the floor'
   )
   assert.equal(capExpeditionSpendAtCashFloor(undefined, 5000, 3000), 3000)
 })
+
+test('a bankrupting settlement on load also ends an active run', () => {
+  const started = startedState({ money: 100, fame: 100 })
+  const atResult = {
+    ...started,
+    currentScene: GAME_PHASES.POST_GIG,
+    currentGig: { id: 'bust_venue', name: 'Bust Venue' },
+    lastGigStats: { score: 1000, misses: 0, accuracy: 40, failed: false }
+  }
+  const action = createRecordPendingGigSettlementAction({
+    gigId: 'bust_venue',
+    net: -100000,
+    perfScore: 10,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: {}
+  })
+  assert.ok(action)
+  const recorded = gameReducer(atResult, action)
+  assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(recorded)))
+  )
+  assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(loaded.terminalOutcome, { reason: 'bankruptcy' })
+  assert.equal(loaded.expedition.status, 'failed')
+  assert.equal(loaded.expedition.outcome?.reason, 'bankruptcy')
+})

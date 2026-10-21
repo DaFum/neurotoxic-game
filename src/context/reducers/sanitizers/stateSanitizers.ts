@@ -1674,7 +1674,7 @@ const MAX_SUPPLY_STOP_ITEMS = 24
  * inflate state.
  *
  * @param value - The raw untrusted saved inventory
- * @returns The cleaned items, or null when no shop was open
+ * @returns The cleaned items, or null when no shop was open or nothing usable remains
  */
 export const sanitizeSupplyStopInventory = (
   value: unknown
@@ -1691,7 +1691,8 @@ export const sanitizeSupplyStopInventory = (
     const item = sanitizeShopInventoryItem(value[i])
     if (item && Object.keys(item).length > 0) items.push(item)
   }
-  return items
+  // Nothing usable left is no open shop, not an empty one.
+  return items.length > 0 ? items : null
 }
 
 /**

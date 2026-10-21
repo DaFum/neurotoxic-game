@@ -35,6 +35,13 @@ const makeState = (overrides = {}) => {
   }
 }
 
+// A fetch Response look-alike: the hook always reads the JSON body.
+const okResponse = () => ({
+  ok: true,
+  status: 200,
+  json: () => Promise.resolve({ success: true })
+})
+
 const bodies = fetchMock =>
   fetchMock.mock.calls.map(([, options]) => JSON.parse(options.body))
 
@@ -79,7 +86,7 @@ describe('useLeaderboardSync', () => {
   })
 
   it('syncs the current stats with a revision when the player is valid', async () => {
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     renderHook(() =>
       useLeaderboardSync(
@@ -120,7 +127,7 @@ describe('useLeaderboardSync', () => {
   })
 
   it('sums followers with non-finite platform counts treated as 0', async () => {
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     renderHook(() =>
       useLeaderboardSync(
@@ -142,7 +149,7 @@ describe('useLeaderboardSync', () => {
 
   it('publishes same-day changes, including decreases, after the throttle', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'same-day', money: 500 })
@@ -173,10 +180,10 @@ describe('useLeaderboardSync', () => {
     mockFetch.mockImplementationOnce(
       () =>
         new Promise(resolve => {
-          resolveFirst = () => resolve({ ok: true })
+          resolveFirst = () => resolve(okResponse())
         })
     )
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'coalesce', money: 500 })
@@ -199,7 +206,7 @@ describe('useLeaderboardSync', () => {
 
   it('queues a return to the previously synced snapshot while another is in flight', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'revert', money: 500 })
@@ -211,7 +218,7 @@ describe('useLeaderboardSync', () => {
     mockFetch.mockImplementationOnce(
       () =>
         new Promise(resolve => {
-          resolveA = () => resolve({ ok: true })
+          resolveA = () => resolve(okResponse())
         })
     )
     rerender(makeState({ playerId: 'revert', money: 400 }))
@@ -234,7 +241,7 @@ describe('useLeaderboardSync', () => {
 
   it('publishes the final-day snapshot without another day tick', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'final-day', day: 9, fame: 100 })
@@ -250,7 +257,7 @@ describe('useLeaderboardSync', () => {
 
   it('sends strictly increasing revisions even if the clock goes backwards', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
     // A previous session already used a revision far ahead of this clock.
     localStorage.setItem('neurotoxic_stats_revision:rev', '9999999999999')
     const clock = { now: () => 1000, today: () => new Date(1000) }
@@ -270,7 +277,7 @@ describe('useLeaderboardSync', () => {
 
   it('restarts from the clock when the stored revision is not a safe integer', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
     localStorage.setItem('neurotoxic_stats_revision:huge', '1e20')
     const clock = { now: () => 5000, today: () => new Date(5000) }
 
@@ -301,7 +308,7 @@ describe('useLeaderboardSync', () => {
       status: 500,
       statusText: 'Server Error'
     })
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     renderHook(() => useLeaderboardSync(makeState({ playerId: 'retry' })))
     await act(async () => {})
@@ -332,7 +339,7 @@ describe('useLeaderboardSync', () => {
           rejectFirst = () => reject(new Error('network'))
         })
     )
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'retry-newer', money: 500 })
@@ -387,7 +394,7 @@ describe('useLeaderboardSync', () => {
     vi.useFakeTimers()
     mockFetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'x' })
     mockFetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'x' })
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
       initialProps: makeState({ playerId: 'fresh-attempt', money: 500 })
@@ -413,7 +420,7 @@ describe('useLeaderboardSync', () => {
       json: () =>
         Promise.resolve({ success: true, stale: true, revision: 9e12 })
     })
-    mockFetch.mockResolvedValue({ ok: true })
+    mockFetch.mockResolvedValue(okResponse())
     const clock = { now: () => 1000, today: () => new Date(1000) }
 
     renderHook(() =>
@@ -429,6 +436,58 @@ describe('useLeaderboardSync', () => {
     expect(
       localStorage.getItem('neurotoxic_last_synced_snapshot:behind')
     ).not.toBeNull()
+  })
+
+  it('does not allocate a revision for a skipped flush', async () => {
+    vi.useFakeTimers()
+    // A fresh module: the 404 verdict is session state and must not leak.
+    vi.resetModules()
+    const { useLeaderboardSync: useFreshSync } =
+      await import('../../src/hooks/useLeaderboardSync')
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 404 })
+    const { rerender } = renderHook(state => useFreshSync(state), {
+      initialProps: makeState({ playerId: 'skipped-flush', money: 500 })
+    })
+    await act(async () => {})
+    const key = 'neurotoxic_stats_revision:skipped-flush'
+    const stored = localStorage.getItem(key)
+    expect(stored).not.toBeNull()
+
+    // The endpoint is now known to be missing: later flushes send nothing.
+    rerender(makeState({ playerId: 'skipped-flush', money: 900 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem(key)).toBe(stored)
+  })
+
+  it('backs off when the server keeps answering stale', async () => {
+    vi.useFakeTimers()
+    const stale = revision => ({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ success: true, stale: true, revision })
+    })
+    mockFetch.mockResolvedValueOnce(stale(5e12))
+    mockFetch.mockResolvedValueOnce(stale(6e12))
+    mockFetch.mockResolvedValue(okResponse())
+
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'two-tabs' })))
+    await act(async () => {})
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2) // first catch-up: base interval
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2) // second stale: now backing off
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(3)
   })
 
   it('logs concurrent 404 responses once and disables later session syncs', async () => {

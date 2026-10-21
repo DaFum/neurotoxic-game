@@ -35,6 +35,8 @@ type SyncSlot = {
   lastSentAt: number | null
   /** Consecutive failed requests, for the retry backoff. */
   failures: number
+  /** Consecutive stale responses, so two writers cannot loop at the base rate. */
+  staleStreak: number
   /** Snapshot key of the failed request a retry is waiting on. */
   retryKey: string | null
   timer: ReturnType<typeof setTimeout> | null
@@ -184,16 +186,19 @@ const isRetryable = (error: unknown): boolean =>
  * Throws when the stats endpoint exists but returns a non-success response.
  */
 const syncLeaderboardStats = async (
-  payload: LeaderboardStatsPayload & { revision: number }
+  payload: LeaderboardStatsPayload,
+  allocateRevision: () => number
 ): Promise<SyncResult> => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return { status: 'skipped' }
   }
 
+  // Allocated only once the request really goes out, so a skipped flush does
+  // not burn a revision or write storage.
   const response = await fetch('/api/leaderboard/stats', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ ...payload, revision: allocateRevision() })
   })
 
   if (response.status === 404) {
@@ -211,10 +216,7 @@ const syncLeaderboardStats = async (
     throw new SyncHttpError(response.status, response.statusText)
   }
 
-  const body: unknown =
-    typeof response.json === 'function'
-      ? await response.json().catch(() => null)
-      : null
+  const body: unknown = await response.json().catch(() => null)
   if (
     typeof body === 'object' &&
     body !== null &&
@@ -261,6 +263,7 @@ const getSlot = (playerId: string): SyncSlot => {
     lastSentKey: typeof stored === 'string' ? stored : null,
     lastSentAt: null,
     failures: 0,
+    staleStreak: 0,
     retryKey: null,
     timer: null
   }
@@ -317,12 +320,12 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
   slot.inFlightKey = key
   slot.lastSentAt = clock.now()
   try {
-    const result = await syncLeaderboardStats({
-      ...payload,
-      revision: nextRevision(payload.playerId, clock)
-    })
+    const result = await syncLeaderboardStats(payload, () =>
+      nextRevision(payload.playerId, clock)
+    )
     if (result.status === 'synced') {
       slot.failures = 0
+      slot.staleStreak = 0
       slot.retryKey = null
       slot.lastSentKey = key
       setSafeStorageItem(lastSyncedKeyStorageKey(payload.playerId), key)
@@ -332,6 +335,13 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
       // and send the snapshot again, or the board would stay on the old one.
       adoptServerRevision(payload.playerId, result.revision)
       slot.pending ??= payload
+      // The first catch-up goes out at the base interval; if the server is
+      // still ahead (a second tab or device), back off like a failure.
+      slot.staleStreak += 1
+      if (slot.staleStreak > 1) {
+        slot.failures += 1
+        slot.retryKey = key
+      }
     }
   } catch (error) {
     // Silent fail for leaderboard sync to not disrupt gameplay
