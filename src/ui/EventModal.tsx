@@ -10,7 +10,11 @@ import { Tooltip } from './shared/Tooltip'
 import { generateEffectText } from '../utils/effectFormatter'
 import { formatCurrency } from '../utils/numberUtils'
 import { translateContextKeys } from '../utils/translationUtils'
-import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
+import {
+  resolveEventChoice,
+  getOptionPreviewMoney,
+  isOptionAffordable
+} from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
 import { withExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import {
@@ -63,7 +67,8 @@ const EventOptionButton = ({
   const isDisabled =
     option.disabled ||
     (typeof option.condition === 'function' &&
-      !option.condition(withExpeditionSpendableCash(gameState)))
+      !option.condition(withExpeditionSpendableCash(gameState))) ||
+    !isOptionAffordable(option, gameState)
   const buttonClass = isDisabled
     ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed focus-visible:ring-ash-gray'
     : index === 0
@@ -413,7 +418,8 @@ export const EventModal = ({
             (typeof option.condition === 'function' &&
               !option.condition(
                 withExpeditionSpendableCash(gameStateRef.current)
-              ))
+              )) ||
+            !isOptionAffordable(option, gameStateRef.current)
           if (!isDisabled) {
             handleOptionSelect(option)
           }

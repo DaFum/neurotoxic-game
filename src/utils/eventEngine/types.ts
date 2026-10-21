@@ -86,6 +86,7 @@ export type EngineGameState = {
     id?: string
     tags?: string[]
     context?: Record<string, unknown>
+    options?: unknown[]
   } | null
   assets?: Array<{
     condition?: number

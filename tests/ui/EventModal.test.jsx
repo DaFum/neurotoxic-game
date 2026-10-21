@@ -45,7 +45,8 @@ vi.mock('../../src/utils/eventEngine', () => ({
     description:
       option.description !== undefined ? option.description : 'Description'
   })),
-  getOptionPreviewMoney: vi.fn(() => null)
+  getOptionPreviewMoney: vi.fn(() => null),
+  isOptionAffordable: vi.fn(() => true)
 }))
 
 vi.mock('../../src/ui/shared/BrutalistUI', () => ({
