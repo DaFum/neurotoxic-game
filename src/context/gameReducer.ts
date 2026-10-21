@@ -19,6 +19,7 @@ import {
 } from './reducers/assetReducer'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
+import { GAME_PHASES } from './gameConstants'
 import type { GameAction, GameState } from '../types'
 import type { AssetKind } from '../types/assets'
 import { handleChangeScene } from './reducers/sceneReducer'
@@ -99,7 +100,8 @@ import {
   handleOfferExpeditionDraft,
   handleSelectExpeditionDraft,
   handleResolveExpeditionSocialResult,
-  handleCreateSocialIntelGrant
+  handleCreateSocialIntelGrant,
+  settleExpeditionOnTerminalOutcome
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -197,7 +199,15 @@ type ReducerMap = {
  * Using a map provides O(1) lookup instead of a long switch statement.
  */
 const reducerMap: ReducerMap = {
-  [ActionTypes.CHANGE_SCENE]: handleChangeScene,
+  [ActionTypes.CHANGE_SCENE]: (state, payload) => {
+    const next = handleChangeScene(state, payload)
+    // Entering GAMEOVER over a live run (stranded check, bankruptcy) ends the
+    // run with the cause the scene change recorded, like every other way out.
+    if (next === state || next.currentScene !== GAME_PHASES.GAMEOVER) {
+      return next
+    }
+    return settleExpeditionOnTerminalOutcome(next)
+  },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
@@ -247,7 +257,10 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
     handleSetPendingSupplyStopInventory,
-  [ActionTypes.SET_TERMINAL_OUTCOME]: handleSetTerminalOutcome,
+  [ActionTypes.SET_TERMINAL_OUTCOME]: (state, payload) => {
+    const ended = handleSetTerminalOutcome(state, payload)
+    return ended === state ? state : settleExpeditionOnTerminalOutcome(ended)
+  },
   [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
   [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,
   [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,

@@ -6,6 +6,9 @@
 - If a local `RelationshipChange`-shaped clone already exists, replace it with the shared import and remove the duplicate in the same change.
 - `EventDelta` (`src/types/events.d.ts`) is shared with `eventEngine.ts`, `gameState/`, and `EventDeltaPayload` (`actions.d.ts`). Its `player`, `band`, `social`, and `flags` containers are required; callers initialize each as `{}`. `EventDeltaPayload` only adds `activeStoryFlags` and `pendingEvents`; do not redeclare the containers.
 
+- `TerminalOutcome` (`src/types/game.d.ts`) is the single contract for `GameState.terminalOutcome`; reducers, sanitizers and the action creator import it. Adding an ending means extending the union, the `sanitizeTerminalOutcome` allowlist in `systemReducer.ts`, and a test that a save carrying it reloads at GAMEOVER.
+- `UpgradeFailureReason` (`assets.d.ts`) must stay aligned with the `assets:upgradeFailed.<reason>` locale keys in EN and DE.
+
 ## Social Contracts
 
 - Social platform and `SocialPostOption` contracts live in `src/types/social.d.ts`; do not reintroduce local platform unions or `SocialPostOption` clones in social utilities/hooks.

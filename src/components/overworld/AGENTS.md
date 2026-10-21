@@ -10,6 +10,8 @@
 - `cityTraits` for map nodes must be derived from `normalizeVenueId(node.venueId ?? node.venue)` and `getCityKeyFromVenueId(...)` from `src/utils/mapGenerator.ts`. `node.venue.city` does not exist; an empty city key should pass `undefined`.
 - `OverworldMap` SVG/CSS fallbacks must use defined brand tokens from `BRAND_COLOR_HEX` / `src/index.css`. `--color-toxic-red` is not a valid token; use an existing red token such as `--color-blood-red` or add the new token to `brandColors.ts` and CSS together.
 
+- `OverworldMap` passes `isReachable` for the current `SUPPLY_STOP` as well as connected nodes and `START`: clicking it reopens that stop's shop, and an unreachable node gets no button role, tab stop or keyboard handler, so the recovery would be pointer-only.
+
 ## Modals
 
 - `OverworldModals` is the canonical container for the Overworld modal stack (Band HQ, Quests, Stash, Pirate Radio, Merch Press, Blood Bank, Dark Web Leak). Add new overworld modals here and thread state through `useOverworldModals()`; do not inline `{showFoo && <FooModal />}` blocks in `src/scenes/Overworld.tsx`.

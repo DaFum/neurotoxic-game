@@ -4,6 +4,7 @@ import {
   sanitizeSocial,
   sanitizeSetlist,
   sanitizeActiveEvent,
+  sanitizeSupplyStopInventory,
   sanitizeToasts,
   sanitizeReputationByRegion,
   sanitizeActiveQuests,
@@ -78,6 +79,8 @@ import {
 } from '../../domain/expedition/meta'
 import { GAME_PHASES } from '../gameConstants'
 import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
+import { settleExpeditionOnTerminalOutcome } from './expeditionReducer'
+import { deriveGameOverOutcome } from './sceneReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
 import {
@@ -254,6 +257,11 @@ export const handleLoadGame = (
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     terminalOutcome: sanitizeTerminalOutcome(loadedState.terminalOutcome),
+    // Transient, so it is always set from the save (null when absent): a load
+    // over a live session must not keep that session's open shop.
+    pendingSupplyStopInventory: sanitizeSupplyStopInventory(
+      loadedState.pendingSupplyStopInventory
+    ),
     toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion
@@ -417,9 +425,31 @@ export const handleLoadGame = (
     loadedState.pendingGigSettlement
   )
   // An ending recorded before the save is final: reloading must not undo it.
-  return settled.terminalOutcome
-    ? { ...settled, currentScene: GAME_PHASES.GAMEOVER }
-    : settled
+  // A save written at GAMEOVER before endings were recorded has none; derive it
+  // the way the live transition would, or it would resume the Career.
+  const recorded =
+    settled.terminalOutcome ??
+    (loadedState.currentScene === GAME_PHASES.GAMEOVER
+      ? deriveGameOverOutcome({
+          ...settled,
+          currentScene: GAME_PHASES.GAMEOVER
+        })
+      : null)
+  // A victory is only ever recorded with no run active (the Finale completes
+  // it first), so one that comes with a live run is a forged or corrupt claim.
+  const ending =
+    recorded?.reason === 'career_victory' &&
+    settled.expedition?.status === 'active'
+      ? null
+      : recorded
+  if (!ending) return { ...settled, terminalOutcome: null }
+  // A save written before the ending settled its run (or a hostile one) must
+  // not reload at GAMEOVER with the run still active.
+  return settleExpeditionOnTerminalOutcome({
+    ...settled,
+    terminalOutcome: ending,
+    currentScene: GAME_PHASES.GAMEOVER
+  })
 }
 
 /**
@@ -712,6 +742,7 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
 
   return {
     ...state,
+    terminalOutcome: { reason: 'bankruptcy' },
     currentScene: GAME_PHASES.GAMEOVER
   }
 }
@@ -1040,9 +1071,23 @@ export const handleSetPendingSupplyStopInventory = (
  */
 const sanitizeTerminalOutcome = (value: unknown): TerminalOutcome | null => {
   if (!isLooseRecord(value) || hasForbiddenKeysDeep(value)) return null
-  if (value.reason !== 'event_game_over') return null
-  if (typeof value.eventId !== 'string' || value.eventId === '') return null
-  return { reason: value.reason, eventId: value.eventId }
+  // Own-property reads only: an inherited `reason` from a polluted prototype
+  // must never count as save data.
+  if (!Object.hasOwn(value, 'reason')) return null
+  const reason = value.reason
+  if (
+    reason === 'bankruptcy' ||
+    reason === 'career_victory' ||
+    reason === 'stranded'
+  ) {
+    return { reason }
+  }
+  if (reason !== 'event_game_over' || !Object.hasOwn(value, 'eventId')) {
+    return null
+  }
+  const eventId = value.eventId
+  if (typeof eventId !== 'string' || eventId === '') return null
+  return { reason, eventId }
 }
 
 /**

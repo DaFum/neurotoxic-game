@@ -4,3 +4,8 @@
 
 - `selectEvent` is the sole RNG boundary for shuffle and chance rolls. A functional `chance` may derive probability from the optimized state but must not consume randomness itself.
 - Template venue context reads canonical `player.location`; `currentLocation` is not part of persisted player state.
+
+## Paid options during a run
+
+- Option `condition`s are evaluated against `withExpeditionSpendableCash(state)` (in `resolveChoice` and `EventModal`), so a money gate such as `money >= 45` cannot be met with protected cash.
+- `isOptionAffordable` derives a direct money cost from the option's effects (`getOptionPreviewMoney`, percentage costs priced against the real balance) and refuses it when only protected cash could pay and a sibling option is still choosable. If none is, the cost stays payable (clipped at the floor) so an event can never lock. It runs in `resolveEventChoice` and in the modal, and is a no-op outside a run.

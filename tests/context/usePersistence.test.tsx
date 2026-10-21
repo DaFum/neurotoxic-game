@@ -224,6 +224,32 @@ describe('usePersistence', () => {
     expect(savedState()).toMatchObject({ currentScene: GAME_PHASES.OVERWORLD })
   })
 
+  it('autosaves the stranded ending when the Overworld hands over to GAMEOVER', () => {
+    const { rerender } = renderHook(
+      ({ currentScene }) =>
+        usePersistence({
+          currentScene,
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        }),
+      { initialProps: { currentScene: GAME_PHASES.OVERWORLD as string } }
+    )
+    // The stranded check saves before it changes scene, so that save has no
+    // ending; only the save after the commit can make it durable.
+    mockStateRef.current = {
+      currentScene: GAME_PHASES.GAMEOVER,
+      terminalOutcome: { reason: 'stranded' }
+    }
+    rerender({ currentScene: GAME_PHASES.GAMEOVER })
+
+    expect(JSON.parse(localStorage.getItem(SAVE_KEY) ?? '{}')).toMatchObject({
+      currentScene: GAME_PHASES.GAMEOVER,
+      terminalOutcome: { reason: 'stranded' }
+    })
+  })
+
   it('persists the settled state when a load consumes a pending gig settlement', () => {
     const { isLooseRecord } = vi.mocked(gameStateModule)
     vi.mocked(getUnlocks).mockReturnValue([])

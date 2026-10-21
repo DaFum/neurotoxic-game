@@ -298,6 +298,9 @@ const validateLoadedEffect = (
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
 
+  // Own keys only: `__proto__` would resolve to Object.prototype and throw when
+  // called, and `constructor` to a function that accepts anything.
+  if (!Object.hasOwn(VALIDATE_EFFECT_REQUIREMENTS, typeStr)) return null
   const validator = VALIDATE_EFFECT_REQUIREMENTS[typeStr]
   if (!validator || !validator(effectObj)) return null
 
@@ -1660,6 +1663,39 @@ const rehydrateRegistryEvent = (event: GameEvent): void => {
   event.options = registeredOptions as EventOption[]
   if (Array.isArray(registered.tags))
     event.tags = sanitizeStringArray(registered.tags)
+}
+
+const MAX_SUPPLY_STOP_ITEMS = 24
+
+/**
+ * Sanitizes the supply-stop shop that was open when the game was saved.
+ *
+ * @remarks
+ * The stock is the node's own `shopInventory`, a plain list of purchasable
+ * items, so each entry goes through the shop-item field schema and anything
+ * that is not an object is dropped. The list is capped so a hostile save cannot
+ * inflate state.
+ *
+ * @param value - The raw untrusted saved inventory
+ * @returns The cleaned items, or null when no shop was open or nothing usable remains
+ */
+export const sanitizeSupplyStopInventory = (
+  value: unknown
+): GameState['pendingSupplyStopInventory'] => {
+  if (!Array.isArray(value)) return null
+  const items: NonNullable<GameState['pendingSupplyStopInventory']> = []
+  for (
+    let i = 0;
+    i < value.length && items.length < MAX_SUPPLY_STOP_ITEMS;
+    i++
+  ) {
+    // The same per-field schema the map's shop stock goes through, so a crafted
+    // save cannot smuggle in a negative cost or an unvalidated effect.
+    const item = sanitizeShopInventoryItem(value[i])
+    if (item && Object.keys(item).length > 0) items.push(item)
+  }
+  // Nothing usable left is no open shop, not an empty one.
+  return items.length > 0 ? items : null
 }
 
 /**

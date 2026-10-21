@@ -600,6 +600,83 @@ describe('committed identity freeze while active', () => {
     payload: { assetId, targetTier: 2, newSlotIds: [] }
   })
 
+  it('settles an active run as failed when a game-over event ends the Career', () => {
+    const state = activeState()
+    const next = gameReducer(state, {
+      type: ActionTypes.SET_TERMINAL_OUTCOME,
+      payload: { reason: 'event_game_over', eventId: 'deal_devil' }
+    })
+    assert.equal(next.currentScene, 'GAMEOVER')
+    assert.deepEqual(next.terminalOutcome, {
+      reason: 'event_game_over',
+      eventId: 'deal_devil'
+    })
+    assert.equal(next.expedition.status, 'failed')
+    assert.equal(next.expedition.outcome?.kind, 'failed')
+    assert.equal(next.expedition.outcome?.reason, 'event_game_over')
+  })
+
+  it('leaves a run that is not active untouched on a game-over event', () => {
+    const state = activeState({ status: 'idle' })
+    const next = gameReducer(state, {
+      type: ActionTypes.SET_TERMINAL_OUTCOME,
+      payload: { reason: 'event_game_over', eventId: 'deal_devil' }
+    })
+    assert.equal(next.terminalOutcome?.reason, 'event_game_over')
+    assert.equal(next.expedition.status, 'idle')
+  })
+
+  it('settles the run when a live scene change enters GAMEOVER', () => {
+    const stranded = gameReducer(
+      { ...activeState(), currentScene: 'OVERWORLD' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.deepEqual(stranded.terminalOutcome, { reason: 'stranded' })
+    assert.equal(stranded.expedition.status, 'failed')
+    assert.equal(stranded.expedition.outcome?.reason, 'fuel_stranded')
+
+    const broke = gameReducer(
+      { ...activeState(), currentScene: 'POST_GIG' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.equal(broke.expedition.outcome?.reason, 'bankruptcy')
+  })
+
+  it('settles a terminal outcome with the reason that matches it', () => {
+    for (const [outcome, reason] of [
+      [{ reason: 'bankruptcy' }, 'bankruptcy'],
+      [{ reason: 'stranded' }, 'fuel_stranded'],
+      [{ reason: 'event_game_over', eventId: 'e' }, 'event_game_over']
+    ]) {
+      const next = gameReducer(activeState(), {
+        type: ActionTypes.SET_TERMINAL_OUTCOME,
+        payload: outcome
+      })
+      assert.equal(next.expedition.outcome?.reason, reason)
+    }
+  })
+
+  it('does not read a stale tourCompleted flag as a victory while a run is live', () => {
+    const state = activeState()
+    state.player.stats = { ...state.player.stats, tourCompleted: true }
+    const next = gameReducer(
+      { ...state, currentScene: 'POST_GIG' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.deepEqual(next.terminalOutcome, { reason: 'bankruptcy' })
+    assert.equal(next.expedition.status, 'failed')
+    assert.equal(next.expedition.outcome?.reason, 'bankruptcy')
+  })
+
+  it('leaves the run alone for any other scene change', () => {
+    const state = { ...activeState(), currentScene: 'OVERWORLD' }
+    const next = gameReducer(state, {
+      type: ActionTypes.CHANGE_SCENE,
+      payload: 'PREGIG'
+    })
+    assert.equal(next.expedition.status, 'active')
+  })
+
   it('rejects a tier upgrade on the committed chassis', () => {
     const state = activeState()
     const tier = state.assets[0].chassisTier

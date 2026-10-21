@@ -82,6 +82,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.
 - To check or review the codebase, you can also use the `symbols.json` file. Run `pnpm run symbols:update` and then `pnpm run symbols:check`. Never manually edit or commit ignored `symbols.json` files.
+- Vitest node/api suites (`tests/api`, logic tests) need the node config: `pnpm exec vitest run --config vitest.config.node.js tests/<file>`. Server code under `api/` is type-checked by `pnpm run typecheck:server`; tooling tests by `pnpm run test:tooling`.
 - Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
 - After editing this file, run `pnpm run sync:agents`; `tests/node/agentInstructionsSync.test.js` fails when `.github/copilot-instructions.md` drifts from it.
 
@@ -142,3 +143,6 @@ Use skill names as triggers when planning work (e.g., "I'll use game-improver fo
 - `START_GIG` resets both `gigModifiers` and minigame state. Completion reducers must not change scenes; continuation callbacks own navigation.
 - `lastGigStats.score` is raw (thousands). Outcome gates use `accuracy` (0–100) plus `failed`.
 - Use typed `advanceDay(state)`; never dispatch payloadless `createAdvanceDayAction()`. Bankruptcy uses `getTotalDailyObligations(state)`.
+- Terminal endings (bankruptcy, career victory, stranded, event game over) are persisted as `terminalOutcome` (`src/types/game.d.ts`). Any path that ends in `GAMEOVER` must have it set (`handleChangeScene` derives one if missing), otherwise a reload resumes the run instead of the ending.
+- During an active expedition `protectedCareerCash` is not spendable. Spend gates, event conditions and option affordability use the spendable view from `src/domain/expedition/spendableCash.ts`; the cash floor (`enforceExpeditionCashFloor`) is the reducer backstop, not the only check.
+- Leaderboard ranking is honor-based. Stats syncs carry a monotonic `revision`; the API drops stale revisions. Do not add client-trust assumptions beyond that.

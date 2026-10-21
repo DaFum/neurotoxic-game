@@ -912,6 +912,7 @@ export const validateExpeditionBuildCommitment = (
  */
 const EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS: ReadonlySet<string> = new Set([
   ActionTypes.ADVANCE_DAY,
+  ActionTypes.SET_TERMINAL_OUTCOME,
   ActionTypes.LOAD_GAME,
   ActionTypes.RESET_STATE,
   ActionTypes.EXTRACT_EXPEDITION,

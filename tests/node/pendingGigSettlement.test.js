@@ -98,6 +98,14 @@ test('pending gig settlement reconciliation on load', async t => {
 
     assert.equal(loaded.player.money, 0)
     assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+    assert.deepEqual(loaded.terminalOutcome, { reason: 'bankruptcy' })
+
+    // The ending is durable: reloading the saved ending stays on GAMEOVER.
+    const reloaded = handleLoadGame(
+      createInitialState(),
+      JSON.parse(JSON.stringify({ terminalOutcome: loaded.terminalOutcome }))
+    )
+    assert.equal(reloaded.currentScene, GAME_PHASES.GAMEOVER)
   })
 
   await t.test('completes a successful Career Finale', () => {
@@ -108,6 +116,7 @@ test('pending gig settlement reconciliation on load', async t => {
     assert.equal(loaded.player.money, 800)
     assert.equal(loaded.player.stats.tourCompleted, true)
     assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+    assert.deepEqual(loaded.terminalOutcome, { reason: 'career_victory' })
   })
 
   await t.test('a failed Finale settles money but completes nothing', () => {
@@ -119,6 +128,7 @@ test('pending gig settlement reconciliation on load', async t => {
     assert.equal(loaded.player.money, 800)
     assert.notEqual(loaded.player.stats.tourCompleted, true)
     assert.equal(loaded.currentScene, GAME_PHASES.OVERWORLD)
+    assert.equal(loaded.terminalOutcome, null)
   })
 
   await t.test('does not settle twice', () => {
@@ -405,4 +415,85 @@ test('capExpeditionSpendAtCashFloor refuses only a spend that crosses the floor'
     3000
   )
   assert.equal(capExpeditionSpendAtCashFloor(undefined, 5000, 3000), 3000)
+})
+
+test('a bankrupting settlement on load also ends an active run', () => {
+  const started = startedState({ money: 100, fame: 100 })
+  const atResult = {
+    ...started,
+    currentScene: GAME_PHASES.POST_GIG,
+    currentGig: { id: 'bust_venue', name: 'Bust Venue' },
+    lastGigStats: { score: 1000, misses: 0, accuracy: 40, failed: false }
+  }
+  const action = createRecordPendingGigSettlementAction({
+    gigId: 'bust_venue',
+    net: -100000,
+    perfScore: 10,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: {}
+  })
+  assert.ok(action)
+  const recorded = gameReducer(atResult, action)
+  assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(recorded)))
+  )
+  assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(loaded.terminalOutcome, { reason: 'bankruptcy' })
+  assert.equal(loaded.expedition.status, 'failed')
+  assert.equal(loaded.expedition.outcome?.reason, 'bankruptcy')
+})
+
+test('a save that records an ending settles a run it left active', () => {
+  const started = startedState({ money: 1000, fame: 100 })
+  const hostile = {
+    ...started,
+    currentScene: GAME_PHASES.OVERWORLD,
+    terminalOutcome: { reason: 'event_game_over', eventId: 'deal_devil' }
+  }
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(hostile)))
+  )
+  assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.expedition.status, 'failed')
+  assert.equal(loaded.expedition.outcome?.reason, 'event_game_over')
+})
+
+test('a save written at GAMEOVER before endings were recorded still ends the Career', () => {
+  const base = createInitialState()
+  const save = tourCompleted => ({
+    currentScene: GAME_PHASES.GAMEOVER,
+    player: {
+      ...base.player,
+      stats: { ...base.player.stats, tourCompleted }
+    }
+  })
+
+  const victory = handleLoadGame(createInitialState(), save(true))
+  assert.equal(victory.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(victory.terminalOutcome, { reason: 'career_victory' })
+
+  const bust = handleLoadGame(createInitialState(), save(false))
+  assert.equal(bust.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(bust.terminalOutcome, { reason: 'bankruptcy' })
+})
+
+test('a victory claimed over a live run is dropped on load', () => {
+  const started = startedState({ money: 1000, fame: 100 })
+  const forged = {
+    ...started,
+    currentScene: GAME_PHASES.OVERWORLD,
+    terminalOutcome: { reason: 'career_victory' }
+  }
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(forged)))
+  )
+  assert.equal(loaded.terminalOutcome, null)
+  assert.notEqual(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.expedition.status, 'active')
 })

@@ -112,6 +112,11 @@ interface SoftlockContext {
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */
   assetModifiers?: AssetModifiers
+  /**
+   * Effective Expedition fuel-consumption multiplier, so a leg is priced at the
+   * litres settlement will burn. Omitted means neutral (`1`).
+   */
+  fuelMultiplier?: number
   /** Array of hypothetical post-sale combinations, each specifying the generated proceeds and the resulting obligations/modifiers if those specific assets were sold. */
   postSaleScenarios?: {
     assetProceeds: number
@@ -276,6 +281,7 @@ export const checkSoftlock = (
   // check conservative for legacy callers.
   const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
+  const fuelMultiplier = Math.max(0, finiteNumberOr(context.fuelMultiplier, 1))
 
   // The travel gate (`checkTravelPrerequisites`) admits every START node
   // regardless of visibility or connectivity, and the map surfaces it as
@@ -323,7 +329,7 @@ export const checkSoftlock = (
       const accessAllowed = context.isNodeAccessible?.(n) ?? true
       return (
         accessAllowed &&
-        fuel >= finiteNumberOr(fuelLiters, 0) &&
+        fuel >= finiteNumberOr(fuelLiters, 0) * fuelMultiplier &&
         money >= calculateTravelCashRequired(totalCost, activeDailyObligations)
       )
     }

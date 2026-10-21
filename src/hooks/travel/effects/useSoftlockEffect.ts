@@ -74,7 +74,15 @@ export const useSoftlockEffect = ({
   )
 
   useEffect(() => {
-    if (!gameMap || state.isTraveling || !player.currentNodeId) {
+    // An active run owns its own stranding: it raises a `fuel_stranded` crisis
+    // with the escapes this check cannot see (insurance claim, tow), the same
+    // way the daily bankruptcy check defers to it.
+    if (
+      !gameMap ||
+      state.isTraveling ||
+      !player.currentNodeId ||
+      params.expeditionStatus === 'active'
+    ) {
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
@@ -101,6 +109,8 @@ export const useSoftlockEffect = ({
         liabilities
       }),
       assetModifiers: getActiveAssetModifiers(assets ?? []),
+      // The litres the travel gate and settlement burn, not the base figure.
+      fuelMultiplier: params.expeditionFuelMultiplier,
       postSaleScenarios,
       // Reuse the real booking gate rather than re-deriving it here, so a
       // neighbor the player would be refused at cannot count as an escape.
@@ -151,6 +161,8 @@ export const useSoftlockEffect = ({
     state.isTraveling,
     refs.timeoutRef,
     params.venueBlacklist,
-    params.reputationByRegion
+    params.reputationByRegion,
+    params.expeditionFuelMultiplier,
+    params.expeditionStatus
   ])
 }

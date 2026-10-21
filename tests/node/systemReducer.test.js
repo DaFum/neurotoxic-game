@@ -2347,6 +2347,21 @@ test('terminal outcome survives a JSON round trip and routes load to GAMEOVER', 
   assert.equal(without.terminalOutcome, null)
 })
 
+test('terminal outcome ignores a reason inherited from a polluted prototype', () => {
+  Object.prototype.reason = 'bankruptcy'
+  try {
+    const state = createInitialState()
+    assert.equal(handleSetTerminalOutcome(state, {}), state)
+    assert.equal(
+      handleLoadGame(createInitialState(), { terminalOutcome: {} })
+        .terminalOutcome,
+      null
+    )
+  } finally {
+    delete Object.prototype.reason
+  }
+})
+
 test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
   const state = createInitialState()
   for (const bad of [
@@ -2357,5 +2372,99 @@ test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
     JSON.parse('{"reason":"event_game_over","eventId":"a","__proto__":{"x":1}}')
   ]) {
     assert.equal(handleSetTerminalOutcome(state, bad), state)
+  }
+})
+
+test('an open supply-stop shop survives a JSON round trip and is capped on load', () => {
+  const items = [{ id: 'item_1', name: 'Snack', cost: 5 }]
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify({ pendingSupplyStopInventory: items }))
+  )
+  // The sanitizer's copies are prototype-less; compare by content.
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(loaded.pendingSupplyStopInventory)),
+    items
+  )
+
+  const flood = Array.from({ length: 100 }, (_, i) => ({ id: i, cost: 1 }))
+  const capped = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: [...flood, 'junk', null]
+  })
+  assert.equal(capped.pendingSupplyStopInventory.length, 24)
+})
+
+test('restored supply-stop items go through the shop item field schema', () => {
+  const loaded = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: [
+      { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
+      { id: 'bad_cost', cost: 'free' }
+    ]
+  })
+  const [first, second] = loaded.pendingSupplyStopInventory
+  // A negative cost can never turn a purchase into income.
+  assert.equal(first.cost, 0)
+  assert.equal(Object.hasOwn(first, 'secret'), false)
+  // A non-numeric cost is dropped rather than copied.
+  assert.equal(Object.hasOwn(second, 'cost'), false)
+})
+
+test('restored supply-stop items drop forbidden prototype keys', () => {
+  const hostile = JSON.parse(
+    '[{"id":"x","cost":1,"__proto__":{"polluted":true},"constructor":{"x":1}}]'
+  )
+  const loaded = handleLoadGame(createInitialState(), {
+    pendingSupplyStopInventory: hostile
+  })
+  const [item] = loaded.pendingSupplyStopInventory
+  assert.equal(Object.hasOwn(item, '__proto__'), false)
+  assert.equal(Object.hasOwn(item, 'constructor'), false)
+  assert.equal({}.polluted, undefined)
+})
+
+test('loading a save without a shop closes the live session shop', () => {
+  const live = {
+    ...createInitialState(),
+    pendingSupplyStopInventory: [{ id: 'x', cost: 1 }]
+  }
+  assert.equal(handleLoadGame(live, {}).pendingSupplyStopInventory, null)
+  assert.equal(
+    handleLoadGame(live, { pendingSupplyStopInventory: 'nope' })
+      .pendingSupplyStopInventory,
+    null
+  )
+})
+
+test('a saved supply-stop list with nothing usable restores no open shop', () => {
+  for (const pendingSupplyStopInventory of [[], ['junk', null, 5]]) {
+    const loaded = handleLoadGame(createInitialState(), {
+      pendingSupplyStopInventory
+    })
+    assert.equal(loaded.pendingSupplyStopInventory, null)
+  }
+})
+
+test('a saved supply-stop item with an inherited effect type loads without its effect', () => {
+  const good = { id: 'item_ok', name: 'Snack', cost: 5 }
+  for (const type of ['__proto__', 'constructor', 'toString']) {
+    const hostile = JSON.parse(
+      JSON.stringify({
+        pendingSupplyStopInventory: [
+          { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
+          good
+        ]
+      })
+    )
+    // Loading must not throw, and no effect with an inherited type survives.
+    const loaded = handleLoadGame(createInitialState(), hostile)
+    const items = loaded.pendingSupplyStopInventory
+    assert.ok(Array.isArray(items), type)
+    for (const item of items) {
+      assert.equal(Object.hasOwn(item, 'effect'), false, type)
+    }
+    assert.ok(
+      items.some(item => item.id === 'item_ok'),
+      type
+    )
   }
 })

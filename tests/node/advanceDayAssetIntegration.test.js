@@ -385,4 +385,5 @@ test('AdvanceDay Integration - bankruptcy uses total daily obligations', () => {
   })
 
   assert.equal(nextState.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(nextState.terminalOutcome, { reason: 'bankruptcy' })
 })

@@ -1194,6 +1194,54 @@ const finalizeExpedition = (
 }
 
 /**
+ * Settles an active run as failed when a game-over event ends the Career.
+ *
+ * @param state - Game state after the terminal outcome was recorded.
+ * @param reason - Failure reason to settle with; defaults to the game-over event.
+ * @returns The state with the run finalized, or the identical reference when no
+ * run is active.
+ *
+ * @remarks
+ * `event_game_over` is never derived as a pending crisis: the event already
+ * ended the Career, so there is no decision left to offer. The run settles
+ * through the same path as an accepted failure, so retention and the run
+ * summary stay consistent with every other way a run can fail.
+ */
+export const settleExpeditionOnGameOver = (
+  state: GameState,
+  reason: ExpeditionFailureReason = 'event_game_over'
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  return finalizeExpedition(state, 'failed', {
+    reason,
+    finaleResultId: null,
+    explicitRareRewardIds: []
+  })
+}
+
+/**
+ * Settles an active run with the failure that matches a recorded ending.
+ *
+ * @param state - Game state whose `terminalOutcome` is already recorded.
+ * @returns The state with the run finalized, or the identical reference when
+ * no run is active or the ending settles none (a victory).
+ */
+export const settleExpeditionOnTerminalOutcome = (
+  state: GameState
+): GameState => {
+  switch (state.terminalOutcome?.reason) {
+    case 'stranded':
+      return settleExpeditionOnGameOver(state, 'fuel_stranded')
+    case 'bankruptcy':
+      return settleExpeditionOnGameOver(state, 'bankruptcy')
+    case 'event_game_over':
+      return settleExpeditionOnGameOver(state, 'event_game_over')
+    default:
+      return state
+  }
+}
+
+/**
  * Extracts voluntarily at a legal extraction window.
  *
  * @param state - Current game state.
