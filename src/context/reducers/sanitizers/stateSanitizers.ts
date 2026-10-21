@@ -298,6 +298,9 @@ const validateLoadedEffect = (
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
 
+  // Own keys only: `__proto__` would resolve to Object.prototype and throw when
+  // called, and `constructor` to a function that accepts anything.
+  if (!Object.hasOwn(VALIDATE_EFFECT_REQUIREMENTS, typeStr)) return null
   const validator = VALIDATE_EFFECT_REQUIREMENTS[typeStr]
   if (!validator || !validator(effectObj)) return null
 

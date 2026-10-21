@@ -2443,3 +2443,28 @@ test('a saved supply-stop list with nothing usable restores no open shop', () =>
     assert.equal(loaded.pendingSupplyStopInventory, null)
   }
 })
+
+test('a saved supply-stop item with an inherited effect type loads without its effect', () => {
+  const good = { id: 'item_ok', name: 'Snack', cost: 5 }
+  for (const type of ['__proto__', 'constructor', 'toString']) {
+    const hostile = JSON.parse(
+      JSON.stringify({
+        pendingSupplyStopInventory: [
+          { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
+          good
+        ]
+      })
+    )
+    // Loading must not throw, and no effect with an inherited type survives.
+    const loaded = handleLoadGame(createInitialState(), hostile)
+    const items = loaded.pendingSupplyStopInventory
+    assert.ok(Array.isArray(items), type)
+    for (const item of items) {
+      assert.equal(Object.hasOwn(item, 'effect'), false, type)
+    }
+    assert.ok(
+      items.some(item => item.id === 'item_ok'),
+      type
+    )
+  }
+})

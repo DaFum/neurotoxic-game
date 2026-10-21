@@ -133,6 +133,53 @@ describe('useSoftlockEffect during an active run', () => {
   })
 })
 
+describe('useSoftlockEffect when a run starts during the countdown', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.clearAllMocks()
+  })
+
+  test('cancels a stranding countdown that is already running', () => {
+    const changeScene = vi.fn()
+    const refs = { timeoutRef: { current: null } }
+    const makeParams = expeditionStatus => ({
+      gameMap: { nodes: {}, connections: [] },
+      player: { currentNodeId: 'node_0', day: 1, money: 0 },
+      band: {},
+      social: {},
+      assets: [],
+      liabilities: [],
+      addToast: vi.fn(),
+      saveGame: vi.fn(),
+      changeScene,
+      venueBlacklist: [],
+      reputationByRegion: {},
+      expeditionStatus
+    })
+    const { rerender, unmount } = renderHook(
+      ({ expeditionStatus }) =>
+        useSoftlockEffect({
+          refs,
+          state: { isTraveling: false },
+          params: makeParams(expeditionStatus)
+        }),
+      { initialProps: { expeditionStatus: 'idle' } }
+    )
+    // Stranded outside a run: the countdown is running.
+    expect(refs.timeoutRef.current).not.toBeNull()
+
+    // A run takes over the stranding; the pending Career game over is cancelled.
+    rerender({ expeditionStatus: 'active' })
+    expect(refs.timeoutRef.current).toBeNull()
+    vi.advanceTimersByTime(10000)
+    expect(changeScene).not.toHaveBeenCalled()
+    unmount()
+  })
+})
+
 describe('useSoftlockEffect stranded toast', () => {
   beforeEach(() => {
     vi.useFakeTimers()
