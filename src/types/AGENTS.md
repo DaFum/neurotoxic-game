@@ -9,6 +9,10 @@
 - `TerminalOutcome` (`src/types/game.d.ts`) is the single contract for `GameState.terminalOutcome`; reducers, sanitizers and the action creator import it. Adding an ending means extending the union, the `sanitizeTerminalOutcome` allowlist in `systemReducer.ts`, and a test that a save carrying it reloads at GAMEOVER.
 - `UpgradeFailureReason` (`assets.d.ts`) must stay aligned with the `assets:upgradeFailed.<reason>` locale keys in EN and DE.
 
+## Leaderboard Contract
+
+- `LeaderboardStatsPayload` (`src/types/leaderboard.d.ts`) is the stats snapshot shared by `useLeaderboardSync` and `src/utils/leaderboardSyncController.ts`; import it instead of redeclaring the shape. A new field also needs the matching clamp and validation in `api/leaderboard/stats.js` and an entry in the controller's `snapshotKey`.
+
 ## Social Contracts
 
 - Social platform and `SocialPostOption` contracts live in `src/types/social.d.ts`; do not reintroduce local platform unions or `SocialPostOption` clones in social utilities/hooks.

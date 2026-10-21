@@ -4,11 +4,9 @@ import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
 import { systemClock, type IClock } from '../utils/clock'
-import {
-  createLeaderboardSyncController,
-  type LeaderboardStatsPayload
-} from '../utils/leaderboardSyncController'
+import { createLeaderboardSyncController } from '../utils/leaderboardSyncController'
 import type { GameState } from '../types'
+import type { LeaderboardStatsPayload } from '../types/leaderboard'
 
 /**
  * One controller per session: its per-player slots and the "endpoint missing"

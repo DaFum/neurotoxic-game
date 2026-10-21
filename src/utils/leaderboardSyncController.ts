@@ -14,18 +14,7 @@
  */
 import { finiteNumberOr } from './finiteNumber'
 import type { IClock } from './clock'
-
-export type LeaderboardStatsPayload = {
-  playerId: string
-  playerName: string
-  money: number
-  day: number
-  fame: number
-  followers: number
-  distance: number
-  conflicts: number
-  stageDives: number
-}
+import type { LeaderboardStatsPayload } from '../types/leaderboard'
 
 /**
  * The stats endpoint allows 5 requests a minute per IP, so one player never
