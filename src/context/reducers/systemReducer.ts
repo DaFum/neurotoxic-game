@@ -80,6 +80,7 @@ import {
 import { GAME_PHASES } from '../gameConstants'
 import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
 import { settleExpeditionOnTerminalOutcome } from './expeditionReducer'
+import { deriveGameOverOutcome } from './sceneReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
 import {
@@ -424,14 +425,31 @@ export const handleLoadGame = (
     loadedState.pendingGigSettlement
   )
   // An ending recorded before the save is final: reloading must not undo it.
+  // A save written at GAMEOVER before endings were recorded has none; derive it
+  // the way the live transition would, or it would resume the Career.
+  const recorded =
+    settled.terminalOutcome ??
+    (loadedState.currentScene === GAME_PHASES.GAMEOVER
+      ? deriveGameOverOutcome({
+          ...settled,
+          currentScene: GAME_PHASES.GAMEOVER
+        })
+      : null)
+  // A victory is only ever recorded with no run active (the Finale completes
+  // it first), so one that comes with a live run is a forged or corrupt claim.
+  const ending =
+    recorded?.reason === 'career_victory' &&
+    settled.expedition?.status === 'active'
+      ? null
+      : recorded
+  if (!ending) return { ...settled, terminalOutcome: null }
   // A save written before the ending settled its run (or a hostile one) must
   // not reload at GAMEOVER with the run still active.
-  return settled.terminalOutcome
-    ? settleExpeditionOnTerminalOutcome({
-        ...settled,
-        currentScene: GAME_PHASES.GAMEOVER
-      })
-    : settled
+  return settleExpeditionOnTerminalOutcome({
+    ...settled,
+    terminalOutcome: ending,
+    currentScene: GAME_PHASES.GAMEOVER
+  })
 }
 
 /**

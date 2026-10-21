@@ -462,3 +462,38 @@ test('a save that records an ending settles a run it left active', () => {
   assert.equal(loaded.expedition.status, 'failed')
   assert.equal(loaded.expedition.outcome?.reason, 'event_game_over')
 })
+
+test('a save written at GAMEOVER before endings were recorded still ends the Career', () => {
+  const base = createInitialState()
+  const save = tourCompleted => ({
+    currentScene: GAME_PHASES.GAMEOVER,
+    player: {
+      ...base.player,
+      stats: { ...base.player.stats, tourCompleted }
+    }
+  })
+
+  const victory = handleLoadGame(createInitialState(), save(true))
+  assert.equal(victory.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(victory.terminalOutcome, { reason: 'career_victory' })
+
+  const bust = handleLoadGame(createInitialState(), save(false))
+  assert.equal(bust.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(bust.terminalOutcome, { reason: 'bankruptcy' })
+})
+
+test('a victory claimed over a live run is dropped on load', () => {
+  const started = startedState({ money: 1000, fame: 100 })
+  const forged = {
+    ...started,
+    currentScene: GAME_PHASES.OVERWORLD,
+    terminalOutcome: { reason: 'career_victory' }
+  }
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(forged)))
+  )
+  assert.equal(loaded.terminalOutcome, null)
+  assert.notEqual(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.expedition.status, 'active')
+})

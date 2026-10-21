@@ -55,7 +55,7 @@ export const handleChangeScene = (
  * screen reads it: a completed tour is the victory, a scene change out of the
  * Overworld is the stranded check, and anything else is bankruptcy.
  */
-const deriveGameOverOutcome = (state: GameState): TerminalOutcome => {
+export const deriveGameOverOutcome = (state: GameState): TerminalOutcome => {
   // `tourCompleted` outlives the run that set it, so a stale flag must not turn
   // a later bankruptcy into a victory: a real victory is only ever recorded with
   // no run active (the Finale completes the run first).
