@@ -799,6 +799,30 @@ describe('protected career cash floor', () => {
     )
   })
 
+  it('holds only the cash debit of an event delta at the floor', () => {
+    const state = activeRun({ money: 1000, protectedCareerCash: 900 })
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_EVENT_DELTA,
+      payload: {
+        player: { money: -450, time: -3 },
+        social: { controversyLevel: 30 }
+      }
+    })
+    assert.notEqual(next, state)
+    // Protected cash is untouched; the unrelated penalty still lands.
+    assert.equal(next.player.money, 900)
+    assert.equal(next.social.controversyLevel, 30)
+  })
+
+  it('never lowers cash that already sits below the floor on an event delta', () => {
+    const state = activeRun({ money: 500, protectedCareerCash: 900 })
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_EVENT_DELTA,
+      payload: { player: { money: -100 } }
+    })
+    assert.equal(next.player.money, 500)
+  })
+
   it('fails closed on a corrupt protected slice: any spend is refused', () => {
     for (const corrupt of [Number.NaN, -100]) {
       const state = activeRun({ money: 2000, protectedCareerCash: 900 })

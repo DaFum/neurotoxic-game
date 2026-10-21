@@ -10,6 +10,7 @@ import {
   sanitizeSocial
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
+import { EVENTS_DB } from '../../src/data/events'
 import { calculateAppliedDelta } from '../../src/utils/gameState'
 
 describe('stateSanitizers', () => {
@@ -589,6 +590,33 @@ describe('stateSanitizers', () => {
         brandReputation: { CORPORATE: Number.NaN, INDIE: Infinity }
       })
       assert.deepEqual(social.brandReputation, {})
+    })
+  })
+  describe('sanitizeActiveEvent registry rehydration', () => {
+    const registered = EVENTS_DB.transport.find(
+      e => e.id === 'reststop_night_coffee'
+    )
+
+    it('restores composite effects, conditions and tags after a JSON round trip', () => {
+      const restored = sanitizeActiveEvent(
+        JSON.parse(JSON.stringify(registered))
+      )
+      assert.deepEqual(restored.tags, registered.tags)
+      assert.deepEqual(restored.options[0].effect, registered.options[0].effect)
+      assert.equal(typeof restored.options[0].condition, 'function')
+      assert.equal(
+        restored.options[0].condition({ player: { money: 10 } }),
+        false
+      )
+    })
+
+    it('keeps sanitized save data when the option list no longer matches the registry', () => {
+      const saved = JSON.parse(JSON.stringify(registered))
+      saved.options = saved.options.slice(0, 2)
+      const restored = sanitizeActiveEvent(saved)
+      assert.equal(restored.options.length, 2)
+      assert.deepEqual(restored.options[0].effect, { type: 'composite' })
+      assert.equal(restored.tags, undefined)
     })
   })
 })

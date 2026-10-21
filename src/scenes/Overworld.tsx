@@ -29,6 +29,8 @@ import {
   getExpeditionTravelMap
 } from '../domain/expedition/routeOverlay'
 import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
+import { getExpeditionProtectedCash } from '../domain/expedition/loadout'
+import { getEffectiveExpeditionRules } from '../domain/expedition/effectiveRules'
 import { ExpeditionStatusStrip } from '../ui/expedition/ExpeditionStatusStrip'
 import { ExpeditionCrewStatus } from '../ui/expedition/ExpeditionCrewStatus'
 import { ExpeditionRunControls } from '../ui/expedition/ExpeditionRunControls'
@@ -61,6 +63,13 @@ export const Overworld = () => {
   const expeditionDraftPending = useGameSelector(
     state => state.expedition?.pendingRunDraftOffer != null
   )
+  // Neutral outside a run; a number, so the selector stays stable.
+  const expeditionFuelMultiplier = useGameSelector(state =>
+    state.expedition?.status === 'active'
+      ? getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier
+      : 1
+  )
+  const expeditionProtectedCash = useGameSelector(getExpeditionProtectedCash)
   // The Fame a Festival booking needs, or `null` when it is open (always
   // `null` outside a run). A number, so the selector stays stable.
   const festivalBookingMinimumFame = useGameSelector(
@@ -109,6 +118,8 @@ export const Overworld = () => {
     venueBlacklist,
     expeditionStatus,
     expeditionDraftPending,
+    expeditionFuelMultiplier,
+    expeditionProtectedCash,
     updatePlayer,
     updateBand,
     saveGame,

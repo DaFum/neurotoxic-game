@@ -3,6 +3,7 @@ import { secureRandom } from '../crypto'
 import { bandHasTrait } from '../traitUtils'
 import { finiteNumberOr } from '../gameState'
 import { StateError } from '../errorHandler'
+import { withExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { asNumber } from './helpers'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
@@ -112,7 +113,10 @@ export const resolveChoice = (
   gameState: EngineGameState,
   rng: () => number = secureRandom
 ) => {
-  if (choice.condition && !choice.condition(gameState)) {
+  if (
+    choice.condition &&
+    !choice.condition(withExpeditionSpendableCash(gameState))
+  ) {
     return { outcome: 'rejected' }
   }
 

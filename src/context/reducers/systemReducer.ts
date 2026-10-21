@@ -38,6 +38,7 @@ import {
 } from '../../quests/producers/assetQuestEvents'
 import type {
   GameState,
+  TerminalOutcome,
   BandState,
   BandMember,
   ToastPayload,
@@ -252,6 +253,7 @@ export const handleLoadGame = (
     pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
+    terminalOutcome: sanitizeTerminalOutcome(loadedState.terminalOutcome),
     toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion
@@ -410,10 +412,14 @@ export const handleLoadGame = (
   // Tour Pressure goes with it.
   // A save written on the post-gig screen predates Continue; settle it here
   // once, on the fully sanitized state, rather than reopening POST_GIG.
-  return settlePendingGigOnLoad(
+  const settled = settlePendingGigOnLoad(
     reconcileExpeditionAscensionOnLoad(migratedState),
     loadedState.pendingGigSettlement
   )
+  // An ending recorded before the save is final: reloading must not undo it.
+  return settled.terminalOutcome
+    ? { ...settled, currentScene: GAME_PHASES.GAMEOVER }
+    : settled
 }
 
 /**
@@ -1023,6 +1029,44 @@ export const handleSetPendingSupplyStopInventory = (
   return {
     ...state,
     pendingSupplyStopInventory: nextInventory
+  }
+}
+
+/**
+ * Narrows an untrusted value to a durable terminal outcome.
+ *
+ * @param value - Raw payload or saved field.
+ * @returns A clean outcome, or null for anything malformed.
+ */
+const sanitizeTerminalOutcome = (value: unknown): TerminalOutcome | null => {
+  if (!isLooseRecord(value) || hasForbiddenKeysDeep(value)) return null
+  if (value.reason !== 'event_game_over') return null
+  if (typeof value.eventId !== 'string' || value.eventId === '') return null
+  return { reason: value.reason, eventId: value.eventId }
+}
+
+/**
+ * Records a terminal outcome and moves the Career to GAMEOVER.
+ *
+ * @remarks
+ * Dispatched together with the event that caused it, so the save snapshot
+ * taken after resolution already carries the ending and `handleLoadGame` can
+ * route a reload back to GAMEOVER.
+ *
+ * @param state - Current game state.
+ * @param payload - Raw terminal outcome.
+ * @returns Updated state, or the identical reference for a malformed payload.
+ */
+export const handleSetTerminalOutcome = (
+  state: GameState,
+  payload: unknown
+): GameState => {
+  const terminalOutcome = sanitizeTerminalOutcome(payload)
+  if (!terminalOutcome) return state
+  return {
+    ...state,
+    terminalOutcome,
+    currentScene: GAME_PHASES.GAMEOVER
   }
 }
 

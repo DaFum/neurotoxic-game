@@ -28,13 +28,21 @@ const buildMap = () => ({
   layers: [[START.id], [], [TWO_STEPS_AHEAD.id, UNCONNECTED.id]]
 })
 
-const renderTravel = expeditionStatus => {
+const renderTravel = (
+  expeditionStatus,
+  {
+    fuel = 100,
+    expeditionFuelMultiplier,
+    currentNodeId = START.id,
+    onShowSupplyStop
+  } = {}
+) => {
   const state = createInitialState()
   const player = {
     ...state.player,
-    currentNodeId: START.id,
+    currentNodeId,
     money: 5000,
-    van: { ...state.player.van, fuel: 100, condition: 100 }
+    van: { ...state.player.van, fuel, condition: 100 }
   }
   const setPendingTravelNode = vi.fn()
   const addToast = vi.fn()
@@ -59,8 +67,10 @@ const renderTravel = expeditionStatus => {
       params: {
         addToast,
         onShowHQ: vi.fn(),
+        onShowSupplyStop,
         expeditionStatus,
-        expeditionDraftPending: false
+        expeditionDraftPending: false,
+        expeditionFuelMultiplier
       },
       getLocationName: name => name ?? '',
       handleNodeArrivalCallback: vi.fn(),
@@ -106,5 +116,59 @@ describe('useHandleTravel overlay override', () => {
     handleTravel(UNCONNECTED)
     expect(setPendingTravelNode).not.toHaveBeenCalled()
     expect(toastKeys(addToast).join('|')).toMatch(/not connected/i)
+  })
+
+  test('quotes the effective expedition fuel multiplier in the resource gate', () => {
+    // A free-fuel chassis makes a leg affordable on an empty tank, and a
+    // punishing one rejects it on a full tank, matching settlement.
+    const free = renderTravel('active', {
+      fuel: 0,
+      expeditionFuelMultiplier: 0
+    })
+    free.handleTravel(TWO_STEPS_AHEAD)
+    expect(free.setPendingTravelNode).toHaveBeenCalledWith(TWO_STEPS_AHEAD)
+
+    const neutral = renderTravel('active', { fuel: 0 })
+    neutral.handleTravel(TWO_STEPS_AHEAD)
+    expect(neutral.setPendingTravelNode).not.toHaveBeenCalled()
+
+    const heavy = renderTravel('active', {
+      fuel: 100,
+      expeditionFuelMultiplier: 1000
+    })
+    heavy.handleTravel(TWO_STEPS_AHEAD)
+    expect(heavy.setPendingTravelNode).not.toHaveBeenCalled()
+  })
+
+  test('ignores the expedition fuel multiplier outside a run', () => {
+    // START is visible and connected from here, so travel reaches the
+    // resource check, which a 1000x multiplier would fail if it leaked in.
+    const idle = renderTravel('idle', {
+      fuel: 100,
+      expeditionFuelMultiplier: 1000,
+      currentNodeId: TWO_STEPS_AHEAD.id
+    })
+    idle.handleTravel(START)
+    expect(idle.setPendingTravelNode).toHaveBeenCalledWith(START)
+  })
+
+  test('clicking the current supply stop reopens its persisted shop', () => {
+    const inventory = [{ id: 'item_1', name: 'Snack', cost: 5 }]
+    const stop = {
+      id: 'node_stop',
+      type: 'SUPPLY_STOP',
+      layer: 1,
+      x: 30,
+      y: 50,
+      shopInventory: inventory
+    }
+    const onShowSupplyStop = vi.fn()
+    const { handleTravel, setPendingTravelNode } = renderTravel('active', {
+      currentNodeId: stop.id,
+      onShowSupplyStop
+    })
+    handleTravel(stop)
+    expect(onShowSupplyStop).toHaveBeenCalledWith(inventory)
+    expect(setPendingTravelNode).not.toHaveBeenCalled()
   })
 })

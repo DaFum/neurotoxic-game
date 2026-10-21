@@ -38,6 +38,7 @@ import {
   calculateChassisGrossSaleValue,
   selectAssetsMap
 } from '../utils/assetSelectors'
+import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
 import { finiteNumberOr } from '../utils/gameState'
 import { getSafeUUID } from '../utils/crypto'
 import {
@@ -322,6 +323,8 @@ export const upgradeChassisTier = (
     }
     return fail('UNKNOWN_ASSET')
   }
+  if (isExpeditionChassisCommitmentLocked(state, assetId))
+    return fail('EXPEDITION_LOCKED')
   if (asset.chassisTier >= targetTier) return fail('MAX_TIER_REACHED')
   const targetCfg = getChassisTierConfig(
     asset.kind,

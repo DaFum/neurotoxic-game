@@ -12,6 +12,7 @@ import { formatCurrency } from '../utils/numberUtils'
 import { translateContextKeys } from '../utils/translationUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
+import { withExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import {
   isEditableKeyTarget,
   isTopmostModalDialog
@@ -61,7 +62,8 @@ const EventOptionButton = ({
 }: EventOptionButtonProps) => {
   const isDisabled =
     option.disabled ||
-    (typeof option.condition === 'function' && !option.condition(gameState))
+    (typeof option.condition === 'function' &&
+      !option.condition(withExpeditionSpendableCash(gameState)))
   const buttonClass = isDisabled
     ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed focus-visible:ring-ash-gray'
     : index === 0
@@ -409,7 +411,9 @@ export const EventModal = ({
           const isDisabled =
             option.disabled ||
             (typeof option.condition === 'function' &&
-              !option.condition(gameStateRef.current))
+              !option.condition(
+                withExpeditionSpendableCash(gameStateRef.current)
+              ))
           if (!isDisabled) {
             handleOptionSelect(option)
           }

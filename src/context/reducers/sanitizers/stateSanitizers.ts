@@ -11,6 +11,7 @@ import {
   deriveCityTraits
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
+import { EVENTS_DB } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
 import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
@@ -67,7 +68,7 @@ import {
   MAX_BANTER_EVENTS
 } from '../../../utils/gameState'
 import { MINIGAME_TYPES } from '../../gameConstants'
-import type { MinigameType } from '../../../types/game'
+import type { MinigameType, UnknownRecord } from '../../../types/game'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from '../toastSanitizers'
 import type {
   GameState,
@@ -1616,6 +1617,51 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
   return !isEmptyObject(option) ? option : null
 }
 
+let registryEventsById: Map<string, UnknownRecord> | null = null
+
+const getRegistryEvent = (id: string): UnknownRecord | undefined => {
+  if (!registryEventsById) {
+    registryEventsById = new Map()
+    for (const pool of Object.values(EVENTS_DB)) {
+      for (const registered of pool) {
+        if (typeof registered.id === 'string')
+          registryEventsById.set(registered.id, registered)
+      }
+    }
+  }
+  return registryEventsById.get(id)
+}
+
+/**
+ * Restores registry-owned executable event data that JSON cannot carry.
+ *
+ * @remarks
+ * Serialization drops option `condition` functions, nested composite effects
+ * and event `tags`. When the saved event is a registry event whose option list
+ * still matches (same length and per-index label/id), the canonical options and
+ * tags replace the lossy copies. Unknown ids and mismatched option lists keep
+ * the sanitized save data untouched.
+ *
+ * @param event - The sanitized active event, mutated in place
+ */
+const rehydrateRegistryEvent = (event: GameEvent): void => {
+  const registered = getRegistryEvent(event.id)
+  if (!registered) return
+  const registeredOptions = registered.options
+  if (!Array.isArray(registeredOptions) || !event.options) return
+  const matches =
+    registeredOptions.length === event.options.length &&
+    registeredOptions.every((opt, i) => {
+      const saved = event.options?.[i]
+      if (!saved || !isLooseRecord(opt)) return false
+      return saved.id === opt.id && saved.label === opt.label
+    })
+  if (!matches) return
+  event.options = registeredOptions as EventOption[]
+  if (Array.isArray(registered.tags))
+    event.tags = sanitizeStringArray(registered.tags)
+}
+
 /**
  * Sanitizes the active game event state.
  *
@@ -1673,6 +1719,8 @@ export const sanitizeActiveEvent = (
     })
     if (options.length > 0) event.options = options
   }
+
+  rehydrateRegistryEvent(event)
 
   return event
 }

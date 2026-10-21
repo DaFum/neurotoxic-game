@@ -80,4 +80,50 @@ describe('useVanMaintenance', () => {
     expect(result.current.handleRefuel).not.toBe(handleRefuel)
     expect(result.current.handleRepair).not.toBe(handleRepair)
   })
+
+  describe('protected expedition cash', () => {
+    const lowVan = { fuel: 0, condition: 10, upgrades: [] }
+    const render = (protectedCash: number) => {
+      const params = createParams(0)
+      const player = { ...params.player, money: 1000, van: lowVan }
+      const hook = renderHook(() => {
+        const isTravelingRef = useRef(false)
+        return useVanMaintenance({
+          ...params,
+          player,
+          protectedCash,
+          isTravelingRef
+        })
+      })
+      return { params, result: hook.result }
+    }
+
+    it('refuses refuel and repair that would dip into protected cash', () => {
+      const { params, result } = render(999)
+      act(() => {
+        result.current.handleRefuel()
+        result.current.handleRepair()
+      })
+      expect(params.updatePlayer).not.toHaveBeenCalled()
+      expect(params.addToast).toHaveBeenCalledTimes(2)
+      expect(params.addToast).not.toHaveBeenCalledWith(
+        expect.anything(),
+        'success'
+      )
+    })
+
+    it('still pays from the spendable slice', () => {
+      const { params, result } = render(500)
+      act(() => {
+        result.current.handleRefuel()
+      })
+      expect(params.updatePlayer).toHaveBeenCalledTimes(1)
+      const [update] = params.updatePlayer.mock.calls[0]
+      expect(update.money).toBeGreaterThanOrEqual(500)
+      expect(params.addToast).toHaveBeenCalledWith(
+        expect.any(String),
+        'success'
+      )
+    })
+  })
 })

@@ -16,6 +16,9 @@ import { calcBaseBreakdownChance } from '../../utils/upgradeUtils'
 import { audioService } from '../../utils/audio/audioEngine'
 import type { VanMaintenanceParams } from './types'
 
+const spendableCash = (money: unknown, protectedCash: number): number =>
+  Math.max(0, finiteNumberOr(money, 0) - finiteNumberOr(protectedCash, 0))
+
 /**
  * Provides the van refuel and repair handlers.
  *
@@ -38,6 +41,7 @@ export const useVanMaintenance = ({
   updateBand,
   advanceDay,
   dailyObligations,
+  protectedCash = 0,
   addToast
 }: VanMaintenanceParams) => {
   const pendingRestRef = useRef(false)
@@ -61,7 +65,9 @@ export const useVanMaintenance = ({
       return
     }
 
-    if (finiteNumberOr(player.money, 0) < cost) {
+    // Protected expedition cash is not spendable: the root cash-floor guard
+    // would reject the update and leave the van unchanged.
+    if (spendableCash(player.money, protectedCash) < cost) {
       addToast(
         i18n.t('ui:travel.refuel.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to fill up.',
@@ -89,7 +95,14 @@ export const useVanMaintenance = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player.van, player.money, updatePlayer, addToast, isTravelingRef])
+  }, [
+    player.van,
+    player.money,
+    protectedCash,
+    updatePlayer,
+    addToast,
+    isTravelingRef
+  ])
 
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return
@@ -107,7 +120,9 @@ export const useVanMaintenance = ({
       return
     }
 
-    if (finiteNumberOr(player.money, 0) < cost) {
+    // Protected expedition cash is not spendable: the root cash-floor guard
+    // would reject the update and leave the van unchanged.
+    if (spendableCash(player.money, protectedCash) < cost) {
       addToast(
         i18n.t('ui:travel.repair.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to repair.',
@@ -144,7 +159,14 @@ export const useVanMaintenance = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player.van, player.money, updatePlayer, addToast, isTravelingRef])
+  }, [
+    player.van,
+    player.money,
+    protectedCash,
+    updatePlayer,
+    addToast,
+    isTravelingRef
+  ])
 
   const handleRestInVan = useCallback(() => {
     if (isTravelingRef.current) return

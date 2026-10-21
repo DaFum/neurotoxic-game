@@ -69,3 +69,43 @@ test('resolveEventChoice rejects non-finite cooldown durations', () => {
   assert.equal(cooldownFor(Number.POSITIVE_INFINITY), 'some_event')
   assert.equal(cooldownFor(Number.NaN), 'some_event')
 })
+
+const protectedRun = (money, protectedCareerCash) => ({
+  ...buildState(),
+  player: { ...buildState().player, money },
+  expedition: { status: 'active', protectedCareerCash }
+})
+
+test('a paid option is rejected when only protected cash could pay for it', () => {
+  const choice = {
+    label: 'Buy coffee',
+    condition: state => state.player.money >= 45,
+    effect: { type: 'resource', resource: 'money', value: -45 }
+  }
+  // €1,000 total but €990 protected: only €10 is spendable.
+  assert.equal(
+    resolveEventChoice(choice, protectedRun(1000, 990)).result.outcome,
+    'rejected'
+  )
+  // Enough spendable cash resolves normally.
+  assert.notEqual(
+    resolveEventChoice(choice, protectedRun(1000, 900)).result.outcome,
+    'rejected'
+  )
+  // Outside a run the full balance counts.
+  assert.notEqual(
+    resolveEventChoice(choice, buildState()).result.outcome,
+    'rejected'
+  )
+})
+
+test('an unconditioned penalty still resolves when protected cash blocks the debit', () => {
+  const fine = {
+    label: 'Pay fine',
+    effect: { type: 'resource', resource: 'money', value: -200 }
+  }
+  assert.notEqual(
+    resolveEventChoice(fine, protectedRun(1000, 990)).result?.outcome,
+    'rejected'
+  )
+})

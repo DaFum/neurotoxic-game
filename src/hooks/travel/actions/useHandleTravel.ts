@@ -6,6 +6,7 @@ import { formatCurrency, formatNumber } from '../../../utils/numberUtils'
 import { handleError } from '../../../utils/errorHandler'
 import { VENUES_BY_ID } from '../../../data/venues'
 import { isGigNode } from '../../../utils/arrivalUtils'
+import { finiteNumberOr } from '../../../utils/gameState'
 import { getActiveAssetModifiers } from '../../../utils/assetSelectors'
 import {
   resolveTravelVenue,
@@ -71,7 +72,7 @@ export const useHandleTravel = ({
   clearPendingTravel,
   startTravelSequence
 }: UseHandleTravelParams) => {
-  const { addToast, onShowHQ } = params
+  const { addToast, onShowHQ, onShowSupplyStop } = params
 
   return useCallback(
     (node: MapNode) => {
@@ -142,6 +143,13 @@ export const useHandleTravel = ({
               })
             })
           }
+        } else if (node.type === 'SUPPLY_STOP' && onShowSupplyStop) {
+          // Arrival opens the shop from transient state a reload drops, and the
+          // stock is the node's own persisted `shopInventory`, so reopening it
+          // here neither rerolls offers nor replays the arrival day tick.
+          onShowSupplyStop(
+            Array.isArray(node.shopInventory) ? node.shopInventory : []
+          )
         } else {
           addToast(
             i18n.t('ui:travel.currentLocation', {
@@ -230,7 +238,7 @@ export const useHandleTravel = ({
       const {
         dist,
         totalCost,
-        fuelLiters,
+        fuelLiters: baseFuelLiters,
         dailyCost,
         totalCashImpact,
         cashRequired
@@ -244,6 +252,15 @@ export const useHandleTravel = ({
         liabilities,
         assetModifiers
       )
+
+      // Quote the litres `resolveExpeditionTravelCost` will settle (zero
+      // pickups), so the gate neither blocks a feasible leg nor approves one
+      // the chassis rules make unaffordable.
+      const fuelLiters =
+        params.expeditionStatus === 'active'
+          ? baseFuelLiters *
+            Math.max(0, finiteNumberOr(params.expeditionFuelMultiplier, 1))
+          : baseFuelLiters
 
       const resourceCheck = checkTravelResources(
         cashRequired,
@@ -298,7 +315,9 @@ export const useHandleTravel = ({
       addToast,
       params.expeditionStatus,
       params.expeditionDraftPending,
+      params.expeditionFuelMultiplier,
       onShowHQ,
+      onShowSupplyStop,
       startTravelSequence,
       clearPendingTravel,
       getLocationName,

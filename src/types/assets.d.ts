@@ -274,7 +274,11 @@ export type PurchaseFailureReason =
  * Failure codes for chassis tier upgrade attempts.
  */
 export type UpgradeFailureReason =
-  'UNKNOWN_ASSET' | 'MAX_TIER_REACHED' | 'UNKNOWN_CONFIG' | 'INSUFFICIENT_FUNDS'
+  | 'UNKNOWN_ASSET'
+  | 'MAX_TIER_REACHED'
+  | 'UNKNOWN_CONFIG'
+  | 'INSUFFICIENT_FUNDS'
+  | 'EXPEDITION_LOCKED'
 
 /**
  * Failure codes for chassis repair attempts.

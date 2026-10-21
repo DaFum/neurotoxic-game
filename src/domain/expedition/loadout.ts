@@ -49,6 +49,10 @@ import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
 } from './cargo'
+import {
+  getExpeditionProtectedCash,
+  getExpeditionSpendableCash
+} from './spendableCash'
 import { findExpeditionTourbusAsset } from './chassis'
 import {
   getAvailableInsurancePolicyIds,
@@ -104,43 +108,10 @@ const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
  */
 export const EXPEDITION_MAX_SETLIST_SONGS = 4
 
-/**
- * Cash the player may spend inside an active Expedition.
- *
- * @param state - Current game state.
- * @returns Non-negative spendable amount.
- *
- * @remarks
- * `protectedCareerCash` is committed in the build and is off-limits for the
- * whole run. Without this boundary a wealthy Career would trivialize every run
- * safety decision — the design requires Cash to be a tool for controlling risk,
- * not an unlimited rescue. Outside a run the full balance is spendable.
- */
-export const getExpeditionSpendableCash = (state: GameState): number =>
-  Math.max(
-    0,
-    finiteNumberOr(state.player.money, 0) - getExpeditionProtectedCash(state)
-  )
-
-/**
- * Career Cash the active run may not touch.
- *
- * @param state - Current game state.
- * @returns Non-negative protected amount; `0` outside an active run.
- *
- * @remarks
- * A corrupt protected slice (non-finite or negative) fails closed: the whole
- * balance counts as protected, so {@link getExpeditionSpendableCash} reports
- * nothing spendable rather than treating the protection as gone.
- */
-export const getExpeditionProtectedCash = (state: GameState): number => {
-  if (state.expedition?.status !== 'active') return 0
-  const protectedCash = state.expedition.protectedCareerCash
-  if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
-    return Math.max(0, finiteNumberOr(state.player.money, 0))
-  }
-  return protectedCash
-}
+export {
+  getExpeditionProtectedCash,
+  getExpeditionSpendableCash
+} from './spendableCash'
 
 /**
  * Checks whether an active-Expedition spend is affordable.
@@ -1028,6 +999,19 @@ export const enforceExpeditionCashFloor = (
   const after = finiteNumberOr(nextState.player.money, 0)
   if (after >= before) return nextState
   if (after >= floor) return nextState
+
+  // An event bundles Cash with time, controversy and confiscation. Rolling the
+  // whole delta back would cancel those penalties while the event still
+  // closes, so only the Cash debit is held at the floor.
+  if (actionType === ActionTypes.APPLY_EVENT_DELTA) {
+    return {
+      ...nextState,
+      player: {
+        ...nextState.player,
+        money: Math.max(after, Math.min(before, floor))
+      }
+    }
+  }
 
   logger.warn(
     'Expedition',

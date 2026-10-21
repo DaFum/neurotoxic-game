@@ -153,6 +153,13 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
   const gameOverToast = sideEffects.find(e => e.type === 'gameOverToast')
   assert.ok(gameOverToast)
   assert.equal(gameOverToast.descriptionKey, 'event:death_desc')
+
+  // the ending is recorded in state so the save snapshot carries it
+  const terminal = actions.find(a => a.type === 'SET_TERMINAL_OUTCOME')
+  assert.deepEqual(terminal?.payload, {
+    reason: 'event_game_over',
+    eventId: 'evt_test'
+  })
 })
 
 // --- pendingEvent pop ---

@@ -13,6 +13,7 @@ import { createInitialState } from '../../src/context/initialState'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { prepareExpeditionRun } from '../../src/context/expeditionActionCreators'
+import { upgradeChassisTier } from '../../src/context/assetActionCreators'
 import { createDefaultExpeditionState } from '../../src/domain/expedition/defaults'
 import { nextSeed } from '../../src/utils/seededRng'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
@@ -592,6 +593,36 @@ describe('committed identity freeze while active', () => {
       next.assets[0].slots[0].installedModuleId,
       FIRST_TOURBUS_MODULE_ID
     )
+  })
+
+  const upgradeTier = assetId => ({
+    type: ActionTypes.UPGRADE_CHASSIS_TIER,
+    payload: { assetId, targetTier: 2, newSlotIds: [] }
+  })
+
+  it('rejects a tier upgrade on the committed chassis', () => {
+    const state = activeState()
+    const tier = state.assets[0].chassisTier
+    const next = gameReducer(state, upgradeTier('asset_bus'))
+    assert.equal(next, state)
+    assert.equal(next.assets[0].chassisTier, tier)
+    assert.equal(next.player.money, 100000)
+  })
+
+  it('refuses the tier-upgrade action on the committed chassis', () => {
+    const state = activeState()
+    const action = upgradeChassisTier('asset_bus', 2, state)
+    assert.equal(action.type, ActionTypes.UPGRADE_CHASSIS_TIER_FAILED)
+    assert.equal(action.payload.reason, 'EXPEDITION_LOCKED')
+  })
+
+  it('still allows a tier upgrade on an asset the run did not commit', () => {
+    const state = activeState()
+    const action = upgradeChassisTier('asset_spare', 2, state)
+    assert.equal(action.type, ActionTypes.UPGRADE_CHASSIS_TIER)
+    const next = gameReducer(state, action)
+    assert.notEqual(next, state)
+    assert.equal(next.assets[1].chassisTier, 2)
   })
 
   it('still allows servicing an asset the run did not commit', () => {

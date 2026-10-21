@@ -51,6 +51,14 @@ export type TravelLogicParams = {
   expeditionStatus?: GameState['expedition']['status']
   /** A Run Draft offer is waiting; the route refuses travel until it is picked. */
   expeditionDraftPending?: boolean
+  /**
+   * Effective expedition fuel-consumption multiplier, so the confirmation and
+   * resource gate quote the same litres the settlement will burn. Absent or
+   * outside a run it is neutral (1).
+   */
+  expeditionFuelMultiplier?: number
+  /** Career cash an active run may not spend; `0` outside a run. */
+  expeditionProtectedCash?: number
   onShowHQ?: () => void
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]
@@ -133,5 +141,7 @@ export interface VanMaintenanceParams {
   updateBand: (updates: Partial<BandState>) => void
   advanceDay: () => void
   dailyObligations: number
+  /** Career cash an active run may not spend; `0` outside a run. */
+  protectedCash?: number
   addToast: OptionalToastCallback
 }

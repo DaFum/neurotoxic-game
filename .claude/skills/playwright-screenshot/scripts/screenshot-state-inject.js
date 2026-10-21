@@ -201,6 +201,7 @@ export const BASE_STATE = {
   unlocks: [],
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
+  terminalOutcome: null,
   pendingForeclosureNotices: [],
   pendingRiskEvent: null,
   completedMilestones: [],

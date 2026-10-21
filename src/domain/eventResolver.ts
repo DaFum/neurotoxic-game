@@ -13,7 +13,8 @@ import {
   createAddQuestAction,
   createAddUnlockAction,
   createApplyEventDeltaAction,
-  createSetActiveEventAction
+  createSetActiveEventAction,
+  createSetTerminalOutcomeAction
 } from '../context/actionCreators'
 import { applyExpeditionEventDelta } from '../context/expeditionActionCreators'
 import { sanitizeExpeditionEventResultIds } from './expedition/eventDeltas'
@@ -270,6 +271,13 @@ export function resolveEvent(
       })
 
       const clearEventAction = createSetActiveEventAction(null)
+      // Recorded before the save so the ending is durable, not just routed.
+      actions.push(
+        createSetTerminalOutcomeAction({
+          reason: 'event_game_over',
+          eventId: state.activeEvent?.id ?? 'unknown'
+        })
+      )
 
       sideEffects.push({ type: 'saveGame' })
       sideEffects.push({ type: 'changeScene', scene: GAME_PHASES.GAMEOVER })
