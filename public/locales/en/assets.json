@@ -316,6 +316,7 @@
   "upgradeFailed.max_tier_reached": "Asset is already at maximum tier.",
   "upgradeFailed.unknown_config": "Asset configuration not available.",
   "upgradeFailed.insufficient_funds": "Not enough money.",
+  "upgradeFailed.expedition_locked": "The active expedition build is locked.",
   "repairFailed.unknown_asset": "Unknown asset.",
   "repairFailed.no_damage": "Asset is not damaged.",
   "repairFailed.insufficient_funds": "Not enough money.",

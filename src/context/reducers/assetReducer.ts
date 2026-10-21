@@ -445,6 +445,7 @@ export const handleUpgradeChassisTier = (
     assetId
   )
   if (!targetAsset) return state
+  if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
   const currentConfigTier = getChassisTierConfig(

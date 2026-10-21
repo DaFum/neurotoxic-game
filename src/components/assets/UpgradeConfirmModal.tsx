@@ -12,6 +12,7 @@ import {
 } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**
@@ -35,8 +36,15 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
       ? calculateChassisUpgradeCost(currentConfig, targetConfig)
       : 0
   const insufficient = nextTier !== null && money < cost
+  const commitmentLocked = useGameSelector(state =>
+    isExpeditionChassisCommitmentLocked(state, asset.id)
+  )
   const blocked =
-    nextTier === null || !currentConfig || !targetConfig || insufficient
+    nextTier === null ||
+    !currentConfig ||
+    !targetConfig ||
+    insufficient ||
+    commitmentLocked
 
   return (
     <Modal
@@ -76,9 +84,11 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           <CancelButton onClick={onClose} />
           <Tooltip
             content={
-              insufficient
-                ? t('assets:purchaseFailed.insufficient_funds')
-                : undefined
+              commitmentLocked
+                ? t('assets:upgradeFailed.expedition_locked')
+                : insufficient
+                  ? t('assets:purchaseFailed.insufficient_funds')
+                  : undefined
             }
           >
             <ConfirmButton
