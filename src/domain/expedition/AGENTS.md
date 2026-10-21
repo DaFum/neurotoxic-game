@@ -15,6 +15,13 @@
 - A seeded gate proves an event _could_ occur at a route step, never that it did. `sourceId`, `resolvedEventSourceIds`, `materialized` and the ledger entries themselves are all save-authored and cannot authenticate a reward. Every `event_rare` entry is dropped on load for that reason; do not re-admit them without reducer-authored evidence a save cannot construct.
 - A settlement bonus needs run-scoped evidence. `completedQuestIds` only ever grows, so it proves history, not that a milestone happened in the run being settled.
 
+## Protected cash
+
+- `getExpeditionProtectedCash`, `getExpeditionSpendableCash` and `withExpeditionSpendableCash` live in `spendableCash.ts`, free of heavy imports so the event engine and UI can use them; `loadout.ts` re-exports the first two.
+- `APPLY_EVENT_DELTA` is not exempt from the cash floor: `enforceExpeditionCashFloor` keeps its non-cash effects and holds only the cash debit at the floor. Whether an optional cost may be chosen is decided earlier, by `isOptionAffordable` (see `src/utils/eventEngine/AGENTS.md`), so clipping never buys a full reward for a partial payment.
+- `SET_TERMINAL_OUTCOME` is exempt from the floor like the other terminal actions, and `event_game_over` is a terminal-only failure reason: it is never derived as a pending crisis.
+- `checkSoftlock` takes the effective `fuelMultiplier` so the stranded verdict prices a leg at the litres settlement burns.
+
 ## Composition
 
 - Numeric rules (what a thing is worth) and route-pressure weights (how often it is offered) are separate axes with one owner each: `getEffectiveExpeditionRules` and `getExpeditionRoutePressureProfile`. Never branch on a Region or Tour id outside the registries.

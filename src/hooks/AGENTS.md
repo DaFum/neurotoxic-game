@@ -20,6 +20,13 @@
 - Band harmony is clamped to minimum `1` (never `0`). `arrivalUtils` uses `harmony <= 1` as the deterministic gig-cancellation check with probabilistic cancellation above that. A `harmony <= 0` branch is unreachable — do not reintroduce one.
 - `useArrivalLogic.handleArrivalSequence` is the only arrival path and the only caller of `processTravelEvents`. Keep its default gig-node policy (skip GIG/FESTIVAL/FINALE so gig events fire in PreGig): do not pass `{ includeGigNodes: true }`. Travel itself has one owner too — `useTravelLogic` gates affordability and hands off to the tourbus minigame, `handleCompleteTravelMinigame` settles costs/fuel/location, and this hook runs the day tick, events, rival, and routing. Do not reintroduce a second settlement path.
 
+- `Overworld` feeds `useTravelLogic` two expedition values: `expeditionFuelMultiplier` (the effective multiplier, `1` outside a run) so the travel gate quotes the litres `resolveExpeditionTravelCost` will settle, and `expeditionProtectedCash` so `useVanMaintenance` checks refuel/repair against spendable cash before dispatching and toasting success. Do not price either from the legacy helpers alone.
+- Clicking the node the band already stands on, when it is a `SUPPLY_STOP`, reopens that node's `shopInventory` through `onShowSupplyStop`; it must not advance the day or replay arrival effects.
+
+## Leaderboard sync
+
+- `useLeaderboardSync` keeps one slot per player: at most one request in flight, the newest snapshot queued behind it, sends throttled to the stats endpoint's 5/min limit. A change is queued unless it equals what the server will hold (`inFlightKey ?? lastSentKey`), so a return to an older snapshot during a request is still sent. Do not reintroduce a per-day gate; it left current-stat boards on the day's first snapshot.
+
 ## Venue IDs
 
 - Saved/legacy venue IDs may carry a namespace prefix (`'venues:berlin_so36'`) while `gameMap.cityStates` is keyed by the city prefix (`'berlin'`).

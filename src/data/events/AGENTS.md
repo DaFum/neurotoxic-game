@@ -6,6 +6,9 @@
 - Invalid or malformed raw events are logged and skipped during the `index.ts` validation pass; fix the source entry rather than relying on runtime filtering.
 - Event ID uniqueness is asserted by `tests/utils/architecture.test.jsx` against `ALL_RAW_EVENTS` (pre-dedup), not the deduplicated `EVENTS_DB`. Duplicate IDs are logged/skipped at runtime but still fail CI.
 
+- A saved active event is rehydrated from this registry on load (`rehydrateRegistryEvent` in `stateSanitizers.ts`): options, composite effects, conditions and `tags` are restored only when the saved option list still matches by length and per-index `id` and `label`. Reordering or relabelling options of an existing event makes saves in flight fall back to the sanitized (lossy) copy, so change them deliberately.
+- Option `condition`s run against a state whose `player.money` is only the spendable cash during an active run (`withExpeditionSpendableCash`), so a money gate like `money >= 45` already respects protected cash. Options with a direct money cost but no such condition are covered by `isOptionAffordable`; see `src/utils/eventEngine/AGENTS.md`.
+
 ## Special Events
 
 - `special.ts` entries require `category: 'special'`, `events:` i18n keys, and unique IDs.
