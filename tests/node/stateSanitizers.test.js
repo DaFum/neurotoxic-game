@@ -616,6 +616,7 @@ describe('stateSanitizers', () => {
       const restored = sanitizeActiveEvent(saved)
       assert.equal(restored.options.length, 2)
       assert.deepEqual(restored.options[0].effect, { type: 'composite' })
+      assert.equal(restored.tags, undefined)
     })
   })
 })

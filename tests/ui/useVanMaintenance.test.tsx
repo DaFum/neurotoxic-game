@@ -113,11 +113,13 @@ describe('useVanMaintenance', () => {
     })
 
     it('still pays from the spendable slice', () => {
-      const { params, result } = render(0)
+      const { params, result } = render(500)
       act(() => {
         result.current.handleRefuel()
       })
       expect(params.updatePlayer).toHaveBeenCalledTimes(1)
+      const [update] = params.updatePlayer.mock.calls[0]
+      expect(update.money).toBeGreaterThanOrEqual(500)
       expect(params.addToast).toHaveBeenCalledWith(
         expect.any(String),
         'success'

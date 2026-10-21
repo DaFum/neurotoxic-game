@@ -141,13 +141,15 @@ describe('useHandleTravel overlay override', () => {
   })
 
   test('ignores the expedition fuel multiplier outside a run', () => {
+    // START is visible and connected from here, so travel reaches the
+    // resource check, which a 1000x multiplier would fail if it leaked in.
     const idle = renderTravel('idle', {
       fuel: 100,
-      expeditionFuelMultiplier: 1000
+      expeditionFuelMultiplier: 1000,
+      currentNodeId: TWO_STEPS_AHEAD.id
     })
-    idle.handleTravel(TWO_STEPS_AHEAD)
-    // Dimmed by the Career visibility rule, never by a fuel refusal.
-    expect(toastKeys(idle.addToast).join('|')).not.toMatch(/fuel/i)
+    idle.handleTravel(START)
+    expect(idle.setPendingTravelNode).toHaveBeenCalledWith(START)
   })
 
   test('clicking the current supply stop reopens its persisted shop', () => {

@@ -1648,16 +1648,16 @@ const rehydrateRegistryEvent = (event: GameEvent): void => {
   const registered = getRegistryEvent(event.id)
   if (!registered) return
   const registeredOptions = registered.options
-  if (Array.isArray(registeredOptions) && event.options) {
-    const matches =
-      registeredOptions.length === event.options.length &&
-      registeredOptions.every((opt, i) => {
-        const saved = event.options?.[i]
-        if (!saved || !isLooseRecord(opt)) return false
-        return saved.id === opt.id && saved.label === opt.label
-      })
-    if (matches) event.options = registeredOptions as EventOption[]
-  }
+  if (!Array.isArray(registeredOptions) || !event.options) return
+  const matches =
+    registeredOptions.length === event.options.length &&
+    registeredOptions.every((opt, i) => {
+      const saved = event.options?.[i]
+      if (!saved || !isLooseRecord(opt)) return false
+      return saved.id === opt.id && saved.label === opt.label
+    })
+  if (!matches) return
+  event.options = registeredOptions as EventOption[]
   if (Array.isArray(registered.tags))
     event.tags = sanitizeStringArray(registered.tags)
 }
