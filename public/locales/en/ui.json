@@ -2281,7 +2281,7 @@
   "menu.sermon_desc": "Host an illegal void sermon",
   "void_sermon.controversy": "CONTROVERSY:",
   "void_sermon.cost": "COST:",
-  "void_sermon.description": "Host an illegal void sermon to extract donations and brainwash attendees. Grants massive fame and zealotry, but destroys band harmony and spikes controversy.",
+  "void_sermon.description": "Host an illegal void sermon to brainwash attendees. Grants massive fame and zealotry, but destroys band harmony and spikes controversy.",
   "void_sermon.execute": "HOST SERMON",
   "void_sermon.fame": "FAME:",
   "void_sermon.harmony_cost": "HARMONY COST:",

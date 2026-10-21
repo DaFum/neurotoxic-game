@@ -24,6 +24,7 @@ export const useZealotryAction = (
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
+  const gameState = useGameSelector(state => state)
 
   const {
     isOpen: showModal,
@@ -39,7 +40,7 @@ export const useZealotryAction = (
 
   let canRun = false
   try {
-    canRun = validateZealotryAction(social, player, band, descriptor)
+    canRun = validateZealotryAction(social, player, band, descriptor, gameState)
   } catch (error) {
     logger.error(descriptor.loggerScope, descriptor.validationFailureMessage, {
       error,

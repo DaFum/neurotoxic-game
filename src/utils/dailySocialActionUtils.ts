@@ -1,6 +1,8 @@
 import { clampBandHarmony, clampPlayerMoney } from './gameState'
 import { isFiniteNumber } from './finiteNumber'
+import { getExpeditionSpendableCash } from '../domain/expedition/loadout'
 import type {
+  GameState,
   BandState,
   PlayerState,
   SocialState,
@@ -136,14 +138,18 @@ export const validateZealotryAction = (
   social: Partial<SocialState> | null | undefined,
   player: Partial<PlayerState> | null | undefined,
   band: Partial<BandState> | null | undefined,
-  descriptor: ZealotryActionDescriptor
+  descriptor: ZealotryActionDescriptor,
+  gameState?: GameState
 ): boolean => {
   if (!social || !player || !band) return false
+  const availableMoney = gameState
+    ? getExpeditionSpendableCash(gameState)
+    : player.money
   const { dayField, thresholdField, thresholdRequired, config } = descriptor
   return validateDailySocialActionEligibility({
     lastActionDay: social[dayField],
     currentDay: player.day,
-    money: player.money,
+    money: availableMoney,
     harmony: band.harmony,
     cost: config.COST,
     harmonyCost: config.HARMONY_COST,
