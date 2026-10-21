@@ -179,6 +179,13 @@ export const LeaderboardTab = () => {
         isUnavailable={isUnavailable}
         rankings={rankings}
       />
+
+      <p
+        className='text-xs text-ash-gray'
+        data-testid='leaderboard-honor-notice'
+      >
+        {t('ui:leaderboard.honor_notice')}
+      </p>
     </div>
   )
 }

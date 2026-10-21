@@ -1458,6 +1458,7 @@
   "leaderboard.fame": "RUHM",
   "leaderboard.followers": "FOLLOWER",
   "leaderboard.global_wealth": "GESAMTVERMÖGEN",
+  "leaderboard.honor_notice": "Die Ranglisten sind selbst gemeldet und nicht überprüft: Es gilt das Ehrenwort.",
   "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
   "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
   "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",

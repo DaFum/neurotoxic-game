@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
+import { systemClock, type IClock } from '../utils/clock'
 import type { GameState } from '../types'
 
 type LeaderboardStatsPayload = {
@@ -17,16 +18,34 @@ type LeaderboardStatsPayload = {
   stageDives: number
 }
 
+/**
+ * The stats endpoint allows 5 requests a minute per IP, so one player never
+ * sends more often than this, however fast their stats change.
+ */
+const MIN_SYNC_INTERVAL_MS = 15000
+
+/** Per-player sync state: at most one request in flight, latest snapshot kept. */
+type SyncSlot = {
+  inFlight: boolean
+  pending: LeaderboardStatsPayload | null
+  lastSentKey: string | null
+  lastSentAt: number | null
+  timer: ReturnType<typeof setTimeout> | null
+}
+
 let leaderboardStatsEndpointUnavailable = false
-// Dedupes concurrent syncs: the effect fires per stat change and the
-// last-synced-day marker is only written after the fetch resolves, so without
-// this every stat change within one day launched another POST.
-const inFlightSyncs = new Set<string>()
+// Coalesces stat changes: while a request is in flight or throttled, only the
+// newest snapshot is kept and sent afterwards, so a change is never dropped
+// and the board is never left on the first snapshot of the day.
+const syncSlots = new Map<string, SyncSlot>()
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
-    inFlightSyncs.clear()
+    for (const slot of syncSlots.values()) {
+      if (slot.timer) clearTimeout(slot.timer)
+    }
+    syncSlots.clear()
   })
 }
 
@@ -136,7 +155,9 @@ const createSyncPayload = (
  * @throws {@link Error}
  * Throws when the stats endpoint exists but returns a non-success response.
  */
-const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
+const syncLeaderboardStats = async (
+  payload: LeaderboardStatsPayload & { revision: number }
+) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }
@@ -165,11 +186,120 @@ const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
   return true
 }
 
+const snapshotKey = (payload: LeaderboardStatsPayload): string =>
+  JSON.stringify([
+    payload.playerName,
+    payload.money,
+    payload.day,
+    payload.fame,
+    payload.followers,
+    payload.distance,
+    payload.conflicts,
+    payload.stageDives
+  ])
+
+const lastSyncedKeyStorageKey = (playerId: string) =>
+  `neurotoxic_last_synced_snapshot:${playerId}`
+const revisionStorageKey = (playerId: string) =>
+  `neurotoxic_stats_revision:${playerId}`
+
+const getSlot = (playerId: string): SyncSlot => {
+  const existing = syncSlots.get(playerId)
+  if (existing) return existing
+  // localStorage is untrusted: only a string marker counts as a prior sync.
+  const stored = getSafeStorageItem<unknown>(
+    lastSyncedKeyStorageKey(playerId),
+    null
+  )
+  const slot: SyncSlot = {
+    inFlight: false,
+    pending: null,
+    lastSentKey: typeof stored === 'string' ? stored : null,
+    lastSentAt: null,
+    timer: null
+  }
+  syncSlots.set(playerId, slot)
+  return slot
+}
+
+/**
+ * Next monotonic snapshot revision for a player. Persisted before sending, so
+ * a retry or a reload can never reuse or lower a revision the server has seen.
+ */
+const nextRevision = (playerId: string, clock: IClock): number => {
+  const stored = finiteNumberOr(
+    getSafeStorageItem<unknown>(revisionStorageKey(playerId), 0),
+    0
+  )
+  const revision = Math.max(Math.floor(stored) + 1, Math.floor(clock.now()))
+  setSafeStorageItem(revisionStorageKey(playerId), revision)
+  return revision
+}
+
+const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
+  slot.timer = null
+  const payload = slot.pending
+  if (!payload || slot.inFlight) return
+  slot.pending = null
+  const key = snapshotKey(payload)
+  if (key === slot.lastSentKey) return
+
+  slot.inFlight = true
+  slot.lastSentAt = clock.now()
+  try {
+    const didSync = await syncLeaderboardStats({
+      ...payload,
+      revision: nextRevision(payload.playerId, clock)
+    })
+    if (didSync) {
+      slot.lastSentKey = key
+      setSafeStorageItem(lastSyncedKeyStorageKey(payload.playerId), key)
+      logger.info('Leaderboard', `Synced stats for day ${payload.day}`)
+    }
+  } catch (error) {
+    // Silent fail for leaderboard sync to not disrupt gameplay
+    logger.warn('Leaderboard', 'Stats sync failed', error)
+  } finally {
+    slot.inFlight = false
+    // A change that arrived during the request goes out next.
+    if (slot.pending && snapshotKey(slot.pending) !== slot.lastSentKey) {
+      scheduleFlush(slot, clock)
+    }
+  }
+}
+
+const scheduleFlush = (slot: SyncSlot, clock: IClock): void => {
+  if (slot.timer || slot.inFlight) return
+  const wait =
+    slot.lastSentAt === null
+      ? 0
+      : Math.max(0, MIN_SYNC_INTERVAL_MS - (clock.now() - slot.lastSentAt))
+  if (wait === 0) {
+    void flushSlot(slot, clock)
+    return
+  }
+  slot.timer = setTimeout(() => {
+    void flushSlot(slot, clock)
+  }, wait)
+}
+
 /**
  * Hook to sync player stats to the global leaderboards.
+ *
+ * @remarks
+ * Every stat change is queued as the latest snapshot and flushed through one
+ * in-flight request per player, throttled to the endpoint's rate limit. Each
+ * request carries a monotonic revision so the server can drop one that was
+ * overtaken. The board is honor-based: values are client-reported and not
+ * verified.
+ *
  * @param state - The current game state.
+ * @param clock - Clock used for throttling and revisions. Defaults to the system clock.
  */
-export const useLeaderboardSync = (state: GameState): void => {
+export const useLeaderboardSync = (
+  state: GameState,
+  clock: IClock = systemClock
+): void => {
   const { playerId, playerName, money, day, fame, stats } = state.player
   const { totalDistance, conflictsResolved, stageDives } = stats
   const social = state.social
@@ -177,63 +307,29 @@ export const useLeaderboardSync = (state: GameState): void => {
   const totalFollowers = calculateTotalFollowers(social)
 
   useEffect(() => {
-    // 1. Strict Validation
+    // Strict validation
     if (!isValidForSync(playerId, playerName, day, money)) {
       return
     }
 
-    const syncStats = async () => {
-      // 2. Check if already synced for this day (Player-Specific)
-      const syncKey = `neurotoxic_last_synced_day:${playerId}`
-      // localStorage is untrusted: the parsed marker may be any JSON value.
-      const lastSyncedDay = finiteNumberOr(
-        getSafeStorageItem<unknown>(syncKey, 0),
-        0
-      )
-
-      if (day <= lastSyncedDay) return
-
-      // 3. Dedupe: one request per player and day. The marker below is only
-      // written after the await, so concurrent effect runs would all pass the
-      // lastSyncedDay check and POST duplicate intermediate snapshots.
-      const flightKey = `${playerId}:${day}`
-      if (inFlightSyncs.has(flightKey)) return
-      inFlightSyncs.add(flightKey)
-
-      // 4. Sync Logic
-      try {
-        const payload = createSyncPayload(
-          playerId ?? '',
-          playerName,
-          money,
-          day,
-          fame,
-          totalDistance,
-          conflictsResolved,
-          stageDives,
-          totalFollowers
-        )
-
-        const didSync = await syncLeaderboardStats(payload)
-        if (!didSync) return
-
-        // 5. Update Synced State. Keep the marker monotonic: a slower sync
-        // for an earlier day must not lower it after a later day completed.
-        const markerDay = finiteNumberOr(
-          getSafeStorageItem<unknown>(syncKey, 0),
-          0
-        )
-        setSafeStorageItem(syncKey, Math.max(markerDay, day))
-        logger.info('Leaderboard', `Synced stats for day ${day}`)
-      } catch (error) {
-        // Silent fail for leaderboard sync to not disrupt gameplay
-        logger.warn('Leaderboard', 'Stats sync failed', error)
-      } finally {
-        inFlightSyncs.delete(flightKey)
-      }
+    const payload = createSyncPayload(
+      playerId ?? '',
+      playerName,
+      money,
+      day,
+      fame,
+      totalDistance,
+      conflictsResolved,
+      stageDives,
+      totalFollowers
+    )
+    const slot = getSlot(payload.playerId)
+    if (snapshotKey(payload) === slot.lastSentKey) {
+      slot.pending = null
+      return
     }
-
-    syncStats()
+    slot.pending = payload
+    scheduleFlush(slot, clock)
   }, [
     playerId,
     playerName,
@@ -243,6 +339,7 @@ export const useLeaderboardSync = (state: GameState): void => {
     totalFollowers,
     totalDistance,
     conflictsResolved,
-    stageDives
+    stageDives,
+    clock
   ]) // Keep primitive deps for reliable React updates
 }

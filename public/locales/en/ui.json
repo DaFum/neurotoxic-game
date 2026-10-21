@@ -1458,6 +1458,7 @@
   "leaderboard.fame": "FAME",
   "leaderboard.followers": "FOLLOWERS",
   "leaderboard.global_wealth": "GLOBAL WEALTH",
+  "leaderboard.honor_notice": "Rankings are self-reported and not verified: they run on the honor system.",
   "leaderboard.load_error": "Could not load rankings.",
   "leaderboard.no_data": "NO DATA RECORDED YET.",
   "leaderboard.no_songs": "NO SONGS UNLOCKED",

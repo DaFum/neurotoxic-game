@@ -25,6 +25,7 @@ const mockRedisClient = {
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),
   multi: vi.fn(() => mockMulti),
+  eval: vi.fn(() => Promise.resolve(1)),
   disconnect: vi.fn(() => Promise.resolve()),
   on: vi.fn(),
   connect: vi.fn(() => Promise.resolve())
@@ -49,6 +50,8 @@ describe('Leaderboard Stats API', () => {
     mockRedisClient.disconnect.mockClear()
     mockRedisClient.on.mockClear()
     mockRedisClient.connect.mockClear()
+    mockRedisClient.eval.mockClear()
+    mockRedisClient.eval.mockImplementation(() => Promise.resolve(1))
     mockMulti.zAdd.mockClear()
     mockMulti.exec.mockClear()
 
@@ -90,6 +93,78 @@ describe('Leaderboard Stats API', () => {
     // Checks that all 6 stats have been zAdd'ed in multi
     assert.strictEqual(mockMulti.zAdd.mock.calls.length, 6)
     assert.strictEqual(mockMulti.exec.mock.calls.length, 1)
+  })
+
+  const revisionRequest = revision => ({
+    method: 'POST',
+    headers: { 'x-forwarded-for': '127.0.0.1' },
+    body: {
+      playerId: 'test-band',
+      playerName: 'Test Band',
+      money: 100,
+      fame: 10,
+      followers: 500,
+      distance: 50,
+      conflicts: 2,
+      stageDives: 5,
+      revision
+    }
+  })
+
+  test('POST with a revision applies all boards atomically in one script', async () => {
+    const { res } = createApiRouteMocks()
+    await statsModule.default(revisionRequest(1700000000000), res)
+
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], { success: true })
+    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 1)
+    const [script, options] = mockRedisClient.eval.mock.calls[0]
+    assert.match(script, /HGET/)
+    assert.deepStrictEqual(options.keys, [
+      'lb:revision',
+      'lb:balance',
+      'lb:fame',
+      'lb:followers',
+      'lb:distance',
+      'lb:conflicts',
+      'lb:stage_dives'
+    ])
+    assert.deepStrictEqual(options.arguments, [
+      'test-band',
+      '1700000000000',
+      '100',
+      '10',
+      '500',
+      '50',
+      '2',
+      '5'
+    ])
+    // The legacy non-atomic path is not used when a revision is present.
+    assert.strictEqual(mockMulti.exec.mock.calls.length, 0)
+    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 1)
+  })
+
+  test('POST with a stale revision is acknowledged but not applied', async () => {
+    mockRedisClient.eval.mockImplementation(() => Promise.resolve(0))
+    const { res } = createApiRouteMocks()
+    await statsModule.default(revisionRequest(5), res)
+
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
+      success: true,
+      stale: true
+    })
+    // A stale snapshot must not rewrite the display name either.
+    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 0)
+  })
+
+  test('POST rejects an invalid revision', async () => {
+    for (const bad of [0, -1, 1.5, '7', null, Number.NaN, 2 ** 60]) {
+      const { res } = createApiRouteMocks()
+      await statsModule.default(revisionRequest(bad), res)
+      assert.strictEqual(res.status.mock.calls[0][0], 400, String(bad))
+    }
+    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 0)
   })
 
   test('POST rejects missing required fields', async () => {

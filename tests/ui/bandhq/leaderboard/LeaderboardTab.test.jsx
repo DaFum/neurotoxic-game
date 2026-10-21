@@ -52,6 +52,14 @@ describe('LeaderboardTab', () => {
     )
   })
 
+  it('labels the rankings as self-reported', async () => {
+    render(<LeaderboardTab />)
+
+    expect(screen.getByTestId('leaderboard-honor-notice')).toHaveTextContent(
+      'ui:leaderboard.honor_notice'
+    )
+  })
+
   it('keeps the active tab enabled and supports roving keyboard focus', async () => {
     const user = userEvent.setup()
     render(<LeaderboardTab />)

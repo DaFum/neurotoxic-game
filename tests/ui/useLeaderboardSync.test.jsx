@@ -17,6 +17,26 @@ vi.mock('../../src/utils/errorHandler', async () => {
     await import('../mocks/storageErrorMock.js')
   return createStorageErrorMock()
 })
+
+const makeState = (overrides = {}) => {
+  const { playerId = 'id-123', social, ...player } = overrides
+  return {
+    player: {
+      playerId,
+      playerName: 'Player1',
+      money: 500,
+      fame: 100,
+      day: 5,
+      stats: { totalDistance: 120, conflictsResolved: 3, stageDives: 10 },
+      ...player
+    },
+    social: social ?? { instagram: 1000 }
+  }
+}
+
+const bodies = fetchMock =>
+  fetchMock.mock.calls.map(([, options]) => JSON.parse(options.body))
+
 describe('useLeaderboardSync', () => {
   const mockFetch = vi.fn()
 
@@ -27,270 +47,198 @@ describe('useLeaderboardSync', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     delete global.fetch
   })
 
   it('skips sync if player ID is missing', () => {
-    const gameState = {
-      player: {
-        playerId: null,
-        playerName: '',
-        money: 100,
-        fame: 0,
-        day: 5,
-        stats: {
-          totalDistance: 0,
-          conflictsResolved: 0,
-          stageDives: 0
-        }
-      },
-      social: {
-        instagram: 0,
-        tiktok: 0,
-        youtube: 0,
-        newsletter: 0
-      }
-    }
-
-    renderHook(() => useLeaderboardSync(gameState))
+    renderHook(() =>
+      useLeaderboardSync(makeState({ playerId: null, playerName: '' }))
+    )
 
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('skips sync if day has not advanced beyond last synced day', () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '5')
-    const gameState = {
-      player: {
-        playerId: 'id-123',
-        playerName: 'Player1',
-        money: 100,
-        fame: 0,
-        day: 5,
-        stats: {
-          totalDistance: 0,
-          conflictsResolved: 0,
-          stageDives: 0
-        }
-      },
-      social: {
-        instagram: 0,
-        tiktok: 0,
-        youtube: 0,
-        newsletter: 0
-      }
-    }
+  it('skips sync when the snapshot matches the last synced one', () => {
+    // The marker is stored through the JSON storage helper, so it is a quoted
+    // string in localStorage.
+    localStorage.setItem(
+      'neurotoxic_last_synced_snapshot:fresh-player',
+      JSON.stringify(JSON.stringify(['Player1', 500, 5, 100, 1000, 120, 3, 10]))
+    )
 
-    renderHook(() => useLeaderboardSync(gameState))
+    renderHook(() =>
+      useLeaderboardSync(makeState({ playerId: 'fresh-player' }))
+    )
 
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('syncs stats if day > last synced day and player is valid', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
-    mockFetch.mockResolvedValue({ ok: true })
-
-    // Provide all required properties via GameState structure used by the hook
-    const gameState = {
-      player: {
-        playerId: 'id-123',
-        playerName: 'Player1',
-        money: 500,
-        fame: 100,
-        day: 5,
-        passiveFollowers: 500,
-        stats: {
-          totalDistance: 120,
-          conflictsResolved: 3,
-          stageDives: 10
-        }
-      },
-      social: {
-        instagram: 1000,
-        tiktok: 200,
-        youtube: 300,
-        newsletter: 50
-      }
-    }
-
-    renderHook(() => useLeaderboardSync(gameState))
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/leaderboard/stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          playerId: 'id-123',
-          playerName: 'Player1',
-          money: 500,
-          day: 5,
-          fame: 100,
-          followers: 1550, // 1000 + 200 + 300 + 50
-          distance: 120,
-          conflicts: 3,
-          stageDives: 10
-        })
-      })
-    })
-
-    expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('5')
-  })
-
-  it('sums followers with non-finite platform counts treated as 0', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
+  it('syncs the current stats with a revision when the player is valid', async () => {
     mockFetch.mockResolvedValue({ ok: true })
 
     renderHook(() =>
-      useLeaderboardSync({
-        player: {
-          playerId: 'id-123',
-          playerName: 'Player1',
-          money: 500,
-          fame: 100,
-          day: 5,
-          stats: { totalDistance: 0, conflictsResolved: 0, stageDives: 0 }
-        },
-        social: { instagram: NaN, tiktok: 200, youtube: 300, newsletter: 50 }
-      })
+      useLeaderboardSync(
+        makeState({
+          playerId: 'sync-valid',
+          social: {
+            instagram: 1000,
+            tiktok: 200,
+            youtube: 300,
+            newsletter: 50
+          }
+        })
+      )
+    )
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
+    expect(mockFetch.mock.calls[0][0]).toBe('/api/leaderboard/stats')
+    const [body] = bodies(mockFetch)
+    expect(body).toMatchObject({
+      playerId: 'sync-valid',
+      playerName: 'Player1',
+      money: 500,
+      day: 5,
+      fame: 100,
+      followers: 1550, // 1000 + 200 + 300 + 50
+      distance: 120,
+      conflicts: 3,
+      stageDives: 10
+    })
+    expect(Number.isSafeInteger(body.revision)).toBe(true)
+    expect(body.revision).toBeGreaterThan(0)
+
+    await waitFor(() =>
+      expect(
+        localStorage.getItem('neurotoxic_last_synced_snapshot:sync-valid')
+      ).not.toBeNull()
+    )
+  })
+
+  it('sums followers with non-finite platform counts treated as 0', async () => {
+    mockFetch.mockResolvedValue({ ok: true })
+
+    renderHook(() =>
+      useLeaderboardSync(
+        makeState({
+          playerId: 'sum-followers',
+          social: {
+            instagram: NaN,
+            tiktok: 200,
+            youtube: 300,
+            newsletter: 50
+          }
+        })
+      )
     )
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalled())
-    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-    expect(body.followers).toBe(550)
+    expect(bodies(mockFetch)[0].followers).toBe(550)
   })
 
-  it('dedupes concurrent syncs for the same player and day', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
-    let resolveFetch
-    mockFetch.mockImplementation(
+  it('publishes same-day changes, including decreases, after the throttle', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({ ok: true })
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'same-day', money: 500 })
+    })
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    // Same day: spend money and gain fame. Nothing is dropped, it is held for
+    // the rate-limit window and then sent.
+    rerender(makeState({ playerId: 'same-day', money: 300, fame: 160 }))
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(bodies(mockFetch)[1]).toMatchObject({
+      day: 5,
+      money: 300,
+      fame: 160
+    })
+  })
+
+  it('coalesces changes during an in-flight request into one trailing snapshot', async () => {
+    vi.useFakeTimers()
+    let resolveFirst
+    mockFetch.mockImplementationOnce(
       () =>
         new Promise(resolve => {
-          resolveFetch = () => resolve({ ok: true })
+          resolveFirst = () => resolve({ ok: true })
         })
     )
+    mockFetch.mockResolvedValue({ ok: true })
 
-    const makeState = money => ({
-      player: {
-        playerId: 'id-123',
-        playerName: 'Player1',
-        money,
-        fame: 100,
-        day: 5,
-        stats: {
-          totalDistance: 120,
-          conflictsResolved: 3,
-          stageDives: 10
-        }
-      },
-      social: { instagram: 1000 }
-    })
-
-    // The marker is only written after the fetch resolves; a second effect
-    // run during the in-flight request must not start another POST.
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
-      initialProps: makeState(500)
+      initialProps: makeState({ playerId: 'coalesce', money: 500 })
     })
-    rerender(makeState(600))
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(1)
-    })
-
-    resolveFetch()
-    await waitFor(() => {
-      expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe(
-        '5'
-      )
-    })
+    await act(async () => {})
+    rerender(makeState({ playerId: 'coalesce', money: 600 }))
+    rerender(makeState({ playerId: 'coalesce', money: 700 }))
+    await act(async () => {})
+    // Still only the first request: no overlapping POSTs.
     expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    resolveFirst()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    // The intermediate 600 snapshot is skipped; only the latest goes out.
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(bodies(mockFetch)[1].money).toBe(700)
   })
 
-  it('keeps synced-day marker monotonic when older in-flight sync resolves last', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
-    const resolversByDay = new Map()
-
-    mockFetch.mockImplementation((_, options) => {
-      const parsedBody = JSON.parse(options.body)
-      const requestDay = parsedBody.day
-      return new Promise(resolve => {
-        resolversByDay.set(requestDay, () => resolve({ ok: true }))
-      })
-    })
-
-    const makeState = day => ({
-      player: {
-        playerId: 'id-123',
-        playerName: 'Player1',
-        money: 500,
-        fame: 100,
-        day,
-        stats: {
-          totalDistance: 120,
-          conflictsResolved: 3,
-          stageDives: 10
-        }
-      },
-      social: { instagram: 1000 }
-    })
+  it('publishes the final-day snapshot without another day tick', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({ ok: true })
 
     const { rerender } = renderHook(state => useLeaderboardSync(state), {
-      initialProps: makeState(5)
+      initialProps: makeState({ playerId: 'final-day', day: 9, fame: 100 })
     })
-    rerender(makeState(6))
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(2)
-    })
-
-    const resolveDay6 = resolversByDay.get(6)
-    const resolveDay5 = resolversByDay.get(5)
-    expect(resolveDay6).toBeTypeOf('function')
-    expect(resolveDay5).toBeTypeOf('function')
-    resolveDay6()
-
-    await waitFor(() => {
-      expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe(
-        '6'
-      )
+    await act(async () => {})
+    rerender(makeState({ playerId: 'final-day', day: 9, fame: 900 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
     })
 
-    resolveDay5()
-    await waitFor(() => {
-      expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe(
-        '6'
-      )
-    })
+    expect(bodies(mockFetch).at(-1)).toMatchObject({ day: 9, fame: 900 })
   })
 
-  it('does not update localStorage if sync fails', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
+  it('sends strictly increasing revisions even if the clock goes backwards', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({ ok: true })
+    // A previous session already used a revision far ahead of this clock.
+    localStorage.setItem('neurotoxic_stats_revision:rev', '9999999999999')
+    const clock = { now: () => 1000, today: () => new Date(1000) }
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state, clock), {
+      initialProps: makeState({ playerId: 'rev', money: 500 })
+    })
+    await act(async () => {})
+    rerender(makeState({ playerId: 'rev', money: 400 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+
+    const revisions = bodies(mockFetch).map(body => body.revision)
+    expect(revisions).toEqual([10000000000000, 10000000000001])
+  })
+
+  it('does not mark the snapshot as synced if the request fails', async () => {
     mockFetch.mockResolvedValue({ ok: false, statusText: 'Server Error' })
 
-    const gameState = {
-      player: {
-        playerId: 'id-123',
-        playerName: 'Player1',
-        money: 500,
-        fame: 100,
-        day: 5,
-        stats: {
-          totalDistance: 120,
-          conflictsResolved: 3,
-          stageDives: 10
-        }
-      },
-      social: {
-        instagram: 1000
-      }
-    }
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'fails' })))
 
-    renderHook(() => useLeaderboardSync(gameState))
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled()
-    })
-
-    // Should still be 4 because sync failed
-    expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('4')
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+    await waitFor(() => expect(logger.warn).toHaveBeenCalled())
+    expect(
+      localStorage.getItem('neurotoxic_last_synced_snapshot:fails')
+    ).toBeNull()
   })
 
   it('logs concurrent 404 responses once and disables later session syncs', async () => {
@@ -301,22 +249,20 @@ describe('useLeaderboardSync', () => {
     mockFetch.mockImplementation(
       () => new Promise(resolve => resolvers.push(resolve))
     )
-    const makeState = day => ({
-      player: {
+    const makeMissingState = day =>
+      makeState({
         playerId: 'missing-endpoint-player',
         playerName: 'Player',
-        money: 500,
-        fame: 100,
         day,
-        stats: { totalDistance: 0, conflictsResolved: 0, stageDives: 0 }
-      },
-      social: {}
-    })
+        stats: { totalDistance: 0, conflictsResolved: 0, stageDives: 0 },
+        social: {}
+      })
     const { rerender } = renderHook(state => useSessionLeaderboardSync(state), {
-      initialProps: makeState(5)
+      initialProps: makeMissingState(5)
     })
-    rerender(makeState(6))
-    expect(mockFetch).toHaveBeenCalledTimes(2)
+    rerender(makeMissingState(6))
+    // Changes during the in-flight request are coalesced, not sent in parallel.
+    expect(mockFetch).toHaveBeenCalledTimes(1)
 
     await act(async () => {
       for (const resolve of resolvers) resolve({ status: 404, ok: false })
@@ -326,11 +272,14 @@ describe('useLeaderboardSync', () => {
       'Stats endpoint unavailable (404). Disabling stat sync for this session.'
     )
     expect(
-      localStorage.getItem('neurotoxic_last_synced_day:missing-endpoint-player')
+      localStorage.getItem(
+        'neurotoxic_last_synced_snapshot:missing-endpoint-player'
+      )
     ).toBeNull()
 
-    rerender(makeState(7))
-    expect(mockFetch).toHaveBeenCalledTimes(2)
+    rerender(makeMissingState(7))
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1)
     expect(logger.warn).not.toHaveBeenCalled()
   })
 })

@@ -17,6 +17,17 @@ const VALID_STATS = [
 ]
 const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 
+// Applies a snapshot only when its revision is newer than the stored one, and
+// writes every board in the same atomic step. KEYS[1] is the revision hash,
+// KEYS[2..] the sorted sets; ARGV[1] is the player id, ARGV[2] the revision and
+// ARGV[3..] the scores in board order. Returns 1 when applied, 0 when stale.
+const WRITE_IF_NEWER_SCRIPT = `
+local current = tonumber(redis.call('HGET', KEYS[1], ARGV[1])) or 0
+if tonumber(ARGV[2]) <= current then return 0 end
+redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
+for i = 2, #KEYS do redis.call('ZADD', KEYS[i], ARGV[i + 1], ARGV[1]) end
+return 1`
+
 /**
  * @param {unknown} val
  * @returns {number}
@@ -72,7 +83,8 @@ export default async function handler(req, res) {
         followers,
         distance,
         conflicts,
-        stageDives
+        stageDives,
+        revision
       } = body
 
       // Basic Type Checks
@@ -100,6 +112,51 @@ export default async function handler(req, res) {
       const safeDistance = clampStat(distance)
       const safeConflicts = clampStat(conflicts)
       const safeStageDives = clampStat(stageDives)
+
+      // An optional monotonic snapshot revision lets the server drop a request
+      // that was overtaken in flight. Clients without one keep the legacy
+      // last-write-wins behavior.
+      const hasRevision = revision !== undefined
+      if (
+        hasRevision &&
+        !(
+          typeof revision === 'number' &&
+          Number.isSafeInteger(revision) &&
+          revision > 0
+        )
+      ) {
+        return res.status(400).json({ error: 'Invalid revision' })
+      }
+
+      if (hasRevision) {
+        const applied = await client.eval(WRITE_IF_NEWER_SCRIPT, {
+          keys: [
+            'lb:revision',
+            'lb:balance',
+            'lb:fame',
+            'lb:followers',
+            'lb:distance',
+            'lb:conflicts',
+            'lb:stage_dives'
+          ],
+          arguments: [
+            playerId,
+            String(revision),
+            String(money),
+            String(safeFame),
+            String(safeFollowers),
+            String(safeDistance),
+            String(safeConflicts),
+            String(safeStageDives)
+          ]
+        })
+        if (Number(applied) !== 1) {
+          // Not an error: a newer snapshot already landed.
+          return res.status(200).json({ success: true, stale: true })
+        }
+        await client.hSet('players', { [playerId]: player.playerName })
+        return res.status(200).json({ success: true })
+      }
 
       // v4: hSet accepts object
       await client.hSet('players', { [playerId]: player.playerName })
