@@ -799,6 +799,28 @@ describe('protected career cash floor', () => {
     )
   })
 
+  it('fails closed on a corrupt protected slice: any spend is refused', () => {
+    for (const corrupt of [Number.NaN, -100]) {
+      const state = activeRun({ money: 2000, protectedCareerCash: 900 })
+      const broken = {
+        ...state,
+        expedition: { ...state.expedition, protectedCareerCash: corrupt }
+      }
+      const spent = { ...broken, player: { ...broken.player, money: 1900 } }
+      assert.equal(
+        enforceExpeditionCashFloor(broken, spent, ActionTypes.UPDATE_PLAYER),
+        broken,
+        `protectedCareerCash ${corrupt} must refuse the spend`
+      )
+      const earned = { ...broken, player: { ...broken.player, money: 2100 } }
+      assert.equal(
+        enforceExpeditionCashFloor(broken, earned, ActionTypes.UPDATE_PLAYER),
+        earned,
+        'a gain is never refused'
+      )
+    }
+  })
+
   it('clears a recorded travel refusal once Cash rises again', () => {
     const state = activeRun({ money: 2000, protectedCareerCash: 900 })
     const blocked = {

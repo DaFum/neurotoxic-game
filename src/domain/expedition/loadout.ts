@@ -1015,10 +1015,7 @@ export const enforceExpeditionCashFloor = (
   }
   if (EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS.has(actionType)) return nextState
 
-  const floor = Math.max(
-    0,
-    finiteNumberOr(previousState.expedition.protectedCareerCash, 0)
-  )
+  const floor = getExpeditionProtectedCash(previousState)
   if (floor === 0) return nextState
 
   const before = finiteNumberOr(previousState.player.money, 0)
