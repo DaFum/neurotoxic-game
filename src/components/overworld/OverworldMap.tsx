@@ -150,7 +150,12 @@ export const OverworldMap = React.memo(
         const isCurrent = node.id === player.currentNodeId
         const hasRival = rivalBand?.currentLocationId === node.id
         const visibility = getNodeVisibility(node.layer, currentLayer)
-        const isReachable = isConnected(node.id) || node.type === 'START'
+        // The current supply stop is actionable (it reopens its shop), so it
+        // must be keyboard-reachable like any other travel target.
+        const isReachable =
+          isConnected(node.id) ||
+          node.type === 'START' ||
+          (isCurrent && node.type === 'SUPPLY_STOP')
 
         const overlaySubtype =
           overlaySubtypeByNodeId &&

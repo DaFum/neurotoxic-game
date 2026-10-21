@@ -114,4 +114,28 @@ describe('OverworldMap overlay wiring', () => {
     const overlayIcon = nodeProps.find(p => p.node.id === 'node_1_1').iconUrl
     expect(overlayIcon).not.toBe(plainIcon)
   })
+
+  test('keeps the current supply stop reachable so its shop can be reopened', () => {
+    const stopMap = {
+      ...travelMap,
+      nodes: {
+        ...travelMap.nodes,
+        node_1_0: node('node_1_0', 'SUPPLY_STOP', 1, 50)
+      }
+    }
+    render(
+      <OverworldMap
+        {...baseProps}
+        gameMap={stopMap}
+        player={{ ...baseProps.player, currentNodeId: 'node_1_0' }}
+        isConnected={() => false}
+      />
+    )
+    const stop = nodeProps.find(p => p.node.id === 'node_1_0')
+    expect(stop.isCurrent).toBe(true)
+    expect(stop.isReachable).toBe(true)
+    // A non-supply current node stays unreachable from itself.
+    const gig = nodeProps.find(p => p.node.id === 'node_1_1')
+    expect(gig.isReachable).toBe(false)
+  })
 })
