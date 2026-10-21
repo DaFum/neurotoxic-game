@@ -98,6 +98,14 @@ test('pending gig settlement reconciliation on load', async t => {
 
     assert.equal(loaded.player.money, 0)
     assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+    assert.deepEqual(loaded.terminalOutcome, { reason: 'bankruptcy' })
+
+    // The ending is durable: reloading the saved ending stays on GAMEOVER.
+    const reloaded = handleLoadGame(
+      createInitialState(),
+      JSON.parse(JSON.stringify({ terminalOutcome: loaded.terminalOutcome }))
+    )
+    assert.equal(reloaded.currentScene, GAME_PHASES.GAMEOVER)
   })
 
   await t.test('completes a successful Career Finale', () => {
@@ -108,6 +116,7 @@ test('pending gig settlement reconciliation on load', async t => {
     assert.equal(loaded.player.money, 800)
     assert.equal(loaded.player.stats.tourCompleted, true)
     assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+    assert.deepEqual(loaded.terminalOutcome, { reason: 'career_victory' })
   })
 
   await t.test('a failed Finale settles money but completes nothing', () => {
@@ -119,6 +128,7 @@ test('pending gig settlement reconciliation on load', async t => {
     assert.equal(loaded.player.money, 800)
     assert.notEqual(loaded.player.stats.tourCompleted, true)
     assert.equal(loaded.currentScene, GAME_PHASES.OVERWORLD)
+    assert.equal(loaded.terminalOutcome, null)
   })
 
   await t.test('does not settle twice', () => {

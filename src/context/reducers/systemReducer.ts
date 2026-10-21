@@ -718,6 +718,7 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
 
   return {
     ...state,
+    terminalOutcome: { reason: 'bankruptcy' },
     currentScene: GAME_PHASES.GAMEOVER
   }
 }
@@ -1046,6 +1047,9 @@ export const handleSetPendingSupplyStopInventory = (
  */
 const sanitizeTerminalOutcome = (value: unknown): TerminalOutcome | null => {
   if (!isLooseRecord(value) || hasForbiddenKeysDeep(value)) return null
+  if (value.reason === 'bankruptcy' || value.reason === 'career_victory') {
+    return { reason: value.reason }
+  }
   if (value.reason !== 'event_game_over') return null
   if (typeof value.eventId !== 'string' || value.eventId === '') return null
   return { reason: value.reason, eventId: value.eventId }

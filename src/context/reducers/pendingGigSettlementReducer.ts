@@ -276,7 +276,12 @@ export const settlePendingGigOnLoad = (
     })
   }
 
-  return bankrupt || careerFinale
-    ? { ...next, currentScene: GAME_PHASES.GAMEOVER }
-    : next
+  if (!bankrupt && !careerFinale) return next
+  return {
+    ...next,
+    terminalOutcome: bankrupt
+      ? { reason: 'bankruptcy' }
+      : { reason: 'career_victory' },
+    currentScene: GAME_PHASES.GAMEOVER
+  }
 }

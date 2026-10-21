@@ -61,10 +61,10 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 /**
  * Why the Career ended, recorded so loading cannot undo the ending.
  */
-export interface TerminalOutcome {
-  reason: 'event_game_over'
-  eventId: string
-}
+export type TerminalOutcome =
+  | { reason: 'event_game_over'; eventId: string }
+  | { reason: 'bankruptcy' }
+  | { reason: 'career_victory' }
 
 export interface GameSettings {
   crtEnabled: boolean
