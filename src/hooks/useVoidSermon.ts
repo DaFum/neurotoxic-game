@@ -6,11 +6,11 @@ import { VOID_SERMON_REQUIRED_ZEALOTRY } from '../data/zealotryActionGates'
 
 /** Tuning values for the void sermon social action. */
 const VOID_SERMON_CONFIG: ZealotryActionConfig = {
-  COST: 500,
-  FAME_GAIN: 300,
-  ZEALOTRY_GAIN: 20,
-  CONTROVERSY_GAIN: 30,
-  HARMONY_COST: 20,
+  COST: 750,
+  FAME_GAIN: 400,
+  ZEALOTRY_GAIN: 25,
+  CONTROVERSY_GAIN: 40,
+  HARMONY_COST: 25,
   REQUIRED_ZEALOTRY: VOID_SERMON_REQUIRED_ZEALOTRY
 }
 
