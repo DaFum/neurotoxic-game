@@ -933,10 +933,6 @@ export const validateExpeditionBuildCommitment = (
  *   wants unpayable obligations to surface as the bankruptcy crisis, which the
  *   failure shell derives from the same spendable slice. G2 owns the full
  *   active-Expedition day policy.
- * - `APPLY_EVENT_DELTA` carries an event's mandatory consequences. Cash, time,
- *   controversy and confiscation arrive bundled, so rejecting the debit would
- *   also cancel the unrelated penalties while the event still closes. The
- *   reducer clamps money at zero, so the protected slice absorbs the shortfall.
  * - `LOAD_GAME`/`RESET_STATE` install a state rather than spend from one, so
  *   comparing their result against the previous state's floor is meaningless.
  * - The Expedition terminal actions settle the run. A settlement only ever
@@ -945,7 +941,6 @@ export const validateExpeditionBuildCommitment = (
  */
 const EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS: ReadonlySet<string> = new Set([
   ActionTypes.ADVANCE_DAY,
-  ActionTypes.APPLY_EVENT_DELTA,
   ActionTypes.LOAD_GAME,
   ActionTypes.RESET_STATE,
   ActionTypes.EXTRACT_EXPEDITION,
@@ -1033,6 +1028,19 @@ export const enforceExpeditionCashFloor = (
   const after = finiteNumberOr(nextState.player.money, 0)
   if (after >= before) return nextState
   if (after >= floor) return nextState
+
+  // An event bundles Cash with time, controversy and confiscation. Rolling the
+  // whole delta back would cancel those penalties while the event still
+  // closes, so only the Cash debit is held at the floor.
+  if (actionType === ActionTypes.APPLY_EVENT_DELTA) {
+    return {
+      ...nextState,
+      player: {
+        ...nextState.player,
+        money: Math.max(after, Math.min(before, floor))
+      }
+    }
+  }
 
   logger.warn(
     'Expedition',
