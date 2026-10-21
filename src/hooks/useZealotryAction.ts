@@ -1,5 +1,6 @@
 import { useGameSelector } from '../context/GameState'
 import { useDisclosure } from './useDisclosure'
+import { getExpeditionSpendableCash } from '../domain/expedition/loadout'
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 import {
@@ -24,6 +25,14 @@ export const useZealotryAction = (
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
+  // An unreadable state yields undefined so the guarded validation below logs it.
+  const spendableCash = useGameSelector(state => {
+    try {
+      return getExpeditionSpendableCash(state)
+    } catch {
+      return undefined
+    }
+  })
 
   const {
     isOpen: showModal,
@@ -39,7 +48,13 @@ export const useZealotryAction = (
 
   let canRun = false
   try {
-    canRun = validateZealotryAction(social, player, band, descriptor)
+    canRun = validateZealotryAction(
+      social,
+      player,
+      band,
+      descriptor,
+      spendableCash
+    )
   } catch (error) {
     logger.error(descriptor.loggerScope, descriptor.validationFailureMessage, {
       error,

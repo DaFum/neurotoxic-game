@@ -1,3 +1,4 @@
+import { useVoidSermon } from '../useVoidSermon'
 import { useBandHQModal } from '../useBandHQModal'
 import { useQuestsModal } from '../useQuestsModal'
 import { useContrabandStash } from '../useContrabandStash'
@@ -22,6 +23,7 @@ export const useOverworldModals = () => {
   const bloodBank = useBloodBank()
   const darkWebLeak = useDarkWebLeak()
   const cultIndoctrination = useCultIndoctrination()
+  const voidSermon = useVoidSermon()
   const supplyStop = useSupplyStopModal()
 
   return {
@@ -33,6 +35,7 @@ export const useOverworldModals = () => {
     bloodBank,
     darkWebLeak,
     cultIndoctrination,
+    voidSermon,
     supplyStop
   }
 }

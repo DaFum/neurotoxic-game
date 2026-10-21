@@ -110,7 +110,30 @@ describe('ZealotryActionModal', () => {
     expect(onConfirm).not.toHaveBeenCalled()
   })
 
-  it.each(['dark_web_leak', 'cult_indoctrination'] as const)(
+  it('explains missing money using spendable cash during an active expedition', () => {
+    const previous = mockState.current
+    mockState.current = {
+      ...previous,
+      expedition: { status: 'active', protectedCareerCash: 500 }
+    } as typeof previous
+    try {
+      render(
+        <ZealotryActionModal
+          {...defaultProps}
+          config={{ ...defaultProps.config, COST: 600 }}
+          canRun={false}
+        />
+      )
+      fireEvent.mouseEnter(
+        screen.getByRole('button', { name: /EXECUTE INDOCTRINATION/i })
+      )
+      expect(screen.getByText('Not enough money')).toBeInTheDocument()
+    } finally {
+      mockState.current = previous
+    }
+  })
+
+  it.each(['dark_web_leak', 'cult_indoctrination', 'void_sermon'] as const)(
     'resolves its labels from the %s locale prefix',
     prefix => {
       const { labels: _labels, ...rest } = defaultProps

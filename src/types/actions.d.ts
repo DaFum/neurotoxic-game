@@ -81,6 +81,8 @@ export interface ZealotryActionPayload {
 
 /** Reducer payload for resolving a cult indoctrination. */
 export type CultIndoctrinationPayload = ZealotryActionPayload
+/** Reducer payload for resolving a void sermon. */
+export type VoidSermonPayload = ZealotryActionPayload
 
 /** Reducer payload for resolving a dark-web leak. */
 export type DarkWebLeakPayload = ZealotryActionPayload

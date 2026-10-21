@@ -3,6 +3,7 @@ import { GlitchButton } from './GlitchButton'
 import { Tooltip } from './shared/Tooltip'
 import { useGameSelector } from '../context/GameState'
 import { isFiniteNumber } from '../utils/finiteNumber'
+import { getExpeditionSpendableCash } from '../domain/expedition/loadout'
 import { useTranslation } from 'react-i18next'
 import type { ZealotryActionConfig } from '../types'
 import { formatCurrency, formatNumber } from '../utils/numberUtils'
@@ -32,7 +33,8 @@ interface ZealotryActionModalLabels {
  * (`title`, `description`, `cost`, `fame`, `zealotry`, `controversy`,
  * `harmony_cost`, `ran_today`, `execute`).
  */
-type ZealotryActionI18nPrefix = 'dark_web_leak' | 'cult_indoctrination'
+type ZealotryActionI18nPrefix =
+  'dark_web_leak' | 'cult_indoctrination' | 'void_sermon'
 
 /**
  * Either pre-resolved labels (actions with bespoke copy, e.g. Pirate Radio) or
@@ -93,16 +95,18 @@ export const ZealotryActionModal = (props: ZealotryActionModalProps) => {
     props.i18nPrefix !== undefined
       ? resolvePrefixedLabels(t, props.i18nPrefix)
       : props.labels
-  const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
+  const spendableCash = useGameSelector(state =>
+    state.player ? getExpeditionSpendableCash(state) : undefined
+  )
 
-  const isMoneyValid = isFiniteNumber(player?.money)
+  const isMoneyValid = isFiniteNumber(spendableCash)
   const isHarmonyValid = isFiniteNumber(band?.harmony)
   const isControversyValid = isFiniteNumber(social?.controversyLevel)
   const isZealotryValid = isFiniteNumber(social?.zealotry)
 
-  const isAffordable = isMoneyValid && (player?.money as number) >= config.COST
+  const isAffordable = isMoneyValid && (spendableCash as number) >= config.COST
   const hasEnoughHarmony =
     isHarmonyValid && (band?.harmony as number) >= config.HARMONY_COST
   const meetsControversy =

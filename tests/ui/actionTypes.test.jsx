@@ -59,6 +59,7 @@ describe('ActionTypes', () => {
       'BLOOD_BANK_DONATE',
       'DARK_WEB_LEAK',
       'CULT_INDOCTRINATION',
+      'VOID_SERMON',
       'SET_PENDING_BANDHQ_OPEN',
       'SET_PENDING_SUPPLY_STOP_INVENTORY',
       'PURCHASE_CHASSIS',

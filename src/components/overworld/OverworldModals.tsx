@@ -58,6 +58,14 @@ export const OverworldModals = ({ modals }: OverworldModalsProps) => {
       hasLeakedToday,
       DARK_WEB_LEAK_CONFIG
     },
+    voidSermon: {
+      showVoidSermon,
+      closeVoidSermon,
+      triggerSermon,
+      canSermon,
+      hasSermonedToday,
+      VOID_SERMON_CONFIG
+    },
     cultIndoctrination: {
       showCultIndoctrination,
       closeCultIndoctrination,
@@ -109,6 +117,16 @@ export const OverworldModals = ({ modals }: OverworldModalsProps) => {
           canRun={canDarkWebLeak}
           hasRunToday={hasLeakedToday}
           config={DARK_WEB_LEAK_CONFIG}
+        />
+      )}
+      {showVoidSermon && (
+        <ZealotryActionModal
+          i18nPrefix='void_sermon'
+          onCancel={closeVoidSermon}
+          onConfirm={triggerSermon}
+          canRun={canSermon}
+          hasRunToday={hasSermonedToday}
+          config={VOID_SERMON_CONFIG}
         />
       )}
       {showCultIndoctrination && (

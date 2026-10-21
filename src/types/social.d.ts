@@ -221,6 +221,7 @@ export interface SocialState extends UnknownRecord {
   lastPirateBroadcastDay: number | null
   lastDarkWebLeakDay: number | null
   lastCultIndoctrinationDay: number | null
+  lastVoidSermonDay: number | null
   controversyLevel: number
   loyalty: number
   zealotry: number

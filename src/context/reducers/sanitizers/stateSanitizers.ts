@@ -1372,7 +1372,8 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     'lastGigDifficulty',
     'lastPirateBroadcastDay',
     'lastDarkWebLeakDay',
-    'lastCultIndoctrinationDay'
+    'lastCultIndoctrinationDay',
+    'lastVoidSermonDay'
   ] as const) {
     const raw = safeValue[key]
     if (raw === null) {
@@ -1487,6 +1488,7 @@ const SOCIAL_UPDATE_FIELDS = {
   lastGigDifficulty: { numeric: true, nullable: true },
   lastPirateBroadcastDay: { numeric: true, nullable: true, nonNegative: true },
   lastDarkWebLeakDay: { numeric: true, nullable: true, nonNegative: true },
+  lastVoidSermonDay: { numeric: true, nullable: true, nonNegative: true },
   lastCultIndoctrinationDay: {
     numeric: true,
     nullable: true,

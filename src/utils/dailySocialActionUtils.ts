@@ -11,7 +11,10 @@ import type {
  * Social-state fields recording the day a zealotry action last ran.
  */
 type ZealotryActionDayField =
-  'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
+  | 'lastPirateBroadcastDay'
+  | 'lastDarkWebLeakDay'
+  | 'lastCultIndoctrinationDay'
+  | 'lastVoidSermonDay'
 
 /**
  * Static description of one once-per-day zealotry social action.
@@ -133,14 +136,15 @@ export const validateZealotryAction = (
   social: Partial<SocialState> | null | undefined,
   player: Partial<PlayerState> | null | undefined,
   band: Partial<BandState> | null | undefined,
-  descriptor: ZealotryActionDescriptor
+  descriptor: ZealotryActionDescriptor,
+  spendableMoney?: number
 ): boolean => {
   if (!social || !player || !band) return false
   const { dayField, thresholdField, thresholdRequired, config } = descriptor
   return validateDailySocialActionEligibility({
     lastActionDay: social[dayField],
     currentDay: player.day,
-    money: player.money,
+    money: spendableMoney ?? player.money,
     harmony: band.harmony,
     cost: config.COST,
     harmonyCost: config.HARMONY_COST,

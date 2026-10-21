@@ -186,6 +186,7 @@ export const Overworld = () => {
         openBloodBank={modals.bloodBank.openBloodBank}
         openClinic={openClinic}
         openDarkWebLeak={modals.darkWebLeak.openDarkWebLeak}
+        openVoidSermon={modals.voidSermon.openVoidSermon}
         openCultIndoctrination={
           modals.cultIndoctrination.openCultIndoctrination
         }

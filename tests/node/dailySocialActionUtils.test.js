@@ -19,3 +19,21 @@ test('validateZealotryAction rejects non-finite numeric invariants', () => {
     false
   )
 })
+
+test('validateZealotryAction uses spendable money over raw player money', () => {
+  const descriptor = {
+    dayField: 'lastVoidSermonDay',
+    config: { COST: 500, HARMONY_COST: 10 },
+    loggerScope: 'VoidSermon',
+    validationFailureMessage: 'test',
+    successMessageKey: 'ui:void_sermon.success'
+  }
+  const args = [
+    { lastVoidSermonDay: 1 },
+    { day: 5, money: 1000 },
+    { harmony: 50 }
+  ]
+  assert.equal(validateZealotryAction(...args, descriptor), true)
+  assert.equal(validateZealotryAction(...args, descriptor, 200), false)
+  assert.equal(validateZealotryAction(...args, descriptor, 500), true)
+})
