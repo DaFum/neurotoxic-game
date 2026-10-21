@@ -22,7 +22,6 @@ import { assertNever } from '../utils/assertNever'
 import { GAME_PHASES } from './gameConstants'
 import type { GameAction, GameState } from '../types'
 import type { AssetKind } from '../types/assets'
-import type { ExpeditionFailureReason } from '../types/expedition'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -102,7 +101,7 @@ import {
   handleSelectExpeditionDraft,
   handleResolveExpeditionSocialResult,
   handleCreateSocialIntelGrant,
-  settleExpeditionOnGameOver
+  settleExpeditionOnTerminalOutcome
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -195,22 +194,6 @@ type ReducerMap = {
   [K in HandledActionTypes]: ReducerEntry<K>
 }
 
-/** The run failure a live GAMEOVER entry settles with; a victory settles none. */
-const gameOverFailureReason = (
-  outcome: GameState['terminalOutcome']
-): ExpeditionFailureReason | null => {
-  switch (outcome?.reason) {
-    case 'stranded':
-      return 'fuel_stranded'
-    case 'bankruptcy':
-      return 'bankruptcy'
-    case 'event_game_over':
-      return 'event_game_over'
-    default:
-      return null
-  }
-}
-
 /**
  * Maps action types to their respective handler functions.
  * Using a map provides O(1) lookup instead of a long switch statement.
@@ -223,8 +206,7 @@ const reducerMap: ReducerMap = {
     if (next === state || next.currentScene !== GAME_PHASES.GAMEOVER) {
       return next
     }
-    const reason = gameOverFailureReason(next.terminalOutcome)
-    return reason ? settleExpeditionOnGameOver(next, reason) : next
+    return settleExpeditionOnTerminalOutcome(next)
   },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
@@ -277,9 +259,7 @@ const reducerMap: ReducerMap = {
     handleSetPendingSupplyStopInventory,
   [ActionTypes.SET_TERMINAL_OUTCOME]: (state, payload) => {
     const ended = handleSetTerminalOutcome(state, payload)
-    if (ended === state) return state
-    const reason = gameOverFailureReason(ended.terminalOutcome)
-    return reason ? settleExpeditionOnGameOver(ended, reason) : ended
+    return ended === state ? state : settleExpeditionOnTerminalOutcome(ended)
   },
   [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
   [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,

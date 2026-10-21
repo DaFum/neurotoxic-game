@@ -1220,6 +1220,28 @@ export const settleExpeditionOnGameOver = (
 }
 
 /**
+ * Settles an active run with the failure that matches a recorded ending.
+ *
+ * @param state - Game state whose `terminalOutcome` is already recorded.
+ * @returns The state with the run finalized, or the identical reference when
+ * no run is active or the ending settles none (a victory).
+ */
+export const settleExpeditionOnTerminalOutcome = (
+  state: GameState
+): GameState => {
+  switch (state.terminalOutcome?.reason) {
+    case 'stranded':
+      return settleExpeditionOnGameOver(state, 'fuel_stranded')
+    case 'bankruptcy':
+      return settleExpeditionOnGameOver(state, 'bankruptcy')
+    case 'event_game_over':
+      return settleExpeditionOnGameOver(state, 'event_game_over')
+    default:
+      return state
+  }
+}
+
+/**
  * Extracts voluntarily at a legal extraction window.
  *
  * @param state - Current game state.

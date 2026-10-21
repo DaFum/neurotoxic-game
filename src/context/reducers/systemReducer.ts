@@ -79,6 +79,7 @@ import {
 } from '../../domain/expedition/meta'
 import { GAME_PHASES } from '../gameConstants'
 import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
+import { settleExpeditionOnTerminalOutcome } from './expeditionReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
 import {
@@ -423,8 +424,13 @@ export const handleLoadGame = (
     loadedState.pendingGigSettlement
   )
   // An ending recorded before the save is final: reloading must not undo it.
+  // A save written before the ending settled its run (or a hostile one) must
+  // not reload at GAMEOVER with the run still active.
   return settled.terminalOutcome
-    ? { ...settled, currentScene: GAME_PHASES.GAMEOVER }
+    ? settleExpeditionOnTerminalOutcome({
+        ...settled,
+        currentScene: GAME_PHASES.GAMEOVER
+      })
     : settled
 }
 

@@ -371,10 +371,14 @@ export function usePersistence({
     // a crash before the record's save would restore a played gig whose
     // payout nothing can settle. Without it, the last durable save before
     // the record is the pre-gig one, so that crash replays the gig instead.
+    // OVERWORLD -> GAMEOVER is the stranded check: its own save runs before the
+    // scene change, so the ending (and the settled run) is only durable here.
     const shouldAutosaveOnTransition =
-      previousScene === GAME_PHASES.POST_GIG &&
-      (currentScene === GAME_PHASES.GAMEOVER ||
-        currentScene === GAME_PHASES.OVERWORLD)
+      (previousScene === GAME_PHASES.POST_GIG &&
+        (currentScene === GAME_PHASES.GAMEOVER ||
+          currentScene === GAME_PHASES.OVERWORLD)) ||
+      (previousScene === GAME_PHASES.OVERWORLD &&
+        currentScene === GAME_PHASES.GAMEOVER)
 
     if (handledSaveRequestRef.current !== saveRequestCount) {
       handledSaveRequestRef.current = saveRequestCount

@@ -101,6 +101,8 @@ export const useSoftlockEffect = ({
         liabilities
       }),
       assetModifiers: getActiveAssetModifiers(assets ?? []),
+      // The litres the travel gate and settlement burn, not the base figure.
+      fuelMultiplier: params.expeditionFuelMultiplier,
       postSaleScenarios,
       // Reuse the real booking gate rather than re-deriving it here, so a
       // neighbor the player would be refused at cannot count as an escape.
@@ -151,6 +153,7 @@ export const useSoftlockEffect = ({
     state.isTraveling,
     refs.timeoutRef,
     params.venueBlacklist,
-    params.reputationByRegion
+    params.reputationByRegion,
+    params.expeditionFuelMultiplier
   ])
 }

@@ -446,3 +446,19 @@ test('a bankrupting settlement on load also ends an active run', () => {
   assert.equal(loaded.expedition.status, 'failed')
   assert.equal(loaded.expedition.outcome?.reason, 'bankruptcy')
 })
+
+test('a save that records an ending settles a run it left active', () => {
+  const started = startedState({ money: 1000, fame: 100 })
+  const hostile = {
+    ...started,
+    currentScene: GAME_PHASES.OVERWORLD,
+    terminalOutcome: { reason: 'event_game_over', eventId: 'deal_devil' }
+  }
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(hostile)))
+  )
+  assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.expedition.status, 'failed')
+  assert.equal(loaded.expedition.outcome?.reason, 'event_game_over')
+})
