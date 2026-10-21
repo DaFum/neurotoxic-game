@@ -15,6 +15,7 @@ import type {
   ClinicActionPayload,
   CompleteTravelMinigamePayload,
   CultIndoctrinationPayload,
+  VoidSermonPayload,
   DarkWebLeakPayload,
   EventDeltaPayload,
   MerchPressPayload,
@@ -355,9 +356,9 @@ export type GameAction =
   | Action<(typeof ActionTypes)['DARK_WEB_LEAK'], DarkWebLeakPayload>
   | Action<
       (typeof ActionTypes)['CULT_INDOCTRINATION'],
-      (typeof ActionTypes)['VOID_SERMON'],
       CultIndoctrinationPayload
     >
+  | Action<(typeof ActionTypes)['VOID_SERMON'], VoidSermonPayload>
   | Action<(typeof ActionTypes)['SET_PENDING_BANDHQ_OPEN'], boolean>
   | Action<
       (typeof ActionTypes)['SET_PENDING_SUPPLY_STOP_INVENTORY'],
