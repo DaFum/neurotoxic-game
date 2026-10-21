@@ -99,7 +99,8 @@ import {
   handleOfferExpeditionDraft,
   handleSelectExpeditionDraft,
   handleResolveExpeditionSocialResult,
-  handleCreateSocialIntelGrant
+  handleCreateSocialIntelGrant,
+  settleExpeditionOnGameOver
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -247,7 +248,10 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
     handleSetPendingSupplyStopInventory,
-  [ActionTypes.SET_TERMINAL_OUTCOME]: handleSetTerminalOutcome,
+  [ActionTypes.SET_TERMINAL_OUTCOME]: (state, payload) => {
+    const ended = handleSetTerminalOutcome(state, payload)
+    return ended === state ? state : settleExpeditionOnGameOver(ended)
+  },
   [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
   [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,
   [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,

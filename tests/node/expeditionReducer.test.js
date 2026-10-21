@@ -600,6 +600,32 @@ describe('committed identity freeze while active', () => {
     payload: { assetId, targetTier: 2, newSlotIds: [] }
   })
 
+  it('settles an active run as failed when a game-over event ends the Career', () => {
+    const state = activeState()
+    const next = gameReducer(state, {
+      type: ActionTypes.SET_TERMINAL_OUTCOME,
+      payload: { reason: 'event_game_over', eventId: 'deal_devil' }
+    })
+    assert.equal(next.currentScene, 'GAMEOVER')
+    assert.deepEqual(next.terminalOutcome, {
+      reason: 'event_game_over',
+      eventId: 'deal_devil'
+    })
+    assert.equal(next.expedition.status, 'failed')
+    assert.equal(next.expedition.outcome?.kind, 'failed')
+    assert.equal(next.expedition.outcome?.reason, 'event_game_over')
+  })
+
+  it('leaves a run that is not active untouched on a game-over event', () => {
+    const state = activeState({ status: 'idle' })
+    const next = gameReducer(state, {
+      type: ActionTypes.SET_TERMINAL_OUTCOME,
+      payload: { reason: 'event_game_over', eventId: 'deal_devil' }
+    })
+    assert.equal(next.terminalOutcome?.reason, 'event_game_over')
+    assert.equal(next.expedition.status, 'idle')
+  })
+
   it('rejects a tier upgrade on the committed chassis', () => {
     const state = activeState()
     const tier = state.assets[0].chassisTier

@@ -436,6 +436,7 @@
   "expedition.crisis.title.bankruptcy": "OUT OF MONEY",
   "expedition.crisis.title.crew_collapse": "CREW COLLAPSE",
   "expedition.crisis.title.critical_contract_breach": "CONTRACT BREACH",
+  "expedition.crisis.title.event_game_over": "THE END",
   "expedition.crisis.title.fuel_stranded": "STRANDED",
   "expedition.crisis.title.technical_shutdown": "GEAR FAILURE",
   "expedition.extraction.cancel": "Keep going",

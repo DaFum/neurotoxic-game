@@ -100,7 +100,8 @@ const FAILURE_REASONS: ReadonlySet<string> = new Set<ExpeditionFailureReason>([
   'technical_shutdown',
   'crew_collapse',
   'authority_crisis',
-  'critical_contract_breach'
+  'critical_contract_breach',
+  'event_game_over'
 ])
 
 const FAILURE_CHOICES: ReadonlySet<string> = new Set<ExpeditionFailureChoiceId>(

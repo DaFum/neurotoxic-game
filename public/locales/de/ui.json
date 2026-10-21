@@ -436,6 +436,7 @@
   "expedition.crisis.title.bankruptcy": "KEIN GELD MEHR",
   "expedition.crisis.title.crew_collapse": "CREW AM ENDE",
   "expedition.crisis.title.critical_contract_breach": "VERTRAGSBRUCH",
+  "expedition.crisis.title.event_game_over": "DAS ENDE",
   "expedition.crisis.title.fuel_stranded": "LIEGENGEBLIEBEN",
   "expedition.crisis.title.technical_shutdown": "TECHNIKAUSFALL",
   "expedition.extraction.cancel": "Weitermachen",

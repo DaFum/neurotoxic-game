@@ -413,6 +413,7 @@ export type ExpeditionFailureReason =
   | 'crew_collapse'
   | 'authority_crisis'
   | 'critical_contract_breach'
+  | 'event_game_over'
 
 /**
  * Safe ways out of a live Authority encounter.
