@@ -23,6 +23,7 @@ type LeaderboardStatsPayload = {
  * sends more often than this, however fast their stats change.
  */
 const MIN_SYNC_INTERVAL_MS = 15000
+const MAX_RETRY_INTERVAL_MS = 5 * 60 * 1000
 
 /** Per-player sync state: at most one request in flight, latest snapshot kept. */
 type SyncSlot = {
@@ -32,6 +33,8 @@ type SyncSlot = {
   pending: LeaderboardStatsPayload | null
   lastSentKey: string | null
   lastSentAt: number | null
+  /** Consecutive failed requests, for the retry backoff. */
+  failures: number
   timer: ReturnType<typeof setTimeout> | null
 }
 
@@ -219,6 +222,7 @@ const getSlot = (playerId: string): SyncSlot => {
     pending: null,
     lastSentKey: typeof stored === 'string' ? stored : null,
     lastSentAt: null,
+    failures: 0,
     timer: null
   }
   syncSlots.set(playerId, slot)
@@ -230,11 +234,17 @@ const getSlot = (playerId: string): SyncSlot => {
  * a retry or a reload can never reuse or lower a revision the server has seen.
  */
 const nextRevision = (playerId: string, clock: IClock): number => {
-  const stored = finiteNumberOr(
+  const raw = finiteNumberOr(
     getSafeStorageItem<unknown>(revisionStorageKey(playerId), 0),
     0
   )
-  const revision = Math.max(Math.floor(stored) + 1, Math.floor(clock.now()))
+  // Storage is untrusted: a value the API would reject (not a safe integer, or
+  // exhausted) was never accepted server-side, so start from the clock instead.
+  const stored =
+    Number.isSafeInteger(raw) && raw > 0 && raw < Number.MAX_SAFE_INTEGER
+      ? raw
+      : 0
+  const revision = Math.max(stored + 1, Math.floor(clock.now()))
   setSafeStorageItem(revisionStorageKey(playerId), revision)
   return revision
 }
@@ -255,6 +265,7 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
       ...payload,
       revision: nextRevision(payload.playerId, clock)
     })
+    slot.failures = 0
     if (didSync) {
       slot.lastSentKey = key
       setSafeStorageItem(lastSyncedKeyStorageKey(payload.playerId), key)
@@ -263,6 +274,10 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
   } catch (error) {
     // Silent fail for leaderboard sync to not disrupt gameplay
     logger.warn('Leaderboard', 'Stats sync failed', error)
+    // Keep the snapshot for a retry (backoff, never faster than the rate limit)
+    // unless a newer one is already waiting.
+    slot.failures += 1
+    slot.pending ??= payload
   } finally {
     slot.inFlight = false
     slot.inFlightKey = null
@@ -275,10 +290,17 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
 
 const scheduleFlush = (slot: SyncSlot, clock: IClock): void => {
   if (slot.timer || slot.inFlight) return
+  const interval =
+    slot.failures === 0
+      ? MIN_SYNC_INTERVAL_MS
+      : Math.min(
+          MAX_RETRY_INTERVAL_MS,
+          MIN_SYNC_INTERVAL_MS * 2 ** slot.failures
+        )
   const wait =
     slot.lastSentAt === null
       ? 0
-      : Math.max(0, MIN_SYNC_INTERVAL_MS - (clock.now() - slot.lastSentAt))
+      : Math.max(0, interval - (clock.now() - slot.lastSentAt))
   if (wait === 0) {
     void flushSlot(slot, clock)
     return

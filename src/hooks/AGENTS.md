@@ -25,7 +25,7 @@
 
 ## Leaderboard sync
 
-- `useLeaderboardSync` keeps one slot per player: at most one request in flight, the newest snapshot queued behind it, sends throttled to the stats endpoint's 5/min limit. A change is queued unless it equals what the server will hold (`inFlightKey ?? lastSentKey`), so a return to an older snapshot during a request is still sent. Do not reintroduce a per-day gate; it left current-stat boards on the day's first snapshot.
+- `useLeaderboardSync` keeps one slot per player: at most one request in flight, the newest snapshot queued behind it, sends throttled to the stats endpoint's 5/min limit. A change is queued unless it equals what the server will hold (`inFlightKey ?? lastSentKey`), so a return to an older snapshot during a request is still sent. A failed request (network, 429, 500) keeps its snapshot for a retry with doubling backoff (capped at 5 min) unless a newer one is queued; a 404 still disables the sync for the session. A stored revision that is not a positive safe integer is discarded in favor of the clock. Do not reintroduce a per-day gate; it left current-stat boards on the day's first snapshot.
 
 ## Venue IDs
 

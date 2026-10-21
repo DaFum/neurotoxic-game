@@ -19,8 +19,10 @@ import {
 } from './reducers/assetReducer'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
+import { GAME_PHASES } from './gameConstants'
 import type { GameAction, GameState } from '../types'
 import type { AssetKind } from '../types/assets'
+import type { ExpeditionFailureReason } from '../types/expedition'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -193,12 +195,37 @@ type ReducerMap = {
   [K in HandledActionTypes]: ReducerEntry<K>
 }
 
+/** The run failure a live GAMEOVER entry settles with; a victory settles none. */
+const gameOverFailureReason = (
+  outcome: GameState['terminalOutcome']
+): ExpeditionFailureReason | null => {
+  switch (outcome?.reason) {
+    case 'stranded':
+      return 'fuel_stranded'
+    case 'bankruptcy':
+      return 'bankruptcy'
+    case 'event_game_over':
+      return 'event_game_over'
+    default:
+      return null
+  }
+}
+
 /**
  * Maps action types to their respective handler functions.
  * Using a map provides O(1) lookup instead of a long switch statement.
  */
 const reducerMap: ReducerMap = {
-  [ActionTypes.CHANGE_SCENE]: handleChangeScene,
+  [ActionTypes.CHANGE_SCENE]: (state, payload) => {
+    const next = handleChangeScene(state, payload)
+    // Entering GAMEOVER over a live run (stranded check, bankruptcy) ends the
+    // run with the cause the scene change recorded, like every other way out.
+    if (next === state || next.currentScene !== GAME_PHASES.GAMEOVER) {
+      return next
+    }
+    const reason = gameOverFailureReason(next.terminalOutcome)
+    return reason ? settleExpeditionOnGameOver(next, reason) : next
+  },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,

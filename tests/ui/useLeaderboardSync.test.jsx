@@ -268,6 +268,20 @@ describe('useLeaderboardSync', () => {
     expect(revisions).toEqual([10000000000000, 10000000000001])
   })
 
+  it('restarts from the clock when the stored revision is not a safe integer', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({ ok: true })
+    localStorage.setItem('neurotoxic_stats_revision:huge', '1e20')
+    const clock = { now: () => 5000, today: () => new Date(5000) }
+
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'huge' }), clock))
+    await act(async () => {})
+
+    const [body] = bodies(mockFetch)
+    expect(Number.isSafeInteger(body.revision)).toBe(true)
+    expect(body.revision).toBe(5000)
+  })
+
   it('does not mark the snapshot as synced if the request fails', async () => {
     mockFetch.mockResolvedValue({ ok: false, statusText: 'Server Error' })
 
@@ -278,6 +292,55 @@ describe('useLeaderboardSync', () => {
     expect(
       localStorage.getItem('neurotoxic_last_synced_snapshot:fails')
     ).toBeNull()
+  })
+
+  it('retries a failed snapshot with backoff when nothing newer arrives', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({ ok: false, statusText: 'Server Error' })
+    mockFetch.mockResolvedValue({ ok: true })
+
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'retry' })))
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    // Not before the backoff has passed.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(bodies(mockFetch)[1].money).toBe(500)
+    expect(
+      localStorage.getItem('neurotoxic_last_synced_snapshot:retry')
+    ).not.toBeNull()
+  })
+
+  it('does not retry an old snapshot over a newer pending one', async () => {
+    vi.useFakeTimers()
+    let rejectFirst
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectFirst = () => reject(new Error('network'))
+        })
+    )
+    mockFetch.mockResolvedValue({ ok: true })
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'retry-newer', money: 500 })
+    })
+    await act(async () => {})
+    rerender(makeState({ playerId: 'retry-newer', money: 900 }))
+    rejectFirst()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000)
+    })
+
+    expect(bodies(mockFetch).map(body => body.money)).toEqual([500, 900])
   })
 
   it('logs concurrent 404 responses once and disables later session syncs', async () => {

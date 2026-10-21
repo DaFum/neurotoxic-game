@@ -122,6 +122,7 @@ describe('Leaderboard Stats API', () => {
     assert.match(script, /HGET/)
     assert.deepStrictEqual(options.keys, [
       'lb:revision',
+      'players',
       'lb:balance',
       'lb:fame',
       'lb:followers',
@@ -132,6 +133,7 @@ describe('Leaderboard Stats API', () => {
     assert.deepStrictEqual(options.arguments, [
       'test-band',
       '1700000000000',
+      'Test Band',
       '100',
       '10',
       '500',
@@ -141,7 +143,9 @@ describe('Leaderboard Stats API', () => {
     ])
     // The legacy non-atomic path is not used when a revision is present.
     assert.strictEqual(mockMulti.exec.mock.calls.length, 0)
-    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 1)
+    // The display name is written inside the same guarded script, never by a
+    // separate call an older request could finish after a newer one.
+    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 0)
   })
 
   test('POST with a stale revision is acknowledged but not applied', async () => {

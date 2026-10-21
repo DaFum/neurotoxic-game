@@ -255,6 +255,30 @@ test('EventModal keyboard selection blocks disabled options', async () => {
   expect(screen.queryByText(/CONTINUE/i)).not.toBeInTheDocument()
 })
 
+test('EventModal blocks an option that is not affordable, by click and key', async () => {
+  const { isOptionAffordable } = await import('../../src/utils/eventEngine')
+  isOptionAffordable.mockImplementation(option => option.label !== 'Option 1')
+  try {
+    const mockEvent = {
+      id: 'test_event_unaffordable',
+      title: 'Test Event',
+      description: 'This is a test event.',
+      options: [{ label: 'Option 1' }, { label: 'Option 2' }]
+    }
+    const handleSelect = vi.fn()
+
+    render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+    fireEvent.click(screen.getByText('Option 1'))
+    fireEvent.keyDown(window, { key: '1' })
+
+    expect(handleSelect).not.toHaveBeenCalled()
+    expect(screen.queryByText(/CONTINUE/i)).not.toBeInTheDocument()
+  } finally {
+    isOptionAffordable.mockImplementation(() => true)
+  }
+})
+
 test('EventModal blocks options that have a failing condition', async () => {
   const mockEvent = {
     id: 'test_event_condition',

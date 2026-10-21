@@ -626,6 +626,31 @@ describe('committed identity freeze while active', () => {
     assert.equal(next.expedition.status, 'idle')
   })
 
+  it('settles the run when a live scene change enters GAMEOVER', () => {
+    const stranded = gameReducer(
+      { ...activeState(), currentScene: 'OVERWORLD' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.deepEqual(stranded.terminalOutcome, { reason: 'stranded' })
+    assert.equal(stranded.expedition.status, 'failed')
+    assert.equal(stranded.expedition.outcome?.reason, 'fuel_stranded')
+
+    const broke = gameReducer(
+      { ...activeState(), currentScene: 'POST_GIG' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.equal(broke.expedition.outcome?.reason, 'bankruptcy')
+  })
+
+  it('leaves the run alone for any other scene change', () => {
+    const state = { ...activeState(), currentScene: 'OVERWORLD' }
+    const next = gameReducer(state, {
+      type: ActionTypes.CHANGE_SCENE,
+      payload: 'PREGIG'
+    })
+    assert.equal(next.expedition.status, 'active')
+  })
+
   it('rejects a tier upgrade on the committed chassis', () => {
     const state = activeState()
     const tier = state.assets[0].chassisTier

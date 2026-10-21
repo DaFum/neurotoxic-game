@@ -1197,6 +1197,7 @@ const finalizeExpedition = (
  * Settles an active run as failed when a game-over event ends the Career.
  *
  * @param state - Game state after the terminal outcome was recorded.
+ * @param reason - Failure reason to settle with; defaults to the game-over event.
  * @returns The state with the run finalized, or the identical reference when no
  * run is active.
  *
@@ -1206,10 +1207,13 @@ const finalizeExpedition = (
  * through the same path as an accepted failure, so retention and the run
  * summary stay consistent with every other way a run can fail.
  */
-export const settleExpeditionOnGameOver = (state: GameState): GameState => {
+export const settleExpeditionOnGameOver = (
+  state: GameState,
+  reason: ExpeditionFailureReason = 'event_game_over'
+): GameState => {
   if (state.expedition?.status !== 'active') return state
   return finalizeExpedition(state, 'failed', {
-    reason: 'event_game_over',
+    reason,
     finaleResultId: null,
     explicitRareRewardIds: []
   })
