@@ -25,7 +25,14 @@ export const useZealotryAction = (
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
-  const spendableCash = useGameSelector(getExpeditionSpendableCash)
+  // An unreadable state yields undefined so the guarded validation below logs it.
+  const spendableCash = useGameSelector(state => {
+    try {
+      return getExpeditionSpendableCash(state)
+    } catch {
+      return undefined
+    }
+  })
 
   const {
     isOpen: showModal,
