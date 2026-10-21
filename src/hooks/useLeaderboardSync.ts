@@ -344,7 +344,7 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
       // still ahead (a second tab or device), back off like a failure.
       slot.staleStreak += 1
       if (slot.staleStreak > 1) {
-        slot.failures += 1
+        slot.failures = slot.retryKey === key ? slot.failures + 1 : 1
         slot.retryKey = key
       }
     }
@@ -355,7 +355,7 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
     // backoff and never faster than the rate limit; a rejected payload would
     // fail the same way every time. A newer pending snapshot wins.
     if (isRetryable(error)) {
-      slot.failures += 1
+      slot.failures = slot.retryKey === key ? slot.failures + 1 : 1
       slot.retryKey = key
       slot.pending ??= payload
     }

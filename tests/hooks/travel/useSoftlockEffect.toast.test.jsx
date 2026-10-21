@@ -94,6 +94,45 @@ describe('useSoftlockEffect fuel pricing', () => {
   })
 })
 
+describe('useSoftlockEffect during an active run', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.clearAllMocks()
+  })
+
+  test('leaves the stranding to the run, so the Career is not ended over its crisis', () => {
+    const changeScene = vi.fn()
+    const refs = { timeoutRef: { current: null } }
+    const { unmount } = renderHook(() =>
+      useSoftlockEffect({
+        refs,
+        state: { isTraveling: false },
+        params: {
+          gameMap: { nodes: {}, connections: [] },
+          player: { currentNodeId: 'node_0', day: 1, money: 0 },
+          band: {},
+          social: {},
+          assets: [],
+          liabilities: [],
+          addToast: vi.fn(),
+          saveGame: vi.fn(),
+          changeScene,
+          venueBlacklist: [],
+          reputationByRegion: {},
+          expeditionStatus: 'active'
+        }
+      })
+    )
+    vi.advanceTimersByTime(10000)
+    expect(changeScene).not.toHaveBeenCalled()
+    expect(refs.timeoutRef.current).toBeNull()
+    unmount()
+  })
+})
+
 describe('useSoftlockEffect stranded toast', () => {
   beforeEach(() => {
     vi.useFakeTimers()

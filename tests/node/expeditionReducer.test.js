@@ -656,6 +656,18 @@ describe('committed identity freeze while active', () => {
     }
   })
 
+  it('does not read a stale tourCompleted flag as a victory while a run is live', () => {
+    const state = activeState()
+    state.player.stats = { ...state.player.stats, tourCompleted: true }
+    const next = gameReducer(
+      { ...state, currentScene: 'POST_GIG' },
+      { type: ActionTypes.CHANGE_SCENE, payload: 'GAMEOVER' }
+    )
+    assert.deepEqual(next.terminalOutcome, { reason: 'bankruptcy' })
+    assert.equal(next.expedition.status, 'failed')
+    assert.equal(next.expedition.outcome?.reason, 'bankruptcy')
+  })
+
   it('leaves the run alone for any other scene change', () => {
     const state = { ...activeState(), currentScene: 'OVERWORLD' }
     const next = gameReducer(state, {

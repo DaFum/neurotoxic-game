@@ -56,7 +56,13 @@ export const handleChangeScene = (
  * Overworld is the stranded check, and anything else is bankruptcy.
  */
 const deriveGameOverOutcome = (state: GameState): TerminalOutcome => {
-  if (state.player.stats?.tourCompleted === true) {
+  // `tourCompleted` outlives the run that set it, so a stale flag must not turn
+  // a later bankruptcy into a victory: a real victory is only ever recorded with
+  // no run active (the Finale completes the run first).
+  if (
+    state.player.stats?.tourCompleted === true &&
+    state.expedition?.status !== 'active'
+  ) {
     return { reason: 'career_victory' }
   }
   return state.currentScene === GAME_PHASES.OVERWORLD

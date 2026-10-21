@@ -504,6 +504,34 @@ describe('useLeaderboardSync', () => {
     expect(last.revision).toBeGreaterThan(9e12)
   })
 
+  it('counts the backoff per snapshot, not across different ones', async () => {
+    vi.useFakeTimers()
+    const fail = { ok: false, status: 500, statusText: 'x' }
+    mockFetch.mockResolvedValueOnce(fail) // K1 fails
+    mockFetch.mockResolvedValueOnce(fail) // K2 fails
+    mockFetch.mockResolvedValue(okResponse())
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'per-snapshot', money: 500 })
+    })
+    await act(async () => {})
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    // A newer snapshot goes out at the base interval and fails too.
+    rerender(makeState({ playerId: 'per-snapshot', money: 800 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+
+    // Its first retry waits 30 s, not the 60 s a carried-over count would give.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    expect(bodies(mockFetch)[2].money).toBe(800)
+  })
+
   it('backs off when the server keeps answering stale', async () => {
     vi.useFakeTimers()
     const stale = revision => ({

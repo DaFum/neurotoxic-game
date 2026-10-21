@@ -74,7 +74,15 @@ export const useSoftlockEffect = ({
   )
 
   useEffect(() => {
-    if (!gameMap || state.isTraveling || !player.currentNodeId) {
+    // An active run owns its own stranding: it raises a `fuel_stranded` crisis
+    // with the escapes this check cannot see (insurance claim, tow), the same
+    // way the daily bankruptcy check defers to it.
+    if (
+      !gameMap ||
+      state.isTraveling ||
+      !player.currentNodeId ||
+      params.expeditionStatus === 'active'
+    ) {
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
@@ -154,6 +162,7 @@ export const useSoftlockEffect = ({
     refs.timeoutRef,
     params.venueBlacklist,
     params.reputationByRegion,
-    params.expeditionFuelMultiplier
+    params.expeditionFuelMultiplier,
+    params.expeditionStatus
   ])
 }
