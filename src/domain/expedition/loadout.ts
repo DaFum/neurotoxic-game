@@ -969,7 +969,13 @@ export const capExpeditionSpendAtCashFloor = (
   after: number
 ): number => {
   if (expedition?.status !== 'active') return after
-  const floor = Math.max(0, finiteNumberOr(expedition.protectedCareerCash, 0))
+  // A corrupt slice fails closed, like getExpeditionProtectedCash: the whole
+  // balance counts as protected.
+  const protectedCash = expedition.protectedCareerCash
+  const floor =
+    isFiniteNumber(protectedCash) && protectedCash >= 0
+      ? protectedCash
+      : Math.max(0, finiteNumberOr(before, 0))
   if (floor === 0 || after >= before || after >= floor) return after
   return before
 }

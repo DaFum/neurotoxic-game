@@ -384,6 +384,16 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
   })
 })
 
+test('capExpeditionSpendAtCashFloor fails closed on a corrupt protected slice', () => {
+  for (const corrupt of [Number.NaN, -100]) {
+    const run = { status: 'active', protectedCareerCash: corrupt }
+    assert.equal(capExpeditionSpendAtCashFloor(run, 5000, 4500), 5000)
+    assert.equal(capExpeditionSpendAtCashFloor(run, 5000, 0), 5000)
+    assert.equal(capExpeditionSpendAtCashFloor(run, 3000, 3500), 3500)
+    assert.equal(capExpeditionSpendAtCashFloor(run, 0, 0), 0)
+  }
+})
+
 test('capExpeditionSpendAtCashFloor refuses only a spend that crosses the floor', () => {
   const run = { status: 'active', protectedCareerCash: 4000 }
   assert.equal(capExpeditionSpendAtCashFloor(run, 5000, 3000), 5000)
