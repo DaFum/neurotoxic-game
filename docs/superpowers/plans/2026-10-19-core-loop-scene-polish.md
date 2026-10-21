@@ -22,21 +22,21 @@
 
 ## File Structure
 
-| File                                                                      | Change                      | Responsibility                                |
-| ------------------------------------------------------------------------- | --------------------------- | --------------------------------------------- |
-| `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js` | Modify                      | Add `tourprep`, `runsummary` fixtures         |
-| `tests/node/playwright-screenshot-fixture-validation.test.js`             | Modify                      | Pin the new fixtures through `handleLoadGame` |
-| `src/components/postGig/NetResult.tsx`                                    | Modify                      | Legible net-profit amount                     |
-| `tests/ui/NetResult.test.jsx`                                             | Modify                      | Pin the font change                           |
-| `src/scenes/PostGig.tsx`, `src/scenes/PreGig.tsx`                         | Modify                      | Phone clearance below the global HUD          |
-| `src/hooks/travel/effects/useSoftlockEffect.ts`                           | Modify                      | One stranded toast per softlock episode       |
-| `tests/hooks/travel/useSoftlockEffect.toast.test.jsx`                     | Create                      | Pin single toast                              |
-| `src/components/pregig/SetlistBlock.tsx`, `GigModifiersBlock.tsx`         | Modify                      | Scroll affordance, no silent clipping         |
-| `src/scenes/gameover/GameOverStats.tsx`                                   | Modify                      | Readable final-statistics state               |
-| `src/scenes/mainmenu/MainMenuHeader.tsx`                                  | Modify                      | Subtitle contrast, top spacing                |
-| `src/components/MapNodeView.tsx`                                          | Modify                      | Overworld label collisions (Task 9)           |
-| `src/scenes/TourPrep.tsx`, `src/scenes/RunSummary.tsx`                    | Modify                      | Per triage (Task 10)                          |
-| `public/locales/{en,de}/ui.json` (or the repo's locale path)              | Modify only if copy changes | Locale parity                                 |
+| File | Change | Responsibility |
+| --- | --- | --- |
+| `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js` | Modify | Add `tourprep`, `runsummary` fixtures |
+| `tests/node/playwright-screenshot-fixture-validation.test.js` | Modify | Pin the new fixtures through `handleLoadGame` |
+| `src/components/postGig/NetResult.tsx` | Modify | Legible net-profit amount |
+| `tests/ui/NetResult.test.jsx` | Modify | Pin the font change |
+| `src/scenes/PostGig.tsx`, `src/scenes/PreGig.tsx` | Modify | Phone clearance below the global HUD |
+| `src/hooks/travel/effects/useSoftlockEffect.ts` | Modify | One stranded toast per softlock episode |
+| `tests/hooks/travel/useSoftlockEffect.toast.test.jsx` | Create | Pin single toast |
+| `src/components/pregig/SetlistBlock.tsx`, `GigModifiersBlock.tsx` | Modify | Scroll affordance, no silent clipping |
+| `src/scenes/gameover/GameOverStats.tsx` | Modify | Readable final-statistics state |
+| `src/scenes/mainmenu/MainMenuHeader.tsx` | Modify | Subtitle contrast, top spacing |
+| `src/components/MapNodeView.tsx` | Modify | Overworld label collisions (Task 9) |
+| `src/scenes/TourPrep.tsx`, `src/scenes/RunSummary.tsx` | Modify | Per triage (Task 10) |
+| `public/locales/{en,de}/ui.json` (or the repo's locale path) | Modify only if copy changes | Locale parity |
 
 ---
 
@@ -54,18 +54,18 @@
 - [ ] **Step 1: Write the failing test.** Append inside the existing `describe('Playwright Screenshot Fixtures', ...)` block:
 
 ```js
-test('expedition scene fixtures survive handleLoadGame and name a real scene', () => {
-  for (const name of ['tourprep', 'runsummary']) {
-    ok(Object.hasOwn(FIXTURES, name), `fixture "${name}" is missing`)
-    const scene = FIXTURES[name].state.currentScene
-    ok(
-      ALLOWED_SCENE_VALUES.has(scene),
-      `fixture "${name}" targets unknown scene "${scene}"`
-    )
-  }
-  strictEqual(FIXTURES.tourprep.state.currentScene, 'TOUR_PREP')
-  strictEqual(FIXTURES.runsummary.state.currentScene, 'RUN_SUMMARY')
-})
+  test('expedition scene fixtures survive handleLoadGame and name a real scene', () => {
+    for (const name of ['tourprep', 'runsummary']) {
+      ok(Object.hasOwn(FIXTURES, name), `fixture "${name}" is missing`)
+      const scene = FIXTURES[name].state.currentScene
+      ok(
+        ALLOWED_SCENE_VALUES.has(scene),
+        `fixture "${name}" targets unknown scene "${scene}"`
+      )
+    }
+    strictEqual(FIXTURES.tourprep.state.currentScene, 'TOUR_PREP')
+    strictEqual(FIXTURES.runsummary.state.currentScene, 'RUN_SUMMARY')
+  })
 ```
 
 - [ ] **Step 2: Run it to verify it fails.**
@@ -136,12 +136,12 @@ Expected: FAIL with `fixture "tourprep" is missing`. If `ALLOWED_SCENE_VALUES` i
 - [ ] **Step 2: Extend the validation test** so it proves the outcome survives the sanitizers. Add to the test from Task 1:
 
 ```js
-const loaded = handleLoadGame(createInitialState(), {
-  type: 'LOAD_GAME',
-  payload: deepMerge(BASE_STATE, FIXTURES.runsummary.state)
-})
-strictEqual(loaded.expedition.outcome?.runId, 'fixture-run-1')
-strictEqual(loaded.expedition.outcome?.settlement.moneyRetained, 600)
+    const loaded = handleLoadGame(
+      createInitialState(),
+      { type: 'LOAD_GAME', payload: deepMerge(BASE_STATE, FIXTURES.runsummary.state) }
+    )
+    strictEqual(loaded.expedition.outcome?.runId, 'fixture-run-1')
+    strictEqual(loaded.expedition.outcome?.settlement.moneyRetained, 600)
 ```
 
 Check how the existing tests in this file call `handleLoadGame` (they already import it) and copy that call shape exactly; adjust argument order if it differs.
@@ -196,13 +196,13 @@ The amount renders in `font-display` (Metal Mania, `src/index.css:251`) and the 
 - [ ] **Step 1: Write the failing test** (append to `tests/ui/NetResult.test.jsx`):
 
 ```jsx
-it('renders the amount in the mono face so the sign and euro glyphs stay legible', () => {
-  render(<NetResult net={8} />)
+  it('renders the amount in the mono face so the sign and euro glyphs stay legible', () => {
+    render(<NetResult net={8} />)
 
-  const netEl = screen.getByTestId('post-gig-net-result-value')
-  expect(netEl.className).toContain('font-mono')
-  expect(netEl.className).not.toContain('font-display')
-})
+    const netEl = screen.getByTestId('post-gig-net-result-value')
+    expect(netEl.className).toContain('font-mono')
+    expect(netEl.className).not.toContain('font-display')
+  })
 ```
 
 - [ ] **Step 2: Run to verify it fails.**
@@ -239,11 +239,11 @@ git commit -m "fix(postgig): render net profit in mono face for legible sign and
 - [ ] **Step 1: Write the failing test** (append to `tests/ui/PostGig.component.test.jsx`, reusing that file's existing render helper and mocks):
 
 ```jsx
-it('reserves phone space below the global HUD', () => {
-  renderPostGig() // use the existing helper in this file; match its actual name
-  const screen = within(document.body).getByTestId('post-gig-screen')
-  expect(screen.className).toContain('max-sm:pt-44')
-})
+  it('reserves phone space below the global HUD', () => {
+    renderPostGig()   // use the existing helper in this file; match its actual name
+    const screen = within(document.body).getByTestId('post-gig-screen')
+    expect(screen.className).toContain('max-sm:pt-44')
+  })
 ```
 
 Open the file first and use whatever render helper and imports it already has.
@@ -351,31 +351,31 @@ import { useEffect, useRef } from 'react'
 ```
 
 ```ts
-// One toast per softlock episode: the cleanup below clears the timer on every
-// dependency change, so the timer alone cannot tell a new episode from a re-run.
-const toastedRef = useRef(false)
+  // One toast per softlock episode: the cleanup below clears the timer on every
+  // dependency change, so the timer alone cannot tell a new episode from a re-run.
+  const toastedRef = useRef(false)
 ```
 
 Change the stranded branch:
 
 ```ts
-if (!refs.timeoutRef.current) {
-  logger.error('TravelLogic', 'GAME OVER: Stranded')
-  if (!toastedRef.current) {
-    toastedRef.current = true
-    addToast(
-      i18n.t('ui:travel.errors.gameOverStranded', {
-        defaultValue:
-          'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
-      }),
-      'error'
-    )
-  }
-  refs.timeoutRef.current = setTimeout(() => {
-    saveGame(false)
-    changeScene(GAME_PHASES.GAMEOVER)
-  }, 3000)
-}
+      if (!refs.timeoutRef.current) {
+        logger.error('TravelLogic', 'GAME OVER: Stranded')
+        if (!toastedRef.current) {
+          toastedRef.current = true
+          addToast(
+            i18n.t('ui:travel.errors.gameOverStranded', {
+              defaultValue:
+                'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
+            }),
+            'error'
+          )
+        }
+        refs.timeoutRef.current = setTimeout(() => {
+          saveGame(false)
+          changeScene(GAME_PHASES.GAMEOVER)
+        }, 3000)
+      }
 ```
 
 and in the `else` (no longer stranded) branch, reset it:
@@ -412,12 +412,12 @@ Confirmed in the baselines: at 1280×720 the 4th setlist row and the 5th budget 
 - [ ] **Step 1: Write the failing test.** Assert the scroll region is reachable and labelled, and that the phone caps are gone:
 
 ```jsx
-it('lets the setlist take its natural height on phone', () => {
-  renderSetlistBlock() // use the existing helper/props in the SetlistBlock test file
-  const region = screen.getByRole('region', { name: /setlist/i })
-  expect(region.className).not.toContain('max-h-[48svh]')
-  expect(region.className).toContain('lg:overflow-y-auto')
-})
+  it('lets the setlist take its natural height on phone', () => {
+    renderSetlistBlock()   // use the existing helper/props in the SetlistBlock test file
+    const region = screen.getByRole('region', { name: /setlist/i })
+    expect(region.className).not.toContain('max-h-[48svh]')
+    expect(region.className).toContain('lg:overflow-y-auto')
+  })
 ```
 
 Use the existing test file's render helper and props; the region role and name come from Step 3.
@@ -463,12 +463,12 @@ Confirmed from the settled capture at 1280x720: the footer is `absolute bottom-4
 - [ ] **Step 1: Write the failing test.** The footer must be in normal flow, not absolutely positioned:
 
 ```jsx
-it('sits in normal flow so it can never overlap the buttons above it', () => {
-  const { container } = render(<MainMenuFooter />)
-  const root = container.firstElementChild
-  expect(root.className).not.toContain('absolute')
-  expect(root.className).toContain('mt-')
-})
+  it('sits in normal flow so it can never overlap the buttons above it', () => {
+    const { container } = render(<MainMenuFooter />)
+    const root = container.firstElementChild
+    expect(root.className).not.toContain('absolute')
+    expect(root.className).toContain('mt-')
+  })
 ```
 
 Use the file's existing imports and i18n/motion mocks.
@@ -518,20 +518,20 @@ Expected: all green. Report any failure with its output; never weaken a test.
 
 ## Self-review against the spec
 
-| Spec item                         | Task                                                                                                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Phase 0 fixtures and baselines    | 1, 2                                                                                                                                                         |
-| HUD overlaps titles on phone      | 4                                                                                                                                                            |
+| Spec item | Task |
+| --- | --- |
+| Phase 0 fixtures and baselines | 1, 2 |
+| HUD overlaps titles on phone | 4 |
 | Overworld HUD takes ~40% of phone | Not planned as written: `OverworldHUD` already collapses Band Status on phone and has an expedition one-line mode. Revisit from the triage addendum (Task 9) |
-| PreGig lists clipped              | 6                                                                                                                                                            |
-| Net profit mangled                | 3                                                                                                                                                            |
-| Duplicate GameOver toast          | 5                                                                                                                                                            |
-| MainMenu                          | 8                                                                                                                                                            |
-| Overworld labels                  | 9                                                                                                                                                            |
-| PostGig, Gig hierarchy            | 4 (PostGig clearance); Gig has no confirmed defect beyond phone HUD grouping, to be re-evaluated from the baselines                                          |
-| GameOver stats                    | 7                                                                                                                                                            |
-| TourPrep, RunSummary              | 10                                                                                                                                                           |
-| Guardrails, verification          | Conventions block, 11                                                                                                                                        |
+| PreGig lists clipped | 6 |
+| Net profit mangled | 3 |
+| Duplicate GameOver toast | 5 |
+| MainMenu | 8 |
+| Overworld labels | 9 |
+| PostGig, Gig hierarchy | 4 (PostGig clearance); Gig has no confirmed defect beyond phone HUD grouping, to be re-evaluated from the baselines |
+| GameOver stats | 7 |
+| TourPrep, RunSummary | 10 |
+| Guardrails, verification | Conventions block, 11 |
 
 Spec deviation to confirm: the spec's "collapse Band Status by default on phone" and "compact Overworld HUD strip" are already implemented in `BandStatusPanel` (`expanded` defaults to false below `sm`) and `OverworldHUD` (`expeditionActive` mode), so this plan does not re-implement them.
 
@@ -539,31 +539,31 @@ Spec deviation to confirm: the spec's "collapse Band Status by default on phone"
 
 ## Triage addendum (from the Phase 0 baselines, 2026-10-19)
 
-| Scene                            | Finding                                        | Disposition                               |
-| -------------------------------- | ---------------------------------------------- | ----------------------------------------- |
-| TourPrep (desktop, phone)        | None                                           | No change                                 |
-| RunSummary (desktop)             | None                                           | No change                                 |
-| RunSummary (phone)               | HUD covers title and first rows                | Task 4                                    |
-| GameOver (settled, both)         | Populated and readable                         | Task 7 dropped; duplicate toast is Task 5 |
-| MainMenu (settled, desktop)      | Footer overlaps the Features button            | Task 8                                    |
-| MainMenu subtitle, title spacing | Fine once settled                              | No change                                 |
-| Overworld                        | Label pile-up on phone, dense desktop clusters | Task 9, written from the baselines        |
+| Scene | Finding | Disposition |
+| --- | --- | --- |
+| TourPrep (desktop, phone) | None | No change |
+| RunSummary (desktop) | None | No change |
+| RunSummary (phone) | HUD covers title and first rows | Task 4 |
+| GameOver (settled, both) | Populated and readable | Task 7 dropped; duplicate toast is Task 5 |
+| MainMenu (settled, desktop) | Footer overlaps the Features button | Task 8 |
+| MainMenu subtitle, title spacing | Fine once settled | No change |
+| Overworld | Label pile-up on phone, dense desktop clusters | Task 9, written from the baselines |
 
 ---
 
 ## Execution status (2026-10-19)
 
-| Task                                          | Status                                                              | Commit           |
-| --------------------------------------------- | ------------------------------------------------------------------- | ---------------- |
-| 1-2 Fixtures and baselines                    | Done                                                                | 8d76152          |
-| 3 Net profit mono face                        | Done                                                                | 6caf351          |
-| 4 HUD clearance (PostGig, PreGig, RunSummary) | Done                                                                | a111ae1          |
-| 5 Single stranded toast                       | Done                                                                | 1d212f5          |
-| 6 PreGig list clipping                        | Done                                                                | dd4d241          |
-| 7 GameOver stats                              | Dropped (no defect once settled)                                    | -                |
-| 8 MainMenu footer overlap                     | Done, plus safe-centering follow-up                                 | ee4d714, 4b0d4ac |
-| 9 Overworld labels                            | Deferred: design decision, #3170                                    | -                |
-| 10 TourPrep / RunSummary                      | Resolved by triage (RunSummary via Task 4)                          | -                |
-| 11 Final verification                         | Narrow tests and screenshots done locally; full suite is left to CI | -                |
+| Task | Status | Commit |
+| --- | --- | --- |
+| 1-2 Fixtures and baselines | Done | 8d76152 |
+| 3 Net profit mono face | Done | 6caf351 |
+| 4 HUD clearance (PostGig, PreGig, RunSummary) | Done | a111ae1 |
+| 5 Single stranded toast | Done | 1d212f5 |
+| 6 PreGig list clipping | Done | dd4d241 |
+| 7 GameOver stats | Dropped (no defect once settled) | - |
+| 8 MainMenu footer overlap | Done, plus safe-centering follow-up | ee4d714, 4b0d4ac |
+| 9 Overworld labels | Deferred: design decision, #3170 | - |
+| 10 TourPrep / RunSummary | Resolved by triage (RunSummary via Task 4) | - |
+| 11 Final verification | Narrow tests and screenshots done locally; full suite is left to CI | - |
 
 Open items filed: #3169 (stranded countdown restarts), #3170 (Overworld label collisions), #3171 (screenshot diff tool compares nothing without pixelmatch), #3172 (Gig phone HUD, Clinic, Credits, Intro, minigames).

@@ -70,29 +70,26 @@ test('NoteTextureManager', async t => {
     })
   })
 
-  await t.test(
-    'late cached textures are not retained after disposal',
-    async () => {
-      let resolveTextures
-      loadTexturesImpl = () =>
-        new Promise(resolve => {
-          resolveTextures = resolve
-        })
+  await t.test('late cached textures are not retained after disposal', async () => {
+    let resolveTextures
+    loadTexturesImpl = () =>
+      new Promise(resolve => {
+        resolveTextures = resolve
+      })
 
-      const manager = new NoteTextureManager()
-      const loading = manager.loadAssets()
-      manager.dispose()
+    const manager = new NoteTextureManager()
+    const loading = manager.loadAssets()
+    manager.dispose()
 
-      const skull = { destroy: mock.fn() }
-      const lightning = { destroy: mock.fn() }
-      resolveTextures({ skull, lightning })
-      await loading
+    const skull = { destroy: mock.fn() }
+    const lightning = { destroy: mock.fn() }
+    resolveTextures({ skull, lightning })
+    await loading
 
-      assert.deepEqual(manager.noteTextures, { skull: null, lightning: null })
-      assert.equal(skull.destroy.mock.calls.length, 0)
-      assert.equal(lightning.destroy.mock.calls.length, 0)
-    }
-  )
+    assert.deepEqual(manager.noteTextures, { skull: null, lightning: null })
+    assert.equal(skull.destroy.mock.calls.length, 0)
+    assert.equal(lightning.destroy.mock.calls.length, 0)
+  })
 
   await t.test('dispose leaves shared cached textures alive', async () => {
     const skull = { destroy: mock.fn() }

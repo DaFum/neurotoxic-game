@@ -81,9 +81,7 @@ test('GigModifierButton handles disabled state correctly and renders tooltip', (
 
   if (button.parentElement) {
     fireEvent.mouseEnter(button.parentElement)
-    expect(screen.getByRole('tooltip')).toHaveTextContent(
-      'Insufficient funds (€50)'
-    )
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Insufficient funds (€50)')
   }
 
   fireEvent.click(button)
