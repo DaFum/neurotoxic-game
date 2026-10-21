@@ -35,6 +35,8 @@ type SyncSlot = {
   lastSentAt: number | null
   /** Consecutive failed requests, for the retry backoff. */
   failures: number
+  /** Snapshot key of the failed request a retry is waiting on. */
+  retryKey: string | null
   timer: ReturnType<typeof setTimeout> | null
 }
 
@@ -152,19 +154,40 @@ const createSyncPayload = (
   }
 }
 
+/** A non-success response; `status` decides whether a retry can help. */
+class SyncHttpError extends Error {
+  readonly status: number
+  constructor(status: number, statusText: string) {
+    super(`Sync failed: ${statusText}`)
+    this.status = status
+  }
+}
+
+type SyncResult =
+  | { status: 'synced' }
+  | { status: 'skipped' }
+  | { status: 'stale'; revision: number }
+
+/** Network errors, rate limiting and server errors can succeed later. */
+const isRetryable = (error: unknown): boolean =>
+  !(error instanceof SyncHttpError) ||
+  error.status === 429 ||
+  error.status >= 500
+
 /**
  * Sends the payload to the leaderboard API.
  * @param payload - The data to sync.
- * @returns true when synced; false when intentionally skipped.
+ * @returns `synced` when applied, `stale` with the server's revision when a
+ * newer one was already stored, `skipped` when intentionally not sent.
  *
  * @throws {@link Error}
  * Throws when the stats endpoint exists but returns a non-success response.
  */
 const syncLeaderboardStats = async (
   payload: LeaderboardStatsPayload & { revision: number }
-) => {
+): Promise<SyncResult> => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
-    return false
+    return { status: 'skipped' }
   }
 
   const response = await fetch('/api/leaderboard/stats', {
@@ -181,14 +204,29 @@ const syncLeaderboardStats = async (
       )
     }
     leaderboardStatsEndpointUnavailable = true
-    return false
+    return { status: 'skipped' }
   }
 
   if (!response.ok) {
-    throw new Error(`Sync failed: ${response.statusText}`)
+    throw new SyncHttpError(response.status, response.statusText)
   }
 
-  return true
+  const body: unknown =
+    typeof response.json === 'function'
+      ? await response.json().catch(() => null)
+      : null
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    Object.hasOwn(body, 'stale') &&
+    (body as { stale?: unknown }).stale === true
+  ) {
+    const revision = Object.hasOwn(body, 'revision')
+      ? (body as { revision?: unknown }).revision
+      : undefined
+    return { status: 'stale', revision: finiteNumberOr(revision, 0) }
+  }
+  return { status: 'synced' }
 }
 
 const snapshotKey = (payload: LeaderboardStatsPayload): string =>
@@ -223,30 +261,48 @@ const getSlot = (playerId: string): SyncSlot => {
     lastSentKey: typeof stored === 'string' ? stored : null,
     lastSentAt: null,
     failures: 0,
+    retryKey: null,
     timer: null
   }
   syncSlots.set(playerId, slot)
   return slot
 }
 
-/**
- * Next monotonic snapshot revision for a player. Persisted before sending, so
- * a retry or a reload can never reuse or lower a revision the server has seen.
- */
-const nextRevision = (playerId: string, clock: IClock): number => {
+/** The stored revision, or 0 when it is not one the API would accept. */
+const readStoredRevision = (playerId: string): number => {
+  // Storage is untrusted: a value the API would reject (not a safe integer, or
+  // exhausted) was never accepted server-side, so start from the clock instead.
   const raw = finiteNumberOr(
     getSafeStorageItem<unknown>(revisionStorageKey(playerId), 0),
     0
   )
-  // Storage is untrusted: a value the API would reject (not a safe integer, or
-  // exhausted) was never accepted server-side, so start from the clock instead.
-  const stored =
-    Number.isSafeInteger(raw) && raw > 0 && raw < Number.MAX_SAFE_INTEGER
-      ? raw
-      : 0
-  const revision = Math.max(stored + 1, Math.floor(clock.now()))
+  return Number.isSafeInteger(raw) && raw > 0 && raw < Number.MAX_SAFE_INTEGER
+    ? raw
+    : 0
+}
+
+/**
+ * Next monotonic snapshot revision for a player. Persisted before sending, so
+ * a retry or a reload can never reuse or lower a revision this client sent. A
+ * revision the server holds beyond it (cleared storage, a clock set back) is
+ * learned from the stale response and adopted by `adoptServerRevision`.
+ */
+const nextRevision = (playerId: string, clock: IClock): number => {
+  const revision = Math.max(
+    readStoredRevision(playerId) + 1,
+    Math.floor(clock.now())
+  )
   setSafeStorageItem(revisionStorageKey(playerId), revision)
   return revision
+}
+
+const adoptServerRevision = (playerId: string, revision: number): void => {
+  if (
+    Number.isSafeInteger(revision) &&
+    revision > readStoredRevision(playerId)
+  ) {
+    setSafeStorageItem(revisionStorageKey(playerId), revision)
+  }
 }
 
 const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
@@ -261,23 +317,33 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
   slot.inFlightKey = key
   slot.lastSentAt = clock.now()
   try {
-    const didSync = await syncLeaderboardStats({
+    const result = await syncLeaderboardStats({
       ...payload,
       revision: nextRevision(payload.playerId, clock)
     })
-    slot.failures = 0
-    if (didSync) {
+    if (result.status === 'synced') {
+      slot.failures = 0
+      slot.retryKey = null
       slot.lastSentKey = key
       setSafeStorageItem(lastSyncedKeyStorageKey(payload.playerId), key)
       logger.info('Leaderboard', `Synced stats for day ${payload.day}`)
+    } else if (result.status === 'stale') {
+      // The server holds a newer revision than this client has used. Adopt it
+      // and send the snapshot again, or the board would stay on the old one.
+      adoptServerRevision(payload.playerId, result.revision)
+      slot.pending ??= payload
     }
   } catch (error) {
     // Silent fail for leaderboard sync to not disrupt gameplay
     logger.warn('Leaderboard', 'Stats sync failed', error)
-    // Keep the snapshot for a retry (backoff, never faster than the rate limit)
-    // unless a newer one is already waiting.
-    slot.failures += 1
-    slot.pending ??= payload
+    // Only a failure that can clear up is retried (network, 429, 5xx), with
+    // backoff and never faster than the rate limit; a rejected payload would
+    // fail the same way every time. A newer pending snapshot wins.
+    if (isRetryable(error)) {
+      slot.failures += 1
+      slot.retryKey = key
+      slot.pending ??= payload
+    }
   } finally {
     slot.inFlight = false
     slot.inFlightKey = null
@@ -289,14 +355,19 @@ const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
 }
 
 const scheduleFlush = (slot: SyncSlot, clock: IClock): void => {
-  if (slot.timer || slot.inFlight) return
-  const interval =
-    slot.failures === 0
-      ? MIN_SYNC_INTERVAL_MS
-      : Math.min(
-          MAX_RETRY_INTERVAL_MS,
-          MIN_SYNC_INTERVAL_MS * 2 ** slot.failures
-        )
+  if (slot.inFlight) return
+  // Re-plan an existing timer: the pending snapshot may have changed, and a
+  // fresh one must not wait out the backoff of the one it replaced.
+  if (slot.timer) clearTimeout(slot.timer)
+  slot.timer = null
+  // The backoff belongs to the failed snapshot; a newer one is a fresh attempt.
+  const retrying =
+    slot.failures > 0 &&
+    slot.pending !== null &&
+    snapshotKey(slot.pending) === slot.retryKey
+  const interval = retrying
+    ? Math.min(MAX_RETRY_INTERVAL_MS, MIN_SYNC_INTERVAL_MS * 2 ** slot.failures)
+    : MIN_SYNC_INTERVAL_MS
   const wait =
     slot.lastSentAt === null
       ? 0

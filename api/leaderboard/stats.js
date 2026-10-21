@@ -21,14 +21,15 @@ const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 // writes the display name and every board in the same atomic step. KEYS[1] is
 // the revision hash, KEYS[2] the player-name hash, KEYS[3..] the sorted sets;
 // ARGV[1] is the player id, ARGV[2] the revision, ARGV[3] the name and ARGV[4..]
-// the scores in board order. Returns 1 when applied, 0 when stale.
+// the scores in board order. Returns { applied, stored revision }: 1 when
+// applied, 0 when stale (the stored revision lets the client catch up).
 const WRITE_IF_NEWER_SCRIPT = `
 local current = tonumber(redis.call('HGET', KEYS[1], ARGV[1])) or 0
-if tonumber(ARGV[2]) <= current then return 0 end
+if tonumber(ARGV[2]) <= current then return {0, current} end
 redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
 redis.call('HSET', KEYS[2], ARGV[1], ARGV[3])
 for i = 3, #KEYS do redis.call('ZADD', KEYS[i], ARGV[i + 1], ARGV[1]) end
-return 1`
+return {1, tonumber(ARGV[2])}`
 
 /**
  * @param {unknown} val
@@ -131,7 +132,7 @@ export default async function handler(req, res) {
       }
 
       if (hasRevision) {
-        const applied = await client.eval(WRITE_IF_NEWER_SCRIPT, {
+        const result = await client.eval(WRITE_IF_NEWER_SCRIPT, {
           keys: [
             'lb:revision',
             'players',
@@ -154,9 +155,14 @@ export default async function handler(req, res) {
             String(safeStageDives)
           ]
         })
-        if (Number(applied) !== 1) {
-          // Not an error: a newer snapshot already landed.
-          return res.status(200).json({ success: true, stale: true })
+        const reply = Array.isArray(result) ? result : []
+        const stored = Number(reply[1])
+        if (Number(reply[0]) !== 1) {
+          // Not an error: a newer snapshot already landed. The stored revision
+          // lets a client whose own sequence fell behind catch up.
+          return res
+            .status(200)
+            .json({ success: true, stale: true, revision: stored })
         }
         return res.status(200).json({ success: true })
       }

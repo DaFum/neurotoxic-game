@@ -25,7 +25,7 @@ const mockRedisClient = {
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),
   multi: vi.fn(() => mockMulti),
-  eval: vi.fn(() => Promise.resolve(1)),
+  eval: vi.fn(() => Promise.resolve([1, 1])),
   disconnect: vi.fn(() => Promise.resolve()),
   on: vi.fn(),
   connect: vi.fn(() => Promise.resolve())
@@ -51,7 +51,7 @@ describe('Leaderboard Stats API', () => {
     mockRedisClient.on.mockClear()
     mockRedisClient.connect.mockClear()
     mockRedisClient.eval.mockClear()
-    mockRedisClient.eval.mockImplementation(() => Promise.resolve(1))
+    mockRedisClient.eval.mockImplementation(() => Promise.resolve([1, 1]))
     mockMulti.zAdd.mockClear()
     mockMulti.exec.mockClear()
 
@@ -149,14 +149,16 @@ describe('Leaderboard Stats API', () => {
   })
 
   test('POST with a stale revision is acknowledged but not applied', async () => {
-    mockRedisClient.eval.mockImplementation(() => Promise.resolve(0))
+    mockRedisClient.eval.mockImplementation(() => Promise.resolve([0, 9]))
     const { res } = createApiRouteMocks()
     await statsModule.default(revisionRequest(5), res)
 
     assert.strictEqual(res.status.mock.calls[0][0], 200)
+    // The stored revision is returned so the client can catch up.
     assert.deepStrictEqual(res.json.mock.calls[0][0], {
       success: true,
-      stale: true
+      stale: true,
+      revision: 9
     })
     // A stale snapshot must not rewrite the display name either.
     assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 0)

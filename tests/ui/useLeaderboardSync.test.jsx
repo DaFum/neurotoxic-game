@@ -296,7 +296,11 @@ describe('useLeaderboardSync', () => {
 
   it('retries a failed snapshot with backoff when nothing newer arrives', async () => {
     vi.useFakeTimers()
-    mockFetch.mockResolvedValueOnce({ ok: false, statusText: 'Server Error' })
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Server Error'
+    })
     mockFetch.mockResolvedValue({ ok: true })
 
     renderHook(() => useLeaderboardSync(makeState({ playerId: 'retry' })))
@@ -341,6 +345,90 @@ describe('useLeaderboardSync', () => {
     })
 
     expect(bodies(mockFetch).map(body => body.money)).toEqual([500, 900])
+  })
+
+  it('does not retry a rejected payload (permanent 4xx)', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request'
+    })
+
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'rejected' })))
+    await act(async () => {})
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10 * 60 * 1000)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('retries after a 429 and caps the backoff', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 429,
+      statusText: 'Too Many Requests'
+    })
+
+    renderHook(() => useLeaderboardSync(makeState({ playerId: 'limited' })))
+    await act(async () => {})
+    // Backoff 30s, 60s, 120s, 240s, then capped at 300s.
+    for (const wait of [30, 60, 120, 240, 300, 300]) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(wait * 1000)
+      })
+    }
+    expect(mockFetch).toHaveBeenCalledTimes(7)
+  })
+
+  it('sends a newer snapshot at the base interval while an older one backs off', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'x' })
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'x' })
+    mockFetch.mockResolvedValue({ ok: true })
+
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState({ playerId: 'fresh-attempt', money: 500 })
+    })
+    await act(async () => {})
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(2) // failures = 2, next retry 60s
+
+    rerender(makeState({ playerId: 'fresh-attempt', money: 800 }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    expect(bodies(mockFetch)[2].money).toBe(800)
+  })
+
+  it('adopts the server revision from a stale response and resends', async () => {
+    vi.useFakeTimers()
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({ success: true, stale: true, revision: 9e12 })
+    })
+    mockFetch.mockResolvedValue({ ok: true })
+    const clock = { now: () => 1000, today: () => new Date(1000) }
+
+    renderHook(() =>
+      useLeaderboardSync(makeState({ playerId: 'behind' }), clock)
+    )
+    await act(async () => {})
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000)
+    })
+
+    const revisions = bodies(mockFetch).map(body => body.revision)
+    expect(revisions).toEqual([1000, 9e12 + 1])
+    expect(
+      localStorage.getItem('neurotoxic_last_synced_snapshot:behind')
+    ).not.toBeNull()
   })
 
   it('logs concurrent 404 responses once and disables later session syncs', async () => {

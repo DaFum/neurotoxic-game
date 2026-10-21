@@ -277,7 +277,9 @@ const reducerMap: ReducerMap = {
     handleSetPendingSupplyStopInventory,
   [ActionTypes.SET_TERMINAL_OUTCOME]: (state, payload) => {
     const ended = handleSetTerminalOutcome(state, payload)
-    return ended === state ? state : settleExpeditionOnGameOver(ended)
+    if (ended === state) return state
+    const reason = gameOverFailureReason(ended.terminalOutcome)
+    return reason ? settleExpeditionOnGameOver(ended, reason) : ended
   },
   [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
   [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,

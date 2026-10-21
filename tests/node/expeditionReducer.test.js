@@ -642,6 +642,20 @@ describe('committed identity freeze while active', () => {
     assert.equal(broke.expedition.outcome?.reason, 'bankruptcy')
   })
 
+  it('settles a terminal outcome with the reason that matches it', () => {
+    for (const [outcome, reason] of [
+      [{ reason: 'bankruptcy' }, 'bankruptcy'],
+      [{ reason: 'stranded' }, 'fuel_stranded'],
+      [{ reason: 'event_game_over', eventId: 'e' }, 'event_game_over']
+    ]) {
+      const next = gameReducer(activeState(), {
+        type: ActionTypes.SET_TERMINAL_OUTCOME,
+        payload: outcome
+      })
+      assert.equal(next.expedition.outcome?.reason, reason)
+    }
+  })
+
   it('leaves the run alone for any other scene change', () => {
     const state = { ...activeState(), currentScene: 'OVERWORLD' }
     const next = gameReducer(state, {
