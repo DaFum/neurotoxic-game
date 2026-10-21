@@ -66,6 +66,7 @@ describe('ContrabandStash', () => {
         stash={[
           {
             id: 'c_weekender_coffee',
+            instanceId: 'coffee-1',
             type: 'consumable',
             effectType: 'stamina'
           }
@@ -78,10 +79,38 @@ describe('ContrabandStash', () => {
     })
     expect(button).toBeInTheDocument()
     expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).toHaveAttribute('aria-describedby', 'target-required-coffee-1')
     expect(button).not.toBeDisabled()
 
     button.click()
     expect(handleUseItem).not.toHaveBeenCalled()
+  })
+
+  it('renders target member button selection group with accessible ARIA attributes', () => {
+    render(
+      <ContrabandStash
+        {...baseProps}
+        selectedMember='member-1'
+        members={[
+          { id: 'member-1', name: 'Matze' },
+          { id: 'member-2', name: 'Susi' }
+        ]}
+        stash={[]}
+      />
+    )
+
+    const group = screen.getByRole('group', { name: /Target Member:/i })
+    expect(group).toBeInTheDocument()
+
+    const selectedBtn = screen.getByRole('button', {
+      name: 'Target member: Matze (Selected)'
+    })
+    expect(selectedBtn).toHaveAttribute('aria-pressed', 'true')
+
+    const unselectedBtn = screen.getByRole('button', {
+      name: 'Select target member: Susi'
+    })
+    expect(unselectedBtn).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('renders the item icon as a decorative glyph next to the name', () => {

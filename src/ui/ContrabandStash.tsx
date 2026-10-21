@@ -205,12 +205,14 @@ const StashCardActions = memo(
     const buttonAriaLabel = `${actionText}: ${itemName}`
 
     const isLocked = requiresTarget && !selectedMember
+    const helperTextId = `target-required-${item.instanceId ?? item.id}`
 
     const button = (
       <ActionButton
         onClick={handleUse}
         aria-disabled={isLocked ? true : undefined}
         aria-label={buttonAriaLabel}
+        aria-describedby={isLocked ? helperTextId : undefined}
         variant='primary'
         className='w-full text-sm font-bold'
       >
@@ -224,7 +226,7 @@ const StashCardActions = memo(
         !selectedMember &&
         !item.applied &&
         item.type === 'consumable' ? (
-          <p className='text-error-red text-xs mb-2 italic'>
+          <p id={helperTextId} className='text-error-red text-xs mb-2 italic'>
             {t('ui:contraband.requiresTarget', {
               defaultValue: 'Requires target member.'
             })}
@@ -353,28 +355,48 @@ export const ContrabandStash = ({
 
         {/* Member Selection for targeted items */}
         <div className='mb-6 bg-shadow-black border border-toxic-green-20 p-4 '>
-          <h3 className='text-toxic-green text-sm font-bold mb-3 uppercase tracking-wider'>
+          <h3
+            id='target-member-label'
+            className='text-toxic-green text-sm font-bold mb-3 uppercase tracking-wider'
+          >
             {t('ui:contraband.targetMemberLabel', {
               defaultValue: 'Target Member:'
             })}
           </h3>
-          <div className='flex flex-wrap gap-2'>
+          <div
+            role='group'
+            aria-labelledby='target-member-label'
+            className='flex flex-wrap gap-2'
+          >
             {members.map(m => {
               if (!isBandMember(m)) return null
+              const memberName =
+                m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })
+              const isSelected = selectedMember === m.id
+              const memberButtonAriaLabel = isSelected
+                ? t('ui:contraband.targetMemberSelected', {
+                    name: memberName,
+                    defaultValue: 'Target member: {{name}} (Selected)'
+                  })
+                : t('ui:contraband.targetMemberSelect', {
+                    name: memberName,
+                    defaultValue: 'Select target member: {{name}}'
+                  })
+
               return (
                 <button
                   key={m.id}
                   type='button'
-                  aria-pressed={selectedMember === m.id}
+                  aria-pressed={isSelected}
+                  aria-label={memberButtonAriaLabel}
                   onClick={() => setSelectedMember?.(m.id)}
                   className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
-                    selectedMember === m.id
+                    isSelected
                       ? 'border-toxic-green bg-toxic-green-20 text-star-white'
                       : 'border-ash-gray bg-transparent text-ash-gray hover:border-toxic-green hover:text-toxic-green'
                   }`}
                 >
-                  {m.name ??
-                    t('ui:member.unknown', { defaultValue: 'Unknown' })}
+                  {memberName}
                 </button>
               )
             })}

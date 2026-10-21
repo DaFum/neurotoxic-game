@@ -129,6 +129,8 @@
   "contraband.passiveActive": "PASSIVER EFFEKT AKTIV",
   "contraband.requiresTarget": "Erfordert Ziel-Mitglied.",
   "contraband.targetMemberLabel": "Zielmitglied:",
+  "contraband.targetMemberSelect": "Zielmitglied auswählen: {{name}}",
+  "contraband.targetMemberSelected": "Zielmitglied: {{name}} (Ausgewählt)",
   "contraband.title": "SCHMUGGELWAREN VERSTECK",
   "contraband.useItem": "GEGENSTAND VERWENDEN",
   "crafting.craft": "Herstellen",
