@@ -73,6 +73,7 @@ const PERSISTED_FIELDS = {
   currentGig: isNullableObject,
   lastGigStats: isNullableObject,
   activeEvent: isNullableObject,
+  terminalOutcome: isNullableObject,
   activeStoryFlags: Array.isArray,
   eventCooldowns: Array.isArray,
   pendingEvents: Array.isArray,

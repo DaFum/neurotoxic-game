@@ -164,6 +164,9 @@ const CREATOR_ARGS = {
     }
   ],
   createSetPendingBandHQOpenAction: () => [true],
+  createSetTerminalOutcomeAction: () => [
+    { reason: 'event_game_over', eventId: 'deal_devil' }
+  ],
   createSetPendingSupplyStopInventoryAction: () => [
     [{ id: 'item_1', price: 10 }]
   ],

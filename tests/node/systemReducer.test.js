@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   handleLoadGame,
+  handleSetTerminalOutcome,
   handleResetState,
   handleUpdateSettings,
   handleSetMap,
@@ -2323,4 +2324,38 @@ test('handleLoadGame sanitizes the persisted runSeed', async t => {
     const nextState = handleLoadGame(createInitialState(), {})
     assert.equal(Number.isFinite(nextState.runSeed), true)
   })
+})
+
+test('terminal outcome survives a JSON round trip and routes load to GAMEOVER', () => {
+  const ended = handleSetTerminalOutcome(createInitialState(), {
+    reason: 'event_game_over',
+    eventId: 'deal_devil'
+  })
+  assert.equal(ended.currentScene, GAME_PHASES.GAMEOVER)
+
+  for (let load = 0; load < 2; load++) {
+    const loaded = handleLoadGame(
+      createInitialState(),
+      JSON.parse(JSON.stringify({ terminalOutcome: ended.terminalOutcome }))
+    )
+    assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
+    assert.deepEqual(loaded.terminalOutcome, ended.terminalOutcome)
+  }
+
+  const without = handleLoadGame(createInitialState(), {})
+  assert.equal(without.currentScene, GAME_PHASES.OVERWORLD)
+  assert.equal(without.terminalOutcome, null)
+})
+
+test('handleSetTerminalOutcome rejects malformed payloads by identity', () => {
+  const state = createInitialState()
+  for (const bad of [
+    null,
+    'x',
+    { reason: 'other', eventId: 'a' },
+    { reason: 'event_game_over', eventId: '' },
+    JSON.parse('{"reason":"event_game_over","eventId":"a","__proto__":{"x":1}}')
+  ]) {
+    assert.equal(handleSetTerminalOutcome(state, bad), state)
+  }
 })

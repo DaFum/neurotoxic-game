@@ -58,6 +58,14 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 /**
  * Player-controlled settings that survive save/load and reset flows.
  */
+/**
+ * Why the Career ended, recorded so loading cannot undo the ending.
+ */
+export interface TerminalOutcome {
+  reason: 'event_game_over'
+  eventId: string
+}
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -189,6 +197,8 @@ export interface GameState {
   unlocks: string[]
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
+  /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
+  terminalOutcome: TerminalOutcome | null
   pendingForeclosureNotices: AssetKind[]
   pendingRiskEvent: RiskEventDescriptor | null
   completedMilestones: string[]
@@ -360,6 +370,7 @@ export type GameAction =
     >
   | Action<(typeof ActionTypes)['VOID_SERMON'], VoidSermonPayload>
   | Action<(typeof ActionTypes)['SET_PENDING_BANDHQ_OPEN'], boolean>
+  | Action<(typeof ActionTypes)['SET_TERMINAL_OUTCOME'], TerminalOutcome>
   | Action<
       (typeof ActionTypes)['SET_PENDING_SUPPLY_STOP_INVENTORY'],
       PurchaseItem[] | null

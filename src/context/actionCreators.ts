@@ -28,7 +28,7 @@ import {
 import { sanitizeLoadedToast } from './reducers/toastSanitizers'
 import { sanitizePendingGigSettlement } from './reducers/pendingGigSettlementReducer'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
-import type { RivalBandState } from '../types'
+import type { RivalBandState, TerminalOutcome } from '../types'
 import {
   clampNonNegative,
   clampToNonNegativeInt,
@@ -1076,6 +1076,19 @@ export const createSetPendingSupplyStopInventoryAction = (
 > => ({
   type: ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY,
   payload: Array.isArray(inventory) ? inventory : null
+})
+
+/**
+ * Creates an action that records the Career's terminal outcome.
+ *
+ * @param outcome - Why the Career ended.
+ * @returns Terminal outcome action.
+ */
+export const createSetTerminalOutcomeAction = (
+  outcome: TerminalOutcome
+): Extract<GameAction, { type: typeof ActionTypes.SET_TERMINAL_OUTCOME }> => ({
+  type: ActionTypes.SET_TERMINAL_OUTCOME,
+  payload: outcome
 })
 
 /**

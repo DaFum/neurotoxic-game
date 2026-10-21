@@ -118,6 +118,7 @@ import {
   handleAddUnlock,
   handleSetPendingBandHQOpen,
   handleSetPendingSupplyStopInventory,
+  handleSetTerminalOutcome,
   handleSetPendingRiskEvent
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
@@ -246,6 +247,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
     handleSetPendingSupplyStopInventory,
+  [ActionTypes.SET_TERMINAL_OUTCOME]: handleSetTerminalOutcome,
   [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
   [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,
   [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,

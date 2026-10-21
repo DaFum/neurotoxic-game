@@ -254,6 +254,7 @@ const initialState: GameState = {
   unlocks: [],
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
+  terminalOutcome: null,
   pendingForeclosureNotices: [],
   pendingRiskEvent: null,
   completedMilestones: [],
