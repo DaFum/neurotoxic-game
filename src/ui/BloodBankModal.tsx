@@ -143,10 +143,13 @@ const DonationCard = ({
     ? t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })
     : undefined
 
+  const warningId = `blood-bank-warning-${variant}`
+
   const actionBtn = (
     <ActionButton
       onClick={canDonate ? onDonate : e => e.preventDefault()}
       aria-disabled={!canDonate}
+      aria-describedby={!canDonate ? warningId : undefined}
       className={`w-full ${canDonate ? v.buttonEnabled : 'bg-void-black text-ash-gray border-2 border-ash-gray/60 opacity-60 cursor-not-allowed pointer-events-auto'}`}
     >
       {t(v.actionKey, { defaultValue: v.actionDefault })}
@@ -182,6 +185,7 @@ const DonationCard = ({
         )}
         {!canDonate && (
           <p
+            id={warningId}
             className={`text-xs font-mono uppercase tracking-wider text-center mt-2 ${v.warning}`}
           >
             {t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })}

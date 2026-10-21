@@ -55,7 +55,9 @@ describe('useAmpLogic (characterization)', () => {
   it('cancels repair continuation on unmount', () => {
     const onResult = vi.fn()
     const onContinue = vi.fn()
-    const { result, unmount } = renderHook(() => useAmpLogic({ onResult, onContinue }))
+    const { result, unmount } = renderHook(() =>
+      useAmpLogic({ onResult, onContinue })
+    )
     act(() => result.current.finishMinigame())
     unmount()
     act(() => vi.advanceTimersByTime(10_000))

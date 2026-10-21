@@ -58,6 +58,10 @@ describe('BloodBankModal', () => {
 
     const donateButton = screen.getByRole('button', { name: /donate blood/i })
     expect(donateButton).toHaveAttribute('aria-disabled', 'true')
+    expect(donateButton).toHaveAttribute(
+      'aria-describedby',
+      'blood-bank-warning-blood'
+    )
     expect(donateButton).not.toBeDisabled()
 
     fireEvent.mouseEnter(donateButton)
