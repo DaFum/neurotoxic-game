@@ -198,6 +198,15 @@ const CREATOR_ARGS = {
   advanceDay: () => [baseState()],
   createApplyQuestEventAction: () => [{ type: 'gig_completed', amount: 1 }],
   graftNeuroOverclock: () => ['matze'],
+  createVoidSermonAction: () => [
+    {
+      cost: 500,
+      fameGain: 300,
+      zealotryGain: 20,
+      controversyGain: 30,
+      harmonyCost: 20
+    }
+  ],
   createCultIndoctrinationAction: () => [
     {
       cost: 300,
