@@ -21,6 +21,7 @@ const defaultActions = () => ({
   openClinic: vi.fn(),
   openDarkWebLeak: vi.fn(),
   openCultIndoctrination: vi.fn(),
+  openVoidSermon: vi.fn(),
   openHQ: vi.fn(),
   openAssets: vi.fn(),
   handleRefuel: vi.fn(),
@@ -59,6 +60,16 @@ describe('OverworldMenu', () => {
     )
 
     expect(actions.openCultIndoctrination).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps Void Sermon reachable from the hustles category', () => {
+    const actions = defaultActions()
+    render(<Harness actions={actions} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /HUSTLES/i }))
+    fireEvent.click(screen.getByRole('button', { name: /VOID SERMON/i }))
+
+    expect(actions.openVoidSermon).toHaveBeenCalledTimes(1)
   })
 
   it('keeps the logistics menu open for the second rest-in-van click', () => {

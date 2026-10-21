@@ -348,7 +348,7 @@ const useMenuCategories = (
             desc: t('ui:menu.sermon_desc', {
               defaultValue: 'Host an illegal void sermon'
             }),
-            icon: '👁',
+            icon: '🕳',
             v: 'p',
             action: 'openVoidSermon'
           }

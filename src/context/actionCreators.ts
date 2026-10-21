@@ -132,8 +132,7 @@ export const createUpdatePlayerAction = (
     type: ActionTypes.UPDATE_PLAYER,
     payload:
       typeof updates === 'function'
-        ? (prev: import('../types').PlayerState) =>
-            sanitizePlayerUpdates(updates(prev))
+        ? prev => sanitizePlayerUpdates(updates(prev))
         : sanitizePlayerUpdates(updates)
   }
 }
@@ -202,8 +201,7 @@ export const createUpdateBandAction = (
     type: ActionTypes.UPDATE_BAND,
     payload:
       typeof updates === 'function'
-        ? (prev: import('../types').BandState) =>
-            sanitizeBandUpdates(updates(prev))
+        ? prev => sanitizeBandUpdates(updates(prev))
         : sanitizeBandUpdates(updates)
   }
 }
