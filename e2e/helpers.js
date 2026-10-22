@@ -109,3 +109,126 @@ export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
     clearTimeout(timeoutId)
   }
 }
+
+/**
+ * Builds one of the Expedition save fixtures inside the page.
+ *
+ * @remarks
+ * The fixtures import game sources that only Vite can resolve, so they are
+ * loaded through the dev server rather than in the Node test process.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page, already on the app origin.
+ * @param {string} name - Exported builder in `e2e/fixtures/expeditionFixtures.js`.
+ * @returns {Promise<any>} The fixture: its raw `save` string plus the facts a spec asserts on.
+ */
+export async function buildFixture(page, name) {
+  return page.evaluate(async fixtureName => {
+    const fixtures = await import('/e2e/fixtures/expeditionFixtures.js')
+    const build = fixtures[fixtureName]
+    if (typeof build !== 'function') {
+      throw new Error(`Unknown e2e fixture: ${fixtureName}`)
+    }
+    return build()
+  }, name)
+}
+
+/**
+ * Evaluates a fixture helper (for example `quoteTravel`) against the live root state.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @param {string} name - Exported helper in `e2e/fixtures/expeditionFixtures.js`.
+ * @param {unknown[]} args - Arguments after the root state.
+ * @returns {Promise<any>} The helper's JSON-serializable result.
+ */
+export async function evaluateFixtureHelper(page, name, ...args) {
+  return page.evaluate(
+    async ([helperName, helperArgs]) => {
+      const fixtures = await import('/e2e/fixtures/expeditionFixtures.js')
+      if (typeof fixtures[helperName] !== 'function') {
+        throw new Error(`Unknown e2e fixture helper: ${helperName}`)
+      }
+      if (!window.gameState) {
+        throw new Error('window.gameState is missing: is this a DEV build?')
+      }
+      return fixtures[helperName](window.gameState, ...helperArgs)
+    },
+    [name, args]
+  )
+}
+
+/**
+ * Writes raw values into localStorage once, on the app origin, then reloads.
+ *
+ * @remarks
+ * Seeding happens exactly once through the page, never through
+ * `addInitScript`: an init script would rewrite the value on every reload and
+ * hide exactly the persistence behavior the specs observe.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @param {Record<string, string>} entries - Storage key to raw string value.
+ * @param {{ url?: string }} [options] - App URL to seed on; defaults to the events-off game.
+ */
+export async function seedSaveOnce(
+  page,
+  entries,
+  { url = '/?events=off' } = {}
+) {
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  await page.evaluate(values => {
+    for (const [key, value] of Object.entries(values)) {
+      window.localStorage.setItem(key, value)
+    }
+  }, entries)
+  await page.reload({ waitUntil: 'domcontentloaded' })
+}
+
+/**
+ * Loads the seeded save through the real **Load Game** menu button.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page, already on the app origin.
+ */
+export async function loadSavedGame(page) {
+  await skipToMenu(page, { navigate: false })
+  const loadButton = page.getByRole('button', { name: /load game/i })
+  await loadButton.click()
+}
+
+/**
+ * Reads the root game state from the DEV-only `window.gameState` getter.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @returns {Promise<any>} A structured copy of the root state.
+ */
+export async function readRootState(page) {
+  return page.evaluate(() => {
+    if (!window.gameState) {
+      throw new Error('window.gameState is missing: is this a DEV build?')
+    }
+    return window.gameState
+  })
+}
+
+/**
+ * Waits for a DEV test hook and returns a handle to it.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @param {'rhythm'|'tourbus'|'tourbusFrames'} name - Hook key on `window.neurotoxicTestHooks`.
+ * @param {{ timeout?: number }} [options] - How long to wait for the owner to register it.
+ * @returns {Promise<import('@playwright/test').JSHandle>} Handle to the hook object.
+ */
+export async function getTestHook(page, name, { timeout = 10000 } = {}) {
+  try {
+    return await page.waitForFunction(
+      hookName => window.neurotoxicTestHooks?.[hookName],
+      name,
+      { timeout }
+    )
+  } catch (error) {
+    throw new Error(
+      `Test hook "${name}" was not registered within ${timeout}ms: the ` +
+        `component that owns it is not mounted, or this is not a DEV build. ` +
+        `(${error.message})`,
+      { cause: error }
+    )
+  }
+}
