@@ -13,7 +13,8 @@ import type {
   SocialState,
   UpdateBandPayload,
   UpdatePlayerPayload,
-  GamePhase
+  GamePhase,
+  LoadGameResult
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger } from '../utils/logger'
@@ -27,7 +28,6 @@ import { addUnlockWithPersistence, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
-import type { LoadGameResult } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'

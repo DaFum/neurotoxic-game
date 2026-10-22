@@ -72,6 +72,14 @@ describe('RESTOCK_MERCH', () => {
     assert.equal(next.band.inventory.shirts, 0)
   })
 
+  it('refuses outright during an active run, even with spendable cash', () => {
+    const run = startedState({ money: 10000 })
+    const state = { ...run, band: { ...run.band, inventory: { shirts: 0 } } }
+    assert.equal(state.expedition.status, 'active')
+    const next = gameReducer(state, createRestockMerchAction('shirts'))
+    assert.equal(next, state)
+  })
+
   it('refuses at full capacity and fills only the remaining room', () => {
     const full = careerWith(500, { shirts: 100 })
     assert.equal(gameReducer(full, createRestockMerchAction('shirts')), full)

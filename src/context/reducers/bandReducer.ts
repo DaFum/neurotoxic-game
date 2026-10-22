@@ -815,6 +815,9 @@ const handleRestockMerch = (
   payload: { merchKey: string }
 ): GameState => {
   const merchKey = payload?.merchKey
+  // A run shows its own cargo, not the Career stock, so Career stock bought
+  // there would be unreachable; the pre-gig handler blocks it too.
+  if (state.expedition?.status === 'active') return state
   if (typeof merchKey !== 'string' || isForbiddenKey(merchKey)) return state
   const inventory = state.band.inventory ?? {}
   const restock = resolveMerchRestock(

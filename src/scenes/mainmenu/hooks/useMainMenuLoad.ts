@@ -3,7 +3,7 @@ import type { MutableRefObject } from 'react'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { TFunction } from 'i18next'
 import type { ToastCallback } from '../../../types/callbacks'
-import type { LoadGameResult } from '../../../context/usePersistence'
+import type { LoadGameResult } from '../../../types'
 
 interface UseMainMenuLoadProps {
   setIsLoadingGame: (val: boolean) => void

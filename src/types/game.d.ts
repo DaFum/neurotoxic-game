@@ -67,6 +67,13 @@ export type TerminalOutcome =
   | { reason: 'career_victory' }
   | { reason: 'stranded' }
 
+/**
+ * Outcome of `loadGame`. Every refusal except `missing` has already told the
+ * player why through its own toast; `missing` (no readable save) has not.
+ */
+export type LoadGameResult =
+  { ok: true } | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' }
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean

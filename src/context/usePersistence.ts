@@ -37,20 +37,13 @@ import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { parseSaveVersion } from '../utils/saveVersion'
 import { createLoadGameAction } from './actionCreators'
-import type { GameAction, GameState } from '../types'
+import type { GameAction, GameState, LoadGameResult } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 /**
  * The string identifier used to store and retrieve the game's save payload in local storage.
  */
 export const SAVE_KEY = 'neurotoxic_v3_save'
-
-/**
- * Outcome of `loadGame`. Every refusal except `missing` has already told the
- * player why through its own toast; `missing` (no readable save) has not.
- */
-export type LoadGameResult =
-  { ok: true } | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' }
 
 /**
  * Highest save version written to the shared `SAVE_KEY`. Every shipped build
