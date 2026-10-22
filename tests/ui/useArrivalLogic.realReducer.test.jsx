@@ -154,6 +154,40 @@ describe('useArrivalLogic through the real reducer', () => {
     expect(store.state.player.day).toBe(initial.player.day)
     expect(store.state.band.members).toEqual(initial.band.members)
     expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'Not enough money for gas and food!',
+      'error'
+    )
+  })
+
+  test('a leg the route refused is reported as not completed, not as unaffordable', () => {
+    const initial = restState()
+    initial.minigame = {
+      ...initial.minigame,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: 'node_far'
+    }
+    const { result } = renderArrival(initial)
+    // A route refusal or invalid target clears the minigame and leaves the
+    // band on the node it was leaving.
+    act(() => {
+      store.state = {
+        ...store.state,
+        minigame: { ...store.state.minigame, active: false, type: null }
+      }
+      for (const listener of store.listeners) listener()
+    })
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'The trip could not be completed. Back to the map.',
+      'error'
+    )
   })
 
   test('a committed settlement to the intended node arrives normally', () => {

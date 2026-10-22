@@ -2246,6 +2246,7 @@
   "travel.errors.failedToOpenHq": "HQ konnte nicht geöffnet werden.",
   "travel.errors.gameOverStranded": "GAME OVER: Gestrandet! Du kannst nicht reisen und dir keinen Treibstoff leisten.",
   "travel.errors.invalidLocation": "Fehler: Ungültiger Ort.",
+  "travel.errors.legNotCompleted": "Die Fahrt konnte nicht abgeschlossen werden. Zurück zur Karte.",
   "travel.errors.locationNotConnected": "Reise nicht möglich: Ort nicht verbunden",
   "travel.errors.locationNotVisible": "Reise nicht möglich: Ort nicht sichtbar",
   "travel.errors.notEnoughFuel": "Nicht genug Treibstoff im Tank!",

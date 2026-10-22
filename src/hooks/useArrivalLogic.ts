@@ -233,14 +233,22 @@ export const useArrivalLogic = ({
     // band on the node it left. Arriving then would charge a day and replay
     // the origin's arrival, so the leg is abandoned back to the map instead.
     const intendedTarget = intendedTargetRef.current
+    // Only the cash floor leaves the minigame active; a route refusal or an
+    // invalid target clears it with the band still on the origin node.
+    const settlementUnpaid =
+      minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS
     if (
-      (minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS) ||
+      settlementUnpaid ||
       (intendedTarget !== null && intendedTarget !== nodeId)
     ) {
       addToast(
-        i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
-          defaultValue: 'Not enough money for gas and food!'
-        }),
+        settlementUnpaid
+          ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
+              defaultValue: 'Not enough money for gas and food!'
+            })
+          : i18n.t('ui:travel.errors.legNotCompleted', {
+              defaultValue: 'The trip could not be completed. Back to the map.'
+            }),
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)
