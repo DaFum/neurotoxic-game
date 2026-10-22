@@ -72,7 +72,8 @@ export type TerminalOutcome =
  * player why through its own toast; `missing` (no readable save) has not.
  */
 export type LoadGameResult =
-  { ok: true } | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' }
+  | { ok: true }
+  | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' | 'unreadable' }
 
 export interface GameSettings {
   crtEnabled: boolean

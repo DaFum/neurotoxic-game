@@ -610,9 +610,24 @@ export function usePersistence({
           // The same guard saveGame applies: anything newer than this build
           // (a slot of its own or a newer payload in the shared key) means a
           // loaded session could never be saved. Say so rather than loading or
-          // reporting no save at all. An unreadable slot falls through and
-          // reads as no save.
+          // reporting no save at all. An unreadable slot refuses too: a newer
+          // save cannot be ruled out, and saveGame would refuse every save of
+          // the session it started.
           const newerVersion = readNewerStoredSaveVersion(storage)
+          if (newerVersion === 'unreadable') {
+            logger.warn(
+              'Persistence',
+              'Load skipped: the save slot cannot be read'
+            )
+            addToast(
+              tRef.current('ui:save.loadUnreadable', {
+                defaultValue:
+                  'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+              }),
+              'error'
+            )
+            return { ok: false, reason: 'unreadable' }
+          }
           if (typeof newerVersion === 'number') {
             handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
               addToast
