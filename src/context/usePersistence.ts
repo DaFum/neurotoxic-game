@@ -46,6 +46,13 @@ import type { OptionalToastCallback } from '../types/callbacks'
 export const SAVE_KEY = 'neurotoxic_v3_save'
 
 /**
+ * Outcome of `loadGame`. Every refusal except `missing` has already told the
+ * player why through its own toast; `missing` (no readable save) has not.
+ */
+export type LoadGameResult =
+  { ok: true } | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' }
+
+/**
  * Highest save version written to the shared `SAVE_KEY`. Every shipped build
  * writes there; later versions each write a slot of their own.
  */
@@ -600,10 +607,10 @@ export function usePersistence({
     }
   }, [currentScene, saveGame, saveRequestCount])
 
-  const loadGame = useCallback(() => {
+  const loadGame = useCallback((): LoadGameResult => {
     return safeStorageOperation(
       'loadGame',
-      () => {
+      (): LoadGameResult => {
         let parsed: unknown
         let rawSave: string
         try {
@@ -617,10 +624,10 @@ export function usePersistence({
             handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
               addToast
             })
-            return false
+            return { ok: false, reason: 'incompatible' }
           }
           const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
-          if (!saved) return false
+          if (!saved) return { ok: false, reason: 'missing' }
           rawSave = saved
           parsed = safeJsonParse(saved)
         } catch (_error) {
@@ -633,7 +640,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         if (!isLooseRecord(parsed)) {
@@ -645,7 +652,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         // Checked before shape validation: a newer schema may legitimately
@@ -656,7 +663,7 @@ export function usePersistence({
           handleError(new StateError(incompatibleSaveMessage(storedVersion)), {
             addToast
           })
-          return false
+          return { ok: false, reason: 'incompatible' }
         }
 
         try {
@@ -672,7 +679,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         const parsedObj = parsed as Record<string, unknown>
@@ -688,7 +695,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         const savedRaw = Array.isArray(parsedObj.unlocks)
@@ -713,9 +720,11 @@ export function usePersistence({
         if (isLooseRecord(migratedObj.pendingGigSettlement)) {
           saveGameAfterStateCommit()
         }
-        return true
+        return { ok: true }
       },
-      false
+      // A storage operation that keeps throwing is handled silently, like an
+      // unreadable slot, so it reads as no save.
+      { ok: false, reason: 'missing' }
     )
   }, [
     addToast,

@@ -20,6 +20,7 @@ import { nextSeed } from '../../src/utils/seededRng'
 import { SONGS_DB } from '../../src/data/songs'
 import { FLAGS } from '../../src/data/flags.registry'
 import { logger } from '../../src/utils/logger'
+import { CURRENT_SAVE_VERSION } from '../../src/context/reducers/migrations'
 
 // ADVANCE_DAY takes no `rng` function: daily rolls come from `dayRngStream`.
 // A run of neutral mid-range rolls stands in for the old `rng: () => 0.5`.
@@ -1780,6 +1781,23 @@ test('systemReducer - ADD_TOAST logs a malformed payload it drops', t => {
     'GameState',
     'Rejected malformed ADD_TOAST payload'
   ])
+})
+
+test('systemReducer - LOAD_GAME logs "Game Loaded" only for a load it accepts', t => {
+  const info = t.mock.method(logger, 'info', () => {})
+  t.mock.method(logger, 'warn', () => {})
+  const state = createInitialState()
+  const loadedCalls = () =>
+    info.mock.calls.filter(call => call.arguments[1] === 'Game Loaded').length
+
+  assert.equal(
+    handleLoadGame(state, { version: CURRENT_SAVE_VERSION + 1 }),
+    state
+  )
+  assert.equal(loadedCalls(), 0)
+
+  handleLoadGame(state, { version: CURRENT_SAVE_VERSION })
+  assert.equal(loadedCalls(), 1)
 })
 
 test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {

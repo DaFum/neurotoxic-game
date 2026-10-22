@@ -27,7 +27,7 @@ export const GameOver = () => {
   }, [player, changeScene])
 
   const handleRetry = () => {
-    if (loadGame()) {
+    if (loadGame().ok) {
       // Already handled by loadGame logic
     } else {
       changeScene(GAME_PHASES.MENU)

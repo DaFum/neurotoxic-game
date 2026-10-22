@@ -56,7 +56,7 @@ describe('MainMenu Identity Flow', () => {
       updatePlayer: mockUpdatePlayer,
       resetState: mockResetState,
       addToast: mockAddToast,
-      loadGame: vi.fn().mockReturnValue(false)
+      loadGame: vi.fn().mockReturnValue({ ok: false, reason: 'missing' })
     })
 
     useBandHQModal.mockReturnValue({

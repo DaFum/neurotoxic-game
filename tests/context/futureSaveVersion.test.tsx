@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import type { LoadGameResult } from '../../src/context/usePersistence'
 
 vi.mock('../../src/utils/logger', async importOriginal => {
   const actual = await importOriginal<typeof import('../../src/utils/logger')>()
@@ -100,12 +101,12 @@ describe('future-version save protection', () => {
     localStorage.setItem(SAVE_KEY, FUTURE_SAVE)
     const { result, dispatch, addToast } = renderPersistence()
 
-    let loaded: boolean | undefined
+    let loaded: LoadGameResult | undefined
     act(() => {
       loaded = result.current.loadGame()
     })
 
-    expect(loaded).toBe(false)
+    expect(loaded).toEqual({ ok: false, reason: 'incompatible' })
     expect(dispatch).not.toHaveBeenCalled()
     expect(
       toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
@@ -147,7 +148,7 @@ describe('future-version save protection', () => {
     const { result, addToast } = renderPersistence()
 
     act(() => {
-      expect(result.current.loadGame()).toBe(true)
+      expect(result.current.loadGame()).toEqual({ ok: true })
     })
 
     localStorage.setItem(SAVE_KEY, FUTURE_SAVE)
@@ -203,12 +204,12 @@ describe('future-version save protection', () => {
       localStorage.setItem(SAVE_KEY, savePayload(version))
       const { result, dispatch, unmount } = renderPersistence()
 
-      let loaded: boolean | undefined
+      let loaded: LoadGameResult | undefined
       act(() => {
         loaded = result.current.loadGame()
       })
 
-      expect(loaded, `version ${version}`).toBe(true)
+      expect(loaded, `version ${version}`).toEqual({ ok: true })
       expect(dispatch).toHaveBeenCalledWith(
         expect.objectContaining({ type: ActionTypes.LOAD_GAME })
       )
@@ -277,14 +278,14 @@ describe('future-version save protection', () => {
       adapter.set(`${SAVE_KEY}.v7`, furtherSave)
       const { result, dispatch, addToast } = renderPersistence(adapter)
 
-      let loaded: boolean | undefined
+      let loaded: LoadGameResult | undefined
       let saved: boolean | undefined
       act(() => {
         loaded = result.current.loadGame()
         saved = result.current.saveGame(false)
       })
 
-      expect(loaded).toBe(false)
+      expect(loaded).toEqual({ ok: false, reason: 'incompatible' })
       expect(saved).toBe(false)
       expect(dispatch).not.toHaveBeenCalled()
       expect(
@@ -299,12 +300,12 @@ describe('future-version save protection', () => {
       adapter.set(NEWER_SLOT, FUTURE_SAVE)
       const { result, dispatch, addToast } = renderPersistence(adapter)
 
-      let loaded: boolean | undefined
+      let loaded: LoadGameResult | undefined
       act(() => {
         loaded = result.current.loadGame()
       })
 
-      expect(loaded).toBe(false)
+      expect(loaded).toEqual({ ok: false, reason: 'incompatible' })
       expect(dispatch).not.toHaveBeenCalled()
       expect(
         toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
@@ -415,12 +416,12 @@ describe('future-version save protection', () => {
       adapter.set(NEWER_SLOT, v3Save)
       const { result, dispatch } = renderFutureBuild()
 
-      let loaded: boolean | undefined
+      let loaded: LoadGameResult | undefined
       act(() => {
         loaded = result.current.loadGame()
       })
 
-      expect(loaded).toBe(true)
+      expect(loaded).toEqual({ ok: true })
       expect(loadedMoney(dispatch)).toBe(333)
       expect(adapter.get(SAVE_KEY)).toBe(legacySave)
       expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
@@ -433,14 +434,14 @@ describe('future-version save protection', () => {
       adapter.set(NEWER_SLOT, v3Save)
       const { result, dispatch, addToast } = renderFutureBuild()
 
-      let loaded: boolean | undefined
+      let loaded: LoadGameResult | undefined
       let saved: boolean | undefined
       act(() => {
         loaded = result.current.loadGame()
         saved = result.current.saveGame(false)
       })
 
-      expect(loaded).toBe(false)
+      expect(loaded).toEqual({ ok: false, reason: 'incompatible' })
       expect(saved).toBe(false)
       expect(dispatch).not.toHaveBeenCalled()
       expect(

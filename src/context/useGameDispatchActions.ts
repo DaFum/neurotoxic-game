@@ -27,6 +27,7 @@ import { addUnlockWithPersistence, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
+import type { LoadGameResult } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
@@ -178,7 +179,7 @@ type BaseGameDispatchActions = {
    * dispatch depends on it.
    */
   saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
-  loadGame: () => boolean
+  loadGame: () => LoadGameResult
   deleteSave: () => void
   resetState: () => void
   updateSettings: (
