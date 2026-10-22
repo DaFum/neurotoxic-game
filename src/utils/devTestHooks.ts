@@ -9,7 +9,7 @@
  */
 
 /** Copied lane, pause, transport and hit/miss state of the rhythm game. */
-export type RhythmTestSnapshot = {
+type RhythmTestSnapshot = {
   /** Active flag of each lane, in lane order. */
   laneActive: boolean[]
   /** Whether the player paused the gig. */
@@ -25,12 +25,12 @@ export type RhythmTestSnapshot = {
 }
 
 /** Read-only view of the running rhythm game. */
-export type RhythmTestApi = {
+type RhythmTestApi = {
   getSnapshot: () => RhythmTestSnapshot
 }
 
 /** One obstacle a Tourbus test places. */
-export type TourbusTestObstacle = {
+type TourbusTestObstacle = {
   id: string | number
   lane: number
   y: number
@@ -38,14 +38,14 @@ export type TourbusTestObstacle = {
 }
 
 /** Replaces the Tourbus obstacle list and pins the speed; spawning stays off. */
-export type TourbusTestFixture = {
+type TourbusTestFixture = {
   fixedSpeed: number
   spawnEnabled: false
   obstacles: TourbusTestObstacle[]
 }
 
 /** Copied Tourbus state: lane, damage, pickups, collisions and obstacles. */
-export type TourbusTestSnapshot = {
+type TourbusTestSnapshot = {
   busLane: number
   damage: number
   pickupCount: number
@@ -60,13 +60,13 @@ export type TourbusTestSnapshot = {
 }
 
 /** Test control and read-only view of the Tourbus minigame logic. */
-export type TourbusTestApi = {
+type TourbusTestApi = {
   setFixture: (fixture: TourbusTestFixture) => void
   getSnapshot: () => TourbusTestSnapshot
 }
 
 /** Manual frame stepping for the Tourbus stage. */
-export type TourbusFramesApi = {
+type TourbusFramesApi = {
   enableManualFrames: () => void
   stepFrame: (deltaMS: number) => void
 }

@@ -1,5 +1,8 @@
 import { expect } from '@playwright/test'
 
+/** Dev-server path of the in-page fixtures; passed in so only the browser resolves it. */
+const FIXTURE_MODULE = '/e2e/fixtures/expeditionFixtures.js'
+
 /** localStorage key of the shared save slot (`SAVE_KEY` in `usePersistence.ts`). */
 export const SAVE_KEY = 'neurotoxic_v3_save'
 
@@ -127,14 +130,17 @@ export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
  * @returns {Promise<any>} The fixture: its raw `save` string plus the facts a spec asserts on.
  */
 export async function buildFixture(page, name) {
-  return page.evaluate(async fixtureName => {
-    const fixtures = await import('/e2e/fixtures/expeditionFixtures.js')
-    const build = fixtures[fixtureName]
-    if (typeof build !== 'function') {
-      throw new Error(`Unknown e2e fixture: ${fixtureName}`)
-    }
-    return build()
-  }, name)
+  return page.evaluate(
+    async ([modulePath, fixtureName]) => {
+      const fixtures = await import(/* @vite-ignore */ modulePath)
+      const build = fixtures[fixtureName]
+      if (typeof build !== 'function') {
+        throw new Error(`Unknown e2e fixture: ${fixtureName}`)
+      }
+      return build()
+    },
+    [FIXTURE_MODULE, name]
+  )
 }
 
 /**
@@ -147,8 +153,8 @@ export async function buildFixture(page, name) {
  */
 export async function evaluateFixtureHelper(page, name, ...args) {
   return page.evaluate(
-    async ([helperName, helperArgs]) => {
-      const fixtures = await import('/e2e/fixtures/expeditionFixtures.js')
+    async ([modulePath, helperName, helperArgs]) => {
+      const fixtures = await import(/* @vite-ignore */ modulePath)
       if (typeof fixtures[helperName] !== 'function') {
         throw new Error(`Unknown e2e fixture helper: ${helperName}`)
       }
@@ -157,7 +163,7 @@ export async function evaluateFixtureHelper(page, name, ...args) {
       }
       return fixtures[helperName](window.gameState, ...helperArgs)
     },
-    [name, args]
+    [FIXTURE_MODULE, name, args]
   )
 }
 
