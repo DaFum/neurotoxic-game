@@ -109,8 +109,14 @@ export const VoidTraderTab = ({
           const tradeButton = (
             <ActionButton
               variant='primary'
-              onClick={() => handleTrade(item)}
-              disabled={disabled}
+              onClick={e => {
+                if (disabled) {
+                  e.preventDefault()
+                  return
+                }
+                handleTrade(item)
+              }}
+              aria-disabled={disabled}
               className='text-xs min-h-11 py-2 px-4 min-w-32'
             >
               {isProcessingThis
