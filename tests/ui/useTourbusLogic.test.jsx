@@ -107,7 +107,7 @@ describe('useTourbusLogic', () => {
     unmount()
   })
 
-  test('obstacle ids are UUIDs, unique even when spawned in one burst', () => {
+  test('obstacle ids are numeric, unique, and monotonic when spawned in one burst', () => {
     const { result } = renderHook(() => useTourbusLogic())
     const game = result.current.gameStateRef.current
     game.obstacles = []
@@ -120,10 +120,11 @@ describe('useTourbusLogic', () => {
     expect(game.obstacles.length).toBeGreaterThan(1)
     const ids = game.obstacles.map(obstacle => obstacle.id)
     expect(new Set(ids).size).toBe(ids.length)
-    for (const id of ids) {
-      expect(id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
-      )
+    for (let i = 0; i < ids.length; i++) {
+      expect(typeof ids[i]).toBe('number')
+      if (i > 0) {
+        expect(ids[i]).toBeGreaterThan(ids[i - 1])
+      }
     }
   })
 
