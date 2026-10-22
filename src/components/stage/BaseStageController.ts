@@ -27,6 +27,9 @@ export class BaseStageController<TState = unknown> {
   initPromise: Promise<void> | null
   container: Container | null
   resizeHandler: StageResizeHandler
+  /** When set, automatic Pixi frames are ignored and only `stepFrame` advances. */
+  private manualFrames = false
+  private manualStepActive = false
   constructor({
     containerRef,
     gameStateRef,
@@ -202,9 +205,40 @@ export class BaseStageController<TState = unknown> {
    */
   handleTicker(ticker: Pick<Ticker, 'deltaMS'>) {
     if (this.isDisposed) return
+    // In manual-frame mode only `stepFrame` may advance the stage.
+    if (this.manualFrames && !this.manualStepActive) return
     if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
 
     this.update(ticker.deltaMS)
+  }
+
+  /**
+   * Stops automatic Pixi frames from advancing the stage.
+   *
+   * @remarks
+   * For deterministic browser tests only: after this call the stage moves solely
+   * through {@link stepFrame}. Nothing in the game calls it.
+   */
+  enableManualFrames() {
+    this.manualFrames = true
+  }
+
+  /**
+   * Runs one frame of the given length through the normal ticker path.
+   *
+   * @param deltaMS - Frame length in milliseconds.
+   *
+   * @remarks
+   * Goes through {@link handleTicker}, so logic still runs before the stage
+   * update, as in a real frame.
+   */
+  stepFrame(deltaMS: number) {
+    this.manualStepActive = true
+    try {
+      this.handleTicker({ deltaMS })
+    } finally {
+      this.manualStepActive = false
+    }
   }
 
   /**

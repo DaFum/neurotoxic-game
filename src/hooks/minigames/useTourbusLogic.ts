@@ -10,6 +10,7 @@ import {
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
 import { getSafeRandom } from '../../utils/crypto'
+import { registerTestHook } from '../../utils/devTestHooks'
 import { finiteNumberOr } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
@@ -25,6 +26,15 @@ type TourbusLogicState = {
   isGameOver: boolean
   damage: number
   itemsCollected: TourbusObstacleType[]
+}
+
+/**
+ * DEV-only test control. `null` in normal play and in production, where nothing
+ * can populate it; when set, speed is pinned and obstacles stop spawning.
+ */
+type TourbusTestControl = {
+  fixedSpeed: number
+  spawnEnabled: boolean
 }
 
 type UiState = {
@@ -166,6 +176,7 @@ export const useTourbusLogic = () => {
     isAudioReady: true
   })
   const finishCalledRef = useRef(false)
+  const testControlRef = useRef<TourbusTestControl | null>(null)
 
   const moveLeft = useCallback(() => {
     if (gameStateRef.current.isGameOver) return
@@ -213,13 +224,17 @@ export const useTourbusLogic = () => {
       if (game.isGameOver) return
 
       const currentSpawnRate = updateGameSpeed(game)
+      const testControl = testControlRef.current
+      if (testControl) game.speed = testControl.fixedSpeed
       const clampedDelta = Math.max(
         0,
         Math.min(finiteNumberOr(deltaMS, 0), 100)
       )
       game.distance += game.speed * clampedDelta
 
-      spawnObstacles(game, currentSpawnRate, clampedDelta)
+      if (!testControl || testControl.spawnEnabled) {
+        spawnObstacles(game, currentSpawnRate, clampedDelta)
+      }
       processObstacles(game, clampedDelta, upgradesRef.current)
 
       // Check Win/Loss
@@ -234,6 +249,43 @@ export const useTourbusLogic = () => {
       syncUiState(game, setUiState)
     },
     [endRun]
+  )
+
+  // DEV-only browser-test seam: replaces the obstacle list and pins the speed,
+  // and reads back copies. Bus lane, damage and stats are never written here.
+  useEffect(
+    () =>
+      registerTestHook('tourbus', {
+        setFixture: ({ fixedSpeed, spawnEnabled, obstacles }) => {
+          testControlRef.current = { fixedSpeed, spawnEnabled }
+          gameStateRef.current.obstacles = obstacles.map(obstacle => ({
+            id: obstacle.id,
+            lane: obstacle.lane,
+            y: obstacle.y,
+            type: obstacle.type,
+            collided: false
+          }))
+        },
+        getSnapshot: () => {
+          const game = gameStateRef.current
+          return {
+            busLane: game.busLane,
+            damage: game.damage,
+            pickupCount: game.itemsCollected.length,
+            collidedIds: game.obstacles
+              .filter(obstacle => obstacle.collided === true)
+              .map(obstacle => obstacle.id),
+            obstacles: game.obstacles.map(obstacle => ({
+              id: obstacle.id,
+              lane: obstacle.lane,
+              y: obstacle.y,
+              type: obstacle.type,
+              collided: obstacle.collided === true
+            }))
+          }
+        }
+      }),
+    []
   )
 
   // Setup keyboard controls
