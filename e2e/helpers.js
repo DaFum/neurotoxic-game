@@ -1,3 +1,8 @@
+import { expect } from '@playwright/test'
+
+/** localStorage key of the shared save slot (`SAVE_KEY` in `usePersistence.ts`). */
+export const SAVE_KEY = 'neurotoxic_v3_save'
+
 /**
  * Navigates to and confirms the app's main menu, skipping the intro and any tutorial when available.
  *
@@ -231,4 +236,21 @@ export async function getTestHook(page, name, { timeout = 10000 } = {}) {
       { cause: error }
     )
   }
+}
+
+/**
+ * Dismisses the first-visit tutorial a freshly loaded Overworld shows.
+ *
+ * @remarks
+ * A fresh browser context always shows it on the first Overworld visit, so
+ * its presence is asserted rather than tolerated. Call it only on that first
+ * visit: once skipped, the tutorial does not return after a reload.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page, on the Overworld.
+ */
+export async function dismissTutorial(page) {
+  const tutorial = page.getByRole('region', { name: /tutorial/i })
+  await expect(tutorial).toBeVisible()
+  await tutorial.getByRole('button', { name: /skip all/i }).click()
+  await expect(tutorial).toHaveCount(0)
 }

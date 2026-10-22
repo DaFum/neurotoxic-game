@@ -155,34 +155,57 @@ const serialize = state =>
     version: CURRENT_SAVE_VERSION
   })
 
-/** A Career at the start node, protected cash sized against the first leg. */
+/**
+ * Quotes every leg the run may travel next.
+ *
+ * @param state - Root game state.
+ * @returns One quote per connected node, in route order.
+ */
+export const quoteConnectedLegs = state =>
+  connectedNodeIds(state).map(nodeId => ({
+    nodeId,
+    ...quoteTravel(state, nodeId)
+  }))
+
+/**
+ * A Career at the start node, protected cash sized against every first leg.
+ *
+ * @remarks
+ * The map does not say which node a click lands on, so the cash is sized
+ * against the whole connected set: the wallet covers the dearest leg, and the
+ * spendable balance falls short of the cheapest one.
+ */
 const travelFixture = ({ protectsCash }) => {
   const probe = startedState(0)
-  const targetNodeId = connectedNodeIds(probe)[0]
-  if (!targetNodeId) fail('the start node has no connected node')
-  const quote = quoteTravel(probe, targetNodeId)
-  if (!(quote.wallet > quote.totalCost && quote.wallet >= quote.cashRequired))
-    fail('the wallet must cover the leg for the fixture to prove anything')
+  const quotes = quoteConnectedLegs(probe)
+  if (quotes.length === 0) fail('the start node has no connected node')
+  const dearestCost = Math.max(...quotes.map(quote => quote.totalCost))
+  const dearestRequired = Math.max(...quotes.map(quote => quote.cashRequired))
+  const cheapestRequired = Math.min(...quotes.map(quote => quote.cashRequired))
+  const wallet = quotes[0].wallet
+  if (!(wallet > dearestCost && wallet >= dearestRequired))
+    fail('the wallet must cover every leg for the fixture to prove anything')
 
   // The probe is already past the upfront cost, so the same amount protected
-  // from the START commitment leaves exactly `cashRequired - 1` spendable.
-  const protectedCareerCash = protectsCash
-    ? quote.wallet - (quote.cashRequired - 1)
-    : 0
+  // from the START commitment leaves `cheapestRequired - 1` spendable.
+  const protectedCareerCash = protectsCash ? wallet - (cheapestRequired - 1) : 0
   const state = startedState(protectedCareerCash)
-  const finalQuote = quoteTravel(state, targetNodeId)
-  if (protectsCash) {
-    if (!(finalQuote.wallet > finalQuote.totalCost))
-      fail('protected-cash fixture: wallet must exceed the leg cost')
-    if (!(finalQuote.spendable < finalQuote.cashRequired))
-      fail('protected-cash fixture: spendable cash must fall short')
-  } else if (!(finalQuote.spendable >= finalQuote.cashRequired)) {
-    fail('zero-protected fixture: the leg must be affordable')
+  const finalQuotes = quoteConnectedLegs(state)
+  for (const quote of finalQuotes) {
+    if (protectsCash) {
+      if (!(quote.wallet > quote.totalCost))
+        fail(`protected-cash: wallet must exceed the ${quote.nodeId} leg cost`)
+      if (!(quote.spendable < quote.cashRequired))
+        fail(
+          `protected-cash: spendable cash must fall short for ${quote.nodeId}`
+        )
+    } else if (!(quote.spendable >= quote.cashRequired)) {
+      fail(`zero-protected: the ${quote.nodeId} leg must be affordable`)
+    }
   }
   return {
     save: serialize(state),
-    targetNodeId,
-    quote: finalQuote
+    nodeIds: finalQuotes.map(quote => quote.nodeId)
   }
 }
 
