@@ -262,6 +262,7 @@ export type GameAction =
       { isActive: boolean }
     >
   | Action<(typeof ActionTypes)['HOLD_BAND_MEETING']>
+  | Action<(typeof ActionTypes)['RESTOCK_MERCH'], { merchKey: string }>
   | Action<(typeof ActionTypes)['UPDATE_BAND'], UpdateBandPayload>
   | Action<(typeof ActionTypes)['SETTLE_SOLD_MERCH'], Record<string, number>>
   | Action<

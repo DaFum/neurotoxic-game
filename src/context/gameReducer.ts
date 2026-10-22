@@ -162,6 +162,7 @@ const BAND_ACTIONS = [
   ActionTypes.UNLOCK_TRAIT,
   ActionTypes.TOGGLE_NEURO_DECIMATOR,
   ActionTypes.HOLD_BAND_MEETING,
+  ActionTypes.RESTOCK_MERCH,
   ActionTypes.CRAFT_ITEM
 ] as const
 
