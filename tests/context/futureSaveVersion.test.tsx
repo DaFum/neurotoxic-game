@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import type { LoadGameResult } from '../../src/context/usePersistence'
+import type { LoadGameResult } from '../../src/types'
 
 vi.mock('../../src/utils/logger', async importOriginal => {
   const actual = await importOriginal<typeof import('../../src/utils/logger')>()
