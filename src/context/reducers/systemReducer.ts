@@ -436,7 +436,11 @@ export const handleLoadGame = (
   )
   // An ending recorded before the save is final: reloading must not undo it.
   // A save written at GAMEOVER before endings were recorded has none; derive it
-  // the way the live transition would, or it would resume the Career.
+  // the way the live transition would, or it would resume the Career. The scene
+  // is pinned to GAMEOVER (the sanitized state says OVERWORLD), so its defeat is
+  // bankruptcy, never stranded: before endings were recorded the stranded check
+  // saved at OVERWORLD and nothing autosaved its scene change, so a bankruptcy
+  // is the only defeat such a save can hold at GAMEOVER.
   const recorded =
     settled.terminalOutcome ??
     (loadedState.currentScene === GAME_PHASES.GAMEOVER
