@@ -103,7 +103,9 @@ const noInputLayout = lane => {
   return [
     { id: 101, lane, y: 79.4, type: 'OBSTACLE' },
     { id: 102, lane, y: 80.3, type: 'FUEL' },
-    { id: 103, lane, y: 81.7, type: 'VOID_HAZARD' },
+    // 103 starts 83.8 and travels 12 in one 100 ms frame: it crosses the
+    // whole hit region (85 to 95) inside a single frame.
+    { id: 103, lane, y: 83.8, type: 'VOID_HAZARD' },
     { id: 104, lane: other, y: 80.2, type: 'OBSTACLE' },
     { id: 105, lane, y: 60, type: 'OBSTACLE' }
   ]
