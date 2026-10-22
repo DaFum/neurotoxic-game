@@ -1,4 +1,4 @@
-import { clamp0to100, finiteNumberOr } from '../../../gameState'
+import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../../../gameState'
 import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../../../data/merch'
 import type {
   CityGenre,
@@ -120,9 +120,11 @@ export const calculateMerchIncome = (
     // signal is available in that case, so demand stays unmodified.
     if (!Number.isFinite(price) || !Number.isFinite(defaultPrice)) return 1.0
     if (defaultPrice === 0) return 1.0
+    // No floor: a steep enough markup drives demand to zero, so overpricing
+    // costs buyers instead of only shifting share between items.
     if (price > defaultPrice) {
       return Math.max(
-        0.2,
+        0,
         1 - ((price - defaultPrice) / defaultPrice) * 1.5 * elasticity
       )
     }
@@ -135,6 +137,10 @@ export const calculateMerchIncome = (
   const rawShare: Record<string, number> = {}
   const priceByKey: Record<string, number> = {}
   let totalRawShare = 0
+  // Same sum without the price multiplier: the demand available at default
+  // prices. Normalising by the larger of the two lets discounts shift share
+  // between items while markups shrink total demand.
+  let totalBaseShare = 0
 
   // Compute raw share for every item regardless of inventory. Out-of-stock
   // items still contribute to totalRawShare so their portion of demand is
@@ -150,7 +156,13 @@ export const calculateMerchIncome = (
       missNorm * profile.missSensitivity
     const perfMult = Math.max(0.1, perfLift)
 
-    const price = customPrices[profile.key] ?? profile.defaultPrice
+    // A non-finite or negative stored price has no meaningful demand signal
+    // and would otherwise multiply revenue, so it sells at the default price.
+    const customPrice = customPrices[profile.key]
+    const price =
+      isFiniteNumber(customPrice) && customPrice >= 0
+        ? customPrice
+        : profile.defaultPrice
     priceByKey[profile.key] = price
     const priceMult = priceModifierFor(
       price,
@@ -158,10 +170,11 @@ export const calculateMerchIncome = (
       profile.priceElasticity
     )
 
-    const share =
-      profile.baseAppeal * genreMult * spendingMult * perfMult * priceMult
+    const baseShare = profile.baseAppeal * genreMult * spendingMult * perfMult
+    const share = baseShare * priceMult
     rawShare[profile.key] = share
     totalRawShare += share
+    totalBaseShare += baseShare
   }
 
   if (totalRawShare <= 0) {
@@ -181,7 +194,7 @@ export const calculateMerchIncome = (
   for (let i = 0; i < sortedKeys.length; i++) {
     const key = sortedKeys[i]
     if (!key) continue
-    const share = (rawShare[key] ?? 0) / totalRawShare
+    const share = (rawShare[key] ?? 0) / Math.max(totalRawShare, totalBaseShare)
     const desired = Math.floor(effectiveBuyers * share)
     const inventoryCount =
       typeof safeInventory[key] === 'number'

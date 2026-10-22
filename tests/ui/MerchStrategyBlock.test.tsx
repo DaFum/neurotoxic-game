@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MerchStrategyBlock } from '../../src/components/pregig/MerchStrategyBlock'
+import { DEFAULT_MERCH_PRICES, MERCH_MAX_PRICES } from '../../src/data/merch'
 
 vi.mock('../../src/utils/numberUtils', () => ({
   formatCurrency: (value: number) => `${value} EUR`
@@ -137,5 +138,44 @@ describe('MerchStrategyBlock', () => {
     expect(
       screen.getByText('Expedition stock is committed before the run.')
     ).toBeInTheDocument()
+  })
+
+  describe('price increase button', () => {
+    const shirtsIndex = Object.keys(DEFAULT_MERCH_PRICES).indexOf('shirts')
+    const maxShirts = MERCH_MAX_PRICES.shirts ?? 0
+
+    const renderWithShirtPrice = (
+      price: number,
+      onUpdatePrice: (merchKey: string, newPrice: number) => void
+    ) => {
+      render(
+        <MerchStrategyBlock
+          bandInventory={{ shirts: 10 }}
+          customPrices={{ shirts: price }}
+          onUpdatePrice={onUpdatePrice}
+          onRestock={vi.fn()}
+          playerMoney={1000}
+        />
+      )
+      return screen.getAllByRole('button', {
+        name: 'ui:pregig.merchStrategy.increasePrice'
+      })[shirtsIndex]
+    }
+
+    it('raises the price by one below the maximum', () => {
+      const onUpdatePrice = vi.fn()
+      const button = renderWithShirtPrice(maxShirts - 1, onUpdatePrice)
+      expect(button).not.toBeDisabled()
+      fireEvent.click(button!)
+      expect(onUpdatePrice).toHaveBeenCalledWith('shirts', maxShirts)
+    })
+
+    it('stops at the canonical maximum price', () => {
+      const onUpdatePrice = vi.fn()
+      const button = renderWithShirtPrice(maxShirts, onUpdatePrice)
+      expect(button).toBeDisabled()
+      fireEvent.click(button!)
+      expect(onUpdatePrice).not.toHaveBeenCalled()
+    })
   })
 })

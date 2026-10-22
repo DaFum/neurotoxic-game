@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economy'
+import { MERCH_MAX_PRICES } from '../../data/merch'
 import { formatCurrency } from '../../utils/numberUtils'
 import {
   getMerchCapacity,
@@ -30,6 +31,7 @@ interface MerchItem {
   stock: number
   currentPrice: number
   defaultPrice: number
+  maxPrice: number
   restockCost: number
   restockAmount: number
   imgPrompt?: string
@@ -118,8 +120,14 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
             aria-label={t('ui:pregig.merchStrategy.increasePrice', {
               item: item.name
             })}
-            onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
-            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            onClick={() =>
+              onUpdatePrice(
+                item.key,
+                Math.min(item.maxPrice, item.currentPrice + 1)
+              )
+            }
+            disabled={item.currentPrice >= item.maxPrice}
+            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             +
           </button>
@@ -171,6 +179,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
       if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
         const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
         const currentPrice = customPrices[key] ?? defaultPrice
+        const maxPrice = MERCH_MAX_PRICES[key] ?? defaultPrice
         const stock =
           typeof bandInventory[key] === 'number'
             ? (bandInventory[key] as number)
@@ -201,6 +210,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           stock,
           currentPrice,
           defaultPrice,
+          maxPrice,
           restockCost,
           restockAmount,
           imgPrompt

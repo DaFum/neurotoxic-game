@@ -12,6 +12,7 @@ import {
   clampToNonNegativeInt,
   isFiniteNumber
 } from '../utils/gameState'
+import { MERCH_MAX_PRICES } from '../data/merch'
 
 /** Numeric field rules shared by partial updates and persisted-state recovery. */
 export const PLAYER_NUMERIC_NORMALIZERS = {
@@ -69,6 +70,26 @@ export const sanitizePlayerUpdates = (
   return result as Partial<PlayerState>
 }
 
+/**
+ * Keeps known merch keys with finite, non-negative prices, capped at the
+ * canonical per-item maximum.
+ *
+ * @param raw - Untrusted price map from a band patch or a save.
+ * @returns Price map containing only valid, clamped entries.
+ */
+export const sanitizeMerchPrices = (
+  raw: Record<string, unknown>
+): Record<string, number> => {
+  const sanitized: Record<string, number> = {}
+  for (const [key, max] of Object.entries(MERCH_MAX_PRICES)) {
+    if (!Object.hasOwn(raw, key)) continue
+    const value = raw[key]
+    if (isFiniteNumber(value) && value >= 0)
+      sanitized[key] = Math.min(value, max)
+  }
+  return sanitized
+}
+
 /** Normalizes numeric band patches and preserves required container shapes. */
 export const sanitizeBandUpdates = (
   updates: Partial<BandState>
@@ -92,5 +113,7 @@ export const sanitizeBandUpdates = (
     }
     result.performance = performance
   }
+  if (isLooseRecord(result.merchPrices))
+    result.merchPrices = sanitizeMerchPrices(result.merchPrices)
   return result as Partial<BandState>
 }
