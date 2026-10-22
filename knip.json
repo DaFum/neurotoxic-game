@@ -27,7 +27,7 @@
     "@microsoft/eslint-formatter-sarif",
     "markdownlint-cli2"
   ],
-  "ignoreBinaries": ["rg"],
+  "ignoreBinaries": ["rg", "redis-server"],
   "vite": {
     "config": ["vite.config.js"]
   },
