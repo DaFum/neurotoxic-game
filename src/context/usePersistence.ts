@@ -18,6 +18,7 @@ import {
   defaultStorageAdapter,
   isStorageDegraded,
   readStorageItem,
+  readStorageItemChecked,
   removeStorageItem,
   safeStorageOperation,
   writeStorageItem
@@ -165,17 +166,22 @@ const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
  * this build supports.
  *
  * @param storage - Adapter the slot is read through.
- * @returns The stored version when it exceeds `CURRENT_SAVE_VERSION`, else
- * `null` (no save, unparseable, or a version this build can load).
+ * @returns The stored version when it exceeds `CURRENT_SAVE_VERSION`,
+ * `'unreadable'` when the slot could not be read at all, else `null` (no
+ * save, unparseable, or a version this build can load).
  *
  * @remarks
  * Read from storage at write time rather than remembered from the last load,
  * so a newer save written by another tab mid-session is protected as well.
+ * An unreadable slot is reported apart from an empty one: writing over it
+ * would seed the in-memory fallback, which shadows persistent storage and
+ * would later overwrite a newer save once storage recovers.
  */
 const readNewerStoredSaveVersion = (
   storage: IStorageAdapter
-): number | null => {
-  const saved = readStorageItem(SAVE_KEY, storage)
+): number | 'unreadable' | null => {
+  const { ok, value: saved } = readStorageItemChecked(SAVE_KEY, storage)
+  if (!ok) return 'unreadable'
   if (!saved) return null
   let parsed: unknown
   try {
@@ -330,6 +336,13 @@ export function usePersistence({
       // this build cannot represent it, so it never writes over it.
       // Adapter reads report failure as `null` rather than throwing.
       const newerStoredVersion = readNewerStoredSaveVersion(storage)
+      if (newerStoredVersion === 'unreadable') {
+        logger.warn(
+          'Persistence',
+          'Save skipped: the save slot cannot be read, so a newer save cannot be ruled out'
+        )
+        return false
+      }
       if (newerStoredVersion !== null) {
         logger.warn(
           'Persistence',

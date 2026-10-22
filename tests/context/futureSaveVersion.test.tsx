@@ -142,6 +142,37 @@ describe('future-version save protection', () => {
     ).toBe(true)
   })
 
+  it('fails closed while the slot cannot be read, so a memory fallback never shadows a newer save', () => {
+    localStorage.setItem(SAVE_KEY, FUTURE_SAVE)
+    const { result } = renderPersistence()
+
+    const failing = () => {
+      throw new Error('SecurityError')
+    }
+    const getSpy = vi
+      .spyOn(window.localStorage, 'getItem')
+      .mockImplementation(failing)
+    const setSpy = vi
+      .spyOn(window.localStorage, 'setItem')
+      .mockImplementation(failing)
+
+    let savedDuringOutage: boolean | undefined
+    act(() => {
+      savedDuringOutage = result.current.saveGame(false)
+    })
+    expect(savedDuringOutage).toBe(false)
+
+    getSpy.mockRestore()
+    setSpy.mockRestore()
+
+    let savedAfterRecovery: boolean | undefined
+    act(() => {
+      savedAfterRecovery = result.current.saveGame(false)
+    })
+    expect(savedAfterRecovery).toBe(false)
+    expect(localStorage.getItem(SAVE_KEY)).toBe(FUTURE_SAVE)
+  })
+
   it('still loads a current-version save and an older one', () => {
     for (const version of [CURRENT_SAVE_VERSION, 1]) {
       localStorage.setItem(SAVE_KEY, savePayload(version))
