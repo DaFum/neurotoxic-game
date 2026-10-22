@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { getEventListeners } from 'node:events'
 import {
   createLeaderboardSyncController,
   snapshotKey,
@@ -592,6 +593,25 @@ for (const [outcome, settle] of [
     )
   })
 }
+
+test('a settled request leaves no abort listener, and a later dispose no rejection', async () => {
+  const unhandled = []
+  const onUnhandled = reason => unhandled.push(reason)
+  process.on('unhandledRejection', onUnhandled)
+  try {
+    const t = setup({ requestTimeoutMs: TIMEOUT_MS })
+    await t.submit(snap(500))
+    assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+    // The race against the abort signal is over: its listener must go with it.
+    assert.equal(getEventListeners(t.signals[0], 'abort').length, 0)
+
+    t.controller.dispose()
+    await flush()
+    assert.deepEqual(unhandled, [])
+  } finally {
+    process.off('unhandledRejection', onUnhandled)
+  }
+})
 
 test('a disposed controller ignores later submits', async () => {
   const t = setup()
