@@ -128,7 +128,7 @@ describe('MainMenu Component', () => {
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
-    it.each(['incompatible', 'corrupt'])(
+    it.each(['incompatible', 'corrupt', 'unreadable'])(
       'adds no "No save found" toast when the save is %s',
       reason => {
         mockLoadGame.mockReturnValue({ ok: false, reason })

@@ -24,6 +24,7 @@ const { StorageProvider } = await import('../../src/context/StorageContext')
 
 const INCOMPATIBLE_KEY = 'ui:save.incompatibleVersion'
 const UNREADABLE_KEY = 'ui:save.slotUnreadable'
+const LOAD_UNREADABLE_KEY = 'ui:save.loadUnreadable'
 
 // The slot a build one schema ahead writes. Literal on purpose: no build at
 // the current version can produce it.
@@ -197,6 +198,29 @@ describe('future-version save protection', () => {
     })
     expect(savedAfterRecovery).toBe(false)
     expect(localStorage.getItem(SAVE_KEY)).toBe(FUTURE_SAVE)
+  })
+
+  it('refuses to load while the slot cannot be read, and says so instead of reporting no save', () => {
+    localStorage.setItem(SAVE_KEY, savePayload(CURRENT_SAVE_VERSION))
+    const { result, dispatch, addToast } = renderPersistence()
+
+    const getSpy = vi
+      .spyOn(window.localStorage, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('SecurityError')
+      })
+
+    let loaded: LoadGameResult | undefined
+    act(() => {
+      loaded = result.current.loadGame()
+    })
+    getSpy.mockRestore()
+
+    expect(loaded).toEqual({ ok: false, reason: 'unreadable' })
+    expect(dispatch).not.toHaveBeenCalled()
+    expect(
+      toastMessages(addToast).some(m => m.includes(LOAD_UNREADABLE_KEY))
+    ).toBe(true)
   })
 
   it('still loads a current-version save and an older one', () => {
