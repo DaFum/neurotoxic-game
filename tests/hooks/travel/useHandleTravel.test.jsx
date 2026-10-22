@@ -34,19 +34,26 @@ const renderTravel = (
     fuel = 100,
     expeditionFuelMultiplier,
     currentNodeId = START.id,
-    onShowSupplyStop
+    onShowSupplyStop,
+    money = 5000,
+    expeditionProtectedCash,
+    expeditionArrivedOverlay,
+    lastGigNodeId,
+    gameMap = buildMap()
   } = {}
 ) => {
   const state = createInitialState()
   const player = {
     ...state.player,
     currentNodeId,
-    money: 5000,
+    ...(lastGigNodeId === undefined ? {} : { lastGigNodeId }),
+    money,
     van: { ...state.player.van, fuel, condition: 100 }
   }
   const setPendingTravelNode = vi.fn()
   const addToast = vi.fn()
   const startTravelSequence = vi.fn()
+  const handleNodeArrivalCallback = vi.fn()
   const refs = {
     isTravelingRef: { current: false },
     playerRef: { current: player },
@@ -54,7 +61,7 @@ const renderTravel = (
     assetsRef: { current: state.assets },
     liabilitiesRef: { current: state.liabilities },
     socialRef: { current: state.social },
-    gameMapRef: { current: buildMap() },
+    gameMapRef: { current: gameMap },
     reputationByRegionRef: { current: {} },
     venueBlacklistRef: { current: [] },
     pendingTravelNodeRef: { current: null },
@@ -70,15 +77,24 @@ const renderTravel = (
         onShowSupplyStop,
         expeditionStatus,
         expeditionDraftPending: false,
-        expeditionFuelMultiplier
+        expeditionFuelMultiplier,
+        expeditionProtectedCash,
+        expeditionArrivedOverlay
       },
       getLocationName: name => name ?? '',
-      handleNodeArrivalCallback: vi.fn(),
+      handleNodeArrivalCallback,
       clearPendingTravel: vi.fn(),
       startTravelSequence
     })
   )
-  return { handleTravel: result.current, setPendingTravelNode, addToast }
+  return {
+    handleTravel: result.current,
+    setPendingTravelNode,
+    addToast,
+    startTravelSequence,
+    handleNodeArrivalCallback,
+    refs
+  }
 }
 
 const toastKeys = addToast =>
@@ -170,5 +186,87 @@ describe('useHandleTravel overlay override', () => {
     handleTravel(stop)
     expect(onShowSupplyStop).toHaveBeenCalledWith(inventory)
     expect(setPendingTravelNode).not.toHaveBeenCalled()
+  })
+})
+
+describe('useHandleTravel expedition cash and overlay gates', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
+  test('a leg costing more than the spendable slice is refused, not started', () => {
+    // 10000 Cash with 9999 protected leaves 1 spendable; any leg costs more.
+    const {
+      handleTravel,
+      setPendingTravelNode,
+      startTravelSequence,
+      addToast,
+      refs
+    } = renderTravel('active', { money: 10000, expeditionProtectedCash: 9999 })
+    handleTravel(TWO_STEPS_AHEAD)
+    refs.pendingTravelNodeRef.current = TWO_STEPS_AHEAD
+    handleTravel(TWO_STEPS_AHEAD)
+    expect(setPendingTravelNode).not.toHaveBeenCalled()
+    expect(startTravelSequence).not.toHaveBeenCalled()
+    expect(toastKeys(addToast).join('|')).toMatch(/not enough money/i)
+  })
+
+  test('the same wallet with no protected slice may travel', () => {
+    const { handleTravel, setPendingTravelNode } = renderTravel('active', {
+      money: 10000,
+      expeditionProtectedCash: 0
+    })
+    handleTravel(TWO_STEPS_AHEAD)
+    expect(setPendingTravelNode).toHaveBeenCalledWith(TWO_STEPS_AHEAD)
+  })
+
+  const GIG_HERE = {
+    id: 'node_gig',
+    type: 'GIG',
+    layer: 0,
+    x: 10,
+    y: 50,
+    venue: { id: 'berlin_so36', name: 'SO36' }
+  }
+  const gigMap = () => ({
+    nodes: { [GIG_HERE.id]: GIG_HERE },
+    nodeList: [],
+    connections: [],
+    layers: [[GIG_HERE.id]]
+  })
+
+  test('re-entering a gig node a persisted overlay converted books no show', () => {
+    // After a reload only the persisted `expedition.arrivedOverlay` remains.
+    const { handleTravel, handleNodeArrivalCallback, addToast } = renderTravel(
+      'active',
+      {
+        currentNodeId: GIG_HERE.id,
+        gameMap: gigMap(),
+        expeditionArrivedOverlay: {
+          nodeId: GIG_HERE.id,
+          subtype: 'UNDERGROUND_MARKET',
+          source: 'ghost_route'
+        }
+      }
+    )
+    handleTravel(GIG_HERE)
+    expect(handleNodeArrivalCallback).not.toHaveBeenCalled()
+    expect(toastKeys(addToast).join('|')).toMatch(/you are at/i)
+  })
+
+  test('re-entering an ordinary unplayed gig node still starts it', () => {
+    const { handleTravel, handleNodeArrivalCallback } = renderTravel('active', {
+      currentNodeId: GIG_HERE.id,
+      gameMap: gigMap(),
+      expeditionArrivedOverlay: null
+    })
+    handleTravel(GIG_HERE)
+    expect(handleNodeArrivalCallback).toHaveBeenCalledTimes(1)
+    expect(handleNodeArrivalCallback.mock.calls[0][0].type).toBe('GIG')
   })
 })

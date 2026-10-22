@@ -27,6 +27,7 @@ describe('GigModifiersBlock', () => {
     toggleModifier: vi.fn(),
     handleBandMeeting: vi.fn(),
     bandMeetingCost: 50,
+    canAffordBandMeeting: true,
     currentModifiers: { activeEffects: [] }
   }
 
@@ -92,6 +93,23 @@ describe('GigModifiersBlock', () => {
     fireEvent.click(meetingButton)
 
     expect(defaultProps.handleBandMeeting).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables the band meeting button when the meeting is unaffordable', () => {
+    const handleBandMeeting = vi.fn()
+    render(
+      <GigModifiersBlock
+        {...defaultProps}
+        handleBandMeeting={handleBandMeeting}
+        canAffordBandMeeting={false}
+      />
+    )
+    const button = screen
+      .getByText('ui:pregig.bandMeeting.label')
+      .closest('button')
+    expect(button).toBeDisabled()
+    if (button) fireEvent.click(button)
+    expect(handleBandMeeting).not.toHaveBeenCalled()
   })
 
   it('renders active effects from currentModifiers', () => {

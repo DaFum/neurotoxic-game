@@ -2,10 +2,7 @@ import { useCallback, useRef } from 'react'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import type { RhythmGameRefState } from './useRhythmGameState'
 
-import {
-  canProcessInput,
-  processLaneInput
-} from '../../utils/rhythmGameInputUtils'
+import { registerLaneInput } from '../../utils/rhythmGameInputUtils'
 
 type RhythmGameInputParams = {
   gameStateRef: { current: RhythmGameRefState }
@@ -46,18 +43,13 @@ export const useRhythmGameInput = ({
    */
   const registerInput = useCallback(
     (laneIndex: number, isDown: boolean) => {
-      const state = gameStateRef.current
-      const transportState = audioEngine.getTransportState()
-
-      if (!canProcessInput(state, activeEvent, transportState)) {
-        return
-      }
-
-      processLaneInput({
+      registerLaneInput({
         laneIndex,
         isDown,
-        now: audioEngine.getGigTimeMs(),
-        state,
+        state: gameStateRef.current,
+        activeEvent,
+        transportState: audioEngine.getTransportState(),
+        getNow: () => audioEngine.getGigTimeMs(),
         lastInputTimes: lastInputTimesRef.current,
         handleHit
       })

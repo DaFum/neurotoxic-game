@@ -130,6 +130,36 @@ describe('useLeaderboardSync', () => {
     )
   })
 
+  it('caps only the published balance at 10,000,000 and keeps the other stats', async () => {
+    mockFetch.mockResolvedValue(okResponse())
+    const wallets = [10_000_000, 10_000_001, 2_500_000_000]
+
+    for (const money of wallets) {
+      renderHook(() =>
+        useLeaderboardSync(makeState({ playerId: `rich-${money}`, money }))
+      )
+    }
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
+    expect(
+      bodies(mockFetch).map(({ playerId, money, fame, followers, day }) => ({
+        playerId,
+        money,
+        fame,
+        followers,
+        day
+      }))
+    ).toEqual(
+      wallets.map(money => ({
+        playerId: `rich-${money}`,
+        money: 10_000_000,
+        fame: 100,
+        followers: 1000,
+        day: 5
+      }))
+    )
+  })
+
   it('sums followers with non-finite platform counts treated as 0', async () => {
     mockFetch.mockResolvedValue(okResponse())
 

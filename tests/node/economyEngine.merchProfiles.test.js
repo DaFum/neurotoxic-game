@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateMerchIncome } from '../../src/utils/economy'
+import {
+  calculateMerchIncome,
+  DEFAULT_MERCH_PRICES
+} from '../../src/utils/economy'
 
 const buildInventory = (overrides = {}) => ({
   shirts: 50,
@@ -315,4 +318,143 @@ test('out-of-stock items do not redistribute their demand share to in-stock item
     partPatches <= basePatches + 1,
     `patches must not gain from out-of-stock hoodies/vinyl: baseline=${basePatches}, partial=${partPatches}`
   )
+})
+
+// --- Price demand: raising prices must cost buyers, not just shift share ---
+
+const FULL_STOCK = Object.fromEntries(
+  Object.keys(DEFAULT_MERCH_PRICES).map(key => [key, 9999])
+)
+const PRICE_CTX = {
+  cityTraits: {
+    genreBias: 'punk',
+    barSpendingProfile: 'average',
+    attentionSpan: 30
+  }
+}
+const scaledPrices = factor =>
+  Object.fromEntries(
+    Object.entries(DEFAULT_MERCH_PRICES).map(([key, price]) => [
+      key,
+      price * factor
+    ])
+  )
+const unitsSold = result =>
+  Object.values(result.soldItems ?? {}).reduce((a, b) => a + b, 0)
+const callPriced = (merchPrices, inventory = FULL_STOCK) =>
+  callMerch({
+    ticketsSold: 2000,
+    inventory,
+    context: { ...PRICE_CTX, ...(merchPrices ? { merchPrices } : {}) }
+  })
+
+test('raising every price 100x or 1000x cannot keep unit sales or multiply revenue', () => {
+  const baseline = callPriced()
+  assert.ok(unitsSold(baseline) > 0, 'baseline must sell something')
+  for (const factor of [100, 1000]) {
+    const scaled = callPriced(scaledPrices(factor))
+    assert.ok(
+      unitsSold(scaled) < unitsSold(baseline),
+      `${factor}x prices must lose buyers: baseline=${unitsSold(baseline)}, scaled=${unitsSold(scaled)}`
+    )
+    assert.ok(
+      scaled.revenue <= baseline.revenue,
+      `${factor}x prices must not multiply revenue: baseline=${baseline.revenue}, scaled=${scaled.revenue}`
+    )
+  }
+})
+
+test('revenue at 10x default prices is below revenue at default prices', () => {
+  const baseline = callPriced()
+  const tenX = callPriced(scaledPrices(10))
+  assert.ok(
+    tenX.revenue < baseline.revenue,
+    `10x revenue (${tenX.revenue}) must be below default revenue (${baseline.revenue})`
+  )
+})
+
+test('uniform price changes earn the most revenue at the default price', () => {
+  const baseline = callPriced()
+  for (const factor of [0.5, 0.8, 1.1, 1.25, 1.5, 2]) {
+    const result = callPriced(scaledPrices(factor))
+    assert.ok(
+      result.revenue < baseline.revenue,
+      `${factor}x revenue (${result.revenue}) must be below default revenue (${baseline.revenue})`
+    )
+  }
+})
+
+test('explicit default prices keep the default result identical', () => {
+  assert.deepEqual(callPriced(scaledPrices(1)), callPriced())
+})
+
+test('an overpriced item loses its buyers without pushing them to other items', () => {
+  const baseline = callPriced()
+  const mixed = callPriced({ shirts: DEFAULT_MERCH_PRICES.shirts * 10 })
+  assert.equal(mixed.soldItems.shirts ?? 0, 0, 'shirts priced 10x sell none')
+  for (const [key, sold] of Object.entries(baseline.soldItems)) {
+    if (key === 'shirts') continue
+    assert.equal(
+      mixed.soldItems[key] ?? 0,
+      sold,
+      `${key} must not absorb overpriced shirt demand`
+    )
+  }
+})
+
+test('a discount moves share between items but adds no buyers overall', () => {
+  const baseline = callPriced()
+  const itemCount = Object.keys(DEFAULT_MERCH_PRICES).length
+  const discounted = callPriced({
+    shirts: DEFAULT_MERCH_PRICES.shirts / 2,
+    hoodies: DEFAULT_MERCH_PRICES.hoodies * 3
+  })
+  assert.ok(
+    discounted.soldItems.shirts > baseline.soldItems.shirts,
+    'discounted shirts gain share'
+  )
+  assert.equal(
+    discounted.soldItems.hoodies ?? 0,
+    0,
+    'tripled hoodies sell none'
+  )
+  // Flooring each item can drop at most one unit per item.
+  assert.ok(
+    unitsSold(discounted) <= unitsSold(baseline) + itemCount,
+    `discount must not create buyers: baseline=${unitsSold(baseline)}, discounted=${unitsSold(discounted)}`
+  )
+})
+
+test('overpricing an out-of-stock item does not hand its demand to in-stock items', () => {
+  const inventory = { ...FULL_STOCK, hoodies: 0, vinyl: 0 }
+  const baseline = callPriced(undefined, inventory)
+  const priced = callPriced(
+    {
+      hoodies: DEFAULT_MERCH_PRICES.hoodies * 1000,
+      vinyl: DEFAULT_MERCH_PRICES.vinyl * 1000
+    },
+    inventory
+  )
+  assert.deepEqual(priced.soldItems, baseline.soldItems)
+  assert.equal(priced.revenue, baseline.revenue)
+})
+
+test('non-finite or negative custom prices fall back to the default price', () => {
+  const baseline = callPriced()
+  for (const bad of [
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    Number.NaN,
+    -5,
+    '40',
+    null
+  ]) {
+    const prices = Object.fromEntries(
+      Object.keys(DEFAULT_MERCH_PRICES).map(key => [key, bad])
+    )
+    const result = callPriced(prices)
+    assert.ok(Number.isFinite(result.revenue), `revenue finite for ${bad}`)
+    assert.equal(result.revenue, baseline.revenue, `revenue for ${bad}`)
+    assert.deepEqual(result.soldItems, baseline.soldItems, `sold for ${bad}`)
+  }
 })

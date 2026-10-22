@@ -46,10 +46,12 @@ describe('usePreGigHandlers', () => {
         merchCapacityBonus: 0
       },
       adjustedBandMeetingCost: 10,
+      spendableMoney: 100,
       selectedSongIds: new Set(),
       calculatedBudget: 0,
       typedT: vi.fn(k => k),
       updatePlayer: vi.fn(),
+      holdBandMeeting: vi.fn(),
       updateBand: vi.fn(),
       setSetlist: vi.fn(),
       setGigModifiers: vi.fn(),

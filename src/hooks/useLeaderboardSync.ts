@@ -5,6 +5,7 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
 import { systemClock, type IClock } from '../utils/clock'
 import { createLeaderboardSyncController } from '../utils/leaderboardSyncController'
+import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import type { GameState } from '../types'
 import type { LeaderboardStatsPayload } from '../types/leaderboard'
 
@@ -29,6 +30,8 @@ const controller = createLeaderboardSyncController({
   isEnabled: () => getLeaderboardSyncEnabledFlag()
 })
 
+// Disposal is terminal: the reloaded module builds a fresh controller, and the
+// old one aborts its requests and ignores anything that settles afterwards.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => controller.dispose())
 }
@@ -98,7 +101,7 @@ const calculateTotalFollowers = (social: GameState['social']) => {
  * Creates the payload to be sent to the leaderboard API.
  * @param playerId - The player's ID.
  * @param playerName - The player's name.
- * @param money - The player's money.
+ * @param money - The player's money; published capped at `MAX_PUBLISHED_BALANCE`.
  * @param day - The current game day.
  * @param fame - The player's fame.
  * @param totalDistance - The total distance traveled.
@@ -121,7 +124,8 @@ const createSyncPayload = (
   return {
     playerId,
     playerName,
-    money,
+    // Only the published value is capped, never the wallet itself.
+    money: Math.min(money, MAX_PUBLISHED_BALANCE),
     day,
     fame: fame ?? 0,
     followers: totalFollowers,

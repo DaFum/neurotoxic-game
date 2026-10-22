@@ -207,6 +207,18 @@ export const createUpdateBandAction = (
 }
 
 /**
+ * Creates the paid band-meeting action.
+ *
+ * @returns Payloadless HOLD_BAND_MEETING action; the reducer derives the cost
+ * and the harmony reward from state so the debit and the reward land together
+ * or not at all.
+ */
+export const createHoldBandMeetingAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.HOLD_BAND_MEETING }
+> => ({ type: ActionTypes.HOLD_BAND_MEETING })
+
+/**
  * Creates an action that toggles the Neuro Decimator gig modifier.
  *
  * @param isActive - Whether the modifier should be active.

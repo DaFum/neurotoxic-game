@@ -142,3 +142,25 @@ export const DEFAULT_MERCH_PRICES: Record<string, number> = (() => {
   }
   return prices
 })()
+
+/**
+ * Highest storable price as a multiple of the default. Every profile's demand
+ * reaches zero below 2x (every elasticity is at least 0.8), so higher prices only sell nothing.
+ */
+const MERCH_MAX_PRICE_MULTIPLIER = 2
+
+/**
+ * Canonical per-item price ceiling enforced by band updates, save hydration and
+ * the pre-gig price controls.
+ */
+export const MERCH_MAX_PRICES: Record<string, number> = (() => {
+  const prices: Record<string, number> = {}
+  for (const key in DEFAULT_MERCH_PRICES) {
+    if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
+      prices[key] = Math.ceil(
+        (DEFAULT_MERCH_PRICES[key] ?? 0) * MERCH_MAX_PRICE_MULTIPLIER
+      )
+    }
+  }
+  return prices
+})()

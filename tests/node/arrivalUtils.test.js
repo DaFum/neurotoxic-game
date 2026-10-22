@@ -21,8 +21,8 @@ describe('handleNodeArrival', () => {
     const mocks = getMocks()
     const band = {
       members: [
-        { stamina: 50, mood: 50 },
-        { stamina: 90, mood: 95 }
+        { id: 'a', stamina: 50, mood: 50 },
+        { id: 'b', stamina: 90, mood: 95 }
       ]
     }
     const node = { type: 'REST_STOP' }
@@ -38,7 +38,9 @@ describe('handleNodeArrival', () => {
     })
 
     assert.strictEqual(mocks.updateBand.mock.calls.length, 1)
-    const updatedMembers = mocks.updateBand.mock.calls[0].arguments[0].members
+    // A functional update: rest applies to the reducer's current members.
+    const updatedMembers =
+      mocks.updateBand.mock.calls[0].arguments[0](band).members
     // Member 1: 50+20=70, 50+10=60
     assert.strictEqual(updatedMembers[0].stamina, 70)
     assert.strictEqual(updatedMembers[0].mood, 60)
@@ -437,7 +439,9 @@ describe('handleNodeArrival NaN recovery', () => {
     const updateBand = mock.fn()
     handleNodeArrival({
       node: { type: 'REST_STOP' },
-      band: { members: [{ stamina: NaN, mood: NaN, staminaMax: 100 }] },
+      band: {
+        members: [{ id: 'a', stamina: NaN, mood: NaN, staminaMax: 100 }]
+      },
       updateBand,
       updatePlayer: mock.fn(),
       triggerEvent: mock.fn(),
@@ -445,7 +449,9 @@ describe('handleNodeArrival NaN recovery', () => {
       addToast: mock.fn(),
       onShowHQ: mock.fn()
     })
-    const [member] = updateBand.mock.calls[0].arguments[0].members
+    const [member] = updateBand.mock.calls[0].arguments[0]({
+      members: [{ id: 'a', stamina: NaN, mood: NaN, staminaMax: 100 }]
+    }).members
     // stamina: 100 default + 20 -> clamped 100; mood: 50 default + 10 -> 60
     assert.strictEqual(member.stamina, 100)
     assert.strictEqual(member.mood, 60)

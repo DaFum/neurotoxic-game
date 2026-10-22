@@ -70,6 +70,9 @@ export const Overworld = () => {
       : 1
   )
   const expeditionProtectedCash = useGameSelector(getExpeditionProtectedCash)
+  const expeditionArrivedOverlay = useGameSelector(
+    state => state.expedition?.arrivedOverlay ?? null
+  )
   // The Fame a Festival booking needs, or `null` when it is open (always
   // `null` outside a run). A number, so the selector stays stable.
   const festivalBookingMinimumFame = useGameSelector(
@@ -120,6 +123,7 @@ export const Overworld = () => {
     expeditionDraftPending,
     expeditionFuelMultiplier,
     expeditionProtectedCash,
+    expeditionArrivedOverlay,
     updatePlayer,
     updateBand,
     saveGame,

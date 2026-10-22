@@ -20,6 +20,7 @@ import { clampUnit, formatNumber } from './numberUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
+import type { UpdateBandPayload } from '../types/actions'
 import type { ExpeditionAccessLock } from '../domain/expedition/fame'
 import type { OptionalToastCallback } from '../types/callbacks'
 
@@ -107,6 +108,38 @@ export const isGigNode = <T extends { type?: string }>(
   )
 }
 
+/**
+ * Resolves the node type arrival logic must act on.
+ *
+ * @param node - The map node the band stands on.
+ * @param nodeId - That node's id (map fixtures may omit `node.id`).
+ * @param expedition - Expedition slice carrying the persisted `arrivedOverlay`.
+ * @returns `node` itself, or a copy typed `SPECIAL` when a Legendary converted
+ * this node on the move that reached it.
+ *
+ * @remarks
+ * The conversion is what the run travelled, so a Ghost Route escape that
+ * landed on a Gig node must not play the show it was the escape from. Normal
+ * arrival and same-node re-entry both read this, and `handleStartGig` refuses
+ * a converted current node, so neither path can book it.
+ */
+export const resolveArrivalNode = <T extends { type?: string }>(
+  node: T,
+  nodeId: string | null | undefined,
+  expedition:
+    { arrivedOverlay?: { nodeId?: unknown } | null } | null | undefined
+): T => {
+  const overlayNodeId = expedition?.arrivedOverlay?.nodeId
+  if (
+    typeof overlayNodeId !== 'string' ||
+    overlayNodeId !== nodeId ||
+    node.type === 'SPECIAL'
+  ) {
+    return node
+  }
+  return { ...node, type: 'SPECIAL' }
+}
+
 type ProcessTravelEventsOptions = {
   includeGigNodes?: boolean
 }
@@ -139,7 +172,7 @@ type HandleNodeArrivalParams = {
   node: ArrivalNode
   band: BandState
   player: PlayerState
-  updateBand: (p: Partial<BandState>) => void
+  updateBand: (p: UpdateBandPayload) => void
   updatePlayer: (p: Partial<PlayerState>) => void
   triggerEvent: (category: string, triggerPoint?: string) => boolean
   startGig: (venue: Venue) => void
@@ -206,24 +239,29 @@ export const handleNodeArrival = (
     // the same stop, so it must not fall through to the unhandled branch.
     case 'REST':
     case 'REST_STOP': {
-      const members = band?.members ?? []
-      const newMembers = [...members]
-      for (let i = 0; i < members.length; i++) {
-        const m = members[i]
-        if (!m) continue
-        const staminaMax = finiteNumberOr(m.staminaMax, 100)
-        const newStamina = clampMemberStamina(
-          readMemberStamina(m.stamina, staminaMax) + 20,
-          staminaMax
-        )
-        const newMood = clampMemberMood(readMemberMood(m.mood) + 10)
-        newMembers[i] = {
-          ...m,
-          stamina: newStamina,
-          mood: newMood
+      // A functional update reads the reducer's current members: arrival has
+      // just dispatched the day tick, so a patch built from the `band` the
+      // caller captured would overwrite the tick's mood, stamina, traits and
+      // expired buffs. Only `{ id, stamina, mood }` is sent; the reducer merges
+      // by id, so every other field and each member's position stay as they are.
+      updateBand(prev => {
+        const members = prev?.members ?? []
+        const patches: Partial<BandState['members'][number]>[] = []
+        for (let i = 0; i < members.length; i++) {
+          const m = members[i]
+          if (!m || typeof m.id !== 'string') continue
+          const staminaMax = finiteNumberOr(m.staminaMax, 100)
+          patches.push({
+            id: m.id,
+            stamina: clampMemberStamina(
+              readMemberStamina(m.stamina, staminaMax) + 20,
+              staminaMax
+            ),
+            mood: clampMemberMood(readMemberMood(m.mood) + 10)
+          })
         }
-      }
-      updateBand({ members: newMembers })
+        return { members: patches as BandState['members'] }
+      })
       addToast(
         i18n.t('ui:arrival.restedAtStop', {
           defaultValue: 'Rested at stop. Band feels better.'

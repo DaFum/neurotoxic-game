@@ -271,14 +271,22 @@ export const checkTravelPrerequisites = (
  * immediate travel debit.
  * @param fuelLiters - Required fuel in liters.
  * @param player - Player state used for current money and van fuel.
+ * @param protectedCash - Career Cash an active Expedition may not spend; `0`
+ * (the default) outside a run. Only the balance above it can pay for the leg.
  * @returns Access result with localized error metadata when resources are short.
  */
 export const checkTravelResources = (
   totalCashRequired: number,
   fuelLiters: number,
-  player: PlayerState
+  player: PlayerState,
+  protectedCash: unknown = 0
 ): VenueAccessResult => {
-  if (clampPlayerMoney(finiteNumberOr(player.money, 0)) < totalCashRequired) {
+  const spendableCash = Math.max(
+    0,
+    clampPlayerMoney(finiteNumberOr(player.money, 0)) -
+      Math.max(0, finiteNumberOr(protectedCash, 0))
+  )
+  if (spendableCash < totalCashRequired) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.notEnoughMoneyForTravel',

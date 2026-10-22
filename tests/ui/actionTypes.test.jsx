@@ -11,6 +11,7 @@ describe('ActionTypes', () => {
       'RECORD_PENDING_GIG_SETTLEMENT',
       'CLEAR_PENDING_GIG_SETTLEMENT',
       'TOGGLE_NEURO_DECIMATOR',
+      'HOLD_BAND_MEETING',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',
       'SET_MAP',

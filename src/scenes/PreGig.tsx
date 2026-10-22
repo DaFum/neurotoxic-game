@@ -45,6 +45,7 @@ export const PreGig = () => {
     bandMeetingCost,
     assetModifiers,
     handleBandMeeting,
+    canAffordBandMeeting,
     toggleSong,
     canAffordModifier,
     toggleModifier,
@@ -121,6 +122,7 @@ export const PreGig = () => {
             toggleModifier={toggleModifier}
             handleBandMeeting={handleBandMeeting}
             bandMeetingCost={bandMeetingCost}
+            canAffordBandMeeting={canAffordBandMeeting}
             currentModifiers={currentModifiers}
           />
           <SetlistBlock

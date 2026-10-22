@@ -1,5 +1,6 @@
 import client from '../../lib/redis.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
+import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import {
   parseLeaderboardLimit,
   isLeaderboardRateLimited,
@@ -100,9 +101,12 @@ export default async function handler(req, res) {
       }
 
       // Detailed Validation
-      if (!Number.isFinite(money) || money < 0 || money > 10000000) {
+      if (!Number.isFinite(money) || money < 0) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
+      // A richer wallet is published at the cap instead of rejected: a 400
+      // here would drop every other stat of the snapshot and is not retried.
+      const publishedBalance = Math.min(money, MAX_PUBLISHED_BALANCE)
 
       const player = validateLeaderboardPlayer(playerId, playerName)
       if ('error' in player) {
@@ -147,7 +151,7 @@ export default async function handler(req, res) {
             playerId,
             String(revision),
             String(player.playerName),
-            String(money),
+            String(publishedBalance),
             String(safeFame),
             String(safeFollowers),
             String(safeDistance),
@@ -180,7 +184,7 @@ export default async function handler(req, res) {
       // credential) is mitigated here by no longer publishing it in GET
       // responses; closing it properly needs real auth and is out of scope.
       const multi = client.multi()
-      multi.zAdd('lb:balance', { score: money, value: playerId })
+      multi.zAdd('lb:balance', { score: publishedBalance, value: playerId })
       multi.zAdd('lb:fame', { score: safeFame, value: playerId })
       multi.zAdd('lb:followers', { score: safeFollowers, value: playerId })
       multi.zAdd('lb:distance', { score: safeDistance, value: playerId })

@@ -3,7 +3,9 @@ import { test, describe, mock } from 'node:test'
 
 import {
   canProcessInput,
-  processLaneInput
+  processLaneInput,
+  registerLaneInput,
+  releaseAllLanes
 } from '../../src/utils/rhythmGameInputUtils'
 
 describe('useRhythmGameInput Utils', () => {
@@ -170,6 +172,107 @@ describe('useRhythmGameInput Utils', () => {
       })
 
       assert.strictEqual(handleHit.mock.callCount(), 0)
+    })
+  })
+
+  describe('registerLaneInput', () => {
+    const makeState = () => ({
+      songTransitioning: false,
+      isGameOver: false,
+      hasSubmittedResults: false,
+      lanes: [{ active: false }, { active: false }, { active: false }]
+    })
+
+    /** Feeds one input edge with the given gating context. */
+    const edge = (ctx, laneIndex, isDown) =>
+      registerLaneInput({
+        laneIndex,
+        isDown,
+        state: ctx.state,
+        activeEvent: ctx.activeEvent,
+        transportState: ctx.transportState,
+        getNow: () => ctx.now,
+        lastInputTimes: ctx.lastInputTimes,
+        handleHit: ctx.handleHit
+      })
+
+    const makeCtx = () => ({
+      state: makeState(),
+      activeEvent: null,
+      transportState: 'started',
+      now: 1000,
+      lastInputTimes: [],
+      handleHit: mock.fn()
+    })
+
+    const blockers = {
+      'transport paused': ctx => {
+        ctx.transportState = 'paused'
+      },
+      'event active': ctx => {
+        ctx.activeEvent = { id: 'event' }
+      },
+      'song transition': ctx => {
+        ctx.state.songTransitioning = true
+      }
+    }
+    const unblock = ctx => {
+      ctx.transportState = 'started'
+      ctx.activeEvent = null
+      ctx.state.songTransitioning = false
+    }
+
+    for (const [name, block] of Object.entries(blockers)) {
+      test(`press -> ${name} -> release -> resume leaves lanes inactive with no extra hit`, () => {
+        const ctx = makeCtx()
+        edge(ctx, 0, true)
+        edge(ctx, 2, true)
+        assert.equal(ctx.handleHit.mock.callCount(), 2)
+
+        block(ctx)
+        ctx.now += 200
+        edge(ctx, 0, false)
+        edge(ctx, 2, false)
+        unblock(ctx)
+        ctx.now += 200
+
+        assert.deepEqual(
+          ctx.state.lanes.map(lane => lane.active),
+          [false, false, false]
+        )
+        assert.equal(ctx.handleHit.mock.callCount(), 2)
+      })
+
+      test(`presses stay rejected while ${name}`, () => {
+        const ctx = makeCtx()
+        block(ctx)
+        edge(ctx, 1, true)
+        assert.equal(ctx.state.lanes[1].active, false)
+        assert.equal(ctx.handleHit.mock.callCount(), 0)
+      })
+    }
+
+    test('releases never score and ignore invalid lanes', () => {
+      const ctx = makeCtx()
+      ctx.state.lanes[1].active = true
+      edge(ctx, 1, false)
+      edge(ctx, -1, false)
+      edge(ctx, 3, false)
+      assert.equal(ctx.state.lanes[1].active, false)
+      assert.equal(ctx.handleHit.mock.callCount(), 0)
+    })
+  })
+
+  describe('releaseAllLanes', () => {
+    test('clears every held lane visual', () => {
+      const state = {
+        lanes: [{ active: true }, { active: false }, { active: true }]
+      }
+      releaseAllLanes(state)
+      assert.deepEqual(
+        state.lanes.map(lane => lane.active),
+        [false, false, false]
+      )
     })
   })
 })

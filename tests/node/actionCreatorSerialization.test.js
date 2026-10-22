@@ -98,6 +98,7 @@ const CREATOR_ARGS = {
   createClearPendingGigSettlementAction: () => ['settlement_1'],
   createUpdateBandAction: () => [{ harmony: 80 }],
   toggleNeuroDecimator: () => [true],
+  createHoldBandMeetingAction: () => [],
   createUpdateSocialAction: () => [{ instagram: 1000 }],
   createUpdateSettingsAction: () => [{ crtEnabled: false }],
   createSetMapAction: () => [{ nodes: {}, connections: [] }],

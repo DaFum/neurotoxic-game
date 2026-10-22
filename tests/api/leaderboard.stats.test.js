@@ -164,6 +164,69 @@ describe('Leaderboard Stats API', () => {
     assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 0)
   })
 
+  // The published balance is capped at 10,000,000; a richer wallet is not a
+  // reason to drop the whole snapshot (fame, followers and the rest).
+  for (const [money, published] of [
+    [10_000_000, '10000000'],
+    [10_000_001, '10000000'],
+    [2_500_000_000, '10000000']
+  ]) {
+    test(`POST with a revision publishes money ${money} as ${published} and keeps the other stats`, async () => {
+      const req = revisionRequest(1700000000000)
+      req.body.money = money
+      const { res } = createApiRouteMocks()
+      await statsModule.default(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], { success: true })
+      assert.deepStrictEqual(mockRedisClient.eval.mock.calls[0][1].arguments, [
+        'test-band',
+        '1700000000000',
+        'Test Band',
+        published,
+        '10',
+        '500',
+        '50',
+        '2',
+        '5'
+      ])
+    })
+
+    test(`POST without a revision publishes money ${money} as ${published} and keeps the other stats`, async () => {
+      const req = revisionRequest(undefined)
+      req.body.money = money
+      const { res } = createApiRouteMocks()
+      await statsModule.default(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(
+        mockMulti.zAdd.mock.calls.map(([key, { score }]) => [key, score]),
+        [
+          ['lb:balance', Number(published)],
+          ['lb:fame', 10],
+          ['lb:followers', 500],
+          ['lb:distance', 50],
+          ['lb:conflicts', 2],
+          ['lb:stage_dives', 5]
+        ]
+      )
+    })
+  }
+
+  test('POST still rejects a negative or non-finite money value', async () => {
+    for (const bad of [-1, Number.NaN, Infinity]) {
+      const req = revisionRequest(1700000000000)
+      req.body.money = bad
+      const { res } = createApiRouteMocks()
+      await statsModule.default(req, res)
+      assert.strictEqual(res.status.mock.calls[0][0], 400, String(bad))
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Invalid money value'
+      })
+    }
+    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 0)
+  })
+
   test('POST rejects an invalid revision', async () => {
     for (const bad of [0, -1, 1.5, '7', null, Number.NaN, 2 ** 60]) {
       const { res } = createApiRouteMocks()

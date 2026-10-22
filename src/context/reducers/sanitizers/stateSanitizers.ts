@@ -1,6 +1,7 @@
 import {
   PLAYER_NUMERIC_NORMALIZERS,
-  BAND_NUMERIC_NORMALIZERS
+  BAND_NUMERIC_NORMALIZERS,
+  sanitizeMerchPrices
 } from '../../updateSanitizers'
 import {
   hasForbiddenOwnKeys,
@@ -13,7 +14,6 @@ import {
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
 import { EVENTS_DB } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
-import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
@@ -1030,16 +1030,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
     typeof bandData.merchPrices === 'object' &&
     !Array.isArray(bandData.merchPrices)
   ) {
-    const raw = bandData.merchPrices as Record<string, unknown>
-    const sanitized: Record<string, number> = {}
-    for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
-      if (!Object.hasOwn(raw, k)) continue
-      const v = raw[k]
-      if (isFiniteNumber(v) && v >= 0) {
-        sanitized[k] = v
-      }
-    }
-    rawBand.merchPrices = sanitized
+    rawBand.merchPrices = sanitizeMerchPrices(
+      bandData.merchPrices as Record<string, unknown>
+    )
   }
   // Validate Band Members
   const memberSource = Array.isArray(bandData.members)

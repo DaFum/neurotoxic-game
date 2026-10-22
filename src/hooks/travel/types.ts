@@ -9,6 +9,7 @@ import type {
   Venue
 } from '../../types'
 import type { OptionalToastCallback } from '../../types/callbacks'
+import type { UpdateBandPayload } from '../../types/actions'
 
 /**
  * Inputs to {@link useTravelLogic}: the live game-state slices it reads and the
@@ -38,7 +39,7 @@ export type TravelLogicParams = {
   social: SocialState
   gameMap: GameMap | null
   updatePlayer: (updates: Partial<PlayerState>) => void
-  updateBand: (updates: Partial<BandState>) => void
+  updateBand: (updates: UpdateBandPayload) => void
   saveGame: (showToast?: boolean, stateSnapshot?: GameState) => void
   advanceDay: () => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
@@ -59,6 +60,11 @@ export type TravelLogicParams = {
   expeditionFuelMultiplier?: number
   /** Career cash an active run may not spend; `0` outside a run. */
   expeditionProtectedCash?: number
+  /**
+   * The run's persisted Legendary conversion, so re-entering the current node
+   * resolves the same arrival type the arrival sequence did.
+   */
+  expeditionArrivedOverlay?: GameState['expedition']['arrivedOverlay']
   onShowHQ?: () => void
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]

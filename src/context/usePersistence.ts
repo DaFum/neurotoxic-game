@@ -17,7 +17,9 @@ import { handleError, StateError, StorageError } from '../utils/errorHandler'
 import {
   defaultStorageAdapter,
   isStorageDegraded,
+  listStorageKeys,
   readStorageItem,
+  readStorageItemChecked,
   removeStorageItem,
   safeStorageOperation,
   writeStorageItem
@@ -42,6 +44,78 @@ import type { OptionalToastCallback } from '../types/callbacks'
  * The string identifier used to store and retrieve the game's save payload in local storage.
  */
 export const SAVE_KEY = 'neurotoxic_v3_save'
+
+/**
+ * Highest save version written to the shared `SAVE_KEY`. Every shipped build
+ * writes there; later versions each write a slot of their own.
+ */
+const SHARED_SLOT_MAX_VERSION = 2
+
+const VERSION_SLOT_PREFIX = `${SAVE_KEY}.v`
+
+/**
+ * Resolves the storage key a build at the given save version writes to.
+ *
+ * @param version - Save version of the writing build.
+ * @returns `SAVE_KEY` up to version 2, else `SAVE_KEY.v<version>`.
+ *
+ * @remarks
+ * Builds on different versions never share a key, so a tab on an older build
+ * cannot overwrite a newer build's save in the gap between its newer-save
+ * check and its write.
+ */
+export const getSaveSlotKey = (version: number): string =>
+  version <= SHARED_SLOT_MAX_VERSION
+    ? SAVE_KEY
+    : `${VERSION_SLOT_PREFIX}${version}`
+
+/**
+ * Lists the version-specific save slots present in storage.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns Each slot's key and the version its name carries.
+ */
+const listVersionSlots = (
+  storage: IStorageAdapter
+): { key: string; version: number }[] => {
+  const slots: { key: string; version: number }[] = []
+  for (const key of listStorageKeys(storage)) {
+    if (!key.startsWith(VERSION_SLOT_PREFIX)) continue
+    const version = parseSaveVersion(key.slice(VERSION_SLOT_PREFIX.length))
+    if (version !== null && version > SHARED_SLOT_MAX_VERSION) {
+      slots.push({ key, version })
+    }
+  }
+  return slots
+}
+
+/**
+ * Highest version among slots this build cannot load.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns That version, or `null` when every slot is loadable.
+ */
+const readNewestIncompatibleSlotVersion = (
+  storage: IStorageAdapter
+): number | null => {
+  let newest: number | null = null
+  for (const { version } of listVersionSlots(storage)) {
+    if (version > CURRENT_SAVE_VERSION && (newest === null || version > newest))
+      newest = version
+  }
+  return newest
+}
+
+/**
+ * Whether any save slot, shared or version-specific, holds a save.
+ *
+ * @param storage - Adapter to look through; defaults to the production singleton.
+ * @returns `true` when a save exists in any slot, loadable or not.
+ */
+export const hasStoredSave = (
+  storage: IStorageAdapter = defaultStorageAdapter
+): boolean =>
+  !!readStorageItem(SAVE_KEY, storage) || listVersionSlots(storage).length > 0
 
 const isNullableObject = (value: unknown): boolean =>
   value === null || isLooseRecord(value)
@@ -161,6 +235,65 @@ const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
 }
 
 /**
+ * Reads the version of the save currently in the slot when it is newer than
+ * this build supports.
+ *
+ * @param storage - Adapter the slot is read through.
+ * @returns The stored version when it exceeds `CURRENT_SAVE_VERSION`,
+ * `'unreadable'` when the slot could not be read at all, else `null` (no
+ * save, unparseable, or a version this build can load).
+ *
+ * @remarks
+ * Read from storage at write time rather than remembered from the last load,
+ * so a newer save written by another tab mid-session is protected as well.
+ * An unreadable slot is reported apart from an empty one: writing over it
+ * would seed the in-memory fallback, which shadows persistent storage and
+ * would later overwrite a newer save once storage recovers.
+ */
+const readNewerStoredSaveVersion = (
+  storage: IStorageAdapter
+): number | 'unreadable' | null => {
+  const { ok, value: saved } = readStorageItemChecked(SAVE_KEY, storage)
+  if (!ok) return 'unreadable'
+  const newestSlotVersion = readNewestIncompatibleSlotVersion(storage)
+  if (newestSlotVersion !== null) return newestSlotVersion
+  // Legacy defence: the shared key itself carrying a newer payload.
+  if (!saved) return null
+  let parsed: unknown
+  try {
+    parsed = safeJsonParse(saved)
+  } catch (_error) {
+    return null
+  }
+  if (!isLooseRecord(parsed)) return null
+  const storedVersion = readSaveVersion(parsed)
+  return storedVersion > CURRENT_SAVE_VERSION ? storedVersion : null
+}
+
+/**
+ * Picks the slot this build loads from: the highest version-specific slot it
+ * supports, else the shared key.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns Storage key to read the save from.
+ *
+ * @remarks
+ * Lower slots are never deleted: the older build's save stays where it was,
+ * so going back to that build still finds it.
+ */
+const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
+  let best: { key: string; version: number } | null = null
+  for (const slot of listVersionSlots(storage)) {
+    if (
+      slot.version <= CURRENT_SAVE_VERSION &&
+      (best === null || slot.version > best.version)
+    )
+      best = slot
+  }
+  return best?.key ?? SAVE_KEY
+}
+
+/**
  * Folds a parsed save through the migration chain, quarantining the raw payload
  * when a migration step fails.
  *
@@ -249,6 +382,11 @@ export function usePersistence({
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
       removeStorageItem(SAVE_KEY, storage)
+      // Every version slot goes too: load picks the highest one left, so a
+      // survivor would bring the deleted progress back.
+      for (const { key } of listVersionSlots(storage)) {
+        removeStorageItem(key, storage)
+      }
     })
     window.location.reload()
   }, [storage])
@@ -269,6 +407,36 @@ export function usePersistence({
     )
   }, [addToast, tRef])
 
+  // An unreadable slot refuses every save, so the player is told once rather
+  // than on every autosave.
+  const slotUnreadableNoticeShownRef = useRef(false)
+  const notifySlotUnreadable = useCallback(() => {
+    if (slotUnreadableNoticeShownRef.current) return
+    slotUnreadableNoticeShownRef.current = true
+    addToast(
+      tRef.current('ui:save.slotUnreadable', {
+        defaultValue:
+          'The save could not be read, so saving was skipped to protect any existing save. Progress will not be saved until storage works again.'
+      }),
+      'error'
+    )
+  }, [addToast, tRef])
+
+  const incompatibleSaveMessage = useCallback(
+    (saveVersion: number) =>
+      tRef.current('ui:save.incompatibleVersion', {
+        saveVersion,
+        supportedVersion: CURRENT_SAVE_VERSION,
+        defaultValue:
+          'This save was made by a newer version of the game (save version {{saveVersion}}, this version supports up to {{supportedVersion}}). It was left untouched and will not be overwritten; update the game to continue it.'
+      }),
+    [tRef]
+  )
+
+  // Every save request is refused while the slot holds a newer save, so the
+  // notice is shown once per session rather than on every autosave.
+  const incompatibleNoticeShownRef = useRef(false)
+
   /**
    * Writes the save, reporting whether the write actually landed.
    *
@@ -283,6 +451,30 @@ export function usePersistence({
       showToast = true,
       stateSnapshot: GameState = stateRef.current
     ): boolean => {
+      // A save from a newer build is the player's only copy of that progress;
+      // this build cannot represent it, so it never writes over it.
+      // Adapter reads report failure as `null` rather than throwing.
+      const newerStoredVersion = readNewerStoredSaveVersion(storage)
+      if (newerStoredVersion === 'unreadable') {
+        logger.warn(
+          'Persistence',
+          'Save skipped: the save slot cannot be read, so a newer save cannot be ruled out'
+        )
+        notifySlotUnreadable()
+        return false
+      }
+      if (newerStoredVersion !== null) {
+        logger.warn(
+          'Persistence',
+          `Save skipped: slot holds save version ${newerStoredVersion}, newer than ${CURRENT_SAVE_VERSION}`
+        )
+        if (!incompatibleNoticeShownRef.current) {
+          incompatibleNoticeShownRef.current = true
+          addToast(incompatibleSaveMessage(newerStoredVersion), 'error')
+        }
+        return false
+      }
+
       const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
@@ -311,7 +503,11 @@ export function usePersistence({
               `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
-          return writeStorageItem(SAVE_KEY, serialized, storage)
+          return writeStorageItem(
+            getSaveSlotKey(CURRENT_SAVE_VERSION),
+            serialized,
+            storage
+          )
         },
         false
       )
@@ -334,7 +530,16 @@ export function usePersistence({
       }
       return success === true
     },
-    [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
+    [
+      addToast,
+      clock,
+      incompatibleSaveMessage,
+      notifySlotUnreadable,
+      notifyStorageDegraded,
+      stateRef,
+      storage,
+      tRef
+    ]
   )
 
   const previousSceneRef = useRef(currentScene)
@@ -402,7 +607,19 @@ export function usePersistence({
         let parsed: unknown
         let rawSave: string
         try {
-          const saved = readStorageItem(SAVE_KEY, storage)
+          // The same guard saveGame applies: anything newer than this build
+          // (a slot of its own or a newer payload in the shared key) means a
+          // loaded session could never be saved. Say so rather than loading or
+          // reporting no save at all. An unreadable slot falls through and
+          // reads as no save.
+          const newerVersion = readNewerStoredSaveVersion(storage)
+          if (typeof newerVersion === 'number') {
+            handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
+              addToast
+            })
+            return false
+          }
+          const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
           if (!saved) return false
           rawSave = saved
           parsed = safeJsonParse(saved)
@@ -428,6 +645,17 @@ export function usePersistence({
             ),
             { addToast }
           )
+          return false
+        }
+
+        // Checked before shape validation: a newer schema may legitimately
+        // fail this build's validator, and it must not be reported as corrupt.
+        // Nothing is written on this path, so the stored save stays as it was.
+        const storedVersion = readSaveVersion(parsed)
+        if (storedVersion > CURRENT_SAVE_VERSION) {
+          handleError(new StateError(incompatibleSaveMessage(storedVersion)), {
+            addToast
+          })
           return false
         }
 
@@ -489,7 +717,14 @@ export function usePersistence({
       },
       false
     )
-  }, [addToast, dispatch, saveGameAfterStateCommit, storage, tRef])
+  }, [
+    addToast,
+    dispatch,
+    incompatibleSaveMessage,
+    saveGameAfterStateCommit,
+    storage,
+    tRef
+  ])
 
   return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }
