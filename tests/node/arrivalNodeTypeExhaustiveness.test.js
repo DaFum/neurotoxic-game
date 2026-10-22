@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { test, mock, describe } from 'node:test'
-import { handleNodeArrival } from '../../src/utils/arrivalUtils'
+import {
+  handleNodeArrival,
+  isGigArrivalNode
+} from '../../src/utils/arrivalUtils'
 import { MAP_NODE_TYPES } from '../../src/utils/mapNodeTypes'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { logger } from '../../src/utils/logger'
@@ -46,6 +49,13 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
           false,
           `node type "${type}" fell through to the unhandled branch`
         )
+        // useArrivalLogic defers exactly the gig branch to its post-commit
+        // effect; the predicate must name the types that branch books.
+        assert.equal(
+          isGigArrivalNode({ type }),
+          result.gigStarted,
+          `isGigArrivalNode disagrees with handleNodeArrival for "${type}"`
+        )
       } finally {
         warn.mock.restore()
       }
@@ -78,6 +88,7 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
       const result = handleNodeArrival(params)
 
       assert.equal(result.gigStarted, true, `${type} should start a gig`)
+      assert.equal(isGigArrivalNode({ type }), true)
       assert.equal(params.startGig.mock.calls.length, 1)
     }
   })

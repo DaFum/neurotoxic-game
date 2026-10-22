@@ -6,8 +6,10 @@ import { createInitialState } from '../../src/context/initialState'
 import {
   advanceDay,
   createStartGigAction,
-  createUpdateBandAction
+  createUpdateBandAction,
+  createUpdatePlayerAction
 } from '../../src/context/actionCreators'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 
 // The hook reads and dispatches through a store backed by the real root
@@ -36,7 +38,7 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     advanceDay: () => dispatch(advanceDay(store.state)),
     updateBand: updates => dispatch(createUpdateBandAction(updates)),
-    updatePlayer: () => {},
+    updatePlayer: updates => dispatch(createUpdatePlayerAction(updates)),
     startGig: venue => dispatch(createStartGigAction(venue)),
     changeScene: spies.changeScene,
     addToast: spies.addToast,
@@ -62,16 +64,33 @@ const restState = () => {
   const members = base.band.members.map((m, i) => ({
     ...m,
     mood: 50,
-    stamina: 40,
-    traits: { ...(m.traits ?? {}) },
-    // Index 0 carries a one-day buff the tick must expire.
-    ...(i === 0 ? { tempBuff: 1 } : {})
+    // Index 0 sits close enough to the cap that rest is bounded by staminaMax.
+    stamina: i === 0 ? 95 : 40,
+    // +20 from the contraband effect below, which the tick expires.
+    staminaMax: 120,
+    traits: { ...(m.traits ?? {}) }
   }))
+  // A one-day stamina_max contraband effect: the tick reverts it, so the
+  // post-tick members are back at a staminaMax of 100.
+  const activeContrabandEffects = [
+    {
+      instanceId: 'contraband_test_1',
+      effectType: 'stamina_max',
+      value: 20,
+      remainingDuration: 1
+    }
+  ]
   return {
     ...base,
     currentScene: GAME_PHASES.TRAVEL_MINIGAME,
     // Stress drains member mood on the tick, so post-tick mood differs.
-    band: { ...base.band, members, stress: 60, harmony: 70 },
+    band: {
+      ...base.band,
+      members,
+      activeContrabandEffects,
+      stress: 60,
+      harmony: 70
+    },
     gameMap: {
       nodes: { [REST.id]: REST },
       connections: [],
@@ -85,19 +104,22 @@ afterEach(() => {
   store.listeners.clear()
 })
 
-const renderArrival = initial => {
+const renderArrival = (initial, rng = () => 0.99) => {
   store.state = initial
   spies.changeScene = vi.fn()
   spies.addToast = vi.fn()
-  return renderHook(() => useArrivalLogic({ rng: () => 0.99 }))
+  return renderHook(() => useArrivalLogic({ rng }))
 }
 
 describe('useArrivalLogic through the real reducer', () => {
   test('rest recovery applies to the post-tick members', () => {
     const initial = restState()
     const postTick = gameReducer(initial, advanceDay(initial))
-    // The fixture must make the tick move mood, or the test proves nothing.
+    // The fixture must make the tick move mood and expire the contraband
+    // staminaMax bonus, or the test proves nothing.
     expect(postTick.band.members[0].mood).not.toBe(50)
+    expect(postTick.band.activeContrabandEffects).toEqual([])
+    expect(postTick.band.members[0].staminaMax).toBe(100)
 
     const { result } = renderArrival(initial)
     act(() => {
@@ -113,7 +135,7 @@ describe('useArrivalLogic through the real reducer', () => {
       expect(member.mood).toBe(Math.min(100, ticked.mood + 10))
       expect(member.stamina).toBe(Math.min(staminaMax, ticked.stamina + 20))
       expect(member.traits).toEqual(ticked.traits)
-      expect(member.tempBuff).toEqual(ticked.tempBuff)
+      expect(member.staminaMax).toBe(ticked.staminaMax)
     })
   })
 
@@ -152,6 +174,40 @@ describe('useArrivalLogic through the real reducer', () => {
     expect(store.state.player.day).toBe(initial.player.day)
     expect(store.state.band.members).toEqual(initial.band.members)
     expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'Not enough money for gas and food!',
+      'error'
+    )
+  })
+
+  test('a leg the route refused is reported as not completed, not as unaffordable', () => {
+    const initial = restState()
+    initial.minigame = {
+      ...initial.minigame,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: 'node_far'
+    }
+    const { result } = renderArrival(initial)
+    // A route refusal or invalid target clears the minigame and leaves the
+    // band on the node it was leaving.
+    act(() => {
+      store.state = {
+        ...store.state,
+        minigame: { ...store.state.minigame, active: false, type: null }
+      }
+      for (const listener of store.listeners) listener()
+    })
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'The trip could not be completed. Back to the map.',
+      'error'
+    )
   })
 
   test('a committed settlement to the intended node arrives normally', () => {
@@ -176,6 +232,78 @@ describe('useArrivalLogic through the real reducer', () => {
       result.current.handleArrivalSequence()
     })
     expect(store.state.player.day).toBe(initial.player.day + 1)
+  })
+})
+
+describe('gig arrival through the real reducer', () => {
+  const GIG = {
+    id: 'node_gig',
+    type: 'GIG',
+    layer: 1,
+    x: 10,
+    y: 10,
+    venue: { id: 'berlin_so36', name: 'SO36' }
+  }
+  const gigArrivalState = ({ harmony, consecutiveBadShows = 0 }) => {
+    const base = createInitialState()
+    return {
+      ...base,
+      currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+      band: { ...base.band, harmony },
+      gameMap: {
+        nodes: { [GIG.id]: GIG },
+        connections: [],
+        layers: [[GIG.id]]
+      },
+      player: {
+        ...base.player,
+        currentNodeId: GIG.id,
+        fame: 500,
+        stats: { ...base.player.stats, consecutiveBadShows }
+      }
+    }
+  }
+  const cancelledToast = () =>
+    spies.addToast.mock.calls.some(([message]) =>
+      String(message).toLowerCase().includes('cancelled')
+    )
+
+  test('a band the tick lifts off the harmony floor plays the show', () => {
+    const initial = gigArrivalState({ harmony: 1 })
+    const postTick = gameReducer(initial, advanceDay(initial))
+    // Pre-tick harmony is the deterministic cancel; the tick must lift it.
+    expect(postTick.band.harmony).toBeGreaterThan(1)
+
+    const { result } = renderArrival(initial)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(cancelledToast()).toBe(false)
+    expect(store.state.player.fame).toBe(500)
+    expect(store.state.currentScene).toBe(GAME_PHASES.PRE_GIG)
+    expect(store.state.currentGig?.id).toBe(GIG.venue.id)
+  })
+
+  test('a band the tick drops below the threshold can lose the show', () => {
+    const initial = gigArrivalState({ harmony: 20, consecutiveBadShows: 5 })
+    const postTick = gameReducer(initial, advanceDay(initial))
+    // Above the threshold before the tick, below it after.
+    expect(postTick.band.harmony).toBeLessThan(
+      BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
+    )
+
+    const { result } = renderArrival(initial, () => 0)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(cancelledToast()).toBe(true)
+    expect(store.state.currentGig).toBeFalsy()
+    expect(store.state.player.fame).toBe(
+      postTick.player.fame - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+    )
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 })
 

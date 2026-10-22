@@ -2246,6 +2246,7 @@
   "travel.errors.failedToOpenHq": "Failed to open HQ.",
   "travel.errors.gameOverStranded": "GAME OVER: Stranded! Cannot travel and cannot afford fuel.",
   "travel.errors.invalidLocation": "Error: Invalid location.",
+  "travel.errors.legNotCompleted": "The trip could not be completed. Back to the map.",
   "travel.errors.locationNotConnected": "Cannot travel: location not connected",
   "travel.errors.locationNotVisible": "Cannot travel: location not visible",
   "travel.errors.notEnoughFuel": "Not enough fuel in the tank!",
