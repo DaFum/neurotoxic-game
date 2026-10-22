@@ -15,6 +15,7 @@
 
 ## Tests
 
+- `tests/events/paidOptionsProtectedCash.test.js` walks the whole registry against the protected-cash rule (`isOptionAffordable`): no event may lose its last choosable option, a paid option is refused while a free choosable sibling exists, and every paid option stays payable when the whole balance is spendable. A new event needs no extra test for this, but a `disabled` flag, a changed sibling `condition` or an all-paid event shows up there by event id.
 - For each new or changed `condition`, test one state that returns truthy (`true` or a context object) and one state that returns `false`; call the condition directly instead of relying on random event selection.
 
 ## Probability
