@@ -5,6 +5,8 @@ const mockRedisClient = {
   isOpen: true,
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),
+  // The rate-limit script; always under the limit here.
+  eval: vi.fn(() => Promise.resolve(1)),
   disconnect: vi.fn(() => Promise.resolve()),
   connect: vi.fn(() => Promise.resolve()),
   hSet: vi.fn(() => Promise.resolve()),
