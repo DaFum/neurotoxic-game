@@ -47,7 +47,9 @@ describe('VoidTraderTab Component', () => {
     const buttons = screen.getAllByRole('button', {
       name: /ui:hq.voidTrader.trade/i
     })
-    expect(buttons[0]).toBeDisabled()
+    expect(buttons[0]).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(buttons[0])
+    expect(handleTrade).not.toHaveBeenCalled()
   })
 
   it('renders a tooltip explaining why the trade action is disabled', () => {
@@ -140,10 +142,10 @@ describe('VoidTraderTab Component', () => {
     })
     expect(loadingButtons.length).toBeGreaterThan(0)
 
-    // Check that all buttons are actually disabled, either because they are processing or because another item is processing
+    // Check that all buttons are actually disabled via aria-disabled, keeping them focusable for tooltips
     const allButtons = screen.getAllByRole('button')
     allButtons.forEach(btn => {
-      expect(btn).toBeDisabled()
+      expect(btn).toHaveAttribute('aria-disabled', 'true')
     })
   })
 })

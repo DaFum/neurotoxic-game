@@ -95,13 +95,19 @@ export const RegionalStandingSection = ({
                       const btn = (
                         <button
                           type='button'
-                          disabled={!affordable}
-                          onClick={() => onMakeAmends(venueId)}
+                          aria-disabled={!affordable}
+                          onClick={e => {
+                            if (!affordable) {
+                              e.preventDefault()
+                              return
+                            }
+                            onMakeAmends(venueId)
+                          }}
                           aria-label={`${t('ui:detailedStats.makeAmends', {
                             amount: formatCurrency(cost, i18n.language),
                             defaultValue: 'Make Amends ({{amount}})'
                           })} — ${translateLocation(t, venueId, venueId)}`}
-                          className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
+                          className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider aria-disabled:opacity-40 aria-disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
                         >
                           {t('ui:detailedStats.makeAmends', {
                             amount: formatCurrency(cost, i18n.language),

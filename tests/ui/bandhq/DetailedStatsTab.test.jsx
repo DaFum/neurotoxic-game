@@ -187,4 +187,49 @@ describe('DetailedStatsTab', () => {
     expect(screen.getByText('x1.25')).toBeInTheDocument()
     expect(screen.queryByText(/0\.7000000000000001/)).not.toBeInTheDocument()
   })
+
+  it('uses aria-disabled on locked crafting buttons to keep them keyboard focusable without triggering craft callbacks', () => {
+    const onCraft = vi.fn()
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={{ ...band, stash: {} }}
+        social={social}
+        onCraft={onCraft}
+      />
+    )
+
+    const craftButtons = screen.getAllByRole('button', { name: /^Craft / })
+    expect(craftButtons.length).toBeGreaterThan(0)
+    const lockedBtn = craftButtons[0]
+
+    expect(lockedBtn).toHaveAttribute('aria-disabled', 'true')
+    expect(lockedBtn).not.toBeDisabled()
+
+    fireEvent.click(lockedBtn)
+    expect(onCraft).not.toHaveBeenCalled()
+  })
+
+  it('uses aria-disabled on unaffordable make amends buttons to keep them keyboard focusable without triggering callback', () => {
+    const onMakeAmends = vi.fn()
+    render(
+      <DetailedStatsTab
+        player={{ ...player, money: 0 }}
+        band={band}
+        social={social}
+        venueBlacklist={['underground_berlin']}
+        onMakeAmends={onMakeAmends}
+      />
+    )
+
+    const makeAmendsBtn = screen.getByRole('button', {
+      name: /Make Amends/
+    })
+
+    expect(makeAmendsBtn).toHaveAttribute('aria-disabled', 'true')
+    expect(makeAmendsBtn).not.toBeDisabled()
+
+    fireEvent.click(makeAmendsBtn)
+    expect(onMakeAmends).not.toHaveBeenCalled()
+  })
 })
