@@ -107,7 +107,7 @@ describe('MainMenu Component', () => {
 
   describe('Load Game and Navigation', () => {
     it('loads game successfully when save exists', async () => {
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:load_game'))
@@ -118,7 +118,7 @@ describe('MainMenu Component', () => {
     })
 
     it('shows error toast when no save found', async () => {
-      mockLoadGame.mockReturnValue(false)
+      mockLoadGame.mockReturnValue({ ok: false, reason: 'missing' })
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:load_game'))
@@ -128,8 +128,22 @@ describe('MainMenu Component', () => {
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
+    it.each(['incompatible', 'corrupt'])(
+      'adds no "No save found" toast when the save is %s',
+      reason => {
+        mockLoadGame.mockReturnValue({ ok: false, reason })
+        render(<MainMenu />)
+
+        fireEvent.click(screen.getByText('ui:load_game'))
+
+        expect(mockLoadGame).toHaveBeenCalled()
+        expect(mockAddToast).not.toHaveBeenCalledWith('No save found', 'error')
+        expect(mockChangeScene).not.toHaveBeenCalled()
+      }
+    )
+
     it('sets loading state while loading game', () => {
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
       const { container } = render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:load_game'))
@@ -197,7 +211,7 @@ describe('MainMenu Component', () => {
     })
 
     it('loads existing save when load button clicked in prompt', async () => {
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
@@ -519,7 +533,7 @@ describe('MainMenu Component', () => {
     })
 
     it('handles rapid button clicks gracefully', async () => {
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
       render(<MainMenu />)
 
       const loadButton = screen.getByText('ui:load_game').closest('button')
@@ -610,7 +624,7 @@ describe('MainMenu Component', () => {
 
   describe('Additional edge cases and regressions', () => {
     it('handles concurrent save and load operations', async () => {
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
       render(<MainMenu />)
 
       const loadButton = screen.getByText('ui:load_game')
@@ -692,7 +706,7 @@ describe('MainMenu Component', () => {
       audioManager.ensureAudioContext.mockRejectedValue(
         new Error('Audio failed')
       )
-      mockLoadGame.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
 
       render(<MainMenu />)
 

@@ -179,8 +179,6 @@ export const handleLoadGame = (
   state: GameState,
   payload: unknown
 ): GameState => {
-  logger.info('GameState', 'Game Loaded')
-
   const rawState: Record<string, unknown> = (
     typeof payload === 'object' && payload !== null ? payload : {}
   ) as Record<string, unknown>
@@ -196,6 +194,8 @@ export const handleLoadGame = (
     )
     return state
   }
+
+  logger.info('GameState', 'Game Loaded')
 
   // Fold the raw payload through every migration step above its stored version
   // before any sanitizer runs, so each step sees the layout it was written for.

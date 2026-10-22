@@ -53,7 +53,7 @@ const renderMenuLoad = save =>
       setIsLoadingGame: vi.fn(),
       loadGame: () => {
         dispatch(createLoadGameAction(save))
-        return true
+        return { ok: true }
       },
       changeScene: scene => dispatch(createChangeSceneAction(scene)),
       initializeAudio: vi.fn(),

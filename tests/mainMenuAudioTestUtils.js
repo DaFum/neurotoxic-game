@@ -10,7 +10,7 @@ export const createMockGameState = ({
   pendingBandHQOpen = false
 } = {}) => ({
   changeScene: () => {},
-  loadGame: () => Boolean(canLoad),
+  loadGame: () => (canLoad ? { ok: true } : { ok: false, reason: 'missing' }),
   addToast: () => {},
   player: { money: 100, currentNodeId: 'node_0_0' },
   updatePlayer: () => {},

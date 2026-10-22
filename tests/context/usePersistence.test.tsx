@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import type { LoadGameResult } from '../../src/context/usePersistence'
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
@@ -94,7 +95,28 @@ describe('usePersistence', () => {
   })
 
   describe('loadGame', () => {
-    it('should return false and call handleError when save file contains invalid JSON', () => {
+    it('reports a missing save without an error toast when nothing is stored', () => {
+      const { result } = renderHook(() =>
+        usePersistence({
+          currentScene: 'MOCK_SCENE',
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        })
+      )
+
+      let loadResult: LoadGameResult | undefined
+      act(() => {
+        loadResult = result.current.loadGame()
+      })
+
+      expect(loadResult).toEqual({ ok: false, reason: 'missing' })
+      expect(handleError).not.toHaveBeenCalled()
+      expect(mockDispatch).not.toHaveBeenCalled()
+    })
+
+    it('should report a corrupt save and call handleError when save file contains invalid JSON', () => {
       localStorage.setItem(SAVE_KEY, '{invalid-json}')
       vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('{invalid-json}')
 
@@ -115,7 +137,7 @@ describe('usePersistence', () => {
 
       expect(safeStorageOperation).toHaveBeenCalledTimes(1)
 
-      expect(loadResult).toBe(false)
+      expect(loadResult).toEqual({ ok: false, reason: 'corrupt' })
       expect(handleError).toHaveBeenCalledTimes(1)
       expect(handleError).toHaveBeenCalledWith(
         expect.any(StateError),
@@ -272,11 +294,11 @@ describe('usePersistence', () => {
         })
       )
       vi.mocked(safeStorageOperation).mockClear()
-      let loaded = false
+      let loaded: LoadGameResult | undefined
       act(() => {
         loaded = result.current.loadGame()
       })
-      expect(loaded).toBe(true)
+      expect(loaded).toEqual({ ok: true })
       return vi
         .mocked(safeStorageOperation)
         .mock.calls.map(([operation]) => operation)

@@ -3,10 +3,11 @@ import type { MutableRefObject } from 'react'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { TFunction } from 'i18next'
 import type { ToastCallback } from '../../../types/callbacks'
+import type { LoadGameResult } from '../../../context/usePersistence'
 
 interface UseMainMenuLoadProps {
   setIsLoadingGame: (val: boolean) => void
-  loadGame: () => boolean
+  loadGame: () => LoadGameResult
   initializeAudio: () => void
   setShowExistingSavePrompt: (val: boolean) => void
   addToast: ToastCallback
@@ -32,13 +33,17 @@ export const useMainMenuLoad = ({
   const handleLoad = useCallback(() => {
     setIsLoadingGame(true)
 
-    if (!loadGame()) {
-      addToast(
-        tRef.current('ui:no_save_found', {
-          defaultValue: 'No save found'
-        }),
-        'error'
-      )
+    const result = loadGame()
+    if (!result.ok) {
+      // Every other refusal has already shown its own message.
+      if (result.reason === 'missing') {
+        addToast(
+          tRef.current('ui:no_save_found', {
+            defaultValue: 'No save found'
+          }),
+          'error'
+        )
+      }
       setIsLoadingGame(false)
       return
     }
