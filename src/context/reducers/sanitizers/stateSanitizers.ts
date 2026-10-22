@@ -1628,24 +1628,32 @@ const getRegistryEvent = (id: string): UnknownRecord | undefined => {
   return registryEventsById.get(id)
 }
 
-// Deep-copies registry data (functions stay shared by reference) so state never
-// aliases the module-level registry. The WeakMap keeps it cycle safe.
+// Deep-copies registry data so state never aliases the module-level registry.
+// Only plain objects and arrays are copied: functions and class instances
+// (Date, Map, ...) stay shared by reference rather than being flattened. The
+// WeakSet holds the objects on the current path, so a cycle ends the descent
+// instead of recursing forever.
 const cloneRegistryValue = (
   value: unknown,
-  seen: WeakMap<object, unknown> = new WeakMap()
+  ancestors: WeakSet<object> = new WeakSet()
 ): unknown => {
   if (typeof value !== 'object' || value === null) return value
-  if (seen.has(value)) return seen.get(value)
-  if (Array.isArray(value)) {
-    const copy: unknown[] = []
-    seen.set(value, copy)
-    for (const item of value) copy.push(cloneRegistryValue(item, seen))
-    return copy
+  if (ancestors.has(value)) return value
+  const isArray = Array.isArray(value)
+  const prototype = Object.getPrototypeOf(value)
+  if (!isArray && prototype !== Object.prototype && prototype !== null) {
+    return value
   }
-  const copy: Record<string, unknown> = {}
-  seen.set(value, copy)
-  for (const [key, item] of Object.entries(value))
-    copy[key] = cloneRegistryValue(item, seen)
+  ancestors.add(value)
+  const copy: unknown = isArray
+    ? value.map(item => cloneRegistryValue(item, ancestors))
+    : Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          cloneRegistryValue(item, ancestors)
+        ])
+      )
+  ancestors.delete(value)
   return copy
 }
 

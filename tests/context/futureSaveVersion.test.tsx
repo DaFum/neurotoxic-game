@@ -200,6 +200,26 @@ describe('future-version save protection', () => {
     expect(localStorage.getItem(SAVE_KEY)).toBe(FUTURE_SAVE)
   })
 
+  it('says the save could not be read when the load keeps failing, not that none exists', () => {
+    localStorage.setItem(SAVE_KEY, savePayload(CURRENT_SAVE_VERSION))
+    const { result, dispatch, addToast } = renderPersistence()
+    // The adapter never throws, so a failure that outlasts the retries has to
+    // come from inside the operation.
+    dispatch.mockImplementation(() => {
+      throw new Error('boom')
+    })
+
+    let loaded: LoadGameResult | undefined
+    act(() => {
+      loaded = result.current.loadGame()
+    })
+
+    expect(loaded).toEqual({ ok: false, reason: 'unreadable' })
+    expect(
+      toastMessages(addToast).some(m => m.includes(LOAD_UNREADABLE_KEY))
+    ).toBe(true)
+  })
+
   it('refuses to load while the slot cannot be read, and says so instead of reporting no save', () => {
     localStorage.setItem(SAVE_KEY, savePayload(CURRENT_SAVE_VERSION))
     const { result, dispatch, addToast } = renderPersistence()

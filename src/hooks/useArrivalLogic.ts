@@ -153,25 +153,39 @@ export const useArrivalLogic = ({
       const gigNode = route.gigNode
       route.gigNode = null
       let queuedGigVenue: Venue | null = null
-      const arrivalResult = handleNodeArrival({
-        node: gigNode,
-        band,
-        player,
-        updateBand,
-        updatePlayer,
-        triggerEvent,
-        startGig: venue => {
-          queuedGigVenue = venue
-        },
-        addToast,
-        rng,
-        bookingLock: getExpeditionNodeBookingLock(
-          { player, expedition },
-          gigNode.type
-        )
-      })
-      route.scene = arrivalResult.scene
-      route.gigVenue = arrivalResult.gigStarted ? queuedGigVenue : null
+      try {
+        const arrivalResult = handleNodeArrival({
+          node: gigNode,
+          band,
+          player,
+          updateBand,
+          updatePlayer,
+          triggerEvent,
+          startGig: venue => {
+            queuedGigVenue = venue
+          },
+          addToast,
+          rng,
+          bookingLock: getExpeditionNodeBookingLock(
+            { player, expedition },
+            gigNode.type
+          )
+        })
+        route.scene = arrivalResult.scene
+        route.gigVenue = arrivalResult.gigStarted ? queuedGigVenue : null
+      } catch (error) {
+        // The sequence has already spent its day, so a throw here must not leave
+        // the route half-consumed (no gig, no message, a later effect pass
+        // silently routing to the map): report it and fall back to the map.
+        handleError(error, {
+          addToast,
+          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+            defaultValue: 'Failed to start Gig.'
+          })
+        })
+        route.gigVenue = null
+        route.scene = GAME_PHASES.OVERWORLD
+      }
     }
 
     if (route.gigVenue && !route.gigStartQueued) {

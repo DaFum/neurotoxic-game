@@ -310,6 +310,27 @@ describe('gig arrival through the real reducer', () => {
     expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 
+  test('a gig evaluation that throws is reported and falls back to the map', () => {
+    const initial = gigArrivalState({ harmony: 20, consecutiveBadShows: 5 })
+    const { result } = renderArrival(initial, () => {
+      throw new Error('boom')
+    })
+
+    expect(() =>
+      act(() => {
+        result.current.handleArrivalSequence()
+      })
+    ).not.toThrow()
+
+    expect(spies.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String)
+    )
+    expect(store.state.currentGig).toBeFalsy()
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.changeScene).toHaveBeenCalledTimes(1)
+  })
+
   test('a cancelled show saves after its fame penalty has committed', () => {
     const initial = gigArrivalState({ harmony: 20, consecutiveBadShows: 5 })
 

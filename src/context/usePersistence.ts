@@ -601,7 +601,21 @@ export function usePersistence({
   }, [currentScene, saveGame, saveRequestCount])
 
   const loadGame = useCallback((): LoadGameResult => {
-    return safeStorageOperation(
+    const refuseUnreadable = (): LoadGameResult => {
+      logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
+      addToast(
+        tRef.current('ui:save.loadUnreadable', {
+          defaultValue:
+            'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+        }),
+        'error'
+      )
+      return { ok: false, reason: 'unreadable' }
+    }
+    // Returned by identity when the storage operation itself keeps throwing, so
+    // that case is told apart from a refusal the operation already reported.
+    const storageFailed: LoadGameResult = { ok: false, reason: 'unreadable' }
+    const result = safeStorageOperation(
       'loadGame',
       (): LoadGameResult => {
         let parsed: unknown
@@ -614,20 +628,7 @@ export function usePersistence({
           // save cannot be ruled out, and saveGame would refuse every save of
           // the session it started.
           const newerVersion = readNewerStoredSaveVersion(storage)
-          if (newerVersion === 'unreadable') {
-            logger.warn(
-              'Persistence',
-              'Load skipped: the save slot cannot be read'
-            )
-            addToast(
-              tRef.current('ui:save.loadUnreadable', {
-                defaultValue:
-                  'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
-              }),
-              'error'
-            )
-            return { ok: false, reason: 'unreadable' }
-          }
+          if (newerVersion === 'unreadable') return refuseUnreadable()
           if (typeof newerVersion === 'number') {
             handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
               addToast
@@ -730,10 +731,10 @@ export function usePersistence({
         }
         return { ok: true }
       },
-      // A storage operation that keeps throwing is handled silently, like an
-      // unreadable slot, so it reads as no save.
-      { ok: false, reason: 'missing' }
+      storageFailed
     )
+    // The operation's failure was handled silently, so the player is told here.
+    return result === storageFailed ? refuseUnreadable() : result
   }, [
     addToast,
     dispatch,
