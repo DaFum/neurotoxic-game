@@ -1628,6 +1628,35 @@ const getRegistryEvent = (id: string): UnknownRecord | undefined => {
   return registryEventsById.get(id)
 }
 
+// Deep-copies registry data so state never aliases the module-level registry.
+// Only plain objects and arrays are copied: functions and class instances
+// (Date, Map, ...) stay shared by reference rather than being flattened. The
+// WeakSet holds the objects on the current path, so a cycle ends the descent
+// instead of recursing forever.
+const cloneRegistryValue = (
+  value: unknown,
+  ancestors: WeakSet<object> = new WeakSet()
+): unknown => {
+  if (typeof value !== 'object' || value === null) return value
+  if (ancestors.has(value)) return value
+  const isArray = Array.isArray(value)
+  const prototype = Object.getPrototypeOf(value)
+  if (!isArray && prototype !== Object.prototype && prototype !== null) {
+    return value
+  }
+  ancestors.add(value)
+  const copy: unknown = isArray
+    ? value.map(item => cloneRegistryValue(item, ancestors))
+    : Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          cloneRegistryValue(item, ancestors)
+        ])
+      )
+  ancestors.delete(value)
+  return copy
+}
+
 /**
  * Restores registry-owned executable event data that JSON cannot carry.
  *
@@ -1653,7 +1682,7 @@ const rehydrateRegistryEvent = (event: GameEvent): void => {
       return saved.id === opt.id && saved.label === opt.label
     })
   if (!matches) return
-  event.options = registeredOptions as EventOption[]
+  event.options = cloneRegistryValue(registeredOptions) as EventOption[]
   if (Array.isArray(registered.tags))
     event.tags = sanitizeStringArray(registered.tags)
 }
@@ -1685,7 +1714,8 @@ export const sanitizeSupplyStopInventory = (
     // The same per-field schema the map's shop stock goes through, so a crafted
     // save cannot smuggle in a negative cost or an unvalidated effect.
     const item = sanitizeShopInventoryItem(value[i])
-    if (item && Object.keys(item).length > 0) items.push(item)
+    // `sanitizeShopInventoryItem` already returns null for an empty result.
+    if (item) items.push(item)
   }
   // Nothing usable left is no open shop, not an empty one.
   return items.length > 0 ? items : null

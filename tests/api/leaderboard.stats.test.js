@@ -25,7 +25,9 @@ const mockRedisClient = {
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),
   multi: vi.fn(() => mockMulti),
-  eval: vi.fn(() => Promise.resolve([1, 1])),
+  // Serves the rate-limit script from `incr` and the revision script from
+  // `writeResult`, so tests can steer each independently.
+  eval: vi.fn(),
   disconnect: vi.fn(() => Promise.resolve()),
   on: vi.fn(),
   connect: vi.fn(() => Promise.resolve())
@@ -35,6 +37,13 @@ const mockRedisClient = {
 vi.mock('../../lib/redis', () => ({
   default: mockRedisClient
 }))
+
+let writeResult = [1, 1]
+const isRateLimitScript = script => script.includes("'INCR'")
+const writeCalls = () =>
+  mockRedisClient.eval.mock.calls.filter(
+    ([script]) => !isRateLimitScript(script)
+  )
 
 describe('Leaderboard Stats API', () => {
   let statsModule
@@ -51,7 +60,12 @@ describe('Leaderboard Stats API', () => {
     mockRedisClient.on.mockClear()
     mockRedisClient.connect.mockClear()
     mockRedisClient.eval.mockClear()
-    mockRedisClient.eval.mockImplementation(() => Promise.resolve([1, 1]))
+    writeResult = [1, 1]
+    mockRedisClient.eval.mockImplementation(script =>
+      isRateLimitScript(script)
+        ? mockRedisClient.incr()
+        : Promise.resolve(writeResult)
+    )
     mockMulti.zAdd.mockClear()
     mockMulti.exec.mockClear()
 
@@ -117,8 +131,8 @@ describe('Leaderboard Stats API', () => {
 
     assert.strictEqual(res.status.mock.calls[0][0], 200)
     assert.deepStrictEqual(res.json.mock.calls[0][0], { success: true })
-    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 1)
-    const [script, options] = mockRedisClient.eval.mock.calls[0]
+    assert.strictEqual(writeCalls().length, 1)
+    const [script, options] = writeCalls()[0]
     assert.match(script, /HGET/)
     assert.deepStrictEqual(options.keys, [
       'lb:revision',
@@ -149,7 +163,7 @@ describe('Leaderboard Stats API', () => {
   })
 
   test('POST with a stale revision is acknowledged but not applied', async () => {
-    mockRedisClient.eval.mockImplementation(() => Promise.resolve([0, 9]))
+    writeResult = [0, 9]
     const { res } = createApiRouteMocks()
     await statsModule.default(revisionRequest(5), res)
 
@@ -179,7 +193,7 @@ describe('Leaderboard Stats API', () => {
 
       assert.strictEqual(res.status.mock.calls[0][0], 200)
       assert.deepStrictEqual(res.json.mock.calls[0][0], { success: true })
-      assert.deepStrictEqual(mockRedisClient.eval.mock.calls[0][1].arguments, [
+      assert.deepStrictEqual(writeCalls()[0][1].arguments, [
         'test-band',
         '1700000000000',
         'Test Band',
@@ -224,7 +238,7 @@ describe('Leaderboard Stats API', () => {
         error: 'Invalid money value'
       })
     }
-    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 0)
+    assert.strictEqual(writeCalls().length, 0)
   })
 
   test('POST rejects an invalid revision', async () => {
@@ -233,7 +247,7 @@ describe('Leaderboard Stats API', () => {
       await statsModule.default(revisionRequest(bad), res)
       assert.strictEqual(res.status.mock.calls[0][0], 400, String(bad))
     }
-    assert.strictEqual(mockRedisClient.eval.mock.calls.length, 0)
+    assert.strictEqual(writeCalls().length, 0)
   })
 
   test('POST rejects missing required fields', async () => {

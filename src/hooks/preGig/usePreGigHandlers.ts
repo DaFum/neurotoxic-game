@@ -1,34 +1,16 @@
 import { useState, useCallback, useRef } from 'react'
-import type {
-  GameState,
-  PlayerState,
-  BandState,
-  Venue,
-  GigModifiers
-} from '../../types'
+import type { GameState, BandState, Venue, GigModifiers } from '../../types'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import type { Song } from '../../types/audio'
 import type { AssetModifiers } from '../../types/assets'
 import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
-import type { UpdatePlayerPayload } from '../../types'
 import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
-import {
-  clampPlayerMoney,
-  clampBandHarmony,
-  finiteNumberOr
-} from '../../utils/gameState'
-import { canAfford } from '../../utils/purchaseLogicUtils'
-import {
-  getMerchCapacity,
-  resolveMerchRestockCost,
-  getMerchBundleAmount,
-  getTotalMerchStock
-} from '../../utils/merchUtils'
+import { clampBandHarmony, finiteNumberOr } from '../../utils/gameState'
+import { resolveMerchRestock } from '../../utils/merchUtils'
 import { audioService, getSongId } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
 import { pickWeighted } from '../../utils/selectionUtils'
-import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import {
   getLastMinigameFallback,
   setLastMinigameFallback,
@@ -43,7 +25,6 @@ import type { Minigame } from './preGigUtils'
  */
 export interface UsePreGigHandlersProps {
   band: GameState['band']
-  player: PlayerState
   currentGig: Venue | null
   setlist: RhythmSetlistEntry[]
   /** Most songs the setlist may hold. */
@@ -57,8 +38,8 @@ export interface UsePreGigHandlersProps {
   selectedSongIds: Set<string>
   calculatedBudget: number
   typedT: TranslationCallback
-  updatePlayer: (updates: UpdatePlayerPayload) => void
   holdBandMeeting: () => void
+  restockMerch: (merchKey: string) => void
   updateBand: (
     updates: Partial<BandState> | ((band: BandState) => Partial<BandState>)
   ) => void
@@ -101,7 +82,6 @@ interface UsePreGigHandlersReturn {
  */
 export const usePreGigHandlers = ({
   band,
-  player,
   currentGig,
   setlist,
   setlistMax,
@@ -113,8 +93,8 @@ export const usePreGigHandlers = ({
   selectedSongIds,
   calculatedBudget,
   typedT,
-  updatePlayer,
   holdBandMeeting,
+  restockMerch,
   updateBand,
   setSetlist,
   setGigModifiers,
@@ -141,51 +121,27 @@ export const usePreGigHandlers = ({
   const handleRestockMerch = useCallback(
     (merchKey: string) => {
       if (isExpeditionActive) return
-      const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(merchKey)
-      if (!itemDef) return
-
-      const bundleAmount = getMerchBundleAmount(itemDef)
-      const currentInventory = band?.inventory ?? {}
-      const merchCapacity = getMerchCapacity(assetModifiers.merchCapacityBonus)
-      const remainingCapacity = Math.max(
-        0,
-        merchCapacity - getTotalMerchStock(currentInventory)
+      const restock = resolveMerchRestock(
+        merchKey,
+        band?.inventory ?? {},
+        assetModifiers
       )
+      if (!restock) return
 
-      if (remainingCapacity <= 0) {
+      if (restock.restockAmount <= 0) {
         addToast(typedT('ui:pregig.toasts.merchCapacityFull'), 'error')
         return
       }
 
-      const restockAmount = Math.max(
-        0,
-        Math.min(bundleAmount, remainingCapacity)
-      )
-      const cost = resolveMerchRestockCost({
-        itemCost: itemDef.cost,
-        merchCostMultiplier: assetModifiers.merchCostMultiplier,
-        restockAmount,
-        bundleAmount
-      })
-      if (!canAfford({ currency: 'money' }, player, cost)) {
+      // Spendable cash, not the raw balance, matching the reducer's check.
+      if (spendableMoney < restock.cost) {
         addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
         return
       }
 
-      updatePlayer((prev: PlayerState) => ({
-        money: clampPlayerMoney(finiteNumberOr(prev.money, 0) - cost)
-      }))
-
-      updateBand((prevBand: BandState) => {
-        const currentInventory = prevBand.inventory ?? {}
-        const currentAmount = finiteNumberOr(currentInventory[merchKey], 0)
-        return {
-          inventory: {
-            ...currentInventory,
-            [merchKey]: currentAmount + restockAmount
-          }
-        }
-      })
+      // One action pays and adds the stock, so the debit and the goods land
+      // together or not at all.
+      restockMerch(merchKey)
 
       addToast(
         typedT('ui:pregig.toasts.restocked', { defaultValue: 'Restocked!' }),
@@ -193,13 +149,11 @@ export const usePreGigHandlers = ({
       )
     },
     [
-      player,
+      spendableMoney,
       band?.inventory,
-      assetModifiers.merchCapacityBonus,
-      assetModifiers.merchCostMultiplier,
+      assetModifiers,
       isExpeditionActive,
-      updatePlayer,
-      updateBand,
+      restockMerch,
       addToast,
       typedT
     ]
@@ -250,16 +204,15 @@ export const usePreGigHandlers = ({
   )
 
   // Single affordability rule for enabling a modifier: the projected budget
-  // (current selections plus this one) must fit the player's money. Shared by
-  // the toggle guard and the button's disabled state.
+  // (current selections plus this one) must fit the spendable cash. Shared by
+  // the toggle guard and the button's disabled state. Modifier costs are paid
+  // in the post-gig ledger, where the Expedition cash floor refuses a debit
+  // into protected Career Cash, so protected cash must not unlock them here.
   const canAffordModifier = useCallback(
     (key: keyof typeof MODIFIER_COSTS) =>
-      canAfford(
-        { currency: 'money' },
-        player,
-        calculatedBudget + calculateGigModifierCost(key, assetModifiers)
-      ),
-    [player, calculatedBudget, assetModifiers]
+      spendableMoney >=
+      calculatedBudget + calculateGigModifierCost(key, assetModifiers),
+    [spendableMoney, calculatedBudget, assetModifiers]
   )
 
   const toggleModifier = useCallback(

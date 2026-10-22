@@ -251,11 +251,13 @@ export const createLeaderboardSyncController = (
         : null
       return { response, body }
     }
-    // Settles the race even when `fetch` or the body ignores the signal.
+    // Settles the race even when `fetch` or the body ignores the signal. The
+    // listener is removed once the race is decided, so an abort after that
+    // (dispose) cannot reject this promise.
+    let onAbort = (): void => {}
     const aborted = new Promise<never>((_, reject) => {
-      signal.addEventListener('abort', () => reject(signal.reason), {
-        once: true
-      })
+      onAbort = () => reject(signal.reason)
+      signal.addEventListener('abort', onAbort, { once: true })
     })
     const deadline = deps.timers.setTimeout(() => {
       abort.abort(
@@ -267,6 +269,7 @@ export const createLeaderboardSyncController = (
       reply = await Promise.race([exchange(), aborted])
     } finally {
       deps.timers.clearTimeout(deadline)
+      signal.removeEventListener('abort', onAbort)
     }
     // An abort that fired while the body was read (and swallowed as `null`)
     // still fails the request.

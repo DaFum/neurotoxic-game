@@ -111,8 +111,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     changeScene,
     setSetlist,
     setGigModifiers,
-    updatePlayer,
     holdBandMeeting,
+    restockMerch,
     triggerEvent,
     updateBand,
     addToast,
@@ -151,7 +151,6 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     handleStartShow
   } = usePreGigHandlers({
     band,
-    player,
     currentGig,
     setlist,
     setlistMax,
@@ -163,8 +162,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     selectedSongIds,
     calculatedBudget,
     typedT,
-    updatePlayer,
     holdBandMeeting,
+    restockMerch,
     updateBand,
     setSetlist,
     setGigModifiers,

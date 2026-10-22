@@ -36,7 +36,6 @@ describe('usePreGigHandlers', () => {
 
     mockProps = {
       band: { harmony: 50, inventory: {}, merchPrices: {} },
-      player: { money: 100 },
       currentGig: null,
       setlist: [],
       setlistMax: 3,
@@ -50,8 +49,8 @@ describe('usePreGigHandlers', () => {
       selectedSongIds: new Set(),
       calculatedBudget: 0,
       typedT: vi.fn(k => k),
-      updatePlayer: vi.fn(),
       holdBandMeeting: vi.fn(),
+      restockMerch: vi.fn(),
       updateBand: vi.fn(),
       setSetlist: vi.fn(),
       setGigModifiers: vi.fn(),
@@ -99,11 +98,11 @@ describe('usePreGigHandlers', () => {
   })
 
   describe('modifier affordability', () => {
-    it('canAffordModifier compares the projected budget with the player money', () => {
+    it('canAffordModifier compares the projected budget with the spendable cash', () => {
       const { result: cheap } = renderHook(() =>
         usePreGigHandlers({
           ...mockProps,
-          player: { money: 1_000_000 },
+          spendableMoney: 1_000_000,
           calculatedBudget: 0
         })
       )
@@ -112,16 +111,31 @@ describe('usePreGigHandlers', () => {
       const { result: broke } = renderHook(() =>
         usePreGigHandlers({
           ...mockProps,
-          player: { money: 0 },
+          spendableMoney: 0,
           calculatedBudget: 0
         })
       )
       expect(broke.current.canAffordModifier('catering')).toBe(false)
     })
 
+    it('protected run cash cannot unlock a modifier', () => {
+      // A wealthy Career whose cash is all protected during the run.
+      const { result } = renderHook(() =>
+        usePreGigHandlers({
+          ...mockProps,
+          player: { money: 1_000_000 },
+          spendableMoney: 0,
+          isExpeditionActive: true
+        })
+      )
+      expect(result.current.canAffordModifier('catering')).toBe(false)
+      act(() => result.current.toggleModifier('catering'))
+      expect(mockProps.setGigModifiers).not.toHaveBeenCalled()
+    })
+
     it('toggleModifier refuses an unaffordable activation but still switches an active one off', () => {
       const { result: broke } = renderHook(() =>
-        usePreGigHandlers({ ...mockProps, player: { money: 0 } })
+        usePreGigHandlers({ ...mockProps, spendableMoney: 0 })
       )
       act(() => broke.current.toggleModifier('catering'))
       expect(mockProps.setGigModifiers).not.toHaveBeenCalled()
@@ -133,7 +147,7 @@ describe('usePreGigHandlers', () => {
       const { result: active } = renderHook(() =>
         usePreGigHandlers({
           ...mockProps,
-          player: { money: 0 },
+          spendableMoney: 0,
           gigModifiers: { catering: true }
         })
       )
@@ -148,38 +162,45 @@ describe('usePreGigHandlers', () => {
     const { result } = renderHook(() =>
       usePreGigHandlers({
         ...mockProps,
-        player: { money: 1_000_000 },
+        spendableMoney: 1_000_000,
         isExpeditionActive: true
       })
     )
 
     act(() => result.current.handleRestockMerch('shirts'))
 
-    expect(mockProps.updatePlayer).not.toHaveBeenCalled()
+    expect(mockProps.restockMerch).not.toHaveBeenCalled()
     expect(mockProps.updateBand).not.toHaveBeenCalled()
   })
 
-  it('recovers a non-finite stored merch count before adding restock stock', () => {
+  it('restock dispatches one atomic payment-and-stock action', () => {
     const { result } = renderHook(() =>
-      usePreGigHandlers({
-        ...mockProps,
-        player: { money: 1_000_000 },
-        band: {
-          harmony: 50,
-          inventory: { shirts: Number.NaN },
-          merchPrices: {}
-        }
-      })
+      usePreGigHandlers({ ...mockProps, spendableMoney: 1_000_000 })
     )
 
     act(() => result.current.handleRestockMerch('shirts'))
 
-    const updateInventory = mockProps.updateBand.mock.calls[0][0]
-    const patch = updateInventory({
-      harmony: 50,
-      inventory: { shirts: Number.NaN },
-      merchPrices: {}
-    })
-    expect(Number.isFinite(patch.inventory.shirts)).toBe(true)
+    expect(mockProps.restockMerch).toHaveBeenCalledTimes(1)
+    expect(mockProps.restockMerch).toHaveBeenCalledWith('shirts')
+    expect(mockProps.updateBand).not.toHaveBeenCalled()
+    expect(mockProps.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.restocked',
+      'success'
+    )
+  })
+
+  it('restock refuses with a toast when spendable cash is short', () => {
+    // A shirt bundle costs 150; 149 spendable cannot pay.
+    const { result } = renderHook(() =>
+      usePreGigHandlers({ ...mockProps, spendableMoney: 149 })
+    )
+
+    act(() => result.current.handleRestockMerch('shirts'))
+
+    expect(mockProps.restockMerch).not.toHaveBeenCalled()
+    expect(mockProps.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.noMoneyUpgrade',
+      'error'
+    )
   })
 })

@@ -109,6 +109,20 @@ export const isGigNode = <T extends { type?: string }>(
 }
 
 /**
+ * Checks if arrival at the node takes the gig branch of `handleNodeArrival`.
+ *
+ * @param node - Node to test; nullish nodes return false.
+ * @returns True for GIG, FESTIVAL, FINALE and the legacy CITY type.
+ *
+ * @remarks
+ * Unlike `isGigNode`, this includes legacy CITY: it still gets travel events,
+ * but arrival books its venue exactly like a GIG node.
+ */
+export const isGigArrivalNode = (
+  node: { type?: string } | null | undefined
+): boolean => isGigNode(node) || node?.type === 'CITY'
+
+/**
  * Resolves the node type arrival logic must act on.
  *
  * @param node - The map node the band stands on.

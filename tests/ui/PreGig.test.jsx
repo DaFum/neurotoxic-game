@@ -128,6 +128,7 @@ const mockUseGameState = {
   player: { money: 1000 },
   updatePlayer: vi.fn(),
   holdBandMeeting: vi.fn(),
+  restockMerch: vi.fn(),
   triggerEvent: vi.fn(),
   activeEvent: null,
   band: { harmony: 50, inventory: { shirts: 10 }, merchPrices: {} },
@@ -295,6 +296,7 @@ describe('PreGig', () => {
     fireEvent.click(
       getByRole('button', { name: 'ui:pregig.merchStrategy.restock' })
     )
+    expect(mockUseGameState.restockMerch).not.toHaveBeenCalled()
     expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
     expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
   })
@@ -682,7 +684,7 @@ describe('PreGig', () => {
     expect(nextBand.merchPrices.shirts).toBe(19)
   })
 
-  test('merch tab restock button invokes updatePlayer for cost deduction', async () => {
+  test('merch tab restock button dispatches one atomic restock action', async () => {
     mockUseGameState.band = {
       harmony: 50,
       inventory: { shirts: 0 },
@@ -702,18 +704,21 @@ describe('PreGig', () => {
 
     fireEvent.click(restockBtns[0])
 
-    // Restock must do both: deduct money AND add inventory
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
-    expect(mockUseGameState.updateBand).toHaveBeenCalled()
+    // Debit and stock travel in one action, never as two separate updates.
+    expect(mockUseGameState.restockMerch).toHaveBeenCalledTimes(1)
+    expect(mockUseGameState.restockMerch).toHaveBeenCalledWith('shirts')
+    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
   })
 
-  test('merch restock cost uses asset merch cost multiplier', async () => {
+  test('merch restock eligibility uses asset merch cost multiplier', async () => {
     mockUseGameState.band = {
       harmony: 50,
       inventory: { shirts: 0 },
       merchPrices: {}
     }
-    mockUseGameState.player = { money: 500 }
+    // 120 covers the discounted 113 shirt bundle but not the base 150.
+    mockUseGameState.player = { money: 120 }
     mockUseGameState.assets = [
       makeAssetWithModule({
         kind: 'merch_workshop_chassis',
@@ -731,9 +736,7 @@ describe('PreGig', () => {
     const restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
     fireEvent.click(restockBtns[0])
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
-    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
-    expect(updateFn({ money: 500 })).toEqual({ money: 387 })
+    expect(mockUseGameState.restockMerch).toHaveBeenCalledWith('shirts')
   })
 
   test('synchronous re-entry guard: double-call dispatches only one start-minigame action', async () => {
@@ -847,13 +850,13 @@ describe('PreGig', () => {
     let restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
     fireEvent.click(restockBtns[0])
 
-    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.restockMerch).not.toHaveBeenCalled()
     expect(mockUseGameState.addToast).toHaveBeenCalledWith(
       'ui:pregig.toasts.merchCapacityFull',
       'error'
     )
 
-    mockUseGameState.updatePlayer.mockClear()
+    mockUseGameState.restockMerch.mockClear()
     mockUseGameState.addToast.mockClear()
     mockUseGameState.assets = [
       makeAssetWithModule({
@@ -866,8 +869,6 @@ describe('PreGig', () => {
     restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
     fireEvent.click(restockBtns[0])
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
-    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
-    expect(updateFn({ money: 500 })).toEqual({ money: 350 })
+    expect(mockUseGameState.restockMerch).toHaveBeenCalledWith('shirts')
   })
 })

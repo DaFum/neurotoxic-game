@@ -37,7 +37,7 @@ import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { parseSaveVersion } from '../utils/saveVersion'
 import { createLoadGameAction } from './actionCreators'
-import type { GameAction, GameState } from '../types'
+import type { GameAction, GameState, LoadGameResult } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 /**
@@ -600,27 +600,43 @@ export function usePersistence({
     }
   }, [currentScene, saveGame, saveRequestCount])
 
-  const loadGame = useCallback(() => {
-    return safeStorageOperation(
+  const loadGame = useCallback((): LoadGameResult => {
+    const refuseUnreadable = (): LoadGameResult => {
+      logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
+      addToast(
+        tRef.current('ui:save.loadUnreadable', {
+          defaultValue:
+            'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+        }),
+        'error'
+      )
+      return { ok: false, reason: 'unreadable' }
+    }
+    // Returned by identity when the storage operation itself keeps throwing, so
+    // that case is told apart from a refusal the operation already reported.
+    const storageFailed: LoadGameResult = { ok: false, reason: 'unreadable' }
+    const result = safeStorageOperation(
       'loadGame',
-      () => {
+      (): LoadGameResult => {
         let parsed: unknown
         let rawSave: string
         try {
           // The same guard saveGame applies: anything newer than this build
           // (a slot of its own or a newer payload in the shared key) means a
           // loaded session could never be saved. Say so rather than loading or
-          // reporting no save at all. An unreadable slot falls through and
-          // reads as no save.
+          // reporting no save at all. An unreadable slot refuses too: a newer
+          // save cannot be ruled out, and saveGame would refuse every save of
+          // the session it started.
           const newerVersion = readNewerStoredSaveVersion(storage)
+          if (newerVersion === 'unreadable') return refuseUnreadable()
           if (typeof newerVersion === 'number') {
             handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
               addToast
             })
-            return false
+            return { ok: false, reason: 'incompatible' }
           }
           const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
-          if (!saved) return false
+          if (!saved) return { ok: false, reason: 'missing' }
           rawSave = saved
           parsed = safeJsonParse(saved)
         } catch (_error) {
@@ -633,7 +649,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         if (!isLooseRecord(parsed)) {
@@ -645,7 +661,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         // Checked before shape validation: a newer schema may legitimately
@@ -656,7 +672,7 @@ export function usePersistence({
           handleError(new StateError(incompatibleSaveMessage(storedVersion)), {
             addToast
           })
-          return false
+          return { ok: false, reason: 'incompatible' }
         }
 
         try {
@@ -672,7 +688,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         const parsedObj = parsed as Record<string, unknown>
@@ -688,7 +704,7 @@ export function usePersistence({
             ),
             { addToast }
           )
-          return false
+          return { ok: false, reason: 'corrupt' }
         }
 
         const savedRaw = Array.isArray(parsedObj.unlocks)
@@ -713,10 +729,12 @@ export function usePersistence({
         if (isLooseRecord(migratedObj.pendingGigSettlement)) {
           saveGameAfterStateCommit()
         }
-        return true
+        return { ok: true }
       },
-      false
+      storageFailed
     )
+    // The operation's failure was handled silently, so the player is told here.
+    return result === storageFailed ? refuseUnreadable() : result
   }, [
     addToast,
     dispatch,

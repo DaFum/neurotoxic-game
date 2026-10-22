@@ -13,7 +13,8 @@ import type {
   SocialState,
   UpdateBandPayload,
   UpdatePlayerPayload,
-  GamePhase
+  GamePhase,
+  LoadGameResult
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger } from '../utils/logger'
@@ -96,7 +97,8 @@ import {
   createSetPendingRiskEventAction,
   createAddUnlockAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction,
-  createHoldBandMeetingAction
+  createHoldBandMeetingAction,
+  createRestockMerchAction
 } from './actionCreators'
 import {
   purchaseChassis as purchaseChassisAction,
@@ -121,6 +123,8 @@ type BaseGameDispatchActions = {
   ) => void
   /** Pays for a band meeting and restores harmony atomically. */
   holdBandMeeting: () => void
+  /** Pays for one merch restock and adds the stock atomically. */
+  restockMerch: (merchKey: string) => void
   updateSocial: (
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
@@ -175,7 +179,7 @@ type BaseGameDispatchActions = {
    * dispatch depends on it.
    */
   saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
-  loadGame: () => boolean
+  loadGame: () => LoadGameResult
   deleteSave: () => void
   resetState: () => void
   updateSettings: (
@@ -505,6 +509,7 @@ type SimpleDispatchActions = Pick<
   | 'clearPendingGigSettlement'
   | 'toggleNeuroDecimator'
   | 'holdBandMeeting'
+  | 'restockMerch'
   | 'updateSocial'
   | 'setGameMap'
   | 'setCurrentGig'
@@ -600,6 +605,8 @@ export function useGameDispatchActions({
       toggleNeuroDecimator: isActive =>
         dispatch(createToggleNeuroDecimatorAction(isActive)),
       holdBandMeeting: () => dispatch(createHoldBandMeetingAction()),
+      restockMerch: (merchKey: string) =>
+        dispatch(createRestockMerchAction(merchKey)),
       updateSocial: (
         updates:
           Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)

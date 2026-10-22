@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { getEventListeners } from 'node:events'
 import {
   createLeaderboardSyncController,
   snapshotKey,
@@ -394,6 +395,19 @@ test('resends a snapshot equal to the last confirmed one after a stale response'
   assert.ok(t.bodies[2].revision > 9e12)
 })
 
+test('clears the stored confirmed-snapshot marker when a stale response arrives', async () => {
+  const t = setup({ script: [okResponse(), staleResponse(9e12)] })
+  await t.submit(snap(500)) // X confirmed and stored
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+
+  await t.submit(snap(400))
+  await t.advance(MIN_SYNC_INTERVAL_MS) // Y answered stale: another tab wrote
+
+  // The server holds a snapshot this tab never confirmed, so a reload must not
+  // treat X as still stored and skip it.
+  assert.equal(t.storage.get(LAST_KEY('p')), '')
+})
+
 test('backs off when the server keeps answering stale', async () => {
   const t = setup({ script: [staleResponse(5e12), staleResponse(6e12)] })
   await t.submit(snap(500))
@@ -592,6 +606,25 @@ for (const [outcome, settle] of [
     )
   })
 }
+
+test('a settled request leaves no abort listener, and a later dispose no rejection', async () => {
+  const unhandled = []
+  const onUnhandled = reason => unhandled.push(reason)
+  process.on('unhandledRejection', onUnhandled)
+  try {
+    const t = setup({ requestTimeoutMs: TIMEOUT_MS })
+    await t.submit(snap(500))
+    assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+    // The race against the abort signal is over: its listener must go with it.
+    assert.equal(getEventListeners(t.signals[0], 'abort').length, 0)
+
+    t.controller.dispose()
+    await flush()
+    assert.deepEqual(unhandled, [])
+  } finally {
+    process.off('unhandledRejection', onUnhandled)
+  }
+})
 
 test('a disposed controller ignores later submits', async () => {
   const t = setup()

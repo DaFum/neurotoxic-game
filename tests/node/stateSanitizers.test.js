@@ -610,6 +610,43 @@ describe('stateSanitizers', () => {
       )
     })
 
+    it('does not alias the registry options and survives mutation', () => {
+      const restored = sanitizeActiveEvent(
+        JSON.parse(JSON.stringify(registered))
+      )
+      assert.notEqual(restored.options, registered.options)
+      restored.options.forEach((opt, i) => {
+        assert.notEqual(opt, registered.options[i])
+        assert.notEqual(opt.effect, registered.options[i].effect)
+        assert.notEqual(
+          opt.effect.effects,
+          registered.options[i].effect.effects
+        )
+      })
+      const before = JSON.stringify(registered.options)
+      restored.options[0].effect.effects[0].value = 9999
+      restored.options[0].label = 'mutated'
+      restored.options.pop()
+      assert.equal(JSON.stringify(registered.options), before)
+    })
+
+    it('keeps non-plain registry values intact and survives a cycle', () => {
+      const saved = JSON.parse(JSON.stringify(registered))
+      const option = registered.options[0]
+      const stamp = new Map([['k', 1]])
+      option.meta = stamp
+      option.self = option
+      try {
+        const restored = sanitizeActiveEvent(saved)
+        assert.equal(restored.options[0].meta, stamp)
+        assert.notEqual(restored.options[0], option)
+        assert.equal(restored.options[0].effect.type, option.effect.type)
+      } finally {
+        delete option.meta
+        delete option.self
+      }
+    })
+
     it('keeps sanitized save data when the option list no longer matches the registry', () => {
       const saved = JSON.parse(JSON.stringify(registered))
       saved.options = saved.options.slice(0, 2)

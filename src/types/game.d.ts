@@ -67,6 +67,14 @@ export type TerminalOutcome =
   | { reason: 'career_victory' }
   | { reason: 'stranded' }
 
+/**
+ * Outcome of `loadGame`. Every refusal except `missing` has already told the
+ * player why through its own toast; `missing` (no readable save) has not.
+ */
+export type LoadGameResult =
+  | { ok: true }
+  | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' | 'unreadable' }
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -262,6 +270,7 @@ export type GameAction =
       { isActive: boolean }
     >
   | Action<(typeof ActionTypes)['HOLD_BAND_MEETING']>
+  | Action<(typeof ActionTypes)['RESTOCK_MERCH'], { merchKey: string }>
   | Action<(typeof ActionTypes)['UPDATE_BAND'], UpdateBandPayload>
   | Action<(typeof ActionTypes)['SETTLE_SOLD_MERCH'], Record<string, number>>
   | Action<

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import {
   handleNodeArrival,
+  isGigArrivalNode,
   processHarmonyRegen,
   processTravelEvents,
   resolveArrivalNode
@@ -10,7 +11,7 @@ import { handleError } from '../utils/errorHandler'
 import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import i18n from '../i18n'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
-import type { GamePhase, Venue } from '../types'
+import type { GamePhase, MapNode, Venue } from '../types'
 
 /**
  * Optional overrides for `useArrivalLogic`.
@@ -49,6 +50,10 @@ type UseArrivalLogicOptions = {
  * bankruptcy the reducer sets `currentScene = GAMEOVER`; the effect detects this
  * and short-circuits routing while still saving once — so GAMEOVER is never
  * overwritten by an arrival scene.
+ *
+ * Gig-branch arrival (`isGigArrivalNode`) is evaluated in that effect too, so
+ * the cancellation roll and its fame penalty read the committed post-tick
+ * band and player rather than the pre-dispatch render values.
  */
 export const useArrivalLogic = ({
   onShowHQ,
@@ -90,10 +95,13 @@ export const useArrivalLogic = ({
   // The ref holds the payload; the nonce is bumped to trigger the effect after the
   // arrival dispatches commit. The effect guards on the ref (not a boolean state)
   // so it never has to call a setState synchronously inside the effect.
+  // `gigNode` is a gig-branch arrival still to be evaluated: the cancellation
+  // roll and its fame penalty must read the committed post-tick band and player.
   const pendingRouteRef = useRef<{
     scene: GamePhase
     gigVenue: Venue | null
     gigStartQueued: boolean
+    gigNode: MapNode | null
   } | null>(null)
   const [routeNonce, setRouteNonce] = useState(0)
 
@@ -137,6 +145,49 @@ export const useArrivalLogic = ({
       return
     }
 
+    // The gig evaluation dispatches (fame penalty, booking lock) from inside
+    // this effect, so a save taken here would miss them.
+    let evaluatedGig = false
+    if (route.gigNode) {
+      evaluatedGig = true
+      const gigNode = route.gigNode
+      route.gigNode = null
+      let queuedGigVenue: Venue | null = null
+      try {
+        const arrivalResult = handleNodeArrival({
+          node: gigNode,
+          band,
+          player,
+          updateBand,
+          updatePlayer,
+          triggerEvent,
+          startGig: venue => {
+            queuedGigVenue = venue
+          },
+          addToast,
+          rng,
+          bookingLock: getExpeditionNodeBookingLock(
+            { player, expedition },
+            gigNode.type
+          )
+        })
+        route.scene = arrivalResult.scene
+        route.gigVenue = arrivalResult.gigStarted ? queuedGigVenue : null
+      } catch (error) {
+        // The sequence has already spent its day, so a throw here must not leave
+        // the route half-consumed (no gig, no message, a later effect pass
+        // silently routing to the map): report it and fall back to the map.
+        handleError(error, {
+          addToast,
+          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+            defaultValue: 'Failed to start Gig.'
+          })
+        })
+        route.gigVenue = null
+        route.scene = GAME_PHASES.OVERWORLD
+      }
+    }
+
     if (route.gigVenue && !route.gigStartQueued) {
       try {
         startGig(route.gigVenue)
@@ -172,7 +223,11 @@ export const useArrivalLogic = ({
     // runs after advanceDay() and the side-effect dispatches have committed.
     if (!route.gigStartQueued) {
       changeScene(route.scene)
-      saveGame(false)
+      if (evaluatedGig) {
+        saveGameAfterStateCommit()
+      } else {
+        saveGame(false)
+      }
     }
   }, [
     routeNonce,
@@ -181,7 +236,14 @@ export const useArrivalLogic = ({
     saveGameAfterStateCommit,
     changeScene,
     startGig,
-    addToast
+    addToast,
+    band,
+    player,
+    expedition,
+    updateBand,
+    updatePlayer,
+    triggerEvent,
+    rng
   ])
 
   const handleArrivalSequence = useCallback(() => {
@@ -193,14 +255,22 @@ export const useArrivalLogic = ({
     // band on the node it left. Arriving then would charge a day and replay
     // the origin's arrival, so the leg is abandoned back to the map instead.
     const intendedTarget = intendedTargetRef.current
+    // Only the cash floor leaves the minigame active; a route refusal or an
+    // invalid target clears it with the band still on the origin node.
+    const settlementUnpaid =
+      minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS
     if (
-      (minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS) ||
+      settlementUnpaid ||
       (intendedTarget !== null && intendedTarget !== nodeId)
     ) {
       addToast(
-        i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
-          defaultValue: 'Not enough money for gas and food!'
-        }),
+        settlementUnpaid
+          ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
+              defaultValue: 'Not enough money for gas and food!'
+            })
+          : i18n.t('ui:travel.errors.legNotCompleted', {
+              defaultValue: 'The trip could not be completed. Back to the map.'
+            }),
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)
@@ -264,11 +334,16 @@ export const useArrivalLogic = ({
       checkRivalEncounter()
 
       // 4. Handle Node Arrival & Routing
-      // Delegates routing (HQ, Gig, Rest Stop) to shared utility
+      // Delegates routing (HQ, Gig, Rest Stop) to shared utility. A gig-branch
+      // node is evaluated in the post-commit effect instead, so its
+      // cancellation roll and fame penalty read the post-tick band and player.
+      const gigNode =
+        currentNode && isGigArrivalNode(currentNode) ? currentNode : null
+      const syncNode = gigNode ? null : currentNode
       let queuedGigVenue: Venue | null = null
-      const arrivalResult = currentNode
+      const arrivalResult = syncNode
         ? handleNodeArrival({
-            node: currentNode,
+            node: syncNode,
             band,
             player,
             updateBand,
@@ -292,7 +367,7 @@ export const useArrivalLogic = ({
             rng,
             bookingLock: getExpeditionNodeBookingLock(
               { player, expedition },
-              currentNode.type
+              syncNode.type
             )
           })
         : { scene: GAME_PHASES.OVERWORLD as GamePhase, gigStarted: false }
@@ -303,7 +378,8 @@ export const useArrivalLogic = ({
       pendingRouteRef.current = {
         scene: arrivalResult.scene,
         gigVenue: arrivalResult.gigStarted ? queuedGigVenue : null,
-        gigStartQueued: false
+        gigStartQueued: false,
+        gigNode
       }
       setRouteNonce(n => n + 1)
     } catch (e) {

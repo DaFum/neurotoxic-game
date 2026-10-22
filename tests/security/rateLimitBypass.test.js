@@ -3,8 +3,9 @@ import assert from 'node:assert'
 
 const mockRedisClient = {
   isOpen: true,
-  incr: vi.fn(),
   expire: vi.fn(() => Promise.resolve()),
+  // The rate-limit script; the test supplies a per-key counter.
+  eval: vi.fn(),
   disconnect: vi.fn(() => Promise.resolve()),
   connect: vi.fn(() => Promise.resolve()),
   hSet: vi.fn(() => Promise.resolve()),
@@ -31,9 +32,9 @@ describe('Rate Limit Bypass Security Tests', () => {
     vi.clearAllMocks()
     mockRedisClient.isOpen = true
 
-    // Reset incr mock
+    // Reset the rate-limit counter
     let counts = {}
-    mockRedisClient.incr.mockImplementation(key => {
+    mockRedisClient.eval.mockImplementation((_script, { keys: [key] }) => {
       counts[key] = (counts[key] || 0) + 1
       return Promise.resolve(counts[key])
     })

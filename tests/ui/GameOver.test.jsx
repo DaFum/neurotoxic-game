@@ -76,4 +76,21 @@ describe('GameOver Scene', () => {
       expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
     })
   })
+
+  test('LOAD LAST SAVE without a save returns to the menu', async () => {
+    const { getByText, findByText, getByTestId } = render(
+      <GameStateProvider>
+        <GameOverTestHarness>
+          <GameOver />
+        </GameOverTestHarness>
+      </GameStateProvider>
+    )
+
+    await findByText('ui:gameOver.loadLastSave')
+    fireEvent.click(getByText('ui:gameOver.loadLastSave'))
+
+    await waitFor(() => {
+      expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
+    })
+  })
 })
