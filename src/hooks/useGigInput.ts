@@ -5,6 +5,7 @@ import {
   handleKeyDownLogic,
   handleKeyUpLogic
 } from '../utils/gigInputUtils'
+import { releaseAllLanes } from '../utils/rhythmGameInputUtils'
 import { hasActiveModal } from '../ui/shared/useModalBehavior'
 import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
 import type { RhythmLane } from '../types/rhythmGame'
@@ -112,6 +113,18 @@ export const useGigInput = ({
     triggerBandAnimation,
     onTogglePause
   ])
+
+  // A keyup that happens while the window is unfocused never arrives, so a lane
+  // held when focus is lost would stay lit. Lanes are per-mount state, so
+  // scene teardown needs no release.
+  useEffect(() => {
+    const releaseHeldLanes = (): void => {
+      const state = gameStateRef.current
+      if (state) releaseAllLanes(state)
+    }
+    window.addEventListener('blur', releaseHeldLanes)
+    return () => window.removeEventListener('blur', releaseHeldLanes)
+  }, [gameStateRef])
 
   // Touch/Mouse Input Handlers for Columns
   /**

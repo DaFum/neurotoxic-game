@@ -1,20 +1,19 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { audioService } from '../../utils/audio/audioEngine'
-import { getHitDamage } from './tourbusLogicUtils'
+import { stepTourbusObstacles } from './tourbusLogicUtils'
 import {
   TOURBUS_LANE_COUNT,
-  TOURBUS_BUS_Y_PERCENT,
-  TOURBUS_BUS_HEIGHT_PERCENT,
   TOURBUS_BASE_SPEED,
   TOURBUS_MAX_SPEED,
   TOURBUS_SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
 import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
-import { clamp0to100, finiteNumberOr } from '../../utils/gameState'
+import { finiteNumberOr } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
+import type { AudioSfxType } from '../../utils/audio/AudioManager'
 
 type TourbusLogicState = {
   busLane: number
@@ -78,6 +77,13 @@ const spawnObstacles = (
   }
 }
 
+/** Sound played when the bus collides with each obstacle type. */
+const COLLISION_SFX: Record<TourbusObstacleType, AudioSfxType> = {
+  OBSTACLE: 'crash',
+  FUEL: 'pickup',
+  VOID_HAZARD: 'void_hit'
+}
+
 /**
  * Moves obstacles and handles collisions with the bus.
  */
@@ -86,39 +92,10 @@ const processObstacles = (
   deltaMS: number,
   upgrades: string[]
 ) => {
-  const survivingObstacles: TourbusObstacle[] = []
-  const obstacleSpeed = game.speed
-
-  for (let i = 0; i < game.obstacles.length; i++) {
-    const obs = game.obstacles[i]
-    if (!obs) continue
-    obs.y += obstacleSpeed * deltaMS
-
-    if (
-      !obs.collided &&
-      obs.y > TOURBUS_BUS_Y_PERCENT &&
-      obs.y < TOURBUS_BUS_Y_PERCENT + TOURBUS_BUS_HEIGHT_PERCENT &&
-      obs.lane === game.busLane
-    ) {
-      obs.collided = true
-      if (obs.type === 'OBSTACLE') {
-        const hitDamage = getHitDamage(upgrades)
-        game.damage = clamp0to100(game.damage + hitDamage)
-        audioService.playSFX('crash')
-      } else if (obs.type === 'FUEL') {
-        game.itemsCollected.push('FUEL')
-        audioService.playSFX('pickup')
-      } else if (obs.type === 'VOID_HAZARD') {
-        game.itemsCollected.push('VOID_HAZARD')
-        audioService.playSFX('void_hit')
-      }
-    }
-
-    if (obs.y < 120) {
-      survivingObstacles.push(obs)
-    }
+  const collisions = stepTourbusObstacles(game, game.speed * deltaMS, upgrades)
+  for (const type of collisions) {
+    audioService.playSFX(COLLISION_SFX[type])
   }
-  game.obstacles = survivingObstacles
 }
 
 /**

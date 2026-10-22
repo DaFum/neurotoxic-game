@@ -220,4 +220,32 @@ describe('useGigInput', () => {
     // Verify ensureAudioContext was called
     assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
   })
+
+  test('window blur clears held lane visuals without registering a hit', () => {
+    gameStateRef.current.lanes = [
+      { key: 'a', active: true },
+      { key: 's', active: true }
+    ]
+    renderUseGigInput()
+
+    act(() => {
+      window.dispatchEvent(new window.Event('blur'))
+    })
+
+    assert.deepEqual(
+      gameStateRef.current.lanes.map(lane => lane.active),
+      [false, false]
+    )
+    assert.equal(actions.registerInput.mock.calls.length, 0)
+  })
+
+  test('window blur listener is removed on unmount', () => {
+    const { unmount } = renderUseGigInput()
+    unmount()
+    gameStateRef.current.lanes = [{ key: 'a', active: true }]
+
+    window.dispatchEvent(new window.Event('blur'))
+
+    assert.equal(gameStateRef.current.lanes[0].active, true)
+  })
 })
