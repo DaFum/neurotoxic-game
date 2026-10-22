@@ -2088,6 +2088,7 @@
   "save.migrationFailed": "Speicherstand konnte nicht aktualisiert werden. Eine Kopie wurde zur Wiederherstellung gesichert; greife auf Anfangszustand zurück.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "save.saveFailed": "Spiel konnte nicht gespeichert werden.",
+  "save.slotUnreadable": "Der Speicherstand konnte nicht gelesen werden, deshalb wurde das Speichern übersprungen, um einen vorhandenen Speicherstand zu schützen. Der Fortschritt wird erst wieder gespeichert, wenn der Speicher funktioniert.",
   "save.storageUnavailable": "Speicher ist in diesem Browsermodus nicht verfügbar. Fortschritt bleibt nur für diese Sitzung erhalten und wird nicht gespeichert.",
   "scene.loading": "Szene wird geladen...",
   "seconds": "{{count}} Sek.",

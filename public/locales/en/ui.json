@@ -2088,6 +2088,7 @@
   "save.migrationFailed": "Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.",
   "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
   "save.saveFailed": "Failed to save game.",
+  "save.slotUnreadable": "The save could not be read, so saving was skipped to protect any existing save. Progress will not be saved until storage works again.",
   "save.storageUnavailable": "Storage is unavailable in this browser mode. Progress is kept for this session only and will not persist.",
   "scene.loading": "Loading Scene...",
   "seconds": "{{count}}s",

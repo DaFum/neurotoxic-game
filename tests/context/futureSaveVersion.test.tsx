@@ -22,6 +22,7 @@ const { InMemoryAdapter } = await import('../../src/utils/storageAdapter')
 const { StorageProvider } = await import('../../src/context/StorageContext')
 
 const INCOMPATIBLE_KEY = 'ui:save.incompatibleVersion'
+const UNREADABLE_KEY = 'ui:save.slotUnreadable'
 
 // The slot a build one schema ahead writes. Literal on purpose: no build at
 // the current version can produce it.
@@ -165,7 +166,7 @@ describe('future-version save protection', () => {
 
   it('fails closed while the slot cannot be read, so a memory fallback never shadows a newer save', () => {
     localStorage.setItem(SAVE_KEY, FUTURE_SAVE)
-    const { result } = renderPersistence()
+    const { result, addToast } = renderPersistence()
 
     const failing = () => {
       throw new Error('SecurityError')
@@ -182,6 +183,9 @@ describe('future-version save protection', () => {
       savedDuringOutage = result.current.saveGame(false)
     })
     expect(savedDuringOutage).toBe(false)
+    expect(toastMessages(addToast).some(m => m.includes(UNREADABLE_KEY))).toBe(
+      true
+    )
 
     getSpy.mockRestore()
     setSpy.mockRestore()

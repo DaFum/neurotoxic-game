@@ -407,6 +407,21 @@ export function usePersistence({
     )
   }, [addToast, tRef])
 
+  // An unreadable slot refuses every save, so the player is told once rather
+  // than on every autosave.
+  const slotUnreadableNoticeShownRef = useRef(false)
+  const notifySlotUnreadable = useCallback(() => {
+    if (slotUnreadableNoticeShownRef.current) return
+    slotUnreadableNoticeShownRef.current = true
+    addToast(
+      tRef.current('ui:save.slotUnreadable', {
+        defaultValue:
+          'The save could not be read, so saving was skipped to protect any existing save. Progress will not be saved until storage works again.'
+      }),
+      'error'
+    )
+  }, [addToast, tRef])
+
   const incompatibleSaveMessage = useCallback(
     (saveVersion: number) =>
       tRef.current('ui:save.incompatibleVersion', {
@@ -445,6 +460,7 @@ export function usePersistence({
           'Persistence',
           'Save skipped: the save slot cannot be read, so a newer save cannot be ruled out'
         )
+        notifySlotUnreadable()
         return false
       }
       if (newerStoredVersion !== null) {
@@ -518,6 +534,7 @@ export function usePersistence({
       addToast,
       clock,
       incompatibleSaveMessage,
+      notifySlotUnreadable,
       notifyStorageDegraded,
       stateRef,
       storage,
