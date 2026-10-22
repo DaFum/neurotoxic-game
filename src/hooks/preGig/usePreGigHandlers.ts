@@ -33,7 +33,8 @@ import {
   getLastMinigameFallback,
   setLastMinigameFallback,
   isMinigame,
-  MINIGAME_CONFIG
+  MINIGAME_CONFIG,
+  BAND_MEETING_HARMONY_GAIN
 } from './preGigUtils'
 import type { Minigame } from './preGigUtils'
 
@@ -51,10 +52,13 @@ export interface UsePreGigHandlersProps {
   assetModifiers: AssetModifiers
   isExpeditionActive?: boolean
   adjustedBandMeetingCost: number
+  /** Cash the player may spend: excludes an active run's protected slice. */
+  spendableMoney: number
   selectedSongIds: Set<string>
   calculatedBudget: number
   typedT: TranslationCallback
   updatePlayer: (updates: UpdatePlayerPayload) => void
+  holdBandMeeting: () => void
   updateBand: (
     updates: Partial<BandState> | ((band: BandState) => Partial<BandState>)
   ) => void
@@ -77,6 +81,7 @@ interface UsePreGigHandlersReturn {
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void
   handleBandMeeting: () => void
+  canAffordBandMeeting: boolean
   toggleSong: (song: Song) => void
   canAffordModifier: (key: keyof typeof MODIFIER_COSTS) => boolean
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
@@ -104,10 +109,12 @@ export const usePreGigHandlers = ({
   assetModifiers,
   isExpeditionActive = false,
   adjustedBandMeetingCost,
+  spendableMoney,
   selectedSongIds,
   calculatedBudget,
   typedT,
   updatePlayer,
+  holdBandMeeting,
   updateBand,
   setSetlist,
   setGigModifiers,
@@ -198,9 +205,12 @@ export const usePreGigHandlers = ({
     ]
   )
 
+  // Spendable cash, not the raw balance: during an active run the protected
+  // Career slice cannot pay for a meeting, and the reducer refuses it too.
+  const canAffordBandMeeting = spendableMoney >= adjustedBandMeetingCost
+
   const handleBandMeeting = useCallback(() => {
-    const cost = adjustedBandMeetingCost
-    if (!canAfford({ currency: 'money' }, player, cost)) {
+    if (!canAffordBandMeeting) {
       addToast(typedT('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
     }
@@ -216,27 +226,17 @@ export const usePreGigHandlers = ({
       return
     }
 
-    updatePlayer((prev: PlayerState) => ({
-      money: clampPlayerMoney(finiteNumberOr(prev.money, 0) - cost)
-    }))
-    const newHarmony = clampBandHarmony(prevHarmony + 15)
-    const appliedDelta = newHarmony - prevHarmony
-
-    updateBand({ harmony: newHarmony })
+    // One action pays and restores harmony, so the debit and the reward land
+    // together or not at all.
+    holdBandMeeting()
+    const appliedDelta =
+      clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN) - prevHarmony
 
     addToast(
       typedT('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
       'success'
     )
-  }, [
-    adjustedBandMeetingCost,
-    player,
-    addToast,
-    typedT,
-    updatePlayer,
-    band?.harmony,
-    updateBand
-  ])
+  }, [canAffordBandMeeting, addToast, typedT, holdBandMeeting, band?.harmony])
 
   const toggleSong = useCallback(
     (song: Song) => {
@@ -348,6 +348,7 @@ export const usePreGigHandlers = ({
     handleUpdateMerchPrice,
     handleRestockMerch,
     handleBandMeeting,
+    canAffordBandMeeting,
     toggleSong,
     canAffordModifier,
     toggleModifier,

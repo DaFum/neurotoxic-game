@@ -127,6 +127,7 @@ const mockUseGameState = {
   setGigModifiers: vi.fn(),
   player: { money: 1000 },
   updatePlayer: vi.fn(),
+  holdBandMeeting: vi.fn(),
   triggerEvent: vi.fn(),
   activeEvent: null,
   band: { harmony: 50, inventory: { shirts: 10 }, merchPrices: {} },
@@ -392,7 +393,7 @@ describe('PreGig', () => {
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
   })
 
-  test('band meeting costs 50 and adds 15 harmony', async () => {
+  test('band meeting dispatches one atomic payment-and-harmony action', async () => {
     mockUseGameState.player.money = 500
     mockUseGameState.band.harmony = 50
 
@@ -401,18 +402,19 @@ describe('PreGig', () => {
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
     fireEvent.click(meetingBtn)
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
-    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
-    expect(updateFn({ money: 500 })).toEqual({ money: 450 })
-    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
+    // Debit and reward travel in one action, never as two separate updates.
+    expect(mockUseGameState.holdBandMeeting).toHaveBeenCalledTimes(1)
+    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
     expect(mockUseGameState.addToast).toHaveBeenCalledWith(
       'ui:pregig.toasts.meetingHeld',
       'success'
     )
   })
 
-  test('band meeting cost uses asset training cost multiplier', async () => {
-    mockUseGameState.player.money = 500
+  test('band meeting eligibility uses the asset training cost multiplier', async () => {
+    // 45 covers the discounted 43 but not the base 50.
+    mockUseGameState.player.money = 45
     mockUseGameState.band.harmony = 50
     mockUseGameState.assets = [
       makeAssetWithModule({
@@ -427,38 +429,54 @@ describe('PreGig', () => {
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
     fireEvent.click(meetingBtn)
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
-    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
-    expect(updateFn({ money: 500 })).toEqual({ money: 457 })
-    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
+    expect(mockUseGameState.holdBandMeeting).toHaveBeenCalledTimes(1)
   })
 
-  test('band meeting fails when insufficient money', async () => {
+  test('band meeting button is disabled when money is insufficient', async () => {
     mockUseGameState.player.money = 30
 
     const { findByText } = render(React.createElement(PreGig))
 
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    expect(meetingBtn.closest('button')).toBeDisabled()
     fireEvent.click(meetingBtn)
 
+    expect(mockUseGameState.holdBandMeeting).not.toHaveBeenCalled()
     expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
     expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
-      'ui:pregig.toasts.noMoneySnacks',
-      'error'
-    )
   })
 
-  test('band meeting caps harmony at 100', async () => {
+  test('band meeting is disabled when only protected run cash could pay', async () => {
+    mockUseGameState.player.money = 10000
+    mockUseGameState.band.members = []
+    mockUseGameState.expedition = {
+      status: 'active',
+      protectedCareerCash: 9999
+    }
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    expect(meetingBtn.closest('button')).toBeDisabled()
+    fireEvent.click(meetingBtn)
+
+    expect(mockUseGameState.holdBandMeeting).not.toHaveBeenCalled()
+  })
+
+  test('band meeting at max harmony refuses without dispatching', async () => {
     mockUseGameState.player.money = 500
-    mockUseGameState.band.harmony = 92
+    mockUseGameState.band.harmony = 100
 
     const { findByText } = render(React.createElement(PreGig))
 
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
     fireEvent.click(meetingBtn)
 
-    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 100 })
+    expect(mockUseGameState.holdBandMeeting).not.toHaveBeenCalled()
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'info'
+    )
   })
 
   test('allows starting gig when harmony is low (handled by arrival check)', async () => {

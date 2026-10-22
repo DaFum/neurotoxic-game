@@ -11,6 +11,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economy'
 
 import { canStartExpeditionPreGig } from '../domain/expedition/condition'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { EXPEDITION_MAX_SETLIST_SONGS } from '../domain/expedition/loadout'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
@@ -52,6 +53,8 @@ interface PreGigLogicReturn {
   GIG_MODIFIER_OPTIONS: ModifierOption[]
   bandMeetingCost: number
   handleBandMeeting: () => void
+  /** Whether spendable cash (never protected run cash) covers a meeting. */
+  canAffordBandMeeting: boolean
   toggleSong: (song: Song) => void
   canAffordModifier: (key: keyof typeof MODIFIER_COSTS) => boolean
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
@@ -76,6 +79,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const setlist = useGameSelector(state => state.setlist)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
   const player = useGameSelector(state => state.player)
+  const spendableMoney = useGameSelector(getExpeditionSpendableCash)
   const activeEvent = useGameSelector(state => state.activeEvent)
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
@@ -108,6 +112,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     setSetlist,
     setGigModifiers,
     updatePlayer,
+    holdBandMeeting,
     triggerEvent,
     updateBand,
     addToast,
@@ -139,6 +144,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     handleUpdateMerchPrice,
     handleRestockMerch,
     handleBandMeeting,
+    canAffordBandMeeting,
     toggleSong,
     canAffordModifier,
     toggleModifier,
@@ -153,10 +159,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     assetModifiers,
     isExpeditionActive,
     adjustedBandMeetingCost,
+    spendableMoney,
     selectedSongIds,
     calculatedBudget,
     typedT,
     updatePlayer,
+    holdBandMeeting,
     updateBand,
     setSetlist,
     setGigModifiers,
@@ -212,6 +220,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     GIG_MODIFIER_OPTIONS,
     bandMeetingCost: adjustedBandMeetingCost,
     handleBandMeeting,
+    canAffordBandMeeting,
     toggleSong,
     canAffordModifier,
     toggleModifier,

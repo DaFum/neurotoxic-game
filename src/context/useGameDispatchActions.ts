@@ -95,7 +95,8 @@ import {
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
   createSetPendingRiskEventAction,
   createAddUnlockAction,
-  toggleNeuroDecimator as createToggleNeuroDecimatorAction
+  toggleNeuroDecimator as createToggleNeuroDecimatorAction,
+  createHoldBandMeetingAction
 } from './actionCreators'
 import {
   purchaseChassis as purchaseChassisAction,
@@ -118,6 +119,8 @@ type BaseGameDispatchActions = {
   toggleNeuroDecimator: (
     isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]
   ) => void
+  /** Pays for a band meeting and restores harmony atomically. */
+  holdBandMeeting: () => void
   updateSocial: (
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
@@ -501,6 +504,7 @@ type SimpleDispatchActions = Pick<
   | 'recordPendingGigSettlement'
   | 'clearPendingGigSettlement'
   | 'toggleNeuroDecimator'
+  | 'holdBandMeeting'
   | 'updateSocial'
   | 'setGameMap'
   | 'setCurrentGig'
@@ -595,6 +599,7 @@ export function useGameDispatchActions({
         dispatch(createClearPendingGigSettlementAction(id)),
       toggleNeuroDecimator: isActive =>
         dispatch(createToggleNeuroDecimatorAction(isActive)),
+      holdBandMeeting: () => dispatch(createHoldBandMeetingAction()),
       updateSocial: (
         updates:
           Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)

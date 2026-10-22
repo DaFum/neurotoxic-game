@@ -261,6 +261,7 @@ export type GameAction =
       (typeof ActionTypes)['TOGGLE_NEURO_DECIMATOR'],
       { isActive: boolean }
     >
+  | Action<(typeof ActionTypes)['HOLD_BAND_MEETING']>
   | Action<(typeof ActionTypes)['UPDATE_BAND'], UpdateBandPayload>
   | Action<(typeof ActionTypes)['SETTLE_SOLD_MERCH'], Record<string, number>>
   | Action<

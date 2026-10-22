@@ -5,6 +5,7 @@ import { assertNever } from '../../utils/assertNever'
 import {
   clampLuck,
   clampBandHarmony,
+  clampPlayerMoney,
   clampBandStress,
   clampMemberMood,
   clampMemberStamina,
@@ -40,6 +41,12 @@ import {
   type InventoryUseEffect
 } from '../../data/inventoryItems'
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import {
+  BAND_MEETING_HARMONY_GAIN,
+  resolveBandMeetingCost
+} from '../../hooks/preGig/preGigUtils'
 import type {
   BandMember,
   BandState,
@@ -755,6 +762,39 @@ const handleToggleNeuroDecimator = (
 }
 
 /**
+ * Pays for a band meeting and restores harmony in one step.
+ *
+ * @param state - Game state before the meeting.
+ * @returns State with the meeting cost debited and harmony raised, or the
+ * original state when harmony is already maxed or the spendable balance cannot
+ * cover the cost.
+ *
+ * @remarks
+ * The cost is derived from the active assets and affordability from the
+ * spendable view, so an active run's protected Career Cash can never pay for
+ * it. Debit and reward are one state update: either both apply or neither.
+ */
+const handleHoldBandMeeting = (state: GameState): GameState => {
+  const prevHarmony = finiteNumberOr(state.band.harmony, 1)
+  if (prevHarmony >= 100) return state
+  const cost = resolveBandMeetingCost(
+    getActiveAssetModifiers(state.assets ?? []).trainingCostMultiplier
+  )
+  if (getExpeditionSpendableCash(state) < cost) return state
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) - cost)
+    },
+    band: {
+      ...state.band,
+      harmony: clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN)
+    }
+  }
+}
+
+/**
  * Routes band-owned actions to their reducer helpers.
  *
  * @param state - Game state before the band action.
@@ -774,6 +814,8 @@ export const bandReducer = (
         state,
         action.payload as { isActive: boolean }
       )
+    case ActionTypes.HOLD_BAND_MEETING:
+      return handleHoldBandMeeting(state)
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload as UpdateBandPayload)
     case ActionTypes.UNLOCK_TRAIT:

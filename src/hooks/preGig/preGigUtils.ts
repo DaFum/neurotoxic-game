@@ -85,6 +85,9 @@ export const setLastMinigameFallback = (minigame: Minigame): void => {
 
 const BAND_MEETING_COST = 50
 
+/** Harmony a paid band meeting restores, before the 1..100 clamp. */
+export const BAND_MEETING_HARMONY_GAIN = 15
+
 /**
  * Calculates the total cost of a band meeting based on the current training cost multiplier.
  *
