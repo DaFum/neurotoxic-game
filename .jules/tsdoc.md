@@ -26,3 +26,4 @@
 
 **Learning:** Documented EXPEDITION_CREW, EXPEDITION_CREW_BY_ID
 **Action:** Kept constants properly typed using const assertions and explicit typing for dictionary lookups while adding semantic TSDoc documentation for their purpose and optimizations.
+| 2026-10-22 | src/utils/balanceTuning.ts | BalanceTuning, getEarlyGameObligationMultiplier, getRepeatDemandMultiplier, resolveBalanceTuning |
