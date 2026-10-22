@@ -21,7 +21,9 @@ const dispatch = action => {
 }
 const spies = vi.hoisted(() => ({
   changeScene: null,
-  addToast: null
+  addToast: null,
+  saveGame: null,
+  saveGameAfterStateCommit: null
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -42,8 +44,8 @@ vi.mock('../../src/context/GameState', () => ({
     startGig: venue => dispatch(createStartGigAction(venue)),
     changeScene: spies.changeScene,
     addToast: spies.addToast,
-    saveGame: () => {},
-    saveGameAfterStateCommit: () => {},
+    saveGame: spies.saveGame,
+    saveGameAfterStateCommit: spies.saveGameAfterStateCommit,
     triggerEvent: () => false,
     setPendingBandHQOpen: () => {},
     setPendingSupplyStopInventory: () => {},
@@ -108,6 +110,8 @@ const renderArrival = (initial, rng = () => 0.99) => {
   store.state = initial
   spies.changeScene = vi.fn()
   spies.addToast = vi.fn()
+  spies.saveGame = vi.fn()
+  spies.saveGameAfterStateCommit = vi.fn()
   return renderHook(() => useArrivalLogic({ rng }))
 }
 
@@ -304,6 +308,21 @@ describe('gig arrival through the real reducer', () => {
       postTick.player.fame - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
     )
     expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+  })
+
+  test('a cancelled show saves after its fame penalty has committed', () => {
+    const initial = gigArrivalState({ harmony: 20, consecutiveBadShows: 5 })
+
+    const { result } = renderArrival(initial, () => 0)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // The penalty is dispatched inside the routing effect, so an immediate
+    // saveGame would still see the pre-penalty fame.
+    expect(cancelledToast()).toBe(true)
+    expect(spies.saveGame).not.toHaveBeenCalled()
+    expect(spies.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
   })
 })
 

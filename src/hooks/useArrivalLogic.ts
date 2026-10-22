@@ -145,7 +145,11 @@ export const useArrivalLogic = ({
       return
     }
 
+    // The gig evaluation dispatches (fame penalty, booking lock) from inside
+    // this effect, so a save taken here would miss them.
+    let evaluatedGig = false
     if (route.gigNode) {
+      evaluatedGig = true
       const gigNode = route.gigNode
       route.gigNode = null
       let queuedGigVenue: Venue | null = null
@@ -205,7 +209,11 @@ export const useArrivalLogic = ({
     // runs after advanceDay() and the side-effect dispatches have committed.
     if (!route.gigStartQueued) {
       changeScene(route.scene)
-      saveGame(false)
+      if (evaluatedGig) {
+        saveGameAfterStateCommit()
+      } else {
+        saveGame(false)
+      }
     }
   }, [
     routeNonce,
