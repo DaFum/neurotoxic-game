@@ -6,8 +6,10 @@ import { createInitialState } from '../../src/context/initialState'
 import {
   advanceDay,
   createStartGigAction,
-  createUpdateBandAction
+  createUpdateBandAction,
+  createUpdatePlayerAction
 } from '../../src/context/actionCreators'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 
 // The hook reads and dispatches through a store backed by the real root
@@ -36,7 +38,7 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     advanceDay: () => dispatch(advanceDay(store.state)),
     updateBand: updates => dispatch(createUpdateBandAction(updates)),
-    updatePlayer: () => {},
+    updatePlayer: updates => dispatch(createUpdatePlayerAction(updates)),
     startGig: venue => dispatch(createStartGigAction(venue)),
     changeScene: spies.changeScene,
     addToast: spies.addToast,
@@ -85,11 +87,11 @@ afterEach(() => {
   store.listeners.clear()
 })
 
-const renderArrival = initial => {
+const renderArrival = (initial, rng = () => 0.99) => {
   store.state = initial
   spies.changeScene = vi.fn()
   spies.addToast = vi.fn()
-  return renderHook(() => useArrivalLogic({ rng: () => 0.99 }))
+  return renderHook(() => useArrivalLogic({ rng }))
 }
 
 describe('useArrivalLogic through the real reducer', () => {
@@ -176,6 +178,78 @@ describe('useArrivalLogic through the real reducer', () => {
       result.current.handleArrivalSequence()
     })
     expect(store.state.player.day).toBe(initial.player.day + 1)
+  })
+})
+
+describe('gig arrival through the real reducer', () => {
+  const GIG = {
+    id: 'node_gig',
+    type: 'GIG',
+    layer: 1,
+    x: 10,
+    y: 10,
+    venue: { id: 'berlin_so36', name: 'SO36' }
+  }
+  const gigArrivalState = ({ harmony, consecutiveBadShows = 0 }) => {
+    const base = createInitialState()
+    return {
+      ...base,
+      currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+      band: { ...base.band, harmony },
+      gameMap: {
+        nodes: { [GIG.id]: GIG },
+        connections: [],
+        layers: [[GIG.id]]
+      },
+      player: {
+        ...base.player,
+        currentNodeId: GIG.id,
+        fame: 500,
+        stats: { ...base.player.stats, consecutiveBadShows }
+      }
+    }
+  }
+  const cancelledToast = () =>
+    spies.addToast.mock.calls.some(([message]) =>
+      String(message).toLowerCase().includes('cancelled')
+    )
+
+  test('a band the tick lifts off the harmony floor plays the show', () => {
+    const initial = gigArrivalState({ harmony: 1 })
+    const postTick = gameReducer(initial, advanceDay(initial))
+    // Pre-tick harmony is the deterministic cancel; the tick must lift it.
+    expect(postTick.band.harmony).toBeGreaterThan(1)
+
+    const { result } = renderArrival(initial)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(cancelledToast()).toBe(false)
+    expect(store.state.player.fame).toBe(500)
+    expect(store.state.currentScene).toBe(GAME_PHASES.PRE_GIG)
+    expect(store.state.currentGig?.id).toBe(GIG.venue.id)
+  })
+
+  test('a band the tick drops below the threshold can lose the show', () => {
+    const initial = gigArrivalState({ harmony: 20, consecutiveBadShows: 5 })
+    const postTick = gameReducer(initial, advanceDay(initial))
+    // Above the threshold before the tick, below it after.
+    expect(postTick.band.harmony).toBeLessThan(
+      BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
+    )
+
+    const { result } = renderArrival(initial, () => 0)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(cancelledToast()).toBe(true)
+    expect(store.state.currentGig).toBeFalsy()
+    expect(store.state.player.fame).toBe(
+      postTick.player.fame - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+    )
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 })
 
