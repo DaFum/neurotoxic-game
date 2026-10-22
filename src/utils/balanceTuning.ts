@@ -1,5 +1,12 @@
 import { deepFreeze } from './objectUtils'
 
+/**
+ * Defines the structure for game economic balancing constants and modifiers.
+ *
+ * @remarks
+ * Encapsulates the multi-phased variables used throughout economy calculations.
+ * Adjustments to these parameters strictly alter the game's difficulty and pacing.
+ */
 export interface BalanceTuning {
   earlyGame: {
     durationDays: number
@@ -109,6 +116,13 @@ export const BALANCE_RECOMMENDATION_HOLD: Readonly<BalanceRecommendationHold> | 
 export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> =
   ORIGINAL_CONTROL_BALANCE_TUNING
 
+/**
+ * Calculates the active financial obligation multiplier for the given game day.
+ *
+ * @param day - The current in-game day.
+ * @param tuning - The balance tuning configuration to evaluate against.
+ * @returns A computed multiplier scaling baseline daily obligations.
+ */
 export const getEarlyGameObligationMultiplier = (
   day: number,
   tuning: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
@@ -122,6 +136,14 @@ export const getEarlyGameObligationMultiplier = (
     : 1
 }
 
+/**
+ * Determines the penalty multiplier for repeating gigs too quickly in a region.
+ *
+ * @param day - The current in-game day.
+ * @param recentRegionalGigCount - The number of gigs recently played in the active region.
+ * @param tuning - The balance tuning configuration dictating the penalty scaling.
+ * @returns A multiplier to apply to the base gig demand (a value between 0 and 1).
+ */
 export const getRepeatDemandMultiplier = (
   day: number,
   recentRegionalGigCount: number,
@@ -169,6 +191,19 @@ const validateNumber = (key: keyof typeof RANGES, value: unknown): number => {
   return value
 }
 
+/**
+ * Constructs a comprehensive balance tuning object by applying overrides to a baseline.
+ *
+ * @remarks
+ * Employs structural validation against a predefined set of ranges to ensure economy
+ * stability. The resulting object is deeply frozen to enforce immutable runtime state.
+ *
+ * @param overrides - Partial nested overrides for early game, touring, or recovery parameters.
+ * @param base - The base configuration object to extend.
+ * @returns A deeply frozen `BalanceTuning` object combining the base and valid overrides.
+ * @throws {@link TypeError} When unknown sections, keys, or non-finite inputs are detected.
+ * @throws {@link RangeError} When provided numeric values fall outside designated boundaries or stages are misordered.
+ */
 export const resolveBalanceTuning = (
   overrides: Partial<{
     earlyGame: Partial<BalanceTuning['earlyGame']>
