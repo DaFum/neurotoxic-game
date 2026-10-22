@@ -7,7 +7,7 @@ import {
 } from '../../../utils/storage'
 import { getSafeUUID } from '../../../utils/crypto'
 import { GAME_PHASES } from '../../../context/gameConstants'
-import { SAVE_KEY } from '../../../context/usePersistence'
+import { hasStoredSave } from '../../../context/usePersistence'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { GamePhase } from '../../../types/game'
 import type { TFunction } from 'i18next'
@@ -80,7 +80,7 @@ export const useMainMenuStart = ({
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
-      readStorageItem(SAVE_KEY)
+      hasStoredSave()
     )
     if (savedGameExists) {
       setShowExistingSavePrompt(true)

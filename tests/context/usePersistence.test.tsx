@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import type { ReactNode } from 'react'
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
@@ -63,6 +64,8 @@ const { getUnlocks } = await import('../../src/utils/unlockManager')
 const { CURRENT_SAVE_VERSION } =
   await import('../../src/context/reducers/migrations/index')
 const { GAME_PHASES } = await import('../../src/context/gameConstants')
+const { InMemoryAdapter } = await import('../../src/utils/storageAdapter')
+const { StorageProvider } = await import('../../src/context/StorageContext')
 
 describe('usePersistence', () => {
   let mockStateRef: { current: unknown }
@@ -344,6 +347,48 @@ describe('usePersistence', () => {
     } finally {
       setItemSpy.mockRestore()
     }
+  })
+
+  describe('deleteSave', () => {
+    it('removes the shared key and every version slot, and nothing else', () => {
+      // An injected adapter: the global localStorage stub in
+      // tests/vitest.setup.js cannot enumerate keys, and slot discovery does.
+      const adapter = new InMemoryAdapter()
+      const unrelatedKeys = [
+        'neurotoxic_player_name',
+        'neurotoxic:save:quarantine:v1',
+        `${SAVE_KEY}_backup`
+      ]
+      for (const key of [
+        SAVE_KEY,
+        `${SAVE_KEY}.v3`,
+        `${SAVE_KEY}.v12`,
+        ...unrelatedKeys
+      ]) {
+        adapter.set(key, '{}')
+      }
+      const { result } = renderHook(
+        () =>
+          usePersistence({
+            currentScene: 'MOCK_SCENE',
+            stateRef: mockStateRef,
+            dispatch: mockDispatch,
+            addToast: mockAddToast,
+            tRef: mockTRef
+          }),
+        {
+          wrapper: ({ children }: { children: ReactNode }) => (
+            <StorageProvider adapter={adapter}>{children}</StorageProvider>
+          )
+        }
+      )
+
+      act(() => {
+        result.current.deleteSave()
+      })
+
+      expect(adapter.keys().sort()).toEqual([...unrelatedKeys].sort())
+    })
   })
 
   describe('createRawLoadPayload', () => {

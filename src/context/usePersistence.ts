@@ -17,6 +17,7 @@ import { handleError, StateError, StorageError } from '../utils/errorHandler'
 import {
   defaultStorageAdapter,
   isStorageDegraded,
+  listStorageKeys,
   readStorageItem,
   readStorageItemChecked,
   removeStorageItem,
@@ -43,6 +44,78 @@ import type { OptionalToastCallback } from '../types/callbacks'
  * The string identifier used to store and retrieve the game's save payload in local storage.
  */
 export const SAVE_KEY = 'neurotoxic_v3_save'
+
+/**
+ * Highest save version written to the shared `SAVE_KEY`. Every shipped build
+ * writes there; later versions each write a slot of their own.
+ */
+const SHARED_SLOT_MAX_VERSION = 2
+
+const VERSION_SLOT_PREFIX = `${SAVE_KEY}.v`
+
+/**
+ * Resolves the storage key a build at the given save version writes to.
+ *
+ * @param version - Save version of the writing build.
+ * @returns `SAVE_KEY` up to version 2, else `SAVE_KEY.v<version>`.
+ *
+ * @remarks
+ * Builds on different versions never share a key, so a tab on an older build
+ * cannot overwrite a newer build's save in the gap between its newer-save
+ * check and its write.
+ */
+export const getSaveSlotKey = (version: number): string =>
+  version <= SHARED_SLOT_MAX_VERSION
+    ? SAVE_KEY
+    : `${VERSION_SLOT_PREFIX}${version}`
+
+/**
+ * Lists the version-specific save slots present in storage.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns Each slot's key and the version its name carries.
+ */
+const listVersionSlots = (
+  storage: IStorageAdapter
+): { key: string; version: number }[] => {
+  const slots: { key: string; version: number }[] = []
+  for (const key of listStorageKeys(storage)) {
+    if (!key.startsWith(VERSION_SLOT_PREFIX)) continue
+    const version = parseSaveVersion(key.slice(VERSION_SLOT_PREFIX.length))
+    if (version !== null && version > SHARED_SLOT_MAX_VERSION) {
+      slots.push({ key, version })
+    }
+  }
+  return slots
+}
+
+/**
+ * Highest version among slots this build cannot load.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns That version, or `null` when every slot is loadable.
+ */
+const readNewestIncompatibleSlotVersion = (
+  storage: IStorageAdapter
+): number | null => {
+  let newest: number | null = null
+  for (const { version } of listVersionSlots(storage)) {
+    if (version > CURRENT_SAVE_VERSION && (newest === null || version > newest))
+      newest = version
+  }
+  return newest
+}
+
+/**
+ * Whether any save slot, shared or version-specific, holds a save.
+ *
+ * @param storage - Adapter to look through; defaults to the production singleton.
+ * @returns `true` when a save exists in any slot, loadable or not.
+ */
+export const hasStoredSave = (
+  storage: IStorageAdapter = defaultStorageAdapter
+): boolean =>
+  !!readStorageItem(SAVE_KEY, storage) || listVersionSlots(storage).length > 0
 
 const isNullableObject = (value: unknown): boolean =>
   value === null || isLooseRecord(value)
@@ -182,6 +255,9 @@ const readNewerStoredSaveVersion = (
 ): number | 'unreadable' | null => {
   const { ok, value: saved } = readStorageItemChecked(SAVE_KEY, storage)
   if (!ok) return 'unreadable'
+  const newestSlotVersion = readNewestIncompatibleSlotVersion(storage)
+  if (newestSlotVersion !== null) return newestSlotVersion
+  // Legacy defence: the shared key itself carrying a newer payload.
   if (!saved) return null
   let parsed: unknown
   try {
@@ -192,6 +268,29 @@ const readNewerStoredSaveVersion = (
   if (!isLooseRecord(parsed)) return null
   const storedVersion = readSaveVersion(parsed)
   return storedVersion > CURRENT_SAVE_VERSION ? storedVersion : null
+}
+
+/**
+ * Picks the slot this build loads from: the highest version-specific slot it
+ * supports, else the shared key.
+ *
+ * @param storage - Adapter the keys are enumerated through.
+ * @returns Storage key to read the save from.
+ *
+ * @remarks
+ * Lower slots are never deleted: the older build's save stays where it was,
+ * so going back to that build still finds it.
+ */
+const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
+  let best: { key: string; version: number } | null = null
+  for (const slot of listVersionSlots(storage)) {
+    if (
+      slot.version <= CURRENT_SAVE_VERSION &&
+      (best === null || slot.version > best.version)
+    )
+      best = slot
+  }
+  return best?.key ?? SAVE_KEY
 }
 
 /**
@@ -283,6 +382,11 @@ export function usePersistence({
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
       removeStorageItem(SAVE_KEY, storage)
+      // Every version slot goes too: load picks the highest one left, so a
+      // survivor would bring the deleted progress back.
+      for (const { key } of listVersionSlots(storage)) {
+        removeStorageItem(key, storage)
+      }
     })
     window.location.reload()
   }, [storage])
@@ -383,7 +487,11 @@ export function usePersistence({
               `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
-          return writeStorageItem(SAVE_KEY, serialized, storage)
+          return writeStorageItem(
+            getSaveSlotKey(CURRENT_SAVE_VERSION),
+            serialized,
+            storage
+          )
         },
         false
       )
@@ -482,8 +590,19 @@ export function usePersistence({
         let parsed: unknown
         let rawSave: string
         try {
-          const saved = readStorageItem(SAVE_KEY, storage)
-          if (!saved) return false
+          const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
+          if (!saved) {
+            // Only a newer build's slot exists: say so, as for a newer
+            // payload below, rather than reporting no save at all.
+            const newerSlotVersion = readNewestIncompatibleSlotVersion(storage)
+            if (newerSlotVersion !== null) {
+              handleError(
+                new StateError(incompatibleSaveMessage(newerSlotVersion)),
+                { addToast }
+              )
+            }
+            return false
+          }
           rawSave = saved
           parsed = safeJsonParse(saved)
         } catch (_error) {
