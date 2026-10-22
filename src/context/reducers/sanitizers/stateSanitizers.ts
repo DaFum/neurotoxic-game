@@ -1628,6 +1628,27 @@ const getRegistryEvent = (id: string): UnknownRecord | undefined => {
   return registryEventsById.get(id)
 }
 
+// Deep-copies registry data (functions stay shared by reference) so state never
+// aliases the module-level registry. The WeakMap keeps it cycle safe.
+const cloneRegistryValue = (
+  value: unknown,
+  seen: WeakMap<object, unknown> = new WeakMap()
+): unknown => {
+  if (typeof value !== 'object' || value === null) return value
+  if (seen.has(value)) return seen.get(value)
+  if (Array.isArray(value)) {
+    const copy: unknown[] = []
+    seen.set(value, copy)
+    for (const item of value) copy.push(cloneRegistryValue(item, seen))
+    return copy
+  }
+  const copy: Record<string, unknown> = {}
+  seen.set(value, copy)
+  for (const [key, item] of Object.entries(value))
+    copy[key] = cloneRegistryValue(item, seen)
+  return copy
+}
+
 /**
  * Restores registry-owned executable event data that JSON cannot carry.
  *
@@ -1653,7 +1674,7 @@ const rehydrateRegistryEvent = (event: GameEvent): void => {
       return saved.id === opt.id && saved.label === opt.label
     })
   if (!matches) return
-  event.options = registeredOptions as EventOption[]
+  event.options = cloneRegistryValue(registeredOptions) as EventOption[]
   if (Array.isArray(registered.tags))
     event.tags = sanitizeStringArray(registered.tags)
 }

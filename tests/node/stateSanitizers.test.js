@@ -610,6 +610,26 @@ describe('stateSanitizers', () => {
       )
     })
 
+    it('does not alias the registry options and survives mutation', () => {
+      const restored = sanitizeActiveEvent(
+        JSON.parse(JSON.stringify(registered))
+      )
+      assert.notEqual(restored.options, registered.options)
+      restored.options.forEach((opt, i) => {
+        assert.notEqual(opt, registered.options[i])
+        assert.notEqual(opt.effect, registered.options[i].effect)
+        assert.notEqual(
+          opt.effect.effects,
+          registered.options[i].effect.effects
+        )
+      })
+      const before = JSON.stringify(registered.options)
+      restored.options[0].effect.effects[0].value = 9999
+      restored.options[0].label = 'mutated'
+      restored.options.pop()
+      assert.equal(JSON.stringify(registered.options), before)
+    })
+
     it('keeps sanitized save data when the option list no longer matches the registry', () => {
       const saved = JSON.parse(JSON.stringify(registered))
       saved.options = saved.options.slice(0, 2)
