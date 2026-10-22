@@ -148,9 +148,16 @@ describe('save recovery - version marker', () => {
     assert.equal(state.version, CURRENT_SAVE_VERSION)
   })
 
-  it('leaves a future version marker untouched', () => {
-    const state = handleLoadGame(createInitialState(), { version: 9999 })
-    assert.equal(state.version, 9999)
+  it('refuses to hydrate a save from a newer schema version', () => {
+    // Hydrating it would keep only the fields this build knows while still
+    // labelling the state with the newer version; the next save would then
+    // overwrite the player's newer save with a lossy copy.
+    const base = createInitialState()
+    const state = handleLoadGame(base, {
+      version: CURRENT_SAVE_VERSION + 1,
+      player: { money: 4321 }
+    })
+    assert.equal(state, base)
   })
 })
 

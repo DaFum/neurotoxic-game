@@ -161,6 +161,34 @@ const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
 }
 
 /**
+ * Reads the version of the save currently in the slot when it is newer than
+ * this build supports.
+ *
+ * @param storage - Adapter the slot is read through.
+ * @returns The stored version when it exceeds `CURRENT_SAVE_VERSION`, else
+ * `null` (no save, unparseable, or a version this build can load).
+ *
+ * @remarks
+ * Read from storage at write time rather than remembered from the last load,
+ * so a newer save written by another tab mid-session is protected as well.
+ */
+const readNewerStoredSaveVersion = (
+  storage: IStorageAdapter
+): number | null => {
+  const saved = readStorageItem(SAVE_KEY, storage)
+  if (!saved) return null
+  let parsed: unknown
+  try {
+    parsed = safeJsonParse(saved)
+  } catch (_error) {
+    return null
+  }
+  if (!isLooseRecord(parsed)) return null
+  const storedVersion = readSaveVersion(parsed)
+  return storedVersion > CURRENT_SAVE_VERSION ? storedVersion : null
+}
+
+/**
  * Folds a parsed save through the migration chain, quarantining the raw payload
  * when a migration step fails.
  *
@@ -269,6 +297,21 @@ export function usePersistence({
     )
   }, [addToast, tRef])
 
+  const incompatibleSaveMessage = useCallback(
+    (saveVersion: number) =>
+      tRef.current('ui:save.incompatibleVersion', {
+        saveVersion,
+        supportedVersion: CURRENT_SAVE_VERSION,
+        defaultValue:
+          'This save was made by a newer version of the game (save version {{saveVersion}}, this version supports up to {{supportedVersion}}). It was left untouched and will not be overwritten; update the game to continue it.'
+      }),
+    [tRef]
+  )
+
+  // Every save request is refused while the slot holds a newer save, so the
+  // notice is shown once per session rather than on every autosave.
+  const incompatibleNoticeShownRef = useRef(false)
+
   /**
    * Writes the save, reporting whether the write actually landed.
    *
@@ -283,6 +326,22 @@ export function usePersistence({
       showToast = true,
       stateSnapshot: GameState = stateRef.current
     ): boolean => {
+      // A save from a newer build is the player's only copy of that progress;
+      // this build cannot represent it, so it never writes over it.
+      // Adapter reads report failure as `null` rather than throwing.
+      const newerStoredVersion = readNewerStoredSaveVersion(storage)
+      if (newerStoredVersion !== null) {
+        logger.warn(
+          'Persistence',
+          `Save skipped: slot holds save version ${newerStoredVersion}, newer than ${CURRENT_SAVE_VERSION}`
+        )
+        if (!incompatibleNoticeShownRef.current) {
+          incompatibleNoticeShownRef.current = true
+          addToast(incompatibleSaveMessage(newerStoredVersion), 'error')
+        }
+        return false
+      }
+
       const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
@@ -334,7 +393,15 @@ export function usePersistence({
       }
       return success === true
     },
-    [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
+    [
+      addToast,
+      clock,
+      incompatibleSaveMessage,
+      notifyStorageDegraded,
+      stateRef,
+      storage,
+      tRef
+    ]
   )
 
   const previousSceneRef = useRef(currentScene)
@@ -431,6 +498,17 @@ export function usePersistence({
           return false
         }
 
+        // Checked before shape validation: a newer schema may legitimately
+        // fail this build's validator, and it must not be reported as corrupt.
+        // Nothing is written on this path, so the stored save stays as it was.
+        const storedVersion = readSaveVersion(parsed)
+        if (storedVersion > CURRENT_SAVE_VERSION) {
+          handleError(new StateError(incompatibleSaveMessage(storedVersion)), {
+            addToast
+          })
+          return false
+        }
+
         try {
           validateSaveData(parsed)
         } catch (error) {
@@ -489,7 +567,14 @@ export function usePersistence({
       },
       false
     )
-  }, [addToast, dispatch, saveGameAfterStateCommit, storage, tRef])
+  }, [
+    addToast,
+    dispatch,
+    incompatibleSaveMessage,
+    saveGameAfterStateCommit,
+    storage,
+    tRef
+  ])
 
   return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }

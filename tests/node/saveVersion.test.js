@@ -106,9 +106,21 @@ describe('save-version contract is shared by every load boundary', () => {
     assert.equal(next.version, CURRENT_SAVE_VERSION)
   })
 
-  it('handleLoadGame still honors a legitimate high version marker', () => {
+  it('handleLoadGame rejects a version above the current schema', () => {
+    // A direct LOAD_GAME dispatch (screenshot hydration included) must not
+    // hydrate a newer save: the reducer returns the state it was given.
     const base = createInitialState({ unlocks: [] })
     const next = handleLoadGame(base, { ...validSave(), version: 999 })
-    assert.equal(next.version, 999)
+    assert.equal(next, base)
+    assert.equal(next.version, CURRENT_SAVE_VERSION)
+  })
+
+  it('handleLoadGame rejects a digit-string version above the current schema', () => {
+    const base = createInitialState({ unlocks: [] })
+    const next = handleLoadGame(base, {
+      ...validSave(),
+      version: String(CURRENT_SAVE_VERSION + 1)
+    })
+    assert.equal(next, base)
   })
 })

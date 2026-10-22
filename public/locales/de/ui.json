@@ -2084,6 +2084,7 @@
   "roadieRun.itemTypes.GUITAR": "Gitarre",
   "roadieRun.itemTypes.unknown": "Unbekannt",
   "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig.",
+  "save.incompatibleVersion": "Dieser Speicherstand stammt aus einer neueren Version des Spiels (Speicherstand-Version {{saveVersion}}, diese Version unterstützt bis {{supportedVersion}}). Er wurde nicht verändert und wird nicht überschrieben; aktualisiere das Spiel, um ihn fortzusetzen.",
   "save.migrationFailed": "Speicherstand konnte nicht aktualisiert werden. Eine Kopie wurde zur Wiederherstellung gesichert; greife auf Anfangszustand zurück.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "save.saveFailed": "Spiel konnte nicht gespeichert werden.",

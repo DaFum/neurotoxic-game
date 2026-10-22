@@ -170,7 +170,10 @@ const migrateVenueBlacklist = (blacklist: string[]): string[] => {
  *
  * @remarks
  * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
- * version marker to the current schema version after migrations run.
+ * version marker to the current schema version after migrations run. A save
+ * from a newer schema is refused and the state returned unchanged: this build
+ * would drop the fields it does not know, and the next save would overwrite
+ * the newer one with that lossy copy.
  */
 export const handleLoadGame = (
   state: GameState,
@@ -186,6 +189,13 @@ export const handleLoadGame = (
     ? rawState.version
     : state.version
   const explicitVersion = parseSaveVersion(rawVersion) ?? 0
+  if (explicitVersion > CURRENT_SAVE_VERSION) {
+    logger.warn(
+      'GameState',
+      `Refusing to load save version ${explicitVersion}; this build supports up to ${CURRENT_SAVE_VERSION}`
+    )
+    return state
+  }
 
   // Fold the raw payload through every migration step above its stored version
   // before any sanitizer runs, so each step sees the layout it was written for.
@@ -235,7 +245,7 @@ export const handleLoadGame = (
     career: settleExpeditionUnlockJournalOnLoad(
       sanitizeCareerState(loadedState.career)
     ),
-    version: Math.max(explicitVersion, CURRENT_SAVE_VERSION),
+    version: CURRENT_SAVE_VERSION,
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
