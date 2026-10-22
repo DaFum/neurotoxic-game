@@ -607,19 +607,20 @@ export function usePersistence({
         let parsed: unknown
         let rawSave: string
         try {
-          const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
-          if (!saved) {
-            // Only a newer build's slot exists: say so, as for a newer
-            // payload below, rather than reporting no save at all.
-            const newerSlotVersion = readNewestIncompatibleSlotVersion(storage)
-            if (newerSlotVersion !== null) {
-              handleError(
-                new StateError(incompatibleSaveMessage(newerSlotVersion)),
-                { addToast }
-              )
-            }
+          // A newer build's slot means this build must not continue the older
+          // line: saveGame refuses every write while that slot exists, so a
+          // loaded session could never be saved. Say so, as for a newer
+          // payload below, rather than loading or reporting no save at all.
+          const newerSlotVersion = readNewestIncompatibleSlotVersion(storage)
+          if (newerSlotVersion !== null) {
+            handleError(
+              new StateError(incompatibleSaveMessage(newerSlotVersion)),
+              { addToast }
+            )
             return false
           }
+          const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
+          if (!saved) return false
           rawSave = saved
           parsed = safeJsonParse(saved)
         } catch (_error) {

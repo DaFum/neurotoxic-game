@@ -269,21 +269,27 @@ describe('future-version save protection', () => {
       expect(adapter.get(NEWER_SLOT)).toBe(FUTURE_SAVE)
     })
 
-    it('loads the shared slot, ignores newer slots and deletes nothing', () => {
+    it('refuses to load the shared slot while a newer slot exists, so no session is left unsavable', () => {
       const currentSave = savePayload(CURRENT_SAVE_VERSION, 222)
       const furtherSave = savePayload(CURRENT_SAVE_VERSION + 5, 777)
       adapter.set(SAVE_KEY, currentSave)
       adapter.set(NEWER_SLOT, FUTURE_SAVE)
       adapter.set(`${SAVE_KEY}.v7`, furtherSave)
-      const { result, dispatch } = renderPersistence(adapter)
+      const { result, dispatch, addToast } = renderPersistence(adapter)
 
       let loaded: boolean | undefined
+      let saved: boolean | undefined
       act(() => {
         loaded = result.current.loadGame()
+        saved = result.current.saveGame(false)
       })
 
-      expect(loaded).toBe(true)
-      expect(loadedMoney(dispatch)).toBe(222)
+      expect(loaded).toBe(false)
+      expect(saved).toBe(false)
+      expect(dispatch).not.toHaveBeenCalled()
+      expect(
+        toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
+      ).toBe(true)
       expect(adapter.get(SAVE_KEY)).toBe(currentSave)
       expect(adapter.get(NEWER_SLOT)).toBe(FUTURE_SAVE)
       expect(adapter.get(`${SAVE_KEY}.v7`)).toBe(furtherSave)
@@ -405,10 +411,8 @@ describe('future-version save protection', () => {
     it('loads the highest slot it supports and leaves the lower ones as they were', () => {
       const legacySave = savePayload(2, 222)
       const v3Save = savePayload(3, 333)
-      const v5Save = savePayload(5, 555)
       adapter.set(SAVE_KEY, legacySave)
       adapter.set(NEWER_SLOT, v3Save)
-      adapter.set(`${SAVE_KEY}.v5`, v5Save)
       const { result, dispatch } = renderFutureBuild()
 
       let loaded: boolean | undefined
@@ -420,7 +424,6 @@ describe('future-version save protection', () => {
       expect(loadedMoney(dispatch)).toBe(333)
       expect(adapter.get(SAVE_KEY)).toBe(legacySave)
       expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
-      expect(adapter.get(`${SAVE_KEY}.v5`)).toBe(v5Save)
     })
 
     it('writes only its own slot', () => {
