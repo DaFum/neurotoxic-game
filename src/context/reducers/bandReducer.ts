@@ -43,6 +43,7 @@ import {
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import { resolveMerchRestock } from '../../utils/merchUtils'
 import {
   BAND_MEETING_HARMONY_GAIN,
   resolveBandMeetingCost
@@ -795,6 +796,54 @@ const handleHoldBandMeeting = (state: GameState): GameState => {
 }
 
 /**
+ * Pays for one merch restock and adds the stock in one step.
+ *
+ * @param state - Game state before the restock.
+ * @param payload - Merch inventory key to restock.
+ * @returns State with the restock cost debited and the stock added, or the
+ * original state for an unknown or hostile key, full merch capacity, or a
+ * spendable balance that cannot cover the cost.
+ *
+ * @remarks
+ * Amount and cost are derived from the inventory and active assets, and
+ * affordability from the spendable view, so an active run's protected Career
+ * Cash can never pay for it. Debit and stock are one state update: either both
+ * apply or neither.
+ */
+const handleRestockMerch = (
+  state: GameState,
+  payload: { merchKey: string }
+): GameState => {
+  const merchKey = payload?.merchKey
+  if (typeof merchKey !== 'string' || isForbiddenKey(merchKey)) return state
+  const inventory = state.band.inventory ?? {}
+  const restock = resolveMerchRestock(
+    merchKey,
+    inventory,
+    getActiveAssetModifiers(state.assets ?? [])
+  )
+  if (!restock || restock.restockAmount <= 0) return state
+  if (getExpeditionSpendableCash(state) < restock.cost) return state
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) - restock.cost
+      )
+    },
+    band: {
+      ...state.band,
+      inventory: {
+        ...inventory,
+        [merchKey]:
+          finiteNumberOr(inventory[merchKey], 0) + restock.restockAmount
+      }
+    }
+  }
+}
+
+/**
  * Routes band-owned actions to their reducer helpers.
  *
  * @param state - Game state before the band action.
@@ -816,6 +865,8 @@ export const bandReducer = (
       )
     case ActionTypes.HOLD_BAND_MEETING:
       return handleHoldBandMeeting(state)
+    case ActionTypes.RESTOCK_MERCH:
+      return handleRestockMerch(state, action.payload as { merchKey: string })
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload as UpdateBandPayload)
     case ActionTypes.UNLOCK_TRAIT:

@@ -12,6 +12,7 @@ describe('ActionTypes', () => {
       'CLEAR_PENDING_GIG_SETTLEMENT',
       'TOGGLE_NEURO_DECIMATOR',
       'HOLD_BAND_MEETING',
+      'RESTOCK_MERCH',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',
       'SET_MAP',

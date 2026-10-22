@@ -219,6 +219,24 @@ export const createHoldBandMeetingAction = (): Extract<
 > => ({ type: ActionTypes.HOLD_BAND_MEETING })
 
 /**
+ * Creates the paid merch-restock action.
+ *
+ * @param merchKey - Merch inventory key to restock.
+ * @returns RESTOCK_MERCH action; a non-string or forbidden key becomes `''`,
+ * which the reducer refuses. The reducer derives amount and cost from state so
+ * the debit and the stock land together or not at all.
+ */
+export const createRestockMerchAction = (
+  merchKey: string
+): Extract<GameAction, { type: typeof ActionTypes.RESTOCK_MERCH }> => ({
+  type: ActionTypes.RESTOCK_MERCH,
+  payload: {
+    merchKey:
+      typeof merchKey === 'string' && !isForbiddenKey(merchKey) ? merchKey : ''
+  }
+})
+
+/**
  * Creates an action that toggles the Neuro Decimator gig modifier.
  *
  * @param isActive - Whether the modifier should be active.

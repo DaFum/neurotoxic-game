@@ -1,5 +1,6 @@
 import { finiteNumberOr } from './gameState'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
+import type { AssetModifiers } from '../types/assets'
 
 /**
  * HQ item definition type for merch-backed inventory items.
@@ -75,4 +76,45 @@ export const resolveMerchRestockCost = ({
 
   const fullBundleCost = Math.ceil(safeItemCost * safeMultiplier)
   return Math.ceil(fullBundleCost * (cappedRestockAmount / safeBundleAmount))
+}
+
+/**
+ * Resolves one restock of a merch item against the current stock.
+ *
+ * @param merchKey - Merch inventory key to restock.
+ * @param inventory - Current band inventory.
+ * @param assetModifiers - Active asset merch capacity bonus and cost multiplier.
+ * @returns `null` for a key that is not restockable merch; otherwise the units
+ * one restock adds (`0` when stock is at capacity) and their cost.
+ *
+ * @remarks
+ * Shared by the pre-gig handler, which picks its toast from it, and the
+ * `RESTOCK_MERCH` reducer, which stays authoritative over the purchase.
+ */
+export const resolveMerchRestock = (
+  merchKey: string,
+  inventory: Record<string, unknown>,
+  assetModifiers: Pick<
+    AssetModifiers,
+    'merchCapacityBonus' | 'merchCostMultiplier'
+  >
+): { restockAmount: number; cost: number } | null => {
+  const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(merchKey)
+  if (!itemDef) return null
+  const bundleAmount = getMerchBundleAmount(itemDef)
+  const remainingCapacity = Math.max(
+    0,
+    getMerchCapacity(assetModifiers.merchCapacityBonus) -
+      getTotalMerchStock(inventory)
+  )
+  const restockAmount = Math.min(bundleAmount, remainingCapacity)
+  return {
+    restockAmount,
+    cost: resolveMerchRestockCost({
+      itemCost: itemDef.cost,
+      merchCostMultiplier: assetModifiers.merchCostMultiplier,
+      restockAmount,
+      bundleAmount
+    })
+  }
 }

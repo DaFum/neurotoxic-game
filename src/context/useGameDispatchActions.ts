@@ -96,7 +96,8 @@ import {
   createSetPendingRiskEventAction,
   createAddUnlockAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction,
-  createHoldBandMeetingAction
+  createHoldBandMeetingAction,
+  createRestockMerchAction
 } from './actionCreators'
 import {
   purchaseChassis as purchaseChassisAction,
@@ -121,6 +122,8 @@ type BaseGameDispatchActions = {
   ) => void
   /** Pays for a band meeting and restores harmony atomically. */
   holdBandMeeting: () => void
+  /** Pays for one merch restock and adds the stock atomically. */
+  restockMerch: (merchKey: string) => void
   updateSocial: (
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
@@ -505,6 +508,7 @@ type SimpleDispatchActions = Pick<
   | 'clearPendingGigSettlement'
   | 'toggleNeuroDecimator'
   | 'holdBandMeeting'
+  | 'restockMerch'
   | 'updateSocial'
   | 'setGameMap'
   | 'setCurrentGig'
@@ -600,6 +604,8 @@ export function useGameDispatchActions({
       toggleNeuroDecimator: isActive =>
         dispatch(createToggleNeuroDecimatorAction(isActive)),
       holdBandMeeting: () => dispatch(createHoldBandMeetingAction()),
+      restockMerch: (merchKey: string) =>
+        dispatch(createRestockMerchAction(merchKey)),
       updateSocial: (
         updates:
           Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
