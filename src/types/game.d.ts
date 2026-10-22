@@ -75,6 +75,25 @@ export type LoadGameResult =
   | { ok: true }
   | { ok: false; reason: 'missing' | 'incompatible' | 'corrupt' | 'unreadable' }
 
+/**
+ * What loading the selected save would do, decided without loading it.
+ *
+ * @remarks
+ * `terminal` is the reducer's own verdict: the loaded state would land on
+ * GAMEOVER. `unavailable` carries why the save is refused.
+ */
+export type LoadPreviewResult =
+  | { status: 'missing' }
+  | {
+      status: 'unavailable'
+      reason: Exclude<
+        Extract<LoadGameResult, { ok: false }>['reason'],
+        'missing'
+      >
+    }
+  | { status: 'resumable' }
+  | { status: 'terminal' }
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
