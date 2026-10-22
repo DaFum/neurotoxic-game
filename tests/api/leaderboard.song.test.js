@@ -25,6 +25,8 @@ const mockClient = {
   hmGet: vi.fn(() => Promise.resolve([])),
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),
+  // The rate-limit script; its count comes from `incr`.
+  eval: vi.fn(() => mockClient.incr()),
   disconnect: vi.fn(() => Promise.resolve()),
   on: vi.fn()
 }

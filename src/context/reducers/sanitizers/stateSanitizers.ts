@@ -1685,7 +1685,8 @@ export const sanitizeSupplyStopInventory = (
     // The same per-field schema the map's shop stock goes through, so a crafted
     // save cannot smuggle in a negative cost or an unvalidated effect.
     const item = sanitizeShopInventoryItem(value[i])
-    if (item && Object.keys(item).length > 0) items.push(item)
+    // `sanitizeShopInventoryItem` already returns null for an empty result.
+    if (item) items.push(item)
   }
   // Nothing usable left is no open shop, not an empty one.
   return items.length > 0 ? items : null

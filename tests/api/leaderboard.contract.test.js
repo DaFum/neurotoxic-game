@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
 import { toPublicPlayerRef } from '../../lib/apiUtils.js'
+import { RATE_LIMIT_SCRIPT } from '../../lib/leaderboard.js'
 
 const mockClient = vi.hoisted(() => ({
   isOpen: true,
   connect: vi.fn(),
   incr: vi.fn(),
   expire: vi.fn(),
+  eval: vi.fn(),
   hSet: vi.fn(),
   multi: vi.fn(),
   zRangeWithScores: vi.fn(),
@@ -39,7 +41,7 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
   beforeEach(async () => {
     vi.resetAllMocks()
     mockClient.isOpen = true
-    mockClient.incr.mockResolvedValue(1)
+    mockClient.eval.mockResolvedValue(1)
     mockClient.zRangeWithScores.mockResolvedValue([])
     mockClient.multi.mockReturnValue({ zAdd: vi.fn(), exec: vi.fn() })
     handler = (await endpoint.load()).default
@@ -151,8 +153,8 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
     }
   )
 
-  test('POST expires only the first rate-limit count and blocks the sixth before writes', async () => {
-    mockClient.incr
+  test('POST counts each request in one atomic script and blocks the sixth before writes', async () => {
+    mockClient.eval
       .mockResolvedValueOnce(1)
       .mockResolvedValueOnce(5)
       .mockResolvedValueOnce(6)
@@ -165,17 +167,24 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
 
     for (let i = 0; i < 3; i++) await handler(req, res)
 
-    expect(mockClient.incr.mock.calls).toEqual([
-      [`rate_limit:${endpoint.name}:127.0.0.1`],
-      [`rate_limit:${endpoint.name}:127.0.0.1`],
-      [`rate_limit:${endpoint.name}:127.0.0.1`]
-    ])
-    expect(mockClient.expire.mock.calls).toEqual([
-      [`rate_limit:${endpoint.name}:127.0.0.1`, 60]
+    const rateLimitOptions = {
+      keys: [`rate_limit:${endpoint.name}:127.0.0.1`],
+      arguments: ['60']
+    }
+    expect(mockClient.eval.mock.calls).toEqual([
+      [RATE_LIMIT_SCRIPT, rateLimitOptions],
+      [RATE_LIMIT_SCRIPT, rateLimitOptions],
+      [RATE_LIMIT_SCRIPT, rateLimitOptions]
     ])
     expect(mockClient.hSet).toHaveBeenCalledTimes(2)
     expect(res.status.mock.lastCall).toEqual([429])
     expect(res.json.mock.lastCall).toEqual([{ error: 'Too many requests' }])
+  })
+
+  test('the rate-limit script repairs a counter that has no expiry', () => {
+    expect(RATE_LIMIT_SCRIPT).toMatch(/INCR/)
+    expect(RATE_LIMIT_SCRIPT).toMatch(/TTL.*< 0/)
+    expect(RATE_LIMIT_SCRIPT).toMatch(/EXPIRE/)
   })
 
   test('POST preserves endpoint-specific errors before player validation', async () => {

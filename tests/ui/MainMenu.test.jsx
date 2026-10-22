@@ -240,25 +240,17 @@ describe('MainMenu Component', () => {
   })
 
   it('treats a save in a newer version slot as an existing save', () => {
-    // Slot discovery enumerates keys, which the setup file's localStorage stub
-    // cannot do; jsdom's own Storage can.
-    vi.unstubAllGlobals()
-    localStorage.clear()
-    try {
-      localStorage.setItem('neurotoxic_v3_save.v3', 'newer-save-data')
-      localStorage.setItem('neurotoxic_player_id', 'existing-id')
-      localStorage.setItem('neurotoxic_player_name', 'ExistingPlayer')
-      render(<MainMenu />)
+    localStorage.setItem('neurotoxic_v3_save.v3', 'newer-save-data')
+    localStorage.setItem('neurotoxic_player_id', 'existing-id')
+    localStorage.setItem('neurotoxic_player_name', 'ExistingPlayer')
+    render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:start_game'))
+    fireEvent.click(screen.getByText('ui:start_game'))
 
-      expect(
-        screen.getByText('ui:mainMenu.existingSave.title')
-      ).toBeInTheDocument()
-      expect(mockChangeScene).not.toHaveBeenCalled()
-    } finally {
-      localStorage.clear()
-    }
+    expect(
+      screen.getByText('ui:mainMenu.existingSave.title')
+    ).toBeInTheDocument()
+    expect(mockChangeScene).not.toHaveBeenCalled()
   })
 
   describe('Player name input validation', () => {
