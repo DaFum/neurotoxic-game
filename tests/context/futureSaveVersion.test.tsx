@@ -426,6 +426,30 @@ describe('future-version save protection', () => {
       expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
     })
 
+    it('refuses to load when the shared key holds a newer payload, even beside a slot it supports', () => {
+      const v3Save = savePayload(3, 333)
+      const newerShared = savePayload(5, 555)
+      adapter.set(SAVE_KEY, newerShared)
+      adapter.set(NEWER_SLOT, v3Save)
+      const { result, dispatch, addToast } = renderFutureBuild()
+
+      let loaded: boolean | undefined
+      let saved: boolean | undefined
+      act(() => {
+        loaded = result.current.loadGame()
+        saved = result.current.saveGame(false)
+      })
+
+      expect(loaded).toBe(false)
+      expect(saved).toBe(false)
+      expect(dispatch).not.toHaveBeenCalled()
+      expect(
+        toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
+      ).toBe(true)
+      expect(adapter.get(SAVE_KEY)).toBe(newerShared)
+      expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
+    })
+
     it('writes only its own slot', () => {
       const legacySave = savePayload(2, 222)
       adapter.set(SAVE_KEY, legacySave)
