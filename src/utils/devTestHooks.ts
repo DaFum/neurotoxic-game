@@ -8,6 +8,8 @@
  * that registers them and are removed again on its teardown.
  */
 
+import type { TourbusObstacleType } from '../types/tourbus'
+
 /** Copied lane, pause, transport and hit/miss state of the rhythm game. */
 type RhythmTestSnapshot = {
   /** Active flag of each lane, in lane order. */
@@ -34,7 +36,7 @@ type TourbusTestObstacle = {
   id: string | number
   lane: number
   y: number
-  type: 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
+  type: TourbusObstacleType
 }
 
 /** Replaces the Tourbus obstacle list and pins the speed; spawning stays off. */

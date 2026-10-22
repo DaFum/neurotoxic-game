@@ -119,6 +119,14 @@ export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
 }
 
 /**
+ * @typedef {object} ExpeditionFixture
+ * @property {string} save - Raw save string to seed.
+ * @property {string} [nodeId] - Node the run stands on.
+ * @property {string[]} [nodeIds] - Connected node ids.
+ * @property {string} [locationName] - Localized location name.
+ */
+
+/**
  * Builds one of the Expedition save fixtures inside the page.
  *
  * @remarks
@@ -127,7 +135,7 @@ export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
  *
  * @param {import('@playwright/test').Page} page - The Playwright page, already on the app origin.
  * @param {string} name - Exported builder in `e2e/fixtures/expeditionFixtures.js`.
- * @returns {Promise<any>} The fixture: its raw `save` string plus the facts a spec asserts on.
+ * @returns {Promise<ExpeditionFixture>} The fixture: its raw `save` string plus the facts a spec asserts on.
  */
 export async function buildFixture(page, name) {
   return page.evaluate(
@@ -149,7 +157,7 @@ export async function buildFixture(page, name) {
  * @param {import('@playwright/test').Page} page - The Playwright page.
  * @param {string} name - Exported helper in `e2e/fixtures/expeditionFixtures.js`.
  * @param {unknown[]} args - Arguments after the root state.
- * @returns {Promise<any>} The helper's JSON-serializable result.
+ * @returns {Promise<unknown>} The helper's JSON-serializable result.
  */
 export async function evaluateFixtureHelper(page, name, ...args) {
   return page.evaluate(
@@ -208,7 +216,7 @@ export async function loadSavedGame(page) {
  * Reads the root game state from the DEV-only `window.gameState` getter.
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
- * @returns {Promise<any>} A structured copy of the root state.
+ * @returns {Promise<import('../src/types').GameState>} A structured copy of the root state.
  */
 export async function readRootState(page) {
   return page.evaluate(() => {
