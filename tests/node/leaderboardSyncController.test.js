@@ -32,10 +32,12 @@ const staleResponse = revision => ({
 })
 const deferred = () => {
   let resolve
-  const promise = new Promise(r => {
-    resolve = r
+  let reject
+  const promise = new Promise((res, rej) => {
+    resolve = res
+    reject = rej
   })
-  return { promise, resolve }
+  return { promise, resolve, reject }
 }
 
 const snap = (money, playerId = 'p') => ({
@@ -57,21 +59,29 @@ const flush = () => new Promise(resolve => setImmediate(resolve))
  * consumed one per request: a response, or a function returning a response
  * (or a promise of one, or throwing). Once empty, requests answer ok.
  */
-const setup = ({ startMs = 1_000_000, script = [], enabled = true } = {}) => {
+const setup = ({
+  startMs = 1_000_000,
+  script = [],
+  enabled = true,
+  requestTimeoutMs
+} = {}) => {
   let nowMs = startMs
   let nextTimerId = 1
   const timers = []
   const storage = new Map()
   const bodies = []
+  const signals = []
   const logs = { info: [], warn: [] }
   const queue = [...script]
   const env = { enabled }
 
   const clock = { now: () => nowMs, today: () => new Date(nowMs) }
   const controller = createLeaderboardSyncController({
+    ...(requestTimeoutMs === undefined ? {} : { requestTimeoutMs }),
     fetch: async (url, init) => {
       assert.equal(url, '/api/leaderboard/stats')
       bodies.push(JSON.parse(init.body))
+      signals.push(init.signal)
       const next = queue.length > 0 ? queue.shift() : okResponse()
       return typeof next === 'function' ? next() : next
     },
@@ -118,8 +128,21 @@ const setup = ({ startMs = 1_000_000, script = [], enabled = true } = {}) => {
     await flush()
   }
 
-  return { controller, submit, advance, storage, bodies, logs, env, timers }
+  return {
+    controller,
+    submit,
+    advance,
+    storage,
+    bodies,
+    signals,
+    logs,
+    env,
+    timers
+  }
 }
+
+const TIMEOUT_MS = 10_000
+const never = () => new Promise(() => {})
 
 test('sends the first snapshot at once, with a revision, and records it', async () => {
   const t = setup()
@@ -438,4 +461,144 @@ test('dispose cancels a pending timer and forgets all state', async () => {
   assert.equal(t.timers.length, 0)
   await t.advance(60 * 60 * 1000)
   assert.equal(t.bodies.length, 1)
+})
+
+test('a request that never answers expires, frees the slot and is retried', async () => {
+  const t = setup({ requestTimeoutMs: TIMEOUT_MS, script: [never] })
+  await t.submit(snap(500))
+  assert.equal(t.bodies.length, 1)
+  assert.equal(t.signals[0].aborted, false)
+
+  await t.advance(TIMEOUT_MS - 1)
+  assert.equal(t.logs.warn.length, 0)
+  await t.advance(1)
+  // The deadline aborts the request and counts as a failure that can clear up.
+  assert.equal(t.signals[0].aborted, true)
+  assert.equal(t.logs.warn.length, 1)
+  assert.equal(t.storage.has(LAST_KEY('p')), false)
+
+  // First retry after the 30 s backoff, counted from the send.
+  await t.advance(30_000 - TIMEOUT_MS - 1)
+  assert.equal(t.bodies.length, 1)
+  await t.advance(1)
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.bodies[1].money, 500)
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+})
+
+test('a response body that never finishes expires the same way', async () => {
+  const t = setup({
+    requestTimeoutMs: TIMEOUT_MS,
+    script: [{ ok: true, status: 200, statusText: 'OK', json: never }]
+  })
+  await t.submit(snap(500))
+  await t.advance(TIMEOUT_MS)
+  assert.equal(t.signals[0].aborted, true)
+  assert.equal(t.logs.warn.length, 1)
+  assert.equal(t.storage.has(LAST_KEY('p')), false)
+
+  await t.advance(30_000)
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+})
+
+test('after a timeout only the newest pending snapshot goes out, at the base interval', async () => {
+  const t = setup({ requestTimeoutMs: TIMEOUT_MS, script: [never] })
+  await t.submit(snap(500))
+  await t.submit(snap(600))
+  await t.submit(snap(700)) // newest, waits behind the stalled request
+  await t.advance(TIMEOUT_MS)
+
+  await t.advance(MIN_SYNC_INTERVAL_MS - TIMEOUT_MS - 1)
+  assert.equal(t.bodies.length, 1)
+  await t.advance(1)
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.bodies[1].money, 700)
+
+  await t.advance(60 * 60 * 1000)
+  assert.deepEqual(
+    t.bodies.map(body => body.money),
+    [500, 700]
+  )
+})
+
+test('a timed-out request that completes late cannot overwrite accepted state', async () => {
+  const late = deferred()
+  const t = setup({
+    requestTimeoutMs: TIMEOUT_MS,
+    script: [() => late.promise]
+  })
+  await t.submit(snap(500))
+  await t.submit(snap(700))
+  await t.advance(MIN_SYNC_INTERVAL_MS) // 500 expires, 700 goes out and lands
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(700)))
+  const infoCount = t.logs.info.length
+
+  late.resolve(okResponse())
+  await flush()
+  await t.advance(60 * 60 * 1000)
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(700)))
+  assert.equal(t.logs.info.length, infoCount)
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.timers.length, 0)
+})
+
+test('a late 404 from a timed-out request does not disable the sync', async () => {
+  const late = deferred()
+  const t = setup({
+    requestTimeoutMs: TIMEOUT_MS,
+    script: [() => late.promise]
+  })
+  await t.submit(snap(500))
+  await t.advance(TIMEOUT_MS)
+  late.resolve(failResponse(404))
+  await flush()
+
+  await t.advance(30_000)
+  assert.equal(t.bodies.length, 2)
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+})
+
+// Disposal is terminal: a disposed controller is never reused. In-flight work
+// is aborted and its outcome ignored, and later submits are dropped.
+for (const [outcome, settle] of [
+  ['resolves', d => d.resolve(okResponse())],
+  ['rejects', d => d.reject(new Error('network down'))]
+]) {
+  test(`an in-flight request that ${outcome} after dispose changes nothing`, async () => {
+    const inFlight = deferred()
+    const t = setup({
+      requestTimeoutMs: TIMEOUT_MS,
+      script: [() => inFlight.promise]
+    })
+    await t.submit(snap(500))
+    await t.submit(snap(700)) // would be scheduled once the request settles
+    const stored = new Map(t.storage)
+    const logs = { info: t.logs.info.length, warn: t.logs.warn.length }
+
+    t.controller.dispose()
+    assert.equal(t.signals[0].aborted, true)
+    settle(inFlight)
+    await flush()
+    await t.advance(60 * 60 * 1000)
+
+    assert.deepEqual(t.storage, stored)
+    assert.equal(t.timers.length, 0)
+    assert.equal(t.bodies.length, 1)
+    assert.deepEqual(
+      { info: t.logs.info.length, warn: t.logs.warn.length },
+      logs
+    )
+  })
+}
+
+test('a disposed controller ignores later submits', async () => {
+  const t = setup()
+  t.controller.dispose()
+  await t.submit(snap(500))
+  await t.advance(60 * 60 * 1000)
+  assert.equal(t.bodies.length, 0)
+  assert.equal(t.storage.size, 0)
+  assert.equal(t.timers.length, 0)
 })

@@ -22,6 +22,11 @@ import type { LeaderboardStatsPayload } from '../types/leaderboard'
  */
 export const MIN_SYNC_INTERVAL_MS = 15000
 const MAX_RETRY_INTERVAL_MS = 5 * 60 * 1000
+/**
+ * Default deadline for one stats request, response headers and body included.
+ * A request still open then is aborted and retried like a network error.
+ */
+const REQUEST_TIMEOUT_MS = 10000
 
 /** The part of a fetch Response the controller reads. */
 type SyncResponse = {
@@ -34,7 +39,12 @@ type SyncResponse = {
 export type LeaderboardSyncDeps = {
   fetch: (
     url: string,
-    init: { method: string; headers: Record<string, string>; body: string }
+    init: {
+      method: string
+      headers: Record<string, string>
+      body: string
+      signal: AbortSignal
+    }
   ) => Promise<SyncResponse>
   clock: IClock
   /** Untrusted string-keyed storage; reads return whatever was stored. */
@@ -51,12 +61,19 @@ export type LeaderboardSyncDeps = {
     warn: (source: string, message: string, error?: unknown) => void
   }
   isEnabled: () => boolean
+  /** Deadline for one request, body included. Defaults to 10 s. */
+  requestTimeoutMs?: number
 }
 
 export type LeaderboardSyncController = {
   /** Queues the latest snapshot for a player and flushes it when due. */
   submit: (payload: LeaderboardStatsPayload, clock?: IClock) => void
-  /** Cancels pending timers and forgets all per-player state. */
+  /**
+   * Ends the controller for good: aborts requests in flight, cancels timers
+   * and forgets all per-player state. Reuse after disposal is unsupported: a
+   * late response writes nothing and later submits are ignored, so create a
+   * new controller instead.
+   */
   dispose: () => void
 }
 
@@ -75,6 +92,8 @@ type SyncSlot = {
   /** Snapshot key of the failed request a retry is waiting on. */
   retryKey: string | null
   timer: unknown
+  /** Aborts the request in flight, on its deadline or on dispose. */
+  abort: AbortController | null
 }
 
 /** A non-success response; `status` decides whether a retry can help. */
@@ -134,6 +153,10 @@ export const createLeaderboardSyncController = (
   // and the board is never left on the first snapshot of the day.
   const slots = new Map<string, SyncSlot>()
   let endpointUnavailable = false
+  // Terminal: once set, no settled request may write storage, log, schedule a
+  // timer or send again.
+  let disposed = false
+  const requestTimeoutMs = deps.requestTimeoutMs ?? REQUEST_TIMEOUT_MS
 
   const getSlot = (playerId: string): SyncSlot => {
     const existing = slots.get(playerId)
@@ -149,7 +172,8 @@ export const createLeaderboardSyncController = (
       failures: 0,
       staleStreak: 0,
       retryKey: null,
-      timer: null
+      timer: null,
+      abort: null
     }
     slots.set(playerId, slot)
     return slot
@@ -198,23 +222,56 @@ export const createLeaderboardSyncController = (
    * @returns `synced` when applied, `stale` with the server's revision when a
    * newer one was already stored, `skipped` when intentionally not sent.
    * @throws {@link Error} when the stats endpoint exists but answers with a
-   * non-success response.
+   * non-success response, or when `abort` fires (deadline or dispose) before
+   * the response body has been read.
    */
   const send = async (
     payload: LeaderboardStatsPayload,
-    allocateRevision: () => number
+    allocateRevision: () => number,
+    abort: AbortController
   ): Promise<SyncResult> => {
     if (!deps.isEnabled() || endpointUnavailable) {
       return { status: 'skipped' }
     }
 
-    // Allocated only once the request really goes out, so a skipped flush does
-    // not burn a revision or write storage.
-    const response = await deps.fetch('/api/leaderboard/stats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, revision: allocateRevision() })
+    const { signal } = abort
+    // The network part only: what it reads is interpreted below, after the
+    // race, so a request that lost to its deadline has no effect when it
+    // settles later. Allocated only once the request really goes out, so a
+    // skipped flush does not burn a revision or write storage.
+    const exchange = async () => {
+      const response = await deps.fetch('/api/leaderboard/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, revision: allocateRevision() }),
+        signal
+      })
+      const body: unknown = response.ok
+        ? await response.json().catch(() => null)
+        : null
+      return { response, body }
+    }
+    // Settles the race even when `fetch` or the body ignores the signal.
+    const aborted = new Promise<never>((_, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), {
+        once: true
+      })
     })
+    const deadline = deps.timers.setTimeout(() => {
+      abort.abort(
+        new Error(`Stats sync timed out after ${requestTimeoutMs} ms`)
+      )
+    }, requestTimeoutMs)
+    let reply: Awaited<ReturnType<typeof exchange>>
+    try {
+      reply = await Promise.race([exchange(), aborted])
+    } finally {
+      deps.timers.clearTimeout(deadline)
+    }
+    // An abort that fired while the body was read (and swallowed as `null`)
+    // still fails the request.
+    signal.throwIfAborted()
+    const { response, body } = reply
 
     if (response.status === 404) {
       if (!endpointUnavailable) {
@@ -231,7 +288,6 @@ export const createLeaderboardSyncController = (
       throw new SyncHttpError(response.status, response.statusText ?? '')
     }
 
-    const body: unknown = await response.json().catch(() => null)
     if (
       typeof body === 'object' &&
       body !== null &&
@@ -249,7 +305,7 @@ export const createLeaderboardSyncController = (
   const flushSlot = async (slot: SyncSlot, clock: IClock): Promise<void> => {
     slot.timer = null
     const payload = slot.pending
-    if (!payload || slot.inFlight) return
+    if (disposed || !payload || slot.inFlight) return
     slot.pending = null
     const key = snapshotKey(payload)
     if (key === slot.lastSentKey) return
@@ -257,10 +313,15 @@ export const createLeaderboardSyncController = (
     slot.inFlight = true
     slot.inFlightKey = key
     slot.lastSentAt = clock.now()
+    const abort = new AbortController()
+    slot.abort = abort
     try {
-      const result = await send(payload, () =>
-        nextRevision(payload.playerId, clock)
+      const result = await send(
+        payload,
+        () => nextRevision(payload.playerId, clock),
+        abort
       )
+      if (disposed) return
       if (result.status === 'synced') {
         slot.failures = 0
         slot.staleStreak = 0
@@ -287,6 +348,7 @@ export const createLeaderboardSyncController = (
         }
       }
     } catch (error) {
+      if (disposed) return
       // Silent fail for leaderboard sync to not disrupt gameplay
       deps.logger.warn('Leaderboard', 'Stats sync failed', error)
       // Only a failure that can clear up is retried (network, 429, 5xx), with
@@ -300,15 +362,20 @@ export const createLeaderboardSyncController = (
     } finally {
       slot.inFlight = false
       slot.inFlightKey = null
+      slot.abort = null
       // A change that arrived during the request goes out next.
-      if (slot.pending && snapshotKey(slot.pending) !== slot.lastSentKey) {
+      if (
+        !disposed &&
+        slot.pending &&
+        snapshotKey(slot.pending) !== slot.lastSentKey
+      ) {
         scheduleFlush(slot, clock)
       }
     }
   }
 
   const scheduleFlush = (slot: SyncSlot, clock: IClock): void => {
-    if (slot.inFlight) return
+    if (disposed || slot.inFlight) return
     // Re-plan an existing timer: the pending snapshot may have changed, and a
     // fresh one must not wait out the backoff of the one it replaced.
     if (slot.timer !== null) deps.timers.clearTimeout(slot.timer)
@@ -339,6 +406,7 @@ export const createLeaderboardSyncController = (
 
   return {
     submit: (payload, clock = deps.clock) => {
+      if (disposed) return
       const slot = getSlot(payload.playerId)
       // What the server will hold once nothing is pending: the request on the
       // wire if there is one, else the last confirmed snapshot. Returning to an
@@ -352,9 +420,10 @@ export const createLeaderboardSyncController = (
       scheduleFlush(slot, clock)
     },
     dispose: () => {
-      endpointUnavailable = false
+      disposed = true
       for (const slot of slots.values()) {
         if (slot.timer !== null) deps.timers.clearTimeout(slot.timer)
+        slot.abort?.abort(new Error('Leaderboard sync disposed'))
       }
       slots.clear()
     }
