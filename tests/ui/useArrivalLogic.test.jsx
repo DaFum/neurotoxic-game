@@ -54,8 +54,9 @@ describe('useArrivalLogic', () => {
     })
 
     expect(mockGameState.updateBand.mock.calls.length).toBe(1)
-    const updateArg = mockGameState.updateBand.mock.calls[0][0]
-    expect(updateArg.harmony).toBe(55) // 50 + 5
+    // A functional update, so the regen lands on the post-tick harmony.
+    const updater = mockGameState.updateBand.mock.calls[0][0]
+    expect(updater(mockGameState.band).harmony).toBe(55) // 50 + 5
   })
 
   test('handles REST_STOP node', () => {
@@ -66,7 +67,7 @@ describe('useArrivalLogic', () => {
         }
       },
       band: {
-        members: [{ mood: 50, stamina: 50 }]
+        members: [{ id: 'm1', mood: 50, stamina: 50 }]
       }
     })
 
@@ -75,7 +76,10 @@ describe('useArrivalLogic', () => {
     })
 
     expect(mockGameState.updateBand.mock.calls.length).toBe(1)
-    const updateArg = mockGameState.updateBand.mock.calls[0][0]
+    // A functional update, so rest applies to the reducer's current members.
+    const updateArg = mockGameState.updateBand.mock.calls[0][0](
+      mockGameState.band
+    )
     // Expect boost: mood + 10, stamina + 20
     expect(updateArg.members[0].mood).toBe(60)
     expect(updateArg.members[0].stamina).toBe(70)

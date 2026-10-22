@@ -1,0 +1,222 @@
+import { useEffect, useReducer } from 'react'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { act, renderHook } from '@testing-library/react'
+import { gameReducer } from '../../src/context/gameReducer'
+import { createInitialState } from '../../src/context/initialState'
+import {
+  advanceDay,
+  createStartGigAction,
+  createUpdateBandAction
+} from '../../src/context/actionCreators'
+import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
+
+// The hook reads and dispatches through a store backed by the real root
+// reducer and action creators, so assertions cover committed state.
+const store = vi.hoisted(() => ({ state: null, listeners: new Set() }))
+const dispatch = action => {
+  store.state = gameReducer(store.state, action)
+  for (const listener of store.listeners) listener()
+}
+const spies = vi.hoisted(() => ({
+  changeScene: null,
+  addToast: null
+}))
+
+vi.mock('../../src/context/GameState', () => ({
+  useGameSelector: selector => {
+    const [, rerender] = useReducer(n => n + 1, 0)
+    useEffect(() => {
+      store.listeners.add(rerender)
+      return () => {
+        store.listeners.delete(rerender)
+      }
+    }, [])
+    return selector(store.state)
+  },
+  useGameActions: () => ({
+    advanceDay: () => dispatch(advanceDay(store.state)),
+    updateBand: updates => dispatch(createUpdateBandAction(updates)),
+    updatePlayer: () => {},
+    startGig: venue => dispatch(createStartGigAction(venue)),
+    changeScene: spies.changeScene,
+    addToast: spies.addToast,
+    saveGame: () => {},
+    saveGameAfterStateCommit: () => {},
+    triggerEvent: () => false,
+    setPendingBandHQOpen: () => {},
+    setPendingSupplyStopInventory: () => {},
+    moveRivalBand: () => {},
+    checkRivalEncounter: () => {},
+    recordExpeditionCrewStressSource: () => {},
+    recordExpeditionObligationSignal: () => {},
+    offerExpeditionDraft: () => {}
+  })
+}))
+
+const { useArrivalLogic } = await import('../../src/hooks/useArrivalLogic')
+
+const REST = { id: 'node_rest', type: 'REST_STOP', layer: 1, x: 10, y: 10 }
+
+const restState = () => {
+  const base = createInitialState()
+  const members = base.band.members.map((m, i) => ({
+    ...m,
+    mood: 50,
+    stamina: 40,
+    traits: { ...(m.traits ?? {}) },
+    // Index 0 carries a one-day buff the tick must expire.
+    ...(i === 0 ? { tempBuff: 1 } : {})
+  }))
+  return {
+    ...base,
+    currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+    // Stress drains member mood on the tick, so post-tick mood differs.
+    band: { ...base.band, members, stress: 60, harmony: 70 },
+    gameMap: {
+      nodes: { [REST.id]: REST },
+      connections: [],
+      layers: [[REST.id]]
+    },
+    player: { ...base.player, currentNodeId: REST.id }
+  }
+}
+
+afterEach(() => {
+  store.listeners.clear()
+})
+
+const renderArrival = initial => {
+  store.state = initial
+  spies.changeScene = vi.fn()
+  spies.addToast = vi.fn()
+  return renderHook(() => useArrivalLogic({ rng: () => 0.99 }))
+}
+
+describe('useArrivalLogic through the real reducer', () => {
+  test('rest recovery applies to the post-tick members', () => {
+    const initial = restState()
+    const postTick = gameReducer(initial, advanceDay(initial))
+    // The fixture must make the tick move mood, or the test proves nothing.
+    expect(postTick.band.members[0].mood).not.toBe(50)
+
+    const { result } = renderArrival(initial)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    const after = store.state
+    expect(after.player.day).toBe(postTick.player.day)
+    after.band.members.forEach((member, i) => {
+      const ticked = postTick.band.members[i]
+      const staminaMax = ticked.staminaMax ?? 100
+      expect(member.id).toBe(ticked.id)
+      expect(member.mood).toBe(Math.min(100, ticked.mood + 10))
+      expect(member.stamina).toBe(Math.min(staminaMax, ticked.stamina + 20))
+      expect(member.traits).toEqual(ticked.traits)
+      expect(member.tempBuff).toEqual(ticked.tempBuff)
+    })
+  })
+
+  test('harmony regen adds to the post-tick harmony', () => {
+    const initial = restState()
+    initial.band = { ...initial.band, harmonyRegenTravel: true }
+    const postTick = gameReducer(initial, advanceDay(initial))
+    expect(postTick.band.harmony).not.toBe(70)
+
+    const { result } = renderArrival(initial)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(store.state.band.harmony).toBe(
+      Math.min(100, postTick.band.harmony + 5)
+    )
+  })
+
+  test('a settlement the reducer refused charges no day and processes no arrival', () => {
+    const initial = restState()
+    // What the cash floor leaves behind: the minigame still active, the band
+    // still on the node it was leaving.
+    initial.player = { ...initial.player, currentNodeId: REST.id }
+    initial.minigame = {
+      ...initial.minigame,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: 'node_far'
+    }
+    const { result } = renderArrival(initial)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(store.state.band.members).toEqual(initial.band.members)
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+  })
+
+  test('a committed settlement to the intended node arrives normally', () => {
+    const initial = restState()
+    initial.minigame = {
+      ...initial.minigame,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: REST.id
+    }
+    const { result } = renderArrival(initial)
+    // The completion reducer clears the minigame on a committed leg.
+    act(() => {
+      dispatch({ type: 'UPDATE_PLAYER', payload: {} })
+      store.state = {
+        ...store.state,
+        minigame: { ...store.state.minigame, active: false, type: null }
+      }
+      for (const listener of store.listeners) listener()
+    })
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    expect(store.state.player.day).toBe(initial.player.day + 1)
+  })
+})
+
+describe('START_GIG on a converted current node', () => {
+  const GIG = {
+    id: 'node_gig',
+    type: 'GIG',
+    layer: 1,
+    x: 10,
+    y: 10,
+    venue: { id: 'berlin_so36', name: 'SO36' }
+  }
+  const gigState = arrivedOverlay => {
+    const base = createInitialState()
+    return {
+      ...base,
+      currentScene: GAME_PHASES.OVERWORLD,
+      gameMap: {
+        nodes: { [GIG.id]: GIG },
+        connections: [],
+        layers: [[GIG.id]]
+      },
+      player: { ...base.player, currentNodeId: GIG.id },
+      expedition: { ...base.expedition, arrivedOverlay }
+    }
+  }
+
+  test('is rejected by the reducer', () => {
+    const state = gigState({
+      nodeId: GIG.id,
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'ghost_route'
+    })
+    const next = gameReducer(state, createStartGigAction(GIG.venue))
+    expect(next).toBe(state)
+  })
+
+  test('an ordinary unplayed gig node still starts', () => {
+    const state = gigState(null)
+    const next = gameReducer(state, createStartGigAction(GIG.venue))
+    expect(next.currentScene).toBe(GAME_PHASES.PRE_GIG)
+    expect(next.currentGig?.id).toBe(GIG.venue.id)
+  })
+})

@@ -136,6 +136,19 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     )
     return state
   }
+  // A Legendary converted the node the band stands on into a SPECIAL stop
+  // (`resolveArrivalNode`); the show it replaced is not bookable from it.
+  const arrivedOverlayNodeId = state.expedition?.arrivedOverlay?.nodeId
+  if (
+    typeof arrivedOverlayNodeId === 'string' &&
+    arrivedOverlayNodeId === state.player.currentNodeId
+  ) {
+    logger.warn(
+      'GameState',
+      'Rejected START_GIG: the current node was converted by a route overlay'
+    )
+    return state
+  }
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
   // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
   // it has to resolve before the screen derives its performance profile —

@@ -17,7 +17,7 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
       type,
       venue: { id: 'venue_test', name: 'Test Venue', capacity: 100, pay: 100 }
     },
-    band: { harmony: 100, members: [{ stamina: 50, mood: 50 }] },
+    band: { harmony: 100, members: [{ id: 'm1', stamina: 50, mood: 50 }] },
     player: { fame: 50 },
     updateBand: mock.fn(),
     updatePlayer: mock.fn(),
@@ -87,7 +87,9 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
     handleNodeArrival(params)
 
     assert.equal(params.updateBand.mock.calls.length, 1)
-    const [update] = params.updateBand.mock.calls[0].arguments
+    // A functional update, applied to the reducer's current band.
+    const [updater] = params.updateBand.mock.calls[0].arguments
+    const update = updater(params.band)
     assert.equal(update.members[0].stamina, 70)
     assert.equal(update.members[0].mood, 60)
   })

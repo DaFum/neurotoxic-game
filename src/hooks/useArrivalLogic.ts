@@ -3,12 +3,13 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import {
   handleNodeArrival,
   processHarmonyRegen,
-  processTravelEvents
+  processTravelEvents,
+  resolveArrivalNode
 } from '../utils/arrivalUtils'
 import { handleError } from '../utils/errorHandler'
 import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import i18n from '../i18n'
-import { GAME_PHASES } from '../context/gameConstants'
+import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
 import type { GamePhase, Venue } from '../types'
 
 /**
@@ -60,6 +61,7 @@ export const useArrivalLogic = ({
   const currentScene = useGameSelector(state => state.currentScene)
   const expedition = useGameSelector(state => state.expedition)
   const rivalBandId = useGameSelector(state => state.rivalBand?.id ?? null)
+  const minigame = useGameSelector(state => state.minigame)
   const {
     advanceDay,
     saveGame,
@@ -94,6 +96,20 @@ export const useArrivalLogic = ({
     gigStartQueued: boolean
   } | null>(null)
   const [routeNonce, setRouteNonce] = useState(0)
+
+  // The leg this scene is driving. The completion reducer clears the minigame
+  // on a committed settlement, so the destination is remembered while it is
+  // still active; arrival compares it against the committed node.
+  const intendedTargetRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (
+      minigame?.active === true &&
+      minigame.type === MINIGAME_TYPES.TOURBUS &&
+      typeof minigame.targetDestination === 'string'
+    ) {
+      intendedTargetRef.current = minigame.targetDestination
+    }
+  }, [minigame])
 
   // Reset the guard whenever the player moves to a new node so a stale `true` value from a
   // previous arrival (or a failed one) never blocks the next legitimate arrival.
@@ -171,39 +187,50 @@ export const useArrivalLogic = ({
   const handleArrivalSequence = useCallback(() => {
     const nodeId = player.currentNodeId
     if (isHandlingRef.current === nodeId) return
+
+    // A settlement the reducer refused (the protected-cash floor, a route
+    // refusal, an invalid target) leaves the tourbus minigame active or the
+    // band on the node it left. Arriving then would charge a day and replay
+    // the origin's arrival, so the leg is abandoned back to the map instead.
+    const intendedTarget = intendedTargetRef.current
+    if (
+      (minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS) ||
+      (intendedTarget !== null && intendedTarget !== nodeId)
+    ) {
+      addToast(
+        i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
+          defaultValue: 'Not enough money for gas and food!'
+        }),
+        'error'
+      )
+      changeScene(GAME_PHASES.OVERWORLD)
+      return
+    }
     isHandlingRef.current = nodeId
 
     try {
       // 1. Advance Day
       advanceDay()
 
-      // 2. Harmony Regen (if applicable)
-      const newHarmony = processHarmonyRegen(
-        band,
-        expedition?.status === 'active'
-      )
-      if (newHarmony !== null) {
-        updateBand({ harmony: newHarmony })
+      // 2. Harmony Regen (if applicable), on the post-tick harmony: a value
+      // read from the pre-dispatch `band` would discard the day's drift.
+      const isRunActive = expedition?.status === 'active'
+      if (processHarmonyRegen(band, isRunActive) !== null) {
+        updateBand(prev => {
+          const regenerated = processHarmonyRegen(prev, isRunActive)
+          return regenerated === null ? {} : { harmony: regenerated }
+        })
       }
 
       // 3. Trigger Events
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const baseNode = gameMap?.nodes[player.currentNodeId]
-      // A Legendary that converted this node is what the run travelled, so
-      // arrival resolves the subtype the overlay advertised rather than the
-      // node's own class: a Ghost Route escape that landed on a Gig node must
-      // not play the show it was the escape from. The reducer records the
-      // conversion on the move and the load path re-derives it, so this only
-      // reads a fact both have already proved.
-      const arrivedOverlay =
-        expedition?.arrivedOverlay?.nodeId === player.currentNodeId
-          ? expedition.arrivedOverlay
-          : null
-      const currentNode =
-        baseNode && arrivedOverlay && baseNode.type !== 'SPECIAL'
-          ? { ...baseNode, type: 'SPECIAL' as const }
-          : baseNode
+      // A Legendary that converted this node is what the run travelled; the
+      // shared resolver gives same-node re-entry the same answer.
+      const currentNode = baseNode
+        ? resolveArrivalNode(baseNode, player.currentNodeId, expedition)
+        : baseNode
       if (expedition?.status === 'active') {
         const sourceType = currentNode?.type === 'REST_STOP' ? 'rest' : 'travel'
         const sourceId = `${sourceType}:${player.currentNodeId}:${expedition.routeStep}`
@@ -306,7 +333,9 @@ export const useArrivalLogic = ({
     recordExpeditionCrewStressSource,
     recordExpeditionObligationSignal,
     offerExpeditionDraft,
-    rivalBandId
+    rivalBandId,
+    minigame,
+    changeScene
   ])
 
   return { handleArrivalSequence }

@@ -5,7 +5,7 @@ import { logger } from '../../../utils/logger'
 import { formatCurrency, formatNumber } from '../../../utils/numberUtils'
 import { handleError } from '../../../utils/errorHandler'
 import { VENUES_BY_ID } from '../../../data/venues'
-import { isGigNode } from '../../../utils/arrivalUtils'
+import { isGigNode, resolveArrivalNode } from '../../../utils/arrivalUtils'
 import { finiteNumberOr } from '../../../utils/gameState'
 import { getActiveAssetModifiers } from '../../../utils/assetSelectors'
 import {
@@ -114,7 +114,12 @@ export const useHandleTravel = ({
           clearPendingTravel()
         }
 
-        if (isGigNode(node)) {
+        // A node a Legendary converted on the move that reached it is not a
+        // gig, exactly as arrival treated it; re-entry must not book the show.
+        const arrivalNode = resolveArrivalNode(node, node.id, {
+          arrivedOverlay: params.expeditionArrivedOverlay
+        })
+        if (isGigNode(arrivalNode)) {
           if (node.id === player.lastGigNodeId) {
             addToast(
               i18n.t('ui:travel.errors.alreadyPlayedHere', {
@@ -262,10 +267,14 @@ export const useHandleTravel = ({
             Math.max(0, finiteNumberOr(params.expeditionFuelMultiplier, 1))
           : baseFuelLiters
 
+      // Quoted against spendable cash: the settlement debit cannot cross the
+      // run's protected Career Cash, so admitting a leg on the full wallet
+      // would start a trip the cash floor then refuses.
       const resourceCheck = checkTravelResources(
         cashRequired,
         fuelLiters,
-        player
+        player,
+        params.expeditionProtectedCash
       )
       if (!resourceCheck.allowed) {
         addToast(
@@ -316,6 +325,8 @@ export const useHandleTravel = ({
       params.expeditionStatus,
       params.expeditionDraftPending,
       params.expeditionFuelMultiplier,
+      params.expeditionProtectedCash,
+      params.expeditionArrivedOverlay,
       onShowHQ,
       onShowSupplyStop,
       startTravelSequence,
