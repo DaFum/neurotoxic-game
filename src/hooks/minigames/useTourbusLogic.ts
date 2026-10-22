@@ -9,7 +9,7 @@ import {
   TOURBUS_SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
-import { getSafeRandom, getSafeUUID } from '../../utils/crypto'
+import { getSafeRandom } from '../../utils/crypto'
 import { finiteNumberOr } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
@@ -18,6 +18,7 @@ import type { AudioSfxType } from '../../utils/audio/AudioManager'
 type TourbusLogicState = {
   busLane: number
   obstacles: TourbusObstacle[]
+  nextObstacleId: number
   distance: number
   speed: number
   lastSpawnTime: number
@@ -49,6 +50,10 @@ const updateGameSpeed = (game: TourbusLogicState): number => {
 /**
  * Spawns new obstacles based on elapsed time and current spawn rate.
  */
+// ⚡ BOLT OPTIMIZATION: Replaced getSafeUUID() with a monotonic integer ID counter.
+// Why: spawnObstacles runs inside the 60 FPS update tick during Tourbus minigame gameplay.
+// Calling getSafeUUID() allocated a 36-character string and accessed Web Crypto entropy on every obstacle spawn.
+// Impact: Eliminates Web Crypto entropy queries, string allocations, and GC pressure per obstacle spawn, enabling fast numeric Map/Set lookups in TourbusObstacleManager.
 const spawnObstacles = (
   game: TourbusLogicState,
   currentSpawnRate: number,
@@ -67,7 +72,7 @@ const spawnObstacles = (
       type = 'FUEL' // 20% chance
     }
     game.obstacles.push({
-      id: getSafeUUID(),
+      id: ++game.nextObstacleId,
       lane,
       y: -10, // Start above screen (0 to 100 is visible area)
       type,
@@ -136,6 +141,7 @@ export const useTourbusLogic = () => {
   const gameStateRef = useRef<TourbusLogicState>({
     busLane: 1, // 0, 1, 2
     obstacles: [], // { id, lane, y (0-100), type }
+    nextObstacleId: 0,
     distance: 0,
     speed: TOURBUS_BASE_SPEED,
     lastSpawnTime: 0,
