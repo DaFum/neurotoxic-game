@@ -2,10 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import {
-  buildArtifactMetadata,
-  validateArtifactMetadata
-} from './utils/balance-report-metadata.mjs'
+import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 import {
   pairedMetricStatistics,
   bankruptcyTransitions
@@ -13,10 +10,9 @@ import {
 import {
   SCENARIOS,
   SIMULATION_CONSTANTS,
-  runSingleSimulation,
-  createZealotryCounters
+  runSingleSimulation
 } from './game-balance-simulation.mjs'
-import { SEED_STREAMS, streamSeed } from './game-balance-experiments.mjs'
+import { streamSeed, pairedFamePerGig } from './game-balance-experiments.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(
@@ -220,49 +216,60 @@ const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
 
   const neverEligibleShare = n > 0 ? neverEligibleRuns / n : 0
 
-  // Paired metric deltas
-  const extract = (runs, key) => runs.map(r => r[key] ?? 0)
-  const extractSocial = (runs, key) => runs.map(r => r.state?.social?.[key] ?? 0)
+  const extract = (runs, getter) => runs.map(r => getter(r) ?? 0)
+
+  const pairsForFame = controlRuns.map((controlRun, idx) => ({
+    control: {
+      fameEarned: controlRun.fameAccounting?.earned ?? 0,
+      gigsPlayed: controlRun.gigsPlayed ?? 0
+    },
+    candidate: {
+      fameEarned: candidateRuns[idx].fameAccounting?.earned ?? 0,
+      gigsPlayed: candidateRuns[idx].gigsPlayed ?? 0
+    }
+  }))
+
+  const famePerGig = pairedFamePerGig(pairsForFame)
 
   const pairedDeltas = {
     daysSurvived: pairedMetricStatistics(
-      extract(controlRuns, 'daysSurvived'),
-      extract(candidateRuns, 'daysSurvived'),
+      extract(controlRuns, r => r.daysSurvived),
+      extract(candidateRuns, r => r.daysSurvived),
       { bootstrapSeed: `${bootstrapSeed}__days` }
     ),
     finalMoney: pairedMetricStatistics(
-      extract(controlRuns, 'finalMoney'),
-      extract(candidateRuns, 'finalMoney'),
+      extract(controlRuns, r => r.finalMoney),
+      extract(candidateRuns, r => r.finalMoney),
       { bootstrapSeed: `${bootstrapSeed}__money` }
     ),
     finalFame: pairedMetricStatistics(
-      extract(controlRuns, 'finalFame'),
-      extract(candidateRuns, 'finalFame'),
+      extract(controlRuns, r => r.finalFame),
+      extract(candidateRuns, r => r.finalFame),
       { bootstrapSeed: `${bootstrapSeed}__fame` }
     ),
     fameEarned: pairedMetricStatistics(
-      extract(controlRuns, 'fameEarned'),
-      extract(candidateRuns, 'fameEarned'),
+      extract(controlRuns, r => r.fameAccounting?.earned),
+      extract(candidateRuns, r => r.fameAccounting?.earned),
       { bootstrapSeed: `${bootstrapSeed}__fameEarned` }
     ),
     gigsPlayed: pairedMetricStatistics(
-      extract(controlRuns, 'gigsPlayed'),
-      extract(candidateRuns, 'gigsPlayed'),
+      extract(controlRuns, r => r.gigsPlayed),
+      extract(candidateRuns, r => r.gigsPlayed),
       { bootstrapSeed: `${bootstrapSeed}__gigs` }
     ),
     finalHarmony: pairedMetricStatistics(
-      extract(controlRuns, 'finalHarmony'),
-      extract(candidateRuns, 'finalHarmony'),
+      extract(controlRuns, r => r.finalHarmony),
+      extract(candidateRuns, r => r.finalHarmony),
       { bootstrapSeed: `${bootstrapSeed}__harmony` }
     ),
     maxDrawdownPct: pairedMetricStatistics(
-      extract(controlRuns, 'maxDrawdownPct'),
-      extract(candidateRuns, 'maxDrawdownPct'),
+      extract(controlRuns, r => r.maxPeakToTroughDrop),
+      extract(candidateRuns, r => r.maxPeakToTroughDrop),
       { bootstrapSeed: `${bootstrapSeed}__drawdown` }
     ),
-    controversyPeak: pairedMetricStatistics(
-      extractSocial(controlRuns, 'controversyLevel'),
-      extractSocial(candidateRuns, 'controversyLevel'),
+    finalControversy: pairedMetricStatistics(
+      extract(controlRuns, r => r.finalControversy),
+      extract(candidateRuns, r => r.finalControversy),
       { bootstrapSeed: `${bootstrapSeed}__controversy` }
     ),
     bankruptcy: bankruptcyTransitions(
@@ -282,6 +289,7 @@ const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
       totalDaysAtControversy85OrHigher,
       totalActiveDealPayoutsLost
     },
+    pairedFamePerGig: famePerGig,
     pairedDeltas
   }
 }

@@ -56,11 +56,17 @@ Across 200 runs per cell on the calibration stream across early, mid, and late s
 - **Post-State:** Money $450, Harmony 50, Zealotry 60, Controversy 50, Active Deals: 1 (retained).
 - **Feedback & Pressure:** Modal clearly displays cost ($750), harmony cost (-25), and gains. Toast clearly communicates Fame +400, Zealotry +25, Controversy +40. Decision pressure is high due to remaining $450 cash.
 
-### Scenario 2: Five Consecutive Days of Normal-Play Sermon Use
+### Scenario 2: Five Consecutive Days of Normal-Play Sermon Use (Harmony Binding Test)
 - **Pre-State:** Day 15, Money $5,000, Harmony 90, Zealotry 40, Controversy 0.
-- **Action:** Execute Void Sermon daily for 5 days.
-- **Post-State:** Money drops by $3,750. Harmony drops to 15 (triggering low-harmony gig cancellation risk). Controversy rises to 100 (clamped).
-- **Feedback & Pressure:** Severe decision pressure. Band harmony drops into critical range, forcing clinic visits or rest days to avoid gig cancellation. Daily cap prevents multi-use per day.
+- **Action:** Attempt to execute Void Sermon daily for 5 consecutive days without active harmony recovery.
+- **Outcome & Sequence:**
+  - **Day 1:** Money $4,250 (-$750), Harmony 65 (-25), Zealotry 65 (+25), Controversy 40 (+40). Executed successfully.
+  - **Day 2:** Money $3,500 (-$750), Harmony 40 (-25), Zealotry 90 (+25), Controversy 80 (+40). Executed successfully.
+  - **Day 3:** Money $2,750 (-$750), Harmony 15 (-25), Zealotry 100 (clamped), Controversy 100 (clamped). Active deals broken as controversy crossed 85! Executed successfully.
+  - **Day 4:** Attempt blocked! Harmony is 15 (< 25 required harmony cost). Reducer rejects dispatch with "Insufficient funds or harmony for void sermon".
+  - **Day 5:** Attempt blocked! Harmony remains 15 (below 25 required cost).
+- **Post-State:** Total spend $2,250 over 3 successful executions. Harmony drops to 15. Attempts on Days 4 & 5 are rejected by the harmony cost gate.
+- **Feedback & Pressure:** Demonstrates that the -25 harmony cost acts as a strict binding constraint, preventing unpunished daily repeat usage beyond 3 consecutive days unless the player spends resources resting or visiting the clinic.
 
 ### Scenario 3: Use from Controversy 45+ with Active Deal
 - **Pre-State:** Day 12, Money $2,000, Harmony 80, Zealotry 50, Controversy 48, Active Deal: "BurgerCorp Value Menu" (Corporate, 3 remaining gigs). Brand Trust: Corporate 50.

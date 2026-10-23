@@ -1590,6 +1590,7 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
     }
 
     const actionObj = act.creator(payload)
+    const oldFame = finiteNumberOr(currentState.player?.fame, 0)
     const prevControversy = finiteNumberOr(currentState.social?.controversyLevel, 0)
     const prevDeals = currentState.social?.activeDeals
       ? [...currentState.social.activeDeals]
@@ -1605,11 +1606,17 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
       state.band = nextState.band
       state.social = nextState.social
 
+      recordObservedFameChange(
+        counters.fameAccounting,
+        oldFame,
+        nextState.player.fame
+      )
+
       const nextControversy = finiteNumberOr(
         nextState.social?.controversyLevel,
         0
       )
-      if (prevControversy < 85 && nextControversy >= 85) {
+      if (prevControversy < 85 && nextControversy >= 85 && prevDeals.length > 0) {
         counters.zealotryPolicy.dealBreakEvents++
         for (const deal of prevDeals) {
           if (deal?.alignment) {
@@ -2902,6 +2909,10 @@ export const runSingleSimulation = (
     postPulses: 0,
     contrabandDrops: 0,
     catalogUpgrades: 0,
+    zealotryPolicy:
+      scenario.dailyActionPolicy && scenario.dailyActionPolicy !== 'none'
+        ? createZealotryCounters(scenario.dailyActionPolicy)
+        : null,
     executionCoverage: createExecutionCoverage(),
     harmonyRecovery: {
       evaluations: 0,
@@ -3034,6 +3045,7 @@ export const runSingleSimulation = (
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
     counters.currentDay = day
+    state.player.day = day
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.tight)
       daysBelowTightLiquidity += 1
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
