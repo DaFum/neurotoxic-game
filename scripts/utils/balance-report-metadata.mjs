@@ -150,6 +150,7 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/domain/expedition/runDrafts.ts',
   'src/domain/expedition/runResources.ts',
   'src/domain/expedition/social.ts',
+  'src/domain/expedition/spendableCash.ts',
   'src/domain/expedition/sponsors.ts',
   'src/domain/expedition/travel.ts',
   'src/data/expedition/archive.ts',

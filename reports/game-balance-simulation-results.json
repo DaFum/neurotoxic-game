@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T13:04:26.305Z",
+  "generatedAt": "2026-10-23T14:05:48.319Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "76cf80a0b69c8be0484c5f53904dff6bfbf2f7e8bcbe08309001f9c5e702d694",
-    "generatorFingerprint": "57f04d740d8317d5ac26af842ec2cf07f38afd79041153be1e9e1257bd50009c",
+    "sourceFingerprint": "b9ed068a8aeaef3f2d0a309cfb4a2d9a26152995022ea943311e52d497555bb8",
+    "generatorFingerprint": "261a98ee05611459c36d42eb477f0c41b143db62148e2bed7fbc843b6ee3ab26",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -14121,8 +14121,8 @@
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-10-23T13:04:26.305Z",
-      "sourceFingerprint": "76cf80a0b69c8be0484c5f53904dff6bfbf2f7e8bcbe08309001f9c5e702d694",
+      "generatedAt": "2026-10-23T14:05:48.319Z",
+      "sourceFingerprint": "b9ed068a8aeaef3f2d0a309cfb4a2d9a26152995022ea943311e52d497555bb8",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",

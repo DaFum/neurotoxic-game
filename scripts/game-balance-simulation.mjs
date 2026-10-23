@@ -1533,10 +1533,6 @@ export const executeDailyZealotryPolicy = (state, scenario, counters, day) => {
     counters.zealotryPolicy = createZealotryCounters(policy)
   }
 
-  if (state.player && day != null) {
-    state.player.day = day
-  }
-
   let actionList = []
   if (policy === 'sermon-repeat' || policy === 'sermon-reserve') {
     actionList = [ZEALOTRY_ACTIONS.sermon]

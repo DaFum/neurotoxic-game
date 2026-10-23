@@ -76,6 +76,7 @@ const REQUIRED_SOURCES = [
   'src/domain/expedition/map.ts',
   'src/domain/expedition/travel.ts',
   'src/domain/expedition/loadout.ts',
+  'src/domain/expedition/spendableCash.ts',
   'src/domain/expedition/condition.ts',
   'src/domain/expedition/repairs.ts',
   'src/domain/expedition/cargo.ts',
