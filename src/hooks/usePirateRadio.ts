@@ -1,16 +1,7 @@
-import type { ZealotryActionConfig } from '../types'
 import { useGameActions } from '../context/GameState'
 import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
-
-/** Tuning values for the pirate-radio social action. */
-const PIRATE_RADIO_CONFIG: ZealotryActionConfig = {
-  COST: 200,
-  FAME_GAIN: 150,
-  ZEALOTRY_GAIN: 15,
-  CONTROVERSY_GAIN: 20,
-  HARMONY_COST: 10
-}
+import { PIRATE_RADIO_CONFIG } from '../data/zealotryActionConfigs'
 
 const PIRATE_RADIO_ACTION: ZealotryActionDescriptor = {
   dayField: 'lastPirateBroadcastDay',

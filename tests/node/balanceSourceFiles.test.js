@@ -39,6 +39,8 @@ test('balance source list has no duplicates', () => {
 // untouched silently breaks that claim, so the modules carrying the economy
 // scalars, fame rewards, catalogue prices and RNG batching are pinned here.
 const REQUIRED_SOURCES = [
+  'src/data/zealotryActionConfigs.ts',
+  'src/data/zealotryActionGates.ts',
   'src/data/brandDeals.ts',
   'src/data/postOptions.ts',
   'src/data/events/index.ts',

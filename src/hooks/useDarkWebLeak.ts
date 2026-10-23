@@ -1,18 +1,7 @@
-import type { DarkWebLeakConfig } from '../types'
 import { useGameActions } from '../context/GameState'
 import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
-import { DARK_WEB_LEAK_REQUIRED_CONTROVERSY } from '../data/zealotryActionGates'
-
-/** Tuning values for the dark-web leak social action. */
-const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
-  COST: 500,
-  FAME_GAIN: 300,
-  ZEALOTRY_GAIN: 25,
-  CONTROVERSY_GAIN: 30,
-  HARMONY_COST: 20,
-  REQUIRED_CONTROVERSY: DARK_WEB_LEAK_REQUIRED_CONTROVERSY
-}
+import { DARK_WEB_LEAK_CONFIG } from '../data/zealotryActionConfigs'
 
 const DARK_WEB_LEAK_ACTION: ZealotryActionDescriptor = {
   dayField: 'lastDarkWebLeakDay',

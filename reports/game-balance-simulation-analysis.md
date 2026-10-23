@@ -1,16 +1,16 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-10-18T20:42:48.043Z
+Erstellt am: 2026-10-23T10:46:34.188Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88
-- Generator-Fingerprint: e86470a7e38bee056ba4640df74b809dcb089087f5b11f4a31306082aac0bad9
+- Source-Fingerprint: e5b760be3dfef8d5b91b68de3de030688625b33545d5e3da499f89c4923d256e
+- Generator-Fingerprint: 4d3a0fad6d6d6f0a22d5622ea28fd3f749f50c9c8930e7862675a183cc34e38f
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
-- Working Tree Dirty: Nein
+- Working Tree Dirty: Ja
 
 ## Simulationseinstellungen
 
@@ -595,7 +595,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `d8f4f4fe8b8dccb2d9af635f18b2ceab101ae37b4b18f94b6f7efabe6d1de432` | `9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88` |
+| Source-Fingerprint | `9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88` | `e5b760be3dfef8d5b91b68de3de030688625b33545d5e3da499f89c4923d256e` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
