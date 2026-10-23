@@ -228,3 +228,8 @@
 
 **Learning:** In permutation / combination loops (such as evaluating softlock avoidance scenarios up to 1,023 iterations in `getPostSaleScenarios`), creating temporary string arrays (`comboAssetIds`) and running linear `.includes()` array scans inside the loop produces ~1,000 array allocations and ~40,000+ linear scans per call. Precomputing a bitmask lookup object (`sellableBitMap`) outside the loop replaces array allocations and linear searches with O(1) bitwise AND checks (`(i & bit) === 0`), speeding up scenario evaluation by ~1.6x.
 **Action:** When iterating bitmask combinations ($2^N$), map string keys to bit positions before the loop to evaluate set membership with O(1) bitwise operations instead of array `.includes()`.
+
+## 2026-10-24 - Stage update loop change detection and flash state transitions
+
+**Learning:** When adding change-detection short-circuits to PixiJS stage renderers (e.g. `RoadiePlayerManager`), tracking `_flashTimeout !== null` status (`isFlashing === lastWasFlashing`) is essential so that hit flash start, duration, and resolution transitions cleanly re-synchronize sprite tints instead of leaving sprite tints stuck in flash state.
+**Action:** Always include temporary timer/animation status in stage controller change-detection conditions so property updates execute cleanly on animation state transitions.
