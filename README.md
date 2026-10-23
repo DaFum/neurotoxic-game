@@ -29,7 +29,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
 - **Prerequisites**
 
-- Node.js >= 22.13.0 is required. (Run `nvm use` to align with `.nvmrc`)
+- Node.js >= 22.18.0 is required. (Run `nvm use` to align with `.nvmrc`)
 
 - **Run**
   1. `pnpm install`
