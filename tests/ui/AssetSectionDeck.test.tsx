@@ -109,7 +109,7 @@ describe('AssetSectionDeck', () => {
       const button = screen.getByRole('button', { name })
       expect(button).toHaveClass('assets-hub-secondary-button')
       expect(button).not.toHaveClass('assets-hub-primary-button')
-      expect(button).toHaveStyle({ background: 'transparent' })
+      expect(button).toHaveStyle({ backgroundColor: 'rgba(0, 0, 0, 0)' })
     }
 
     render(
