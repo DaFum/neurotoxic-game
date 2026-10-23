@@ -22,6 +22,7 @@
     "balance:expedition:quick": "node --import tsx scripts/game-balance-expedition.mjs --quick",
     "simulate:balance": "node --import tsx scripts/game-balance-simulation.mjs",
     "simulate:balance:experiments": "node --import tsx scripts/game-balance-experiments.mjs",
+    "simulate:balance:zealotry": "node --import tsx scripts/game-balance-zealotry.mjs",
     "simulate:balance:tension": "node --import tsx scripts/game-balance-tension-report.mjs",
     "validate:balance:tension-report": "node --import tsx scripts/game-balance-tension-report.mjs --validate-provenance",
     "simulate:balance:baseline": "node --import tsx scripts/game-balance-simulation.mjs --write-baseline reports/game-balance-simulation-baseline.json",

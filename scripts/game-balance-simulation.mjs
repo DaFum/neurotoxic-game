@@ -14,6 +14,24 @@ import { VENUES_BY_ID } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
 import { EVENTS_DB } from '../src/data/events/index.js'
 import { BRAND_DEALS } from '../src/data/brandDeals.js'
+import {
+  VOID_SERMON_CONFIG,
+  DARK_WEB_LEAK_CONFIG,
+  CULT_INDOCTRINATION_CONFIG,
+  PIRATE_RADIO_CONFIG
+} from '../src/data/zealotryActionConfigs.ts'
+import {
+  createVoidSermonAction,
+  createDarkWebLeakAction,
+  createCultIndoctrinationAction,
+  createPirateBroadcastAction
+} from '../src/context/actionCreators.ts'
+import {
+  VOID_SERMON_REQUIRED_ZEALOTRY,
+  CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
+  DARK_WEB_LEAK_REQUIRED_CONTROVERSY
+} from '../src/data/zealotryActionGates.ts'
+import { getExpeditionSpendableCash } from '../src/domain/expedition/spendableCash.ts'
 import { POST_OPTIONS } from '../src/data/postOptions.js'
 import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
 import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
@@ -1418,6 +1436,219 @@ const applyTriggerEvent = (
   return true
 }
 
+export const ZEALOTRY_ACTIONS = Object.freeze({
+  sermon: {
+    key: 'sermon',
+    dayField: 'lastVoidSermonDay',
+    config: VOID_SERMON_CONFIG,
+    creator: createVoidSermonAction,
+    gateCheck: state =>
+      finiteNumberOr(state.social?.zealotry, 0) >= VOID_SERMON_REQUIRED_ZEALOTRY
+  },
+  leak: {
+    key: 'leak',
+    dayField: 'lastDarkWebLeakDay',
+    config: DARK_WEB_LEAK_CONFIG,
+    creator: createDarkWebLeakAction,
+    gateCheck: state =>
+      finiteNumberOr(state.social?.controversyLevel, 0) >=
+      DARK_WEB_LEAK_REQUIRED_CONTROVERSY
+  },
+  cult: {
+    key: 'cult',
+    dayField: 'lastCultIndoctrinationDay',
+    config: CULT_INDOCTRINATION_CONFIG,
+    creator: createCultIndoctrinationAction,
+    gateCheck: state =>
+      finiteNumberOr(state.social?.zealotry, 0) >=
+      CULT_INDOCTRINATION_REQUIRED_ZEALOTRY
+  },
+  pirate: {
+    key: 'pirate',
+    dayField: 'lastPirateBroadcastDay',
+    config: PIRATE_RADIO_CONFIG,
+    creator: createPirateBroadcastAction,
+    gateCheck: () => true
+  }
+})
+
+export const createZealotryCounters = (policyName = 'none') => ({
+  policyName,
+  actions: {
+    sermon: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    leak: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    cult: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    pirate: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    }
+  },
+  dealBreakEvents: 0,
+  trustLost: 0,
+  daysAtControversy85OrHigher: 0,
+  activeDealPayoutsLost: 0,
+  dailyResourceTrajectory: []
+})
+
+const VALID_ZEALOTRY_POLICIES = new Set([
+  'none',
+  'sermon-repeat',
+  'leak-repeat',
+  'cult-repeat',
+  'pirate-repeat',
+  'legal-stack',
+  'sermon-reserve'
+])
+
+export const executeDailyZealotryPolicy = (state, scenario, counters, day) => {
+  const policy = scenario.dailyActionPolicy ?? 'none'
+  if (policy === 'none') return state
+
+  if (!VALID_ZEALOTRY_POLICIES.has(policy)) {
+    throw new RangeError(`Unknown dailyActionPolicy: ${policy}`)
+  }
+
+  if (!counters.zealotryPolicy) {
+    counters.zealotryPolicy = createZealotryCounters(policy)
+  }
+
+  let actionList = []
+  if (policy === 'sermon-repeat' || policy === 'sermon-reserve') {
+    actionList = [ZEALOTRY_ACTIONS.sermon]
+  } else if (policy === 'leak-repeat') {
+    actionList = [ZEALOTRY_ACTIONS.leak]
+  } else if (policy === 'cult-repeat') {
+    actionList = [ZEALOTRY_ACTIONS.cult]
+  } else if (policy === 'pirate-repeat') {
+    actionList = [ZEALOTRY_ACTIONS.pirate]
+  } else if (policy === 'legal-stack') {
+    actionList = [
+      ZEALOTRY_ACTIONS.sermon,
+      ZEALOTRY_ACTIONS.leak,
+      ZEALOTRY_ACTIONS.cult,
+      ZEALOTRY_ACTIONS.pirate
+    ]
+  }
+
+  const reserveCashFloor = scenario.reserveCashFloor ?? 500
+  const reserveHarmonyFloor = scenario.reserveHarmonyFloor ?? 40
+
+  let currentState = state
+
+  for (const act of actionList) {
+    const actionKey = act.key
+    const actionCounters = counters.zealotryPolicy.actions[actionKey]
+    actionCounters.attempted++
+
+    const playerDay = finiteNumberOr(currentState.player?.day, day)
+    const cost = act.config.COST
+    const harmonyCost = act.config.HARMONY_COST
+    const spendableCash = getExpeditionSpendableCash(currentState)
+
+    let rejectionReason = null
+
+    if (currentState.social?.[act.dayField] === playerDay) {
+      rejectionReason = 'daily_marker'
+    } else if (!act.gateCheck(currentState)) {
+      rejectionReason = 'gate'
+    } else if (
+      spendableCash < cost ||
+      (policy === 'sermon-reserve' && spendableCash - cost < reserveCashFloor)
+    ) {
+      rejectionReason = 'cash'
+    } else if (
+      finiteNumberOr(currentState.band?.harmony, 0) < harmonyCost ||
+      (policy === 'sermon-reserve' &&
+        finiteNumberOr(currentState.band?.harmony, 0) - harmonyCost < reserveHarmonyFloor)
+    ) {
+      rejectionReason = 'harmony'
+    }
+
+    if (rejectionReason) {
+      actionCounters.rejected++
+      actionCounters.rejections[rejectionReason]++
+      continue
+    }
+
+    actionCounters.eligible++
+
+    const payload = {
+      cost: act.config.COST,
+      fameGain: act.config.FAME_GAIN,
+      zealotryGain: act.config.ZEALOTRY_GAIN,
+      controversyGain: act.config.CONTROVERSY_GAIN,
+      harmonyCost: act.config.HARMONY_COST
+    }
+
+    const actionObj = act.creator(payload)
+    const oldFame = finiteNumberOr(currentState.player?.fame, 0)
+    const prevDeals = currentState.social?.activeDeals
+      ? [...currentState.social.activeDeals]
+      : []
+    const prevReputation = { ...(currentState.social?.brandReputation || {}) }
+
+    const nextState = gameReducer(currentState, actionObj)
+
+    if (nextState !== currentState) {
+      actionCounters.successful++
+      currentState = nextState
+
+      Object.assign(state, nextState)
+      state.toasts = []
+
+      recordObservedFameChange(
+        counters.fameAccounting,
+        oldFame,
+        nextState.player.fame
+      )
+
+      const prevActiveDealsCount = prevDeals.length
+      const nextActiveDealsCount = (nextState.social?.activeDeals || []).length
+
+      if (prevActiveDealsCount > 0 && nextActiveDealsCount === 0) {
+        counters.zealotryPolicy.dealBreakEvents++
+        for (const deal of prevDeals) {
+          const align = deal?.alignment
+          if (align) {
+            const prevRep = prevReputation[align] ?? 0
+            const nextRep = nextState.social?.brandReputation?.[align] ?? 0
+            counters.zealotryPolicy.trustLost += Math.max(0, prevRep - nextRep)
+          }
+          const perGig = deal?.offer?.perGig ?? 0
+          const remaining = deal?.remainingGigs ?? 0
+          counters.zealotryPolicy.activeDealPayoutsLost += remaining * perGig
+        }
+      }
+    } else {
+      actionCounters.rejected++
+      actionCounters.rejections.cash++
+    }
+  }
+
+  return currentState
+}
+
 const maybeShiftSocialTrend = (state, rng, counters) => {
   counters.executionCoverage.socialTrends.evaluations++
   if (rng() >= SIMULATION_CONSTANTS.trendShiftChance) return
@@ -2691,6 +2922,10 @@ export const runSingleSimulation = (
     postPulses: 0,
     contrabandDrops: 0,
     catalogUpgrades: 0,
+    zealotryPolicy:
+      scenario.dailyActionPolicy && scenario.dailyActionPolicy !== 'none'
+        ? createZealotryCounters(scenario.dailyActionPolicy)
+        : null,
     executionCoverage: createExecutionCoverage(),
     harmonyRecovery: {
       evaluations: 0,
@@ -2997,6 +3232,26 @@ export const runSingleSimulation = (
       state.player.fame
     )
     maybeShiftSocialTrend(state, rng, counters)
+    if (scenario.dailyActionPolicy && scenario.dailyActionPolicy !== 'none') {
+      const moneyBeforeZealotry = state.player.money
+      executeDailyZealotryPolicy(state, scenario, counters, day)
+      observeAttributedLoss('other', moneyBeforeZealotry)
+      observeEarlyRunwayMoney()
+      if (!counters.zealotryPolicy) {
+        counters.zealotryPolicy = createZealotryCounters(scenario.dailyActionPolicy)
+      }
+      if (finiteNumberOr(state.social?.controversyLevel, 0) >= 85) {
+        counters.zealotryPolicy.daysAtControversy85OrHigher++
+      }
+      counters.zealotryPolicy.dailyResourceTrajectory.push({
+        day,
+        money: state.player.money,
+        fame: state.player.fame,
+        harmony: state.band.harmony,
+        zealotry: state.social.zealotry,
+        controversyLevel: state.social.controversyLevel
+      })
+    }
     const hadSponsorBeforeActivation = hasActiveSponsorship(state.social)
     if (scenario.brandDealsEnabled !== false) {
       counters.executionCoverage.sponsorship.attempts++

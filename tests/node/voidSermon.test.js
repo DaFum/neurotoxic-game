@@ -95,6 +95,7 @@ test('Void Sermon', async t => {
     assert.strictEqual(nextState.player.fame, 100)
     assert.strictEqual(nextState.social.lastVoidSermonDay, null)
   })
+
   const baseState = (overrides = {}) => {
     const initialState = createInitialState()
     return {
@@ -110,6 +111,7 @@ test('Void Sermon', async t => {
       ...overrides
     }
   }
+
   const payload = {
     cost: 750,
     fameGain: 400,
@@ -117,6 +119,7 @@ test('Void Sermon', async t => {
     controversyGain: 40,
     harmonyCost: 25
   }
+
   const sermon = state =>
     gameReducer(state, { type: ActionTypes.VOID_SERMON, payload })
 
@@ -156,6 +159,61 @@ test('Void Sermon', async t => {
       const next = sermon(state)
       assert.strictEqual(next.player.money, 1000)
       assert.strictEqual(next.social.lastVoidSermonDay, null)
+    }
+  )
+
+  await t.test(
+    'removes active deals and applies 10 trust lost per deal on upward crossing of 85 controversy',
+    () => {
+      const state = baseState({
+        social: {
+          ...baseState().social,
+          controversyLevel: 70,
+          activeDeals: [
+            { id: 'deal1', alignment: 'corporate', remainingGigs: 3 },
+            { id: 'deal2', alignment: 'indie', remainingGigs: 4 }
+          ],
+          brandReputation: { corporate: 50, indie: 50 }
+        }
+      })
+      const next = sermon(state)
+      assert.strictEqual(next.social.activeDeals.length, 0)
+      assert.strictEqual(next.social.brandReputation.corporate, 40)
+      assert.strictEqual(next.social.brandReputation.indie, 40)
+    }
+  )
+
+  await t.test(
+    'does not remove active deal when starting at 85 or higher controversy',
+    () => {
+      const state = baseState({
+        social: {
+          ...baseState().social,
+          controversyLevel: 85,
+          activeDeals: [{ id: 'deal1', alignment: 'corporate', remainingGigs: 3 }],
+          brandReputation: { corporate: 50 }
+        }
+      })
+      const next = sermon(state)
+      assert.strictEqual(next.social.activeDeals.length, 1)
+      assert.strictEqual(next.social.brandReputation.corporate, 50)
+      assert.strictEqual(next.social.controversyLevel, 100)
+    }
+  )
+
+  await t.test(
+    'deducts full cost and harmony with no zealotry gain when zealotry is already 100',
+    () => {
+      const state = baseState({
+        social: {
+          ...baseState().social,
+          zealotry: 100
+        }
+      })
+      const next = sermon(state)
+      assert.strictEqual(next.player.money, 1250)
+      assert.strictEqual(next.band.harmony, 55)
+      assert.strictEqual(next.social.zealotry, 100)
     }
   )
 })

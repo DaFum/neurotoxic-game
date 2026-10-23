@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T20:42:48.043Z",
+  "generatedAt": "2026-10-23T14:05:48.319Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,11 +433,11 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88",
-    "generatorFingerprint": "e86470a7e38bee056ba4640df74b809dcb089087f5b11f4a31306082aac0bad9",
+    "sourceFingerprint": "b9ed068a8aeaef3f2d0a309cfb4a2d9a26152995022ea943311e52d497555bb8",
+    "generatorFingerprint": "261a98ee05611459c36d42eb477f0c41b143db62148e2bed7fbc843b6ee3ab26",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
-    "workingTreeDirty": false,
+    "workingTreeDirty": true,
     "artifactSchemaVersion": 1,
     "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
     "shippedGigCadencePolicy": "first-income"
@@ -14113,16 +14113,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-10-18T17:49:41.906Z",
-      "sourceFingerprint": "d8f4f4fe8b8dccb2d9af635f18b2ceab101ae37b4b18f94b6f7efabe6d1de432",
+      "generatedAt": "2026-10-18T20:42:48.043Z",
+      "sourceFingerprint": "9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-10-18T20:42:48.043Z",
-      "sourceFingerprint": "9eabbdd9e5f21f618987382b0bbe2fe101f1482ea92434c8659e72e4b5418f88",
+      "generatedAt": "2026-10-23T14:05:48.319Z",
+      "sourceFingerprint": "b9ed068a8aeaef3f2d0a309cfb4a2d9a26152995022ea943311e52d497555bb8",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",

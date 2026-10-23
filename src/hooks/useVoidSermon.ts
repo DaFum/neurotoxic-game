@@ -1,18 +1,7 @@
-import type { ZealotryActionConfig } from '../types'
 import { useGameActions } from '../context/GameState'
 import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
-import { VOID_SERMON_REQUIRED_ZEALOTRY } from '../data/zealotryActionGates'
-
-/** Tuning values for the void sermon social action. */
-const VOID_SERMON_CONFIG: ZealotryActionConfig = {
-  COST: 750,
-  FAME_GAIN: 400,
-  ZEALOTRY_GAIN: 25,
-  CONTROVERSY_GAIN: 40,
-  HARMONY_COST: 25,
-  REQUIRED_ZEALOTRY: VOID_SERMON_REQUIRED_ZEALOTRY
-}
+import { VOID_SERMON_CONFIG } from '../data/zealotryActionConfigs'
 
 const VOID_SERMON_ACTION: ZealotryActionDescriptor = {
   dayField: 'lastVoidSermonDay',
@@ -27,6 +16,11 @@ const VOID_SERMON_ACTION: ZealotryActionDescriptor = {
 
 /**
  * Coordinates void sermon modal state, validation, and dispatch.
+ *
+ * @remarks
+ * Confirmed tuning values (Cost: $750, Fame: +400, Zealotry: +25, Controversy: +40, Harmony: -25)
+ * are retained per `docs/balance/void-sermon-tuning.md`. Repeat execution is bounded by the
+ * once-per-day daily cap, cash reserves ($750), and band harmony drain (-25).
  *
  * @returns Modal state, eligibility flags, action callbacks, and sermon tuning constants.
  */

@@ -5,9 +5,10 @@ import { HIGH_CONTROVERSY_THRESHOLD } from '../utils/socialThresholds'
  *
  * @remarks
  * Single source of truth shared by the hook configs (`useDarkWebLeak`,
- * `useCultIndoctrination`), which use them for the UI eligibility check, and by
- * `applyZealotryAction` in `socialReducer`, which enforces them so a raw
- * dispatch cannot skip the gate.
+ * `useCultIndoctrination`, `useVoidSermon`), which use them for the UI eligibility check,
+ * and by `applyZealotryAction` in `socialReducer`, which enforces them so a raw
+ * dispatch cannot skip the gate. Repeat execution is bounded by daily caps, cash cost,
+ * and band harmony drain (see `docs/balance/void-sermon-tuning.md`).
  */
 
 /**

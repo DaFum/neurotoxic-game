@@ -39,6 +39,10 @@ test('balance source list has no duplicates', () => {
 // untouched silently breaks that claim, so the modules carrying the economy
 // scalars, fame rewards, catalogue prices and RNG batching are pinned here.
 const REQUIRED_SOURCES = [
+  'src/context/actionCreators.ts',
+  'src/context/reducers/socialReducer.ts',
+  'src/data/zealotryActionConfigs.ts',
+  'src/data/zealotryActionGates.ts',
   'src/data/brandDeals.ts',
   'src/data/postOptions.ts',
   'src/data/events/index.ts',
@@ -72,6 +76,7 @@ const REQUIRED_SOURCES = [
   'src/domain/expedition/map.ts',
   'src/domain/expedition/travel.ts',
   'src/domain/expedition/loadout.ts',
+  'src/domain/expedition/spendableCash.ts',
   'src/domain/expedition/condition.ts',
   'src/domain/expedition/repairs.ts',
   'src/domain/expedition/cargo.ts',

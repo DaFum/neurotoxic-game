@@ -1,18 +1,7 @@
-import type { CultIndoctrinationConfig } from '../types'
 import { useGameActions } from '../context/GameState'
 import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
-import { CULT_INDOCTRINATION_REQUIRED_ZEALOTRY } from '../data/zealotryActionGates'
-
-/** Tuning values for the cult indoctrination social action. */
-const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
-  COST: 1000,
-  FAME_GAIN: 500,
-  ZEALOTRY_GAIN: 40,
-  CONTROVERSY_GAIN: 50,
-  HARMONY_COST: 30,
-  REQUIRED_ZEALOTRY: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY
-}
+import { CULT_INDOCTRINATION_CONFIG } from '../data/zealotryActionConfigs'
 
 const CULT_INDOCTRINATION_ACTION: ZealotryActionDescriptor = {
   dayField: 'lastCultIndoctrinationDay',
