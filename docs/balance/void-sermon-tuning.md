@@ -34,17 +34,17 @@ Void Sermon is judged as "too strong" if either:
 
 ---
 
-## 3. Empirical Simulation Findings (Calibration Stream)
+## 3. Empirical Simulation Findings (Calibration & Validation Streams)
 
-Across 200 runs per cell on the calibration stream across early, mid, and late stage probes:
+Across 200 runs per cell on the simulation streams across early, mid, and late stage probes:
 
 1. **Survival & Financial Balance:**
-   - Void Sermon's $750 cost and -25 harmony cost create a severe liquidity and morale drain. In early-game probes (`early_game_probe`), repeated Sermon usage without sufficient cash reserves causes rapid insolvency.
+   - Void Sermon's $750 cost and -25 harmony cost create significant cash and morale drain. Unrestrained daily repeat execution (`sermon-repeat`) results in net negative Fame deltas (-5,065 Fame in `early_game_probe__zealotry_35`) and cash drawdowns (-$4,823) due to premature run termination from low-harmony show cancellations and cash depletion.
 2. **Reserve Policy (`sermon-reserve`):**
-   - Preserving a $500 cash floor and 40 harmony floor prevents bankruptcy while allowing selective Sermon execution during high-resource windows.
+   - Preserving a $500 cash floor and 40 harmony floor bounds cash drawdown (-$604 vs -$4,823) and mitigates insolvency risk, allowing controlled execution during solvent windows.
 3. **Never-Eligible Shares:**
-   - In baseline starting states (zealotry 0), `sermon-repeat` records a 100% gate-rejection rate until zealotry reaches 35 through other means (e.g. Pirate Radio or events).
-   - In `zealotry_35` and `zealotry_50` fixtures, Void Sermon unlocks immediately and provides targeted Fame spikes.
+   - In baseline starting states (zealotry 0), `sermon-repeat` records a 100% gate-rejection rate until zealotry reaches 35 through other means.
+   - In `zealotry_35` and `zealotry_50` fixtures, Void Sermon unlocks immediately with a 0% initial gate rejection rate, giving +400 gross Fame per execution before cash and harmony bounds restrict further use.
 
 ---
 

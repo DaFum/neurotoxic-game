@@ -31,6 +31,7 @@ import {
   CULT_INDOCTRINATION_REQUIRED_ZEALOTRY,
   DARK_WEB_LEAK_REQUIRED_CONTROVERSY
 } from '../src/data/zealotryActionGates.ts'
+import { getExpeditionSpendableCash } from '../src/domain/expedition/spendableCash.ts'
 import { POST_OPTIONS } from '../src/data/postOptions.js'
 import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
 import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
@@ -1510,12 +1511,30 @@ export const createZealotryCounters = (policyName = 'none') => ({
   dailyResourceTrajectory: []
 })
 
-export const executeDailyZealotryPolicy = (state, scenario, counters) => {
+const VALID_ZEALOTRY_POLICIES = new Set([
+  'none',
+  'sermon-repeat',
+  'leak-repeat',
+  'cult-repeat',
+  'pirate-repeat',
+  'legal-stack',
+  'sermon-reserve'
+])
+
+export const executeDailyZealotryPolicy = (state, scenario, counters, day) => {
   const policy = scenario.dailyActionPolicy ?? 'none'
   if (policy === 'none') return state
 
+  if (!VALID_ZEALOTRY_POLICIES.has(policy)) {
+    throw new RangeError(`Unknown dailyActionPolicy: ${policy}`)
+  }
+
   if (!counters.zealotryPolicy) {
     counters.zealotryPolicy = createZealotryCounters(policy)
+  }
+
+  if (state.player && day != null) {
+    state.player.day = day
   }
 
   let actionList = []
@@ -1546,9 +1565,10 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
     const actionCounters = counters.zealotryPolicy.actions[actionKey]
     actionCounters.attempted++
 
-    const playerDay = finiteNumberOr(currentState.player?.day, 1)
+    const playerDay = finiteNumberOr(currentState.player?.day, day)
     const cost = act.config.COST
     const harmonyCost = act.config.HARMONY_COST
+    const spendableCash = getExpeditionSpendableCash(currentState)
 
     let rejectionReason = null
 
@@ -1557,12 +1577,8 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
     } else if (!act.gateCheck(currentState)) {
       rejectionReason = 'gate'
     } else if (
-      finiteNumberOr(currentState.player?.money, 0) < cost ||
-      (policy === 'sermon-reserve' &&
-        finiteNumberOr(currentState.player?.money, 0) - cost < reserveCashFloor) ||
-      (currentState.expedition?.status === 'active' &&
-        finiteNumberOr(currentState.player?.money, 0) - cost <
-          finiteNumberOr(currentState.expedition?.protectedCareerCash, 0))
+      spendableCash < cost ||
+      (policy === 'sermon-reserve' && spendableCash - cost < reserveCashFloor)
     ) {
       rejectionReason = 'cash'
     } else if (
@@ -1591,10 +1607,10 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
 
     const actionObj = act.creator(payload)
     const oldFame = finiteNumberOr(currentState.player?.fame, 0)
-    const prevControversy = finiteNumberOr(currentState.social?.controversyLevel, 0)
     const prevDeals = currentState.social?.activeDeals
       ? [...currentState.social.activeDeals]
       : []
+    const prevReputation = { ...(currentState.social?.brandReputation || {}) }
 
     const nextState = gameReducer(currentState, actionObj)
 
@@ -1602,9 +1618,8 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
       actionCounters.successful++
       currentState = nextState
 
-      state.player = nextState.player
-      state.band = nextState.band
-      state.social = nextState.social
+      Object.assign(state, nextState)
+      state.toasts = []
 
       recordObservedFameChange(
         counters.fameAccounting,
@@ -1612,15 +1627,17 @@ export const executeDailyZealotryPolicy = (state, scenario, counters) => {
         nextState.player.fame
       )
 
-      const nextControversy = finiteNumberOr(
-        nextState.social?.controversyLevel,
-        0
-      )
-      if (prevControversy < 85 && nextControversy >= 85 && prevDeals.length > 0) {
+      const prevActiveDealsCount = prevDeals.length
+      const nextActiveDealsCount = (nextState.social?.activeDeals || []).length
+
+      if (prevActiveDealsCount > 0 && nextActiveDealsCount === 0) {
         counters.zealotryPolicy.dealBreakEvents++
         for (const deal of prevDeals) {
-          if (deal?.alignment) {
-            counters.zealotryPolicy.trustLost += 10
+          const align = deal?.alignment
+          if (align) {
+            const prevRep = prevReputation[align] ?? 0
+            const nextRep = nextState.social?.brandReputation?.[align] ?? 0
+            counters.zealotryPolicy.trustLost += Math.max(0, prevRep - nextRep)
           }
           const perGig = deal?.offer?.perGig ?? 0
           const remaining = deal?.remainingGigs ?? 0
@@ -3045,7 +3062,6 @@ export const runSingleSimulation = (
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
     counters.currentDay = day
-    state.player.day = day
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.tight)
       daysBelowTightLiquidity += 1
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
@@ -3221,7 +3237,10 @@ export const runSingleSimulation = (
     )
     maybeShiftSocialTrend(state, rng, counters)
     if (scenario.dailyActionPolicy && scenario.dailyActionPolicy !== 'none') {
-      executeDailyZealotryPolicy(state, scenario, counters)
+      const moneyBeforeZealotry = state.player.money
+      executeDailyZealotryPolicy(state, scenario, counters, day)
+      observeAttributedLoss('other', moneyBeforeZealotry)
+      observeEarlyRunwayMoney()
       if (!counters.zealotryPolicy) {
         counters.zealotryPolicy = createZealotryCounters(scenario.dailyActionPolicy)
       }

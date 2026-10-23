@@ -116,7 +116,6 @@ export const runZealotryExperiment = async ({
         fixtureKey,
         fixture,
         runsPerScenario,
-        control: controlRuns,
         candidates: {}
       }
 
@@ -145,8 +144,7 @@ export const runZealotryExperiment = async ({
 
         resultsByCell[cellKey].candidates[policyKey] = {
           policyKey,
-          metrics,
-          runs: candidateRuns
+          metrics
         }
       }
     }
@@ -361,32 +359,8 @@ const main = async () => {
 
   const experimentResult = await runZealotryExperiment({ runsPerScenario, stream })
 
-  // Strip individual run detail before writing JSON to keep artifact compact
-  const compactResults = {
-    metadata: experimentResult.metadata,
-    stream: experimentResult.stream,
-    runsPerScenario: experimentResult.runsPerScenario,
-    resultsByCell: {}
-  }
-
-  for (const [cellKey, cellData] of Object.entries(experimentResult.resultsByCell)) {
-    compactResults.resultsByCell[cellKey] = {
-      probeId: cellData.probeId,
-      fixtureKey: cellData.fixtureKey,
-      fixture: cellData.fixture,
-      candidates: {}
-    }
-
-    for (const [pKey, cData] of Object.entries(cellData.candidates)) {
-      compactResults.resultsByCell[cellKey].candidates[pKey] = {
-        policyKey: pKey,
-        metrics: cData.metrics
-      }
-    }
-  }
-
-  await fs.writeFile(OUTPUT_JSON, JSON.stringify(compactResults, null, 2), 'utf8')
-  const markdown = generateMarkdownReport(compactResults)
+  await fs.writeFile(OUTPUT_JSON, JSON.stringify(experimentResult, null, 2), 'utf8')
+  const markdown = generateMarkdownReport(experimentResult)
   await fs.writeFile(OUTPUT_MARKDOWN, markdown, 'utf8')
 
   console.log(`Wrote JSON artifact to ${OUTPUT_JSON}`)

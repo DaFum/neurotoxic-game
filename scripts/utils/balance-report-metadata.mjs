@@ -30,6 +30,8 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/context/reducers/sanitizers/stateSanitizers.ts',
   'src/utils/saveValidator.ts',
   'src/context/usePersistence.ts',
+  'src/context/actionCreators.ts',
+  'src/context/reducers/socialReducer.ts',
   'src/data/zealotryActionConfigs.ts',
   'src/data/zealotryActionGates.ts',
   'src/data/brandDeals.ts',
