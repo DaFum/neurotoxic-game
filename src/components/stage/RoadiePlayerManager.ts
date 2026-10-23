@@ -41,6 +41,10 @@ export class RoadiePlayerManager {
     starWhite: number
     toxicGreen: number
   }
+  lastCarryingType: string | null | undefined = undefined
+  lastCellW = -1
+  lastCellH = -1
+  lastWasFlashing = false
 
   /**
    * Initializes a new instance of the RoadiePlayerManager.
@@ -77,6 +81,11 @@ export class RoadiePlayerManager {
    * @param cellH - The height of a single grid cell.
    */
   setup(container: Container, cellW: number, cellH: number) {
+    this.lastCarryingType = undefined
+    this.lastCellW = -1
+    this.lastCellH = -1
+    this.lastWasFlashing = false
+
     // Player Container (Groups body + item)
     this.playerContainer = new Container()
     container.addChild(this.playerContainer)
@@ -142,8 +151,30 @@ export class RoadiePlayerManager {
     cellW: number,
     cellH: number
   ) {
-    if (this.itemSprite && this.textures.items) {
-      if (state.carrying) {
+    if (!this.itemSprite || !this.textures.items) return
+
+    const currentType = state.carrying ? state.carrying.type : null
+    const isFlashing = this._flashTimeout !== null
+
+    // ⚡ BOLT OPTIMIZATION: Short-circuit when carrying item type, grid dimensions, and flash status are unchanged
+    // What: Added state tracking (`lastCarryingType`, `lastCellW`, `lastCellH`, `lastWasFlashing`) to bypass sprite property mutations during tick loops.
+    // Why: updateCarryingVisuals runs on every frame tick (~60 FPS) in the Roadie minigame update loop. Setting texture, scale, and tint every frame triggers unnecessary PixiJS matrix/transform dirty recalculations.
+    // Impact: Avoids ~3,600 redundant PixiJS texture/scale/tint property mutations per minute during stable Roadie gameplay while respecting flash transitions.
+    if (
+      currentType === this.lastCarryingType &&
+      cellW === this.lastCellW &&
+      cellH === this.lastCellH &&
+      isFlashing === this.lastWasFlashing
+    ) {
+      return
+    }
+
+    this.lastCarryingType = currentType
+    this.lastCellW = cellW
+    this.lastCellH = cellH
+    this.lastWasFlashing = isFlashing
+
+    if (state.carrying) {
         this.itemSprite.visible = true
         // Set texture based on type
         const tex = this.textures.items[state.carrying.type]
@@ -174,7 +205,6 @@ export class RoadiePlayerManager {
           this.playerSprite.tint = this.colors.starWhite
         }
       }
-    }
   }
 
   /**
@@ -216,6 +246,11 @@ export class RoadiePlayerManager {
    * Cleans up all managed PixiJS display objects and clears active timeouts.
    */
   dispose() {
+    this.lastCarryingType = undefined
+    this.lastCellW = -1
+    this.lastCellH = -1
+    this.lastWasFlashing = false
+
     if (this._flashTimeout) {
       clearTimeout(this._flashTimeout)
       this._flashTimeout = null
