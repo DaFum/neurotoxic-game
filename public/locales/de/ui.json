@@ -396,6 +396,8 @@
   "expedition.crew.injury.serious": "Schwere Verletzung",
   "expedition.crew.mika": "Mika",
   "expedition.crew.noah": "Noah",
+  "expedition.crew.lockedTooltip": "Crew-Mitglied noch nicht freigeschaltet.",
+  "expedition.crew.maxCapacityTooltip": "Maximale Crew-Kapazität erreicht (max. {{count}}).",
   "expedition.crew.picker": "Crew ({{count}}/{{max}})",
   "expedition.crew.role.driver": "Fahrerin",
   "expedition.crew.role.manager": "Managerin",

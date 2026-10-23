@@ -4,6 +4,7 @@ import { useGameSelector } from '../../context/GameState'
 import { EXPEDITION_CREW } from '../../data/expedition/crew'
 import { MAX_EXPEDITION_CREW } from '../../domain/expedition/crew'
 import { getAvailableCrewIds } from '../../domain/expedition/loadout'
+import { Tooltip } from '../shared/Tooltip'
 
 interface ExpeditionCrewPickerProps {
   selectedCrewIds: string[]
@@ -27,26 +28,39 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
       <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
         {EXPEDITION_CREW.map(crew => {
           const selected = selectedCrewIds.includes(crew.id)
-          const disabled =
-            !availableCrewIds.includes(crew.id) ||
-            (!selected && selectedCrewIds.length >= MAX_EXPEDITION_CREW)
-          return (
+          const isUnlocked = availableCrewIds.includes(crew.id)
+          const isMaxCapacity =
+            !selected && selectedCrewIds.length >= MAX_EXPEDITION_CREW
+          const disabled = !isUnlocked || isMaxCapacity
+
+          const disabledReason = !isUnlocked
+            ? t('ui:expedition.crew.lockedTooltip')
+            : isMaxCapacity
+              ? t('ui:expedition.crew.maxCapacityTooltip', {
+                  count: MAX_EXPEDITION_CREW
+                })
+              : undefined
+
+          const button = (
             <button
               key={crew.id}
               type='button'
               aria-pressed={selected}
-              disabled={disabled}
-              onClick={() =>
+              aria-disabled={disabled}
+              onClick={() => {
+                if (disabled) return
                 onChange(
                   selected
                     ? selectedCrewIds.filter(id => id !== crew.id)
                     : [...selectedCrewIds, crew.id]
                 )
-              }
-              className={`min-h-11 border-2 p-2 text-left font-mono uppercase shadow-[3px_3px_0_var(--color-toxic-green)] transition-colors disabled:opacity-40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
-                selected
-                  ? 'border-toxic-green bg-toxic-green/20 text-star-white'
-                  : 'border-steel-gray bg-charcoal-gray text-ash-gray hover:border-toxic-green'
+              }}
+              className={`w-full min-h-11 border-2 p-2 text-left font-mono uppercase shadow-[3px_3px_0_var(--color-toxic-green)] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                disabled
+                  ? 'opacity-40 cursor-not-allowed border-steel-gray bg-charcoal-gray/50 text-ash-gray'
+                  : selected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : 'border-steel-gray bg-charcoal-gray text-ash-gray hover:border-toxic-green'
               }`}
             >
               <strong>{t(crew.displayNameKey)}</strong>
@@ -58,6 +72,14 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
                 {t(`ui:expedition.crew.role.${crew.role}`)}
               </span>
             </button>
+          )
+
+          return disabledReason ? (
+            <Tooltip key={crew.id} content={disabledReason}>
+              {button}
+            </Tooltip>
+          ) : (
+            button
           )
         })}
       </div>
