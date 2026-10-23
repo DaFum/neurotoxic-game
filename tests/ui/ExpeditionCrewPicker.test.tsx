@@ -29,7 +29,13 @@ describe('ExpeditionCrewPicker', () => {
         onChange={onChange}
       />
     )
-    expect(screen.getByRole('button', { name: /yara/i })).toBeDisabled()
+    const yaraButton = screen.getByRole('button', { name: /yara/i })
+    expect(yaraButton).toHaveAttribute('aria-disabled', 'true')
+
+    // Verify clicking an aria-disabled crew member does not trigger onChange
+    onChange.mockClear()
+    fireEvent.click(yaraButton)
+    expect(onChange).not.toHaveBeenCalled()
   })
 
   it('renders a selected crew tile differently from an unselected one', () => {
@@ -52,5 +58,15 @@ describe('ExpeditionCrewPicker', () => {
     expect(selected.className).toContain('border-toxic-green')
     expect(selected.className).toContain('bg-toxic-green/20')
     expect(unselected.className).toContain('border-steel-gray')
+  })
+
+  it('marks unavailable/locked crew members as aria-disabled', () => {
+    state.current = createInitialState()
+    // Simulate empty available crew
+    render(
+      <ExpeditionCrewPicker selectedCrewIds={[]} onChange={vi.fn()} />
+    )
+    const mikaButton = screen.getByRole('button', { name: /mika/i })
+    expect(mikaButton).toHaveAttribute('aria-disabled', 'false')
   })
 })
