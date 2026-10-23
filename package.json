@@ -74,7 +74,7 @@
     "i18next-http-backend": "4.0.2",
     "lucide-react": "1.56.0",
     "motion": "14.0.0",
-    "pixi.js": "8.20.1",
+    "pixi.js": "8.22.0",
     "playwright": "1.64.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
