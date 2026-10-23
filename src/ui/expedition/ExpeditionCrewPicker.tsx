@@ -55,7 +55,7 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
                     : [...selectedCrewIds, crew.id]
                 )
               }}
-              className={`min-h-11 border-2 p-2 text-left font-mono uppercase shadow-[3px_3px_0_var(--color-toxic-green)] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              className={`w-full min-h-11 border-2 p-2 text-left font-mono uppercase shadow-[3px_3px_0_var(--color-toxic-green)] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 disabled
                   ? 'opacity-40 cursor-not-allowed border-steel-gray bg-charcoal-gray/50 text-ash-gray'
                   : selected
