@@ -476,6 +476,7 @@ test('a save written at GAMEOVER before endings were recorded still ends the Car
   const victory = handleLoadGame(createInitialState(), save(true))
   assert.equal(victory.currentScene, GAME_PHASES.GAMEOVER)
   assert.deepEqual(victory.terminalOutcome, { reason: 'career_victory' })
+  assert.equal(victory.player.stats.tourCompleted, true)
 
   const bust = handleLoadGame(createInitialState(), save(false))
   assert.equal(bust.currentScene, GAME_PHASES.GAMEOVER)
@@ -487,7 +488,11 @@ test('a victory claimed over a live run is dropped on load', () => {
   const forged = {
     ...started,
     currentScene: GAME_PHASES.OVERWORLD,
-    terminalOutcome: { reason: 'career_victory' }
+    terminalOutcome: { reason: 'career_victory' },
+    player: {
+      ...started.player,
+      stats: { ...started.player.stats, tourCompleted: true }
+    }
   }
   const loaded = handleLoadGame(
     createInitialState(),
@@ -496,4 +501,73 @@ test('a victory claimed over a live run is dropped on load', () => {
   assert.equal(loaded.terminalOutcome, null)
   assert.notEqual(loaded.currentScene, GAME_PHASES.GAMEOVER)
   assert.equal(loaded.expedition.status, 'active')
+  assert.equal(loaded.player.stats.tourCompleted, false)
+})
+
+test('clearing stale tourCompleted on load when save has no ending', async t => {
+  await t.test(
+    'load an OVERWORLD save with tourCompleted: true and idle expedition clears flag and leaves save unmutated',
+    () => {
+      const inputSave = {
+        currentScene: GAME_PHASES.OVERWORLD,
+        player: {
+          stats: { tourCompleted: true }
+        },
+        expedition: { status: 'idle' }
+      }
+      const inputCopy = JSON.parse(JSON.stringify(inputSave))
+      const loaded = handleLoadGame(createInitialState(), inputSave)
+
+      assert.equal(loaded.currentScene, GAME_PHASES.OVERWORLD)
+      assert.equal(loaded.terminalOutcome, null)
+      assert.equal(loaded.player.stats.tourCompleted, false)
+      assert.deepEqual(inputSave, inputCopy, 'input save must not be mutated')
+    }
+  )
+
+  await t.test(
+    'subsequent defeat from post-gig transition after clearing flag yields bankruptcy not career_victory',
+    () => {
+      const loaded = handleLoadGame(createInitialState(), {
+        currentScene: GAME_PHASES.OVERWORLD,
+        player: {
+          stats: { tourCompleted: true }
+        },
+        expedition: { status: 'idle' }
+      })
+      const postGigState = {
+        ...loaded,
+        currentScene: GAME_PHASES.POST_GIG
+      }
+      const gameOverState = gameReducer(postGigState, {
+        type: ActionTypes.CHANGE_SCENE,
+        payload: GAME_PHASES.GAMEOVER
+      })
+      assert.deepEqual(gameOverState.terminalOutcome, { reason: 'bankruptcy' })
+      assert.notDeepEqual(gameOverState.terminalOutcome, {
+        reason: 'career_victory'
+      })
+    }
+  )
+
+  await t.test(
+    'load a save with an invalid terminalOutcome clears stale tourCompleted flag',
+    () => {
+      for (const invalidOutcome of [
+        { reason: 'unknown_reason' },
+        'not_a_record',
+        12345
+      ]) {
+        const loaded = handleLoadGame(createInitialState(), {
+          currentScene: GAME_PHASES.OVERWORLD,
+          terminalOutcome: invalidOutcome,
+          player: {
+            stats: { tourCompleted: true }
+          }
+        })
+        assert.equal(loaded.player.stats.tourCompleted, false)
+        assert.equal(loaded.terminalOutcome, null)
+      }
+    }
+  )
 })

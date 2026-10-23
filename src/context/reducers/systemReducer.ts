@@ -456,7 +456,24 @@ export const handleLoadGame = (
     settled.expedition?.status === 'active'
       ? null
       : recorded
-  if (!ending) return { ...settled, terminalOutcome: null }
+  // A pre-9edc437 save could carry tourCompleted into OVERWORLD; without clearing
+  // it when a loaded save has no ending, a later defeat records career_victory.
+  if (!ending) {
+    if (settled.player.stats.tourCompleted === true) {
+      return {
+        ...settled,
+        terminalOutcome: null,
+        player: {
+          ...settled.player,
+          stats: {
+            ...settled.player.stats,
+            tourCompleted: false
+          }
+        }
+      }
+    }
+    return { ...settled, terminalOutcome: null }
+  }
   // A save written before the ending settled its run (or a hostile one) must
   // not reload at GAMEOVER with the run still active.
   return settleExpeditionOnTerminalOutcome({
