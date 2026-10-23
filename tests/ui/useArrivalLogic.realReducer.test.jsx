@@ -5,10 +5,19 @@ import { gameReducer } from '../../src/context/gameReducer'
 import { createInitialState } from '../../src/context/initialState'
 import {
   advanceDay,
+  createLoadGameAction,
   createStartGigAction,
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
+import { ActionTypes } from '../../src/context/actionTypes'
+import {
+  createPersistedState,
+  createRawLoadPayload
+} from '../../src/context/usePersistence'
+import { deriveExpeditionGhostRouteTargetFrom } from '../../src/domain/expedition/legendaries'
+import { createFixedClock } from '../../src/utils/clock'
+import { fixtureMap, startedState } from '../expeditionLifecycleFixture.js'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 
@@ -23,7 +32,9 @@ const spies = vi.hoisted(() => ({
   changeScene: null,
   addToast: null,
   saveGame: null,
-  saveGameAfterStateCommit: null
+  saveGameAfterStateCommit: null,
+  startGig: null,
+  triggerEvent: null
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -41,12 +52,12 @@ vi.mock('../../src/context/GameState', () => ({
     advanceDay: () => dispatch(advanceDay(store.state)),
     updateBand: updates => dispatch(createUpdateBandAction(updates)),
     updatePlayer: updates => dispatch(createUpdatePlayerAction(updates)),
-    startGig: venue => dispatch(createStartGigAction(venue)),
+    startGig: spies.startGig,
     changeScene: spies.changeScene,
     addToast: spies.addToast,
     saveGame: spies.saveGame,
     saveGameAfterStateCommit: spies.saveGameAfterStateCommit,
-    triggerEvent: () => false,
+    triggerEvent: spies.triggerEvent,
     setPendingBandHQOpen: () => {},
     setPendingSupplyStopInventory: () => {},
     moveRivalBand: () => {},
@@ -112,6 +123,9 @@ const renderArrival = (initial, rng = () => 0.99) => {
   spies.addToast = vi.fn()
   spies.saveGame = vi.fn()
   spies.saveGameAfterStateCommit = vi.fn()
+  // Still the real action creator; only the calls are recorded.
+  spies.startGig = vi.fn(venue => dispatch(createStartGigAction(venue)))
+  spies.triggerEvent = vi.fn(() => false)
   return renderHook(() => useArrivalLogic({ rng }))
 }
 
@@ -386,5 +400,202 @@ describe('START_GIG on a converted current node', () => {
     const next = gameReducer(state, createStartGigAction(GIG.venue))
     expect(next.currentScene).toBe(GAME_PHASES.PRE_GIG)
     expect(next.currentGig?.id).toBe(GIG.venue.id)
+  })
+})
+
+describe('a Ghost Route conversion that survives a real LOAD_GAME', () => {
+  const HEADLINER = {
+    finalizedExpeditionRuns: 5,
+    completedExpeditionRuns: 5,
+    completedExpeditionRegionIds: ['home_turf', 'festival_fields']
+  }
+
+  /**
+   * Finds a Ghost Route detour the run can actually take: a Gig the seeded
+   * derivation picks from a reachable node, so the conversion has a base Gig to
+   * be taken for. Nothing is hard-coded: the map and seed decide.
+   *
+   * @param {number} runSeed - The run's seed.
+   * @param {import('../../src/types/expedition').ExpeditionMap} map - The run's canonical route.
+   * @returns {{ path: string[], predecessor: string, predecessorStep: number, target: string }}
+   *   The path from the start to the predecessor (both included), the
+   *   predecessor, its route step and the detour target.
+   */
+  const findGhostRouteFixture = (runSeed, map) => {
+    const queue = [{ nodeId: map.startNodeId, path: [map.startNodeId] }]
+    const seen = new Set([map.startNodeId])
+    for (let head = 0; head < queue.length; head++) {
+      const entry = queue[head]
+      if (!entry) continue
+      const { nodeId, path } = entry
+      const outgoing = map.connections.filter(edge => edge.from === nodeId)
+      if (Object.hasOwn(map.meta, nodeId)) {
+        const step = map.meta[nodeId]?.routeStep
+        const target =
+          typeof step === 'number'
+            ? deriveExpeditionGhostRouteTargetFrom(nodeId, step, runSeed, map)
+            : null
+        const node =
+          target !== null && Object.hasOwn(map.nodes, target)
+            ? map.nodes[target]
+            : null
+        const subtype =
+          target !== null && Object.hasOwn(map.meta, target)
+            ? map.meta[target]?.specialSubtype
+            : undefined
+        const hasVenue =
+          node?.venue !== undefined &&
+          node.venue !== null &&
+          Object.keys(node.venue).length > 0
+        if (
+          typeof step === 'number' &&
+          target !== null &&
+          node?.type === 'GIG' &&
+          hasVenue &&
+          subtype !== undefined &&
+          subtype !== 'UNDERGROUND_MARKET' &&
+          subtype !== 'BLACK_MARKET' &&
+          outgoing.some(edge => edge.to === target)
+        ) {
+          return { path, predecessor: nodeId, predecessorStep: step, target }
+        }
+      }
+      for (const edge of outgoing) {
+        if (seen.has(edge.to)) continue
+        seen.add(edge.to)
+        queue.push({ nodeId: edge.to, path: [...path, edge.to] })
+      }
+    }
+    throw new Error(
+      `No reachable node derives a Ghost Route detour onto a Gig for seed ${runSeed}`
+    )
+  }
+
+  const advanceRoute = (state, nodeId) => {
+    const next = gameReducer(state, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId, expectedRouteStep: state.expedition.routeStep }
+    })
+    // A refused advance returns the same state; the fixture must not go on.
+    expect(next).not.toBe(state)
+    return next
+  }
+
+  /**
+   * Owns Ghost Route at Headliner rank and corners the run with Authority
+   * pressure, mirroring `owning` and `cornered` in
+   * tests/node/expeditionLegendaries.test.js.
+   */
+  const ownedAndCornered = state => ({
+    ...state,
+    career: { ...state.career, ...HEADLINER, legendaryIds: ['ghost_route'] },
+    player: {
+      ...state.player,
+      money: 0,
+      van: { ...state.player.van, fuel: 0 }
+    },
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, heat: 95 },
+      cargo: { ...state.expedition.cargo, contraband: [] },
+      loadout: { ...state.expedition.loadout, crewIds: [] },
+      activeObligations: [
+        { id: 'o1', sourceType: 'native', status: 'active' },
+        { id: 'o2', sourceType: 'native', status: 'active' }
+      ]
+    }
+  })
+
+  /** The overlay a reload must still carry, reached only through real saves. */
+  const loadedGhostRouteState = () => {
+    const base = startedState({ money: 5000 })
+    const fixture = findGhostRouteFixture(base.runSeed, fixtureMap())
+
+    let state = base
+    for (const nodeId of fixture.path.slice(1)) {
+      state = advanceRoute(state, nodeId)
+    }
+    expect(state.expedition.routeStep).toBe(fixture.predecessorStep)
+    state = ownedAndCornered(state)
+    const escaped = advanceRoute(state, fixture.target)
+
+    const overlay = {
+      nodeId: fixture.target,
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'ghost_route'
+    }
+    expect(escaped.expedition.arrivedOverlay).toEqual(overlay)
+    expect(escaped.expedition.consumedLegendaryIds).toContain('ghost_route')
+    expect(escaped.expedition.visitedNodeIds.at(-1)).toBe(fixture.target)
+
+    // The save path the game uses: persist, serialize, parse, whitelist, load.
+    const persisted = createPersistedState(escaped, createFixedClock(1000))
+    const parsed = JSON.parse(JSON.stringify(persisted))
+    const payload = createRawLoadPayload(parsed, parsed.unlocks ?? [])
+    const loaded = gameReducer(
+      createInitialState(),
+      createLoadGameAction(payload)
+    )
+    return { loaded, fixture, overlay }
+  }
+
+  test('the load keeps the overlay and the base Gig behind it', () => {
+    const { loaded, fixture, overlay } = loadedGhostRouteState()
+
+    expect(loaded.expedition.status).toBe('active')
+    expect(loaded.expedition.arrivedOverlay).toEqual(overlay)
+    expect(loaded.player.currentNodeId).toBe(fixture.target)
+    expect(loaded.expedition.visitedNodeIds.at(-1)).toBe(fixture.target)
+    const targetNode = loaded.gameMap?.nodes[fixture.target]
+    expect(targetNode?.type).toBe('GIG')
+    expect(targetNode?.venue).toBeTruthy()
+    // The load hard-sets the scene; nothing else about it is changed here.
+    expect(loaded.currentScene).toBe(GAME_PHASES.OVERWORLD)
+    expect(loaded.minigame?.active).toBe(false)
+    expect(loaded.minigame?.targetDestination ?? null).toBeNull()
+  })
+
+  test('arrival routes it as a special stop and never books the base Gig', () => {
+    const { loaded } = loadedGhostRouteState()
+    const gigBefore = loaded.currentGig
+
+    const { result } = renderArrival(loaded)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(spies.startGig).not.toHaveBeenCalled()
+    const categories = spies.triggerEvent.mock.calls.map(
+      ([category]) => category
+    )
+    expect(categories).toContain('special')
+    expect(spies.changeScene).not.toHaveBeenCalledWith(GAME_PHASES.PRE_GIG)
+    expect(store.state.currentScene).not.toBe(GAME_PHASES.PRE_GIG)
+    expect(store.state.currentGig).toEqual(gigBefore)
+    expect(store.state.expedition.arrivedOverlay).toEqual(
+      loaded.expedition.arrivedOverlay
+    )
+  })
+
+  test('the same node without the overlay books its Gig (positive control)', () => {
+    const { loaded, fixture } = loadedGhostRouteState()
+    const control = {
+      ...loaded,
+      expedition: { ...loaded.expedition, arrivedOverlay: null }
+    }
+
+    const { result } = renderArrival(control)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    const venue = loaded.gameMap?.nodes[fixture.target]?.venue
+    expect(spies.startGig).toHaveBeenCalledWith(
+      expect.objectContaining({ id: venue?.id })
+    )
+    const categories = spies.triggerEvent.mock.calls.map(
+      ([category]) => category
+    )
+    expect(categories).not.toContain('special')
   })
 })

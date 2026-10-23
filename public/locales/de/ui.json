@@ -1355,6 +1355,7 @@
   "game-over.booed-off-stage": "AUSGEBUHT",
   "game-over.crowd-spoken": "DAS PUBLIKUM HAT GESPROCHEN",
   "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
+  "gameOver.lastSaveIsEnding": "Dein letzter Speicherstand hält dieses Ende fest. Kehre zum Menü zurück, um eine neue Tour zu starten.",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "gameOver.soldOut": "AUSVERKAUFT",

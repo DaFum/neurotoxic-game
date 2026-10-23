@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useReducer,
   useRef,
   useMemo,
@@ -6,7 +7,9 @@ import {
   type MutableRefObject
 } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
+import { useAudioEngine } from '../../context/AudioEngineContext'
 import { getSafeRandom } from '../../utils/crypto'
+import { registerTestHook } from '../../utils/devTestHooks'
 import type { GigAudioStatus } from '../../types/gigAudioStatus'
 import type {
   RhythmGameRefState,
@@ -330,6 +333,26 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
         dispatch({ type: 'SET_CORRUPTION_STATE', payload: { level, active } })
     }),
     []
+  )
+
+  // DEV-only read-only view for browser tests; copies only, no setters or refs.
+  const audioEngine = useAudioEngine()
+  useEffect(
+    () =>
+      registerTestHook('rhythm', {
+        getSnapshot: () => {
+          const game = gameStateRef.current
+          return {
+            laneActive: game.lanes.map(lane => Boolean(lane.active)),
+            userPaused: game.userPaused === true,
+            transportState: audioEngine.getTransportState(),
+            gigTimeMs: audioEngine.getGigTimeMs(),
+            hits: game.stats.perfectHits + (game.stats.hits ?? 0),
+            misses: game.stats.misses
+          }
+        }
+      }),
+    [audioEngine]
   )
 
   return {

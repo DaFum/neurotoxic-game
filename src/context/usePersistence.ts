@@ -37,7 +37,14 @@ import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { parseSaveVersion } from '../utils/saveVersion'
 import { createLoadGameAction } from './actionCreators'
-import type { GameAction, GameState, LoadGameResult } from '../types'
+import { createInitialState } from './initialState'
+import { handleLoadGame } from './reducers/systemReducer'
+import type {
+  GameAction,
+  GameState,
+  LoadGameResult,
+  LoadPreviewResult
+} from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 /**
@@ -299,6 +306,9 @@ const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
  *
  * @param parsedObj - Parsed save object that passed shape validation.
  * @param rawSave - Exact serialized payload, copied aside on failure.
+ * @param adapter - Storage backend the quarantine copy is written to.
+ * @param options - `quarantine: false` runs the migration without writing the
+ * quarantine copy or logging a failure, for a preview that must not write.
  * @returns Migrated payload stamped with the current version, or `null` when a
  * migration step threw.
  *
@@ -309,7 +319,8 @@ const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
 export const migrateLoadedSave = (
   parsedObj: Record<string, unknown>,
   rawSave: string,
-  adapter: IStorageAdapter = defaultStorageAdapter
+  adapter: IStorageAdapter = defaultStorageAdapter,
+  options: { quarantine?: boolean } = {}
 ): Record<string, unknown> | null => {
   const storedVersion = readSaveVersion(parsedObj)
   if (storedVersion >= CURRENT_SAVE_VERSION) return parsedObj
@@ -323,6 +334,9 @@ export const migrateLoadedSave = (
     }
     return { ...migrated, version: CURRENT_SAVE_VERSION }
   } catch (error) {
+    // A preview only asks whether the save would load: it must not write the
+    // quarantine copy or log the failure.
+    if (options.quarantine === false) return null
     const reason = error instanceof Error ? error.message : String(error)
     quarantineSave(rawSave, storedVersion, reason, adapter)
     logger.error(
@@ -332,6 +346,128 @@ export const migrateLoadedSave = (
     )
     return null
   }
+}
+
+/**
+ * How a refused load is reported. A real load toasts and logs each refusal; a
+ * preview passes {@link SILENT_LOAD_REPORTER} so nothing leaves the helper.
+ */
+type LoadReporter = {
+  unreadable: () => void
+  incompatible: (saveVersion: number) => void
+  parseFailed: () => void
+  corruptFailed: (reason?: string) => void
+  migrationFailed: () => void
+}
+
+const SILENT_LOAD_REPORTER: LoadReporter = {
+  unreadable: () => {},
+  incompatible: () => {},
+  parseFailed: () => {},
+  corruptFailed: () => {},
+  migrationFailed: () => {}
+}
+
+/** The reasons a stored save is refused, before any reducer sees it. */
+type StoredSaveRefusal = 'missing' | 'incompatible' | 'corrupt' | 'unreadable'
+
+type StoredSaveEvaluation =
+  | {
+      ok: true
+      /** The parsed, validated and migrated save. */
+      migrated: Record<string, unknown>
+      /** Persistent unlocks merged with the ones the save carries. */
+      unlocks: string[]
+    }
+  | { ok: false; reason: StoredSaveRefusal }
+
+/**
+ * Selects the stored slot and decides whether it may load: version guards,
+ * parsing, validation and migration.
+ *
+ * @param storage - Storage backend the slot is read from.
+ * @param report - How each refusal is reported.
+ * @param preview - Skips every write: the migration quarantine copy. Reads and
+ * the unlock merge are unchanged, so a preview reaches the verdict a load would.
+ * @returns The accepted payload, or the reason the save is refused.
+ *
+ * @remarks
+ * The one place `loadGame` and `previewLoadGame` decide acceptance, so the
+ * preview cannot drift from what a load does. It reports only through `report`
+ * and writes nothing itself; the load applies the accepted payload.
+ */
+const evaluateStoredSave = (
+  storage: IStorageAdapter,
+  report: LoadReporter,
+  preview: boolean
+): StoredSaveEvaluation => {
+  let parsed: unknown
+  let rawSave: string
+  try {
+    // The same guard saveGame applies: anything newer than this build
+    // (a slot of its own or a newer payload in the shared key) means a
+    // loaded session could never be saved. Say so rather than loading or
+    // reporting no save at all. An unreadable slot refuses too: a newer
+    // save cannot be ruled out, and saveGame would refuse every save of
+    // the session it started.
+    const newerVersion = readNewerStoredSaveVersion(storage)
+    if (newerVersion === 'unreadable') {
+      report.unreadable()
+      return { ok: false, reason: 'unreadable' }
+    }
+    if (typeof newerVersion === 'number') {
+      report.incompatible(newerVersion)
+      return { ok: false, reason: 'incompatible' }
+    }
+    const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
+    if (!saved) return { ok: false, reason: 'missing' }
+    rawSave = saved
+    parsed = safeJsonParse(saved)
+  } catch (_error) {
+    report.parseFailed()
+    return { ok: false, reason: 'corrupt' }
+  }
+
+  if (!isLooseRecord(parsed)) {
+    report.corruptFailed()
+    return { ok: false, reason: 'corrupt' }
+  }
+
+  // Checked before shape validation: a newer schema may legitimately
+  // fail this build's validator, and it must not be reported as corrupt.
+  // Nothing is written on this path, so the stored save stays as it was.
+  const storedVersion = readSaveVersion(parsed)
+  if (storedVersion > CURRENT_SAVE_VERSION) {
+    report.incompatible(storedVersion)
+    return { ok: false, reason: 'incompatible' }
+  }
+
+  try {
+    validateSaveData(parsed)
+  } catch (error) {
+    report.corruptFailed(error instanceof Error ? error.message : String(error))
+    return { ok: false, reason: 'corrupt' }
+  }
+
+  const parsedObj = parsed as Record<string, unknown>
+
+  const migratedObj = migrateLoadedSave(parsedObj, rawSave, storage, {
+    quarantine: !preview
+  })
+  if (!migratedObj) {
+    report.migrationFailed()
+    return { ok: false, reason: 'corrupt' }
+  }
+
+  const savedRaw = Array.isArray(parsedObj.unlocks) ? parsedObj.unlocks : []
+  const savedUnlocks = savedRaw.filter(
+    (u): u is string => typeof u === 'string' && u.length > 0
+  )
+  const persistentUnlocks = getUnlocks(storage)
+  const mergedUnlocks = Array.from(
+    new Set([...persistentUnlocks, ...savedUnlocks].filter(u => u.length > 0))
+  )
+  return { ok: true, migrated: migratedObj, unlocks: mergedUnlocks }
 }
 
 /**
@@ -601,15 +737,54 @@ export function usePersistence({
   }, [currentScene, saveGame, saveRequestCount])
 
   const loadGame = useCallback((): LoadGameResult => {
-    const refuseUnreadable = (): LoadGameResult => {
-      logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
-      addToast(
-        tRef.current('ui:save.loadUnreadable', {
-          defaultValue:
-            'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+    const report: LoadReporter = {
+      unreadable: () => {
+        logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
+        addToast(
+          tRef.current('ui:save.loadUnreadable', {
+            defaultValue:
+              'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+          }),
+          'error'
+        )
+      },
+      incompatible: saveVersion =>
+        handleError(new StateError(incompatibleSaveMessage(saveVersion)), {
+          addToast
         }),
-        'error'
-      )
+      parseFailed: () =>
+        handleError(
+          new StateError(
+            tRef.current('ui:save.parseFailed', {
+              defaultValue:
+                'Save file parsing failed. Falling back to initial state.'
+            })
+          ),
+          { addToast }
+        ),
+      corruptFailed: reason =>
+        handleError(
+          new StateError(
+            tRef.current('ui:save.corruptFailed', {
+              defaultValue: 'Save file is corrupt or invalid.'
+            }),
+            ...(reason === undefined ? [] : [{ reason }])
+          ),
+          { addToast }
+        ),
+      migrationFailed: () =>
+        handleError(
+          new StateError(
+            tRef.current('ui:save.migrationFailed', {
+              defaultValue:
+                'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
+            })
+          ),
+          { addToast }
+        )
+    }
+    const refuseUnreadable = (): LoadGameResult => {
+      report.unreadable()
       return { ok: false, reason: 'unreadable' }
     }
     // Returned by identity when the storage operation itself keeps throwing, so
@@ -618,115 +793,19 @@ export function usePersistence({
     const result = safeStorageOperation(
       'loadGame',
       (): LoadGameResult => {
-        let parsed: unknown
-        let rawSave: string
-        try {
-          // The same guard saveGame applies: anything newer than this build
-          // (a slot of its own or a newer payload in the shared key) means a
-          // loaded session could never be saved. Say so rather than loading or
-          // reporting no save at all. An unreadable slot refuses too: a newer
-          // save cannot be ruled out, and saveGame would refuse every save of
-          // the session it started.
-          const newerVersion = readNewerStoredSaveVersion(storage)
-          if (newerVersion === 'unreadable') return refuseUnreadable()
-          if (typeof newerVersion === 'number') {
-            handleError(new StateError(incompatibleSaveMessage(newerVersion)), {
-              addToast
-            })
-            return { ok: false, reason: 'incompatible' }
-          }
-          const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
-          if (!saved) return { ok: false, reason: 'missing' }
-          rawSave = saved
-          parsed = safeJsonParse(saved)
-        } catch (_error) {
-          handleError(
-            new StateError(
-              tRef.current('ui:save.parseFailed', {
-                defaultValue:
-                  'Save file parsing failed. Falling back to initial state.'
-              })
-            ),
-            { addToast }
-          )
-          return { ok: false, reason: 'corrupt' }
-        }
+        const evaluation = evaluateStoredSave(storage, report, false)
+        if (!evaluation.ok) return { ok: false, reason: evaluation.reason }
 
-        if (!isLooseRecord(parsed)) {
-          handleError(
-            new StateError(
-              tRef.current('ui:save.corruptFailed', {
-                defaultValue: 'Save file is corrupt or invalid.'
-              })
-            ),
-            { addToast }
-          )
-          return { ok: false, reason: 'corrupt' }
-        }
-
-        // Checked before shape validation: a newer schema may legitimately
-        // fail this build's validator, and it must not be reported as corrupt.
-        // Nothing is written on this path, so the stored save stays as it was.
-        const storedVersion = readSaveVersion(parsed)
-        if (storedVersion > CURRENT_SAVE_VERSION) {
-          handleError(new StateError(incompatibleSaveMessage(storedVersion)), {
-            addToast
-          })
-          return { ok: false, reason: 'incompatible' }
-        }
-
-        try {
-          validateSaveData(parsed)
-        } catch (error) {
-          const reason = error instanceof Error ? error.message : String(error)
-          handleError(
-            new StateError(
-              tRef.current('ui:save.corruptFailed', {
-                defaultValue: 'Save file is corrupt or invalid.'
-              }),
-              { reason }
-            ),
-            { addToast }
-          )
-          return { ok: false, reason: 'corrupt' }
-        }
-
-        const parsedObj = parsed as Record<string, unknown>
-
-        const migratedObj = migrateLoadedSave(parsedObj, rawSave, storage)
-        if (!migratedObj) {
-          handleError(
-            new StateError(
-              tRef.current('ui:save.migrationFailed', {
-                defaultValue:
-                  'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
-              })
-            ),
-            { addToast }
-          )
-          return { ok: false, reason: 'corrupt' }
-        }
-
-        const savedRaw = Array.isArray(parsedObj.unlocks)
-          ? parsedObj.unlocks
-          : []
-        const savedUnlocks = savedRaw.filter(
-          (u): u is string => typeof u === 'string' && u.length > 0
-        )
-        const persistentUnlocks = getUnlocks(storage)
-        const mergedUnlocks = Array.from(
-          new Set(
-            [...persistentUnlocks, ...savedUnlocks].filter(u => u.length > 0)
-          )
-        )
-        for (const unlockId of mergedUnlocks) addUnlock(unlockId, storage)
+        for (const unlockId of evaluation.unlocks) addUnlock(unlockId, storage)
 
         dispatch(
-          createLoadGameAction(createRawLoadPayload(migratedObj, mergedUnlocks))
+          createLoadGameAction(
+            createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
+          )
         )
         // LOAD_GAME consumes a pending gig settlement in memory only; persist
         // the settled ledger and the cleared record in the same commit.
-        if (isLooseRecord(migratedObj.pendingGigSettlement)) {
+        if (isLooseRecord(evaluation.migrated.pendingGigSettlement)) {
           saveGameAfterStateCommit()
         }
         return { ok: true }
@@ -744,5 +823,47 @@ export function usePersistence({
     tRef
   ])
 
-  return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
+  /**
+   * What a load of the selected save would do, without doing it.
+   *
+   * @returns `missing`, `unavailable` with the refusal reason, `terminal` when
+   * the loaded state would land on GAMEOVER, else `resumable`.
+   *
+   * @remarks
+   * Runs the same acceptance path as `loadGame` in preview mode, then applies
+   * the load reducer to a fresh state, so the verdict is the reducer's own scene
+   * selection. It dispatches nothing, shows no toast, reports no error and
+   * writes no storage.
+   */
+  const previewLoadGame = useCallback((): LoadPreviewResult => {
+    let evaluation: StoredSaveEvaluation
+    try {
+      evaluation = evaluateStoredSave(storage, SILENT_LOAD_REPORTER, true)
+    } catch (_error) {
+      return { status: 'unavailable', reason: 'unreadable' }
+    }
+    if (!evaluation.ok) {
+      return evaluation.reason === 'missing'
+        ? { status: 'missing' }
+        : { status: 'unavailable', reason: evaluation.reason }
+    }
+    const action = createLoadGameAction(
+      createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
+    )
+    const loaded = handleLoadGame(
+      createInitialState({ storage }),
+      action.payload
+    )
+    return loaded.currentScene === GAME_PHASES.GAMEOVER
+      ? { status: 'terminal' }
+      : { status: 'resumable' }
+  }, [storage])
+
+  return {
+    deleteSave,
+    saveGame,
+    saveGameAfterStateCommit,
+    loadGame,
+    previewLoadGame
+  }
 }

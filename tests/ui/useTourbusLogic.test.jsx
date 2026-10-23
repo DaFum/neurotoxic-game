@@ -336,4 +336,96 @@ describe('useTourbusLogic', () => {
 
     unmount()
   })
+  describe('DEV test fixture', () => {
+    const fixture = (obstacles = []) => ({
+      fixedSpeed: 0.12,
+      spawnEnabled: false,
+      obstacles
+    })
+
+    test('is absent until a test sets it: speed and spawning stay production', () => {
+      const { result, unmount } = renderHook(() => useTourbusLogic())
+      const game = result.current.gameStateRef.current
+
+      act(() => {
+        for (let i = 0; i < 20; i++) result.current.update(100)
+      })
+
+      expect(game.speed).not.toBe(0.12)
+      expect(game.obstacles.length + game.nextObstacleId).toBeGreaterThan(0)
+      unmount()
+    })
+
+    test('replaces only the obstacle list; lane, damage and stats stay', () => {
+      const { result, unmount } = renderHook(() => useTourbusLogic())
+      const game = result.current.gameStateRef.current
+      game.busLane = 2
+      game.damage = 7
+      game.itemsCollected = ['FUEL']
+      game.distance = 33
+
+      window.neurotoxicTestHooks.tourbus.setFixture(
+        fixture([{ id: 'x', lane: 0, y: 10, type: 'OBSTACLE' }])
+      )
+
+      expect(game.obstacles).toEqual([
+        { id: 'x', lane: 0, y: 10, type: 'OBSTACLE', collided: false }
+      ])
+      expect(game.busLane).toBe(2)
+      expect(game.damage).toBe(7)
+      expect(game.itemsCollected).toEqual(['FUEL'])
+      expect(game.distance).toBe(33)
+      unmount()
+    })
+
+    test('pins the speed and skips spawning while delta clamping still applies', () => {
+      const { result, unmount } = renderHook(() => useTourbusLogic())
+      const game = result.current.gameStateRef.current
+      window.neurotoxicTestHooks.tourbus.setFixture(
+        fixture([{ id: 'x', lane: 0, y: 10, type: 'OBSTACLE' }])
+      )
+
+      act(() => {
+        for (let i = 0; i < 20; i++) result.current.update(100)
+        result.current.update(10000)
+      })
+
+      expect(game.speed).toBe(0.12)
+      expect(game.nextObstacleId).toBe(0)
+      expect(game.obstacles.every(obstacle => obstacle.id === 'x')).toBe(true)
+      // 20 full frames plus one clamped to 100 ms: 21 x 100 ms at the fixed speed.
+      expect(game.distance).toBeCloseTo(0.12 * 100 * 21, 5)
+      unmount()
+    })
+
+    test('reads back copies, not the live state', () => {
+      const { result, unmount } = renderHook(() => useTourbusLogic())
+      const game = result.current.gameStateRef.current
+      window.neurotoxicTestHooks.tourbus.setFixture(
+        fixture([{ id: 'x', lane: 1, y: 90, type: 'OBSTACLE' }])
+      )
+      act(() => result.current.update(10))
+
+      const snapshot = window.neurotoxicTestHooks.tourbus.getSnapshot()
+      expect(snapshot.collidedIds).toEqual(['x'])
+      expect(snapshot.damage).toBe(10)
+
+      snapshot.obstacles[0].y = -999
+      snapshot.collidedIds.push('forged')
+      expect(game.obstacles[0].y).toBeGreaterThan(0)
+      expect(
+        window.neurotoxicTestHooks.tourbus.getSnapshot().collidedIds
+      ).toEqual(['x'])
+      unmount()
+    })
+
+    test('is unregistered on unmount', () => {
+      const { unmount } = renderHook(() => useTourbusLogic())
+      expect(window.neurotoxicTestHooks.tourbus).toBeDefined()
+
+      unmount()
+
+      expect(window.neurotoxicTestHooks?.tourbus).toBeUndefined()
+    })
+  })
 })

@@ -1355,6 +1355,7 @@
   "game-over.booed-off-stage": "BOOED OFF STAGE",
   "game-over.crowd-spoken": "THE CROWD HAS SPOKEN",
   "gameOver.finalStatistics": "FINAL STATISTICS",
+  "gameOver.lastSaveIsEnding": "Your last save records this ending. Return to the menu to start a new tour.",
   "gameOver.loadLastSave": "LOAD LAST SAVE",
   "gameOver.returnToMenu": "RETURN TO MENU",
   "gameOver.soldOut": "SOLD OUT",

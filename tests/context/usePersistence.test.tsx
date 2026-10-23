@@ -67,6 +67,22 @@ const { CURRENT_SAVE_VERSION } =
 const { GAME_PHASES } = await import('../../src/context/gameConstants')
 const { InMemoryAdapter } = await import('../../src/utils/storageAdapter')
 const { StorageProvider } = await import('../../src/context/StorageContext')
+const { createPersistedState } =
+  await import('../../src/context/usePersistence')
+const { createInitialState } = await import('../../src/context/initialState')
+const { createFixedClock } = await import('../../src/utils/clock')
+const { ActionTypes } = await import('../../src/context/actionTypes')
+const { resetStorageFallback } = await import('../../src/utils/storage')
+const { addUnlock } = await import('../../src/utils/unlockManager')
+const { validateSaveData } = await import('../../src/utils/saveValidator')
+// The file mocks these for the unit tests above; the preview needs the real
+// reducer behind it, so its block puts the real implementations back.
+const actualGameState = await vi.importActual<
+  typeof import('../../src/utils/gameState')
+>('../../src/utils/gameState')
+const actualSaveValidator = await vi.importActual<
+  typeof import('../../src/utils/saveValidator')
+>('../../src/utils/saveValidator')
 
 describe('usePersistence', () => {
   let mockStateRef: { current: unknown }
@@ -369,6 +385,242 @@ describe('usePersistence', () => {
     } finally {
       setItemSpy.mockRestore()
     }
+  })
+
+  describe('previewLoadGame', () => {
+    type Preview = ReturnType<
+      ReturnType<typeof usePersistence>['previewLoadGame']
+    >
+
+    beforeEach(() => {
+      resetStorageFallback()
+      localStorage.clear()
+      vi.mocked(gameStateModule.isLooseRecord).mockImplementation(
+        actualGameState.isLooseRecord
+      )
+      vi.mocked(gameStateModule.normalizeSetlistForSave).mockImplementation(
+        actualGameState.normalizeSetlistForSave
+      )
+      vi.mocked(validateSaveData).mockImplementation(
+        actualSaveValidator.validateSaveData
+      )
+      vi.mocked(getUnlocks).mockReturnValue([])
+    })
+
+    const setup = () =>
+      renderHook(() =>
+        usePersistence({
+          currentScene: 'MOCK_SCENE',
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        })
+      )
+
+    /** What a real save of this state looks like in storage. */
+    const storedSave = (overrides: Record<string, unknown>): string =>
+      JSON.stringify(
+        createPersistedState(
+          { ...createInitialState(), ...overrides } as never,
+          createFixedClock(1)
+        )
+      )
+
+    /** A save written on the post-gig screen, before Continue settled it. */
+    const postGigSave = (
+      settlement: Record<string, unknown>,
+      nodeType = 'GIG'
+    ): string => {
+      const base = createInitialState()
+      return storedSave({
+        currentScene: GAME_PHASES.POST_GIG,
+        player: {
+          ...base.player,
+          money: 500,
+          fame: 100,
+          currentNodeId: 'node_gig',
+          lastGigNodeId: 'node_gig'
+        },
+        gameMap: {
+          nodes: { node_gig: { id: 'node_gig', type: nodeType, x: 0, y: 0 } },
+          connections: []
+        },
+        currentGig: { id: 'gig_venue', name: 'Gig Venue' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-1',
+          gigId: 'gig_venue',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          ...settlement
+        }
+      })
+    }
+
+    const snapshotStorage = (): string =>
+      JSON.stringify(
+        Array.from({ length: localStorage.length }, (_, i) => {
+          const key = localStorage.key(i) as string
+          return [key, localStorage.getItem(key)]
+        }).sort()
+      )
+
+    // [name, stored save, expected preview, expected loadGame result]
+    const accepted: [string, () => string, Preview][] = [
+      [
+        'a normal OVERWORLD save',
+        () => storedSave({ currentScene: GAME_PHASES.OVERWORLD }),
+        { status: 'resumable' }
+      ],
+      [
+        'a recorded ending',
+        () =>
+          storedSave({
+            currentScene: GAME_PHASES.GAMEOVER,
+            terminalOutcome: { reason: 'bankruptcy' }
+          }),
+        { status: 'terminal' }
+      ],
+      [
+        'a legacy GAMEOVER save with no recorded ending',
+        () =>
+          storedSave({
+            currentScene: GAME_PHASES.GAMEOVER,
+            terminalOutcome: null
+          }),
+        { status: 'terminal' }
+      ],
+      [
+        'a pending settlement that bankrupts the band',
+        () => postGigSave({ net: -700 }),
+        { status: 'terminal' }
+      ],
+      [
+        'a pending settlement that completes the Career Finale',
+        () => postGigSave({}, 'FINALE'),
+        { status: 'terminal' }
+      ],
+      [
+        'a pending settlement that leaves the band standing',
+        () => postGigSave({ net: 100 }),
+        { status: 'resumable' }
+      ]
+    ]
+
+    it.each(accepted)(
+      'classifies %s without any side effect, and loadGame still loads it',
+      (_name, makeSave, expected) => {
+        localStorage.setItem(SAVE_KEY, makeSave())
+        const before = snapshotStorage()
+        const { result } = setup()
+
+        let preview: Preview | undefined
+        act(() => {
+          preview = result.current.previewLoadGame()
+        })
+
+        expect(preview).toEqual(expected)
+        expect(mockDispatch).not.toHaveBeenCalled()
+        expect(mockAddToast).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
+        expect(addUnlock).not.toHaveBeenCalled()
+        expect(snapshotStorage()).toBe(before)
+
+        let loaded: LoadGameResult | undefined
+        act(() => {
+          loaded = result.current.loadGame()
+        })
+        expect(loaded).toEqual({ ok: true })
+        expect(mockDispatch).toHaveBeenCalledTimes(1)
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: ActionTypes.LOAD_GAME })
+        )
+      }
+    )
+
+    it('reports no save when nothing is stored', () => {
+      const { result } = setup()
+      let preview: Preview | undefined
+      let loaded: LoadGameResult | undefined
+      act(() => {
+        preview = result.current.previewLoadGame()
+        loaded = result.current.loadGame()
+      })
+      expect(preview).toEqual({ status: 'missing' })
+      expect(loaded).toEqual({ ok: false, reason: 'missing' })
+    })
+
+    it('reports a newer save as incompatible, quietly, and leaves it untouched', () => {
+      const newer = JSON.stringify({
+        version: CURRENT_SAVE_VERSION + 1,
+        player: { money: 1 }
+      })
+      localStorage.setItem(SAVE_KEY, newer)
+      const { result } = setup()
+
+      let preview: Preview | undefined
+      act(() => {
+        preview = result.current.previewLoadGame()
+      })
+      expect(preview).toEqual({ status: 'unavailable', reason: 'incompatible' })
+      expect(handleError).not.toHaveBeenCalled()
+      expect(mockAddToast).not.toHaveBeenCalled()
+      expect(localStorage.getItem(SAVE_KEY)).toBe(newer)
+
+      let loaded: LoadGameResult | undefined
+      act(() => {
+        loaded = result.current.loadGame()
+      })
+      expect(loaded).toEqual({ ok: false, reason: 'incompatible' })
+      expect(handleError).toHaveBeenCalledTimes(1)
+    })
+
+    it('reports a save that cannot be parsed as corrupt, without reporting it', () => {
+      localStorage.setItem(SAVE_KEY, '{invalid-json}')
+      const { result } = setup()
+
+      let preview: Preview | undefined
+      act(() => {
+        preview = result.current.previewLoadGame()
+      })
+      expect(preview).toEqual({ status: 'unavailable', reason: 'corrupt' })
+      expect(handleError).not.toHaveBeenCalled()
+
+      let loaded: LoadGameResult | undefined
+      act(() => {
+        loaded = result.current.loadGame()
+      })
+      expect(loaded).toEqual({ ok: false, reason: 'corrupt' })
+    })
+
+    it('reports an unreadable slot as unavailable, quietly', () => {
+      localStorage.setItem(SAVE_KEY, storedSave({}))
+      const { result } = setup()
+      const getSpy = vi
+        .spyOn(window.localStorage, 'getItem')
+        .mockImplementation(() => {
+          throw new Error('SecurityError')
+        })
+
+      let preview: Preview | undefined
+      let loaded: LoadGameResult | undefined
+      act(() => {
+        preview = result.current.previewLoadGame()
+      })
+      const toastsAfterPreview = mockAddToast.mock.calls.length
+      act(() => {
+        loaded = result.current.loadGame()
+      })
+      getSpy.mockRestore()
+
+      expect(preview).toEqual({ status: 'unavailable', reason: 'unreadable' })
+      expect(toastsAfterPreview).toBe(0)
+      expect(loaded).toEqual({ ok: false, reason: 'unreadable' })
+    })
   })
 
   describe('deleteSave', () => {

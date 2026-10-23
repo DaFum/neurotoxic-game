@@ -14,7 +14,8 @@ import type {
   UpdateBandPayload,
   UpdatePlayerPayload,
   GamePhase,
-  LoadGameResult
+  LoadGameResult,
+  LoadPreviewResult
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger } from '../utils/logger'
@@ -180,6 +181,8 @@ type BaseGameDispatchActions = {
    */
   saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
   loadGame: () => LoadGameResult
+  /** What `loadGame` would do with the stored save, without doing it. */
+  previewLoadGame: () => LoadPreviewResult
   deleteSave: () => void
   resetState: () => void
   updateSettings: (
@@ -569,14 +572,19 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
-  const { deleteSave, saveGame, saveGameAfterStateCommit, loadGame } =
-    usePersistence({
-      currentScene: state.currentScene,
-      stateRef,
-      dispatch,
-      addToast,
-      tRef
-    })
+  const {
+    deleteSave,
+    saveGame,
+    saveGameAfterStateCommit,
+    loadGame,
+    previewLoadGame
+  } = usePersistence({
+    currentScene: state.currentScene,
+    stateRef,
+    dispatch,
+    addToast,
+    tRef
+  })
 
   const { setActiveEvent, setScreenshotMode, triggerEvent, resolveEvent } =
     useEventSystem({
@@ -918,6 +926,7 @@ export function useGameDispatchActions({
       saveGame,
       saveGameAfterStateCommit,
       loadGame,
+      previewLoadGame,
       deleteSave,
       resetState,
       endGig,
@@ -945,6 +954,7 @@ export function useGameDispatchActions({
       saveGame,
       saveGameAfterStateCommit,
       loadGame,
+      previewLoadGame,
       deleteSave,
       resetState,
       endGig,

@@ -1,4 +1,11 @@
-import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js'
+import {
+  Container,
+  Graphics,
+  Sprite,
+  Texture,
+  TilingSprite,
+  type ApplicationOptions
+} from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
 import {
@@ -11,6 +18,7 @@ import {
   loadTextures
 } from './stageRenderUtils'
 import { logger } from '../../utils/logger'
+import { registerTestHook } from '../../utils/devTestHooks'
 import {
   IMG_PROMPTS,
   getGenImageUrl,
@@ -63,6 +71,7 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
   wobbleTime: number
   textures: TourbusTextures
   colors: TourbusColors
+  unregisterTestFrames: (() => void) | null = null
 
   constructor(params: StageControllerOptions<TourbusControllerState>) {
     super(params)
@@ -93,6 +102,17 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       bloodRed: getPixiColorFromToken('--blood-red'),
       toxicGreen: getPixiColorFromToken('--toxic-green'),
       voidPurple: getPixiColorFromToken('--void-purple')
+    }
+  }
+
+  async init(options: Partial<ApplicationOptions> = {}) {
+    await super.init(options)
+    // DEV-only: lets a browser test step frames by hand once the stage is up.
+    if (!this.isDisposed && this.app && !this.unregisterTestFrames) {
+      this.unregisterTestFrames = registerTestHook('tourbusFrames', {
+        enableManualFrames: () => this.enableManualFrames(),
+        stepFrame: deltaMS => this.stepFrame(deltaMS)
+      })
     }
   }
 
@@ -311,6 +331,9 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
   }
 
   dispose() {
+    this.unregisterTestFrames?.()
+    this.unregisterTestFrames = null
+
     if (this.effectManager) {
       this.effectManager.dispose()
       this.effectManager = null
