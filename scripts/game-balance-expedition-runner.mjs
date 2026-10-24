@@ -1194,7 +1194,8 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
     viralRandomValue: draw('viral'),
     expedition: state.expedition,
     activeEvent: state.activeEvent,
-    activeQuests: state.activeQuests
+    activeQuests: state.activeQuests,
+    rivalBand: state.rivalBand
   })
 
   let next = gameReducer(state, {

@@ -39,6 +39,7 @@ interface UsePostGigDerivationsProps {
   isScreenshotMode: boolean
   gigRewardMultiplier?: number
   expedition?: GameState['expedition']
+  rivalBand?: GameState['rivalBand']
 }
 
 /**
@@ -63,7 +64,8 @@ export const usePostGigDerivations = ({
   triggerEvent,
   isScreenshotMode,
   gigRewardMultiplier = 1,
-  expedition
+  expedition,
+  rivalBand
 }: UsePostGigDerivationsProps) => {
   const perfScore = useMemo(
     () => calculatePerformanceScore(lastGigStats?.score ?? 0),
@@ -208,7 +210,8 @@ export const usePostGigDerivations = ({
         social,
         activeEvent,
         activeQuests,
-        expedition
+        expedition,
+        rivalBand
       })
     }, [
       currentGig,
@@ -218,7 +221,8 @@ export const usePostGigDerivations = ({
       social,
       activeEvent,
       activeQuests,
-      expedition
+      expedition,
+      rivalBand
     ])
 
   return {

@@ -13,6 +13,7 @@ interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
+  rivalBand?: GameState['rivalBand']
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
@@ -35,6 +36,7 @@ export function useSocialPostHandler({
   player,
   band,
   social,
+  rivalBand,
   currentGig,
   perfScore,
   lastGigStats,
@@ -74,7 +76,8 @@ export function useSocialPostHandler({
           viralRandomValue: secureRandom(),
           expedition,
           activeEvent,
-          activeQuests
+          activeQuests,
+          rivalBand
         })
       } catch (e) {
         if (e instanceof SocialPostRefusalError) {
@@ -137,6 +140,7 @@ export function useSocialPostHandler({
       expedition,
       activeEvent,
       activeQuests,
+      rivalBand,
       commitSocialPost,
       unlockTrait,
       applyQuestEvent,

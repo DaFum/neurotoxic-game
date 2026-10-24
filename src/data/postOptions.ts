@@ -406,7 +406,7 @@ export const POST_OPTIONS = [
     condition: (state: GameState) =>
       state.player &&
       typeof state.player.money === 'number' &&
-      getExpeditionSpendableCash(state) > 500 &&
+      getExpeditionSpendableCash(state) >= 500 &&
       Array.isArray(state.band?.members) &&
       state.band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {

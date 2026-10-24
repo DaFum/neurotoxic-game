@@ -223,6 +223,7 @@ export function usePostGigHandlers({
     player,
     band,
     social,
+    rivalBand,
     currentGig,
     perfScore,
     lastGigStats,

@@ -272,7 +272,8 @@ export const calculatePostGigStateUpdates = (
     viralRandomValue,
     expedition,
     activeEvent,
-    activeQuests
+    activeQuests,
+    rivalBand
   } = params
 
   const gameState: SocialEngineGameState = {
@@ -284,6 +285,7 @@ export const calculatePostGigStateUpdates = (
     activeQuests,
     currentGig,
     expedition,
+    rivalBand,
     gigEvents: lastGigStats?.events ?? []
   }
   const fullGameStateForCash = { player, band, social, expedition } as GameState

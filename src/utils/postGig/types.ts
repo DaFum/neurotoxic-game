@@ -16,6 +16,7 @@ export type CalculatePostGigStateParams = {
   expedition?: GameState['expedition']
   activeEvent?: GameState['activeEvent']
   activeQuests?: GameState['activeQuests']
+  rivalBand?: GameState['rivalBand']
 }
 
 /** Result of resolving a spin-story money effect: either no-op or the clamped next money + applied delta. */

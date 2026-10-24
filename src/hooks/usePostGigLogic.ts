@@ -122,7 +122,8 @@ export const usePostGigLogic = () => {
       triggerEvent,
       isScreenshotMode,
       gigRewardMultiplier: finaleRewardMultiplier,
-      expedition
+      expedition,
+      rivalBand
     })
 
   // Continue settles the gig, but the player can reload before pressing it.
