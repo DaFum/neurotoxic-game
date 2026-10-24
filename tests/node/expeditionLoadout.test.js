@@ -19,6 +19,7 @@ import {
   enforceExpeditionCashFloor,
   getExpeditionFuelTopUpCost,
   getExpeditionSpendableCash,
+  settleExpeditionMandatoryDebit,
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout'
 import { deriveExpeditionPendingFailure } from '../../src/domain/expedition/failure'
@@ -109,6 +110,96 @@ describe('minimum legal G1A build', () => {
       )
       expectReason(result, 'MALFORMED_CANDIDATE')
     }
+  })
+})
+
+describe('settleExpeditionMandatoryDebit', () => {
+  const activeRun = (money, protectedCareerCash) => {
+    const state = createInitialState()
+    state.player.money = money
+    state.expedition = {
+      ...createDefaultExpeditionState(),
+      status: 'active',
+      runId: 'run_1',
+      protectedCareerCash
+    }
+    return state
+  }
+
+  it('pays full charge inside the spendable slice', () => {
+    const state = activeRun(5000, 4000) // 1000 spendable
+    const result = settleExpeditionMandatoryDebit(state, { charge: 300 })
+    assert.deepEqual(result, {
+      nextMoney: 4700,
+      paid: 300,
+      waived: 0
+    })
+  })
+
+  it('pays charge exactly on the floor', () => {
+    const state = activeRun(5000, 4000) // 1000 spendable
+    const result = settleExpeditionMandatoryDebit(state, { charge: 1000 })
+    assert.deepEqual(result, {
+      nextMoney: 4000,
+      paid: 1000,
+      waived: 0
+    })
+  })
+
+  it('partially pays charge with waived remainder (€10 spendable, €200 charge)', () => {
+    const state = activeRun(4010, 4000) // 10 spendable
+    const result = settleExpeditionMandatoryDebit(state, { charge: 200 })
+    assert.deepEqual(result, {
+      nextMoney: 4000,
+      paid: 10,
+      waived: 190
+    })
+  })
+
+  it('offsets charge with credit', () => {
+    const state = activeRun(4010, 4000) // 10 spendable
+    // €200 charge, €50 credit -> available = 10 + 50 = 60. Paid = 60, waived = 140.
+    // nextMoney = 4010 + 50 - 60 = 4000.
+    const result = settleExpeditionMandatoryDebit(state, { charge: 200, credit: 50 })
+    assert.deepEqual(result, {
+      nextMoney: 4000,
+      paid: 60,
+      waived: 140
+    })
+
+    // €50 charge, €100 credit -> available = 10 + 100 = 110. Paid = 50, waived = 0.
+    // nextMoney = 4010 + 100 - 50 = 4060.
+    const resultFullCredit = settleExpeditionMandatoryDebit(state, { charge: 50, credit: 100 })
+    assert.deepEqual(resultFullCredit, {
+      nextMoney: 4060,
+      paid: 50,
+      waived: 0
+    })
+  })
+
+  it('handles malformed protectedCareerCash by making spendable cash 0 (only credit pays charge, nextMoney >= money)', () => {
+    const state = activeRun(5000, Number.NaN)
+    const result = settleExpeditionMandatoryDebit(state, { charge: 200, credit: 50 })
+    // Spendable cash is 0. available = 50. paid = 50, waived = 150.
+    // nextMoney = 5000 + 50 - 50 = 5000.
+    assert.deepEqual(result, {
+      nextMoney: 5000,
+      paid: 50,
+      waived: 150
+    })
+    assert.ok(result.nextMoney >= 5000)
+  })
+
+  it('clamps to zero debit outside an active expedition (no active expedition)', () => {
+    const state = createInitialState()
+    state.player.money = 50
+    // Outside run, spendable = 50. charge = 200. paid = 50, waived = 150. nextMoney = 0.
+    const result = settleExpeditionMandatoryDebit(state, { charge: 200 })
+    assert.deepEqual(result, {
+      nextMoney: 0,
+      paid: 50,
+      waived: 150
+    })
   })
 })
 

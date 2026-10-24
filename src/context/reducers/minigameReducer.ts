@@ -66,8 +66,11 @@ import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQu
 import { applyExpeditionRouteAdvance } from './expeditionReducer'
 import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import { SPARE_GEAR_ITEM_IDS } from '../../data/inventoryItems'
 import { buildDeterministicToastId } from './toastSanitizers'
+import { settleExpeditionMandatoryDebit } from '../../domain/expedition/loadout'
 
 /**
  * Resolves gear damage from a botched setup minigame: the first owned spare in
@@ -805,14 +808,15 @@ export const handleCompleteRoadieMinigame = (
     effectiveContrabandDelivered
   )
 
+  const settlement = settleExpeditionMandatoryDebit(state, {
+    charge: repairCost,
+    credit: contrabandBonus
+  })
+
   const nextHarmony = clampBandHarmony(
     finiteNumberOr(state.band.harmony, 1) - finiteNumberOr(stress, 0)
   )
-  const nextMoney = clampPlayerMoney(
-    finiteNumberOr(state.player.money, 0) -
-      finiteNumberOr(repairCost, 0) +
-      finiteNumberOr(contrabandBonus, 0)
-  )
+  const nextMoney = clampPlayerMoney(settlement.nextMoney)
 
   // Consume the stash item (decrement stacks or remove) only when a delivery was
   // actually credited; otherwise a zero-count payload would burn inventory for no bonus.
@@ -867,6 +871,18 @@ export const handleCompleteRoadieMinigame = (
       )
       nextModifiers.damaged_gear = true
     }
+  }
+
+  if (settlement.waived > 0 && state.expedition?.status === 'active') {
+    nextToasts = [
+      ...(nextToasts ?? []),
+      {
+        id: buildDeterministicToastId('roadie-waived-toast', nextToasts ?? []),
+        messageKey: 'ui:toast.roadieRepairWaived',
+        options: { amount: formatCurrency(settlement.waived, i18n.language) },
+        type: 'info'
+      }
+    ]
   }
 
   let nextState: GameState = {
