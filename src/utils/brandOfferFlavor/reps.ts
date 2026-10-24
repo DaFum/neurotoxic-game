@@ -57,7 +57,7 @@ const getRepPool = (alignment: string): RepEntry[] => {
 }
 
 /**
- * Constructs a fully localized brand offer representative profile, using weighted random selection based on brand alignment.
+ * Constructs a fully localized brand offer representative profile, using uniform random selection based on brand alignment.
  *
  * @remarks
  * This function handles resolving dynamic translation keys for the representative's name and title, relying on localized economy data. If the specified alignment has no entries, it gracefully defaults to the `NEUTRAL` pool and guarantees a fallback title.

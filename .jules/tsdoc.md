@@ -27,4 +27,3 @@
 **Learning:** Documented EXPEDITION_CREW, EXPEDITION_CREW_BY_ID
 **Action:** Kept constants properly typed using const assertions and explicit typing for dictionary lookups while adding semantic TSDoc documentation for their purpose and optimizations.
 | 2026-10-23 | src/data/expedition/crewSignatureTraits.ts | EXPEDITION_CREW_SIGNATURE_BY_ROLE |
-| 2026-10-24 | src/utils/brandOfferFlavor/reps.ts | RepEntry, REPS_BY_ALIGNMENT, getRepPool, buildRep |
