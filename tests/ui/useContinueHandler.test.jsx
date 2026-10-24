@@ -357,6 +357,113 @@ describe('useContinueHandler hook', () => {
     expect(props.dispatchers.changeScene).toHaveBeenCalledWith('GAMEOVER')
   })
 
+  it('dispatches previous balance, no error toast, no GAMEOVER, and navigates to OVERWORLD for protected active-run loss', async () => {
+    calculateContinueStats.mockReturnValue({
+      newMoney: 0,
+      newFame: 20,
+      fameLevel: 2
+    })
+    shouldTriggerBankruptcy.mockReturnValue(false)
+    const props = makeProps({
+      player: { money: 500, fame: 10, day: 3, location: 'berlin', currentNodeId: 'n1', stats: { tourCompleted: false } },
+      financials: { net: -600, soldMerch: {} },
+      expedition: {
+        status: 'active',
+        protectedCareerCash: 400,
+        routeStep: 1,
+        loadout: null
+      }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+
+    expect(props.dispatchers.updatePlayer).toHaveBeenCalledWith({
+      money: 500,
+      fame: 20,
+      fameLevel: 2
+    })
+    expect(props.dispatchers.addToast).not.toHaveBeenCalledWith(
+      expect.any(String),
+      'error'
+    )
+    expect(props.dispatchers.changeScene).not.toHaveBeenCalledWith('GAMEOVER')
+
+    await flushMicrotasks()
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('dispatches accepted money, no error toast, no GAMEOVER, and navigates to OVERWORLD for accepted-money insolvency in active run', async () => {
+    calculateContinueStats.mockReturnValue({
+      newMoney: 0,
+      newFame: 20,
+      fameLevel: 2
+    })
+    shouldTriggerBankruptcy.mockReturnValue(true)
+    const props = makeProps({
+      player: { money: 500, fame: 10, day: 3, location: 'berlin', currentNodeId: 'n1', stats: { tourCompleted: false } },
+      financials: { net: -600, soldMerch: {} },
+      expedition: {
+        status: 'active',
+        protectedCareerCash: 0,
+        routeStep: 1,
+        loadout: null
+      }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+
+    expect(props.dispatchers.updatePlayer).toHaveBeenCalledWith({
+      money: 0,
+      fame: 20,
+      fameLevel: 2
+    })
+    expect(props.dispatchers.addToast).not.toHaveBeenCalledWith(
+      expect.any(String),
+      'error'
+    )
+    expect(props.dispatchers.changeScene).not.toHaveBeenCalledWith('GAMEOVER')
+
+    await flushMicrotasks()
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('does not request completion or Run Summary for an insolvent active-run Finale', async () => {
+    calculateContinueStats.mockReturnValue({
+      newMoney: 0,
+      newFame: 20,
+      fameLevel: 2
+    })
+    shouldTriggerBankruptcy.mockReturnValue(true)
+    const props = makeProps({
+      isFinaleGig: true,
+      expedition: {
+        status: 'active',
+        runId: 'run-1',
+        protectedCareerCash: 0,
+        routeStep: 4,
+        loadout: null
+      },
+      lastGigStats: { misses: 0, failed: false }
+    })
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+
+    expect(props.dispatchers.completeExpedition).not.toHaveBeenCalled()
+    expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+
+    await flushMicrotasks()
+    expect(props.dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
   it('handles successful Career finale path correctly', async () => {
     const props = makeProps({ isFinaleGig: true })
     const { result } = renderHook(() => useContinueHandler(props))

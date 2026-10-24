@@ -417,7 +417,61 @@ test('capExpeditionSpendAtCashFloor refuses only a spend that crosses the floor'
   assert.equal(capExpeditionSpendAtCashFloor(undefined, 5000, 3000), 3000)
 })
 
-test('a bankrupting settlement on load also ends an active run', () => {
+test('active-run protected loss settlement on load maintains active run without pending failure', () => {
+  const started = startedState(
+    { money: 500, fame: 100, van: { fuel: 100, fuelMax: 100 } },
+    { build: { protectedCareerCash: 400 } }
+  )
+  const atResult = {
+    ...started,
+    currentScene: GAME_PHASES.POST_GIG,
+    player: {
+      ...started.player,
+      money: 500,
+      fame: 100,
+      van: { ...started.player.van, fuel: 100, fuelMax: 100 }
+    },
+    currentGig: { id: 'protected_venue', name: 'Protected Venue' },
+    lastGigStats: { score: 1000, misses: 58, accuracy: 30, failed: false }
+  }
+  const action = createRecordPendingGigSettlementAction({
+    gigId: 'protected_venue',
+    net: -600,
+    perfScore: 30,
+    misses: 58,
+    dealFameMultiplier: 1,
+    soldMerch: {}
+  })
+  assert.ok(action)
+  const recorded = gameReducer(atResult, action)
+  assert.equal(recorded.expedition.protectedCareerCash, 400)
+  assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+
+  const saved = createPersistedState(recorded)
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(saved))
+  )
+
+  assert.equal(loaded.player.money, 500)
+  assert.notEqual(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.terminalOutcome, null)
+  assert.equal(loaded.expedition.status, 'active')
+  assert.equal(loaded.expedition.pendingFailure, null)
+  assert.ok(loaded.player.fame !== 100, 'fame is updated')
+  assert.equal(loaded.pendingGigSettlement, null)
+
+  const reloaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(loaded)))
+  )
+  assert.equal(reloaded.player.money, 500)
+  assert.equal(reloaded.expedition.status, 'active')
+  assert.equal(reloaded.expedition.pendingFailure, null)
+  assert.equal(reloaded.pendingGigSettlement, null)
+})
+
+test('a bankrupting settlement on load for an active run raises pendingFailure', () => {
   const started = startedState({ money: 100, fame: 100 })
   const atResult = {
     ...started,
@@ -441,10 +495,28 @@ test('a bankrupting settlement on load also ends an active run', () => {
     createInitialState(),
     JSON.parse(JSON.stringify(createPersistedState(recorded)))
   )
-  assert.equal(loaded.currentScene, GAME_PHASES.GAMEOVER)
-  assert.deepEqual(loaded.terminalOutcome, { reason: 'bankruptcy' })
-  assert.equal(loaded.expedition.status, 'failed')
-  assert.equal(loaded.expedition.outcome?.reason, 'bankruptcy')
+  assert.equal(loaded.expedition.status, 'active')
+  assert.notEqual(loaded.currentScene, GAME_PHASES.GAMEOVER)
+  assert.equal(loaded.terminalOutcome, null)
+  assert.ok(loaded.expedition.pendingFailure)
+  assert.equal(loaded.expedition.pendingFailure.reason, 'bankruptcy')
+
+  const acceptAction = {
+    type: ActionTypes.ACCEPT_EXPEDITION_FAILURE,
+    payload: {
+      pendingFailureId: loaded.expedition.pendingFailure.id,
+      expectedRouteStep: loaded.expedition.routeStep
+    }
+  }
+  const failedRun = gameReducer(loaded, acceptAction)
+  assert.equal(failedRun.expedition.status, 'failed')
+
+  const gameOverRun = gameReducer(failedRun, {
+    type: ActionTypes.SET_TERMINAL_OUTCOME,
+    payload: { reason: 'bankruptcy' }
+  })
+  assert.equal(gameOverRun.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(gameOverRun.terminalOutcome, { reason: 'bankruptcy' })
 })
 
 test('a save that records an ending settles a run it left active', () => {
