@@ -502,6 +502,7 @@ describe('social.trendMatched from the post-gig social post', () => {
       social: state.social,
       t: (_key, opts) => opts?.defaultValue ?? '',
       dispatchers: {
+        commitSocialPost: () => true,
         updateBand: noop,
         updatePlayer: noop,
         updateSocial: noop,

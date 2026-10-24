@@ -142,6 +142,7 @@ const getLastFunctionalUpdate = mockFn =>
 const mockUpdatePlayer = vi.fn()
 const mockUpdateBand = vi.fn()
 const mockUpdateSocial = vi.fn()
+const mockCommitSocialPost = vi.fn(() => true)
 const mockChangeScene = vi.fn()
 const mockTriggerEvent = vi.fn()
 const mockAddToast = vi.fn()
@@ -207,6 +208,7 @@ const createBaseState = (overrides = {}) => ({
   saveGameAfterStateCommit: vi.fn(),
   recordPendingGigSettlement: vi.fn(),
   clearPendingGigSettlement: vi.fn(),
+  commitSocialPost: mockCommitSocialPost,
   ...overrides
 })
 
@@ -394,36 +396,24 @@ describe('PostGig Component - Social Post Selection', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      // Followers update + influencer
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          instagram: expect.any(Number),
-          influencers: {
-            influencer1: { score: 75 } // 50 + 25
-          }
+          moneyDelta: 200,
+          social: expect.objectContaining({
+            instagram: expect.any(Number),
+            influencers: {
+              influencer1: { score: 75 } // 50 + 25
+            }
+          }),
+          band: expect.objectContaining({
+            harmony: 60, // 50 + 10
+            members: expect.arrayContaining([
+              expect.objectContaining({ mood: 65 }), // 50 + 15
+              expect.objectContaining({ mood: 65 })
+            ])
+          })
         })
       )
-
-      // Band harmony and mood
-      expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          harmony: 60 // 50 + 10
-        })
-      )
-
-      expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          members: expect.arrayContaining([
-            expect.objectContaining({ mood: 65 }), // 50 + 15
-            expect.objectContaining({ mood: 65 })
-          ])
-        })
-      )
-
-      // Player money
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        money: 700 // 500 + 200
-      })
 
       // Trait unlock
       expect(mockUnlockTrait).toHaveBeenCalledWith(
@@ -451,12 +441,14 @@ describe('PostGig Component - Social Post Selection', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateBand).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          members: expect.arrayContaining([
-            expect.objectContaining({ name: 'Member1', mood: 70 }), // 50 + 20
-            expect.objectContaining({ name: 'Member2', mood: 50 }) // unchanged
-          ])
+          band: expect.objectContaining({
+            members: expect.arrayContaining([
+              expect.objectContaining({ name: 'Member1', mood: 70 }), // 50 + 20
+              expect.objectContaining({ name: 'Member2', mood: 50 }) // unchanged
+            ])
+          })
         })
       )
     })
@@ -474,10 +466,12 @@ describe('PostGig Component - Social Post Selection', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          tiktok: expect.any(Number),
-          youtube: expect.any(Number)
+          social: expect.objectContaining({
+            tiktok: expect.any(Number),
+            youtube: expect.any(Number)
+          })
         })
       )
     })
@@ -496,9 +490,11 @@ describe('PostGig Component - Social Post Selection', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          viral: 2 // 0 + 1 (success) + 1 (gig viral bonus)
+          social: expect.objectContaining({
+            viral: 2 // 0 + 1 (success) + 1 (gig viral bonus)
+          })
         })
       )
     })
@@ -517,9 +513,11 @@ describe('PostGig Component - Social Post Selection', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          viral: 1 // 0 + 1 (success)
+          social: expect.objectContaining({
+            viral: 1 // 0 + 1 (success)
+          })
         })
       )
     })
@@ -874,9 +872,11 @@ describe('PostGig Component - Edge Cases', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateBand).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          harmony: 100 // Clamped to max
+          band: expect.objectContaining({
+            harmony: 100 // Clamped to max
+          })
         })
       )
     })
@@ -907,13 +907,15 @@ describe('PostGig Component - Edge Cases', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateBand).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          members: [
-            expect.objectContaining({
-              mood: 100 // Clamped to max
-            })
-          ]
+          band: expect.objectContaining({
+            members: [
+              expect.objectContaining({
+                mood: 100 // Clamped to max
+              })
+            ]
+          })
         })
       )
     })
@@ -932,9 +934,11 @@ describe('PostGig Component - Edge Cases', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
         expect.objectContaining({
-          instagram: expect.any(Number)
+          social: expect.objectContaining({
+            instagram: expect.any(Number)
+          })
         })
       )
     })
@@ -977,7 +981,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     // Should not crash and should handle undefined values
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalled()
+      expect(mockCommitSocialPost).toHaveBeenCalled()
     })
   })
 })

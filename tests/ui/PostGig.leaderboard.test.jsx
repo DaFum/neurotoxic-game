@@ -198,7 +198,8 @@ describe('PostGig Leaderboard Submission', () => {
     applyQuestEvent: vi.fn(),
     saveGameAfterStateCommit: vi.fn(),
     recordPendingGigSettlement: vi.fn(),
-    clearPendingGigSettlement: vi.fn()
+    clearPendingGigSettlement: vi.fn(),
+    commitSocialPost: vi.fn(() => true)
   })
 
   /**

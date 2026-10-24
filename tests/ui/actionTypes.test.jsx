@@ -62,6 +62,7 @@ describe('ActionTypes', () => {
       'DARK_WEB_LEAK',
       'CULT_INDOCTRINATION',
       'VOID_SERMON',
+      'APPLY_SOCIAL_POST_RESULT',
       'SET_PENDING_BANDHQ_OPEN',
       'SET_PENDING_SUPPLY_STOP_INVENTORY',
       'SET_TERMINAL_OUTCOME',
