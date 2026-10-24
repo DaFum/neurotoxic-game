@@ -16,6 +16,7 @@ interface UseSocialPostHandlerProps {
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
+  pendingSettlementId?: string | null
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
@@ -35,11 +36,13 @@ export function useSocialPostHandler({
   currentGig,
   perfScore,
   lastGigStats,
+  pendingSettlementId,
   isProcessingActionRef,
   setIsProcessingAction,
   t,
   dispatchers: {
     updateSocial,
+    applyGigSocialReconciliation,
     updateBand,
     updatePlayer,
     unlockTrait,
@@ -85,10 +88,12 @@ export function useSocialPostHandler({
           band,
           social,
           t,
+          pendingSettlementId,
           dispatchers: {
             updateBand,
             updatePlayer,
             updateSocial,
+            applyGigSocialReconciliation,
             unlockTrait,
             applyQuestEvent,
             addToast,
@@ -118,7 +123,9 @@ export function useSocialPostHandler({
       social,
       player,
       band,
+      pendingSettlementId,
       updateSocial,
+      applyGigSocialReconciliation,
       updateBand,
       updatePlayer,
       unlockTrait,

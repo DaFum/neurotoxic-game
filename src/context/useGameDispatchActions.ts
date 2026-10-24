@@ -69,6 +69,7 @@ import {
   createSettleSoldMerchAction,
   createRecordPendingGigSettlementAction,
   createClearPendingGigSettlementAction,
+  createApplyGigSocialReconciliationAction,
   createUpdateSocialAction,
   createUpdateSettingsAction,
   createSetMapAction,
@@ -129,6 +130,12 @@ type BaseGameDispatchActions = {
   updateSocial: (
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
+  ) => void
+  applyGigSocialReconciliation: (
+    socialUpdate:
+      | Partial<SocialState>
+      | ((prev: SocialState) => Partial<SocialState>),
+    settlementId?: string | null
   ) => void
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
@@ -514,6 +521,7 @@ type SimpleDispatchActions = Pick<
   | 'holdBandMeeting'
   | 'restockMerch'
   | 'updateSocial'
+  | 'applyGigSocialReconciliation'
   | 'setGameMap'
   | 'setCurrentGig'
   | 'startGig'
@@ -619,6 +627,15 @@ export function useGameDispatchActions({
         updates:
           Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
       ) => dispatch(createUpdateSocialAction(updates)),
+      applyGigSocialReconciliation: (
+        socialUpdate:
+          | Partial<SocialState>
+          | ((prev: SocialState) => Partial<SocialState>),
+        settlementId?: string | null
+      ) =>
+        dispatch(
+          createApplyGigSocialReconciliationAction(socialUpdate, settlementId)
+        ),
       // setGameMap is an intentional test seam on the public dispatch surface.
       // Production map creation lives in useMapGeneration, which dispatches
       // createSetMapAction directly: that hook is instantiated before this one

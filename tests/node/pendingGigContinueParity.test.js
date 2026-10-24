@@ -16,6 +16,8 @@ import {
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
+import { ActionTypes } from '../../src/context/actionTypes'
+import { buildPerGigSocialReconciliation } from '../../src/utils/postGig/socialResolution'
 import {
   completeExpedition,
   offerExpeditionDraft,
@@ -103,6 +105,18 @@ const runContinue = shown => {
       fameLevel: ledger.fameLevel
     })
   )
+  const socialPatch = buildPerGigSocialReconciliation({
+    player: shown.player,
+    social: shown.social,
+    currentGig: shown.currentGig
+  })
+  state = gameReducer(state, {
+    type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+    payload: {
+      socialUpdate: socialPatch,
+      settlementId: shown.pendingGigSettlement.id
+    }
+  })
   state = gameReducer(
     state,
     createClearPendingGigSettlementAction(shown.pendingGigSettlement.id)
@@ -236,6 +250,10 @@ const rawSlices = state => ({
   expeditionStatus: state.expedition.status,
   pendingRunDraftOffer: state.expedition.pendingRunDraftOffer ?? null,
   crewStress: state.expedition.crew?.stressByCrewId ?? {},
+  socialActiveDeals: state.social.activeDeals,
+  socialLoyalty: state.social.loyalty,
+  socialLastGigDay: state.social.lastGigDay,
+  socialRegionalGigHistory: state.social.regionalGigHistory,
   crewSourceIds: state.expedition.resolvedCrewSourceIds ?? [],
   obligationSignals: state.expedition.resolvedObligationSignalIds ?? [],
   pendingGigSettlement: state.pendingGigSettlement

@@ -219,6 +219,7 @@ export function usePostGigHandlers({
     currentGig,
     perfScore,
     lastGigStats,
+    pendingSettlementId,
     isProcessingActionRef,
     setIsProcessingAction,
     t,
@@ -241,6 +242,7 @@ export function usePostGigHandlers({
     hasSpunRef,
     setHasSpun,
     t,
+    pendingSettlementId,
     dispatchers
   })
   return {

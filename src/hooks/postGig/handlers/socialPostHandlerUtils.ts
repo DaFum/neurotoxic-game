@@ -17,6 +17,7 @@ type SocialPostDispatchers = Pick<
   | 'updateBand'
   | 'updatePlayer'
   | 'updateSocial'
+  | 'applyGigSocialReconciliation'
   | 'unlockTrait'
   | 'applyQuestEvent'
   | 'addToast'
@@ -41,12 +42,14 @@ export function applySocialPostResult(params: {
   social: GameState['social']
   t: import('i18next').TFunction
   dispatchers: SocialPostDispatchers
+  pendingSettlementId?: string | null
 }): void {
-  const { option, updates, player, band, social, t, dispatchers } = params
+  const { option, updates, player, band, social, t, dispatchers, pendingSettlementId } = params
   const {
     updateBand,
     updatePlayer,
     updateSocial,
+    applyGigSocialReconciliation,
     unlockTrait,
     applyQuestEvent,
     addToast,
@@ -126,7 +129,11 @@ export function applySocialPostResult(params: {
     })
   }
 
-  updateSocial(updatedSocial)
+  if (applyGigSocialReconciliation) {
+    applyGigSocialReconciliation(updatedSocial, pendingSettlementId)
+  } else {
+    updateSocial(updatedSocial)
+  }
 
   const followersGained = finiteNumberOr(finalResult.totalFollowers, 0)
   // Pass platform + category as context so per-quest filters can narrow

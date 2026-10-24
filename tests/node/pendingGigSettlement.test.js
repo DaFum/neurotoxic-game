@@ -162,6 +162,284 @@ test('pending gig settlement reconciliation on load', async t => {
       }
     }
   )
+
+  await t.test(
+    'pre-post recovery: energy_drink_cx deal decrement, sponsor expiry, and history update',
+    () => {
+      const base = createInitialState()
+      const snapshot = {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: {
+          ...base.player,
+          money: 500,
+          fame: 100,
+          day: 1,
+          location: 'venues:berlin_so36.name',
+          currentNodeId: 'node_gig',
+          lastGigNodeId: 'node_gig'
+        },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          activeDeals: [
+            { id: 'energy_drink_cx', remainingGigs: 1, type: 'SPONSOR', offer: {} }
+          ],
+          regionalGigHistory: {}
+        },
+        gameMap: {
+          nodes: { node_gig: { id: 'node_gig', type: 'GIG', x: 0, y: 0 } },
+          connections: []
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-cx',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          socialReconciled: false
+        }
+      }
+
+      const loaded = handleLoadGame(createInitialState(), snapshot)
+
+      assert.equal(loaded.player.money, 800)
+      assert.equal(loaded.pendingGigSettlement, null)
+      assert.equal(loaded.social.activeDeals.length, 0, 'expired sponsor removed')
+      assert.equal(loaded.social.lastGigDay, 1)
+      assert.deepEqual(loaded.social.regionalGigHistory, { berlin: [1] })
+    }
+  )
+
+  await t.test(
+    'pre-post recovery: community_radio deal decrements loyalty from 10 to 13',
+    () => {
+      const base = createInitialState()
+      const snapshot = {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: {
+          ...base.player,
+          money: 500,
+          day: 1,
+          location: 'venues:berlin_so36.name'
+        },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          loyalty: 10,
+          activeDeals: [
+            { id: 'community_radio', remainingGigs: 1, type: 'SPONSOR', offer: {} }
+          ],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-radio',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          socialReconciled: false
+        }
+      }
+
+      const loaded = handleLoadGame(createInitialState(), snapshot)
+      assert.equal(loaded.social.loyalty, 13, 'loyalty increased by per-gig bonus')
+    }
+  )
+
+  await t.test('post-post persistence round-trip with composite action', () => {
+    const base = createInitialState()
+    const rawPostState = {
+      ...base,
+      currentScene: GAME_PHASES.POST_GIG,
+      player: {
+        ...base.player,
+        money: 500,
+        day: 1,
+        location: 'venues:berlin_so36.name'
+      },
+      social: {
+        ...base.social,
+        loyalty: 10,
+        activeDeals: [
+          { id: 'energy_drink_cx', remainingGigs: 1, type: 'SPONSOR', offer: {} }
+        ],
+        regionalGigHistory: {}
+      },
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+    }
+
+    // 1. Record pending settlement
+    const recordAction = createRecordPendingGigSettlementAction({
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }, 'settlement-composite-1')
+    assert.ok(recordAction)
+    let state = gameReducer(rawPostState, recordAction)
+    assert.equal(state.pendingGigSettlement?.socialReconciled, false)
+
+    // 2. Apply composite action
+    const compositeAction = {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        socialUpdate: { instagram: 1050, loyalty: 15, activeDeals: [], lastGigDay: 1 },
+        settlementId: 'settlement-composite-1'
+      }
+    }
+    state = gameReducer(state, compositeAction)
+    assert.equal(state.pendingGigSettlement?.socialReconciled, true)
+    assert.equal(state.social.loyalty, 15)
+
+    // 3. JSON round-trip createPersistedState and load
+    const persisted = JSON.parse(JSON.stringify(createPersistedState(state)))
+    const loaded = handleLoadGame(createInitialState(), persisted)
+
+    assert.equal(loaded.player.money, 800, 'payout settled')
+    assert.equal(loaded.social.loyalty, 15, 'loyalty unchanged from post-post social update')
+    assert.equal(loaded.social.activeDeals.length, 0)
+    assert.equal(loaded.social.lastGigDay, 1)
+  })
+
+  await t.test('replay of already socialReconciled settlement on load does not double-count', () => {
+    const base = createInitialState()
+    const snapshot = {
+      currentScene: GAME_PHASES.POST_GIG,
+      player: { ...base.player, money: 500 },
+      band: { ...base.band },
+      social: {
+        ...base.social,
+        loyalty: 15,
+        lastGigDay: 1,
+        activeDeals: []
+      },
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+      pendingGigSettlement: {
+        id: 'settlement-reconciled',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        socialReconciled: true
+      }
+    }
+
+    const loaded = handleLoadGame(createInitialState(), snapshot)
+    assert.equal(loaded.player.money, 800)
+    assert.equal(loaded.social.loyalty, 15)
+    assert.equal(loaded.social.lastGigDay, 1)
+  })
+
+  await t.test('two sequential settlements on the same day and region both reconcile', () => {
+    const base = createInitialState()
+    let state = {
+      ...base,
+      currentScene: GAME_PHASES.POST_GIG,
+      player: {
+        ...base.player,
+        money: 500,
+        day: 1,
+        location: 'venues:berlin_so36.name'
+      },
+      social: {
+        ...base.social,
+        activeDeals: [
+          { id: 'energy_drink_cx', remainingGigs: 2, type: 'SPONSOR', offer: {} }
+        ],
+        regionalGigHistory: {}
+      },
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+    }
+
+    // Gig 1
+    const rec1 = createRecordPendingGigSettlementAction({
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }, 'set-1')
+    state = gameReducer(state, rec1)
+    state = handleLoadGame(createInitialState(), createPersistedState(state))
+    assert.equal(state.social.activeDeals[0]?.remainingGigs, 1)
+
+    // Gig 2 (same day, same region)
+    state = {
+      ...state,
+      currentScene: GAME_PHASES.POST_GIG,
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+    }
+    const rec2 = createRecordPendingGigSettlementAction({
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }, 'set-2')
+    state = gameReducer(state, rec2)
+    state = handleLoadGame(createInitialState(), createPersistedState(state))
+
+    assert.equal(state.social.activeDeals.length, 0, 'deal decremented second time and expired')
+  })
+
+  await t.test('missing and non-boolean status values sanitize to false', () => {
+    for (const val of [undefined, null, 'true', 1, false]) {
+      const snapshot = buildPostGigSnapshot({ socialReconciled: val })
+      const sanitized = createRecordPendingGigSettlementAction(snapshot.pendingGigSettlement, 'test-id')
+      assert.equal(sanitized?.payload?.socialReconciled, false)
+    }
+    const trueSnapshot = buildPostGigSnapshot({ socialReconciled: true })
+    const trueSanitized = createRecordPendingGigSettlementAction(trueSnapshot.pendingGigSettlement, 'test-id')
+    assert.equal(trueSanitized?.payload?.socialReconciled, false, 'creator always initializes to false')
+  })
+
+  await t.test('mismatched composite action settlement ID leaves marker false', () => {
+    const base = createInitialState()
+    let state = {
+      ...base,
+      currentScene: GAME_PHASES.POST_GIG,
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      pendingGigSettlement: {
+        id: 'settlement-actual',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        socialReconciled: false
+      }
+    }
+
+    const action = {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        socialUpdate: { instagram: 500 },
+        settlementId: 'settlement-other'
+      }
+    }
+    state = gameReducer(state, action)
+    assert.equal(state.social.instagram, 500)
+    assert.equal(state.pendingGigSettlement?.socialReconciled, false)
+  })
 })
 
 test('pending gig settlement actions', async t => {
@@ -184,9 +462,12 @@ test('pending gig settlement actions', async t => {
   await t.test('records a well-formed settlement for the current gig', () => {
     const next = gameReducer(postGigState(), {
       type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
-      payload: record
+      payload: { ...record, socialReconciled: false }
     })
-    assert.deepEqual(next.pendingGigSettlement, record)
+    assert.deepEqual(next.pendingGigSettlement, {
+      ...record,
+      socialReconciled: false
+    })
   })
 
   await t.test(
@@ -390,7 +671,8 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     net: -Number.MAX_SAFE_INTEGER,
     perfScore: 30,
     misses: 0,
-    dealFameMultiplier: 1
+    dealFameMultiplier: 1,
+    socialReconciled: false
   })
 })
 
