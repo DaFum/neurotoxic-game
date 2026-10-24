@@ -96,6 +96,10 @@ const CREATOR_ARGS = {
     'settlement_1'
   ],
   createClearPendingGigSettlementAction: () => ['settlement_1'],
+  createApplyGigSocialReconciliationAction: () => [
+    { instagram: 1000 },
+    'settlement_1'
+  ],
   createUpdateBandAction: () => [{ harmony: 80 }],
   toggleNeuroDecimator: () => [true],
   createHoldBandMeetingAction: () => [],

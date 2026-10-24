@@ -160,16 +160,52 @@ export const createSettleSoldMerchAction = (
  * are malformed.
  */
 export const createRecordPendingGigSettlementAction = (
-  settlement: Omit<PendingGigSettlement, 'id'>,
+  settlement: Omit<PendingGigSettlement, 'id' | 'socialReconciled'>,
   id: string = getSafeUUID()
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RECORD_PENDING_GIG_SETTLEMENT }
 > | null => {
-  const payload = sanitizePendingGigSettlement({ ...settlement, id })
+  const payload = sanitizePendingGigSettlement({
+    ...settlement,
+    id,
+    socialReconciled: false
+  })
   return payload
     ? { type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT, payload }
     : null
+}
+
+/**
+ * Creates an action applying a per-gig social update and marking its pending settlement as socialReconciled.
+ *
+ * @param socialUpdate - Social state update payload or updater function.
+ * @param settlementId - Id of the target pending settlement, sanitized to non-empty string or null.
+ * @returns APPLY_GIG_SOCIAL_RECONCILIATION action.
+ */
+export const createApplyGigSocialReconciliationAction = (
+  socialUpdate: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
+  settlementId?: string | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION }
+> => {
+  const payloadSocial =
+    typeof socialUpdate === 'function'
+      ? (prev: SocialState) => sanitizeSocialUpdates(socialUpdate(prev))
+      : sanitizeSocialUpdates(socialUpdate)
+  const safeId =
+    typeof settlementId === 'string' && settlementId.length > 0
+      ? settlementId
+      : null
+
+  return {
+    type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+    payload: {
+      socialUpdate: payloadSocial,
+      settlementId: safeId
+    }
+  }
 }
 
 /**

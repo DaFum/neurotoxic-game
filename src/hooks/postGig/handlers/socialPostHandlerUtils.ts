@@ -17,11 +17,13 @@ type SocialPostDispatchers = Pick<
   | 'updateBand'
   | 'updatePlayer'
   | 'updateSocial'
+  | 'applyGigSocialReconciliation'
   | 'unlockTrait'
   | 'applyQuestEvent'
   | 'addToast'
   | 'setPostResult'
   | 'requestBrandOffers'
+  | 'saveGameAfterStateCommit'
 >
 
 /**
@@ -41,17 +43,20 @@ export function applySocialPostResult(params: {
   social: GameState['social']
   t: import('i18next').TFunction
   dispatchers: SocialPostDispatchers
+  pendingSettlementId?: string | null
 }): void {
-  const { option, updates, player, band, social, t, dispatchers } = params
+  const { option, updates, player, band, social, t, dispatchers, pendingSettlementId } = params
   const {
     updateBand,
     updatePlayer,
     updateSocial,
+    applyGigSocialReconciliation,
     unlockTrait,
     applyQuestEvent,
     addToast,
     setPostResult,
-    requestBrandOffers
+    requestBrandOffers,
+    saveGameAfterStateCommit
   } = dispatchers
 
   const {
@@ -126,7 +131,11 @@ export function applySocialPostResult(params: {
     })
   }
 
-  updateSocial(updatedSocial)
+  if (applyGigSocialReconciliation) {
+    applyGigSocialReconciliation(updatedSocial, pendingSettlementId)
+  } else {
+    updateSocial(updatedSocial)
+  }
 
   const followersGained = finiteNumberOr(finalResult.totalFollowers, 0)
   // Pass platform + category as context so per-quest filters can narrow
@@ -152,4 +161,8 @@ export function applySocialPostResult(params: {
   // Offers must see the committed state: the dispatches above can complete a
   // quest whose rewards change social, money or harmony in the reducer.
   requestBrandOffers()
+
+  // Persist the state (including pendingGigSettlement.socialReconciled: true)
+  // so a reload or crash on the result/deals screen retains reconciliation status.
+  saveGameAfterStateCommit?.()
 }

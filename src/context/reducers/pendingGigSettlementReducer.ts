@@ -17,7 +17,9 @@ import {
 } from '../../utils/postGig/performanceLogic'
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import { buildPerGigSocialReconciliation } from '../../utils/postGig/socialResolution'
 import { handleSettleSoldMerch } from './gigReducer'
+import { handleUpdateSocial } from './socialReducer'
 import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
   handleCompleteExpedition,
@@ -52,8 +54,16 @@ export const sanitizePendingGigSettlement = (
   raw: unknown
 ): PendingGigSettlement | null => {
   if (!isLooseRecord(raw) || hasForbiddenKeysDeep(raw)) return null
-  const { id, gigId, net, perfScore, misses, dealFameMultiplier, soldMerch } =
-    raw
+  const {
+    id,
+    gigId,
+    net,
+    perfScore,
+    misses,
+    dealFameMultiplier,
+    soldMerch,
+    socialReconciled
+  } = raw
   if (typeof id !== 'string' || id.length === 0) return null
   if (typeof gigId !== 'string' || gigId.length === 0) return null
   if (
@@ -84,7 +94,8 @@ export const sanitizePendingGigSettlement = (
       1,
       MAX_DEAL_FAME_MULTIPLIER
     ),
-    soldMerch: sold
+    soldMerch: sold,
+    socialReconciled: Object.prototype.hasOwnProperty.call(raw, 'socialReconciled') && socialReconciled === true
   }
 }
 
@@ -109,7 +120,55 @@ export const handleRecordPendingGigSettlement = (
   ) {
     return state
   }
-  return { ...state, pendingGigSettlement: record }
+  const socialReconciled =
+    state.pendingGigSettlement?.gigId === record.gigId
+      ? state.pendingGigSettlement.socialReconciled === true
+      : record.socialReconciled
+
+  return {
+    ...state,
+    pendingGigSettlement: {
+      ...record,
+      socialReconciled
+    }
+  }
+}
+
+/**
+ * Applies social updates and sets `socialReconciled: true` on matching pending settlement.
+ *
+ * @param state - Current game state.
+ * @param payload - Object carrying `socialUpdate` and optional `settlementId`.
+ * @returns State with social updates applied and settlement marker set if IDs match.
+ */
+export const handleApplyGigSocialReconciliation = (
+  state: GameState,
+  payload: unknown
+): GameState => {
+  if (!isLooseRecord(payload)) return state
+  const { socialUpdate, settlementId } = payload
+  const nextState = handleUpdateSocial(
+    state,
+    socialUpdate as Partial<GameState['social']>
+  )
+
+  const pending = nextState.pendingGigSettlement
+  if (
+    pending &&
+    typeof settlementId === 'string' &&
+    settlementId.length > 0 &&
+    pending.id === settlementId
+  ) {
+    return {
+      ...nextState,
+      pendingGigSettlement: {
+        ...pending,
+        socialReconciled: true
+      }
+    }
+  }
+
+  return nextState
 }
 
 /**
@@ -194,6 +253,19 @@ export const settlePendingGigOnLoad = (
   let next: GameState = { ...state, pendingGigSettlement: null }
   if (!record || !state.lastGigStats || record.gigId !== state.currentGig?.id) {
     return next
+  }
+
+  if (record.socialReconciled !== true) {
+    try {
+      const socialPatch = buildPerGigSocialReconciliation({
+        player: state.player,
+        social: state.social,
+        currentGig: state.currentGig
+      })
+      next = handleUpdateSocial(next, socialPatch)
+    } catch {
+      // If reconciliation fails, catch error and continue payout recovery
+    }
   }
 
   next = handleSettleSoldMerch(next, record.soldMerch)

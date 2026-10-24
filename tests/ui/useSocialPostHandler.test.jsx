@@ -33,13 +33,15 @@ const t = (key, opts) => opts?.defaultValue ?? key
 function makeDispatchers() {
   return {
     updateSocial: vi.fn(),
+    applyGigSocialReconciliation: vi.fn(),
     updateBand: vi.fn(),
     updatePlayer: vi.fn(),
     unlockTrait: vi.fn(),
     applyQuestEvent: vi.fn(),
     addToast: vi.fn(),
     setPostResult: vi.fn(),
-    requestBrandOffers: vi.fn()
+    requestBrandOffers: vi.fn(),
+    saveGameAfterStateCommit: vi.fn()
   }
 }
 
@@ -93,7 +95,12 @@ describe('useSocialPostHandler (characterization)', () => {
       expect.objectContaining({ harmony: 85 })
     )
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
-    expect(d.updateSocial).toHaveBeenCalledWith({ followers: 510 })
+    expect(d.applyGigSocialReconciliation).toHaveBeenCalledWith(
+      { followers: 510 },
+      undefined
+    )
+    expect(d.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+    expect(d.updateSocial).not.toHaveBeenCalled()
     // harmony delta +5 => success toast + harmony quest event
     expect(d.addToast).toHaveBeenCalledWith(
       expect.stringContaining('+5'),
@@ -117,7 +124,7 @@ describe('useSocialPostHandler (characterization)', () => {
     const requestedAt = d.requestBrandOffers.mock.invocationCallOrder[0]
     expect(requestedAt).toBeGreaterThan(
       Math.max(
-        ...d.updateSocial.mock.invocationCallOrder,
+        ...d.applyGigSocialReconciliation.mock.invocationCallOrder,
         ...d.applyQuestEvent.mock.invocationCallOrder
       )
     )
@@ -240,9 +247,10 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.dispatchers.setPostResult).toHaveBeenCalledWith(
       expect.objectContaining({ followers: 10 })
     )
-    expect(props.dispatchers.updateSocial).toHaveBeenCalledWith({
-      followers: 510
-    })
+    expect(props.dispatchers.applyGigSocialReconciliation).toHaveBeenCalledWith(
+      { followers: 510 },
+      undefined
+    )
   })
 
   it('releases guard in the error path so the player can retry', () => {
@@ -293,8 +301,22 @@ describe('applySocialPostResult', () => {
     expect(d.setPostResult).toHaveBeenCalledWith(props.updates.finalResult)
     expect(d.updateBand).toHaveBeenCalledWith(props.updates.newBand)
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
-    expect(d.updateSocial).toHaveBeenCalledWith(props.updates.updatedSocial)
+    expect(d.applyGigSocialReconciliation).toHaveBeenCalledWith(
+      props.updates.updatedSocial,
+      undefined
+    )
     expect(d.requestBrandOffers).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes pendingSettlementId through to applyGigSocialReconciliation', () => {
+    const props = makeApplyProps({ pendingSettlementId: 'settlement-123' })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.applyGigSocialReconciliation).toHaveBeenCalledWith(
+      props.updates.updatedSocial,
+      'settlement-123'
+    )
   })
 
   it('does not fire updateBand when hasBandUpdates is false', () => {

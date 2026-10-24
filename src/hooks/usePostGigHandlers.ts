@@ -76,6 +76,7 @@ export function usePostGigHandlers({
   updatePlayer,
   updateBand,
   updateSocial,
+  applyGigSocialReconciliation,
   unlockTrait,
   addToast,
   changeScene,
@@ -153,6 +154,7 @@ export function usePostGigHandlers({
       updatePlayer,
       updateBand,
       updateSocial,
+      applyGigSocialReconciliation,
       setPhase,
       addQuest,
       applyQuestEvent,
@@ -175,6 +177,7 @@ export function usePostGigHandlers({
       updatePlayer,
       updateBand,
       updateSocial,
+      applyGigSocialReconciliation,
       setPhase,
       addQuest,
       applyQuestEvent,
@@ -219,6 +222,7 @@ export function usePostGigHandlers({
     currentGig,
     perfScore,
     lastGigStats,
+    pendingSettlementId,
     isProcessingActionRef,
     setIsProcessingAction,
     t,
@@ -241,6 +245,7 @@ export function usePostGigHandlers({
     hasSpunRef,
     setHasSpun,
     t,
+    pendingSettlementId,
     dispatchers
   })
   return {

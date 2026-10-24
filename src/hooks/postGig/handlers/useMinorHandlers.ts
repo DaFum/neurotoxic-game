@@ -19,6 +19,7 @@ interface UseMinorHandlersProps {
   hasSpunRef: React.MutableRefObject<boolean>
   setHasSpun: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
+  pendingSettlementId?: string | null
   dispatchers: HandlerDispatchers
 }
 
@@ -37,7 +38,16 @@ export function useMinorHandlers({
   hasSpunRef,
   setHasSpun,
   t,
-  dispatchers: { updatePlayer, updateSocial, addToast, setPhase, setPostResult }
+  pendingSettlementId,
+  dispatchers: {
+    updatePlayer,
+    updateSocial,
+    applyGigSocialReconciliation,
+    addToast,
+    setPhase,
+    setPostResult,
+    saveGameAfterStateCommit
+  }
 }: UseMinorHandlersProps) {
   const handleNextPhase = useCallback(() => {
     if (postOptionsDerivationError) {
@@ -52,9 +62,17 @@ export function useMinorHandlers({
       // social-post path would otherwise own, so a failed option generation
       // does not freeze deal countdowns or the gig-history markers.
       try {
-        updateSocial(
-          buildPerGigSocialReconciliation({ player, social, currentGig })
-        )
+        const patch = buildPerGigSocialReconciliation({
+          player,
+          social,
+          currentGig
+        })
+        if (applyGigSocialReconciliation) {
+          applyGigSocialReconciliation(patch, pendingSettlementId)
+        } else {
+          updateSocial(patch)
+        }
+        saveGameAfterStateCommit?.()
       } catch (e) {
         logger.error('PostGig', 'Failed to reconcile per-gig social state', e)
       }
@@ -79,6 +97,9 @@ export function useMinorHandlers({
     social,
     currentGig,
     updateSocial,
+    applyGigSocialReconciliation,
+    pendingSettlementId,
+    saveGameAfterStateCommit,
     t,
     addToast,
     setPostResult

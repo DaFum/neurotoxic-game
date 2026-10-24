@@ -44,7 +44,8 @@ import {
 } from './reducers/gigReducer'
 import {
   handleRecordPendingGigSettlement,
-  handleClearPendingGigSettlement
+  handleClearPendingGigSettlement,
+  handleApplyGigSocialReconciliation
 } from './reducers/pendingGigSettlementReducer'
 import {
   handleSetActiveEvent,
@@ -212,6 +213,8 @@ const reducerMap: ReducerMap = {
   },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
+  [ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION]:
+    handleApplyGigSocialReconciliation,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
   [ActionTypes.SET_MAP]: handleSetMap,
   [ActionTypes.SET_GIG]: handleSetGig,

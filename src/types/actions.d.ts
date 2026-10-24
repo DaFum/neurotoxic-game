@@ -136,6 +136,14 @@ export type UpdateBandPayload =
   Partial<BandState> | ((band: BandState) => Partial<BandState>)
 
 /**
+ * Payload for applying per-gig social update and marking settlement as socialReconciled.
+ */
+export interface ApplyGigSocialReconciliationPayload {
+  socialUpdate: import('./social').UpdateSocialPayload
+  settlementId: string | null
+}
+
+/**
  * Payload used when resetting state while preserving selected settings.
  *
  * @remarks
