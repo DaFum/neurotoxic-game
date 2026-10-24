@@ -3,10 +3,10 @@ import { renderHook, act } from '@testing-library/react'
 
 const { SocialPostRefusalError } = vi.hoisted(() => {
   class SocialPostRefusalError extends Error {
-    constructor(message) {
+    constructor(message, code = 'INSUFFICIENT_SPENDABLE_CASH') {
       super(message)
       this.name = 'SocialPostRefusalError'
-      this.code = 'INSUFFICIENT_SPENDABLE_CASH'
+      this.code = code
     }
   }
   return { SocialPostRefusalError }
@@ -177,6 +177,25 @@ describe('useSocialPostHandler (characterization)', () => {
     )
     expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
     // guard still released
+    expect(props.isProcessingActionRef.current).toBe(false)
+  })
+
+  it.each([
+    ['CONDITION_FAILED', 'ui:postGig.postOptionUnavailable'],
+    ['INSUFFICIENT_SPENDABLE_CASH', 'ui:postGig.insufficientSpendableCash'],
+    ['SOMETHING_ELSE', 'ui:postGig.postResolutionFailed']
+  ])('names the reason a %s refusal gives', (code, key) => {
+    vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    calculatePostGigStateUpdates.mockImplementation(() => {
+      throw new SocialPostRefusalError('refused', code)
+    })
+    const props = makeProps()
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(key, 'error')
+    expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
     expect(props.isProcessingActionRef.current).toBe(false)
   })
 

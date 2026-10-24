@@ -504,6 +504,49 @@ test('floor-0 active-run insolvency parity for pending failure across live Conti
   assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
 })
 
+test('a successful Finale with zero spendable Cash, net -100 and no daily obligations completes identically on live Continue and load', () => {
+  const walked = walkToFinale(
+    startedState(
+      { money: 400, fame: 100 },
+      { build: { protectedCareerCash: 400 } }
+    )
+  )
+  const atResult = withPostGigResult(walked, {
+    nodeType: 'FINALE',
+    gigId: 'finale_venue'
+  })
+  const recorded = recordSettlement({
+    ...atResult,
+    player: { ...atResult.player, money: 400 },
+    // Ad revenue (10 per 10k subscribers) is what takes the daily obligations
+    // to zero or below; the shared fixture's 86 would hide the case.
+    social: { ...atResult.social, youtube: 90000 },
+    expedition: { ...atResult.expedition, protectedCareerCash: 400 },
+    pendingGigSettlement: {
+      id: 'settlement-finale-zero-obligations',
+      gigId: 'finale_venue',
+      net: -100,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }
+  })
+  assert.ok(
+    getTotalDailyObligations(recorded) <= 0,
+    'the fixture must reach zero or negative obligations'
+  )
+
+  const continued = runContinue(recorded)
+  const loaded = reload(recorded)
+
+  assert.equal(continued.player.money, 400, 'the floor refuses the net loss')
+  assert.equal(continued.expedition.status, 'completed')
+  assert.equal(continued.expedition.pendingFailure, null)
+  assert.equal(continued.terminalOutcome, null)
+  assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
+})
+
 test('evaluateAcceptedSettlementSolvency ignores the settlement net for an active run, like the economy failure signal', () => {
   const state = startedState(
     { money: 400 },

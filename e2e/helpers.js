@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { expect } from '@playwright/test'
 
 /** Dev-server path of the in-page fixtures; passed in so only the browser resolves it. */
@@ -225,6 +226,32 @@ export async function readRootState(page) {
     }
     return window.gameState
   })
+}
+
+/** Bundled art the game itself falls back to when generated images are unavailable. */
+const OFFLINE_FALLBACK_SVG = fileURLToPath(
+  new URL('../public/images/generated-offline-fallback.svg', import.meta.url)
+)
+
+/**
+ * Answers every generated-image request (gen.pollinations.ai) from the bundled
+ * fallback art, so a scene's readiness never depends on an external service.
+ *
+ * @remarks
+ * Stage controllers await their textures before the stage is considered up, and
+ * `getTestHook` waits for that. A slow or blocked Pollinations response on a CI
+ * runner otherwise delays the hook past its timeout.
+ *
+ * @param {import('@playwright/test').BrowserContext} context - Context to stub, before any page navigates.
+ */
+export async function stubGeneratedImages(context) {
+  await context.route(/gen\.pollinations\.ai\//, route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      path: OFFLINE_FALLBACK_SVG
+    })
+  )
 }
 
 /**

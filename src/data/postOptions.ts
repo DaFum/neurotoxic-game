@@ -212,6 +212,11 @@ const requireBandMembers = (
   )
 }
 
+/** What `perf_smashed_gear` debits for the destroyed gear. */
+const SMASHED_GEAR_COST = 300
+/** Cash the player must keep after paying for `perf_smashed_gear`. */
+const SMASHED_GEAR_CASH_BUFFER = 200
+
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
@@ -406,7 +411,8 @@ export const POST_OPTIONS = [
     condition: (state: GameState) =>
       state.player &&
       typeof state.player.money === 'number' &&
-      getExpeditionSpendableCash(state) > 500 &&
+      getExpeditionSpendableCash(state) >
+        SMASHED_GEAR_COST + SMASHED_GEAR_CASH_BUFFER &&
       Array.isArray(state.band?.members) &&
       state.band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
@@ -422,7 +428,7 @@ export const POST_OPTIONS = [
         success: true,
         platform: SOCIAL_PLATFORMS.TIKTOK.id,
         followers: 2500,
-        moneyChange: -300,
+        moneyChange: -SMASHED_GEAR_COST,
         targetMember: targetName,
         moodChange: -10,
         message: i18n.t('ui:postOptions.perf_smashed_gear.message', {

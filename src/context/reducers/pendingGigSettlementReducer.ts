@@ -263,6 +263,15 @@ export const settlePendingGigOnLoad = (
 
   // Records saved before the marker existed carry no field. Those written after
   // the social post already stamped today's gig day and must not reconcile twice.
+  //
+  // `lastGigDay === day` can only mistake a second gig for a reconciled one if
+  // two paid gigs complete on one day, which production does not allow: arrival
+  // runs `advanceDay` before `START_GIG`, and `SET_LAST_GIG_STATS` stamps
+  // `lastGigNodeId` so the node cannot be replayed. Alternatives were rejected:
+  // a migration has no per-settlement evidence, `regionalGigHistory` collapses
+  // same-day entries and carries no settlement id, and `lastGigNodeId` proves a
+  // gig was played, not that its post was applied. Records created by
+  // `createRecordPendingGigSettlementAction` always carry the marker.
   const legacyAlreadyReconciled =
     !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
     finiteNumberOr(state.social.lastGigDay, -1) ===
@@ -288,6 +297,11 @@ export const settlePendingGigOnLoad = (
   next = handleSettleSoldMerch(next, record.soldMerch)
 
   const player = next.player
+  // Measured before the gig's fame lands, like the `totalDailyObligations` the
+  // Continue handler receives from the screen it was pressed on. Fame raises
+  // the lifestyle cost, so re-reading it after settling could flip a Finale
+  // that live Continue completed.
+  const totalDailyObligations = getTotalDailyObligations(next)
   const stats = calculateContinueStats({
     player,
     perfScore: record.perfScore,
@@ -309,7 +323,7 @@ export const settlePendingGigOnLoad = (
     previousMoney: player.money,
     proposedMoney: stats.newMoney,
     net: record.net,
-    totalDailyObligations: getTotalDailyObligations(next)
+    totalDailyObligations
   })
 
   const settled: GameState = {
@@ -325,13 +339,13 @@ export const settlePendingGigOnLoad = (
   // bookkeeping (a rising balance retires a recorded travel refusal).
   next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
 
-  // Evaluate solvency from post-floor state money with getTotalDailyObligations(next)
+  // Evaluate solvency from post-floor state money and the pre-settlement obligations.
   const { insolvent, careerBankrupt } = evaluateAcceptedSettlementSolvency({
     expedition: next.expedition,
     previousMoney: next.player.money,
     proposedMoney: next.player.money,
     net: record.net,
-    totalDailyObligations: getTotalDailyObligations(next)
+    totalDailyObligations
   })
 
   const isFinaleGig =

@@ -225,4 +225,69 @@ describe('Social post spendable Cash eligibility & composite action regression',
     })
     assert.strictEqual(replayed, matched)
   })
+
+  describe('perf_smashed_gear Cash gate (#3270)', () => {
+    const resolveWith = money => {
+      const state = startedState({ money })
+      return () =>
+        calculatePostGigStateUpdates({
+          option: smashGearOpt,
+          player: state.player,
+          band: state.band,
+          social: state.social,
+          perfScore: 80,
+          secureRandomValue: 0.5,
+          selectionRandomValue: 0.5,
+          viralRandomValue: 1,
+          expedition: state.expedition
+        })
+    }
+
+    it('needs more than 500 spendable Cash, not just the 300 it debits', () => {
+      assert.equal(smashGearOpt.condition(startedState({ money: 500 })), false)
+      assert.equal(smashGearOpt.condition(startedState({ money: 501 })), true)
+    })
+
+    it('debits 300 once it is offered, leaving a 200 buffer', () => {
+      const updates = resolveWith(501)()
+      assert.equal(updates.appliedMoneyDelta, -300)
+      assert.equal(updates.nextMoney, 201)
+      assert.throws(
+        resolveWith(500),
+        err =>
+          err instanceof SocialPostRefusalError &&
+          err.code === 'CONDITION_FAILED'
+      )
+    })
+  })
+
+  describe('selection-time condition recheck inputs (#3270)', () => {
+    const rivalOpt = POST_OPTIONS.find(o => o.id === 'drama_rival_callout')
+
+    it('treats an omitted slice as a failed condition instead of throwing', () => {
+      const state = startedState({ money: 100000 })
+      const params = {
+        option: rivalOpt,
+        player: state.player,
+        band: state.band,
+        social: state.social,
+        perfScore: 80,
+        secureRandomValue: 0.5,
+        selectionRandomValue: 0.5,
+        viralRandomValue: 1
+      }
+      assert.throws(
+        () => calculatePostGigStateUpdates(params),
+        err =>
+          err instanceof SocialPostRefusalError &&
+          err.code === 'CONDITION_FAILED'
+      )
+      assert.doesNotThrow(() =>
+        calculatePostGigStateUpdates({
+          ...params,
+          rivalBand: { name: 'Rivals', hostility: 50, fame: 10 }
+        })
+      )
+    })
+  })
 })

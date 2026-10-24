@@ -11,6 +11,18 @@ import { applySocialPostResult } from './socialPostHandlerUtils'
 import type { HandlerDispatchers } from './types'
 import { deriveExpeditionSocialResultId } from '../../../domain/expedition/social'
 
+/** Maps a social-post refusal code to the toast that tells the player why. */
+const refusalToastKey = (code: string): string => {
+  switch (code) {
+    case 'CONDITION_FAILED':
+      return 'ui:postGig.postOptionUnavailable'
+    case 'INSUFFICIENT_SPENDABLE_CASH':
+      return 'ui:postGig.insufficientSpendableCash'
+    default:
+      return 'ui:postGig.postResolutionFailed'
+  }
+}
+
 /** Props for {@link useSocialPostHandler}: state slices, gig context, the processing guard, translator, and dispatchers. */
 interface UseSocialPostHandlerProps {
   player: GameState['player']
@@ -91,14 +103,7 @@ export function useSocialPostHandler({
             optionId: option.id,
             code: e.code
           })
-          addToast(
-            t(
-              e.code === 'INSUFFICIENT_SPENDABLE_CASH'
-                ? 'ui:postGig.insufficientSpendableCash'
-                : 'ui:postGig.postResolutionFailed'
-            ),
-            'error'
-          )
+          addToast(t(refusalToastKey(e.code)), 'error')
         } else {
           logger.error('PostGig', 'Failed to resolve selected post', e)
           addToast(t('ui:postGig.postResolutionFailed'), 'error')

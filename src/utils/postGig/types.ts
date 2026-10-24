@@ -1,7 +1,20 @@
 import type { GameState, PostGigSummary, Venue, PostResult } from '../../types'
 import type { Platform, SocialPostOption } from '../../types/social'
 
-/** Inputs to `calculatePostGigStateUpdates` — the selected post plus the state slices and RNG value it resolves against. */
+/**
+ * Inputs to `calculatePostGigStateUpdates` — the selected post plus the state
+ * slices and RNG value it resolves against.
+ *
+ * @remarks
+ * The selection-time recheck evaluates the option's `condition` against exactly
+ * these slices. An omitted optional slice is treated as absent, never defaulted:
+ * conditions that read it evaluate to false and the call throws a
+ * `SocialPostRefusalError` with code `CONDITION_FAILED`. `expedition` is the
+ * exception that fails open: without it the whole balance counts as spendable
+ * Cash. Callers outside the post-gig UI (balance scripts) must pass
+ * `expedition`, `activeEvent`, `activeQuests` and `rivalBand` when the run has
+ * them, or the recheck disagrees with the options they derived.
+ */
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
