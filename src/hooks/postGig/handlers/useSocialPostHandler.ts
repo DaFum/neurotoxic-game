@@ -16,6 +16,9 @@ interface UseSocialPostHandlerProps {
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
+  expedition?: GameState['expedition']
+  activeEvent?: GameState['activeEvent']
+  activeQuests?: GameState['activeQuests']
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
@@ -35,6 +38,9 @@ export function useSocialPostHandler({
   currentGig,
   perfScore,
   lastGigStats,
+  expedition,
+  activeEvent,
+  activeQuests,
   isProcessingActionRef,
   setIsProcessingAction,
   t,
@@ -66,7 +72,9 @@ export function useSocialPostHandler({
           secureRandomValue: secureRandom(),
           selectionRandomValue: secureRandom(),
           viralRandomValue: secureRandom(),
-          expedition: player ? (player as unknown as GameState).expedition : undefined
+          expedition,
+          activeEvent,
+          activeQuests
         })
       } catch (e) {
         if (e instanceof SocialPostRefusalError) {
@@ -126,6 +134,9 @@ export function useSocialPostHandler({
       social,
       player,
       band,
+      expedition,
+      activeEvent,
+      activeQuests,
       commitSocialPost,
       unlockTrait,
       applyQuestEvent,

@@ -176,6 +176,8 @@ export const usePostGigLogic = () => {
     activeStoryFlags,
     setlist,
     expedition,
+    activeEvent,
+    activeQuests,
     isFinaleGig,
     pendingSettlementId,
     totalDailyObligations,

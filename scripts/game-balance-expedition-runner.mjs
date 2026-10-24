@@ -1191,7 +1191,10 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
     perfScore: state.lastGigStats.accuracy ?? 0,
     secureRandomValue: draw('secure'),
     selectionRandomValue: draw('selection'),
-    viralRandomValue: draw('viral')
+    viralRandomValue: draw('viral'),
+    expedition: state.expedition,
+    activeEvent: state.activeEvent,
+    activeQuests: state.activeQuests
   })
 
   let next = gameReducer(state, {

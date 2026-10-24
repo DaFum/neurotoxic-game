@@ -170,6 +170,10 @@ export interface SocialEngineGameState {
   }
   currentGig?: { id?: string; [key: string]: unknown } | null
   expedition?: import('./expedition').ExpeditionState | null
+  lastGigStats?: import('./gig').PostGigSummary | null
+  activeEvent?: import('./events').GameEvent | null
+  activeQuests?: import('./quest').ActiveQuestState[] | null
+  gigEvents?: string[]
 }
 
 /**

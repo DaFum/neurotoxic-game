@@ -44,6 +44,8 @@ interface UsePostGigHandlersProps extends Omit<
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
   expedition: GameState['expedition']
+  activeEvent?: GameState['activeEvent']
+  activeQuests?: GameState['activeQuests']
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
   /** Id of the persisted settlement Continue settles. */
@@ -70,6 +72,8 @@ export function usePostGigHandlers({
   activeStoryFlags,
   setlist,
   expedition,
+  activeEvent,
+  activeQuests,
   isFinaleGig,
   pendingSettlementId,
   totalDailyObligations,
@@ -222,6 +226,9 @@ export function usePostGigHandlers({
     currentGig,
     perfScore,
     lastGigStats,
+    expedition,
+    activeEvent,
+    activeQuests,
     isProcessingActionRef,
     setIsProcessingAction,
     t,

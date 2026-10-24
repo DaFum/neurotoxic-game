@@ -270,10 +270,22 @@ export const calculatePostGigStateUpdates = (
     secureRandomValue,
     selectionRandomValue,
     viralRandomValue,
-    expedition
+    expedition,
+    activeEvent,
+    activeQuests
   } = params
 
-  const gameState: SocialEngineGameState = { player, band, social, currentGig, expedition }
+  const gameState: SocialEngineGameState = {
+    player,
+    band,
+    social,
+    lastGigStats,
+    activeEvent,
+    activeQuests,
+    currentGig,
+    expedition,
+    gigEvents: lastGigStats?.events ?? []
+  }
   const fullGameStateForCash = { player, band, social, expedition } as GameState
 
   if (typeof option.condition === 'function' && !option.condition(gameState)) {
