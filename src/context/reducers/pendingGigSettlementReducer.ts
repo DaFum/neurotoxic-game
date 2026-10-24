@@ -263,6 +263,15 @@ export const settlePendingGigOnLoad = (
 
   // Records saved before the marker existed carry no field. Those written after
   // the social post already stamped today's gig day and must not reconcile twice.
+  //
+  // `lastGigDay === day` can only mistake a second gig for a reconciled one if
+  // two paid gigs complete on one day, which production does not allow: arrival
+  // runs `advanceDay` before `START_GIG`, and `SET_LAST_GIG_STATS` stamps
+  // `lastGigNodeId` so the node cannot be replayed. Alternatives were rejected:
+  // a migration has no per-settlement evidence, `regionalGigHistory` collapses
+  // same-day entries and carries no settlement id, and `lastGigNodeId` proves a
+  // gig was played, not that its post was applied. Records created by
+  // `createRecordPendingGigSettlementAction` always carry the marker.
   const legacyAlreadyReconciled =
     !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
     finiteNumberOr(state.social.lastGigDay, -1) ===

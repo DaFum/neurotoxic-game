@@ -88,6 +88,14 @@ Expedition build and then returns to `OVERWORLD`; finalized runs are observed by
 `ExpeditionRunControls` on the Overworld, persisted, and routed to
 `RUN_SUMMARY`.
 
+At most one paid gig completes per `player.day`. `START_GIG` has no daily limit;
+the callers enforce it: travel arrival runs `advanceDay` before `START_GIG`, and
+`SET_LAST_GIG_STATS` stamps `player.lastGigNodeId`, which `useHandleTravel` checks
+before re-entering the current node. `settlePendingGigOnLoad` depends on this
+(it reads `social.lastGigDay === player.day` for save records without a
+`socialReconciled` marker), so a new paid-gig entry path must keep it or revisit
+that heuristic.
+
 ### Expedition run lifecycle
 
 The run-scoped `expedition.status` is a nested state machine independent from
