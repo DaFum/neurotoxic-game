@@ -56,9 +56,15 @@ const DeckActionButton = ({
   const button = (
     <button
       type='button'
-      onClick={onClick}
-      disabled={disabled}
-      className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${disabled ? 'assets-hub-secondary-button' : 'assets-hub-primary-button'} min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40`}
+      onClick={e => {
+        if (disabled) {
+          e.preventDefault()
+          return
+        }
+        onClick()
+      }}
+      aria-disabled={disabled}
+      className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${disabled ? 'assets-hub-secondary-button opacity-40 cursor-not-allowed' : 'assets-hub-primary-button'} min-h-11 border-2 px-2 py-2 text-xs uppercase`}
       style={{
         borderColor: 'var(--section-accent, var(--color-toxic-green))',
         background: disabled

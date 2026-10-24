@@ -75,7 +75,10 @@ describe('AssetSectionDeck', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: 'Upgrade' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Upgrade' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
   })
 
   it('allows repair whenever the canonical repair rule has a positive cost', () => {
@@ -125,7 +128,7 @@ describe('AssetSectionDeck', () => {
 
     const enabled = screen
       .getAllByRole('button', { name: /^(Repair|Upgrade)$/ })
-      .filter(button => !(button as HTMLButtonElement).disabled)
+      .filter(button => button.getAttribute('aria-disabled') !== 'true')
     expect(enabled).toHaveLength(2)
     for (const button of enabled) {
       expect(button).toHaveClass('assets-hub-primary-button')
