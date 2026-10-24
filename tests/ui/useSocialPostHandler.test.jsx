@@ -331,6 +331,17 @@ describe('applySocialPostResult', () => {
     expect(d.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
   })
 
+  it('reports a generic failure, not a Cash refusal, when a non-debit commit is rejected', () => {
+    const props = makeApplyProps({ updatesOverrides: { appliedMoneyDelta: 0 } })
+    props.dispatchers.commitSocialPost.mockReturnValue(false)
+
+    expect(applySocialPostResult(props)).toBe(false)
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      'ui:postGig.postResolutionFailed',
+      'error'
+    )
+  })
+
   it('does not persist when the commit is rejected', () => {
     const props = makeApplyProps()
     props.dispatchers.commitSocialPost.mockReturnValue(false)

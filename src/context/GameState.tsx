@@ -32,7 +32,9 @@ import { createInitialState } from './initialState'
  * save in storage was placed by tooling and should hydrate on mount.
  */
 const INJECT_MARKER_KEY = 'neurotoxic_inject_marker'
+const MAX_QUEUED_ACTIONS = 64
 import { gameReducer } from './gameReducer'
+import { projectQueuedActions } from './queuedActions'
 import { createLoadGameAction } from './actionCreators'
 import type { GameState, GameAction } from '../types'
 import { useMapGeneration } from './useMapGeneration'
@@ -173,6 +175,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const storage = useStorage()
   const [state, rawDispatch] = useReducer(gameReducer, storage, initGameState)
 
+  // Use a ref to access the latest state in actions without creating a dependency loop
+  // This allows actions to be stable (memoized once) while still accessing current state.
+  const stateRef = useRef(state)
+  stateRef.current = state
+
   const queuedActionsRef = useRef<GameAction[]>([])
 
   useLayoutEffect(() => {
@@ -193,7 +200,16 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       logger.debug('GameState', 'dispatch ' + String(action.type))
     }
     if (action) {
-      queuedActionsRef.current.push(action)
+      const queue = queuedActionsRef.current
+      queue.push(action)
+      // Dispatches that leave state unchanged never trigger the clearing
+      // effect; drop their no-ops once the backlog grows.
+      if (queue.length > MAX_QUEUED_ACTIONS) {
+        queuedActionsRef.current = projectQueuedActions(
+          stateRef.current,
+          queue
+        ).pending
+      }
     }
     rawDispatch(action)
   }, [])
@@ -217,12 +233,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   // Leaderboard Sync Hook
   useLeaderboardSync(state)
-
-  // Use a ref to access the latest state in actions without creating a dependency loop
-  // This allows actions to be stable (memoized once) while still accessing current state.
-  const stateRef = useRef(state)
-  stateRef.current = state
-
 
   const storeRef = useRef<GameStore | null>(null)
   if (!storeRef.current) {

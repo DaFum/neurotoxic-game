@@ -87,6 +87,10 @@ export function useSocialPostHandler({
         })
       } catch (e) {
         if (e instanceof SocialPostRefusalError) {
+          logger.warn('PostGig', 'Selected post refused', {
+            optionId: option.id,
+            code: e.code
+          })
           addToast(
             t(
               e.code === 'INSUFFICIENT_SPENDABLE_CASH'

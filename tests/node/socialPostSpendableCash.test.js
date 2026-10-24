@@ -217,6 +217,12 @@ describe('Social post spendable Cash eligibility & composite action regression',
       type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
       payload: payload('other')
     })
-    assert.equal(mismatched.pendingGigSettlement.socialReconciled, false)
+    assert.strictEqual(mismatched, base)
+
+    const replayed = gameReducer(matched, {
+      type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+      payload: payload('settlement-1')
+    })
+    assert.strictEqual(replayed, matched)
   })
 })

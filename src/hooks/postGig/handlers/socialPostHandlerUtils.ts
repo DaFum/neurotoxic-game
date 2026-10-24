@@ -1,6 +1,7 @@
 import type { GameState } from '../../../types'
 import type { SocialPostOption } from '../../../types/social'
 import i18n from '../../../i18n'
+import { logger } from '../../../utils/logger'
 import { formatCurrency } from '../../../utils/numberUtils'
 import { calculatePostGigStateUpdates } from '../../../utils/postGig'
 import { createHarmonyChangedQuestEvent } from '../../../quests/producers/gigQuestEvents'
@@ -76,10 +77,22 @@ export function applySocialPostResult(params: {
     social: socialPatch
   }
 
-  const committed = commitSocialPost ? commitSocialPost(commitPayload) : false
-
-  if (!committed) {
-    addToast(t('ui:postGig.insufficientSpendableCash'), 'error')
+  if (!commitSocialPost(commitPayload)) {
+    // Only a debit can be refused for Cash; anything else is a rejected payload
+    // or a reducer no-op and must not tell the player they are broke.
+    const refusedForCash = appliedMoneyDelta < 0
+    logger.warn('PostGig', 'Social post commit rejected', {
+      optionId: pendingSocialOptionId,
+      refusedForCash
+    })
+    addToast(
+      t(
+        refusedForCash
+          ? 'ui:postGig.insufficientSpendableCash'
+          : 'ui:postGig.postResolutionFailed'
+      ),
+      'error'
+    )
     return false
   }
 

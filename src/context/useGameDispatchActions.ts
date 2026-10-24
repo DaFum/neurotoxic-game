@@ -34,6 +34,7 @@ import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
+import { projectQueuedActions } from './queuedActions'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,
@@ -779,12 +780,11 @@ export function useGameDispatchActions({
 
   const commitSocialPost = useCallback(
     (payload: ApplySocialPostResultPayload): boolean => {
-      let snapshot = stateRef.current
-      if (queuedActionsRef?.current?.length) {
-        for (const queuedAction of queuedActionsRef.current) {
-          snapshot = gameReducer(snapshot, queuedAction)
-        }
-      }
+      const { snapshot, pending } = projectQueuedActions(
+        stateRef.current,
+        queuedActionsRef?.current ?? []
+      )
+      if (queuedActionsRef) queuedActionsRef.current = pending
       const action = createApplySocialPostResultAction(snapshot, payload)
       if (!action) return false
       if (gameReducer(snapshot, action) === snapshot) return false

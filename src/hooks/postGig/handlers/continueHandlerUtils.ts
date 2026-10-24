@@ -118,13 +118,6 @@ export function buildStoryFlagQuests(params: {
 }
 
 /**
- * Derives the ordered fame/money quest events for a settled gig (pure).
- *
- * @param player - Player state before the gig's gains were applied.
- * @param stats - Settled post-gig fame and money totals.
- * @returns Fame event first, then money, each only for a positive gain.
- */
-/**
  * Result of evaluating accepted settlement solvency.
  */
 export interface AcceptedSettlementSolvencyResult {
@@ -150,8 +143,13 @@ export function evaluateAcceptedSettlementSolvency(params: {
   net: number
   totalDailyObligations: number
 }): AcceptedSettlementSolvencyResult {
-  const { expedition, previousMoney, proposedMoney, net, totalDailyObligations } =
-    params
+  const {
+    expedition,
+    previousMoney,
+    proposedMoney,
+    net,
+    totalDailyObligations
+  } = params
   const normalizedPrevious = finiteNumberOr(previousMoney, 0)
   const acceptedMoney = capExpeditionSpendAtCashFloor(
     expedition,
@@ -176,6 +174,13 @@ export function evaluateAcceptedSettlementSolvency(params: {
   }
 }
 
+/**
+ * Derives the ordered fame/money quest events for a settled gig (pure).
+ *
+ * @param player - Player state before the gig's gains were applied.
+ * @param stats - Settled post-gig fame and money totals.
+ * @returns Fame event first, then money, each only for a positive gain.
+ */
 export function derivePostGigEconomyQuestEvents(
   player: GameState['player'],
   stats: { newFame: number; newMoney: number }

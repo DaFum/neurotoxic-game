@@ -215,15 +215,6 @@ const buildSocialActionNextState = (
 })
 
 /**
- * Merges sanitized social-state updates while preserving reducer-owned clamps and validation.
- *
- * @param state - Game state before the social patch.
- * @param payload - Partial social patch or updater function. Numeric fields,
- * active deals, and trend data are normalized before merge.
- * @returns State with social updates merged, or the original state when the
- * payload is invalid.
- */
-/**
  * Atomically applies all persistent state changes from a resolved social post.
  *
  * Checks if a negative moneyDelta exceeds available spendable Cash.
@@ -255,6 +246,20 @@ export const handleApplySocialPostResult = (
     !isFiniteNumber(payload.moneyDelta)
   ) {
     logger.warn('GameState', 'Invalid moneyDelta for social post result')
+    return state
+  }
+
+  const namesSettlement =
+    typeof payload.settlementId === 'string' && payload.settlementId.length > 0
+  const pendingBefore = state.pendingGigSettlement
+  // A post for a settlement that is gone or already reconciled would apply the
+  // per-gig deal decrement a second time.
+  if (
+    namesSettlement &&
+    (!pendingBefore ||
+      pendingBefore.id !== payload.settlementId ||
+      pendingBefore.socialReconciled === true)
+  ) {
     return state
   }
 
@@ -323,6 +328,15 @@ export const handleApplySocialPostResult = (
   return nextState
 }
 
+/**
+ * Merges sanitized social-state updates while preserving reducer-owned clamps and validation.
+ *
+ * @param state - Game state before the social patch.
+ * @param payload - Partial social patch or updater function. Numeric fields,
+ * active deals, and trend data are normalized before merge.
+ * @returns State with social updates merged, or the original state when the
+ * payload is invalid.
+ */
 export const handleUpdateSocial = (
   state: GameState,
   payload: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)

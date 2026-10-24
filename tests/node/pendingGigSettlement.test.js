@@ -355,6 +355,17 @@ test('pending gig settlement reconciliation on load', async t => {
       }
     })
     assert.strictEqual(replayed, state)
+
+    // 5. An id that no longer names the pending record is a no-op
+    const cleared = { ...state, pendingGigSettlement: null }
+    const stale = gameReducer(cleared, {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        socialUpdate: { loyalty: 99 },
+        settlementId: 'settlement-composite-1'
+      }
+    })
+    assert.strictEqual(stale, cleared)
   })
 
   await t.test(
@@ -389,6 +400,55 @@ test('pending gig settlement reconciliation on load', async t => {
       assert.equal(loaded.player.money, 800)
       assert.equal(loaded.social.loyalty, 15)
       assert.equal(loaded.social.lastGigDay, 1)
+    }
+  )
+
+  await t.test(
+    'legacy record without the marker is not reconciled again once the gig day is stamped',
+    () => {
+      const base = createInitialState()
+      const dealFor = {
+        id: 'energy_drink_cx',
+        remainingGigs: 3,
+        type: 'SPONSOR',
+        offer: {}
+      }
+      const makeSnapshot = lastGigDay => ({
+        currentScene: GAME_PHASES.POST_GIG,
+        player: { ...base.player, money: 500, day: 1 },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          lastGigDay,
+          activeDeals: [dealFor],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-legacy',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {}
+        }
+      })
+
+      const already = handleLoadGame(createInitialState(), makeSnapshot(1))
+      assert.equal(
+        already.social.activeDeals[0]?.remainingGigs,
+        3,
+        'no second decrement'
+      )
+
+      const missing = handleLoadGame(createInitialState(), makeSnapshot(0))
+      assert.equal(
+        missing.social.activeDeals[0]?.remainingGigs,
+        2,
+        'reconciled once'
+      )
     }
   )
 
@@ -490,38 +550,39 @@ test('pending gig settlement reconciliation on load', async t => {
     }
   )
 
-  await t.test(
-    'mismatched composite action settlement ID leaves marker false',
-    () => {
-      const base = createInitialState()
-      let state = {
-        ...base,
-        currentScene: GAME_PHASES.POST_GIG,
-        currentGig: { id: 'berlin_so36', name: 'SO36' },
-        pendingGigSettlement: {
-          id: 'settlement-actual',
-          gigId: 'berlin_so36',
-          net: 300,
-          perfScore: 80,
-          misses: 0,
-          dealFameMultiplier: 1,
-          soldMerch: {},
-          socialReconciled: false
-        }
+  await t.test('mismatched composite action settlement ID is a no-op', () => {
+    const base = createInitialState()
+    const state = {
+      ...base,
+      currentScene: GAME_PHASES.POST_GIG,
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      pendingGigSettlement: {
+        id: 'settlement-actual',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        socialReconciled: false
       }
-
-      const action = {
-        type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
-        payload: {
-          socialUpdate: { instagram: 500 },
-          settlementId: 'settlement-other'
-        }
-      }
-      state = gameReducer(state, action)
-      assert.equal(state.social.instagram, 500)
-      assert.equal(state.pendingGigSettlement?.socialReconciled, false)
     }
-  )
+
+    const action = {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        socialUpdate: { instagram: 500 },
+        settlementId: 'settlement-other'
+      }
+    }
+    const next = gameReducer(state, action)
+    assert.strictEqual(
+      next,
+      state,
+      'an id that names no pending record is a no-op'
+    )
+    assert.equal(next.pendingGigSettlement?.socialReconciled, false)
+  })
 })
 
 test('pending gig settlement actions', async t => {

@@ -30,7 +30,7 @@ export interface HandlerDispatchers {
       | ((prev: GameState['social']) => Partial<GameState['social']>),
     settlementId?: string | null
   ) => void
-  commitSocialPost?: (
+  commitSocialPost: (
     payload: import('../../../types/actions').ApplySocialPostResultPayload
   ) => boolean
   setPhase: (phase: PostGigPhase) => void

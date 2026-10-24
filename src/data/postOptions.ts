@@ -406,7 +406,7 @@ export const POST_OPTIONS = [
     condition: (state: GameState) =>
       state.player &&
       typeof state.player.money === 'number' &&
-      getExpeditionSpendableCash(state) >= 500 &&
+      getExpeditionSpendableCash(state) > 500 &&
       Array.isArray(state.band?.members) &&
       state.band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
@@ -1051,9 +1051,7 @@ export const POST_OPTIONS = [
         getExpeditionSpendableCash(state)
       )
     },
-    resolve: (
-      state: GameState & { diceRoll: number }
-    ) => {
+    resolve: (state: GameState & { diceRoll: number }) => {
       const influencers = state.social?.influencers || {}
       const spendable = getExpeditionSpendableCash(state)
       const affordableIds = getAffordableInfluencerIds(influencers, spendable)

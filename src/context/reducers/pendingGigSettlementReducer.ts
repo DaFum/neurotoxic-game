@@ -1,5 +1,6 @@
 import type { GameState, PendingGigSettlement } from '../../types'
 import { GAME_PHASES } from '../gameConstants'
+import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
 import {
@@ -146,11 +147,13 @@ export const handleApplyGigSocialReconciliation = (
 ): GameState => {
   if (!isLooseRecord(payload)) return state
   const { socialUpdate, settlementId } = payload
+  const namesSettlement =
+    typeof settlementId === 'string' && settlementId.length > 0
   const targetsPending =
-    typeof settlementId === 'string' &&
-    settlementId.length > 0 &&
-    state.pendingGigSettlement?.id === settlementId
-  // Exactly once per settlement: a replay must not decrement deals again.
+    namesSettlement && state.pendingGigSettlement?.id === settlementId
+  // Exactly once per settlement: a replay, or an id that no longer names the
+  // pending record (already cleared by Continue), must not decrement deals again.
+  if (namesSettlement && !targetsPending) return state
   if (targetsPending && state.pendingGigSettlement?.socialReconciled === true) {
     return state
   }
@@ -258,7 +261,13 @@ export const settlePendingGigOnLoad = (
     return next
   }
 
-  if (record.socialReconciled !== true) {
+  // Records saved before the marker existed carry no field. Those written after
+  // the social post already stamped today's gig day and must not reconcile twice.
+  const legacyAlreadyReconciled =
+    !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
+    finiteNumberOr(state.social.lastGigDay, -1) ===
+      finiteNumberOr(state.player.day, 0)
+  if (record.socialReconciled !== true && !legacyAlreadyReconciled) {
     try {
       const socialPatch = buildPerGigSocialReconciliation({
         player: state.player,
@@ -266,8 +275,13 @@ export const settlePendingGigOnLoad = (
         currentGig: state.currentGig
       })
       next = handleUpdateSocial(next, socialPatch)
-    } catch {
-      // If reconciliation fails, catch error and continue payout recovery
+    } catch (error) {
+      // Payout recovery continues; the failure must stay visible.
+      logger.warn(
+        'GameState',
+        'Per-gig social reconciliation failed on load',
+        error
+      )
     }
   }
 
