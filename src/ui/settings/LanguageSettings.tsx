@@ -13,18 +13,18 @@ export const LanguageSettings = memo(function LanguageSettings() {
       <h2 className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
         {t('ui:language')}
       </h2>
-      <div className='flex gap-4'>
+      <div className='flex flex-wrap gap-4'>
         <ActionButton
           onClick={() => i18n.changeLanguage('en')}
           aria-pressed={!!i18n.language?.startsWith('en')}
-          className={`flex-1 ${i18n.language?.startsWith('en') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
+          className={`flex-1 min-w-40 ${i18n.language?.startsWith('en') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
         >
           {t('ui:language_option_en')}
         </ActionButton>
         <ActionButton
           onClick={() => i18n.changeLanguage('de')}
           aria-pressed={!!i18n.language?.startsWith('de')}
-          className={`flex-1 ${i18n.language?.startsWith('de') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
+          className={`flex-1 min-w-40 ${i18n.language?.startsWith('de') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
         >
           {t('ui:language_option_de')}
         </ActionButton>

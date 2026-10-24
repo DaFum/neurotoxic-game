@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test'
-import { skipToMenu } from './helpers.js'
+import {
+  SAVE_KEY,
+  buildFixture,
+  dismissTutorial,
+  loadSavedGame,
+  readRootState,
+  seedSaveOnce,
+  skipToMenu
+} from './helpers.js'
 
 test.describe('Visual smoke tests', () => {
   test('MainMenu renders its stable primary hierarchy', async ({ page }) => {
@@ -493,5 +501,83 @@ test.describe('Visual smoke tests', () => {
     })
     const { width } = page.viewportSize()
     if (width < 641) expect(clipped).toBe(false)
+  })
+
+  test('Settings language controls stay inside the panel in EN and DE (#3252)', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /band hq/i }).click()
+    const modal = page.getByRole('dialog')
+    await modal.getByRole('tab', { name: /settings/i }).click()
+    const panel = modal.getByRole('tabpanel')
+    await expect(panel).toBeVisible()
+
+    const measure = () =>
+      panel.evaluate(el => {
+        const box = el.getBoundingClientRect()
+        const buttons = [...el.querySelectorAll('button[aria-pressed]')]
+          .filter(b => /english|german|deutsch|englisch/i.test(b.textContent))
+          .map(b => b.getBoundingClientRect())
+        return {
+          overflow: el.scrollWidth - el.clientWidth,
+          inside: buttons.every(
+            r => r.left >= box.left - 0.5 && r.right <= box.right + 0.5
+          ),
+          count: buttons.length
+        }
+      })
+
+    for (const language of [
+      /english/i,
+      /german|deutsch/i,
+      /english|englisch/i
+    ]) {
+      await panel.getByRole('button', { name: language }).first().click()
+      const m = await measure()
+      expect(m.count).toBe(2)
+      expect(m.inside).toBe(true)
+      expect(m.overflow).toBeLessThanOrEqual(0)
+    }
+  })
+
+  test('German Band HQ tab labels stay inside their own tab (#3253)', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /band hq/i }).click()
+    const modal = page.getByRole('dialog')
+    await modal.getByRole('tab', { name: /settings/i }).click()
+    await modal
+      .getByRole('tabpanel')
+      .getByRole('button', { name: /german|deutsch/i })
+      .first()
+      .click()
+
+    const tabs = modal.getByRole('tab')
+    const count = await tabs.count()
+    expect(count).toBeGreaterThan(5)
+
+    // Letter-spacing leaves a fraction of a pixel after the last glyph.
+    const TOLERANCE = 1.5
+    for (let i = 0; i < count; i++) {
+      const tab = tabs.nth(i)
+      // A locked tab cannot be selected, but its label must still fit.
+      if ((await tab.getAttribute('aria-disabled')) !== 'true') {
+        await tab.click({ timeout: 5000 })
+      }
+      const fit = await tab.evaluate(el => {
+        const box = el.getBoundingClientRect()
+        const range = document.createRange()
+        range.selectNodeContents(el)
+        const content = range.getBoundingClientRect()
+        return {
+          left: content.left - box.left,
+          right: box.right - content.right
+        }
+      })
+      expect(fit.left, `tab ${i} left`).toBeGreaterThanOrEqual(-TOLERANCE)
+      expect(fit.right, `tab ${i} right`).toBeGreaterThanOrEqual(-TOLERANCE)
+    }
   })
 })
