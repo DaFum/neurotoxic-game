@@ -47,7 +47,7 @@ Operators deploying or maintaining the API backend must execute this checklist t
 - **Header Rotation Failure**: If varying headers rotates rate-limit buckets through public ingress, open a follow-up ticket to:
   - Configure the ingress proxy to strip or overwrite `x-real-ip` and `x-forwarded-for`.
   - Or update `normalizeIp` to remove the `x-real-ip` branch or add a proxy-peer allowlist.
-- **Shared Bucket Failure**: If all users collide in a single bucket behind a proxy, open a follow-up ticket to configure `TRUST_PROXY=true` in the environment.
+- **Shared Bucket Failure**: If all users collide in a single bucket behind a proxy, open a follow-up ticket to configure `TRUST_PROXY=true` for that backend deployment. Do not enable it before verifying that the ingress strips or overwrites caller-supplied `x-real-ip` and `x-forwarded-for`, that direct-origin access is blocked, and repeat the header-rotation probe after enabling trust.
 
 ---
 
@@ -70,7 +70,7 @@ Operators deploying or maintaining the API backend must execute this checklist t
    - Total denied (`429`) requests across all backing-off players per 60-second window is strictly upper-bounded by $N_b$.
 
 ### 3.3 Follow-up Candidate Enhancements
-If the 360-second worst-case recovery duration under shared-IP contention is deemed unacceptable for high-density environments (e.g. LAN events or shared office egresses), candidates for future enhancement include:
+If the 360-second uncontended recovery bound (not a worst-case guarantee under shared-IP contention) is deemed unacceptable for high-density environments (e.g. LAN events or shared office egresses), candidates for future enhancement include:
 - Server-side `Retry-After` header support in 429 responses.
 - Client-side randomized retry jitter in `leaderboardSyncController`.
 

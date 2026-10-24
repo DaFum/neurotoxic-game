@@ -1096,7 +1096,7 @@ describe('GameState Context - commitSocialPost', () => {
                 moneyDelta: -200,
                 social: {
                   pendingSocialOptionId: 'test_option',
-                  followers: { tiktok: 100 }
+                  tiktok: 100
                 }
               })
             }}
@@ -1117,13 +1117,17 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Set Money').click()
     })
 
-    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
     act(() => {
       screen.getByText('Commit Valid').click()
     })
 
     expect(commitResult).toBe(true)
-    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(initialMoney - 200)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
+      initialMoney - 200
+    )
   })
 
   test('commitSocialPost rejects debit exceeding spendable Cash and returns false without dispatching', () => {
@@ -1142,7 +1146,7 @@ describe('GameState Context - commitSocialPost', () => {
                 moneyDelta: -999999,
                 social: {
                   pendingSocialOptionId: 'test_option',
-                  followers: { tiktok: 100 }
+                  tiktok: 100
                 }
               })
             }}
@@ -1159,13 +1163,17 @@ describe('GameState Context - commitSocialPost', () => {
       </GameStateProvider>
     )
 
-    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
     act(() => {
       screen.getByText('Commit Invalid').click()
     })
 
     expect(commitResult).toBe(false)
-    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(initialMoney)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
+      initialMoney
+    )
   })
 
   test('commitSocialPost returns false and skips dispatch when balance reduction queued in same act() leaves insufficient Cash', () => {
@@ -1177,7 +1185,9 @@ describe('GameState Context - commitSocialPost', () => {
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <div data-testid='tiktok-followers'>{gameState.social?.followers?.tiktok || 0}</div>
+          <div data-testid='tiktok-followers'>
+            {gameState.social?.tiktok ?? 0}
+          </div>
           <button
             type='button'
             onClick={() => gameState.updatePlayer({ money: 500 })}
@@ -1192,7 +1202,7 @@ describe('GameState Context - commitSocialPost', () => {
                 moneyDelta: -300,
                 social: {
                   pendingSocialOptionId: 'test_option',
-                  followers: { tiktok: 5000 }
+                  tiktok: 5000
                 }
               })
             }}
@@ -1214,13 +1224,17 @@ describe('GameState Context - commitSocialPost', () => {
     })
     expect(screen.getByTestId('player-money')).toHaveTextContent('500')
 
+    const initialTiktok = screen.getByTestId('tiktok-followers').textContent
+
     act(() => {
       screen.getByText('Queue Batch').click()
     })
 
     expect(commitResult).toBe(false)
     expect(screen.getByTestId('player-money')).toHaveTextContent('100')
-    expect(screen.getByTestId('tiktok-followers')).toHaveTextContent('0')
+    expect(screen.getByTestId('tiktok-followers')).toHaveTextContent(
+      initialTiktok
+    )
   })
 
   test('dispatching SET_GIG calls logger.info exactly once (single reducer pass)', () => {

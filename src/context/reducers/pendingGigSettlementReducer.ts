@@ -36,9 +36,7 @@ import {
   evaluateAcceptedSettlementSolvency,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
-import {
-  enforceExpeditionCashFloor
-} from '../../domain/expedition/loadout'
+import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
 
 const clampRange = (value: number, min: number, max: number): number =>
@@ -95,7 +93,8 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    socialReconciled: Object.prototype.hasOwnProperty.call(raw, 'socialReconciled') && socialReconciled === true
+    socialReconciled:
+      Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true
   }
 }
 
@@ -147,18 +146,22 @@ export const handleApplyGigSocialReconciliation = (
 ): GameState => {
   if (!isLooseRecord(payload)) return state
   const { socialUpdate, settlementId } = payload
+  const targetsPending =
+    typeof settlementId === 'string' &&
+    settlementId.length > 0 &&
+    state.pendingGigSettlement?.id === settlementId
+  // Exactly once per settlement: a replay must not decrement deals again.
+  if (targetsPending && state.pendingGigSettlement?.socialReconciled === true) {
+    return state
+  }
   const nextState = handleUpdateSocial(
     state,
     socialUpdate as Partial<GameState['social']>
   )
+  if (nextState === state) return state
 
   const pending = nextState.pendingGigSettlement
-  if (
-    pending &&
-    typeof settlementId === 'string' &&
-    settlementId.length > 0 &&
-    pending.id === settlementId
-  ) {
+  if (pending && targetsPending) {
     return {
       ...nextState,
       pendingGigSettlement: {
@@ -372,5 +375,7 @@ export const settlePendingGigOnLoad = (
     currentScene: GAME_PHASES.GAMEOVER
   }
   // A run still active when the Career goes bankrupt ends with it.
-  return careerBankrupt ? settleExpeditionOnGameOver(ended, 'bankruptcy') : ended
+  return careerBankrupt
+    ? settleExpeditionOnGameOver(ended, 'bankruptcy')
+    : ended
 }

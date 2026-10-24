@@ -70,7 +70,7 @@ import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { SPARE_GEAR_ITEM_IDS } from '../../data/inventoryItems'
 import { buildDeterministicToastId } from './toastSanitizers'
-import { settleExpeditionMandatoryDebit } from '../../domain/expedition/loadout'
+import { settleExpeditionMandatoryDebit } from '../../domain/expedition/spendableCash'
 
 /**
  * Resolves gear damage from a botched setup minigame: the first owned spare in

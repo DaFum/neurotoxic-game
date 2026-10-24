@@ -136,7 +136,6 @@ export type UpdateBandPayload =
   Partial<BandState> | ((band: BandState) => Partial<BandState>)
 
 /**
-/**
  * Payload for applying per-gig social update and marking settlement as socialReconciled.
  */
 export interface ApplyGigSocialReconciliationPayload {
