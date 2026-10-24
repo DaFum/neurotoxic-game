@@ -150,7 +150,13 @@ export const OverworldMap = React.memo(
       if (expeditionFogByNodeId) {
         for (const id in gameMap.nodes) {
           if (!Object.hasOwn(gameMap.nodes, id)) continue
-          if (id !== player.currentNodeId && isConnected(id)) {
+          const candidate = gameMap.nodes[id as keyof typeof gameMap.nodes]
+          if (
+            candidate &&
+            id !== player.currentNodeId &&
+            isConnected(id) &&
+            getNodeVisibility(candidate.layer, currentLayer) !== 'hidden'
+          ) {
             travelTargetCount += 1
           }
         }

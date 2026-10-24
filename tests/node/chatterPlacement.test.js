@@ -14,7 +14,8 @@ describe('decideChatterPlacement', () => {
     const placement = decideChatterPlacement(
       box(16, 416),
       [{ left: 16, top: 16 }],
-      [box(20, 363, 280, 40)]
+      [box(20, 363, 280, 40)],
+      { suppressWhenBlocked: true }
     )
     assert.deepEqual(placement, { kind: 'default' })
   })
@@ -27,7 +28,8 @@ describe('decideChatterPlacement', () => {
         { left: 16, top: 400 },
         { left: 16, top: 16 }
       ],
-      [board]
+      [board],
+      { suppressWhenBlocked: true }
     )
     assert.deepEqual(placement, {
       kind: 'anchor',
@@ -44,16 +46,30 @@ describe('decideChatterPlacement', () => {
         { left: 16, top: 416 },
         { left: 16, top: 16 }
       ],
-      [board, header]
+      [board, header],
+      { suppressWhenBlocked: true }
     )
     assert.deepEqual(placement, { kind: 'suppress' })
+  })
+
+  it('keeps the default on larger screens when nothing is clear', () => {
+    const board = box(20, 363, 280, 208)
+    const header = box(16, 16, 288, 120)
+    const placement = decideChatterPlacement(
+      box(16, 416),
+      [{ left: 16, top: 16 }],
+      [board, header],
+      { suppressWhenBlocked: false }
+    )
+    assert.deepEqual(placement, { kind: 'default' })
   })
 
   it('treats touching edges as clear', () => {
     const placement = decideChatterPlacement(
       box(16, 100),
       [],
-      [box(16, 188, 288, 40)]
+      [box(16, 188, 288, 40)],
+      { suppressWhenBlocked: true }
     )
     assert.deepEqual(placement, { kind: 'default' })
   })

@@ -40,9 +40,12 @@ export const MinigameSceneFrame = <TState,>({
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
-      {/* The canvas is the live playfield: phones have no spare screen beside it. */}
+      {/* The canvas is the live playfield and fills the screen: on a phone the
+          optional chatter is hidden while the minigame runs (see
+          `data-chatter-avoid-compact` in ChatterOverlay) instead of covering
+          it. The completion overlay is a dialog and guards itself. */}
       <div
-        data-chatter-avoid-compact=''
+        data-chatter-avoid-compact={uiState?.isGameOver ? undefined : ''}
         className='absolute inset-0 pointer-events-none'
       >
         <PixiStage

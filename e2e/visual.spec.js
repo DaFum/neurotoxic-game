@@ -55,7 +55,26 @@ const loadSeedOneExpedition = async page => {
     .toBe('OVERWORLD')
   await dismissTutorial(page)
   await expect(page.locator('.map-node.clickable').first()).toBeVisible()
-  await page.waitForTimeout(500)
+  // Wait for the node layout to stop moving instead of sleeping.
+  let previous = ''
+  await expect
+    .poll(
+      async () => {
+        const current = await page.locator('.map-node').evaluateAll(nodes =>
+          JSON.stringify(
+            nodes.map(node => {
+              const r = node.getBoundingClientRect()
+              return [r.left, r.top, r.width, r.height]
+            })
+          )
+        )
+        const stable = current === previous
+        previous = current
+        return stable
+      },
+      { intervals: [150], timeout: 10000 }
+    )
+    .toBe(true)
 }
 
 /**
@@ -707,14 +726,14 @@ test.describe('Visual smoke tests', () => {
     page
   }) => {
     // The desktop map keeps every name chip; the dense-branch rule is phone-only.
-    test.skip(page.viewportSize().width > 640, 'Phone-only collision check')
+    test.skip(page.viewportSize().width >= 640, 'Phone-only collision check')
     expect(await seedOneLabelCollisions(page)).toEqual([])
   })
 
   test('A focused Expedition destination shows its name before travel confirmation (#3254)', async ({
     page
   }) => {
-    test.skip(page.viewportSize().width > 640, 'Phone-only label rule')
+    test.skip(page.viewportSize().width >= 640, 'Phone-only label rule')
     await loadSeedOneExpedition(page)
 
     const destination = page.getByRole('button', {
@@ -747,7 +766,7 @@ test.describe('Visual smoke tests', () => {
   test('Chatter never covers the live Kabelsalat board on a phone (#3256)', async ({
     page
   }) => {
-    test.skip(page.viewportSize().width > 640, 'Phone-only overlay rule')
+    test.skip(page.viewportSize().width >= 640, 'Phone-only overlay rule')
     await page.emulateMedia({ reducedMotion: 'reduce' })
     // Time keeps flowing after install; fastForward only fires the due
     // chatter timer so the test does not wait out its 8-25s delay.
@@ -775,16 +794,18 @@ test.describe('Visual smoke tests', () => {
         }
       })
 
+    // The chatter timer is due after the jump; poll until its message shows.
     let result = null
-    for (
-      let attempt = 0;
-      attempt < 12 && !(result && result.messages > 0);
-      attempt++
-    ) {
-      await page.clock.fastForward(30000)
-      await page.waitForTimeout(300)
-      result = await measure()
-    }
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          result = await measure()
+          return result?.messages ?? 0
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
     expect(result, 'a chatter message must appear').not.toBeNull()
     expect(result.messages).toBeGreaterThan(0)
     // A message may sit on the board only if it is not painted at all.

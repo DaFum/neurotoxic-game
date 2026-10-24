@@ -300,7 +300,10 @@ ChatterMessage.displayName = 'ChatterMessage'
 
 const EDGE_MARGIN = 16
 
-const COMPACT_VIEWPORT_MAX_PX = 639
+// Layout changes (a board mounting, a header wrapping) do not fire `resize`;
+// re-measure shortly after the DOM settles.
+const DOM_SETTLE_MS = 200
+const SM_BREAKPOINT_PX = 640
 
 // Interactive / high-value elements the chatter box must never sit on top of.
 // (Static flavour text isn't included — the box would otherwise never find a
@@ -320,8 +323,12 @@ const OBSTACLE_SELECTOR =
 // time-critical state. Larger screens keep their anchors.
 const COMPACT_OBSTACLE_SELECTOR = `${OBSTACLE_SELECTOR},[data-chatter-avoid-compact]`
 
+// Mirrors Tailwind's `max-sm` (`width < 40rem`) so the JS rule and the CSS
+// `max-sm:` rules flip at the same width, rem-scaled included.
 const isCompactViewport = (): boolean =>
-  window.innerWidth <= COMPACT_VIEWPORT_MAX_PX
+  typeof window.matchMedia === 'function'
+    ? window.matchMedia('(width < 40rem)').matches
+    : window.innerWidth < SM_BREAKPOINT_PX
 
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []
@@ -429,13 +436,16 @@ const useNonOverlappingPosition = (
           bottom: box.bottom
         },
         anchors,
-        obstacles
+        obstacles,
+        { suppressWhenBlocked: isCompactViewport() }
       )
       if (placement.kind === 'default') return
       if (placement.kind === 'suppress') {
-        // Optional flavour text must not cover a live playfield; it keeps its
-        // layout slot (so the next re-measure still sees its size) but is not
-        // painted or announced.
+        // Optional flavour text must not cover a live playfield on a phone. It
+        // keeps its layout slot (so the next re-measure still sees its size) but
+        // is not painted or announced. Its own lifetime is untouched on purpose:
+        // a suppressed message simply expires, like one nobody looked at, and
+        // the next message is placed afresh.
         el.style.visibility = 'hidden'
         return
       }
@@ -455,8 +465,21 @@ const useNonOverlappingPosition = (
       rafId = requestAnimationFrame(reposition)
     }
     window.addEventListener('resize', handleResize)
+    // Re-place when obstacles mount or unmount after the message appeared, so a
+    // late board cannot be covered and a stale suppression does not outlive it.
+    let settleTimer: ReturnType<typeof setTimeout> | undefined
+    const observer =
+      typeof MutationObserver === 'function'
+        ? new MutationObserver(() => {
+            clearTimeout(settleTimer)
+            settleTimer = setTimeout(reposition, DOM_SETTLE_MS)
+          })
+        : null
+    observer?.observe(document.body, { childList: true, subtree: true })
     return () => {
       cancelAnimationFrame(rafId)
+      clearTimeout(settleTimer)
+      observer?.disconnect()
       window.removeEventListener('resize', handleResize)
     }
     // `sceneKey` re-measures on scene navigation (this overlay is mounted

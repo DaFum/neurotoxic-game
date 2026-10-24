@@ -33,14 +33,17 @@ const hitsAny = (rect: Rect, obstacles: readonly Rect[]): boolean => {
  * @param defaultRect - The box at its CSS default position.
  * @param anchors - Fallback anchors, preferred first.
  * @param obstacles - Rectangles the box must never cover.
- * @returns The default when it is clear, else the first clear anchor, else
- * `suppress`: chatter is optional, so with no safe spot it is hidden instead of
- * covering time-critical UI.
+ * @param options - `suppressWhenBlocked` hides the box when no spot is clear.
+ * @returns The default when it is clear, else the first clear anchor. When
+ * nothing is clear: `suppress` if allowed (chatter is optional, so on a phone it
+ * is hidden instead of covering time-critical UI), otherwise the default, which
+ * is what larger screens always did.
  */
 export const decideChatterPlacement = (
   defaultRect: Rect,
   anchors: readonly Anchor[],
-  obstacles: readonly Rect[]
+  obstacles: readonly Rect[],
+  options: { suppressWhenBlocked: boolean }
 ): ChatterPlacement => {
   if (!hitsAny(defaultRect, obstacles)) return { kind: 'default' }
   const w = defaultRect.right - defaultRect.left
@@ -56,5 +59,7 @@ export const decideChatterPlacement = (
     }
     if (!hitsAny(candidate, obstacles)) return { kind: 'anchor', anchor }
   }
-  return { kind: 'suppress' }
+  return options.suppressWhenBlocked
+    ? { kind: 'suppress' }
+    : { kind: 'default' }
 }
