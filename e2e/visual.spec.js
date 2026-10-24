@@ -9,6 +9,34 @@ import {
   skipToMenu
 } from './helpers.js'
 
+/**
+ * Loads the ordinary-gig fixture, enters PreGig through the map and starts
+ * Kabelsalat through the DEV hook.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ */
+const enterKabelsalat = async page => {
+  const url = '/?events=off'
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const fixture = await buildFixture(page, 'ordinaryGigFixture')
+  await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+  await loadSavedGame(page)
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('OVERWORLD')
+  await dismissTutorial(page)
+  await page
+    .locator('.map-node')
+    .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+    .click()
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('PREGIG')
+  await page.evaluate(() =>
+    window.gameState.startKabelsalatMinigame(window.gameState.currentGig.id)
+  )
+}
+
 test.describe('Visual smoke tests', () => {
   test('MainMenu renders its stable primary hierarchy', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -578,6 +606,36 @@ test.describe('Visual smoke tests', () => {
       })
       expect(fit.left, `tab ${i} left`).toBeGreaterThanOrEqual(-TOLERANCE)
       expect(fit.right, `tab ${i} right`).toBeGreaterThanOrEqual(-TOLERANCE)
+    }
+  })
+
+  test('Kabelsalat title and status line stay inside the viewport (#3255)', async ({
+    page
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await enterKabelsalat(page)
+
+    const heading = page.getByRole('heading', { name: /hardware_rigging/i })
+    await expect(heading).toBeVisible()
+
+    const bounds = await heading.evaluate(el => {
+      const textRect = node => {
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        return range.getBoundingClientRect()
+      }
+      const status = el.parentElement.querySelector('p')
+      return {
+        viewport: window.innerWidth,
+        title: textRect(el),
+        status: textRect(status)
+      }
+    })
+    for (const part of ['title', 'status']) {
+      expect(bounds[part].left, `${part} left edge`).toBeGreaterThanOrEqual(0)
+      expect(bounds[part].right, `${part} right edge`).toBeLessThanOrEqual(
+        bounds.viewport
+      )
     }
   })
 })

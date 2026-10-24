@@ -15,8 +15,8 @@ interface HeaderTitleProps {
  */
 export const HeaderTitle: FC<HeaderTitleProps> = React.memo(
   ({ t, isShocked, isGameOver, isPoweredOn }) => (
-    <div>
-      <h2 className='text-2xl font-bold text-toxic-green tracking-[0.2em] relative'>
+    <div className='max-w-full self-start md:self-auto'>
+      <h2 className='text-xl sm:text-2xl font-bold text-toxic-green tracking-[0.1em] sm:tracking-[0.2em] relative'>
         <span className='relative z-10'>
           {t('ui:minigames.kabelsalat.title')}
         </span>
