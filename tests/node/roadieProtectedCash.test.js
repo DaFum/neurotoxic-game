@@ -1,5 +1,6 @@
-import { describe, it } from 'node:test'
+import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
+import i18n from '../../src/i18n'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { startedState } from '../expeditionLifecycleFixture'
@@ -7,6 +8,10 @@ import { SPARE_GEAR_ITEM_IDS } from '../../src/data/inventoryItems'
 import { QuestLifecycle } from '../../src/domain/questLifecycle'
 
 describe('roadie minigame protected cash', () => {
+  beforeEach(() => {
+    i18n.language = 'en'
+  })
+
   it('acceptance case: caps repair at spendable cash and sets damaged_gear when no spare', () => {
     // Money €5000, protected €4990 -> spendable €10.
     // Damage 100 -> repairCost €200.
