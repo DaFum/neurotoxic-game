@@ -38,7 +38,8 @@ const renderProvider = (adapter: InMemoryAdapter) => {
   return renderHook(
     () => ({
       actions: useGameActions(),
-      career: useGameSelector(state => state.career)
+      career: useGameSelector(state => state.career),
+      toasts: useGameSelector(state => state.toasts)
     }),
     { wrapper }
   )
@@ -157,10 +158,8 @@ describe('the unlock purchase is reachable through useGameActions', () => {
   })
 
   it('refuses a second purchase started inside the same batch', () => {
-    // `dispatch` does not update `stateRef`, so without the guard the second
-    // call would recompute from the pre-begin snapshot and persist a state
-    // that has never seen the first purchase. The Career below can legally
-    // afford *both* sets, so only the guard can refuse the second one.
+    // The Career below can legally afford *both* sets, so only the open
+    // journal entry of the first purchase can refuse the second one.
     const adapter = new InMemoryAdapter()
     seedSave(adapter, {
       tourTokens: 8,
@@ -185,14 +184,46 @@ describe('the unlock purchase is reachable through useGameActions', () => {
       8 - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
     )
 
-    // The guard releases at the next commit, so the second set is buyable
-    // straight afterwards rather than being lost.
+    // The entry closes with the grant, so the second set is buyable straight
+    // afterwards rather than being lost.
     act(() => {
       second =
         result.current.actions.purchaseExpeditionUnlockSet('festival_network')
     })
     expect(second).toBe(true)
     expect(result.current.career.unlockedSetIds).toContain('festival_network')
+  })
+
+  it('treats a double click on one set as one purchase, without an error', () => {
+    const adapter = new InMemoryAdapter()
+    seedSave(adapter)
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+
+    let results: boolean[] = []
+    act(() => {
+      results = [
+        result.current.actions.purchaseExpeditionUnlockSet('mechanic_network'),
+        result.current.actions.purchaseExpeditionUnlockSet('mechanic_network')
+      ]
+    })
+    expect(results).toEqual([true, false])
+    expect(
+      result.current.career.unlockedSetIds.filter(
+        (id: string) => id === 'mechanic_network'
+      )
+    ).toHaveLength(1)
+    expect(result.current.career.tourTokens).toBe(
+      READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    )
+    // The repeat is the first click being honoured, not a refusal to explain.
+    expect(
+      result.current.toasts.filter(
+        (toast: { type: string }) => toast.type === 'error'
+      )
+    ).toHaveLength(0)
   })
 
   it('recovers a crash between the debit and the grant', () => {

@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next'
 import {
-  useRef,
   useCallback,
   useMemo,
   startTransition,
@@ -811,14 +810,6 @@ export function useGameDispatchActions({
     [careerActions, saveGameAfterStateCommit]
   )
 
-  // The committed state a purchase was last computed from. `dispatch` does not
-  // update `stateRef` synchronously, so a second purchase in the same batch
-  // would judge its own legality against a snapshot that predates the first
-  // one - and then open a journal entry the reducer refuses. Refusing while
-  // `stateRef` still holds that same state releases on its own at the next
-  // commit.
-  const lastUnlockPurchaseBaseRef = useRef<GameState | null>(null)
-
   // The Career purchases' failure toast: the same `<prefix>.<reason>` shape the
   // asset `dispatchWithFailureToast` uses. Career actions have no typed
   // `*_FAILED` variant - the reducer refuses by returning the identical state -
@@ -858,32 +849,28 @@ export function useGameDispatchActions({
 
   const purchaseExpeditionUnlockSet = useCallback(
     (setId: string): boolean => {
-      const base = stateRef.current
-      // A repeat within the same batch (a double click) is not a refusal the
-      // player needs explained: the first click is already being honoured.
-      if (lastUnlockPurchaseBaseRef.current === base) return false
-      const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
+      // `latestStateRef` already holds every dispatch of this batch, so a
+      // second purchase sees the first one's open journal entry.
+      const base = latestStateRef.current
+      // A repeat of the purchase already open (a double click) is not a refusal
+      // the player needs explained: the first click is already being honoured.
+      if (base.career.pendingUnlockPurchase?.setId === setId) return false
       // The reducer is the authority on whether this purchase is legal, so the
       // answer is taken from the reducer itself rather than re-checked here
-      // against rules that could drift. Running it locally is the only way to
-      // ask before dispatching; nothing but that answer is read off the
-      // result.
-      const opened = gameReducer(base, beginAction)
-      if (opened.career.pendingUnlockPurchase?.setId !== setId) {
+      // against rules that could drift: a refused begin leaves no open entry.
+      dispatch(createBeginExpeditionUnlockPurchaseAction(setId))
+      if (
+        latestStateRef.current.career.pendingUnlockPurchase?.setId !== setId
+      ) {
         toastCareerPurchaseFailure(
           getExpeditionUnlockSetPurchaseBlocker(base.career, setId)
         )
         return false
       }
 
-      lastUnlockPurchaseBaseRef.current = base
-      dispatch(beginAction)
-      // Persist the marker *before* granting, but from the committed
-      // post-debit render rather than from `opened`: that local snapshot is
-      // only what this one action would do to the state `stateRef` last saw,
-      // so anything else dispatched in the same batch is missing from it and
-      // writing it would drop those updates from storage. `opened` therefore
-      // decides only whether the purchase is legal.
+      // Persist the marker *before* granting, from the committed post-debit
+      // render: it carries anything else dispatched in the same batch, so no
+      // update of that batch is dropped from storage.
       //
       // The grant waits for that write, which is the whole point of the
       // journal: a process that dies in this window leaves a save saying
@@ -917,8 +904,8 @@ export function useGameDispatchActions({
     [
       addToast,
       dispatch,
+      latestStateRef,
       saveGameAfterStateCommit,
-      stateRef,
       tRef,
       toastCareerPurchaseFailure
     ]
