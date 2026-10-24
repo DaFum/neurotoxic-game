@@ -38,13 +38,12 @@ const enterKabelsalat = async page => {
 }
 
 /**
- * Measures the visible map-node labels of the route-seed-1 Expedition start and
- * returns the pairs of different nodes whose label boxes intersect.
+ * Loads the route-seed-1 Expedition start through the normal save loader and
+ * waits for its travel targets to be interactive.
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
- * @returns {Promise<number[][]>} Colliding node index pairs.
  */
-const seedOneLabelCollisions = async page => {
+const loadSeedOneExpedition = async page => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const url = '/?events=off'
   await page.goto(url, { waitUntil: 'domcontentloaded' })
@@ -57,6 +56,17 @@ const seedOneLabelCollisions = async page => {
   await dismissTutorial(page)
   await expect(page.locator('.map-node.clickable').first()).toBeVisible()
   await page.waitForTimeout(500)
+}
+
+/**
+ * Measures the visible map-node labels of the route-seed-1 Expedition start and
+ * returns the pairs of different nodes whose label boxes intersect.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @returns {Promise<number[][]>} Colliding node index pairs.
+ */
+const seedOneLabelCollisions = async page => {
+  await loadSeedOneExpedition(page)
 
   const labels = await page.evaluate(() =>
     [...document.querySelectorAll('[data-testid="map-node-label"]')]
@@ -699,6 +709,25 @@ test.describe('Visual smoke tests', () => {
     // The desktop map keeps every name chip; the dense-branch rule is phone-only.
     test.skip(page.viewportSize().width > 640, 'Phone-only collision check')
     expect(await seedOneLabelCollisions(page)).toEqual([])
+  })
+
+  test('A focused Expedition destination shows its name before travel confirmation (#3254)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width > 640, 'Phone-only label rule')
+    await loadSeedOneExpedition(page)
+
+    const destination = page.getByRole('button', {
+      name: /travel to the distillery/i
+    })
+    const label = destination.getByTestId('map-node-label')
+    // Dense branch: the name is hidden at rest and revealed by focus alone.
+    await expect(label).toBeHidden()
+    await destination.focus()
+    await expect(label).toBeVisible()
+    await expect(label).toContainText(/the distillery/i)
+    // Focus must not have started the two-step travel confirmation.
+    await expect(page.getByText('CONFIRM?')).toHaveCount(0)
   })
 
   // Adjacent phone breakpoints get their own viewport (see the 639/640 block).
