@@ -89,6 +89,7 @@ export function usePostGigHandlers({
   settleSoldMerch,
   clearPendingGigSettlement,
   offerExpeditionDraft,
+  commitSocialPost,
   phase,
   setPhase,
   setBrandOffers,
@@ -169,7 +170,8 @@ export function usePostGigHandlers({
       resolveExpeditionSocialResult,
       settleSoldMerch,
       clearPendingGigSettlement,
-      offerExpeditionDraft
+      offerExpeditionDraft,
+      commitSocialPost
     }),
     [
       updatePlayer,
@@ -191,7 +193,8 @@ export function usePostGigHandlers({
       resolveExpeditionSocialResult,
       settleSoldMerch,
       clearPendingGigSettlement,
-      offerExpeditionDraft
+      offerExpeditionDraft,
+      commitSocialPost
     ]
   )
   const handleContinue = useContinueHandler({

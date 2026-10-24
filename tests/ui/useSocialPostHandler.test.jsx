@@ -1,10 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
-// Mock the pure utils so the test characterizes the hook's *orchestration*
-// (which dispatchers fire, in what order) rather than the math those utils own.
+const { SocialPostRefusalError } = vi.hoisted(() => {
+  class SocialPostRefusalError extends Error {
+    constructor(message) {
+      super(message)
+      this.name = 'SocialPostRefusalError'
+      this.code = 'INSUFFICIENT_SPENDABLE_CASH'
+    }
+  }
+  return { SocialPostRefusalError }
+})
+
 vi.mock('../../src/utils/postGig', () => ({
-  calculatePostGigStateUpdates: vi.fn()
+  calculatePostGigStateUpdates: vi.fn(),
+  SocialPostRefusalError
 }))
 vi.mock('../../src/quests/producers/gigQuestEvents', () => ({
   createHarmonyChangedQuestEvent: vi.fn(() => ({ type: 'harmony.changed' }))
@@ -32,6 +42,7 @@ const t = (key, opts) => opts?.defaultValue ?? key
 
 function makeDispatchers() {
   return {
+    commitSocialPost: vi.fn(() => true),
     updateSocial: vi.fn(),
     updateBand: vi.fn(),
     updatePlayer: vi.fn(),
@@ -80,7 +91,7 @@ describe('useSocialPostHandler (characterization)', () => {
     vi.clearAllMocks()
   })
 
-  it('applies updates and requests brand offers', () => {
+  it('commits composite payload and requests brand offers', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
@@ -88,12 +99,12 @@ describe('useSocialPostHandler (characterization)', () => {
     act(() => result.current({ id: 'post_1' }))
 
     const d = props.dispatchers
+    expect(d.commitSocialPost).toHaveBeenCalledWith({
+      band: expect.objectContaining({ harmony: 85 }),
+      moneyDelta: 100,
+      social: expect.objectContaining({ followers: 510, pendingSocialOptionId: 'post_1' })
+    })
     expect(d.setPostResult).toHaveBeenCalledTimes(1)
-    expect(d.updateBand).toHaveBeenCalledWith(
-      expect.objectContaining({ harmony: 85 })
-    )
-    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
-    expect(d.updateSocial).toHaveBeenCalledWith({ followers: 510 })
     // harmony delta +5 => success toast + harmony quest event
     expect(d.addToast).toHaveBeenCalledWith(
       expect.stringContaining('+5'),
@@ -106,7 +117,7 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.isProcessingActionRef.current).toBe(true)
   })
 
-  it('requests brand offers only after the post and its quest events dispatch', () => {
+  it('requests brand offers only after commitSocialPost and its quest events dispatch', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
@@ -117,7 +128,7 @@ describe('useSocialPostHandler (characterization)', () => {
     const requestedAt = d.requestBrandOffers.mock.invocationCallOrder[0]
     expect(requestedAt).toBeGreaterThan(
       Math.max(
-        ...d.updateSocial.mock.invocationCallOrder,
+        ...d.commitSocialPost.mock.invocationCallOrder,
         ...d.applyQuestEvent.mock.invocationCallOrder
       )
     )
@@ -240,9 +251,11 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.dispatchers.setPostResult).toHaveBeenCalledWith(
       expect.objectContaining({ followers: 10 })
     )
-    expect(props.dispatchers.updateSocial).toHaveBeenCalledWith({
-      followers: 510
-    })
+    expect(props.dispatchers.commitSocialPost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        social: expect.objectContaining({ followers: 510 })
+      })
+    )
   })
 
   it('releases guard in the error path so the player can retry', () => {
@@ -285,26 +298,31 @@ describe('applySocialPostResult', () => {
     }
   }
 
-  it('fires core dispatchers and requests brand offers when hasBandUpdates is true', () => {
+  it('commits composite payload and requests brand offers when hasBandUpdates is true', () => {
     const props = makeApplyProps()
     applySocialPostResult(props)
 
     const d = props.dispatchers
+    expect(d.commitSocialPost).toHaveBeenCalledWith({
+      band: props.updates.newBand,
+      moneyDelta: 100,
+      social: { ...props.updates.updatedSocial, pendingSocialOptionId: 'post_1' }
+    })
     expect(d.setPostResult).toHaveBeenCalledWith(props.updates.finalResult)
-    expect(d.updateBand).toHaveBeenCalledWith(props.updates.newBand)
-    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
-    expect(d.updateSocial).toHaveBeenCalledWith(props.updates.updatedSocial)
     expect(d.requestBrandOffers).toHaveBeenCalledTimes(1)
   })
 
-  it('does not fire updateBand when hasBandUpdates is false', () => {
+  it('does not include band in commitPayload when hasBandUpdates is false', () => {
     const props = makeApplyProps({
       updatesOverrides: { hasBandUpdates: false }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updateBand).not.toHaveBeenCalled()
+    expect(d.commitSocialPost).toHaveBeenCalledWith({
+      moneyDelta: 100,
+      social: { ...props.updates.updatedSocial, pendingSocialOptionId: 'post_1' }
+    })
   })
 
   it('shows success toast and fires quest event for positive harmony delta', () => {
@@ -338,35 +356,39 @@ describe('applySocialPostResult', () => {
     })
   })
 
-  it('shows success toast and updates player money for positive money delta', () => {
+  it('shows success toast for positive money delta', () => {
     const props = makeApplyProps({
       updatesOverrides: { appliedMoneyDelta: 100, nextMoney: 1100 }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
+    expect(d.commitSocialPost).toHaveBeenCalledWith(
+      expect.objectContaining({ moneyDelta: 100 })
+    )
     expect(d.addToast).toHaveBeenCalledWith(
       expect.stringContaining('100'),
       'success'
     )
   })
 
-  it('shows error toast and updates player money for negative money delta', () => {
+  it('shows error toast for negative money delta', () => {
     const props = makeApplyProps({
       updatesOverrides: { appliedMoneyDelta: -50, nextMoney: 950 }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 950 })
+    expect(d.commitSocialPost).toHaveBeenCalledWith(
+      expect.objectContaining({ moneyDelta: -50 })
+    )
     expect(d.addToast).toHaveBeenCalledWith(
       expect.stringContaining('50'),
       'error'
     )
   })
 
-  it('updates player money when money delta is zero but finalResult.moneyChange is truthy', () => {
+  it('does not include moneyDelta when appliedMoneyDelta is zero', () => {
     const props = makeApplyProps({
       updatesOverrides: {
         appliedMoneyDelta: 0,
@@ -377,10 +399,8 @@ describe('applySocialPostResult', () => {
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1000 })
-    expect(d.addToast).not.toHaveBeenCalledWith(
-      expect.stringContaining('Money'),
-      expect.anything()
+    expect(d.commitSocialPost).toHaveBeenCalledWith(
+      expect.not.objectContaining({ moneyDelta: expect.anything() })
     )
   })
 
@@ -400,32 +420,15 @@ describe('applySocialPostResult', () => {
     )
   })
 
-  it('updates player stats for failed stage dive', () => {
+  it('includes failedStageDive in commit payload', () => {
     const props = makeApplyProps({
       updatesOverrides: { finalResult: { failedStageDive: true } }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith(
-      expect.objectContaining({
-        stats: expect.objectContaining({ failedStageDives: 2 })
-      })
-    )
-  })
-
-  it('updates player stats for failed stage dive when player.stats is undefined', () => {
-    const props = makeApplyProps({
-      player: { money: 1000, fame: 10, day: 3, location: 'berlin' },
-      updatesOverrides: { finalResult: { failedStageDive: true } }
-    })
-    applySocialPostResult(props)
-
-    const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith(
-      expect.objectContaining({
-        stats: { failedStageDives: 1 }
-      })
+    expect(d.commitSocialPost).toHaveBeenCalledWith(
+      expect.objectContaining({ failedStageDive: true })
     )
   })
 

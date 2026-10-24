@@ -136,6 +136,16 @@ export type UpdateBandPayload =
   Partial<BandState> | ((band: BandState) => Partial<BandState>)
 
 /**
+ * Reducer payload for atomically committing a resolved social post result.
+ */
+export interface ApplySocialPostResultPayload {
+  band?: UpdateBandPayload
+  moneyDelta?: number
+  failedStageDive?: boolean
+  social: Partial<SocialState> & { pendingSocialOptionId: string }
+}
+
+/**
  * Payload used when resetting state while preserving selected settings.
  *
  * @remarks

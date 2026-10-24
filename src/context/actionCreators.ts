@@ -37,6 +37,8 @@ import {
   finiteNumberOr,
   isFiniteNumber
 } from '../utils/gameState'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import type { ApplySocialPostResultPayload } from '../types/actions'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
@@ -266,6 +268,47 @@ export const createUpdateSocialAction = (
   return {
     type: ActionTypes.UPDATE_SOCIAL,
     payload
+  }
+}
+
+/**
+ * Creates an action that atomically commits a social post outcome.
+ * Validates the debit against the supplied state snapshot's spendable Cash.
+ * Returns null if the snapshot cannot pay.
+ *
+ * @param stateSnapshot - Current game state snapshot.
+ * @param payload - Composite social post result payload.
+ */
+export const createApplySocialPostResultAction = (
+  stateSnapshot: GameState,
+  payload: ApplySocialPostResultPayload
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_SOCIAL_POST_RESULT }
+> | null => {
+  if (!payload || typeof payload !== 'object' || !payload.social) return null
+  if (
+    typeof payload.social.pendingSocialOptionId !== 'string' ||
+    payload.social.pendingSocialOptionId.length === 0
+  ) {
+    return null
+  }
+
+  const moneyDelta = finiteNumberOr(payload.moneyDelta, 0)
+  if (moneyDelta < 0) {
+    const requiredDebit = Math.abs(moneyDelta)
+    const spendable = getExpeditionSpendableCash(stateSnapshot)
+    if (requiredDebit > spendable) {
+      return null
+    }
+  }
+
+  return {
+    type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+    payload: {
+      ...payload,
+      moneyDelta
+    }
   }
 }
 

@@ -88,7 +88,8 @@ export const usePostGigLogic = () => {
     settleSoldMerch,
     recordPendingGigSettlement,
     clearPendingGigSettlement,
-    offerExpeditionDraft
+    offerExpeditionDraft,
+    commitSocialPost
   } = useGameActions()
 
   // 1. Core State
@@ -194,6 +195,7 @@ export const usePostGigLogic = () => {
     settleSoldMerch,
     clearPendingGigSettlement,
     offerExpeditionDraft,
+    commitSocialPost,
     phase,
     setPhase,
     setPostResult,

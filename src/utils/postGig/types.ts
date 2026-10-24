@@ -13,6 +13,7 @@ export type CalculatePostGigStateParams = {
   secureRandomValue?: number
   selectionRandomValue?: number
   viralRandomValue?: number
+  expedition?: GameState['expedition']
 }
 
 /** Result of resolving a spin-story money effect: either no-op or the clamped next money + applied delta. */

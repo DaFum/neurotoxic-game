@@ -207,7 +207,8 @@ export const usePostGigDerivations = ({
         band,
         social,
         activeEvent,
-        activeQuests
+        activeQuests,
+        expedition
       })
     }, [
       currentGig,
@@ -216,7 +217,8 @@ export const usePostGigDerivations = ({
       band,
       social,
       activeEvent,
-      activeQuests
+      activeQuests,
+      expedition
     ])
 
   return {

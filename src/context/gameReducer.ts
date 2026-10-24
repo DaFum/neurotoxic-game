@@ -27,6 +27,7 @@ import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
 import {
   handleUpdateSocial,
+  handleApplySocialPostResult,
   handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
@@ -212,6 +213,7 @@ const reducerMap: ReducerMap = {
   },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
+  [ActionTypes.APPLY_SOCIAL_POST_RESULT]: handleApplySocialPostResult,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
   [ActionTypes.SET_MAP]: handleSetMap,
   [ActionTypes.SET_GIG]: handleSetGig,

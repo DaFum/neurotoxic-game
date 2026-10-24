@@ -70,6 +70,7 @@ import {
   createRecordPendingGigSettlementAction,
   createClearPendingGigSettlementAction,
   createUpdateSocialAction,
+  createApplySocialPostResultAction,
   createUpdateSettingsAction,
   createSetMapAction,
   createSetGigAction,
@@ -101,6 +102,7 @@ import {
   createHoldBandMeetingAction,
   createRestockMerchAction
 } from './actionCreators'
+import type { ApplySocialPostResultPayload } from '../types/actions'
 import {
   purchaseChassis as purchaseChassisAction,
   installModule as installModuleAction,
@@ -130,6 +132,9 @@ type BaseGameDispatchActions = {
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
   ) => void
+  commitSocialPost: (
+    payload: ApplySocialPostResultPayload
+  ) => boolean
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
   startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
@@ -757,6 +762,17 @@ export function useGameDispatchActions({
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
+  const commitSocialPost = useCallback(
+    (payload: ApplySocialPostResultPayload): boolean => {
+      const snapshot = stateRef.current
+      const action = createApplySocialPostResultAction(snapshot, payload)
+      if (!action) return false
+      dispatch(action)
+      return true
+    },
+    [dispatch, stateRef]
+  )
+
   // A resolved decision is persisted Career state that changes nothing about
   // the scene, so the write has to travel with the dispatch: the autosave the
   // player would otherwise wait for fires on a scene transition, and a crash
@@ -938,6 +954,7 @@ export function useGameDispatchActions({
       ...assetActions,
       ...expeditionActions,
       ...careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
@@ -966,6 +983,7 @@ export function useGameDispatchActions({
       assetActions,
       expeditionActions,
       careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,

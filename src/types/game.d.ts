@@ -298,6 +298,10 @@ export type GameAction =
     >
   | Action<(typeof ActionTypes)['CLEAR_PENDING_GIG_SETTLEMENT'], { id: string }>
   | Action<(typeof ActionTypes)['UPDATE_SOCIAL'], UpdateSocialPayload>
+  | Action<
+      (typeof ActionTypes)['APPLY_SOCIAL_POST_RESULT'],
+      import('./actions').ApplySocialPostResultPayload
+    >
   | Action<(typeof ActionTypes)['UPDATE_SETTINGS'], UnknownRecord>
   | Action<(typeof ActionTypes)['SET_MAP'], GameMap | null>
   | Action<(typeof ActionTypes)['SET_GIG'], Venue | null>

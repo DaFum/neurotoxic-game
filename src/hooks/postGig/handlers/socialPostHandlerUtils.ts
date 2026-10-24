@@ -14,9 +14,7 @@ import type { HandlerDispatchers } from './types'
 
 type SocialPostDispatchers = Pick<
   HandlerDispatchers,
-  | 'updateBand'
-  | 'updatePlayer'
-  | 'updateSocial'
+  | 'commitSocialPost'
   | 'unlockTrait'
   | 'applyQuestEvent'
   | 'addToast'
@@ -25,10 +23,9 @@ type SocialPostDispatchers = Pick<
 >
 
 /**
- * Applies an already-computed social-post resolution: posts the result, applies
- * band/player/social updates and toasts, unlocks traits, emits quest events,
- * then requests brand offers. The owning hook generates them once these
- * dispatches commit, so quest rewards earned by this post are already applied.
+ * Applies an already-computed social-post resolution: commits the composite result
+ * atomically via `commitSocialPost`. If accepted, displays toasts, unlocks traits,
+ * emits quest events, and requests brand offers.
  *
  * Pure orchestration over injected dispatchers (no React state); the heavy math
  * is owned by `calculatePostGigStateUpdates`.
@@ -41,12 +38,10 @@ export function applySocialPostResult(params: {
   social: GameState['social']
   t: import('i18next').TFunction
   dispatchers: SocialPostDispatchers
-}): void {
-  const { option, updates, player, band, social, t, dispatchers } = params
+}): boolean {
+  const { option, updates, band, social, t, dispatchers } = params
   const {
-    updateBand,
-    updatePlayer,
-    updateSocial,
+    commitSocialPost,
     unlockTrait,
     applyQuestEvent,
     addToast,
@@ -59,16 +54,31 @@ export function applySocialPostResult(params: {
     newBand,
     hasBandUpdates,
     appliedHarmonyDelta,
-    nextMoney,
     appliedMoneyDelta,
     updatedSocial
   } = updates
 
-  setPostResult(finalResult)
-
-  if (hasBandUpdates) {
-    updateBand(newBand)
+  const pendingSocialOptionId = option.id ?? 'unknown'
+  const socialPatch = {
+    ...updatedSocial,
+    pendingSocialOptionId
   }
+
+  const commitPayload = {
+    ...(hasBandUpdates ? { band: newBand } : {}),
+    ...(appliedMoneyDelta !== 0 ? { moneyDelta: appliedMoneyDelta } : {}),
+    ...(finalResult.failedStageDive ? { failedStageDive: true } : {}),
+    social: socialPatch
+  }
+
+  const committed = commitSocialPost ? commitSocialPost(commitPayload) : false
+
+  if (!committed) {
+    addToast(t('ui:postGig.insufficientSpendableCash'), 'error')
+    return false
+  }
+
+  setPostResult(finalResult)
 
   if (appliedHarmonyDelta !== 0) {
     const sign = appliedHarmonyDelta > 0 ? '+' : ''
@@ -77,6 +87,14 @@ export function applySocialPostResult(params: {
       appliedHarmonyDelta > 0 ? 'success' : 'error'
     )
   }
+
+  if (appliedMoneyDelta !== 0) {
+    addToast(
+      `${t('ui:stats.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
+      appliedMoneyDelta > 0 ? 'success' : 'error'
+    )
+  }
+
   if (appliedHarmonyDelta > 0) {
     applyQuestEvent(
       createHarmonyChangedQuestEvent({
@@ -86,16 +104,6 @@ export function applySocialPostResult(params: {
         )
       })
     )
-  }
-
-  if (appliedMoneyDelta !== 0) {
-    updatePlayer({ money: nextMoney })
-    addToast(
-      `${t('ui:stats.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
-      appliedMoneyDelta > 0 ? 'success' : 'error'
-    )
-  } else if (finalResult.moneyChange) {
-    updatePlayer({ money: nextMoney })
   }
 
   if (finalResult.unlockTrait) {
@@ -114,19 +122,6 @@ export function applySocialPostResult(params: {
       'success'
     )
   }
-
-  // Track failed stage dives / crowdsurfs; 2 unlock the `clumsy` trait via
-  // the daily SOCIAL_UPDATE pass in checkTraitUnlocks.
-  if (finalResult.failedStageDive) {
-    updatePlayer({
-      stats: {
-        ...player?.stats,
-        failedStageDives: finiteNumberOr(player?.stats?.failedStageDives, 0) + 1
-      }
-    })
-  }
-
-  updateSocial(updatedSocial)
 
   const followersGained = finiteNumberOr(finalResult.totalFollowers, 0)
   // Pass platform + category as context so per-quest filters can narrow
@@ -152,4 +147,6 @@ export function applySocialPostResult(params: {
   // Offers must see the committed state: the dispatches above can complete a
   // quest whose rewards change social, money or harmony in the reducer.
   requestBrandOffers()
+
+  return true
 }

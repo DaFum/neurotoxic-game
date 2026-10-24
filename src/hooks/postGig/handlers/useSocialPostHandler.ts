@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import type { GameState, PostGigSummary, Venue } from '../../../types'
 import type { SocialPostOption } from '../../../types/social'
 import { logger } from '../../../utils/logger'
-import { calculatePostGigStateUpdates } from '../../../utils/postGig'
+import { calculatePostGigStateUpdates, SocialPostRefusalError } from '../../../utils/postGig'
 import { secureRandom } from '../../../utils/crypto'
 import { applySocialPostResult } from './socialPostHandlerUtils'
 import type { HandlerDispatchers } from './types'
@@ -39,9 +39,7 @@ export function useSocialPostHandler({
   setIsProcessingAction,
   t,
   dispatchers: {
-    updateSocial,
-    updateBand,
-    updatePlayer,
+    commitSocialPost,
     unlockTrait,
     applyQuestEvent,
     addToast,
@@ -67,18 +65,23 @@ export function useSocialPostHandler({
           perfScore,
           secureRandomValue: secureRandom(),
           selectionRandomValue: secureRandom(),
-          viralRandomValue: secureRandom()
+          viralRandomValue: secureRandom(),
+          expedition: player ? (player as unknown as GameState).expedition : undefined
         })
       } catch (e) {
-        logger.error('PostGig', 'Failed to resolve selected post', e)
-        addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        if (e instanceof SocialPostRefusalError) {
+          addToast(t('ui:postGig.insufficientSpendableCash'), 'error')
+        } else {
+          logger.error('PostGig', 'Failed to resolve selected post', e)
+          addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        }
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
         return
       }
 
       try {
-        applySocialPostResult({
+        const applied = applySocialPostResult({
           option,
           updates,
           player,
@@ -86,9 +89,7 @@ export function useSocialPostHandler({
           social,
           t,
           dispatchers: {
-            updateBand,
-            updatePlayer,
-            updateSocial,
+            commitSocialPost,
             unlockTrait,
             applyQuestEvent,
             addToast,
@@ -96,13 +97,20 @@ export function useSocialPostHandler({
             requestBrandOffers
           }
         })
+
+        if (!applied) {
+          isProcessingActionRef.current = false
+          setIsProcessingAction(false)
+          return
+        }
+
         if (resolveExpeditionSocialResult && option.id) {
           resolveExpeditionSocialResult(
             deriveExpeditionSocialResultId(option),
             option.id
           )
         }
-        // Guard intentionally NOT reset here: the phase transition owns the
+        // Guard intentionally NOT reset here on success: the phase transition owns the
         // lifecycle. Resetting before it runs would re-open the settlement
         // window for rapid double-clicks.
       } catch (e) {
@@ -118,9 +126,7 @@ export function useSocialPostHandler({
       social,
       player,
       band,
-      updateSocial,
-      updateBand,
-      updatePlayer,
+      commitSocialPost,
       unlockTrait,
       applyQuestEvent,
       addToast,

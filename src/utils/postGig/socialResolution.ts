@@ -20,10 +20,13 @@ import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getActiveDealBenefits } from '../brandDealBenefits'
 import { getRegionKeyForLocation } from '../mapUtils'
+import { StateError } from '../errorHandler'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 
 const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 
 import type { GameState, UnknownRecord } from '../../types'
+import type { SocialEngineGameState } from '../../types/social'
 import type { Platform } from '../../types/social'
 import type { BandMember } from '../../types/band'
 import type { ActiveBrandDeal, BrandDeal } from '../../types/social'
@@ -234,6 +237,20 @@ export const buildPerGigSocialReconciliation = ({
 }
 
 /**
+ * Dedicated error thrown when a social post cannot be selected or resolved
+ * due to insufficient spendable cash in an active Expedition or Career mode.
+ */
+export class SocialPostRefusalError extends StateError {
+  public code: string
+
+  constructor(message: string, context: Record<string, unknown> = {}) {
+    super(message, context)
+    this.name = 'SocialPostRefusalError'
+    this.code = 'INSUFFICIENT_SPENDABLE_CASH'
+  }
+}
+
+/**
  * Resolves a selected social post into the full set of post-gig state updates:
  * the final result, band/social/player deltas (clamped), applied harmony/money
  * deltas, and whether band updates are needed. Pure — owns the math the
@@ -252,9 +269,20 @@ export const calculatePostGigStateUpdates = (
     perfScore,
     secureRandomValue,
     selectionRandomValue,
-    viralRandomValue
+    viralRandomValue,
+    expedition
   } = params
-  const gameState = { player, band, social }
+
+  const gameState: SocialEngineGameState = { player, band, social, currentGig, expedition }
+  const fullGameStateForCash = { player, band, social, expedition } as GameState
+
+  if (typeof option.condition === 'function' && !option.condition(gameState)) {
+    throw new SocialPostRefusalError(
+      `Option ${option.id} condition failed for current state.`,
+      { optionId: option.id }
+    )
+  }
+
   const result = normalizeResolvedPost(
     resolvePost(option, gameState, secureRandomValue, selectionRandomValue)
   )
@@ -360,6 +388,17 @@ export const calculatePostGigStateUpdates = (
     )
     nextMoney = applied.nextMoney
     appliedMoneyDelta = applied.appliedDelta
+
+    if (appliedMoneyDelta < 0) {
+      const requiredDebit = Math.abs(appliedMoneyDelta)
+      const spendableCash = getExpeditionSpendableCash(fullGameStateForCash)
+      if (requiredDebit > spendableCash) {
+        throw new SocialPostRefusalError(
+          `Insufficient spendable Cash to pay post debit ${requiredDebit}. Spendable: ${spendableCash}.`,
+          { optionId: option.id, requiredDebit, spendableCash }
+        )
+      }
+    }
   }
 
   const boundedZealotry = clamp0to100(

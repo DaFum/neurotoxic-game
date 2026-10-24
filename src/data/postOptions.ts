@@ -10,6 +10,7 @@ import { hasActiveQuest } from '../utils/questUtils'
 import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
 import { pickIndex, selectRandomItem } from '../utils/selectionUtils'
 import { isCultAudience, isScandalControversy } from '../utils/socialThresholds'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -402,12 +403,12 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ player, band }: GameState) =>
-      player &&
-      typeof player.money === 'number' &&
-      player.money > 500 &&
-      Array.isArray(band?.members) &&
-      band.members.length > 0,
+    condition: (state: GameState) =>
+      state.player &&
+      typeof state.player.money === 'number' &&
+      getExpeditionSpendableCash(state) > 500 &&
+      Array.isArray(state.band?.members) &&
+      state.band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       const members = requireBandMembers(band, 'perf_smashed_gear')
       const target = selectRandomItem(members, () => diceRoll)?.name
@@ -1041,20 +1042,22 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
-    condition: ({ social, player }: GameState) => {
-      const influencers = social?.influencers || {}
-      if (!player || typeof player.money !== 'number') return false
+    condition: (state: GameState) => {
+      const influencers = state.social?.influencers || {}
+      if (!state.player || typeof state.player.money !== 'number') return false
 
-      return hasAffordableInfluencer(influencers, player.money)
+      return hasAffordableInfluencer(
+        influencers,
+        getExpeditionSpendableCash(state)
+      )
     },
-    resolve: ({
-      social,
-      player,
-      diceRoll
-    }: GameState & { diceRoll: number }) => {
-      const influencers = social?.influencers || {}
-      const playerMoney = player?.money ?? 0
-      const affordableIds = getAffordableInfluencerIds(influencers, playerMoney)
+    resolve: (
+      state: GameState & { diceRoll: number }
+    ) => {
+      const influencers = state.social?.influencers || {}
+      const spendable = getExpeditionSpendableCash(state)
+      const affordableIds = getAffordableInfluencerIds(influencers, spendable)
+      const diceRoll = state.diceRoll
 
       if (affordableIds.length === 0) {
         return {

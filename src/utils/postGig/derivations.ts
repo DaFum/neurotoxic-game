@@ -267,7 +267,8 @@ export const derivePostOptions = ({
   band,
   social,
   activeEvent,
-  activeQuests
+  activeQuests,
+  expedition
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -276,6 +277,7 @@ export const derivePostOptions = ({
   social: GameState['social']
   activeEvent: GameState['activeEvent']
   activeQuests: GameState['activeQuests']
+  expedition?: GameState['expedition']
 }) => {
   if (!currentGig || !lastGigStats) return { options: [], error: null }
 
@@ -288,6 +290,7 @@ export const derivePostOptions = ({
     activeEvent,
     activeQuests,
     currentGig,
+    expedition,
     gigEvents: lastGigStats.events ?? []
   }
 

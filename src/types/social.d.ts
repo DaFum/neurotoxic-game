@@ -169,6 +169,7 @@ export interface SocialEngineGameState {
     [key: string]: unknown
   }
   currentGig?: { id?: string; [key: string]: unknown } | null
+  expedition?: import('./expedition').ExpeditionState | null
 }
 
 /**
