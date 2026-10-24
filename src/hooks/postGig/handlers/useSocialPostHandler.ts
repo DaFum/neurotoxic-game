@@ -2,7 +2,10 @@ import { useCallback } from 'react'
 import type { GameState, PostGigSummary, Venue } from '../../../types'
 import type { SocialPostOption } from '../../../types/social'
 import { logger } from '../../../utils/logger'
-import { calculatePostGigStateUpdates } from '../../../utils/postGig'
+import {
+  calculatePostGigStateUpdates,
+  SocialPostRefusalError
+} from '../../../utils/postGig'
 import { secureRandom } from '../../../utils/crypto'
 import { applySocialPostResult } from './socialPostHandlerUtils'
 import type { HandlerDispatchers } from './types'
@@ -13,10 +16,14 @@ interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
+  rivalBand?: GameState['rivalBand']
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
   pendingSettlementId?: string | null
+  expedition?: GameState['expedition']
+  activeEvent?: GameState['activeEvent']
+  activeQuests?: GameState['activeQuests']
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
@@ -33,18 +40,19 @@ export function useSocialPostHandler({
   player,
   band,
   social,
+  rivalBand,
   currentGig,
   perfScore,
   lastGigStats,
   pendingSettlementId,
+  expedition,
+  activeEvent,
+  activeQuests,
   isProcessingActionRef,
   setIsProcessingAction,
   t,
   dispatchers: {
-    updateSocial,
-    applyGigSocialReconciliation,
-    updateBand,
-    updatePlayer,
+    commitSocialPost,
     unlockTrait,
     applyQuestEvent,
     addToast,
@@ -71,18 +79,29 @@ export function useSocialPostHandler({
           perfScore,
           secureRandomValue: secureRandom(),
           selectionRandomValue: secureRandom(),
-          viralRandomValue: secureRandom()
+          viralRandomValue: secureRandom(),
+          expedition,
+          activeEvent,
+          activeQuests,
+          rivalBand
         })
       } catch (e) {
-        logger.error('PostGig', 'Failed to resolve selected post', e)
-        addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        if (
+          e instanceof SocialPostRefusalError &&
+          e.code === 'INSUFFICIENT_SPENDABLE_CASH'
+        ) {
+          addToast(t('ui:postGig.insufficientSpendableCash'), 'error')
+        } else {
+          logger.error('PostGig', 'Failed to resolve selected post', e)
+          addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        }
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
         return
       }
 
       try {
-        applySocialPostResult({
+        const applied = applySocialPostResult({
           option,
           updates,
           player,
@@ -91,10 +110,7 @@ export function useSocialPostHandler({
           t,
           pendingSettlementId,
           dispatchers: {
-            updateBand,
-            updatePlayer,
-            updateSocial,
-            applyGigSocialReconciliation,
+            commitSocialPost,
             unlockTrait,
             applyQuestEvent,
             addToast,
@@ -103,13 +119,20 @@ export function useSocialPostHandler({
             saveGameAfterStateCommit
           }
         })
+
+        if (!applied) {
+          isProcessingActionRef.current = false
+          setIsProcessingAction(false)
+          return
+        }
+
         if (resolveExpeditionSocialResult && option.id) {
           resolveExpeditionSocialResult(
             deriveExpeditionSocialResultId(option),
             option.id
           )
         }
-        // Guard intentionally NOT reset here: the phase transition owns the
+        // Guard intentionally NOT reset here on success: the phase transition owns the
         // lifecycle. Resetting before it runs would re-open the settlement
         // window for rapid double-clicks.
       } catch (e) {
@@ -126,10 +149,11 @@ export function useSocialPostHandler({
       player,
       band,
       pendingSettlementId,
-      updateSocial,
-      applyGigSocialReconciliation,
-      updateBand,
-      updatePlayer,
+      expedition,
+      activeEvent,
+      activeQuests,
+      rivalBand,
+      commitSocialPost,
       unlockTrait,
       applyQuestEvent,
       addToast,

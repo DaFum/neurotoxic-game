@@ -71,6 +71,7 @@ import {
   createClearPendingGigSettlementAction,
   createApplyGigSocialReconciliationAction,
   createUpdateSocialAction,
+  createApplySocialPostResultAction,
   createUpdateSettingsAction,
   createSetMapAction,
   createSetGigAction,
@@ -102,6 +103,7 @@ import {
   createHoldBandMeetingAction,
   createRestockMerchAction
 } from './actionCreators'
+import type { ApplySocialPostResultPayload } from '../types/actions'
 import {
   purchaseChassis as purchaseChassisAction,
   installModule as installModuleAction,
@@ -133,10 +135,10 @@ type BaseGameDispatchActions = {
   ) => void
   applyGigSocialReconciliation: (
     socialUpdate:
-      | Partial<SocialState>
-      | ((prev: SocialState) => Partial<SocialState>),
+      Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
     settlementId?: string | null
   ) => void
+  commitSocialPost: (payload: ApplySocialPostResultPayload) => boolean
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
   startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
@@ -542,6 +544,7 @@ interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
   stateRef: MutableRefObject<GameState>
+  queuedActionsRef?: MutableRefObject<GameAction[]>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
 }
@@ -556,6 +559,7 @@ export function useGameDispatchActions({
   dispatch,
   state,
   stateRef,
+  queuedActionsRef,
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
@@ -629,8 +633,7 @@ export function useGameDispatchActions({
       ) => dispatch(createUpdateSocialAction(updates)),
       applyGigSocialReconciliation: (
         socialUpdate:
-          | Partial<SocialState>
-          | ((prev: SocialState) => Partial<SocialState>),
+          Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
         settlementId?: string | null
       ) =>
         dispatch(
@@ -773,6 +776,23 @@ export function useGameDispatchActions({
     stateRef
   })
   const careerActions = useCareerDispatchActions(dispatch)
+
+  const commitSocialPost = useCallback(
+    (payload: ApplySocialPostResultPayload): boolean => {
+      let snapshot = stateRef.current
+      if (queuedActionsRef?.current?.length) {
+        for (const queuedAction of queuedActionsRef.current) {
+          snapshot = gameReducer(snapshot, queuedAction)
+        }
+      }
+      const action = createApplySocialPostResultAction(snapshot, payload)
+      if (!action) return false
+      if (gameReducer(snapshot, action) === snapshot) return false
+      dispatch(action)
+      return true
+    },
+    [dispatch, queuedActionsRef, stateRef]
+  )
 
   // A resolved decision is persisted Career state that changes nothing about
   // the scene, so the write has to travel with the dispatch: the autosave the
@@ -955,6 +975,7 @@ export function useGameDispatchActions({
       ...assetActions,
       ...expeditionActions,
       ...careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
@@ -983,6 +1004,7 @@ export function useGameDispatchActions({
       assetActions,
       expeditionActions,
       careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,

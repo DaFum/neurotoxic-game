@@ -1753,6 +1753,7 @@
   "postGig.phaseTourUpdate": "TOUR UPDATE",
   "postGig.platforms.instagram": "Instagram",
   "postGig.platforms.tiktok": "TikTok",
+  "postGig.insufficientSpendableCash": "Insufficient spendable Cash to pay for this post.",
   "postGig.platforms.youtube": "YouTube",
   "postGig.postResolutionFailed": "Post failed. Try another option.",
   "postGig.processing": "Processing...",

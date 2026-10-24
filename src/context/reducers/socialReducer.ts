@@ -12,8 +12,12 @@ import type {
   PirateBroadcastPayload,
   DarkWebLeakPayload,
   CultIndoctrinationPayload,
-  VoidSermonPayload
+  VoidSermonPayload,
+  ApplySocialPostResultPayload
 } from '../../types'
+import { handleUpdateBand } from './bandReducer'
+import { handleUpdatePlayer } from './playerReducer'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
@@ -219,6 +223,106 @@ const buildSocialActionNextState = (
  * @returns State with social updates merged, or the original state when the
  * payload is invalid.
  */
+/**
+ * Atomically applies all persistent state changes from a resolved social post.
+ *
+ * Checks if a negative moneyDelta exceeds available spendable Cash.
+ * If validation fails or payload is malformed, returns the identical state reference.
+ * Order of updates:
+ * 1. Optional band patch via handleUpdateBand
+ * 2. Player update via handleUpdatePlayer with clamped money and optional failedStageDive counter increment
+ * 3. Social update via handleUpdateSocial
+ * 4. Optional `pendingGigSettlement.socialReconciled` marker for `settlementId`
+ *
+ * @param state - Current game state before social post application.
+ * @param payload - Composite social post outcome payload.
+ */
+export const handleApplySocialPostResult = (
+  state: GameState,
+  payload: ApplySocialPostResultPayload
+): GameState => {
+  if (!payload || typeof payload !== 'object' || !payload.social) return state
+  if (
+    typeof payload.social.pendingSocialOptionId !== 'string' ||
+    payload.social.pendingSocialOptionId.length === 0
+  ) {
+    return state
+  }
+
+  if (
+    payload.moneyDelta !== undefined &&
+    payload.moneyDelta !== null &&
+    !isFiniteNumber(payload.moneyDelta)
+  ) {
+    logger.warn('GameState', 'Invalid moneyDelta for social post result')
+    return state
+  }
+
+  const moneyDelta = payload.moneyDelta ?? 0
+  if (moneyDelta < 0) {
+    const requiredDebit = Math.abs(moneyDelta)
+    const spendable = getExpeditionSpendableCash(state)
+    if (requiredDebit > spendable) {
+      logger.warn(
+        'GameState',
+        'Insufficient spendable Cash for social post result'
+      )
+      return state
+    }
+  }
+
+  let nextState = state
+
+  // 1. Band update
+  if (payload.band) {
+    nextState = handleUpdateBand(nextState, payload.band)
+  }
+
+  // 2. Player update: money delta & failedStageDive stat
+  const prevMoney = finiteNumberOr(nextState.player.money, 0)
+  const nextMoney = clampPlayerMoney(prevMoney + moneyDelta)
+  const hasMoneyChange = nextMoney !== prevMoney
+  const hasStageDiveChange = payload.failedStageDive === true
+
+  if (hasMoneyChange || hasStageDiveChange) {
+    const playerUpdates: Record<string, unknown> = {}
+    if (hasMoneyChange) {
+      playerUpdates.money = nextMoney
+    }
+    if (hasStageDiveChange) {
+      const prevFailedDives = finiteNumberOr(
+        nextState.player.stats?.failedStageDives,
+        0
+      )
+      playerUpdates.stats = {
+        ...nextState.player.stats,
+        failedStageDives: prevFailedDives + 1
+      }
+    }
+    nextState = handleUpdatePlayer(nextState, playerUpdates)
+  }
+
+  // 3. Social update
+  nextState = handleUpdateSocial(nextState, payload.social)
+
+  // 4. Settlement marker: reconciled together with the social patch so a
+  // reload cannot observe one without the other.
+  const pending = nextState.pendingGigSettlement
+  if (
+    pending &&
+    typeof payload.settlementId === 'string' &&
+    payload.settlementId.length > 0 &&
+    pending.id === payload.settlementId
+  ) {
+    nextState = {
+      ...nextState,
+      pendingGigSettlement: { ...pending, socialReconciled: true }
+    }
+  }
+
+  return nextState
+}
+
 export const handleUpdateSocial = (
   state: GameState,
   payload: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)

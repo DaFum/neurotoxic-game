@@ -438,6 +438,49 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     assert.equal(domCheck.ok, domCheck.dominanceViolations.length === 0)
   })
 
+  it('increments failedStageDives counter when a failed stage dive post is committed in simulation', async () => {
+    const { gameReducer } = await import('../../src/context/gameReducer.ts')
+    const { ActionTypes } = await import('../../src/context/actionTypes.ts')
+    const { POST_OPTIONS } = await import('../../src/data/postOptions.ts')
+    const { calculatePostGigStateUpdates } = await import(
+      '../../src/utils/postGig/socialResolution.ts'
+    )
+
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const state = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const crowdsurfOpt = POST_OPTIONS.find(o => o.id === 'drama_crowdsurf_fail')
+    assert.ok(crowdsurfOpt)
+
+    // Force failure by passing secureRandomValue = 0.1 (roll <= 0.5)
+    const updates = calculatePostGigStateUpdates({
+      option: crowdsurfOpt,
+      player: state.player,
+      band: state.band,
+      social: state.social,
+      perfScore: 80,
+      secureRandomValue: 0.1,
+      selectionRandomValue: 0.1,
+      viralRandomValue: 0.1,
+      expedition: state.expedition
+    })
+
+    assert.equal(updates.finalResult.failedStageDive, true)
+
+    const initialFailedDives = state.player.stats?.failedStageDives ?? 0
+
+    const nextState = gameReducer(state, {
+      type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+      payload: {
+        social: updates.updatedSocial,
+        moneyDelta: updates.appliedMoneyDelta,
+        band: updates.newBand,
+        failedStageDive: updates.finalResult?.failedStageDive
+      }
+    })
+
+    assert.equal(nextState.player.stats.failedStageDives, initialFailedDives + 1)
+  })
+
   it('separates soft corridor findings from a blocking dominance verdict', () => {
     // G6 Task 7 calls the corridors tuneable hypotheses and says dominance
     // blocks only when the same conclusion reproduces in disjoint calibration

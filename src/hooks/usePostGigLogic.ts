@@ -89,7 +89,8 @@ export const usePostGigLogic = () => {
     settleSoldMerch,
     recordPendingGigSettlement,
     clearPendingGigSettlement,
-    offerExpeditionDraft
+    offerExpeditionDraft,
+    commitSocialPost
   } = useGameActions()
 
   // 1. Core State
@@ -122,7 +123,8 @@ export const usePostGigLogic = () => {
       triggerEvent,
       isScreenshotMode,
       gigRewardMultiplier: finaleRewardMultiplier,
-      expedition
+      expedition,
+      rivalBand
     })
 
   // Continue settles the gig, but the player can reload before pressing it.
@@ -176,6 +178,8 @@ export const usePostGigLogic = () => {
     activeStoryFlags,
     setlist,
     expedition,
+    activeEvent,
+    activeQuests,
     isFinaleGig,
     pendingSettlementId,
     totalDailyObligations,
@@ -196,6 +200,7 @@ export const usePostGigLogic = () => {
     settleSoldMerch,
     clearPendingGigSettlement,
     offerExpeditionDraft,
+    commitSocialPost,
     phase,
     setPhase,
     setPostResult,

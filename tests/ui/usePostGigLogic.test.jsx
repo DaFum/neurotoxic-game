@@ -115,6 +115,7 @@ describe('usePostGigLogic', () => {
   const mockSaveGameAfterStateCommit = vi.fn()
   const mockRecordPendingGigSettlement = vi.fn()
   const mockClearPendingGigSettlement = vi.fn()
+  const mockCommitSocialPost = vi.fn(() => true)
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -172,6 +173,7 @@ describe('usePostGigLogic', () => {
     saveGameAfterStateCommit: mockSaveGameAfterStateCommit,
     recordPendingGigSettlement: mockRecordPendingGigSettlement,
     clearPendingGigSettlement: mockClearPendingGigSettlement,
+    commitSocialPost: mockCommitSocialPost,
     ...overrides
   })
 
@@ -369,26 +371,20 @@ describe('usePostGigLogic', () => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({ instagram: expect.any(Number), viral: 1 })
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          social: expect.objectContaining({ instagram: expect.any(Number) })
+        })
       )
       expect(mockAddToast).toHaveBeenCalledWith('Money +€300', 'success')
       expect(mockAddToast).toHaveBeenCalledWith('Harmony +15', 'success')
-      expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          members: expect.arrayContaining([
-            expect.objectContaining({ mood: 70 })
-          ])
-        })
-      )
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({ money: 800 })
       expect(mockUnlockTrait).toHaveBeenCalledWith(
         'Member1',
         'social_butterfly'
       )
 
       // Viral bonus
-      mockUpdateSocial.mockClear()
+      mockCommitSocialPost.mockClear()
       socialEngine.checkViralEvent.mockReturnValueOnce(true)
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -398,8 +394,10 @@ describe('usePostGigLogic', () => {
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({ viral: 2 })
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          social: expect.objectContaining({ viral: 2 })
+        })
       )
     })
 
@@ -713,12 +711,14 @@ describe('usePostGigLogic', () => {
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
-        expect(mockUpdateBand).toHaveBeenCalledWith(
+        expect(mockCommitSocialPost).toHaveBeenCalledWith(
           expect.objectContaining({
-            members: expect.arrayContaining([
-              expect.objectContaining({ name: 'Member1', mood: 75 }),
-              expect.objectContaining({ name: 'Member2', mood: 50 })
-            ])
+            band: expect.objectContaining({
+              members: expect.arrayContaining([
+                expect.objectContaining({ name: 'Member1', mood: 75 }),
+                expect.objectContaining({ name: 'Member2', mood: 50 })
+              ])
+            })
           })
         )
       }
@@ -731,13 +731,13 @@ describe('usePostGigLogic', () => {
           platform: 'instagram',
           influencerUpdate: { id: 'nonexistent', scoreChange: 10 }
         })
-        mockUpdateSocial.mockClear()
+        mockCommitSocialPost.mockClear()
         let { result } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
-        expect(mockUpdateSocial).toHaveBeenCalled()
+        expect(mockCommitSocialPost).toHaveBeenCalled()
       }
 
       // Ego Drop
@@ -748,19 +748,15 @@ describe('usePostGigLogic', () => {
           platform: 'instagram',
           egoDrop: 'Member2'
         })
-        mockUpdateSocial.mockClear()
+        mockCommitSocialPost.mockClear()
         let { result } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
-        let updateFn =
-          mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
-        let updatedSocial =
-          typeof updateFn === 'function'
-            ? updateFn(getBaseState().social)
-            : updateFn
-        expect(updatedSocial).toEqual(
+        let commitPayload =
+          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+        expect(commitPayload.social).toEqual(
           expect.objectContaining({ egoFocus: 'Member2' })
         )
       }
@@ -776,19 +772,15 @@ describe('usePostGigLogic', () => {
           allMembersMoodChange: true,
           allMembersStaminaChange: true
         })
-        mockUpdateBand.mockClear()
+        mockCommitSocialPost.mockClear()
         let { result } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
-        let updateBandFn =
-          mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
-        let updatedBand =
-          typeof updateBandFn === 'function'
-            ? updateBandFn(getBaseState().band)
-            : updateBandFn
-        expect(updatedBand).toEqual(
+        let commitPayload =
+          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+        expect(commitPayload.band).toEqual(
           expect.objectContaining({
             members: expect.arrayContaining([
               expect.objectContaining({ mood: 100, stamina: 0 }),
@@ -806,19 +798,15 @@ describe('usePostGigLogic', () => {
           platform: 'instagram',
           egoClear: true
         })
-        mockUpdateSocial.mockClear()
+        mockCommitSocialPost.mockClear()
         let { result } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
-        let egoClearFn =
-          mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
-        let egoClearedSocial =
-          typeof egoClearFn === 'function'
-            ? egoClearFn({ ...getBaseState().social, egoFocus: 'Member1' })
-            : egoClearFn
-        expect(egoClearedSocial).toEqual(
+        let commitPayload =
+          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+        expect(commitPayload.social).toEqual(
           expect.objectContaining({ egoFocus: null })
         )
       }
@@ -868,8 +856,10 @@ describe('usePostGigLogic', () => {
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({ activeDeals: [] })
+      expect(mockCommitSocialPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          social: expect.objectContaining({ activeDeals: [] })
+        })
       )
     })
 

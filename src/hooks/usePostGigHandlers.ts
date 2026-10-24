@@ -44,6 +44,8 @@ interface UsePostGigHandlersProps extends Omit<
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
   expedition: GameState['expedition']
+  activeEvent?: GameState['activeEvent']
+  activeQuests?: GameState['activeQuests']
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
   /** Id of the persisted settlement Continue settles. */
@@ -70,6 +72,8 @@ export function usePostGigHandlers({
   activeStoryFlags,
   setlist,
   expedition,
+  activeEvent,
+  activeQuests,
   isFinaleGig,
   pendingSettlementId,
   totalDailyObligations,
@@ -90,6 +94,7 @@ export function usePostGigHandlers({
   settleSoldMerch,
   clearPendingGigSettlement,
   offerExpeditionDraft,
+  commitSocialPost,
   phase,
   setPhase,
   setBrandOffers,
@@ -171,7 +176,8 @@ export function usePostGigHandlers({
       resolveExpeditionSocialResult,
       settleSoldMerch,
       clearPendingGigSettlement,
-      offerExpeditionDraft
+      offerExpeditionDraft,
+      commitSocialPost
     }),
     [
       updatePlayer,
@@ -194,7 +200,8 @@ export function usePostGigHandlers({
       resolveExpeditionSocialResult,
       settleSoldMerch,
       clearPendingGigSettlement,
-      offerExpeditionDraft
+      offerExpeditionDraft,
+      commitSocialPost
     ]
   )
   const handleContinue = useContinueHandler({
@@ -219,10 +226,14 @@ export function usePostGigHandlers({
     player,
     band,
     social,
+    rivalBand,
     currentGig,
     perfScore,
     lastGigStats,
     pendingSettlementId,
+    expedition,
+    activeEvent,
+    activeQuests,
     isProcessingActionRef,
     setIsProcessingAction,
     t,

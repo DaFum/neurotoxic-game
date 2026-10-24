@@ -34,7 +34,7 @@ import { createInitialState } from './initialState'
 const INJECT_MARKER_KEY = 'neurotoxic_inject_marker'
 import { gameReducer } from './gameReducer'
 import { createLoadGameAction } from './actionCreators'
-import type { GameState } from '../types'
+import type { GameState, GameAction } from '../types'
 import { useMapGeneration } from './useMapGeneration'
 import { SAVE_KEY, createRawLoadPayload } from './usePersistence'
 
@@ -173,6 +173,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const storage = useStorage()
   const [state, rawDispatch] = useReducer(gameReducer, storage, initGameState)
 
+  const queuedActionsRef = useRef<GameAction[]>([])
+
+  useLayoutEffect(() => {
+    queuedActionsRef.current = []
+  }, [state])
+
   // Dev-only dispatch logging middleware: records each action type before it
   // reduces. Gated by the logger level (`debug` is suppressed at INFO and
   // above), so it is silent in production and changes no behavior — it only
@@ -185,6 +191,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       Object.hasOwn(action, 'type')
     ) {
       logger.debug('GameState', 'dispatch ' + String(action.type))
+    }
+    if (action) {
+      queuedActionsRef.current.push(action)
     }
     rawDispatch(action)
   }, [])
@@ -213,6 +222,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
+
 
   const storeRef = useRef<GameStore | null>(null)
   if (!storeRef.current) {
@@ -265,6 +275,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     dispatch,
     state,
     stateRef,
+    queuedActionsRef,
     tRef,
     resetMapGenerationRetries
   })

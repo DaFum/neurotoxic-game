@@ -26,9 +26,18 @@ export const createStorageErrorMock = () => {
       return fallbackValue[0]
     }
   })
+  class MockStateError extends Error {
+    constructor(message, options) {
+      super(message)
+      this.name = 'StateError'
+      this.code = options?.code
+      this.originalError = options?.originalError
+    }
+  }
   return {
     handleError: mockHandleError,
     StorageError: MockStorageError,
+    StateError: MockStateError,
     runSafeStorageOperation
   }
 }

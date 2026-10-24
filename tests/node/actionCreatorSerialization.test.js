@@ -105,6 +105,13 @@ const CREATOR_ARGS = {
   createHoldBandMeetingAction: () => [],
   createRestockMerchAction: () => ['shirts'],
   createUpdateSocialAction: () => [{ instagram: 1000 }],
+  createApplySocialPostResultAction: () => [
+    baseState(),
+    {
+      moneyDelta: -100,
+      social: { pendingSocialOptionId: 'opt_1', followers: { tiktok: 500 } }
+    }
+  ],
   createUpdateSettingsAction: () => [{ crtEnabled: false }],
   createSetMapAction: () => [{ nodes: {}, connections: [] }],
   createSetGigAction: () => [{ name: 'Test Venue', capacity: 100 }],

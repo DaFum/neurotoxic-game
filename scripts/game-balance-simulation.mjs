@@ -1727,7 +1727,9 @@ const maybeApplyPostPulse = (
     player: state.player,
     band: state.band,
     social: state.social,
-    activeEvent
+    activeEvent,
+    expedition: state.expedition,
+    activeQuests: state.activeQuests
   })
 
   if (!options || options.length === 0) return false
@@ -1744,7 +1746,10 @@ const maybeApplyPostPulse = (
       lastGigStats,
       currentGig,
       perfScore: performanceScore,
-      secureRandomValue: rng()
+      secureRandomValue: rng(),
+      expedition: state.expedition,
+      activeEvent: state.activeEvent ?? activeEvent,
+      activeQuests: state.activeQuests
     })
 
   if (updatedSocial) state.social = { ...state.social, ...updatedSocial }
