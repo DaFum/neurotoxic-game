@@ -326,6 +326,23 @@ export const handleBeginExpeditionUnlockPurchase = (
 }
 
 /**
+ * The open journal entry, when `payload` names exactly its set.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the set being completed or rolled back.
+ * @returns The entry, or `null` for a malformed payload, no open entry, or a
+ * different set - the caller then returns the identical state.
+ */
+const matchingPendingUnlockPurchase = (
+  state: GameState,
+  payload: ExpeditionUnlockPurchasePayload
+) => {
+  if (!payload || typeof payload !== 'object') return null
+  const pending = state.career.pendingUnlockPurchase
+  return pending && pending.setId === payload.setId ? pending : null
+}
+
+/**
  * Grants the set the open journal entry paid for.
  *
  * @param state - Current game state.
@@ -341,9 +358,8 @@ export const handleCompleteExpeditionUnlockPurchase = (
   state: GameState,
   payload: ExpeditionUnlockPurchasePayload
 ): GameState => {
-  if (!payload || typeof payload !== 'object') return state
-  const pending = state.career.pendingUnlockPurchase
-  if (!pending || pending.setId !== payload.setId) return state
+  const pending = matchingPendingUnlockPurchase(state, payload)
+  if (!pending) return state
   return {
     ...state,
     career: {
@@ -371,9 +387,8 @@ export const handleRollbackExpeditionUnlockPurchase = (
   state: GameState,
   payload: ExpeditionUnlockPurchasePayload
 ): GameState => {
-  if (!payload || typeof payload !== 'object') return state
-  const pending = state.career.pendingUnlockPurchase
-  if (!pending || pending.setId !== payload.setId) return state
+  const pending = matchingPendingUnlockPurchase(state, payload)
+  if (!pending) return state
   return {
     ...state,
     career: {
