@@ -243,10 +243,14 @@ export const buildPerGigSocialReconciliation = ({
 export class SocialPostRefusalError extends StateError {
   public code: string
 
-  constructor(message: string, context: Record<string, unknown> = {}) {
+  constructor(
+    message: string,
+    code = 'INSUFFICIENT_SPENDABLE_CASH',
+    context: Record<string, unknown> = {}
+  ) {
     super(message, context)
     this.name = 'SocialPostRefusalError'
-    this.code = 'INSUFFICIENT_SPENDABLE_CASH'
+    this.code = code
   }
 }
 
@@ -293,6 +297,7 @@ export const calculatePostGigStateUpdates = (
   if (typeof option.condition === 'function' && !option.condition(gameState)) {
     throw new SocialPostRefusalError(
       `Option ${option.id} condition failed for current state.`,
+      'CONDITION_FAILED',
       { optionId: option.id }
     )
   }
@@ -409,6 +414,7 @@ export const calculatePostGigStateUpdates = (
       if (requiredDebit > spendableCash) {
         throw new SocialPostRefusalError(
           `Insufficient spendable Cash to pay post debit ${requiredDebit}. Spendable: ${spendableCash}.`,
+          'INSUFFICIENT_SPENDABLE_CASH',
           { optionId: option.id, requiredDebit, spendableCash }
         )
       }

@@ -80,7 +80,10 @@ export function useSocialPostHandler({
           rivalBand
         })
       } catch (e) {
-        if (e instanceof SocialPostRefusalError) {
+        if (
+          e instanceof SocialPostRefusalError &&
+          e.code === 'INSUFFICIENT_SPENDABLE_CASH'
+        ) {
           addToast(t('ui:postGig.insufficientSpendableCash'), 'error')
         } else {
           logger.error('PostGig', 'Failed to resolve selected post', e)

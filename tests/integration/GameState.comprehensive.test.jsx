@@ -1071,3 +1071,99 @@ describe('GameState Context - Minigames', () => {
     }).not.toThrow()
   })
 })
+
+describe('GameState Context - commitSocialPost', () => {
+  test('commitSocialPost dispatches composite action on sufficient spendable Cash and returns true', () => {
+    let commitResult = false
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 1000 })}
+          >
+            Set Money
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -200,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  followers: { tiktok: 100 }
+                }
+              })
+            }}
+          >
+            Commit Valid
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Set Money').click()
+    })
+
+    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    act(() => {
+      screen.getByText('Commit Valid').click()
+    })
+
+    expect(commitResult).toBe(true)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(initialMoney - 200)
+  })
+
+  test('commitSocialPost rejects debit exceeding spendable Cash and returns false without dispatching', () => {
+    let commitResult = true
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button
+            type='button'
+            onClick={() => {
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -999999,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  followers: { tiktok: 100 }
+                }
+              })
+            }}
+          >
+            Commit Invalid
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    act(() => {
+      screen.getByText('Commit Invalid').click()
+    })
+
+    expect(commitResult).toBe(false)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(initialMoney)
+  })
+})
