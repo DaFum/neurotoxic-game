@@ -870,11 +870,12 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     // Derivation of Explicit Upper Bound for Confirmation after State Changes Stop:
     // 1. Backoff interval cap = MAX_RETRY_INTERVAL_MS = 300 seconds (300,000 ms).
     // 2. Server rate-limit window = 60 seconds (60,000 ms).
-    // 3. Worst-case upper bound until newest snapshot confirmation after state changes stop:
-    //    Backoff Cap (300s) + Window Duration (60s) = 360 seconds (360,000 ms).
-    const stateChangeStoppedAtMs = cluster.getNow() // 1,015,000 ms
+    // 3. For a client with no continuing contention (e.g. 1 backing-off player remaining),
+    //    confirmation occurs within Backoff Cap (300s) + Window Duration (60s) = 360 seconds (360,000 ms).
+    // 4. More generally, when M pending clients compete for 5 slots per window, clearance occurs in
+    //    ceil(M / 5) window waves plus backoff delays (~ ceil(M / 5) * 60s + 300s).
 
-    // Advance time and verify confirmation occurs within 360,000 ms upper bound
+    // Advance time and verify confirmation occurs within 360,000 ms upper bound for this uncontended client
     await cluster.advance(360_000)
 
     // Check that p6's newest snapshot snap(999, 'p6') was confirmed and stored

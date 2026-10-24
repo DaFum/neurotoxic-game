@@ -63,8 +63,8 @@ Operators deploying or maintaining the API backend must execute this checklist t
 
 ### 3.2 Explicit Upper Bounds & Derivations
 1. **Confirmation Upper Bound after State Changes Stop**:
-   - *Derivation*: `Backoff Cap (300s) + Window Duration (60s) = 360 seconds` (360,000 ms).
-   - Once state changes cease, the newest pending snapshot is guaranteed to achieve confirmation and storage within 360 seconds in worst-case window alignment.
+   - *Single-Client / Uncontended Bound*: `Backoff Cap (300s) + Window Duration (60s) = 360 seconds` (360,000 ms). Once state changes cease and no continuing queue contention remains, a single backing-off client is guaranteed to achieve confirmation and storage within 360 seconds.
+   - *General Multi-Client Queue Clearance Bound*: When $M$ pending clients compete for 5 available slots per 60-second window, request admission occurs in waves of at most 5 clients per 60s window ($\lceil M / 5 \rceil$ waves). Accounting for exponential backoff progression across competing clients, total clearance time for $M$ competing pending clients is bounded by $\lceil M / 5 \rceil \times 60\text{s} + 300\text{s}$.
 2. **Upper Bound on Denied Requests Per Window**:
    - *Derivation*: With $N_b$ players backing off at cap ($I \ge 60\text{s}$ up to $300\text{s}$), each player issues at most 1 retry per 60-second window.
    - Total denied (`429`) requests across all backing-off players per 60-second window is strictly upper-bounded by $N_b$.
