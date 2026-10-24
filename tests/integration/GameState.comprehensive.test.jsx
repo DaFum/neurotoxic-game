@@ -1,5 +1,6 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
+import { logger } from '../../src/utils/logger'
 import {
   GameStateProvider,
   useGameActions,
@@ -1220,5 +1221,39 @@ describe('GameState Context - commitSocialPost', () => {
     expect(commitResult).toBe(false)
     expect(screen.getByTestId('player-money')).toHaveTextContent('100')
     expect(screen.getByTestId('tiktok-followers')).toHaveTextContent('0')
+  })
+
+  test('dispatching SET_GIG calls logger.info exactly once (single reducer pass)', () => {
+    const TestComponent = () => {
+      const { setCurrentGig } = useGameActions()
+      return (
+        <button
+          type='button'
+          onClick={() => setCurrentGig({ id: 'venue_1', name: 'Venue 1' })}
+        >
+          Set Gig
+        </button>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const setGigLogsBefore = logger.info.mock.calls.filter(
+      call => call[1] === 'Set Current Gig'
+    ).length
+
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
+
+    const setGigLogsAfter = logger.info.mock.calls.filter(
+      call => call[1] === 'Set Current Gig'
+    ).length
+
+    expect(setGigLogsAfter - setGigLogsBefore).toBe(1)
   })
 })
