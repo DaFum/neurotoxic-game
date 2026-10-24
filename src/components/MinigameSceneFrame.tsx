@@ -40,7 +40,11 @@ export const MinigameSceneFrame = <TState,>({
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
-      <div className='absolute inset-0 pointer-events-none'>
+      {/* The canvas is the live playfield: phones have no spare screen beside it. */}
+      <div
+        data-chatter-avoid-compact=''
+        className='absolute inset-0 pointer-events-none'
+      >
         <PixiStage
           gameStateRef={logic.gameStateRef}
           update={logic.update}

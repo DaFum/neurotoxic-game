@@ -91,6 +91,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
       )}
 
       <div
+        data-chatter-avoid-compact=''
         className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
           ${
             isShocked

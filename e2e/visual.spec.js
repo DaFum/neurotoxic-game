@@ -714,4 +714,51 @@ test.describe('Visual smoke tests', () => {
       })
     })
   }
+
+  test('Chatter never covers the live Kabelsalat board on a phone (#3256)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width > 640, 'Phone-only overlay rule')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    // Time keeps flowing after install; fastForward only fires the due
+    // chatter timer so the test does not wait out its 8-25s delay.
+    await page.clock.install()
+    await enterKabelsalat(page)
+    await expect(page.locator('svg[role="img"]')).toBeVisible()
+
+    const measure = () =>
+      page.evaluate(() => {
+        const overlay = [...document.querySelectorAll('[role="status"]')].find(
+          el => el.className.includes('z-(--z-chatter)')
+        )
+        const board = document.querySelector('svg[role="img"]')
+        if (!overlay || !board) return null
+        const a = overlay.getBoundingClientRect()
+        const b = board.getBoundingClientRect()
+        return {
+          messages: overlay.children.length,
+          painted: getComputedStyle(overlay).visibility !== 'hidden',
+          overlaps:
+            a.left < b.right &&
+            a.right > b.left &&
+            a.top < b.bottom &&
+            a.bottom > b.top
+        }
+      })
+
+    let result = null
+    for (
+      let attempt = 0;
+      attempt < 12 && !(result && result.messages > 0);
+      attempt++
+    ) {
+      await page.clock.fastForward(30000)
+      await page.waitForTimeout(300)
+      result = await measure()
+    }
+    expect(result, 'a chatter message must appear').not.toBeNull()
+    expect(result.messages).toBeGreaterThan(0)
+    // A message may sit on the board only if it is not painted at all.
+    expect(result.painted && result.overlaps).toBe(false)
+  })
 })

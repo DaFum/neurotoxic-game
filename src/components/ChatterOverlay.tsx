@@ -13,6 +13,11 @@ import { MOTION_TRANSITIONS } from '../config/motion'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
+import {
+  decideChatterPlacement,
+  type Anchor,
+  type Rect
+} from './chatterPlacement'
 import type {
   ChatterGameState,
   ChatterMessageData,
@@ -295,11 +300,7 @@ ChatterMessage.displayName = 'ChatterMessage'
 
 const EDGE_MARGIN = 16
 
-type Rect = { left: number; top: number; right: number; bottom: number }
-type Anchor = { left: number; top: number }
-
-const rectsIntersect = (a: Rect, b: Rect): boolean =>
-  a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+const COMPACT_VIEWPORT_MAX_PX = 639
 
 // Interactive / high-value elements the chatter box must never sit on top of.
 // (Static flavour text isn't included — the box would otherwise never find a
@@ -313,9 +314,21 @@ const rectsIntersect = (a: Rect, b: Rect): boolean =>
 const OBSTACLE_SELECTOR =
   'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"],[data-chatter-avoid]'
 
+// `data-chatter-avoid-compact` marks a live playfield or readout (minigame
+// board, countdown) that only needs protecting on a phone: there is no spare
+// screen to park the chatter beside it, and an overlapping message hides
+// time-critical state. Larger screens keep their anchors.
+const COMPACT_OBSTACLE_SELECTOR = `${OBSTACLE_SELECTOR},[data-chatter-avoid-compact]`
+
+const isCompactViewport = (): boolean =>
+  window.innerWidth <= COMPACT_VIEWPORT_MAX_PX
+
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []
-  for (const el of document.querySelectorAll<HTMLElement>(OBSTACLE_SELECTOR)) {
+  const selector = isCompactViewport()
+    ? COMPACT_OBSTACLE_SELECTOR
+    : OBSTACLE_SELECTOR
+  for (const el of document.querySelectorAll<HTMLElement>(selector)) {
     if (self.contains(el) || el.contains(self)) continue
     const r = el.getBoundingClientRect()
     if (r.width > 0 && r.height > 0) {
@@ -364,6 +377,7 @@ const clearPositionOverride = (el: HTMLElement): void => {
   el.style.right = ''
   el.style.bottom = ''
   el.style.transform = ''
+  el.style.visibility = ''
 }
 
 /**
@@ -407,36 +421,27 @@ const useNonOverlappingPosition = (
         w,
         h
       )
-      // ⚡ BOLT OPTIMIZATION: Replace anchors.find + obstacles.some callback allocations
-      // with single-pass procedural for loops to eliminate closure allocations and GC pressure on resize/layout recalculation.
-      let clear: Anchor | undefined
-      for (let i = 0; i < anchors.length; i++) {
-        const a = anchors[i]
-        if (!a) continue
-        const candidateRect = {
-          left: a.left,
-          top: a.top,
-          right: a.left + w,
-          bottom: a.top + h
-        }
-        let hasIntersection = false
-        for (let j = 0; j < obstacles.length; j++) {
-          const o = obstacles[j]
-          if (o && rectsIntersect(candidateRect, o)) {
-            hasIntersection = true
-            break
-          }
-        }
-        if (!hasIntersection) {
-          clear = a
-          break
-        }
+      const placement = decideChatterPlacement(
+        {
+          left: box.left,
+          top: box.top,
+          right: box.right,
+          bottom: box.bottom
+        },
+        anchors,
+        obstacles
+      )
+      if (placement.kind === 'default') return
+      if (placement.kind === 'suppress') {
+        // Optional flavour text must not cover a live playfield; it keeps its
+        // layout slot (so the next re-measure still sees its size) but is not
+        // painted or announced.
+        el.style.visibility = 'hidden'
+        return
       }
-      // Default anchor already clear (or nothing fits) → keep the CSS default.
-      if (!clear || clear === anchors[0]) return
 
-      el.style.left = `${Math.round(clear.left)}px`
-      el.style.top = `${Math.round(clear.top)}px`
+      el.style.left = `${Math.round(placement.anchor.left)}px`
+      el.style.top = `${Math.round(placement.anchor.top)}px`
       el.style.right = 'auto'
       el.style.bottom = 'auto'
       el.style.transform = 'none'
