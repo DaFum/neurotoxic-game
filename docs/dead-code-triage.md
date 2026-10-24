@@ -1,10 +1,11 @@
-# Dead-code triage — 2026-08-03, refreshed 2026-10-06, 2026-10-11 and 2026-10-14
+# Dead-code triage — 2026-08-03, refreshed 2026-10-06, 2026-10-11, 2026-10-14 and 2026-10-24
 
 Triage of the 78-finding knip baseline captured on 2026-08-02 (issue #2677).
 After the original pass the report was down to **10 findings**. The 2026-10-06
 code-quality audit pass (`docs/code-quality-audit-2026-10-05.md`) brought it to
 **8**. By the 2026-10-11 refresh Knip no longer flags `lint-staged`, so the live
-report is **7**, and `.ci/dead-code-budget.json` `max` is lowered to match.
+report is **7**, and `.ci/dead-code-budget.json` `max` is lowered to match. The
+2026-10-24 refresh takes it to **1** and lowers `max` again.
 
 Everything left in the report is listed below with the reason it stays. There is
 no untriaged remainder. Items knip does not report but that look dead to a
@@ -48,8 +49,9 @@ Count against the 78-finding baseline: the original pass resolved 68 (listed
 below) and left 10. The refresh resolved 3 more of those 10
 (`AudioEngineProvider`, `motion-dom`, `motion-utils`), so 71 of the 78 are
 resolved and 7 remain. `lint-staged` is not part of the baseline; it brought the
-live report to 8 on 2026-10-06 and dropped out again by 2026-10-11, leaving the
-7 listed under [Remaining](#remaining-7--intentional-keep).
+live report to 8 on 2026-10-06 and dropped out again by 2026-10-11, leaving 7.
+The [2026-10-24 refresh](#2026-10-24-refresh) resolved six of those; the one that
+is left is under [Remaining](#remaining-1--intentional-keep).
 
 ## 2026-10-11 refresh
 
@@ -95,6 +97,26 @@ findings; the live report is still **7**.
 - New seams are recorded under [Test seams](#test-seams): `setGameMap`,
   `setScreenshotMode`, `setActiveEvent`, `createAdvanceQuestAction` /
   `ADVANCE_QUEST`, `getExpeditionAccessLock`.
+
+## 2026-10-24 refresh
+
+The live report had drifted to **9**: two own-file-only exports were new. It is
+now **1**, and `.ci/dead-code-budget.json` `max` is **1**.
+
+- `applyRepeatDemandAdjustment` (`src/utils/postGig/derivations.ts`) and
+  `deterministicBootstrapConfidence` (`scripts/utils/paired-statistics.mjs`)
+  lost their `export`; nothing outside their own module imports them.
+- `EFFECT_HANDLERS` (`src/utils/purchaseLogicUtils.ts`) and `QUEST_SLOT_LIMITS`
+  (`src/domain/questAcceptance.ts`) were exported only as fixtures for
+  `tests/node/updateSymbols.test.js`. The test now writes a temporary fixture
+  file for the same two cases (read by element access outside a call position,
+  read only from a module-private helper) plus the negative case, and both
+  symbols lost their `export`.
+- `flatted`, `eslint-plugin-react-refresh`, `rollup-plugin-visualizer` and
+  `serialize-javascript` were removed from `package.json`. `flatted` and
+  `serialize-javascript` remain in the lockfile as transitives of `flat-cache`
+  and `@rollup/plugin-terser`, at the same pinned versions; the lockfile diff
+  was removals only. Frozen install, build, typecheck and ESLint were checked.
 
 ## Resolved in the original pass (68)
 
@@ -178,14 +200,7 @@ Notes:
 - `BreakdownLabelKey` (`src/utils/economy/breakdownLabelKeys.ts`) — derived type
   with no reference anywhere, including its own file.
 
-## Remaining (7) — intentional, keep
-
-### Deliberate exports (2)
-
-| Symbol                                                | Why it stays                                                                                                                                                                        |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `EFFECT_HANDLERS` (`src/utils/purchaseLogicUtils.ts`) | Fixture for `tests/node/updateSymbols.test.js`, which asserts `referencedInFile === true` for it. Unexporting drops it from `symbols.json` and breaks the extractor's own coverage. |
-| `QUEST_SLOT_LIMITS` (`src/domain/questAcceptance.ts`) | Same — the `updateSymbols` test uses it as the "referenced only from module-private helpers" case.                                                                                  |
+## Remaining (1) — intentional, keep
 
 ### Duplicate export (1)
 
@@ -196,23 +211,9 @@ Notes:
 `ORIGINAL_CONTROL_BALANCE_TUNING` explicitly as the control arm. Collapsing them
 would erase that distinction.
 
-### Unused dependencies (4)
-
-`flatted` (`dependencies`); `eslint-plugin-react-refresh`,
-`rollup-plugin-visualizer`, `serialize-javascript` (`devDependencies`).
-
-No source, config, script, or skill references `flatted`, `react-refresh`,
-`visualizer` or `serialize-javascript` — `eslint.config.js` does not register
-`react-refresh` and `vite.config.js` does not use `visualizer`. They look like
-transitive packages that were promoted to direct entries by accident.
-
 `lint-staged` was listed here on 2026-10-06 as a false positive
 (`.husky/pre-commit` runs `npx lint-staged` against the config block in
 `package.json`); Knip no longer reports it. It is used and stays.
-
-Left in place deliberately: `AGENTS.md` requires dependency changes to be
-discussed first, and these are pinned. Removing the four would take the report
-to 3. That is a follow-up decision, not part of this triage.
 
 ## Intentionally kept: test oracles, seams and tooling
 
