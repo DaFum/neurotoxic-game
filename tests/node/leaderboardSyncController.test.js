@@ -872,8 +872,8 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     // 2. Server rate-limit window = 60 seconds (60,000 ms).
     // 3. For a client with no continuing contention (e.g. 1 backing-off player remaining),
     //    confirmation occurs within Backoff Cap (300s) + Window Duration (60s) = 360 seconds (360,000 ms).
-    // 4. More generally, when M pending clients compete for 5 slots per window, clearance occurs in
-    //    ceil(M / 5) window waves plus backoff delays (~ ceil(M / 5) * 60s + 300s).
+    // 4. Note: Multi-client recovery under arbitrary contention lacks an admission fairness guarantee
+    //    because uncoordinated exponential retries do not form a FIFO fair queue.
 
     // Advance time and verify confirmation occurs within 360,000 ms upper bound for this uncontended client
     await cluster.advance(360_000)
