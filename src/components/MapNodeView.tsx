@@ -78,6 +78,11 @@ interface MapNodeProps {
   isTraveling: boolean
   visibility: NodeVisibility
   isReachable: boolean
+  /**
+   * Dense Expedition branch: below `sm` a reachable node shows its name only
+   * on focus/tap, because neighbouring name chips would overlap.
+   */
+  compactLabels?: boolean
   isPendingConfirm?: boolean
   handleTravel: (node: MapNodeData) => void
   setHoveredNode: (node: MapNodeData | null) => void
@@ -375,6 +380,7 @@ export const MapNodeView = memo(
     isTraveling,
     visibility,
     isReachable,
+    compactLabels = false,
     isPendingConfirm,
     handleTravel,
     setHoveredNode,
@@ -472,7 +478,7 @@ export const MapNodeView = memo(
       isPendingConfirm ||
       (isCurrent && !currentNameIsSceneTitle)
         ? ''
-        : isReachable && !isCurrent
+        : isReachable && !isCurrent && !compactLabels
           ? 'max-[359px]:hidden'
           : 'max-sm:hidden'
 
@@ -581,6 +587,7 @@ export const MapNodeView = memo(
             cleanly instead of blending; the hovered/current node raises its
             z-index (above) so its label reads on top. */}
         <div
+          data-testid='map-node-label'
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           {showTypeChip && (

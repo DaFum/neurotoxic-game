@@ -143,6 +143,19 @@ export const OverworldMap = React.memo(
       if (!gameMap) return null
       const nodes: React.ReactNode[] = []
       const activeStoryFlagsSet = new Set(activeStoryFlags ?? [])
+      // A three-way (or wider) Expedition branch is too dense for readable
+      // name chips on a phone: the chips of neighbouring destinations overlap.
+      // Names then show on focus/tap only (tooltip and aria-label carry them).
+      let travelTargetCount = 0
+      if (expeditionFogByNodeId) {
+        for (const id in gameMap.nodes) {
+          if (!Object.hasOwn(gameMap.nodes, id)) continue
+          if (id !== player.currentNodeId && isConnected(id)) {
+            travelTargetCount += 1
+          }
+        }
+      }
+      const compactLabels = travelTargetCount >= 3
       for (const key in gameMap.nodes) {
         if (!Object.hasOwn(gameMap.nodes, key)) continue
         const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
@@ -188,6 +201,7 @@ export const OverworldMap = React.memo(
               isTraveling={isTraveling}
               visibility={visibility}
               isReachable={isReachable}
+              compactLabels={compactLabels}
               isPendingConfirm={pendingTravelNode?.id === node.id}
               handleTravel={handleTravel}
               setHoveredNode={setHoveredNode}

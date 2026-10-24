@@ -37,6 +37,60 @@ const enterKabelsalat = async page => {
   )
 }
 
+/**
+ * Measures the visible map-node labels of the route-seed-1 Expedition start and
+ * returns the pairs of different nodes whose label boxes intersect.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @returns {Promise<number[][]>} Colliding node index pairs.
+ */
+const seedOneLabelCollisions = async page => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const url = '/?events=off'
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const fixture = await buildFixture(page, 'seedOneStartFixture')
+  await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+  await loadSavedGame(page)
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('OVERWORLD')
+  await dismissTutorial(page)
+  await expect(page.locator('.map-node.clickable').first()).toBeVisible()
+  await page.waitForTimeout(500)
+
+  const labels = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="map-node-label"]')]
+      .map((label, node) => ({
+        node,
+        boxes: [...label.children]
+          .filter(child => getComputedStyle(child).display !== 'none')
+          .map(child => child.getBoundingClientRect())
+          .filter(r => r.width > 0 && r.height > 0)
+          .map(r => ({
+            left: r.left,
+            top: r.top,
+            right: r.right,
+            bottom: r.bottom
+          }))
+      }))
+      .filter(entry => entry.boxes.length > 0)
+  )
+  const intersects = (a, b) =>
+    a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+  const collisions = []
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      for (const a of labels[i].boxes) {
+        for (const b of labels[j].boxes) {
+          if (intersects(a, b))
+            collisions.push([labels[i].node, labels[j].node])
+        }
+      }
+    }
+  }
+  return collisions
+}
+
 test.describe('Visual smoke tests', () => {
   test('MainMenu renders its stable primary hierarchy', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -638,4 +692,26 @@ test.describe('Visual smoke tests', () => {
       )
     }
   })
+
+  test('Expedition destination labels do not overlap on route seed 1 (#3254)', async ({
+    page
+  }) => {
+    // The desktop map keeps every name chip; the dense-branch rule is phone-only.
+    test.skip(page.viewportSize().width > 640, 'Phone-only collision check')
+    expect(await seedOneLabelCollisions(page)).toEqual([])
+  })
+
+  // Adjacent phone breakpoints get their own viewport (see the 639/640 block).
+  for (const width of [360, 414, 480, 639]) {
+    test.describe(`seed-1 labels at ${width}px`, () => {
+      test.use({ viewport: { width, height: 800 } })
+
+      test('destination labels do not overlap (#3254)', async ({
+        page
+      }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+        expect(await seedOneLabelCollisions(page)).toEqual([])
+      })
+    })
+  }
 })
