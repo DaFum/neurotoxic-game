@@ -514,7 +514,7 @@ export const validatePurchase = (
 /**
  * Registry of effect handlers to process different purchase effect types
  */
-export const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
+const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
   inventory_set: (effect, _item, _playerPatch, _player, band) => {
     return { bandPatch: applyInventorySet(effect, band?.inventory) }
   },

@@ -198,6 +198,26 @@ describe('ExpeditionMetaTab through the real reducer', () => {
     )
   })
 
+  it('builds a level once when the same build is requested twice in a batch', () => {
+    const adapter = mountWithCareer({ tourTokens: 5 })
+    const results: boolean[] = []
+    act(() => {
+      results.push(
+        probe.actions?.purchaseExpeditionHqFacility('workshop', 0) ?? false
+      )
+      results.push(
+        probe.actions?.purchaseExpeditionHqFacility('workshop', 0) ?? true
+      )
+    })
+    expect(results).toEqual([true, false])
+    expect(probe.career?.hqFacilityLevels.workshop).toBe(1)
+    expect(probe.career?.tourTokens).toBe(5 - HQ_FACILITY_LEVEL_COSTS[1])
+    expect(probe.toasts.some(toast => toast.type === 'error')).toBe(false)
+    expect(
+      JSON.parse(String(adapter.get(SAVE_KEY))).career.hqFacilityLevels.workshop
+    ).toBe(1)
+  })
+
   it('toasts the reason a refused unlock set gives', () => {
     mountWithCareer({ tourTokens: 5 })
     let bought = true

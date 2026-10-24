@@ -13,7 +13,7 @@ import { getCurrentVenueId } from './questEffects'
 /**
  * Maximum active quest slots by quest kind.
  */
-export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
+const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
   story: 1,
   side: 2,
   repeatable: 2,

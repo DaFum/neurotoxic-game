@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { logger } from '../../src/utils/logger'
@@ -1269,5 +1270,70 @@ describe('GameState Context - commitSocialPost', () => {
     ).length
 
     expect(setGigLogsAfter - setGigLogsBefore).toBe(1)
+  })
+
+  const countSetGigLogs = () =>
+    logger.info.mock.calls.filter(call => call[1] === 'Set Current Gig').length
+
+  test('commitSocialPost does not replay earlier dispatches through the reducer', () => {
+    const TestComponent = () => {
+      const { setCurrentGig, commitSocialPost } = useGameActions()
+      return (
+        <button
+          type='button'
+          onClick={() => {
+            setCurrentGig({ id: 'venue_1', name: 'Venue 1' })
+            commitSocialPost({
+              moneyDelta: 0,
+              social: { pendingSocialOptionId: 'test_option', tiktok: 100 }
+            })
+          }}
+        >
+          Gig And Post
+        </button>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const before = countSetGigLogs()
+    act(() => {
+      screen.getByText('Gig And Post').click()
+    })
+
+    expect(countSetGigLogs() - before).toBe(1)
+  })
+
+  test('a dispatched action reduces once under StrictMode', () => {
+    const TestComponent = () => {
+      const { setCurrentGig } = useGameActions()
+      return (
+        <button
+          type='button'
+          onClick={() => setCurrentGig({ id: 'venue_1', name: 'Venue 1' })}
+        >
+          Set Gig
+        </button>
+      )
+    }
+
+    render(
+      <StrictMode>
+        <GameStateProvider>
+          <TestComponent />
+        </GameStateProvider>
+      </StrictMode>
+    )
+
+    const before = countSetGigLogs()
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
+
+    expect(countSetGigLogs() - before).toBe(1)
   })
 })

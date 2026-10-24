@@ -176,6 +176,67 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
   }
 })
 
+test('same-file references set referencedInFile, and unreferenced exports do not', () => {
+  const fixtureDir = path.join('src', '__symbolIndexFixtures')
+  const fixturePath = 'src/__symbolIndexFixtures/SymbolIndexSameFile.ts'
+  const symbolsBeforeFixture = cachedSymbolsText
+
+  try {
+    fs.mkdirSync(fixtureDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(fixtureDir, 'SymbolIndexSameFile.ts'),
+      [
+        '// Read by element access inside an exported function, outside a',
+        '// call or JSX position.',
+        'export const SymbolIndexHandlerTable: Record<string, () => number> = {',
+        '  grant: () => 1',
+        '}',
+        '',
+        '// Read only from a module-private helper.',
+        'export const SymbolIndexSlotLimits: Record<string, number> = {',
+        '  main: 1',
+        '}',
+        '',
+        '// Never read anywhere.',
+        'export const SymbolIndexUnreferenced = 0',
+        '',
+        'const resolveSymbolIndexSlot = (kind: string): string =>',
+        "  Object.hasOwn(SymbolIndexSlotLimits, kind) ? kind : 'side'",
+        '',
+        'export const runSymbolIndexHandler = (kind: string): number => {',
+        '  const handler = SymbolIndexHandlerTable[kind]',
+        '  return (handler?.() ?? 0) + resolveSymbolIndexSlot(kind).length',
+        '}',
+        ''
+      ].join('\n')
+    )
+
+    runUpdateSymbols()
+    refreshSymbolsCache()
+    const ks = loadSymbols()
+    const entryOf = name => ks[name].find(entry => entry.path === fixturePath)
+
+    assert.equal(
+      entryOf('SymbolIndexHandlerTable').referencedInFile,
+      true,
+      'symbols referenced same-file outside call/JSX positions should set referencedInFile'
+    )
+    assert.equal(
+      entryOf('SymbolIndexSlotLimits').referencedInFile,
+      true,
+      'symbols referenced only from module-private helpers should set referencedInFile'
+    )
+    assert.equal(
+      entryOf('SymbolIndexUnreferenced').referencedInFile,
+      undefined,
+      'a symbol nothing reads must not be marked referenced'
+    )
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true })
+    restoreSymbolsCache(symbolsBeforeFixture)
+  }
+})
+
 test('parameter names normalize CRLF source text to LF', () => {
   const fixtureDir = path.join('src', '__symbolIndexFixtures')
   const symbolsBeforeFixture = cachedSymbolsText
@@ -270,22 +331,6 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
         usage.dynamic === true
     ),
     'dynamically imported (lazy) modules should record usedBy with dynamic: true'
-  )
-
-  const effectHandlers = ks.EFFECT_HANDLERS.find(
-    entry => entry.path === 'src/utils/purchaseLogicUtils.ts'
-  )
-  assert.ok(
-    effectHandlers.referencedInFile === true,
-    'symbols referenced same-file outside call/JSX positions should set referencedInFile'
-  )
-
-  const questSlotLimits = ks.QUEST_SLOT_LIMITS.find(
-    entry => entry.path === 'src/domain/questAcceptance.ts'
-  )
-  assert.ok(
-    questSlotLimits.referencedInFile === true,
-    'symbols referenced only from module-private helpers should set referencedInFile'
   )
 
   const questState = ks.QuestState.find(

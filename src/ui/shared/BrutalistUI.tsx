@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
-import type { MouseEvent, ComponentType } from 'react'
+import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CriticalDialogShell } from './CriticalDialogShell'
 
@@ -150,18 +150,22 @@ export const UplinkButton = memo(
 
 // --- SVG DECORATIONS ---
 
-// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+interface TitledSvgProps extends SvgIconProps {
+  viewBox: string
+  children: ReactNode
+}
+
 /**
- * Displays the alert icon with severity-specific styling.
- * @param props - Optional class and accessible title for the alert icon.
+ * Shared shell of the decorative SVG icons: names the icon through `title`
+ * when there is one and hides it from assistive technology otherwise.
  */
-export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
+const TitledSvg = ({ className, title, viewBox, children }: TitledSvgProps) => {
   const titleId = useId()
 
   return (
     <svg
       className={className}
-      viewBox='0 0 24 24'
+      viewBox={viewBox}
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
       {...(title
@@ -169,53 +173,51 @@ export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
         : { 'aria-hidden': 'true', focusable: 'false', role: 'presentation' })}
     >
       {title && <title id={titleId}>{title}</title>}
-      <path
-        d='M12 2L22 20H2L12 2Z'
-        stroke='currentColor'
-        strokeWidth='2'
-        strokeLinecap='square'
-        strokeLinejoin='miter'
-      />
-      <rect x='11' y='10' width='2' height='6' fill='currentColor' />
-      <rect x='11' y='17' width='2' height='2' fill='currentColor' />
+      {children}
     </svg>
   )
-})
+}
+
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+/**
+ * Displays the alert icon with severity-specific styling.
+ * @param props - Optional class and accessible title for the alert icon.
+ */
+export const AlertIcon = memo(({ className, title }: SvgIconProps) => (
+  <TitledSvg className={className} title={title} viewBox='0 0 24 24'>
+    <path
+      d='M12 2L22 20H2L12 2Z'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='square'
+      strokeLinejoin='miter'
+    />
+    <rect x='11' y='10' width='2' height='6' fill='currentColor' />
+    <rect x='11' y='17' width='2' height='2' fill='currentColor' />
+  </TitledSvg>
+))
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
  * Displays one hex-node status tile.
  * @param props - Optional class and accessible title for the hex-node icon.
  */
-export const HexNode = memo(({ className, title }: SvgIconProps) => {
-  const titleId = useId()
-
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 100 100'
-      fill='none'
-      xmlns='http://www.w3.org/2000/svg'
-      {...(title
-        ? { role: 'img', 'aria-labelledby': titleId }
-        : { 'aria-hidden': 'true', focusable: 'false', role: 'presentation' })}
-    >
-      {title && <title id={titleId}>{title}</title>}
-      <path
-        d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
-        stroke='currentColor'
-        strokeWidth='4'
-        strokeLinejoin='miter'
-      />
-      <circle cx='50' cy='50' r='10' fill='currentColor' />
-      <path
-        d='M50 25V40M50 60V75M25 50H40M60 50H75'
-        stroke='currentColor'
-        strokeWidth='2'
-      />
-    </svg>
-  )
-})
+export const HexNode = memo(({ className, title }: SvgIconProps) => (
+  <TitledSvg className={className} title={title} viewBox='0 0 100 100'>
+    <path
+      d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
+      stroke='currentColor'
+      strokeWidth='4'
+      strokeLinejoin='miter'
+    />
+    <circle cx='50' cy='50' r='10' fill='currentColor' />
+    <path
+      d='M50 25V40M50 60V75M25 50H40M60 50H75'
+      stroke='currentColor'
+      strokeWidth='2'
+    />
+  </TitledSvg>
+))
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 const WarningStripe = memo(() => {
