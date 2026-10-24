@@ -297,6 +297,11 @@ export const settlePendingGigOnLoad = (
   next = handleSettleSoldMerch(next, record.soldMerch)
 
   const player = next.player
+  // Measured before the gig's fame lands, like the `totalDailyObligations` the
+  // Continue handler receives from the screen it was pressed on. Fame raises
+  // the lifestyle cost, so re-reading it after settling could flip a Finale
+  // that live Continue completed.
+  const totalDailyObligations = getTotalDailyObligations(next)
   const stats = calculateContinueStats({
     player,
     perfScore: record.perfScore,
@@ -318,7 +323,7 @@ export const settlePendingGigOnLoad = (
     previousMoney: player.money,
     proposedMoney: stats.newMoney,
     net: record.net,
-    totalDailyObligations: getTotalDailyObligations(next)
+    totalDailyObligations
   })
 
   const settled: GameState = {
@@ -334,13 +339,13 @@ export const settlePendingGigOnLoad = (
   // bookkeeping (a rising balance retires a recorded travel refusal).
   next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
 
-  // Evaluate solvency from post-floor state money with getTotalDailyObligations(next)
+  // Evaluate solvency from post-floor state money and the pre-settlement obligations.
   const { insolvent, careerBankrupt } = evaluateAcceptedSettlementSolvency({
     expedition: next.expedition,
     previousMoney: next.player.money,
     proposedMoney: next.player.money,
     net: record.net,
-    totalDailyObligations: getTotalDailyObligations(next)
+    totalDailyObligations
   })
 
   const isFinaleGig =
