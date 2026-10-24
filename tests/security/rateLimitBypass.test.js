@@ -84,23 +84,106 @@ describe('Rate Limit Bypass Security Tests', () => {
     })
   })
 
-  test('VULNERABILITY FIX: Should not be bypassed by whitespace-only x-real-ip', async () => {
-    process.env.TRUST_PROXY = 'true'
-    const { normalizeIp } = await import('../../lib/apiUtils.js')
-
-    const req = {
-      socket: { remoteAddress: '10.0.0.1' },
-      headers: {
-        'x-real-ip': '   ',
-        'x-forwarded-for': 'client-ip, proxy1-ip'
-      }
+  test('VULNERABILITY FIX: Should NOT be able to bypass rate limit via x-real-ip spoofing by default', async () => {
+    const res = {
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
-    const ip = normalizeIp(req)
-    // Should fall through to the next source (x-forwarded-for last hop)
-    assert.strictEqual(ip, 'proxy1-ip')
+    // 1. Fill rate limit for real IP 127.0.0.1 while changing x-real-ip on each request
+    for (let i = 0; i < 5; i++) {
+      const req = {
+        method: 'POST',
+        socket: { remoteAddress: '127.0.0.1' },
+        headers: { 'x-real-ip': `10.0.0.${i + 1}` }, // Changing spoofed x-real-ip
+        body: { playerId: 'p1', playerName: 'n1', money: 100 }
+      }
+      await statsHandler(req, res)
+      assert.strictEqual(res.status.mock.lastCall[0], 200)
+    }
 
-    // Cleanup to prevent test pollution
-    delete process.env.TRUST_PROXY
+    // 6th request with SAME socket IP but DIFFERENT x-real-ip should be blocked (429)
+    const req6 = {
+      method: 'POST',
+      socket: { remoteAddress: '127.0.0.1' },
+      headers: { 'x-real-ip': '10.0.0.99' },
+      body: { playerId: 'p1', playerName: 'n1', money: 100 }
+    }
+    await statsHandler(req6, res)
+    assert.strictEqual(
+      res.status.mock.lastCall[0],
+      429,
+      'Rate limit should NOT be bypassed via x-real-ip spoofing in default mode'
+    )
+    assert.deepStrictEqual(res.json.mock.lastCall[0], {
+      error: 'Too many requests'
+    })
+  })
+
+  test('VULNERABILITY FIX: Should not be bypassed by whitespace-only x-real-ip', async () => {
+    process.env.TRUST_PROXY = 'true'
+    try {
+      const { normalizeIp } = await import('../../lib/apiUtils.js')
+
+      const req = {
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: {
+          'x-real-ip': '   ',
+          'x-forwarded-for': 'client-ip, proxy1-ip'
+        }
+      }
+
+      const ip = normalizeIp(req)
+      // Should fall through to the next source (x-forwarded-for last hop)
+      assert.strictEqual(ip, 'proxy1-ip')
+    } finally {
+      delete process.env.TRUST_PROXY
+    }
+  })
+
+  test('DEPLOYMENT DEPENDENCY: trusted-mode nonblank x-real-ip takes precedence over x-forwarded-for', async () => {
+    process.env.TRUST_PROXY = 'true'
+    try {
+      const { normalizeIp } = await import('../../lib/apiUtils.js')
+
+      const req = {
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: {
+          'x-real-ip': ' 203.0.113.50 ',
+          'x-forwarded-for': '198.51.100.1, 198.51.100.2'
+        }
+      }
+
+      const ip = normalizeIp(req)
+      // Nonblank x-real-ip takes precedence over x-forwarded-for (deployment dependency check)
+      assert.strictEqual(ip, '203.0.113.50')
+    } finally {
+      delete process.env.TRUST_PROXY
+    }
+  })
+
+  test('DEPLOYMENT DEPENDENCY: trusted-mode different x-real-ip values select different bucket keys', async () => {
+    process.env.TRUST_PROXY = 'true'
+    try {
+      const { normalizeIp } = await import('../../lib/apiUtils.js')
+
+      const req1 = {
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: { 'x-real-ip': '198.51.100.10' }
+      }
+      const req2 = {
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: { 'x-real-ip': '198.51.100.20' }
+      }
+
+      const ip1 = normalizeIp(req1)
+      const ip2 = normalizeIp(req2)
+
+      assert.strictEqual(ip1, '198.51.100.10')
+      assert.strictEqual(ip2, '198.51.100.20')
+      assert.notStrictEqual(ip1, ip2)
+    } finally {
+      delete process.env.TRUST_PROXY
+    }
   })
 })

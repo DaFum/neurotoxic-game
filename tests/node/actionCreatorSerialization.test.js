@@ -96,11 +96,22 @@ const CREATOR_ARGS = {
     'settlement_1'
   ],
   createClearPendingGigSettlementAction: () => ['settlement_1'],
+  createApplyGigSocialReconciliationAction: () => [
+    { instagram: 1000 },
+    'settlement_1'
+  ],
   createUpdateBandAction: () => [{ harmony: 80 }],
   toggleNeuroDecimator: () => [true],
   createHoldBandMeetingAction: () => [],
   createRestockMerchAction: () => ['shirts'],
   createUpdateSocialAction: () => [{ instagram: 1000 }],
+  createApplySocialPostResultAction: () => [
+    baseState(),
+    {
+      moneyDelta: -100,
+      social: { pendingSocialOptionId: 'opt_1', followers: { tiktok: 500 } }
+    }
+  ],
   createUpdateSettingsAction: () => [{ crtEnabled: false }],
   createSetMapAction: () => [{ nodes: {}, connections: [] }],
   createSetGigAction: () => [{ name: 'Test Venue', capacity: 100 }],

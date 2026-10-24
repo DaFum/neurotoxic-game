@@ -1,5 +1,6 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
+import { logger } from '../../src/utils/logger'
 import {
   GameStateProvider,
   useGameActions,
@@ -1069,5 +1070,204 @@ describe('GameState Context - Minigames', () => {
         screen.getByText('Complete Roadie').click()
       })
     }).not.toThrow()
+  })
+})
+
+describe('GameState Context - commitSocialPost', () => {
+  test('commitSocialPost dispatches composite action on sufficient spendable Cash and returns true', () => {
+    let commitResult = false
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 1000 })}
+          >
+            Set Money
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -200,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  tiktok: 100
+                }
+              })
+            }}
+          >
+            Commit Valid
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Set Money').click()
+    })
+
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
+    act(() => {
+      screen.getByText('Commit Valid').click()
+    })
+
+    expect(commitResult).toBe(true)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
+      initialMoney - 200
+    )
+  })
+
+  test('commitSocialPost rejects debit exceeding spendable Cash and returns false without dispatching', () => {
+    let commitResult = true
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button
+            type='button'
+            onClick={() => {
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -999999,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  tiktok: 100
+                }
+              })
+            }}
+          >
+            Commit Invalid
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
+    act(() => {
+      screen.getByText('Commit Invalid').click()
+    })
+
+    expect(commitResult).toBe(false)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
+      initialMoney
+    )
+  })
+
+  test('commitSocialPost returns false and skips dispatch when balance reduction queued in same act() leaves insufficient Cash', () => {
+    let commitResult = true
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <div data-testid='tiktok-followers'>
+            {gameState.social?.tiktok ?? 0}
+          </div>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 500 })}
+          >
+            Setup
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              gameState.updatePlayer({ money: 100 })
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -300,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  tiktok: 5000
+                }
+              })
+            }}
+          >
+            Queue Batch
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Setup').click()
+    })
+    expect(screen.getByTestId('player-money')).toHaveTextContent('500')
+
+    const initialTiktok = screen.getByTestId('tiktok-followers').textContent
+
+    act(() => {
+      screen.getByText('Queue Batch').click()
+    })
+
+    expect(commitResult).toBe(false)
+    expect(screen.getByTestId('player-money')).toHaveTextContent('100')
+    expect(screen.getByTestId('tiktok-followers')).toHaveTextContent(
+      initialTiktok
+    )
+  })
+
+  test('dispatching SET_GIG calls logger.info exactly once (single reducer pass)', () => {
+    const TestComponent = () => {
+      const { setCurrentGig } = useGameActions()
+      return (
+        <button
+          type='button'
+          onClick={() => setCurrentGig({ id: 'venue_1', name: 'Venue 1' })}
+        >
+          Set Gig
+        </button>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const setGigLogsBefore = logger.info.mock.calls.filter(
+      call => call[1] === 'Set Current Gig'
+    ).length
+
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
+
+    const setGigLogsAfter = logger.info.mock.calls.filter(
+      call => call[1] === 'Set Current Gig'
+    ).length
+
+    expect(setGigLogsAfter - setGigLogsBefore).toBe(1)
   })
 })

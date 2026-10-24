@@ -1,5 +1,6 @@
 import type { GameState, PendingGigSettlement } from '../../types'
 import { GAME_PHASES } from '../gameConstants'
+import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
 import {
@@ -16,9 +17,10 @@ import {
   calculateContinueStats
 } from '../../utils/postGig/performanceLogic'
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
-import { shouldTriggerBankruptcy } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import { buildPerGigSocialReconciliation } from '../../utils/postGig/socialResolution'
 import { handleSettleSoldMerch } from './gigReducer'
+import { handleUpdateSocial } from './socialReducer'
 import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
   handleCompleteExpedition,
@@ -32,12 +34,10 @@ import {
   derivePostGigContinueEffects,
   derivePostGigEconomyQuestEvents,
   drainBandStamina,
+  evaluateAcceptedSettlementSolvency,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
-import {
-  capExpeditionSpendAtCashFloor,
-  enforceExpeditionCashFloor
-} from '../../domain/expedition/loadout'
+import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
 
 const clampRange = (value: number, min: number, max: number): number =>
@@ -53,8 +53,16 @@ export const sanitizePendingGigSettlement = (
   raw: unknown
 ): PendingGigSettlement | null => {
   if (!isLooseRecord(raw) || hasForbiddenKeysDeep(raw)) return null
-  const { id, gigId, net, perfScore, misses, dealFameMultiplier, soldMerch } =
-    raw
+  const {
+    id,
+    gigId,
+    net,
+    perfScore,
+    misses,
+    dealFameMultiplier,
+    soldMerch,
+    socialReconciled
+  } = raw
   if (typeof id !== 'string' || id.length === 0) return null
   if (typeof gigId !== 'string' || gigId.length === 0) return null
   if (
@@ -85,7 +93,9 @@ export const sanitizePendingGigSettlement = (
       1,
       MAX_DEAL_FAME_MULTIPLIER
     ),
-    soldMerch: sold
+    soldMerch: sold,
+    socialReconciled:
+      Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true
   }
 }
 
@@ -110,7 +120,61 @@ export const handleRecordPendingGigSettlement = (
   ) {
     return state
   }
-  return { ...state, pendingGigSettlement: record }
+  const socialReconciled =
+    state.pendingGigSettlement?.gigId === record.gigId
+      ? state.pendingGigSettlement.socialReconciled === true
+      : record.socialReconciled
+
+  return {
+    ...state,
+    pendingGigSettlement: {
+      ...record,
+      socialReconciled
+    }
+  }
+}
+
+/**
+ * Applies social updates and sets `socialReconciled: true` on matching pending settlement.
+ *
+ * @param state - Current game state.
+ * @param payload - Object carrying `socialUpdate` and optional `settlementId`.
+ * @returns State with social updates applied and settlement marker set if IDs match.
+ */
+export const handleApplyGigSocialReconciliation = (
+  state: GameState,
+  payload: unknown
+): GameState => {
+  if (!isLooseRecord(payload)) return state
+  const { socialUpdate, settlementId } = payload
+  const namesSettlement =
+    typeof settlementId === 'string' && settlementId.length > 0
+  const targetsPending =
+    namesSettlement && state.pendingGigSettlement?.id === settlementId
+  // Exactly once per settlement: a replay, or an id that no longer names the
+  // pending record (already cleared by Continue), must not decrement deals again.
+  if (namesSettlement && !targetsPending) return state
+  if (targetsPending && state.pendingGigSettlement?.socialReconciled === true) {
+    return state
+  }
+  const nextState = handleUpdateSocial(
+    state,
+    socialUpdate as Partial<GameState['social']>
+  )
+  if (nextState === state) return state
+
+  const pending = nextState.pendingGigSettlement
+  if (pending && targetsPending) {
+    return {
+      ...nextState,
+      pendingGigSettlement: {
+        ...pending,
+        socialReconciled: true
+      }
+    }
+  }
+
+  return nextState
 }
 
 /**
@@ -197,6 +261,30 @@ export const settlePendingGigOnLoad = (
     return next
   }
 
+  // Records saved before the marker existed carry no field. Those written after
+  // the social post already stamped today's gig day and must not reconcile twice.
+  const legacyAlreadyReconciled =
+    !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
+    finiteNumberOr(state.social.lastGigDay, -1) ===
+      finiteNumberOr(state.player.day, 0)
+  if (record.socialReconciled !== true && !legacyAlreadyReconciled) {
+    try {
+      const socialPatch = buildPerGigSocialReconciliation({
+        player: state.player,
+        social: state.social,
+        currentGig: state.currentGig
+      })
+      next = handleUpdateSocial(next, socialPatch)
+    } catch (error) {
+      // Payout recovery continues; the failure must stay visible.
+      logger.warn(
+        'GameState',
+        'Per-gig social reconciliation failed on load',
+        error
+      )
+    }
+  }
+
   next = handleSettleSoldMerch(next, record.soldMerch)
 
   const player = next.player
@@ -213,41 +301,56 @@ export const settlePendingGigOnLoad = (
     clampPlayerMoney,
     BALANCE_CONSTANTS
   })
-  const bankrupt = shouldTriggerBankruptcy(
-    stats.newMoney,
-    record.net,
-    getTotalDailyObligations(next)
-  )
-  const isFinaleGig =
-    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
-  const successfulFinale =
-    isFinaleGig && !bankrupt && state.lastGigStats.failed !== true
-  const careerFinale = successfulFinale && next.expedition.status === 'idle'
-  const expeditionFinale =
-    successfulFinale && next.expedition.status === 'active'
-
   // Continue refuses only the Cash an active run's protected Career Cash floor
   // forbids and still lands the fame; settle under the same rule so a reload
   // can neither spend that Cash nor lose that fame.
+  const { acceptedMoney } = evaluateAcceptedSettlementSolvency({
+    expedition: next.expedition,
+    previousMoney: player.money,
+    proposedMoney: stats.newMoney,
+    net: record.net,
+    totalDailyObligations: getTotalDailyObligations(next)
+  })
+
   const settled: GameState = {
     ...next,
     player: {
       ...player,
-      money: capExpeditionSpendAtCashFloor(
-        next.expedition,
-        finiteNumberOr(player.money, 0),
-        stats.newMoney
-      ),
+      money: acceptedMoney,
       fame: stats.newFame,
-      fameLevel: stats.fameLevel,
-      ...(careerFinale
-        ? { stats: { ...player.stats, tourCompleted: true } }
-        : {})
+      fameLevel: stats.fameLevel
     }
   }
   // The capped Cash never crosses the floor, so this only runs the floor's
   // bookkeeping (a rising balance retires a recorded travel refusal).
   next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
+
+  // Evaluate solvency from post-floor state money with getTotalDailyObligations(next)
+  const { insolvent, careerBankrupt } = evaluateAcceptedSettlementSolvency({
+    expedition: next.expedition,
+    previousMoney: next.player.money,
+    proposedMoney: next.player.money,
+    net: record.net,
+    totalDailyObligations: getTotalDailyObligations(next)
+  })
+
+  const isFinaleGig =
+    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
+  const successfulFinale =
+    isFinaleGig && !insolvent && state.lastGigStats.failed !== true
+  const careerFinale = successfulFinale && next.expedition.status === 'idle'
+  const expeditionFinale =
+    successfulFinale && next.expedition.status === 'active'
+
+  if (careerFinale) {
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        stats: { ...next.player.stats, tourCompleted: true }
+      }
+    }
+  }
 
   for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
     next = handleApplyQuestEvent(next, event)
@@ -277,14 +380,16 @@ export const settlePendingGigOnLoad = (
     })
   }
 
-  if (!bankrupt && !careerFinale) return next
+  if (!careerBankrupt && !careerFinale) return next
   const ended: GameState = {
     ...next,
-    terminalOutcome: bankrupt
+    terminalOutcome: careerBankrupt
       ? { reason: 'bankruptcy' }
       : { reason: 'career_victory' },
     currentScene: GAME_PHASES.GAMEOVER
   }
   // A run still active when the Career goes bankrupt ends with it.
-  return bankrupt ? settleExpeditionOnGameOver(ended, 'bankruptcy') : ended
+  return careerBankrupt
+    ? settleExpeditionOnGameOver(ended, 'bankruptcy')
+    : ended
 }

@@ -24,6 +24,15 @@ export interface HandlerDispatchers {
       | Partial<GameState['social']>
       | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
+  applyGigSocialReconciliation: (
+    socialUpdate:
+      | Partial<GameState['social']>
+      | ((prev: GameState['social']) => Partial<GameState['social']>),
+    settlementId?: string | null
+  ) => void
+  commitSocialPost: (
+    payload: import('../../../types/actions').ApplySocialPostResultPayload
+  ) => boolean
   setPhase: (phase: PostGigPhase) => void
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void

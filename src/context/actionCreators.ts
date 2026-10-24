@@ -37,6 +37,8 @@ import {
   finiteNumberOr,
   isFiniteNumber
 } from '../utils/gameState'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import type { ApplySocialPostResultPayload } from '../types/actions'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
@@ -160,16 +162,53 @@ export const createSettleSoldMerchAction = (
  * are malformed.
  */
 export const createRecordPendingGigSettlementAction = (
-  settlement: Omit<PendingGigSettlement, 'id'>,
+  settlement: Omit<PendingGigSettlement, 'id' | 'socialReconciled'>,
   id: string = getSafeUUID()
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RECORD_PENDING_GIG_SETTLEMENT }
 > | null => {
-  const payload = sanitizePendingGigSettlement({ ...settlement, id })
+  const payload = sanitizePendingGigSettlement({
+    ...settlement,
+    id,
+    socialReconciled: false
+  })
   return payload
     ? { type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT, payload }
     : null
+}
+
+/**
+ * Creates an action applying a per-gig social update and marking its pending settlement as socialReconciled.
+ *
+ * @param socialUpdate - Social state update payload or updater function.
+ * @param settlementId - Id of the target pending settlement, sanitized to non-empty string or null.
+ * @returns APPLY_GIG_SOCIAL_RECONCILIATION action.
+ */
+export const createApplyGigSocialReconciliationAction = (
+  socialUpdate:
+    Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
+  settlementId?: string | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION }
+> => {
+  const payloadSocial =
+    typeof socialUpdate === 'function'
+      ? (prev: SocialState) => sanitizeSocialUpdates(socialUpdate(prev))
+      : sanitizeSocialUpdates(socialUpdate)
+  const safeId =
+    typeof settlementId === 'string' && settlementId.length > 0
+      ? settlementId
+      : null
+
+  return {
+    type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+    payload: {
+      socialUpdate: payloadSocial,
+      settlementId: safeId
+    }
+  }
 }
 
 /**
@@ -266,6 +305,55 @@ export const createUpdateSocialAction = (
   return {
     type: ActionTypes.UPDATE_SOCIAL,
     payload
+  }
+}
+
+/**
+ * Creates an action that atomically commits a social post outcome.
+ * Validates the debit against the supplied state snapshot's spendable Cash.
+ * Returns null if the snapshot cannot pay.
+ *
+ * @param stateSnapshot - Current game state snapshot.
+ * @param payload - Composite social post result payload.
+ */
+export const createApplySocialPostResultAction = (
+  stateSnapshot: GameState,
+  payload: ApplySocialPostResultPayload
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_SOCIAL_POST_RESULT }
+> | null => {
+  if (!payload || typeof payload !== 'object' || !payload.social) return null
+  if (
+    typeof payload.social.pendingSocialOptionId !== 'string' ||
+    payload.social.pendingSocialOptionId.length === 0
+  ) {
+    return null
+  }
+
+  if (
+    payload.moneyDelta !== undefined &&
+    payload.moneyDelta !== null &&
+    !isFiniteNumber(payload.moneyDelta)
+  ) {
+    return null
+  }
+
+  const moneyDelta = payload.moneyDelta ?? 0
+  if (moneyDelta < 0) {
+    const requiredDebit = Math.abs(moneyDelta)
+    const spendable = getExpeditionSpendableCash(stateSnapshot)
+    if (requiredDebit > spendable) {
+      return null
+    }
+  }
+
+  return {
+    type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+    payload: {
+      ...payload,
+      moneyDelta
+    }
   }
 }
 

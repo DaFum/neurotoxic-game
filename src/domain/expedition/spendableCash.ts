@@ -64,3 +64,44 @@ export const withExpeditionSpendableCash = <T extends object>(state: T): T => {
     player: { ...full.player, money: getExpeditionSpendableCash(full) }
   }
 }
+
+/**
+ * Outcome of settling a mandatory charge against spendable cash.
+ */
+export interface ExpeditionMandatoryDebitSettlement {
+  /** The next player money balance. */
+  nextMoney: number
+  /** The amount of the charge actually paid. */
+  paid: number
+  /** The portion of the charge that was waived due to insufficient spendable cash. */
+  waived: number
+}
+
+/**
+ * Settles a mandatory debit (such as Roadie minigame equipment repairs) against available
+ * spendable cash and credit.
+ *
+ * @param state - Current game state.
+ * @param params - The mandatory charge and optional offsetting credit.
+ * @returns Settlement containing next money balance, amount paid, and amount waived.
+ *
+ * @remarks
+ * Normalizes inputs to finite nonnegative numbers. Outside an active run, protection is 0 and
+ * debit is capped at balance so money never goes below 0. If protection is malformed, spendable
+ * cash is 0, so only `credit` pays the charge and `nextMoney` is never lower than `money`.
+ */
+export const settleExpeditionMandatoryDebit = (
+  state: GameState,
+  { charge: rawCharge, credit: rawCredit }: { charge: number; credit?: number }
+): ExpeditionMandatoryDebitSettlement => {
+  const charge = Math.max(0, finiteNumberOr(rawCharge, 0))
+  const credit = Math.max(0, finiteNumberOr(rawCredit, 0))
+  const money = finiteNumberOr(state?.player?.money, 0)
+
+  const available = getExpeditionSpendableCash(state) + credit
+  const paid = Math.min(charge, available)
+  const waived = charge - paid
+  const nextMoney = money + credit - paid
+
+  return { nextMoney, paid, waived }
+}

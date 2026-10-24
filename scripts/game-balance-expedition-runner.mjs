@@ -1191,12 +1191,21 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
     perfScore: state.lastGigStats.accuracy ?? 0,
     secureRandomValue: draw('secure'),
     selectionRandomValue: draw('selection'),
-    viralRandomValue: draw('viral')
+    viralRandomValue: draw('viral'),
+    expedition: state.expedition,
+    activeEvent: state.activeEvent,
+    activeQuests: state.activeQuests,
+    rivalBand: state.rivalBand
   })
 
   let next = gameReducer(state, {
-    type: ActionTypes.UPDATE_SOCIAL,
-    payload: updates.updatedSocial
+    type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+    payload: {
+      social: updates.updatedSocial,
+      moneyDelta: updates.appliedMoneyDelta,
+      band: updates.newBand,
+      failedStageDive: updates.finalResult?.failedStageDive
+    }
   })
   // The reducer proves the option against `social.pendingSocialOptionId`, which
   // the update above stamps. If that did not land, the settlement would be

@@ -16,6 +16,8 @@ import {
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
+import { ActionTypes } from '../../src/context/actionTypes'
+import { buildPerGigSocialReconciliation } from '../../src/utils/postGig/socialResolution'
 import {
   completeExpedition,
   offerExpeditionDraft,
@@ -41,7 +43,10 @@ import {
   createFameGainedQuestEvent,
   createMoneyEarnedQuestEvent
 } from '../../src/quests/producers/economyQuestEvents'
-import { buildStoryFlagQuests } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
+import {
+  buildStoryFlagQuests,
+  evaluateAcceptedSettlementSolvency
+} from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 import { getExpeditionFinaleProfile } from '../../src/domain/expedition/finales'
 import { FLAGS } from '../../src/data/flags.registry'
 import { createPersistedState } from '../../src/context/usePersistence'
@@ -68,41 +73,56 @@ const runContinue = shown => {
   const gigId = shown.currentGig.id
   const stats = shown.lastGigStats
   const { player, band, expedition } = shown
+  const settlement = shown.pendingGigSettlement ?? SETTLEMENT
   let state = gameReducer(
     shown,
-    createSettleSoldMerchAction(SETTLEMENT.soldMerch)
+    createSettleSoldMerchAction(settlement.soldMerch)
   )
 
   const ledger = calculateContinueStats({
     player,
-    perfScore: SETTLEMENT.perfScore,
-    financials: { net: SETTLEMENT.net },
+    perfScore: settlement.perfScore,
+    financials: { net: settlement.net },
     misses: stats.misses,
     bandStyle: finiteNumberOr(band.style, 0),
-    dealFameMultiplier: SETTLEMENT.dealFameMultiplier,
+    dealFameMultiplier: settlement.dealFameMultiplier,
     calculateFameGain,
     calculateFameLevel,
     clampPlayerFame,
     clampPlayerMoney,
     BALANCE_CONSTANTS
   })
-  const bankrupt = shouldTriggerBankruptcy(
-    ledger.newMoney,
-    SETTLEMENT.net,
-    getTotalDailyObligations(shown)
-  )
+  const { acceptedMoney, insolvent } = evaluateAcceptedSettlementSolvency({
+    expedition,
+    previousMoney: player.money,
+    proposedMoney: ledger.newMoney,
+    net: settlement.net,
+    totalDailyObligations: getTotalDailyObligations(shown)
+  })
   const isFinaleGig =
     shown.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
-  const successfulFinale = isFinaleGig && !bankrupt && stats.failed !== true
+  const successfulFinale = isFinaleGig && !insolvent && stats.failed !== true
 
   state = gameReducer(
     state,
     createUpdatePlayerAction({
-      money: ledger.newMoney,
+      money: acceptedMoney,
       fame: ledger.newFame,
       fameLevel: ledger.fameLevel
     })
   )
+  const socialPatch = buildPerGigSocialReconciliation({
+    player: shown.player,
+    social: shown.social,
+    currentGig: shown.currentGig
+  })
+  state = gameReducer(state, {
+    type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+    payload: {
+      socialUpdate: socialPatch,
+      settlementId: shown.pendingGigSettlement.id
+    }
+  })
   state = gameReducer(
     state,
     createClearPendingGigSettlementAction(shown.pendingGigSettlement.id)
@@ -119,11 +139,11 @@ const runContinue = shown => {
       )
     )
   }
-  if (ledger.newMoney > player.money) {
+  if (acceptedMoney > player.money) {
     state = gameReducer(
       state,
       createApplyQuestEventAction(
-        createMoneyEarnedQuestEvent({ amount: ledger.newMoney - player.money })
+        createMoneyEarnedQuestEvent({ amount: acceptedMoney - player.money })
       )
     )
   }
@@ -208,7 +228,8 @@ const runContinue = shown => {
 const recordSettlement = atResult => {
   const action = createRecordPendingGigSettlementAction({
     gigId: atResult.currentGig.id,
-    ...SETTLEMENT
+    ...SETTLEMENT,
+    ...(atResult.pendingGigSettlement ?? {})
   })
   assert.ok(action)
   const recorded = gameReducer(atResult, action)
@@ -236,9 +257,15 @@ const rawSlices = state => ({
   expeditionStatus: state.expedition.status,
   pendingRunDraftOffer: state.expedition.pendingRunDraftOffer ?? null,
   crewStress: state.expedition.crew?.stressByCrewId ?? {},
+  socialActiveDeals: state.social.activeDeals,
+  socialLoyalty: state.social.loyalty,
+  socialLastGigDay: state.social.lastGigDay,
+  socialRegionalGigHistory: state.social.regionalGigHistory,
   crewSourceIds: state.expedition.resolvedCrewSourceIds ?? [],
   obligationSignals: state.expedition.resolvedObligationSignalIds ?? [],
-  pendingGigSettlement: state.pendingGigSettlement
+  pendingGigSettlement: state.pendingGigSettlement,
+  pendingFailure: state.expedition.pendingFailure ?? null,
+  terminalOutcome: state.terminalOutcome ?? null
 })
 
 /** The gameplay slices Continue and a reload must agree on. */
@@ -365,5 +392,146 @@ test('a settled reload applies the Continue effects exactly once', () => {
       )
     ),
     loaded
+  )
+})
+
+test('protected-loss parity for net -600 across live Continue and load recovery', () => {
+  const walked = walkTo(
+    startedState(
+      { money: 500, fame: 100, van: { fuel: 100, fuelMax: 100 } },
+      { build: { protectedCareerCash: 400 } }
+    ),
+    1
+  )
+  const atResult = {
+    ...walked,
+    currentScene: GAME_PHASES.POST_GIG,
+    player: {
+      ...walked.player,
+      money: 500,
+      fame: 100,
+      van: { ...walked.player.van, fuel: 100, fuelMax: 100 }
+    },
+    currentGig: { id: 'protected_venue', name: 'Protected Venue' },
+    lastGigStats: { score: 1000, misses: 58, accuracy: 30, failed: false },
+    expedition: {
+      ...walked.expedition,
+      protectedCareerCash: 400,
+      lastGigResolvedAtRouteStep: walked.expedition.routeStep,
+      loadout: { ...walked.expedition.loadout, crewIds: ['yara'] },
+      crew: {
+        stressByCrewId: { yara: 20 },
+        injuryByCrewId: walked.expedition.crew?.injuryByCrewId ?? {}
+      }
+    }
+  }
+  const recorded = recordSettlement({
+    ...atResult,
+    pendingGigSettlement: {
+      id: 'settlement-protected',
+      gigId: 'protected_venue',
+      net: -600,
+      perfScore: 30,
+      misses: 58,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }
+  })
+
+  const continued = runContinue(recorded)
+  const loaded = reload(recorded)
+
+  assert.equal(continued.player.money, 500)
+  assert.equal(continued.expedition.status, 'active')
+  assert.equal(continued.expedition.pendingFailure, null)
+  assert.equal(continued.terminalOutcome, null)
+
+  assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
+})
+
+test('floor-0 active-run insolvency parity for pending failure across live Continue and load recovery', () => {
+  const walked = walkTo(
+    startedState(
+      { money: 500, fame: 100, van: { fuel: 100, fuelMax: 100 } },
+      { build: { protectedCareerCash: 0 } }
+    ),
+    1
+  )
+  const atResult = {
+    ...walked,
+    currentScene: GAME_PHASES.POST_GIG,
+    player: {
+      ...walked.player,
+      money: 500,
+      fame: 100,
+      van: { ...walked.player.van, fuel: 100, fuelMax: 100 }
+    },
+    currentGig: { id: 'bust_venue', name: 'Bust Venue' },
+    lastGigStats: { score: 1000, misses: 58, accuracy: 30, failed: false },
+    expedition: {
+      ...walked.expedition,
+      protectedCareerCash: 0,
+      lastGigResolvedAtRouteStep: walked.expedition.routeStep,
+      loadout: { ...walked.expedition.loadout, crewIds: ['yara'] },
+      crew: {
+        stressByCrewId: { yara: 20 },
+        injuryByCrewId: walked.expedition.crew?.injuryByCrewId ?? {}
+      }
+    }
+  }
+  const recorded = recordSettlement({
+    ...atResult,
+    pendingGigSettlement: {
+      id: 'settlement-bust',
+      gigId: 'bust_venue',
+      net: -600,
+      perfScore: 30,
+      misses: 58,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    }
+  })
+
+  const continued = runContinue(recorded)
+  const loaded = reload(recorded)
+
+  assert.equal(continued.player.money, 0)
+  assert.equal(continued.expedition.status, 'active')
+  assert.ok(continued.expedition.pendingFailure)
+  assert.equal(continued.expedition.pendingFailure.reason, 'bankruptcy')
+  assert.equal(continued.terminalOutcome, null)
+
+  assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
+})
+
+test('evaluateAcceptedSettlementSolvency ignores the settlement net for an active run, like the economy failure signal', () => {
+  const state = startedState(
+    { money: 400 },
+    { build: { protectedCareerCash: 400 } }
+  )
+  const base = {
+    previousMoney: 400,
+    proposedMoney: 300,
+    net: -100,
+    totalDailyObligations: -50
+  }
+
+  const active = evaluateAcceptedSettlementSolvency({
+    ...base,
+    expedition: state.expedition
+  })
+  assert.equal(active.acceptedMoney, 400, 'the floor refuses the loss')
+  assert.equal(active.insolvent, false)
+  assert.equal(active.careerBankrupt, false)
+
+  const career = evaluateAcceptedSettlementSolvency({
+    ...base,
+    expedition: undefined,
+    proposedMoney: 0
+  })
+  assert.equal(
+    career.insolvent,
+    true,
+    'a Career still counts the settlement net'
   )
 })

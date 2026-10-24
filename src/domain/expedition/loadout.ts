@@ -110,7 +110,8 @@ export const EXPEDITION_MAX_SETLIST_SONGS = 4
 
 export {
   getExpeditionProtectedCash,
-  getExpeditionSpendableCash
+  getExpeditionSpendableCash,
+  settleExpeditionMandatoryDebit
 } from './spendableCash'
 
 /**
@@ -966,6 +967,9 @@ export const capExpeditionSpendAtCashFloor = (
  * deltas all deduct from `player.money` through their own reducers; auditing
  * each of them would leave the next spend path added elsewhere unguarded, and
  * the design requires the protected slice to hold against *every* in-run spend.
+ *
+ * Roadie settles equipment repairs as a capped mandatory debit before this guard
+ * runs, and the generic rollback here acts as a backstop only.
  *
  * Only a spend that actually lowers the balance is judged, so an action that
  * nets positive or leaves Cash untouched is never rejected — including one that

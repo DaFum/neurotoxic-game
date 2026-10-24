@@ -34,6 +34,7 @@ import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
+import { projectQueuedActions } from './queuedActions'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,
@@ -69,7 +70,9 @@ import {
   createSettleSoldMerchAction,
   createRecordPendingGigSettlementAction,
   createClearPendingGigSettlementAction,
+  createApplyGigSocialReconciliationAction,
   createUpdateSocialAction,
+  createApplySocialPostResultAction,
   createUpdateSettingsAction,
   createSetMapAction,
   createSetGigAction,
@@ -101,6 +104,7 @@ import {
   createHoldBandMeetingAction,
   createRestockMerchAction
 } from './actionCreators'
+import type { ApplySocialPostResultPayload } from '../types/actions'
 import {
   purchaseChassis as purchaseChassisAction,
   installModule as installModuleAction,
@@ -130,6 +134,12 @@ type BaseGameDispatchActions = {
     updates:
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
   ) => void
+  applyGigSocialReconciliation: (
+    socialUpdate:
+      Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
+    settlementId?: string | null
+  ) => void
+  commitSocialPost: (payload: ApplySocialPostResultPayload) => boolean
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
   startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
@@ -514,6 +524,7 @@ type SimpleDispatchActions = Pick<
   | 'holdBandMeeting'
   | 'restockMerch'
   | 'updateSocial'
+  | 'applyGigSocialReconciliation'
   | 'setGameMap'
   | 'setCurrentGig'
   | 'startGig'
@@ -534,6 +545,7 @@ interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
   stateRef: MutableRefObject<GameState>
+  queuedActionsRef?: MutableRefObject<GameAction[]>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
 }
@@ -548,6 +560,7 @@ export function useGameDispatchActions({
   dispatch,
   state,
   stateRef,
+  queuedActionsRef,
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
@@ -619,6 +632,14 @@ export function useGameDispatchActions({
         updates:
           Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
       ) => dispatch(createUpdateSocialAction(updates)),
+      applyGigSocialReconciliation: (
+        socialUpdate:
+          Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
+        settlementId?: string | null
+      ) =>
+        dispatch(
+          createApplyGigSocialReconciliationAction(socialUpdate, settlementId)
+        ),
       // setGameMap is an intentional test seam on the public dispatch surface.
       // Production map creation lives in useMapGeneration, which dispatches
       // createSetMapAction directly: that hook is instantiated before this one
@@ -756,6 +777,22 @@ export function useGameDispatchActions({
     stateRef
   })
   const careerActions = useCareerDispatchActions(dispatch)
+
+  const commitSocialPost = useCallback(
+    (payload: ApplySocialPostResultPayload): boolean => {
+      const { snapshot, pending } = projectQueuedActions(
+        stateRef.current,
+        queuedActionsRef?.current ?? []
+      )
+      if (queuedActionsRef) queuedActionsRef.current = pending
+      const action = createApplySocialPostResultAction(snapshot, payload)
+      if (!action) return false
+      if (gameReducer(snapshot, action) === snapshot) return false
+      dispatch(action)
+      return true
+    },
+    [dispatch, queuedActionsRef, stateRef]
+  )
 
   // A resolved decision is persisted Career state that changes nothing about
   // the scene, so the write has to travel with the dispatch: the autosave the
@@ -938,6 +975,7 @@ export function useGameDispatchActions({
       ...assetActions,
       ...expeditionActions,
       ...careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
@@ -966,6 +1004,7 @@ export function useGameDispatchActions({
       assetActions,
       expeditionActions,
       careerActions,
+      commitSocialPost,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,

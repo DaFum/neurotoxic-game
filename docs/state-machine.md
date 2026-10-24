@@ -243,7 +243,8 @@ contract.
 - **Protected Career Cash is global.** After every action, the root reducer calls
   `enforceExpeditionCashFloor(previousState, nextState, action.type)`. A spend
   that crosses the protected slice is rejected back to the pre-action state;
-  new spend paths do not need to remember a separate local guard.
+  new spend paths do not need to remember a separate local guard. Roadie repairs
+  are capped at spendable cash and the shortfall is waived.
 - **Pending Expedition failure is derived centrally.** The root reducer calls
   `syncExpeditionPendingFailure(nextState)` after every action. Callers do not
   author the crisis directly, preventing the stored failure reason from

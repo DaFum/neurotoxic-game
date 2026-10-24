@@ -77,6 +77,7 @@ import {
   reconcileExpeditionAscensionOnLoad,
   settleExpeditionUnlockJournalOnLoad
 } from '../../domain/expedition/meta'
+import { syncExpeditionPendingFailure } from '../../domain/expedition/failure'
 import { GAME_PHASES } from '../gameConstants'
 import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
 import { settleExpeditionOnTerminalOutcome } from './expeditionReducer'
@@ -430,9 +431,11 @@ export const handleLoadGame = (
   // Tour Pressure goes with it.
   // A save written on the post-gig screen predates Continue; settle it here
   // once, on the fully sanitized state, rather than reopening POST_GIG.
-  const settled = settlePendingGigOnLoad(
-    reconcileExpeditionAscensionOnLoad(migratedState),
-    loadedState.pendingGigSettlement
+  const settled = syncExpeditionPendingFailure(
+    settlePendingGigOnLoad(
+      reconcileExpeditionAscensionOnLoad(migratedState),
+      loadedState.pendingGigSettlement
+    )
   )
   // An ending recorded before the save is final: reloading must not undo it.
   // A save written at GAMEOVER before endings were recorded has none; derive it

@@ -19,6 +19,11 @@ import {
   finiteNumberOr,
   readMemberStamina
 } from '../../../utils/gameState'
+import {
+  capExpeditionSpendAtCashFloor,
+  getExpeditionSpendableCash
+} from '../../../domain/expedition/loadout'
+import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import {
   createFameGainedQuestEvent,
@@ -110,6 +115,69 @@ export function buildStoryFlagQuests(params: {
   }
 
   return quests
+}
+
+/**
+ * Result of evaluating accepted settlement solvency.
+ */
+export interface AcceptedSettlementSolvencyResult {
+  acceptedMoney: number
+  insolvent: boolean
+  careerBankrupt: boolean
+}
+
+/**
+ * Evaluates accepted player cash, overall solvency, and career bankruptcy for post-gig settlement (pure).
+ *
+ * @param params - Expedition state, previous money, proposed money from stats, settlement net, total daily obligations.
+ * @returns Accepted cash post-floor, insolvency flag, and career bankruptcy flag.
+ *
+ * @remarks
+ * For an active expedition run, active-run insolvency is handled through `pendingFailure` in `failure.ts`
+ * (which triggers an `expedition_cash` crisis on overworld sync) rather than immediate career bankruptcy.
+ * The active-run decision uses the same rule as that signal (settlement net ignored), so the Finale
+ * gate and the crisis cannot disagree.
+ */
+export function evaluateAcceptedSettlementSolvency(params: {
+  expedition: GameState['expedition'] | undefined
+  previousMoney: number | undefined
+  proposedMoney: number
+  net: number
+  totalDailyObligations: number
+}): AcceptedSettlementSolvencyResult {
+  const {
+    expedition,
+    previousMoney,
+    proposedMoney,
+    net,
+    totalDailyObligations
+  } = params
+  const normalizedPrevious = finiteNumberOr(previousMoney, 0)
+  const acceptedMoney = capExpeditionSpendAtCashFloor(
+    expedition,
+    normalizedPrevious,
+    proposedMoney
+  )
+  const spendableCash = getExpeditionSpendableCash({
+    player: { money: acceptedMoney },
+    expedition
+  } as GameState)
+  const activeRun = expedition?.status === 'active'
+  // An active run's crisis is decided by `getExpeditionEconomyFailureSignal`,
+  // which ignores this gig's net. Gating the Finale on a net that signal discards
+  // would suppress completion without ever raising the matching crisis.
+  const insolvent = shouldTriggerBankruptcy(
+    spendableCash,
+    activeRun ? 0 : net,
+    totalDailyObligations
+  )
+  const careerBankrupt = insolvent && !activeRun
+
+  return {
+    acceptedMoney,
+    insolvent,
+    careerBankrupt
+  }
 }
 
 /**

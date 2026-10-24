@@ -27,6 +27,7 @@ import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
 import {
   handleUpdateSocial,
+  handleApplySocialPostResult,
   handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
@@ -44,7 +45,8 @@ import {
 } from './reducers/gigReducer'
 import {
   handleRecordPendingGigSettlement,
-  handleClearPendingGigSettlement
+  handleClearPendingGigSettlement,
+  handleApplyGigSocialReconciliation
 } from './reducers/pendingGigSettlementReducer'
 import {
   handleSetActiveEvent,
@@ -212,6 +214,9 @@ const reducerMap: ReducerMap = {
   },
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
+  [ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION]:
+    handleApplyGigSocialReconciliation,
+  [ActionTypes.APPLY_SOCIAL_POST_RESULT]: handleApplySocialPostResult,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
   [ActionTypes.SET_MAP]: handleSetMap,
   [ActionTypes.SET_GIG]: handleSetGig,
