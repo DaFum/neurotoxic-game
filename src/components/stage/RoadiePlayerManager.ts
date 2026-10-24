@@ -175,36 +175,35 @@ export class RoadiePlayerManager {
     this.lastWasFlashing = isFlashing
 
     if (state.carrying) {
-        this.itemSprite.visible = true
-        // Set texture based on type
-        const tex = this.textures.items[state.carrying.type]
-        if (tex && tex.width > 0 && tex.height > 0) {
-          this.itemSprite.texture = tex
-          // Scale item to fit ~0.6 of a cell
-          const itemScale =
-            Math.min(cellW / tex.width, cellH / tex.height) * 0.6
-          this.itemSprite.scale.set(itemScale)
-        } else {
-          this.itemSprite.texture = Texture.WHITE
-          this.itemSprite.scale.set(0.3)
-        }
-
-        // Apply toxic green tint to player sprite when carrying CONTRABAND
-        if (
-          state.carrying.type === 'CONTRABAND' &&
-          this.playerSprite &&
-          !this._flashTimeout
-        ) {
-          this.playerSprite.tint = this.colors.toxicGreen
-        } else if (this.playerSprite && !this._flashTimeout) {
-          this.playerSprite.tint = this.colors.starWhite
-        }
+      this.itemSprite.visible = true
+      // Set texture based on type
+      const tex = this.textures.items[state.carrying.type]
+      if (tex && tex.width > 0 && tex.height > 0) {
+        this.itemSprite.texture = tex
+        // Scale item to fit ~0.6 of a cell
+        const itemScale = Math.min(cellW / tex.width, cellH / tex.height) * 0.6
+        this.itemSprite.scale.set(itemScale)
       } else {
-        this.itemSprite.visible = false
-        if (this.playerSprite && !this._flashTimeout) {
-          this.playerSprite.tint = this.colors.starWhite
-        }
+        this.itemSprite.texture = Texture.WHITE
+        this.itemSprite.scale.set(0.3)
       }
+
+      // Apply toxic green tint to player sprite when carrying CONTRABAND
+      if (
+        state.carrying.type === 'CONTRABAND' &&
+        this.playerSprite &&
+        !this._flashTimeout
+      ) {
+        this.playerSprite.tint = this.colors.toxicGreen
+      } else if (this.playerSprite && !this._flashTimeout) {
+        this.playerSprite.tint = this.colors.starWhite
+      }
+    } else {
+      this.itemSprite.visible = false
+      if (this.playerSprite && !this._flashTimeout) {
+        this.playerSprite.tint = this.colors.starWhite
+      }
+    }
   }
 
   /**
