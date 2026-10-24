@@ -200,14 +200,6 @@ function useAmpHazards(
     purgesUsedRef.current += 1
   }, [setInterference])
 
-  useEffect(() => {
-    if (isGameOver) return
-    const syncInterval = setInterval(() => {
-      setInterference(interferenceRef.current)
-    }, 100)
-    return () => clearInterval(syncInterval)
-  }, [isGameOver, setInterference])
-
   return {
     isHijackActiveRef,
     hijacksOverriddenRef,
@@ -363,6 +355,12 @@ export function useAmpLogic({
     feedbackLoopsDampenedRef
   ])
 
+  // ⚡ BOLT OPTIMIZATION: Removed 100ms setInterval background timer for interference sync
+  // What: Replaced periodic setInterval polling with frame-tick integer change-detection inside `update` and direct state reset in `purgeInterference`.
+  // Why: Eliminates persistent 100ms timer intervals, timer handle allocations, and unnecessary React re-renders.
+  // Impact: Improves frame consistency and reduces CPU timer interrupts during amp calibration minigame updates.
+  const lastSyncedInterferenceRef = useRef(-1)
+
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
     (deltaMS: number) => {
@@ -398,6 +396,12 @@ export function useAmpLogic({
           setVoidResonance
         }
       )
+
+      const currentInterferenceInt = Math.floor(interferenceRef.current)
+      if (currentInterferenceInt !== lastSyncedInterferenceRef.current) {
+        lastSyncedInterferenceRef.current = currentInterferenceInt
+        setInterference(currentInterferenceInt)
+      }
     },
     [
       finishMinigame,
@@ -411,6 +415,7 @@ export function useAmpLogic({
       setIsFeedbackLoopActive,
       setScore,
       setVoidResonance,
+      setInterference,
       timeLeftRef,
       isHijackActiveRef,
       isFeedbackLoopActiveRef,
