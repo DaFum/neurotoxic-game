@@ -1,4 +1,4 @@
-import test from 'node:test'
+import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { getEventListeners } from 'node:events'
 import {
@@ -634,4 +634,271 @@ test('a disposed controller ignores later submits', async () => {
   assert.equal(t.bodies.length, 0)
   assert.equal(t.storage.size, 0)
   assert.equal(t.timers.length, 0)
+})
+
+describe('shared-IP contention, 429 backoff, and recovery', () => {
+  // Server rate limit constants copied from lib/leaderboard.js (isLeaderboardRateLimited):
+  // RATE_LIMIT_MAX_REQUESTS = 5 (max 5 requests per window per IP)
+  // RATE_LIMIT_WINDOW_MS = 60_000 (60 seconds fixed window)
+  // Maintainers: update these constants if the Lua rate-limit script or limit in lib/leaderboard.js changes.
+  const RATE_LIMIT_MAX_REQUESTS = 5
+  const RATE_LIMIT_WINDOW_MS = 60_000
+
+  const setupSharedCluster = ({ startMs = 1_000_000 } = {}) => {
+    let nowMs = startMs
+    let nextTimerId = 1
+    const timers = []
+    const storage = new Map()
+    const requestLog = []
+    const logs = { info: [], warn: [] }
+
+    // Shared rate limit bucket state matching Redis Lua script in lib/leaderboard.js:
+    // Fixed 60-second window starting at first request.
+    // Counter increments for EVERY request attempt, including denied 429 requests.
+    let windowStartMs = null
+    let requestCount = 0
+
+    const clock = { now: () => nowMs, today: () => new Date(nowMs) }
+
+    const sharedFetch = async (url, init) => {
+      assert.equal(url, '/api/leaderboard/stats')
+      const body = JSON.parse(init.body)
+
+      if (windowStartMs === null || nowMs >= windowStartMs + RATE_LIMIT_WINDOW_MS) {
+        windowStartMs = nowMs
+        requestCount = 0
+      }
+
+      // Counter increments on every request (including 429 denied requests)
+      requestCount++
+      const status = requestCount <= RATE_LIMIT_MAX_REQUESTS ? 200 : 429
+
+      requestLog.push({
+        playerId: body.playerId,
+        key: snapshotKey(body),
+        time: nowMs,
+        status,
+        windowCount: requestCount
+      })
+
+      if (status === 200) {
+        return okResponse()
+      }
+      return failResponse(429)
+    }
+
+    const timerControls = {
+      setTimeout: (fn, ms) => {
+        const id = nextTimerId++
+        timers.push({ id, at: nowMs + ms, fn })
+        return id
+      },
+      clearTimeout: id => {
+        const index = timers.findIndex(t => t.id === id)
+        if (index >= 0) timers.splice(index, 1)
+      }
+    }
+
+    const createController = () => {
+      return createLeaderboardSyncController({
+        fetch: sharedFetch,
+        clock,
+        storage: {
+          read: key => storage.get(key),
+          write: (key, value) => storage.set(key, value)
+        },
+        timers: timerControls,
+        logger: {
+          info: (...args) => logs.info.push(args),
+          warn: (...args) => logs.warn.push(args)
+        },
+        isEnabled: () => true
+      })
+    }
+
+    const advance = async ms => {
+      const target = nowMs + ms
+      for (;;) {
+        const due = timers
+          .filter(t => t.at <= target)
+          .sort((a, b) => a.at - b.at)[0]
+        if (!due) break
+        timers.splice(timers.indexOf(due), 1)
+        nowMs = due.at
+        due.fn()
+        await flush()
+      }
+      nowMs = target
+      await flush()
+    }
+
+    return {
+      clock,
+      createController,
+      advance,
+      storage,
+      requestLog,
+      logs,
+      timers,
+      getNow: () => nowMs
+    }
+  }
+
+  test('contention across >5 players: 5 acceptances, 429 for remaining, backoff, recovery after window expiry', async () => {
+    const cluster = setupSharedCluster({ startMs: 1_000_000 })
+
+    // Instantiate 3 controllers representing separate tabs/devices sharing 1 IP.
+    // Controller 1: Player 1
+    // Controller 2: Player 2
+    // Controller 3 (Multi-player tab/device): Players 3, 4, 5, 6, 7 (Total 7 players > 5)
+    const ctrl1 = cluster.createController()
+    const ctrl2 = cluster.createController()
+    const ctrl3 = cluster.createController()
+
+    const players = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']
+
+    // Submit initial snapshots at time 0
+    ctrl1.submit(snap(100, 'p1'))
+    ctrl2.submit(snap(100, 'p2'))
+    ctrl3.submit(snap(100, 'p3'))
+    ctrl3.submit(snap(100, 'p4'))
+    ctrl3.submit(snap(100, 'p5'))
+    ctrl3.submit(snap(100, 'p6'))
+    ctrl3.submit(snap(100, 'p7'))
+    await flush()
+
+    // Assert exactly 7 requests logged at time 0
+    assert.equal(cluster.requestLog.length, 7)
+
+    // Assert first 5 requests received 200 OK
+    for (let i = 0; i < 5; i++) {
+      assert.equal(cluster.requestLog[i].status, 200, `Request ${i + 1} should be 200`)
+      const pid = cluster.requestLog[i].playerId
+      assert.equal(cluster.storage.get(LAST_KEY(pid)), snapshotKey(snap(100, pid)))
+    }
+
+    // Assert remaining 2 requests (6th and 7th) received 429 Too Many Requests
+    assert.equal(cluster.requestLog[5].status, 429, '6th request should be 429')
+    assert.equal(cluster.requestLog[6].status, 429, '7th request should be 429')
+    assert.equal(cluster.storage.has(LAST_KEY('p6')), false)
+    assert.equal(cluster.storage.has(LAST_KEY('p7')), false)
+
+    // Advance 15,000 ms: backoff for 1st failure is 30,000 ms (min(300s, 15s * 2^1)), so no early retry
+    await cluster.advance(15_000)
+    assert.equal(cluster.requestLog.length, 7, 'No early retries before 30s backoff timer')
+
+    await cluster.advance(14_999)
+    assert.equal(cluster.requestLog.length, 7, 'No early retries at 29,999 ms')
+
+    // At t = 30,000 ms: retries for p6 and p7 fire.
+    // Note: Identical timing produces identical retry times because the controller has no jitter.
+    await cluster.advance(1)
+    assert.equal(cluster.requestLog.length, 9, '2 retries sent at 30,000 ms')
+
+    // Still within active window [0, 60000ms), so retries receive 429 and increase backoff duration
+    assert.equal(cluster.requestLog[7].status, 429)
+    assert.equal(cluster.requestLog[8].status, 429)
+    // Failures count is now 2, so backoff doubles to 60,000 ms (next retry at t = 30,000 + 60,000 = 90,000 ms)
+
+    // Advance to t = 60,000 ms: window expires on server
+    await cluster.advance(30_000)
+    assert.equal(cluster.requestLog.length, 9, 'No retries between 30s and 60s')
+
+    // Advance to t = 89,999 ms: still waiting for 60s backoff timer from t = 30,000 ms
+    await cluster.advance(29_999)
+    assert.equal(cluster.requestLog.length, 9)
+
+    // At t = 90,000 ms: backoff timers fire. Server window reset at t = 60,000 ms, so request count resets.
+    await cluster.advance(1)
+    assert.equal(cluster.requestLog.length, 11, 'Retries sent at 90,000 ms')
+    assert.equal(cluster.requestLog[9].status, 200, 'p6 retry after window expiry succeeds with 200')
+    assert.equal(cluster.requestLog[10].status, 200, 'p7 retry after window expiry succeeds with 200')
+
+    // Assert all players' newest snapshots are confirmed and stored under neurotoxic_last_synced_snapshot:${playerId}
+    for (const pid of players) {
+      assert.equal(
+        cluster.storage.get(LAST_KEY(pid)),
+        snapshotKey(snap(100, pid)),
+        `Player ${pid} snapshot confirmed in storage`
+      )
+    }
+
+    // Verify 429 did NOT disable sync (unlike 404): no 404 endpoint unavailable log was recorded
+    assert.equal(
+      cluster.logs.info.some(args => args[1]?.includes('endpoint unavailable (404)')),
+      false,
+      '429 response must not disable stat sync'
+    )
+
+    ctrl1.dispose()
+    ctrl2.dispose()
+    ctrl3.dispose()
+  })
+
+  test('pending-snapshot replacement, base pacing, upper bound proof, and denied request cap', async () => {
+    const cluster = setupSharedCluster({ startMs: 1_000_000 })
+    const ctrl1 = cluster.createController()
+    const ctrl2 = cluster.createController()
+
+    // Submit 6 players at t = 0 to fill 5 slots and force p6 into 429 backoff
+    for (let i = 1; i <= 5; i++) {
+      ctrl1.submit(snap(100, `p${i}`))
+    }
+    ctrl2.submit(snap(100, 'p6'))
+    await flush()
+
+    assert.equal(cluster.requestLog.length, 6)
+    assert.equal(cluster.requestLog[5].status, 429, 'p6 gets 429 and enters backoff')
+
+    // At t = 10,000 ms: Submit a NEW snapshot for p6 during backoff
+    await cluster.advance(10_000)
+    ctrl2.submit(snap(999, 'p6'))
+    await flush()
+
+    // Assert pending-snapshot replacement and base pacing:
+    // A newer snapshot with a different key resets retrying state and schedules at base pacing (MIN_SYNC_INTERVAL_MS = 15s).
+    // Elapsed since lastSentAt (t=0) is 10s, so wait is max(0, 15s - 10s) = 5s (scheduled at t = 15,000 ms).
+    await cluster.advance(4_999)
+    assert.equal(cluster.requestLog.length, 6, 'p6 new snapshot does not fire before 15s base interval')
+
+    await cluster.advance(1)
+    assert.equal(cluster.requestLog.length, 7, 'p6 new snapshot fires at 15s base interval')
+    assert.equal(cluster.requestLog[6].key, snapshotKey(snap(999, 'p6')))
+    assert.equal(cluster.requestLog[6].status, 429, 'p6 new snapshot at t=15s gets 429 as window is still full')
+
+    // Stop state changes at t = 15,000 ms
+    // Derivation of Explicit Upper Bound for Confirmation after State Changes Stop:
+    // 1. Backoff interval cap = MAX_RETRY_INTERVAL_MS = 300 seconds (300,000 ms).
+    // 2. Server rate-limit window = 60 seconds (60,000 ms).
+    // 3. Worst-case upper bound until newest snapshot confirmation after state changes stop:
+    //    Backoff Cap (300s) + Window Duration (60s) = 360 seconds (360,000 ms).
+    const stateChangeStoppedAtMs = cluster.getNow() // 1,015,000 ms
+
+    // Advance time and verify confirmation occurs within 360,000 ms upper bound
+    await cluster.advance(360_000)
+
+    // Check that p6's newest snapshot snap(999, 'p6') was confirmed and stored
+    assert.equal(
+      cluster.storage.get(LAST_KEY('p6')),
+      snapshotKey(snap(999, 'p6')),
+      'Newest snapshot confirmed within 360s bound'
+    )
+
+    // Assert Upper Limit on Denied Requests Per Window from Backoff Cap:
+    // Derivation: When N_b players are backing off at cap (retry interval I >= 30s up to 300s),
+    // each player issues at most 1 retry per 60s window once I >= 60s.
+    // In any 60-second window, the number of denied 429 requests across backing-off players
+    // is strictly upper-bounded by N_b (the count of backing-off players).
+    const requestsInSecondWindow = cluster.requestLog.filter(
+      r => r.time >= 1_060_000 && r.time < 1_120_000
+    )
+    const deniedInSecondWindow = requestsInSecondWindow.filter(r => r.status === 429)
+    assert.ok(
+      deniedInSecondWindow.length <= 1,
+      `Denied requests in window (${deniedInSecondWindow.length}) <= 1 backing-off player`
+    )
+
+    ctrl1.dispose()
+    ctrl2.dispose()
+  })
 })
