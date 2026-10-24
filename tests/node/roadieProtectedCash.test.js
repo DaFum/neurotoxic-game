@@ -40,7 +40,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast, 'should include waived repair toast')
-    assert.equal(waivedToast.options.amount, 190)
+    assert.equal(waivedToast.options.amount, '€190')
   })
 
   it('replay case: ignores re-dispatched completion on inactive minigame', () => {
@@ -151,7 +151,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast)
-    assert.equal(waivedToast.options.amount, 140)
+    assert.equal(waivedToast.options.amount, '€140')
   })
 
   it('boundary case: gear_nerd discount changes the repair crossing', () => {
@@ -196,7 +196,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast)
-    assert.equal(waivedToast.options.amount, 10)
+    assert.equal(waivedToast.options.amount, '€10')
   })
 
   it('boundary case: damage > 50 with spare consumes spare, avoids damaged_gear, repair still capped', () => {
@@ -233,6 +233,30 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.spareGearUsed'
     )
     assert.ok(spareToast)
+  })
+
+  it('boundary case: outside an active expedition, no waived toast is emitted', () => {
+    // Money €10 outside an active expedition. Damage 100 -> repairCost €200.
+    // Money drops to 0, waived = 190, but state.expedition is undefined/idle -> no toast.
+    const state = {
+      ...startedState({ money: 10 }),
+      expedition: undefined
+    }
+
+    const started = gameReducer(state, {
+      type: ActionTypes.START_ROADIE_MINIGAME,
+      payload: { gigId: 'gig_1' }
+    })
+    const completed = gameReducer(started, {
+      type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
+      payload: { equipmentDamage: 100 }
+    })
+
+    assert.equal(completed.player.money, 0)
+    const waivedToast = completed.toasts.find(
+      t => t.messageKey === 'ui:toast.roadieRepairWaived'
+    )
+    assert.equal(waivedToast, undefined)
   })
 
   it('boundary case: malformed protection keeps money at starting balance when spendable cash is 0', () => {

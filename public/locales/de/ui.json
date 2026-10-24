@@ -2234,7 +2234,7 @@
   "toast.quest_complete_money": "[{{name}}]: ABGESCHLOSSEN {{amount}}",
   "toast.quest_complete_skill": "[{{name}}]: ABGESCHLOSSEN +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FEHLGESCHLAGEN",
-  "toast.roadieRepairWaived": "Geschütztes Geld schützt die Ausrüstung: €{{amount}} Reparaturkosten erlassen.",
+  "toast.roadieRepairWaived": "Geschütztes Geld schützt die Ausrüstung: {{amount}} Reparaturkosten erlassen.",
   "toast.spareGearUsed": "Ersatzausrüstung rettet den Aufbau: {{item}} verbraucht.",
   "toast.three_disasters": "3 DISASTER HINTEREINANDER — Beweist euch erst in kleinen Locations.",
   "toast.void_trade_success": "[ERHALTEN]: {{itemName}} (-{{fame}} Ruhm)",
