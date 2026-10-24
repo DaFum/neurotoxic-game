@@ -40,7 +40,8 @@ function makeDispatchers() {
     applyQuestEvent: vi.fn(),
     addToast: vi.fn(),
     setPostResult: vi.fn(),
-    requestBrandOffers: vi.fn()
+    requestBrandOffers: vi.fn(),
+    saveGameAfterStateCommit: vi.fn()
   }
 }
 
@@ -98,6 +99,7 @@ describe('useSocialPostHandler (characterization)', () => {
       { followers: 510 },
       undefined
     )
+    expect(d.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
     expect(d.updateSocial).not.toHaveBeenCalled()
     // harmony delta +5 => success toast + harmony quest event
     expect(d.addToast).toHaveBeenCalledWith(

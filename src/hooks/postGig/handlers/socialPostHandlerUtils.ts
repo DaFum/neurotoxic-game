@@ -23,6 +23,7 @@ type SocialPostDispatchers = Pick<
   | 'addToast'
   | 'setPostResult'
   | 'requestBrandOffers'
+  | 'saveGameAfterStateCommit'
 >
 
 /**
@@ -54,7 +55,8 @@ export function applySocialPostResult(params: {
     applyQuestEvent,
     addToast,
     setPostResult,
-    requestBrandOffers
+    requestBrandOffers,
+    saveGameAfterStateCommit
   } = dispatchers
 
   const {
@@ -159,4 +161,8 @@ export function applySocialPostResult(params: {
   // Offers must see the committed state: the dispatches above can complete a
   // quest whose rewards change social, money or harmony in the reducer.
   requestBrandOffers()
+
+  // Persist the state (including pendingGigSettlement.socialReconciled: true)
+  // so a reload or crash on the result/deals screen retains reconciliation status.
+  saveGameAfterStateCommit()
 }

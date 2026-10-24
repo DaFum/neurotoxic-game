@@ -45,7 +45,8 @@ export function useMinorHandlers({
     applyGigSocialReconciliation,
     addToast,
     setPhase,
-    setPostResult
+    setPostResult,
+    saveGameAfterStateCommit
   }
 }: UseMinorHandlersProps) {
   const handleNextPhase = useCallback(() => {
@@ -71,6 +72,7 @@ export function useMinorHandlers({
         } else {
           updateSocial(patch)
         }
+        saveGameAfterStateCommit()
       } catch (e) {
         logger.error('PostGig', 'Failed to reconcile per-gig social state', e)
       }
@@ -97,6 +99,7 @@ export function useMinorHandlers({
     updateSocial,
     applyGigSocialReconciliation,
     pendingSettlementId,
+    saveGameAfterStateCommit,
     t,
     addToast,
     setPostResult

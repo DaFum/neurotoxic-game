@@ -24,7 +24,7 @@ export interface HandlerDispatchers {
       | Partial<GameState['social']>
       | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
-  applyGigSocialReconciliation?: (
+  applyGigSocialReconciliation: (
     socialUpdate:
       | Partial<GameState['social']>
       | ((prev: GameState['social']) => Partial<GameState['social']>),

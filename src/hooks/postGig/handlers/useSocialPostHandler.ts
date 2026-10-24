@@ -50,6 +50,7 @@ export function useSocialPostHandler({
     addToast,
     setPostResult,
     requestBrandOffers,
+    saveGameAfterStateCommit,
     resolveExpeditionSocialResult
   }
 }: UseSocialPostHandlerProps) {
@@ -98,7 +99,8 @@ export function useSocialPostHandler({
             applyQuestEvent,
             addToast,
             setPostResult,
-            requestBrandOffers
+            requestBrandOffers,
+            saveGameAfterStateCommit
           }
         })
         if (resolveExpeditionSocialResult && option.id) {
@@ -135,6 +137,7 @@ export function useSocialPostHandler({
       t,
       setPostResult,
       requestBrandOffers,
+      saveGameAfterStateCommit,
       resolveExpeditionSocialResult,
       isProcessingActionRef,
       setIsProcessingAction

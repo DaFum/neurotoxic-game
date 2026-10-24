@@ -27,7 +27,8 @@ function makeDispatchers() {
     applyGigSocialReconciliation: vi.fn(),
     addToast: vi.fn(),
     setPhase: vi.fn(),
-    setPostResult: vi.fn()
+    setPostResult: vi.fn(),
+    saveGameAfterStateCommit: vi.fn()
   }
 }
 
@@ -169,6 +170,7 @@ describe('useMinorHandlers — handleNextPhase', () => {
       },
       undefined
     )
+    expect(props.dispatchers.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
     expect(props.dispatchers.updateSocial).not.toHaveBeenCalled()
     expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
   })
