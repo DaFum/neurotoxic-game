@@ -467,4 +467,23 @@ describe('MinigameSceneFrame', () => {
     expect(skipButton.className).toContain('focus-visible:ring-2')
     expect(skipButton.className).toContain('focus-visible:ring-toxic-green')
   })
+  test.each([
+    [false, true],
+    [true, false]
+  ])(
+    'marks the playfield for phone chatter only while the minigame runs, isGameOver=%s',
+    async (isGameOver, marked) => {
+      render(
+        <MinigameSceneFrame
+          controllerFactory={mockControllerFactory}
+          logic={mockLogic}
+          uiState={{ isGameOver }}
+          onComplete={mockOnComplete}
+        />
+      )
+
+      const stage = screen.getByTestId('pixi-stage-mock').parentElement
+      expect(stage?.hasAttribute('data-chatter-avoid-compact')).toBe(marked)
+    }
+  )
 })

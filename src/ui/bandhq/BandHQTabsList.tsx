@@ -78,7 +78,7 @@ export const BandHQTabsList = ({
             {tab.isLocked ? (
               <Tooltip
                 content={t('ui:hq.voidTraderLockedTooltip')}
-                className='flex-1 flex'
+                className='flex-1 flex max-sm:flex-auto max-sm:shrink-0'
               >
                 {button}
               </Tooltip>

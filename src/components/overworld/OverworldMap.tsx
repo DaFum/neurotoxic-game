@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
@@ -7,6 +7,7 @@ import { normalizeVenueId } from '../../utils/mapUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
+import { useMapLabelDeclutter } from './useMapLabelDeclutter'
 import { getNodeIconUrl } from './utils'
 import { nodeToPercentPosition } from '../../utils/mapUtils'
 
@@ -143,6 +144,25 @@ export const OverworldMap = React.memo(
       if (!gameMap) return null
       const nodes: React.ReactNode[] = []
       const activeStoryFlagsSet = new Set(activeStoryFlags ?? [])
+      // A three-way (or wider) Expedition branch is too dense for readable
+      // name chips on a phone: the chips of neighbouring destinations overlap.
+      // Names then show on focus/tap only (tooltip and aria-label carry them).
+      let travelTargetCount = 0
+      if (expeditionFogByNodeId) {
+        for (const id in gameMap.nodes) {
+          if (!Object.hasOwn(gameMap.nodes, id)) continue
+          const candidate = gameMap.nodes[id as keyof typeof gameMap.nodes]
+          if (
+            candidate &&
+            id !== player.currentNodeId &&
+            isConnected(id) &&
+            getNodeVisibility(candidate.layer, currentLayer) !== 'hidden'
+          ) {
+            travelTargetCount += 1
+          }
+        }
+      }
+      const compactLabels = travelTargetCount >= 3
       for (const key in gameMap.nodes) {
         if (!Object.hasOwn(gameMap.nodes, key)) continue
         const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
@@ -188,6 +208,7 @@ export const OverworldMap = React.memo(
               isTraveling={isTraveling}
               visibility={visibility}
               isReachable={isReachable}
+              compactLabels={compactLabels}
               isPendingConfirm={pendingTravelNode?.id === node.id}
               handleTravel={handleTravel}
               setHoveredNode={setHoveredNode}
@@ -268,8 +289,17 @@ export const OverworldMap = React.memo(
       )
     }, [hoveredNode, isConnected, currentNode])
 
+    // Expedition maps only: hide the lower-priority one of two overlapping labels.
+    const mapRef = useRef<HTMLDivElement>(null)
+    useMapLabelDeclutter(
+      mapRef,
+      Boolean(expeditionFogByNodeId),
+      renderedNodes,
+      hoveredNode?.id ?? null
+    )
+
     return (
-      <div className='map-wrap'>
+      <div className='map-wrap' ref={mapRef}>
         <FallbackImage
           src={mapBgUrl}
           alt=''

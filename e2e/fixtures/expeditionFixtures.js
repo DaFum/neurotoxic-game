@@ -212,6 +212,11 @@ const travelFixture = ({ protectsCash }) => {
 /** Wallet covers the leg, but protected Career Cash makes it unaffordable. */
 export const protectedCashFixture = () => travelFixture({ protectsCash: true })
 
+/** Fresh run on route seed 1, standing on its start node (visual audit #3254). */
+export const seedOneStartFixture = () => ({
+  save: serialize(startedState(0, 1))
+})
+
 /** Same run with nothing protected: the leg is affordable. */
 export const zeroProtectedCashFixture = () =>
   travelFixture({ protectsCash: false })

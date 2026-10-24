@@ -1,5 +1,125 @@
 import { test, expect } from '@playwright/test'
-import { skipToMenu } from './helpers.js'
+import {
+  SAVE_KEY,
+  buildFixture,
+  dismissTutorial,
+  loadSavedGame,
+  readRootState,
+  seedSaveOnce,
+  skipToMenu
+} from './helpers.js'
+
+/**
+ * Loads the ordinary-gig fixture, enters PreGig through the map and starts
+ * Kabelsalat through the DEV hook.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ */
+const enterKabelsalat = async page => {
+  const url = '/?events=off'
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const fixture = await buildFixture(page, 'ordinaryGigFixture')
+  await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+  await loadSavedGame(page)
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('OVERWORLD')
+  await dismissTutorial(page)
+  await page
+    .locator('.map-node')
+    .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+    .click()
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('PREGIG')
+  await page.evaluate(() =>
+    window.gameState.startKabelsalatMinigame(window.gameState.currentGig.id)
+  )
+}
+
+/**
+ * Loads the route-seed-1 Expedition start through the normal save loader and
+ * waits for its travel targets to be interactive.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ */
+const loadSeedOneExpedition = async page => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const url = '/?events=off'
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const fixture = await buildFixture(page, 'seedOneStartFixture')
+  await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+  await loadSavedGame(page)
+  await expect
+    .poll(async () => (await readRootState(page)).currentScene)
+    .toBe('OVERWORLD')
+  await dismissTutorial(page)
+  await expect(page.locator('.map-node.clickable').first()).toBeVisible()
+  // Wait for the node layout to stop moving instead of sleeping.
+  let previous = ''
+  await expect
+    .poll(
+      async () => {
+        const current = await page.locator('.map-node').evaluateAll(nodes =>
+          JSON.stringify(
+            nodes.map(node => {
+              const r = node.getBoundingClientRect()
+              return [r.left, r.top, r.width, r.height]
+            })
+          )
+        )
+        const stable = current === previous
+        previous = current
+        return stable
+      },
+      { intervals: [150], timeout: 10000 }
+    )
+    .toBe(true)
+}
+
+/**
+ * Measures the visible map-node labels of the route-seed-1 Expedition start and
+ * returns the pairs of different nodes whose label boxes intersect.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @returns {Promise<number[][]>} Colliding node index pairs.
+ */
+const seedOneLabelCollisions = async page => {
+  await loadSeedOneExpedition(page)
+
+  const labels = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="map-node-label"]')]
+      .filter(label => getComputedStyle(label).visibility !== 'hidden')
+      .map((label, node) => ({
+        node,
+        boxes: [...label.children]
+          .filter(child => getComputedStyle(child).display !== 'none')
+          .map(child => child.getBoundingClientRect())
+          .filter(r => r.width > 0 && r.height > 0)
+          .map(r => ({
+            left: r.left,
+            top: r.top,
+            right: r.right,
+            bottom: r.bottom
+          }))
+      }))
+      .filter(entry => entry.boxes.length > 0)
+  )
+  const intersects = (a, b) =>
+    a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+  const collisions = []
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      for (const a of labels[i].boxes) {
+        for (const b of labels[j].boxes) {
+          if (intersects(a, b))
+            collisions.push([labels[i].node, labels[j].node])
+        }
+      }
+    }
+  }
+  return collisions
+}
 
 test.describe('Visual smoke tests', () => {
   test('MainMenu renders its stable primary hierarchy', async ({ page }) => {
@@ -493,5 +613,203 @@ test.describe('Visual smoke tests', () => {
     })
     const { width } = page.viewportSize()
     if (width < 641) expect(clipped).toBe(false)
+  })
+
+  test('Settings language controls stay inside the panel in EN and DE (#3252)', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /band hq/i }).click()
+    const modal = page.getByRole('dialog')
+    await modal.getByRole('tab', { name: /settings/i }).click()
+    const panel = modal.getByRole('tabpanel')
+    await expect(panel).toBeVisible()
+
+    const measure = () =>
+      panel.evaluate(el => {
+        const box = el.getBoundingClientRect()
+        const buttons = [...el.querySelectorAll('button[aria-pressed]')]
+          .filter(b => /english|german|deutsch|englisch/i.test(b.textContent))
+          .map(b => b.getBoundingClientRect())
+        return {
+          overflow: el.scrollWidth - el.clientWidth,
+          inside: buttons.every(
+            r => r.left >= box.left - 0.5 && r.right <= box.right + 0.5
+          ),
+          count: buttons.length
+        }
+      })
+
+    for (const language of [
+      /english/i,
+      /german|deutsch/i,
+      /english|englisch/i
+    ]) {
+      await panel.getByRole('button', { name: language }).first().click()
+      const m = await measure()
+      expect(m.count).toBe(2)
+      expect(m.inside).toBe(true)
+      expect(m.overflow).toBeLessThanOrEqual(0)
+    }
+  })
+
+  test('German Band HQ tab labels stay inside their own tab (#3253)', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /band hq/i }).click()
+    const modal = page.getByRole('dialog')
+    await modal.getByRole('tab', { name: /settings/i }).click()
+    await modal
+      .getByRole('tabpanel')
+      .getByRole('button', { name: /german|deutsch/i })
+      .first()
+      .click()
+
+    const tabs = modal.getByRole('tab')
+    const count = await tabs.count()
+    expect(count).toBeGreaterThan(5)
+
+    // Letter-spacing leaves a fraction of a pixel after the last glyph.
+    const TOLERANCE = 1.5
+    for (let i = 0; i < count; i++) {
+      const tab = tabs.nth(i)
+      // A locked tab cannot be selected, but its label must still fit.
+      if ((await tab.getAttribute('aria-disabled')) !== 'true') {
+        await tab.click({ timeout: 5000 })
+      }
+      const fit = await tab.evaluate(el => {
+        const box = el.getBoundingClientRect()
+        const range = document.createRange()
+        range.selectNodeContents(el)
+        const content = range.getBoundingClientRect()
+        return {
+          left: content.left - box.left,
+          right: box.right - content.right
+        }
+      })
+      expect(fit.left, `tab ${i} left`).toBeGreaterThanOrEqual(-TOLERANCE)
+      expect(fit.right, `tab ${i} right`).toBeGreaterThanOrEqual(-TOLERANCE)
+    }
+  })
+
+  test('Kabelsalat title and status line stay inside the viewport (#3255)', async ({
+    page
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await enterKabelsalat(page)
+
+    const heading = page.getByRole('heading', { name: /hardware_rigging/i })
+    await expect(heading).toBeVisible()
+
+    const bounds = await heading.evaluate(el => {
+      const textRect = node => {
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        return range.getBoundingClientRect()
+      }
+      const status = el.parentElement.querySelector('p')
+      return {
+        viewport: window.innerWidth,
+        title: textRect(el),
+        status: textRect(status)
+      }
+    })
+    for (const part of ['title', 'status']) {
+      expect(bounds[part].left, `${part} left edge`).toBeGreaterThanOrEqual(0)
+      expect(bounds[part].right, `${part} right edge`).toBeLessThanOrEqual(
+        bounds.viewport
+      )
+    }
+  })
+
+  test('Expedition destination labels do not overlap on route seed 1 (#3254, #3273)', async ({
+    page
+  }) => {
+    // Phones hide names of a dense branch; wider maps hide the less important
+    // of two overlapping labels. Either way no two visible labels intersect.
+    expect(await seedOneLabelCollisions(page)).toEqual([])
+  })
+
+  test('A focused Expedition destination shows its name before travel confirmation (#3254)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width >= 640, 'Phone-only label rule')
+    await loadSeedOneExpedition(page)
+
+    const destination = page.getByRole('button', {
+      name: /travel to the distillery/i
+    })
+    const label = destination.getByTestId('map-node-label')
+    // Dense branch: the name is hidden at rest and revealed by focus alone.
+    await expect(label).toBeHidden()
+    await destination.focus()
+    await expect(label).toBeVisible()
+    await expect(label).toContainText(/the distillery/i)
+    // Focus must not have started the two-step travel confirmation.
+    await expect(page.getByText('CONFIRM?')).toHaveCount(0)
+  })
+
+  // Adjacent phone breakpoints get their own viewport (see the 639/640 block).
+  for (const width of [360, 414, 480, 639]) {
+    test.describe(`seed-1 labels at ${width}px`, () => {
+      test.use({ viewport: { width, height: 800 } })
+
+      test('destination labels do not overlap (#3254)', async ({
+        page
+      }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+        expect(await seedOneLabelCollisions(page)).toEqual([])
+      })
+    })
+  }
+
+  test('Chatter never covers the live Kabelsalat board on a phone (#3256)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width >= 640, 'Phone-only overlay rule')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    // Time keeps flowing after install; fastForward only fires the due
+    // chatter timer so the test does not wait out its 8-25s delay.
+    await page.clock.install()
+    await enterKabelsalat(page)
+    await expect(page.locator('svg[role="img"]')).toBeVisible()
+
+    const measure = () =>
+      page.evaluate(() => {
+        const overlay = [...document.querySelectorAll('[role="status"]')].find(
+          el => el.className.includes('z-(--z-chatter)')
+        )
+        const board = document.querySelector('svg[role="img"]')
+        if (!overlay || !board) return null
+        const a = overlay.getBoundingClientRect()
+        const b = board.getBoundingClientRect()
+        return {
+          messages: overlay.children.length,
+          painted: getComputedStyle(overlay).visibility !== 'hidden',
+          overlaps:
+            a.left < b.right &&
+            a.right > b.left &&
+            a.top < b.bottom &&
+            a.bottom > b.top
+        }
+      })
+
+    // The chatter timer is due after the jump; poll until its message shows.
+    let result = null
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          result = await measure()
+          return result?.messages ?? 0
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
+    expect(result, 'a chatter message must appear').not.toBeNull()
+    expect(result.messages).toBeGreaterThan(0)
+    // A message may sit on the board only if it is not painted at all.
+    expect(result.painted && result.overlaps).toBe(false)
   })
 })
