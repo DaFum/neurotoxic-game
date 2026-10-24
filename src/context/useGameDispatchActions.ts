@@ -34,7 +34,6 @@ import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
-import { projectQueuedActions } from './queuedActions'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,
@@ -545,7 +544,7 @@ interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
   stateRef: MutableRefObject<GameState>
-  queuedActionsRef?: MutableRefObject<GameAction[]>
+  latestStateRef: MutableRefObject<GameState>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
 }
@@ -560,7 +559,7 @@ export function useGameDispatchActions({
   dispatch,
   state,
   stateRef,
-  queuedActionsRef,
+  latestStateRef,
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
@@ -780,18 +779,18 @@ export function useGameDispatchActions({
 
   const commitSocialPost = useCallback(
     (payload: ApplySocialPostResultPayload): boolean => {
-      const { snapshot, pending } = projectQueuedActions(
-        stateRef.current,
-        queuedActionsRef?.current ?? []
+      const action = createApplySocialPostResultAction(
+        latestStateRef.current,
+        payload
       )
-      if (queuedActionsRef) queuedActionsRef.current = pending
-      const action = createApplySocialPostResultAction(snapshot, payload)
       if (!action) return false
-      if (gameReducer(snapshot, action) === snapshot) return false
+      // `dispatch` reduces synchronously, so a changed state is the reducer's
+      // own answer, not a prediction.
+      const before = latestStateRef.current
       dispatch(action)
-      return true
+      return latestStateRef.current !== before
     },
-    [dispatch, queuedActionsRef, stateRef]
+    [dispatch, latestStateRef]
   )
 
   // A resolved decision is persisted Career state that changes nothing about

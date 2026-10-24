@@ -32,9 +32,7 @@ import { createInitialState } from './initialState'
  * save in storage was placed by tooling and should hydrate on mount.
  */
 const INJECT_MARKER_KEY = 'neurotoxic_inject_marker'
-const MAX_QUEUED_ACTIONS = 64
 import { gameReducer } from './gameReducer'
-import { projectQueuedActions } from './queuedActions'
 import { createLoadGameAction } from './actionCreators'
 import type { GameState, GameAction } from '../types'
 import { useMapGeneration } from './useMapGeneration'
@@ -105,6 +103,9 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   return value
 }
 
+/** Reducer for React's store: `dispatch` has already reduced the action. */
+const replaceState = (_state: GameState, next: GameState): GameState => next
+
 /**
  * Initializes game state with persistent unlocks and optional screenshot-test
  * hydration.
@@ -173,24 +174,26 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   }, [t])
 
   const storage = useStorage()
-  const [state, rawDispatch] = useReducer(gameReducer, storage, initGameState)
+  // React only stores what `dispatch` below computed (`replaceState`); the
+  // reducer itself runs once, synchronously, in `dispatch`.
+  const [state, setState] = useReducer(replaceState, storage, initGameState)
 
-  // Use a ref to access the latest state in actions without creating a dependency loop
-  // This allows actions to be stable (memoized once) while still accessing current state.
+  // The state React last rendered. Reads that must agree with the UI (the
+  // store, persistence, the DEV `window.gameState`) use this one; it also
+  // keeps actions stable (memoized once) while still seeing the current state.
   const stateRef = useRef(state)
   stateRef.current = state
 
-  const queuedActionsRef = useRef<GameAction[]>([])
+  // The state after every dispatch so far, including ones React has not
+  // rendered yet. Action code that decides from the current state (a post
+  // commit, a purchase) reads this one instead of a render that lags.
+  const latestStateRef = useRef(state)
 
-  useLayoutEffect(() => {
-    queuedActionsRef.current = []
-  }, [state])
-
-  // Dev-only dispatch logging middleware: records each action type before it
-  // reduces. Gated by the logger level (`debug` is suppressed at INFO and
-  // above), so it is silent in production and changes no behavior — it only
-  // forwards to the underlying reducer dispatch with a stable identity.
-  const dispatch = useCallback<typeof rawDispatch>(action => {
+  // Reduces the action once against `latestStateRef` and hands React the
+  // result. A reducer that throws now throws from `dispatch` instead of from
+  // the render, and leaves the state untouched. Also logs each action type in
+  // DEV (`debug` is suppressed at INFO and above, so silent in production).
+  const dispatch = useCallback((action: GameAction) => {
     if (
       IS_DEV &&
       action &&
@@ -199,19 +202,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     ) {
       logger.debug('GameState', 'dispatch ' + String(action.type))
     }
-    if (action) {
-      const queue = queuedActionsRef.current
-      queue.push(action)
-      // Dispatches that leave state unchanged never trigger the clearing
-      // effect; drop their no-ops once the backlog grows.
-      if (queue.length > MAX_QUEUED_ACTIONS) {
-        queuedActionsRef.current = projectQueuedActions(
-          stateRef.current,
-          queue
-        ).pending
-      }
-    }
-    rawDispatch(action)
+    const next = gameReducer(latestStateRef.current, action)
+    if (next === latestStateRef.current) return
+    latestStateRef.current = next
+    setState(next)
   }, [])
 
   // Clean up injection marker after mount (deferred from initGameState to
@@ -285,7 +279,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     dispatch,
     state,
     stateRef,
-    queuedActionsRef,
+    latestStateRef,
     tRef,
     resetMapGenerationRetries
   })
