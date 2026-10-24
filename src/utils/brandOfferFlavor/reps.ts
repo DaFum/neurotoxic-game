@@ -2,8 +2,14 @@ import type { RandomFn } from '../../types/callbacks'
 import { pickIndex } from '../selectionUtils'
 import type { BrandOfferRep } from '../../types/social'
 
+/**
+ * Defines the structure for a brand representative's flavor profile.
+ */
 type RepEntry = { name: string; title: string }
 
+/**
+ * A dictionary mapping brand alignment categories to predefined lists of representative names and titles.
+ */
 const REPS_BY_ALIGNMENT: Record<string, RepEntry[]> = {
   EVIL: [
     { name: 'Vex Halberd', title: 'Brand Strategist' },
@@ -37,6 +43,12 @@ const REPS_BY_ALIGNMENT: Record<string, RepEntry[]> = {
   ]
 }
 
+/**
+ * Retrieves the pool of brand representatives corresponding to a specific brand alignment.
+ *
+ * @param alignment - The alignment identifier to query (e.g., 'EVIL', 'CORPORATE').
+ * @returns An array of representative entries for the specified alignment, or the neutral fallback pool if none match.
+ */
 const getRepPool = (alignment: string): RepEntry[] => {
   if (!Object.hasOwn(REPS_BY_ALIGNMENT, alignment)) {
     return REPS_BY_ALIGNMENT.NEUTRAL ?? []
@@ -44,6 +56,16 @@ const getRepPool = (alignment: string): RepEntry[] => {
   return REPS_BY_ALIGNMENT[alignment] ?? []
 }
 
+/**
+ * Constructs a fully localized brand offer representative profile, using weighted random selection based on brand alignment.
+ *
+ * @remarks
+ * This function handles resolving dynamic translation keys for the representative's name and title, relying on localized economy data. If the specified alignment has no entries, it gracefully defaults to the `NEUTRAL` pool and guarantees a fallback title.
+ *
+ * @param alignment - The brand's alignment identifier.
+ * @param rng - The random number generator callback used to pick a representative.
+ * @returns A brand offer representative object containing localized keys and default fallbacks for name and title.
+ */
 export const buildRep = (alignment: string, rng: RandomFn): BrandOfferRep => {
   const pool = getRepPool(alignment)
   const fallback: RepEntry = { name: 'Anon Rep', title: 'Brand Contact' }
