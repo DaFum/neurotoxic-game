@@ -22,7 +22,7 @@ interface RepeatDemandContext {
   tuning?: Readonly<BalanceTuning>
 }
 
-export const applyRepeatDemandAdjustment = (
+const applyRepeatDemandAdjustment = (
   financials: NonNullable<ReturnType<typeof calculateGigFinancials>>,
   context: RepeatDemandContext
 ) => {

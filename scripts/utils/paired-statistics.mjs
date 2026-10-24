@@ -54,7 +54,7 @@ const seededRandom = seed => {
   }
 }
 
-export const deterministicBootstrapConfidence = (
+const deterministicBootstrapConfidence = (
   values,
   seed,
   resamples = 2000
