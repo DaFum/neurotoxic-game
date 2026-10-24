@@ -34,7 +34,7 @@ import { createInitialState } from './initialState'
 const INJECT_MARKER_KEY = 'neurotoxic_inject_marker'
 import { gameReducer } from './gameReducer'
 import { createLoadGameAction } from './actionCreators'
-import type { GameState } from '../types'
+import type { GameState, GameAction } from '../types'
 import { useMapGeneration } from './useMapGeneration'
 import { SAVE_KEY, createRawLoadPayload } from './usePersistence'
 
