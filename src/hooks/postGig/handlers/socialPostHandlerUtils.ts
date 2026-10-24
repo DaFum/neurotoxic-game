@@ -164,5 +164,5 @@ export function applySocialPostResult(params: {
 
   // Persist the state (including pendingGigSettlement.socialReconciled: true)
   // so a reload or crash on the result/deals screen retains reconciliation status.
-  saveGameAfterStateCommit()
+  saveGameAfterStateCommit?.()
 }

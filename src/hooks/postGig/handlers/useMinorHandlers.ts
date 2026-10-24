@@ -72,7 +72,7 @@ export function useMinorHandlers({
         } else {
           updateSocial(patch)
         }
-        saveGameAfterStateCommit()
+        saveGameAfterStateCommit?.()
       } catch (e) {
         logger.error('PostGig', 'Failed to reconcile per-gig social state', e)
       }
