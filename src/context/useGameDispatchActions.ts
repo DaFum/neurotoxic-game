@@ -42,6 +42,7 @@ import {
   createRollbackExpeditionUnlockPurchaseAction
 } from './careerActionCreators'
 import {
+  getExpeditionHqFacilityLevel,
   getExpeditionHqFacilityPurchaseBlocker,
   getExpeditionUnlockSetPurchaseBlocker,
   type ExpeditionCareerPurchaseBlocker
@@ -827,7 +828,13 @@ export function useGameDispatchActions({
 
   const purchaseExpeditionHqFacility = useCallback(
     (facilityId: string, expectedLevel: number): boolean => {
-      const base = stateRef.current
+      // `latestStateRef` already holds every dispatch of this batch, so a
+      // second click sees the level the first one bought.
+      const base = latestStateRef.current
+      // A repeat of a build already honoured (a double click) is not a refusal
+      // the player needs explained.
+      if (getExpeditionHqFacilityLevel(base.career, facilityId) > expectedLevel)
+        return false
       const action = createPurchaseExpeditionHqFacilityAction(
         facilityId,
         expectedLevel
@@ -844,7 +851,12 @@ export function useGameDispatchActions({
       saveGameAfterStateCommit()
       return true
     },
-    [dispatch, saveGameAfterStateCommit, stateRef, toastCareerPurchaseFailure]
+    [
+      dispatch,
+      latestStateRef,
+      saveGameAfterStateCommit,
+      toastCareerPurchaseFailure
+    ]
   )
 
   const purchaseExpeditionUnlockSet = useCallback(
