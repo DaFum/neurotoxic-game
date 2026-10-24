@@ -764,6 +764,78 @@ test.describe('Visual smoke tests', () => {
     })
   }
 
+  for (const height of [800, 720]) {
+    test.describe(`Kabelsalat chatter at 1280x${height}`, () => {
+      test.use({ viewport: { width: 1280, height } })
+
+      test('chatter never covers a plug, socket or the header (#3274)', async ({
+        page
+      }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+        await page.emulateMedia({ reducedMotion: 'reduce' })
+        await page.clock.install()
+        await enterKabelsalat(page)
+        await expect(page.locator('svg[role="img"]')).toBeVisible()
+
+        const measure = () =>
+          page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            if (!overlay) return null
+            const box = overlay.getBoundingClientRect()
+            const hits = [
+              ...document.querySelectorAll(
+                'svg [role="button"],[data-chatter-avoid]'
+              )
+            ]
+              .filter(el => {
+                const r = el.getBoundingClientRect()
+                return (
+                  box.left < r.right &&
+                  box.right > r.left &&
+                  box.top < r.bottom &&
+                  box.bottom > r.top
+                )
+              })
+              .map(el => el.getAttribute('aria-label') ?? el.tagName)
+            const inlineLeft = Number.parseFloat(overlay.style.left)
+            return {
+              messages: overlay.children.length,
+              painted: getComputedStyle(overlay).visibility !== 'hidden',
+              hits,
+              // A moved box must be painted at the anchor that was checked.
+              leftDrift: Number.isNaN(inlineLeft)
+                ? 0
+                : Math.abs(box.left - inlineLeft)
+            }
+          })
+
+        let result = null
+        await expect
+          .poll(
+            async () => {
+              await page.clock.fastForward(30000)
+              result = await measure()
+              return result?.messages ?? 0
+            },
+            { intervals: [250], timeout: 20000 }
+          )
+          .toBeGreaterThan(0)
+        // The placement re-measures once the DOM settles; let it finish.
+        await expect
+          .poll(async () => (await measure())?.hits ?? ['pending'], {
+            intervals: [250],
+            timeout: 5000
+          })
+          .toEqual([])
+        result = await measure()
+        expect(result.painted).toBe(true)
+        expect(result.leftDrift).toBeLessThan(1)
+      })
+    })
+  }
+
   test('Chatter never covers the live Kabelsalat board on a phone (#3256)', async ({
     page
   }) => {

@@ -15,6 +15,7 @@ import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import {
   decideChatterPlacement,
+  gapAnchors,
   type Anchor,
   type Rect
 } from './chatterPlacement'
@@ -384,6 +385,7 @@ const clearPositionOverride = (el: HTMLElement): void => {
   el.style.right = ''
   el.style.bottom = ''
   el.style.transform = ''
+  el.style.translate = ''
   el.style.visibility = ''
 }
 
@@ -421,13 +423,23 @@ const useNonOverlappingPosition = (
       if (w === 0 || h === 0) return
 
       const obstacles = collectObstacleRects(el)
-      const anchors = candidateAnchors(
+      const fixedAnchors = candidateAnchors(
         isOverworld,
         window.innerWidth,
         window.innerHeight,
         w,
         h
       )
+      const anchors = [
+        ...fixedAnchors,
+        ...gapAnchors(obstacles, {
+          lefts: [...new Set(fixedAnchors.map(a => a.left))],
+          size: { w, h },
+          viewport: { vw: window.innerWidth, vh: window.innerHeight },
+          margin: EDGE_MARGIN,
+          preferredTop: box.top
+        })
+      ]
       const placement = decideChatterPlacement(
         {
           left: box.left,
@@ -455,6 +467,10 @@ const useNonOverlappingPosition = (
       el.style.right = 'auto'
       el.style.bottom = 'auto'
       el.style.transform = 'none'
+      // Tailwind v4's `-translate-x-1/2` sets `translate`, not `transform`, so
+      // without this the box is painted half its width left of the anchor that
+      // was just checked.
+      el.style.translate = 'none'
     }
 
     reposition()

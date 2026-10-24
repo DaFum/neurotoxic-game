@@ -27,6 +27,50 @@ const hitsAny = (rect: Rect, obstacles: readonly Rect[]): boolean => {
   return false
 }
 
+const GAP_PX = 8
+
+/**
+ * Proposes anchors that sit directly above or below each obstacle. A wide
+ * obstacle (a full-width header) can block every fixed anchor while a clear band
+ * remains between it and the next obstacle; the fixed anchors cannot see it.
+ *
+ * @param obstacles - Rectangles the box must never cover.
+ * @param layout - `lefts` are the horizontal positions to try, `size` the box,
+ * `viewport` the screen, `margin` the minimum distance to its edges, and
+ * `preferredTop` the vertical position the box would like to keep.
+ * @returns Anchors inside the margins, closest to `preferredTop` first. Pass
+ * them after the fixed anchors so the usual positions still win.
+ */
+export const gapAnchors = (
+  obstacles: readonly Rect[],
+  layout: {
+    lefts: readonly number[]
+    size: { w: number; h: number }
+    viewport: { vw: number; vh: number }
+    margin: number
+    preferredTop: number
+  }
+): Anchor[] => {
+  const { lefts, size, viewport, margin, preferredTop } = layout
+  const minTop = margin
+  const maxTop = viewport.vh - size.h - margin
+  const tops = new Set<number>()
+  for (const o of obstacles) {
+    for (const top of [o.bottom + GAP_PX, o.top - size.h - GAP_PX]) {
+      const rounded = Math.round(top)
+      if (rounded >= minTop && rounded <= maxTop) tops.add(rounded)
+    }
+  }
+  const sorted = [...tops].sort(
+    (a, b) => Math.abs(a - preferredTop) - Math.abs(b - preferredTop)
+  )
+  const anchors: Anchor[] = []
+  for (const top of sorted) {
+    for (const left of lefts) anchors.push({ left, top })
+  }
+  return anchors
+}
+
 /**
  * Decides where an optional chatter box may sit.
  *

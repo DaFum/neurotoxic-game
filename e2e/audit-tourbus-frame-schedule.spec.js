@@ -6,7 +6,8 @@ import {
   getTestHook,
   loadSavedGame,
   readRootState,
-  seedSaveOnce
+  seedSaveOnce,
+  stubGeneratedImages
 } from './helpers.js'
 
 test.describe.configure({ retries: 0 })
@@ -53,6 +54,9 @@ const startTourbus = async page => {
 const runSchedule = async (browser, baseURL, schedule, layout) => {
   const context = await browser.newContext({ baseURL })
   try {
+    // The stage awaits its generated textures before it registers the frame
+    // hook; keep that off the network.
+    await stubGeneratedImages(context)
     const page = await context.newPage()
     await startTourbus(page)
 

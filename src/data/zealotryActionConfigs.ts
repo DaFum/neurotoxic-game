@@ -29,14 +29,15 @@ export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = Object.freeze({
 })
 
 /** Tuning values for the cult indoctrination social action. */
-export const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = Object.freeze({
-  COST: 1000,
-  FAME_GAIN: 500,
-  ZEALOTRY_GAIN: 40,
-  CONTROVERSY_GAIN: 50,
-  HARMONY_COST: 30,
-  REQUIRED_ZEALOTRY: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY
-})
+export const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig =
+  Object.freeze({
+    COST: 1000,
+    FAME_GAIN: 500,
+    ZEALOTRY_GAIN: 40,
+    CONTROVERSY_GAIN: 50,
+    HARMONY_COST: 30,
+    REQUIRED_ZEALOTRY: CULT_INDOCTRINATION_REQUIRED_ZEALOTRY
+  })
 
 /** Tuning values for the void sermon social action. */
 export const VOID_SERMON_CONFIG: ZealotryActionConfig = Object.freeze({

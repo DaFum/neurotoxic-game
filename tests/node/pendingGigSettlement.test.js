@@ -6,6 +6,7 @@ import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
+  advanceDay,
   createRecordPendingGigSettlementAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
@@ -449,6 +450,95 @@ test('pending gig settlement reconciliation on load', async t => {
         2,
         'reconciled once'
       )
+    }
+  )
+
+  // The legacy skip above is safe because a second paid gig on the same day is
+  // unreachable: arrival runs `advanceDay` before `START_GIG`, and
+  // `SET_LAST_GIG_STATS` stamps `lastGigNodeId` so the node cannot be replayed.
+  // This pins the part the heuristic reads: after the arrival tick the day is
+  // past the previous gig's stamp, so the next gig's legacy record reconciles.
+  await t.test(
+    'legacy record for a gig reached by travel reconciles after the arrival tick',
+    () => {
+      const base = createInitialState()
+      let previous = {
+        ...base,
+        player: { ...base.player, money: 5000, day: 1 },
+        social: { ...base.social, lastGigDay: 1 }
+      }
+      previous = gameReducer(previous, advanceDay(previous))
+      assert.equal(previous.player.day, 2)
+      assert.equal(previous.social.lastGigDay, 1)
+
+      const loaded = handleLoadGame(createInitialState(), {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: { ...previous.player, money: 500 },
+        band: { ...previous.band },
+        social: {
+          ...previous.social,
+          activeDeals: [
+            {
+              id: 'energy_drink_cx',
+              remainingGigs: 3,
+              type: 'SPONSOR',
+              offer: {}
+            }
+          ],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-b',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {}
+        }
+      })
+      assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 2)
+    }
+  )
+
+  await t.test(
+    'a record carrying an unusable marker is reconciled, not read as legacy',
+    () => {
+      const base = createInitialState()
+      const loaded = handleLoadGame(createInitialState(), {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: { ...base.player, money: 500, day: 1 },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          lastGigDay: 1,
+          activeDeals: [
+            {
+              id: 'energy_drink_cx',
+              remainingGigs: 3,
+              type: 'SPONSOR',
+              offer: {}
+            }
+          ],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-null-marker',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          socialReconciled: null
+        }
+      })
+      // The lastGigDay heuristic only covers records with no marker field.
+      assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 2)
     }
   )
 

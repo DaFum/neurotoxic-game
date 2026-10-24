@@ -1756,6 +1756,7 @@
   "postGig.insufficientSpendableCash": "Nicht genügend verfügbares Geld für diesen Post.",
   "postGig.platforms.youtube": "YouTube",
   "postGig.postResolutionFailed": "Post fehlgeschlagen. Versuche eine andere Option.",
+  "postGig.postOptionUnavailable": "Dieser Post ist nicht mehr verfügbar. Versuche eine andere Option.",
   "postGig.processing": "Verarbeitung...",
   "postGig.skippedBrandDeals": "Marken-Deals übersprungen.",
   "postGig.socialOptionsUnavailable": "Social-Optionen sind gerade nicht verfügbar.",

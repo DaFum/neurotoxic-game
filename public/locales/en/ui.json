@@ -1756,6 +1756,7 @@
   "postGig.insufficientSpendableCash": "Insufficient spendable Cash to pay for this post.",
   "postGig.platforms.youtube": "YouTube",
   "postGig.postResolutionFailed": "Post failed. Try another option.",
+  "postGig.postOptionUnavailable": "That post is no longer available. Try another option.",
   "postGig.processing": "Processing...",
   "postGig.skippedBrandDeals": "Skipped brand deals.",
   "postGig.socialOptionsUnavailable": "Social options are unavailable right now.",
