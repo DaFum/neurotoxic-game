@@ -16,7 +16,6 @@ import {
   calculateContinueStats
 } from '../../utils/postGig/performanceLogic'
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
-import { shouldTriggerBankruptcy } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { handleSettleSoldMerch } from './gigReducer'
 import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
@@ -32,10 +31,10 @@ import {
   derivePostGigContinueEffects,
   derivePostGigEconomyQuestEvents,
   drainBandStamina,
+  evaluateAcceptedSettlementSolvency,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
 import {
-  capExpeditionSpendAtCashFloor,
   enforceExpeditionCashFloor
 } from '../../domain/expedition/loadout'
 import { ActionTypes } from '../actionTypes'
@@ -213,41 +212,56 @@ export const settlePendingGigOnLoad = (
     clampPlayerMoney,
     BALANCE_CONSTANTS
   })
-  const bankrupt = shouldTriggerBankruptcy(
-    stats.newMoney,
-    record.net,
-    getTotalDailyObligations(next)
-  )
-  const isFinaleGig =
-    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
-  const successfulFinale =
-    isFinaleGig && !bankrupt && state.lastGigStats.failed !== true
-  const careerFinale = successfulFinale && next.expedition.status === 'idle'
-  const expeditionFinale =
-    successfulFinale && next.expedition.status === 'active'
-
   // Continue refuses only the Cash an active run's protected Career Cash floor
   // forbids and still lands the fame; settle under the same rule so a reload
   // can neither spend that Cash nor lose that fame.
+  const { acceptedMoney } = evaluateAcceptedSettlementSolvency({
+    expedition: next.expedition,
+    previousMoney: player.money,
+    proposedMoney: stats.newMoney,
+    net: record.net,
+    totalDailyObligations: getTotalDailyObligations(next)
+  })
+
   const settled: GameState = {
     ...next,
     player: {
       ...player,
-      money: capExpeditionSpendAtCashFloor(
-        next.expedition,
-        finiteNumberOr(player.money, 0),
-        stats.newMoney
-      ),
+      money: acceptedMoney,
       fame: stats.newFame,
-      fameLevel: stats.fameLevel,
-      ...(careerFinale
-        ? { stats: { ...player.stats, tourCompleted: true } }
-        : {})
+      fameLevel: stats.fameLevel
     }
   }
   // The capped Cash never crosses the floor, so this only runs the floor's
   // bookkeeping (a rising balance retires a recorded travel refusal).
   next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
+
+  // Evaluate solvency from post-floor state money with getTotalDailyObligations(next)
+  const { insolvent, careerBankrupt } = evaluateAcceptedSettlementSolvency({
+    expedition: next.expedition,
+    previousMoney: next.player.money,
+    proposedMoney: next.player.money,
+    net: record.net,
+    totalDailyObligations: getTotalDailyObligations(next)
+  })
+
+  const isFinaleGig =
+    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
+  const successfulFinale =
+    isFinaleGig && !insolvent && state.lastGigStats.failed !== true
+  const careerFinale = successfulFinale && next.expedition.status === 'idle'
+  const expeditionFinale =
+    successfulFinale && next.expedition.status === 'active'
+
+  if (careerFinale) {
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        stats: { ...next.player.stats, tourCompleted: true }
+      }
+    }
+  }
 
   for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
     next = handleApplyQuestEvent(next, event)
@@ -277,14 +291,14 @@ export const settlePendingGigOnLoad = (
     })
   }
 
-  if (!bankrupt && !careerFinale) return next
+  if (!careerBankrupt && !careerFinale) return next
   const ended: GameState = {
     ...next,
-    terminalOutcome: bankrupt
+    terminalOutcome: careerBankrupt
       ? { reason: 'bankruptcy' }
       : { reason: 'career_victory' },
     currentScene: GAME_PHASES.GAMEOVER
   }
   // A run still active when the Career goes bankrupt ends with it.
-  return bankrupt ? settleExpeditionOnGameOver(ended, 'bankruptcy') : ended
+  return careerBankrupt ? settleExpeditionOnGameOver(ended, 'bankruptcy') : ended
 }

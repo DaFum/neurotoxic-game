@@ -19,6 +19,11 @@ import {
   finiteNumberOr,
   readMemberStamina
 } from '../../../utils/gameState'
+import {
+  capExpeditionSpendAtCashFloor,
+  getExpeditionSpendableCash
+} from '../../../domain/expedition/loadout'
+import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import {
   createFameGainedQuestEvent,
@@ -119,6 +124,58 @@ export function buildStoryFlagQuests(params: {
  * @param stats - Settled post-gig fame and money totals.
  * @returns Fame event first, then money, each only for a positive gain.
  */
+/**
+ * Result of evaluating accepted settlement solvency.
+ */
+export interface AcceptedSettlementSolvencyResult {
+  acceptedMoney: number
+  insolvent: boolean
+  careerBankrupt: boolean
+}
+
+/**
+ * Evaluates accepted player cash, overall solvency, and career bankruptcy for post-gig settlement (pure).
+ *
+ * @param params - Expedition state, previous money, proposed money from stats, settlement net, total daily obligations.
+ * @returns Accepted cash post-floor, insolvency flag, and career bankruptcy flag.
+ *
+ * @remarks
+ * For an active expedition run, active-run insolvency is handled through `pendingFailure` in `failure.ts`
+ * (which triggers an `expedition_cash` crisis on overworld sync) rather than immediate career bankruptcy.
+ */
+export function evaluateAcceptedSettlementSolvency(params: {
+  expedition: GameState['expedition'] | undefined
+  previousMoney: number | undefined
+  proposedMoney: number
+  net: number
+  totalDailyObligations: number
+}): AcceptedSettlementSolvencyResult {
+  const { expedition, previousMoney, proposedMoney, net, totalDailyObligations } =
+    params
+  const normalizedPrevious = finiteNumberOr(previousMoney, 0)
+  const acceptedMoney = capExpeditionSpendAtCashFloor(
+    expedition,
+    normalizedPrevious,
+    proposedMoney
+  )
+  const spendableCash = getExpeditionSpendableCash({
+    player: { money: acceptedMoney },
+    expedition
+  } as GameState)
+  const insolvent = shouldTriggerBankruptcy(
+    spendableCash,
+    net,
+    totalDailyObligations
+  )
+  const careerBankrupt = insolvent && expedition?.status !== 'active'
+
+  return {
+    acceptedMoney,
+    insolvent,
+    careerBankrupt
+  }
+}
+
 export function derivePostGigEconomyQuestEvents(
   player: GameState['player'],
   stats: { newFame: number; newMoney: number }

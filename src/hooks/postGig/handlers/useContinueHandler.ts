@@ -16,16 +16,15 @@ import {
   finiteNumberOr,
   BALANCE_CONSTANTS
 } from '../../../utils/gameState'
-import { capExpeditionSpendAtCashFloor } from '../../../domain/expedition/loadout'
 import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGig'
-import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import {
   buildSoldMerchInventory,
   derivePostGigContinueEffects,
   dispatchEconomyQuests,
   drainBandStamina,
+  evaluateAcceptedSettlementSolvency,
   handleContinueSceneTransition
 } from './continueHandlerUtils'
 import type { HandlerDispatchers } from './types'
@@ -161,15 +160,18 @@ export function useContinueHandler({
         BALANCE_CONSTANTS
       })
 
-      const bankrupt = shouldTriggerBankruptcy(
-        stats.newMoney,
-        financials.net,
-        totalDailyObligations
-      )
+      const { acceptedMoney, insolvent, careerBankrupt } =
+        evaluateAcceptedSettlementSolvency({
+          expedition,
+          previousMoney: player.money,
+          proposedMoney: stats.newMoney,
+          net: financials.net,
+          totalDailyObligations
+        })
 
       const successfulFinale =
         isFinaleGig &&
-        !bankrupt &&
+        !insolvent &&
         !!currentGig?.id &&
         !!lastGigStats &&
         lastGigStats.failed !== true
@@ -180,11 +182,7 @@ export function useContinueHandler({
       updatePlayer({
         // Under an active run's protected Career Cash floor only the Cash is
         // refused; the fame the gig earned still lands.
-        money: capExpeditionSpendAtCashFloor(
-          expedition,
-          finiteNumberOr(player.money, 0),
-          stats.newMoney
-        ),
+        money: acceptedMoney,
         fame: stats.newFame,
         fameLevel: stats.fameLevel,
         // Surviving the FINALE gig completes the tour; the flag persists in
@@ -265,7 +263,7 @@ export function useContinueHandler({
       }
 
       handleContinueSceneTransition({
-        bankrupt,
+        bankrupt: careerBankrupt,
         isFinaleGig: careerFinale,
         addToast,
         changeScene,
