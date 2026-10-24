@@ -2234,6 +2234,7 @@
   "toast.quest_complete_money": "[{{name}}]: COMPLETE {{amount}}",
   "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FAILED",
+  "toast.roadieRepairWaived": "Protected cash saved the equipment: €{{amount}} in repairs waived.",
   "toast.spareGearUsed": "Spare gear saved the setup: {{item}} used up.",
   "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
   "toast.void_trade_success": "[ACQUIRED]: {{itemName}} (-{{fame}} Fame)",
