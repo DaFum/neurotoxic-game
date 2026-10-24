@@ -31,7 +31,7 @@ describe('Social post spendable Cash eligibility & composite action regression',
     assert.equal(smashGearOpt.condition(poorState), false)
     assert.equal(influencerOpt.condition(poorState), false)
 
-    // Direct call to calculatePostGigStateUpdates with smashGearOpt on state with insufficient spendable Cash throws SocialPostRefusalError.
+    // Direct call to calculatePostGigStateUpdates with smashGearOpt on state with insufficient spendable Cash throws SocialPostRefusalError with code CONDITION_FAILED.
     assert.throws(
       () => {
         calculatePostGigStateUpdates({
@@ -46,7 +46,7 @@ describe('Social post spendable Cash eligibility & composite action regression',
           expedition: poorState.expedition
         })
       },
-      SocialPostRefusalError
+      err => err instanceof SocialPostRefusalError && err.code === 'CONDITION_FAILED'
     )
 
     // Test direct action creator / reducer rejection for negative moneyDelta exceeding spendable cash (-300 debit with €100 spendable).
@@ -158,5 +158,28 @@ describe('Social post spendable Cash eligibility & composite action regression',
 
     assert.equal(updates.finalResult.success, true)
     assert.equal(updates.finalResult.influencerUpdate.id, 'inf_micro')
+  })
+
+  it('rejects non-finite moneyDelta in action creator and reducer without state changes', () => {
+    const base = createInitialState()
+    base.player.money = 1000
+
+    const malformedPayload = {
+      moneyDelta: NaN,
+      social: { pendingSocialOptionId: 'opt_1', followers: { tiktok: 5000 } }
+    }
+
+    // Action creator returns null for NaN moneyDelta
+    const action = createApplySocialPostResultAction(base, malformedPayload)
+    assert.equal(action, null)
+
+    // Reducer returns identical state reference
+    const nextState = gameReducer(base, {
+      type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+      payload: malformedPayload
+    })
+    assert.equal(nextState, base)
+    assert.equal(nextState.player.money, 1000)
+    assert.deepEqual(nextState.social, base.social)
   })
 })

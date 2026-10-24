@@ -539,6 +539,7 @@ interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
   stateRef: MutableRefObject<GameState>
+  pendingStateRef?: MutableRefObject<GameState>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
 }
@@ -553,6 +554,7 @@ export function useGameDispatchActions({
   dispatch,
   state,
   stateRef,
+  pendingStateRef,
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
@@ -764,13 +766,14 @@ export function useGameDispatchActions({
 
   const commitSocialPost = useCallback(
     (payload: ApplySocialPostResultPayload): boolean => {
-      const snapshot = stateRef.current
+      const snapshot = (pendingStateRef ?? stateRef).current
       const action = createApplySocialPostResultAction(snapshot, payload)
       if (!action) return false
+      if (gameReducer(snapshot, action) === snapshot) return false
       dispatch(action)
       return true
     },
-    [dispatch, stateRef]
+    [dispatch, pendingStateRef, stateRef]
   )
 
   // A resolved decision is persisted Career state that changes nothing about

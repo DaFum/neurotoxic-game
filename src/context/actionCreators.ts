@@ -294,7 +294,15 @@ export const createApplySocialPostResultAction = (
     return null
   }
 
-  const moneyDelta = finiteNumberOr(payload.moneyDelta, 0)
+  if (
+    payload.moneyDelta !== undefined &&
+    payload.moneyDelta !== null &&
+    !isFiniteNumber(payload.moneyDelta)
+  ) {
+    return null
+  }
+
+  const moneyDelta = payload.moneyDelta ?? 0
   if (moneyDelta < 0) {
     const requiredDebit = Math.abs(moneyDelta)
     const spendable = getExpeditionSpendableCash(stateSnapshot)

@@ -1166,4 +1166,59 @@ describe('GameState Context - commitSocialPost', () => {
     expect(commitResult).toBe(false)
     expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(initialMoney)
   })
+
+  test('commitSocialPost returns false and skips dispatch when balance reduction queued in same act() leaves insufficient Cash', () => {
+    let commitResult = true
+    const TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <div data-testid='tiktok-followers'>{gameState.social?.followers?.tiktok || 0}</div>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 500 })}
+          >
+            Setup
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              gameState.updatePlayer({ money: 100 })
+              commitResult = gameState.commitSocialPost({
+                moneyDelta: -300,
+                social: {
+                  pendingSocialOptionId: 'test_option',
+                  followers: { tiktok: 5000 }
+                }
+              })
+            }}
+          >
+            Queue Batch
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Setup').click()
+    })
+    expect(screen.getByTestId('player-money')).toHaveTextContent('500')
+
+    act(() => {
+      screen.getByText('Queue Batch').click()
+    })
+
+    expect(commitResult).toBe(false)
+    expect(screen.getByTestId('player-money')).toHaveTextContent('100')
+    expect(screen.getByTestId('tiktok-followers')).toHaveTextContent('0')
+  })
 })

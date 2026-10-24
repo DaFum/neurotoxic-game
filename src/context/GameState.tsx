@@ -173,6 +173,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const storage = useStorage()
   const [state, rawDispatch] = useReducer(gameReducer, storage, initGameState)
 
+  const pendingStateRef = useRef(state)
+
   // Dev-only dispatch logging middleware: records each action type before it
   // reduces. Gated by the logger level (`debug` is suppressed at INFO and
   // above), so it is silent in production and changes no behavior — it only
@@ -185,6 +187,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       Object.hasOwn(action, 'type')
     ) {
       logger.debug('GameState', 'dispatch ' + String(action.type))
+    }
+    if (action) {
+      try {
+        pendingStateRef.current = gameReducer(pendingStateRef.current, action)
+      } catch {
+        // Fallback: if gameReducer throws, keep existing pendingStateRef
+      }
     }
     rawDispatch(action)
   }, [])
@@ -213,6 +222,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
+
+  useLayoutEffect(() => {
+    pendingStateRef.current = state
+  }, [state])
 
   const storeRef = useRef<GameStore | null>(null)
   if (!storeRef.current) {
@@ -265,6 +278,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     dispatch,
     state,
     stateRef,
+    pendingStateRef,
     tRef,
     resetMapGenerationRetries
   })
