@@ -503,3 +503,35 @@ test('floor-0 active-run insolvency parity for pending failure across live Conti
 
   assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
 })
+
+test('evaluateAcceptedSettlementSolvency ignores the settlement net for an active run, like the economy failure signal', () => {
+  const state = startedState(
+    { money: 400 },
+    { build: { protectedCareerCash: 400 } }
+  )
+  const base = {
+    previousMoney: 400,
+    proposedMoney: 300,
+    net: -100,
+    totalDailyObligations: -50
+  }
+
+  const active = evaluateAcceptedSettlementSolvency({
+    ...base,
+    expedition: state.expedition
+  })
+  assert.equal(active.acceptedMoney, 400, 'the floor refuses the loss')
+  assert.equal(active.insolvent, false)
+  assert.equal(active.careerBankrupt, false)
+
+  const career = evaluateAcceptedSettlementSolvency({
+    ...base,
+    expedition: undefined,
+    proposedMoney: 0
+  })
+  assert.equal(
+    career.insolvent,
+    true,
+    'a Career still counts the settlement net'
+  )
+})

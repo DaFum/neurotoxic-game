@@ -135,6 +135,8 @@ export interface AcceptedSettlementSolvencyResult {
  * @remarks
  * For an active expedition run, active-run insolvency is handled through `pendingFailure` in `failure.ts`
  * (which triggers an `expedition_cash` crisis on overworld sync) rather than immediate career bankruptcy.
+ * The active-run decision uses the same rule as that signal (settlement net ignored), so the Finale
+ * gate and the crisis cannot disagree.
  */
 export function evaluateAcceptedSettlementSolvency(params: {
   expedition: GameState['expedition'] | undefined
@@ -160,12 +162,16 @@ export function evaluateAcceptedSettlementSolvency(params: {
     player: { money: acceptedMoney },
     expedition
   } as GameState)
+  const activeRun = expedition?.status === 'active'
+  // An active run's crisis is decided by `getExpeditionEconomyFailureSignal`,
+  // which ignores this gig's net. Gating the Finale on a net that signal discards
+  // would suppress completion without ever raising the matching crisis.
   const insolvent = shouldTriggerBankruptcy(
     spendableCash,
-    net,
+    activeRun ? 0 : net,
     totalDailyObligations
   )
-  const careerBankrupt = insolvent && expedition?.status !== 'active'
+  const careerBankrupt = insolvent && !activeRun
 
   return {
     acceptedMoney,
