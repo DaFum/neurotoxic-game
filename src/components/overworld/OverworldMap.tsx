@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
@@ -7,6 +7,7 @@ import { normalizeVenueId } from '../../utils/mapUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
+import { useMapLabelDeclutter } from './useMapLabelDeclutter'
 import { getNodeIconUrl } from './utils'
 import { nodeToPercentPosition } from '../../utils/mapUtils'
 
@@ -288,8 +289,17 @@ export const OverworldMap = React.memo(
       )
     }, [hoveredNode, isConnected, currentNode])
 
+    // Expedition maps only: hide the lower-priority one of two overlapping labels.
+    const mapRef = useRef<HTMLDivElement>(null)
+    useMapLabelDeclutter(
+      mapRef,
+      Boolean(expeditionFogByNodeId),
+      renderedNodes,
+      hoveredNode?.id ?? null
+    )
+
     return (
-      <div className='map-wrap'>
+      <div className='map-wrap' ref={mapRef}>
         <FallbackImage
           src={mapBgUrl}
           alt=''

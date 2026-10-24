@@ -89,6 +89,7 @@ const seedOneLabelCollisions = async page => {
 
   const labels = await page.evaluate(() =>
     [...document.querySelectorAll('[data-testid="map-node-label"]')]
+      .filter(label => getComputedStyle(label).visibility !== 'hidden')
       .map((label, node) => ({
         node,
         boxes: [...label.children]
@@ -722,11 +723,11 @@ test.describe('Visual smoke tests', () => {
     }
   })
 
-  test('Expedition destination labels do not overlap on route seed 1 (#3254)', async ({
+  test('Expedition destination labels do not overlap on route seed 1 (#3254, #3273)', async ({
     page
   }) => {
-    // The desktop map keeps every name chip; the dense-branch rule is phone-only.
-    test.skip(page.viewportSize().width >= 640, 'Phone-only collision check')
+    // Phones hide names of a dense branch; wider maps hide the less important
+    // of two overlapping labels. Either way no two visible labels intersect.
     expect(await seedOneLabelCollisions(page)).toEqual([])
   })
 

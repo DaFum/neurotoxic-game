@@ -490,6 +490,18 @@ export const MapNodeView = memo(
       nodeTypeLabel.toLocaleLowerCase() !== nodeLocationName.toLocaleLowerCase()
     const nameVisibleOnDesktop = isCurrent || isHoveredLocal || isPendingConfirm
 
+    // When two labels collide the more important one stays (see
+    // `useMapLabelDeclutter`): focused/confirming, then a reachable destination,
+    // then the current node.
+    const labelPriority =
+      isHoveredLocal || isPendingConfirm
+        ? 0
+        : isReachable && !isCurrent
+          ? 1
+          : isCurrent
+            ? 2
+            : 3
+
     // Determine visuals based on props
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
@@ -504,6 +516,7 @@ export const MapNodeView = memo(
 
     return (
       <div
+        data-label-priority={labelPriority}
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : isReachable ? 'z-(--z-stage)' : 'z-(--z-stage-bg)'}
           ${!isReachable && !isCurrent ? 'opacity-60 grayscale pointer-events-none' : 'opacity-100'}
@@ -588,7 +601,7 @@ export const MapNodeView = memo(
             z-index (above) so its label reads on top. */}
         <div
           data-testid='map-node-label'
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
+          className={`data-[declutter-hidden=true]:invisible absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           {showTypeChip && (
             <span
