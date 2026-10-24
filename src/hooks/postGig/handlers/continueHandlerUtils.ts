@@ -19,7 +19,10 @@ import {
   finiteNumberOr,
   readMemberStamina
 } from '../../../utils/gameState'
-import { capExpeditionSpendAtCashFloor } from '../../../domain/expedition/loadout'
+import {
+  capExpeditionSpendAtCashFloor,
+  getExpeditionSpendableCash
+} from '../../../domain/expedition/loadout'
 import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import {
@@ -155,8 +158,12 @@ export function evaluateAcceptedSettlementSolvency(params: {
     normalizedPrevious,
     proposedMoney
   )
+  const spendableCash = getExpeditionSpendableCash({
+    player: { money: acceptedMoney },
+    expedition
+  } as GameState)
   const insolvent = shouldTriggerBankruptcy(
-    acceptedMoney,
+    spendableCash,
     net,
     totalDailyObligations
   )

@@ -229,6 +229,51 @@ test('pending gig settlement actions', async t => {
   })
 })
 
+test('a Finale settlement leaving balance at protected Career Cash with insolvency gates Finale completion on load', () => {
+  const walked = walkToFinale(
+    startedState(
+      { money: 400, fame: 100 },
+      { build: { protectedCareerCash: 400 } }
+    )
+  )
+  const routeStep = walked.expedition.routeStep
+  const atResult = {
+    ...walked,
+    currentScene: GAME_PHASES.POST_GIG,
+    player: { ...walked.player, money: 400 },
+    currentGig: { id: 'finale_venue', name: 'Finale Venue' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+    expedition: {
+      ...walked.expedition,
+      protectedCareerCash: 400,
+      lastGigResolvedAtRouteStep: routeStep
+    }
+  }
+  const action = createRecordPendingGigSettlementAction({
+    gigId: 'finale_venue',
+    net: -100,
+    perfScore: 80,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: {}
+  })
+  assert.ok(action)
+  const recorded = gameReducer(atResult, action)
+  assert.ok(recorded.pendingGigSettlement, 'the record is accepted')
+
+  const loaded = handleLoadGame(
+    createInitialState(),
+    JSON.parse(JSON.stringify(createPersistedState(recorded)))
+  )
+
+  assert.equal(loaded.player.money, 400)
+  assert.equal(loaded.expedition.status, 'active')
+  assert.notEqual(loaded.expedition.status, 'completed')
+  assert.ok(loaded.expedition.pendingFailure)
+  assert.equal(loaded.expedition.pendingFailure.reason, 'bankruptcy')
+  assert.equal(loaded.pendingGigSettlement, null)
+})
+
 test('a reload on an Expedition Finale result completes the run', async t => {
   // The real save path: the post-gig screen records the settlement, the
   // record-then-save writes the whitelisted slice, and the load settles it.
