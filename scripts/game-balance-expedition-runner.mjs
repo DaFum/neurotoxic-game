@@ -1204,7 +1204,7 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
       social: updates.updatedSocial,
       moneyDelta: updates.appliedMoneyDelta,
       band: updates.newBand,
-      failedStageDive: updates.failedStageDive
+      failedStageDive: updates.finalResult?.failedStageDive
     }
   })
   // The reducer proves the option against `social.pendingSocialOptionId`, which
