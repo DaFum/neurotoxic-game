@@ -32,7 +32,7 @@ export interface HandlerDispatchers {
   ) => void
   commitSocialPost: (
     payload: import('../../../types/actions').ApplySocialPostResultPayload
-  ) => boolean
+  ) => import('../../../utils/postGig/socialPostResultValidation').SocialPostCommitResult
   setPhase: (phase: PostGigPhase) => void
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void

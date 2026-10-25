@@ -31,6 +31,7 @@ import type { Platform } from '../../types/social'
 import type { BandMember } from '../../types/band'
 import type { ActiveBrandDeal, BrandDeal } from '../../types/social'
 import type { CalculatePostGigStateParams, ResolvedPostResult } from './types'
+import type { SocialPostRefusalCode } from './socialPostResultValidation'
 
 const isSocialPlatformId = (value: unknown): value is Platform =>
   typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
@@ -241,11 +242,11 @@ export const buildPerGigSocialReconciliation = ({
  * due to insufficient spendable cash in an active Expedition or Career mode.
  */
 export class SocialPostRefusalError extends StateError {
-  public code: string
+  public code: SocialPostRefusalCode
 
   constructor(
     message: string,
-    code = 'INSUFFICIENT_SPENDABLE_CASH',
+    code: SocialPostRefusalCode = 'INSUFFICIENT_SPENDABLE_CASH',
     context: Record<string, unknown> = {}
   ) {
     super(message, context)
