@@ -28,8 +28,18 @@ function runTeardownStep(step: () => void, name: string): void {
  * `state.ts`, so adding a node there is the only step needed to have it torn
  * down here.
  */
-export function disposeAudio() {
+export function disposeAudio(): void {
   audioState.playRequestId++
+  disposeAudioInternal()
+}
+
+/**
+ * Tears down the audio graph without invalidating the current playback
+ * request. Internal recovery only: `ensureAudioContext()` rebuilds a closed
+ * context with it so the request that is awaiting the rebuild is not cancelled.
+ * Explicit disposal must go through {@link disposeAudio}.
+ */
+export function disposeAudioInternal(): void {
   // stopAudioInternal() logic - we can't call it here directly if it's in playback
   // So we handle the disposal of shared resources manually
 

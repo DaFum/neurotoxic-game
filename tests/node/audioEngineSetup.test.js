@@ -345,10 +345,15 @@ test('ensureAudioContext', async t => {
       state = 'running'
     })
 
+    // The request that awaits the rebuild must stay valid: only an explicit
+    // stop or a newer request may bump the generation.
+    const requestIdBefore = audioState.playRequestId
+
     try {
       const result = await ensureAudioContext()
       assert.strictEqual(result, true)
       assert.strictEqual(mockTone.start.mock.calls.length, 1)
+      assert.strictEqual(audioState.playRequestId, requestIdBefore)
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)

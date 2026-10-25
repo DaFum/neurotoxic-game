@@ -7,7 +7,7 @@ import {
 } from './audioContextState'
 import { audioState } from './state'
 import { setupAudio } from './setup'
-import { disposeAudio } from './dispose'
+import { disposeAudioInternal } from './dispose'
 
 type RawAudioContextLike = AudioContext & {
   state?: AudioContextState | 'interrupted'
@@ -201,7 +201,7 @@ export async function ensureAudioContext(): Promise<boolean> {
         `AudioContext state is ${reasonState}. Rebuilding audio graph.`
       )
       try {
-        disposeAudio()
+        disposeAudioInternal()
       } catch (error) {
         logger.debug(
           'AudioEngine',
