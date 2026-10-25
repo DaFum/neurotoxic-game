@@ -85,9 +85,13 @@ import {
   createSetActiveEventAction
 } from '../src/context/actionCreators.ts'
 import { areBetweenTourDecisionsResolved } from '../src/domain/expedition/betweenTour.ts'
-import { getActiveAssetModifiers } from '../src/utils/assetSelectors.ts'
+import {
+  getActiveAssetModifiers,
+  getTotalDailyObligations
+} from '../src/utils/assetSelectors.ts'
 import { deriveFinancials } from '../src/utils/postGig/derivations.ts'
 import { calculateContinueStats } from '../src/utils/postGig/performanceLogic.ts'
+import { evaluateAcceptedSettlementSolvency } from '../src/hooks/postGig/handlers/continueHandlerUtils.ts'
 import {
   BALANCE_CONSTANTS,
   calculateFameGain,
@@ -1598,9 +1602,11 @@ export const explainExtractionDecision = (state, profile) => {
  * `getExpeditionSpendableCash` subtracts the protected slice and every
  * discretionary spender checks it through `canSpendExpeditionCash`, so a
  * guarded spend that crosses the floor means a call site bypassed the guard.
- * Money moving below the floor by other means - a Gig that lost money, a
- * travel settlement - is legal, and asserting otherwise made the simulation
- * describe a stricter game than the one in `src/`.
+ * A Gig loss is not such a route: when it would cross the floor the
+ * settlement refuses that Cash change in full (`capExpeditionSpendAtCashFloor`)
+ * and the balance stays where it was, while the Gig's Fame still lands. Cash
+ * can still legally sit below the floor through floor-exempt actions such as
+ * the `ADVANCE_DAY` obligations, so this gate judges only guarded spends.
  */
 const verifyProtectedCashNotSpent = (before, after, label) => {
   const protectedCash = finiteNumberOr(
@@ -1755,6 +1761,18 @@ const selectExtractionRareCarryIds = state => {
  * @param {number} gig.misses - Missed notes.
  * @param {Record<string, any>} telemetry - Run telemetry to update.
  * @returns {import('../src/types').GameState} State after the payout.
+ *
+ * @remarks
+ * Same sequence as `useContinueHandler`: `calculateContinueStats` proposes the
+ * new balance, `evaluateAcceptedSettlementSolvency` refuses the Cash part in
+ * full when it would cross an active run's protected Career Cash floor, and
+ * one `UPDATE_PLAYER` carries the accepted money with the calculated Fame.
+ * Dispatching the proposed money instead let `enforceExpeditionCashFloor`
+ * revert the whole update, so the run also lost the Fame production keeps.
+ *
+ * `gigNetTotal` stays the quoted ledger net; `acceptedGigNetTotal` is what
+ * Cash actually moved, and a refusal adds the refused wallet change to
+ * `refusedGigLossValue`.
  */
 export const settleSimulatedGigPayout = (
   state,
@@ -1766,32 +1784,40 @@ export const settleSimulatedGigPayout = (
     perfScore,
     financials,
     misses,
-    bandStyle: state.band.style,
+    bandStyle: finiteNumberOr(state.band.style, 0),
+    dealFameMultiplier: financials.dealFameMultiplier,
     calculateFameGain,
     calculateFameLevel,
     clampPlayerFame,
     clampPlayerMoney,
     BALANCE_CONSTANTS
   })
+  const previousMoney = finiteNumberOr(state.player.money, 0)
+  const { acceptedMoney } = evaluateAcceptedSettlementSolvency({
+    expedition: state.expedition,
+    previousMoney: state.player.money,
+    proposedMoney: continueStats.newMoney,
+    net: financials.net,
+    totalDailyObligations: getTotalDailyObligations(state)
+  })
   telemetry.gigNetTotal += finiteNumberOr(financials.net, 0)
-  // Through the reducer, not into state.
-  //
-  // `useContinueHandler` applies the post-Gig payout with
-  // `updatePlayer({ money, fame, fameLevel })`, so in production it
-  // passes `gameReducer` and therefore `enforceExpeditionCashFloor` -
-  // the central guard that reverts any action lowering Cash past the
-  // protected slice. Writing the same fields straight into state made
-  // the Gig the one money movement in the run that could cross the
-  // floor, which is not a rule the game has. The simulation has to
-  // reflect the code.
-  return gameReducer(state, {
+  if (acceptedMoney !== continueStats.newMoney) {
+    telemetry.refusedGigLossCount += 1
+    telemetry.refusedGigLossValue += acceptedMoney - continueStats.newMoney
+  }
+  // Through the reducer, not into state, so the floor's bookkeeping (a rising
+  // balance retires a recorded travel refusal) runs as in production.
+  const next = gameReducer(state, {
     type: ActionTypes.UPDATE_PLAYER,
     payload: {
-      money: continueStats.newMoney,
+      money: acceptedMoney,
       fame: continueStats.newFame,
       fameLevel: continueStats.fameLevel
     }
   })
+  telemetry.acceptedGigNetTotal +=
+    finiteNumberOr(next.player.money, 0) - previousMoney
+  return next
 }
 
 /**
@@ -1879,7 +1905,12 @@ export const runExpeditionSimulation = (
     extractionDecisions: [],
     pressureEvents: [],
     socialPosts: [],
+    // Quoted ledger net; the accepted net is what Cash actually moved after
+    // the protected Career Cash floor refused any crossing loss.
     gigNetTotal: 0,
+    acceptedGigNetTotal: 0,
+    refusedGigLossCount: 0,
+    refusedGigLossValue: 0,
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
     maxComboBest: 0,
@@ -2095,13 +2126,16 @@ export const runExpeditionSimulation = (
           if (action) {
             const beforeRepair = state
             state = gameReducer(state, action)
-            verifyProtectedCashNotSpent(
-              beforeRepair,
-              state,
-              `repair:${intent.mode}`
-            )
-            telemetry.repairsCount++
-            telemetry.repairSpend += resolution.result.moneyCost
+            // A refused dispatch returns the same state; it is not a repair.
+            if (state !== beforeRepair) {
+              verifyProtectedCashNotSpent(
+                beforeRepair,
+                state,
+                `repair:${intent.mode}`
+              )
+              telemetry.repairsCount++
+              telemetry.repairSpend += resolution.result.moneyCost
+            }
           }
         }
       }
