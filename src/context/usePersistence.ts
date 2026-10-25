@@ -4,7 +4,8 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState
+  useState,
+  startTransition
 } from 'react'
 import type { TFunction } from 'i18next'
 import {
@@ -712,7 +713,12 @@ export function usePersistence({
       if (onSaved) {
         saveRequestListenersRef.current.push(onSaved)
       }
-      setSaveRequestCount(count => count + 1)
+      // A transition, like the scene and START_GIG dispatches it follows: a
+      // default-lane update renders first, so the effect would save the state
+      // from before a transition-dispatched action committed. Both land in the
+      // same transition lane when requested in the same event, and a save that
+      // trails a default-lane dispatch still sees it, as the render includes it.
+      startTransition(() => setSaveRequestCount(count => count + 1))
     },
     []
   )
