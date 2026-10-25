@@ -143,7 +143,7 @@ import {
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
-import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
+import { ORIGINAL_CONTROL_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
 // ── Determinism Mock ──────────────────────────────────────────────────────
@@ -2833,7 +2833,7 @@ const createExecutionCoverage = () => ({
 export const runSingleSimulation = (
   scenario,
   seed,
-  tuning = DEFAULT_BALANCE_TUNING
+  tuning = ORIGINAL_CONTROL_BALANCE_TUNING
 ) => {
   // UUIDs are deterministic per run so candidate ordering cannot affect paired
   // gameplay through generated asset/campaign identifiers.

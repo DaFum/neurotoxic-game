@@ -181,6 +181,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // The state React last rendered. Reads that must agree with the UI (the
   // store, persistence, the DEV `window.gameState`) use this one; it also
   // keeps actions stable (memoized once) while still seeing the current state.
+  //
+  // Written during render on purpose (React Doctor's no-ref-current-in-render
+  // flags it): `useGameSelector` reads this ref as its snapshot, so publishing
+  // it from a layout effect would render every subscriber against the old
+  // state first and then force a second synchronous pass per dispatch. A
+  // discarded render leaking its state is no new hazard either, since
+  // `latestStateRef` is ahead of the rendered state by design.
   const stateRef = useRef(state)
   stateRef.current = state
 

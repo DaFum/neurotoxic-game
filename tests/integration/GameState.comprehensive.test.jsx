@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, startTransition } from 'react'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { logger } from '../../src/utils/logger'
@@ -1335,5 +1335,100 @@ describe('GameState Context - commitSocialPost', () => {
     })
 
     expect(countSetGigLogs() - before).toBe(1)
+  })
+
+  test('a transition dispatch and an urgent dispatch in one batch both land and reduce once', () => {
+    const TestComponent = () => {
+      const { setCurrentGig, updatePlayer } = useGameActions()
+      const gigId = useGameSelector(s => s.currentGig?.id ?? 'none')
+      const money = useGameSelector(s => s.player.money)
+      return (
+        <div>
+          <div data-testid='gig-id'>{gigId}</div>
+          <div data-testid='money'>{money}</div>
+          <button
+            type='button'
+            onClick={() => {
+              startTransition(() =>
+                setCurrentGig({ id: 'venue_1', name: 'Venue 1' })
+              )
+              updatePlayer({ money: 321 })
+            }}
+          >
+            Transition And Urgent
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const before = countSetGigLogs()
+    act(() => {
+      screen.getByText('Transition And Urgent').click()
+    })
+
+    expect(screen.getByTestId('gig-id')).toHaveTextContent('venue_1')
+    expect(screen.getByTestId('money')).toHaveTextContent('321')
+    expect(countSetGigLogs() - before).toBe(1)
+  })
+
+  test('a reducer that throws reaches the caller of dispatch and leaves the state alone', () => {
+    let thrown = null
+    const TestComponent = () => {
+      const { setCurrentGig, updatePlayer } = useGameActions()
+      const gigId = useGameSelector(s => s.currentGig?.id ?? 'none')
+      const money = useGameSelector(s => s.player.money)
+      return (
+        <div>
+          <div data-testid='gig-id'>{gigId}</div>
+          <div data-testid='money'>{money}</div>
+          <button
+            type='button'
+            onClick={() => {
+              try {
+                setCurrentGig({ id: 'venue_1', name: 'Venue 1' })
+              } catch (e) {
+                thrown = e
+              }
+            }}
+          >
+            Set Gig
+          </button>
+          <button type='button' onClick={() => updatePlayer({ money: 777 })}>
+            Set Money
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    const sentinel = new Error('reducer boom')
+    logger.info.mockImplementationOnce((scope, message) => {
+      if (message === 'Set Current Gig') throw sentinel
+    })
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
+
+    expect(thrown).toBe(sentinel)
+    expect(screen.getByTestId('gig-id')).toHaveTextContent('none')
+
+    // The refused action left no half-applied state behind: later dispatches
+    // reduce from the untouched state and land normally.
+    act(() => {
+      screen.getByText('Set Money').click()
+    })
+    expect(screen.getByTestId('money')).toHaveTextContent('777')
+    expect(screen.getByTestId('gig-id')).toHaveTextContent('none')
   })
 })

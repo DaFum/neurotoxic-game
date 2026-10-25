@@ -24,13 +24,29 @@ const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 // ARGV[1] is the player id, ARGV[2] the revision, ARGV[3] the name and ARGV[4..]
 // the scores in board order. Returns { applied, stored revision }: 1 when
 // applied, 0 when stale (the stored revision lets the client catch up).
-const WRITE_IF_NEWER_SCRIPT = `
+export const WRITE_IF_NEWER_SCRIPT = `
 local current = tonumber(redis.call('HGET', KEYS[1], ARGV[1])) or 0
 if tonumber(ARGV[2]) <= current then return {0, current} end
 redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
 redis.call('HSET', KEYS[2], ARGV[1], ARGV[3])
 for i = 3, #KEYS do redis.call('ZADD', KEYS[i], ARGV[i + 1], ARGV[1]) end
 return {1, tonumber(ARGV[2])}`
+
+// The unversioned counterpart: last-write-wins for a player who never sent a
+// revision, but refused outright once one is stored, so an old client cannot
+// roll a revision-protected player back. Same key order as the versioned script
+// without the revision argument: KEYS[1] revision hash, KEYS[2] players, KEYS[3..]
+// sorted sets; ARGV[1] player id, ARGV[2] name, ARGV[3..] scores. Never writes
+// `lb:revision`, so such a player stays last-write-wins. HEXISTS rather than a
+// numeric check: "was ever versioned" is the boundary, a malformed stored value
+// must not reopen it. Returns { applied, stored revision } like the versioned one.
+export const WRITE_IF_UNVERSIONED_SCRIPT = `
+if redis.call('HEXISTS', KEYS[1], ARGV[1]) == 1 then
+  return {0, tonumber(redis.call('HGET', KEYS[1], ARGV[1])) or 0}
+end
+redis.call('HSET', KEYS[2], ARGV[1], ARGV[2])
+for i = 3, #KEYS do redis.call('ZADD', KEYS[i], ARGV[i], ARGV[1]) end
+return {1, 0}`
 
 /**
  * @param {unknown} val
@@ -121,8 +137,8 @@ export default async function handler(req, res) {
       const safeStageDives = clampStat(stageDives)
 
       // An optional monotonic snapshot revision lets the server drop a request
-      // that was overtaken in flight. Clients without one keep the legacy
-      // last-write-wins behavior.
+      // that was overtaken in flight. Clients without one keep last-write-wins
+      // until the player has stored a revision, after which they are refused.
       const hasRevision = revision !== undefined
       if (
         hasRevision &&
@@ -135,63 +151,53 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid revision' })
       }
 
-      if (hasRevision) {
-        const result = await client.eval(WRITE_IF_NEWER_SCRIPT, {
-          keys: [
-            'lb:revision',
-            'players',
-            'lb:balance',
-            'lb:fame',
-            'lb:followers',
-            'lb:distance',
-            'lb:conflicts',
-            'lb:stage_dives'
-          ],
-          arguments: [
-            playerId,
-            String(revision),
-            String(player.playerName),
-            String(publishedBalance),
-            String(safeFame),
-            String(safeFollowers),
-            String(safeDistance),
-            String(safeConflicts),
-            String(safeStageDives)
-          ]
-        })
-        const reply = Array.isArray(result) ? result : []
-        const stored = Number(reply[1])
-        if (Number(reply[0]) !== 1) {
-          // Not an error: a newer snapshot already landed. The stored revision
-          // lets a client whose own sequence fell behind catch up.
-          return res
-            .status(200)
-            .json({ success: true, stale: true, revision: stored })
-        }
-        return res.status(200).json({ success: true })
+      const scores = [
+        String(publishedBalance),
+        String(safeFame),
+        String(safeFollowers),
+        String(safeDistance),
+        String(safeConflicts),
+        String(safeStageDives)
+      ]
+      // NOTE: intentionally no GT flag in either script, unlike song.js. These
+      // boards track the player's CURRENT stats, and money legitimately
+      // decreases, so GT would silently redefine lb:balance as "peak balance
+      // ever". That is a gameplay decision, not a security fix. The
+      // write-authorization weakness (playerId is a client-generated
+      // localStorage UUID and the only credential) is mitigated by no longer
+      // publishing it in GET responses; closing it properly needs real auth and
+      // is out of scope.
+      const boardKeys = [
+        'lb:balance',
+        'lb:fame',
+        'lb:followers',
+        'lb:distance',
+        'lb:conflicts',
+        'lb:stage_dives'
+      ]
+      const result = hasRevision
+        ? await client.eval(WRITE_IF_NEWER_SCRIPT, {
+            keys: ['lb:revision', 'players', ...boardKeys],
+            arguments: [
+              playerId,
+              String(revision),
+              String(player.playerName),
+              ...scores
+            ]
+          })
+        : await client.eval(WRITE_IF_UNVERSIONED_SCRIPT, {
+            keys: ['lb:revision', 'players', ...boardKeys],
+            arguments: [playerId, String(player.playerName), ...scores]
+          })
+      const reply = Array.isArray(result) ? result : []
+      if (Number(reply[0]) !== 1) {
+        // Not an error: a newer snapshot already landed (or, for an unversioned
+        // request, the player is revision-protected). The stored revision lets a
+        // client whose own sequence fell behind catch up.
+        return res
+          .status(200)
+          .json({ success: true, stale: true, revision: Number(reply[1]) })
       }
-
-      // v4: hSet accepts object
-      await client.hSet('players', { [playerId]: player.playerName })
-
-      // v4: zAdd(key, { score, value })
-      // Update multiple sorted sets
-      // NOTE: intentionally no GT flag here, unlike song.js. These boards track
-      // the player's CURRENT stats, and money legitimately decreases, so GT
-      // would silently redefine lb:balance as "peak balance ever". That is a
-      // gameplay decision, not a security fix. The write-authorization weakness
-      // (playerId is a client-generated localStorage UUID and the only
-      // credential) is mitigated here by no longer publishing it in GET
-      // responses; closing it properly needs real auth and is out of scope.
-      const multi = client.multi()
-      multi.zAdd('lb:balance', { score: publishedBalance, value: playerId })
-      multi.zAdd('lb:fame', { score: safeFame, value: playerId })
-      multi.zAdd('lb:followers', { score: safeFollowers, value: playerId })
-      multi.zAdd('lb:distance', { score: safeDistance, value: playerId })
-      multi.zAdd('lb:conflicts', { score: safeConflicts, value: playerId })
-      multi.zAdd('lb:stage_dives', { score: safeStageDives, value: playerId })
-
-      await multi.exec()
 
       return res.status(200).json({ success: true })
     } catch (error) {

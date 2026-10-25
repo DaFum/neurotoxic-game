@@ -137,6 +137,7 @@ const BaseIcon = memo(function BaseIcon({
 }) {
   const titleId = useId()
   return (
+    // biome-ignore lint/a11y/noSvgWithoutTitle: the title is optional by design. A titled icon renders <title> linked through aria-labelledby with role="img"; an untitled one is aria-hidden, unfocusable and role="presentation".
     <svg
       aria-hidden={!title}
       focusable={title ? undefined : 'false'}

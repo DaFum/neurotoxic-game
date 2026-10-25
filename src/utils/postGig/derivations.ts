@@ -5,7 +5,7 @@ import { applyPostGigPerformancePenalty } from './performanceLogic'
 import { BALANCE_CONSTANTS, finiteNumberOr } from '../gameState'
 import { getRegionKeyForLocation } from '../mapUtils'
 import {
-  DEFAULT_BALANCE_TUNING,
+  ORIGINAL_CONTROL_BALANCE_TUNING,
   getRepeatDemandMultiplier
 } from '../balanceTuning'
 
@@ -36,7 +36,7 @@ const applyRepeatDemandAdjustment = (
     ? financials
     : { ...financials, net: safeNet }
 
-  const tuning = context.tuning ?? DEFAULT_BALANCE_TUNING
+  const tuning = context.tuning ?? ORIGINAL_CONTROL_BALANCE_TUNING
   if (
     tuning.touring.repeatDemandPenaltyPerGig <= 0 ||
     tuning.touring.maxRepeatDemandPenalty <= 0 ||

@@ -37,6 +37,24 @@ export interface BalanceTuning {
   }
 }
 
+/**
+ * Production tuning and the control arm of the balance experiments (the
+ * alias this once had is gone). Currently neutral: Phase 3 selected no lever once the
+ * simulated horizon was bounded by the map, and the report still recommends the
+ * neutral no-op, so there is nothing being held back (`BALANCE_RECOMMENDATION_HOLD`
+ * is `null`).
+ *
+ * The levers it previously carried were calibrated against 75-day runs. A real
+ * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"
+ * obligation discount covered every real playthrough six times over — a
+ * permanent subsidy, not the temporary relief it was justified as — while a
+ * repeat-demand window starting at day 28 never fired at all. Over the real
+ * horizon the untuned economy sits inside every KPI band and inside Bootstrap
+ * Struggle's insolvency tolerance, so there is nothing for a lever to fix.
+ *
+ * Re-run `pnpm run simulate:balance:experiments` before reintroducing a lever;
+ * `bootstrap-none` / `touring-none` are legitimate winners.
+ */
 export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
   deepFreeze({
     earlyGame: {
@@ -97,26 +115,6 @@ export const BALANCE_RECOMMENDATION_HOLD: Readonly<BalanceRecommendationHold> | 
   null
 
 /**
- * Production tuning. Currently neutral: Phase 3 selected no lever once the
- * simulated horizon was bounded by the map, and the report still recommends the
- * neutral no-op, so there is nothing being held back (`BALANCE_RECOMMENDATION_HOLD`
- * is `null`).
- *
- * The levers it previously carried were calibrated against 75-day runs. A real
- * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"
- * obligation discount covered every real playthrough six times over — a
- * permanent subsidy, not the temporary relief it was justified as — while a
- * repeat-demand window starting at day 28 never fired at all. Over the real
- * horizon the untuned economy sits inside every KPI band and inside Bootstrap
- * Struggle's insolvency tolerance, so there is nothing for a lever to fix.
- *
- * Re-run `pnpm run simulate:balance:experiments` before reintroducing a lever;
- * `bootstrap-none` / `touring-none` are legitimate winners.
- */
-export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> =
-  ORIGINAL_CONTROL_BALANCE_TUNING
-
-/**
  * Calculates the active financial obligation multiplier for the given game day.
  *
  * @param day - The current in-game day.
@@ -125,7 +123,7 @@ export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> =
  */
 export const getEarlyGameObligationMultiplier = (
   day: number,
-  tuning: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
+  tuning: Readonly<BalanceTuning> = ORIGINAL_CONTROL_BALANCE_TUNING
 ): number => {
   const stage = tuning.earlyGame.obligationStages.find(
     item => day <= item.throughDay
@@ -147,7 +145,7 @@ export const getEarlyGameObligationMultiplier = (
 export const getRepeatDemandMultiplier = (
   day: number,
   recentRegionalGigCount: number,
-  tuning: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
+  tuning: Readonly<BalanceTuning> = ORIGINAL_CONTROL_BALANCE_TUNING
 ): number =>
   day <= tuning.touring.repeatDemandStartDay
     ? 1
@@ -210,7 +208,7 @@ export const resolveBalanceTuning = (
     touring: Partial<BalanceTuning['touring']>
     recovery: Partial<BalanceTuning['recovery']>
   }> = {},
-  base: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
+  base: Readonly<BalanceTuning> = ORIGINAL_CONTROL_BALANCE_TUNING
 ): Readonly<BalanceTuning> => {
   for (const section of Object.keys(overrides)) {
     if (!Object.hasOwn(base, section)) {

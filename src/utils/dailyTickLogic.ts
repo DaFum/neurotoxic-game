@@ -30,7 +30,7 @@ import {
 import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { PlayerState, BandState, GameState, SocialState } from '../types'
 import {
-  DEFAULT_BALANCE_TUNING,
+  ORIGINAL_CONTROL_BALANCE_TUNING,
   getEarlyGameObligationMultiplier,
   type BalanceTuning
 } from './balanceTuning'
@@ -463,7 +463,7 @@ const updatePassiveEffectsAndMembers = (
 export const calculateDailyUpdates = (
   currentState: GameState,
   rng: () => number = getSafeRandom,
-  tuning: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
+  tuning: Readonly<BalanceTuning> = ORIGINAL_CONTROL_BALANCE_TUNING
 ) => {
   const nextPlayer = {
     ...currentState.player,
