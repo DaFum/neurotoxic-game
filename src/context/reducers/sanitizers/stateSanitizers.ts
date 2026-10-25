@@ -944,6 +944,12 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         : {})
     },
     inventory: sanitizeBandInventory(bandData.inventory),
+    // Only meaningful while the pedal is owned; without this every load reset
+    // it and re-activating charged the harmony cost again.
+    neuroDecimatorActive:
+      bandData.neuroDecimatorActive === true &&
+      isLooseRecord(bandData.inventory) &&
+      bandData.inventory.neuroDecimator === true,
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),

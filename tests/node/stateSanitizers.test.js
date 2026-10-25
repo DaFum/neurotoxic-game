@@ -326,6 +326,33 @@ describe('stateSanitizers', () => {
     })
   })
 
+  describe('neuroDecimatorActive on load', () => {
+    it('restores an active decimator while the pedal is owned', () => {
+      const band = sanitizeBand({
+        neuroDecimatorActive: true,
+        inventory: { neuroDecimator: true }
+      })
+      assert.strictEqual(band.neuroDecimatorActive, true)
+    })
+
+    it('resets it when the pedal is not owned or the value is not a boolean', () => {
+      assert.strictEqual(
+        sanitizeBand({ neuroDecimatorActive: true, inventory: {} })
+          .neuroDecimatorActive,
+        false
+      )
+      for (const bad of ['true', 1, {}, null]) {
+        assert.strictEqual(
+          sanitizeBand({
+            neuroDecimatorActive: bad,
+            inventory: { neuroDecimator: true }
+          }).neuroDecimatorActive,
+          false
+        )
+      }
+    })
+  })
+
   describe('sanitizeBand', () => {
     it('clamps negative luck to 0', () => {
       const loadedData = {
