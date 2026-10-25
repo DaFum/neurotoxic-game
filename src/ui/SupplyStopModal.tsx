@@ -4,6 +4,7 @@ import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
 import { GlitchButton } from './GlitchButton'
 import { Modal } from './shared/Modal'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
 import { usePurchaseLock } from './bandhq/hooks/usePurchaseLock'
 import { calculateFameLevel, finiteNumberOr } from '../utils/gameState'
@@ -32,6 +33,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
+  const spendableCash = useGameSelector(getExpeditionSpendableCash)
   const { updatePlayer, updateBand, addToast } = useGameActions()
   const fameLostRef = React.useRef(0)
   const applyBlackMarketFamePenalty = React.useCallback(
@@ -58,7 +60,8 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     updatePlayer,
     updateBand,
     addToast,
-    transformPlayerPatch: applyBlackMarketFamePenalty
+    transformPlayerPatch: applyBlackMarketFamePenalty,
+    spendableCash
   })
 
   const { processingItemId, runWithLock } = usePurchaseLock()

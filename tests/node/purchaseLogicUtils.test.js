@@ -17,6 +17,29 @@ import {
 
 describe('purchaseLogicUtils', () => {
   describe('validatePurchase', () => {
+    test('rejects a money purchase the expedition cash floor would roll back', () => {
+      const item = {
+        id: 'supply_snack',
+        cost: 300,
+        currency: 'money',
+        effect: { type: 'inventory_add', item: 'snack', value: 1 }
+      }
+      const player = { money: 1000, fame: 0 }
+
+      // 1000 raw, but only 100 spendable: granting the item would be free.
+      assert.deepStrictEqual(validatePurchase(item, player, {}, {}, 100), {
+        isValid: false,
+        errorType: 'insufficient_funds'
+      })
+      assert.equal(validatePurchase(item, player, {}, {}, 400).isValid, true)
+      assert.equal(validatePurchase(item, player, {}, {}).isValid, true)
+      // Fame purchases never touch the cash floor.
+      assert.equal(
+        canAfford({ currency: 'fame' }, { money: 0, fame: 500 }, 300, 0),
+        true
+      )
+    })
+
     test('rejects items with requiresReputation: true when controversyLevel >= 50', () => {
       const item = {
         id: 'hq_room_label',
