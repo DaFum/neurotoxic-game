@@ -9,7 +9,8 @@ import {
   sanitizePlayer,
   sanitizeRivalBand,
   sanitizeRivalBandUpdates,
-  sanitizeSocial
+  sanitizeSocial,
+  sanitizeSocialUpdates
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { EVENTS_DB } from '../../src/data/events'
@@ -323,6 +324,60 @@ describe('stateSanitizers', () => {
         null,
         { validKey: 'val', num: 1 }
       ])
+    })
+  })
+
+  describe('sanitizeSocialUpdates structured fields', () => {
+    it('drops wrong-typed egoFocus, regionalGigHistory and influencers', () => {
+      assert.deepStrictEqual(
+        sanitizeSocialUpdates({
+          regionalGigHistory: null,
+          influencers: 'x',
+          egoFocus: 42
+        }),
+        {}
+      )
+      // Arrays are not records either.
+      assert.deepStrictEqual(
+        sanitizeSocialUpdates({ regionalGigHistory: [1], influencers: [] }),
+        {}
+      )
+    })
+
+    it('keeps a string or null egoFocus', () => {
+      assert.deepStrictEqual(sanitizeSocialUpdates({ egoFocus: 'matze' }), {
+        egoFocus: 'matze'
+      })
+      assert.deepStrictEqual(sanitizeSocialUpdates({ egoFocus: null }), {
+        egoFocus: null
+      })
+    })
+
+    it('filters influencer entries exactly like the load path', () => {
+      const raw = {
+        good: { tier: 'micro', trait: 'edgy', score: 4, extra: 'dropped' },
+        noScore: { tier: 'micro', trait: 'edgy', score: Number.NaN },
+        wrongType: { tier: 1, trait: 'edgy', score: 4 },
+        notRecord: 'x'
+      }
+      const hostile = JSON.parse(
+        '{"__proto__":{"tier":"a","trait":"b","score":1}}'
+      )
+      const fromUpdate = sanitizeSocialUpdates({ influencers: raw }).influencers
+      assert.deepStrictEqual(fromUpdate, {
+        good: { tier: 'micro', trait: 'edgy', score: 4 }
+      })
+      assert.deepStrictEqual(
+        fromUpdate,
+        sanitizeSocial({ influencers: raw }).influencers
+      )
+      assert.strictEqual(
+        Object.hasOwn(
+          sanitizeSocialUpdates({ influencers: hostile }).influencers,
+          '__proto__'
+        ),
+        false
+      )
     })
   })
 

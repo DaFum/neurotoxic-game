@@ -871,35 +871,29 @@ describe('Action Creators', () => {
 
       const actionNaN = createUpdateSocialAction(payloadNaN)
       const expectedNaN = {}
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      // egoFocus, influencers and regionalGigHistory are checked per field now,
+      // so a wrong-typed value is dropped instead of passed through.
+      ;['trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedNaN[f] = Number.NaN
       })
       assert.deepStrictEqual(actionNaN.payload, expectedNaN)
 
       const actionInf = createUpdateSocialAction(payloadInf)
       const expectedInf = {}
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      ;['trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedInf[f] = Number.POSITIVE_INFINITY
       })
       assert.deepStrictEqual(actionInf.payload, expectedInf)
 
       const actionZero = createUpdateSocialAction(payloadZero)
-      allFields.forEach(f => {
-        assert.strictEqual(actionZero.payload[f], 0)
+      const structured = ['egoFocus', 'influencers', 'regionalGigHistory']
+      allFields
+        .filter(f => !structured.includes(f))
+        .forEach(f => {
+          assert.strictEqual(actionZero.payload[f], 0)
+        })
+      structured.forEach(f => {
+        assert.strictEqual(Object.hasOwn(actionZero.payload, f), false)
       })
 
       const actionNull = createUpdateSocialAction(payloadNull)
@@ -915,14 +909,8 @@ describe('Action Creators', () => {
       nullableFields.forEach(f => {
         expectedNull[f] = null
       })
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      // `null` is a valid egoFocus; a null influencer map or history is not.
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedNull[f] = null
       })
       assert.deepStrictEqual(actionNull.payload, expectedNull)

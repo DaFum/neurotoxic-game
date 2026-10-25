@@ -1337,6 +1337,40 @@ export const sanitizeReputationByRegion = (
 }
 
 /**
+ * Keeps the well-formed influencer entries of an untrusted influencer map.
+ *
+ * @param value - Untrusted `influencers` record.
+ * @returns Own, non-forbidden entries with string `tier`/`trait` and a finite
+ * `score`, copied field by field.
+ *
+ * @remarks
+ * Shared by the load path ({@link sanitizeSocial}) and the `UPDATE_SOCIAL`
+ * whitelist so a raw dispatch cannot store what a load would reject.
+ */
+const sanitizeInfluencers = (
+  value: Record<string, unknown>
+): NonNullable<SocialState['influencers']> => {
+  const out: NonNullable<SocialState['influencers']> = {}
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue
+    if (isForbiddenKey(key)) continue
+    const influencer = value[key]
+    if (!isLooseRecord(influencer)) continue
+    const { tier, trait, score } = influencer
+    if (
+      typeof tier !== 'string' ||
+      typeof trait !== 'string' ||
+      typeof score !== 'number' ||
+      !Number.isFinite(score)
+    ) {
+      continue
+    }
+    out[key] = { tier, trait, score }
+  }
+  return out
+}
+
+/**
  * Sanitizes the broader social state encompassing followers, influencers, and brand interactions.
  *
  * @remarks
@@ -1466,23 +1500,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   }
 
   if (isLooseRecord(safeValue.influencers)) {
-    sanitized.influencers = {}
-    for (const key in safeValue.influencers) {
-      if (!Object.hasOwn(safeValue.influencers, key)) continue
-      if (isForbiddenKey(key)) continue
-      const influencer = safeValue.influencers[key]
-      if (!isLooseRecord(influencer)) continue
-      const { tier, trait, score } = influencer
-      if (
-        typeof tier !== 'string' ||
-        typeof trait !== 'string' ||
-        typeof score !== 'number' ||
-        !Number.isFinite(score)
-      ) {
-        continue
-      }
-      sanitized.influencers[key] = { tier, trait, score }
-    }
+    sanitized.influencers = sanitizeInfluencers(safeValue.influencers)
   }
 
   return sanitized
@@ -1567,6 +1585,20 @@ export const sanitizeSocialUpdates = (
       }
       if (!isFiniteNumber(value)) continue
       out[key] = spec.nonNegative ? Math.max(0, value) : value
+      continue
+    }
+    // The structured fields get the load path's per-field checks: a raw dispatch
+    // must not store a wrong-typed `egoFocus`, history or influencer map.
+    if (key === 'egoFocus') {
+      if (value === null || typeof value === 'string') out[key] = value
+      continue
+    }
+    if (key === 'regionalGigHistory') {
+      if (isLooseRecord(value)) out[key] = normalizeRegionalGigHistory(value)
+      continue
+    }
+    if (key === 'influencers') {
+      if (isLooseRecord(value)) out[key] = sanitizeInfluencers(value)
       continue
     }
     out[key] = value
