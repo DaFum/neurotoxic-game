@@ -378,7 +378,7 @@ const isShallowEqual = (a: unknown, b: unknown): boolean => {
  * Hook to select a specific state slice.
  *
  * @remarks
- * This is the preferred state surface for new code. Note that re-renders are still triggered by any context update; for equality-based bail-out, memoize the consuming component with `React.memo`.
+ * This is the preferred state surface for new code. Note that unrelated state updates do not rerender the consumer; `useSyncExternalStore` handles bail-out automatically when the selected value is shallow-equal to the previous one. `React.memo` is only needed to filter parent-driven prop renders.
  *
  * @typeParam T - The expected structure of the selected state slice.
  * @param selector - Function to extract the desired state slice.
