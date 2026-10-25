@@ -219,3 +219,8 @@
 
 **Learning:** Clicking custom track segments on range inputs (like SegmentedSlider) moves DOM focus away from the underlying `<input type="range" class="sr-only">`, causing keyboard users who click a segment to lose arrow-key control and proxy focus rings. Additionally, pairing `aria-labelledby` with a redundant `aria-label` on switch buttons overrides the label computation and causes screen readers to read conflicting names.
 **Action:** When handling segment selection on custom range sliders, explicitly call `inputRef.current?.focus()` to keep focus on the underlying range control. On toggle switches, omit redundant `aria-label` attributes when `aria-labelledby` points to a visual label element.
+
+## 2026-10-25 - Pause Overlay Modal Behavior & Focus Trapping
+
+**Learning:** Standalone minigame pause overlays (such as `PauseOverlay.tsx`) that don't use shared `Modal` dialog wrappers were missing full modal semantics (`useModalBehavior`). This allowed keyboard focus to escape into the background gameplay stage during pause state and omitted global Escape key listening and background `inert` / `aria-hidden` background muting.
+**Action:** Wrap custom pause overlays in `useModalBehavior(isPaused, onResume)`, supplying `data-modal-overlay=""` on the backdrop and `ref={dialogRef}`, `role="dialog"`, `tabIndex={-1}`, and `aria-labelledby` on the inner dialog container.
