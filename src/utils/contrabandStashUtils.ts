@@ -7,7 +7,11 @@ import {
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from './contrabandEffects'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
-import { clampBandHarmony, clampBandStress } from './gameState/clamps'
+import {
+  clampBandHarmony,
+  clampBandStress,
+  readMemberStamina
+} from './gameState/clamps'
 import { isForbiddenKey } from './objectUtils'
 type StashItemLike = {
   id?: string
@@ -159,6 +163,8 @@ export const isStashFullFor = (
  * `harmony` and `stress` unclamped. A caller that applies or reverts an
  * equipment effect outside the expiry tick has to bring those two back into
  * range itself, or a later clamp plus the inverse revert drifts past 0-100.
+ * A `stamina_max` revert lowers `staminaMax` only, so each member's `stamina`
+ * is brought back under the new cap here as well.
  */
 export const clampSharedBandEffectResult = (
   band: BandState,
@@ -168,6 +174,14 @@ export const clampSharedBandEffectResult = (
     band.harmony = clampBandHarmony(finiteNumberOr(band.harmony, 1))
   } else if (effectType === 'stress') {
     band.stress = clampBandStress(finiteNumberOr(band.stress, 0))
+  } else if (effectType === 'stamina_max' && band.members) {
+    band.members = band.members.map(member => ({
+      ...member,
+      stamina: readMemberStamina(
+        member.stamina,
+        finiteNumberOr(member.staminaMax, 100)
+      )
+    }))
   }
 }
 

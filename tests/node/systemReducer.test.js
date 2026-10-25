@@ -15,6 +15,8 @@ import {
   handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
+import { gameReducer } from '../../src/context/gameReducer'
+import { advanceDay } from '../../src/context/actionCreators'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
 import { SONGS_DB } from '../../src/data/songs'
@@ -2554,4 +2556,38 @@ test('handleLoadGame still collapses an active expedition whose runSeed is missi
     handleLoadGame(createInitialState(), raw).expedition.status,
     'active'
   )
+})
+
+test('an expiring stamina_max bonus leaves no member stamina above the lowered cap', () => {
+  const base = createInitialState()
+  const state = {
+    ...base,
+    band: {
+      ...base.band,
+      members: base.band.members.map(m => ({
+        ...m,
+        stamina: 120,
+        staminaMax: 120
+      })),
+      activeContrabandEffects: [
+        {
+          instanceId: 'ampoule_1',
+          effectType: 'stamina_max',
+          value: 20,
+          remainingDuration: 1
+        }
+      ]
+    }
+  }
+
+  const next = gameReducer(state, advanceDay(state))
+
+  assert.deepEqual(next.band.activeContrabandEffects, [])
+  for (const member of next.band.members) {
+    assert.equal(member.staminaMax, 100)
+    assert.ok(
+      member.stamina <= member.staminaMax,
+      `${member.id} ${member.stamina}`
+    )
+  }
 })

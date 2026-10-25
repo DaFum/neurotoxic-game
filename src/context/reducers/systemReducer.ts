@@ -54,6 +54,7 @@ import {
   clampBandStress,
   clampMemberMood,
   readMemberMood,
+  readMemberStamina,
   isForbiddenKey,
   finiteNumberOr,
   parseCooldownEntry,
@@ -720,9 +721,13 @@ const processContrabandExpiry = (band: BandState): BandState => {
           const updatedMembers = new Array<BandMember>(len)
           for (let mIdx = 0; mIdx < len; mIdx++) {
             const m = nextBand.members[mIdx] as BandMember
+            const staminaMax = Math.max(0, finiteNumberOr(m?.staminaMax, 100))
             updatedMembers[mIdx] = {
               ...m,
-              staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+              staminaMax,
+              // The expired bonus lowered the cap; stamina regenerated under
+              // it must not stay above it for the rest of the day.
+              stamina: readMemberStamina(m?.stamina, staminaMax)
             }
           }
           nextBand.members = updatedMembers
