@@ -7,6 +7,17 @@ import path from 'node:path'
 let cachedDocument
 let cachedSymbolsText
 
+// The indexer scans only `src`, so fixtures have to live there.
+const FIXTURE_DIR = path.join('src', '__symbolIndexFixtures')
+
+function writeFixture(fileName, content) {
+  fs.mkdirSync(FIXTURE_DIR, { recursive: true })
+  // FIXTURE_DIR is a constant under `src` and every fileName is a literal in
+  // this file.
+  // ast-grep-ignore: detect-non-literal-fs-filename
+  fs.writeFileSync(path.join(FIXTURE_DIR, fileName), content)
+}
+
 function refreshSymbolsCache() {
   cachedSymbolsText = fs.readFileSync('symbols.json', 'utf8')
   cachedDocument = JSON.parse(cachedSymbolsText)
@@ -98,25 +109,23 @@ test('direct exports from declaration files remain indexed', () => {
 })
 
 test('test, spec, and story files are ignored while React HOCs keep render signatures', () => {
-  const fixtureDir = path.join('src', '__symbolIndexFixtures')
   const symbolsBeforeFixture = cachedSymbolsText
 
   try {
-    fs.mkdirSync(fixtureDir, { recursive: true })
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexNoise.test.ts'),
+    writeFixture(
+      'SymbolIndexNoise.test.ts',
       'export const SymbolIndexTestNoise = true\n'
     )
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexNoise.spec.ts'),
+    writeFixture(
+      'SymbolIndexNoise.spec.ts',
       'export const SymbolIndexSpecNoise = true\n'
     )
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexNoise.stories.tsx'),
+    writeFixture(
+      'SymbolIndexNoise.stories.tsx',
       'export const SymbolIndexStoryNoise = true\n'
     )
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexHocFixture.tsx'),
+    writeFixture(
+      'SymbolIndexHocFixture.tsx',
       [
         "import { forwardRef, memo } from 'react'",
         '',
@@ -171,20 +180,18 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
       'SymbolIndexHocFixtureProps'
     )
   } finally {
-    fs.rmSync(fixtureDir, { recursive: true, force: true })
+    fs.rmSync(FIXTURE_DIR, { recursive: true, force: true })
     restoreSymbolsCache(symbolsBeforeFixture)
   }
 })
 
 test('same-file references set referencedInFile, and unreferenced exports do not', () => {
-  const fixtureDir = path.join('src', '__symbolIndexFixtures')
   const fixturePath = 'src/__symbolIndexFixtures/SymbolIndexSameFile.ts'
   const symbolsBeforeFixture = cachedSymbolsText
 
   try {
-    fs.mkdirSync(fixtureDir, { recursive: true })
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexSameFile.ts'),
+    writeFixture(
+      'SymbolIndexSameFile.ts',
       [
         '// Read by element access inside an exported function, outside a',
         '// call or JSX position.',
@@ -232,19 +239,17 @@ test('same-file references set referencedInFile, and unreferenced exports do not
       'a symbol nothing reads must not be marked referenced'
     )
   } finally {
-    fs.rmSync(fixtureDir, { recursive: true, force: true })
+    fs.rmSync(FIXTURE_DIR, { recursive: true, force: true })
     restoreSymbolsCache(symbolsBeforeFixture)
   }
 })
 
 test('parameter names normalize CRLF source text to LF', () => {
-  const fixtureDir = path.join('src', '__symbolIndexFixtures')
   const symbolsBeforeFixture = cachedSymbolsText
 
   try {
-    fs.mkdirSync(fixtureDir, { recursive: true })
-    fs.writeFileSync(
-      path.join(fixtureDir, 'SymbolIndexCrLfParam.ts'),
+    writeFixture(
+      'SymbolIndexCrLfParam.ts',
       [
         'export function SymbolIndexCrLfParam({',
         '  first,',
@@ -274,7 +279,7 @@ test('parameter names normalize CRLF source text to LF', () => {
       'second'
     ])
   } finally {
-    fs.rmSync(fixtureDir, { recursive: true, force: true })
+    fs.rmSync(FIXTURE_DIR, { recursive: true, force: true })
     restoreSymbolsCache(symbolsBeforeFixture)
   }
 })

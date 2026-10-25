@@ -200,16 +200,16 @@ Notes:
 - `BreakdownLabelKey` (`src/utils/economy/breakdownLabelKeys.ts`) — derived type
   with no reference anywhere, including its own file.
 
-## Remaining (1) — intentional, keep
+## Remaining (0)
 
-### Duplicate export (1)
+### Duplicate export — resolved 2026-10-25
 
-`src/utils/balanceTuning.ts` exports `DEFAULT_BALANCE_TUNING` as an alias of
-`ORIGINAL_CONTROL_BALANCE_TUNING`. Both names are load-bearing:
-`src/utils/dailyTickLogic.ts` and `src/utils/postGig/derivations.ts` default to
-`DEFAULT_BALANCE_TUNING`, while `scripts/game-balance-experiments.mjs` names
-`ORIGINAL_CONTROL_BALANCE_TUNING` explicitly as the control arm. Collapsing them
-would erase that distinction.
+`src/utils/balanceTuning.ts` used to export `DEFAULT_BALANCE_TUNING` as an alias
+of `ORIGINAL_CONTROL_BALANCE_TUNING`. The alias is removed: `dailyTickLogic.ts`,
+`postGig/derivations.ts`, `balanceTuning.ts` and
+`scripts/game-balance-simulation.mjs` now name `ORIGINAL_CONTROL_BALANCE_TUNING`
+directly (the same frozen object), and its docblock says it is also the
+production tuning. The budget in `.ci/dead-code-budget.json` is 0.
 
 `lint-staged` was listed here on 2026-10-06 as a false positive
 (`.husky/pre-commit` runs `npx lint-staged` against the config block in

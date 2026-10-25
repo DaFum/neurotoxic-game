@@ -1,4 +1,7 @@
 import type { QuestDefinition } from '../types/quest'
+// jscpd:ignore-start
+// The import names and the QUEST_REGISTRY keys below are the same list on
+// purpose: explicit names keep per-quest type inference and tree-shaking.
 import {
   quest_prove_yourself,
   quest_apology_tour,
@@ -44,6 +47,7 @@ import {
   quest_hard_knocks,
   quest_stage_time
 } from './quests'
+// jscpd:ignore-end
 
 /**
  * Static quest configuration registry keyed by stable quest id.

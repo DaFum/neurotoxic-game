@@ -1,6 +1,6 @@
 {
-  "max": 1,
-  "baselineDate": "2026-10-24",
+  "max": 0,
+  "baselineDate": "2026-10-25",
   "scope": "knip findings across src/**, api/**, lib/**, scripts/** and package.json dependencies",
-  "note": "REPORT-ONLY. The 2026-08-02 baseline of 78 (issue #2677) was triaged down to 10 on 2026-08-03, to 8 on 2026-10-06, to 7 on 2026-10-11 and to 1 on 2026-10-24 (two own-file-only exports unexported, the updateSymbols fixtures moved off real symbols, four unused dependencies removed); docs/dead-code-triage.md carries the per-finding verdict. The 1 remaining is intentional: DEFAULT_BALANCE_TUNING is a deliberate alias of ORIGINAL_CONTROL_BALANCE_TUNING. Promotion to blocking is now a config change only: add `pnpm run deadcode:budget` as a required step in .github/workflows/test.yml."
+  "note": "REPORT-ONLY. The 2026-08-02 baseline of 78 (issue #2677) was triaged down to 10 on 2026-08-03, to 8 on 2026-10-06, to 7 on 2026-10-11 and to 1 on 2026-10-24 (two own-file-only exports unexported, the updateSymbols fixtures moved off real symbols, four unused dependencies removed) and to 0 on 2026-10-25 (the DEFAULT_BALANCE_TUNING alias removed, every user names ORIGINAL_CONTROL_BALANCE_TUNING); docs/dead-code-triage.md carries the per-finding verdict. No intentional finding remains. Promotion to blocking is now a config change only: add `pnpm run deadcode:budget` as a required step in .github/workflows/test.yml."
 }
