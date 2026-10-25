@@ -103,6 +103,8 @@ export const applyPostGigPerformancePenalty = ({
  * - `params.misses` - Total missed notes.
  * - `params.bandStyle` - Fractional bonus to positive fame gains from
  *   temporary band effects (contraband `style`).
+ * - `params.failed` - The gig ended in a collapse (`lastGigStats.failed`);
+ *   it pays the bad-gig fame loss instead of the performance reward.
  * - `params.dealFameMultiplier` - Active brand-deal fame multiplier,
  *   applied to positive fame gains (defaults to 1).
  * - `params.calculateFameGain` - Applies diminishing returns to raw fame gain.
@@ -118,6 +120,7 @@ export const calculateContinueStats = ({
   perfScore,
   financials,
   misses,
+  failed,
   bandStyle,
   dealFameMultiplier,
   calculateFameGain,
@@ -130,6 +133,7 @@ export const calculateContinueStats = ({
   perfScore: number
   financials: Pick<PostGigFinancials, 'net'>
   misses?: number
+  failed?: boolean
   bandStyle?: number
   dealFameMultiplier?: number
   calculateFameGain: (a: number, b: number, c: number) => number
@@ -141,7 +145,9 @@ export const calculateContinueStats = ({
   const prevFame = finiteNumberOr(player.fame, 0)
 
   let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-  if (perfScore >= 31) {
+  // A collapsed gig (`failed`) takes the bad-gig branch whatever its raw score
+  // reached before the collapse: outcome gates use accuracy plus `failed`.
+  if (failed !== true && perfScore >= 31) {
     const rawFameGain = calculateGigFameReward(perfScore)
     finalFameGain = calculateFameGain(
       rawFameGain,

@@ -310,6 +310,9 @@ export const settlePendingGigOnLoad = (
     perfScore: record.perfScore,
     financials: { net: record.net },
     misses: record.misses,
+    // Read from state like the Finale gate below, so a reload settles a
+    // collapsed gig exactly as live Continue did.
+    failed: state.lastGigStats?.failed === true,
     bandStyle: finiteNumberOr(next.band.style, 0),
     dealFameMultiplier: record.dealFameMultiplier,
     calculateFameGain,
