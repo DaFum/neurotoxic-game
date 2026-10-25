@@ -1364,6 +1364,7 @@
   "gameOver.tourComplete": "TOUR VOLLENDET",
   "game_over": "GAME OVER: {{description}}",
   "gig.audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
+  "gig.audioUnlockFailed": "Audio konnte nicht entsperrt werden. Versuche es erneut.",
   "gig.combo": "KOMBO",
   "gig.controlsAria": "Spielsteuerung ein- oder ausblenden",
   "gig.controlsHint": "Spielsteuerung",

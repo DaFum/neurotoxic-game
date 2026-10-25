@@ -88,12 +88,23 @@ export const Gig = () => {
                 actions.retryAudioInitialization()
               } else {
                 logger.warn('Gig', 'Audio context unlock returned false')
+                addToast(
+                  t('ui:gig.audioUnlockFailed', {
+                    defaultValue: 'Audio could not be unlocked. Try again.'
+                  }),
+                  'error'
+                )
               }
             })
             .catch(err => {
               logger.error('Gig', 'Audio context unlock rejected', err)
             })
         }}
+        onQuit={
+          stats.audioStatus === 'failed'
+            ? () => void handleQuitGig()
+            : undefined
+        }
       />
     )
   }

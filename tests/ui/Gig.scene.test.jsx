@@ -511,6 +511,55 @@ describe('Gig Scene Component', () => {
       expect(mockRetry).toHaveBeenCalled()
     })
 
+    test('offers no quit button while audio is merely blocked', async () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'blocked' },
+        actions: { retryAudioInitialization: vi.fn() },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+
+      render(<Gig />)
+      expect(screen.queryByText(/QUIT GIG/i)).toBeNull()
+    })
+
+    test('failed audio offers a way out of the gig', async () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'failed' },
+        actions: { retryAudioInitialization: vi.fn() },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+
+      render(<Gig />)
+      await act(async () => {
+        fireEvent.click(screen.getByText(/QUIT GIG/i))
+      })
+
+      expect(mockSetLastGigStats).toHaveBeenCalled()
+      expect(mockEndGig).toHaveBeenCalled()
+    })
+
+    test('toasts when the audio unlock resolves false', async () => {
+      const mockRetry = vi.fn()
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'blocked' },
+        actions: { retryAudioInitialization: mockRetry },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+      audioService.ensureAudioContext.mockResolvedValue(false)
+
+      render(<Gig />)
+      await act(async () => {
+        fireEvent.click(screen.getByText(/INITIALIZE AUDIO/i))
+      })
+      await flushPromises()
+
+      expect(mockRetry).not.toHaveBeenCalled()
+      expect(mockAddToast).toHaveBeenCalledWith(expect.any(String), 'error')
+    })
+
     test('does not render main gig UI when audio locked', async () => {
       useRhythmGameLogic.mockReturnValue({
         stats: { audioStatus: 'blocked' },
