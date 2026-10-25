@@ -816,3 +816,52 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
     assert.equal(action.payload.reason, 'LOAN_PROFILE_INELIGIBLE')
   })
 })
+
+describe('affordability during an active expedition', () => {
+  // 3000 raw, 2500 protected: only 500 is spendable.
+  const protectedState = overrides =>
+    makeState({ player: { money: 3000 }, ...overrides })
+  const withProtectedCash = state => ({
+    ...state,
+    expedition: { status: 'active', protectedCareerCash: 2500 }
+  })
+
+  it('refuses a cash purchase the protected slice would roll back', () => {
+    setupTourbusT1()
+    const action = purchaseChassis(
+      { kind: 'tourbus_chassis', flavor: 'diy', tier: 1, mode: 'cash' },
+      withProtectedCash(protectedState())
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'INSUFFICIENT_FUNDS')
+  })
+
+  it('still sells the same purchase when nothing is protected', () => {
+    setupTourbusT1()
+    const action = purchaseChassis(
+      { kind: 'tourbus_chassis', flavor: 'diy', tier: 1, mode: 'cash' },
+      makeState({ player: { money: 3000 } })
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS)
+  })
+
+  it('refuses a module install the protected slice would roll back', () => {
+    registerTestModule('install_protected', { cost: 600, installCost: 10 })
+    const asset = makeAsset({
+      slots: [
+        {
+          id: 'slot_1',
+          slotType: 'tb_roof',
+          position: { x: 0, y: 0 },
+          installedModuleId: null
+        }
+      ]
+    })
+    const action = installModule(
+      { assetId: 'asset_1', slotId: 'slot_1', moduleId: 'install_protected' },
+      withProtectedCash(protectedState({ assets: [asset] }))
+    )
+    assert.equal(action.type, ActionTypes.INSTALL_MODULE_FAILED)
+    assert.equal(action.payload.reason, 'INSUFFICIENT_FUNDS')
+  })
+})
