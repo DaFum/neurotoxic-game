@@ -95,6 +95,18 @@ const IS_DEV =
     >
   ).DEV
 
+/**
+ * Resolves a React context and guarantees a non-null value, throwing if the context is missing.
+ *
+ * @remarks
+ * Used internally to unwrap state slices and dispatch functions cleanly.
+ *
+ * @typeParam T - The expected structure of the context value.
+ * @param context - The React context to consume.
+ * @param name - The name of the hook calling this function, used for error reporting.
+ * @returns The resolved non-null context value.
+ * @throws {@link Error} If the context value is null, indicating missing provider hierarchy.
+ */
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
   if (value === null) {
@@ -103,7 +115,13 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   return value
 }
 
-/** Reducer for React's store: `dispatch` has already reduced the action. */
+/**
+ * Acts as a pass-through reducer for React's local state store since actions are pre-reduced.
+ *
+ * @param _state - The current game state (ignored).
+ * @param next - The pre-calculated next game state.
+ * @returns The next game state identically as provided.
+ */
 const replaceState = (_state: GameState, next: GameState): GameState => next
 
 /**
@@ -325,14 +343,11 @@ export const useGameActions = () => {
 }
 
 /**
- * Hook to select a specific state slice.
+ * Evaluates whether two unknown values are equal via strict shallow comparison.
  *
- * @remarks
- * This is the preferred state surface for new code. Note that re-renders are still triggered by any context update; for equality-based bail-out, memoize the consuming component with `React.memo`.
- *
- * @typeParam T - The expected structure of the selected state slice.
- * @param selector - Function to extract the desired state slice.
- * @returns The specific state slice extracted by the selector.
+ * @param a - The first value to compare.
+ * @param b - The second value to compare.
+ * @returns A boolean indicating if the values match identically at the first depth level.
  */
 const isShallowEqual = (a: unknown, b: unknown): boolean => {
   if (Object.is(a, b)) return true
@@ -359,6 +374,16 @@ const isShallowEqual = (a: unknown, b: unknown): boolean => {
   return true
 }
 
+/**
+ * Hook to select a specific state slice.
+ *
+ * @remarks
+ * This is the preferred state surface for new code. Note that re-renders are still triggered by any context update; for equality-based bail-out, memoize the consuming component with `React.memo`.
+ *
+ * @typeParam T - The expected structure of the selected state slice.
+ * @param selector - Function to extract the desired state slice.
+ * @returns The specific state slice extracted by the selector.
+ */
 export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const store = useRequiredContext(GameStateContext, 'useGameSelector')
   const instRef = useRef<{
