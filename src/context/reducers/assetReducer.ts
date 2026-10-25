@@ -107,6 +107,11 @@ export const handlePurchaseChassis = (
   const { id, kind, flavor, tier, mode, slotIds, loanProfileId, today } =
     payload
 
+  // A replayed or forged payload must not charge twice for one id: the second
+  // asset would be dropped on the next load and its payment lost.
+  if (typeof id !== 'string' || id.length === 0) return state
+  if (findAssetById(state.assets ?? [], id).index !== -1) return state
+
   if (hasActiveAssetAcquisition(state, kind)) return state
 
   // Own-property lookup: hostile kind/flavor/tier keys ('constructor',
@@ -757,6 +762,7 @@ export const handleDismissForeclosureNotice = (
   state: GameState,
   payload: { kind: AssetKind }
 ): GameState => {
+  if (!isLooseRecord(payload)) return state
   return {
     ...state,
     pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(

@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert'
 import {
   handlePurchaseChassis,
+  handleDismissForeclosureNotice,
   handleInstallModule,
   handleRemoveModule,
   handleUpgradeChassisTier,
@@ -997,4 +998,44 @@ test('handleRefinanceLiability - rejects ineligible loan profile payloads', () =
   })
 
   assert.strictEqual(next, startState)
+})
+
+test('handlePurchaseChassis - rejects an empty, missing or already used asset id', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const rich = {
+    ...mockState,
+    player: { ...mockState.player, money: configTier.price * 3 }
+  }
+  const payload = id => ({
+    id,
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'cash',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  for (const id of ['', undefined, null, 7]) {
+    assert.strictEqual(handlePurchaseChassis(rich, payload(id)), rich)
+  }
+
+  const bought = handlePurchaseChassis(rich, payload('dup'))
+  assert.strictEqual(bought.assets.length, 1)
+  // A replay of the same id charges nothing and adds nothing.
+  assert.strictEqual(handlePurchaseChassis(bought, payload('dup')), bought)
+})
+
+test('handleDismissForeclosureNotice - a non-record payload leaves state untouched', () => {
+  const state = { ...mockState, pendingForeclosureNotices: ['tourbus_chassis'] }
+  for (const bad of [null, undefined, 'x', 5]) {
+    assert.strictEqual(handleDismissForeclosureNotice(state, bad), state)
+  }
+  assert.deepStrictEqual(
+    handleDismissForeclosureNotice(state, { kind: 'tourbus_chassis' })
+      .pendingForeclosureNotices,
+    []
+  )
 })
