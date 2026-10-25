@@ -1,4 +1,4 @@
-import { finiteNumberOr } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import { clampBandHarmony, clampBandStress } from './gameState/clamps'
 import type { BandMember, BandState } from '../types'
 
@@ -127,3 +127,39 @@ export const clampSharedBandEffectResult = (
     band.stress = clampBandStress(finiteNumberOr(band.stress, 0))
   }
 }
+
+/**
+ * Reads the band stat that {@link clampSharedBandEffectResult} bounds.
+ *
+ * @param band - Band to read.
+ * @param effectType - Effect type about to be applied.
+ * @returns The current harmony or stress, or `null` for any other effect type.
+ */
+export const readClampedBandVital = (
+  band: BandState,
+  effectType: unknown
+): number | null => {
+  if (effectType === 'harmony') return finiteNumberOr(band.harmony, 1)
+  if (effectType === 'stress') return finiteNumberOr(band.stress, 0)
+  return null
+}
+
+/**
+ * The value to negate when reverting an apply-on-add equipment effect.
+ *
+ * @param entry - Stash entry (or item definition) of the equipment.
+ * @returns The delta the add actually applied when it was recorded (a clamped
+ * harmony or stress moves by less than `value`), otherwise the catalog `value`.
+ *
+ * @remarks
+ * Reverting the catalog value after a clamped apply would hand the player the
+ * clamped difference for free (harmony 5 with -10 becomes 1, the revert of +10 then gives 11).
+ */
+export const getEquipmentRevertValue = (entry: {
+  value?: unknown
+  appliedValue?: unknown
+}): number =>
+  finiteNumberOr(
+    isFiniteNumber(entry.appliedValue) ? entry.appliedValue : entry.value,
+    0
+  )

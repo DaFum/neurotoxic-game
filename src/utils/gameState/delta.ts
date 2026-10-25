@@ -2,6 +2,7 @@ import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 import {
   applySharedBandEffect,
   clampSharedBandEffectResult,
+  getEquipmentRevertValue,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../contrabandEffects'
 import { addContrabandToBand } from '../contrabandStashUtils'
@@ -953,7 +954,7 @@ export const applyEventDelta = (
             applySharedBandEffect(
               nextBand,
               entry.effectType,
-              -finiteNumberOr(entry.value, 0),
+              -getEquipmentRevertValue(entry),
               EQUIPMENT_APPLY_ON_ADD_EFFECTS
             )
             clampSharedBandEffectResult(nextBand, entry.effectType)

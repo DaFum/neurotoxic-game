@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -23,6 +23,10 @@ export const Gig = () => {
   const currentGig = useGameSelector(state => state.currentGig)
   const band = useGameSelector(state => state.band)
   const { changeScene, addToast, setLastGigStats, endGig } = useGameActions()
+
+  // An unlock attempt that returned false or rejected: the retry would fail
+  // the same way, so the player needs the way out whatever the audio status.
+  const [unlockAttemptFailed, setUnlockAttemptFailed] = useState(false)
 
   const tRef = useRef(t)
   useEffect(() => {
@@ -88,6 +92,7 @@ export const Gig = () => {
                 actions.retryAudioInitialization()
               } else {
                 logger.warn('Gig', 'Audio context unlock returned false')
+                setUnlockAttemptFailed(true)
                 addToast(
                   t('ui:gig.audioUnlockFailed', {
                     defaultValue: 'Audio could not be unlocked. Try again.'
@@ -98,10 +103,11 @@ export const Gig = () => {
             })
             .catch(err => {
               logger.error('Gig', 'Audio context unlock rejected', err)
+              setUnlockAttemptFailed(true)
             })
         }}
         onQuit={
-          stats.audioStatus === 'failed'
+          stats.audioStatus === 'failed' || unlockAttemptFailed
             ? () => void handleQuitGig()
             : undefined
         }

@@ -560,6 +560,25 @@ describe('Gig Scene Component', () => {
       expect(mockAddToast).toHaveBeenCalledWith(expect.any(String), 'error')
     })
 
+    test('offers quit after a blocked unlock attempt rejects', async () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'blocked' },
+        actions: { retryAudioInitialization: vi.fn() },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+      audioService.ensureAudioContext.mockRejectedValue(new Error('denied'))
+
+      render(<Gig />)
+      expect(screen.queryByText(/QUIT GIG/i)).toBeNull()
+      await act(async () => {
+        fireEvent.click(screen.getByText(/INITIALIZE AUDIO/i))
+      })
+      await flushPromises()
+
+      expect(screen.getByText(/QUIT GIG/i)).toBeInTheDocument()
+    })
+
     test('does not render main gig UI when audio locked', async () => {
       useRhythmGameLogic.mockReturnValue({
         stats: { audioStatus: 'blocked' },

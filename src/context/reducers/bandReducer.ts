@@ -22,6 +22,7 @@ import { CONTRABAND_BY_ID } from '../../data/contraband'
 import {
   applySharedBandEffect,
   clampSharedBandEffectResult,
+  getEquipmentRevertValue,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../../utils/contrabandEffects'
 import {
@@ -516,7 +517,7 @@ export const handleCraftItem = (
         applySharedBandEffect(
           consumedBand,
           itemDef.effectType,
-          -(itemDef.value as number),
+          -getEquipmentRevertValue({ ...itemDef, ...entry }),
           EQUIPMENT_APPLY_ON_ADD_EFFECTS
         )
         clampSharedBandEffectResult(consumedBand, itemDef.effectType)

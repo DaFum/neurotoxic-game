@@ -735,13 +735,19 @@ test('band member deltas copy the members list only when a member changes', () =
   assert.strictEqual(state.band.members[1].mood, 50)
 })
 
-test('apply-on-add equipment keeps harmony inside 1-100 on add and on confiscation', () => {
+test('apply-on-add equipment keeps harmony inside 1-100 and reverts what it applied', () => {
   // -10 harmony at 5 would be stored as -5, below the clamp floor.
   const added = addContrabandToBand(
     { harmony: 5, stash: {}, members: [] },
     { contrabandId: 'c_abyssal_pendant', instanceId: 'pendant_1' }
   )
   assert.equal(added.harmony, 1)
+  // Removing it undoes only the 4 the add actually took, not the catalog 10.
+  const removed = applyEventDelta(
+    { band: added },
+    { band: { stashRemove: ['c_abyssal_pendant'] } }
+  )
+  assert.equal(removed.band.harmony, 5)
 
   // The reverse: a stored 95 plus the +10 revert would be 105.
   const state = {

@@ -18,7 +18,7 @@
 
 ## Contraband effects
 
-- `contrabandEffects.ts` (`applySharedBandEffect`, `ADDITIVE_BAND_EFFECT_FIELDS`, `EQUIPMENT_APPLY_ON_ADD_EFFECTS`) is the single source of truth for applying additive band-stat effects. `bandReducer` (apply) and `gameState/delta.ts` (revert on stash confiscation, via a negated value) both consume it — do not reinline the field map or the apply/clamp math. Passing a negated `value` is the canonical revert — an exact additive inverse (no floor; the rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time).
+- `contrabandEffects.ts` (`applySharedBandEffect`, `ADDITIVE_BAND_EFFECT_FIELDS`, `EQUIPMENT_APPLY_ON_ADD_EFFECTS`) is the single source of truth for applying additive band-stat effects. `bandReducer` (apply) and `gameState/delta.ts` (revert on stash confiscation, via a negated value) both consume it — do not reinline the field map or the apply/clamp math. Passing a negated `value` is the canonical revert — an exact additive inverse (no floor; the rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time). Harmony and stress are re-clamped after an equipment add/revert (`clampSharedBandEffectResult`); because a clamped add moves the stat by less than `value`, the stash entry records `appliedValue` and the revert negates `getEquipmentRevertValue(entry)` instead of the catalog value.
 
 ## Economy invariants
 

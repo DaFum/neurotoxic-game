@@ -4,6 +4,7 @@ import { CONTRABAND_BY_ID } from '../data/contraband'
 import {
   applySharedBandEffect,
   clampSharedBandEffectResult,
+  readClampedBandVital,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from './contrabandEffects'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
@@ -215,6 +216,7 @@ export const addContrabandToBand = (
   })
 
   if (item.applyOnAdd && item.type === 'equipment') {
+    const before = readClampedBandVital(newBand, item.effectType)
     applySharedBandEffect(
       newBand,
       item.effectType,
@@ -222,6 +224,14 @@ export const addContrabandToBand = (
       EQUIPMENT_APPLY_ON_ADD_EFFECTS
     )
     clampSharedBandEffectResult(newBand, item.effectType)
+    const after = readClampedBandVital(newBand, item.effectType)
+    // Remembered so the revert undoes what was applied, not the catalog value.
+    if (before !== null && after !== null) {
+      ;(newBand.stash as Record<string, unknown>)[item.id] = {
+        ...newInstance,
+        appliedValue: after - before
+      }
+    }
   }
 
   return newBand
