@@ -270,6 +270,8 @@ export interface AmpHUDProps {
  */
 export interface AudioLockedOverlayProps {
   onInitializeAudio: () => void
+  /** Leaves the gig; only passed once a retry cannot succeed. */
+  onQuit?: () => void
 }
 
 /**

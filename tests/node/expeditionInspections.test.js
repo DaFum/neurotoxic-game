@@ -177,53 +177,59 @@ test('Task 8: Expedition Inspections', async t => {
     }
   })
 
-  await t.test('crew inspection resolves available committed registry roles', () => {
-    for (const id of ['mika', 'tom']) {
+  await t.test(
+    'crew inspection resolves available committed registry roles',
+    () => {
+      for (const id of ['mika', 'tom']) {
+        const state = createActiveStateWithDefects([], {
+          loadout: { crewIds: [id], build: { selectedTourbusModuleIds: [] } }
+        })
+        for (const crewId of [undefined, id]) {
+          assert.equal(
+            resolveExpeditionInspection(state, {
+              mode: 'crew_inspection',
+              crewId,
+              expectedRouteStep: 2
+            }).ok,
+            true
+          )
+        }
+        state.expedition.crew.injuryByCrewId[id] = 'serious'
+        assert.equal(
+          resolveExpeditionInspection(state, {
+            mode: 'crew_inspection',
+            expectedRouteStep: 2
+          }).ok,
+          false
+        )
+      }
+    }
+  )
+
+  await t.test(
+    'crew inspection refuses recovery debt, uncommitted and invented crew',
+    () => {
       const state = createActiveStateWithDefects([], {
-        loadout: { crewIds: [id], build: { selectedTourbusModuleIds: [] } }
+        loadout: { crewIds: ['mika'], build: { selectedTourbusModuleIds: [] } }
       })
-      for (const crewId of [undefined, id]) {
+      state.career.crewRecoveryDebtById.mika = {
+        crewId: 'mika',
+        createdFromRunId: 'previous-run',
+        severity: 'serious',
+        toursRemaining: 1
+      }
+      for (const crewId of [undefined, 'mika', 'tom', 'crew_roadie_bob']) {
         assert.equal(
           resolveExpeditionInspection(state, {
             mode: 'crew_inspection',
             crewId,
             expectedRouteStep: 2
           }).ok,
-          true
+          false
         )
       }
-      state.expedition.crew.injuryByCrewId[id] = 'serious'
-      assert.equal(
-        resolveExpeditionInspection(state, {
-          mode: 'crew_inspection',
-          expectedRouteStep: 2
-        }).ok,
-        false
-      )
     }
-  })
-
-  await t.test('crew inspection refuses recovery debt, uncommitted and invented crew', () => {
-    const state = createActiveStateWithDefects([], {
-      loadout: { crewIds: ['mika'], build: { selectedTourbusModuleIds: [] } }
-    })
-    state.career.crewRecoveryDebtById.mika = {
-      crewId: 'mika',
-      createdFromRunId: 'previous-run',
-      severity: 'serious',
-      toursRemaining: 1
-    }
-    for (const crewId of [undefined, 'mika', 'tom', 'crew_roadie_bob']) {
-      assert.equal(
-        resolveExpeditionInspection(state, {
-          mode: 'crew_inspection',
-          crewId,
-          expectedRouteStep: 2
-        }).ok,
-        false
-      )
-    }
-  })
+  )
 
   await t.test(
     'module_inspection succeeds with inspectionLevel >= 1 and reveals one defect',
@@ -385,6 +391,37 @@ test('Task 8: Expedition Inspections', async t => {
         assert.equal(res.result.professionalRepair.targetRestore, 40)
         assert.equal(res.result.professionalRepair.resolvesTargetDefects, true)
       }
+    }
+  )
+
+  await t.test(
+    'full_service repair spends technicalFailureAccepted once no group is dead',
+    () => {
+      const run = otherGroupsDead => {
+        const state = createActiveStateWithDefects([], {
+          technicalFailureAccepted: true,
+          technicalCondition: {
+            pa: 0,
+            instruments: otherGroupsDead ? 0 : 55
+          }
+        })
+        return gameReducer(
+          state,
+          executeExpeditionInspection(state, {
+            mode: 'full_service',
+            repairTargetGroup: 'pa'
+          })
+        )
+      }
+
+      const recovered = run(false)
+      assert.ok(recovered.expedition.technicalCondition.pa > 0)
+      assert.equal(recovered.expedition.technicalFailureAccepted, false)
+
+      // Another dead group keeps the acceptance, as the repair handler does.
+      const stillDead = run(true)
+      assert.ok(stillDead.expedition.technicalCondition.pa > 0)
+      assert.equal(stillDead.expedition.technicalFailureAccepted, true)
     }
   )
 

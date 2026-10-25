@@ -38,6 +38,7 @@ function makeProps(overrides = {}) {
   const setHasSpun = overrides.setHasSpun ?? vi.fn()
   return {
     player: { money: 1000, day: 7, location: 'venues:berlin_club.name' },
+    expedition: { status: 'idle', protectedCareerCash: 0 },
     social: { activeDeals: [{ id: 'deal_1', remainingGigs: 2 }] },
     currentGig: { id: 'berlin_club', diff: 3 },
     postOptionsDerivationError: null,
@@ -189,7 +190,9 @@ describe('useMinorHandlers — handleNextPhase', () => {
 
     act(() => result.current.handleNextPhase())
 
-    expect(props.dispatchers.applyGigSocialReconciliation).not.toHaveBeenCalled()
+    expect(
+      props.dispatchers.applyGigSocialReconciliation
+    ).not.toHaveBeenCalled()
     expect(props.dispatchers.updateSocial).not.toHaveBeenCalled()
     expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
     expect(props.dispatchers.addToast).toHaveBeenCalledWith(

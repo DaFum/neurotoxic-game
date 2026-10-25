@@ -21,6 +21,8 @@ mock.module('tone', { namedExports: mockTone })
 // Import SUT
 const { setupAudio, disposeAudio } =
   await import('../../src/utils/audio/audioEngine')
+const { disposeAudioInternal } = await import('../../src/utils/audio/dispose')
+const { audioState } = await import('../../src/utils/audio/state')
 
 test('disposeAudio logs error when dispose fails', async t => {
   // Spy on logger.debug
@@ -52,4 +54,17 @@ test('disposeAudio logs error when dispose fails', async t => {
   )
 
   assert.ok(found, 'Should have logged disposal failure')
+})
+
+test('disposeAudio invalidates pending playback, disposeAudioInternal keeps it valid', async () => {
+  await setupAudio()
+  const before = audioState.playRequestId
+
+  disposeAudioInternal()
+  assert.strictEqual(audioState.playRequestId, before)
+  assert.strictEqual(audioState.isSetup, false)
+
+  await setupAudio()
+  disposeAudio()
+  assert.strictEqual(audioState.playRequestId, before + 1)
 })

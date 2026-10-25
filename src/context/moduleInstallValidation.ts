@@ -3,6 +3,7 @@ import type {
   InstallModuleFailureReason,
   InstallModulePayload
 } from '../types/assets'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { getRegisteredModule } from '../utils/assetModuleRegistry'
 import {
   getLockReasons,
@@ -32,9 +33,11 @@ export const validateModuleInstall = (
     s => s.installedModuleId === raw.moduleId
   ).length
   if (count >= (module.maxPerAsset ?? 1)) return 'MAX_PER_ASSET'
+  // Spendable, not raw: the Expedition cash floor rolls back a debit into the
+  // protected slice, which would swallow the install without a failure.
   if (
     !Number.isFinite(state.player.money) ||
-    state.player.money < module.cost + module.installCost
+    getExpeditionSpendableCash(state) < module.cost + module.installCost
   ) {
     return 'INSUFFICIENT_FUNDS'
   }

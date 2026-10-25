@@ -39,6 +39,7 @@ import {
   selectAssetsMap
 } from '../utils/assetSelectors'
 import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { finiteNumberOr } from '../utils/gameState'
 import { getSafeUUID } from '../utils/crypto'
 import {
@@ -106,6 +107,15 @@ type AssetForeclosedAction = ActionByType<typeof ActionTypes.ASSET_FORECLOSED>
  */
 const canAfford = (money: number, cost: number): boolean =>
   Number.isFinite(money) && money >= cost
+
+/**
+ * Affordability against the raw balance and, during an active Expedition, the
+ * spendable slice. The cash floor rolls a debit into protected cash back
+ * silently, so the creator has to refuse it with a typed failure instead.
+ */
+const canAffordInState = (state: GameState, cost: number): boolean =>
+  canAfford(state.player.money, cost) &&
+  canAfford(getExpeditionSpendableCash(state), cost)
 
 /**
  * Composes the pre-generated `NewSlotEntry` array for a module that uses
@@ -189,7 +199,7 @@ export const purchaseChassis = (
   if (hasActiveAssetAcquisition(state, raw.kind)) {
     return fail('ACQUISITION_ALREADY_ACTIVE')
   }
-  if (raw.mode === 'cash' && !canAfford(state.player.money, cfg.price)) {
+  if (raw.mode === 'cash' && !canAffordInState(state, cfg.price)) {
     return fail('INSUFFICIENT_FUNDS')
   }
   if (raw.mode === 'loan') {
@@ -339,7 +349,7 @@ export const upgradeChassisTier = (
   )
   if (!currentCfg) return fail('UNKNOWN_CONFIG')
   const upgradeCost = calculateChassisUpgradeCost(currentCfg, targetCfg)
-  if (!canAfford(state.player.money, upgradeCost)) {
+  if (!canAffordInState(state, upgradeCost)) {
     return fail('INSUFFICIENT_FUNDS')
   }
 
@@ -381,6 +391,14 @@ export const sellChassis = (
   state?: GameState
 ): SellChassisAction | SellChassisFailedAction => {
   if (state) {
+    // The committed tourbus is the run's source of archetype, cargo and
+    // modules; selling it would leave the run without one.
+    if (isExpeditionChassisCommitmentLocked(state, assetId)) {
+      return {
+        type: ActionTypes.SELL_CHASSIS_FAILED,
+        payload: { assetId, reason: 'EXPEDITION_LOCKED' }
+      }
+    }
     const asset = selectAssetsMap(state).get(assetId)
     const grossSale =
       asset !== undefined
@@ -441,7 +459,7 @@ export const repairChassis = (
   if (!asset) return fail('UNKNOWN_ASSET')
   const repairCost = calculateChassisRepairCost(asset.condition)
   if (repairCost <= 0) return fail('NO_DAMAGE')
-  if (!canAfford(state.player.money, repairCost)) {
+  if (!canAffordInState(state, repairCost)) {
     return fail('INSUFFICIENT_FUNDS')
   }
   return {
@@ -491,7 +509,7 @@ export const refinanceLiability = (
 
   const principal = finiteNumberOr(liability.principalRemaining, 0)
   const fee = calculateRefinanceFee(principal)
-  if (!canAfford(state.player.money, fee)) return fail('INSUFFICIENT_FUNDS')
+  if (!canAffordInState(state, fee)) return fail('INSUFFICIENT_FUNDS')
 
   return {
     type: ActionTypes.REFINANCE_LIABILITY,

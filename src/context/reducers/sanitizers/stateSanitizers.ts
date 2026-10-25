@@ -12,6 +12,7 @@ import {
   deriveCityTraits
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
+import { isRecordedAppliedValueValid } from '../../../utils/contrabandEffects'
 import { EVENTS_DB } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
@@ -217,6 +218,17 @@ const sanitizeStashItem = (
   // a phantom stack count.
   if (baseItem.stackable === false && (copy.stacks as number) > 1) {
     copy.stacks = 1
+  }
+  // `appliedValue` is the one per-instance field that feeds a stat reversal, so
+  // it must be a delta a clamped apply-on-add could have recorded.
+  if (
+    !isRecordedAppliedValueValid(
+      baseItem.effectType,
+      baseItem.value,
+      copy.appliedValue
+    )
+  ) {
+    delete copy.appliedValue
   }
   if (
     Object.hasOwn(itemObj, 'remainingDuration') &&

@@ -21,10 +21,12 @@ import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import {
   applySharedBandEffect,
+  getEquipmentRevertValue,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../../utils/contrabandEffects'
 import {
   addContrabandToBand,
+  clampSharedBandEffectResult,
   getStashCapacity,
   getStashStackCount,
   getStashUsedSlots,
@@ -515,9 +517,10 @@ export const handleCraftItem = (
         applySharedBandEffect(
           consumedBand,
           itemDef.effectType,
-          -(itemDef.value as number),
+          -getEquipmentRevertValue({ ...entry, ...itemDef }),
           EQUIPMENT_APPLY_ON_ADD_EFFECTS
         )
+        clampSharedBandEffectResult(consumedBand, itemDef.effectType)
       }
       delete newStash[itemId]
     } else {

@@ -528,6 +528,40 @@ describe('stateSanitizers', () => {
     }
   })
 
+  describe('recorded appliedValue on stash items', () => {
+    const load = (id, appliedValue) =>
+      sanitizeBand({
+        stash: { [id]: { id, stacks: 1, applied: true, appliedValue } }
+      }).stash[id]
+
+    it('keeps a delta a clamped harmony add could have recorded', () => {
+      // c_abyssal_pendant is -10 harmony: -4 is what a clamp at 5 leaves.
+      assert.strictEqual(load('c_abyssal_pendant', -4).appliedValue, -4)
+    })
+
+    it('strips a forged delta: wrong sign, too large, non-finite or non-numeric', () => {
+      for (const forged of [10, -1000000, Number.NaN, Infinity, '-4', null]) {
+        assert.strictEqual(
+          Object.hasOwn(load('c_abyssal_pendant', forged), 'appliedValue'),
+          false,
+          `appliedValue ${String(forged)} must be dropped`
+        )
+      }
+    })
+
+    it('strips appliedValue from equipment that is not clamped harmony or stress', () => {
+      // c_rusty_strings is +5 luck: nothing ever records a delta for it.
+      assert.strictEqual(
+        Object.hasOwn(load('c_rusty_strings', -1000000), 'appliedValue'),
+        false
+      )
+      assert.strictEqual(
+        Object.hasOwn(load('c_rusty_strings', 3), 'appliedValue'),
+        false
+      )
+    })
+  })
+
   describe('sanitizePlayer', () => {
     it('clamps clinicVisits to a non-negative integer', () => {
       assert.strictEqual(sanitizePlayer({ clinicVisits: -3 }).clinicVisits, 0)

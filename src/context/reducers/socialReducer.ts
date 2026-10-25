@@ -3,6 +3,7 @@ import {
   REGION_BLACKLIST_THRESHOLD
 } from '../../utils/mapUtils'
 import i18n from '../../i18n'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
@@ -193,10 +194,16 @@ const appendDeltaSuccessToast = (
  */
 const readPlayerFundsAndHarmony = (
   state: GameState
-): { money: number; harmony: number } => ({
-  money: clampPlayerMoney(finiteNumberOr(state.player.money, 0)),
-  harmony: clampBandHarmony(finiteNumberOr(state.band?.harmony, 1))
-})
+): { money: number; spendable: number; harmony: number } => {
+  const money = clampPlayerMoney(finiteNumberOr(state.player.money, 0))
+  return {
+    money,
+    // The affordability gate: the Expedition cash floor rolls a debit into
+    // protected cash back without a word, so it is refused here instead.
+    spendable: Math.min(money, getExpeditionSpendableCash(state)),
+    harmony: clampBandHarmony(finiteNumberOr(state.band?.harmony, 1))
+  }
+}
 
 /**
  * Assembles the post-action state shared by merch-press and zealotry-style
@@ -675,9 +682,10 @@ export const handleUnblacklistVenue = (
   const cost = getUnblacklistCost(venueId)
   // Persisted money is untrusted at this boundary: the shared funds policy
   // recovers stale saves with a finite fallback instead of rejecting.
-  const currentMoney = readPlayerFundsAndHarmony(state).money
+  const funds = readPlayerFundsAndHarmony(state)
+  const currentMoney = funds.money
 
-  if (currentMoney < cost) {
+  if (funds.spendable < cost) {
     return {
       ...state,
       toasts: [
@@ -797,7 +805,7 @@ export const handleMerchPress = (
   const currentMoney = funds.money
   const currentHarmony = funds.harmony
 
-  if (currentMoney < cost || currentHarmony < harmonyCost) {
+  if (funds.spendable < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', 'Insufficient funds or harmony for merch press')
     return state
   }
@@ -916,7 +924,7 @@ const applyZealotryAction = (
   const currentMoney = funds.money
   const currentHarmony = funds.harmony
 
-  if (currentMoney < cost || currentHarmony < harmonyCost) {
+  if (funds.spendable < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', options.insufficientLogMessage)
     return state
   }

@@ -295,7 +295,8 @@ export const usePurchaseLogic = ({
   updatePlayer,
   updateBand,
   addToast,
-  transformPlayerPatch
+  transformPlayerPatch,
+  spendableCash
 }: {
   player: PlayerState
   band: BandState
@@ -304,6 +305,8 @@ export const usePurchaseLogic = ({
   updateBand: (patch: UpdateBandPayload) => void
   addToast: ToastFn
   transformPlayerPatch?: PlayerPatchTransform
+  /** Cash an active Expedition may spend; omitted outside the game provider. */
+  spendableCash?: number
 }) => {
   const { t } = useTranslation(['ui', 'items'])
 
@@ -311,8 +314,9 @@ export const usePurchaseLogic = ({
    * Gets the combined purchase decision (cost, affordability, ownership)
    */
   const getPurchaseDecisionCallback = useCallback(
-    (item: PurchaseItem) => getPurchaseDecision(item, player, band, social),
-    [player, band, social]
+    (item: PurchaseItem) =>
+      getPurchaseDecision(item, player, band, social, spendableCash),
+    [player, band, social, spendableCash]
   )
 
   /**
@@ -323,7 +327,13 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(item, player, band, social)
+        const validation = validatePurchase(
+          item,
+          player,
+          band,
+          social,
+          spendableCash
+        )
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)
@@ -461,10 +471,11 @@ export const usePurchaseLogic = ({
         item,
         player,
         band,
-        social
+        social,
+        spendableCash
       )
     ) => !decision.canPurchase,
-    [player, band, social]
+    [player, band, social, spendableCash]
   )
 
   return {

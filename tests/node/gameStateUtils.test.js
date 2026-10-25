@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { addContrabandToBand } from '../../src/utils/contrabandStashUtils'
 import {
   applyEventDelta,
   applyInventoryItemDelta,
@@ -732,4 +733,78 @@ test('band member deltas copy the members list only when a member changes', () =
   assert.strictEqual(changed.band.members[1].mood, 55)
   assert.strictEqual(changed.band.members[2], state.band.members[2])
   assert.strictEqual(state.band.members[1].mood, 50)
+})
+
+test('apply-on-add equipment keeps harmony inside 1-100 and reverts what it applied', () => {
+  // -10 harmony at 5 would be stored as -5, below the clamp floor.
+  const added = addContrabandToBand(
+    { harmony: 5, stash: {}, members: [] },
+    { contrabandId: 'c_abyssal_pendant', instanceId: 'pendant_1' }
+  )
+  assert.equal(added.harmony, 1)
+  // Removing it undoes only the 4 the add actually took, not the catalog 10.
+  const removed = applyEventDelta(
+    { band: added },
+    { band: { stashRemove: ['c_abyssal_pendant'] } }
+  )
+  assert.equal(removed.band.harmony, 5)
+
+  // The reverse: a stored 95 plus the +10 revert would be 105.
+  const state = {
+    band: {
+      harmony: 95,
+      stash: {
+        c_abyssal_pendant: {
+          id: 'c_abyssal_pendant',
+          type: 'equipment',
+          effectType: 'harmony',
+          value: -10,
+          applyOnAdd: true,
+          applied: true,
+          stacks: null
+        }
+      }
+    }
+  }
+  const next = applyEventDelta(state, {
+    band: { stashRemove: ['c_abyssal_pendant'] }
+  })
+  assert.equal(next.band.harmony, 100)
+})
+
+test('confiscation ignores a forged appliedValue on equipment', () => {
+  const state = {
+    band: {
+      luck: 12,
+      harmony: 50,
+      stash: {
+        c_rusty_strings: {
+          id: 'c_rusty_strings',
+          type: 'equipment',
+          effectType: 'luck',
+          value: 5,
+          applyOnAdd: true,
+          applied: true,
+          appliedValue: -1000000,
+          stacks: null
+        },
+        c_abyssal_pendant: {
+          id: 'c_abyssal_pendant',
+          type: 'equipment',
+          effectType: 'harmony',
+          value: -10,
+          applyOnAdd: true,
+          applied: true,
+          appliedValue: -1000000,
+          stacks: null
+        }
+      }
+    }
+  }
+  const next = applyEventDelta(state, {
+    band: { stashRemove: ['c_rusty_strings', 'c_abyssal_pendant'] }
+  })
+  assert.equal(next.band.luck, 7)
+  // The pendant reverts its canonical +10, clamped to the 0-100 range.
+  assert.equal(next.band.harmony, 60)
 })

@@ -23,6 +23,7 @@ import { getExpeditionTechnicalCondition } from './condition'
 import type { GameState } from '../../types'
 import type {
   ConditionGroup,
+  ExpeditionFailureReason,
   ExpeditionInsuranceClaimType,
   ExpeditionInsurancePolicy,
   ExpeditionInsurancePolicyId
@@ -77,6 +78,12 @@ export const getAvailableInsurancePolicyIds = (
 
 export interface CanClaimInsuranceOptions {
   isContrabandOrSabotage?: boolean
+  /**
+   * The crisis being derived. A signal derivation passes its own reason so the
+   * verdict never depends on the crisis stored by an earlier sync; a claim
+   * against an existing crisis omits it and reads the stored one.
+   */
+  crisisReason?: ExpeditionFailureReason
 }
 
 export const canClaimExpeditionInsurance = (
@@ -89,8 +96,9 @@ export const canClaimExpeditionInsurance = (
 
   // Exclusion check: Contraband / intentional sabotage Authority outcomes are excluded
   if (options?.isContrabandOrSabotage === true) return false
-  if (state.expedition.pendingFailure?.reason === 'authority_crisis')
-    return false
+  const crisisReason =
+    options?.crisisReason ?? state.expedition.pendingFailure?.reason
+  if (crisisReason === 'authority_crisis') return false
 
   // Check claim not consumed
   if (
@@ -120,8 +128,7 @@ export const canClaimExpeditionInsurance = (
       EXPENSE_CONSTANTS.transport.maxFuel
     )
     const condition = readVanCondition(state.player.van?.condition)
-    const isMobilityFailure =
-      state.expedition.pendingFailure?.reason === 'fuel_stranded'
+    const isMobilityFailure = crisisReason === 'fuel_stranded'
     if (fuel > 0 && condition > 0 && !isMobilityFailure) {
       return false
     }

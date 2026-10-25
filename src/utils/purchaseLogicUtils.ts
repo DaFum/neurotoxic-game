@@ -224,17 +224,24 @@ export const isItemOwned = (
  * @param item - Item to check
  * @param player - Player state
  * @param adjustedCost - Cost after adjustments
+ * @param spendableMoney - Cash an active Expedition may spend. Caps a money
+ * purchase: the cash floor rolls a debit into protected cash back, so an item
+ * bought on the raw balance would be granted without being paid for.
  * @returns True if affordable
  */
 export const canAfford = (
   item: { currency?: string },
   player: Pick<PlayerState, 'money' | 'fame'>,
-  adjustedCost: number
+  adjustedCost: number,
+  spendableMoney?: number
 ): boolean => {
   const payingWithFame = item.currency === 'fame'
   const rawCurrency = payingWithFame ? player.fame : player.money
   const currencyValue = finiteNumberOr(rawCurrency, 0)
-  return currencyValue >= adjustedCost
+  if (payingWithFame || spendableMoney === undefined) {
+    return currencyValue >= adjustedCost
+  }
+  return Math.min(currencyValue, spendableMoney) >= adjustedCost
 }
 
 /**
@@ -412,12 +419,13 @@ const derivePurchaseDecision = (
   player: PlayerState,
   band: BandState,
   social: SocialState,
-  effect: Effect | undefined
+  effect: Effect | undefined,
+  spendableMoney?: number
 ): { decision: PurchaseDecision; meetsReputation: boolean } => {
   const cost = getAdjustedCost(item, band)
   const isOwned = isItemOwned(item, player, band)
   const isConsumable = effect?.type === 'inventory_add'
-  const playerCanAfford = canAfford(item, player, cost)
+  const playerCanAfford = canAfford(item, player, cost, spendableMoney)
 
   const hasValidEffect = !!effect
   const meetsReputation =
@@ -446,16 +454,24 @@ const derivePurchaseDecision = (
  * @param item - Item to purchase
  * @param player - Player state
  * @param band - Band state
+ * @param spendableMoney - Cash an active Expedition may spend; see {@link canAfford}.
  * @returns Decision variables (cost, affordability, ownership, etc)
  */
 export const getPurchaseDecision = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState,
-  social: SocialState
+  social: SocialState,
+  spendableMoney?: number
 ): PurchaseDecision =>
-  derivePurchaseDecision(item, player, band, social, getPrimaryEffect(item))
-    .decision
+  derivePurchaseDecision(
+    item,
+    player,
+    band,
+    social,
+    getPrimaryEffect(item),
+    spendableMoney
+  ).decision
 
 /**
  * Validates whether the item can be purchased.
@@ -463,13 +479,15 @@ export const getPurchaseDecision = (
  * @param player - Player state
  * @param band - Band state
  * @param social - Social state (optional)
+ * @param spendableMoney - Cash an active Expedition may spend; see {@link canAfford}.
  * @returns Discriminated union indicating validity and computed parameters.
  */
 export const validatePurchase = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState,
-  social: SocialState
+  social: SocialState,
+  spendableMoney?: number
 ): PurchaseValidationResult => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
@@ -481,7 +499,8 @@ export const validatePurchase = (
     player,
     band,
     social,
-    effect
+    effect,
+    spendableMoney
   )
 
   if (!meetsReputation) {

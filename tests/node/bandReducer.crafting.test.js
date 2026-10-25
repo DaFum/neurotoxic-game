@@ -173,4 +173,42 @@ describe('bandReducer - handleCraftItem', () => {
 
     assert.strictEqual(next, state)
   })
+
+  it('reverts the catalog value for an input that records no clamped delta', () => {
+    // The add was clamped, so it moved the stat by 3, not the catalog 5.
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: 1, appliedValue: 3 }
+    })
+    state.band.luck = 5
+
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick-applied',
+      toastId: 'craft_toast_blood_pick_applied'
+    })
+
+    // Only clamped harmony/stress records a delta; luck reverts its catalog +5.
+    assert.equal(next.band.luck, 0)
+  })
+
+  it('ignores a forged appliedValue and reverts the catalog value', () => {
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: {
+        id: 'c_rusty_strings',
+        stacks: 1,
+        appliedValue: -1000000
+      }
+    })
+    state.band.luck = 5
+
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick-forged',
+      toastId: 'craft_toast_blood_pick_forged'
+    })
+
+    assert.equal(next.band.luck, 0)
+  })
 })

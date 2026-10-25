@@ -5,10 +5,11 @@ import type { AudioLockedOverlayProps } from '../../../types/components'
 
 /**
  * Displays the browser-audio unlock prompt before gig playback starts.
- * @param props - Callback that retries or starts audio initialization.
+ * @param props - Callback that retries or starts audio initialization, and an
+ * optional quit callback offered when initialization cannot succeed.
  */
 export const AudioLockedOverlay = memo(
-  ({ onInitializeAudio }: AudioLockedOverlayProps) => {
+  ({ onInitializeAudio, onQuit }: AudioLockedOverlayProps) => {
     const { t } = useTranslation()
 
     return (
@@ -41,6 +42,11 @@ export const AudioLockedOverlay = memo(
         >
           {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
         </GlitchButton>
+        {onQuit && (
+          <GlitchButton onClick={onQuit} variant='danger' className='mt-8'>
+            {t('ui:gig.quit', { defaultValue: 'QUIT GIG' })}
+          </GlitchButton>
+        )}
       </div>
     )
   }

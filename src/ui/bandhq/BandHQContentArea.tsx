@@ -8,6 +8,7 @@ import type { PurchaseDecision } from '../../types/purchase'
 import { usePurchaseLogic } from './hooks/usePurchaseLogic'
 import { useBandHQLogic } from './hooks/useBandHQLogic'
 import { useGameActions, useGameSelector } from '../../context/GameState.tsx'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
 import { StatsTab } from './StatsTab.tsx'
@@ -39,6 +40,7 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
+  const spendableCash = useGameSelector(getExpeditionSpendableCash)
   const settings = useGameSelector(state => state.settings)
   const setlist = useGameSelector(state => state.setlist)
   const activeQuests = useGameSelector(state => state.activeQuests)
@@ -70,7 +72,8 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
     social,
     updatePlayer,
     updateBand,
-    addToast
+    addToast,
+    spendableCash
   }
 
   const { handleBuy, isItemDisabled, getPurchaseDecision } =

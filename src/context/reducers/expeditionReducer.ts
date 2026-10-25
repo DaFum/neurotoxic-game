@@ -2177,7 +2177,14 @@ export const handleExecuteExpeditionInspection = (
     },
     expedition: {
       ...state.expedition,
-      technicalCondition: updatedTc
+      technicalCondition: updatedTc,
+      // A professional repair can bring the dead group back, which spends the
+      // acceptance exactly as the repair handler does.
+      technicalFailureAccepted: EXPEDITION_CONDITION_GROUPS.some(
+        group => updatedTc[group] === 0
+      )
+        ? state.expedition.technicalFailureAccepted
+        : false
     }
   }
 }

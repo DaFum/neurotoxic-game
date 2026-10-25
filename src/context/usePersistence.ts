@@ -4,7 +4,8 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState
+  useState,
+  startTransition
 } from 'react'
 import type { TFunction } from 'i18next'
 import {
@@ -387,7 +388,8 @@ type StoredSaveEvaluation =
  *
  * @param storage - Storage backend the slot is read from.
  * @param report - How each refusal is reported.
- * @param preview - Skips every write: the migration quarantine copy. Reads and
+ * @param preview - Skips every write: the quarantine copy of a refused or
+ * migration-failed save. Reads and
  * the unlock merge are unchanged, so a preview reaches the verdict a load would.
  * @returns The accepted payload, or the reason the save is refused.
  *
@@ -402,7 +404,14 @@ const evaluateStoredSave = (
   preview: boolean
 ): StoredSaveEvaluation => {
   let parsed: unknown
-  let rawSave: string
+  let rawSave: string | undefined
+  // Copies a refused payload aside before the caller falls back to the initial
+  // state: the next autosave writes the same key and would destroy the only
+  // copy of the run. A preview writes nothing.
+  const quarantineRejected = (version: number, reason: string): void => {
+    if (preview || !rawSave) return
+    quarantineSave(rawSave, version, reason, storage)
+  }
   try {
     // The same guard saveGame applies: anything newer than this build
     // (a slot of its own or a newer payload in the shared key) means a
@@ -423,12 +432,17 @@ const evaluateStoredSave = (
     if (!saved) return { ok: false, reason: 'missing' }
     rawSave = saved
     parsed = safeJsonParse(saved)
-  } catch (_error) {
+  } catch (error) {
+    quarantineRejected(
+      0,
+      `Save JSON parsing failed: ${error instanceof Error ? error.message : String(error)}`
+    )
     report.parseFailed()
     return { ok: false, reason: 'corrupt' }
   }
 
   if (!isLooseRecord(parsed)) {
+    quarantineRejected(0, 'Stored save is not an object')
     report.corruptFailed()
     return { ok: false, reason: 'corrupt' }
   }
@@ -445,7 +459,9 @@ const evaluateStoredSave = (
   try {
     validateSaveData(parsed)
   } catch (error) {
-    report.corruptFailed(error instanceof Error ? error.message : String(error))
+    const reason = error instanceof Error ? error.message : String(error)
+    quarantineRejected(storedVersion, `Save validation failed: ${reason}`)
+    report.corruptFailed(reason)
     return { ok: false, reason: 'corrupt' }
   }
 
@@ -697,7 +713,12 @@ export function usePersistence({
       if (onSaved) {
         saveRequestListenersRef.current.push(onSaved)
       }
-      setSaveRequestCount(count => count + 1)
+      // A transition, like the scene and START_GIG dispatches it follows: a
+      // default-lane update renders first, so the effect would save the state
+      // from before a transition-dispatched action committed. Both land in the
+      // same transition lane when requested in the same event, and a save that
+      // trails a default-lane dispatch still sees it, as the render includes it.
+      startTransition(() => setSaveRequestCount(count => count + 1))
     },
     []
   )

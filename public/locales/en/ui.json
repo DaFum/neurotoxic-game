@@ -1364,6 +1364,7 @@
   "gameOver.tourComplete": "TOUR COMPLETE",
   "game_over": "GAME OVER: {{description}}",
   "gig.audioOverride": "Audio Interface requires manual override.",
+  "gig.audioUnlockFailed": "Audio could not be unlocked. Try again.",
   "gig.combo": "COMBO",
   "gig.controlsAria": "Toggle game controls",
   "gig.controlsHint": "Game Controls",

@@ -3,6 +3,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { useDisclosure } from './useDisclosure'
 import { secureRandom } from '../utils/crypto'
 import { finiteNumberOr } from '../utils/finiteNumber'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 
 /**
  * Coordinates merch-press modal state, eligibility, random outcome, and dispatch.
@@ -12,6 +13,7 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 export const useMerchPress = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
+  const spendableCash = useGameSelector(getExpeditionSpendableCash)
   const { merchPress } = useGameActions()
 
   const {
@@ -34,7 +36,7 @@ export const useMerchPress = () => {
   }, [player?.fameLevel])
 
   const canPress =
-    finiteNumberOr(player?.money, 0) >= config.cost &&
+    spendableCash >= config.cost &&
     finiteNumberOr(band?.harmony, 0) >= config.harmonyCostOnFail
 
   const triggerPress = useCallback(() => {
