@@ -1972,7 +1972,11 @@ export const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
     name: raw.name,
     alignment,
     powerLevel,
-    currentLocationId
+    currentLocationId,
+    ...(typeof raw.lastEscalatedNodeId === 'string' &&
+    raw.lastEscalatedNodeId.length > 0
+      ? { lastEscalatedNodeId: raw.lastEscalatedNodeId }
+      : {})
   }
 }
 
@@ -2020,6 +2024,13 @@ export const sanitizeRivalBandUpdates = (
       typeof value.currentLocationId === 'string')
   ) {
     updates.currentLocationId = value.currentLocationId
+  }
+  if (
+    Object.hasOwn(value, 'lastEscalatedNodeId') &&
+    (value.lastEscalatedNodeId === null ||
+      typeof value.lastEscalatedNodeId === 'string')
+  ) {
+    updates.lastEscalatedNodeId = value.lastEscalatedNodeId
   }
   return updates
 }

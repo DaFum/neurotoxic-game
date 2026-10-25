@@ -7,6 +7,8 @@ import {
   sanitizeBand,
   sanitizeMinigameState,
   sanitizePlayer,
+  sanitizeRivalBand,
+  sanitizeRivalBandUpdates,
   sanitizeSocial
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
@@ -558,6 +560,38 @@ describe('stateSanitizers', () => {
       assert.strictEqual(
         Object.hasOwn(load('c_rusty_strings', 3), 'appliedValue'),
         false
+      )
+    })
+  })
+
+  describe('rivalBand lastEscalatedNodeId', () => {
+    const rival = extra => ({ id: 'r1', name: 'Rival', ...extra })
+
+    it('survives a save round trip and the update whitelist', () => {
+      assert.strictEqual(
+        sanitizeRivalBand(rival({ lastEscalatedNodeId: 'node-1' }))
+          .lastEscalatedNodeId,
+        'node-1'
+      )
+      assert.deepStrictEqual(
+        sanitizeRivalBandUpdates({ lastEscalatedNodeId: null }),
+        { lastEscalatedNodeId: null }
+      )
+    })
+
+    it('drops a mistyped marker instead of persisting it', () => {
+      for (const bad of [5, {}, [], true, '']) {
+        assert.strictEqual(
+          Object.hasOwn(
+            sanitizeRivalBand(rival({ lastEscalatedNodeId: bad })),
+            'lastEscalatedNodeId'
+          ),
+          false
+        )
+      }
+      assert.deepStrictEqual(
+        sanitizeRivalBandUpdates({ lastEscalatedNodeId: 7 }),
+        {}
       )
     })
   })
