@@ -206,6 +206,22 @@ describe('sanitizeExpeditionState', () => {
     assert.equal(sanitized.loadout?.tourTypeId, 'standard_tour')
   })
 
+  it('takes the insurance policy from the committed loadout, not a free-standing field', () => {
+    const uninsured = { ...activeSave(), insurancePolicyId: 'touring' }
+    assert.equal(
+      sanitizeExpeditionState(uninsured, 654321).insurancePolicyId,
+      null
+    )
+
+    const insured = activeSave()
+    insured.loadout.insurancePolicyId = 'roadside'
+    insured.insurancePolicyId = 'touring'
+    assert.equal(
+      sanitizeExpeditionState(insured, 654321).insurancePolicyId,
+      'roadside'
+    )
+  })
+
   it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {
     const save = activeSave()
     save.routeStep = 0

@@ -948,9 +948,13 @@ export const sanitizeExpeditionState = (
       readString(value, 'metaUnlockQuestCompletedRunId') === runId
         ? runId
         : null,
+    // Like protectedCareerCash, a committed build is authoritative: a save
+    // cannot add a policy whose premium the run never paid.
     insurancePolicyId:
       getExpeditionInsurancePolicy(
-        readString(value, 'insurancePolicyId') ?? loadout?.insurancePolicyId
+        loadout
+          ? loadout.insurancePolicyId
+          : readString(value, 'insurancePolicyId')
       )?.id ?? null,
     insuranceClaimConsumed:
       readBoolean(value, 'insuranceClaimConsumed') ||
