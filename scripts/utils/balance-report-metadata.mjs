@@ -26,6 +26,13 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/hooks/postGig/usePostGigDerivations.ts',
   // Owns the post-Gig Festival Run Draft offer the Expedition runner mirrors.
   'src/hooks/postGig/handlers/useContinueHandler.ts',
+  // The Expedition runner settles each simulated Gig through
+  // evaluateAcceptedSettlementSolvency, so its protected-Cash acceptance rule
+  // moves simulated Cash and Fame.
+  'src/hooks/postGig/handlers/continueHandlerUtils.ts',
+  // APPLY_SOCIAL_POST_RESULT runs this validator in the reducer, so it decides
+  // which simulated posts commit and which are refused.
+  'src/utils/postGig/socialPostResultValidation.ts',
   'src/context/initialState.ts',
   'src/context/reducers/sanitizers/stateSanitizers.ts',
   'src/utils/saveValidator.ts',
