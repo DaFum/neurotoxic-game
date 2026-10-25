@@ -517,7 +517,7 @@ export const handleCraftItem = (
         applySharedBandEffect(
           consumedBand,
           itemDef.effectType,
-          -getEquipmentRevertValue({ ...itemDef, ...entry }),
+          -getEquipmentRevertValue({ ...entry, ...itemDef }),
           EQUIPMENT_APPLY_ON_ADD_EFFECTS
         )
         clampSharedBandEffectResult(consumedBand, itemDef.effectType)

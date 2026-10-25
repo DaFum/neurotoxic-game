@@ -121,6 +121,31 @@ export const readClampedBandVital = (
 }
 
 /**
+ * Whether a recorded `appliedValue` is one a clamped apply-on-add could have
+ * produced.
+ *
+ * @param effectType - Effect type of the equipment.
+ * @param value - Canonical catalog value of the equipment.
+ * @param appliedValue - Recorded per-instance delta (untrusted: it round-trips
+ * through the save).
+ * @returns True only for a finite harmony/stress delta that points the same way
+ * as `value` and is no larger than it, which is all clamping can do.
+ */
+export const isRecordedAppliedValueValid = (
+  effectType: unknown,
+  value: unknown,
+  appliedValue: unknown
+): appliedValue is number => {
+  if (effectType !== 'harmony' && effectType !== 'stress') return false
+  if (!isFiniteNumber(appliedValue) || !isFiniteNumber(value)) return false
+  if (appliedValue === 0) return true
+  return (
+    Math.sign(appliedValue) === Math.sign(value) &&
+    Math.abs(appliedValue) <= Math.abs(value)
+  )
+}
+
+/**
  * The value to negate when reverting an apply-on-add equipment effect.
  *
  * @param entry - Stash entry (or item definition) of the equipment.
@@ -129,13 +154,23 @@ export const readClampedBandVital = (
  *
  * @remarks
  * Reverting the catalog value after a clamped apply would hand the player the
- * clamped difference for free (harmony 5 with -10 becomes 1, the revert of +10 then gives 11).
+ * clamped difference for free (harmony 5 with -10 becomes 1, the revert of +10
+ * then gives 11). The recorded delta is save-authored, so it is only honored
+ * where {@link isRecordedAppliedValueValid} holds; anything else reverts the
+ * catalog value, so a forged entry cannot mint a stat.
  */
 export const getEquipmentRevertValue = (entry: {
+  effectType?: unknown
   value?: unknown
   appliedValue?: unknown
 }): number =>
   finiteNumberOr(
-    isFiniteNumber(entry.appliedValue) ? entry.appliedValue : entry.value,
+    isRecordedAppliedValueValid(
+      entry.effectType,
+      entry.value,
+      entry.appliedValue
+    )
+      ? entry.appliedValue
+      : entry.value,
     0
   )

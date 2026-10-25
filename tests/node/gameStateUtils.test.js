@@ -771,3 +771,40 @@ test('apply-on-add equipment keeps harmony inside 1-100 and reverts what it appl
   })
   assert.equal(next.band.harmony, 100)
 })
+
+test('confiscation ignores a forged appliedValue on equipment', () => {
+  const state = {
+    band: {
+      luck: 12,
+      harmony: 50,
+      stash: {
+        c_rusty_strings: {
+          id: 'c_rusty_strings',
+          type: 'equipment',
+          effectType: 'luck',
+          value: 5,
+          applyOnAdd: true,
+          applied: true,
+          appliedValue: -1000000,
+          stacks: null
+        },
+        c_abyssal_pendant: {
+          id: 'c_abyssal_pendant',
+          type: 'equipment',
+          effectType: 'harmony',
+          value: -10,
+          applyOnAdd: true,
+          applied: true,
+          appliedValue: -1000000,
+          stacks: null
+        }
+      }
+    }
+  }
+  const next = applyEventDelta(state, {
+    band: { stashRemove: ['c_rusty_strings', 'c_abyssal_pendant'] }
+  })
+  assert.equal(next.band.luck, 7)
+  // The pendant reverts its canonical +10, clamped to the 0-100 range.
+  assert.equal(next.band.harmony, 60)
+})
