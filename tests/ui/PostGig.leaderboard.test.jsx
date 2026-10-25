@@ -199,7 +199,7 @@ describe('PostGig Leaderboard Submission', () => {
     saveGameAfterStateCommit: vi.fn(),
     recordPendingGigSettlement: vi.fn(),
     clearPendingGigSettlement: vi.fn(),
-    commitSocialPost: vi.fn(() => true)
+    commitSocialPost: vi.fn(() => ({ ok: true }))
   })
 
   /**

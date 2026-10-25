@@ -142,7 +142,7 @@ const getLastFunctionalUpdate = mockFn =>
 const mockUpdatePlayer = vi.fn()
 const mockUpdateBand = vi.fn()
 const mockUpdateSocial = vi.fn()
-const mockCommitSocialPost = vi.fn(() => true)
+const mockCommitSocialPost = vi.fn(() => ({ ok: true }))
 const mockChangeScene = vi.fn()
 const mockTriggerEvent = vi.fn()
 const mockAddToast = vi.fn()

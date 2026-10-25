@@ -17,7 +17,7 @@ import type {
 } from '../../types'
 import { handleUpdateBand } from './bandReducer'
 import { handleUpdatePlayer } from './playerReducer'
-import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { validateSocialPostResult } from '../../utils/postGig/socialPostResultValidation'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
@@ -63,6 +63,17 @@ import {
   DARK_WEB_LEAK_REQUIRED_CONTROVERSY,
   VOID_SERMON_REQUIRED_ZEALOTRY
 } from '../../data/zealotryActionGates'
+
+/** Warning logged when `handleApplySocialPostResult` refuses a payload. */
+const SOCIAL_POST_REFUSAL_LOG: Record<
+  NonNullable<ReturnType<typeof validateSocialPostResult>>,
+  string
+> = {
+  INVALID_PAYLOAD: 'Invalid social post result payload',
+  STALE_SETTLEMENT: 'Stale settlement for social post result',
+  INSUFFICIENT_SPENDABLE_CASH:
+    'Insufficient spendable Cash for social post result'
+}
 
 /** Controversy at or above this voids active brand deals. */
 const DEAL_BREAK_CONTROVERSY = 85
@@ -217,8 +228,9 @@ const buildSocialActionNextState = (
 /**
  * Atomically applies all persistent state changes from a resolved social post.
  *
- * Checks if a negative moneyDelta exceeds available spendable Cash.
- * If validation fails or payload is malformed, returns the identical state reference.
+ * Runs `validateSocialPostResult` (shape, finite moneyDelta, settlement id,
+ * spendable-Cash debit). If it refuses, logs and returns the identical state
+ * reference.
  * Order of updates:
  * 1. Optional band patch via handleUpdateBand
  * 2. Player update via handleUpdatePlayer with clamped money and optional failedStageDive counter increment
@@ -232,49 +244,13 @@ export const handleApplySocialPostResult = (
   state: GameState,
   payload: ApplySocialPostResultPayload
 ): GameState => {
-  if (!payload || typeof payload !== 'object' || !payload.social) return state
-  if (
-    typeof payload.social.pendingSocialOptionId !== 'string' ||
-    payload.social.pendingSocialOptionId.length === 0
-  ) {
-    return state
-  }
-
-  if (
-    payload.moneyDelta !== undefined &&
-    payload.moneyDelta !== null &&
-    !isFiniteNumber(payload.moneyDelta)
-  ) {
-    logger.warn('GameState', 'Invalid moneyDelta for social post result')
-    return state
-  }
-
-  const namesSettlement =
-    typeof payload.settlementId === 'string' && payload.settlementId.length > 0
-  const pendingBefore = state.pendingGigSettlement
-  // A post for a settlement that is gone or already reconciled would apply the
-  // per-gig deal decrement a second time.
-  if (
-    namesSettlement &&
-    (!pendingBefore ||
-      pendingBefore.id !== payload.settlementId ||
-      pendingBefore.socialReconciled === true)
-  ) {
+  const refusal = validateSocialPostResult(state, payload)
+  if (refusal !== null) {
+    logger.warn('GameState', SOCIAL_POST_REFUSAL_LOG[refusal])
     return state
   }
 
   const moneyDelta = payload.moneyDelta ?? 0
-  if (moneyDelta < 0) {
-    const requiredDebit = Math.abs(moneyDelta)
-    const spendable = getExpeditionSpendableCash(state)
-    if (requiredDebit > spendable) {
-      logger.warn(
-        'GameState',
-        'Insufficient spendable Cash for social post result'
-      )
-      return state
-    }
-  }
 
   let nextState = state
 

@@ -213,9 +213,9 @@ const requireBandMembers = (
 }
 
 /** What `perf_smashed_gear` debits for the destroyed gear. */
-const SMASHED_GEAR_COST = 300
+export const SMASHED_GEAR_COST = 300
 /** Cash the player must keep after paying for `perf_smashed_gear`. */
-const SMASHED_GEAR_CASH_BUFFER = 200
+export const SMASHED_GEAR_CASH_BUFFER = 200
 
 /**
  * Registry of all available social media post options.

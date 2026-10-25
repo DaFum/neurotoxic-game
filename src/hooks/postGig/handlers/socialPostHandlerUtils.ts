@@ -12,6 +12,19 @@ import {
 import { isPostMatchingTrend } from '../../../utils/socialEngine'
 import { clampBandHarmony, finiteNumberOr } from '../../../utils/gameState'
 import type { HandlerDispatchers } from './types'
+import type { SocialPostRefusalCode } from '../../../utils/postGig/socialPostResultValidation'
+
+/** Maps a social-post refusal code to the toast that tells the player why. */
+export const refusalToastKey = (code: SocialPostRefusalCode | null): string => {
+  switch (code) {
+    case 'CONDITION_FAILED':
+      return 'ui:postGig.postOptionUnavailable'
+    case 'INSUFFICIENT_SPENDABLE_CASH':
+      return 'ui:postGig.insufficientSpendableCash'
+    default:
+      return 'ui:postGig.postResolutionFailed'
+  }
+}
 
 type SocialPostDispatchers = Pick<
   HandlerDispatchers,
@@ -77,22 +90,15 @@ export function applySocialPostResult(params: {
     social: socialPatch
   }
 
-  if (!commitSocialPost(commitPayload)) {
-    // Only a debit can be refused for Cash; anything else is a rejected payload
-    // or a reducer no-op and must not tell the player they are broke.
-    const refusedForCash = appliedMoneyDelta < 0
+  const commit = commitSocialPost(commitPayload)
+  if (!commit.ok) {
+    // The refusal reason comes from the commit itself: a debit refused for a
+    // stale settlement must not tell the player they are broke.
     logger.warn('PostGig', 'Social post commit rejected', {
       optionId: pendingSocialOptionId,
-      refusedForCash
+      reason: commit.reason
     })
-    addToast(
-      t(
-        refusedForCash
-          ? 'ui:postGig.insufficientSpendableCash'
-          : 'ui:postGig.postResolutionFailed'
-      ),
-      'error'
-    )
+    addToast(t(refusalToastKey(commit.reason)), 'error')
     return false
   }
 

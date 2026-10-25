@@ -1076,7 +1076,7 @@ describe('GameState Context - Minigames', () => {
 
 describe('GameState Context - commitSocialPost', () => {
   test('commitSocialPost dispatches composite action on sufficient spendable Cash and returns true', () => {
-    let commitResult = false
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1125,14 +1125,14 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Commit Valid').click()
     })
 
-    expect(commitResult).toBe(true)
+    expect(commitResult).toEqual({ ok: true })
     expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
       initialMoney - 200
     )
   })
 
   test('commitSocialPost rejects debit exceeding spendable Cash and returns false without dispatching', () => {
-    let commitResult = true
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1171,14 +1171,17 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Commit Invalid').click()
     })
 
-    expect(commitResult).toBe(false)
+    expect(commitResult).toEqual({
+      ok: false,
+      reason: 'INSUFFICIENT_SPENDABLE_CASH'
+    })
     expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
       initialMoney
     )
   })
 
   test('commitSocialPost returns false and skips dispatch when balance reduction queued in same act() leaves insufficient Cash', () => {
-    let commitResult = true
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1231,7 +1234,10 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Queue Batch').click()
     })
 
-    expect(commitResult).toBe(false)
+    expect(commitResult).toEqual({
+      ok: false,
+      reason: 'INSUFFICIENT_SPENDABLE_CASH'
+    })
     expect(screen.getByTestId('player-money')).toHaveTextContent('100')
     expect(screen.getByTestId('tiktok-followers')).toHaveTextContent(
       initialTiktok
