@@ -541,6 +541,7 @@ export const handleSellChassis = (
 
   const { asset } = findAssetById(state.assets, assetId)
   if (!asset) return state
+  if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
   // The shared quote is the single source of truth for the sale arithmetic; the
   // reducer stays the authority and rejects blocked (uncomputable/underwater)

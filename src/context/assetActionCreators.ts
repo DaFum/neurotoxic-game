@@ -381,6 +381,14 @@ export const sellChassis = (
   state?: GameState
 ): SellChassisAction | SellChassisFailedAction => {
   if (state) {
+    // The committed tourbus is the run's source of archetype, cargo and
+    // modules; selling it would leave the run without one.
+    if (isExpeditionChassisCommitmentLocked(state, assetId)) {
+      return {
+        type: ActionTypes.SELL_CHASSIS_FAILED,
+        payload: { assetId, reason: 'EXPEDITION_LOCKED' }
+      }
+    }
     const asset = selectAssetsMap(state).get(assetId)
     const grossSale =
       asset !== undefined

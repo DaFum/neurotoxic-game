@@ -449,7 +449,10 @@ export type GameAction =
   | Action<(typeof ActionTypes)['SELL_CHASSIS'], { assetId: string }>
   | Action<
       (typeof ActionTypes)['SELL_CHASSIS_FAILED'],
-      { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
+      {
+        assetId: string
+        reason: 'LIABILITY_EXCEEDS_VALUE' | 'EXPEDITION_LOCKED'
+      }
     >
   | Action<(typeof ActionTypes)['REPAIR_CHASSIS'], { assetId: string }>
   | Action<

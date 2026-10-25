@@ -13,7 +13,10 @@ import { createInitialState } from '../../src/context/initialState'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { prepareExpeditionRun } from '../../src/context/expeditionActionCreators'
-import { upgradeChassisTier } from '../../src/context/assetActionCreators'
+import {
+  sellChassis,
+  upgradeChassisTier
+} from '../../src/context/assetActionCreators'
 import { createDefaultExpeditionState } from '../../src/domain/expedition/defaults'
 import { nextSeed } from '../../src/utils/seededRng'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
@@ -707,6 +710,32 @@ describe('committed identity freeze while active', () => {
     const action = upgradeChassisTier('asset_bus', 2, state)
     assert.equal(action.type, ActionTypes.UPGRADE_CHASSIS_TIER_FAILED)
     assert.equal(action.payload.reason, 'EXPEDITION_LOCKED')
+  })
+
+  it('refuses to sell the committed chassis and keeps the state untouched', () => {
+    const state = activeState()
+    const action = sellChassis('asset_bus', state)
+    assert.equal(action.type, ActionTypes.SELL_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'EXPEDITION_LOCKED')
+
+    // The reducer stays authoritative against a hand-built dispatch.
+    const next = gameReducer(state, {
+      type: ActionTypes.SELL_CHASSIS,
+      payload: { assetId: 'asset_bus' }
+    })
+    assert.equal(next, state)
+    assert.equal(next.assets[0].id, 'asset_bus')
+  })
+
+  it('still sells an asset the run did not commit', () => {
+    const state = activeState()
+    const action = sellChassis('asset_spare', state)
+    assert.equal(action.type, ActionTypes.SELL_CHASSIS)
+    const next = gameReducer(state, action)
+    assert.equal(
+      next.assets.some(a => a.id === 'asset_spare'),
+      false
+    )
   })
 
   it('still allows a tier upgrade on an asset the run did not commit', () => {
