@@ -286,7 +286,7 @@ export const handleNodeArrival = (
     }
     case 'SPECIAL': {
       if (!eventAlreadyActive) {
-        const specialEvent = triggerEvent('special')
+        const specialEvent = triggerEvent('special', 'special_location')
         if (!specialEvent) {
           addToast(
             i18n.t('ui:arrival.specialNothingHappened', {
