@@ -2,6 +2,7 @@ import { MAP_NODE_TYPES, isMapNodeType } from './mapNodeTypes'
 import type { MapNodeType } from './mapNodeTypes'
 import { isLooseRecord, isForbiddenKey } from './objectUtils'
 import { isFiniteNumber } from './finiteNumber'
+import { normalizeVenueId } from './mapUtils'
 import { isEmptyObject } from './gameState/checks'
 import {
   deriveCityTraits,
@@ -384,7 +385,11 @@ const buildCityStates = (
   }
   for (const nodeId in nodes) {
     if (!Object.hasOwn(nodes, nodeId)) continue
-    const cityKey = getCityKeyFromVenueId(nodes[nodeId]?.venue?.id ?? '')
+    // Legacy venues can carry namespaced ids like `venues:berlin_so36`; the
+    // city key is derived from the normalized form.
+    const cityKey = getCityKeyFromVenueId(
+      normalizeVenueId(nodes[nodeId]?.venue?.id) ?? ''
+    )
     if (!cityKey || isForbiddenKey(cityKey)) continue
     if (!Object.hasOwn(cityStates, cityKey)) {
       cityStates[cityKey] = deriveCityTraits(cityKey)

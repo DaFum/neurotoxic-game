@@ -1924,6 +1924,11 @@ test('systemReducer - pending modal state', async t => {
       assert.ok(
         next.pendingSupplyStopInventory.some(item => item.id === 'strings')
       )
+      // The shop-item schema clamps a negative cost rather than dropping the item.
+      assert.equal(
+        next.pendingSupplyStopInventory.find(item => item.id === 'bad')?.cost,
+        0
+      )
       // Nothing usable left is no open shop.
       assert.equal(
         handleSetPendingSupplyStopInventory(state, ['x', null])

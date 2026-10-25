@@ -257,6 +257,34 @@ describe('validateGeneratedMap city intel', () => {
     }
   })
 
+  test('derives intel under the normalized city key for a legacy namespaced venue id', () => {
+    const raw = generate(1)
+    const [nodeId] = Object.keys(raw.nodes)
+    const venue = raw.nodes[nodeId].venue
+    const cityKey = getCityKeyFromVenueId(venue.id)
+    const legacy = {
+      ...raw,
+      cityStates: undefined,
+      nodes: {
+        ...raw.nodes,
+        [nodeId]: {
+          ...raw.nodes[nodeId],
+          venue: { ...venue, id: `venues:${venue.id}` }
+        }
+      }
+    }
+    const result = validateGeneratedMap(legacy)
+
+    assert.equal(result.success, true)
+    assert.ok(Object.hasOwn(result.data.cityStates, cityKey), cityKey)
+    assert.equal(
+      Object.keys(result.data.cityStates).some(key =>
+        key.startsWith('venues:')
+      ),
+      false
+    )
+  })
+
   test('keeps a valid entry and replaces an invalid one with derived traits', () => {
     const raw = generate(1)
     const cityKey = cityKeysOf(raw.nodes)[0]
