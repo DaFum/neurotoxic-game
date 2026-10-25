@@ -1203,3 +1203,52 @@ test('clearing stale tourCompleted on load when save has no ending', async t => 
     }
   )
 })
+
+test('an accepted per-gig social patch marks the settlement, a rejected one leaves it for the reload', () => {
+  const initial = createInitialState()
+  const base = {
+    ...initial,
+    currentScene: GAME_PHASES.POST_GIG,
+    currentGig: { id: 'berlin_so36', name: 'SO36' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+  }
+  const record = createRecordPendingGigSettlementAction(
+    {
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {}
+    },
+    'settlement-identity-1'
+  )
+  assert.ok(record)
+  const recorded = gameReducer(base, record)
+  assert.equal(recorded.pendingGigSettlement?.socialReconciled, false)
+  const reconcile = socialUpdate => ({
+    type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+    payload: { socialUpdate, settlementId: 'settlement-identity-1' }
+  })
+
+  // `nextState === state` in the reducer guards rejected updates only: an
+  // accepted patch, even an empty or value-identical one, allocates a new
+  // state and therefore marks the record.
+  for (const patch of [{}, { loyalty: recorded.social.loyalty }]) {
+    const accepted = gameReducer(recorded, reconcile(patch))
+    assert.equal(
+      accepted.pendingGigSettlement?.socialReconciled,
+      true,
+      JSON.stringify(patch)
+    )
+  }
+
+  // A functional updater that yields nothing is a rejected update: the state is
+  // untouched and the marker stays false, so a reload reconciles it once.
+  const rejected = gameReducer(
+    recorded,
+    reconcile(() => null)
+  )
+  assert.strictEqual(rejected, recorded)
+  assert.equal(rejected.pendingGigSettlement?.socialReconciled, false)
+})
