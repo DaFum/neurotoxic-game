@@ -67,11 +67,10 @@ export function useMinorHandlers({
           social,
           currentGig
         })
-        if (applyGigSocialReconciliation) {
-          applyGigSocialReconciliation(patch, pendingSettlementId)
-        } else {
-          updateSocial(patch)
-        }
+        // Always the atomic action: a plain `updateSocial` would land the patch
+        // without marking the settlement reconciled, and a reload would then
+        // apply the deal countdown and gig history a second time.
+        applyGigSocialReconciliation(patch, pendingSettlementId)
         saveGameAfterStateCommit?.()
       } catch (e) {
         logger.error('PostGig', 'Failed to reconcile per-gig social state', e)
@@ -96,7 +95,6 @@ export function useMinorHandlers({
     player,
     social,
     currentGig,
-    updateSocial,
     applyGigSocialReconciliation,
     pendingSettlementId,
     saveGameAfterStateCommit,
