@@ -55,6 +55,10 @@ export interface TourbusObstacleStepState {
  * @param upgrades - Van upgrade ids currently installed.
  * @returns Types of the obstacles that collided this step, in obstacle order.
  */
+// ⚡ BOLT OPTIMIZATION: In-place array compaction for tourbus obstacle stepping
+// What: Replaced intermediate `survivingObstacles` array allocation with two-pointer in-place array compaction.
+// Why: `stepTourbusObstacles` executes on every frame (~60 FPS) during tourbus minigame gameplay. Creating a new array `[]` and pushing elements onto it on every tick triggers continuous GC allocations.
+// Impact: Eliminates ~3,600 temporary array allocations per minute during tourbus minigame gameplay, reducing GC pressure and frame stutter.
 export const stepTourbusObstacles = (
   game: TourbusObstacleStepState,
   travel: number,
@@ -63,9 +67,13 @@ export const stepTourbusObstacles = (
   const hitTop = TOURBUS_BUS_Y_PERCENT
   const hitBottom = TOURBUS_BUS_Y_PERCENT + TOURBUS_BUS_HEIGHT_PERCENT
   const collisions: TourbusObstacleType[] = []
-  const survivingObstacles: TourbusObstacle[] = []
+  const obstacles = game.obstacles
+  let writeIdx = 0
 
-  for (const obs of game.obstacles) {
+  for (let i = 0; i < obstacles.length; i++) {
+    const obs = obstacles[i]
+    if (!obs) continue
+
     const prevY = obs.y
     obs.y = prevY + travel
 
@@ -85,9 +93,16 @@ export const stepTourbusObstacles = (
     }
 
     if (obs.y < OBSTACLE_DESPAWN_Y) {
-      survivingObstacles.push(obs)
+      if (i !== writeIdx) {
+        obstacles[writeIdx] = obs
+      }
+      writeIdx++
     }
   }
-  game.obstacles = survivingObstacles
+
+  if (obstacles.length > writeIdx) {
+    obstacles.length = writeIdx
+  }
+
   return collisions
 }
