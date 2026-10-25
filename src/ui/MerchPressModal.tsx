@@ -7,6 +7,7 @@ import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { PlayerState, BandState } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 
 type MerchPressConfig = {
   cost: number
@@ -38,8 +39,8 @@ export const MerchPressModal = ({
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
-  const isAffordable =
-    finiteNumberOr(player?.money, 0) >= finiteNumberOr(config.cost, 0)
+  const spendableCash = useGameSelector(getExpeditionSpendableCash)
+  const isAffordable = spendableCash >= finiteNumberOr(config.cost, 0)
   const hasEnoughHarmony =
     finiteNumberOr(band?.harmony, 0) >=
     finiteNumberOr(config.harmonyCostOnFail, 0)

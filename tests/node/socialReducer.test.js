@@ -6,6 +6,7 @@ import {
   handleAddVenueBlacklist,
   handleUnblacklistVenue,
   getUnblacklistCost,
+  handleMerchPress,
   handlePirateBroadcast
 } from '../../src/context/reducers/socialReducer'
 import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
@@ -742,6 +743,65 @@ describe('socialReducer', () => {
         deltaHarmony: -10,
         cost: formatCurrency(-200, undefined, 'always')
       })
+    })
+  })
+
+  describe('paid actions during an active expedition', () => {
+    // 1000 raw, 900 protected: only 100 is spendable.
+    const makeState = () => ({
+      player: { money: 1000, fame: 50, day: 42 },
+      band: { harmony: 100 },
+      social: { loyalty: 0, controversyLevel: 0, zealotry: 0 },
+      venueBlacklist: ['stendal_adler'],
+      expedition: { status: 'active', protectedCareerCash: 900 },
+      toasts: []
+    })
+
+    it('refuses a merch press it could only pay from protected cash', () => {
+      const state = makeState()
+      const next = handleMerchPress(state, {
+        cost: 150,
+        loyaltyGain: 5,
+        controversyGain: 5,
+        fameGain: 10,
+        harmonyCost: 0
+      })
+      assert.strictEqual(next, state)
+    })
+
+    it('refuses a pirate broadcast it could only pay from protected cash', () => {
+      const state = makeState()
+      assert.strictEqual(
+        handlePirateBroadcast(state, { cost: 200, harmonyCost: 0 }),
+        state
+      )
+    })
+
+    it('answers amends it cannot afford with the too-expensive toast', () => {
+      const state = makeState()
+      state.player.money = getUnblacklistCost('stendal_adler') + 50
+      state.expedition.protectedCareerCash = state.player.money - 10
+      const next = handleUnblacklistVenue(state, {
+        venueId: 'stendal_adler',
+        toastId: 'amends_toast'
+      })
+      assert.ok(next.venueBlacklist.includes('stendal_adler'))
+      assert.strictEqual(next.player.money, state.player.money)
+      assert.ok(
+        next.toasts.some(t => t.messageKey === 'ui:toast.amendsTooExpensive')
+      )
+    })
+
+    it('still pays from the spendable slice, leaving protected cash intact', () => {
+      const state = makeState()
+      const next = handleMerchPress(state, {
+        cost: 100,
+        loyaltyGain: 5,
+        controversyGain: 5,
+        fameGain: 10,
+        harmonyCost: 0
+      })
+      assert.strictEqual(next.player.money, 900)
     })
   })
 })
