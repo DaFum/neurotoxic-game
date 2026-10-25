@@ -1,5 +1,5 @@
-import { test, expect, vi, afterEach } from 'vitest'
-import { render } from '@testing-library/react'
+import { test, expect, vi, afterEach, describe } from 'vitest'
+import { render, act } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 vi.mock('../../src/data/chatter', () => ({
@@ -107,3 +107,211 @@ test('chatter box keeps its CSS default when nothing is in the way', async () =>
 
   expect(getByRole('status').style.top).toBe('')
 }, 15000)
+
+describe('observer lifecycle', () => {
+  const OVERLAY_RECT = {
+    left: 312,
+    top: 624,
+    right: 712,
+    bottom: 704,
+    width: 400,
+    height: 80
+  }
+  const ZERO_RECT = {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 0,
+    height: 0
+  }
+  const BLOCKING_RECT = {
+    left: 0,
+    top: window.innerHeight / 2,
+    right: window.innerWidth,
+    bottom: window.innerHeight,
+    width: window.innerWidth,
+    height: window.innerHeight / 2
+  }
+
+  /**
+   * Stubs rects through a spy so measurements can be counted. The obstacle
+   * rect is read through a getter, so tests can flip it without remounting.
+   */
+  const spyRects = obstacleRef => {
+    const spy = vi.fn(function () {
+      if (this.getAttribute('role') === 'status') return OVERLAY_RECT
+      if (this.hasAttribute('data-chatter-avoid')) return obstacleRef.current
+      return ZERO_RECT
+    })
+    Element.prototype.getBoundingClientRect = spy
+    // Overlay reads are the measurement count: one per reposition().
+    const measurements = () =>
+      spy.mock.contexts.filter(el => el.getAttribute('role') === 'status')
+        .length
+    return { measurements }
+  }
+
+  const addObstacle = (parent = document.body) => {
+    const el = document.createElement('div')
+    el.setAttribute('data-chatter-avoid', '')
+    parent.appendChild(el)
+    return el
+  }
+
+  const mountOverlay = async () => {
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    return render(<ChatterOverlay />)
+  }
+
+  // Flushes the MutationObserver microtask without advancing timers.
+  const flushMutations = () => act(async () => {})
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  test('an obstacle mounted after first render re-places the box after 200 ms', async () => {
+    vi.useFakeTimers()
+    const obstacle = { current: BLOCKING_RECT }
+    const { measurements } = spyRects(obstacle)
+    // Mounted inside the rendered container, not on <body>: the observer must
+    // see nested scene obstacles (`subtree: true`).
+    const { container: root, getByRole } = await mountOverlay()
+    const container = getByRole('status')
+    expect(container.style.top).toBe('')
+
+    addObstacle(root)
+    await flushMutations()
+    await act(async () => {
+      vi.advanceTimersByTime(199)
+    })
+    expect(container.style.top).toBe('')
+
+    const before = measurements()
+    await act(async () => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(measurements()).toBe(before + 1)
+    expect(Number.parseInt(container.style.top, 10)).toBeLessThan(
+      window.innerHeight / 2
+    )
+  }, 15000)
+
+  test('removing the obstacle lets the box recover its CSS default', async () => {
+    vi.useFakeTimers()
+    const marked = addObstacle()
+    const { measurements } = spyRects({ current: BLOCKING_RECT })
+    const { getByRole } = await mountOverlay()
+    const container = getByRole('status')
+    expect(container.style.top).not.toBe('')
+
+    marked.remove()
+    await flushMutations()
+    const before = measurements()
+    await act(async () => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(measurements()).toBe(before + 1)
+    expect(container.style.top).toBe('')
+  }, 15000)
+
+  test('repeated mutations inside the debounce window cause one measurement', async () => {
+    vi.useFakeTimers()
+    const { measurements } = spyRects({ current: ZERO_RECT })
+    await mountOverlay()
+    const before = measurements()
+
+    for (let i = 0; i < 5; i++) {
+      addObstacle()
+      await flushMutations()
+      await act(async () => {
+        vi.advanceTimersByTime(100)
+      })
+    }
+    // Last mutation was 100 ms ago; the trailing timer has not fired yet.
+    expect(measurements()).toBe(before)
+
+    await act(async () => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(measurements()).toBe(before + 1)
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(measurements()).toBe(before + 1)
+  }, 15000)
+
+  test('a window resize measures on the next animation frame', async () => {
+    vi.useFakeTimers({
+      toFake: [
+        'requestAnimationFrame',
+        'cancelAnimationFrame',
+        'setTimeout',
+        'clearTimeout'
+      ]
+    })
+    const { measurements } = spyRects({ current: ZERO_RECT })
+    await mountOverlay()
+    const before = measurements()
+
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
+      window.dispatchEvent(new Event('resize'))
+    })
+    expect(measurements()).toBe(before)
+
+    await act(async () => {
+      vi.advanceTimersToNextFrame()
+    })
+    // Two resizes in one frame are throttled to a single measurement.
+    expect(measurements()).toBe(before + 1)
+  }, 15000)
+
+  test('unmount disconnects the observer and cancels listeners, timers and frames', async () => {
+    vi.useFakeTimers({
+      toFake: [
+        'requestAnimationFrame',
+        'cancelAnimationFrame',
+        'setTimeout',
+        'clearTimeout'
+      ]
+    })
+    const disconnect = vi.spyOn(MutationObserver.prototype, 'disconnect')
+    const removeListener = vi.spyOn(window, 'removeEventListener')
+    const { measurements } = spyRects({ current: ZERO_RECT })
+    const { unmount } = await mountOverlay()
+
+    // Leave both a debounce timer and an animation frame pending.
+    addObstacle()
+    await flushMutations()
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
+    const before = measurements()
+
+    unmount()
+    expect(disconnect).toHaveBeenCalled()
+    expect(removeListener).toHaveBeenCalledWith('resize', expect.any(Function))
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(measurements()).toBe(before)
+
+    // Neither the removed listener nor the disconnected observer reacts now.
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
+    addObstacle()
+    await flushMutations()
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(measurements()).toBe(before)
+    disconnect.mockRestore()
+    removeListener.mockRestore()
+  }, 15000)
+})

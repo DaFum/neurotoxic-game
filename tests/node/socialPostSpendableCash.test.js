@@ -3,13 +3,19 @@ import { describe, it } from 'node:test'
 import { createInitialState } from '../../src/context/initialState.ts'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
-import { POST_OPTIONS } from '../../src/data/postOptions.ts'
+import {
+  POST_OPTIONS,
+  SMASHED_GEAR_COST,
+  SMASHED_GEAR_CASH_BUFFER
+} from '../../src/data/postOptions.ts'
 import {
   calculatePostGigStateUpdates,
   SocialPostRefusalError
 } from '../../src/utils/postGig/socialResolution.ts'
 import { createApplySocialPostResultAction } from '../../src/context/actionCreators.ts'
+import { validateSocialPostResult } from '../../src/utils/postGig/socialPostResultValidation.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
+import { QUEST_APOLOGY_TOUR } from '../../src/data/questsConstants.ts'
 
 describe('Social post spendable Cash eligibility & composite action regression', () => {
   const smashGearOpt = POST_OPTIONS.find(o => o.id === 'perf_smashed_gear')
@@ -226,6 +232,25 @@ describe('Social post spendable Cash eligibility & composite action regression',
     assert.strictEqual(replayed, matched)
   })
 
+  it('refuses a named settlement id when no settlement is pending', () => {
+    const base = createInitialState()
+    base.pendingGigSettlement = null
+    const payload = {
+      settlementId: 'settlement-1',
+      social: { pendingSocialOptionId: 'opt_1' }
+    }
+
+    assert.equal(validateSocialPostResult(base, payload), 'STALE_SETTLEMENT')
+    assert.equal(createApplySocialPostResultAction(base, payload), null)
+    assert.strictEqual(
+      gameReducer(base, {
+        type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+        payload
+      }),
+      base
+    )
+  })
+
   describe('perf_smashed_gear Cash gate (#3270)', () => {
     const resolveWith = money => {
       const state = startedState({ money })
@@ -243,17 +268,27 @@ describe('Social post spendable Cash eligibility & composite action regression',
         })
     }
 
-    it('needs more than 500 spendable Cash, not just the 300 it debits', () => {
-      assert.equal(smashGearOpt.condition(startedState({ money: 500 })), false)
-      assert.equal(smashGearOpt.condition(startedState({ money: 501 })), true)
+    const gate = SMASHED_GEAR_COST + SMASHED_GEAR_CASH_BUFFER
+
+    it('prices the gear as a positive whole Cash amount', () => {
+      assert.ok(Number.isInteger(SMASHED_GEAR_COST))
+      assert.ok(SMASHED_GEAR_COST > 0)
     })
 
-    it('debits 300 once it is offered, leaving a 200 buffer', () => {
-      const updates = resolveWith(501)()
-      assert.equal(updates.appliedMoneyDelta, -300)
-      assert.equal(updates.nextMoney, 201)
+    it('needs more than cost plus buffer in spendable Cash, not just the cost it debits', () => {
+      assert.equal(smashGearOpt.condition(startedState({ money: gate })), false)
+      assert.equal(
+        smashGearOpt.condition(startedState({ money: gate + 1 })),
+        true
+      )
+    })
+
+    it('debits the cost once it is offered, leaving the buffer', () => {
+      const updates = resolveWith(gate + 1)()
+      assert.equal(updates.appliedMoneyDelta, -SMASHED_GEAR_COST)
+      assert.equal(updates.nextMoney, SMASHED_GEAR_CASH_BUFFER + 1)
       assert.throws(
-        resolveWith(500),
+        resolveWith(gate),
         err =>
           err instanceof SocialPostRefusalError &&
           err.code === 'CONDITION_FAILED'
@@ -286,6 +321,54 @@ describe('Social post spendable Cash eligibility & composite action regression',
         calculatePostGigStateUpdates({
           ...params,
           rivalBand: { name: 'Rivals', hostility: 50, fame: 10 }
+        })
+      )
+    })
+
+    const omittedSliceParams = option => {
+      const state = startedState({ money: 100000 })
+      return {
+        option,
+        player: state.player,
+        band: state.band,
+        social: state.social,
+        perfScore: 80,
+        secureRandomValue: 0.5,
+        selectionRandomValue: 0.5,
+        viralRandomValue: 1
+      }
+    }
+    const isConditionFailed = err =>
+      err instanceof SocialPostRefusalError && err.code === 'CONDITION_FAILED'
+
+    it('refuses an event-gated option when activeEvent is omitted', () => {
+      const vanOpt = POST_OPTIONS.find(o => o.id === 'drama_van_breakdown')
+      const params = omittedSliceParams(vanOpt)
+      assert.throws(
+        () => calculatePostGigStateUpdates(params),
+        isConditionFailed
+      )
+      assert.doesNotThrow(() =>
+        calculatePostGigStateUpdates({
+          ...params,
+          activeEvent: { id: 'van_breakdown_tire' }
+        })
+      )
+    })
+
+    it('refuses the apology-tour option when activeQuests is omitted', () => {
+      const apologyOpt = POST_OPTIONS.find(
+        o => o.id === 'recovery_apology_tour_promo'
+      )
+      const params = omittedSliceParams(apologyOpt)
+      assert.throws(
+        () => calculatePostGigStateUpdates(params),
+        isConditionFailed
+      )
+      assert.doesNotThrow(() =>
+        calculatePostGigStateUpdates({
+          ...params,
+          activeQuests: [{ id: QUEST_APOLOGY_TOUR }]
         })
       )
     })

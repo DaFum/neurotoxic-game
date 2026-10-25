@@ -42,7 +42,7 @@ const t = (key, opts) => opts?.defaultValue ?? key
 
 function makeDispatchers() {
   return {
-    commitSocialPost: vi.fn(() => true),
+    commitSocialPost: vi.fn(() => ({ ok: true })),
     updateSocial: vi.fn(),
     applyGigSocialReconciliation: vi.fn(),
     updateBand: vi.fn(),
@@ -352,7 +352,10 @@ describe('applySocialPostResult', () => {
 
   it('reports a generic failure, not a Cash refusal, when a non-debit commit is rejected', () => {
     const props = makeApplyProps({ updatesOverrides: { appliedMoneyDelta: 0 } })
-    props.dispatchers.commitSocialPost.mockReturnValue(false)
+    props.dispatchers.commitSocialPost.mockReturnValue({
+      ok: false,
+      reason: null
+    })
 
     expect(applySocialPostResult(props)).toBe(false)
     expect(props.dispatchers.addToast).toHaveBeenCalledWith(
@@ -363,10 +366,73 @@ describe('applySocialPostResult', () => {
 
   it('does not persist when the commit is rejected', () => {
     const props = makeApplyProps()
-    props.dispatchers.commitSocialPost.mockReturnValue(false)
+    props.dispatchers.commitSocialPost.mockReturnValue({
+      ok: false,
+      reason: 'INVALID_PAYLOAD'
+    })
 
     expect(applySocialPostResult(props)).toBe(false)
     expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+  })
+
+  it('reports a stale-settlement rejection of a debit as a resolution failure, not a Cash refusal', () => {
+    const props = makeApplyProps({
+      pendingSettlementId: 'settlement-old',
+      updatesOverrides: { appliedMoneyDelta: -300 }
+    })
+    props.dispatchers.commitSocialPost.mockReturnValue({
+      ok: false,
+      reason: 'STALE_SETTLEMENT'
+    })
+
+    expect(applySocialPostResult(props)).toBe(false)
+    expect(props.dispatchers.addToast).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      'ui:postGig.postResolutionFailed',
+      'error'
+    )
+    expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+  })
+
+  it('reports an insufficient-Cash rejection with the spendable Cash message', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedMoneyDelta: -300 }
+    })
+    props.dispatchers.commitSocialPost.mockReturnValue({
+      ok: false,
+      reason: 'INSUFFICIENT_SPENDABLE_CASH'
+    })
+
+    expect(applySocialPostResult(props)).toBe(false)
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      'ui:postGig.insufficientSpendableCash',
+      'error'
+    )
+    expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+  })
+
+  it('releases the processing guards and skips the save after a rejected commit', () => {
+    calculatePostGigStateUpdates.mockReturnValue(
+      makeUpdates({ appliedMoneyDelta: -300 })
+    )
+    const props = makeProps({ pendingSettlementId: 'settlement-old' })
+    props.dispatchers.commitSocialPost.mockReturnValue({
+      ok: false,
+      reason: 'STALE_SETTLEMENT'
+    })
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      'ui:postGig.postResolutionFailed',
+      'error'
+    )
+    expect(props.dispatchers.saveGameAfterStateCommit).not.toHaveBeenCalled()
+    expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
+    expect(props.dispatchers.requestBrandOffers).not.toHaveBeenCalled()
   })
 
   it('does not include band in commitPayload when hasBandUpdates is false', () => {

@@ -161,6 +161,9 @@ export const handleApplyGigSocialReconciliation = (
     state,
     socialUpdate as Partial<GameState['social']>
   )
+  // Guards a rejected update only (a payload that is not an object): an
+  // accepted patch, even an empty one, always allocates a new state and so
+  // reaches the marker below.
   if (nextState === state) return state
 
   const pending = nextState.pendingGigSettlement

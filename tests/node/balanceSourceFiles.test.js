@@ -99,7 +99,11 @@ const REQUIRED_SOURCES = [
   'src/data/expedition/starterPerks.ts',
   'src/context/reducers/expeditionReducer.ts',
   'src/context/reducers/minigameReducer.ts',
-  'src/utils/gigStats.ts'
+  'src/utils/gigStats.ts',
+  // The Expedition runner settles Gigs through the Continue acceptance rule, and
+  // the social-post reducer runs the shared validator.
+  'src/hooks/postGig/handlers/continueHandlerUtils.ts',
+  'src/utils/postGig/socialPostResultValidation.ts'
 ]
 
 REQUIRED_SOURCES.forEach(relativePath => {
@@ -110,6 +114,27 @@ REQUIRED_SOURCES.forEach(relativePath => {
     )
   })
 })
+
+// Hashing the real tree would pass even if a file were missing from the list,
+// so the proof runs on a copy: editing one of these files must move the hash.
+for (const relativePath of [
+  'src/hooks/postGig/handlers/continueHandlerUtils.ts',
+  'src/utils/postGig/socialPostResultValidation.ts'
+]) {
+  test(`editing ${relativePath} changes the balance source hash`, async t => {
+    const copy = fs.mkdtempSync(path.join(os.tmpdir(), 'balance-hash-'))
+    t.after(() => fs.rmSync(copy, { recursive: true, force: true }))
+    for (const file of BALANCE_SOURCE_FILES) {
+      fs.mkdirSync(path.dirname(path.join(copy, file)), { recursive: true })
+      fs.copyFileSync(path.join(ROOT, file), path.join(copy, file))
+    }
+
+    const before = await getBalanceSourceHash(copy)
+    fs.appendFileSync(path.join(copy, relativePath), '\n// changed\n')
+
+    assert.notEqual(await getBalanceSourceHash(copy), before)
+  })
+}
 
 test('balance source hash is stable', async () => {
   const first = await getBalanceSourceHash(ROOT)

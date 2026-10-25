@@ -1,4 +1,4 @@
-import { StrictMode, startTransition } from 'react'
+import { StrictMode, Suspense, startTransition, use, useEffect } from 'react'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { logger } from '../../src/utils/logger'
@@ -1076,7 +1076,7 @@ describe('GameState Context - Minigames', () => {
 
 describe('GameState Context - commitSocialPost', () => {
   test('commitSocialPost dispatches composite action on sufficient spendable Cash and returns true', () => {
-    let commitResult = false
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1125,14 +1125,14 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Commit Valid').click()
     })
 
-    expect(commitResult).toBe(true)
+    expect(commitResult).toEqual({ ok: true })
     expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
       initialMoney - 200
     )
   })
 
   test('commitSocialPost rejects debit exceeding spendable Cash and returns false without dispatching', () => {
-    let commitResult = true
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1171,14 +1171,17 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Commit Invalid').click()
     })
 
-    expect(commitResult).toBe(false)
+    expect(commitResult).toEqual({
+      ok: false,
+      reason: 'INSUFFICIENT_SPENDABLE_CASH'
+    })
     expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
       initialMoney
     )
   })
 
   test('commitSocialPost returns false and skips dispatch when balance reduction queued in same act() leaves insufficient Cash', () => {
-    let commitResult = true
+    let commitResult = null
     const TestComponent = () => {
       const actions = useGameActions()
       const state = useGameSelector(s => s)
@@ -1231,7 +1234,10 @@ describe('GameState Context - commitSocialPost', () => {
       screen.getByText('Queue Batch').click()
     })
 
-    expect(commitResult).toBe(false)
+    expect(commitResult).toEqual({
+      ok: false,
+      reason: 'INSUFFICIENT_SPENDABLE_CASH'
+    })
     expect(screen.getByTestId('player-money')).toHaveTextContent('100')
     expect(screen.getByTestId('tiktok-followers')).toHaveTextContent(
       initialTiktok
@@ -1430,5 +1436,78 @@ describe('GameState Context - commitSocialPost', () => {
     })
     expect(screen.getByTestId('money')).toHaveTextContent('777')
     expect(screen.getByTestId('gig-id')).toHaveTextContent('none')
+  })
+
+  test('a render discarded by a suspended transition leaves the committed and the latest state converged', async () => {
+    let openGate
+    const gate = new Promise(resolve => {
+      openGate = resolve
+    })
+    const commits = []
+    let actions = null
+    // The transition's value: the Gate suspends the render that carries it, so
+    // React discards that render and keeps showing the previous commit.
+    const SUSPENDING_MONEY = 200
+
+    const Gate = () => {
+      const money = useGameSelector(s => s.player.money)
+      if (money === SUSPENDING_MONEY) use(gate)
+      return null
+    }
+    const Probe = () => {
+      actions = useGameActions()
+      const money = useGameSelector(s => s.player.money)
+      useEffect(() => {
+        commits.push(money)
+      }, [money])
+      return <div data-testid='money'>{money}</div>
+    }
+
+    render(
+      <Suspense fallback={<div data-testid='fallback'>loading</div>}>
+        <GameStateProvider>
+          <Probe />
+          <Gate />
+        </GameStateProvider>
+      </Suspense>
+    )
+    const committedBefore = screen.getByTestId('money').textContent
+
+    await act(async () => {
+      startTransition(() => actions.updatePlayer({ money: SUSPENDING_MONEY }))
+    })
+
+    // The transition is pending: the suspended render was never committed.
+    expect(screen.getByTestId('money')).toHaveTextContent(committedBefore)
+    expect(commits).not.toContain(SUSPENDING_MONEY)
+
+    // An urgent functional update reduces from the latest state (the
+    // transition's value), not from the stale committed one. This pins the
+    // observable ordering, not which ref supplies it: the discarded render also
+    // wrote `stateRef` (see the comment at its declaration), so both refs hold
+    // the transition's value here.
+    let seenByUpdater = null
+    await act(async () => {
+      actions.updatePlayer(prev => {
+        seenByUpdater = prev.money
+        return { money: prev.money + 1 }
+      })
+    })
+    expect(seenByUpdater).toBe(SUSPENDING_MONEY)
+    expect(screen.getByTestId('money')).toHaveTextContent(
+      String(SUSPENDING_MONEY + 1)
+    )
+
+    await act(async () => {
+      openGate()
+    })
+
+    // After the gate opens nothing re-applies the discarded render: the
+    // committed state is the accumulator, and the discarded value never landed.
+    expect(screen.getByTestId('money')).toHaveTextContent(
+      String(SUSPENDING_MONEY + 1)
+    )
+    expect(commits).not.toContain(SUSPENDING_MONEY)
+    expect(commits.at(-1)).toBe(SUSPENDING_MONEY + 1)
   })
 })

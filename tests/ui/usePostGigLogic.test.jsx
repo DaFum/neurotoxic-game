@@ -115,7 +115,7 @@ describe('usePostGigLogic', () => {
   const mockSaveGameAfterStateCommit = vi.fn()
   const mockRecordPendingGigSettlement = vi.fn()
   const mockClearPendingGigSettlement = vi.fn()
-  const mockCommitSocialPost = vi.fn(() => true)
+  const mockCommitSocialPost = vi.fn(() => ({ ok: true }))
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -755,7 +755,9 @@ describe('usePostGigLogic', () => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
         let commitPayload =
-          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+          mockCommitSocialPost.mock.calls[
+            mockCommitSocialPost.mock.calls.length - 1
+          ][0]
         expect(commitPayload.social).toEqual(
           expect.objectContaining({ egoFocus: 'Member2' })
         )
@@ -779,7 +781,9 @@ describe('usePostGigLogic', () => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
         let commitPayload =
-          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+          mockCommitSocialPost.mock.calls[
+            mockCommitSocialPost.mock.calls.length - 1
+          ][0]
         expect(commitPayload.band).toEqual(
           expect.objectContaining({
             members: expect.arrayContaining([
@@ -805,7 +809,9 @@ describe('usePostGigLogic', () => {
           result.current.handlePostSelection(result.current.postOptions[0])
         })
         let commitPayload =
-          mockCommitSocialPost.mock.calls[mockCommitSocialPost.mock.calls.length - 1][0]
+          mockCommitSocialPost.mock.calls[
+            mockCommitSocialPost.mock.calls.length - 1
+          ][0]
         expect(commitPayload.social).toEqual(
           expect.objectContaining({ egoFocus: null })
         )

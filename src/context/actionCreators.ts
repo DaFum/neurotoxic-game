@@ -37,7 +37,7 @@ import {
   finiteNumberOr,
   isFiniteNumber
 } from '../utils/gameState'
-import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import { validateSocialPostResult } from '../utils/postGig/socialPostResultValidation'
 import type { ApplySocialPostResultPayload } from '../types/actions'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -310,8 +310,9 @@ export const createUpdateSocialAction = (
 
 /**
  * Creates an action that atomically commits a social post outcome.
- * Validates the debit against the supplied state snapshot's spendable Cash.
- * Returns null if the snapshot cannot pay.
+ * Validates the payload against the supplied state snapshot with
+ * `validateSocialPostResult` (the reducer runs the same check).
+ * Returns null if the snapshot refuses it.
  *
  * @param stateSnapshot - Current game state snapshot.
  * @param payload - Composite social post result payload.
@@ -323,36 +324,13 @@ export const createApplySocialPostResultAction = (
   GameAction,
   { type: typeof ActionTypes.APPLY_SOCIAL_POST_RESULT }
 > | null => {
-  if (!payload || typeof payload !== 'object' || !payload.social) return null
-  if (
-    typeof payload.social.pendingSocialOptionId !== 'string' ||
-    payload.social.pendingSocialOptionId.length === 0
-  ) {
-    return null
-  }
-
-  if (
-    payload.moneyDelta !== undefined &&
-    payload.moneyDelta !== null &&
-    !isFiniteNumber(payload.moneyDelta)
-  ) {
-    return null
-  }
-
-  const moneyDelta = payload.moneyDelta ?? 0
-  if (moneyDelta < 0) {
-    const requiredDebit = Math.abs(moneyDelta)
-    const spendable = getExpeditionSpendableCash(stateSnapshot)
-    if (requiredDebit > spendable) {
-      return null
-    }
-  }
+  if (validateSocialPostResult(stateSnapshot, payload) !== null) return null
 
   return {
     type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
     payload: {
       ...payload,
-      moneyDelta
+      moneyDelta: payload.moneyDelta ?? 0
     }
   }
 }

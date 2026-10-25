@@ -104,6 +104,8 @@ import {
   createRestockMerchAction
 } from './actionCreators'
 import type { ApplySocialPostResultPayload } from '../types/actions'
+import { validateSocialPostResult } from '../utils/postGig/socialPostResultValidation'
+import type { SocialPostCommitResult } from '../utils/postGig/socialPostResultValidation'
 import {
   purchaseChassis as purchaseChassisAction,
   installModule as installModuleAction,
@@ -138,7 +140,9 @@ type BaseGameDispatchActions = {
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
     settlementId?: string | null
   ) => void
-  commitSocialPost: (payload: ApplySocialPostResultPayload) => boolean
+  commitSocialPost: (
+    payload: ApplySocialPostResultPayload
+  ) => SocialPostCommitResult
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
   startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
@@ -778,17 +782,19 @@ export function useGameDispatchActions({
   const careerActions = useCareerDispatchActions(dispatch)
 
   const commitSocialPost = useCallback(
-    (payload: ApplySocialPostResultPayload): boolean => {
-      const action = createApplySocialPostResultAction(
-        latestStateRef.current,
-        payload
-      )
-      if (!action) return false
-      // `dispatch` reduces synchronously, so a changed state is the reducer's
-      // own answer, not a prediction.
+    (payload: ApplySocialPostResultPayload): SocialPostCommitResult => {
       const before = latestStateRef.current
-      dispatch(action)
-      return latestStateRef.current !== before
+      const action = createApplySocialPostResultAction(before, payload)
+      if (action) {
+        dispatch(action)
+        // `dispatch` reduces synchronously, so a changed state is the reducer's
+        // own answer, not a prediction.
+        if (latestStateRef.current !== before) return { ok: true }
+      }
+      return {
+        ok: false,
+        reason: validateSocialPostResult(latestStateRef.current, payload)
+      }
     },
     [dispatch, latestStateRef]
   )
