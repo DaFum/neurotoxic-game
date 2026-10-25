@@ -52,13 +52,15 @@ const withLocale = (locale, fn) => {
 }
 
 describe('toast-baked currency follows the active locale', () => {
+  // Fame level 5 scales the marrow payout to 1000, enough to show the
+  // locale's thousands separator.
   const bloodBankState = () => ({
-    player: { money: 100 },
+    player: { money: 100, fameLevel: 5 },
     band: {
       harmony: 80,
       members: [
         { id: 'm1', stamina: 80, staminaMax: 100 },
-        { id: 'm2', stamina: 60, staminaMax: 100 }
+        { id: 'm2', stamina: 80, staminaMax: 100 }
       ]
     },
     social: { controversyLevel: 10 },
@@ -81,17 +83,14 @@ describe('toast-baked currency follows the active locale', () => {
     test(`blood-bank donate bakes deltaMoney via formatCurrency in ${locale}`, () => {
       const result = withLocale(locale, () =>
         handleBloodBankDonate(bloodBankState(), {
-          moneyGain: 1200,
-          harmonyCost: 30,
-          staminaCost: 20,
-          controversyGain: 5,
+          kind: 'marrow',
           successToast: { message: 'Donation Success', type: 'success' }
         })
       )
 
       assert.strictEqual(
         result.toasts[0].options.deltaMoney,
-        formatCurrency(1200, locale, 'always')
+        formatCurrency(1000, locale, 'always')
       )
     })
 
@@ -138,17 +137,14 @@ describe('toast-baked currency follows the active locale', () => {
       locale =>
         withLocale(locale, () =>
           handleBloodBankDonate(bloodBankState(), {
-            moneyGain: 1200,
-            harmonyCost: 30,
-            staminaCost: 20,
-            controversyGain: 5,
+            kind: 'marrow',
             successToast: { message: 'Donation Success', type: 'success' }
           })
         ).toasts[0].options.deltaMoney
     )
 
     assert.notStrictEqual(perLocale[0], perLocale[1])
-    assert.strictEqual(perLocale[0], '+€1,200')
-    assert.strictEqual(perLocale[1].replace(/\s/g, ' '), '+1.200 €')
+    assert.strictEqual(perLocale[0], '+€1,000')
+    assert.strictEqual(perLocale[1].replace(/\s/g, ' '), '+1.000 €')
   })
 })

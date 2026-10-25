@@ -94,10 +94,8 @@ export type PirateBroadcastPayload = ZealotryActionPayload
  * Reducer payload for blood-bank donation outcomes.
  */
 export interface BloodBankDonatePayload {
-  moneyGain: number
-  harmonyCost: number
-  staminaCost: number
-  controversyGain: number
+  /** Donation kind; the reducer derives price and payout from it. */
+  kind: 'blood' | 'marrow'
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 

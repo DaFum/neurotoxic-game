@@ -1,31 +1,16 @@
 import { useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { useDisclosure } from './useDisclosure'
-import { GAME_CONSTANTS } from '../context/gameConstants'
 import {
-  calculateBloodBankPayout,
+  getBloodBankDonation,
   validateBloodBankDonation
 } from '../utils/bloodBankUtils'
 
-/**
- * Internal configuration definitions mapping donation types to base costs and rewards.
- */
-const DONATION_VARIANTS = {
-  blood: {
-    baseMoney: GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY,
-    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
-    staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
-    controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN,
-    successToastKey: 'ui:blood_bank.success_toast'
-  },
-  marrow: {
-    baseMoney: GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY,
-    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
-    staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
-    controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN,
-    successToastKey: 'ui:blood_bank.marrow_success_toast'
-  }
-}
+/** i18n keys of the toast each donation kind shows on success. */
+const SUCCESS_TOAST_KEYS = {
+  blood: 'ui:blood_bank.success_toast',
+  marrow: 'ui:blood_bank.marrow_success_toast'
+} as const
 
 /**
  * Coordinates blood-bank modal state, donation eligibility, and donation dispatch.
@@ -43,18 +28,13 @@ export const useBloodBank = () => {
     close: closeBloodBank
   } = useDisclosure()
 
+  // Display only: the reducer derives the same amounts from the same table.
   const { config, marrowConfig } = useMemo(() => {
-    const buildConfig = (variant: typeof DONATION_VARIANTS.blood) => ({
-      moneyGain: calculateBloodBankPayout(variant.baseMoney, player?.fameLevel),
-      harmonyCost: variant.harmonyCost,
-      staminaCost: variant.staminaCost,
-      controversyGain: variant.controversyGain
-    })
-
-    return {
-      config: buildConfig(DONATION_VARIANTS.blood),
-      marrowConfig: buildConfig(DONATION_VARIANTS.marrow)
-    }
+    const donation = (kind: 'blood' | 'marrow') =>
+      getBloodBankDonation(kind, player?.fameLevel) as NonNullable<
+        ReturnType<typeof getBloodBankDonation>
+      >
+    return { config: donation('blood'), marrowConfig: donation('marrow') }
   }, [player?.fameLevel])
 
   const canDonate = validateBloodBankDonation(band, config)
@@ -63,34 +43,19 @@ export const useBloodBank = () => {
   const triggerDonate = useCallback(
     (type: 'blood' | 'marrow' = 'blood') => {
       const isMarrow = type === 'marrow'
-      const activeConfig = isMarrow ? marrowConfig : config
-      const variant = DONATION_VARIANTS[type]
 
       if (isMarrow ? !canDonateMarrow : !canDonate) return
 
       const successToast = {
-        messageKey: variant.successToastKey,
+        messageKey: SUCCESS_TOAST_KEYS[type],
         type: 'success' as const
       }
 
-      bloodBankDonate({
-        moneyGain: activeConfig.moneyGain,
-        harmonyCost: activeConfig.harmonyCost,
-        staminaCost: activeConfig.staminaCost,
-        controversyGain: activeConfig.controversyGain,
-        successToast
-      })
+      bloodBankDonate({ kind: type, successToast })
 
       closeBloodBank()
     },
-    [
-      canDonate,
-      canDonateMarrow,
-      bloodBankDonate,
-      closeBloodBank,
-      config,
-      marrowConfig
-    ]
+    [canDonate, canDonateMarrow, bloodBankDonate, closeBloodBank]
   )
 
   return {

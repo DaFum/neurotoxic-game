@@ -187,9 +187,7 @@ const CREATOR_ARGS = {
   createSetPendingRiskEventAction: () => [
     { assetId: 'asset_1', kind: 'tourbus_chassis', severity: 'minor' }
   ],
-  createBloodBankDonateAction: () => [
-    { moneyGain: 60, harmonyCost: 2, staminaCost: 10, controversyGain: 1 }
-  ],
+  createBloodBankDonateAction: () => [{ kind: 'blood' }],
   createTradeVoidItemAction: () => [
     { contrabandId: 'contraband_1', fameCost: 10, instanceId: 'instance_1' }
   ],
@@ -265,10 +263,7 @@ const EXTRA_VARIANTS = [
     label: 'createBloodBankDonateAction with a populated successToast',
     call: () =>
       actionCreators.createBloodBankDonateAction({
-        moneyGain: 60,
-        harmonyCost: 2,
-        staminaCost: 10,
-        controversyGain: 1,
+        kind: 'marrow',
         successToast: { message: 'done', type: 'success' }
       })
   },

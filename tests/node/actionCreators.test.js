@@ -786,15 +786,16 @@ describe('Action Creators', () => {
       assert.strictEqual(pirate.payload.harmonyCost, 5)
       assert.strictEqual(pirate.payload.fameGain, 0)
 
+      // Only the donation kind travels; any amount a caller adds is dropped, so
+      // the reducer alone decides what a donation costs and pays.
       const blood = createBloodBankDonateAction({
-        moneyGain: Number.NaN,
-        harmonyCost: Number.NEGATIVE_INFINITY,
-        staminaCost: 10,
-        controversyGain: 5
+        kind: 'blood',
+        moneyGain: 1e9,
+        harmonyCost: 0,
+        staminaCost: 0
       })
-      assert.strictEqual(blood.payload.moneyGain, 0)
-      assert.strictEqual(Object.hasOwn(blood.payload, 'harmonyCost'), false)
-      assert.strictEqual(blood.payload.staminaCost, 10)
+      assert.deepStrictEqual(Object.keys(blood.payload), ['kind'])
+      assert.strictEqual(blood.payload.kind, 'blood')
 
       for (const fameCost of [undefined, null, Number.NaN, -5, '10']) {
         const trade = createTradeVoidItemAction({
