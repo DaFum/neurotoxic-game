@@ -193,7 +193,11 @@ export const getExpeditionMobilityFailureSignal = (
     choices.push('refuel')
   }
   if (spendable >= EXPEDITION_TOW_COST) choices.push('tow')
-  if (canClaimExpeditionInsurance(state, 'vehicle')) {
+  if (
+    canClaimExpeditionInsurance(state, 'vehicle', undefined, {
+      crisisReason: 'fuel_stranded'
+    })
+  ) {
     choices.push('insurance_claim')
   }
   // `accept_failure` is unconditional, which is what guarantees no softlock:
@@ -348,7 +352,11 @@ export const getTechnicalFailureSignal = (
 
   if (explicitlyAccepted || !hasRecovery) {
     const choices: ExpeditionFailureChoiceId[] = []
-    if (canClaimExpeditionInsurance(state, 'technical', disabledGroup)) {
+    if (
+      canClaimExpeditionInsurance(state, 'technical', disabledGroup, {
+        crisisReason: 'technical_shutdown'
+      })
+    ) {
       choices.push('insurance_claim')
     }
     choices.push('accept_failure')

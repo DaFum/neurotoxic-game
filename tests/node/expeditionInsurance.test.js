@@ -340,6 +340,24 @@ describe('integration with crisis resolution shell', () => {
     assert.ok(signal.choices.includes('insurance_claim'))
   })
 
+  it('offers insurance_claim on the first derivation of a stranded crisis with fuel left', () => {
+    const raw = walkTo(
+      startedState({ money: 5000 }, { insurancePolicyId: 'roadside' }),
+      1
+    )
+    const state = strandPlayer(raw)
+    // Some fuel and a running van: the claim is only legal because the crisis
+    // being derived is a stranding, and nothing has been stored yet.
+    state.player.van.fuel = 3
+    state.player.van.condition = 60
+    state.expedition.pendingFailure = null
+
+    const signal = getExpeditionMobilityFailureSignal(state)
+    assert.ok(signal)
+    assert.equal(signal.reason, 'fuel_stranded')
+    assert.ok(signal.choices.includes('insurance_claim'))
+  })
+
   it('resolves mobility crisis via insurance_claim without cash charge', () => {
     const raw = walkTo(
       startedState({ money: 5000 }, { insurancePolicyId: 'roadside' }),
