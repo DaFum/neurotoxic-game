@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { addContrabandToBand } from '../../src/utils/contrabandStashUtils'
 import {
   applyEventDelta,
   applyInventoryItemDelta,
@@ -732,4 +733,35 @@ test('band member deltas copy the members list only when a member changes', () =
   assert.strictEqual(changed.band.members[1].mood, 55)
   assert.strictEqual(changed.band.members[2], state.band.members[2])
   assert.strictEqual(state.band.members[1].mood, 50)
+})
+
+test('apply-on-add equipment keeps harmony inside 1-100 on add and on confiscation', () => {
+  // -10 harmony at 5 would be stored as -5, below the clamp floor.
+  const added = addContrabandToBand(
+    { harmony: 5, stash: {}, members: [] },
+    { contrabandId: 'c_abyssal_pendant', instanceId: 'pendant_1' }
+  )
+  assert.equal(added.harmony, 1)
+
+  // The reverse: a stored 95 plus the +10 revert would be 105.
+  const state = {
+    band: {
+      harmony: 95,
+      stash: {
+        c_abyssal_pendant: {
+          id: 'c_abyssal_pendant',
+          type: 'equipment',
+          effectType: 'harmony',
+          value: -10,
+          applyOnAdd: true,
+          applied: true,
+          stacks: null
+        }
+      }
+    }
+  }
+  const next = applyEventDelta(state, {
+    band: { stashRemove: ['c_abyssal_pendant'] }
+  })
+  assert.equal(next.band.harmony, 100)
 })

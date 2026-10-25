@@ -3,6 +3,7 @@ import type { ValidationResult } from '../types/validation'
 import { CONTRABAND_BY_ID } from '../data/contraband'
 import {
   applySharedBandEffect,
+  clampSharedBandEffectResult,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from './contrabandEffects'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
@@ -220,6 +221,7 @@ export const addContrabandToBand = (
       item.value as number,
       EQUIPMENT_APPLY_ON_ADD_EFFECTS
     )
+    clampSharedBandEffectResult(newBand, item.effectType)
   }
 
   return newBand

@@ -1,6 +1,7 @@
 import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 import {
   applySharedBandEffect,
+  clampSharedBandEffectResult,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../contrabandEffects'
 import { addContrabandToBand } from '../contrabandStashUtils'
@@ -955,6 +956,7 @@ export const applyEventDelta = (
               -finiteNumberOr(entry.value, 0),
               EQUIPMENT_APPLY_ON_ADD_EFFECTS
             )
+            clampSharedBandEffectResult(nextBand, entry.effectType)
           }
           delete nextBand.stash[itemId]
         }
