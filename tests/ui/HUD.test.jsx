@@ -79,6 +79,15 @@ describe('HUD', () => {
     expect(mockSetNeuroDecimator).toHaveBeenCalledWith(true)
   })
 
+  test('applies a restored decimator flag to the audio engine without a click', async () => {
+    mockGameState.band.neuroDecimatorActive = true
+
+    render(<HUD />)
+
+    expect(mockSetNeuroDecimator).toHaveBeenCalledWith(true)
+    expect(mockToggleNeuroDecimator).not.toHaveBeenCalled()
+  })
+
   test('renders the localized fallback for unnamed members', async () => {
     mockGameState.band.members = [
       { id: 'member-no-name', name: '', mood: 50, stamina: 60 }

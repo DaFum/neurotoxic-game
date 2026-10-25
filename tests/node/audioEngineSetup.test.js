@@ -427,3 +427,26 @@ test('ensureAudioContext', async t => {
     }
   })
 })
+
+test('a decimator turned on before audio setup is applied to the node setup builds', async t => {
+  const { audioManager } = await import('../../src/utils/audio/AudioManager')
+
+  const wanted = audioState.neuroDecimatorWanted
+  t.after(() => {
+    audioState.neuroDecimatorWanted = wanted
+    disposeAudio()
+  })
+
+  disposeAudio()
+  audioManager.setNeuroDecimator(true)
+  assert.equal(audioState.neuroDecimatorWanted, true)
+
+  await setupAudio()
+  assert.equal(audioState.neuroDistortion.wet.value, 0.8)
+
+  // A rebuild keeps it, and turning it off is recorded for the next build too.
+  disposeAudio()
+  audioManager.setNeuroDecimator(false)
+  await setupAudio()
+  assert.equal(audioState.neuroDistortion.wet.value, 0)
+})

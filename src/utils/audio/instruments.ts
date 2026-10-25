@@ -65,7 +65,7 @@ export function setupMasterChain(): void {
 
   // Neuro-Decimator Distortion
   const neuroDistortion = new Tone.Chebyshev(50)
-  neuroDistortion.wet.value = 0
+  neuroDistortion.wet.value = audioState.neuroDecimatorWanted ? 0.8 : 0
 
   // Global reverb for natural space
   const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })

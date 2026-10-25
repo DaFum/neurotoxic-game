@@ -65,6 +65,11 @@ export const audioState = {
   // State flags & IDs
   isSetup: false,
   isCorruptionAudioActive: false,
+  // Whether the Neuro-Decimator should be on, kept apart from the node so it
+  // survives a state restore before audio is set up and a graph rebuild:
+  // `setNeuroDecimator` records it, `instruments.ts` builds the node from it.
+  // Deliberately not reset by `disposeAudio`.
+  neuroDecimatorWanted: false,
   playRequestId: 0,
   transportEndEventId: null as Nullable<number>,
   transportStopEventId: null as Nullable<number>,

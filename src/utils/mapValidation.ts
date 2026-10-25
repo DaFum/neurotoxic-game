@@ -2,6 +2,7 @@ import { MAP_NODE_TYPES, isMapNodeType } from './mapNodeTypes'
 import type { MapNodeType } from './mapNodeTypes'
 import { isLooseRecord, isForbiddenKey } from './objectUtils'
 import { isFiniteNumber } from './finiteNumber'
+import { isEmptyObject } from './gameState/checks'
 import {
   deriveCityTraits,
   getCityKeyFromVenueId
@@ -389,7 +390,7 @@ const buildCityStates = (
       cityStates[cityKey] = deriveCityTraits(cityKey)
     }
   }
-  return Object.keys(cityStates).length > 0 ? cityStates : undefined
+  return isEmptyObject(cityStates) ? undefined : cityStates
 }
 
 /**
