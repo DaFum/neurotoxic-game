@@ -152,10 +152,10 @@ describe('observer lifecycle', () => {
     return { measurements }
   }
 
-  const addObstacle = () => {
+  const addObstacle = (parent = document.body) => {
     const el = document.createElement('div')
     el.setAttribute('data-chatter-avoid', '')
-    document.body.appendChild(el)
+    parent.appendChild(el)
     return el
   }
 
@@ -176,11 +176,13 @@ describe('observer lifecycle', () => {
     vi.useFakeTimers()
     const obstacle = { current: BLOCKING_RECT }
     const { measurements } = spyRects(obstacle)
-    const { getByRole } = await mountOverlay()
+    // Mounted inside the rendered container, not on <body>: the observer must
+    // see nested scene obstacles (`subtree: true`).
+    const { container: root, getByRole } = await mountOverlay()
     const container = getByRole('status')
     expect(container.style.top).toBe('')
 
-    addObstacle()
+    addObstacle(root)
     await flushMutations()
     await act(async () => {
       vi.advanceTimersByTime(199)

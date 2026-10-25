@@ -42,7 +42,7 @@ The runner does not dispatch the Roadie minigame completion, so it records no `p
 
 ## 5. Verdict
 
-No. Spendable Cash covered a full Roadie charge at 97.7% of simulated route steps, so in the profile set a Roadie repair would almost always be paid in full. Protected Cash produces partial or full waivers only in thin-margin runs, mainly `underground_heat` at low and competent skill. The larger effect of the floor is on Gig losses: about a third of the quoted net loss (1.04M of 3.14M) never leaves the wallet.
+The data do not establish how often Roadie repairs are paid in full: the runner never plays the Roadie completion path, so there are no `paid`/`waived` totals for runs that actually had a Roadie charge. What the sample shows is that spendable Cash was at least 200 at 97.7% of route-step observations, which would cover any Roadie charge of 200 or less at those observations; charges below 200, discounts or credits can also be paid in full with less. Protected Cash can only produce partial or full waivers where spendable Cash is thin, mainly `underground_heat` at low and competent skill, so the evidence points against repairs being effectively free, without proving it. The larger effect of the floor is on Gig losses: about a third of the quoted net loss (1.04M of 3.14M) never leaves the wallet.
 
 ## 6. Open Evidence
 
