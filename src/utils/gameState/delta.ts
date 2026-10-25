@@ -1,11 +1,13 @@
 import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 import {
   applySharedBandEffect,
-  clampSharedBandEffectResult,
   getEquipmentRevertValue,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../contrabandEffects'
-import { addContrabandToBand } from '../contrabandStashUtils'
+import {
+  addContrabandToBand,
+  clampSharedBandEffectResult
+} from '../contrabandStashUtils'
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {

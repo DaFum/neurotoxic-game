@@ -21,12 +21,12 @@ import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import {
   applySharedBandEffect,
-  clampSharedBandEffectResult,
   getEquipmentRevertValue,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
 } from '../../utils/contrabandEffects'
 import {
   addContrabandToBand,
+  clampSharedBandEffectResult,
   getStashCapacity,
   getStashStackCount,
   getStashUsedSlots,

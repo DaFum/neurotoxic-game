@@ -1,5 +1,4 @@
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
-import { clampBandHarmony, clampBandStress } from './gameState/clamps'
 import type { BandMember, BandState } from '../types'
 
 /**
@@ -106,30 +105,7 @@ export const applySharedBandEffect = (
 }
 
 /**
- * Re-clamps the band stat an apply-on-add / revert just moved.
- *
- * @param band - Band the effect was applied to; mutated in place.
- * @param effectType - Effect type that was applied or reverted.
- *
- * @remarks
- * {@link applySharedBandEffect} stays an exact additive inverse, so it writes
- * `harmony` and `stress` unclamped. A caller that applies or reverts an
- * equipment effect outside the expiry tick has to bring those two back into
- * range itself, or a later clamp plus the inverse revert drifts past 0-100.
- */
-export const clampSharedBandEffectResult = (
-  band: BandState,
-  effectType: unknown
-): void => {
-  if (effectType === 'harmony') {
-    band.harmony = clampBandHarmony(finiteNumberOr(band.harmony, 1))
-  } else if (effectType === 'stress') {
-    band.stress = clampBandStress(finiteNumberOr(band.stress, 0))
-  }
-}
-
-/**
- * Reads the band stat that {@link clampSharedBandEffectResult} bounds.
+ * Reads the band stat that equipment apply-on-add and revert keep in range.
  *
  * @param band - Band to read.
  * @param effectType - Effect type about to be applied.
