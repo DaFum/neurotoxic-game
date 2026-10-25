@@ -13,6 +13,7 @@ import type { HandlerDispatchers } from './types'
 /** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */
 interface UseMinorHandlersProps {
   player: GameState['player']
+  expedition: GameState['expedition']
   social: GameState['social']
   currentGig: GameState['currentGig']
   postOptionsDerivationError: unknown
@@ -32,6 +33,7 @@ interface UseMinorHandlersProps {
  */
 export function useMinorHandlers({
   player,
+  expedition,
   social,
   currentGig,
   postOptionsDerivationError,
@@ -106,7 +108,7 @@ export function useMinorHandlers({
   const handleSpinStory = useCallback(() => {
     if (hasSpunRef.current) return
 
-    const updates = getSpinStoryMoneyUpdate({ player })
+    const updates = getSpinStoryMoneyUpdate({ player, expedition })
 
     if (!updates.success) {
       addToast(
@@ -136,7 +138,16 @@ export function useMinorHandlers({
       }),
       'success'
     )
-  }, [player, updatePlayer, updateSocial, addToast, t, hasSpunRef, setHasSpun])
+  }, [
+    player,
+    expedition,
+    updatePlayer,
+    updateSocial,
+    addToast,
+    t,
+    hasSpunRef,
+    setHasSpun
+  ])
 
   return { handleNextPhase, handleSpinStory }
 }

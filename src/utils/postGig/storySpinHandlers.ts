@@ -1,5 +1,6 @@
 import { applyClampedMoneyDelta } from './socialResolution'
 import { clampControversyLevel, finiteNumberOr } from '../gameState'
+import { withExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import type { GameState } from '../../types'
 import type { SpinStoryMoneyUpdate } from './types'
 
@@ -12,13 +13,20 @@ export const SPIN_STORY_CONTROVERSY_REDUCTION = 25
  * Computes the money update for a story spin: fails (no-op) when the player
  * cannot afford {@link SPIN_STORY_MONEY_COST}, otherwise returns the clamped
  * next money and applied delta.
+ *
+ * During an active Expedition only the spendable slice counts toward the
+ * affordability gate: the cash floor would reject the debit, and the controversy
+ * reduction dispatched beside it would still apply.
  */
 export const getSpinStoryMoneyUpdate = ({
-  player
+  player,
+  expedition
 }: {
   player: GameState['player']
+  expedition?: GameState['expedition']
 }): SpinStoryMoneyUpdate => {
-  if (finiteNumberOr(player.money, 0) < SPIN_STORY_MONEY_COST) {
+  const spendable = withExpeditionSpendableCash({ player, expedition }).player
+  if (finiteNumberOr(spendable.money, 0) < SPIN_STORY_MONEY_COST) {
     return { success: false }
   }
 

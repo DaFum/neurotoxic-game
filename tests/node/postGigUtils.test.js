@@ -9,8 +9,10 @@ import {
   buildPerGigSocialReconciliation,
   getAcceptDealMoneyUpdate,
   getAcceptDealSocialUpdateFactory,
+  getSpinStoryMoneyUpdate,
   getSpinStorySocialUpdate,
-  SPIN_STORY_CONTROVERSY_REDUCTION
+  SPIN_STORY_CONTROVERSY_REDUCTION,
+  SPIN_STORY_MONEY_COST
 } from '../../src/utils/postGig'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { POST_OPTIONS } from '../../src/data/postOptions'
@@ -570,4 +572,32 @@ test('buildPerGigSocialReconciliation rejects a hostile remainingGigs', () => {
       }),
     /Invalid remainingGigs for active deal deal_bad/
   )
+})
+
+test('getSpinStoryMoneyUpdate gates on spendable cash during an active expedition', () => {
+  const player = { money: 250 }
+  const active = { status: 'active', protectedCareerCash: 200 }
+
+  // 250 raw, but only 50 spendable: the cash floor would reject the debit.
+  assert.equal(
+    getSpinStoryMoneyUpdate({ player, expedition: active }).success,
+    false
+  )
+
+  const affordable = getSpinStoryMoneyUpdate({
+    player: { money: 450 },
+    expedition: active
+  })
+  assert.equal(affordable.success, true)
+  assert.equal(affordable.nextMoney, 450 - SPIN_STORY_MONEY_COST)
+
+  // Outside a run the protected slice does not apply.
+  assert.equal(
+    getSpinStoryMoneyUpdate({
+      player,
+      expedition: { status: 'idle', protectedCareerCash: 200 }
+    }).success,
+    true
+  )
+  assert.equal(getSpinStoryMoneyUpdate({ player }).success, true)
 })

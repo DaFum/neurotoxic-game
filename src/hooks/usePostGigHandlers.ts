@@ -250,6 +250,7 @@ export function usePostGigHandlers({
   })
   const { handleNextPhase, handleSpinStory } = useMinorHandlers({
     player,
+    expedition,
     social,
     currentGig,
     postOptionsDerivationError,
