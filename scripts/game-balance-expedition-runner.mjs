@@ -1745,6 +1745,56 @@ const selectExtractionRareCarryIds = state => {
 }
 
 /**
+ * Applies one simulated Gig's payout the way the post-Gig Continue does.
+ *
+ * @param {import('../src/types').GameState} state - State after the Gig staged.
+ * @param {object} gig - The settled Gig.
+ * @param {{ net: number, dealFameMultiplier?: number }} gig.financials - The
+ * `deriveFinancials` ledger.
+ * @param {number} gig.perfScore - The Gig's performance score.
+ * @param {number} gig.misses - Missed notes.
+ * @param {Record<string, any>} telemetry - Run telemetry to update.
+ * @returns {import('../src/types').GameState} State after the payout.
+ */
+export const settleSimulatedGigPayout = (
+  state,
+  { financials, perfScore, misses },
+  telemetry
+) => {
+  const continueStats = calculateContinueStats({
+    player: state.player,
+    perfScore,
+    financials,
+    misses,
+    bandStyle: state.band.style,
+    calculateFameGain,
+    calculateFameLevel,
+    clampPlayerFame,
+    clampPlayerMoney,
+    BALANCE_CONSTANTS
+  })
+  telemetry.gigNetTotal += finiteNumberOr(financials.net, 0)
+  // Through the reducer, not into state.
+  //
+  // `useContinueHandler` applies the post-Gig payout with
+  // `updatePlayer({ money, fame, fameLevel })`, so in production it
+  // passes `gameReducer` and therefore `enforceExpeditionCashFloor` -
+  // the central guard that reverts any action lowering Cash past the
+  // protected slice. Writing the same fields straight into state made
+  // the Gig the one money movement in the run that could cross the
+  // floor, which is not a rule the game has. The simulation has to
+  // reflect the code.
+  return gameReducer(state, {
+    type: ActionTypes.UPDATE_PLAYER,
+    payload: {
+      money: continueStats.newMoney,
+      fame: continueStats.newFame,
+      fameLevel: continueStats.fameLevel
+    }
+  })
+}
+
+/**
  * Runs a single Expedition simulation from production loadout creation to terminal settlement.
  *
  * @param {import('../src/types').GameState} fixtureState
@@ -2146,37 +2196,11 @@ export const runExpeditionSimulation = (
       })
 
       if (financials) {
-        const continueStats = calculateContinueStats({
-          player: state.player,
-          perfScore: gigAccuracy,
-          financials,
-          misses: gigStats.misses,
-          bandStyle: state.band.style,
-          calculateFameGain,
-          calculateFameLevel,
-          clampPlayerFame,
-          clampPlayerMoney,
-          BALANCE_CONSTANTS
-        })
-        telemetry.gigNetTotal += finiteNumberOr(financials.net, 0)
-        // Through the reducer, not into state.
-        //
-        // `useContinueHandler` applies the post-Gig payout with
-        // `updatePlayer({ money, fame, fameLevel })`, so in production it
-        // passes `gameReducer` and therefore `enforceExpeditionCashFloor` -
-        // the central guard that reverts any action lowering Cash past the
-        // protected slice. Writing the same fields straight into state made
-        // the Gig the one money movement in the run that could cross the
-        // floor, which is not a rule the game has. The simulation has to
-        // reflect the code.
-        state = gameReducer(state, {
-          type: ActionTypes.UPDATE_PLAYER,
-          payload: {
-            money: continueStats.newMoney,
-            fame: continueStats.newFame,
-            fameLevel: continueStats.fameLevel
-          }
-        })
+        state = settleSimulatedGigPayout(
+          state,
+          { financials, perfScore: gigAccuracy, misses: gigStats.misses },
+          telemetry
+        )
       }
 
       // 3b. Post about the show. The Gig opened a Social settlement window at
