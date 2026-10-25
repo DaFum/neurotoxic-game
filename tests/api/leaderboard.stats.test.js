@@ -101,12 +101,47 @@ describe('Leaderboard Stats API', () => {
       success: true
     })
 
-    // Check hSet was called
-    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 1)
+    // One atomic script writes the name and all six boards; no separate
+    // hSet / multi round trips remain.
+    assert.strictEqual(writeCalls().length, 1)
+    const [script, options] = writeCalls()[0]
+    assert.ok(script.includes("'HEXISTS'"))
+    assert.deepStrictEqual(options.keys, [
+      'lb:revision',
+      'players',
+      'lb:balance',
+      'lb:fame',
+      'lb:followers',
+      'lb:distance',
+      'lb:conflicts',
+      'lb:stage_dives'
+    ])
+    assert.deepStrictEqual(options.arguments, [
+      'test-band',
+      'Test Band',
+      '100',
+      '10',
+      '500',
+      '50',
+      '2',
+      '5'
+    ])
+    assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 0)
+    assert.strictEqual(mockMulti.exec.mock.calls.length, 0)
+  })
 
-    // Checks that all 6 stats have been zAdd'ed in multi
-    assert.strictEqual(mockMulti.zAdd.mock.calls.length, 6)
-    assert.strictEqual(mockMulti.exec.mock.calls.length, 1)
+  test('POST without a revision is acknowledged as stale for a revision-protected player', async () => {
+    writeResult = [0, 9]
+    const req = revisionRequest(undefined)
+    const { res } = createApiRouteMocks()
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
+      success: true,
+      stale: true,
+      revision: 9
+    })
   })
 
   const revisionRequest = revision => ({
@@ -213,17 +248,16 @@ describe('Leaderboard Stats API', () => {
       await statsModule.default(req, res)
 
       assert.strictEqual(res.status.mock.calls[0][0], 200)
-      assert.deepStrictEqual(
-        mockMulti.zAdd.mock.calls.map(([key, { score }]) => [key, score]),
-        [
-          ['lb:balance', Number(published)],
-          ['lb:fame', 10],
-          ['lb:followers', 500],
-          ['lb:distance', 50],
-          ['lb:conflicts', 2],
-          ['lb:stage_dives', 5]
-        ]
-      )
+      assert.deepStrictEqual(writeCalls()[0][1].arguments, [
+        'test-band',
+        'Test Band',
+        published,
+        '10',
+        '500',
+        '50',
+        '2',
+        '5'
+      ])
     })
   }
 
@@ -382,15 +416,15 @@ describe('Leaderboard Stats API', () => {
 
     assert.strictEqual(res.status.mock.calls[0][0], 200)
 
-    // Verify clampStat worked
-    const zAddCalls = mockMulti.zAdd.mock.calls
-    const fameCall = zAddCalls.find(call => call[0] === 'lb:fame')
-    const followersCall = zAddCalls.find(call => call[0] === 'lb:followers')
-    const distanceCall = zAddCalls.find(call => call[0] === 'lb:distance')
-
-    assert.strictEqual(fameCall[1].score, 0)
-    assert.strictEqual(followersCall[1].score, 999999999999) // MAX_STAT_VALUE
-    assert.strictEqual(distanceCall[1].score, 0)
+    // Verify clampStat worked: the scores follow the name in board order.
+    const [balance, fame, followers, distance, conflicts, stageDives] =
+      writeCalls()[0][1].arguments.slice(2)
+    assert.strictEqual(balance, '500')
+    assert.strictEqual(fame, '0')
+    assert.strictEqual(followers, '999999999999') // MAX_STAT_VALUE
+    assert.strictEqual(distance, '0')
+    assert.strictEqual(conflicts, '0')
+    assert.strictEqual(stageDives, '0')
   })
 
   test('GET enforces limit constraints', async () => {

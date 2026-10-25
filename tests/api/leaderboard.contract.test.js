@@ -41,7 +41,11 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
   beforeEach(async () => {
     vi.resetAllMocks()
     mockClient.isOpen = true
-    mockClient.eval.mockResolvedValue(1)
+    // The rate-limit script answers with a count, the stats write script with
+    // { applied, stored revision }.
+    mockClient.eval.mockImplementation(script =>
+      Promise.resolve(script === RATE_LIMIT_SCRIPT ? 1 : [1, 0])
+    )
     mockClient.zRangeWithScores.mockResolvedValue([])
     mockClient.multi.mockReturnValue({ zAdd: vi.fn(), exec: vi.fn() })
     handler = (await endpoint.load()).default
@@ -124,13 +128,22 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
     )
 
     expect(res.status).toHaveBeenCalledWith(200)
+    if (endpoint.name === 'stats') {
+      // The stats write is one script: name first, then the scores.
+      const [, options] = mockClient.eval.mock.calls.find(
+        ([script]) => script !== RATE_LIMIT_SCRIPT
+      )
+      expect(options.arguments.slice(0, 2)).toEqual([
+        'player1',
+        'A'.repeat(100)
+      ])
+      return
+    }
     expect(mockClient.hSet).toHaveBeenCalledWith('players', {
       player1: 'A'.repeat(100)
     })
     for (const call of mockClient.multi.mock.results[0].value.zAdd.mock.calls) {
-      expect(call[2]).toEqual(
-        endpoint.name === 'song' ? { GT: true } : undefined
-      )
+      expect(call[2]).toEqual({ GT: true })
     }
   })
 
@@ -154,10 +167,11 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
   )
 
   test('POST counts each request in one atomic script and blocks the sixth before writes', async () => {
-    mockClient.eval
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(5)
-      .mockResolvedValueOnce(6)
+    const counts = [1, 5, 6]
+    let counted = 0
+    mockClient.eval.mockImplementation(script =>
+      Promise.resolve(script === RATE_LIMIT_SCRIPT ? counts[counted++] : [1, 0])
+    )
     const req = {
       method: 'POST',
       socket: { remoteAddress: '127.0.0.1' },
@@ -171,12 +185,20 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
       keys: [`rate_limit:${endpoint.name}:127.0.0.1`],
       arguments: ['60']
     }
-    expect(mockClient.eval.mock.calls).toEqual([
+    const evalCalls = mockClient.eval.mock.calls
+    expect(
+      evalCalls.filter(([script]) => script === RATE_LIMIT_SCRIPT)
+    ).toEqual([
       [RATE_LIMIT_SCRIPT, rateLimitOptions],
       [RATE_LIMIT_SCRIPT, rateLimitOptions],
       [RATE_LIMIT_SCRIPT, rateLimitOptions]
     ])
-    expect(mockClient.hSet).toHaveBeenCalledTimes(2)
+    // Two requests got through to a write, the third was blocked before it.
+    const writes =
+      endpoint.name === 'stats'
+        ? evalCalls.filter(([script]) => script !== RATE_LIMIT_SCRIPT).length
+        : mockClient.hSet.mock.calls.length
+    expect(writes).toBe(2)
     expect(res.status.mock.lastCall).toEqual([429])
     expect(res.json.mock.lastCall).toEqual([{ error: 'Too many requests' }])
   })
