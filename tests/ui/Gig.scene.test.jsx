@@ -577,6 +577,7 @@ describe('Gig Scene Component', () => {
       await flushPromises()
 
       expect(screen.getByText(/QUIT GIG/i)).toBeInTheDocument()
+      expect(mockAddToast).toHaveBeenCalledWith(expect.any(String), 'error')
     })
 
     test('does not render main gig UI when audio locked', async () => {

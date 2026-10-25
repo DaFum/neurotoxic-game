@@ -4,7 +4,7 @@ import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { Modal } from './shared/Modal'
 import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
-import { PlayerState, BandState } from '../types'
+import { BandState } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
@@ -36,7 +36,6 @@ export const MerchPressModal = ({
   config
 }: MerchPressModalProps) => {
   const { t } = useTranslation(['ui'])
-  const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
   const spendableCash = useGameSelector(getExpeditionSpendableCash)
@@ -91,7 +90,7 @@ export const MerchPressModal = ({
 
           <MerchPressCurrentStats
             config={config}
-            player={player}
+            spendableCash={spendableCash}
             band={band}
             isAffordable={isAffordable}
             hasEnoughHarmony={hasEnoughHarmony}
@@ -196,7 +195,7 @@ function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
 
 type MerchPressCurrentStatsProps = {
   config: MerchPressConfig
-  player: PlayerState | null
+  spendableCash: number
   band: BandState | null
   isAffordable: boolean
   hasEnoughHarmony: boolean
@@ -204,13 +203,13 @@ type MerchPressCurrentStatsProps = {
 
 function MerchPressCurrentStats({
   config,
-  player,
+  spendableCash,
   band,
   isAffordable,
   hasEnoughHarmony
 }: MerchPressCurrentStatsProps) {
   const { t, i18n } = useTranslation(['ui'])
-  const money = finiteNumberOr(player?.money, 0)
+  const money = spendableCash
   const harmony = finiteNumberOr(band?.harmony, 0)
   return (
     <div className='border border-toxic-green-20 p-4 space-y-4'>

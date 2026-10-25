@@ -173,4 +173,21 @@ describe('bandReducer - handleCraftItem', () => {
 
     assert.strictEqual(next, state)
   })
+
+  it('reverts only the delta an input recorded when it was applied', () => {
+    // The add was clamped, so it moved the stat by 3, not the catalog 5.
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: 1, appliedValue: 3 }
+    })
+    state.band.luck = 5
+
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick-applied',
+      toastId: 'craft_toast_blood_pick_applied'
+    })
+
+    assert.equal(next.band.luck, 2)
+  })
 })

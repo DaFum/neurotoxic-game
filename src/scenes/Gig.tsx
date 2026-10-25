@@ -104,6 +104,12 @@ export const Gig = () => {
             .catch(err => {
               logger.error('Gig', 'Audio context unlock rejected', err)
               setUnlockAttemptFailed(true)
+              addToast(
+                t('ui:gig.audioUnlockFailed', {
+                  defaultValue: 'Audio could not be unlocked. Try again.'
+                }),
+                'error'
+              )
             })
         }}
         onQuit={
