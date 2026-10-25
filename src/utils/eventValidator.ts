@@ -3,6 +3,7 @@
  * Validates event objects against the expected structure and types.
  */
 import { EVENT_CATEGORIES } from '../data/events/categories'
+import { isFiniteNumber } from './finiteNumber'
 
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES)
 const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
@@ -216,9 +217,10 @@ export const validateCrisisEvent = (event: unknown): boolean => {
         throw new Error(
           'SkillCheck stat must be a string in event ' + String(e.id)
         )
-      if (typeof threshold !== 'number')
+      if (!isFiniteNumber(threshold))
         throw new Error(
-          'SkillCheck threshold must be a number in event ' + String(e.id)
+          'SkillCheck threshold must be a finite number in event ' +
+            String(e.id)
         )
       if (!success || typeof success !== 'object' || Array.isArray(success))
         throw new Error(
@@ -309,9 +311,9 @@ export const validateGameEvent = (event: unknown): boolean => {
           `Event "${e.id}" option[${i}]: skillCheck.stat must be a string`
         )
       }
-      if (typeof sc.threshold !== 'number') {
+      if (!isFiniteNumber(sc.threshold)) {
         throw new Error(
-          `Event "${e.id}" option[${i}]: skillCheck.threshold must be a number`
+          `Event "${e.id}" option[${i}]: skillCheck.threshold must be a finite number`
         )
       }
       const success = sc.success
