@@ -271,8 +271,10 @@ const MapNodeTooltip = memo(
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
+        {/* Hidden on phones: the intel block roughly doubles the tooltip, which
+            no longer fits inside the clipped map above or below a mid-map node. */}
         {cityTraits && (
-          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-xs text-ash-gray font-mono flex flex-col gap-0.5'>
+          <div className='max-sm:hidden mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-xs text-ash-gray font-mono flex flex-col gap-0.5'>
             <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-xxs mb-0.5'>
               {t('ui:map.intel.title')}
             </div>
