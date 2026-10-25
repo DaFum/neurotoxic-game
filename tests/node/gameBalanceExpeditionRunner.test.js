@@ -13,7 +13,8 @@ import {
   evaluateCandidateNode,
   runExpeditionSimulation,
   runExpeditionCohort,
-  checkStrategyDominance
+  checkStrategyDominance,
+  settleSimulatedGigPayout
 } from '../../scripts/game-balance-expedition-runner.mjs'
 import {
   EXPEDITION_BALANCE_PROFILES,
@@ -22,6 +23,15 @@ import {
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../src/domain/expedition/runDrafts.ts'
 import { BALANCE_SOURCE_FILES } from '../../scripts/utils/balance-report-metadata.mjs'
+import { calculateContinueStats } from '../../src/utils/postGig/performanceLogic.ts'
+import {
+  BALANCE_CONSTANTS,
+  calculateFameGain,
+  calculateFameLevel,
+  clampPlayerFame,
+  clampPlayerMoney
+} from '../../src/utils/gameState/index.ts'
+import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
 
 describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
   it('generates provably disjoint seeds between calibration and holdout cohorts', () => {
@@ -442,9 +452,8 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     const { gameReducer } = await import('../../src/context/gameReducer.ts')
     const { ActionTypes } = await import('../../src/context/actionTypes.ts')
     const { POST_OPTIONS } = await import('../../src/data/postOptions.ts')
-    const { calculatePostGigStateUpdates } = await import(
-      '../../src/utils/postGig/socialResolution.ts'
-    )
+    const { calculatePostGigStateUpdates } =
+      await import('../../src/utils/postGig/socialResolution.ts')
 
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const state = buildProductionSimulationLoadout(undefined, profile, 4242)
@@ -478,7 +487,10 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
       }
     })
 
-    assert.equal(nextState.player.stats.failedStageDives, initialFailedDives + 1)
+    assert.equal(
+      nextState.player.stats.failedStageDives,
+      initialFailedDives + 1
+    )
   })
 
   it('separates soft corridor findings from a blocking dominance verdict', () => {
@@ -536,5 +548,89 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     const notReproduced = checkStrategyDominance(dominated, trivial)
     assert.equal(notReproduced.ok, true)
     assert.equal(notReproduced.dominanceViolations.length, 0)
+  })
+})
+
+describe('Expedition runner gig settlement parity (#3284)', () => {
+  // Mirrors `pendingGigContinueParity`'s protected-loss case: the production
+  // Continue refuses the Cash change in full and still lands the Fame.
+  it('refuses a floor-crossing gig loss in full, commits Fame and counts the refusal', () => {
+    const walked = walkTo(
+      startedState(
+        { money: 500, fame: 100, van: { fuel: 100, fuelMax: 100 } },
+        { build: { protectedCareerCash: 400 } }
+      ),
+      1
+    )
+    const state = {
+      ...walked,
+      player: { ...walked.player, money: 500, fame: 100 },
+      expedition: { ...walked.expedition, protectedCareerCash: 400 }
+    }
+    const gig = { financials: { net: -600 }, perfScore: 30, misses: 58 }
+    const expected = calculateContinueStats({
+      player: state.player,
+      perfScore: gig.perfScore,
+      financials: gig.financials,
+      misses: gig.misses,
+      bandStyle: state.band.style,
+      calculateFameGain,
+      calculateFameLevel,
+      clampPlayerFame,
+      clampPlayerMoney,
+      BALANCE_CONSTANTS
+    })
+    assert.notEqual(expected.newFame, 100, 'the gig must move Fame')
+
+    const telemetry = {
+      gigNetTotal: 0,
+      acceptedGigNetTotal: 0,
+      refusedGigLossCount: 0,
+      refusedGigLossValue: 0
+    }
+    const settled = settleSimulatedGigPayout(state, gig, telemetry)
+
+    assert.equal(settled.player.money, 500)
+    assert.equal(settled.player.fame, expected.newFame)
+    assert.equal(settled.player.fameLevel, expected.fameLevel)
+    assert.equal(settled.expedition.status, 'active')
+    // Quoted net stays the ledger figure; the accepted net is what Cash moved.
+    assert.equal(telemetry.gigNetTotal, -600)
+    assert.equal(telemetry.acceptedGigNetTotal, 0)
+    assert.equal(telemetry.refusedGigLossCount, 1)
+    // The wallet change refused: 500 down to the clamped 0.
+    assert.equal(telemetry.refusedGigLossValue, 500)
+  })
+
+  it('applies a loss that stays above the floor and records no refusal', () => {
+    const walked = walkTo(
+      startedState(
+        { money: 500, fame: 100, van: { fuel: 100, fuelMax: 100 } },
+        { build: { protectedCareerCash: 400 } }
+      ),
+      1
+    )
+    const state = {
+      ...walked,
+      player: { ...walked.player, money: 500, fame: 100 },
+      expedition: { ...walked.expedition, protectedCareerCash: 400 }
+    }
+    const telemetry = {
+      gigNetTotal: 0,
+      acceptedGigNetTotal: 0,
+      refusedGigLossCount: 0,
+      refusedGigLossValue: 0
+    }
+    const settled = settleSimulatedGigPayout(
+      state,
+      { financials: { net: -50 }, perfScore: 30, misses: 58 },
+      telemetry
+    )
+
+    assert.equal(settled.player.money, 450)
+    assert.equal(telemetry.gigNetTotal, -50)
+    assert.equal(telemetry.acceptedGigNetTotal, -50)
+    assert.equal(telemetry.refusedGigLossCount, 0)
+    assert.equal(telemetry.refusedGigLossValue, 0)
   })
 })
