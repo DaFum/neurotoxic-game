@@ -71,6 +71,7 @@ import type {
   ExpeditionRewardLedgerEntry,
   ExpeditionSettlement,
   ExpeditionRunDraftOffer,
+  ExpeditionDoubleDownState,
   ExpeditionState,
   ExpeditionStatus,
   ExpeditionTechnicalCondition,
@@ -1539,6 +1540,42 @@ const sanitizeSocialResultProof = (
   }
 }
 
+/** Route step a `<kind>:<id>:<step>` signal id was banked at, else `null`. */
+const readSignalStep = (signalId: string): number | null => {
+  const tail = signalId.slice(signalId.lastIndexOf(':') + 1)
+  return ROUTE_STEP_KEY.test(tail) ? Number.parseInt(tail, 10) : null
+}
+
+/**
+ * Whether persisted run evidence shows the accepted double-down breached.
+ *
+ * @remarks
+ * Only signals banked after the acceptance step count: a rest or post that
+ * resolved at or before it predates the restriction.
+ */
+const isDoubleDownBreached = (
+  doubleDown: ExpeditionDoubleDownState,
+  signalIds: readonly string[],
+  heat: number
+): boolean => {
+  const after = (prefix: string): boolean =>
+    signalIds.some(signalId => {
+      if (!signalId.startsWith(prefix)) return false
+      const step = readSignalStep(signalId)
+      return step !== null && step > doubleDown.acceptedAtRouteStep
+    })
+  switch (doubleDown.addedConstraint.kind) {
+    case 'no_more_rest':
+      return after('rest:')
+    case 'social_silence':
+      return after('social_post:')
+    case 'heat_cap':
+      return heat > doubleDown.addedConstraint.maxHeat
+    default:
+      return false
+  }
+}
+
 const sanitizeActiveObligations = (
   value: unknown,
   runId: string | null,
@@ -1740,16 +1777,24 @@ const sanitizeActiveObligations = (
     // from, so theirs is kept.
     let derivedStatus: 'active' | 'completed' | 'failed' =
       progressList.length > 0 ? 'active' : status
-    if (progressList.some(item => item.failed)) derivedStatus = 'failed'
-    else if (
+    // The accepted double-down is rebuilt from the same persisted run evidence
+    // the base constraints use: a breach after its acceptance step, or the
+    // Finale signal for `finale_required`.
+    const doubleDownBreached =
+      doubleDown !== null &&
+      progressList.length > 0 &&
+      isDoubleDownBreached(doubleDown, resolvedObligationSignalIds, heat)
+    if (progressList.some(item => item.failed) || doubleDownBreached) {
+      derivedStatus = 'failed'
+    } else if (
       progressList.length > 0 &&
       progressList.every(item => item.satisfied)
     ) {
-      if (doubleDown?.addedConstraint.kind === 'finale_required') {
-        derivedStatus = 'active'
-      } else {
-        derivedStatus = 'completed'
-      }
+      derivedStatus =
+        doubleDown?.addedConstraint.kind === 'finale_required' &&
+        !hasFinaleSignal
+          ? 'active'
+          : 'completed'
     }
 
     seen.add(id)

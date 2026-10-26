@@ -2701,3 +2701,74 @@ test('a rest signal on a non-rest node still breaks a no-rest contract (#3365)',
     once
   )
 })
+
+import { deriveExpeditionDoubleDownOffer } from '../../src/domain/expedition/contracts.ts'
+
+/** Loads the run with a double-down of `kind` accepted, given run evidence. */
+const loadWithDoubleDown = (kind, { signalIds = [], heat } = {}) => {
+  const { started, walked } = contractRunOnCanonicalMap()
+  const routeStep = 7
+  const obligation = started.expedition.activeObligations[0]
+  let acceptedAt = -1
+  let offer = null
+  for (let step = 0; step < routeStep && !offer; step++) {
+    const candidate = deriveExpeditionDoubleDownOffer(
+      started.runSeed,
+      obligation.id,
+      step
+    )
+    if (candidate.addedConstraint.kind === kind) {
+      offer = candidate
+      acceptedAt = step
+    }
+  }
+  assert.ok(offer, `an offer of kind ${kind} must be derivable`)
+  const loaded = sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      visitedNodeIds: walked.slice(0, routeStep + 1),
+      routeStep,
+      resolvedObligationSignalIds: signalIds(acceptedAt),
+      pressure:
+        heat === undefined
+          ? started.expedition.pressure
+          : { ...started.expedition.pressure, heat },
+      activeObligations: [{ ...obligation, doubleDown: offer }]
+    },
+    started.runSeed,
+    null
+  )
+  return loaded.activeObligations[0]
+}
+
+test('load keeps a contract failed by its double-down restriction failed and settled (#3367)', () => {
+  const none = () => []
+  for (const [kind, signal] of [
+    ['no_more_rest', at => `rest:exp_5_0:${at + 1}`],
+    ['social_silence', at => `social_post:post_1:${at + 1}`]
+  ]) {
+    const breached = loadWithDoubleDown(kind, {
+      signalIds: at => [signal(at)]
+    })
+    assert.equal(breached.status, 'failed', `${kind} breach stays failed`)
+    assert.equal(breached.settled, true)
+
+    const clean = loadWithDoubleDown(kind, { signalIds: none })
+    assert.equal(clean.status, 'active', `${kind} without breach stays active`)
+  }
+  assert.equal(
+    loadWithDoubleDown('heat_cap', { signalIds: none, heat: 61 }).status,
+    'failed'
+  )
+  assert.equal(
+    loadWithDoubleDown('heat_cap', { signalIds: none, heat: 60 }).status,
+    'active'
+  )
+  // A rest banked at or before the acceptance step predates the restriction.
+  assert.equal(
+    loadWithDoubleDown('no_more_rest', {
+      signalIds: at => [`rest:exp_5_0:${at}`]
+    }).status,
+    'active'
+  )
+})
