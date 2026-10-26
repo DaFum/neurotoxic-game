@@ -126,6 +126,19 @@ describe('MapNodeView', () => {
       expect(tooltipOf(container).style.translate).toBe('-50% 44px')
     })
 
+    test('places it again when the viewport is resized while it is open', () => {
+      globalThis.__tooltipTop = 200
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('')
+
+      // A rotation moved the tooltip past the map's bottom edge.
+      globalThis.__tooltipTop = 500
+      act(() => {
+        window.dispatchEvent(new Event('resize'))
+      })
+      expect(tooltipOf(container).style.translate).toBe('-50% -104px')
+    })
+
     test('leaves a tooltip that fits where it is', () => {
       globalThis.__tooltipTop = 200
       const { container } = renderInMap()

@@ -289,11 +289,15 @@ const MapNodeTooltip = memo(
       }
       host.addEventListener('mouseenter', schedule)
       host.addEventListener('focusin', schedule)
+      // An open tooltip (pending confirmation) outlives a viewport change, e.g.
+      // a rotation, which resizes the map under its old nudge.
+      window.addEventListener('resize', schedule)
       if (isPendingConfirm) schedule()
       return () => {
         cancelAnimationFrame(frame)
         host.removeEventListener('mouseenter', schedule)
         host.removeEventListener('focusin', schedule)
+        window.removeEventListener('resize', schedule)
       }
     }, [isPendingConfirm, flipAbove, cityTraits, fog, nodeLocationName])
     return (
