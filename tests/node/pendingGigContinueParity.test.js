@@ -36,7 +36,6 @@ import {
   finiteNumberOr,
   readMemberStamina
 } from '../../src/utils/gameState'
-import { shouldTriggerBankruptcy } from '../../src/utils/economy'
 import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
 import { getRegionKeyForLocation } from '../../src/utils/mapUtils'
 import {

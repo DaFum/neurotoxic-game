@@ -17,7 +17,6 @@ import { createDefaultExpeditionState } from '../../src/domain/expedition/defaul
 
 // The sub-hook stubs below must keep their `use` prefix: they replace the
 // real hook module exports, and the subject imports them by name.
-/* eslint-disable @eslint-react/no-unnecessary-use-prefix */
 
 const GUITAR = 'hq_inst_guitar_custom' // guitarDifficulty -0.15
 const DRUM_TRIGGER = 'hq_inst_drum_trigger' // drumMultiplier +0.20
