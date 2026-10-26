@@ -372,6 +372,44 @@ describe('COMPLETE_EXPEDITION', () => {
     }
   })
 
+  it('fails the run when the Finale settled a tour-ending contract breach (#3373)', () => {
+    const resolved = withResolvedFinale(
+      walkToFinale(startedState({ money: 5000, fame: 100 }))
+    )
+    const allIn = status => ({
+      id: `${resolved.expedition.runId}:contract_all_in`,
+      sourceType: 'native',
+      sourceId: 'contract_all_in',
+      constraints: [],
+      progressByConstraintId: {},
+      status,
+      settled: status !== 'active',
+      doubleDown: null
+    })
+    const withObligation = status => ({
+      ...resolved,
+      expedition: {
+        ...resolved.expedition,
+        activeObligations: [allIn(status)]
+      }
+    })
+    const complete = state =>
+      gameReducer(state, {
+        type: ActionTypes.COMPLETE_EXPEDITION,
+        payload: {
+          finaleResultId: 'finale_result_1',
+          expectedRouteStep: state.expedition.routeStep
+        }
+      })
+
+    const breached = complete(withObligation('failed'))
+    assert.equal(breached.expedition.status, 'failed')
+    assert.equal(breached.expedition.outcome?.finaleResultId, null)
+
+    const kept = complete(withObligation('completed'))
+    assert.equal(kept.expedition.status, 'completed')
+  })
+
   it('pays out a retained share above what the run earned', () => {
     // Tour Pressure multiplies the terminally retained Money and Fame, so a
     // completed run retains *more* than it earned. `moneyForfeited` clamps at

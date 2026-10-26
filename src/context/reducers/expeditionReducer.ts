@@ -140,6 +140,7 @@ import {
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import {
   deriveExpeditionDoubleDownOffer,
+  getCriticalContractFailureSignal,
   materializeCommittedContracts
 } from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
@@ -1348,6 +1349,21 @@ export const handleCompleteExpedition = (
     state.expedition.lastGigResolvedAtRouteStep !== state.expedition.routeStep
   ) {
     return state
+  }
+
+  // A breached tour-ending Contract outranks a Finale that was played well:
+  // the Continue handler settles this gig's obligation signals before it
+  // completes the run, so the breach is already on the state here. Routing it
+  // through the failure owner keeps both live Continue and the pending-gig
+  // load recovery on the failed verdict, with no completion payout or event.
+  if (getCriticalContractFailureSignal(state)) {
+    const breach = deriveExpeditionPendingFailure(state)
+    if (!breach) return state
+    return finalizeExpedition(state, 'failed', {
+      reason: breach.reason,
+      finaleResultId: null,
+      explicitRareRewardIds: []
+    })
   }
 
   let completionState = state
