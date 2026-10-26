@@ -27,7 +27,8 @@ i18n
     keySeparator: false,
     interpolation: { escapeValue: false },
     backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json'
+      // Relative to the build's `base`, so a sub-path deploy finds its locales.
+      loadPath: `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '/') : '/'}locales/{{lng}}/{{ns}}.json`
     },
     // Suspense config
     react: {
