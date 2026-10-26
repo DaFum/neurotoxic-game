@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { Logger, LOG_LEVELS } from '../../src/utils/logger'
+import { Logger, LOG_LEVELS, safeStringify } from '../../src/utils/logger'
 
 describe('Logger', () => {
   let originalLocalStorage
@@ -180,6 +180,32 @@ describe('Logger', () => {
     const parsed = JSON.parse(json)
     assert.strictEqual(parsed.length, 1)
     assert.strictEqual(parsed[0].message, 'Message')
+  })
+
+  test('safeStringify keeps Error details and survives circular data', () => {
+    const circular = { name: 'loop' }
+    circular.self = circular
+    const shared = { a: 1 }
+    const parsed = JSON.parse(
+      safeStringify({
+        error: new Error('boom'),
+        circular,
+        twice: [shared, shared]
+      })
+    )
+
+    assert.strictEqual(parsed.error.message, 'boom')
+    assert.strictEqual(parsed.error.name, 'Error')
+    assert.strictEqual(parsed.circular.self, '[Circular]')
+    // The same object twice is not a cycle.
+    assert.deepStrictEqual(parsed.twice, [{ a: 1 }, { a: 1 }])
+  })
+
+  test('dump serializes logged Error objects', () => {
+    const logger = new Logger()
+    logger.error('Test', 'failed', new Error('boom'))
+
+    assert.strictEqual(JSON.parse(logger.dump())[0].data.message, 'boom')
   })
 
   test('debug neither logs nor stores an entry in production', () => {
