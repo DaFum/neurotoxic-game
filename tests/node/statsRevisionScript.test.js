@@ -44,6 +44,7 @@ describe(
     let client
     let WRITE_IF_NEWER_SCRIPT
     let WRITE_IF_UNVERSIONED_SCRIPT
+    let SET_NAME_IF_UNVERSIONED_SCRIPT
 
     const keys = ['lb:revision', 'players', ...BOARDS]
     const versioned = (id, revision, name, balance) =>
@@ -65,6 +66,11 @@ describe(
       client.eval(WRITE_IF_UNVERSIONED_SCRIPT, {
         keys,
         arguments: [id, name, String(balance), '1', '1', '1', '1', '1']
+      })
+    const songName = (id, name) =>
+      client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
+        keys: ['lb:revision', 'players'],
+        arguments: [id, name]
       })
     const snapshot = async id => ({
       name: await client.hGet('players', id),
@@ -93,6 +99,8 @@ describe(
       ;({ default: client } = await import('../../lib/redis.js'))
       ;({ WRITE_IF_NEWER_SCRIPT, WRITE_IF_UNVERSIONED_SCRIPT } =
         await import('../../api/leaderboard/stats.js'))
+      ;({ SET_NAME_IF_UNVERSIONED_SCRIPT } =
+        await import('../../api/leaderboard/song.js'))
 
       for (let attempt = 0; ; attempt++) {
         try {
@@ -164,6 +172,32 @@ describe(
         revision: '1',
         balance: 30
       })
+    })
+
+    it('lets song.js name a player that never sent a revision', async () => {
+      assert.equal(await songName('song-only', 'Song One'), 1)
+      assert.equal(await songName('song-only', 'Song Two'), 1)
+      assert.equal(await client.hGet('players', 'song-only'), 'Song Two')
+      assert.equal(await client.hGet('lb:revision', 'song-only'), null)
+    })
+
+    it('keeps a late song.js name from overwriting a versioned snapshot', async () => {
+      await versioned('song-late', 3, 'Snapshot', 300)
+      assert.equal(await songName('song-late', 'Stale song name'), 0)
+      assert.deepEqual(await snapshot('song-late'), {
+        name: 'Snapshot',
+        revision: '3',
+        balance: 300
+      })
+    })
+
+    it('lets the versioned stats write win after a song.js name', async () => {
+      await songName('song-first', 'From song')
+      assert.deepEqual(
+        await versioned('song-first', 1, 'From stats', 10),
+        [1, 1]
+      )
+      assert.equal(await client.hGet('players', 'song-first'), 'From stats')
     })
 
     it('keeps refusing when the stored revision is malformed', async () => {

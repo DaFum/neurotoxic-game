@@ -63,17 +63,24 @@ describe('Leaderboard API - Song', () => {
     })
   })
   let handler
+  let SET_NAME_IF_UNVERSIONED_SCRIPT
+  const nameWrites = () =>
+    mockClient.eval.mock.calls.filter(
+      ([script]) => script === SET_NAME_IF_UNVERSIONED_SCRIPT
+    )
 
   beforeEach(async () => {
     // Import handler dynamically after mocking
     const module = await import('../../api/leaderboard/song')
     handler = module.default
+    SET_NAME_IF_UNVERSIONED_SCRIPT = module.SET_NAME_IF_UNVERSIONED_SCRIPT
 
     mockClient.isOpen = true
     mockClient.connect.mockClear()
     mockClient.incr.mockClear()
     mockClient.expire.mockClear()
     mockClient.hSet.mockClear()
+    mockClient.eval.mockClear()
     mockClient.zAdd.mockClear()
     mockClient.zRangeWithScores.mockClear()
     mockClient.hmGet.mockClear()
@@ -225,11 +232,12 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(mockClient.hSet.mock.calls.length, 1)
-      assert.deepStrictEqual(mockClient.hSet.mock.calls[0], [
-        'players',
-        { player1: 'Player One' }
-      ])
+      assert.strictEqual(nameWrites().length, 1)
+      assert.deepStrictEqual(nameWrites()[0][1], {
+        keys: ['lb:revision', 'players'],
+        arguments: ['player1', 'Player One']
+      })
+      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
 
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 1)
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
@@ -261,11 +269,12 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(mockClient.hSet.mock.calls.length, 1)
-      assert.deepStrictEqual(mockClient.hSet.mock.calls[0], [
-        'players',
-        { player1: 'Player One' }
-      ])
+      assert.strictEqual(nameWrites().length, 1)
+      assert.deepStrictEqual(nameWrites()[0][1], {
+        keys: ['lb:revision', 'players'],
+        arguments: ['player1', 'Player One']
+      })
+      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
 
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 2)
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
@@ -303,7 +312,7 @@ describe('Leaderboard API - Song', () => {
       assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Unknown songId'
       })
-      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
+      assert.strictEqual(nameWrites().length, 0)
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 0)
     })
 
@@ -327,7 +336,7 @@ describe('Leaderboard API - Song', () => {
       assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Unknown songId'
       })
-      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
+      assert.strictEqual(nameWrites().length, 0)
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 0)
     })
 
@@ -355,7 +364,8 @@ describe('Leaderboard API - Song', () => {
     })
 
     test('internal server error returns 500 for POST', async () => {
-      mockClient.hSet.mockImplementationOnce(() => {
+      mockClient.eval.mockImplementationOnce(() => mockClient.incr())
+      mockClient.eval.mockImplementationOnce(() => {
         return Promise.reject(new Error('Redis down'))
       })
 
