@@ -134,6 +134,10 @@ export function useContinueHandler({
     if (isProcessingActionRef.current) return
     isProcessingActionRef.current = true
     setIsProcessingAction(true)
+    // Set once a state-changing dispatch has returned: dispatch runs the reducer
+    // synchronously and leaves state untouched when it throws, so only a throw
+    // after a returned dispatch must not re-open a second payout.
+    let committed = false
     try {
       if (financials.soldMerch) {
         if (settleSoldMerch) {
@@ -144,6 +148,7 @@ export function useContinueHandler({
             inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
           }))
         }
+        committed = true
       }
 
       const stats = calculateContinueStats({
@@ -192,6 +197,7 @@ export function useContinueHandler({
           ? { stats: { ...player.stats, tourCompleted: true } }
           : {})
       })
+      committed = true
       // Same commit as the settlement above, so no save holds both the
       // settled ledger and a record a later load would settle again.
       if (pendingSettlementId && clearPendingGigSettlement) {
@@ -279,6 +285,12 @@ export function useContinueHandler({
         'Unexpected error in continue flow',
         { err, player, currentGig }
       )
+      if (committed) {
+        // The settlement already landed: keep the guard closed and move on
+        // instead of offering the same payout again.
+        changeScene(GAME_PHASES.OVERWORLD)
+        return
+      }
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
     }

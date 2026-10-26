@@ -32,6 +32,8 @@ export interface UsePreGigHandlersProps {
   gigModifiers: GigModifiers
   assetModifiers: AssetModifiers
   isExpeditionActive?: boolean
+  /** An active run has committed its setlist; the reducer rejects any change. */
+  isSetlistFrozen?: boolean
   adjustedBandMeetingCost: number
   /** Cash the player may spend: excludes an active run's protected slice. */
   spendableMoney: number
@@ -88,6 +90,7 @@ export const usePreGigHandlers = ({
   gigModifiers,
   assetModifiers,
   isExpeditionActive = false,
+  isSetlistFrozen = false,
   adjustedBandMeetingCost,
   spendableMoney,
   selectedSongIds,
@@ -194,13 +197,15 @@ export const usePreGigHandlers = ({
 
   const toggleSong = useCallback(
     (song: Song) => {
+      // The reducer would drop the change silently; skip it here instead.
+      if (isSetlistFrozen) return
       if (selectedSongIds.has(song.id)) {
         setSetlist(setlist.filter(s => getSongId(s) !== song.id))
       } else if (setlist.length < setlistMax) {
         setSetlist([...setlist, { id: song.id }])
       }
     },
-    [selectedSongIds, setSetlist, setlist, setlistMax]
+    [isSetlistFrozen, selectedSongIds, setSetlist, setlist, setlistMax]
   )
 
   // Single affordability rule for enabling a modifier: the projected budget

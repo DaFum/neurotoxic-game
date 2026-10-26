@@ -2,8 +2,8 @@
  * Modal - A shared overlay component.
  */
 
-import { useId } from 'react'
-import type { ReactNode, MouseEvent } from 'react'
+import { useId, useRef } from 'react'
+import type { ReactNode, MouseEvent, PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FrameCorners } from './FrameCorners'
 import { Tooltip } from './Tooltip'
@@ -34,6 +34,9 @@ export const Modal = ({
 }: ModalProps) => {
   const { overlayRef, dialogRef } = useModalBehavior(isOpen, onClose)
   const titleId = useId()
+  // Where the current press started: a drag that starts inside the dialog and
+  // ends over the backdrop is dispatched as a click on the overlay.
+  const pressTargetRef = useRef<EventTarget | null>(null)
   const { t } = useTranslation(['ui'])
   const dialogAriaLabel = ariaLabel || undefined
   const dialogAriaLabelledBy = dialogAriaLabel
@@ -50,8 +53,19 @@ export const Modal = ({
       role='presentation'
       className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
       style={{ zIndex: 'var(--z-modal)' }}
+      onPointerDown={(e: PointerEvent<HTMLDivElement>) => {
+        pressTargetRef.current = e.target
+      }}
       onClick={(e: MouseEvent<HTMLDivElement>) => {
-        if (e.target === e.currentTarget) onClose()
+        const pressTarget = pressTargetRef.current
+        pressTargetRef.current = null
+        // A click without a preceding press (keyboard or scripted) still counts.
+        if (
+          e.target === e.currentTarget &&
+          (pressTarget === null || pressTarget === e.currentTarget)
+        ) {
+          onClose()
+        }
       }}
     >
       <div

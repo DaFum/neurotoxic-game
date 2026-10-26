@@ -304,6 +304,45 @@ describe('repair controls', () => {
     ).toBeTruthy()
   })
 
+  it('offers the professional repair for a known defect on a group at full condition', () => {
+    state.current = buildState({
+      pa: 100,
+      defects: [
+        {
+          id: 'defect_known',
+          group: 'pa',
+          severity: 2,
+          status: 'revealed',
+          source: 'field_repair',
+          createdAtRouteStep: 1,
+          triggerAt: 'pre_gig',
+          triggerRouteStep: 5
+        }
+      ]
+    })
+    // At a service location, where the professional repair is legal.
+    state.current.player.currentNodeId = 'service_node'
+    state.current.gameMap = {
+      nodes: {
+        service_node: {
+          id: 'service_node',
+          type: 'SUPPLY_STOP',
+          label: 'Supply Stop',
+          layer: 0
+        }
+      },
+      connections: []
+    } as never
+    state.current.expedition.visitedNodeIds = ['service_node']
+    render(<ExpeditionServicePanel />)
+
+    expect(screen.getByTestId('expedition-repair-professional-pa')).toBeTruthy()
+    // The healthy groups stay without an offer.
+    expect(
+      screen.queryByTestId('expedition-repair-professional-instruments')
+    ).toBeNull()
+  })
+
   it('says so when nothing is repairable', () => {
     // No spare parts, no service location, nothing critical enough to
     // improvise on, and no donor above the cannibalize threshold.
@@ -336,13 +375,13 @@ describe('inspections and termination', () => {
     expect(state.current.expedition.insuranceClaimConsumed).toBe(true)
   })
 
-  it('offers the free quick check and dispatches it', () => {
+  it('does not offer inspections that would reveal nothing', () => {
     render(<ExpeditionServicePanel />)
-    fireEvent.click(screen.getByTestId('expedition-inspection-quick_check'))
-    expect(actions.executeExpeditionInspection).toHaveBeenCalledWith({
-      mode: 'quick_check',
-      expectedRouteStep: ROUTE_STEP
-    })
+    // The quick check only returned condition bands the panel never showed.
+    expect(screen.queryByTestId('expedition-inspection-quick_check')).toBeNull()
+    expect(
+      screen.queryByTestId('expedition-inspection-crew_inspection')
+    ).toBeNull()
   })
 
   it('offers termination only once a group is dead', () => {

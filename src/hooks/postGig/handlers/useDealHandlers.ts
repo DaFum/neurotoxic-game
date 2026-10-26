@@ -48,6 +48,10 @@ export function useDealHandlers({
       if (isProcessingActionRef.current) return
       isProcessingActionRef.current = true
       setIsProcessingAction(true)
+      // Set once a state-changing dispatch has returned (a throwing dispatch
+      // leaves state untouched): a later throw must not re-open the guard, or
+      // a second click would pay the deal out again.
+      let committed = false
       try {
         const resolved = resolveBrandDealAcceptance(
           { player, band, social },
@@ -58,10 +62,15 @@ export function useDealHandlers({
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: resolved.nextPlayer.money })
+          committed = true
         }
 
-        if (deal.offer.item) updateBand(resolved.bandUpdate)
+        if (deal.offer.item) {
+          updateBand(resolved.bandUpdate)
+          committed = true
+        }
         updateSocial(resolved.socialUpdate)
+        committed = true
 
         for (const questEvent of resolved.questEvents) {
           applyQuestEvent(questEvent)
@@ -96,6 +105,13 @@ export function useDealHandlers({
           }),
           'error'
         )
+        if (committed) {
+          // The deal is already booked: leave the offers behind instead of
+          // letting it be accepted again.
+          setBrandOffers([])
+          setPhase('COMPLETE')
+          return
+        }
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
       }

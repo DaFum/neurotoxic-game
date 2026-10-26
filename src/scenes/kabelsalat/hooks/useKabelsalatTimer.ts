@@ -20,6 +20,7 @@ const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length
  * @param setTimeLeft - Setter decremented once per second.
  * @param setIsPoweredOn - Setter used when every socket is wired.
  * @param setIsGameOver - Setter used when time expires.
+ * @param setIsWinning - Optional setter that surfaces the pending win to the UI.
  */
 export const useKabelsalatTimer = (
   connections: Partial<Record<SocketId, CableId>>,
@@ -28,7 +29,8 @@ export const useKabelsalatTimer = (
   isWinningRef: MutableRefObject<boolean>,
   setTimeLeft: Dispatch<SetStateAction<number>>,
   setIsPoweredOn: Dispatch<SetStateAction<boolean>>,
-  setIsGameOver: Dispatch<SetStateAction<boolean>>
+  setIsGameOver: Dispatch<SetStateAction<boolean>>,
+  setIsWinning?: Dispatch<SetStateAction<boolean>>
 ) => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const finishedRef = useRef(false)
@@ -81,6 +83,9 @@ export const useKabelsalatTimer = (
     if (connectionCount === SOCKET_COUNT) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true
+      // The ref guards the logic; the state lets the scene hide SKIP for the
+      // 600 ms before `isPoweredOn` flips, so a skip cannot forfeit the win.
+      setIsWinning?.(true)
 
       const animTimer = setTimeout(() => {
         if (!finishedRef.current) {
@@ -89,7 +94,7 @@ export const useKabelsalatTimer = (
       }, 600)
       return () => clearTimeout(animTimer)
     }
-  }, [connections, isWinningRef, setIsPoweredOn])
+  }, [connections, isWinningRef, setIsPoweredOn, setIsWinning])
 
   return { finishedRef }
 }

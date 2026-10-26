@@ -180,9 +180,10 @@ export class Logger {
    */
   debug(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
-    if (!import.meta.env?.PROD) {
-      console.debug(`[${channel}] ${message}`, data ?? '')
-    }
+    // Production keeps no debug history: hot-path calls would otherwise retain
+    // their payloads and copy the whole history on every call.
+    if (import.meta.env?.PROD) return
+    console.debug(`[${channel}] ${message}`, data ?? '')
     this._push(this._format('DEBUG', channel, message, data))
   }
 
@@ -237,7 +238,41 @@ export class Logger {
    * @returns Pretty-printed JSON representation of retained logs.
    */
   dump(): string {
-    return JSON.stringify(this.logs, null, 2)
+    return safeStringify(this.logs, 2)
+  }
+}
+
+/**
+ * `JSON.stringify` for log payloads: `Error` instances keep their name,
+ * message and stack instead of collapsing to `{}`, and a circular reference is
+ * replaced with a marker rather than throwing.
+ *
+ * @param value - Payload to serialize.
+ * @param space - Optional indentation passed to `JSON.stringify`.
+ * @returns The JSON text, or a placeholder when serialization still fails.
+ */
+export const safeStringify = (value: unknown, space?: number): string => {
+  // Ancestors of the value being visited; a repeated sibling is not a cycle.
+  const path: unknown[] = []
+  try {
+    return (
+      JSON.stringify(
+        value,
+        function (this: unknown, _key: string, val: unknown) {
+          if (val instanceof Error) {
+            return { name: val.name, message: val.message, stack: val.stack }
+          }
+          if (typeof val !== 'object' || val === null) return val
+          while (path.length > 0 && path[path.length - 1] !== this) path.pop()
+          if (path.includes(val)) return '[Circular]'
+          path.push(val)
+          return val
+        },
+        space
+      ) ?? 'undefined'
+    )
+  } catch {
+    return '[Unserializable]'
   }
 }
 

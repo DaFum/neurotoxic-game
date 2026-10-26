@@ -253,4 +253,70 @@ test('Minigame State Transitions', async t => {
       assert.strictEqual(newState.player.money, 492)
     }
   )
+
+  await t.test(
+    'a drop-trip roll does not always send the void hazard to member 0',
+    () => {
+      const initialState = createInitialState()
+      const baseState = {
+        ...initialState,
+        gameMap: {
+          nodes: {
+            node_0: {
+              id: 'node_0',
+              x: 0,
+              y: 0,
+              venue: { id: 'a_one', name: 'A' }
+            },
+            node_1: {
+              id: 'node_1',
+              x: 10,
+              y: 10,
+              venue: { id: 'b_two', name: 'B' }
+            }
+          }
+        },
+        band: {
+          ...initialState.band,
+          luck: 0,
+          members: initialState.band.members.map(member => ({
+            ...member,
+            stamina: 100,
+            staminaMax: 100
+          }))
+        },
+        player: {
+          ...initialState.player,
+          currentNodeId: 'node_0',
+          money: 1000,
+          van: { fuel: 100, condition: 100 }
+        },
+        currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+        minigame: {
+          ...DEFAULT_MINIGAME_STATE,
+          active: true,
+          type: MINIGAME_TYPES.TOURBUS,
+          targetDestination: 'node_1'
+        }
+      }
+
+      const hit = new Set()
+      // Rolls below the base drop chance (0.15) are the drop trips.
+      for (let i = 0; i < 40; i++) {
+        const next = gameReducer(baseState, {
+          type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+          payload: {
+            damageTaken: 0,
+            itemsCollected: ['VOID_HAZARD'],
+            rngValue: (i / 40) * 0.14
+          }
+        })
+        next.band.members.forEach((member, index) => {
+          if (member.stamina < 100) hit.add(index)
+        })
+      }
+
+      assert.ok(hit.size > 1, `only members ${[...hit]} were ever hit`)
+    }
+  )
 })

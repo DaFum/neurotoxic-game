@@ -8,6 +8,9 @@ import { secureRandom } from '../crypto'
 import { selectRandomItem } from '../selectionUtils'
 import type { Song } from '../../types/audio'
 
+/** Sequence value for a silent 16th step (see `startMetalGenerator`). */
+const REST_STEP = 'rest'
+
 /**
  * Generates a procedural riff pattern.
  * @param diff - Difficulty level.
@@ -44,12 +47,14 @@ function generateRiffPattern(
  * @param diff - Difficulty.
  * @param note - The guitar note played on this step.
  * @param random - Random number generator.
+ * @param stepIndex - Sequence step count since the generator started.
  */
 function playProceduralDrums(
   time: number,
   diff: number,
   note: string | null,
-  random: () => number
+  random: () => number,
+  stepIndex: number
 ): void {
   if (!audioState.drumKit) return
 
@@ -66,9 +71,10 @@ function playProceduralDrums(
     if (random() > 0.9) {
       playDrumNote(38, time, 1) // Snare
     }
-    // Hihat on the beat — the 0.1 lower bound is intentional for musical density
-    const beatPhase = time % 0.25
-    if (beatPhase < 0.1 || beatPhase > 0.24) {
+    // Hihat on every second 16th step. The phase comes from the step count,
+    // not the absolute AudioContext time, so the groove does not depend on
+    // when the context happened to start.
+    if (stepIndex % 2 === 0) {
       playDrumNote(42, time, 1) // HiHat
     }
   }
@@ -105,15 +111,23 @@ export async function startMetalGenerator(
 
   Tone.getTransport().bpm.value = bpm
 
-  const pattern = generateRiffPattern(song.difficulty ?? 2, random)
+  // `Tone.Sequence` never calls back for a `null` step, which would hide the
+  // rests from the step count that drives the hi-hat phase. A rest marker makes
+  // every 16th step reach the callback; the callback then skips the rest.
+  const pattern = generateRiffPattern(song.difficulty ?? 2, random).map(
+    note => note ?? REST_STEP
+  )
 
+  let stepIndex = 0
   audioState.loop = new Tone.Sequence<string | null>(
     (time, note: string | null) => {
       if (!audioState.guitar || !audioState.drumKit) return
       if (audioState.guitar.disposed || audioState.drumKit.kick.disposed) return
       try {
+        const step = stepIndex++
+        if (note === REST_STEP) return
         if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
-        playProceduralDrums(time, song.difficulty ?? 2, note, random)
+        playProceduralDrums(time, song.difficulty ?? 2, note, random, step)
       } catch (err) {
         if (err instanceof Error && err.name === 'InvalidStateError') {
           logger.warn(

@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { Logger, LOG_LEVELS } from '../../src/utils/logger'
+import { Logger, LOG_LEVELS, safeStringify } from '../../src/utils/logger'
 
 describe('Logger', () => {
   let originalLocalStorage
@@ -182,14 +182,39 @@ describe('Logger', () => {
     assert.strictEqual(parsed[0].message, 'Message')
   })
 
-  test('debug does not call console.debug in production', () => {
+  test('safeStringify keeps Error details and survives circular data', () => {
+    const circular = { name: 'loop' }
+    circular.self = circular
+    const shared = { a: 1 }
+    const parsed = JSON.parse(
+      safeStringify({
+        error: new Error('boom'),
+        circular,
+        twice: [shared, shared]
+      })
+    )
+
+    assert.strictEqual(parsed.error.message, 'boom')
+    assert.strictEqual(parsed.error.name, 'Error')
+    assert.strictEqual(parsed.circular.self, '[Circular]')
+    // The same object twice is not a cycle.
+    assert.deepStrictEqual(parsed.twice, [{ a: 1 }, { a: 1 }])
+  })
+
+  test('dump serializes logged Error objects', () => {
+    const logger = new Logger()
+    logger.error('Test', 'failed', new Error('boom'))
+
+    assert.strictEqual(JSON.parse(logger.dump())[0].data.message, 'boom')
+  })
+
+  test('debug neither logs nor stores an entry in production', () => {
     globalThis.__IMPORT_META_ENV__ = { PROD: true }
     const logger = new Logger()
-    logger.debug('Test', 'Debug Message')
+    logger.debug('Test', 'Debug Message', { payload: 1 })
 
     assert.strictEqual(globalThis.console.debug.mock.calls.length, 0)
-    assert.strictEqual(logger.logs.length, 1)
-    assert.strictEqual(logger.logs[0].level, 'DEBUG')
+    assert.strictEqual(logger.logs.length, 0)
 
     delete globalThis.__IMPORT_META_ENV__
   })

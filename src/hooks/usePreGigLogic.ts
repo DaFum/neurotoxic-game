@@ -11,6 +11,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economy'
 
 import { canStartExpeditionPreGig } from '../domain/expedition/condition'
+import { isExpeditionCommitmentFrozen } from '../domain/expedition/buildCommitment'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { EXPEDITION_MAX_SETLIST_SONGS } from '../domain/expedition/loadout'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
@@ -35,6 +36,8 @@ interface PreGigLogicReturn {
   band: GameState['band']
   merchInventory: Record<string, unknown>
   isExpeditionActive: boolean
+  /** An active run has committed its setlist, so song toggles are inert. */
+  isSetlistFrozen: boolean
 
   t: TranslationCallback
   i18n: { language: string }
@@ -103,6 +106,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     [band, expedition]
   )
   const canStartShow = useGameSelector(canStartExpeditionPreGig)
+  const isSetlistFrozen = useGameSelector(isExpeditionCommitmentFrozen)
   const setlistMax =
     expedition?.status === 'active'
       ? EXPEDITION_MAX_SETLIST_SONGS
@@ -157,6 +161,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     gigModifiers,
     assetModifiers,
     isExpeditionActive,
+    isSetlistFrozen,
     adjustedBandMeetingCost,
     spendableMoney,
     selectedSongIds,
@@ -203,6 +208,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     band,
     merchInventory,
     isExpeditionActive,
+    isSetlistFrozen,
     t: typedT,
     i18n,
     currentGig,

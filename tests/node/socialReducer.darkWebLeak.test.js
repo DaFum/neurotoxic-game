@@ -75,7 +75,7 @@ test('socialReducer - handleDarkWebLeak', async t => {
   await t.test('clamps values to correct boundaries', () => {
     const initialState = {
       player: { money: 1000, fame: 999990, day: 1 },
-      band: { harmony: 10 },
+      band: { harmony: 20 },
       social: {
         controversyLevel: 90,
         zealotry: 95,
@@ -85,13 +85,7 @@ test('socialReducer - handleDarkWebLeak', async t => {
 
     const action = {
       type: ActionTypes.DARK_WEB_LEAK,
-      payload: {
-        cost: 500,
-        fameGain: 300,
-        zealotryGain: 25,
-        controversyGain: 30,
-        harmonyCost: 10
-      }
+      payload: {}
     }
 
     const result = handleDarkWebLeak(initialState, action.payload)

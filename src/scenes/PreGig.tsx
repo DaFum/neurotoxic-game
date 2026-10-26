@@ -30,6 +30,7 @@ export const PreGig = () => {
     player,
     merchInventory,
     isExpeditionActive,
+    isSetlistFrozen,
     setlist,
     setlistMax,
     gigModifiers,
@@ -132,6 +133,7 @@ export const PreGig = () => {
             songsDict={SONGS_BY_ID}
             selectedSongIds={selectedSongIds}
             player={player}
+            isSetlistFrozen={isSetlistFrozen}
             toggleSong={toggleSong}
           />
         </div>

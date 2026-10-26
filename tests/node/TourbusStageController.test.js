@@ -187,7 +187,9 @@ const stageRenderUtilsMocks = {
     }
     return results
   }),
-  getOptimalResolution: mock.fn(() => 1)
+  getOptimalResolution: mock.fn(() => 1),
+  // Pass-through: the timeout itself is covered by stageRenderUtils tests.
+  withTimeout: mock.fn(promise => promise)
 }
 
 mock.module(
@@ -444,6 +446,23 @@ describe('TourbusStageController', () => {
     assert.equal(controller.createBus.mock.calls.length, 1)
   })
 
+  it('bounds both asset loads with a timeout that still lets a real failure through', async () => {
+    controller.loadAssets = mock.fn(() => Promise.resolve())
+    currentEffectLoad = mock.fn(() => Promise.resolve())
+    controller.drawRoad = mock.fn()
+    controller.createBus = mock.fn()
+    stageRenderUtilsMocks.withTimeout.mock.resetCalls()
+
+    await controller.setup()
+
+    const calls = stageRenderUtilsMocks.withTimeout.mock.calls
+    assert.equal(calls.length, 2)
+    for (const call of calls) {
+      assert.equal(call.arguments[2], 10000)
+      assert.deepEqual(call.arguments[3], { rethrow: true })
+    }
+  })
+
   for (const pendingLoad of ['controller', 'effect']) {
     it(`skips drawing after disposal with the ${pendingLoad} asset load pending`, async () => {
       let resolveControllerLoad
@@ -501,6 +520,24 @@ describe('TourbusStageController', () => {
       assert.equal(controller.createBus.mock.calls.length, 0)
     })
   }
+
+  it('drops late texture results when the controller was disposed during the load', async () => {
+    let resolveTextures
+    stageRenderUtilsMocks.loadTextures.mock.mockImplementationOnce(
+      () =>
+        new Promise(resolve => {
+          resolveTextures = resolve
+        })
+    )
+    const loading = controller.loadAssets()
+    await Promise.resolve()
+    controller.dispose()
+    resolveTextures({ bus: { width: 1, height: 1 } })
+    await loading
+
+    // The late result is not assigned to the disposed controller.
+    assert.equal(controller.textures.bus, null)
+  })
 
   it('should survive dispose while effect manager assets are loading', async () => {
     let resolveEffectLoad

@@ -286,7 +286,13 @@ const DealInfo = memo(
           {displayDeal.offer.item != null && (
             <div>
               🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
-              {displayDeal.offer.item}
+              {typeof displayDeal.offer.item === 'string'
+                ? t(`items:${displayDeal.offer.item}.name`, {
+                    defaultValue: t('ui:deals.itemUnknown', {
+                      defaultValue: 'Unknown item'
+                    })
+                  })
+                : t('ui:deals.itemUnknown', { defaultValue: 'Unknown item' })}
             </div>
           )}
           {terms.revenueShare > 0 && (

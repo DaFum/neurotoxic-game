@@ -740,52 +740,38 @@ describe('Action Creators', () => {
 
   describe('createPirateBroadcastAction', () => {
     it('creates correct action', () => {
-      const payload = {
-        cost: 100,
-        fameGain: 50,
-        zealotryGain: 20,
-        controversyGain: 10,
-        harmonyCost: 5
-      }
       // `successToast` is omitted rather than set to `undefined` so the payload
       // survives a JSON round-trip unchanged.
-      assert.deepStrictEqual(createPirateBroadcastAction(payload), {
+      assert.deepStrictEqual(createPirateBroadcastAction({}), {
         type: ActionTypes.PIRATE_BROADCAST,
-        payload: { ...payload }
+        payload: {}
       })
+    })
+
+    it('drops any cost or gain a caller supplies, so the reducer alone prices the action', () => {
+      const action = createPirateBroadcastAction({
+        cost: 0,
+        fameGain: 1e9,
+        zealotryGain: 1e9,
+        controversyGain: 0,
+        harmonyCost: 0
+      })
+      assert.deepStrictEqual(action.payload, {})
     })
 
     it('creates correct action with successToast', () => {
       const payload = {
-        cost: 100,
-        fameGain: 50,
-        zealotryGain: 20,
-        controversyGain: 10,
-        harmonyCost: 5,
         successToast: { message: 'Success', type: 'success' }
       }
       const action = createPirateBroadcastAction(payload)
       assert.strictEqual(action.type, ActionTypes.PIRATE_BROADCAST)
-      assert.strictEqual(action.payload.cost, 100)
-      assert.strictEqual(action.payload.fameGain, 50)
+      assert.deepStrictEqual(Object.keys(action.payload), ['successToast'])
       assert.strictEqual(action.payload.successToast.message, 'Success')
       assert.strictEqual(action.payload.successToast.type, 'success')
       assert.ok(action.payload.successToast.id.length > 0)
     })
 
     it('coerces non-finite gains to zero and drops invalid prices across service actions', () => {
-      const pirate = createPirateBroadcastAction({
-        cost: Number.POSITIVE_INFINITY,
-        fameGain: Number.NaN,
-        zealotryGain: 20,
-        controversyGain: 10,
-        harmonyCost: 5
-      })
-      // A dropped price makes the reducer reject the action instead of granting it free.
-      assert.strictEqual(Object.hasOwn(pirate.payload, 'cost'), false)
-      assert.strictEqual(pirate.payload.harmonyCost, 5)
-      assert.strictEqual(pirate.payload.fameGain, 0)
-
       // Only the donation kind travels; any amount a caller adds is dropped, so
       // the reducer alone decides what a donation costs and pays.
       const blood = createBloodBankDonateAction({
@@ -804,15 +790,6 @@ describe('Action Creators', () => {
         })
         assert.strictEqual(Object.hasOwn(trade.payload, 'fameCost'), false)
       }
-
-      const leak = createDarkWebLeakAction({
-        cost: 100,
-        fameGain: Number.POSITIVE_INFINITY,
-        zealotryGain: 1,
-        controversyGain: 1,
-        harmonyCost: 1
-      })
-      assert.strictEqual(leak.payload.fameGain, 0)
 
       const merch = createMerchPressAction({
         cost: 100,

@@ -365,7 +365,14 @@ describe('useContinueHandler hook', () => {
     })
     shouldTriggerBankruptcy.mockReturnValue(false)
     const props = makeProps({
-      player: { money: 500, fame: 10, day: 3, location: 'berlin', currentNodeId: 'n1', stats: { tourCompleted: false } },
+      player: {
+        money: 500,
+        fame: 10,
+        day: 3,
+        location: 'berlin',
+        currentNodeId: 'n1',
+        stats: { tourCompleted: false }
+      },
       financials: { net: -600, soldMerch: {} },
       expedition: {
         status: 'active',
@@ -404,7 +411,14 @@ describe('useContinueHandler hook', () => {
     shouldTriggerBankruptcy.mockReturnValue(true)
     const props = makeProps({
       isFinaleGig: true,
-      player: { money: 500, fame: 10, day: 3, location: 'berlin', currentNodeId: 'n1', stats: { tourCompleted: false } },
+      player: {
+        money: 500,
+        fame: 10,
+        day: 3,
+        location: 'berlin',
+        currentNodeId: 'n1',
+        stats: { tourCompleted: false }
+      },
       financials: { net: -100, soldMerch: {} },
       expedition: {
         status: 'active',
@@ -441,7 +455,14 @@ describe('useContinueHandler hook', () => {
     })
     shouldTriggerBankruptcy.mockReturnValue(true)
     const props = makeProps({
-      player: { money: 500, fame: 10, day: 3, location: 'berlin', currentNodeId: 'n1', stats: { tourCompleted: false } },
+      player: {
+        money: 500,
+        fame: 10,
+        day: 3,
+        location: 'berlin',
+        currentNodeId: 'n1',
+        stats: { tourCompleted: false }
+      },
       financials: { net: -600, soldMerch: {} },
       expedition: {
         status: 'active',
@@ -686,11 +707,11 @@ describe('useContinueHandler hook', () => {
     })
   })
 
-  it('catches errors and releases guard', () => {
+  it('catches errors and releases guard when nothing was dispatched yet', () => {
     calculateContinueStats.mockImplementation(() => {
       throw new Error('Test error')
     })
-    const props = makeProps()
+    const props = makeProps({ financials: { net: 100, soldMerch: null } })
     const { result } = renderHook(() => useContinueHandler(props))
 
     act(() => {
@@ -704,6 +725,46 @@ describe('useContinueHandler hook', () => {
     )
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenCalledWith(false)
+  })
+
+  it('keeps the guard closed and moves on when a dispatch throws after the settlement committed', () => {
+    const dispatchers = makeDispatchers()
+    // The sold-merch settlement (updateBand) returned; the player update then
+    // throws. A second click must not pay the merch out again.
+    dispatchers.updatePlayer.mockImplementation(() => {
+      throw new Error('reducer rejected')
+    })
+    const props = makeProps({ dispatchers })
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+    act(() => {
+      result.current()
+    })
+
+    expect(props.isProcessingActionRef.current).toBe(true)
+    expect(props.setIsProcessingAction).not.toHaveBeenCalledWith(false)
+    expect(dispatchers.updateBand).toHaveBeenCalledTimes(1)
+    expect(dispatchers.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('releases the guard when the very first dispatch throws, since nothing was applied', () => {
+    const dispatchers = makeDispatchers()
+    dispatchers.updateBand.mockImplementation(() => {
+      throw new Error('reducer rejected')
+    })
+    const props = makeProps({ dispatchers })
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenCalledWith(false)
+    expect(dispatchers.changeScene).not.toHaveBeenCalled()
   })
 
   it('logs an error if submitLeaderboardScores fails', async () => {

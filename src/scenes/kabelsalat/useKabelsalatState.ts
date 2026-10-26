@@ -23,6 +23,8 @@ export interface KabelsalatState {
   isShocked: boolean
   faultReason: string
   isPoweredOn: boolean
+  /** Every socket is wired and the win animation is pending. */
+  isWinning: boolean
   timeLeft: number
   isGameOver: boolean
   socketOrder: SocketId[]
@@ -52,6 +54,7 @@ export const useKabelsalatState = (): KabelsalatState => {
   const [isShocked, setIsShocked] = useState(false)
   const [faultReason, setFaultReason] = useState('')
   const [isPoweredOn, setIsPoweredOn] = useState(false)
+  const [isWinning, setIsWinning] = useState(false)
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [isGameOver, setIsGameOver] = useState(false)
   const [socketOrder, setSocketOrder] = useState<SocketId[]>([
@@ -71,7 +74,8 @@ export const useKabelsalatState = (): KabelsalatState => {
     isWinningRef,
     setTimeLeft,
     setIsPoweredOn,
-    setIsGameOver
+    setIsGameOver,
+    setIsWinning
   )
 
   // 3. Game End (updated below)
@@ -135,6 +139,7 @@ export const useKabelsalatState = (): KabelsalatState => {
     isShocked,
     faultReason,
     isPoweredOn,
+    isWinning,
     timeLeft,
     isGameOver,
     socketOrder,

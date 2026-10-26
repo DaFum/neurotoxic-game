@@ -104,12 +104,16 @@ export const getPixiColorFromToken = (
  * @param promise - The promise to wrap.
  * @param label - Label for logging.
  * @param timeoutMs - Timeout in milliseconds. Defaults to `10000`.
+ * @param options - Behavior switches.
+ * - `options.rethrow` - Let a rejection propagate (a timeout still resolves
+ *   null), for callers whose setup must fail and clean up on a real error.
  * @returns The resolved value or null if an error/timeout occurred.
  */
 export const withTimeout = async <T>(
   promise: Promise<T>,
   label: string,
-  timeoutMs = 10000
+  timeoutMs = 10000,
+  options: { rethrow?: boolean } = {}
 ): Promise<T | null> => {
   let timerId: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<null>(resolve => {
@@ -127,6 +131,7 @@ export const withTimeout = async <T>(
     const result = await Promise.race([promise, timeout])
     return result
   } catch (err: unknown) {
+    if (options.rethrow) throw err
     const errorMessage = err instanceof Error ? err.message : String(err)
     logger.error(
       'PixiStageController',

@@ -1,6 +1,11 @@
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { logger, LOG_LEVELS, type LogEntry } from '../utils/logger'
+import {
+  logger,
+  LOG_LEVELS,
+  safeStringify,
+  type LogEntry
+} from '../utils/logger'
 import { Tooltip } from './shared/Tooltip'
 
 type LogLevelName = keyof typeof LOG_LEVELS
@@ -39,7 +44,7 @@ const LogRow = ({ log }: { log: LogEntry }) => (
     <span className='text-star-white/80 break-all'>
       {log.message}
       {log.data !== undefined && log.data !== null && (
-        <span className='text-ash-gray ml-2'>{JSON.stringify(log.data)}</span>
+        <span className='text-ash-gray ml-2'>{safeStringify(log.data)}</span>
       )}
     </span>
   </div>
@@ -182,10 +187,7 @@ export const DebugLogViewer = () => {
     <DebugLogViewerContent
       onClose={() => setVisible(false)}
       filterLevel={filterLevel}
-      setFilterLevel={level => {
-        setFilterLevel(level)
-        logger.setLevel(level)
-      }}
+      setFilterLevel={setFilterLevel}
     />
   )
 }

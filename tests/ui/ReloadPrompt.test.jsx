@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ReloadPrompt from '../../src/components/ReloadPrompt'
 
+const mockScene = vi.hoisted(() => ({ current: 'OVERWORLD' }))
 const mockUpdateServiceWorker = vi.fn()
 let mockOfflineReady = false
 let mockNeedRefresh = false
@@ -20,6 +21,10 @@ vi.mock('virtual:pwa-register/react', () => ({
   })
 }))
 
+vi.mock('../../src/context/GameState', () => ({
+  useGameSelector: selector => selector({ currentScene: mockScene.current })
+}))
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: key => key,
@@ -32,6 +37,7 @@ describe('ReloadPrompt', () => {
   beforeEach(() => {
     mockOfflineReady = false
     mockNeedRefresh = false
+    mockScene.current = 'OVERWORLD'
     mockUpdateServiceWorker.mockClear()
     mockSetOfflineReady.mockClear()
     mockSetNeedRefresh.mockClear()
@@ -72,4 +78,17 @@ describe('ReloadPrompt', () => {
     fireEvent.click(screen.getByText('ui:offline.reload'))
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
   })
+
+  it.each(['GIG', 'PRACTICE', 'TRAVEL_MINIGAME', 'PRE_GIG_MINIGAME'])(
+    'hides the reload button during %s so live progress is not dropped',
+    scene => {
+      mockNeedRefresh = true
+      mockScene.current = scene
+      render(<ReloadPrompt />)
+
+      expect(screen.getByText('ui:offline.needRefresh')).toBeInTheDocument()
+      expect(screen.queryByText('ui:offline.reload')).not.toBeInTheDocument()
+      expect(screen.getByText('ui:offline.close')).toBeInTheDocument()
+    }
+  )
 })

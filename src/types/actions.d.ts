@@ -67,15 +67,11 @@ export interface CultIndoctrinationConfig extends ZealotryActionConfig {
  * Reducer payload shared by the zealotry social actions.
  *
  * @remarks
- * `applyZealotryAction` consumes this shape for the pirate broadcast, dark-web
- * leak, and cult indoctrination alike.
+ * Only the toast travels: `applyZealotryAction` takes cost, gains and harmony
+ * cost from the action's config in `data/zealotryActionConfigs`, so a dispatch
+ * cannot choose its own amounts.
  */
 export interface ZealotryActionPayload {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 

@@ -143,7 +143,7 @@ describe('useDarkWebLeak', () => {
     expect(mockGameState.darkWebLeak).not.toHaveBeenCalled()
   })
 
-  it('triggerLeak dispatches with config and closes the modal on success', async () => {
+  it('triggerLeak dispatches only the toast (the reducer prices it) and closes the modal on success', async () => {
     const { result } = renderHook(() => useDarkWebLeak())
 
     const { audioService } = await import('../../src/utils/audio/audioEngine')
@@ -157,14 +157,8 @@ describe('useDarkWebLeak', () => {
       result.current.triggerLeak()
     })
 
-    const { DARK_WEB_LEAK_CONFIG } = result.current
     expect(audioService.playSFX).toHaveBeenCalledWith('cash')
     expect(mockGameState.darkWebLeak).toHaveBeenCalledWith({
-      cost: DARK_WEB_LEAK_CONFIG.COST,
-      fameGain: DARK_WEB_LEAK_CONFIG.FAME_GAIN,
-      zealotryGain: DARK_WEB_LEAK_CONFIG.ZEALOTRY_GAIN,
-      controversyGain: DARK_WEB_LEAK_CONFIG.CONTROVERSY_GAIN,
-      harmonyCost: DARK_WEB_LEAK_CONFIG.HARMONY_COST,
       successToast: {
         messageKey: 'ui:dark_web_leak.success',
         type: 'success'

@@ -44,7 +44,12 @@ vi.mock('../../src/ui/expedition/FailureCrisisDialog', () => ({
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ i18n: { language: 'en' }, t: (key: string) => key })
+  // Like i18next for a key with no entry: the supplied `defaultValue` wins.
+  useTranslation: () => ({
+    i18n: { language: 'en' },
+    t: (key: string, options?: { defaultValue?: unknown }) =>
+      typeof options?.defaultValue === 'string' ? options.defaultValue : key
+  })
 }))
 
 const RUN_SEED = 4242
@@ -238,5 +243,26 @@ describe('Run draft picker', () => {
     fireEvent.click(screen.getByTestId('expedition-run-draft-cold_trail'))
     expect(actions.selectExpeditionDraft).toHaveBeenCalledTimes(1)
     expect(actions.selectExpeditionDraft).toHaveBeenCalledWith('cold_trail')
+  })
+
+  it('labels a trait without a locale entry as unknown instead of showing its id', () => {
+    const base = buildState()
+    base.expedition = {
+      ...base.expedition,
+      pendingRunDraftOffer: {
+        sourceType: 'supply',
+        sourceKey: 'exp_2_0',
+        offeredAtRouteStep: base.expedition.routeStep,
+        candidateTraitIds: ['trait_from_a_newer_save']
+      }
+    }
+    state.current = base
+    render(<ExpeditionRunControls />)
+
+    const button = screen.getByTestId(
+      'expedition-run-draft-trait_from_a_newer_save'
+    )
+    expect(button).toHaveTextContent('Unknown trait')
+    expect(button).not.toHaveTextContent('trait_from_a_newer_save')
   })
 })

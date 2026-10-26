@@ -136,14 +136,8 @@ describe('usePirateRadio', () => {
       result.current.triggerBroadcast()
     })
 
-    const { PIRATE_RADIO_CONFIG } = result.current
     expect(audioManager.playSFX).toHaveBeenCalledWith('cash')
     expect(mockGameState.pirateBroadcast).toHaveBeenCalledWith({
-      cost: PIRATE_RADIO_CONFIG.COST,
-      fameGain: PIRATE_RADIO_CONFIG.FAME_GAIN,
-      zealotryGain: PIRATE_RADIO_CONFIG.ZEALOTRY_GAIN,
-      controversyGain: PIRATE_RADIO_CONFIG.CONTROVERSY_GAIN,
-      harmonyCost: PIRATE_RADIO_CONFIG.HARMONY_COST,
       successToast: {
         messageKey: 'ui:pirate_radio.success',
         type: 'success'

@@ -15,7 +15,8 @@ import {
 import {
   createEdgeKeyedTexture,
   getPixiColorFromToken,
-  loadTextures
+  loadTextures,
+  withTimeout
 } from './stageRenderUtils'
 import { logger } from '../../utils/logger'
 import { registerTestHook } from '../../utils/devTestHooks'
@@ -137,7 +138,16 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     )
 
     // Load Assets
-    await Promise.all([this.loadAssets(), effectManager.loadAssets()])
+    // Bounded like PixiStageController: a stalled texture request must not
+    // keep the ticker (and with it the minigame) from ever starting.
+    await Promise.all([
+      withTimeout(this.loadAssets(), 'Tourbus Assets', 10000, {
+        rethrow: true
+      }),
+      withTimeout(effectManager.loadAssets(), 'Effect Assets', 10000, {
+        rethrow: true
+      })
+    ])
     // dispose() can destroy the containers while either load is pending.
     if (this.isDisposed) return
 
@@ -175,6 +185,10 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
         keyof typeof urls,
         Texture | null
       >
+
+      // `withTimeout` does not cancel this load: drop late results once the
+      // controller is gone instead of assigning cache-owned textures to it.
+      if (this.isDisposed) return
 
       const keys = Object.keys(loaded)
       for (let i = 0, len = keys.length; i < len; i++) {

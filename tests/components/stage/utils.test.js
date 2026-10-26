@@ -50,4 +50,24 @@ describe('withTimeout', () => {
     const result = await withTimeout(rejectingPromise, 'TestLabel')
     assert.equal(result, null)
   })
+
+  test('rethrows a rejection when asked to, but still resolves null on timeout', async () => {
+    await assert.rejects(
+      withTimeout(Promise.reject(new Error('boom')), 'TestLabel', 100, {
+        rethrow: true
+      }),
+      /boom/
+    )
+
+    mock.timers.enable({ apis: ['setTimeout'] })
+    try {
+      const hanging = withTimeout(new Promise(() => {}), 'TestLabel', 100, {
+        rethrow: true
+      })
+      mock.timers.tick(100)
+      assert.equal(await hanging, null)
+    } finally {
+      mock.timers.reset()
+    }
+  })
 })

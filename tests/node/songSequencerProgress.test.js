@@ -94,3 +94,36 @@ test('per-song accuracy includes ordinary hits and resets their baseline between
   await playAudioForSong.mock.calls.at(-1).arguments[2]()
   assert.equal(state.songStats[1].accuracy, 50)
 })
+
+test('a gig that ended while the next song loaded neither writes state nor toasts', async () => {
+  const gameStateRef = {
+    current: {
+      progress: 89,
+      lastEndedSongIndex: 0,
+      songTransitioning: true,
+      hasSubmittedResults: false,
+      isGameOver: false,
+      setlistCompleted: false,
+      notes: [],
+      nextMissCheckIndex: 0,
+      notesVersion: 0,
+      totalDuration: 0
+    }
+  }
+  const setlist = [
+    { id: 'song_a', name: 'Song A' },
+    { id: 'song_b', name: 'Song B' }
+  ]
+  const toasts = []
+  // The band collapses while the audio of the next song is still loading.
+  playAudioForSong.mock.mockImplementationOnce(async () => {
+    gameStateRef.current.isGameOver = true
+    return [{ time: 1000 }]
+  })
+
+  await playSongSequence(1, setlist, gameStateRef, text => toasts.push(text))
+
+  assert.deepStrictEqual(toasts, [])
+  assert.strictEqual(gameStateRef.current.notesVersion, 0)
+  assert.deepStrictEqual(gameStateRef.current.notes, [])
+})

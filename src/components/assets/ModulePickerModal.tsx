@@ -16,6 +16,7 @@ import {
   type ModuleUnlockState
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 import type { AssetConfirmModalProps } from '../../types/ui'
 
 interface Props extends AssetConfirmModalProps {
@@ -83,6 +84,10 @@ export const ModulePickerModal = memo(
     const activeStoryFlags = useGameSelector(s => s.activeStoryFlags)
     const members = useGameSelector(s => s.band.members)
     const assets = useGameSelector(s => s.assets)
+    // The chassis an active run committed to keeps its module set.
+    const chassisLocked = useGameSelector(s =>
+      isExpeditionChassisCommitmentLocked(s, asset.id)
+    )
     const { installModule, removeModule } = useGameActions()
     const slot = useMemo(
       () => (slotId ? selectAssetSlotsMap(asset).get(slotId) : undefined),
@@ -138,6 +143,15 @@ export const ModulePickerModal = memo(
         className='assets-modal-sheet max-w-3xl'
       >
         <div className='assets-modal-body flex flex-col gap-3 p-4 font-mono text-sm'>
+          {chassisLocked && (
+            <p
+              role='status'
+              className='text-xs'
+              style={{ color: 'var(--color-blood-red)' }}
+            >
+              {t('assets:installFailed.expedition_locked')}
+            </p>
+          )}
           {installedModuleId !== null && (
             <div
               className='assets-module-card flex gap-3 border-2 p-2'
@@ -184,7 +198,7 @@ export const ModulePickerModal = memo(
                     removeModule(asset.id, slot.id)
                     onClose()
                   }}
-                  disabled={removalBlocked}
+                  disabled={removalBlocked || chassisLocked}
                   className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                   style={{
                     background: removalBlocked
@@ -291,7 +305,7 @@ export const ModulePickerModal = memo(
                           })
                           onClose()
                         }}
-                        disabled={blocked}
+                        disabled={blocked || chassisLocked}
                         className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                         style={{
                           background: blocked

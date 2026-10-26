@@ -1,7 +1,18 @@
 import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { logger } from '../utils/logger'
+import { useGameSelector } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
+import type { GamePhase } from '../types/game'
 import './ReloadPrompt.css'
+
+/** Scenes holding live progress that a reload would drop. */
+const SCENES_WITH_LIVE_RUN: ReadonlySet<GamePhase> = new Set([
+  GAME_PHASES.GIG,
+  GAME_PHASES.PRACTICE,
+  GAME_PHASES.TRAVEL_MINIGAME,
+  GAME_PHASES.PRE_GIG_MINIGAME
+])
 
 /**
  * Displays the service-worker update prompt and triggers a reload on confirmation.
@@ -10,6 +21,9 @@ import './ReloadPrompt.css'
  */
 export default function ReloadPrompt() {
   const { t } = useTranslation()
+  const reloadBlocked = useGameSelector(state =>
+    SCENES_WITH_LIVE_RUN.has(state.currentScene)
+  )
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -43,7 +57,7 @@ export default function ReloadPrompt() {
           )}
         </div>
         <div className='flex gap-4'>
-          {needRefresh && (
+          {needRefresh && !reloadBlocked && (
             <button
               type='button'
               className='ReloadPrompt-toast-button min-h-11 border-2 border-toxic-green px-4 py-2 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'

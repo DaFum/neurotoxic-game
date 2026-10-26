@@ -150,4 +150,26 @@ describe('SetlistBlock', () => {
     expect(region.getAttribute('aria-label')).toBe(title?.textContent)
     expect(region.className).not.toContain('max-h-[48svh]')
   })
+
+  test('locks every song and ignores clicks while the setlist is frozen', () => {
+    const toggleSongMock = vi.fn()
+
+    const { getAllByRole } = render(
+      <SetlistBlock
+        setlist={[{ id: 'song1' }]}
+        maxSongs={3}
+        songsDb={sampleSongs}
+        songsDict={songsDict}
+        selectedSongIds={new Set(['song1'])}
+        isSetlistFrozen
+        toggleSong={toggleSongMock}
+      />
+    )
+
+    for (const button of getAllByRole('button')) {
+      expect(button.getAttribute('aria-disabled')).toBe('true')
+      fireEvent.click(button)
+    }
+    expect(toggleSongMock).not.toHaveBeenCalled()
+  })
 })

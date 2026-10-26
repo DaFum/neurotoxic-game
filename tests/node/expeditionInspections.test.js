@@ -309,6 +309,24 @@ test('Task 8: Expedition Inspections', async t => {
   )
 
   await t.test(
+    'full_service refuses a fee that would reveal and repair nothing',
+    () => {
+      // Service location and cash are fine; no hidden defect, no repair target.
+      const state = createActiveStateWithDefects([])
+
+      const res = resolveExpeditionInspection(state, {
+        mode: 'full_service',
+        expectedRouteStep: 2
+      })
+
+      assert.equal(res.ok, false)
+      if (!res.ok) {
+        assert.equal(res.reason, 'NOTHING_TO_REVEAL')
+      }
+    }
+  )
+
+  await t.test(
     'full_service reveals all hidden defects and charges diagnostic fee',
     () => {
       const defect1 = {

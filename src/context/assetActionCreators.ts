@@ -41,7 +41,10 @@ import {
 import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { finiteNumberOr } from '../utils/gameState'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import { getSafeUUID } from '../utils/crypto'
+import { resolveCrowdfundProbability } from '../utils/assetTicks'
+import { mulberry32 } from '../utils/seededRng'
 import {
   VALID_ASSET_ACQUISITION_MODES,
   VALID_ASSET_FLAVORS,
@@ -209,7 +212,7 @@ export const purchaseChassis = (
     if (
       !isLoanProfileEligible(profile, {
         fame: state.player.fame,
-        scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
+        scenePresence: finiteNumberOr(state.social.scenePresence, 0)
       })
     ) {
       return fail('LOAN_PROFILE_INELIGIBLE')
@@ -501,7 +504,7 @@ export const refinanceLiability = (
   if (
     !isLoanProfileEligible(profile, {
       fame: state.player.fame,
-      scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
+      scenePresence: finiteNumberOr(state.social.scenePresence, 0)
     })
   ) {
     return fail('LOAN_PROFILE_INELIGIBLE')
@@ -533,29 +536,27 @@ interface StartCrowdfundInput {
   tier: ChassisTier
   /** Target cash amount for the campaign. */
   targetAmount: number
-  /** Fame staked by the player. */
+  /** Fame staked by the player; capped at the fame the player has. */
   fameStake: number
   /** Campaign duration remaining at creation. */
   daysRemaining: number
-  /** Pre-rolled 0..1 success roll from the seeded RNG stream. */
-  plannedSuccessRoll: number
-  /**
-   * Success threshold to stamp on the campaign (= the probability the UI
-   * showed the player). Tick resolves success when `roll < probability`.
-   */
-  plannedSuccessProbability: number
 }
 
 /**
  * Creates a crowdfund campaign action with pre-generated materialization ids.
  *
  * @param raw - Raw campaign setup request.
- * @param state - Current asset and campaign state used to prevent duplicate acquisitions.
+ * @param state - Current asset and campaign state used to prevent duplicate
+ * acquisitions, plus the player's fame, scene presence and seed from which the
+ * odds and the roll are derived here, never taken from the caller.
  * @returns Start-crowdfund action, or null when the request is invalid.
  */
 export const startCrowdfund = (
   raw: StartCrowdfundInput,
-  state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
+  state: Pick<
+    GameState,
+    'assets' | 'crowdfundCampaigns' | 'player' | 'social' | 'rngSeed'
+  >
 ): StartCrowdfundAction | StartCrowdfundFailedAction => {
   const fail = (
     reason: import('../types/assets').StartCrowdfundFailureReason
@@ -574,15 +575,33 @@ export const startCrowdfund = (
   if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return fail('ACQUISITION_ALREADY_ACTIVE')
   }
+  // The odds and the roll come from this state; a partial one would silently
+  // derive them from zero fallbacks.
+  if (!state.player || !state.social || !isFiniteNumber(state.rngSeed)) {
+    return fail('INVALID_CONFIG')
+  }
   // Reject degenerate campaigns: a non-positive target or duration would
   // resolve immediately or invert payout math, and a negative fame stake
   // would credit fame on failure.
   const targetAmount = finiteNumberOr(raw.targetAmount, 0)
-  const fameStake = finiteNumberOr(raw.fameStake, 0)
+  const requestedStake = finiteNumberOr(raw.fameStake, 0)
   const daysRemaining = finiteNumberOr(raw.daysRemaining, 0)
-  if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
+  if (targetAmount <= 0 || daysRemaining <= 0 || requestedStake < 0) {
     return fail('DEGENERATE_CAMPAIGN')
   }
+  // A stake above the fame the player has would pay out fame they never had.
+  const fame = finiteNumberOr(state.player.fame, 0)
+  const fameStake = Math.min(requestedStake, Math.max(0, fame))
+  // The odds the setup modal previews and the roll that resolves them are
+  // derived from state here, so a dispatch cannot choose either.
+  const plannedSuccessProbability = resolveCrowdfundProbability(
+    fame,
+    finiteNumberOr(state.social.scenePresence, 0),
+    targetAmount
+  )
+  const plannedSuccessRoll = mulberry32(
+    state.rngSeed ^ fameStake ^ daysRemaining
+  )()
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
   // stays pure (reducer-purity invariant). The number of slot ids matches
   // the chassis-config slot count for this kind/flavor/tier. If the section
@@ -611,17 +630,8 @@ export const startCrowdfund = (
         daysRemaining,
         materializedAssetId,
         materializedSlotIds,
-        // Clamp to [0, 1] — defensively. The roll is meant to come from
-        // mulberry32 (always in [0, 1)), but a malformed call site shouldn't
-        // be able to plant a roll outside that range and skew resolution.
-        plannedSuccessRoll: Math.max(
-          0,
-          Math.min(1, finiteNumberOr(raw.plannedSuccessRoll, 0))
-        ),
-        plannedSuccessProbability: Math.max(
-          0.05,
-          Math.min(0.95, finiteNumberOr(raw.plannedSuccessProbability, 0.5))
-        )
+        plannedSuccessRoll,
+        plannedSuccessProbability
       }
     }
   }

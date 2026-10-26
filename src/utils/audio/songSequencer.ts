@@ -195,6 +195,15 @@ export const playSongSequence = async (
     return
   }
 
+  // The gig may have ended while the audio loaded (collapse, unmount): neither
+  // write the song's state nor announce it.
+  if (
+    gameStateRef.current.hasSubmittedResults ||
+    gameStateRef.current.isGameOver
+  ) {
+    return
+  }
+
   gameStateRef.current.notes = finalNotes
   gameStateRef.current.nextMissCheckIndex = 0
   gameStateRef.current.notesVersion = gameStateRef.current.notesVersion + 1

@@ -10,6 +10,7 @@ const { mockInstallModule, mockRemoveModule, mockGetModulePoolForAsset } =
     mockGetModulePoolForAsset: vi.fn()
   }))
 const mockState = vi.hoisted(() => ({
+  expedition: undefined as unknown,
   player: { fame: 50, money: 1000 },
   social: { scenePresence: 0 },
   activeStoryFlags: [],
@@ -157,7 +158,9 @@ vi.mock('react-i18next', () => ({
         'assets:module.unlock.money': `Requires ${opts?.amount}`,
         'assets:storyFlag.found_record_collection': 'Found record collection',
         'assets:actions.remove': 'Remove',
-        'assets:actions.install': 'Install'
+        'assets:actions.install': 'Install',
+        'assets:installFailed.expedition_locked':
+          'The active expedition build is locked.'
       }
       return labels[key] ?? opts?.defaultValue ?? key
     }
@@ -169,6 +172,7 @@ describe('ModulePickerModal remove flow', () => {
     mockInstallModule.mockClear()
     mockRemoveModule.mockClear()
     mockGetModulePoolForAsset.mockReturnValue([])
+    mockState.expedition = undefined
   })
 
   it('lets players remove an installed module with refund preview', () => {
@@ -191,6 +195,66 @@ describe('ModulePickerModal remove flow', () => {
     expect(mockRemoveModule).toHaveBeenCalledWith('asset-1', 'audio-slot')
     expect(mockInstallModule).not.toHaveBeenCalled()
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('disables removal and explains why on the chassis the active run committed to', () => {
+    mockState.expedition = {
+      status: 'active',
+      loadout: { activeTourbusAssetId: 'asset-1' }
+    }
+
+    render(
+      <ModulePickerModal
+        asset={asset}
+        slotId='audio-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByText('The active expedition build is locked.')
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeDisabled()
+  })
+
+  it('disables every install button on the committed chassis', () => {
+    mockState.expedition = {
+      status: 'active',
+      loadout: { activeTourbusAssetId: 'workshop-1' }
+    }
+    mockGetModulePoolForAsset.mockReturnValue([
+      { module: ecoInkModule, unlocked: true, lockReasons: [] }
+    ])
+
+    render(
+      <ModulePickerModal
+        asset={workshopAsset}
+        slotId='storage-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Install' })).toBeDisabled()
+  })
+
+  it('keeps other chassis serviceable during an active run', () => {
+    mockState.expedition = {
+      status: 'active',
+      loadout: { activeTourbusAssetId: 'some-other-asset' }
+    }
+
+    render(
+      <ModulePickerModal
+        asset={asset}
+        slotId='audio-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeEnabled()
   })
 
   it('renders required-module lock reasons with localized module names', () => {

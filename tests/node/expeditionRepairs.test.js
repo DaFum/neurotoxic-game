@@ -145,6 +145,78 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
+    'Professional repair prices known defects and refuses a free no-op',
+    () => {
+      const defect = (id, group, severity, status) => ({
+        id,
+        group,
+        severity,
+        status,
+        source: 'field_repair',
+        createdAtRouteStep: 1,
+        triggerAt: 'pre_gig',
+        triggerRouteStep: 5
+      })
+      const intent = {
+        mode: 'professional',
+        targetGroup: 'pa',
+        expectedRouteStep: 3
+      }
+      const priceOf = state => {
+        const res = resolveExpeditionRepair(state, intent, {
+          serviceAvailable: true
+        })
+        return res.ok ? res.result.moneyCost : res.reason
+      }
+
+      // A full-condition group with a known severity-3 defect (25 points) is
+      // no longer free: 25 points * EUR 10.
+      const withDefect = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 100,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_known', 'pa', 3, 'revealed')]
+        }
+      })
+      assert.equal(priceOf(withDefect), 250)
+
+      // A hidden defect is not known to the player, so it is not priced.
+      const hiddenOnly = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 100,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_hidden', 'pa', 3, 'hidden')]
+        }
+      })
+      assert.equal(priceOf(hiddenOnly), 'NOTHING_TO_REPAIR')
+
+      // At full Condition with a known defect only a defect-clearing repair
+      // helps: field repair would burn a part for nothing and is rejected.
+      const field = resolveExpeditionRepair(withDefect, {
+        mode: 'field',
+        targetGroup: 'pa',
+        quality: 0.8,
+        expectedRouteStep: 3
+      })
+      assert.deepEqual(field, { ok: false, reason: 'NOTHING_TO_REPAIR' })
+      assert.equal(priceOf(withDefect), 250)
+
+      // Defects of another group do not add to this group's price.
+      const otherGroup = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 90,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_other', 'instruments', 3, 'revealed')]
+        }
+      })
+      assert.equal(priceOf(otherGroup), 100)
+    }
+  )
+
+  await t.test(
     'Improvise repair: free emergency restore capped at 45 that always creates a hidden defect',
     () => {
       const state = createActiveExpeditionState()

@@ -14,7 +14,8 @@ import type {
   DarkWebLeakPayload,
   CultIndoctrinationPayload,
   VoidSermonPayload,
-  ApplySocialPostResultPayload
+  ApplySocialPostResultPayload,
+  ZealotryActionConfig
 } from '../../types'
 import { handleUpdateBand } from './bandReducer'
 import { handleUpdatePlayer } from './playerReducer'
@@ -64,6 +65,12 @@ import {
   DARK_WEB_LEAK_REQUIRED_CONTROVERSY,
   VOID_SERMON_REQUIRED_ZEALOTRY
 } from '../../data/zealotryActionGates'
+import {
+  CULT_INDOCTRINATION_CONFIG,
+  DARK_WEB_LEAK_CONFIG,
+  PIRATE_RADIO_CONFIG,
+  VOID_SERMON_CONFIG
+} from '../../data/zealotryActionConfigs'
 
 /** Warning logged when `handleApplySocialPostResult` refuses a payload. */
 const SOCIAL_POST_REFUSAL_LOG: Record<
@@ -80,79 +87,6 @@ const SOCIAL_POST_REFUSAL_LOG: Record<
 const DEAL_BREAK_CONTROVERSY = 85
 /** Brand trust lost with each deal that collapses under controversy. */
 const DEAL_BREAK_TRUST_PENALTY = 10
-
-type ZealotryPayloadParsed = {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
-}
-
-/**
- * Parses and validates the numeric fields shared by pirate-broadcast and
- * dark-web-leak payloads. Returns null when any required field is invalid
- * (non-finite or negative) - callers should bail with the unchanged state.
- *
- * `optionalGainFields` lets pirate-broadcast treat its fameGain / zealotryGain
- * / controversyGain as optional (defaulting to 0 when missing) while still
- * validating the value when present.
- */
-const parseZealotryActionPayload = (
-  payload: {
-    cost?: unknown
-    fameGain?: unknown
-    zealotryGain?: unknown
-    controversyGain?: unknown
-    harmonyCost?: unknown
-  },
-  optionalGainFields = false
-): ZealotryPayloadParsed | null => {
-  if (!payload || typeof payload !== 'object') return null
-  const parsedCost = payload.cost as number
-  const parsedFameGain = (
-    payload.fameGain === undefined ? 0 : payload.fameGain
-  ) as number
-  const parsedZealotryGain = (
-    payload.zealotryGain === undefined ? 0 : payload.zealotryGain
-  ) as number
-  const parsedControversyGain = (
-    payload.controversyGain === undefined ? 0 : payload.controversyGain
-  ) as number
-  const parsedHarmonyCost = payload.harmonyCost as number
-
-  const requireGain = (raw: unknown): boolean =>
-    optionalGainFields
-      ? raw != null && (!isFiniteNumber(raw) || raw < 0)
-      : !isFiniteNumber(raw) || raw < 0
-
-  if (
-    !isFiniteNumber(parsedCost) ||
-    parsedCost < 0 ||
-    requireGain(payload.fameGain) ||
-    requireGain(payload.zealotryGain) ||
-    requireGain(payload.controversyGain) ||
-    !isFiniteNumber(parsedHarmonyCost) ||
-    parsedHarmonyCost < 0
-  ) {
-    return null
-  }
-
-  return {
-    cost: parsedCost,
-    fameGain:
-      optionalGainFields && payload.fameGain == null ? 0 : parsedFameGain,
-    zealotryGain:
-      optionalGainFields && payload.zealotryGain == null
-        ? 0
-        : parsedZealotryGain,
-    controversyGain:
-      optionalGainFields && payload.controversyGain == null
-        ? 0
-        : parsedControversyGain,
-    harmonyCost: parsedHarmonyCost
-  }
-}
 
 /**
  * Builds a sanitized success toast (with deltas patched in) and appends it
@@ -864,7 +798,8 @@ const applyZealotryAction = (
     | undefined,
   dayField: ZealotryDayField,
   options: {
-    optionalGainFields: boolean
+    /** Source of cost, gains and harmony cost; the payload never supplies them. */
+    config: ZealotryActionConfig
     duplicateLogMessage: string
     insufficientLogMessage: string
     invalidLogMessage: string
@@ -883,21 +818,11 @@ const applyZealotryAction = (
   // Payload-shape validation runs first so a malformed payload sent on the
   // same day as a successful broadcast logs an "invalid payload" warning
   // (not the misleading "already triggered today") for debuggability.
-  if (options.invalidPayloadShapeLogMessage) {
-    if (!payload || typeof payload !== 'object') {
-      logger.warn('GameState', options.invalidPayloadShapeLogMessage)
-      return state
-    }
-  }
-
-  if (!payload) {
-    logger.warn('GameState', options.invalidLogMessage)
-    return state
-  }
-
-  const parsed = parseZealotryActionPayload(payload, options.optionalGainFields)
-  if (!parsed) {
-    logger.warn('GameState', options.invalidLogMessage)
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    logger.warn(
+      'GameState',
+      options.invalidPayloadShapeLogMessage ?? options.invalidLogMessage
+    )
     return state
   }
 
@@ -917,7 +842,13 @@ const applyZealotryAction = (
     return state
   }
 
-  const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
+  const {
+    COST: cost,
+    FAME_GAIN: fameGain,
+    ZEALOTRY_GAIN: zealotryGain,
+    CONTROVERSY_GAIN: controversyGain,
+    HARMONY_COST: harmonyCost
+  } = options.config
   const successToast = payload.successToast
 
   const funds = readPlayerFundsAndHarmony(state)
@@ -980,7 +911,7 @@ export const handlePirateBroadcast = (
   payload: PirateBroadcastPayload
 ): GameState =>
   applyZealotryAction(state, payload, 'lastPirateBroadcastDay', {
-    optionalGainFields: true,
+    config: PIRATE_RADIO_CONFIG,
     duplicateLogMessage: 'Pirate broadcast already triggered today',
     insufficientLogMessage: 'Insufficient funds or harmony for broadcast',
     invalidLogMessage: 'Invalid pirate broadcast payload'
@@ -999,7 +930,7 @@ export const handleDarkWebLeak = (
   payload: DarkWebLeakPayload | null | undefined
 ): GameState =>
   applyZealotryAction(state, payload, 'lastDarkWebLeakDay', {
-    optionalGainFields: false,
+    config: DARK_WEB_LEAK_CONFIG,
     duplicateLogMessage: 'Dark web leak already triggered today',
     insufficientLogMessage: 'Insufficient funds or harmony for dark web leak',
     invalidLogMessage: 'Invalid dark web leak payload',
@@ -1024,7 +955,7 @@ export const handleCultIndoctrination = (
   payload: CultIndoctrinationPayload | null | undefined
 ): GameState =>
   applyZealotryAction(state, payload, 'lastCultIndoctrinationDay', {
-    optionalGainFields: false,
+    config: CULT_INDOCTRINATION_CONFIG,
     duplicateLogMessage: 'Cult indoctrination already triggered today',
     insufficientLogMessage:
       'Insufficient funds or harmony for cult indoctrination',
@@ -1050,7 +981,7 @@ export const handleVoidSermon = (
   payload: VoidSermonPayload | null | undefined
 ): GameState =>
   applyZealotryAction(state, payload, 'lastVoidSermonDay', {
-    optionalGainFields: false,
+    config: VOID_SERMON_CONFIG,
     duplicateLogMessage: 'Void sermon already triggered today',
     insufficientLogMessage: 'Insufficient funds or harmony for void sermon',
     invalidLogMessage: 'Invalid void sermon payload',

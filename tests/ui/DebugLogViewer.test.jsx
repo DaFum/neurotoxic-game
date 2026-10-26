@@ -2,7 +2,8 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { DebugLogViewer } from '../../src/ui/DebugLogViewer.tsx'
 
-vi.mock('../../src/utils/logger', () => {
+vi.mock('../../src/utils/logger', async importOriginal => {
+  const { safeStringify } = await importOriginal()
   const listeners = new Set()
   const logger = {
     maxLogs: 100,
@@ -47,6 +48,7 @@ vi.mock('../../src/utils/logger', () => {
   return {
     logger,
     isValidLogLevel: vi.fn(() => true),
+    safeStringify,
     LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
   }
 })
@@ -129,6 +131,25 @@ describe('DebugLogViewer', () => {
     // INFO log should be hidden, ERROR log should be visible
     expect(screen.queryByText('hello world')).not.toBeInTheDocument()
     expect(screen.getByText('critical failure')).toBeInTheDocument()
+    // The viewer only hides rows; the global logger level stays untouched.
+    expect(loggerMock.setLevel).not.toHaveBeenCalled()
+  })
+
+  test('renders an Error payload with its message', () => {
+    loggerMock.logs = [
+      {
+        id: 'log3',
+        timestamp: '2025-01-01T10:02:00.000Z',
+        level: 'ERROR',
+        channel: 'EventModal',
+        message: 'Failed to preview',
+        data: new Error('boom')
+      }
+    ]
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    expect(screen.getByText(/"message":"boom"/)).toBeInTheDocument()
   })
 
   test('clears logs', () => {
