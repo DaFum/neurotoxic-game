@@ -938,6 +938,12 @@ export async function playMidiFileInternal(
 
   audioState.midiParts = createMidiParts(midi, normOptions.useCleanPlayback)
 
+  // Chosen only now that the MIDI is loaded and parsed, so a slow fetch cannot
+  // run the shared lead-in out before anything is scheduled.
+  const startTimeSec = normOptions.resolveStartTimeSec
+    ? normOptions.resolveStartTimeSec()
+    : normOptions.startTimeSec
+
   scheduleMidiTransport(midi, {
     reqId,
     filename: params.filename,
@@ -946,7 +952,7 @@ export async function playMidiFileInternal(
     delay: params.delay,
     onEnded: normOptions.onEnded,
     stopAfterSeconds: normOptions.stopAfterSeconds,
-    startTimeSec: normOptions.startTimeSec
+    startTimeSec
   })
 
   return true

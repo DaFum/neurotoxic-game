@@ -47,6 +47,8 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
  * - `onEnded`: callback invoked when playback ends.
  * - `stopAfterSeconds`: playback duration limit in seconds.
  * - `startTimeSec`: absolute Tone.js time to start playback.
+ * - `resolveStartTimeSec`: picks that time after loading finishes, so a slow
+ *   fetch cannot consume the lead-in; wins over `startTimeSec`.
  *
  * @returns Safe playback options for MIDI and song-data scheduling.
  */
@@ -57,6 +59,7 @@ export const normalizeMidiPlaybackOptions = (
   onEnded: ((...args: unknown[]) => void) | null
   stopAfterSeconds: number | null
   startTimeSec: number | null
+  resolveStartTimeSec: (() => number) | null
 } => {
   const opt =
     typeof options === 'object' && options !== null
@@ -77,11 +80,17 @@ export const normalizeMidiPlaybackOptions = (
     ? Math.max(0, Number(opt.startTimeSec))
     : null
 
+  const resolveStartTimeSec =
+    typeof opt.resolveStartTimeSec === 'function'
+      ? (opt.resolveStartTimeSec as () => number)
+      : null
+
   return {
     useCleanPlayback,
     onEnded,
     stopAfterSeconds,
-    startTimeSec
+    startTimeSec,
+    resolveStartTimeSec
   }
 }
 

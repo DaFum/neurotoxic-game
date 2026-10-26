@@ -90,17 +90,22 @@ const playMidiSynthesis = async (
   const gigPlaybackSeconds =
     midiDurationMs !== null ? midiDurationMs / 1000 : null
 
-  const rawGigStartTimeSec = getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-  const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
-  startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
-
+  // The shared gig clock and the transport start are chosen together once the
+  // MIDI has loaded: choosing them up front let a slow fetch outlast the
+  // lead-in and auto-miss the opening notes.
   const success = await playMidiFile(
     currentSong.sourceMid,
     offsetSeconds,
     false,
     0,
     {
-      startTimeSec: toneGigStartTimeSec,
+      resolveStartTimeSec: () => {
+        const toneGigStartTimeSec = getToneStartTimeSec(
+          getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+        )
+        startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
+        return toneGigStartTimeSec
+      },
       stopAfterSeconds: gigPlaybackSeconds,
       useCleanPlayback: false,
       onEnded: onSongEnded
