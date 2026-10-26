@@ -263,3 +263,56 @@ test('genuine Contact-earned reward evidence survives sanitization', () => {
     1
   )
 })
+
+test('a secured Contact reward survives load without its optional intel grant (#3370)', () => {
+  const event = EXPEDITION_CREW_EVENTS.find(
+    candidate => candidate.id === 'expedition_crew_breakthrough'
+  )
+  const started = startedState(
+    { unlockedSetIds: ['industry_network'] },
+    { crewIds: ['noah', 'yara'] }
+  )
+  const state = { ...started, activeEvent: event }
+  const resolved = resolveEvent(event.options[0], state).actions.reduce(
+    gameReducer,
+    state
+  )
+  const sourceId = `${event.id}:${event.options[0].id}`
+  const rewarded = gameReducer(
+    resolved,
+    addExpeditionReward(resolved, {
+      expectedRewardId: 'reward_contact_backline_deal',
+      sourceType: 'crew_contact',
+      sourceId
+    })
+  )
+  const ledgerAfter = expedition =>
+    sanitizeExpeditionState(expedition, rewarded.runSeed).rewardLedger.length
+
+  // The grant is abandoned (another branch taken) or never existed (every
+  // onward node already at full intel): the Contact itself is still on record.
+  const withoutGrant = {
+    ...rewarded.expedition,
+    intelGrants: [],
+    resolvedCrewSourceIds: (
+      rewarded.expedition.resolvedCrewSourceIds ?? []
+    ).filter(id => !id.includes(':contact:'))
+  }
+  assert.equal(ledgerAfter(withoutGrant), 1)
+
+  // Evidence for a different Contact, or none at all, still fails.
+  const markerOnly = withoutGrant.resolvedCrewSourceIds.filter(id =>
+    id.includes(':contact_resolved:')
+  )
+  assert.equal(markerOnly.length, 1)
+  assert.equal(
+    ledgerAfter({
+      ...withoutGrant,
+      resolvedCrewSourceIds: markerOnly.map(id =>
+        id.replace(sourceId, 'expedition_crew_other:invented')
+      )
+    }),
+    0
+  )
+  assert.equal(ledgerAfter({ ...withoutGrant, resolvedCrewSourceIds: [] }), 0)
+})

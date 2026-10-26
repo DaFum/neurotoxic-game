@@ -713,11 +713,26 @@ export const sanitizeExpeditionState = (
     if (
       !outcome?.contactIntel ||
       !preparedMap ||
-      !Array.isArray(rawIntelGrants) ||
       !Array.isArray(resolvedSourceIds)
     ) {
       return false
     }
+    // The durable marker written when the Contact resolved: it does not depend
+    // on the optional intel grant, which a different route choice abandons.
+    if (
+      resolvedSourceIds.some(id => {
+        if (typeof id !== 'string') return false
+        const prefix = `${sourceId}:contact_resolved:`
+        if (!id.startsWith(prefix)) return false
+        const step = id.slice(prefix.length)
+        return (
+          ROUTE_STEP_KEY.test(step) && Number.parseInt(step, 10) <= routeStep
+        )
+      })
+    ) {
+      return true
+    }
+    if (!Array.isArray(rawIntelGrants)) return false
     const currentNodeId = validVisitedPath.at(-1)
     return rawIntelGrants.some(rawGrant => {
       const grant = sanitizeIntelGrant(rawGrant)

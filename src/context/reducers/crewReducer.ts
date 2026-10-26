@@ -44,6 +44,9 @@ const rememberSource = (state: GameState, sourceId: string): string[] => [
 const eventProofId = (state: GameState, sourceId: string): string =>
   `${sourceId}:resolved:${state.expedition.routeStep}`
 
+const contactResolvedMarkerId = (sourceId: string, routeStep: number): string =>
+  `${sourceId}:contact_resolved:${routeStep}`
+
 const hasResolvedEventProof = (state: GameState, sourceId: string): boolean =>
   (state.expedition.resolvedCrewSourceIds ?? []).includes(
     eventProofId(state, sourceId)
@@ -559,9 +562,17 @@ export const applyResolvedCrewEventOutcome = (
     ...next,
     expedition: {
       ...next.expedition,
-      resolvedCrewSourceIds: (
-        next.expedition.resolvedCrewSourceIds ?? []
-      ).filter(id => id !== proofId)
+      resolvedCrewSourceIds: [
+        ...(next.expedition.resolvedCrewSourceIds ?? []).filter(
+          id => id !== proofId
+        ),
+        // The Contact itself stays on record, independent of the optional
+        // intel grant (which can be absent or abandoned with the route), so
+        // the secured reward it earned still has evidence after a reload.
+        ...(outcome.contactIntel
+          ? [contactResolvedMarkerId(sourceId, state.expedition.routeStep)]
+          : [])
+      ]
     }
   }
 }
