@@ -8,7 +8,8 @@ vi.mock('react-i18next', () => ({
       const translations = {
         'economy:brandDeals.energy_drink_cx.description':
           'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
-        'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink'
+        'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink',
+        'items:golden_pick.name': 'Golden Pick'
       }
       return translations[key] ?? options?.defaultValue ?? key
     },
@@ -193,4 +194,44 @@ test('DealCard stacks content and actions on narrow screens', () => {
   const negotiateButton = screen.getByRole('button', { name: 'NEGOTIATE' })
   expect(negotiateButton).toHaveClass('w-full')
   expect(negotiateButton).toHaveClass('min-h-11')
+})
+
+test('DealCard shows the localized item name, not the raw item id', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'deal_item',
+        name: 'Item Deal',
+        description: 'Gives a pick',
+        offer: { upfront: 1000, item: 'golden_pick', duration: 10 }
+      }}
+      negotiationState={null}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(container).toHaveTextContent('Golden Pick')
+  expect(container).not.toHaveTextContent('golden_pick')
+})
+
+test('DealCard falls back to an unknown-item label for an id without a locale entry', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'deal_item',
+        name: 'Item Deal',
+        description: 'Gives a thing',
+        offer: { upfront: 1000, item: 'not_in_locale', duration: 10 }
+      }}
+      negotiationState={null}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(container).toHaveTextContent('Unknown item')
+  expect(container).not.toHaveTextContent('not_in_locale')
 })
