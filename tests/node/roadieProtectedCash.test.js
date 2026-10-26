@@ -1,5 +1,6 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import i18n from '../../src/i18n'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
@@ -45,7 +46,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast, 'should include waived repair toast')
-    assert.equal(waivedToast.options.amount, '€190')
+    assert.equal(waivedToast.options.amount, 190)
   })
 
   it('replay case: ignores re-dispatched completion on inactive minigame', () => {
@@ -156,7 +157,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast)
-    assert.equal(waivedToast.options.amount, '€140')
+    assert.equal(waivedToast.options.amount, 140)
   })
 
   it('boundary case: gear_nerd discount changes the repair crossing', () => {
@@ -201,7 +202,7 @@ describe('roadie minigame protected cash', () => {
       t => t.messageKey === 'ui:toast.roadieRepairWaived'
     )
     assert.ok(waivedToast)
-    assert.equal(waivedToast.options.amount, '€10')
+    assert.equal(waivedToast.options.amount, 10)
   })
 
   it('boundary case: damage > 50 with spare consumes spare, avoids damaged_gear, repair still capped', () => {
@@ -327,5 +328,25 @@ describe('roadie minigame protected cash', () => {
     // Final money = 4990 + 600 = 5590.
     assert.equal(completed.player.money, 5590)
     assert.ok(completed.player.money >= 4990)
+  })
+})
+
+describe('roadieRepairWaived toast formatting', () => {
+  it('the locale string formats the raw amount per language at render time', () => {
+    for (const lng of ['en', 'de']) {
+      const bundle = JSON.parse(
+        readFileSync(`public/locales/${lng}/ui.json`, 'utf8')
+      )
+      i18n.addResourceBundle(lng, 'ui', bundle, true, true)
+    }
+    const en = i18n.getFixedT('en', 'ui')('toast.roadieRepairWaived', {
+      amount: 1190
+    })
+    const de = i18n.getFixedT('de', 'ui')('toast.roadieRepairWaived', {
+      amount: 1190
+    })
+
+    assert.match(en, /€1,190/)
+    assert.match(de, /1\.190\s?€/)
   })
 })

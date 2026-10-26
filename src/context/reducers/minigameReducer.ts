@@ -66,8 +66,6 @@ import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQu
 import { applyExpeditionRouteAdvance } from './expeditionReducer'
 import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
-import i18n from '../../i18n'
-import { formatCurrency } from '../../utils/numberUtils'
 import { SPARE_GEAR_ITEM_IDS } from '../../data/inventoryItems'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { settleExpeditionMandatoryDebit } from '../../domain/expedition/spendableCash'
@@ -879,7 +877,8 @@ export const handleCompleteRoadieMinigame = (
       {
         id: buildDeterministicToastId('roadie-waived-toast', nextToasts ?? []),
         messageKey: 'ui:toast.roadieRepairWaived',
-        options: { amount: formatCurrency(settlement.waived, i18n.language) },
+        // Raw value: the locale string formats it, so the reducer stays pure.
+        options: { amount: settlement.waived },
         type: 'info'
       }
     ]
