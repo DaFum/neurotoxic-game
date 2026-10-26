@@ -705,6 +705,7 @@
   "expedition.reward.unknown": "Unbekannte Beute",
   "expedition.runDraft.hint": "Wähle eins, bevor du weiterreist. Es hält den Rest der Tour.",
   "expedition.runDraft.title": "Run-Draft",
+  "expedition.runDraft.traitUnknown": "Unbekannte Eigenschaft",
   "expedition.runDraft.trait.backchannel": "Hinterkanal",
   "expedition.runDraft.trait.cold_trail": "Kalte Spur",
   "expedition.runDraft.trait.crew_mediator": "Crew-Vermittler",

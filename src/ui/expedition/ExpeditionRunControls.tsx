@@ -138,7 +138,9 @@ const ExpeditionRunDraftPicker = memo(function ExpeditionRunDraftPicker() {
           className='min-h-11 px-3 py-2 text-xs font-mono uppercase border border-steel-gray text-ash-gray hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
         >
           {t(`ui:expedition.runDraft.trait.${traitId}`, {
-            defaultValue: traitId
+            defaultValue: t('ui:expedition.runDraft.traitUnknown', {
+              defaultValue: 'Unknown trait'
+            })
           })}
         </button>
       ))}
@@ -180,13 +182,18 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
               {(() => {
                 if (item.sourceType === 'brandDeal') {
                   const deal = BRAND_DEALS.find(d => d.id === item.sourceId)
+                  const unknownContract = t('ui:expedition.contract.unknown', {
+                    defaultValue: 'Unknown Contract'
+                  })
                   return deal
                     ? (getTranslatedBrandDealDisplay(deal, t)?.name ??
-                        item.sourceId)
-                    : item.sourceId
+                        unknownContract)
+                    : unknownContract
                 }
                 return t(`ui:expedition.contract.${item.sourceId}`, {
-                  defaultValue: item.sourceId
+                  defaultValue: t('ui:expedition.contract.unknown', {
+                    defaultValue: 'Unknown Contract'
+                  })
                 })
               })()}
               :{' '}

@@ -85,7 +85,9 @@ export const AuthorityEncounterDialog = memo(function AuthorityEncounterDialog({
       return t('ui:expedition.authority.meta.future_obligation', {
         contract: obligationTemplateId
           ? t(`ui:expedition.contract.${obligationTemplateId}`, {
-              defaultValue: obligationTemplateId
+              defaultValue: t('ui:expedition.contract.unknown', {
+                defaultValue: 'Unknown Contract'
+              })
             })
           : t('ui:expedition.contract.unknown')
       })
