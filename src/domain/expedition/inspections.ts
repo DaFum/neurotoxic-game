@@ -179,6 +179,10 @@ export const resolveExpeditionInspection = (
 
       const defects = Array.isArray(tc.defects) ? tc.defects : []
       const hiddenDefects = defects.filter(d => d.status === 'hidden')
+      // A fee that buys no reveal and no repair is a pure charge: refuse it.
+      if (hiddenDefects.length === 0 && !professionalRepair) {
+        return { ok: false, reason: 'NOTHING_TO_REVEAL' }
+      }
       return {
         ok: true,
         result: {

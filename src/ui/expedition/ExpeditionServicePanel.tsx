@@ -130,9 +130,16 @@ const selectServiceView = (state: GameState): ServiceView => {
           mode,
           expectedRouteStep: routeStep
         })
+        // Offer only inspections that do something: the reducer returns no
+        // readout, so one that reveals nothing and repairs nothing would be a
+        // button with no visible result.
+        const hasEffect =
+          resolution.ok &&
+          (resolution.result.revealedDefectIds.length > 0 ||
+            resolution.result.professionalRepair !== undefined)
         return {
           mode,
-          legal: resolution.ok,
+          legal: hasEffect,
           diagnosticFee: resolution.ok ? resolution.result.diagnosticFee : 0
         }
       })

@@ -336,13 +336,13 @@ describe('inspections and termination', () => {
     expect(state.current.expedition.insuranceClaimConsumed).toBe(true)
   })
 
-  it('offers the free quick check and dispatches it', () => {
+  it('does not offer inspections that would reveal nothing', () => {
     render(<ExpeditionServicePanel />)
-    fireEvent.click(screen.getByTestId('expedition-inspection-quick_check'))
-    expect(actions.executeExpeditionInspection).toHaveBeenCalledWith({
-      mode: 'quick_check',
-      expectedRouteStep: ROUTE_STEP
-    })
+    // The quick check only returned condition bands the panel never showed.
+    expect(screen.queryByTestId('expedition-inspection-quick_check')).toBeNull()
+    expect(
+      screen.queryByTestId('expedition-inspection-crew_inspection')
+    ).toBeNull()
   })
 
   it('offers termination only once a group is dead', () => {
