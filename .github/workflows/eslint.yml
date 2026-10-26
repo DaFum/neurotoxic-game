@@ -26,9 +26,6 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Install ESLint SARIF formatter
-        run: pnpm add -D @microsoft/eslint-formatter-sarif@3.1.0
-
       - name: Run ESLint
         env:
           SARIF_ESLINT_IGNORE_SUPPRESSED: 'true'
@@ -36,9 +33,11 @@ jobs:
           pnpm exec eslint . \
             --format @microsoft/eslint-formatter-sarif \
             --output-file eslint-results.sarif
-        continue-on-error: true
 
+      # Runs after a lint failure too (the failed step still fails the job) but
+      # not when ESLint died before it wrote a report.
       - name: Upload analysis results to GitHub
+        if: ${{ !cancelled() && hashFiles('eslint-results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           sarif_file: eslint-results.sarif
