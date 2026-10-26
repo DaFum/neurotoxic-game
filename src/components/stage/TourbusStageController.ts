@@ -186,6 +186,10 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
         Texture | null
       >
 
+      // `withTimeout` does not cancel this load: drop late results once the
+      // controller is gone instead of assigning cache-owned textures to it.
+      if (this.isDisposed) return
+
       const keys = Object.keys(loaded)
       for (let i = 0, len = keys.length; i < len; i++) {
         const key = keys[i] as keyof TourbusTextures | undefined

@@ -304,6 +304,45 @@ describe('repair controls', () => {
     ).toBeTruthy()
   })
 
+  it('offers the professional repair for a known defect on a group at full condition', () => {
+    state.current = buildState({
+      pa: 100,
+      defects: [
+        {
+          id: 'defect_known',
+          group: 'pa',
+          severity: 2,
+          status: 'revealed',
+          source: 'field_repair',
+          createdAtRouteStep: 1,
+          triggerAt: 'pre_gig',
+          triggerRouteStep: 5
+        }
+      ]
+    })
+    // At a service location, where the professional repair is legal.
+    state.current.player.currentNodeId = 'service_node'
+    state.current.gameMap = {
+      nodes: {
+        service_node: {
+          id: 'service_node',
+          type: 'SUPPLY_STOP',
+          label: 'Supply Stop',
+          layer: 0
+        }
+      },
+      connections: []
+    } as never
+    state.current.expedition.visitedNodeIds = ['service_node']
+    render(<ExpeditionServicePanel />)
+
+    expect(screen.getByTestId('expedition-repair-professional-pa')).toBeTruthy()
+    // The healthy groups stay without an offer.
+    expect(
+      screen.queryByTestId('expedition-repair-professional-instruments')
+    ).toBeNull()
+  })
+
   it('says so when nothing is repairable', () => {
     // No spare parts, no service location, nothing critical enough to
     // improvise on, and no donor above the cannibalize threshold.

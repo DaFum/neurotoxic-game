@@ -41,6 +41,7 @@ import {
 import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { finiteNumberOr } from '../utils/gameState'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import { getSafeUUID } from '../utils/crypto'
 import { resolveCrowdfundProbability } from '../utils/assetTicks'
 import { mulberry32 } from '../utils/seededRng'
@@ -211,7 +212,7 @@ export const purchaseChassis = (
     if (
       !isLoanProfileEligible(profile, {
         fame: state.player.fame,
-        scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
+        scenePresence: finiteNumberOr(state.social.scenePresence, 0)
       })
     ) {
       return fail('LOAN_PROFILE_INELIGIBLE')
@@ -503,7 +504,7 @@ export const refinanceLiability = (
   if (
     !isLoanProfileEligible(profile, {
       fame: state.player.fame,
-      scenePresence: finiteNumberOr(state.social?.scenePresence, 0)
+      scenePresence: finiteNumberOr(state.social.scenePresence, 0)
     })
   ) {
     return fail('LOAN_PROFILE_INELIGIBLE')
@@ -552,8 +553,10 @@ interface StartCrowdfundInput {
  */
 export const startCrowdfund = (
   raw: StartCrowdfundInput,
-  state: Pick<GameState, 'assets' | 'crowdfundCampaigns'> &
-    Partial<Pick<GameState, 'player' | 'social' | 'rngSeed'>>
+  state: Pick<
+    GameState,
+    'assets' | 'crowdfundCampaigns' | 'player' | 'social' | 'rngSeed'
+  >
 ): StartCrowdfundAction | StartCrowdfundFailedAction => {
   const fail = (
     reason: import('../types/assets').StartCrowdfundFailureReason
@@ -572,6 +575,11 @@ export const startCrowdfund = (
   if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return fail('ACQUISITION_ALREADY_ACTIVE')
   }
+  // The odds and the roll come from this state; a partial one would silently
+  // derive them from zero fallbacks.
+  if (!state.player || !state.social || !isFiniteNumber(state.rngSeed)) {
+    return fail('INVALID_CONFIG')
+  }
   // Reject degenerate campaigns: a non-positive target or duration would
   // resolve immediately or invert payout math, and a negative fame stake
   // would credit fame on failure.
@@ -582,17 +590,17 @@ export const startCrowdfund = (
     return fail('DEGENERATE_CAMPAIGN')
   }
   // A stake above the fame the player has would pay out fame they never had.
-  const fame = finiteNumberOr(state.player?.fame, 0)
+  const fame = finiteNumberOr(state.player.fame, 0)
   const fameStake = Math.min(requestedStake, Math.max(0, fame))
   // The odds the setup modal previews and the roll that resolves them are
   // derived from state here, so a dispatch cannot choose either.
   const plannedSuccessProbability = resolveCrowdfundProbability(
     fame,
-    finiteNumberOr(state.social?.scenePresence, 0),
+    finiteNumberOr(state.social.scenePresence, 0),
     targetAmount
   )
   const plannedSuccessRoll = mulberry32(
-    finiteNumberOr(state.rngSeed, 0) ^ fameStake ^ daysRemaining
+    state.rngSeed ^ fameStake ^ daysRemaining
   )()
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
   // stays pure (reducer-purity invariant). The number of slot ids matches

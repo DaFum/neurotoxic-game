@@ -521,6 +521,24 @@ describe('TourbusStageController', () => {
     })
   }
 
+  it('drops late texture results when the controller was disposed during the load', async () => {
+    let resolveTextures
+    stageRenderUtilsMocks.loadTextures.mock.mockImplementationOnce(
+      () =>
+        new Promise(resolve => {
+          resolveTextures = resolve
+        })
+    )
+    const loading = controller.loadAssets()
+    await Promise.resolve()
+    controller.dispose()
+    resolveTextures({ bus: { width: 1, height: 1 } })
+    await loading
+
+    // The late result is not assigned to the disposed controller.
+    assert.equal(controller.textures.bus, null)
+  })
+
   it('should survive dispose while effect manager assets are loading', async () => {
     let resolveEffectLoad
     controller.loadAssets = () => {

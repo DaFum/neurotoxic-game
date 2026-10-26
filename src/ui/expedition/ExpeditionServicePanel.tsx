@@ -92,12 +92,18 @@ const selectServiceView = (state: GameState): ServiceView => {
     group => condition[group] === 0
   )
 
+  const visibleDefects = getVisibleExpeditionDefects(state)
   const repairOptions: RepairOption[] = []
   if (isActive) {
     for (const targetGroup of EXPEDITION_CONDITION_GROUPS) {
-      // A healthy group needs no repair offer; the panel exists for the ones
-      // that are worn or dead.
-      if (condition[targetGroup] >= 100) continue
+      // A healthy group needs no repair offer unless it carries a known
+      // defect: a professional repair clears those even at full condition.
+      if (
+        condition[targetGroup] >= 100 &&
+        !visibleDefects.some(defect => defect.group === targetGroup)
+      ) {
+        continue
+      }
       for (const mode of REPAIR_MODES) {
         // Cannibalize takes from another group, so it needs a donor named up
         // front — the resolver rejects it otherwise.
@@ -151,7 +157,7 @@ const selectServiceView = (state: GameState): ServiceView => {
     runId: state.expedition?.runId ?? null,
     condition,
     disabledGroups,
-    visibleDefects: getVisibleExpeditionDefects(state),
+    visibleDefects,
     repairOptions,
     inspectionOptions,
     technicalInsuranceGroups: isActive

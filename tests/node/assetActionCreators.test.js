@@ -81,6 +81,7 @@ const makeState = (overrides = {}) => ({
   },
   band: { members: [], ...overrides.band },
   social: { ...overrides.social },
+  rngSeed: overrides.rngSeed ?? 12345,
   activeStoryFlags: overrides.activeStoryFlags ?? [],
   assets: overrides.assets ?? [],
   liabilities: overrides.liabilities ?? {},
@@ -635,7 +636,6 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       player: { fame: 100 },
       social: { scenePresence: 40 }
     })
-    state.rngSeed = 12345
     const action = startCrowdfund(
       {
         kind: 'tourbus_chassis',
@@ -656,6 +656,28 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       resolveCrowdfundProbability(100, 40, 5000)
     )
     assert.equal(campaign.plannedSuccessRoll, mulberry32(12345 ^ 50 ^ 14)())
+  })
+
+  it('startCrowdfund refuses a state that lacks what the odds and roll derive from', () => {
+    const input = {
+      kind: 'tourbus_chassis',
+      flavor: 'legit',
+      tier: 1,
+      targetAmount: 5000,
+      fameStake: 50,
+      daysRemaining: 14
+    }
+    for (const broken of [
+      { player: undefined },
+      { social: undefined },
+      { rngSeed: undefined }
+    ]) {
+      const state = { ...makeState(), ...broken }
+      assert.deepEqual(startCrowdfund(input, state), {
+        type: 'START_CROWDFUND_FAILED',
+        payload: { reason: 'INVALID_CONFIG' }
+      })
+    }
   })
 
   it('startCrowdfund caps the fame stake at the fame the player has', () => {
