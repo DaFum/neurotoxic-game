@@ -56,6 +56,83 @@ describe('MapNodeView', () => {
     expect(text).toContain(formatCurrency(25, i18n.language))
   })
 
+  describe('tooltip edge nudge (#3355)', () => {
+    const MAP = { top: 100, bottom: 600 }
+
+    const renderInMap = () => {
+      const rectOf = (top, bottom) => ({
+        top,
+        bottom,
+        left: 0,
+        right: 100,
+        width: 100,
+        height: bottom - top,
+        x: 0,
+        y: top,
+        toJSON: () => ({})
+      })
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+        function rect() {
+          if (this.classList.contains('map-wrap'))
+            return rectOf(MAP.top, MAP.bottom)
+          // The tooltip: 200px tall, hanging out of the map at the top or bottom.
+          if (this.className.includes('bg-void-black/90'))
+            return rectOf(
+              globalThis.__tooltipTop,
+              globalThis.__tooltipTop + 200
+            )
+          return rectOf(0, 0)
+        }
+      )
+      vi.stubGlobal('requestAnimationFrame', cb => {
+        cb(0)
+        return 1
+      })
+      return render(
+        <div className='map-wrap'>
+          <MapNodeView
+            node={mockNode}
+            isCurrent={false}
+            isTraveling={false}
+            visibility='visible'
+            isReachable={true}
+            isPendingConfirm={true}
+            handleTravel={mockHandleTravel}
+            setHoveredNode={mockSetHoveredNode}
+            iconUrl={iconUrl}
+            vanUrl={vanUrl}
+          />
+        </div>
+      )
+    }
+    const tooltipOf = container =>
+      container.querySelector('div[class*="bg-void-black/90"]')
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+      vi.unstubAllGlobals()
+    })
+
+    test('moves a tooltip that overhangs the bottom edge back inside', () => {
+      globalThis.__tooltipTop = 500 // bottom 700, 100px past the map's 600
+      const { container } = renderInMap()
+      // Up by 100 plus the 4px margin.
+      expect(tooltipOf(container).style.translate).toBe('-50% -104px')
+    })
+
+    test('moves a tooltip that overhangs the top edge back inside', () => {
+      globalThis.__tooltipTop = 60 // 40px above the map's 100
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('-50% 44px')
+    })
+
+    test('leaves a tooltip that fits where it is', () => {
+      globalThis.__tooltipTop = 200
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('')
+    })
+  })
+
   test('names a venue-less Expedition stop by its public subtype', async () => {
     const i18n = (await import('i18next')).default
     const rivalStop = { id: 'exp_1_0', type: 'SPECIAL', x: 40, y: 20 }
