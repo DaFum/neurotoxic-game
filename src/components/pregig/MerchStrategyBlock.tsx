@@ -108,7 +108,8 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
             onClick={() =>
               onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
             }
-            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            disabled={item.currentPrice <= 1}
+            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             -
           </button>
