@@ -68,6 +68,38 @@ describe('GeneratedImagePanel', () => {
     expect(img).toHaveAttribute('src', 'http://mock.gen/fallback.svg')
   })
 
+  it('keeps the precached fallback URL unsized after an error (#3363)', () => {
+    render(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 640, height: 360 }}
+      />
+    )
+    fireEvent.error(screen.getByRole('img'))
+    expect(screen.getByRole('img')).toHaveAttribute(
+      'src',
+      'http://mock.gen/fallback.svg'
+    )
+  })
+
+  it('keeps the precached fallback URL unsized when offline (#3363)', () => {
+    vi.mocked(imageGen.resolveGenImageUrl).mockReturnValueOnce(
+      'http://mock.gen/fallback.svg'
+    )
+    render(
+      <GeneratedImagePanel
+        prompt='test prompt'
+        alt='test'
+        sizeHint={{ width: 640, height: 360 }}
+      />
+    )
+    expect(screen.getByRole('img')).toHaveAttribute(
+      'src',
+      'http://mock.gen/fallback.svg'
+    )
+  })
+
   it('retries the generated image when only the size hint changes after an error', () => {
     const { rerender } = render(
       <GeneratedImagePanel

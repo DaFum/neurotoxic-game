@@ -63,9 +63,12 @@ export const GeneratedImagePanel = ({
   const baseSrc = errored
     ? getGeneratedImageFallbackUrl()
     : resolveGenImageUrl(prompt)
-  const src = sizeHint
-    ? appendImageSize(baseSrc, sizeHint.width, sizeHint.height)
-    : baseSrc
+  // The bundled fallback is precached by its exact URL; a size query would miss
+  // the precache and fail offline, so only the remote URL gets sizing.
+  const src =
+    sizeHint && baseSrc !== getGeneratedImageFallbackUrl()
+      ? appendImageSize(baseSrc, sizeHint.width, sizeHint.height)
+      : baseSrc
 
   const style: CSSProperties = {
     aspectRatio: ASPECT_CSS[aspectRatio],
