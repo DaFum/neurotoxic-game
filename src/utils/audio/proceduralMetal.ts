@@ -8,6 +8,9 @@ import { secureRandom } from '../crypto'
 import { selectRandomItem } from '../selectionUtils'
 import type { Song } from '../../types/audio'
 
+/** Sequence value for a silent 16th step (see `startMetalGenerator`). */
+const REST_STEP = 'rest'
+
 /**
  * Generates a procedural riff pattern.
  * @param diff - Difficulty level.
@@ -108,7 +111,12 @@ export async function startMetalGenerator(
 
   Tone.getTransport().bpm.value = bpm
 
-  const pattern = generateRiffPattern(song.difficulty ?? 2, random)
+  // `Tone.Sequence` never calls back for a `null` step, which would hide the
+  // rests from the step count that drives the hi-hat phase. A rest marker makes
+  // every 16th step reach the callback; the callback then skips the rest.
+  const pattern = generateRiffPattern(song.difficulty ?? 2, random).map(
+    note => note ?? REST_STEP
+  )
 
   let stepIndex = 0
   audioState.loop = new Tone.Sequence<string | null>(
@@ -116,14 +124,10 @@ export async function startMetalGenerator(
       if (!audioState.guitar || !audioState.drumKit) return
       if (audioState.guitar.disposed || audioState.drumKit.kick.disposed) return
       try {
+        const step = stepIndex++
+        if (note === REST_STEP) return
         if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
-        playProceduralDrums(
-          time,
-          song.difficulty ?? 2,
-          note,
-          random,
-          stepIndex++
-        )
+        playProceduralDrums(time, song.difficulty ?? 2, note, random, step)
       } catch (err) {
         if (err instanceof Error && err.name === 'InvalidStateError') {
           logger.warn(

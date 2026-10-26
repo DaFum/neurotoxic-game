@@ -466,4 +466,29 @@ test('startMetalGenerator Tests', async t => {
       }
     }
   )
+
+  await t.test(
+    'A rest step still counts toward the hihat phase but plays nothing',
+    async () => {
+      const random = () => 0.5
+      mockPlayDrumNote.mock.resetCalls()
+      await startMetalGenerator({ difficulty: 2 }, 0, {}, random)
+      const { callback } = mockAudioState.loop
+
+      // Tone never calls back for a null step, so rests are passed as a marker.
+      for (const [index, note] of ['A2', 'rest', 'A2', 'A2'].entries()) {
+        callback(200 + index * 0.125, note)
+      }
+      const hihatTimes = mockPlayDrumNote.mock.calls
+        .filter(call => call.arguments[0] === 42)
+        .map(call => call.arguments[1])
+
+      // Steps 0 and 2 carry the hihat; the rest at step 1 advanced the count.
+      assert.deepStrictEqual(hihatTimes, [200, 200.25])
+      assert.ok(
+        !mockAudioState.loop.events.includes(null),
+        'rests must not be passed to Tone.Sequence as null'
+      )
+    }
+  )
 })
