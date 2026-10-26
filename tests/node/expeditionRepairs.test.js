@@ -145,6 +145,67 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
+    'Professional repair prices known defects and refuses a free no-op',
+    () => {
+      const defect = (id, group, severity, status) => ({
+        id,
+        group,
+        severity,
+        status,
+        source: 'field_repair',
+        createdAtRouteStep: 1,
+        triggerAt: 'pre_gig',
+        triggerRouteStep: 5
+      })
+      const intent = {
+        mode: 'professional',
+        targetGroup: 'pa',
+        expectedRouteStep: 3
+      }
+      const priceOf = state => {
+        const res = resolveExpeditionRepair(state, intent, {
+          serviceAvailable: true
+        })
+        return res.ok ? res.result.moneyCost : res.reason
+      }
+
+      // A full-condition group with a known severity-3 defect (25 points) is
+      // no longer free: 25 points * EUR 10.
+      const withDefect = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 100,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_known', 'pa', 3, 'revealed')]
+        }
+      })
+      assert.equal(priceOf(withDefect), 250)
+
+      // A hidden defect is not known to the player, so it is not priced.
+      const hiddenOnly = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 100,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_hidden', 'pa', 3, 'hidden')]
+        }
+      })
+      assert.equal(priceOf(hiddenOnly), 'NOTHING_TO_REPAIR')
+
+      // Defects of another group do not add to this group's price.
+      const otherGroup = createActiveExpeditionState({
+        technicalCondition: {
+          pa: 90,
+          instruments: 70,
+          stageGear: 80,
+          defects: [defect('d_other', 'instruments', 3, 'revealed')]
+        }
+      })
+      assert.equal(priceOf(otherGroup), 100)
+    }
+  )
+
+  await t.test(
     'Improvise repair: free emergency restore capped at 45 that always creates a hidden defect',
     () => {
       const state = createActiveExpeditionState()

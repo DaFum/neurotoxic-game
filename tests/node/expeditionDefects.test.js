@@ -650,8 +650,9 @@ test('defect reducers refuse raw dispatches the inspection/repair paths would re
       expectedRouteStep: 2
     })
     assert.equal(statusOf(next, 'd1'), 'resolved')
-    // (100 - 60) * 10 at the default repair multiplier.
-    assert.equal(next.player.money, 1100)
+    // (100 - 60 missing + 8 for the severity-1 defect) * 10 at the default
+    // repair multiplier.
+    assert.equal(next.player.money, 1020)
     assert.equal(next.expedition.technicalCondition.pa, 100)
   })
 

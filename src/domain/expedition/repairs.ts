@@ -16,6 +16,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionTechnicalCondition } from './condition'
 import { canSpendExpeditionCash } from './loadout'
+import { DEFECT_SEVERITY_DAMAGE } from './defects'
 
 /**
  * Lowest Condition a donor group may have to be cannibalized for parts.
@@ -160,8 +161,22 @@ export const resolveExpeditionRepair = (
 
       const targetCondition = tc[targetGroup]
       const missing = Math.max(0, 100 - targetCondition)
+      // A professional repair also clears every known defect of the group, so
+      // each is priced like the condition points it would otherwise cost.
+      const knownDefectPoints = tc.defects.reduce(
+        (sum, defect) =>
+          defect.group === targetGroup &&
+          (defect.status === 'revealed' || defect.status === 'triggered')
+            ? sum + (DEFECT_SEVERITY_DAMAGE[defect.severity] || 8)
+            : sum,
+        0
+      )
+      if (missing === 0 && knownDefectPoints === 0) {
+        return { ok: false, reason: 'NOTHING_TO_REPAIR' }
+      }
       const basePrice = Math.ceil(
-        missing * EXPEDITION_PROFESSIONAL_REPAIR_RATE_PER_POINT
+        (missing + knownDefectPoints) *
+          EXPEDITION_PROFESSIONAL_REPAIR_RATE_PER_POINT
       )
       const moneyCost = Math.round(
         basePrice * rules.numeric.repairCostMultiplier
