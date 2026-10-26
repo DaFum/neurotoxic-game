@@ -48,6 +48,9 @@ export function useDealHandlers({
       if (isProcessingActionRef.current) return
       isProcessingActionRef.current = true
       setIsProcessingAction(true)
+      // Set before the first state-changing dispatch: a later throw must not
+      // re-open the guard, or a second click would pay the deal out again.
+      let committed = false
       try {
         const resolved = resolveBrandDealAcceptance(
           { player, band, social },
@@ -56,6 +59,7 @@ export function useDealHandlers({
         if (!resolved) throw new Error('Brand deal is no longer acceptable')
         const { appliedMoneyDelta } = resolved
 
+        committed = true
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: resolved.nextPlayer.money })
         }
@@ -96,6 +100,13 @@ export function useDealHandlers({
           }),
           'error'
         )
+        if (committed) {
+          // The deal is already booked: leave the offers behind instead of
+          // letting it be accepted again.
+          setBrandOffers([])
+          setPhase('COMPLETE')
+          return
+        }
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
       }

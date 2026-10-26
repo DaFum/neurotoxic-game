@@ -116,6 +116,41 @@ describe('useDealHandlers — handleAcceptDeal single-shot guard', () => {
     expect(props.isProcessingActionRef.current).toBe(true)
   })
 
+  it('keeps the guard closed and completes when a dispatch throws after the money was paid', () => {
+    const props = makeProps()
+    props.dispatchers.updateSocial.mockImplementation(() => {
+      throw new Error('reducer rejected')
+    })
+    const { result } = renderHook(() => useDealHandlers(props))
+
+    act(() => {
+      result.current.handleAcceptDeal(baseDeal)
+      result.current.handleAcceptDeal(baseDeal)
+    })
+
+    expect(props.dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+    expect(props.isProcessingActionRef.current).toBe(true)
+    expect(props.setIsProcessingAction).not.toHaveBeenCalledWith(false)
+    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
+  })
+
+  it('releases the guard when the deal fails before anything was dispatched', () => {
+    // An already active deal makes the acceptance unresolvable up front.
+    const props = makeProps({
+      social: {
+        followers: 500,
+        brandReputation: {},
+        activeDeals: [{ id: 'x' }]
+      }
+    })
+    const { result } = renderHook(() => useDealHandlers(props))
+
+    act(() => result.current.handleAcceptDeal(baseDeal))
+
+    expect(props.dispatchers.updatePlayer).not.toHaveBeenCalled()
+    expect(props.isProcessingActionRef.current).toBe(false)
+  })
+
   it('no-ops when already processing', () => {
     const props = makeProps({ isProcessingActionRef: { current: true } })
     const { result } = renderHook(() => useDealHandlers(props))
