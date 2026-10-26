@@ -485,7 +485,7 @@ test('START_CROWDFUND - colliding or malformed materialization ids return the id
 })
 
 test('START_CROWDFUND - creator-stamped campaign is admitted and resolves on the tick', () => {
-  const startState = makeCreatorState(1000)
+  const startState = makeCreatorState(1000, { rngSeed: 42 })
   const action = startCrowdfund(
     {
       kind: 'tourbus_chassis',
@@ -493,9 +493,7 @@ test('START_CROWDFUND - creator-stamped campaign is admitted and resolves on the
       tier: 1,
       targetAmount: 4000,
       fameStake: 20,
-      daysRemaining: 1,
-      plannedSuccessRoll: 0.1,
-      plannedSuccessProbability: 0.5
+      daysRemaining: 1
     },
     startState
   )
