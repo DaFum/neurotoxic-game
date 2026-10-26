@@ -27,8 +27,14 @@ postpone re-measurement past one second. Whichever timer fires first measures
 once and cancels the other; there is no leading-edge measurement, so nothing
 re-places before 200 ms of quiet unless the maximum wait runs out. Only the
 callback scheduling changed, not the observer's target or options. The real
-mutation rate in the Gig HUD and the minigames has not been measured; the guard
-is cheap and closes the starvation case regardless.
+mutation rate was measured once (2026-10-26, DEV build, headless Chromium, no
+player input beyond arrow-key presses in the Gig, random events off, 20-30 s per
+scene): a `MutationObserver` on `document.body` with the same options saw at most
+0.8 callbacks per second in every scene (Tourbus 0.2, Roadie 0.2, Kabelsalat 0.8,
+Amp Calibration 0.5, Gig HUD 0.2-0.6). The longest run of mutations less than
+200 ms apart lasted 313 ms, so the old trailing debounce was never starved and
+the maximum wait never fired. Active play with toasts and popups may differ; the
+guard stays as a cheap bound, not as a fix for an observed problem.
 
 Behaviour is pinned by the "observer lifecycle" tests in
 `tests/ui/ChatterOverlayPlacement.test.jsx` (late mount, removal recovery,
