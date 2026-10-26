@@ -304,6 +304,12 @@ const EDGE_MARGIN = 16
 // Layout changes (a board mounting, a header wrapping) do not fire `resize`;
 // re-measure shortly after the DOM settles.
 const DOM_SETTLE_MS = 200
+/**
+ * Longest a burst of DOM mutations may postpone re-measurement. Without it a
+ * sustained `childList` stream (toasts, HUD popups) arriving less than
+ * `DOM_SETTLE_MS` apart would reset the trailing timer forever.
+ */
+const DOM_SETTLE_MAX_WAIT_MS = 1000
 const SM_BREAKPOINT_PX = 640
 
 // Interactive / high-value elements the chatter box must never sit on top of.
@@ -484,17 +490,30 @@ const useNonOverlappingPosition = (
     // Re-place when obstacles mount or unmount after the message appeared, so a
     // late board cannot be covered and a stale suppression does not outlive it.
     let settleTimer: ReturnType<typeof setTimeout> | undefined
+    let maxWaitTimer: ReturnType<typeof setTimeout> | undefined
+    // Whichever timer fires first measures once and cancels the other, so one
+    // burst yields one measurement.
+    const settle = () => {
+      clearTimeout(settleTimer)
+      clearTimeout(maxWaitTimer)
+      maxWaitTimer = undefined
+      reposition()
+    }
     const observer =
       typeof MutationObserver === 'function'
         ? new MutationObserver(() => {
             clearTimeout(settleTimer)
-            settleTimer = setTimeout(reposition, DOM_SETTLE_MS)
+            settleTimer = setTimeout(settle, DOM_SETTLE_MS)
+            // Armed by the first mutation of a burst and not restarted by later
+            // ones.
+            maxWaitTimer ??= setTimeout(settle, DOM_SETTLE_MAX_WAIT_MS)
           })
         : null
     observer?.observe(document.body, { childList: true, subtree: true })
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(settleTimer)
+      clearTimeout(maxWaitTimer)
       observer?.disconnect()
       window.removeEventListener('resize', handleResize)
     }

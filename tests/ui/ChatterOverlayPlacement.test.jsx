@@ -244,6 +244,51 @@ describe('observer lifecycle', () => {
     expect(measurements()).toBe(before + 1)
   }, 15000)
 
+  test('a sustained mutation stream is measured at the max wait (#3289)', async () => {
+    vi.useFakeTimers()
+    const { measurements } = spyRects({ current: ZERO_RECT })
+    await mountOverlay()
+    const before = measurements()
+
+    // A mutation every 100 ms never lets the 200 ms trailing timer fire. The
+    // first one arms the 1000 ms max wait.
+    for (let i = 0; i < 9; i++) {
+      addObstacle()
+      await flushMutations()
+      await act(async () => {
+        vi.advanceTimersByTime(100)
+      })
+    }
+    expect(measurements()).toBe(before)
+
+    addObstacle()
+    await flushMutations()
+    await act(async () => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(measurements()).toBe(before + 1)
+
+    // The stream goes on: the next burst arms a fresh max wait.
+    for (let i = 0; i < 9; i++) {
+      addObstacle()
+      await flushMutations()
+      await act(async () => {
+        vi.advanceTimersByTime(100)
+      })
+    }
+    expect(measurements()).toBe(before + 1)
+
+    // Once it stops, one trailing measurement follows and nothing after it.
+    await act(async () => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(measurements()).toBe(before + 2)
+    await act(async () => {
+      vi.advanceTimersByTime(2000)
+    })
+    expect(measurements()).toBe(before + 2)
+  }, 15000)
+
   test('a window resize measures on the next animation frame', async () => {
     vi.useFakeTimers({
       toFake: [
