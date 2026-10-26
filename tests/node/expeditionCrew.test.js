@@ -7,7 +7,10 @@ import {
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout.ts'
 import { validateExpeditionCrewSelection } from '../../src/domain/expedition/crew.ts'
-import { getCrewStressBand } from '../../src/domain/expedition/crewStress.ts'
+import {
+  classifyGigCrewStress,
+  getCrewStressBand
+} from '../../src/domain/expedition/crewStress.ts'
 import { createCrewDevelopmentEligibilityProof } from '../../src/domain/expedition/career.ts'
 import {
   canResolveCrewRecoveryDebt,
@@ -140,4 +143,26 @@ test('typed creator surfaces derive route guards and career proof actions', () =
   )
   assert.equal(createCrewDevelopmentEligibilityProof(state, 'mika'), null)
   assert.equal(typeof validateExpeditionBuildCommitment, 'function')
+})
+
+test('gig Crew stress classification never rewards a failed gig (#3371)', () => {
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 100, failed: true }),
+    'poor_gig'
+  )
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 70, failed: true }),
+    'poor_gig'
+  )
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 59, failed: false }),
+    'poor_gig'
+  )
+  assert.equal(classifyGigCrewStress({ accuracy: 70, failed: false }), null)
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 80, failed: false }),
+    'successful_gig'
+  )
+  assert.equal(classifyGigCrewStress({ accuracy: NaN }), null)
+  assert.equal(classifyGigCrewStress({}), null)
 })

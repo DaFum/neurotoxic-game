@@ -13,6 +13,7 @@ import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import {
   applyCrewStressDelta,
+  classifyGigCrewStress,
   CREW_STRESS_SOURCE_DELTAS,
   EXPEDITION_SUPPLY_REST_STRESS_BONUS
 } from '../../domain/expedition/crewStress'
@@ -81,11 +82,8 @@ const hasCanonicalStressSource = (
     payload.sourceType === 'poor_gig' ||
     payload.sourceType === 'successful_gig'
   ) {
-    const accuracy = state.lastGigStats?.accuracy
     const correctOutcome =
-      typeof accuracy === 'number' &&
-      Number.isFinite(accuracy) &&
-      (payload.sourceType === 'poor_gig' ? accuracy < 60 : accuracy >= 80)
+      classifyGigCrewStress(state.lastGigStats ?? {}) === payload.sourceType
     return (
       correctOutcome &&
       payload.sourceId ===

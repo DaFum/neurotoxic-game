@@ -48,6 +48,7 @@ import {
   evaluateAcceptedSettlementSolvency
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 import { getExpeditionFinaleProfile } from '../../src/domain/expedition/finales'
+import { classifyGigCrewStress } from '../../src/domain/expedition/crewStress'
 import { FLAGS } from '../../src/data/flags.registry'
 import { createPersistedState } from '../../src/context/usePersistence'
 import {
@@ -181,8 +182,8 @@ const runContinue = shown => {
   if (!isFinaleGig && stats.failed !== true) {
     state = gameReducer(state, offerExpeditionDraft(state, 'major_gig', gigId))
   }
-  if (stats.accuracy < 60 || stats.accuracy >= 80) {
-    const sourceType = stats.accuracy < 60 ? 'poor_gig' : 'successful_gig'
+  const sourceType = classifyGigCrewStress(stats)
+  if (sourceType) {
     for (const crewId of expedition.loadout.crewIds) {
       state = gameReducer(
         state,
@@ -391,6 +392,43 @@ test('a collapsed gig pays the bad-gig fame loss on live Continue and on reload'
     'the same score without a collapse still earns fame'
   )
   assert.equal(loaded.player.fame, continued.player.fame)
+})
+
+test('a quit gig at 100% accuracy earns no successful-gig Crew relief on Continue or reload (#3371)', () => {
+  const walked = walkToFestival(startedState({ money: 5000, fame: 100 }))
+  const atResult = withPostGigResult(walked, {
+    nodeType: 'FESTIVAL',
+    gigId: 'festival_venue'
+  })
+  const crewIds = atResult.expedition.loadout.crewIds
+  const quit = recordSettlement({
+    ...atResult,
+    lastGigStats: { ...atResult.lastGigStats, failed: true, accuracy: 100 }
+  })
+  const before = quit.expedition.crew?.stressByCrewId ?? {}
+
+  const continued = runContinue(quit)
+  const loaded = reload(quit)
+
+  for (const crewId of crewIds) {
+    const stress = continued.expedition.crew?.stressByCrewId?.[crewId] ?? 0
+    assert.ok(stress >= (before[crewId] ?? 0), `${crewId} was not relieved`)
+  }
+  assert.deepEqual(
+    loaded.expedition.crew?.stressByCrewId ?? {},
+    continued.expedition.crew?.stressByCrewId ?? {}
+  )
+  // The reducer rejects a forged success proof for the same failed gig.
+  const forged = gameReducer(
+    quit,
+    recordExpeditionCrewStressSource(
+      quit,
+      crewIds[0],
+      'successful_gig',
+      `gig:${quit.currentGig.id}:${quit.expedition.routeStep}`
+    )
+  )
+  assert.equal(forged, quit)
 })
 
 test('a settled reload applies the Continue effects exactly once', () => {

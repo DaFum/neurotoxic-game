@@ -25,6 +25,7 @@ import {
 } from '../../../domain/expedition/loadout'
 import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
+import { classifyGigCrewStress } from '../../../domain/expedition/crewStress'
 import {
   createFameGainedQuestEvent,
   createMoneyEarnedQuestEvent
@@ -347,13 +348,8 @@ export function derivePostGigContinueEffects(params: {
   if (!isFinaleGig && lastGigStats?.failed !== true) {
     effects.push({ kind: 'offerMajorGigDraft', sourceKey: gigId })
   }
-  const accuracy = lastGigStats?.accuracy
-  if (
-    typeof accuracy === 'number' &&
-    Number.isFinite(accuracy) &&
-    (accuracy < 60 || accuracy >= 80)
-  ) {
-    const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
+  const sourceType = classifyGigCrewStress(lastGigStats ?? {})
+  if (sourceType) {
     const sourceId = `gig:${gigId}:${expedition.routeStep}`
     for (const crewId of expedition.loadout?.crewIds ?? []) {
       effects.push({ kind: 'crewStress', crewId, sourceType, sourceId })
