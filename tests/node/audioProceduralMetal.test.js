@@ -443,4 +443,27 @@ test('startMetalGenerator Tests', async t => {
     assert.strictEqual(mockPlayDrumNote.mock.calls[1].arguments[1], 100) // time
     assert.strictEqual(mockPlayDrumNote.mock.calls[1].arguments[2], 0.7) // velocity
   })
+
+  await t.test(
+    'Hihat follows the step count, not the absolute audio time',
+    async () => {
+      // Neither kick (needs random < 0.2 or E2) nor snare (random > 0.9).
+      const random = () => 0.5
+
+      // Start times that used to land inside or outside the old time%0.25
+      // window by accident; the pattern must be the same for both.
+      for (const startTime of [100, 100.15]) {
+        mockPlayDrumNote.mock.resetCalls()
+        await startMetalGenerator({ difficulty: 2 }, 0, {}, random)
+        const fresh = mockAudioState.loop.callback
+        for (let step = 0; step < 4; step++) {
+          fresh(startTime + step * 0.125, 'A2')
+        }
+        const hihatTimes = mockPlayDrumNote.mock.calls
+          .filter(call => call.arguments[0] === 42)
+          .map(call => call.arguments[1])
+        assert.deepStrictEqual(hihatTimes, [startTime, startTime + 0.25])
+      }
+    }
+  )
 })
