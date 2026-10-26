@@ -4,6 +4,7 @@ import { MapNodeView } from '../MapNodeView'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import { isGigNode } from '../../utils/arrivalUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
@@ -170,12 +171,13 @@ export const OverworldMap = React.memo(
         const isCurrent = node.id === player.currentNodeId
         const hasRival = rivalBand?.currentLocationId === node.id
         const visibility = getNodeVisibility(node.layer, currentLayer)
-        // The current supply stop is actionable (it reopens its shop), so it
-        // must be keyboard-reachable like any other travel target.
+        // The current supply stop (it reopens its shop) and the current gig
+        // node (re-entering books the show) are actionable, so they must be
+        // keyboard-reachable like any other travel target.
         const isReachable =
           isConnected(node.id) ||
           node.type === 'START' ||
-          (isCurrent && node.type === 'SUPPLY_STOP')
+          (isCurrent && (node.type === 'SUPPLY_STOP' || isGigNode(node)))
 
         const overlaySubtype =
           overlaySubtypeByNodeId &&

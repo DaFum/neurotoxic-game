@@ -138,4 +138,49 @@ describe('OverworldMap overlay wiring', () => {
     const gig = nodeProps.find(p => p.node.id === 'node_1_1')
     expect(gig.isReachable).toBe(false)
   })
+
+  test.each(['GIG', 'FESTIVAL', 'FINALE'])(
+    'keeps the current %s node reachable so the show can be booked by keyboard',
+    type => {
+      const gigMap = {
+        ...travelMap,
+        nodes: {
+          ...travelMap.nodes,
+          node_1_0: node('node_1_0', type, 1, 50)
+        }
+      }
+      render(
+        <OverworldMap
+          {...baseProps}
+          gameMap={gigMap}
+          player={{ ...baseProps.player, currentNodeId: 'node_1_0' }}
+          isConnected={() => false}
+        />
+      )
+      const current = nodeProps.find(p => p.node.id === 'node_1_0')
+      expect(current.isCurrent).toBe(true)
+      expect(current.isReachable).toBe(true)
+    }
+  )
+
+  test('keeps a current non-actionable node unreachable from itself', () => {
+    const plainMap = {
+      ...travelMap,
+      nodes: {
+        ...travelMap.nodes,
+        node_1_0: node('node_1_0', 'SPECIAL', 1, 50)
+      }
+    }
+    render(
+      <OverworldMap
+        {...baseProps}
+        gameMap={plainMap}
+        player={{ ...baseProps.player, currentNodeId: 'node_1_0' }}
+        isConnected={() => false}
+      />
+    )
+    const current = nodeProps.find(p => p.node.id === 'node_1_0')
+    expect(current.isCurrent).toBe(true)
+    expect(current.isReachable).toBe(false)
+  })
 })
