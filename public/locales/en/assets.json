@@ -202,6 +202,8 @@
   "installFailed.exclusivity": "Conflicts with an already-installed module.",
   "installFailed.max_per_asset": "Max-per-asset limit reached.",
   "installFailed.insufficient_funds": "Not enough money.",
+  "installFailed.expedition_locked": "The active expedition build is locked.",
+  "removeFailed.expedition_locked": "The active expedition build is locked.",
   "sellFailed.expedition_locked": "The active expedition build is locked.",
   "sellFailed.liability_exceeds_value": "Outstanding debt exceeds sale value.",
   "slot.tb_roof": "Roof",

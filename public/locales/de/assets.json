@@ -202,6 +202,8 @@
   "installFailed.exclusivity": "Konflikt mit bereits installiertem Modul.",
   "installFailed.max_per_asset": "Maximalanzahl pro Asset erreicht.",
   "installFailed.insufficient_funds": "Nicht genug Geld.",
+  "installFailed.expedition_locked": "Der Aufbau der aktiven Expedition ist gesperrt.",
+  "removeFailed.expedition_locked": "Der Aufbau der aktiven Expedition ist gesperrt.",
   "sellFailed.expedition_locked": "Der Aufbau der aktiven Expedition ist gesperrt.",
   "sellFailed.liability_exceeds_value": "Restschuld übersteigt den Verkaufswert.",
   "slot.tb_roof": "Dach",

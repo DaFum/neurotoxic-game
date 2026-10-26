@@ -4,6 +4,7 @@ import type {
   InstallModulePayload
 } from '../types/assets'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
 import { getRegisteredModule } from '../utils/assetModuleRegistry'
 import {
   getLockReasons,
@@ -20,6 +21,10 @@ export const validateModuleInstall = (
 ): InstallModuleFailureReason | null => {
   const module = getRegisteredModule(raw.moduleId)
   if (!module) return 'UNKNOWN_MODULE'
+  // The committed chassis's module set is part of the run's identity.
+  if (isExpeditionChassisCommitmentLocked(state, raw.assetId)) {
+    return 'EXPEDITION_LOCKED'
+  }
   const asset = selectAssetsMap(state).get(raw.assetId)
   if (!asset) return 'UNKNOWN_ASSET'
   const slot = selectAssetSlotsMap(asset).get(raw.slotId)

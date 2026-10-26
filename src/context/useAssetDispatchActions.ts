@@ -14,6 +14,7 @@ import {
   removeModule as removeModuleAction,
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
+import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
 /**
@@ -114,8 +115,18 @@ export function useAssetDispatchActions({
           ActionTypes.INSTALL_MODULE_FAILED,
           'assets:installFailed'
         ),
-      removeModule: (assetId: string, slotId: string) =>
-        dispatch(removeModuleAction(assetId, slotId)),
+      removeModule: (assetId: string, slotId: string) => {
+        // The reducer ignores a removal on the committed chassis; say so
+        // instead of letting the modal close as if it had worked.
+        if (isExpeditionChassisCommitmentLocked(stateRef.current, assetId)) {
+          addToast(
+            tRef.current('assets:removeFailed.expedition_locked'),
+            'error'
+          )
+          return
+        }
+        dispatch(removeModuleAction(assetId, slotId))
+      },
       startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) =>
         dispatchWithFailureToast(
           startCrowdfundAction(input, stateRef.current),

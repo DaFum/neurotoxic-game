@@ -54,3 +54,36 @@ describe('useAssetDispatchActions sellChassis', () => {
     expect(dispatch).toHaveBeenCalledWith(sold)
   })
 })
+
+describe('useAssetDispatchActions removeModule', () => {
+  it('toasts and skips the dispatch on the chassis the active run committed to', () => {
+    const { result, dispatch, addToast, stateRef } = renderAssetActions()
+    stateRef.current = {
+      assets: [],
+      liabilities: {},
+      expedition: {
+        status: 'active',
+        loadout: { activeTourbusAssetId: 'asset_1' }
+      }
+    }
+
+    result.current.removeModule('asset_1', 'slot_1')
+
+    expect(dispatch).not.toHaveBeenCalled()
+    expect(addToast).toHaveBeenCalledWith(
+      't:assets:removeFailed.expedition_locked',
+      'error'
+    )
+  })
+
+  it('dispatches a removal on any other chassis', () => {
+    const { result, dispatch, addToast } = renderAssetActions()
+
+    result.current.removeModule('asset_1', 'slot_1')
+
+    expect(addToast).not.toHaveBeenCalled()
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ type: ActionTypes.REMOVE_MODULE })
+    )
+  })
+})

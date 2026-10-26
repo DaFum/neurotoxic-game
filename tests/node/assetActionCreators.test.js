@@ -262,6 +262,31 @@ describe('installModule', () => {
     assert.equal(action.payload.newSlotIds, undefined)
   })
 
+  it('returns FAILED with EXPEDITION_LOCKED on the chassis the active run committed to', () => {
+    registerTestModule('install_locked')
+    const asset = makeAsset({
+      slots: [
+        {
+          id: 'slot_1',
+          slotType: 'tb_roof',
+          position: { x: 0, y: 0 },
+          installedModuleId: null
+        }
+      ]
+    })
+    const state = makeState({ assets: [asset] })
+    state.expedition = {
+      status: 'active',
+      loadout: { activeTourbusAssetId: 'asset_1' }
+    }
+    const action = installModule(
+      { assetId: 'asset_1', slotId: 'slot_1', moduleId: 'install_locked' },
+      state
+    )
+    assert.equal(action.type, ActionTypes.INSTALL_MODULE_FAILED)
+    assert.equal(action.payload.reason, 'EXPEDITION_LOCKED')
+  })
+
   it('returns FAILED on slot type mismatch', () => {
     registerTestModule('install_mismatch', { slotType: 'tb_audio' })
     const asset = makeAsset({

@@ -315,6 +315,7 @@ export type InstallModuleFailureReason =
   | 'EXCLUSIVITY'
   | 'MAX_PER_ASSET'
   | 'INSUFFICIENT_FUNDS'
+  | 'EXPEDITION_LOCKED'
 
 /**
  * Pre-generated dynamic slot id and type pair.
