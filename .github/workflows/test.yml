@@ -105,7 +105,7 @@ jobs:
         with:
           marker: '<!-- test-results-vitest-logic: do-not-edit -->'
           file: 'test-output-vitest-logic.txt'
-          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError'
+          regex: 'FAIL\b|^\s+[✕×✗]|AssertionError'
           max: ${{ env.MAX_FAILURE_LINES }}
           header: '## ❌ Vitest Logic tests failed'
 
@@ -168,7 +168,7 @@ jobs:
         with:
           marker: '<!-- test-results-vitest-ui: do-not-edit -->'
           file: 'test-output-vitest-ui.txt'
-          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError'
+          regex: 'FAIL\b|^\s+[✕×✗]|AssertionError'
           max: ${{ env.MAX_FAILURE_LINES }}
           header: '## ❌ Vitest UI tests failed'
 
