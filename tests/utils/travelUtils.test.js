@@ -164,6 +164,23 @@ describe('travelUtils', () => {
       )
     })
 
+    test('reads the region key the reputation writers use for an id without an underscore', () => {
+      // Writers key such a venue on the whole id (`getRegionKeyForLocation`).
+      const result = checkVenueAccess({
+        node: { type: 'GIG', venue: { id: 'solo', name: 'Solo' } },
+        reputationByRegion: { solo: -31 },
+        venuesMap: new Map([
+          ['solo', { id: 'solo', name: 'Solo', capacity: 50 }]
+        ]),
+        getLocationName: mockGetLocationName
+      })
+      assert.strictEqual(result.allowed, false)
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.bookingRefusedRegionalReputation'
+      )
+    })
+
     test('gates venueId-only nodes the same as venue-backed nodes', () => {
       // Loaded saves carry venueId only: sanitizeMapNodes drops node.venue.
       const blacklisted = checkVenueAccess({

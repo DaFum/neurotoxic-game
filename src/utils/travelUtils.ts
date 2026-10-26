@@ -1,9 +1,9 @@
 import {
   calculateTravelCashRequired,
+  getRegionKeyForLocation,
   normalizeVenueId,
   REGION_BLACKLIST_THRESHOLD
 } from './mapUtils'
-import { getCityKeyFromVenueId } from './mapGenerator'
 import { clampPlayerMoney, clampVanFuel, finiteNumberOr } from './gameState'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 import type { TranslationCallback } from '../types/callbacks'
@@ -209,7 +209,9 @@ export const checkVenueAccess = ({
     }
   }
 
-  const regionId = (venueId && getCityKeyFromVenueId(venueId)) || 'Unknown'
+  // The same key the reputation writers use, so a venue id without an
+  // underscore is read where it was written.
+  const regionId = getRegionKeyForLocation(venueId) ?? 'Unknown'
   if (
     finiteNumberOr(reputationByRegion[regionId], 0) <=
     REGION_BLACKLIST_THRESHOLD
