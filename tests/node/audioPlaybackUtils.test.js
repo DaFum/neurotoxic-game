@@ -24,7 +24,8 @@ test('normalizeMidiPlaybackOptions', async t => {
       useCleanPlayback: true,
       onEnded: null,
       stopAfterSeconds: null,
-      startTimeSec: null
+      startTimeSec: null,
+      resolveStartTimeSec: null
     })
   })
 
@@ -33,7 +34,8 @@ test('normalizeMidiPlaybackOptions', async t => {
       useCleanPlayback: true,
       onEnded: null,
       stopAfterSeconds: null,
-      startTimeSec: null
+      startTimeSec: null,
+      resolveStartTimeSec: null
     })
     assert.deepStrictEqual(
       normalizeMidiPlaybackOptions({ useCleanPlayback: false }),
@@ -41,7 +43,8 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: false,
         onEnded: null,
         stopAfterSeconds: null,
-        startTimeSec: null
+        startTimeSec: null,
+        resolveStartTimeSec: null
       }
     )
   })
@@ -52,7 +55,8 @@ test('normalizeMidiPlaybackOptions', async t => {
       useCleanPlayback: true,
       onEnded,
       stopAfterSeconds: null,
-      startTimeSec: null
+      startTimeSec: null,
+      resolveStartTimeSec: null
     })
   })
 
@@ -63,7 +67,8 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: true,
         onEnded: null,
         stopAfterSeconds: 30,
-        startTimeSec: null
+        startTimeSec: null,
+        resolveStartTimeSec: null
       }
     )
     assert.deepStrictEqual(
@@ -72,7 +77,8 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: true,
         onEnded: null,
         stopAfterSeconds: 0,
-        startTimeSec: null
+        startTimeSec: null,
+        resolveStartTimeSec: null
       }
     )
     assert.deepStrictEqual(
@@ -81,10 +87,28 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: true,
         onEnded: null,
         stopAfterSeconds: null,
-        startTimeSec: null
+        startTimeSec: null,
+        resolveStartTimeSec: null
       }
     )
   })
+
+  await t.test(
+    'accepts a resolveStartTimeSec callback and ignores other types',
+    () => {
+      const resolveStartTimeSec = () => 4
+      assert.strictEqual(
+        normalizeMidiPlaybackOptions({ resolveStartTimeSec })
+          .resolveStartTimeSec,
+        resolveStartTimeSec
+      )
+      assert.strictEqual(
+        normalizeMidiPlaybackOptions({ resolveStartTimeSec: 4 })
+          .resolveStartTimeSec,
+        null
+      )
+    }
+  )
 
   await t.test('accepts a startTimeSec override', () => {
     assert.deepStrictEqual(
@@ -93,14 +117,16 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: true,
         onEnded: null,
         stopAfterSeconds: null,
-        startTimeSec: 12.5
+        startTimeSec: 12.5,
+        resolveStartTimeSec: null
       }
     )
     assert.deepStrictEqual(normalizeMidiPlaybackOptions({ startTimeSec: -5 }), {
       useCleanPlayback: true,
       onEnded: null,
       stopAfterSeconds: null,
-      startTimeSec: 0
+      startTimeSec: 0,
+      resolveStartTimeSec: null
     })
     assert.deepStrictEqual(
       normalizeMidiPlaybackOptions({ startTimeSec: Number.NaN }),
@@ -108,7 +134,8 @@ test('normalizeMidiPlaybackOptions', async t => {
         useCleanPlayback: true,
         onEnded: null,
         stopAfterSeconds: null,
-        startTimeSec: null
+        startTimeSec: null,
+        resolveStartTimeSec: null
       }
     )
   })
