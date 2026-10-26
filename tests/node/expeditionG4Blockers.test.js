@@ -2772,3 +2772,81 @@ test('load keeps a contract failed by its double-down restriction failed and set
     'active'
   )
 })
+
+const heatBreachFixture = () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  return {
+    ...started,
+    activeEvent: { id: 'expedition_authority_patrol' },
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        heat: 35,
+        pendingDirectorEventId: 'expedition_authority_patrol'
+      },
+      activeObligations: [
+        {
+          id: `${started.expedition.runId}:contract_keep_it_clean`,
+          sourceType: 'native',
+          sourceId: 'contract_keep_it_clean',
+          constraints: [{ id: 'keep_clean', kind: 'max_heat', maxHeat: 40 }],
+          progressByConstraintId: {
+            keep_clean: {
+              constraintId: 'keep_clean',
+              value: 0,
+              satisfied: false,
+              failed: false
+            }
+          },
+          status: 'active',
+          settled: false,
+          doubleDown: null
+        }
+      ]
+    }
+  }
+}
+
+test('Heat an event adds fails a max-Heat contract in the same commit, once (#3368)', () => {
+  const pending = heatBreachFixture()
+  const payload = {
+    expectedRouteStep: pending.expedition.routeStep,
+    sourceEventId: 'expedition_authority_patrol',
+    sourceOptionId: 'wave_through',
+    resultIds: ['attention_drawn']
+  }
+  const resolved = handleApplyExpeditionEventDelta(pending, payload)
+  const obligation = resolved.expedition.activeObligations[0]
+  assert.equal(obligation.status, 'failed')
+  assert.equal(obligation.settled, true)
+  // 35 + 8 event Heat, plus the template's own failure Heat once.
+  assert.ok(resolved.expedition.pressure.heat >= 43 + 10)
+  assert.equal(
+    resolved.expedition.resolvedObligationSignalIds.filter(id =>
+      id.startsWith('heat:')
+    ).length,
+    1
+  )
+
+  // Below the cap nothing fails.
+  const calm = handleApplyExpeditionEventDelta(
+    {
+      ...pending,
+      expedition: {
+        ...pending.expedition,
+        pressure: { ...pending.expedition.pressure, heat: 20 }
+      }
+    },
+    payload
+  )
+  assert.equal(calm.expedition.activeObligations[0].status, 'active')
+})
