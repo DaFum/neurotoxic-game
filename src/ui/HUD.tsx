@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
@@ -31,13 +31,6 @@ export const HUD = memo(() => {
   const neuroDecimatorActive = useGameSelector(
     state => !!state.band?.neuroDecimatorActive
   )
-  // Keeps the audio engine in step with the stored flag: a restored save sets
-  // `neuroDecimatorActive` without any click, and the engine records it for the
-  // node that audio setup builds later.
-  useEffect(() => {
-    audioService.setNeuroDecimator(hasNeuroDecimator && neuroDecimatorActive)
-  }, [hasNeuroDecimator, neuroDecimatorActive])
-
   const hasNeurotoxicPedal = useGameSelector(
     state => !!state.band?.inventory?.neurotoxicPedal
   )

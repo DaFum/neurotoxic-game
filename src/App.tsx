@@ -23,6 +23,7 @@ import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
 import { MOTION_TRANSITIONS } from './config/motion'
 import { AssetNotifications } from './components/assets/AssetNotifications'
+import { useNeuroDecimatorAudioSync } from './hooks/useNeuroDecimatorAudioSync'
 import type { GamePhase } from './types/game'
 
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
@@ -115,6 +116,7 @@ function GameContent() {
   const minigameType = useGameSelector(state => state.minigame?.type)
 
   const { resolveEvent } = useGameActions()
+  useNeuroDecimatorAudioSync()
 
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-void-black text-toxic-green'>
