@@ -119,6 +119,38 @@ describe('Modal Component', () => {
     expect(onCloseMock).toHaveBeenCalledTimes(1)
   })
 
+  test('does not call onClose when a press starts inside the dialog and is released over the backdrop', () => {
+    const onClose = vi.fn()
+    const { getByRole } = render(
+      <Modal isOpen onClose={onClose} title='Test'>
+        <button type='button'>Inside</button>
+      </Modal>
+    )
+    const dialog = getByRole('dialog')
+    const overlay = dialog.parentElement
+
+    fireEvent.pointerDown(dialog)
+    // The browser dispatches the click on the common ancestor, the overlay.
+    fireEvent.click(overlay)
+
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  test('calls onClose when the press and the click both hit the backdrop', () => {
+    const onClose = vi.fn()
+    const { getByRole } = render(
+      <Modal isOpen onClose={onClose} title='Test'>
+        <button type='button'>Inside</button>
+      </Modal>
+    )
+    const overlay = getByRole('dialog').parentElement
+
+    fireEvent.pointerDown(overlay)
+    fireEvent.click(overlay)
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   test('does not call onClose when clicking inside the modal dialog', () => {
     const onCloseMock = vi.fn()
     const { getByRole } = render(
