@@ -674,6 +674,17 @@ export const handleStartExpedition = (
         )
       },
       technicalCondition: createDefaultTechnicalCondition(),
+      // Band injuries the Career carried out of earlier Tours (net of any paid
+      // rehab) are the starting state of this one: the injury maps and the
+      // performance and eligibility rules that read them are run-scoped.
+      bandInjuryByMemberId: Object.assign(
+        Object.create(null),
+        Object.fromEntries(
+          Object.entries(state.career.bandConsequenceByMemberId ?? {}).filter(
+            ([, stage]) => stage !== 'none'
+          )
+        )
+      ) as NonNullable<GameState['expedition']['bandInjuryByMemberId']>,
       preparedSponsorOffers: [],
       preparedSponsorProvenance: undefined,
       activeObligations
