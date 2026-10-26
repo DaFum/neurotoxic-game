@@ -192,6 +192,17 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
       })
       assert.equal(priceOf(hiddenOnly), 'NOTHING_TO_REPAIR')
 
+      // At full Condition with a known defect only a defect-clearing repair
+      // helps: field repair would burn a part for nothing and is rejected.
+      const field = resolveExpeditionRepair(withDefect, {
+        mode: 'field',
+        targetGroup: 'pa',
+        quality: 0.8,
+        expectedRouteStep: 3
+      })
+      assert.deepEqual(field, { ok: false, reason: 'NOTHING_TO_REPAIR' })
+      assert.equal(priceOf(withDefect), 250)
+
       // Defects of another group do not add to this group's price.
       const otherGroup = createActiveExpeditionState({
         technicalCondition: {

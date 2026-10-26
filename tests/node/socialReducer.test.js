@@ -683,6 +683,12 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState2, mockState)
     })
 
+    it('rejects primitive and array payloads without applying anything', () => {
+      for (const bad of ['invalid', 42, true, []]) {
+        assert.strictEqual(handlePirateBroadcast(mockState, bad), mockState)
+      }
+    })
+
     it('should correctly deduct costs and apply gains', () => {
       const nextState = handlePirateBroadcast(mockState, {})
 

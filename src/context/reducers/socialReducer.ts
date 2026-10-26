@@ -818,15 +818,11 @@ const applyZealotryAction = (
   // Payload-shape validation runs first so a malformed payload sent on the
   // same day as a successful broadcast logs an "invalid payload" warning
   // (not the misleading "already triggered today") for debuggability.
-  if (options.invalidPayloadShapeLogMessage) {
-    if (!payload || typeof payload !== 'object') {
-      logger.warn('GameState', options.invalidPayloadShapeLogMessage)
-      return state
-    }
-  }
-
-  if (!payload) {
-    logger.warn('GameState', options.invalidLogMessage)
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    logger.warn(
+      'GameState',
+      options.invalidPayloadShapeLogMessage ?? options.invalidLogMessage
+    )
     return state
   }
 

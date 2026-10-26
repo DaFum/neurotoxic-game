@@ -127,6 +127,11 @@ export const resolveExpeditionRepair = (
       if (spareParts < 1) {
         return { ok: false, reason: 'INSUFFICIENT_SPARE_PARTS' }
       }
+      // A field repair restores Condition only; at full Condition it would
+      // burn a part (and may add a hidden defect) for no benefit.
+      if (tc[targetGroup] >= 100) {
+        return { ok: false, reason: 'NOTHING_TO_REPAIR' }
+      }
 
       const boundedQuality = Math.max(
         0,
