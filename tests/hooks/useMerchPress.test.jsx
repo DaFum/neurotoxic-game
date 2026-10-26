@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useMerchPress } from '../../src/hooks/useMerchPress'
 import * as GameStateContext from '../../src/context/GameState'
+import { secureRandom } from '../../src/utils/crypto'
+
+vi.mock('../../src/utils/crypto', () => ({ secureRandom: vi.fn() }))
 
 vi.mock('../../src/context/GameState', () => {
   const useGameActions = vi.fn()
@@ -55,5 +58,54 @@ describe('useMerchPress', () => {
     expect(renderHook(() => useMerchPress()).result.current.canPress).toBe(
       false
     )
+  })
+
+  describe('press outcome', () => {
+    const press = roll => {
+      const merchPress = vi.fn()
+      GameStateContext.useGameActions.mockReturnValue({
+        merchPress,
+        player: { fameLevel: 2, money: 1000 },
+        band: { harmony: 80 }
+      })
+      secureRandom.mockReturnValue(roll)
+      const { result } = renderHook(() => useMerchPress())
+      result.current.triggerPress()
+      return {
+        payload: merchPress.mock.calls[0][0],
+        config: result.current.config
+      }
+    }
+
+    it('grants no gains on a failed press but still charges cash and harmony', () => {
+      const { payload, config } = press(0.1)
+
+      expect(payload).toMatchObject({
+        cost: config.cost,
+        loyaltyGain: 0,
+        controversyGain: 0,
+        fameGain: 0,
+        harmonyCost: config.harmonyCostOnFail
+      })
+      expect(payload.successToast).toEqual({
+        messageKey: 'ui:merch_press.failure_toast',
+        type: 'warning'
+      })
+    })
+
+    it('grants the configured gains on a successful press', () => {
+      const { payload, config } = press(0.9)
+
+      expect(payload).toMatchObject({
+        cost: config.cost,
+        loyaltyGain: config.loyaltyGain,
+        controversyGain: config.controversyGain,
+        fameGain: config.fameGain,
+        harmonyCost: 0
+      })
+      expect(payload.successToast.messageKey).toBe(
+        'ui:merch_press.success_toast'
+      )
+    })
   })
 })

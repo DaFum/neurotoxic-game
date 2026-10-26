@@ -1580,7 +1580,7 @@
   "merch_press.gain_label": "GEWINN",
   "merch_press.not_enough_harmony": "Nicht genug Harmonie",
   "merch_press.not_enough_money": "Nicht genug Geld",
-  "merch_press.risk_warning": "WARNUNG: {{risk}}% RISIKO FÜR EQUIPMENT-AUSFALL (-{{harmonyCostOnFail}} HARMONIE)",
+  "merch_press.risk_warning": "WARNUNG: {{risk}}% RISIKO FÜR EQUIPMENT-AUSFALL (-{{harmonyCostOnFail}} HARMONIE, KEIN GEWINN)",
   "merch_press.subtitle": "BOOTLEG BETRIEB",
   "merch_press.success_toast": "Merch erfolgreich gepresst",
   "merch_press.title": "UNTERGRUND MERCH-PRESSE",

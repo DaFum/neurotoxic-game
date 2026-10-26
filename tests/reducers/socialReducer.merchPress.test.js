@@ -44,6 +44,28 @@ describe('socialReducer.merchPress', () => {
     assert.strictEqual(result.player.money, 100)
   })
 
+  test('a zero-gain failed press costs cash and harmony only (#3311)', () => {
+    const state = {
+      player: { money: 1000, fame: 40, fameLevel: 0 },
+      band: { harmony: 90, inventory: {} },
+      social: { loyalty: 10, controversyLevel: 84, activeDeals: [] },
+      toasts: []
+    }
+    const result = handleMerchPress(state, {
+      cost: 150,
+      loyaltyGain: 0,
+      controversyGain: 0,
+      fameGain: 0,
+      harmonyCost: 15
+    })
+
+    assert.strictEqual(result.player.money, 850)
+    assert.strictEqual(result.band.harmony, 75)
+    assert.strictEqual(result.player.fame, 40)
+    assert.strictEqual(result.social.loyalty, 10)
+    assert.strictEqual(result.social.controversyLevel, 84)
+  })
+
   test('applies costs and gains', () => {
     const state = {
       player: { money: 1000, fame: 0, fameLevel: 0 },

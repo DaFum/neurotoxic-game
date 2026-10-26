@@ -186,7 +186,7 @@ function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
           risk: Math.round(config.failChance * 100),
           harmonyCostOnFail: config.harmonyCostOnFail,
           defaultValue:
-            'WARNING: {{risk}}% CHANCE OF EQUIPMENT FAILURE (-{{harmonyCostOnFail}} HARMONY)'
+            'WARNING: {{risk}}% CHANCE OF EQUIPMENT FAILURE (-{{harmonyCostOnFail}} HARMONY, NO GAINS)'
         })}
       </p>
     </div>
