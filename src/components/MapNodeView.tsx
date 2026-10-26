@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
@@ -29,6 +29,8 @@ import type {
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const TOOLTIP_PHONE_STYLE = (nodeX: number): CSSProperties =>
   ({ '--node-x': nodeX }) as CSSProperties
+/** Gap kept between a nudged tooltip and the clipped map's top/bottom edge. */
+const TOOLTIP_EDGE_MARGIN_PX = 4
 const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
@@ -252,8 +254,62 @@ const MapNodeTooltip = memo(
     // 45.2% of a 540px mobile one. 45 therefore picks the roomier side on both,
     // leaving at least ~176px against a tallest observed tooltip of 74px.
     const flipAbove = node.y > 45
+
+    // Keeps the tooltip inside the clipped `.map-wrap` whatever its height. The
+    // side is chosen from the node's position alone, so a tall tooltip (the city
+    // intel block, larger root fonts) can still overhang; it is nudged back in
+    // once it is visible. Visibility is CSS-driven (hover/focus) or the pending
+    // confirmation, so the measurement runs on those events, after layout.
+    const tooltipRef = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+      const tooltip = tooltipRef.current
+      const host = tooltip?.parentElement
+      const map = tooltip?.closest('.map-wrap')
+      if (!tooltip || !host || !map) return undefined
+      let frame = 0
+      const place = () => {
+        tooltip.style.translate = ''
+        const tip = tooltip.getBoundingClientRect()
+        if (tip.height === 0) return
+        const box = map.getBoundingClientRect()
+        const top = box.top + TOOLTIP_EDGE_MARGIN_PX
+        const bottom = box.bottom - TOOLTIP_EDGE_MARGIN_PX
+        const shift =
+          tip.top < top
+            ? top - tip.top
+            : tip.bottom > bottom
+              ? bottom - tip.bottom
+              : 0
+        // Same horizontal -50% as the `-translate-x-1/2` class this replaces.
+        if (shift !== 0) tooltip.style.translate = `-50% ${Math.round(shift)}px`
+      }
+      const schedule = () => {
+        cancelAnimationFrame(frame)
+        frame = requestAnimationFrame(place)
+      }
+      host.addEventListener('mouseenter', schedule)
+      host.addEventListener('focusin', schedule)
+      // An open tooltip (pending confirmation) outlives a viewport change, e.g.
+      // a rotation, which resizes the map under its old nudge.
+      window.addEventListener('resize', schedule)
+      // Also while hovered or focused: the effect reruns when the content (and so
+      // the height) changes, and an open tooltip must be placed again then too.
+      if (
+        isPendingConfirm ||
+        host.matches(':hover') ||
+        host.matches(':focus-within')
+      )
+        schedule()
+      return () => {
+        cancelAnimationFrame(frame)
+        host.removeEventListener('mouseenter', schedule)
+        host.removeEventListener('focusin', schedule)
+        window.removeEventListener('resize', schedule)
+      }
+    }, [isPendingConfirm, flipAbove, cityTraits, fog, nodeLocationName])
     return (
       <div
+        ref={tooltipRef}
         /* Below the node, mt-[3.75rem] clears the tallest label stack (type
            label plus a three-line location name), which reaches 60px past the
            bottom of this box. Above the node there is no label stack, so a
@@ -271,10 +327,8 @@ const MapNodeTooltip = memo(
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
-        {/* Hidden on phones: the intel block roughly doubles the tooltip, which
-            no longer fits inside the clipped map above or below a mid-map node. */}
         {cityTraits && (
-          <div className='max-sm:hidden mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-xs text-ash-gray font-mono flex flex-col gap-0.5'>
+          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-xs text-ash-gray font-mono flex flex-col gap-0.5'>
             <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-xxs mb-0.5'>
               {t('ui:map.intel.title')}
             </div>
