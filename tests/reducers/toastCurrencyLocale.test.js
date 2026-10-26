@@ -114,18 +114,14 @@ describe('toast-baked currency follows the active locale', () => {
     test(`dark-web leak bakes the cost via formatCurrency in ${locale}`, () => {
       const result = withLocale(locale, () =>
         handleDarkWebLeak(socialState(), {
-          cost: 1500,
-          fameGain: 8,
-          zealotryGain: 4,
-          controversyGain: 10,
-          harmonyCost: 5,
           successToast: { messageKey: 'ui:test', type: 'success', options: {} }
         })
       )
 
       assert.strictEqual(
         result.toasts[0].options.cost,
-        formatCurrency(-1500, locale, 'always')
+        // DARK_WEB_LEAK_CONFIG.COST: the reducer, not the payload, prices it.
+        formatCurrency(-500, locale, 'always')
       )
     })
   }

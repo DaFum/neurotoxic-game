@@ -156,13 +156,8 @@ describe('socialReducer.merchPress', () => {
   })
 
   test('zealotry-style actions share the finite-number funds read', () => {
-    const payload = {
-      cost: 10,
-      fameGain: 1,
-      zealotryGain: 1,
-      controversyGain: 1,
-      harmonyCost: 1
-    }
+    // Cost and gains come from DARK_WEB_LEAK_CONFIG (500 cash, 20 harmony).
+    const payload = {}
     const makeState = (money, harmony) => ({
       player: { money, fame: 0, fameLevel: 0, day: 3 },
       band: { harmony, inventory: {} },
@@ -177,9 +172,9 @@ describe('socialReducer.merchPress', () => {
     assert.strictEqual(handleDarkWebLeak(boolMoney, payload), boolMoney)
 
     // Fractional funds are valid state and produce a whole-unit result.
-    const fractional = handleDarkWebLeak(makeState(100.5, 50.5), payload)
-    assert.strictEqual(fractional.player.money, 90)
-    assert.strictEqual(fractional.band.harmony, 49)
+    const fractional = handleDarkWebLeak(makeState(600.5, 50.5), payload)
+    assert.strictEqual(fractional.player.money, 100)
+    assert.strictEqual(fractional.band.harmony, 30)
   })
 
   test('formats toast cost at dispatch time', () => {
