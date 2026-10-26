@@ -292,7 +292,14 @@ const MapNodeTooltip = memo(
       // An open tooltip (pending confirmation) outlives a viewport change, e.g.
       // a rotation, which resizes the map under its old nudge.
       window.addEventListener('resize', schedule)
-      if (isPendingConfirm) schedule()
+      // Also while hovered or focused: the effect reruns when the content (and so
+      // the height) changes, and an open tooltip must be placed again then too.
+      if (
+        isPendingConfirm ||
+        host.matches(':hover') ||
+        host.matches(':focus-within')
+      )
+        schedule()
       return () => {
         cancelAnimationFrame(frame)
         host.removeEventListener('mouseenter', schedule)

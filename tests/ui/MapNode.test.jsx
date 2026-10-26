@@ -76,11 +76,14 @@ describe('MapNodeView', () => {
           if (this.classList.contains('map-wrap'))
             return rectOf(MAP.top, MAP.bottom)
           // The tooltip: 200px tall, hanging out of the map at the top or bottom.
-          if (this.className.includes('bg-void-black/90'))
-            return rectOf(
-              globalThis.__tooltipTop,
-              globalThis.__tooltipTop + 200
-            )
+          if (this.className.includes('bg-void-black/90')) {
+            // The rect follows the inline nudge, like a real layout would.
+            const translateY =
+              Number.parseFloat(this.style.translate.split(/\s+/)[1] ?? '0') ||
+              0
+            const top = globalThis.__tooltipTop + translateY
+            return rectOf(top, top + 200)
+          }
           return rectOf(0, 0)
         }
       )
@@ -127,16 +130,17 @@ describe('MapNodeView', () => {
     })
 
     test('places it again when the viewport is resized while it is open', () => {
-      globalThis.__tooltipTop = 200
-      const { container } = renderInMap()
-      expect(tooltipOf(container).style.translate).toBe('')
-
-      // A rotation moved the tooltip past the map's bottom edge.
       globalThis.__tooltipTop = 500
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('-50% -104px')
+
+      // A rotation changed the base position: the old nudge must be dropped
+      // before measuring, and a different one applied.
+      globalThis.__tooltipTop = 400
       act(() => {
         window.dispatchEvent(new Event('resize'))
       })
-      expect(tooltipOf(container).style.translate).toBe('-50% -104px')
+      expect(tooltipOf(container).style.translate).toBe('-50% -4px')
     })
 
     test('leaves a tooltip that fits where it is', () => {
