@@ -33,3 +33,4 @@
 - Saved/legacy venue IDs may carry a namespace prefix (`'venues:berlin_so36'`) while `gameMap.cityStates` is keyed by the city prefix (`'berlin'`).
 - Normalize before deriving a city key: read the raw ID from the node/current gig, run `normalizeVenueId(raw)`, then pass a non-empty result to `getCityKeyFromVenueId`. If normalization returns `null` or the city key is `''`, use the local skip/fallback path instead of deriving traits from the unnormalized value.
 - `usePostGigLogic`, `OverworldMap`, `arrivalUtils`, `systemReducer`, and `minigameReducer` all follow this venue normalization pattern.
+- A rest from the Overworld menu (`useVanMaintenance.handleRestInVan`) records the `rest` obligation signal against the current node while a run is `active`, so no-rest Contracts and double-downs see it exactly like a `REST_STOP` arrival. `Overworld` passes `expeditionStatus` and `recordExpeditionObligationSignal` through `useTravelLogic`.
