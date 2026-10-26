@@ -429,7 +429,10 @@ export const handlePrepareExpeditionSponsorOffers = (
  * the loadout is validated against *that* route, so a caller cannot start a run
  * on a route the Tour Prep preview never showed. Fuel and Cash are applied
  * exactly once, and the run's Cash/Fame baselines are stamped after the pre-run
- * fuel payment so the settlement measures only what the run itself earned.
+ * fuel payment and after the staged sponsor's signing cash, so the settlement
+ * measures only what the run itself earned. The signing cash is paid before the
+ * run and is never forfeited by retention; the installed `brandDeal` obligation
+ * carries the sponsor's risk.
  */
 export const handleStartExpedition = (
   state: GameState,
@@ -589,13 +592,14 @@ export const handleStartExpedition = (
       }
     : state.career
 
+  const committedMoney = sponsorAcceptance?.nextPlayer.money ?? nextMoney
   let nextState: GameState = {
     ...state,
     career: nextCareer,
     rivalBand: rivalSelection?.rivalBand ?? null,
     player: {
       ...(sponsorAcceptance?.nextPlayer ?? state.player),
-      money: sponsorAcceptance?.nextPlayer.money ?? nextMoney,
+      money: committedMoney,
       currentNodeId: preparedMap.startNodeId,
       van: { ...state.player.van, fuel: normalized.build.startingFuelTarget }
     },
@@ -627,7 +631,7 @@ export const handleStartExpedition = (
       insurancePolicyId: normalized.insurancePolicyId ?? null,
       insuranceClaimConsumed: false,
       claimConsumed: false,
-      startingMoney: nextMoney,
+      startingMoney: committedMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
       // The Tour's own starting stock rides on top of what the build packed -

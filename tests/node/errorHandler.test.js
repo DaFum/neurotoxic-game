@@ -277,93 +277,56 @@ describe('handleError', () => {
     }
   })
 
-  it('should safely catch fetch async failures during reportErrorRemote', () => {
+  it('makes no remote reporting requests at any severity', () => {
     const originalWindow = globalThis.window
     const originalFetch = globalThis.fetch
-
-    let fetchCalled = false
-    globalThis.window = {
-      navigator: { onLine: true },
-      dispatchEvent: () => true
-    }
-    globalThis.fetch = () => {
-      fetchCalled = true
-      return Promise.reject(new Error('Fetch failed'))
-    }
-
-    try {
-      const result = handleError(new Error('Remote fetch fail test'), {
-        silent: true
-      })
-      assert.strictEqual(fetchCalled, true, 'fetch should have been called')
-      assert.strictEqual(result.message, 'Remote fetch fail test')
-    } finally {
-      globalThis.window = originalWindow
-      globalThis.fetch = originalFetch
-    }
-  })
-
-  it('should safely catch fetch synchronous throw during reportErrorRemote', () => {
-    const originalWindow = globalThis.window
-    const originalFetch = globalThis.fetch
-
-    let fetchCalled = false
-    globalThis.window = {
-      navigator: { onLine: true },
-      dispatchEvent: () => true
-    }
-    globalThis.fetch = () => {
-      fetchCalled = true
-      throw new Error('Fetch sync failed')
-    }
-
-    try {
-      const result = handleError(new Error('Remote fetch sync fail test'), {
-        silent: true
-      })
-      assert.strictEqual(fetchCalled, true, 'fetch should have been called')
-      assert.strictEqual(result.message, 'Remote fetch sync fail test')
-    } finally {
-      globalThis.window = originalWindow
-      globalThis.fetch = originalFetch
-    }
-  })
-
-  it('should safely catch sendBeacon failures during reportErrorRemote', () => {
-    const originalWindow = globalThis.window
     const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
       globalThis,
       'navigator'
     )
 
-    let beaconCalled = false
-    globalThis.window = {
-      navigator: { onLine: true },
-      dispatchEvent: () => true
+    let fetchCalls = 0
+    let beaconCalls = 0
+    globalThis.fetch = () => {
+      fetchCalls++
+      return Promise.resolve({ ok: true })
     }
     Object.defineProperty(globalThis, 'navigator', {
       configurable: true,
       writable: true,
       value: {
         sendBeacon: () => {
-          beaconCalled = true
-          throw new Error('Beacon failed')
+          beaconCalls++
+          return true
         }
       }
     })
+    globalThis.window = {
+      navigator: { onLine: true },
+      dispatchEvent: () => true
+    }
 
     try {
-      const result = handleError(new Error('Remote beacon fail test'), {
-        silent: true
-      })
-      assert.strictEqual(
-        beaconCalled,
-        true,
-        'sendBeacon should have been called'
-      )
-      assert.strictEqual(result.message, 'Remote beacon fail test')
+      for (const severity of [
+        ErrorSeverity.LOW,
+        ErrorSeverity.MEDIUM,
+        ErrorSeverity.HIGH,
+        ErrorSeverity.CRITICAL
+      ]) {
+        for (const silent of [true, false]) {
+          const result = handleError(new Error('Sensitive: token=SECRET123'), {
+            severity,
+            silent,
+            addToast: () => {}
+          })
+          assert.strictEqual(result.message, 'Sensitive: token=SECRET123')
+        }
+      }
+      assert.strictEqual(fetchCalls, 0)
+      assert.strictEqual(beaconCalls, 0)
     } finally {
       globalThis.window = originalWindow
+      globalThis.fetch = originalFetch
       if (originalNavigatorDescriptor) {
         Object.defineProperty(
           globalThis,
@@ -545,79 +508,6 @@ describe('handleError', () => {
       })
     } finally {
       globalThis.window = originalWindow
-    }
-  })
-
-  it('should sanitize remote telemetry payload and exclude user agent', () => {
-    const originalWindow = globalThis.window
-    const originalFetch = globalThis.fetch
-    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
-      globalThis,
-      'navigator'
-    )
-
-    const fetchCalls = []
-    const beaconCalls = []
-
-    globalThis.fetch = (url, options) => {
-      fetchCalls.push({ url, options })
-      return Promise.resolve({ ok: true })
-    }
-    Object.defineProperty(globalThis, 'navigator', {
-      configurable: true,
-      writable: true,
-      value: {
-        userAgent: 'sensitive-agent',
-        sendBeacon: (url, payload) => {
-          beaconCalls.push({ url, payload })
-          return true
-        }
-      }
-    })
-    globalThis.window = {
-      navigator: { onLine: true },
-      dispatchEvent: () => true
-    }
-
-    try {
-      handleError(new Error('Sensitive info: token=SECRET123'), {
-        silent: true
-      })
-
-      assert.strictEqual(fetchCalls.length, 1)
-      assert.strictEqual(fetchCalls[0].url, '/api/analytics/error')
-      const fetchPayload = JSON.parse(fetchCalls[0].options.body)
-      assert.deepStrictEqual(fetchPayload, {
-        message: 'Error captured',
-        code: ErrorCategory.UNKNOWN,
-        timestamp: fetchPayload.timestamp
-      })
-
-      assert.strictEqual(beaconCalls.length, 1)
-      assert.strictEqual(beaconCalls[0].url, '/api/analytics/error')
-      const beaconPayload = JSON.parse(beaconCalls[0].payload)
-      assert.deepStrictEqual(beaconPayload, {
-        event: 'error',
-        error: {
-          message: 'Error captured',
-          code: ErrorCategory.UNKNOWN,
-          timestamp: beaconPayload.error.timestamp
-        }
-      })
-      assert.strictEqual(beaconPayload.userAgent, undefined)
-    } finally {
-      globalThis.window = originalWindow
-      globalThis.fetch = originalFetch
-
-      if (originalNavigatorDescriptor) {
-        Object.defineProperty(
-          globalThis,
-          'navigator',
-          originalNavigatorDescriptor
-        )
-      } else {
-        delete globalThis.navigator
-      }
     }
   })
 

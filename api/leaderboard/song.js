@@ -11,6 +11,22 @@ import { resolveLeaderboardId } from '../../lib/leaderboardSongIds.js'
 const MAX_SONG_ID_LENGTH = 64
 
 /**
+ * Writes the display name only while the player has no stats revision.
+ *
+ * @remarks
+ * Once `stats.js` has stored a revision for the player it owns the name: a late
+ * or overtaken song request must not overwrite the name a newer versioned
+ * snapshot wrote. Same `HEXISTS` boundary as `WRITE_IF_UNVERSIONED_SCRIPT`
+ * (stats.js), in one script so a stats write cannot land between check and set.
+ * KEYS: [revisions, players]; ARGV: [playerId, playerName]. Returns 1 if the
+ * name was written, 0 if the player is revision-protected.
+ */
+export const SET_NAME_IF_UNVERSIONED_SCRIPT = `
+if redis.call('HEXISTS', KEYS[1], ARGV[1]) == 1 then return 0 end
+redis.call('HSET', KEYS[2], ARGV[1], ARGV[2])
+return 1`
+
+/**
  * Handles score submissions and leaderboard requests for songs.
  *
  * POST validates the payload against prototype pollution, checks every field
@@ -119,8 +135,12 @@ export default async function handler(req, res) {
         validatedItems.push({ songId: leaderboardId, score: scoreItem.score })
       }
 
-      // v4: hSet accepts object
-      await client.hSet('players', { [playerId]: player.playerName })
+      // A refused name write is not an error: the scores below still apply
+      // (GT only ever raises a best) and the response shape stays unchanged.
+      await client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
+        keys: ['lb:revision', 'players'],
+        arguments: [playerId, String(player.playerName)]
+      })
 
       const multi = client.multi()
       for (const item of validatedItems) {

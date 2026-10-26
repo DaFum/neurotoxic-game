@@ -43,13 +43,21 @@ export const useMerchPress = () => {
     if (!canPress) return
 
     const isFailure = secureRandom() < config.failChance
+    // A ruined press still costs the cash and the harmony but yields nothing:
+    // no fame, no loyalty and no controversy, so a failure can neither reward
+    // the player nor push controversy over the deal-break threshold.
     const harmonyCost = isFailure ? config.harmonyCostOnFail : 0
+    const gains = isFailure
+      ? { loyaltyGain: 0, controversyGain: 0, fameGain: 0 }
+      : {
+          loyaltyGain: config.loyaltyGain,
+          controversyGain: config.controversyGain,
+          fameGain: config.fameGain
+        }
 
     merchPress({
       cost: config.cost,
-      loyaltyGain: config.loyaltyGain,
-      controversyGain: config.controversyGain,
-      fameGain: config.fameGain,
+      ...gains,
       harmonyCost,
       successToast: {
         messageKey: isFailure

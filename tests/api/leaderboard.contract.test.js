@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
 import { toPublicPlayerRef } from '../../lib/apiUtils.js'
 import { RATE_LIMIT_SCRIPT } from '../../lib/leaderboard.js'
+import { SET_NAME_IF_UNVERSIONED_SCRIPT } from '../../api/leaderboard/song.js'
 
 const mockClient = vi.hoisted(() => ({
   isOpen: true,
@@ -139,9 +140,10 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
       ])
       return
     }
-    expect(mockClient.hSet).toHaveBeenCalledWith('players', {
-      player1: 'A'.repeat(100)
-    })
+    const [, nameOptions] = mockClient.eval.mock.calls.find(
+      ([script]) => script === SET_NAME_IF_UNVERSIONED_SCRIPT
+    )
+    expect(nameOptions.arguments).toEqual(['player1', 'A'.repeat(100)])
     for (const call of mockClient.multi.mock.results[0].value.zAdd.mock.calls) {
       expect(call[2]).toEqual({ GT: true })
     }
@@ -197,7 +199,9 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
     const writes =
       endpoint.name === 'stats'
         ? evalCalls.filter(([script]) => script !== RATE_LIMIT_SCRIPT).length
-        : mockClient.hSet.mock.calls.length
+        : evalCalls.filter(
+            ([script]) => script === SET_NAME_IF_UNVERSIONED_SCRIPT
+          ).length
     expect(writes).toBe(2)
     expect(res.status.mock.lastCall).toEqual([429])
     expect(res.json.mock.lastCall).toEqual([{ error: 'Too many requests' }])

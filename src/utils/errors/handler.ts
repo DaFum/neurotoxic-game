@@ -88,15 +88,6 @@ const sanitizeErrorInfo = (errorInfo: ErrorInfoObject, clock: IClock) => ({
   timestamp: resolveTimestamp(errorInfo, clock)
 })
 
-const sanitizeTelemetryErrorInfo = (
-  errorInfo: ErrorInfoObject,
-  clock: IClock
-) => ({
-  message: 'Error captured',
-  code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: resolveTimestamp(errorInfo, clock)
-})
-
 const buildErrorInfo = (
   error: unknown,
   normalizedOptions: NormalizedErrorOptions,
@@ -177,37 +168,6 @@ const logErrorLocally = (errorInfo: ErrorInfoObject, clock: IClock) => {
     case ErrorSeverity.LOW:
     default:
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
-  }
-}
-
-const reportErrorRemote = (errorInfo: ErrorInfoObject, clock: IClock) => {
-  if (typeof window !== 'undefined' && window.navigator?.onLine) {
-    try {
-      fetch('/api/analytics/error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo, clock))
-      }).catch(reason => {
-        // Non-recursive debug log only: this runs inside the error handler, so
-        // escalating (warn/error) could re-enter reportErrorRemote. Debug is a
-        // no-op in production but surfaces telemetry outages during debugging.
-        logger.debug('ErrorHandler', 'Remote error report failed', reason)
-      })
-    } catch (_e) {
-      // Ignore tracking errors
-    }
-  }
-
-  if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-    try {
-      const payload = JSON.stringify({
-        event: 'error',
-        error: sanitizeTelemetryErrorInfo(errorInfo, clock)
-      })
-      navigator.sendBeacon('/api/analytics/error', payload)
-    } catch (_e) {
-      // Ignore tracking failures to prevent recursive errors
-    }
   }
 }
 
@@ -303,7 +263,6 @@ export const handleError = (
   )
 
   logErrorLocally(errorInfo, clock)
-  reportErrorRemote(errorInfo, clock)
   showErrorToast(errorInfo, silent, explicitFallbackMessage, addToast)
 
   return errorInfo
