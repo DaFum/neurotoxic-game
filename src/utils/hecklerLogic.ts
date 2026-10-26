@@ -97,21 +97,22 @@ export const processProjectiles = (
       if (i !== writeIdx) projectiles[writeIdx] = p
       writeIdx++
     } else if (session.pool.length < MAX_PROJECTILE_POOL_SIZE) {
-      // Clean non-canonical extension fields before pooling to prevent stale data inheritance
-      if (Object.keys(p).length > 8) {
-        for (const key in p) {
-          if (
-            key !== 'id' &&
-            key !== 'x' &&
-            key !== 'y' &&
-            key !== 'vx' &&
-            key !== 'vy' &&
-            key !== 'rotation' &&
-            key !== 'vr' &&
-            key !== 'type'
-          ) {
-            delete p[key]
-          }
+      // ⚡ BOLT OPTIMIZATION: Eliminate Object.keys() array allocation before pooling projectiles
+      // What: Replaced `Object.keys(p).length > 8` check with a direct `for...in` key iteration over `p`.
+      // Why: Calling `Object.keys(p)` on every recycled projectile created temporary string array allocations on the 60 FPS rhythm game tick path.
+      // Impact: Eliminates array allocations per despawned/recycled projectile during rhythm gameplay.
+      for (const key in p) {
+        if (
+          key !== 'id' &&
+          key !== 'x' &&
+          key !== 'y' &&
+          key !== 'vx' &&
+          key !== 'vy' &&
+          key !== 'rotation' &&
+          key !== 'vr' &&
+          key !== 'type'
+        ) {
+          delete p[key]
         }
       }
       session.pool.push(p)
