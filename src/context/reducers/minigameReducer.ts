@@ -42,6 +42,7 @@ import { isStashEntry } from '../../utils/gameState/checks'
 import { getStashStackCount } from '../../utils/contrabandStashUtils'
 import { pickContrabandDropFromRoll } from '../../utils/contrabandUtils'
 import { pickIndex } from '../../utils/selectionUtils'
+import { mulberry32 } from '../../utils/seededRng'
 import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
@@ -293,7 +294,11 @@ export const handleCompleteTravelMinigame = (
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
     const baseRng = finiteNumberOr(safeRngValue, 0)
-    const memberIndex = pickIndex(nextMembers, () => baseRng)
+    // The same roll decides the contraband drop below (`roll < chance`), so
+    // picking the victim straight from it would always hit member 0 on a drop
+    // trip. An independent stream seeded from the roll breaks that link.
+    const hazardRng = mulberry32(Math.floor(baseRng * 2 ** 32))
+    const memberIndex = pickIndex(nextMembers, hazardRng)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
       const staminaPenalty = voidHazardHits * 10
