@@ -81,6 +81,47 @@ describe('useVanMaintenance', () => {
     expect(result.current.handleRepair).not.toBe(handleRepair)
   })
 
+  describe('rest inside an expedition (#3365)', () => {
+    const restTwice = (
+      overrides: Record<string, unknown>,
+      currentNodeId: string | null = 'exp_2_0'
+    ) => {
+      const params = {
+        ...createParams(0),
+        recordExpeditionObligationSignal: vi.fn(),
+        ...overrides
+      }
+      params.player = { ...params.player, currentNodeId } as never
+      const { result } = renderHook(() => {
+        const isTravelingRef = useRef(false)
+        return useVanMaintenance({ ...params, isTravelingRef })
+      })
+      act(() => {
+        result.current.handleRestInVan()
+      })
+      act(() => {
+        result.current.handleRestInVan()
+      })
+      return params
+    }
+
+    it('banks the rest signal against the current node before the day passes', () => {
+      const params = restTwice({ expeditionStatus: 'active' })
+      expect(params.recordExpeditionObligationSignal).toHaveBeenCalledTimes(1)
+      expect(params.recordExpeditionObligationSignal).toHaveBeenCalledWith(
+        'rest',
+        'exp_2_0'
+      )
+      expect(params.advanceDay).toHaveBeenCalledTimes(1)
+    })
+
+    it('records nothing outside an active run', () => {
+      const params = restTwice({ expeditionStatus: 'idle' })
+      expect(params.recordExpeditionObligationSignal).not.toHaveBeenCalled()
+      expect(params.advanceDay).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('protected expedition cash', () => {
     const lowVan = { fuel: 0, condition: 10, upgrades: [] }
     const render = (protectedCash: number) => {

@@ -2665,3 +2665,39 @@ test('load does not count a historical failed gig toward the contract (#3366)', 
     0
   )
 })
+
+test('a rest signal on a non-rest node still breaks a no-rest contract (#3365)', () => {
+  const state = activeState()
+  state.player.currentNodeId = 'exp_2_0'
+  state.expedition.activeObligations = [
+    {
+      id: 'run-1:contract_no_rest_finale',
+      sourceType: 'native',
+      sourceId: 'contract_no_rest_finale',
+      constraints: [{ id: 'no_rest', kind: 'no_rest_before_finale' }],
+      progressByConstraintId: {
+        no_rest: {
+          constraintId: 'no_rest',
+          value: 0,
+          satisfied: false,
+          failed: false
+        }
+      },
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    }
+  ]
+  const payload = {
+    signalType: 'rest',
+    sourceId: 'exp_2_0',
+    expectedRouteStep: 1
+  }
+  const once = handleRecordExpeditionObligationSignal(state, payload)
+  assert.equal(once.expedition.activeObligations[0].status, 'failed')
+  // Resting again at the same node banks no second breach or penalty.
+  assert.strictEqual(
+    handleRecordExpeditionObligationSignal(once, payload),
+    once
+  )
+})
