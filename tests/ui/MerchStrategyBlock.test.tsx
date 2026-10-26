@@ -140,6 +140,44 @@ describe('MerchStrategyBlock', () => {
     ).toBeInTheDocument()
   })
 
+  describe('price decrease button', () => {
+    const shirtsIndex = Object.keys(DEFAULT_MERCH_PRICES).indexOf('shirts')
+
+    const renderWithShirtPrice = (
+      price: number,
+      onUpdatePrice: (merchKey: string, newPrice: number) => void
+    ) => {
+      render(
+        <MerchStrategyBlock
+          bandInventory={{ shirts: 10 }}
+          customPrices={{ shirts: price }}
+          onUpdatePrice={onUpdatePrice}
+          onRestock={vi.fn()}
+          playerMoney={1000}
+        />
+      )
+      return screen.getAllByRole('button', {
+        name: 'ui:pregig.merchStrategy.decreasePrice'
+      })[shirtsIndex]
+    }
+
+    it('lowers the price by one above the minimum', () => {
+      const onUpdatePrice = vi.fn()
+      const button = renderWithShirtPrice(5, onUpdatePrice)
+      expect(button).not.toBeDisabled()
+      fireEvent.click(button!)
+      expect(onUpdatePrice).toHaveBeenCalledWith('shirts', 4)
+    })
+
+    it('stops at the minimum price ($1)', () => {
+      const onUpdatePrice = vi.fn()
+      const button = renderWithShirtPrice(1, onUpdatePrice)
+      expect(button).toBeDisabled()
+      fireEvent.click(button!)
+      expect(onUpdatePrice).not.toHaveBeenCalled()
+    })
+  })
+
   describe('price increase button', () => {
     const shirtsIndex = Object.keys(DEFAULT_MERCH_PRICES).indexOf('shirts')
     const maxShirts = MERCH_MAX_PRICES.shirts ?? 0
