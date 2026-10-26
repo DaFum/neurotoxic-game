@@ -19,6 +19,7 @@ import {
   createPrepareExpeditionSponsorOffersAction,
   prepareExpeditionSponsorOffers
 } from '../../src/context/expeditionActionCreators.ts'
+import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import {
   getCanonicalBrandDealTermsHash,
   buildPreparedExpeditionSponsorOffers,
@@ -233,6 +234,63 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
     })
     assert.equal(replayed, started)
     assert.equal(replayed.player.money, started.player.money)
+  })
+
+  it('stamps the cash baseline after the sponsor signing cash (#3293)', () => {
+    const prep = preparedState({ money: 5000 })
+    const stagedState = gameReducer(
+      prep,
+      prepareExpeditionSponsorOffers(prep, FIXTURE_REGION_ID, FIXTURE_TOUR_ID)
+    )
+    const cashOffer = stagedState.expedition.preparedSponsorOffers[0]
+    assert.ok(cashOffer)
+
+    const sponsored = gameReducer(stagedState, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout: fixtureLoadout({
+          build: { sponsorOfferId: cashOffer.offerId }
+        })
+      }
+    })
+    const unsponsored = gameReducer(prep, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout: fixtureLoadout({ build: { sponsorOfferId: null } })
+      }
+    })
+
+    // The signing cash is paid out and the run's earnings baseline moves with it.
+    assert.ok(
+      sponsored.player.money > unsponsored.player.money,
+      'the staged sponsor must pay signing cash'
+    )
+    assert.equal(sponsored.expedition.startingMoney, sponsored.player.money)
+    // Sponsor cash neither enters nor raises the protected Career Cash slice.
+    assert.equal(
+      sponsored.expedition.protectedCareerCash,
+      unsponsored.expedition.protectedCareerCash
+    )
+
+    // Untouched cash is not run earnings, so no terminal kind forfeits it.
+    for (const kind of ['failed', 'extracted']) {
+      const settlement = settleExpedition(sponsored, kind)
+      assert.equal(settlement.moneyEarned, 0, kind)
+      assert.equal(settlement.moneyForfeited, 0, kind)
+    }
+
+    // Only cash earned after START is subject to retention.
+    const earned = {
+      ...sponsored,
+      player: { ...sponsored.player, money: sponsored.player.money + 1000 }
+    }
+    const settlement = settleExpedition(earned, 'extracted')
+    assert.equal(settlement.moneyEarned, 1000)
+    assert.equal(settlement.moneyForfeited, 300)
   })
 
   it('starts normally without sponsor obligation when sponsorOfferId is null', () => {
