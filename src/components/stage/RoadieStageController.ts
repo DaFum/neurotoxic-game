@@ -9,7 +9,11 @@ import {
   ROADIE_GRID_HEIGHT
 } from '../../hooks/minigames/minigameConstants'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
+import {
+  getPixiColorFromToken,
+  loadTextures,
+  withTimeout
+} from './stageRenderUtils'
 import {
   IMG_PROMPTS,
   getGenImageUrl,
@@ -88,7 +92,14 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     this.effectManager.init()
 
     // Load Assets concurrently
-    await Promise.all([this.loadAssets(), this.effectManager.loadAssets()])
+    // Bounded like PixiStageController: a stalled texture request must not
+    // keep the ticker (and with it the minigame) from ever starting.
+    await Promise.all([
+      withTimeout(this.loadAssets(), 'Roadie Assets', 10000, { rethrow: true }),
+      withTimeout(this.effectManager.loadAssets(), 'Effect Assets', 10000, {
+        rethrow: true
+      })
+    ])
     if (this.isDisposed) return
 
     const screenW = app.screen.width

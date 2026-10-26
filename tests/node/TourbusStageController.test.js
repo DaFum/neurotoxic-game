@@ -187,7 +187,9 @@ const stageRenderUtilsMocks = {
     }
     return results
   }),
-  getOptimalResolution: mock.fn(() => 1)
+  getOptimalResolution: mock.fn(() => 1),
+  // Pass-through: the timeout itself is covered by stageRenderUtils tests.
+  withTimeout: mock.fn(promise => promise)
 }
 
 mock.module(
@@ -442,6 +444,23 @@ describe('TourbusStageController', () => {
     await setupPromise
     assert.equal(controller.drawRoad.mock.calls.length, 1)
     assert.equal(controller.createBus.mock.calls.length, 1)
+  })
+
+  it('bounds both asset loads with a timeout that still lets a real failure through', async () => {
+    controller.loadAssets = mock.fn(() => Promise.resolve())
+    currentEffectLoad = mock.fn(() => Promise.resolve())
+    controller.drawRoad = mock.fn()
+    controller.createBus = mock.fn()
+    stageRenderUtilsMocks.withTimeout.mock.resetCalls()
+
+    await controller.setup()
+
+    const calls = stageRenderUtilsMocks.withTimeout.mock.calls
+    assert.equal(calls.length, 2)
+    for (const call of calls) {
+      assert.equal(call.arguments[2], 10000)
+      assert.deepEqual(call.arguments[3], { rethrow: true })
+    }
   })
 
   for (const pendingLoad of ['controller', 'effect']) {
