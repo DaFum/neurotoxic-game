@@ -134,6 +134,20 @@ describe('useDealHandlers — handleAcceptDeal single-shot guard', () => {
     expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
   })
 
+  it('releases the guard when the very first dispatch throws, since nothing was applied', () => {
+    const props = makeProps()
+    props.dispatchers.updatePlayer.mockImplementation(() => {
+      throw new Error('reducer rejected')
+    })
+    const { result } = renderHook(() => useDealHandlers(props))
+
+    act(() => result.current.handleAcceptDeal(baseDeal))
+
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenCalledWith(false)
+    expect(props.dispatchers.setPhase).not.toHaveBeenCalled()
+  })
+
   it('releases the guard when the deal fails before anything was dispatched', () => {
     // An already active deal makes the acceptance unresolvable up front.
     const props = makeProps({

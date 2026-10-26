@@ -134,12 +134,12 @@ export function useContinueHandler({
     if (isProcessingActionRef.current) return
     isProcessingActionRef.current = true
     setIsProcessingAction(true)
-    // Set before the first state-changing dispatch: dispatch runs the reducer
-    // synchronously, so a later throw must not re-open a second payout.
+    // Set once a state-changing dispatch has returned: dispatch runs the reducer
+    // synchronously and leaves state untouched when it throws, so only a throw
+    // after a returned dispatch must not re-open a second payout.
     let committed = false
     try {
       if (financials.soldMerch) {
-        committed = true
         if (settleSoldMerch) {
           settleSoldMerch(financials.soldMerch)
         } else {
@@ -148,6 +148,7 @@ export function useContinueHandler({
             inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
           }))
         }
+        committed = true
       }
 
       const stats = calculateContinueStats({
@@ -184,7 +185,6 @@ export function useContinueHandler({
         successfulFinale && expedition?.status === 'active'
       const careerFinale = successfulFinale && expedition?.status === 'idle'
 
-      committed = true
       updatePlayer({
         // Under an active run's protected Career Cash floor only the Cash is
         // refused; the fame the gig earned still lands.
@@ -197,6 +197,7 @@ export function useContinueHandler({
           ? { stats: { ...player.stats, tourCompleted: true } }
           : {})
       })
+      committed = true
       // Same commit as the settlement above, so no save holds both the
       // settled ledger and a record a later load would settle again.
       if (pendingSettlementId && clearPendingGigSettlement) {
