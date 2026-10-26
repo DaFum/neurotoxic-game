@@ -81,6 +81,7 @@ import type { AssetKind, RiskEventDescriptor } from '../types/assets'
  * zero gain as a safe no-op. Price keys listed in `costKeys` (e.g. `cost`,
  * `harmonyCost`) are never coerced: a non-finite or negative price is dropped
  * so the reducer rejects the action instead of granting it for free.
+ * @returns The sanitized payload object with non-negative constraints applied.
  */
 const sanitizeNonNegativePayload = <
   T extends { successToast?: { id?: string } | undefined }
@@ -116,6 +117,7 @@ const sanitizeNonNegativePayload = <
 /**
  * Creates a scene change action
  * @param scene - Target scene name
+ * @returns Action object for changing the current scene.
  */
 export const createChangeSceneAction = (
   scene: GameState['currentScene']
@@ -127,6 +129,7 @@ export const createChangeSceneAction = (
 /**
  * Creates a player update action
  * @param updates - Player state updates
+ * @returns Action object for updating the player state.
  */
 export const createUpdatePlayerAction = (
   updates: UpdatePlayerPayload
@@ -295,6 +298,7 @@ export const toggleNeuroDecimator = (
 /**
  * Creates a social update action
  * @param updates - Social media state updates
+ * @returns Action object for updating the social state.
  */
 export const createUpdateSocialAction = (
   updates: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
@@ -317,6 +321,7 @@ export const createUpdateSocialAction = (
  *
  * @param stateSnapshot - Current game state snapshot.
  * @param payload - Composite social post result payload.
+ * @returns Action object to commit the social post result, or null if the snapshot refuses it.
  */
 export const createApplySocialPostResultAction = (
   stateSnapshot: GameState,
@@ -339,6 +344,7 @@ export const createApplySocialPostResultAction = (
 /**
  * Creates a settings update action
  * @param updates - Settings updates
+ * @returns Action object for updating the global settings.
  */
 export const createUpdateSettingsAction = (
   updates: Record<string, unknown>
@@ -350,6 +356,7 @@ export const createUpdateSettingsAction = (
 /**
  * Replaces the persisted overworld map snapshot.
  * @param map - Generated map object, or null while no map is loaded.
+ * @returns Action object for setting the current game map.
  */
 export const createSetMapAction = (
   map: GameMap | null
@@ -361,6 +368,7 @@ export const createSetMapAction = (
 /**
  * Replaces the current venue object.
  * @param gig - Venue to make current, or null to clear active gig context.
+ * @returns Action object for setting the current gig venue.
  */
 export const createSetGigAction = (
   gig: Venue | null
@@ -377,6 +385,7 @@ export const createSetGigAction = (
  * state, including resetting gig modifiers to defaults.
  *
  * @param venue - Venue object that becomes `currentGig`.
+ * @returns Action object for starting a gig.
  */
 export const createStartGigAction = (
   venue: Venue
@@ -388,6 +397,7 @@ export const createStartGigAction = (
 /**
  * Creates the action that replaces the active gig setlist.
  * @param list - Ordered rhythm setlist entries selected for the next gig.
+ * @returns Action object for setting the current rhythm game setlist.
  */
 export const createSetSetlistAction = (
   list: RhythmSetlistEntry[]
@@ -396,10 +406,6 @@ export const createSetSetlistAction = (
   payload: list
 })
 
-/**
- * Creates a last gig stats action
- * @param stats - Gig statistics
- */
 const STAT_FIELDS = [
   'score',
   'misses',
@@ -410,6 +416,12 @@ const STAT_FIELDS = [
   'maxCombo'
 ] as const
 
+/**
+ * Creates a last gig stats action.
+ *
+ * @param stats - Gig statistics or null to clear the stats.
+ * @returns Action object for setting last gig stats.
+ */
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => {
@@ -447,6 +459,7 @@ export const createSetLastGigStatsAction = (
 /**
  * Creates an active event action
  * @param event - Event object or null
+ * @returns Action object for setting the active event.
  */
 export const createSetActiveEventAction = (
   event: GameEvent | null
@@ -468,6 +481,7 @@ export const createSetActiveEventAction = (
  * turns it on.
  *
  * @param enabled - Whether screenshot mode should be active
+ * @returns Action object to toggle screenshot mode.
  */
 export const createSetScreenshotModeAction = (
   enabled: boolean
@@ -547,6 +561,7 @@ export const createAddToastAction = (
 /**
  * Creates a toast removal action
  * @param id - Toast ID to remove
+ * @returns Action object to remove a toast by ID.
  */
 export const createRemoveToastAction = (
   id: string
@@ -558,6 +573,7 @@ export const createRemoveToastAction = (
 /**
  * Creates a gig modifiers action
  * @param payload - Modifiers or updater function
+ * @returns Action object containing the updated gig modifiers.
  */
 export const createSetGigModifiersAction = (
   payload:
@@ -573,6 +589,7 @@ export const createSetGigModifiersAction = (
 /**
  * Creates a load game action
  * @param data - Saved game data
+ * @returns Action object for loading the game data.
  */
 export const createLoadGameAction = (
   data: RawLoadedGame
@@ -591,6 +608,7 @@ export const createLoadGameAction = (
  * Stamps the new run's `rngSeed`/`runSeed` and the stored global settings here,
  * at the creator boundary, so `handleResetState` neither draws randomness nor
  * reads storage and the same action replays to the same state.
+ * @returns Action object to reset the game state.
  */
 export const createResetStateAction = (
   payload: ResetStatePayload = {},
@@ -612,6 +630,7 @@ export const createResetStateAction = (
  *
  * @param delta - Event delta whose banter entries may need a timestamp.
  * @param clock - Clock supplying the stamp. Defaults to the real clock.
+ * @returns The input delta object with missing timestamp properties populated.
  */
 const stampBanterTimestamps = (
   delta: EventDeltaPayload,
@@ -663,6 +682,7 @@ const stampBanterTimestamps = (
  * Creates an event delta application action
  * @param delta - State delta to apply
  * @param clock - Clock supplying banter timestamps. Defaults to the real clock.
+ * @returns Action object applying the event delta.
  */
 export const createApplyEventDeltaAction = (
   delta: EventDeltaPayload,
@@ -679,6 +699,7 @@ export const createApplyEventDeltaAction = (
  * which is what draining an unplayable head needs. Selection may skip over an
  * ineligible head, so the played event is not always the head — removing it by
  * id keeps it from staying queued for a replay.
+ * @returns Action object to drop the head of the pending events queue (if no ID is provided), or remove the specific matching event (if an ID is provided).
  */
 export const createPopPendingEventAction = (
   eventId?: string
@@ -690,6 +711,7 @@ export const createPopPendingEventAction = (
 /**
  * Requests consumption of one inventory item by id.
  * @param itemType - Inventory item id to consume.
+ * @returns Action object for consuming an item.
  */
 export const createConsumeItemAction = (
   itemType: string
@@ -701,6 +723,7 @@ export const createConsumeItemAction = (
 /**
  * Adds an event id to the cooldown list.
  * @param eventId - Event id to suppress until cooldown expiry.
+ * @returns Action object to add a cooldown for an event.
  */
 export const createAddCooldownAction = (
   eventId: string
@@ -712,6 +735,7 @@ export const createAddCooldownAction = (
 /**
  * Creates start travel minigame action
  * @param targetNodeId - The destination node ID
+ * @returns Action object to start the travel minigame.
  */
 export const createStartTravelMinigameAction = (
   targetNodeId: string
@@ -729,6 +753,7 @@ export const createStartTravelMinigameAction = (
  * an empty collection.
  * @param rngValue - Optional secure random value for reducer-side drop logic,
  * clamped to the unit interval.
+ * @returns Action object indicating the travel minigame completion.
  */
 export const createCompleteTravelMinigameAction = (
   damageTaken: number,
@@ -751,6 +776,7 @@ export const createCompleteTravelMinigameAction = (
 /**
  * Creates start roadie minigame action
  * @param gigId - Id of the gig the roadie minigame precedes.
+ * @returns Action object to start the roadie minigame.
  */
 export const createStartRoadieMinigameAction = (
   gigId: string
@@ -764,6 +790,7 @@ export const createStartRoadieMinigameAction = (
  * @param equipmentDamage - Raw equipment damage from the minigame.
  * @param contrabandDelivered - Optional delivered contraband count.
  * @param deliveredStashItemId - Optional real stash item id that was delivered as contraband.
+ * @returns Action object indicating the roadie minigame completion.
  */
 export const createCompleteRoadieMinigameAction = (
   equipmentDamage: number,
@@ -792,6 +819,7 @@ export const createCompleteRoadieMinigameAction = (
 /**
  * Creates start kabelsalat minigame action
  * @param gigId - Id of the gig the Kabelsalat minigame precedes.
+ * @returns Action object to start the kabelsalat minigame.
  */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
@@ -807,6 +835,7 @@ export const createStartKabelsalatMinigameAction = (
  * Completes Kabelsalat while leaving result validation to the reducer.
  *
  * @param results - Raw completion result emitted by the Kabelsalat scene.
+ * @returns Action object indicating the kabelsalat minigame completion.
  */
 export const createCompleteKabelsalatMinigameAction = (
   results: unknown
@@ -821,6 +850,7 @@ export const createCompleteKabelsalatMinigameAction = (
 /**
  * Action creator to start Amp Calibration minigame
  * @param gigId - Target gig
+ * @returns Action object to start the amp calibration minigame.
  */
 export const createStartAmpCalibrationAction = (
   gigId: string
@@ -836,6 +866,7 @@ export const createStartAmpCalibrationAction = (
  * @param voidResonance - Raw void-resonance count or score contribution.
  * @param purgesUsed - Number of interference purges used during calibration.
  * @param hijacksOverridden - Number of hijacks overridden during calibration.
+ * @returns Action object indicating the amp calibration minigame completion.
  */
 export const createCompleteAmpCalibrationAction = (
   score: number,
@@ -925,6 +956,7 @@ export const createUpdateRivalBandAction = (
  * Creates the action that unlocks one trait for one band member.
  * @param memberId - Target band member id.
  * @param traitId - Trait id to unlock.
+ * @returns Action object to unlock a trait for a band member.
  */
 export const createUnlockTraitAction = (
   memberId: string,
@@ -939,6 +971,7 @@ export const createUnlockTraitAction = (
  * The `handleUnblacklistVenue` reducer charges the amends cost and is the final
  * authority on affordability; this creator only normalizes a hostile id to ''.
  * @param venueId - The ID of the venue to win back.
+ * @returns Action object to unblacklist a specific venue.
  */
 export const createUnblacklistVenueAction = (
   venueId: string
@@ -958,6 +991,7 @@ export const createUnblacklistVenueAction = (
  * fresh contraband instance id.
  * @param recipeId - The crafting recipe id.
  * @param instanceId - Unique id assigned to the crafted contraband output.
+ * @returns Action object for crafting a contraband item.
  */
 export const createCraftItemAction = (
   recipeId: string,
@@ -984,6 +1018,7 @@ export const createCraftItemAction = (
 /**
  * Creates an action to add a new quest.
  * @param quest - The quest object to add.
+ * @returns Action object to add a quest.
  */
 export const createAddQuestAction = (
   quest: QuestState
@@ -1014,6 +1049,7 @@ export const createAddQuestAction = (
  * @param amount - The amount to advance progress by. Defaults to `1`; values
  * that are not finite numbers (numeric strings, booleans, arrays) become `0`.
  * @param randomIdx - Optional random index for quests that pick a variant.
+ * @returns Action object to advance a quest progress.
  */
 export const createAdvanceQuestAction = (
   questId: string,
@@ -1033,6 +1069,7 @@ export const createAdvanceQuestAction = (
 /**
  * Adds a newly earned unlock id to state.
  * @param unlockId - Unlock id to persist.
+ * @returns Action object to add a persistent unlock.
  */
 export const createAddUnlockAction = (
   unlockId: string
@@ -1046,6 +1083,7 @@ export const createAddUnlockAction = (
  * @param instanceId - The unique instance ID of the contraband item in the stash.
  * @param contrabandId - The ID of the contraband item.
  * @param memberId - Optional. The ID of the band member to apply the effect to.
+ * @returns Action object for using a contraband item.
  */
 export const createUseContrabandAction = (
   instanceId: string,
@@ -1068,6 +1106,7 @@ export const createUseContrabandAction = (
  * - `payload.staminaGain` - The amount of stamina to restore.
  * - `payload.moodGain` - The amount of mood to restore.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object for clinic healing.
  */
 export const createClinicHealAction = (
   payload: ClinicActionPayload
@@ -1108,6 +1147,7 @@ export const createClinicHealAction = (
  * - `payload.type` - Must be 'enhance'. Used by the reducer to compute cost.
  * - `payload.trait` - The ID of the trait to graft.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object for clinic enhancement.
  */
 export const createClinicEnhanceAction = (
   payload: ClinicActionPayload
@@ -1141,6 +1181,7 @@ const sanitizeZealotryPayload = (payload: ZealotryActionPayload) => {
  * @param payload - Only the optional toast travels: the reducer derives cost, gains
  * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object for pirate radio broadcast.
  */
 export const createPirateBroadcastAction = (
   payload: PirateBroadcastPayload
@@ -1152,6 +1193,7 @@ export const createPirateBroadcastAction = (
 /**
  * Creates an action to set pendingBandHQOpen
  * @param isOpen - Whether the Band HQ overlay should be queued to open.
+ * @returns Action object to set pendingBandHQOpen.
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean
@@ -1243,6 +1285,7 @@ export const createSetPendingRiskEventAction = (
  * the price and payout from it, so a dispatch cannot choose its own.
  * - `payload.kind` - `'blood'` or `'marrow'`.
  * - `payload.successToast` - Optional toast on success.
+ * @returns Action object to donate blood to the void clinic.
  */
 export const createBloodBankDonateAction = (
   payload: BloodBankDonatePayload
@@ -1268,6 +1311,7 @@ export const createBloodBankDonateAction = (
  * - `payload.contrabandId` - ID of the contraband item.
  * - `payload.fameCost` - Cost in fame to purchase.
  * - `payload.successToast` - Optional toast on success.
+ * @returns Action object to trade fame for a void item.
  */
 export const createTradeVoidItemAction = (
   payload: TradeVoidItemPayload
@@ -1288,6 +1332,7 @@ export const createTradeVoidItemAction = (
  * @param payload - Only the optional toast travels: the reducer derives cost, gains
  * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object to trigger a dark web leak.
  */
 export const createDarkWebLeakAction = (
   payload: DarkWebLeakPayload
@@ -1307,6 +1352,7 @@ export const createDarkWebLeakAction = (
  * - `payload.fameGain` - Fame gained.
  * - `payload.harmonyCost` - Band harmony lost.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object to press merch underground.
  */
 export const createMerchPressAction = (
   payload: MerchPressPayload
@@ -1380,6 +1426,7 @@ export const graftNeuroOverclock = (
  * @param payload - Only the optional toast travels: the reducer derives cost, gains
  * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object to trigger a cult indoctrination.
  */
 export const createCultIndoctrinationAction = (
   payload: CultIndoctrinationPayload
@@ -1394,6 +1441,7 @@ export const createCultIndoctrinationAction = (
  * @param payload - Only the optional toast travels: the reducer derives cost, gains
  * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
+ * @returns Action object to trigger a void sermon.
  */
 export const createVoidSermonAction = (
   payload: VoidSermonPayload
