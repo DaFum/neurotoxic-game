@@ -772,7 +772,10 @@ export interface ExpeditionState {
   lastSocialResult: ExpeditionSocialResultProof | null
   pendingSocialSettlement?: { routeStep: number; gigId: string | null } | null
   lastGigResolvedAtRouteStep?: number | null
-  gigOutcomeByStep?: Record<number, { venueId: string; accuracy: number }>
+  gigOutcomeByStep?: Record<
+    number,
+    { venueId: string; accuracy: number; failed?: boolean }
+  >
 }
 
 export type ExpeditionCrewRole =

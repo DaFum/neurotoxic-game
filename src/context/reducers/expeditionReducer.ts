@@ -2595,8 +2595,10 @@ export const handleRecordExpeditionObligationSignal = (
         const prior = progressByConstraintId[constraint.id]
         if (!prior) continue
         const evidence = {
+          // A failed or forfeited gig keeps its accuracy on record but never
+          // qualifies as a good gig, so it carries no accuracy evidence.
           accuracy:
-            payload.signalType === 'gig'
+            payload.signalType === 'gig' && state.lastGigStats?.failed !== true
               ? state.lastGigStats?.accuracy
               : undefined,
           heat: currentHeat,
@@ -2733,7 +2735,8 @@ export const handleRecordExpeditionObligationSignal = (
           ...(state.expedition.gigOutcomeByStep ?? {}),
           [payload.expectedRouteStep]: {
             venueId: canonicalSourceId,
-            accuracy: accuracy ?? 0
+            accuracy: accuracy ?? 0,
+            ...(state.lastGigStats?.failed === true ? { failed: true } : {})
           }
         }
       : state.expedition.gigOutcomeByStep

@@ -2515,3 +2515,153 @@ test('Authority route_detour treats NaN van fuel as empty', () => {
   state.player.van.fuel = NaN
   assert.ok(!getAvailableAuthoritySafeExits(state).includes('route_detour'))
 })
+
+test('a failed or quit gig never counts toward gig_accuracy_count (#3366)', () => {
+  const failed = activeState()
+  failed.lastGigStats = { accuracy: 100, failed: true }
+  failed.expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value = 2
+  const payload = {
+    signalType: 'gig',
+    sourceId: 'gig-proof',
+    expectedRouteStep: 1
+  }
+
+  const after = handleRecordExpeditionObligationSignal(failed, payload)
+  const obligation = after.expedition.activeObligations[0]
+  assert.equal(obligation.progressByConstraintId.three_good_gigs.value, 2)
+  assert.equal(obligation.status, 'active')
+  assert.equal(obligation.settled, false)
+  assert.equal(after.player.money, failed.player.money)
+  // The failure stays on the historical record instead of being dropped.
+  assert.equal(after.expedition.gigOutcomeByStep[1].failed, true)
+
+  const passed = activeState()
+  passed.lastGigStats = { accuracy: 100, failed: false }
+  passed.expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value = 2
+  const settled = handleRecordExpeditionObligationSignal(passed, payload)
+  assert.equal(settled.player.money, passed.player.money + 1500)
+  assert.equal(settled.expedition.gigOutcomeByStep[1].failed, undefined)
+})
+
+const contractRunOnCanonicalMap = () => {
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: {
+        ...fixtureLoadout(),
+        nativeContracts: [
+          { templateId: 'contract_three_good_gigs', targetNodeId: null }
+        ]
+      }
+    }
+  })
+  const loadout = started.expedition.loadout
+  const map = buildExpeditionMap(
+    started.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const walked = [map.startNodeId]
+  for (let step = 1; step <= map.meta[map.finaleNodeId].routeStep; step++) {
+    const edge = map.connections.find(
+      conn =>
+        conn.from === walked.at(-1) && map.meta[conn.to]?.routeStep === step
+    )
+    if (!edge) break
+    walked.push(edge.to)
+  }
+  return { started, map, walked }
+}
+
+const isGigClass = (map, nodeId) =>
+  ['CLUB_GIG', 'FESTIVAL', 'FINALE'].includes(map.meta[nodeId]?.nodeClass)
+
+const gigProgressAfterSanitize = ({ started, expedition, lastGigStats }) =>
+  sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      ...expedition,
+      // The save claims one good gig; load keeps it only with canonical proof.
+      activeObligations: started.expedition.activeObligations.map(
+        obligation => ({
+          ...obligation,
+          progressByConstraintId: {
+            three_good_gigs: {
+              ...obligation.progressByConstraintId.three_good_gigs,
+              value: 1
+            }
+          }
+        })
+      )
+    },
+    started.runSeed,
+    lastGigStats
+  ).activeObligations[0].progressByConstraintId.three_good_gigs.value
+
+test('load keeps gig contract progress after a Nemesis Key jump (#3369)', () => {
+  const { started, map, walked } = contractRunOnCanonicalMap()
+  // Skip walked[1]: the path then holds route steps [0, 2, ...] and every
+  // later array position trails its route step by one.
+  const jumpStep = walked.findIndex(
+    (id, step) => step >= 2 && isGigClass(map, id)
+  )
+  assert.ok(jumpStep >= 2, 'the walked route must reach a gig past step 1')
+  const visitedNodeIds = [walked[0], ...walked.slice(2, jumpStep + 1)]
+  const gigNodeId = walked[jumpStep]
+  const venueId = map.nodes[gigNodeId]?.venueId || gigNodeId
+
+  const progress = gigProgressAfterSanitize({
+    started,
+    lastGigStats: { score: 1000, accuracy: 100, failed: false },
+    expedition: {
+      visitedNodeIds,
+      routeStep: jumpStep,
+      consumedLegendaryIds: ['nemesis_key'],
+      resolvedObligationSignalIds: [],
+      gigOutcomeByStep: { [jumpStep]: { venueId, accuracy: 100 } }
+    }
+  })
+  assert.equal(progress, 1)
+})
+
+test('load does not count a historical failed gig toward the contract (#3366)', () => {
+  const { started, map, walked } = contractRunOnCanonicalMap()
+  const gigStep = walked.findIndex(
+    (id, step) => step > 0 && isGigClass(map, id)
+  )
+  assert.ok(gigStep > 0 && gigStep < walked.length - 1)
+  const venueId = map.nodes[walked[gigStep]]?.venueId || walked[gigStep]
+  const expedition = failed => ({
+    visitedNodeIds: walked.slice(0, gigStep + 2),
+    routeStep: gigStep + 1,
+    resolvedObligationSignalIds: [`gig:${venueId}:${gigStep}:100`],
+    gigOutcomeByStep: {
+      [gigStep]: failed
+        ? { venueId, accuracy: 100, failed: true }
+        : { venueId, accuracy: 100 }
+    }
+  })
+
+  assert.equal(
+    gigProgressAfterSanitize({
+      started,
+      lastGigStats: null,
+      expedition: expedition(false)
+    }),
+    1,
+    'a passed historical gig with signal proof still counts'
+  )
+  assert.equal(
+    gigProgressAfterSanitize({
+      started,
+      lastGigStats: null,
+      expedition: expedition(true)
+    }),
+    0
+  )
+})

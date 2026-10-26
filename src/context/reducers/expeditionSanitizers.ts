@@ -1401,9 +1401,11 @@ const sanitizeGigOutcomeMap = (
   lastGigStats?: unknown,
   routeStep?: number,
   resolvedObligationSignalIds: string[] = []
-): Record<number, { venueId: string; accuracy: number }> => {
-  const result: Record<number, { venueId: string; accuracy: number }> =
-    Object.create(null)
+): Record<number, { venueId: string; accuracy: number; failed?: boolean }> => {
+  const result: Record<
+    number,
+    { venueId: string; accuracy: number; failed?: boolean }
+  > = Object.create(null)
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
     // Canonical integer keys only: `Number('')` is 0 and `Number(' 1 ')` is 1,
@@ -1452,7 +1454,10 @@ const sanitizeGigOutcomeMap = (
       if (!hasProof) continue
     }
 
-    result[step] = { venueId, accuracy }
+    result[step] =
+      entry.failed === true
+        ? { venueId, accuracy, failed: true }
+        : { venueId, accuracy }
   }
   return result
 }
@@ -1544,7 +1549,10 @@ const sanitizeActiveObligations = (
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
   lastSocialResult: ExpeditionState['lastSocialResult'] = null,
-  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {},
+  gigOutcomeByStep: Record<
+    number,
+    { venueId: string; accuracy: number; failed?: boolean }
+  > = {},
   heat = 0,
   finaleType: ExpeditionState['finaleType'] = null
 ): ExpeditionState['activeObligations'] => {
@@ -1554,8 +1562,7 @@ const sanitizeActiveObligations = (
 
   const countQualifyingGigSignals = (minAccuracy: number): number => {
     let qualifyingCount = 0
-    for (let step = 0; step < validVisitedPath.length; step++) {
-      const expNodeId = validVisitedPath[step]
+    for (const expNodeId of validVisitedPath) {
       if (!expNodeId || !preparedMap) continue
       const metaNode = preparedMap.meta[expNodeId]
       const isGigClass =
@@ -1564,8 +1571,10 @@ const sanitizeActiveObligations = (
           metaNode.nodeClass === 'FESTIVAL' ||
           metaNode.nodeClass === 'FINALE')
       if (!isGigClass) continue
-      const outcome = gigOutcomeByStep[step]
-      if (!outcome) continue
+      // Keyed by the node's canonical route step, not its position in the
+      // visited path: a Nemesis Key jump makes the two differ.
+      const outcome = gigOutcomeByStep[metaNode.routeStep]
+      if (!outcome || outcome.failed === true) continue
       const node = preparedMap.nodes[expNodeId]
       if (outcome.venueId !== node?.venueId && outcome.venueId !== expNodeId)
         continue
