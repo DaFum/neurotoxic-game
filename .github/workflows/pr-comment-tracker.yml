@@ -7,8 +7,6 @@ on:
     types: [opened, reopened, synchronize]
   pull_request_review:
     types: [submitted, edited]
-  pull_request_review_thread:
-    types: [resolved, unresolved]
 
 jobs:
   update-summary-and-check:
