@@ -180,9 +180,10 @@ export class Logger {
    */
   debug(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
-    if (!import.meta.env?.PROD) {
-      console.debug(`[${channel}] ${message}`, data ?? '')
-    }
+    // Production keeps no debug history: hot-path calls would otherwise retain
+    // their payloads and copy the whole history on every call.
+    if (import.meta.env?.PROD) return
+    console.debug(`[${channel}] ${message}`, data ?? '')
     this._push(this._format('DEBUG', channel, message, data))
   }
 

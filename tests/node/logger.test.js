@@ -182,14 +182,13 @@ describe('Logger', () => {
     assert.strictEqual(parsed[0].message, 'Message')
   })
 
-  test('debug does not call console.debug in production', () => {
+  test('debug neither logs nor stores an entry in production', () => {
     globalThis.__IMPORT_META_ENV__ = { PROD: true }
     const logger = new Logger()
-    logger.debug('Test', 'Debug Message')
+    logger.debug('Test', 'Debug Message', { payload: 1 })
 
     assert.strictEqual(globalThis.console.debug.mock.calls.length, 0)
-    assert.strictEqual(logger.logs.length, 1)
-    assert.strictEqual(logger.logs[0].level, 'DEBUG')
+    assert.strictEqual(logger.logs.length, 0)
 
     delete globalThis.__IMPORT_META_ENV__
   })
