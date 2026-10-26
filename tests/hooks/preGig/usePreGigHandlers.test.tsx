@@ -97,6 +97,27 @@ describe('usePreGigHandlers', () => {
     sessionStorage.setItem = originalSetItem
   })
 
+  describe('setlist toggling', () => {
+    const song = { id: 'song1', name: 'Anarchy Anthem' }
+
+    it('adds a song while the setlist is editable', () => {
+      const { result } = renderHook(() => usePreGigHandlers(mockProps))
+
+      act(() => result.current.toggleSong(song as never))
+
+      expect(mockProps.setSetlist).toHaveBeenCalledWith([{ id: 'song1' }])
+    })
+
+    it('ignores toggles once the run has committed its setlist', () => {
+      mockProps.isSetlistFrozen = true
+      const { result } = renderHook(() => usePreGigHandlers(mockProps))
+
+      act(() => result.current.toggleSong(song as never))
+
+      expect(mockProps.setSetlist).not.toHaveBeenCalled()
+    })
+  })
+
   describe('modifier affordability', () => {
     it('canAffordModifier compares the projected budget with the spendable cash', () => {
       const { result: cheap } = renderHook(() =>

@@ -18,6 +18,8 @@ interface SongRowProps {
   song: Song
   isSelected: boolean
   isLocked: boolean
+  /** Locale key explaining the lock; defaults to the difficulty lock. */
+  lockedReasonKey?: string
   toggleSong: (song: Song) => void
 }
 
@@ -29,6 +31,8 @@ interface SetlistBlockProps {
   songsDict: ReadonlyMap<string, Song>
   player?: SetlistPlayerState
   selectedSongIds: Set<string>
+  /** True while an active run has committed its setlist. */
+  isSetlistFrozen?: boolean
   toggleSong: (song: Song) => void
 }
 
@@ -36,6 +40,7 @@ const SongRow = memo(function SongRow({
   song,
   isSelected,
   isLocked,
+  lockedReasonKey = 'ui:pregig.songLockedReason',
   toggleSong
 }: SongRowProps) {
   const { t } = useTranslation('ui')
@@ -105,11 +110,7 @@ const SongRow = memo(function SongRow({
   )
 
   if (isLocked) {
-    return (
-      <Tooltip content={t('ui:pregig.songLockedReason')}>
-        {buttonContent}
-      </Tooltip>
-    )
+    return <Tooltip content={t(lockedReasonKey)}>{buttonContent}</Tooltip>
   }
 
   return buttonContent
@@ -128,6 +129,7 @@ export const SetlistBlock = ({
   songsDict,
   selectedSongIds,
   player,
+  isSetlistFrozen = false,
   toggleSong
 }: SetlistBlockProps) => {
   const { t } = useTranslation('ui')
@@ -184,15 +186,18 @@ export const SetlistBlock = ({
       <div className='flex-1 min-h-0 lg:overflow-y-auto lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-1.5rem),transparent)] pr-0 sm:pr-2 space-y-2'>
         {songsDb.map(song => {
           const isSelected = selectedSongIds.has(song.id)
-          const isLocked = !!(
-            player?.stats?.proveYourselfMode && song.difficulty > 2
-          )
+          const isLocked =
+            isSetlistFrozen ||
+            !!(player?.stats?.proveYourselfMode && song.difficulty > 2)
           return (
             <SongRow
               key={song.id}
               song={song}
               isSelected={isSelected}
               isLocked={isLocked}
+              lockedReasonKey={
+                isSetlistFrozen ? 'ui:bandhq.setlist.lockedTooltip' : undefined
+              }
               toggleSong={toggleSong}
             />
           )
