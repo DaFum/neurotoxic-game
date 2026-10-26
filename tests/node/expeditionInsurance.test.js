@@ -236,6 +236,54 @@ describe('insurance eligibility and exclusions', () => {
     assert.equal(canClaimExpeditionInsurance(state, 'technical', 'pa'), true)
   })
 
+  it('follows the crisis being derived, not the one stored, when authority_crisis becomes technical_shutdown', () => {
+    const state = startedState({}, { insurancePolicyId: 'equipment' })
+    state.expedition.technicalCondition.pa = 0
+    state.expedition = {
+      ...state.expedition,
+      pendingFailure: {
+        id: 'crisis_1',
+        reason: 'authority_crisis',
+        sourceId: 'contraband_seizure',
+        raisedAtRouteStep: 0,
+        choices: ['accept_failure']
+      }
+    }
+
+    // Reading the stored crisis would exclude the claim for good.
+    assert.equal(canClaimExpeditionInsurance(state, 'technical', 'pa'), false)
+    // The derivation that replaces it names the new reason.
+    assert.equal(
+      canClaimExpeditionInsurance(state, 'technical', 'pa', {
+        crisisReason: 'technical_shutdown'
+      }),
+      true
+    )
+  })
+
+  it('excludes an authority crisis being derived even when a technical shutdown is stored', () => {
+    const state = startedState({}, { insurancePolicyId: 'equipment' })
+    state.expedition.technicalCondition.pa = 0
+    state.expedition = {
+      ...state.expedition,
+      pendingFailure: {
+        id: 'crisis_1',
+        reason: 'technical_shutdown',
+        sourceId: 'pa',
+        raisedAtRouteStep: 0,
+        choices: ['accept_failure']
+      }
+    }
+
+    assert.equal(canClaimExpeditionInsurance(state, 'technical', 'pa'), true)
+    assert.equal(
+      canClaimExpeditionInsurance(state, 'technical', 'pa', {
+        crisisReason: 'authority_crisis'
+      }),
+      false
+    )
+  })
+
   it('requires vehicle to be stranded/broken for vehicle claim', () => {
     const state = startedState({}, { insurancePolicyId: 'roadside' })
     // Healthy van
