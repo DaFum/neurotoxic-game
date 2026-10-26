@@ -67,11 +67,6 @@ export const useZealotryAction = (
 
     audioService.playSFX('cash')
     dispatchAction({
-      cost: descriptor.config.COST,
-      fameGain: descriptor.config.FAME_GAIN,
-      zealotryGain: descriptor.config.ZEALOTRY_GAIN,
-      controversyGain: descriptor.config.CONTROVERSY_GAIN,
-      harmonyCost: descriptor.config.HARMONY_COST,
       successToast: {
         messageKey: descriptor.successMessageKey,
         type: 'success'

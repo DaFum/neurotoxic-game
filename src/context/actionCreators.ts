@@ -53,6 +53,7 @@ import type {
   PostGigSummary,
   MerchPressPayload,
   PirateBroadcastPayload,
+  ZealotryActionPayload,
   QuestState,
   RawLoadedGame,
   ResetStatePayload,
@@ -1122,26 +1123,30 @@ export const createClinicEnhanceAction = (
 })
 
 /**
+ * Reduces a zealotry-style action payload to its optional toast: cost, gains and
+ * harmony cost come from the action's config in the reducer, never the caller.
+ */
+const sanitizeZealotryPayload = (payload: ZealotryActionPayload) => {
+  const base = sanitizeNonNegativePayload(payload, [])
+  return base && typeof base === 'object'
+    ? base.successToast
+      ? { successToast: base.successToast }
+      : {}
+    : base
+}
+
+/**
  * Creates an action to trigger a pirate radio broadcast.
  *
- * @param payload - Broadcast cost and reward deltas. Numeric economy/social
- * fields are normalized as non-negative values before dispatch.
- * - `payload.cost` - Money cost.
- * - `payload.fameGain` - Fame gained.
- * - `payload.zealotryGain` - Zealotry gained.
- * - `payload.controversyGain` - Controversy gained.
- * - `payload.harmonyCost` - Band harmony lost.
+ * @param payload - Only the optional toast travels: the reducer derives cost, gains
+ * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
  */
 export const createPirateBroadcastAction = (
   payload: PirateBroadcastPayload
 ): Extract<GameAction, { type: typeof ActionTypes.PIRATE_BROADCAST }> => ({
   type: ActionTypes.PIRATE_BROADCAST,
-  payload: sanitizeNonNegativePayload(
-    payload,
-    ['fameGain', 'zealotryGain', 'controversyGain'],
-    ['cost', 'harmonyCost']
-  )
+  payload: sanitizeZealotryPayload(payload)
 })
 
 /**
@@ -1280,24 +1285,15 @@ export const createTradeVoidItemAction = (
 /**
  * Creates an action to trigger a dark web leak.
  *
- * @param payload - Leak cost and reward deltas. Numeric economy/social fields
- * are normalized as non-negative values before dispatch.
- * - `payload.cost` - Money cost.
- * - `payload.fameGain` - Fame gained.
- * - `payload.zealotryGain` - Zealotry gained.
- * - `payload.controversyGain` - Controversy gained.
- * - `payload.harmonyCost` - Band harmony lost.
+ * @param payload - Only the optional toast travels: the reducer derives cost, gains
+ * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
  */
 export const createDarkWebLeakAction = (
   payload: DarkWebLeakPayload
 ): Extract<GameAction, { type: typeof ActionTypes.DARK_WEB_LEAK }> => ({
   type: ActionTypes.DARK_WEB_LEAK,
-  payload: sanitizeNonNegativePayload(
-    payload,
-    ['fameGain', 'zealotryGain', 'controversyGain'],
-    ['cost', 'harmonyCost']
-  )
+  payload: sanitizeZealotryPayload(payload)
 })
 
 /**
@@ -1381,45 +1377,27 @@ export const graftNeuroOverclock = (
 /**
  * Creates an action to trigger a cult indoctrination.
  *
- * @param payload - Indoctrination cost and reward deltas. Numeric economy/social fields
- * are normalized as non-negative values before dispatch.
- * - `payload.cost` - Money cost.
- * - `payload.fameGain` - Fame gained.
- * - `payload.zealotryGain` - Zealotry gained.
- * - `payload.controversyGain` - Controversy gained.
- * - `payload.harmonyCost` - Band harmony lost.
+ * @param payload - Only the optional toast travels: the reducer derives cost, gains
+ * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
  */
 export const createCultIndoctrinationAction = (
   payload: CultIndoctrinationPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CULT_INDOCTRINATION }> => ({
   type: ActionTypes.CULT_INDOCTRINATION,
-  payload: sanitizeNonNegativePayload(
-    payload,
-    ['fameGain', 'zealotryGain', 'controversyGain'],
-    ['cost', 'harmonyCost']
-  )
+  payload: sanitizeZealotryPayload(payload)
 })
 
 /**
  * Creates an action to trigger a void sermon.
  *
- * @param payload - Sermon cost and reward deltas. Numeric economy/social fields
- * are normalized as non-negative values before dispatch.
- * - `payload.cost` - Money cost.
- * - `payload.fameGain` - Fame gained.
- * - `payload.zealotryGain` - Zealotry gained.
- * - `payload.controversyGain` - Controversy gained.
- * - `payload.harmonyCost` - Band harmony lost.
+ * @param payload - Only the optional toast travels: the reducer derives cost, gains
+ * and harmony cost from the action's config, so a dispatch cannot choose them.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
  */
 export const createVoidSermonAction = (
   payload: VoidSermonPayload
 ): Extract<GameAction, { type: typeof ActionTypes.VOID_SERMON }> => ({
   type: ActionTypes.VOID_SERMON,
-  payload: sanitizeNonNegativePayload(
-    payload,
-    ['fameGain', 'zealotryGain', 'controversyGain'],
-    ['cost', 'harmonyCost']
-  )
+  payload: sanitizeZealotryPayload(payload)
 })

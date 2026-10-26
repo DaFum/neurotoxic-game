@@ -673,27 +673,18 @@ describe('socialReducer', () => {
 
     it('should abort if funds or harmony are insufficient', () => {
       mockState.player.money = 100
-      const payload = { cost: 200, harmonyCost: 10 }
 
-      const nextState = handlePirateBroadcast(mockState, payload)
+      const nextState = handlePirateBroadcast(mockState, {})
       assert.strictEqual(nextState, mockState)
 
       mockState.player.money = 1000
       mockState.band.harmony = 5
-      const nextState2 = handlePirateBroadcast(mockState, payload)
+      const nextState2 = handlePirateBroadcast(mockState, {})
       assert.strictEqual(nextState2, mockState)
     })
 
     it('should correctly deduct costs and apply gains', () => {
-      const payload = {
-        cost: 200,
-        fameGain: 150,
-        zealotryGain: 15,
-        controversyGain: 20,
-        harmonyCost: 10
-      }
-
-      const nextState = handlePirateBroadcast(mockState, payload)
+      const nextState = handlePirateBroadcast(mockState, {})
 
       assert.strictEqual(nextState.player.money, 800)
       assert.strictEqual(nextState.player.fame, 200)
@@ -703,16 +694,28 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.lastPirateBroadcastDay, 42)
     })
 
-    it('should clamp values appropriately', () => {
-      const payload = {
-        cost: 200,
-        fameGain: 150,
-        zealotryGain: 90,
+    it('ignores cost and gains supplied in the payload', () => {
+      const nextState = handlePirateBroadcast(mockState, {
+        cost: 0,
+        fameGain: 1e9,
+        zealotryGain: 100,
         controversyGain: 100,
-        harmonyCost: 100
-      }
+        harmonyCost: 0
+      })
 
-      const nextState = handlePirateBroadcast(mockState, payload)
+      assert.strictEqual(nextState.player.money, 800)
+      assert.strictEqual(nextState.player.fame, 200)
+      assert.strictEqual(nextState.band.harmony, 90)
+      assert.strictEqual(nextState.social.zealotry, 35)
+      assert.strictEqual(nextState.social.controversyLevel, 30)
+    })
+
+    it('should clamp values appropriately', () => {
+      mockState.band.harmony = 10
+      mockState.social.zealotry = 95
+      mockState.social.controversyLevel = 95
+
+      const nextState = handlePirateBroadcast(mockState, {})
 
       assert.strictEqual(nextState.player.money, 800)
       assert.strictEqual(nextState.band.harmony, 1) // clamped
@@ -722,11 +725,6 @@ describe('socialReducer', () => {
 
     it('should handle successToast payload correctly', () => {
       const payload = {
-        cost: 200,
-        fameGain: 150,
-        zealotryGain: 15,
-        controversyGain: 20,
-        harmonyCost: 10,
         successToast: { message: 'ui:pirate_radio.success', type: 'success' }
       }
 
@@ -771,10 +769,7 @@ describe('socialReducer', () => {
 
     it('refuses a pirate broadcast it could only pay from protected cash', () => {
       const state = makeState()
-      assert.strictEqual(
-        handlePirateBroadcast(state, { cost: 200, harmonyCost: 0 }),
-        state
-      )
+      assert.strictEqual(handlePirateBroadcast(state, {}), state)
     })
 
     it('answers amends it cannot afford with the too-expensive toast', () => {

@@ -21,19 +21,13 @@ describe('Pirate Radio Logic', () => {
       toasts: []
     }
 
-    const payload = {
-      cost: 200,
-      fameGain: 100,
-      zealotryGain: 15,
-      controversyGain: 20,
-      harmonyCost: 10,
-      successToast: { message: 'success' }
-    }
+    // Cost and gains come from PIRATE_RADIO_CONFIG; only the toast travels.
+    const payload = { successToast: { message: 'success' } }
 
     const result = handlePirateBroadcast(initialState, payload)
 
     assert.equal(result.player.money, 800)
-    assert.equal(result.player.fame, 150)
+    assert.equal(result.player.fame, 200)
     assert.equal(result.band.harmony, 70)
     assert.equal(result.social.zealotry, 25)
     assert.equal(result.social.controversyLevel, 40)
@@ -44,7 +38,7 @@ describe('Pirate Radio Logic', () => {
   it('should clamp bounds correctly at upper limits', () => {
     const initialState = {
       player: {
-        money: 100,
+        money: 1000,
         fame: 0,
         day: 5
       },
@@ -58,15 +52,7 @@ describe('Pirate Radio Logic', () => {
       }
     }
 
-    const payload = {
-      cost: 0,
-      fameGain: 0,
-      zealotryGain: 20,
-      controversyGain: 20,
-      harmonyCost: 0
-    }
-
-    const result = handlePirateBroadcast(initialState, payload)
+    const result = handlePirateBroadcast(initialState, {})
 
     assert.equal(
       result.social.zealotry,

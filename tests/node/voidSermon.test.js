@@ -14,7 +14,7 @@ test('Void Sermon', async t => {
         ...initialState,
         player: {
           ...initialState.player,
-          money: 100,
+          money: 1000,
           fame: 100
         },
         band: {
@@ -29,27 +29,20 @@ test('Void Sermon', async t => {
         }
       }
 
-      const payload = {
-        cost: 50,
-        fameGain: 100,
-        zealotryGain: 10,
-        controversyGain: 20,
-        harmonyCost: 10
-      }
-
       const nextState = gameReducer(state, {
         type: ActionTypes.VOID_SERMON,
-        payload
+        payload: {}
       })
 
-      assert.strictEqual(nextState.player.money, 50) // 100 - 50
-      assert.strictEqual(nextState.player.fame, 200) // 100 + 100
-      assert.strictEqual(nextState.band.harmony, 40) // 50 - 10
+      // Amounts come from VOID_SERMON_CONFIG, not from the payload.
+      assert.strictEqual(nextState.player.money, 250) // 1000 - 750
+      assert.strictEqual(nextState.player.fame, 500) // 100 + 400
+      assert.strictEqual(nextState.band.harmony, 25) // 50 - 25
       assert.strictEqual(
         nextState.social.zealotry,
-        VOID_SERMON_REQUIRED_ZEALOTRY + 20
+        VOID_SERMON_REQUIRED_ZEALOTRY + 35
       )
-      assert.strictEqual(nextState.social.controversyLevel, 30)
+      assert.strictEqual(nextState.social.controversyLevel, 50)
       assert.strictEqual(
         nextState.social.lastVoidSermonDay,
         nextState.player.day
@@ -78,17 +71,9 @@ test('Void Sermon', async t => {
       }
     }
 
-    const payload = {
-      cost: 50,
-      fameGain: 100,
-      zealotryGain: 10,
-      controversyGain: 20,
-      harmonyCost: 10
-    }
-
     const nextState = gameReducer(state, {
       type: ActionTypes.VOID_SERMON,
-      payload
+      payload: {}
     })
 
     assert.strictEqual(nextState.player.money, 100)
@@ -135,14 +120,24 @@ test('Void Sermon', async t => {
     assert.strictEqual(twice, once)
   })
 
-  await t.test('rejects a non-finite cost payload', () => {
+  await t.test('ignores amounts supplied in the payload', () => {
     const state = baseState()
     const next = gameReducer(state, {
       type: ActionTypes.VOID_SERMON,
-      payload: { ...payload, cost: Number.NaN }
+      payload: {
+        cost: 0,
+        fameGain: 1e9,
+        zealotryGain: 100,
+        controversyGain: 0,
+        harmonyCost: 0
+      }
     })
-    assert.strictEqual(next.player.money, state.player.money)
-    assert.strictEqual(next.social.lastVoidSermonDay, null)
+    // Still charged the configured price and paid the configured gains.
+    assert.strictEqual(next.player.money, 1250)
+    assert.strictEqual(next.player.fame, 500)
+    assert.strictEqual(next.band.harmony, 55)
+    assert.strictEqual(next.social.zealotry, VOID_SERMON_REQUIRED_ZEALOTRY + 25)
+    assert.strictEqual(next.social.controversyLevel, 50)
   })
 
   await t.test(
@@ -190,7 +185,9 @@ test('Void Sermon', async t => {
         social: {
           ...baseState().social,
           controversyLevel: 85,
-          activeDeals: [{ id: 'deal1', alignment: 'corporate', remainingGigs: 3 }],
+          activeDeals: [
+            { id: 'deal1', alignment: 'corporate', remainingGigs: 3 }
+          ],
           brandReputation: { corporate: 50 }
         }
       })
