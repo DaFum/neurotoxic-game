@@ -333,6 +333,38 @@ describe('KabelsalatScene - fully wired win', () => {
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
+  it('hides SKIP from the moment the last cable is wired, so it cannot forfeit the pending win', async () => {
+    vi.mocked(useGameActions).mockReturnValue({
+      completeKabelsalatMinigame: mockCompleteMinigame,
+      completeRoadieMinigame: vi.fn(),
+      completeAmpCalibration: vi.fn(),
+      changeScene: mockChangeScene,
+      band: {},
+      minigame: { type: 'KABELSALAT' }
+    })
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+    expect(screen.getByRole('button', { name: 'SKIP' })).toBeInTheDocument()
+
+    wireEverything()
+
+    // Inside the 600 ms win window `isPoweredOn` is still false.
+    expect(screen.queryByRole('button', { name: 'SKIP' })).toBeNull()
+
+    await act(async () => {
+      vi.advanceTimersByTime(600)
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(2500)
+    })
+
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockCompleteMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+  })
+
   it('routes to GIG immediately from the powered-on continue button', async () => {
     await act(async () => {
       render(<KabelsalatScene />)

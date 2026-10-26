@@ -32,20 +32,21 @@ export const KabelsalatScene = () => {
     handleCableClick,
     handleSocketClick,
     isPowerConnected,
+    isWinning,
     forceAdvance,
     voidSurge,
     purgeVoidSurge
   } = useKabelsalatState()
 
-  // Shared exit controls. A pending win (isPoweredOn) or loss (isGameOver)
+  // Shared exit controls. A pending win (isWinning, then isPoweredOn) or loss (isGameOver)
   // already auto-advances, so both hide SKIP and disable the backdoor.
   const logic = useMemo(
     () => ({ finishMinigame: () => forceAdvance(true) }),
     [forceAdvance]
   )
   const uiState = useMemo(
-    () => ({ isGameOver: isGameOver || isPoweredOn }),
-    [isGameOver, isPoweredOn]
+    () => ({ isGameOver: isGameOver || isPoweredOn || isWinning }),
+    [isGameOver, isPoweredOn, isWinning]
   )
   const handleComplete = useCallback(
     () => forceAdvance(isPoweredOn),

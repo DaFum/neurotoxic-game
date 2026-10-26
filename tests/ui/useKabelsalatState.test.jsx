@@ -372,6 +372,7 @@ describe('useKabelsalatState', () => {
       'isShocked',
       'faultReason',
       'isPoweredOn',
+      'isWinning',
       'timeLeft',
       'isGameOver',
       'socketOrder',
