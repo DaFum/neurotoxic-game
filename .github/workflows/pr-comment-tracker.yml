@@ -97,6 +97,13 @@ jobs:
             // 4. Sanitize-Funktion, um HTML-Kommentare, <details> und Badges zu entfernen
             function sanitizeComment(text) {
               if (!text) return "";
+              // HTML-Kommentare bis zum Fixpunkt entfernen, sonst setzt ein
+              // verschachtelter Kommentar (`<!-<!--x-->- ... -->`) den Marker wieder zusammen.
+              let previous
+              do {
+                previous = text
+                text = text.replace(/<!--[\s\S]*?-->/g, '')
+              } while (text !== previous)
               return text
                 // Entferne Devin-Badge HTML-Block (zusammenhängende a/picture/img Struktur)
                 .replace(/<a[^>]*>\s*<picture[^>]*>[\s\S]*?<\/picture>\s*<\/a>/gi, '')
