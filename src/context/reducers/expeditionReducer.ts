@@ -140,6 +140,7 @@ import {
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import {
   deriveExpeditionDoubleDownOffer,
+  isExpeditionDoubleDownAcceptable,
   getCriticalContractFailureSignal,
   materializeCommittedContracts
 } from '../../domain/expedition/contracts'
@@ -2933,6 +2934,14 @@ export const handleDoubleDownExpeditionObligation = (
     state.expedition.routeStep
   )
   if (payload.offerId !== derived.acceptedOfferId) return state
+  if (
+    !isExpeditionDoubleDownAcceptable(
+      derived,
+      state.expedition.resolvedObligationSignalIds,
+      state.expedition.routeStep
+    )
+  )
+    return state
   const activeObligations = [...state.expedition.activeObligations]
   const obligation = activeObligations[index]
   if (!obligation) return state

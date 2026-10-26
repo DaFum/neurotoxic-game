@@ -13,7 +13,10 @@ import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 import { AuthorityEncounterDialog } from './AuthorityEncounterDialog'
-import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
+import {
+  deriveExpeditionDoubleDownOffer,
+  isExpeditionDoubleDownAcceptable
+} from '../../domain/expedition/contracts'
 import { isAtExpeditionExtractionWindow } from '../../domain/expedition/extraction'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
@@ -155,6 +158,9 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
     state => state.expedition?.activeObligations
   )
   const runSeed = useGameSelector(state => state.runSeed)
+  const resolvedSignalIds = useGameSelector(
+    state => state.expedition?.resolvedObligationSignalIds
+  )
   const routeStep = useGameSelector(state => state.expedition?.routeStep ?? 0)
 
   if (!activeObligations || activeObligations.length === 0) return null
@@ -169,9 +175,20 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
       </span>
       {activeObligations.map(item => {
         if (item.status !== 'active') return null
-        const offer =
+        const derivedOffer =
           item.doubleDown === null && runSeed !== undefined && runSeed !== null
             ? deriveExpeditionDoubleDownOffer(runSeed, item.id, routeStep)
+            : null
+        // The reducer refuses a restriction already broken at this step, so the
+        // control does not offer it.
+        const offer =
+          derivedOffer &&
+          isExpeditionDoubleDownAcceptable(
+            derivedOffer,
+            resolvedSignalIds ?? [],
+            routeStep
+          )
+            ? derivedOffer
             : null
         return (
           <div

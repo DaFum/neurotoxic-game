@@ -2764,13 +2764,6 @@ test('load keeps a contract failed by its double-down restriction failed and set
     loadWithDoubleDown('heat_cap', { signalIds: none, heat: 60 }).status,
     'active'
   )
-  // A rest banked at or before the acceptance step predates the restriction.
-  assert.equal(
-    loadWithDoubleDown('no_more_rest', {
-      signalIds: at => [`rest:exp_5_0:${at}`]
-    }).status,
-    'active'
-  )
 })
 
 const heatBreachFixture = () => {
@@ -2849,4 +2842,54 @@ test('Heat an event adds fails a max-Heat contract in the same commit, once (#33
     payload
   )
   assert.equal(calm.expedition.activeObligations[0].status, 'active')
+})
+
+test('a double-down already broken at this step is refused, later breaches at the step fail on load (#3380 review)', () => {
+  const { started, walked } = contractRunOnCanonicalMap()
+  const obligation = started.expedition.activeObligations[0]
+  let step = -1
+  for (let candidate = 0; candidate < 8 && step < 0; candidate++) {
+    if (
+      deriveExpeditionDoubleDownOffer(started.runSeed, obligation.id, candidate)
+        .addedConstraint.kind === 'no_more_rest'
+    )
+      step = candidate
+  }
+  assert.ok(step >= 0)
+  const atStep = walkTo(startedState(), 0)
+  const base = {
+    ...started,
+    expedition: { ...started.expedition, routeStep: step }
+  }
+  const offer = deriveExpeditionDoubleDownOffer(
+    started.runSeed,
+    obligation.id,
+    step
+  )
+  const action = {
+    type: ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION,
+    payload: {
+      obligationId: obligation.id,
+      offerId: offer.acceptedOfferId,
+      expectedRouteStep: step
+    }
+  }
+  assert.ok(atStep)
+  const accepted = gameReducer(base, action)
+  assert.notStrictEqual(accepted, base, 'accepted without a prior rest')
+
+  const rested = {
+    ...base,
+    expedition: {
+      ...base.expedition,
+      resolvedObligationSignalIds: [`rest:${walked[0]}:${step}`]
+    }
+  }
+  assert.strictEqual(gameReducer(rested, action), rested)
+
+  // A rest banked at the acceptance step after accepting still fails on load.
+  const loaded = loadWithDoubleDown('no_more_rest', {
+    signalIds: at => [`rest:exp_5_0:${at}`]
+  })
+  assert.equal(loaded.status, 'failed')
 })

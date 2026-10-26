@@ -51,6 +51,7 @@ import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
+  readExpeditionSignalStep,
   getExpeditionConstraintRunVerdict,
   hasExpeditionRestSignal,
   materializeContractConstraints
@@ -1555,18 +1556,12 @@ const sanitizeSocialResultProof = (
   }
 }
 
-/** Route step a `<kind>:<id>:<step>` signal id was banked at, else `null`. */
-const readSignalStep = (signalId: string): number | null => {
-  const tail = signalId.slice(signalId.lastIndexOf(':') + 1)
-  return ROUTE_STEP_KEY.test(tail) ? Number.parseInt(tail, 10) : null
-}
-
 /**
  * Whether persisted run evidence shows the accepted double-down breached.
  *
  * @remarks
- * Only signals banked after the acceptance step count: a rest or post that
- * resolved at or before it predates the restriction.
+ * Signals at the acceptance step count too: acceptance is refused while a
+ * matching signal already exists at that step (`isExpeditionDoubleDownAcceptable`).
  */
 const isDoubleDownBreached = (
   doubleDown: ExpeditionDoubleDownState,
@@ -1576,8 +1571,8 @@ const isDoubleDownBreached = (
   const after = (prefix: string): boolean =>
     signalIds.some(signalId => {
       if (!signalId.startsWith(prefix)) return false
-      const step = readSignalStep(signalId)
-      return step !== null && step > doubleDown.acceptedAtRouteStep
+      const step = readExpeditionSignalStep(signalId)
+      return step !== null && step >= doubleDown.acceptedAtRouteStep
     })
   switch (doubleDown.addedConstraint.kind) {
     case 'no_more_rest':
