@@ -54,21 +54,21 @@ describe('errorHandler', () => {
       assert.strictEqual(toastMessage, 'Fallback message used')
     })
 
-    it('catches and falls back when internal mechanisms throw an error', () => {
+    it('returns the normalized error without any network call', () => {
       const originalFetch = global.fetch
       const originalWindow = global.window
 
+      let fetchCalls = 0
       global.window = { navigator: { onLine: true } }
       global.fetch = () => {
-        throw new Error('fetch error forced for test')
+        fetchCalls++
+        return Promise.resolve({ ok: true })
       }
 
       try {
         const result = handleError(new Error('Test error'), {})
-        assert.ok(result !== undefined)
         assert.strictEqual(result.message, 'Test error')
-      } catch (err) {
-        assert.fail(`handleError threw an unexpected error: ${err.message}`)
+        assert.strictEqual(fetchCalls, 0)
       } finally {
         global.fetch = originalFetch
         global.window = originalWindow
