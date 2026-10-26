@@ -7,7 +7,6 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getCrowdfundImagePrompt } from '../../utils/imageGen'
 import { formatCurrency, formatPercent } from '../../utils/numberUtils'
 import { resolveCrowdfundProbability } from '../../utils/assetTicks'
-import { mulberry32 } from '../../utils/seededRng'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { AssetFlavor, AssetKind, ChassisTier } from '../../types/assets'
 import type { BaseModalProps } from '../../types/ui'
@@ -28,10 +27,10 @@ interface Props extends BaseModalProps {
  * perfectly aligned with the backend tick reducer logic. The player configures the campaign by
  * adjusting their fame stake and the campaign duration.
  *
- * The `plannedSuccessRoll` is computed deterministically at confirmation using a one-shot
- * `mulberry32` PRNG. It is seeded with the current game state's `rngSeed` XOR'd with the
- * selected stake and duration. This guarantees deterministic behavior across re-renders within
- * a single play session rather than relying on cryptographic unpredictability.
+ * Only the setup request is dispatched. `startCrowdfund` derives the odds (same
+ * `resolveCrowdfundProbability` inputs as the preview) and the deterministic
+ * `mulberry32` roll from state, and caps the stake at the player's fame, so the
+ * dispatch cannot choose any of them.
  *
  * @param params - The destructure modal properties and asset campaign target parameters.
  * @returns A rendered modal sheet component containing the crowdfund configuration interface.
@@ -48,7 +47,6 @@ export const CrowdfundSetupModal = ({
   const { startCrowdfund } = useGameActions()
   const fame = useGameSelector(s => s.player.fame)
   const scenePresence = useGameSelector(s => s.social?.scenePresence ?? 0)
-  const rngSeed = useGameSelector(s => s.rngSeed)
 
   const [fameStake, setFameStake] = useState<number>(Math.min(20, fame))
   const [days, setDays] = useState<number>(14)
@@ -60,18 +58,14 @@ export const CrowdfundSetupModal = ({
   )
 
   const onConfirm = () => {
-    // mulberry32 seeded with rngSeed^fameStake gives a per-campaign deterministic
-    // roll that survives re-renders inside this modal.
-    const roll = mulberry32(rngSeed ^ fameStake ^ days)()
+    // The action creator derives the odds and the roll from state.
     startCrowdfund({
       kind,
       flavor,
       tier,
       targetAmount,
       fameStake,
-      daysRemaining: days,
-      plannedSuccessRoll: roll,
-      plannedSuccessProbability: probability
+      daysRemaining: days
     })
     onClose()
   }

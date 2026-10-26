@@ -14,6 +14,26 @@ import {
   startCrowdfund
 } from '../../src/context/assetActionCreators'
 import { advanceDay } from '../../src/context/actionCreators'
+import { mulberry32 } from '../../src/utils/seededRng'
+import { resolveCrowdfundProbability } from '../../src/utils/assetTicks'
+
+/**
+ * First rngSeed whose derived crowdfund roll resolves the campaign as wanted.
+ * The creator derives the roll from `rngSeed ^ fameStake ^ days`, so the test
+ * picks the seed instead of stamping a roll.
+ */
+const findSeedFor = (state, { stake, days, target, succeeds }) => {
+  const probability = resolveCrowdfundProbability(
+    state.player.fame,
+    state.social?.scenePresence ?? 0,
+    target
+  )
+  for (let seed = 0; seed < 10000; seed++) {
+    const roll = mulberry32(seed ^ stake ^ days)()
+    if (roll < probability === succeeds) return seed
+  }
+  throw new Error('no seed found')
+}
 
 // Foundation-phase golden path: exercises every action surface end-to-end
 // through the actual gameReducer. Section plans (2–5) will inherit this
@@ -185,11 +205,16 @@ describe('Asset golden path — loan acquisition survives the cycle', () => {
 describe('Asset golden path — crowdfund start → resolution', () => {
   it('successful campaign creates the asset and applies money+fame deltas', () => {
     setupConfig()
-    let state = seedState({
-      // Force success by stamping plannedSuccessRoll < plannedSuccessProbability.
-      // Both are clamped to [0.05, 0.95] in the action creator.
-      rngSeed: 0xffffffff
-    })
+    let state = seedState()
+    state = {
+      ...state,
+      rngSeed: findSeedFor(state, {
+        stake: 20,
+        days: 1,
+        target: 4000,
+        succeeds: true
+      })
+    }
 
     // Build a campaign that resolves on next advanceDay (daysRemaining: 1
     // → tick subtracts 1 → 0 → resolve)
@@ -200,9 +225,7 @@ describe('Asset golden path — crowdfund start → resolution', () => {
         tier: 1,
         targetAmount: 4000,
         fameStake: 20,
-        daysRemaining: 1,
-        plannedSuccessRoll: 0.1,
-        plannedSuccessProbability: 0.9
+        daysRemaining: 1
       },
       state
     )
@@ -237,6 +260,15 @@ describe('Asset golden path — crowdfund start → resolution', () => {
   it('failed campaign deducts fameStake without creating an asset', () => {
     setupConfig()
     let state = seedState()
+    state = {
+      ...state,
+      rngSeed: findSeedFor(state, {
+        stake: 30,
+        days: 1,
+        target: 4000,
+        succeeds: false
+      })
+    }
 
     const startAction = startCrowdfund(
       {
@@ -245,9 +277,7 @@ describe('Asset golden path — crowdfund start → resolution', () => {
         tier: 1,
         targetAmount: 4000,
         fameStake: 30,
-        daysRemaining: 1,
-        plannedSuccessRoll: 0.95,
-        plannedSuccessProbability: 0.1 // roll >= probability → fail
+        daysRemaining: 1
       },
       state
     )

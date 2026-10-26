@@ -12,6 +12,8 @@ import {
 } from '../../src/context/assetActionCreators.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
+import { mulberry32 } from '../../src/utils/seededRng.ts'
+import { resolveCrowdfundProbability } from '../../src/utils/assetTicks.ts'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
@@ -577,9 +579,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       tier: 1,
       targetAmount: 5000,
       fameStake: 50,
-      daysRemaining: 14,
-      plannedSuccessRoll: 0.42,
-      plannedSuccessProbability: 0.5
+      daysRemaining: 14
     })
 
     assert.deepEqual(action, {
@@ -596,15 +596,56 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
         tier: 1,
         targetAmount: 5000,
         fameStake: 50,
-        daysRemaining: 14,
-        plannedSuccessRoll: 0.42,
-        plannedSuccessProbability: 0.5
+        daysRemaining: 14
       },
       makeState()
     )
     assert.equal(action.type, ActionTypes.START_CROWDFUND)
-    assert.equal(action.payload.campaign.plannedSuccessRoll, 0.42)
     assert.equal(typeof action.payload.campaign.id, 'string')
+    assert.equal(action.payload.campaign.fameStake, 50)
+  })
+
+  it('startCrowdfund derives the odds and the roll from state, ignoring any the caller sends', () => {
+    const state = makeState({
+      player: { fame: 100 },
+      social: { scenePresence: 40 }
+    })
+    state.rngSeed = 12345
+    const action = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 5000,
+        fameStake: 50,
+        daysRemaining: 14,
+        // A caller that tries to guarantee the win.
+        plannedSuccessRoll: 0,
+        plannedSuccessProbability: 0.95
+      },
+      state
+    )
+    const campaign = action.payload.campaign
+    assert.equal(
+      campaign.plannedSuccessProbability,
+      resolveCrowdfundProbability(100, 40, 5000)
+    )
+    assert.equal(campaign.plannedSuccessRoll, mulberry32(12345 ^ 50 ^ 14)())
+  })
+
+  it('startCrowdfund caps the fame stake at the fame the player has', () => {
+    const action = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 5000,
+        fameStake: 1e9,
+        daysRemaining: 14
+      },
+      makeState({ player: { fame: 100 } })
+    )
+    assert.equal(action.payload.campaign.fameStake, 100)
   })
 
   it('startCrowdfund rejects non-positive amounts and negative fame stakes', () => {
@@ -614,9 +655,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       tier: 1,
       targetAmount: 5000,
       fameStake: 50,
-      daysRemaining: 14,
-      plannedSuccessRoll: 0.42,
-      plannedSuccessProbability: 0.5
+      daysRemaining: 14
     }
     const expected = {
       type: 'START_CROWDFUND_FAILED',
@@ -653,9 +692,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
         tier: 1,
         targetAmount: 5000,
         fameStake: 50,
-        daysRemaining: 14,
-        plannedSuccessRoll: 0.42,
-        plannedSuccessProbability: 0.5
+        daysRemaining: 14
       },
       makeState({ assets: [makeAsset()] })
     )
@@ -673,9 +710,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
         tier: 1,
         targetAmount: 5000,
         fameStake: 50,
-        daysRemaining: 14,
-        plannedSuccessRoll: 0.42,
-        plannedSuccessProbability: 0.5
+        daysRemaining: 14
       },
       makeState({ crowdfundCampaigns: [makeCampaign()] })
     )
