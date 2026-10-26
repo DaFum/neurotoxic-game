@@ -6,6 +6,7 @@ import {
 } from '../../src/utils/fallbackMap'
 import { MAP_DIVERSITY_REQUIREMENTS } from '../../src/utils/mapValidation'
 import { VENUES_BY_ID } from '../../src/data/venues'
+import { getCityKeyFromVenueId } from '../../src/utils/mapGenerator/cityTraits'
 
 /**
  * The committed fallback map is the last line of defence for a player's run.
@@ -73,5 +74,16 @@ describe('committed fallback map', () => {
       .filter(venueId => !VENUES_BY_ID.has(venueId))
 
     assert.deepEqual([...new Set(missing)], [])
+  })
+
+  test('keeps the committed city intel for every node city', () => {
+    const map = loadFallbackMap()
+
+    assert.ok(map.cityStates && Object.keys(map.cityStates).length > 0)
+    for (const node of Object.values(map.nodes)) {
+      const cityKey = getCityKeyFromVenueId(node.venue.id)
+      if (!cityKey) continue
+      assert.ok(Object.hasOwn(map.cityStates, cityKey), cityKey)
+    }
   })
 })

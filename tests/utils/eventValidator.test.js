@@ -310,10 +310,15 @@ describe('validateCrisisEvent', () => {
         )
 
         ev.options[0].skillCheck.stat = 'musicianship'
-        assert.throws(
-          () => validateCrisisEvent(ev),
-          /SkillCheck threshold must be a number/
-        )
+        // NaN and Infinity are numbers, but `total >= NaN` is never true, so an
+        // authored one would make the option fail forever.
+        for (const bad of [undefined, '50', Number.NaN, Infinity, -Infinity]) {
+          ev.options[0].skillCheck.threshold = bad
+          assert.throws(
+            () => validateCrisisEvent(ev),
+            /SkillCheck threshold must be a finite number/
+          )
+        }
 
         ev.options[0].skillCheck.threshold = 50
         assert.throws(

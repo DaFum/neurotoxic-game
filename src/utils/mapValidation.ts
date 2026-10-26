@@ -2,6 +2,12 @@ import { MAP_NODE_TYPES, isMapNodeType } from './mapNodeTypes'
 import type { MapNodeType } from './mapNodeTypes'
 import { isLooseRecord, isForbiddenKey } from './objectUtils'
 import { isFiniteNumber } from './finiteNumber'
+import { normalizeVenueId } from './mapUtils'
+import { isEmptyObject } from './gameState/checks'
+import {
+  deriveCityTraits,
+  getCityKeyFromVenueId
+} from './mapGenerator/cityTraits'
 
 /**
  * Node shape a validated map is guaranteed to contain.
@@ -339,6 +345,60 @@ export const buildMapFailureSignature = (
 }
 
 /**
+ * Rebuilds the `cityStates` a validated map carries.
+ *
+ * @param rawCityStates - Untrusted `cityStates` of the generated or fallback map.
+ * @param nodes - Validated nodes whose venues name the cities that need intel.
+ * @returns Own, well-formed entries kept as they are, every other node city
+ * filled with its deterministic derived traits; `undefined` when empty.
+ *
+ * @remarks
+ * Same acceptance policy as the load sanitizer (`normalizeLoadedGameMap`): an
+ * entry needs a string `genreBias`, a finite `attentionSpan` and a string
+ * `barSpendingProfile`, and only those three fields are copied. A malformed
+ * container is repaired, never a validation failure, since the traits are
+ * derivable. Dropping them here left a fresh run without city-intel tooltips
+ * until a save was reloaded.
+ */
+const buildCityStates = (
+  rawCityStates: unknown,
+  nodes: Record<string, ValidatedMapNode>
+): ValidatedMap['cityStates'] => {
+  const cityStates: NonNullable<ValidatedMap['cityStates']> = {}
+  if (isLooseRecord(rawCityStates) && !Array.isArray(rawCityStates)) {
+    for (const key in rawCityStates) {
+      if (!Object.hasOwn(rawCityStates, key) || isForbiddenKey(key)) continue
+      const entry = rawCityStates[key]
+      if (
+        isLooseRecord(entry) &&
+        typeof entry.genreBias === 'string' &&
+        isFiniteNumber(entry.attentionSpan) &&
+        typeof entry.barSpendingProfile === 'string'
+      ) {
+        cityStates[key] = {
+          genreBias: entry.genreBias,
+          attentionSpan: entry.attentionSpan,
+          barSpendingProfile: entry.barSpendingProfile
+        }
+      }
+    }
+  }
+  for (const nodeId in nodes) {
+    if (!Object.hasOwn(nodes, nodeId)) continue
+    // Legacy venues can carry namespaced ids like `venues:berlin_so36`; the
+    // city key is derived from the normalized form.
+    const cityKey = getCityKeyFromVenueId(
+      normalizeVenueId(nodes[nodeId]?.venue?.id) ?? ''
+    )
+    if (!cityKey || isForbiddenKey(cityKey)) continue
+    if (!Object.hasOwn(cityStates, cityKey)) {
+      cityStates[cityKey] = deriveCityTraits(cityKey)
+    }
+  }
+  return isEmptyObject(cityStates) ? undefined : cityStates
+}
+
+/**
  * Validates a generated or committed map against the structural and diversity
  * contract before it reaches gameplay.
  *
@@ -451,5 +511,13 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
     }
   }
 
-  return { success: true, data: { nodes, connections: connections ?? [] } }
+  const cityStates = buildCityStates(raw.cityStates, nodes)
+  return {
+    success: true,
+    data: {
+      nodes,
+      connections: connections ?? [],
+      ...(cityStates ? { cityStates } : {})
+    }
+  }
 }

@@ -124,11 +124,21 @@ describe('useMapGeneration', () => {
 
     expect(generateMapSpy).toHaveBeenCalled()
 
-    // Check if dispatch was called with correct action
+    // The validated map is dispatched with the city intel the validator
+    // derives for it, so a new run shows tooltips without a reload.
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'SET_MAP',
-      payload: mockGeneratedMap
+      payload: {
+        ...mockGeneratedMap,
+        cityStates: expect.objectContaining({})
+      }
     })
+    const dispatched = mockDispatch.mock.calls[0]?.[0] as {
+      payload: { cityStates?: Record<string, unknown> }
+    }
+    expect(
+      Object.keys(dispatched.payload.cityStates ?? {}).length
+    ).toBeGreaterThan(0)
   })
 
   it('should not generate a map if gameMap is already provided', () => {

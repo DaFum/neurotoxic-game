@@ -36,7 +36,10 @@ import {
   sanitizeSuccessToast,
   buildDeterministicToastId
 } from './toastSanitizers'
-import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
+import {
+  getBloodBankDonation,
+  validateBloodBankDonation
+} from '../../utils/bloodBankUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
 
@@ -232,30 +235,19 @@ export const handleBloodBankDonate = (
     return state
   }
 
-  const safePayload = payload || {
-    moneyGain: 0,
-    harmonyCost: 0,
-    staminaCost: 0,
-    controversyGain: 0
-  }
-  // Costs are never coerced: a missing or malformed price must not make the
-  // donation free.
-  if (
-    !isFiniteNumber(safePayload.harmonyCost) ||
-    safePayload.harmonyCost < 0 ||
-    !isFiniteNumber(safePayload.staminaCost) ||
-    safePayload.staminaCost < 0
-  ) {
-    logger.warn('ClinicReducer', 'Invalid blood bank cost payload')
+  // The amounts are derived here, never read from the payload: a dispatch can
+  // only pick a donation kind, so it cannot pay itself a billion or price the
+  // donation at zero.
+  const safePayload = isLooseRecord(payload) ? payload : null
+  const donation = getBloodBankDonation(
+    safePayload?.kind,
+    state.player.fameLevel
+  )
+  if (!safePayload || !donation) {
+    logger.warn('ClinicReducer', 'Unknown blood bank donation kind')
     return state
   }
-  const moneyGain = Math.max(0, finiteNumberOr(safePayload.moneyGain, 0))
-  const harmonyCost = safePayload.harmonyCost
-  const staminaCost = safePayload.staminaCost
-  const controversyGain = Math.max(
-    0,
-    finiteNumberOr(safePayload.controversyGain, 0)
-  )
+  const { moneyGain, harmonyCost, staminaCost, controversyGain } = donation
   const successToast = safePayload.successToast
 
   // Validate members array

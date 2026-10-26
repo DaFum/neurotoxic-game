@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
@@ -12,30 +12,36 @@ const ENCOUNTER_POWER_GAIN = 5
  * @param rivalBand - Current rival band state.
  * @param playerNodeId - Player's current map node id.
  * @param updateRivalBand - Action callback used to patch rival state.
+ *
+ * @remarks
+ * The "already escalated here" marker is `rivalBand.lastEscalatedNodeId`, set in
+ * the same dispatch as the power gain. A component ref would reset whenever
+ * Overworld remounts (Clinic, Assets, a reload) and the rival would gain power
+ * again for the same encounter. The marker is cleared once the rival and the
+ * player are no longer on the same node, so the next meeting escalates again.
  */
 export const useRivalEscalation = (
   rivalBand: RivalBandState | null | undefined,
   playerNodeId: string | null | undefined,
   updateRivalBand: ((patch: Partial<RivalBandState>) => void) | undefined
 ) => {
-  const lastEscalatedNodeRef = useRef<string | null>(null)
-
   useEffect(() => {
-    if (!rivalBand || !playerNodeId || !updateRivalBand) {
-      lastEscalatedNodeRef.current = null
-      return
-    }
-    if (rivalBand.currentLocationId !== playerNodeId) {
-      lastEscalatedNodeRef.current = null
-      return
-    }
-    if (lastEscalatedNodeRef.current === playerNodeId) return
+    if (!rivalBand || !playerNodeId || !updateRivalBand) return
 
-    lastEscalatedNodeRef.current = playerNodeId
+    const marker = rivalBand.lastEscalatedNodeId ?? null
+    if (rivalBand.currentLocationId !== playerNodeId) {
+      if (marker !== null) updateRivalBand({ lastEscalatedNodeId: null })
+      return
+    }
+    if (marker === playerNodeId) return
+
     const nextPower = Math.max(
       0,
       finiteNumberOr(rivalBand.powerLevel, 0) + ENCOUNTER_POWER_GAIN
     )
-    updateRivalBand({ powerLevel: nextPower })
+    updateRivalBand({
+      powerLevel: nextPower,
+      lastEscalatedNodeId: playerNodeId
+    })
   }, [rivalBand, playerNodeId, updateRivalBand])
 }

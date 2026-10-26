@@ -84,6 +84,7 @@ const runContinue = shown => {
     perfScore: settlement.perfScore,
     financials: { net: settlement.net },
     misses: stats.misses,
+    failed: stats.failed === true,
     bandStyle: finiteNumberOr(band.style, 0),
     dealFameMultiplier: settlement.dealFameMultiplier,
     calculateFameGain,
@@ -352,6 +353,44 @@ test('a reload on an Expedition Finale result matches Continue (stamina, pedal, 
   )
   assert.deepEqual(gameplaySlices(loaded), gameplaySlices(continued))
   assert.notEqual(loaded.currentScene, GAME_PHASES.POST_GIG)
+})
+
+const walkToFestival = state => {
+  let current = state
+  while (
+    current.gameMap.nodes[current.player.currentNodeId]?.type !== 'FESTIVAL'
+  ) {
+    current = walkTo(current, current.expedition.routeStep + 1)
+  }
+  return current
+}
+
+test('a collapsed gig pays the bad-gig fame loss on live Continue and on reload', () => {
+  const walked = walkToFestival(startedState({ money: 5000, fame: 100 }))
+  const atResult = withPostGigResult(walked, {
+    nodeType: 'FESTIVAL',
+    gigId: 'festival_venue'
+  })
+  // Raw score high enough for a reward (perfScore 80 in the record) but the
+  // gig collapsed before the end.
+  const collapsed = recordSettlement({
+    ...atResult,
+    lastGigStats: { ...atResult.lastGigStats, failed: true, accuracy: 40 }
+  })
+  const survived = recordSettlement(atResult)
+
+  const continued = runContinue(collapsed)
+  const loaded = reload(collapsed)
+
+  assert.ok(
+    continued.player.fame < collapsed.player.fame,
+    'a collapsed gig loses fame'
+  )
+  assert.ok(
+    runContinue(survived).player.fame > survived.player.fame,
+    'the same score without a collapse still earns fame'
+  )
+  assert.equal(loaded.player.fame, continued.player.fame)
 })
 
 test('a settled reload applies the Continue effects exactly once', () => {

@@ -601,3 +601,27 @@ test('getSpinStoryMoneyUpdate gates on spendable cash during an active expeditio
   )
   assert.equal(getSpinStoryMoneyUpdate({ player }).success, true)
 })
+
+test('calculateContinueStats pays the bad-gig fame loss for a collapsed gig', () => {
+  const base = {
+    player: { fame: 500, money: 0 },
+    financials: { net: 0 },
+    misses: 0,
+    calculateFameGain: (raw, _fame, max) => Math.min(raw, max),
+    calculateFameLevel: () => 1,
+    clampPlayerFame: n => n,
+    clampPlayerMoney: n => n,
+    BALANCE_CONSTANTS
+  }
+  const earned = calculateContinueStats({ ...base, perfScore: 80 })
+  const collapsed = calculateContinueStats({
+    ...base,
+    perfScore: 80,
+    failed: true
+  })
+  const bad = calculateContinueStats({ ...base, perfScore: 10 })
+
+  assert.ok(earned.newFame > 500)
+  assert.equal(collapsed.newFame, bad.newFame)
+  assert.equal(collapsed.newFame, 500 - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG)
+})

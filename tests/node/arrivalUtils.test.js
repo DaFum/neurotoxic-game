@@ -87,6 +87,12 @@ describe('handleNodeArrival', () => {
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 1)
     assert.strictEqual(mocks.triggerEvent.mock.calls[0].arguments[0], 'special')
+    // Without a trigger point the filter is skipped and post_gig specials
+    // become eligible at a node with no gig.
+    assert.strictEqual(
+      mocks.triggerEvent.mock.calls[0].arguments[1],
+      'special_location'
+    )
     assert.strictEqual(mocks.addToast.mock.calls.length, 0)
   })
 

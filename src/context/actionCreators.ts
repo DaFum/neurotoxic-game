@@ -1234,24 +1234,26 @@ export const createSetPendingRiskEventAction = (
 /**
  * Creates an action to donate blood to the void clinic.
  *
- * @param payload - Donation rewards and costs. Numeric fields are normalized
- * as non-negative values before dispatch.
- * - `payload.moneyGain` - The money gained.
- * - `payload.harmonyCost` - The harmony lost.
- * - `payload.staminaCost` - The stamina lost per member.
- * - `payload.controversyGain` - The controversy gained.
+ * @param payload - Donation request. Only the kind travels: the reducer derives
+ * the price and payout from it, so a dispatch cannot choose its own.
+ * - `payload.kind` - `'blood'` or `'marrow'`.
  * - `payload.successToast` - Optional toast on success.
  */
 export const createBloodBankDonateAction = (
   payload: BloodBankDonatePayload
-): Extract<GameAction, { type: typeof ActionTypes.BLOOD_BANK_DONATE }> => ({
-  type: ActionTypes.BLOOD_BANK_DONATE,
-  payload: sanitizeNonNegativePayload(
-    payload,
-    ['moneyGain', 'controversyGain'],
-    ['harmonyCost', 'staminaCost']
-  )
-})
+): Extract<GameAction, { type: typeof ActionTypes.BLOOD_BANK_DONATE }> => {
+  const base = sanitizeNonNegativePayload(payload, [])
+  return {
+    type: ActionTypes.BLOOD_BANK_DONATE,
+    payload:
+      base && typeof base === 'object'
+        ? {
+            kind: base.kind,
+            ...(base.successToast ? { successToast: base.successToast } : {})
+          }
+        : base
+  }
+}
 
 /**
  * Creates an action to trade fame for a void item (contraband).

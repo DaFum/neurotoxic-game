@@ -209,6 +209,11 @@ export interface RivalBandState {
   alignment: BrandAlignment
   powerLevel: number
   currentLocationId: string | null
+  /**
+   * Node where the rival already escalated against the player. Persisted so a
+   * remount or reload at the same node does not escalate again.
+   */
+  lastEscalatedNodeId?: string | null
   [key: string]: unknown
 }
 

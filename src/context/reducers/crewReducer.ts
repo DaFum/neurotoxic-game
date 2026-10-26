@@ -150,6 +150,8 @@ export const handleRecordExpeditionCrewStressSource = (
   payload: ExpeditionCrewStressIntent
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
+  // The sibling handlers guard this too: `acceptsSource` reads its length.
+  if (typeof payload.sourceId !== 'string') return state
   const replayId = `${payload.sourceId}:stress:${payload.crewId}`
   if (
     !Object.hasOwn(EXPEDITION_CREW_BY_ID, payload.crewId) ||

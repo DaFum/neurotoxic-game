@@ -257,9 +257,9 @@ test('clinicReducer', async t => {
         // Regression mirror of the heal case: a stale save can carry NaN stamina.
         // handleBloodBankDonate must coerce the NaN base to 0 (finiteNumberOr) so
         // NaN never propagates into stored stamina.
-        // Since 0 < staminaCost + 10, the affordability check will reject the donation,
+        // Since 0 < the blood donation's stamina cost + 10, the affordability
+        // check will reject the donation,
         // returning the original state without economy effects or toasts.
-        const staminaCost = 20
         const state = {
           player: { money: 100, fame: 0, clinicVisits: 0 },
           band: {
@@ -271,10 +271,7 @@ test('clinicReducer', async t => {
         }
 
         const nextState = handleBloodBankDonate(state, {
-          moneyGain: 50,
-          harmonyCost: 0,
-          staminaCost,
-          controversyGain: 0,
+          kind: 'blood',
           successToast: { id: 'bb-toast', message: 'Donated', type: 'success' }
         })
 

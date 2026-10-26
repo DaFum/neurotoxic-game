@@ -15,12 +15,19 @@ import {
   handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
+import { gameReducer } from '../../src/context/gameReducer'
+import { advanceDay } from '../../src/context/actionCreators'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
 import { SONGS_DB } from '../../src/data/songs'
 import { FLAGS } from '../../src/data/flags.registry'
 import { logger } from '../../src/utils/logger'
 import { CURRENT_SAVE_VERSION } from '../../src/context/reducers/migrations'
+import { createPersistedState } from '../../src/context/usePersistence'
+import {
+  FIXTURE_RUN_SEED,
+  startedState
+} from '../expeditionLifecycleFixture.js'
 
 // ADVANCE_DAY takes no `rng` function: daily rolls come from `dayRngStream`.
 // A run of neutral mid-range rolls stands in for the old `rng: () => 0.5`.
@@ -1869,7 +1876,7 @@ test('systemReducer - pending modal state', async t => {
   )
 
   await t.test(
-    'returns same state when pending supply stop inventory is unchanged',
+    'keeps a well-formed pending supply stop inventory as it was',
     () => {
       const inventory = [
         {
@@ -1879,12 +1886,55 @@ test('systemReducer - pending modal state', async t => {
           effect: { type: 'inventory_add', item: 'strings', value: 1 }
         }
       ]
-      const state = {
-        ...createInitialState(),
-        pendingSupplyStopInventory: inventory
-      }
+      const state = createInitialState()
 
-      assert.equal(handleSetPendingSupplyStopInventory(state, inventory), state)
+      const next = handleSetPendingSupplyStopInventory(state, inventory)
+      assert.deepEqual(next.pendingSupplyStopInventory, inventory)
+      // Settled: re-dispatching the stored value changes nothing observable.
+      assert.deepEqual(
+        handleSetPendingSupplyStopInventory(next, inventory)
+          .pendingSupplyStopInventory,
+        inventory
+      )
+    }
+  )
+
+  await t.test(
+    'sanitizes a raw pending supply stop inventory like the load path',
+    () => {
+      const state = createInitialState()
+      const good = {
+        id: 'strings',
+        name: 'Strings',
+        cost: 10,
+        effect: { type: 'inventory_add', item: 'strings', value: 1 }
+      }
+      const hostile = { ...good, id: 'bad', cost: -500 }
+      const next = handleSetPendingSupplyStopInventory(state, [
+        good,
+        hostile,
+        'x',
+        null
+      ])
+
+      assert.ok(
+        next.pendingSupplyStopInventory.every(item => item.cost >= 0),
+        'no negative-cost item is offered'
+      )
+      assert.ok(
+        next.pendingSupplyStopInventory.some(item => item.id === 'strings')
+      )
+      // The shop-item schema clamps a negative cost rather than dropping the item.
+      assert.equal(
+        next.pendingSupplyStopInventory.find(item => item.id === 'bad')?.cost,
+        0
+      )
+      // Nothing usable left is no open shop.
+      assert.equal(
+        handleSetPendingSupplyStopInventory(state, ['x', null])
+          .pendingSupplyStopInventory,
+        null
+      )
     }
   )
 
@@ -2483,6 +2533,66 @@ test('a saved supply-stop item with an inherited effect type loads without its e
     assert.ok(
       items.some(item => item.id === 'item_ok'),
       type
+    )
+  }
+})
+
+test('handleLoadGame keeps an active expedition whose saved runSeed is signed', () => {
+  const run = startedState({ money: 5000 })
+  const raw = JSON.parse(JSON.stringify(createPersistedState(run)))
+  assert.equal(raw.expedition.status, 'active')
+  // Same normalized seed, written the way a build that stored signed seeds
+  // would have: `>>> 0` maps it back to FIXTURE_RUN_SEED.
+  raw.runSeed = FIXTURE_RUN_SEED - 2 ** 32
+
+  const loaded = handleLoadGame(createInitialState(), raw)
+
+  assert.equal(loaded.runSeed, FIXTURE_RUN_SEED)
+  assert.equal(loaded.expedition.status, 'active')
+  assert.equal(loaded.expedition.runId, run.expedition.runId)
+})
+
+test('handleLoadGame still collapses an active expedition whose runSeed is missing', () => {
+  const run = startedState({ money: 5000 })
+  const raw = JSON.parse(JSON.stringify(createPersistedState(run)))
+  delete raw.runSeed
+
+  assert.notEqual(
+    handleLoadGame(createInitialState(), raw).expedition.status,
+    'active'
+  )
+})
+
+test('an expiring stamina_max bonus leaves no member stamina above the lowered cap', () => {
+  const base = createInitialState()
+  const state = {
+    ...base,
+    band: {
+      ...base.band,
+      members: base.band.members.map(m => ({
+        ...m,
+        stamina: 120,
+        staminaMax: 120
+      })),
+      activeContrabandEffects: [
+        {
+          instanceId: 'ampoule_1',
+          effectType: 'stamina_max',
+          value: 20,
+          remainingDuration: 1
+        }
+      ]
+    }
+  }
+
+  const next = gameReducer(state, advanceDay(state))
+
+  assert.deepEqual(next.band.activeContrabandEffects, [])
+  for (const member of next.band.members) {
+    assert.equal(member.staminaMax, 100)
+    assert.ok(
+      member.stamina <= member.staminaMax,
+      `${member.id} ${member.stamina}`
     )
   }
 })

@@ -1,4 +1,5 @@
 import type { BandState } from '../types'
+import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 /**
@@ -39,3 +40,57 @@ export const calculateBloodBankPayout = (
   fameLevel: unknown
 ): number =>
   Math.floor(baseMoney * (1 + finiteNumberOr(fameLevel, 0) * FAME_PAYOUT_STEP))
+
+/** Donation kinds the blood bank offers. */
+type BloodBankDonationKind = 'blood' | 'marrow'
+
+/** What a donation costs and pays, as the reducer applies it. */
+export interface BloodBankDonation {
+  moneyGain: number
+  harmonyCost: number
+  staminaCost: number
+  controversyGain: number
+}
+
+const BLOOD_BANK_DONATIONS = {
+  blood: {
+    baseMoney: GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY,
+    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
+    staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
+    controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN
+  },
+  marrow: {
+    baseMoney: GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY,
+    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+    staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
+    controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN
+  }
+} as const
+
+/**
+ * The one place a donation's price and payout are decided.
+ *
+ * @param kind - Untrusted donation kind from the dispatched payload.
+ * @param fameLevel - Persisted fame level scaling the payout.
+ * @returns The canonical donation for a known kind, otherwise `null`.
+ *
+ * @remarks
+ * The reducer derives every amount from this, so a dispatched payload can only
+ * choose a kind, never a payout; the modal derives its display from the same
+ * table, so the two cannot drift.
+ */
+export const getBloodBankDonation = (
+  kind: unknown,
+  fameLevel: unknown
+): BloodBankDonation | null => {
+  if (typeof kind !== 'string' || !Object.hasOwn(BLOOD_BANK_DONATIONS, kind)) {
+    return null
+  }
+  const donation = BLOOD_BANK_DONATIONS[kind as BloodBankDonationKind]
+  return {
+    moneyGain: calculateBloodBankPayout(donation.baseMoney, fameLevel),
+    harmonyCost: donation.harmonyCost,
+    staminaCost: donation.staminaCost,
+    controversyGain: donation.controversyGain
+  }
+}

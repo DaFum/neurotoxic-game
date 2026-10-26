@@ -127,11 +127,9 @@ describe('useBloodBank', () => {
       result.current.triggerDonate()
     })
 
+    // Only the kind is dispatched; the reducer derives price and payout.
     expect(mockBloodBankDonate).toHaveBeenCalledWith({
-      moneyGain: 120,
-      harmonyCost: 15,
-      staminaCost: 30,
-      controversyGain: 5,
+      kind: 'blood',
       successToast: {
         messageKey: 'ui:blood_bank.success_toast',
         type: 'success'

@@ -430,6 +430,7 @@ class AudioSystem {
    * @param active - The active state
    */
   setNeuroDecimator(active: boolean): void {
+    audioState.neuroDecimatorWanted = active
     if (audioState.neuroDistortion) {
       audioState.neuroDistortion.wet.rampTo(active ? 0.8 : 0, 0.1)
     }

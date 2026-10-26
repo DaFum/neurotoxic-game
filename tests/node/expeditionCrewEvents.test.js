@@ -163,6 +163,22 @@ test('forged crew source ids return the identical state reference', () => {
   assert.equal(next, state)
 })
 
+test('a crew stress payload without a sourceId is refused instead of throwing', () => {
+  const base = startedState({}, { crewIds: ['mika', 'tom'] })
+  for (const sourceId of [undefined, null, 5, {}]) {
+    const next = gameReducer(base, {
+      type: 'RECORD_EXPEDITION_CREW_STRESS_SOURCE',
+      payload: {
+        crewId: 'mika',
+        sourceType: 'travel',
+        sourceId,
+        expectedRouteStep: base.expedition.routeStep
+      }
+    })
+    assert.equal(next, base)
+  }
+})
+
 test('a canonical Crew event id cannot authorize effects before that event resolves', () => {
   const base = startedState({}, { crewIds: ['mika', 'tom'] })
   const next = gameReducer(base, {

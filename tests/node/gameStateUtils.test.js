@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addContrabandToBand } from '../../src/utils/contrabandStashUtils'
+import {
+  addContrabandToBand,
+  clampSharedBandEffectResult
+} from '../../src/utils/contrabandStashUtils'
 import {
   applyEventDelta,
   applyInventoryItemDelta,
@@ -807,4 +810,49 @@ test('confiscation ignores a forged appliedValue on equipment', () => {
   assert.equal(next.band.luck, 7)
   // The pendant reverts its canonical +10, clamped to the 0-100 range.
   assert.equal(next.band.harmony, 60)
+})
+
+test('confiscating stamina_max equipment brings member stamina under the new cap', () => {
+  const member = (id, stamina) => ({ id, stamina, staminaMax: 110 })
+  const state = {
+    band: {
+      harmony: 50,
+      members: [member('matze', 110), member('lars', 60)],
+      stash: {
+        c_amped_synth: {
+          id: 'c_amped_synth',
+          type: 'equipment',
+          effectType: 'stamina_max',
+          value: 10,
+          applyOnAdd: true,
+          applied: true,
+          stacks: null
+        }
+      }
+    }
+  }
+  const next = applyEventDelta(state, {
+    band: { stashRemove: ['c_amped_synth'] }
+  })
+  assert.deepEqual(
+    next.band.members.map(m => [m.id, m.staminaMax, m.stamina]),
+    [
+      ['matze', 100, 100],
+      ['lars', 100, 60]
+    ]
+  )
+})
+
+test('clampSharedBandEffectResult caps stamina at staminaMax after a stamina_max revert', () => {
+  const band = {
+    members: [
+      { id: 'a', stamina: 120, staminaMax: 100 },
+      { id: 'b', stamina: 40, staminaMax: 100 }
+    ]
+  }
+  clampSharedBandEffectResult(band, 'stamina_max')
+  assert.deepEqual(
+    band.members.map(m => m.stamina),
+    [100, 40]
+  )
 })

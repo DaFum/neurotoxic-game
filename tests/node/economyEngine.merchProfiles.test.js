@@ -458,3 +458,29 @@ test('non-finite or negative custom prices fall back to the default price', () =
     assert.deepEqual(result.soldItems, baseline.soldItems, `sold for ${bad}`)
   }
 })
+
+test('a cult audience never sells less merch than the same show without one', () => {
+  // Plenty of stock so sales are limited by buyers, not by the shelf.
+  const inventory = buildInventory({
+    shirts: 5000,
+    hoodies: 5000,
+    patches: 5000,
+    cds: 5000,
+    vinyl: 5000
+  })
+  const cult = { controversyLevel: 100, loyalty: 100 }
+  // 100: S-rank buyRate 0.6, above the 0.45 loyalty cap. 40 and 0: below it.
+  for (const performanceScore of [100, 94, 40, 0]) {
+    const plain = callMerch({ ticketsSold: 400, performanceScore, inventory })
+    const supported = callMerch({
+      ticketsSold: 400,
+      performanceScore,
+      inventory,
+      context: cult
+    })
+    assert.ok(
+      supported.revenue >= plain.revenue,
+      `score ${performanceScore}: cult ${supported.revenue} < plain ${plain.revenue}`
+    )
+  }
+})

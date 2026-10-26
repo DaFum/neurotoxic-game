@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+import { GAME_CONSTANTS } from '../../src/context/gameConstants.ts'
 import {
   handleBloodBankDonate,
   handleGraftNeuroOverclock
@@ -45,47 +46,101 @@ function makeClinicState({
   }
 }
 
+const BLOOD = GAME_CONSTANTS.BLOOD_BANK
+
 describe('handleBloodBankDonate — affordability guard', () => {
   it('rejects donation when harmony cannot pay the cost', () => {
-    const state = makeClinicState({ harmony: 5 })
-    const result = handleBloodBankDonate(state, {
-      moneyGain: 300,
-      harmonyCost: 10,
-      staminaCost: 5,
-      controversyGain: 2
-    })
+    const state = makeClinicState({ harmony: BLOOD.BLOOD_HARMONY_COST })
+    const result = handleBloodBankDonate(state, { kind: 'blood' })
     assert.strictEqual(result, state)
   })
 
   it('rejects donation when a member cannot survive the stamina drain', () => {
-    // memberStamina(12) < staminaCost(5) + 10 = 15
-    const state = makeClinicState({ memberStamina: 12 })
-    const result = handleBloodBankDonate(state, {
-      moneyGain: 300,
-      harmonyCost: 1,
-      staminaCost: 5,
-      controversyGain: 0
+    // A member must keep 10 stamina after the drain.
+    const state = makeClinicState({
+      memberStamina: BLOOD.BLOOD_STAMINA_COST + 9
     })
+    const result = handleBloodBankDonate(state, { kind: 'blood' })
     assert.strictEqual(result, state)
     assert.strictEqual(result.player.money, state.player.money)
     assert.deepStrictEqual(result.toasts, state.toasts)
   })
 
   it('applies donation when band can afford harmony and stamina costs', () => {
-    // harmony(50) > harmonyCost(10), memberStamina(80) >= staminaCost(5)+10=15
+    const state = makeClinicState({
+      harmony: 50,
+      memberStamina: 80,
+      money: 100
+    })
+    const result = handleBloodBankDonate(state, { kind: 'blood' })
+    assert.notStrictEqual(result, state)
+    assert.strictEqual(result.player.money, 100 + BLOOD.BLOOD_BASE_MONEY)
+    assert.strictEqual(result.band.harmony, 50 - BLOOD.BLOOD_HARMONY_COST)
+    assert.strictEqual(
+      result.social.controversyLevel,
+      BLOOD.BLOOD_CONTROVERSY_GAIN
+    )
+    assert.strictEqual(
+      result.band.members[0].stamina,
+      80 - BLOOD.BLOOD_STAMINA_COST
+    )
+  })
+
+  it('scales the payout with the fame level, from the reducer', () => {
+    const state = {
+      ...makeClinicState({ money: 0 }),
+      player: { money: 0, fameLevel: 5 }
+    }
+    // floor(100 * (1 + 5 * 0.2)) = 200
+    assert.strictEqual(
+      handleBloodBankDonate(state, { kind: 'blood' }).player.money,
+      200
+    )
+  })
+
+  it('pays the marrow donation its own price and payout', () => {
+    const state = makeClinicState({ harmony: 90, memberStamina: 100 })
+    const result = handleBloodBankDonate(state, { kind: 'marrow' })
+    assert.strictEqual(
+      result.player.money,
+      state.player.money + BLOOD.MARROW_BASE_MONEY
+    )
+    assert.strictEqual(result.band.harmony, 90 - BLOOD.MARROW_HARMONY_COST)
+  })
+})
+
+describe('handleBloodBankDonate — the payload cannot set its own amounts', () => {
+  it('ignores a forged payout, price and drain next to a valid kind', () => {
     const state = makeClinicState({
       harmony: 50,
       memberStamina: 80,
       money: 100
     })
     const result = handleBloodBankDonate(state, {
-      moneyGain: 300,
-      harmonyCost: 10,
-      staminaCost: 5,
-      controversyGain: 2
+      kind: 'blood',
+      moneyGain: 1e9,
+      harmonyCost: 0,
+      staminaCost: 0,
+      controversyGain: 0
     })
-    assert.notStrictEqual(result, state)
-    assert.strictEqual(result.player.money, 400)
-    assert.strictEqual(result.band.harmony, 40)
+    assert.strictEqual(result.player.money, 100 + BLOOD.BLOOD_BASE_MONEY)
+    assert.strictEqual(result.band.harmony, 50 - BLOOD.BLOOD_HARMONY_COST)
+  })
+
+  it('refuses a missing, unknown or non-record payload without changing state', () => {
+    const state = makeClinicState()
+    for (const hostile of [
+      undefined,
+      null,
+      'blood',
+      7,
+      {},
+      { kind: 'plasma' },
+      { kind: '__proto__' },
+      { kind: ['blood'] },
+      { moneyGain: 300, harmonyCost: 10, staminaCost: 5, controversyGain: 2 }
+    ]) {
+      assert.strictEqual(handleBloodBankDonate(state, hostile), state)
+    }
   })
 })

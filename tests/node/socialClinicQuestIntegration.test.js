@@ -9,6 +9,7 @@ import {
   handleBloodBankDonate,
   handleClinicHeal
 } from '../../src/context/reducers/clinicReducer.ts'
+import { GAME_CONSTANTS } from '../../src/context/gameConstants.ts'
 import { createClinicHealAction } from '../../src/context/actionCreators.ts'
 import { migrateLegacyQuestSchema } from '../../src/domain/questLegacyMigration.ts'
 
@@ -106,23 +107,22 @@ describe('zealotry fame quest integration', () => {
 
 describe('handleBloodBankDonate quest integration', () => {
   const quest = { id: 'quest_payday', progress: 0, required: 1000 }
-  const payload = {
-    moneyGain: 300,
-    harmonyCost: 5,
-    staminaCost: 10,
-    controversyGain: 0
-  }
+  const payload = { kind: 'blood' }
+  // fameLevel 0: the blood donation pays its base amount.
+  const payout = GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY
 
   it('credits the money-earned quest with the applied gain', () => {
     const next = handleBloodBankDonate(buildState({ quest }), payload)
-    assert.strictEqual(next.player.money, 1300)
-    assert.strictEqual(progress(next, 'quest_payday'), 300)
+    assert.strictEqual(next.player.money, 1000 + payout)
+    assert.strictEqual(progress(next, 'quest_payday'), payout)
   })
 
   it('emits nothing for a rejected donation', () => {
     const state = buildState({ quest })
-    const next = handleBloodBankDonate(state, { ...payload, staminaCost: 999 })
-    assert.strictEqual(next, state)
+    // Harmony that cannot pay the donation's cost.
+    const poor = { ...state, band: { ...state.band, harmony: 1 } }
+    const next = handleBloodBankDonate(poor, payload)
+    assert.strictEqual(next, poor)
     assert.strictEqual(progress(next, 'quest_payday'), 0)
   })
 })

@@ -2,6 +2,13 @@ import assert from 'node:assert/strict'
 import { test, describe } from 'node:test'
 import { MapGenerator } from '../../src/utils/mapGenerator'
 import {
+  deriveCityTraits,
+  getCityKeyFromVenueId
+} from '../../src/utils/mapGenerator/cityTraits'
+import { gameReducer } from '../../src/context/gameReducer'
+import { createInitialState } from '../../src/context/initialState'
+import { createSetMapAction } from '../../src/context/actionCreators'
+import {
   MAP_DIVERSITY_REQUIREMENTS,
   buildMapFailureSignature,
   validateGeneratedMap
@@ -195,5 +202,133 @@ describe('validateGeneratedMap', () => {
     ]
 
     assert.equal(buildMapFailureSignature(issues), 'a|b')
+  })
+})
+
+describe('validateGeneratedMap city intel', () => {
+  const cityKeysOf = nodes =>
+    Object.values(nodes)
+      .map(node => getCityKeyFromVenueId(node.venue.id))
+      .filter(Boolean)
+
+  test('keeps the generator cityStates for a fresh map', () => {
+    const raw = generate(1)
+    const result = validateGeneratedMap(raw)
+
+    assert.equal(result.success, true)
+    assert.ok(Object.keys(result.data.cityStates).length > 0)
+    assert.deepEqual(result.data.cityStates, raw.cityStates)
+    for (const cityKey of cityKeysOf(result.data.nodes)) {
+      assert.ok(Object.hasOwn(result.data.cityStates, cityKey), cityKey)
+    }
+  })
+
+  test('returns cityStates for every seed that validates', () => {
+    const missing = []
+    for (let seed = 0; seed < 100; seed++) {
+      const result = validateGeneratedMap(generate(seed))
+      if (result.success && !result.data.cityStates) missing.push(seed)
+    }
+    assert.deepEqual(missing, [])
+  })
+
+  test('survives SET_MAP, so a new run shows city intel without a reload', () => {
+    const result = validateGeneratedMap(generate(1))
+    const state = gameReducer(
+      createInitialState(),
+      createSetMapAction(result.data)
+    )
+    assert.ok(Object.keys(state.gameMap.cityStates ?? {}).length > 0)
+    assert.deepEqual(state.gameMap.cityStates, result.data.cityStates)
+  })
+
+  test('derives intel for cities the map did not carry', () => {
+    const raw = generate(1)
+    const result = validateGeneratedMap({ ...raw, cityStates: undefined })
+
+    assert.equal(result.success, true)
+    const cityKeys = [...new Set(cityKeysOf(raw.nodes))]
+    assert.ok(cityKeys.length > 0)
+    for (const cityKey of cityKeys) {
+      assert.deepEqual(
+        result.data.cityStates[cityKey],
+        deriveCityTraits(cityKey)
+      )
+    }
+  })
+
+  test('derives intel under the normalized city key for a legacy namespaced venue id', () => {
+    const raw = generate(1)
+    const [nodeId] = Object.keys(raw.nodes)
+    const venue = raw.nodes[nodeId].venue
+    const cityKey = getCityKeyFromVenueId(venue.id)
+    const legacy = {
+      ...raw,
+      cityStates: undefined,
+      nodes: {
+        ...raw.nodes,
+        [nodeId]: {
+          ...raw.nodes[nodeId],
+          venue: { ...venue, id: `venues:${venue.id}` }
+        }
+      }
+    }
+    const result = validateGeneratedMap(legacy)
+
+    assert.equal(result.success, true)
+    assert.ok(Object.hasOwn(result.data.cityStates, cityKey), cityKey)
+    assert.equal(
+      Object.keys(result.data.cityStates).some(key =>
+        key.startsWith('venues:')
+      ),
+      false
+    )
+  })
+
+  test('keeps a valid entry and replaces an invalid one with derived traits', () => {
+    const raw = generate(1)
+    const cityKey = cityKeysOf(raw.nodes)[0]
+    const custom = {
+      genreBias: 'metal',
+      attentionSpan: 42,
+      barSpendingProfile: 'high'
+    }
+    const kept = validateGeneratedMap({
+      ...raw,
+      cityStates: { [cityKey]: { ...custom, extra: 'dropped' } }
+    })
+    assert.deepEqual(kept.data.cityStates[cityKey], custom)
+
+    for (const attentionSpan of ['30', Number.NaN]) {
+      const repaired = validateGeneratedMap({
+        ...raw,
+        cityStates: { [cityKey]: { ...custom, attentionSpan } }
+      })
+      assert.deepEqual(
+        repaired.data.cityStates[cityKey],
+        deriveCityTraits(cityKey)
+      )
+    }
+  })
+
+  test('skips forbidden keys and survives a malformed container', () => {
+    const raw = generate(1)
+    const hostile = JSON.parse(
+      '{"__proto__":{"genreBias":"x","attentionSpan":1,"barSpendingProfile":"y"}}'
+    )
+    const withHostile = validateGeneratedMap({ ...raw, cityStates: hostile })
+    assert.equal(withHostile.success, true)
+    assert.equal(Object.hasOwn(withHostile.data.cityStates, '__proto__'), false)
+
+    for (const container of [null, [], 'x', 5]) {
+      const result = validateGeneratedMap({ ...raw, cityStates: container })
+      assert.equal(result.success, true)
+      for (const cityKey of cityKeysOf(raw.nodes)) {
+        assert.deepEqual(
+          result.data.cityStates[cityKey],
+          deriveCityTraits(cityKey)
+        )
+      }
+    }
   })
 })

@@ -786,15 +786,16 @@ describe('Action Creators', () => {
       assert.strictEqual(pirate.payload.harmonyCost, 5)
       assert.strictEqual(pirate.payload.fameGain, 0)
 
+      // Only the donation kind travels; any amount a caller adds is dropped, so
+      // the reducer alone decides what a donation costs and pays.
       const blood = createBloodBankDonateAction({
-        moneyGain: Number.NaN,
-        harmonyCost: Number.NEGATIVE_INFINITY,
-        staminaCost: 10,
-        controversyGain: 5
+        kind: 'blood',
+        moneyGain: 1e9,
+        harmonyCost: 0,
+        staminaCost: 0
       })
-      assert.strictEqual(blood.payload.moneyGain, 0)
-      assert.strictEqual(Object.hasOwn(blood.payload, 'harmonyCost'), false)
-      assert.strictEqual(blood.payload.staminaCost, 10)
+      assert.deepStrictEqual(Object.keys(blood.payload), ['kind'])
+      assert.strictEqual(blood.payload.kind, 'blood')
 
       for (const fameCost of [undefined, null, Number.NaN, -5, '10']) {
         const trade = createTradeVoidItemAction({
@@ -871,35 +872,29 @@ describe('Action Creators', () => {
 
       const actionNaN = createUpdateSocialAction(payloadNaN)
       const expectedNaN = {}
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      // egoFocus, influencers and regionalGigHistory are checked per field now,
+      // so a wrong-typed value is dropped instead of passed through.
+      ;['trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedNaN[f] = Number.NaN
       })
       assert.deepStrictEqual(actionNaN.payload, expectedNaN)
 
       const actionInf = createUpdateSocialAction(payloadInf)
       const expectedInf = {}
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      ;['trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedInf[f] = Number.POSITIVE_INFINITY
       })
       assert.deepStrictEqual(actionInf.payload, expectedInf)
 
       const actionZero = createUpdateSocialAction(payloadZero)
-      allFields.forEach(f => {
-        assert.strictEqual(actionZero.payload[f], 0)
+      const structured = ['egoFocus', 'influencers', 'regionalGigHistory']
+      allFields
+        .filter(f => !structured.includes(f))
+        .forEach(f => {
+          assert.strictEqual(actionZero.payload[f], 0)
+        })
+      structured.forEach(f => {
+        assert.strictEqual(Object.hasOwn(actionZero.payload, f), false)
       })
 
       const actionNull = createUpdateSocialAction(payloadNull)
@@ -915,14 +910,8 @@ describe('Action Creators', () => {
       nullableFields.forEach(f => {
         expectedNull[f] = null
       })
-      ;[
-        'egoFocus',
-        'trend',
-        'activeDeals',
-        'brandReputation',
-        'influencers',
-        'regionalGigHistory'
-      ].forEach(f => {
+      // `null` is a valid egoFocus; a null influencer map or history is not.
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation'].forEach(f => {
         expectedNull[f] = null
       })
       assert.deepStrictEqual(actionNull.payload, expectedNull)

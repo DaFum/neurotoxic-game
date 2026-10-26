@@ -73,7 +73,9 @@ export const calculateMerchIncome = (
   if (isCultAudience(context?.controversyLevel, context?.loyalty)) {
     const loyalty = finiteNumberOr(context.loyalty, 0)
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
-    buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
+    // The cap limits how far loyalty may lift a low rate; it never pulls an
+    // already higher rate (a strong show) down, or support would sell less.
+    buyRate = Math.max(buyRate, Math.min(0.45, buyRate + loyaltyBuyBonus))
     breakdownItems.push({
       labelKey: BREAKDOWN_LABEL_KEYS.SCANDAL_SUPPORT,
       value: 0,

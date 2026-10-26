@@ -7,7 +7,10 @@ import {
   sanitizeBand,
   sanitizeMinigameState,
   sanitizePlayer,
-  sanitizeSocial
+  sanitizeRivalBand,
+  sanitizeRivalBandUpdates,
+  sanitizeSocial,
+  sanitizeSocialUpdates
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { EVENTS_DB } from '../../src/data/events'
@@ -324,6 +327,87 @@ describe('stateSanitizers', () => {
     })
   })
 
+  describe('sanitizeSocialUpdates structured fields', () => {
+    it('drops wrong-typed egoFocus, regionalGigHistory and influencers', () => {
+      assert.deepStrictEqual(
+        sanitizeSocialUpdates({
+          regionalGigHistory: null,
+          influencers: 'x',
+          egoFocus: 42
+        }),
+        {}
+      )
+      // Arrays are not records either.
+      assert.deepStrictEqual(
+        sanitizeSocialUpdates({ regionalGigHistory: [1], influencers: [] }),
+        {}
+      )
+    })
+
+    it('keeps a string or null egoFocus', () => {
+      assert.deepStrictEqual(sanitizeSocialUpdates({ egoFocus: 'matze' }), {
+        egoFocus: 'matze'
+      })
+      assert.deepStrictEqual(sanitizeSocialUpdates({ egoFocus: null }), {
+        egoFocus: null
+      })
+    })
+
+    it('filters influencer entries exactly like the load path', () => {
+      const raw = {
+        good: { tier: 'micro', trait: 'edgy', score: 4, extra: 'dropped' },
+        noScore: { tier: 'micro', trait: 'edgy', score: Number.NaN },
+        wrongType: { tier: 1, trait: 'edgy', score: 4 },
+        notRecord: 'x'
+      }
+      const hostile = JSON.parse(
+        '{"__proto__":{"tier":"a","trait":"b","score":1}}'
+      )
+      const fromUpdate = sanitizeSocialUpdates({ influencers: raw }).influencers
+      assert.deepStrictEqual(fromUpdate, {
+        good: { tier: 'micro', trait: 'edgy', score: 4 }
+      })
+      assert.deepStrictEqual(
+        fromUpdate,
+        sanitizeSocial({ influencers: raw }).influencers
+      )
+      assert.strictEqual(
+        Object.hasOwn(
+          sanitizeSocialUpdates({ influencers: hostile }).influencers,
+          '__proto__'
+        ),
+        false
+      )
+    })
+  })
+
+  describe('neuroDecimatorActive on load', () => {
+    it('restores an active decimator while the pedal is owned', () => {
+      const band = sanitizeBand({
+        neuroDecimatorActive: true,
+        inventory: { neuroDecimator: true }
+      })
+      assert.strictEqual(band.neuroDecimatorActive, true)
+    })
+
+    it('resets it when the pedal is not owned or the value is not a boolean', () => {
+      assert.strictEqual(
+        sanitizeBand({ neuroDecimatorActive: true, inventory: {} })
+          .neuroDecimatorActive,
+        false
+      )
+      for (const bad of ['true', 1, {}, null]) {
+        assert.strictEqual(
+          sanitizeBand({
+            neuroDecimatorActive: bad,
+            inventory: { neuroDecimator: true }
+          }).neuroDecimatorActive,
+          false
+        )
+      }
+    })
+  })
+
   describe('sanitizeBand', () => {
     it('clamps negative luck to 0', () => {
       const loadedData = {
@@ -558,6 +642,38 @@ describe('stateSanitizers', () => {
       assert.strictEqual(
         Object.hasOwn(load('c_rusty_strings', 3), 'appliedValue'),
         false
+      )
+    })
+  })
+
+  describe('rivalBand lastEscalatedNodeId', () => {
+    const rival = extra => ({ id: 'r1', name: 'Rival', ...extra })
+
+    it('survives a save round trip and the update whitelist', () => {
+      assert.strictEqual(
+        sanitizeRivalBand(rival({ lastEscalatedNodeId: 'node-1' }))
+          .lastEscalatedNodeId,
+        'node-1'
+      )
+      assert.deepStrictEqual(
+        sanitizeRivalBandUpdates({ lastEscalatedNodeId: null }),
+        { lastEscalatedNodeId: null }
+      )
+    })
+
+    it('drops a mistyped marker instead of persisting it', () => {
+      for (const bad of [5, {}, [], true, '']) {
+        assert.strictEqual(
+          Object.hasOwn(
+            sanitizeRivalBand(rival({ lastEscalatedNodeId: bad })),
+            'lastEscalatedNodeId'
+          ),
+          false
+        )
+      }
+      assert.deepStrictEqual(
+        sanitizeRivalBandUpdates({ lastEscalatedNodeId: 7 }),
+        {}
       )
     })
   })

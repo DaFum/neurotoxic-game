@@ -151,6 +151,7 @@ export function useContinueHandler({
         perfScore,
         financials,
         misses: lastGigStats?.misses ?? 0,
+        failed: lastGigStats?.failed === true,
         bandStyle: finiteNumberOr(band.style, 0),
         dealFameMultiplier: financials.dealFameMultiplier,
         calculateFameGain,

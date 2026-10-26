@@ -54,6 +54,7 @@ import {
   clampBandStress,
   clampMemberMood,
   readMemberMood,
+  readMemberStamina,
   isForbiddenKey,
   finiteNumberOr,
   parseCooldownEntry,
@@ -319,15 +320,15 @@ export const handleLoadGame = (
     // visited nodes and route step still describe the old one, so a run
     // without its seed collapses to idle the same way one without its
     // committed build does.
-    expedition:
-      isFiniteNumber(loadedState.runSeed) &&
-      loadedState.runSeed === Math.trunc(loadedState.runSeed) >>> 0
-        ? sanitizeExpeditionState(
-            loadedState.expedition,
-            loadedState.runSeed,
-            loadedState.lastGigStats
-          )
-        : createDefaultExpeditionState()
+    expedition: isFiniteNumber(loadedState.runSeed)
+      ? sanitizeExpeditionState(
+          loadedState.expedition,
+          // The seed the load keeps: a signed or fractional one is normalized,
+          // not corrupt, and its run must not be discarded for it.
+          sanitizeRunSeed(loadedState.runSeed),
+          loadedState.lastGigStats
+        )
+      : createDefaultExpeditionState()
   }
 
   // Rebuild canonical map and current node if there is an active/finalized expedition
@@ -720,9 +721,13 @@ const processContrabandExpiry = (band: BandState): BandState => {
           const updatedMembers = new Array<BandMember>(len)
           for (let mIdx = 0; mIdx < len; mIdx++) {
             const m = nextBand.members[mIdx] as BandMember
+            const staminaMax = Math.max(0, finiteNumberOr(m?.staminaMax, 100))
             updatedMembers[mIdx] = {
               ...m,
-              staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+              staminaMax,
+              // The expired bonus lowered the cap; stamina regenerated under
+              // it must not stay above it for the rest of the day.
+              stamina: readMemberStamina(m?.stamina, staminaMax)
             }
           }
           nextBand.members = updatedMembers
@@ -1088,7 +1093,9 @@ export const handleSetPendingSupplyStopInventory = (
   state: GameState,
   inventory: GameState['pendingSupplyStopInventory']
 ): GameState => {
-  const nextInventory = Array.isArray(inventory) ? inventory : null
+  // The reducer is authoritative: the same schema the load path applies, so a
+  // raw dispatch cannot open a shop offering a negative-cost item.
+  const nextInventory = sanitizeSupplyStopInventory(inventory)
   if (state.pendingSupplyStopInventory === nextInventory) return state
 
   return {
