@@ -294,6 +294,27 @@ describe('bandReducer - Contraband', () => {
       assert.strictEqual(handleUseContraband(done, payload), done)
     })
 
+    it('derives packed cargo from the loadout for an older save without cargo', () => {
+      const legacy = stashState([])
+      delete legacy.expedition.cargo
+      legacy.expedition.loadout = {
+        build: {
+          contraband: [
+            { stashKey: 'c_void_energy', instanceId: 'test-123', stacks: 2 }
+          ]
+        }
+      }
+      const next = handleUseContraband(legacy, payload)
+      assert.equal(next.band.members[0].stamina, 70)
+      // The derived cargo is persisted with the consumed stack.
+      assert.equal(next.expedition.cargo.contraband[0].stacks, 1)
+
+      const unpacked = stashState([])
+      delete unpacked.expedition.cargo
+      unpacked.expedition.loadout = { build: { contraband: [] } }
+      assert.strictEqual(handleUseContraband(unpacked, payload), unpacked)
+    })
+
     it('leaves ordinary stash use unrestricted outside a Tour', () => {
       const state = stashState([], 'idle')
       assert.equal(

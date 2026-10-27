@@ -175,8 +175,12 @@ export const useHandleHit = ({
         // Audio init writes the trait/physics multiplier into modifiers; the
         // equipment value (including the committed Expedition gear delta)
         // arrives through `performance`. Both apply, so neither shadows the other.
+        // Rounded so float noise (1.5 * 1.2 = 1.7999999999999998) cannot
+        // floor a whole point away at scoring.
         const activeDrumMultiplier =
-          (state.modifiers.drumMultiplier ?? 1) * drumMultiplier
+          Math.round(
+            (state.modifiers.drumMultiplier ?? 1) * drumMultiplier * 1e6
+          ) / 1e6
         const basePoints = calculatePoints(
           laneIndex,
           activeDrumMultiplier,

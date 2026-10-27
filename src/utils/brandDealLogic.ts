@@ -363,13 +363,21 @@ export const negotiateDeal = (
   }
 }
 
+/** Reads an own data property of an object, never invoking an accessor. */
+const readOwnDataValue = (source: unknown, key: string): unknown => {
+  if (typeof source !== 'object' || source === null) return undefined
+  const descriptor = Object.getOwnPropertyDescriptor(source, key)
+  return descriptor && 'value' in descriptor ? descriptor.value : undefined
+}
+
 /**
  * Rebuilds an active deal from its catalog entry plus the accepted per-gig
  * payout.
  *
  * @param registryDeal - Immutable catalog entry for the deal id.
  * @param remainingGigs - Validated remaining gigs (player progress).
- * @param rawOffer - Untrusted persisted or dispatched offer terms.
+ * @param rawDeal - Untrusted persisted or dispatched deal; only its own data
+ * property `offer.perGig` is read.
  * @returns The catalog deal carrying `remainingGigs`, with `offer.perGig`
  * replaced by the earned payout when it is a plausible one.
  *
@@ -383,22 +391,17 @@ export const negotiateDeal = (
 export const resolveActiveBrandDeal = (
   registryDeal: BrandDeal,
   remainingGigs: number,
-  rawOffer: unknown
+  rawDeal: unknown
 ): ActiveBrandDeal => {
   const active: ActiveBrandDeal = { ...registryDeal, remainingGigs }
   const basePerGig = registryDeal.offer.perGig
-  if (
-    typeof basePerGig !== 'number' ||
-    !Number.isFinite(basePerGig) ||
-    typeof rawOffer !== 'object' ||
-    rawOffer === null ||
-    !Object.hasOwn(rawOffer, 'perGig')
-  ) {
+  if (typeof basePerGig !== 'number' || !Number.isFinite(basePerGig)) {
     return active
   }
-  // Data-property read only: an accessor must never run on untrusted input.
-  const descriptor = Object.getOwnPropertyDescriptor(rawOffer, 'perGig')
-  const earned: unknown = descriptor?.value
+  // Data-property reads only: an accessor must never run on untrusted input,
+  // at the deal level (`offer`) or the offer level (`perGig`).
+  const rawOffer = readOwnDataValue(rawDeal, 'offer')
+  const earned = readOwnDataValue(rawOffer, 'perGig')
   if (typeof earned !== 'number' || !Number.isFinite(earned)) return active
   active.offer = {
     ...registryDeal.offer,

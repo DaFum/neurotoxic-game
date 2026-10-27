@@ -45,6 +45,7 @@ import {
 } from '../../data/inventoryItems'
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { resolveMerchRestock } from '../../utils/merchUtils'
 import {
@@ -707,7 +708,8 @@ export const handleUseContraband = (
   // During a Tour only the committed, still-packed cargo is usable; items left
   // at HQ or surrendered to Authority stay out of reach.
   const isActiveRun = state.expedition?.status === 'active'
-  const packed = isActiveRun ? (state.expedition.cargo?.contraband ?? []) : []
+  const activeCargo = resolveActiveExpeditionCargo(state)
+  const packed = activeCargo?.contraband ?? []
   const packedIndex = packed.findIndex(
     entry =>
       entry.stashKey === contrabandId &&
@@ -732,7 +734,7 @@ export const handleUseContraband = (
   }
 
   newBand.stash = newStash
-  const cargo = state.expedition?.cargo
+  const cargo = activeCargo
   if (isActiveRun && cargo && item.type === 'consumable') {
     const nextPacked = packed
       .map((entry, index) =>

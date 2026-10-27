@@ -198,6 +198,24 @@ describe('socialReducer', () => {
       assert.equal(accessorRead, false)
     })
 
+    it('never runs a non-enumerable offer accessor on a deal payload', () => {
+      let getterCalls = 0
+      const deal = { id: 'energy_drink_cx', remainingGigs: 3 }
+      Object.defineProperty(deal, 'offer', {
+        enumerable: false,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const next = handleUpdateSocial(baseState, { activeDeals: [deal] })
+      assert.equal(getterCalls, 0)
+      assert.equal(
+        next.social.activeDeals[0].offer.perGig,
+        BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.perGig
+      )
+    })
+
     it('should return unchanged state if payload is not an object/function', () => {
       const nextState = handleUpdateSocial(baseState, 'string_payload')
       assert.strictEqual(nextState, baseState)

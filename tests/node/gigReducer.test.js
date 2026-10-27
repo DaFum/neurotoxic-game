@@ -525,6 +525,21 @@ describe('gigReducer', () => {
       assert.strictEqual(getterCalls, 0)
     })
 
+    it('bounds sales by the loadout manifest for an older save without cargo', () => {
+      const state = {
+        band: { inventory: { shirts: 10 } },
+        expedition: {
+          status: 'active',
+          loadout: {
+            build: { merch: [{ inventoryKey: 'shirts', quantity: 3 }] }
+          }
+        }
+      }
+      const next = handleSettleSoldMerch(state, { shirts: 8 })
+      assert.equal(next.band.inventory.shirts, 7)
+      assert.equal(next.expedition.cargo.merch[0].quantity, 0)
+    })
+
     it('deducts active-run sales from owned stock too, bounded by the manifest', () => {
       const state = {
         band: { inventory: { shirts: 10, posters: 4 } },

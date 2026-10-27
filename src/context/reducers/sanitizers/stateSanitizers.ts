@@ -1474,13 +1474,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
         }
         // The earned per-gig payout (variant, negotiation) is the one term
         // that is player progress rather than catalog data.
-        return [
-          resolveActiveBrandDeal(
-            registryDeal,
-            remainingGigs,
-            isLooseRecord(deal) ? deal.offer : undefined
-          )
-        ]
+        return [resolveActiveBrandDeal(registryDeal, remainingGigs, deal)]
       }
     )
   }

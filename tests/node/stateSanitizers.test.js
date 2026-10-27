@@ -739,6 +739,26 @@ describe('stateSanitizers', () => {
     })
   })
 
+  describe('sanitizeSocial activeDeals offer accessor', () => {
+    it('never runs a non-enumerable offer getter on load', () => {
+      let getterCalls = 0
+      const deal = { id: 'energy_drink_cx', remainingGigs: 2 }
+      Object.defineProperty(deal, 'offer', {
+        enumerable: false,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const social = sanitizeSocial({ activeDeals: [deal] })
+      assert.equal(getterCalls, 0)
+      assert.equal(
+        social.activeDeals[0].offer.perGig,
+        BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.perGig
+      )
+    })
+  })
+
   describe('sanitizeSocial brandReputation', () => {
     it('clamps every entry to 0..100 on load', () => {
       const social = sanitizeSocial({

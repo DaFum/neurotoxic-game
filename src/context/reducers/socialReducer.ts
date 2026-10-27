@@ -342,9 +342,7 @@ export const handleUpdateSocial = (
           }
           const registryDeal = BRAND_DEALS_BY_ID.get(id)
           if (!registryDeal) return []
-          return [
-            resolveActiveBrandDeal(registryDeal, safeRemainingGigs, deal.offer)
-          ]
+          return [resolveActiveBrandDeal(registryDeal, safeRemainingGigs, deal)]
         }
       )
       if (validDeals.length !== updates.activeDeals.length) {

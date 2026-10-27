@@ -288,6 +288,22 @@ describe('useRhythmGameScoring', () => {
     expect(gameStateRef.current.score).toBe(300)
   })
 
+  test('awards 180 for physics 1.5x and equipment 1.2x despite float noise (#3386)', () => {
+    gameStateRef.current.modifiers = { drumMultiplier: 1.5 }
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: { drumMultiplier: 1.2, crowdDecay: 1.0 },
+        contextActions
+      })
+    )
+    act(() => {
+      result.current.handleHit(1)
+    })
+    expect(gameStateRef.current.score).toBe(180)
+  })
+
   test('applies the flat hit-window bonus once, already inside the lane window (#3388)', () => {
     gameStateRef.current.modifiers = { hitWindowBonus: 20 }
     const { result } = renderHook(() =>

@@ -46,6 +46,7 @@ import {
 import { normalizeSetlistForSave } from '../../utils/gameState'
 import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import { applyExpeditionSalvageRights } from '../../domain/expedition/legendaries'
 import {
@@ -687,11 +688,8 @@ export const handleSettleSoldMerch = (
   ) {
     return state
   }
-  if (
-    state.expedition?.status === 'active' &&
-    Array.isArray(state.expedition.cargo?.merch)
-  ) {
-    const currentCargo = state.expedition.cargo
+  const currentCargo = resolveActiveExpeditionCargo(state)
+  if (currentCargo && Array.isArray(currentCargo.merch)) {
     // Units actually sold from the packed manifest; the owned stock loses the
     // same units so they cannot be packed and sold again on a later Tour.
     const actuallySold: Record<string, number> = Object.create(null)
