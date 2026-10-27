@@ -27,6 +27,7 @@
 
 - The sync logic lives in `src/utils/leaderboardSyncController.ts` (`createLeaderboardSyncController`), a plain module with `fetch`, clock, storage, timers, logger and the enable flag injected; `useLeaderboardSync` only builds the snapshot from game state and calls `submit`. Change behaviour in the controller and test it in `tests/node/leaderboardSyncController.test.js` (fake clock and timers, scripted `fetch`); keep `tests/ui/useLeaderboardSync.test.jsx` to hook wiring. A change is queued unless it equals what the server will hold (`inFlightKey ?? lastSentKey`), so a return to an older snapshot during a request is still sent. A `stale` response carries the server's revision: the client adopts it, forgets its last confirmed snapshot (the server holds one it never confirmed, so a pending snapshot equal to the old key must still be sent) and resends, so a cleared storage or a clock set back cannot freeze the board. Do not reintroduce a per-day gate; it left current-stat boards on the day's first snapshot.
 - A timed-out request can never mark a snapshot synced. `dispose()` is terminal: every post-await step checks the disposed flag before any storage write, timer or request. The published balance is capped at `MAX_PUBLISHED_BALANCE` (`lib/leaderboardLimits.js`); the player's real wallet is never truncated.
+- Only network errors, 429, and 5xx responses retry; other 4xx responses do not retry, and 404 disables sync. Timeouts abort the request, release the slot, and retry.
 
 ## Venue IDs
 
