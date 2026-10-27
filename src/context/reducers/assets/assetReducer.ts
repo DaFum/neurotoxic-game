@@ -1,5 +1,5 @@
-import { validateModuleInstall } from '../moduleInstallValidation'
-import type { GameState } from '../../types/game'
+import { validateModuleInstall } from '../../moduleInstallValidation'
+import type { GameState } from '../../../types/game'
 import type {
   PurchaseChassisPayload,
   InstallModulePayload,
@@ -9,32 +9,32 @@ import type {
   AssetSlot,
   Liability,
   AssetKind
-} from '../../types/assets'
+} from '../../../types/assets'
 import {
   calculateChassisRepairCost,
   calculateChassisUpgradeCost,
   getChassisTierConfig
-} from '../../utils/assetConfig'
+} from '../../../utils/assets/assetConfig'
 import {
   calculateRefinanceFee,
   computeAmortization,
   getLoanProfile,
   isLoanProfileEligible
-} from '../../utils/loanProfiles'
-import { getRegisteredModule } from '../../utils/assetModuleRegistry'
-import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
-import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
-import { isLooseRecord } from '../../utils/objectUtils'
+} from '../../../utils/assets/loanProfiles'
+import { getRegisteredModule } from '../../../utils/assets/assetModuleRegistry'
+import { hasActiveAssetAcquisition } from '../../../utils/assets/assetSelectors'
+import { clampPlayerMoney, finiteNumberOr } from '../../../utils/gameState'
+import { isLooseRecord } from '../../../utils/objectUtils'
 import { validateRuntimeCrowdfundCampaign } from './assetSanitizers'
-import { QuestEvents } from '../../utils/questProgress'
+import { QuestEvents } from '../../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
   createAssetConditionChangedQuestEvent,
   createAssetModuleInstalledQuestEvent,
   createAssetRepairedQuestEvent
-} from '../../quests/producers/assetQuestEvents'
-import { getAssetSaleQuote } from '../../utils/assetSelectors/assetSaleQuote'
-import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
+} from '../../../quests/producers/assetQuestEvents'
+import { getAssetSaleQuote } from '../../../utils/assets/assetSelectors/assetSaleQuote'
+import { isExpeditionChassisCommitmentLocked } from '../../../domain/expedition/buildCommitment'
 
 /**
  * Finds an asset by id via a single procedural scan.
@@ -706,7 +706,7 @@ export const handleRefinanceLiability = (
  */
 export const handleStartCrowdfund = (
   state: GameState,
-  payload: { campaign: import('../../types/assets').CrowdfundCampaign }
+  payload: { campaign: import('../../../types/assets').CrowdfundCampaign }
 ): GameState => {
   if (!isLooseRecord(payload)) return state
   const campaign = validateRuntimeCrowdfundCampaign(payload.campaign)

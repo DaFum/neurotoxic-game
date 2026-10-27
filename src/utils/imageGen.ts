@@ -4,7 +4,10 @@ import type {
   ChassisTier,
   RiskEventType
 } from '../types/assets'
-import { getRegisteredModule, MODULE_PROMPTS } from './assetModuleRegistry'
+import {
+  getRegisteredModule,
+  MODULE_PROMPTS
+} from './assets/assetModuleRegistry'
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'

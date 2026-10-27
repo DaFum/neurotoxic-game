@@ -5,7 +5,7 @@ import { usePostGigDerivations } from '../../../src/hooks/postGig/usePostGigDeri
 import * as postGigUtils from '../../../src/utils/postGig'
 import * as mapGenerator from '../../../src/utils/mapGenerator'
 import * as mapUtils from '../../../src/utils/mapUtils'
-import * as assetSelectors from '../../../src/utils/assetSelectors'
+import * as assetSelectors from '../../../src/utils/assets/assetSelectors'
 import type {
   Venue,
   PlayerState,
@@ -17,7 +17,7 @@ import type {
 vi.mock('../../../src/utils/postGig')
 vi.mock('../../../src/utils/mapGenerator')
 vi.mock('../../../src/utils/mapUtils')
-vi.mock('../../../src/utils/assetSelectors')
+vi.mock('../../../src/utils/assets/assetSelectors')
 
 describe('usePostGigDerivations', () => {
   const mockTriggerEvent = vi.fn()

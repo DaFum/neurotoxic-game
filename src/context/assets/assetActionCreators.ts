@@ -1,4 +1,4 @@
-import { validateModuleInstall } from './moduleInstallValidation'
+import { validateModuleInstall } from '../moduleInstallValidation'
 /**
  * Action creators for the long-term asset system.
  *
@@ -19,39 +19,39 @@ import { validateModuleInstall } from './moduleInstallValidation'
  *    `*_FAILED`. This is the first line of defense; the reducer re-validates.
  */
 
-import { ActionTypes } from './actionTypes'
-import { logger } from '../utils/logger'
+import { ActionTypes } from '../actionTypes'
+import { logger } from '../../utils/logger'
 import {
   calculateChassisRepairCost,
   calculateChassisUpgradeCost,
   getChassisTierConfig
-} from '../utils/assetConfig'
-import { getRegisteredModule } from '../utils/assetModuleRegistry'
+} from '../../utils/assets/assetConfig'
+import { getRegisteredModule } from '../../utils/assets/assetModuleRegistry'
 import {
   calculateRefinanceFee,
   getLoanProfile,
   isLoanProfileEligible,
   type LoanProfileId
-} from '../utils/loanProfiles'
+} from '../../utils/assets/loanProfiles'
 import {
   hasActiveAssetAcquisition,
   calculateChassisGrossSaleValue,
   selectAssetsMap
-} from '../utils/assetSelectors'
-import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
-import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
-import { finiteNumberOr } from '../utils/gameState'
-import { isFiniteNumber } from '../utils/finiteNumber'
-import { getSafeUUID } from '../utils/crypto'
-import { resolveCrowdfundProbability } from '../utils/assetTicks'
-import { mulberry32 } from '../utils/seededRng'
+} from '../../utils/assets/assetSelectors'
+import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { finiteNumberOr } from '../../utils/gameState'
+import { isFiniteNumber } from '../../utils/finiteNumber'
+import { getSafeUUID } from '../../utils/crypto'
+import { resolveCrowdfundProbability } from '../../utils/assets/assetTicks'
+import { mulberry32 } from '../../utils/seededRng'
 import {
   VALID_ASSET_ACQUISITION_MODES,
   VALID_ASSET_FLAVORS,
   VALID_ASSET_KINDS,
   VALID_ASSET_TIERS
-} from '../utils/assetValidation'
-import type { GameState, GameAction } from '../types'
+} from '../../utils/assets/assetValidation'
+import type { GameState, GameAction } from '../../types'
 import type {
   AcquisitionMode,
   AssetFlavor,
@@ -62,7 +62,7 @@ import type {
   PurchaseFailureReason,
   RefinanceFailureReason,
   SlotType
-} from '../types/assets'
+} from '../../types/assets'
 
 type ActionByType<T extends GameAction['type']> = Extract<
   GameAction,
@@ -316,7 +316,7 @@ export const upgradeChassisTier = (
   state: GameState
 ): UpgradeChassisTierAction | UpgradeChassisTierFailedAction => {
   const fail = (
-    reason: import('../types/assets').UpgradeFailureReason
+    reason: import('../../types/assets').UpgradeFailureReason
   ): UpgradeChassisTierFailedAction => ({
     type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
     payload: { reason }
@@ -452,7 +452,7 @@ export const repairChassis = (
   state: GameState
 ): RepairChassisAction | RepairChassisFailedAction => {
   const fail = (
-    reason: import('../types/assets').RepairFailureReason
+    reason: import('../../types/assets').RepairFailureReason
   ): RepairChassisFailedAction => ({
     type: ActionTypes.REPAIR_CHASSIS_FAILED,
     payload: { reason }
@@ -559,7 +559,7 @@ export const startCrowdfund = (
   >
 ): StartCrowdfundAction | StartCrowdfundFailedAction => {
   const fail = (
-    reason: import('../types/assets').StartCrowdfundFailureReason
+    reason: import('../../types/assets').StartCrowdfundFailureReason
   ): StartCrowdfundFailedAction => ({
     type: ActionTypes.START_CROWDFUND_FAILED,
     payload: { reason }

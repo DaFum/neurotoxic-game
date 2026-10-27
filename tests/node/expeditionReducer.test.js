@@ -16,11 +16,11 @@ import { prepareExpeditionRun } from '../../src/context/expeditionActionCreators
 import {
   sellChassis,
   upgradeChassisTier
-} from '../../src/context/assetActionCreators'
+} from '../../src/context/assets/assetActionCreators'
 import { createDefaultExpeditionState } from '../../src/domain/expedition/defaults'
 import { nextSeed } from '../../src/utils/seededRng'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry'
 import {
   sanitizeExpeditionIntelMap,
   sanitizeExpeditionState

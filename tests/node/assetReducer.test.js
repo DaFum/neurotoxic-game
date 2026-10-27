@@ -11,9 +11,9 @@ import {
   handleRefinanceLiability,
   handleStartCrowdfund,
   handleAssetFailedAction
-} from '../../src/context/reducers/assetReducer.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/context/reducers/assets/assetReducer.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 
 // MODULE_REGISTRY is a mutable shared module-scoped object. To prevent
 // pollution into other test files run in the same process, snapshot the full

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SellConfirmModal } from '../../src/components/assets/SellConfirmModal'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import type { LongTermAsset } from '../../src/types/assets'
 
 const { mockSellChassis, mockState } = vi.hoisted(() => ({

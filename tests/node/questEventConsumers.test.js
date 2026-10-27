@@ -27,8 +27,8 @@ import {
   installModule,
   purchaseChassis,
   repairChassis
-} from '../../src/context/assetActionCreators.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/context/assets/assetActionCreators.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 import { POST_OPTIONS } from '../../src/data/postOptions.ts'
 import { applySocialPostResult } from '../../src/hooks/postGig/handlers/socialPostHandlerUtils.ts'
 import { createInitialState } from '../../src/context/initialState.ts'

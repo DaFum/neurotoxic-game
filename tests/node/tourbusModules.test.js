@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import {
   MODULE_REGISTRY,
   MODULE_PROMPTS
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 import {
   TOURBUS_T1_SLOTS,
   TOURBUS_T2_SLOTS,
   TOURBUS_T3_SLOTS
-} from '../../src/utils/assetSections/tourbusConfig.ts'
+} from '../../src/utils/assets/assetSections/tourbusConfig.ts'
 
 describe('tourbus modules registration', () => {
   it('registers exactly 20 tourbus_chassis modules', () => {

@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import {
   MODULE_REGISTRY,
   MODULE_PROMPTS
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 import {
   STUDIO_T1_SLOTS,
   STUDIO_T2_SLOTS,
   STUDIO_T3_SLOTS
-} from '../../src/utils/assetSections/studioConfig.ts'
+} from '../../src/utils/assets/assetSections/studioConfig.ts'
 
 describe('studio modules registration', () => {
   it('registers exactly 14 studio_chassis modules', () => {

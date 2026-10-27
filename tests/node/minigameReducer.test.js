@@ -16,7 +16,7 @@ import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
 } from '../../src/context/gameConstants.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 import { QuestEvents } from '../../src/utils/questProgress.ts'
 
 const travelFuelModuleId = 'test_minigame_fuel_discount'

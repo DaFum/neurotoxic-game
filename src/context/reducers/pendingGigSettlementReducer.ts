@@ -17,7 +17,7 @@ import {
   calculateContinueStats
 } from '../../utils/postGig/performanceLogic'
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
-import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
 import { buildPerGigSocialReconciliation } from '../../utils/postGig/socialResolution'
 import { handleSettleSoldMerch } from './gigReducer'
 import { handleUpdateSocial } from './socialReducer'

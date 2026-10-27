@@ -5,14 +5,14 @@ import type {
 } from '../types/assets'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
-import { getRegisteredModule } from '../utils/assetModuleRegistry'
+import { getRegisteredModule } from '../utils/assets/assetModuleRegistry'
 import {
   getLockReasons,
   getSlotConflicts,
   isModuleUnlocked,
   selectAssetsMap,
   selectAssetSlotsMap
-} from '../utils/assetSelectors'
+} from '../utils/assets/assetSelectors'
 
 /** Rechecks every module-install gate against the current state. */
 export const validateModuleInstall = (

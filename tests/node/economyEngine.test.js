@@ -18,7 +18,7 @@ import {
   calculateGuaranteedDailyCost,
   shouldTriggerBankruptcy
 } from '../../src/utils/economy'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assets/assetSelectors'
 import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
 const buildGigData = (overrides = {}) => ({

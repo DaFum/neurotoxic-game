@@ -3,7 +3,7 @@ import { useGameSelector } from '../../context/GameState'
 import {
   getTotalDailyObligations,
   getTotalDebt
-} from '../../utils/assetSelectors'
+} from '../../utils/assets/assetSelectors'
 import { formatCurrency } from '../../utils/numberUtils'
 
 /**

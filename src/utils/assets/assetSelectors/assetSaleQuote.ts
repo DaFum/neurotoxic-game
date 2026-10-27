@@ -1,6 +1,6 @@
-import type { LongTermAsset, Liability } from '../../types/assets'
+import type { LongTermAsset, Liability } from '../../../types/assets'
 import { calculateChassisGrossSaleValue } from './assetFinancials'
-import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../finiteNumber'
 
 /**
  * Net-proceeds quote for selling a chassis. `gross` is `null` when the asset

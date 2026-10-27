@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
-import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assetSections/tourbusConfig'
+import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assets/assetSections/tourbusConfig'
 import { TourbusTrailerOverlay } from './TourbusTrailerOverlay'
 import { TourbusSlotButton } from './TourbusSlotButton'
 import type { LongTermAsset } from '../../../types/assets'

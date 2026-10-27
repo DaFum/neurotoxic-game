@@ -6,8 +6,8 @@ import {
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
   sanitizeRngSeed
-} from '../../src/context/reducers/assetSanitizers.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
+} from '../../src/context/reducers/assets/assetSanitizers.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
 
 const validAsset = (overrides = {}) => ({
   id: 'asset_1',

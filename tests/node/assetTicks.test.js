@@ -5,9 +5,9 @@ import {
   processLiabilityTick,
   processCrowdfundTick,
   rollAssetRiskEvents
-} from '../../src/utils/assetTicks.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
-import { LIABILITY_DEFAULT_DAYS } from '../../src/utils/assetConfig.ts'
+} from '../../src/utils/assets/assetTicks.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
+import { LIABILITY_DEFAULT_DAYS } from '../../src/utils/assets/assetConfig.ts'
 import { calculateFameLevel } from '../../src/utils/gameState/index.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {

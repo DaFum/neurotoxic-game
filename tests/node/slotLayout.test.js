@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   formatSlotZonePercent,
   getSlotZonePositionStyle
-} from '../../src/utils/assetSections/slotLayout.ts'
+} from '../../src/utils/assets/assetSections/slotLayout.ts'
 
 describe('slot layout helpers', () => {
   it('formats percent rectangle values as stable CSS percentages', () => {

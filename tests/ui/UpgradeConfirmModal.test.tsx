@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UpgradeConfirmModal } from '../../src/components/assets/UpgradeConfirmModal'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import type { LongTermAsset } from '../../src/types/assets'
 
 const mockUpgradeChassisTier = vi.fn()

@@ -5,7 +5,7 @@ import {
   WORKSHOP_T1_SLOTS,
   WORKSHOP_T2_SLOTS,
   WORKSHOP_T3_SLOTS
-} from '../../src/utils/assetSections/workshopConfig.ts'
+} from '../../src/utils/assets/assetSections/workshopConfig.ts'
 
 describe('WORKSHOP_SLOT_ZONES', () => {
   it('defines tier slot progression for the merch workshop', () => {

@@ -1,13 +1,13 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { CHASSIS_CONFIG } from '../../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../../src/utils/assets/assetConfig'
 import {
   VALID_ASSET_KINDS,
   VALID_ASSET_FLAVORS,
   VALID_ASSET_TIERS,
   VALID_ASSET_ACQUISITION_MODES
-} from '../../../src/utils/assetValidation'
+} from '../../../src/utils/assets/assetValidation'
 
 describe('assetValidation', () => {
   it('VALID_ASSET_KINDS contains all chassis config keys', () => {

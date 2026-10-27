@@ -14,7 +14,7 @@ import { applyBetweenTourDecisionOption } from '../../src/domain/expedition/betw
 import { parseQuestPayload } from '../../src/domain/questPayload'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers'
 import { calculateGigFinancials } from '../../src/utils/economy'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assets/assetSelectors'
 import { deriveFinancials } from '../../src/utils/postGig/derivations'
 import { getAcceptDealSocialUpdateFactory } from '../../src/utils/postGig/dealHandlers'
 import { startedState } from '../expeditionLifecycleFixture.js'

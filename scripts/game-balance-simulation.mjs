@@ -76,7 +76,7 @@ import {
 import {
   getActiveAssetModifiers,
   getTotalDailyObligations
-} from '../src/utils/assetSelectors/index.js'
+} from '../src/utils/assets/assetSelectors/index.js'
 import {
   clampBandHarmony,
   clampBandStress,
@@ -107,16 +107,16 @@ import {
   startCrowdfund,
   installModule,
   repairChassis
-} from '../src/context/assetActionCreators.js'
+} from '../src/context/assets/assetActionCreators.js'
 import {
   handlePurchaseChassis,
   handleStartCrowdfund,
   handleInstallModule,
   handleRepairChassis
-} from '../src/context/reducers/assetReducer.js'
-import { CHASSIS_CONFIG } from '../src/utils/assetConfig.js'
-import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.js'
-import { LOAN_PROFILES } from '../src/utils/loanProfiles.js'
+} from '../src/context/reducers/assets/assetReducer.js'
+import { CHASSIS_CONFIG } from '../src/utils/assets/assetConfig.js'
+import { MODULE_REGISTRY } from '../src/utils/assets/assetModuleRegistry.js'
+import { LOAN_PROFILES } from '../src/utils/assets/loanProfiles.js'
 import { applySharedBandEffect } from '../src/utils/contrabandEffects.js'
 import {
   validatePurchase,
@@ -138,7 +138,7 @@ import {
   rollAssetRiskEvents,
   processLiabilityTick,
   resolveCrowdfundProbability
-} from '../src/utils/assetTicks.js'
+} from '../src/utils/assets/assetTicks.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
@@ -1580,7 +1580,8 @@ export const executeDailyZealotryPolicy = (state, scenario, counters, day) => {
     } else if (
       finiteNumberOr(currentState.band?.harmony, 0) < harmonyCost ||
       (policy === 'sermon-reserve' &&
-        finiteNumberOr(currentState.band?.harmony, 0) - harmonyCost < reserveHarmonyFloor)
+        finiteNumberOr(currentState.band?.harmony, 0) - harmonyCost <
+          reserveHarmonyFloor)
     ) {
       rejectionReason = 'harmony'
     }
@@ -3243,7 +3244,9 @@ export const runSingleSimulation = (
       observeAttributedLoss('other', moneyBeforeZealotry)
       observeEarlyRunwayMoney()
       if (!counters.zealotryPolicy) {
-        counters.zealotryPolicy = createZealotryCounters(scenario.dailyActionPolicy)
+        counters.zealotryPolicy = createZealotryCounters(
+          scenario.dailyActionPolicy
+        )
       }
       if (finiteNumberOr(state.social?.controversyLevel, 0) >= 85) {
         counters.zealotryPolicy.daysAtControversy85OrHigher++

@@ -5,7 +5,7 @@ import { getLoanProfileImagePrompt } from '../../utils/imageGen'
 import {
   LOAN_PROFILES_ARRAY,
   type LoanProfileId
-} from '../../utils/loanProfiles'
+} from '../../utils/assets/loanProfiles'
 import { formatPercent } from '../../utils/numberUtils'
 import type { BaseModalProps } from '../../types/ui'
 

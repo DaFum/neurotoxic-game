@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry'
 import {
   purchaseChassis,
   installModule
-} from '../../src/context/assetActionCreators'
+} from '../../src/context/assets/assetActionCreators'
 
 // Integration tests for tb_trailer_hitch anti-stacking rules.
 

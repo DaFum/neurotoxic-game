@@ -16,7 +16,7 @@ import {
   handleAssetForeclosed,
   handleDismissForeclosureNotice,
   handleAssetFailedAction
-} from './reducers/assetReducer'
+} from './reducers/assets/assetReducer'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
 import { GAME_PHASES } from './gameConstants'
@@ -110,7 +110,7 @@ import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastActionWithId } from './actionCreators'
 import { buildDeterministicToastId } from './reducers/toastSanitizers'
-import { assetForeclosed } from './assetActionCreators'
+import { assetForeclosed } from './assets/assetActionCreators'
 import {
   handleLoadGame,
   handleResetState,

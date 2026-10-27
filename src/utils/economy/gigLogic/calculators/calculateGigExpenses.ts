@@ -2,7 +2,7 @@ import type { GigModifiers } from '../../../../types'
 import type { FinancialBreakdownItem } from '../../../../types/economy'
 import { calculateGigModifierCost } from '../../constants'
 import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../../assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../../assets/assetSelectors'
 import type { AssetModifiers } from '../../../../types/assets'
 import type { BalanceConfig } from '../../../../config/balance'
 /**

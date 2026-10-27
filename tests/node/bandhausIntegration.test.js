@@ -1,14 +1,14 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 // Side-effect: registers all modules including bandhaus modules
-import '../../src/utils/assetModuleRegistry.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
+import '../../src/utils/assets/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
 import {
   isModuleUnlocked,
   getActiveAssetModifiers
-} from '../../src/utils/assetSelectors.ts'
-import { rollAssetRiskEvents } from '../../src/utils/assetTicks.ts'
+} from '../../src/utils/assets/assetSelectors.ts'
+import { rollAssetRiskEvents } from '../../src/utils/assets/assetTicks.ts'
 
 /**
  * Builds a minimal bandhaus LongTermAsset.

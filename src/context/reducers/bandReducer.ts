@@ -46,7 +46,7 @@ import {
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
-import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
 import { resolveMerchRestock } from '../../utils/merchUtils'
 import {
   BAND_MEETING_HARMONY_GAIN,

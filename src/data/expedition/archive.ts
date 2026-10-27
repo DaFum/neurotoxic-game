@@ -16,8 +16,8 @@ import { EXPEDITION_FINALES_BY_ID } from './finales'
 import { EXPEDITION_PRESSURE_EVENTS } from './pressureEvents'
 import { BRAND_DEALS_BY_ID } from '../brandDeals'
 import { CONTRABAND_BY_ID } from '../contraband'
-import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
-import { CHASSIS_CONFIG } from '../../utils/assetConfig'
+import { MODULE_REGISTRY } from '../../utils/assets/assetModuleRegistry'
+import { CHASSIS_CONFIG } from '../../utils/assets/assetConfig'
 import { isForbiddenKey } from '../../utils/objectUtils'
 
 /** Every Archive category, in the order the Archive lists them. */

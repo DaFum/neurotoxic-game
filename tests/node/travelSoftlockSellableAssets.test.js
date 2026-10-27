@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { getSellableAssets, getPostSaleScenarios } from '../../src/utils/travelSoftlockUtils.ts'
-import { getAssetSaleQuote } from '../../src/utils/assetSelectors/assetSaleQuote.ts'
+import {
+  getSellableAssets,
+  getPostSaleScenarios
+} from '../../src/utils/travelSoftlockUtils.ts'
+import { getAssetSaleQuote } from '../../src/utils/assets/assetSelectors/assetSaleQuote.ts'
 
 const makeAsset = id => ({
   id,
@@ -68,11 +71,7 @@ test('getPostSaleScenarios evaluates combinations correctly and accurately calcu
     { id: 'a1', net: 100 },
     { id: 'a2', net: 200 }
   ]
-  const assets = [
-    makeAsset('a1'),
-    makeAsset('a2'),
-    makeAsset('a3')
-  ]
+  const assets = [makeAsset('a1'), makeAsset('a2'), makeAsset('a3')]
   const liabilities = {
     l1: { id: 'l1', assetId: 'a1', dailyPayment: 10 },
     l2: { id: 'l2', assetId: 'a3', dailyPayment: 15 }

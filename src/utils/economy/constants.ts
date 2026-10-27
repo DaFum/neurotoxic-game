@@ -1,7 +1,7 @@
 import { MERCH_PROFILES } from '../../data/merch'
 import type { MerchItemProfile } from '../../data/merch'
 import type { AssetModifiers } from '../../types/assets'
-import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../assets/assetSelectors'
 import { finiteNumberOr } from '../gameState'
 import { BALANCE_CONFIG } from '../../config/balance'
 import type { BalanceConfig } from '../../config/balance'

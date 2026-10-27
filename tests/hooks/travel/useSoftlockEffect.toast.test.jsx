@@ -8,7 +8,7 @@ vi.mock('../../../src/utils/travelSoftlockUtils', () => ({
   getSellableAssets: () => [],
   getPostSaleScenarios: () => []
 }))
-vi.mock('../../../src/utils/assetSelectors', () => ({
+vi.mock('../../../src/utils/assets/assetSelectors', () => ({
   getActiveAssetModifiers: () => ({}),
   getTotalDailyObligations: () => 0
 }))

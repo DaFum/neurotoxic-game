@@ -11,7 +11,7 @@ import {
 } from '../../utils/mapGenerator'
 import { getRegionKeyForLocation, normalizeVenueId } from '../../utils/mapUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
 import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import type {
   GameState,

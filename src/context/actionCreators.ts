@@ -1,6 +1,6 @@
 import { sanitizeBandUpdates, sanitizePlayerUpdates } from './updateSanitizers'
 import { createRngStream, nextSeed } from '../utils/seededRng'
-import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
+import { getAdvanceDayRngStreamLength } from '../utils/assets/assetConfig'
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -19,7 +19,7 @@ import { systemClock } from '../utils/clock'
 import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
-import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
+import { sanitizeRiskEventDescriptor } from './reducers/assets/assetSanitizers'
 import {
   sanitizeGigModifierUpdates,
   sanitizeRivalBandUpdates,

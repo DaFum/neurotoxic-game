@@ -16,7 +16,7 @@
  * avoid circular ESM dependencies. This file is the consumer-facing entry
  * point; importing it triggers all registered section side-effects.
  */
-import type { AssetModule } from '../types/assets'
+import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY } from './assetRegistryStore'
 
 export { MODULE_REGISTRY, MODULE_PROMPTS } from './assetRegistryStore'

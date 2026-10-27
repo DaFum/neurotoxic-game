@@ -3,18 +3,18 @@ import {
   finiteNumberOr,
   isFiniteNumber,
   isLooseRecord
-} from '../../utils/gameState'
-import { isForbiddenKey } from '../../utils/objectUtils'
-import { logger } from '../../utils/logger'
-import { getSecureRandomUint32 } from '../../utils/crypto'
-import { getRegisteredModule } from '../../utils/assetModuleRegistry'
-import { CHASSIS_CONFIG } from '../../utils/assetConfig'
+} from '../../../utils/gameState'
+import { isForbiddenKey } from '../../../utils/objectUtils'
+import { logger } from '../../../utils/logger'
+import { getSecureRandomUint32 } from '../../../utils/crypto'
+import { getRegisteredModule } from '../../../utils/assets/assetModuleRegistry'
+import { CHASSIS_CONFIG } from '../../../utils/assets/assetConfig'
 import {
   VALID_ASSET_ACQUISITION_MODES,
   VALID_ASSET_FLAVORS,
   VALID_ASSET_KINDS,
   VALID_ASSET_TIERS
-} from '../../utils/assetValidation'
+} from '../../../utils/assets/assetValidation'
 import type {
   AssetFlavor,
   AssetKind,
@@ -27,7 +27,7 @@ import type {
   RiskEventDescriptor,
   RiskEventType,
   SlotType
-} from '../../types/assets'
+} from '../../../types/assets'
 
 /**
  * Reports entries discarded during load-time sanitization.

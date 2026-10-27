@@ -16,7 +16,7 @@ vi.mock('../../src/context/GameState', () => ({
     selector(mockState)
 }))
 
-vi.mock('../../src/utils/assetSelectors', () => ({
+vi.mock('../../src/utils/assets/assetSelectors', () => ({
   getTotalDailyObligations: () => 37,
   getTotalDebt: () => 450
 }))

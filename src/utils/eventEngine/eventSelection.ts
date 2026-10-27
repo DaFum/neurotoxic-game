@@ -1,7 +1,7 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { finiteNumberOr, parseCooldownEntry } from '../gameState'
-import { getAssetAggregateBoni } from '../assetSelectors/assetFinancials'
+import { getAssetAggregateBoni } from '../assets/assetSelectors/assetFinancials'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
 import { resolveTemplateString } from './templateResolver'

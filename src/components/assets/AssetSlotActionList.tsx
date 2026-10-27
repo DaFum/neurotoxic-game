@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { LongTermAsset } from '../../types/assets'
-import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
-import { hasCompatibleModuleForSlot } from '../../utils/assetSelectors/moduleUnlock'
+import { MODULE_REGISTRY } from '../../utils/assets/assetModuleRegistry'
+import { hasCompatibleModuleForSlot } from '../../utils/assets/assetSelectors/moduleUnlock'
 import { getModuleDescription } from './moduleDescription'
 
 /**

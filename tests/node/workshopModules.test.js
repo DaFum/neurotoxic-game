@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 import {
   WORKSHOP_T1_SLOTS,
   WORKSHOP_T2_SLOTS,
   WORKSHOP_T3_SLOTS
-} from '../../src/utils/assetSections/workshopConfig.ts'
+} from '../../src/utils/assets/assetSections/workshopConfig.ts'
 
 const EXPECTED_WORKSHOP_MODULE_IDS = [
   'mw_4color_carousel',

@@ -10,12 +10,12 @@ import {
   getAssetTotalUpkeep,
   getActiveAssetModifiers,
   getTotalDailyObligations
-} from '../../src/utils/assetSelectors.ts'
+} from '../../src/utils/assets/assetSelectors.ts'
 import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY
-} from '../../src/utils/assetConfig.ts'
-import { processAssetTick } from '../../src/utils/assetTicks.ts'
+} from '../../src/utils/assets/assetConfig.ts'
+import { processAssetTick } from '../../src/utils/assets/assetTicks.ts'
 import {
   computeDropChance,
   DROP_BASE_CHANCE,

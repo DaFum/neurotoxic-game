@@ -7,7 +7,7 @@ import {
   calculateGigFinancials,
   calculateRefuelCost
 } from '../../src/utils/economy/index.ts'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assetSelectors.ts'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assets/assetSelectors.ts'
 
 test('Economy Asset Modifiers', async t => {
   await t.test('calculateFuelCost halves cost with 0.5 fuelMultiplier', () => {

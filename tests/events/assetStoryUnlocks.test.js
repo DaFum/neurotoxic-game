@@ -2,7 +2,7 @@ import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { ALL_RAW_EVENTS } from '../../src/data/events/index'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 
 const readAssetsLocale = locale =>
   JSON.parse(readFileSync(`public/locales/${locale}/assets.json`, 'utf8'))

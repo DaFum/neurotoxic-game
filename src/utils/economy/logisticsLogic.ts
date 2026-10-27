@@ -1,4 +1,4 @@
-import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../assets/assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../gameState'
 import { bandHasTrait } from '../traitUtils'

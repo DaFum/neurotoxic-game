@@ -30,7 +30,7 @@ import { createInitialState } from '../../src/context/initialState'
 import { EXPEDITION_CREW_BY_ID } from '../../src/data/expedition/crew'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
 import { BRAND_DEALS_BY_ID } from '../../src/data/brandDeals'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry'
 import {
   FIXTURE_REGION_ID,
   startedState,

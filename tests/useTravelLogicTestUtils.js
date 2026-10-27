@@ -1,7 +1,7 @@
 import { beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
-import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../src/utils/assets/assetModuleRegistry.ts'
 
 // Mocks
 const mockCalculateTravelExpenses = mock.fn()
@@ -135,13 +135,16 @@ const mockCalculateChassisGrossSaleValue = mock.fn(
   calculateChassisGrossSaleValueDefault
 )
 
-mock.module(new URL('../src/utils/assetSelectors.ts', import.meta.url).href, {
-  namedExports: {
-    getActiveAssetModifiers: mockGetActiveAssetModifiers,
-    getTotalDailyObligations: mockGetTotalDailyObligations,
-    calculateChassisGrossSaleValue: mockCalculateChassisGrossSaleValue
+mock.module(
+  new URL('../src/utils/assets/assetSelectors.ts', import.meta.url).href,
+  {
+    namedExports: {
+      getActiveAssetModifiers: mockGetActiveAssetModifiers,
+      getTotalDailyObligations: mockGetTotalDailyObligations,
+      calculateChassisGrossSaleValue: mockCalculateChassisGrossSaleValue
+    }
   }
-})
+)
 
 mock.module(
   new URL('../src/utils/audio/AudioManager.ts', import.meta.url).href,

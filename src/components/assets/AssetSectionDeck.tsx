@@ -4,7 +4,7 @@ import type { LongTermAsset } from '../../types/assets'
 import {
   calculateChassisRepairCost,
   getNextChassisTier
-} from '../../utils/assetConfig'
+} from '../../utils/assets/assetConfig'
 import { AssetSlotActionList } from './AssetSlotActionList'
 import { Tooltip } from '../../ui/shared'
 

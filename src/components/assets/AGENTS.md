@@ -4,7 +4,7 @@
 
 - `AssetsScene` is the single hub for the long-term asset system. `sectionRegistry.ts` owns the section view map (`SECTION_VIEWS[kind] = { Component, accent }`); keep all four shipped sections registered there unless deliberately removing a section.
 - The hub sets `--section-accent` as a CSS variable on the scene root. Every modal and panel under `src/components/assets/` reads it via `var(--section-accent, var(--color-toxic-green))`. Do not prop-drill section colours.
-- `AssetsStatusStrip` shows liquidity, net daily obligations, outstanding debt, and active crowdfund campaigns. It computes obligations via `getTotalDailyObligations` and debt via `getTotalDebt` from `src/utils/assetSelectors.ts` — do not recompute the formulas inline.
+- `AssetsStatusStrip` shows liquidity, net daily obligations, outstanding debt, and active crowdfund campaigns. It computes obligations via `getTotalDailyObligations` and debt via `getTotalDebt` from `src/utils/assets/assetSelectors.ts` — do not recompute the formulas inline.
 - `AssetsBottomTabs` owns the section tablist. Tabs and the active tabpanel are linked via `id={`assets-tab-${kind}`}` ↔ `aria-controls`/`aria-labelledby`. Preserve those ids when restructuring the hub.
 - Asset UI styles must use defined color tokens such as `--color-void-black` and `--color-blood-red`; `--color-void` and `--color-blood` are not aliases in `src/index.css`.
 - Section entry points stay thin wrappers around `AssetSectionPanel`/`AssetSectionDeck` that pass `kind` and a hero renderer.

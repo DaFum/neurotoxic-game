@@ -88,7 +88,7 @@ import { areBetweenTourDecisionsResolved } from '../src/domain/expedition/betwee
 import {
   getActiveAssetModifiers,
   getTotalDailyObligations
-} from '../src/utils/assetSelectors.ts'
+} from '../src/utils/assets/assetSelectors.ts'
 import { deriveFinancials } from '../src/utils/postGig/derivations.ts'
 import { calculateContinueStats } from '../src/utils/postGig/performanceLogic.ts'
 import { evaluateAcceptedSettlementSolvency } from '../src/hooks/postGig/handlers/continueHandlerUtils.ts'
