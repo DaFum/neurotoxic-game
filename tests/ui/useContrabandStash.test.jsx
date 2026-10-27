@@ -45,6 +45,7 @@ describe('useContrabandStash', () => {
         instanceId: 'item1',
         type: 'consumable',
         effectType: 'stamina',
+        stacks: 5,
         name: 'Energy Drink'
       },
       c_guitar_strings: {
@@ -108,6 +109,8 @@ describe('useContrabandStash', () => {
     expect(result.current.stashProps.stash.map(item => item.id)).toEqual([
       'c_energy_drink'
     ])
+    // Owned 5, packed 1: the list shows what can actually be used.
+    expect(result.current.stashProps.stash[0].stacks).toBe(1)
   })
 
   it('toggles stash visibility with openStash and closeStash', () => {

@@ -5,13 +5,14 @@
  * could reject the debit while the harmony update still landed (a free
  * meeting).
  */
-import { describe, it } from 'node:test'
+import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { createHoldBandMeetingAction } from '../../src/context/actionCreators'
 import { createInitialState } from '../../src/context/initialState'
 import { startedState } from '../expeditionLifecycleFixture.js'
 import { QuestLifecycle } from '../../src/domain/questLifecycle'
+import { QuestEvents } from '../../src/utils/questProgress'
 
 const MEETING_COST = 50
 const MEETING_HARMONY = 15
@@ -106,6 +107,20 @@ describe('HOLD_BAND_MEETING', () => {
       const next = gameReducer(withQuest(20), createHoldBandMeetingAction())
       assert.equal(next.band.harmony, 20 + MEETING_HARMONY)
       assert.equal(egoQuest(next).progress, 20 + MEETING_HARMONY)
+    })
+
+    it('reports the applied delta when harmony caps at 100', () => {
+      const emit = mock.method(QuestEvents, 'emit')
+      try {
+        const next = gameReducer(withQuest(95), createHoldBandMeetingAction())
+        assert.equal(next.band.harmony, 100)
+        const event = emit.mock.calls.at(-1).arguments[1]
+        assert.equal(event.type, 'band.harmonyChanged')
+        assert.equal(event.amount, 5)
+        assert.equal(event.context.harmony, 100)
+      } finally {
+        emit.mock.restore()
+      }
     })
 
     it('emits nothing for an unaffordable meeting', () => {

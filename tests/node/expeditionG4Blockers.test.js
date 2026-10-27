@@ -2973,22 +2973,21 @@ test('a tier-2 Nemesis never converts the mandatory Finale', () => {
   const effective = getEffectiveExpeditionRoute(atFinaleGate, map)
   assert.equal(effective.subtypeByNodeId[map.finaleNodeId], undefined)
 
-  // A save that already carries the converted Finale is recovered on load.
+  // A save that already carries the converted Finale is recovered on load:
+  // the run stays active on a real path to the Finale, minus the overlay.
+  const atFinale = walkToFinale(started)
+  assert.equal(atFinale.expedition.visitedNodeIds.at(-1), map.finaleNodeId)
   const loaded = sanitizeExpeditionState(
     {
-      ...atFinaleGate.expedition,
-      visitedNodeIds: [
-        ...atFinaleGate.expedition.visitedNodeIds,
-        map.finaleNodeId
-      ],
-      routeStep: finaleStep,
+      ...atFinale.expedition,
       arrivedOverlay: {
         nodeId: map.finaleNodeId,
         subtype: 'RIVAL_ENCOUNTER',
         source: 'nemesis_shortcut'
       }
     },
-    atFinaleGate.runSeed
+    atFinale.runSeed
   )
+  assert.equal(loaded.status, 'active')
   assert.equal(loaded.arrivedOverlay, null)
 })

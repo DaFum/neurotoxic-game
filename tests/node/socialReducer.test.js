@@ -184,6 +184,18 @@ describe('socialReducer', () => {
       assert.equal(accept({ perGig: NaN }).offer.perGig, base)
       assert.equal(accept({ perGig: '9999' }).offer.perGig, base)
       assert.equal(accept(undefined).offer.perGig, base)
+      assert.equal(accept({ perGig: -5 }).offer.perGig, 0)
+      assert.equal(accept({ perGig: 55.9 }).offer.perGig, 55)
+      // An accessor must never run on untrusted input.
+      let accessorRead = false
+      const hostile = {
+        get perGig() {
+          accessorRead = true
+          return 9999
+        }
+      }
+      assert.equal(accept(hostile).offer.perGig, base)
+      assert.equal(accessorRead, false)
     })
 
     it('should return unchanged state if payload is not an object/function', () => {

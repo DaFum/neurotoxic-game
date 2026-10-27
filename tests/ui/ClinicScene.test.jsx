@@ -132,6 +132,7 @@ describe('ClinicScene', () => {
   })
 
   it('keeps Heal available below an upgraded stamina maximum (#3391)', () => {
+    /** @param {number} stamina */
     const member = stamina => ({
       id: 'm9',
       name: 'M9',
@@ -140,6 +141,7 @@ describe('ClinicScene', () => {
       mood: 100,
       traits: {}
     })
+    /** @param {number} stamina */
     const render = stamina => {
       useClinicLogic.mockReturnValue({
         player: { money: 100, fame: 100 },

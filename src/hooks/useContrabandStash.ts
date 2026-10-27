@@ -33,11 +33,13 @@ export const useContrabandStash = () => {
   const stashArray = useMemo<StashItem[]>(() => {
     const items = Object.values(band.stash ?? {}) as StashItem[]
     if (packedContraband === null) return items
-    return items.filter(item =>
-      packedContraband.some(
+    // Show the packed stack count, not the owned one: only that many can be used.
+    return items.flatMap(item => {
+      const packed = packedContraband.find(
         entry => entry.stashKey === item.id && entry.stacks > 0
       )
-    )
+      return packed ? [{ ...item, stacks: packed.stacks }] : []
+    })
   }, [band.stash, packedContraband])
 
   const handleUseItem = useCallback(
