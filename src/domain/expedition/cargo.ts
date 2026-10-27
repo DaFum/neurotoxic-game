@@ -176,6 +176,105 @@ export const isPackedContrabandEntry = (
   (entry.instanceId === null || entry.instanceId === instanceId)
 
 /**
+ * Counts the packed stacks of one contraband id.
+ *
+ * @param contraband - Packed contraband entries.
+ * @param stashKey - Contraband id to count.
+ * @returns Total stacks packed for that id, across all of its entries.
+ */
+export const countPackedContraband = (
+  contraband: readonly ExpeditionContrabandSelection[],
+  stashKey: string
+): number =>
+  contraband.reduce(
+    (sum, entry) =>
+      entry.stashKey === stashKey && entry.stacks > 0
+        ? sum + entry.stacks
+        : sum,
+    0
+  )
+
+/**
+ * Removes stacks of one contraband id from the packed entries.
+ *
+ * @param contraband - Packed contraband entries.
+ * @param stashKey - Contraband id to debit.
+ * @param stacks - Stacks to remove, taken from the first entries that hold them.
+ * @returns New entry list; emptied entries are dropped.
+ */
+export const debitPackedContraband = (
+  contraband: readonly ExpeditionContrabandSelection[],
+  stashKey: string,
+  stacks: number
+): ExpeditionContrabandSelection[] => {
+  let remaining = stacks
+  const next: ExpeditionContrabandSelection[] = []
+  for (const entry of contraband) {
+    if (entry.stashKey !== stashKey || remaining <= 0 || entry.stacks <= 0) {
+      next.push(entry)
+      continue
+    }
+    const taken = Math.min(entry.stacks, remaining)
+    remaining -= taken
+    if (entry.stacks - taken > 0) {
+      next.push({ ...entry, stacks: entry.stacks - taken })
+    }
+  }
+  return next
+}
+
+/**
+ * Adds stacks of one contraband id to the packed entries.
+ *
+ * @param contraband - Packed contraband entries.
+ * @param stashKey - Contraband id to add.
+ * @param instanceId - Instance id of the owned stash stack, when it has one.
+ * @param stacks - Stacks to add.
+ * @returns New entry list, merged into a covering entry when there is one.
+ */
+export const creditPackedContraband = (
+  contraband: readonly ExpeditionContrabandSelection[],
+  stashKey: string,
+  instanceId: string | null,
+  stacks: number
+): ExpeditionContrabandSelection[] => {
+  const index = contraband.findIndex(entry =>
+    isPackedContrabandEntry(entry, stashKey, instanceId)
+  )
+  if (index === -1) return [...contraband, { stashKey, instanceId, stacks }]
+  return contraband.map((entry, i) =>
+    i === index ? { ...entry, stacks: entry.stacks + stacks } : entry
+  )
+}
+
+/**
+ * Narrows the owned stash to what an active run carries.
+ *
+ * @param stash - Owned contraband stash.
+ * @param expedition - Expedition slice.
+ * @returns The stash unchanged outside an active run; during one, only the
+ * packed items, each with at most its packed stack count.
+ */
+export const getCarriedContrabandStash = (
+  stash: Record<string, unknown> | undefined,
+  expedition: GameState['expedition'] | undefined
+): Record<string, unknown> | undefined => {
+  if (expedition?.status !== 'active') return stash
+  const packed = resolveActiveExpeditionCargo({ expedition })?.contraband ?? []
+  const carried: Record<string, unknown> = {}
+  for (const [id, entry] of Object.entries(stash ?? {})) {
+    const count = countPackedContraband(packed, id)
+    if (count <= 0 || typeof entry !== 'object' || entry === null) continue
+    const owned = (entry as { stacks?: unknown }).stacks
+    carried[id] = {
+      ...entry,
+      stacks: typeof owned === 'number' ? Math.min(owned, count) : count
+    }
+  }
+  return carried
+}
+
+/**
  * Resolves the cargo an active run actually carries.
  *
  * @param state - Current game state.
