@@ -73,7 +73,6 @@ baseline instead of duplicating formulas.
 
 ## triggerEvent
 
-- The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`. It returns `true` only after an event is selected, processed, and set active; `false` means no event was triggered.
 - `gig_intro` / `gig_mid` are the only trigger points that fire _during_ the GIG scene. `useEventSystem`'s `triggerEvent` deliberately exempts them from both the GIG-scene block and the daily `eventsTriggeredToday` cap (and does not increment that counter) — they are gig-moment beats, not part of the daily random-event budget. They are fired once each per gig from `useRhythmGameLogic`'s `update` wrapper via `maybeFireGigProgressEvent` in `rhythmGameLoopUtils.ts` (at gig start, then progress ≥ 50, guarded by the `gigIntroFired`/`gigMidFired` ref flags), limited to at most one _shown_ event per setlist song by the `lastGigEventSongIndex` ref flag — only a successful `triggerEvent` consumes the song slot; a missed chance roll spends that event's single attempt but lets the other event still try in the same song. The helper is inert while `songTransitioning` (progress is stale from the previous song) and after `hasSubmittedResults`, and `processRhythmGameTick` pauses audio while the resulting `activeEvent` modal is open. Do NOT re-block GIG-scene events or remove the exemption: the `src/data/events/gig.ts` events, the `showman` trait, and the `stage_diver` milestone all depend on it.
 
 ## Long-Term Assets
@@ -98,12 +97,3 @@ baseline instead of duplicating formulas.
 - `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview and `startCrowdfund` uses it to stamp `plannedSuccessProbability` on the campaign (the caller supplies neither odds nor roll); `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
 - `economy.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
-- `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
-- `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.
-
-## Numeric & Traversal Safety
-
-- When doing arithmetic and calculations on persisted state properties, guard against non-finite values (`NaN`, `Infinity`) by wrapping inputs defensively with `finiteNumberOr(value, defaultValue)`. Choose a domain-appropriate default (e.g. `DEFAULT_PLAYER_STATE.money`) rather than assuming `0` universally.
-- Any recursive object utility or traverser (freezers, cloners, sanitizers, revivers) must track visited references using `WeakSet<object>` for cycle safety to prevent `RangeError: Maximum call stack size exceeded` on circular references.
-- Recursive object traversals must continue through already-frozen parent objects to ensure nested mutable children are processed.
-- State and payload sanitizers must use strict type guards (`isFiniteNumber(val)`) rather than `Number(val)` coercion, preventing improper acceptance of booleans, arrays, or numeric strings.
