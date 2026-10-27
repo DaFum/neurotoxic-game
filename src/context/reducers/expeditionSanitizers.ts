@@ -1160,6 +1160,9 @@ const sanitizeArrivedOverlay = (
   if (!isLooseRecord(value) || !map) return null
   const nodeId = readString(value, 'nodeId')
   if (!nodeId || nodeId !== visitedPath.at(-1)) return null
+  // Saves written before the Finale was exempt carry a converted Finale that
+  // START_GIG would refuse forever; dropping it makes the show bookable again.
+  if (nodeId === map.finaleNodeId) return null
   const from = visitedPath.at(-2)
   const fromStep = from === undefined ? undefined : map.meta[from]?.routeStep
   const step = map.meta[nodeId]?.routeStep

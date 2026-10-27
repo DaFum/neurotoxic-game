@@ -2932,3 +2932,63 @@ test('a heat_cap double-down is refused while Heat is already above its cap', ()
   const under = withHeat(offer.addedConstraint.maxHeat)
   assert.notStrictEqual(gameReducer(under, action), under)
 })
+
+test('a tier-2 Nemesis never converts the mandatory Finale', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const map = fixtureMap()
+  const finaleStep = map.meta[map.finaleNodeId].routeStep
+  const penultimate = map.nodeOrder.find(
+    id => map.meta[id].routeStep === finaleStep - 1
+  )
+  const rivalId = started.rivalBand.id
+  const atFinaleGate = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      routeStep: finaleStep - 1,
+      visitedNodeIds: [...started.expedition.visitedNodeIds, penultimate]
+    },
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...started.career.rivalsById[rivalId],
+          history: {
+            ...started.career.rivalsById[rivalId].history,
+            nemesisLevel: 2
+          }
+        }
+      }
+    }
+  }
+  const effective = getEffectiveExpeditionRoute(atFinaleGate, map)
+  assert.equal(effective.subtypeByNodeId[map.finaleNodeId], undefined)
+
+  // A save that already carries the converted Finale is recovered on load.
+  const loaded = sanitizeExpeditionState(
+    {
+      ...atFinaleGate.expedition,
+      visitedNodeIds: [
+        ...atFinaleGate.expedition.visitedNodeIds,
+        map.finaleNodeId
+      ],
+      routeStep: finaleStep,
+      arrivedOverlay: {
+        nodeId: map.finaleNodeId,
+        subtype: 'RIVAL_ENCOUNTER',
+        source: 'nemesis_shortcut'
+      }
+    },
+    atFinaleGate.runSeed
+  )
+  assert.equal(loaded.arrivedOverlay, null)
+})

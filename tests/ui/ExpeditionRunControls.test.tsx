@@ -206,6 +206,26 @@ describe('ExpeditionRunControls', () => {
   })
 })
 
+describe('Career ending', () => {
+  beforeEach(() => {
+    for (const fn of Object.values(actions)) fn.mockClear()
+  })
+
+  it('never routes a Career terminal outcome to the run summary', () => {
+    const active = buildState()
+    state.current = active
+    const { rerender } = render(<ExpeditionRunControls />)
+    state.current = {
+      ...buildState({ status: 'failed' }),
+      terminalOutcome: { reason: 'event_game_over', eventId: 'deal_devil' },
+      currentScene: 'GAMEOVER'
+    } as GameState
+    rerender(<ExpeditionRunControls />)
+    expect(actions.changeScene).not.toHaveBeenCalled()
+    expect(actions.saveGameAfterStateCommit).not.toHaveBeenCalled()
+  })
+})
+
 describe('Run draft picker', () => {
   beforeEach(() => {
     for (const fn of Object.values(actions)) fn.mockClear()

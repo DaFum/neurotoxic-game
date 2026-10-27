@@ -176,6 +176,9 @@ export const getEffectiveExpeditionRoute = (
   ): void => {
     if (
       nodeId === null ||
+      // The Finale is the mandatory last gig: converting it to a SPECIAL stop
+      // would leave the Tour with no bookable show to complete.
+      nodeId === map.finaleNodeId ||
       !Object.hasOwn(map.meta, nodeId) ||
       map.meta[nodeId]?.routeStep !== state.expedition.routeStep + stepsAhead ||
       Object.hasOwn(subtypeByNodeId, nodeId)
