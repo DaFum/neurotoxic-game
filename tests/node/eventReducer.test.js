@@ -383,7 +383,7 @@ describe('eventReducer', () => {
           const calls = harmonyEmits(spy)
           assert.strictEqual(calls.length, 1)
           assert.strictEqual(calls[0].arguments[1].context.harmony, 45)
-          assert.ok(next.band.harmony >= 45)
+          assert.strictEqual(next.band.harmony, 65)
         } finally {
           spy.mock.restore()
         }
