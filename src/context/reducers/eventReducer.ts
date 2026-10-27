@@ -2,6 +2,7 @@ import { logger } from '../../utils/logger'
 import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
 import {
   applyEventDelta,
+  clampBandHarmony,
   finiteNumberOr,
   isFiniteNumber,
   isForbiddenKey,
@@ -10,6 +11,7 @@ import {
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { QuestEvents } from '../../utils/questProgress'
+import { createHarmonyChangedQuestEvent } from '../../quests/producers/gigQuestEvents'
 import { createStoryFlagAddedQuestEvent } from '../../quests/producers/storyQuestEvents'
 import {
   createFameGainedQuestEvent,
@@ -151,6 +153,16 @@ export const handleApplyEventDelta = (
     )
   }
 
+  // Harmony-threshold quests only advance on this event, so an event choice
+  // that crosses a target must report it. Both ends are clamped the way
+  // `applyEventDelta` clamps them, and the value is captured here, before a
+  // quest reward above can move harmony again.
+  const prevHarmony = clampBandHarmony(finiteNumberOr(state.band?.harmony, 1))
+  const nextHarmony = clampBandHarmony(
+    finiteNumberOr(nextState.band?.harmony, 1)
+  )
+  const harmonyChange = nextHarmony - prevHarmony
+
   const priorFlags = new Set(
     Array.isArray(state.activeStoryFlags) ? state.activeStoryFlags : []
   )
@@ -161,6 +173,16 @@ export const handleApplyEventDelta = (
     resultState = QuestEvents.emit(
       resultState,
       createStoryFlagAddedQuestEvent({ flag })
+    )
+  }
+
+  if (harmonyChange !== 0) {
+    resultState = QuestEvents.emit(
+      resultState,
+      createHarmonyChangedQuestEvent({
+        amount: harmonyChange,
+        newHarmony: nextHarmony
+      })
     )
   }
 

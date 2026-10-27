@@ -19,6 +19,8 @@ const {
   handlePopPendingEvent
 } = await import('../../src/context/reducers/eventReducer')
 
+const { QuestEvents } = await import('../../src/utils/questProgress.ts')
+
 const { migrateLegacyQuestSchema } =
   await import('../../src/domain/questLegacyMigration.ts')
 
@@ -300,6 +302,92 @@ describe('eventReducer', () => {
 
       assert.strictEqual(next.player.location, 'venues:berlin_suff.name')
       assert.strictEqual(questProgress(next, 'quest_local_legend'), 120)
+    })
+
+    describe('harmony quests (#3409)', () => {
+      const egoQuest = { id: 'quest_ego_management', progress: 0, required: 50 }
+      const withHarmony = (harmony, quest = egoQuest) => {
+        const state = stateWithQuest(quest)
+        state.band.harmony = harmony
+        return state
+      }
+      const harmonyEmits = spy =>
+        spy.mock.calls.filter(
+          c => c.arguments[1]?.type === 'band.harmonyChanged'
+        )
+
+      it('advances a threshold quest from an event-driven recovery', () => {
+        const next = handleApplyEventDelta(withHarmony(30), {
+          band: { harmony: 5 }
+        })
+
+        assert.strictEqual(next.band.harmony, 35)
+        assert.strictEqual(questProgress(next, 'quest_ego_management'), 35)
+      })
+
+      it('completes the quest when the delta crosses its target', () => {
+        const next = handleApplyEventDelta(withHarmony(45), {
+          band: { harmony: 5 }
+        })
+
+        assert.strictEqual(
+          next.activeQuests.some(q => q.id === 'quest_ego_management'),
+          false
+        )
+        assert.ok(next.completedQuestIds.includes('quest_ego_management'))
+      })
+
+      it('reports the applied delta when harmony caps at 100', () => {
+        const spy = mock.method(QuestEvents, 'emit')
+        try {
+          handleApplyEventDelta(withHarmony(98), { band: { harmony: 5 } })
+          const calls = harmonyEmits(spy)
+          assert.strictEqual(calls.length, 1)
+          assert.strictEqual(calls[0].arguments[1].amount, 2)
+          assert.strictEqual(calls[0].arguments[1].context.harmony, 100)
+        } finally {
+          spy.mock.restore()
+        }
+      })
+
+      it('emits nothing for no-op or malformed harmony deltas', () => {
+        const spy = mock.method(QuestEvents, 'emit')
+        try {
+          handleApplyEventDelta(withHarmony(100), { band: { harmony: 5 } })
+          handleApplyEventDelta(withHarmony(50), { band: { harmony: 0 } })
+          handleApplyEventDelta(withHarmony(50), { band: { harmony: NaN } })
+          handleApplyEventDelta(withHarmony(50), {
+            band: { harmony: Infinity }
+          })
+          handleApplyEventDelta(withHarmony(50), { band: { harmony: 0.4 } })
+          handleApplyEventDelta(withHarmony(50), { player: { money: 1000 } })
+          assert.strictEqual(harmonyEmits(spy).length, 0)
+        } finally {
+          spy.mock.restore()
+        }
+      })
+
+      it('reports harmony as it was before a quest reward moves it', () => {
+        const spy = mock.method(QuestEvents, 'emit')
+        try {
+          const state = withHarmony(40, {
+            id: 'quest_payday',
+            progress: 0,
+            required: 100,
+            rewards: [{ type: 'band.harmony', amount: 20 }]
+          })
+          const next = handleApplyEventDelta(state, {
+            player: { money: 200 },
+            band: { harmony: 5 }
+          })
+          const calls = harmonyEmits(spy)
+          assert.strictEqual(calls.length, 1)
+          assert.strictEqual(calls[0].arguments[1].context.harmony, 45)
+          assert.ok(next.band.harmony >= 45)
+        } finally {
+          spy.mock.restore()
+        }
+      })
     })
 
     it('does not advance economy quests when nothing was gained', () => {
