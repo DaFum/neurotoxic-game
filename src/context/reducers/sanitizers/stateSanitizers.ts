@@ -1194,14 +1194,16 @@ export const migratePlayerLocation = (location: unknown): string => {
 }
 
 /**
- * Normalizes an older venue identifier to its current valid form.
+ * Normalizes an older venue identifier to its current form for backwards compatibility.
  *
  * @remarks
- * Applies validation and normalization to venue identifiers to ensure backward
- * compatibility with older save files where venue IDs may have varied.
+ * This function performs syntactic normalization (such as stripping legacy decoration) but does not
+ * validate whether the resulting identifier actually corresponds to an existing, valid venue in the game's data.
+ * If the normalized identifier is empty or missing, it passes through the original un-normalized input.
+ * A caller relying on this contract could mistakenly treat arbitrary input as a validated venue ID.
  *
  * @param id - The legacy venue identifier
- * @returns A normalized venue ID string
+ * @returns A normalized venue ID string, or the original input if normalization yields an empty result
  */
 export const migrateLegacyVenueId = (id: unknown): string => {
   if (typeof id !== 'string') return ''
