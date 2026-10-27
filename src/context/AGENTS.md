@@ -9,6 +9,7 @@
 - `UPDATE_SOCIAL` has one whitelist, `sanitizeSocialUpdates` (`stateSanitizers.ts`), run by both `createUpdateSocialAction` and `handleUpdateSocial`: unknown and hostile keys (`__proto__`, `constructor`, `prototype`) are dropped, non-finite values on the numeric `SocialState` fields are dropped (`null` survives only on the nullable `last*` fields), and follower counts, `reputationCooldown` and the `last*Day` markers are floored at 0. The creator wraps the functional updater so sanitization also runs after it resolves. Reducer-side checks (`trend`, `activeDeals`, range clamps) remain final authority — do not remove them.
 - `createUpdateSettingsAction` delegates to `sanitizeSettingsPayload` (the canonical sanitizer in `src/utils/settingsSanitizer.ts`, shared by the reducer's `LOAD_GAME`/`UPDATE_SETTINGS` handling and the global-storage write), which owns the key whitelist (`crtEnabled`, `tutorialSeen`, `logLevel`) and the per-value validation. Adding a new settings field means extending `sanitizeSettingsPayload` only.
 - `updateSettings` must run `sanitizeSettingsPayload(updates)` before `writeGlobalSettings`; never spread raw `updates` into global storage, or malformed/unknown keys (e.g. a non-numeric `logLevel`) bypass the reducer's validation and persist globally.
+- `gig_intro` / `gig_mid` events are exempt from `useEventSystem`'s GIG-scene block and daily `eventsTriggeredToday` cap; do not re-block them. See `triggerEvent` in `src/utils/AGENTS.md`.
 
 ## Persistence
 
@@ -27,8 +28,4 @@
 
 ## Long-Term Assets
 
-- Asset action creators (`assetActionCreators.ts`) normalize payloads via `finiteNumberOr` and strip prototype keys before validation. DIY+loan returns `PURCHASE_CHASSIS_FAILED` (typed) — never `null`.
-- `purchaseChassis` enforces loan-profile eligibility against `state.player.fame` (NOT `state.band.fame`) and `state.social.scenePresence`; ineligible profiles return `PURCHASE_CHASSIS_FAILED` with reason `LOAN_PROFILE_INELIGIBLE`. Add new gating fields to the same union when extending `LoanProfile`.
-- `purchaseChassis` rejects `mode: 'crowdfund'` (`CROWDFUND_REQUIRES_CAMPAIGN`) and `handlePurchaseChassis` only accepts `cash`/`loan` payloads — crowdfund acquisition exists solely via `startCrowdfund` + `processCrowdfundTick`. Without both guards a crowdfund-mode dispatch would mint a free chassis (neither payment branch fires).
-- `startCrowdfund` derives `plannedSuccessProbability` (`resolveCrowdfundProbability` from the player's fame and scene presence plus the target) and `plannedSuccessRoll` (`mulberry32(rngSeed ^ fameStake ^ days)`) from state and caps `fameStake` at the player's fame; callers pass none of them. The setup modal previews the same formula, so the tick resolves `roll < probability` against the displayed odds.
-- `INSTALL_MODULE` allows flavor-mix between module and chassis (legit module on DIY chassis is intentional).
+- Asset action creator rules (`assetActionCreators.ts`) live in `assets/AGENTS.md`.

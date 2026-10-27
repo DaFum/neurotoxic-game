@@ -7,7 +7,7 @@ import { handleError } from '../../../utils/errorHandler'
 import { VENUES_BY_ID } from '../../../data/venues'
 import { isGigNode, resolveArrivalNode } from '../../../utils/arrivalUtils'
 import { finiteNumberOr } from '../../../utils/gameState'
-import { getActiveAssetModifiers } from '../../../utils/assetSelectors'
+import { getActiveAssetModifiers } from '../../../utils/assets/assetSelectors'
 import {
   resolveTravelVenue,
   getNodeAccessStatus,

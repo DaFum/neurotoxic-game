@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AssetSlotActionList } from '../../src/components/assets/AssetSlotActionList'
 import { AssetSectionDeck } from '../../src/components/assets/AssetSectionDeck'
 import { TourbusTrailerOverlay } from '../../src/components/assets/sections/TourbusTrailerOverlay'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry'
 import type { LongTermAsset } from '../../src/types/assets'
 
 const asset: LongTermAsset = {

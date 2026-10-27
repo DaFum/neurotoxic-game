@@ -3,8 +3,8 @@ import type {
   AssetKind,
   ChassisTier,
   SlotType
-} from '../types/assets'
-import { clampNonNegative } from './gameState'
+} from '../../types/assets'
+import { clampNonNegative } from '../gameState'
 import {
   TOURBUS_T1_SLOTS,
   TOURBUS_T2_SLOTS,

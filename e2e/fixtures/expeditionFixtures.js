@@ -21,7 +21,7 @@ import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOv
 import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash.ts'
 import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { calculateTravelCostsAndImpact } from '../../src/utils/travelUtils.ts'
-import { getActiveAssetModifiers } from '../../src/utils/assetSelectors.ts'
+import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors.ts'
 import { getLocationName } from '../../src/hooks/travel/actions/getLocationName.ts'
 
 const FIXTURE_RUN_SEED = 4242

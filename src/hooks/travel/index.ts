@@ -8,7 +8,7 @@ import {
   isConnected as isConnectedUtil,
   getNodeVisibility as getNodeVisibilityUtil
 } from '../../utils/mapUtils'
-import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
 import type { TravelLogicParams } from './types'
 
 /**

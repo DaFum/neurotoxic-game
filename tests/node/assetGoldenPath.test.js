@@ -3,19 +3,19 @@ import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry'
+} from '../../src/utils/assets/assetModuleRegistry'
 import {
   purchaseChassis,
   installModule,
   startCrowdfund
-} from '../../src/context/assetActionCreators'
+} from '../../src/context/assets/assetActionCreators'
 import { advanceDay } from '../../src/context/actionCreators'
 import { mulberry32 } from '../../src/utils/seededRng'
-import { resolveCrowdfundProbability } from '../../src/utils/assetTicks'
+import { resolveCrowdfundProbability } from '../../src/utils/assets/assetTicks'
 
 /**
  * First rngSeed whose derived crowdfund roll resolves the campaign as wanted.

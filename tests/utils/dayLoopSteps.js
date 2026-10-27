@@ -21,7 +21,7 @@ import {
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
-import { getActiveAssetModifiers } from '../../src/utils/assetSelectors'
+import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors'
 import {
   calculateTravelCostsAndImpact,
   checkTravelResources
@@ -29,7 +29,7 @@ import {
 import { processHarmonyRegen } from '../../src/utils/arrivalUtils'
 import { calculateGigFinancials } from '../../src/utils/economy'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
-import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
+import { getTotalDailyObligations } from '../../src/utils/assets/assetSelectors'
 import {
   BALANCE_CONSTANTS,
   calculateFameGain,

@@ -18,7 +18,7 @@ import type {
 import type { GigModifiers } from '../../../../types'
 import type { FinancialBreakdownItem } from '../../../../types/economy'
 import { MERCH_PROFILE_VALUES, SORTED_MERCH_KEYS } from '../../constants'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../../assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../../assets/assetSelectors'
 import { isCultAudience } from '../../../socialThresholds'
 import type { AssetModifiers } from '../../../../types/assets'
 /**

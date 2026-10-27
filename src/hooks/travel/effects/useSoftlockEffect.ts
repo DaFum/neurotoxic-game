@@ -3,7 +3,7 @@ import { checkSoftlock } from '../../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
   getTotalDailyObligations
-} from '../../../utils/assetSelectors'
+} from '../../../utils/assets/assetSelectors'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { GAME_PHASES } from '../../../context/gameConstants'

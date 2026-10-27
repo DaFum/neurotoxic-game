@@ -1,4 +1,4 @@
-# src/utils/assetSections - Agent Instructions
+# src/utils/assets/assetSections - Agent Instructions
 
 ## Tourbus
 

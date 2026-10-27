@@ -6,7 +6,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { MODULE_REGISTRY } from '../../utils/assets/assetModuleRegistry'
 import { getModuleDescription } from './moduleDescription'
 import {
   getModulePoolForAsset,
@@ -14,7 +14,7 @@ import {
   selectAssetSlotsMap,
   type LockReason,
   type ModuleUnlockState
-} from '../../utils/assetSelectors'
+} from '../../utils/assets/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 import type { AssetConfirmModalProps } from '../../types/ui'

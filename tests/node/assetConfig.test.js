@@ -10,7 +10,7 @@ import {
   getNextChassisTier,
   REPAIR_COST_PER_POINT,
   UPGRADE_OVERHEAD
-} from '../../src/utils/assetConfig.ts'
+} from '../../src/utils/assets/assetConfig.ts'
 
 describe('buildDiyTier', () => {
   it('applies DIY multipliers', () => {

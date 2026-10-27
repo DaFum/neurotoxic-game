@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TourbusTrailerOverlay } from '../../src/components/assets/sections/TourbusTrailerOverlay'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry'
 import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({

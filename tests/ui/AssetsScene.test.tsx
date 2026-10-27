@@ -48,7 +48,7 @@ vi.mock('../../src/context/GameState', () => ({
     selector(mockState)
 }))
 
-vi.mock('../../src/utils/assetSelectors', () => ({
+vi.mock('../../src/utils/assets/assetSelectors', () => ({
   getTotalDailyObligations: () => 0,
   getTotalDebt: () => 0,
   hasActiveAssetAcquisition: (state: typeof mockState, kind: string): boolean =>

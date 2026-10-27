@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import {
   MODULE_REGISTRY,
   MODULE_PROMPTS
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 import {
   BANDHAUS_T1_SLOTS,
   BANDHAUS_T2_SLOTS,
   BANDHAUS_T3_SLOTS
-} from '../../src/utils/assetSections/bandhausConfig.ts'
+} from '../../src/utils/assets/assetSections/bandhausConfig.ts'
 
 describe('bandhaus modules registration', () => {
   it('registers exactly 16 bandhaus_chassis modules', () => {

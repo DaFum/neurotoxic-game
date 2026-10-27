@@ -6,9 +6,9 @@ import { LoanProfileModal } from './LoanProfileModal'
 import {
   calculateRefinanceFee,
   type LoanProfileId
-} from '../../utils/loanProfiles'
+} from '../../utils/assets/loanProfiles'
 import { finiteNumberOr } from '../../utils/gameState'
-import { LIABILITY_DEFAULT_DAYS } from '../../utils/assetConfig'
+import { LIABILITY_DEFAULT_DAYS } from '../../utils/assets/assetConfig'
 
 /**
  * Lightweight read-only list of every outstanding liability with the most

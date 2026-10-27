@@ -237,7 +237,7 @@ contract.
   `COMPLETE_ROADIE_MINIGAME` update gameplay state but leave scene changes to
   arrival/overlay callbacks.
 - **Bankruptcy uses total obligations.** Daily bankruptcy decisions consult
-  `getTotalDailyObligations(state)` (`src/utils/assetSelectors.ts`), including
+  `getTotalDailyObligations(state)` (`src/utils/assets/assetSelectors.ts`), including
   asset upkeep/revenue and liability payments, rather than relying on
   `calculateGuaranteedDailyCost` alone.
 - **The root `runSeed` is the single Expedition route seed owner.** The

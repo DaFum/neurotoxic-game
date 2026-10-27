@@ -311,7 +311,7 @@ import { calculateTravelExpenses } from './economy'
 import {
   getTotalDailyObligations,
   getActiveAssetModifiers
-} from './assetSelectors'
+} from './assets/assetSelectors'
 import type { GameState, SocialState } from '../types'
 
 /**

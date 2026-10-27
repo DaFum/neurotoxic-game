@@ -11,9 +11,9 @@ import {
   handleRefinanceLiability,
   handleStartCrowdfund,
   handleAssetFailedAction
-} from '../../src/context/reducers/assetReducer.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/context/reducers/assets/assetReducer.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 
 // MODULE_REGISTRY is a mutable shared module-scoped object. To prevent
 // pollution into other test files run in the same process, snapshot the full
@@ -391,6 +391,26 @@ test('handleInstallModule - rejects insufficient funds', () => {
     moduleId: 'test_mod'
   })
   assert.strictEqual(next, startState)
+})
+
+test('handleInstallModule - replayed install is a no-op and is not charged again', () => {
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+      }
+    ]
+  }
+  const payload = { assetId: 'a1', slotId: 's1', moduleId: 'test_mod' }
+
+  const installed = handleInstallModule(startState, payload)
+  const replayed = handleInstallModule(installed, payload)
+
+  assert.notStrictEqual(installed, startState)
+  assert.strictEqual(replayed, installed)
+  assert.strictEqual(replayed.player.money, installed.player.money)
 })
 
 test('handleUpgradeChassisTier - rejects insufficient funds', () => {

@@ -1,8 +1,8 @@
 import {
   getTotalDailyObligations,
   getActiveAssetModifiers
-} from './assetSelectors'
-import { getAssetSaleQuote } from './assetSelectors/assetSaleQuote'
+} from './assets/assetSelectors'
+import { getAssetSaleQuote } from './assets/assetSelectors/assetSaleQuote'
 import type { GameState, PlayerState, BandState, SocialState } from '../types'
 
 /**

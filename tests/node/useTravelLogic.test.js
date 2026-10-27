@@ -11,7 +11,7 @@ import {
   setupTravelScenario,
   resetTravelLogicMockState
 } from '../useTravelLogicTestUtils'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 
 const {
   mockCalculateTravelExpenses,

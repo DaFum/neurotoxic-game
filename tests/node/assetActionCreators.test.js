@@ -9,15 +9,15 @@ import {
   sellChassis,
   startCrowdfund,
   upgradeChassisTier
-} from '../../src/context/assetActionCreators.ts'
+} from '../../src/context/assets/assetActionCreators.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
 import { mulberry32 } from '../../src/utils/seededRng.ts'
-import { resolveCrowdfundProbability } from '../../src/utils/assetTicks.ts'
+import { resolveCrowdfundProbability } from '../../src/utils/assets/assetTicks.ts'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 
 // Snapshot the shared registries once and restore them after the suite so
 // per-test mutations (setupTourbusT1, registerTestModule) don't leak into

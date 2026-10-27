@@ -1,4 +1,4 @@
-import { getSlotZonePositionStyle } from '../../../utils/assetSections/slotLayout'
+import { getSlotZonePositionStyle } from '../../../utils/assets/assetSections/slotLayout'
 import { AssetSlotButton } from '../shared/AssetSlotButton'
 import type { AssetSlot, SlotType } from '../../../types/assets'
 

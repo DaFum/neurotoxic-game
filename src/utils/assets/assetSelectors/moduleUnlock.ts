@@ -1,7 +1,11 @@
-import type { BandState } from '../../types'
-import type { AssetModule, LongTermAsset, SlotType } from '../../types/assets'
+import type { BandState } from '../../../types'
+import type {
+  AssetModule,
+  LongTermAsset,
+  SlotType
+} from '../../../types/assets'
 import { getRegisteredModule, MODULE_REGISTRY } from '../assetModuleRegistry'
-import { isFiniteNumber } from '../finiteNumber'
+import { isFiniteNumber } from '../../finiteNumber'
 
 /**
  * State slices consumed by module unlock evaluation. Narrower than `GameState`

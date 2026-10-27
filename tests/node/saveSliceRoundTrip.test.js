@@ -17,7 +17,7 @@ import {
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
 import { createFixedClock } from '../../src/utils/clock'
 import { buildExpeditionMap } from '../../src/domain/expedition/map'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import { FLAGS } from '../../src/data/flags.registry'
 
 /**

@@ -8,7 +8,7 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   DAILY_UPDATE_MAX_RNG_ROLLS,
   RNG_BASE_BUFFER
-} from '../../src/utils/assetConfig'
+} from '../../src/utils/assets/assetConfig'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,

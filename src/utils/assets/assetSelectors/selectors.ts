@@ -1,5 +1,5 @@
-import type { GameState } from '../../types'
-import type { AssetSlot, LongTermAsset } from '../../types/assets'
+import type { GameState } from '../../../types'
+import type { AssetSlot, LongTermAsset } from '../../../types/assets'
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
 const assetsMapCache = new WeakMap<

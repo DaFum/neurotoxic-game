@@ -1,5 +1,5 @@
-import type { GameState, ToastPayload } from '../types/game'
-import type { BandMember } from '../types/band'
+import type { GameState, ToastPayload } from '../../types/game'
+import type { BandMember } from '../../types/band'
 import type {
   CrowdfundCampaign,
   Liability,
@@ -7,7 +7,7 @@ import type {
   AssetKind,
   RiskEventDescriptor,
   RiskEventType
-} from '../types/assets'
+} from '../../types/assets'
 import {
   getAssetTotalUpkeep,
   getAssetTotalDailyRevenue,
@@ -22,10 +22,10 @@ import {
   clampPlayerFame,
   finiteNumberOr,
   isEmptyObject
-} from './gameState'
+} from '../gameState'
 import { getRegisteredModule } from './assetModuleRegistry'
-import { clampUnit } from './numberUtils'
-import { pickIndex } from './selectionUtils'
+import { clampUnit } from '../numberUtils'
+import { pickIndex } from '../selectionUtils'
 import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY,
@@ -36,8 +36,8 @@ import {
 import {
   getExpeditionDayPolicy,
   settleExpeditionDailyObligation
-} from '../domain/expedition/loadout'
-import { buildDeterministicToastId } from '../context/reducers/toastSanitizers'
+} from '../../domain/expedition/loadout'
+import { buildDeterministicToastId } from '../../context/reducers/toastSanitizers'
 
 /**
  * Success probability for a crowdfund campaign, given current fame, scene

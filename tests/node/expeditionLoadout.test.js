@@ -25,7 +25,7 @@ import {
 import { deriveExpeditionPendingFailure } from '../../src/domain/expedition/failure'
 import { SONGS_BY_ID } from '../../src/data/songs'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { advanceDay } from '../../src/context/actionCreators'
@@ -160,7 +160,10 @@ describe('settleExpeditionMandatoryDebit', () => {
     const state = activeRun(4010, 4000) // 10 spendable
     // €200 charge, €50 credit -> available = 10 + 50 = 60. Paid = 60, waived = 140.
     // nextMoney = 4010 + 50 - 60 = 4000.
-    const result = settleExpeditionMandatoryDebit(state, { charge: 200, credit: 50 })
+    const result = settleExpeditionMandatoryDebit(state, {
+      charge: 200,
+      credit: 50
+    })
     assert.deepEqual(result, {
       nextMoney: 4000,
       paid: 60,
@@ -169,7 +172,10 @@ describe('settleExpeditionMandatoryDebit', () => {
 
     // €50 charge, €100 credit -> available = 10 + 100 = 110. Paid = 50, waived = 0.
     // nextMoney = 4010 + 100 - 50 = 4060.
-    const resultFullCredit = settleExpeditionMandatoryDebit(state, { charge: 50, credit: 100 })
+    const resultFullCredit = settleExpeditionMandatoryDebit(state, {
+      charge: 50,
+      credit: 100
+    })
     assert.deepEqual(resultFullCredit, {
       nextMoney: 4060,
       paid: 50,
@@ -179,7 +185,10 @@ describe('settleExpeditionMandatoryDebit', () => {
 
   it('handles malformed protectedCareerCash by making spendable cash 0 (only credit pays charge, nextMoney >= money)', () => {
     const state = activeRun(5000, Number.NaN)
-    const result = settleExpeditionMandatoryDebit(state, { charge: 200, credit: 50 })
+    const result = settleExpeditionMandatoryDebit(state, {
+      charge: 200,
+      credit: 50
+    })
     // Spendable cash is 0. available = 50. paid = 50, waived = 150.
     // nextMoney = 5000 + 50 - 50 = 5000.
     assert.deepEqual(result, {

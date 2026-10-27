@@ -1,4 +1,4 @@
-import type { AssetModule } from '../types/assets'
+import type { AssetModule } from '../../types/assets'
 
 /**
  * Bare registry stores — no section imports, no circular deps.

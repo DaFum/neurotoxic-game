@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
-import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
+import { WORKSHOP_SLOT_ZONES } from '../../../utils/assets/assetSections/workshopConfig'
 import { SlotZoneButtons } from './SlotZoneButtons'
 import type { LongTermAsset } from '../../../types/assets'
 

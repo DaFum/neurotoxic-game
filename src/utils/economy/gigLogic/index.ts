@@ -11,7 +11,7 @@ import {
   GLOBAL_PAYOUT_NERF,
   ZEALOTRY_PROMO_THRESHOLD
 } from '../constants'
-import { NEUTRAL_ASSET_MODIFIERS } from '../../assetSelectors'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../assets/assetSelectors'
 import { BALANCE_CONFIG } from '../../../config/balance'
 import type { AssetModifiers } from '../../../types/assets'
 import { getActiveDealBenefits } from '../../brandDealBenefits'

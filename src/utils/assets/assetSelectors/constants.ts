@@ -1,4 +1,4 @@
-import type { AssetBoni, AssetModifiers } from '../../types/assets'
+import type { AssetBoni, AssetModifiers } from '../../../types/assets'
 
 /**
  * The baseline immutable modifiers representing a neutral asset state.

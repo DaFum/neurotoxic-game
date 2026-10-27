@@ -20,7 +20,7 @@ import {
   calculateRefuelCost,
   shouldTriggerBankruptcy
 } from '../../utils/economy'
-import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
 import { getExpeditionNodeBookingLock } from './fame'

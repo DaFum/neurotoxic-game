@@ -6,13 +6,13 @@ import {
 } from '../../src/context/initialState.ts'
 import { handleUpdateBand } from '../../src/context/reducers/bandReducer.ts'
 import { handleUpdatePlayer } from '../../src/context/reducers/playerReducer.ts'
-import { handleInstallModule } from '../../src/context/reducers/assetReducer.ts'
+import { handleInstallModule } from '../../src/context/reducers/assets/assetReducer.ts'
 import {
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
-import { installModule } from '../../src/context/assetActionCreators.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
+import { installModule } from '../../src/context/assets/assetActionCreators.ts'
 import {
   sanitizeBand,
   sanitizePlayer

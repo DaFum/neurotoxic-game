@@ -7,10 +7,10 @@ import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { LoanProfileChoiceGrid } from './LoanProfileModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
-import { CHASSIS_CONFIG } from '../../utils/assetConfig'
-import type { LoanProfileId } from '../../utils/loanProfiles'
+import { CHASSIS_CONFIG } from '../../utils/assets/assetConfig'
+import type { LoanProfileId } from '../../utils/assets/loanProfiles'
 import { formatCurrency } from '../../utils/numberUtils'
-import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
+import { hasActiveAssetAcquisition } from '../../utils/assets/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type {
   AcquisitionMode,

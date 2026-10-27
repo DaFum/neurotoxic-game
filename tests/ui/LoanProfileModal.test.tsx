@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { LoanProfileModal } from '../../src/components/assets/LoanProfileModal'
-import { LOAN_PROFILES } from '../../src/utils/loanProfiles'
+import { LOAN_PROFILES } from '../../src/utils/assets/loanProfiles'
 import type { HTMLAttributes } from 'react'
 
 const profileLabels: Record<string, string> = {

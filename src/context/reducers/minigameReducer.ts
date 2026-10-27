@@ -32,7 +32,7 @@ import {
   calculateKabelsalatMinigameResult,
   calculateAmpCalibrationResult
 } from '../../utils/economy'
-import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'

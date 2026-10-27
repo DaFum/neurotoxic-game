@@ -1,9 +1,9 @@
 import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
-import type { GameAction, GameState } from '../types'
-import type { ChassisTier } from '../types/assets'
-import type { LoanProfileId } from '../utils/loanProfiles'
-import { ActionTypes } from './actionTypes'
+import type { GameAction, GameState } from '../../types'
+import type { ChassisTier } from '../../types/assets'
+import type { LoanProfileId } from '../../utils/assets/loanProfiles'
+import { ActionTypes } from '../actionTypes'
 import {
   purchaseChassis as purchaseChassisAction,
   upgradeChassisTier as upgradeChassisTierAction,
@@ -14,8 +14,8 @@ import {
   removeModule as removeModuleAction,
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
-import { isExpeditionChassisCommitmentLocked } from '../domain/expedition/buildCommitment'
-import type { GameDispatchActions } from './useGameDispatchActions'
+import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
+import type { GameDispatchActions } from '../useGameDispatchActions'
 
 /**
  * Long-term asset dispatch wrappers, sliced from {@link GameDispatchActions}.

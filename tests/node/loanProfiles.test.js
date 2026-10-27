@@ -5,7 +5,7 @@ import {
   LOAN_PROFILES,
   computeAmortization,
   isLoanProfileEligible
-} from '../../src/utils/loanProfiles.ts'
+} from '../../src/utils/assets/loanProfiles.ts'
 
 const readLocale = locale =>
   JSON.parse(readFileSync(`public/locales/${locale}/assets.json`, 'utf8'))

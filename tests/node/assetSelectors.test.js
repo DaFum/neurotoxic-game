@@ -11,11 +11,11 @@ import {
   getTotalDailyObligations,
   isModuleUnlocked,
   NEUTRAL_ASSET_MODIFIERS
-} from '../../src/utils/assetSelectors.ts'
+} from '../../src/utils/assets/assetSelectors.ts'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 
 const registrySnapshot = structuredClone(MODULE_REGISTRY)
 const promptsSnapshot = structuredClone(MODULE_PROMPTS)

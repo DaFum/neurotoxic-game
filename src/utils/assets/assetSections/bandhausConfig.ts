@@ -1,4 +1,4 @@
-import type { SlotType } from '../../types/assets'
+import type { SlotType } from '../../../types/assets'
 
 /**
  * Bandhaus tier-1 chassis slot types.

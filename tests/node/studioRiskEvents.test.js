@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 // Side-effect: registers all modules including studio modules
-import '../../src/utils/assetModuleRegistry.ts'
-import { rollAssetRiskEvents } from '../../src/utils/assetTicks.ts'
+import '../../src/utils/assets/assetModuleRegistry.ts'
+import { rollAssetRiskEvents } from '../../src/utils/assets/assetTicks.ts'
 
 /**
  * Builds a minimal GameState with one studio asset.

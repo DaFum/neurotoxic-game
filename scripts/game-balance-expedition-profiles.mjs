@@ -15,7 +15,7 @@ import { createUnlockExpeditionAscensionAction } from '../src/context/careerActi
 import {
   purchaseChassis,
   installModule
-} from '../src/context/assetActionCreators.ts'
+} from '../src/context/assets/assetActionCreators.ts'
 import { isCrewAvailable } from '../src/domain/expedition/crew.ts'
 import { EXPEDITION_CREW_BY_ID } from '../src/data/expedition/crew.ts'
 import {
@@ -43,7 +43,7 @@ import {
 import { calculateExpeditionCargoCapacity } from '../src/domain/expedition/cargo.ts'
 import { isExpeditionAscensionEligible } from '../src/domain/expedition/meta.ts'
 import { QUEST_EXPEDITION_META_UNLOCK } from '../src/data/questsConstants.ts'
-import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../src/utils/assets/assetModuleRegistry.ts'
 
 export const EXPEDITION_BALANCE_NAMESPACE = '#roguelite-expedition-v1'
 

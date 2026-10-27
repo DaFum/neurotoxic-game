@@ -10,7 +10,7 @@ import {
   handleRefinanceLiability,
   handleStartCrowdfund,
   handleAssetForeclosed
-} from '../../src/context/reducers/assetReducer.ts'
+} from '../../src/context/reducers/assets/assetReducer.ts'
 import {
   installModule,
   purchaseChassis,
@@ -18,14 +18,14 @@ import {
   repairChassis,
   startCrowdfund,
   upgradeChassisTier
-} from '../../src/context/assetActionCreators.ts'
-import { processCrowdfundTick } from '../../src/utils/assetTicks.ts'
+} from '../../src/context/assets/assetActionCreators.ts'
+import { processCrowdfundTick } from '../../src/utils/assets/assetTicks.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
-import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
 import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 
 const TEST_MODULE_ID = 'authority_test_mod'
 test.after(() => {

@@ -1,6 +1,6 @@
-import type { AssetModule } from '../../types/assets'
+import type { AssetModule } from '../../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
-import { FLAGS } from '../../data/flags.registry'
+import { FLAGS } from '../../../data/flags.registry'
 
 /**
  * Merch-workshop module catalogue registered into `MODULE_REGISTRY` on import.

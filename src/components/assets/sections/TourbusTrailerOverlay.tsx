@@ -3,7 +3,7 @@ import { getTrailerImagePrompt } from '../../../utils/imageGen'
 import type { LongTermAsset } from '../../../types/assets'
 import { useTranslation } from 'react-i18next'
 import { TourbusSlotButton } from './TourbusSlotButton'
-import { hasCompatibleModuleForSlot } from '../../../utils/assetSelectors/moduleUnlock'
+import { hasCompatibleModuleForSlot } from '../../../utils/assets/assetSelectors/moduleUnlock'
 
 interface Props {
   asset: LongTermAsset

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   MODULE_REGISTRY,
   MODULE_PROMPTS
-} from '../../src/utils/assetModuleRegistry.ts'
+} from '../../src/utils/assets/assetModuleRegistry.ts'
 
 describe('MODULE_REGISTRY invariants', () => {
   it('no module has self-referential addsSlots (anti-stacking)', () => {

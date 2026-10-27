@@ -30,10 +30,6 @@
   `provenance`, so the artifact reproduces a run without reading builder
   internals.
 
-## Script Format
-
-- The package is `"type": "module"`, so an ad-hoc script that uses `require()` must be named `.cjs` (see `scripts/benchmark-fast-paths.cjs`).
-
 ## Test Runners
 
 - `test:all` deliberately oversubscribes process-isolated `node:test` files to overlap Node/TSX startup latency, with a fixed cap to bound memory. Preserve explicit `NODE_TEST_CONCURRENCY` overrides and benchmark the same representative file cohort before changing the multiplier or cap.
@@ -47,7 +43,7 @@
 
 ## Reports and Provenance
 
-- Generated artifacts include `sourceFingerprint`, `generatorFingerprint`, `seedNamespace`, `runsPerScenario`, `workingTreeDirty`, and `artifactSchemaVersion`. Matching recomputed fingerprints are authoritative; a clean tree or reports-only commit is not required.
+- Matching recomputed fingerprints (`sourceFingerprint`, `generatorFingerprint`) are authoritative for generated artifacts; a clean tree or reports-only commit is not required.
 - `BALANCE_SOURCE_FILES` in `scripts/utils/balance-report-metadata.mjs` must include every source capable of changing report numbers, including RNG batching in `src/utils/crypto.ts` and the Expedition owners under `src/domain/expedition/` and `src/data/expedition/`. The v15 runtime-pacing gate validates captured playtest evidence against this hash, so an unhashed owner lets a stale cohort keep passing after the mechanic it measured has changed.
 - Changing `SIMULATION_CONSTANTS.daysPerRun`, `GLOBAL_PAYOUT_NERF` or `FAME_PROGRESS_CONSTANTS` invalidates the v14 acceptance bands. Re-run the v14 control calibration and re-derive `KPI_TARGETS`, the Fame-per-gig bands, the progression bands and the solvent-money caps in the same change; stale bands turn the v14 gates into checks against a horizon that no longer exists.
 - Derive verdict targets from live configuration. `MAX_GIG_NET` is applied after `GLOBAL_PAYOUT_NERF`; scale it with the nerf to preserve the same clipping threshold, or document intentional extra damping.

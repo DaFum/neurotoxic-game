@@ -9,7 +9,7 @@ import {
   calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
   getNextChassisTier
-} from '../../utils/assetConfig'
+} from '../../utils/assets/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'

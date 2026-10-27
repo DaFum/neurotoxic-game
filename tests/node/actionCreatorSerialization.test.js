@@ -11,7 +11,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import * as actionCreators from '../../src/context/actionCreators'
-import * as assetActionCreators from '../../src/context/assetActionCreators'
+import * as assetActionCreators from '../../src/context/assets/assetActionCreators'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 

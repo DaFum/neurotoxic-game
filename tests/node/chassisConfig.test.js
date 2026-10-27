@@ -1,26 +1,29 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CHASSIS_CONFIG, DIY_PRICE_MULT } from '../../src/utils/assetConfig.ts'
+import {
+  CHASSIS_CONFIG,
+  DIY_PRICE_MULT
+} from '../../src/utils/assets/assetConfig.ts'
 import {
   BANDHAUS_T1_SLOTS,
   BANDHAUS_T2_SLOTS,
   BANDHAUS_T3_SLOTS
-} from '../../src/utils/assetSections/bandhausConfig.ts'
+} from '../../src/utils/assets/assetSections/bandhausConfig.ts'
 import {
   STUDIO_T1_SLOTS,
   STUDIO_T2_SLOTS,
   STUDIO_T3_SLOTS
-} from '../../src/utils/assetSections/studioConfig.ts'
+} from '../../src/utils/assets/assetSections/studioConfig.ts'
 import {
   TOURBUS_T1_SLOTS,
   TOURBUS_T2_SLOTS,
   TOURBUS_T3_SLOTS
-} from '../../src/utils/assetSections/tourbusConfig.ts'
+} from '../../src/utils/assets/assetSections/tourbusConfig.ts'
 import {
   WORKSHOP_T1_SLOTS,
   WORKSHOP_T2_SLOTS,
   WORKSHOP_T3_SLOTS
-} from '../../src/utils/assetSections/workshopConfig.ts'
+} from '../../src/utils/assets/assetSections/workshopConfig.ts'
 
 const sections = [
   {

@@ -6,7 +6,7 @@ import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import * as crypto from '../../src/utils/crypto'
-import * as assetSelectors from '../../src/utils/assetSelectors'
+import * as assetSelectors from '../../src/utils/assets/assetSelectors'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 
@@ -28,7 +28,7 @@ vi.mock('../../src/utils/economy', () => ({
   shouldTriggerBankruptcy: vi.fn(),
   applySwingSmoothing: vi.fn(val => val)
 }))
-vi.mock('../../src/utils/assetSelectors', () => ({
+vi.mock('../../src/utils/assets/assetSelectors', () => ({
   getTotalDailyObligations: vi.fn(() => 0),
   getActiveAssetModifiers: vi.fn(() => ({
     fuelMultiplier: 1,

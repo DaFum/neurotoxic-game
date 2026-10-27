@@ -1,11 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 // Side-effect: registers all modules including studio modules
-import '../../src/utils/assetModuleRegistry.ts'
+import '../../src/utils/assets/assetModuleRegistry.ts'
 import {
   getAssetAggregateBoni,
   getActiveAssetModifiers
-} from '../../src/utils/assetSelectors.ts'
+} from '../../src/utils/assets/assetSelectors.ts'
 
 /**
  * Builds a minimal studio_chassis LongTermAsset with one slot per moduleId.

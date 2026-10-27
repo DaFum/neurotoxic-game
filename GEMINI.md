@@ -1,36 +1,120 @@
-# Neurotoxic - Agent Instructions
+<!-- GENERATED FROM /AGENTS.md — DO NOT EDIT DIRECTLY.
+     Edit /AGENTS.md, then run: pnpm run sync:agents
+     tests/node/agentInstructionsSync.test.js fails if these drift. -->
 
-## Tech Stack & Architecture
+# Neurotoxic — Agent Instructions
 
-- **Frameworks:** React 19.2.5, Pixi.js 8.17.1 (2D renderer), Tone.js 15.5.6 (WebAudio), Framer Motion 12.38.0.
-- **Styling:** Tailwind CSS v4.2.2.
-- **Tooling:** Vite 8.0.8, pnpm (strict requirement, NO npm/yarn). Node >= 22.13.0.
-- **TypeScript:** Strict CheckJS for `.js/.jsx`. No `@ts-nocheck` or `@ts-ignore` allowed.
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-## Workflow & Commands
+## 1. Think Before Coding
 
-- **Testing:**
-  - `pnpm run test` (fast local tests via node:test/Vitest)
-  - `pnpm run test:all` (Full PR gate)
-  - `pnpm run test:ui` (Vitest UI components)
-  - `pnpm run test:node` (Node logic tests)
-- **Quality Gates:** `pnpm run typecheck:core`, `pnpm run typecheck`, `pnpm run deadcode:check`.
-- **Formatting:** `pnpm run lint:fix` and `pnpm run format` (Prettier/ESLint).
-- **Dependencies:** Do NOT upgrade pinned dependencies without explicit discussion.
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-## Domain Invariants & Rules
+Before implementing:
 
-- **State Updates:** All updates must flow through action creators -> reducers. Reducers are the final authority and must re-clamp computed state using canonical helpers like `finiteNumberOr(value, fallback)` from `src/utils/gameStateUtils.ts`.
-- **Payload Sanitization:** State/asset sanitizers must use strict type guards (`isFiniteNumber(val)`) rather than `Number()` coercion, preventing improper acceptance of booleans, arrays, or strings.
-- **Recursive Traversals:** Must be cycle-safe (via `WeakSet`) and traverse nested properties under pre-frozen objects.
-- **Audio:** Use Tone.js exclusively via `audioEngine.ts`. No Howler.js or direct Tone.js reads for game timing (use `audioEngine.getGigTimeMs()`).
-- **Styling & Assets:** Do not hardcode colors. Use defined CSS variables (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`). The design theme is "Void Worship": Toxic Green on Void Black.
-- **Components:** No `.propTypes`. Use TypeScript interfaces or inline JSDoc/prop types.
-- **I18n:** Treat all user-facing strings as localized. Update both `public/locales/en/*.json` and `public/locales/de/*.json`. Use `formatCurrency(value, i18n.language)` for localized currency inside reducers/action creators.
-- **Symbols Index:** Do not hand-edit `symbols.json`. Run `pnpm run symbols:update` after exporting new APIs or changing type shapes.
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-## Simplicity & Surgical Changes
+## 2. Simplicity First
 
-- **Minimum Viable Code:** Write the minimum code needed to solve the problem. Do not add speculative "flexibility" or abstractions.
-- **Surgical Edits:** Touch only what you must. Do not refactor adjacent code or "improve" styling unless requested.
-- **Goal-Driven:** Define success criteria and write tests before implementing changes. A task is incomplete until verified by a test. Matches the test runner framework to the nearest existing tests (Vitest vs `node:test`).
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## Workflow
+
+- Before changing the repository, use the relevant installed workflow skill and read only the nested `AGENTS.md` files that govern the files you will touch. More-specific files override this one.
+- `docs/superpowers/plans/` and `docs/superpowers/specs/` are the binding contract for planned gate work. Read the task's own section before implementing it; a paraphrase drifts from the approved design and the drift surfaces in review, not in the tests.
+- Keep changes surgical. Do not refactor, reformat, upgrade dependencies, or remove pre-existing dead code outside the request.
+- Use `pnpm` only. Dependencies are pinned; discuss changes first. Never add Howler.js—the audio stack is Tone.js through `src/utils/audio/audioEngine.ts`.
+- `package.json#packageManager` is the sole pnpm version source; CI setup must derive and validate the version instead of duplicating it in workflow inputs or environment variables.
+
+## Critical Commands
+
+- Fast tests: `pnpm run test`; compact dot-reporter output: `pnpm run test:dot`; full PR gate: `pnpm run test:all`; UI: `pnpm run test:ui`; node: `pnpm run test:node`; perf/locale: `pnpm run test:additional`.
+- Type gates: `pnpm run typecheck:core`; reducer gate: `pnpm run typecheck`.
+- Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
+- Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.
+- To check or review the codebase, you can also use the `symbols.json` file. Run `pnpm run symbols:update` and then `pnpm run symbols:check`. Never manually edit or commit ignored `symbols.json` files.
+- Vitest node/api suites (`tests/api`, logic tests) need the node config: `pnpm exec vitest run --config vitest.config.node.js tests/<file>`. Server code under `api/` is type-checked by `pnpm run typecheck:server`; tooling tests by `pnpm run test:tooling`.
+- Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
+- After editing this file, run `pnpm run sync:agents`; `tests/node/agentInstructionsSync.test.js` fails when `.github/copilot-instructions.md` drifts from it.
+
+## Skills
+
+Process skills come first: per `using-superpowers`, start new work with `brainstorming` and bugs with `systematic-debugging` before any implementation skill.
+
+## Architecture Constraints
+
+- All state updates go through typed action creators. New actions update `actionTypes`, reducer handling, and `actionCreators` together. Creators sanitize raw payloads; reducers remain authoritative and reject hostile payloads or re-clamp computed state.
+- For persisted-number arithmetic, wrap the stored addend with `finiteNumberOr(value, fallback)` before any clamp. `??` and `typeof value === 'number'` do not reject `NaN`/`Infinity`.
+- State and payload sanitizers must enforce strict type narrowing using `isFiniteNumber(value)`; never use `Number(value)` coercion, which improperly accepts booleans, arrays, and numeric strings.
+- Recursive object utilities (freezers, traversers, sanitizers) must use `WeakSet<object>` for cycle safety and continue traversal through already-frozen parent objects.
+- When modifying imports/exports or barrel files, verify that `pnpm run deadcode:check` does not exceed `.ci/dead-code-budget.json`.
+- Use `audioEngine.getGigTimeMs()` for gameplay timing, never direct Tone.js time reads. Non-gameplay time (timestamps, cooldowns, persistence metadata) goes through the injected `IClock` from `src/utils/clock.ts` (`useClock()` in components, an `IClock` parameter defaulting to `systemClock` in pure helpers).
+- User-facing text uses namespaced i18n keys. Update matching English and German locale JSON together. Currency baked into dispatched toast options must use `formatCurrency(value, i18n.language, signDisplay)`.
+- `src/utils/unlockManager.ts` owns unlock persistence; `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not mix these responsibilities.
+- `CHASSIS_CONFIG` and `MODULE_REGISTRY` are the chassis/module sources of truth. Asset reducers and tick functions stay pure; generate UUIDs in action creators.
+
+## TypeScript and Style
+
+- CheckJS is strict for `.js/.jsx`; never add `@ts-nocheck`, `@ts-ignore`, or `any`. Use `unknown` at boundaries, `Object.hasOwn()` for untrusted keys, type-only imports, and guarded indexed reads.
+- Preserve explicit return types on public members/getters of exported classes.
+- Do not add `.propTypes`. Do not hardcode colors; use defined CSS variables or Pixi token helpers. Brand hex fallbacks come only from `src/utils/brandColors.ts`.
+- Commits use Conventional Commits.
+
+## High-Risk Gotchas
+
+- `currentGig` is the venue object. Region-keyed state must derive its city with `getRegionKeyForLocation`, never raw `player.location`.
+- `START_GIG` resets both `gigModifiers` and minigame state. Completion reducers must not change scenes; continuation callbacks own navigation.
+- `lastGigStats.score` is raw (thousands). Outcome gates use `accuracy` (0–100) plus `failed`.
+- Use typed `advanceDay(state)`; never dispatch payloadless `createAdvanceDayAction()`. Bankruptcy uses `getTotalDailyObligations(state)`.
+- Terminal endings (bankruptcy, career victory, stranded, event game over) are persisted as `terminalOutcome` (`src/types/game.d.ts`). Any path that ends in `GAMEOVER` must have it set (`handleChangeScene` derives one if missing), otherwise a reload resumes the run instead of the ending.
+- During an active expedition `protectedCareerCash` is not spendable. Spend gates, event conditions and option affordability use the spendable view from `src/domain/expedition/spendableCash.ts`; the cash floor (`enforceExpeditionCashFloor`) is the reducer backstop, not the only check.
+- Leaderboard ranking is honor-based. Stats syncs carry a monotonic `revision`; the API drops stale revisions. Do not add client-trust assumptions beyond that.

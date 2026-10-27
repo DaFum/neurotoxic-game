@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { ActionTypes } from '../../src/context/actionTypes'
-import { useAssetDispatchActions } from '../../src/context/useAssetDispatchActions'
-import { sellChassis } from '../../src/context/assetActionCreators'
+import { useAssetDispatchActions } from '../../src/context/assets/useAssetDispatchActions'
+import { sellChassis } from '../../src/context/assets/assetActionCreators'
 
-vi.mock('../../src/context/assetActionCreators', async importOriginal => {
-  const actual = await importOriginal()
-  return { ...actual, sellChassis: vi.fn() }
-})
+vi.mock(
+  '../../src/context/assets/assetActionCreators',
+  async importOriginal => {
+    const actual = await importOriginal()
+    return { ...actual, sellChassis: vi.fn() }
+  }
+)
 
 const renderAssetActions = () => {
   const dispatch = vi.fn()

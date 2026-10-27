@@ -1,11 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { SECTION_VIEWS } from '../../src/components/assets/sectionRegistry.ts'
-import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
-import { TOURBUS_SLOT_POSITIONS } from '../../src/utils/assetSections/tourbusConfig.ts'
-import { STUDIO_SLOT_ZONES } from '../../src/utils/assetSections/studioConfig.ts'
-import { BANDHAUS_SLOT_ZONES } from '../../src/utils/assetSections/bandhausConfig.ts'
-import { WORKSHOP_SLOT_ZONES } from '../../src/utils/assetSections/workshopConfig.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
+import { TOURBUS_SLOT_POSITIONS } from '../../src/utils/assets/assetSections/tourbusConfig.ts'
+import { STUDIO_SLOT_ZONES } from '../../src/utils/assets/assetSections/studioConfig.ts'
+import { BANDHAUS_SLOT_ZONES } from '../../src/utils/assets/assetSections/bandhausConfig.ts'
+import { WORKSHOP_SLOT_ZONES } from '../../src/utils/assets/assetSections/workshopConfig.ts'
 
 const ALL_SLOT_TYPES = [
   'tb_roof',

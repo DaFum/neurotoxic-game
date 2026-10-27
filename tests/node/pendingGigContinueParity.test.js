@@ -36,7 +36,7 @@ import {
   finiteNumberOr,
   readMemberStamina
 } from '../../src/utils/gameState'
-import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
+import { getTotalDailyObligations } from '../../src/utils/assets/assetSelectors'
 import { getRegionKeyForLocation } from '../../src/utils/mapUtils'
 import {
   createFameGainedQuestEvent,

@@ -154,11 +154,11 @@ Adds a daily obligation tracker used by the bankruptcy path. The main flow is al
 
 ### Critical
 
-- **Direct state mutation in tick** — `src/context/reducers/assetReducer.ts:203` — mutates a persisted liability in place, breaking reducer identity guarantees and allowing state updates to bypass the normal immutable transition contract.
+- **Direct state mutation in tick** — `src/context/reducers/assets/assetReducer.ts:203` — mutates a persisted liability in place, breaking reducer identity guarantees and allowing state updates to bypass the normal immutable transition contract.
 
 ### Important
 
-- **Unsafe persisted-number arithmetic** — `src/context/reducers/assetReducer.ts:198` — uses the stored balance without `finiteNumberOr`, so a corrupted non-finite save value can poison the computed balance.
+- **Unsafe persisted-number arithmetic** — `src/context/reducers/assets/assetReducer.ts:198` — uses the stored balance without `finiteNumberOr`, so a corrupted non-finite save value can poison the computed balance.
 
 ### Minor
 

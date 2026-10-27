@@ -118,7 +118,7 @@ vi.mock('../../src/ui/shared/Modal', () => ({
     ) : null
 }))
 
-vi.mock('../../src/utils/assetSelectors', () => ({
+vi.mock('../../src/utils/assets/assetSelectors', () => ({
   getModulePoolForAsset: mockGetModulePoolForAsset,
   selectAssetSlotsMap: (asset: LongTermAsset) => {
     const map = new Map()

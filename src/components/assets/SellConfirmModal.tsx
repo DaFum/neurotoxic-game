@@ -7,7 +7,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { getAssetSaleQuote } from '../../utils/assetSelectors'
+import { getAssetSaleQuote } from '../../utils/assets/assetSelectors'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**

@@ -30,7 +30,7 @@ import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
-import { useAssetDispatchActions } from './useAssetDispatchActions'
+import { useAssetDispatchActions } from './assets/useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
@@ -110,7 +110,7 @@ import {
   purchaseChassis as purchaseChassisAction,
   installModule as installModuleAction,
   startCrowdfund as startCrowdfundAction
-} from './assetActionCreators'
+} from './assets/assetActionCreators'
 import type { ToastType } from '../types/callbacks'
 
 type BaseGameDispatchActions = {
@@ -269,7 +269,7 @@ type BaseGameDispatchActions = {
   repairChassis: (assetId: string) => void
   refinanceLiability: (
     liabilityId: string,
-    loanProfileId: import('../utils/loanProfiles').LoanProfileId
+    loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId
   ) => void
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
   removeModule: (assetId: string, slotId: string) => void
