@@ -33,6 +33,7 @@ import {
   isStashFullFor
 } from '../../utils/contrabandStashUtils'
 import { QuestEvents } from '../../utils/questProgress'
+import { createHarmonyChangedQuestEvent } from '../../quests/producers/gigQuestEvents'
 import {
   createItemUsedQuestEvent,
   createItemCraftedQuestEvent
@@ -813,7 +814,8 @@ const handleHoldBandMeeting = (state: GameState): GameState => {
     getActiveAssetModifiers(state.assets ?? []).trainingCostMultiplier
   )
   if (getExpeditionSpendableCash(state) < cost) return state
-  return {
+  const nextHarmony = clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN)
+  const paid: GameState = {
     ...state,
     player: {
       ...state.player,
@@ -821,9 +823,18 @@ const handleHoldBandMeeting = (state: GameState): GameState => {
     },
     band: {
       ...state.band,
-      harmony: clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN)
+      harmony: nextHarmony
     }
   }
+  // Harmony-threshold quests only advance on this event, so a paid meeting
+  // that reaches a target must report the applied delta and resulting value.
+  return QuestEvents.emit(
+    paid,
+    createHarmonyChangedQuestEvent({
+      amount: nextHarmony - prevHarmony,
+      newHarmony: nextHarmony
+    })
+  )
 }
 
 /**
