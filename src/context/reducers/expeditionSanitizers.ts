@@ -49,6 +49,7 @@ import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
+import { materializeExpeditionCargo } from '../../domain/expedition/cargo'
 import {
   deriveExpeditionDoubleDownOffer,
   readExpeditionSignalStep,
@@ -1045,7 +1046,12 @@ export const sanitizeExpeditionState = (
     activeObligations: sanitizedObligations,
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
-      : {}),
+      : // An older active save never stored its cargo; deriving it once here
+        // gives every reader (Authority exits, archive claims, stash, merch)
+        // the same committed manifest instead of a per-consumer fallback.
+        status === 'active' && loadout
+        ? { cargo: materializeExpeditionCargo(loadout) }
+        : {}),
     ...(value.technicalCondition !== undefined
       ? {
           technicalCondition: sanitizeExpeditionTechnicalCondition(

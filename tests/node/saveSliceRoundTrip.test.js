@@ -231,6 +231,16 @@ const buildPopulatedState = () => {
         protectedCareerCash: 250
       }
     },
+    // START materializes the cargo from the loadout, so a persisted active run
+    // carries it; a save without one is derived on load (#3394) and would not
+    // read as stable here.
+    cargo: {
+      spareParts: 2,
+      supplies: 3,
+      technicalGearItemIds: ['hq_inst_guitar_custom'],
+      merch: [{ inventoryKey: 'shirts', quantity: 10 }],
+      contraband: [{ stashKey: 'stash_a', instanceId: 'inst_1', stacks: 2 }]
+    },
     startingMoney: 4200,
     startingFame: 340,
     protectedCareerCash: 250,
