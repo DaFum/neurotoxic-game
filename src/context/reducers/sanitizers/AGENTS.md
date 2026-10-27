@@ -11,9 +11,3 @@
 - Legacy-key migrations in sanitizers (e.g. `energy → catering` in `sanitizeGigModifiers`) must only apply when the save lacks the current key — the current key always wins over a stale alias.
 - `sanitizePlayer`/`sanitizeBand` own value clamping on load (a direct `LOAD_GAME` bypasses `saveValidator.ts`). The validator's job is type/shape rejection; it still carries legacy in-place clamps (player money and non-negative counters, van condition/breakdown chance, member mood/stamina, band harmony, social counters), but those are not authoritative. Clamp new persisted numeric fields in the sanitizer, never add new clamps to the validator.
 - Gig-modifier keys have one whitelist, `sanitizeGigModifierUpdates` (`stateSanitizers.ts`), shared by the `SET_GIG_MODIFIERS` creator, `gigReducer` and `sanitizeGigModifiers`. A runtime flag such as `damaged_gear` must be added there, never to a second list.
-
-## Asset sanitizers (`assetSanitizers.ts`)
-
-- `assetSanitizers.ts` enforces referential integrity: orphan liabilities and orphan `addedByModuleId` slots are dropped on load. The `VALID_SLOT_TYPES` allow-list mirrors the `SlotType` union (TS erases it at runtime) and is validated before any cast.
-- Crowdfund sanitizer clamps `plannedSuccessRoll` into `[0, 1]` and `plannedSuccessProbability` into `[0.05, 0.95]` (default `0.5` for legacy saves that predate the field). Add equivalent clamps for any new probability fields.
-- `sanitizeRngSeed` and `sanitizeRunSeed` share one body: an unsigned 32-bit integer (`>>> 0`) so `mulberry32` sees a valid UInt32 seed even on saves from a build that wrote signed values. Their `getSecureRandomUint32()` fallback for missing/corrupt seeds is a deliberate purity exception — a fixed constant would give every recovered save the same RNG timeline.
