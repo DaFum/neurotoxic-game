@@ -12,6 +12,7 @@ import {
 import { getRegionKeyForLocation, normalizeVenueId } from '../../utils/mapUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
+import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import type {
   GameState,
   Venue,
@@ -130,12 +131,14 @@ export const usePostGigDerivations = ({
         ? undefined
         : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
 
+    // During a Tour only the packed manifest can be sold, including for an
+    // older save without stored cargo; the Career inventory is the fallback
+    // only outside a run.
     const effectiveInventory: Record<string, number> = {}
-    if (
-      expedition?.status === 'active' &&
-      Array.isArray(expedition.cargo?.merch)
-    ) {
-      for (const item of expedition.cargo.merch) {
+    if (expedition?.status === 'active') {
+      const activeMerch =
+        resolveActiveExpeditionCargo({ expedition })?.merch ?? []
+      for (const item of activeMerch) {
         if (
           item &&
           typeof item.inventoryKey === 'string' &&
@@ -187,8 +190,7 @@ export const usePostGigDerivations = ({
     gigContext,
     assetModifiers,
     gigRewardMultiplier,
-    expedition?.status,
-    expedition?.cargo?.merch
+    expedition
   ])
 
   useEffect(() => {

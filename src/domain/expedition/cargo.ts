@@ -171,14 +171,14 @@ export const materializeExpeditionCargo = (
  * manifest. Persist the returned value when a consumer changes it.
  */
 export const resolveActiveExpeditionCargo = (
-  state: GameState
+  state: Pick<GameState, 'expedition'>
 ): ExpeditionCargoState | null => {
   if (state.expedition?.status !== 'active') return null
   if (state.expedition.cargo && typeof state.expedition.cargo === 'object') {
     return state.expedition.cargo
   }
   return state.expedition.loadout
-    ? materializeExpeditionCargo(state.expedition.loadout, state)
+    ? materializeExpeditionCargo(state.expedition.loadout)
     : null
 }
 

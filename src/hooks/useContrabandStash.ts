@@ -6,6 +6,7 @@ import {
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
+import { resolveActiveExpeditionCargo } from '../domain/expedition/cargo'
 import type { ContrabandStashItem, StashItem } from '../types'
 import { useDisclosure } from './useDisclosure'
 
@@ -15,10 +16,15 @@ import { useDisclosure } from './useDisclosure'
  */
 export const useContrabandStash = () => {
   const band = useGameSelector(state => state.band)
-  const packedContraband = useGameSelector(state =>
-    state.expedition?.status === 'active'
-      ? (state.expedition.cargo?.contraband ?? [])
-      : null
+  const expedition = useGameSelector(state => state.expedition)
+  // The effective cargo also covers an older active save that never stored
+  // one; an active run whose cargo cannot be resolved shows nothing usable.
+  const packedContraband = useMemo(
+    () =>
+      expedition?.status === 'active'
+        ? (resolveActiveExpeditionCargo({ expedition })?.contraband ?? [])
+        : null,
+    [expedition]
   )
   const { useContraband: dispatchUseContraband, addToast } = useGameActions()
   const {

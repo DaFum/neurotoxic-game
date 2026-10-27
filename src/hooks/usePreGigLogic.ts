@@ -14,6 +14,7 @@ import { canStartExpeditionPreGig } from '../domain/expedition/condition'
 import { isExpeditionCommitmentFrozen } from '../domain/expedition/buildCommitment'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { EXPEDITION_MAX_SETLIST_SONGS } from '../domain/expedition/loadout'
+import { resolveActiveExpeditionCargo } from '../domain/expedition/cargo'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 
@@ -92,12 +93,11 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const merchInventory = useMemo(() => {
     if (!isExpeditionActive) return band?.inventory ?? {}
     return Object.fromEntries(
-      (expedition?.cargo?.merch ?? []).map(({ inventoryKey, quantity }) => [
-        inventoryKey,
-        quantity
-      ])
+      (resolveActiveExpeditionCargo({ expedition })?.merch ?? []).map(
+        ({ inventoryKey, quantity }) => [inventoryKey, quantity]
+      )
     )
-  }, [band?.inventory, expedition?.cargo?.merch, isExpeditionActive])
+  }, [band?.inventory, expedition, isExpeditionActive])
   // ⚡ BOLT OPTIMIZATION: Eliminate root GameState selector subscription.
   // Why: Subscribing to full GameState via `state => state` causes the pre-gig scene to re-render on EVERY state update across the entire app (ticks, toasts, chatter).
   // Impact: Prevents unnecessary component re-renders when unrelated store slices update during pre-gig setup.
