@@ -272,6 +272,101 @@ describe('useRhythmGameScoring', () => {
     }
   })
 
+  test('composes the physics drum multiplier with equipment performance (#3386)', () => {
+    gameStateRef.current.modifiers = { drumMultiplier: 2 }
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: { drumMultiplier: 1.5, crowdDecay: 1.0 },
+        contextActions
+      })
+    )
+    act(() => {
+      result.current.handleHit(1)
+    })
+    expect(gameStateRef.current.score).toBe(300)
+  })
+
+  test('awards 180 for physics 1.5x and equipment 1.2x despite float noise (#3386)', () => {
+    gameStateRef.current.modifiers = { drumMultiplier: 1.5 }
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: { drumMultiplier: 1.2, crowdDecay: 1.0 },
+        contextActions
+      })
+    )
+    act(() => {
+      result.current.handleHit(1)
+    })
+    expect(gameStateRef.current.score).toBe(180)
+  })
+
+  test('applies the flat hit-window bonus once, already inside the lane window (#3388)', () => {
+    gameStateRef.current.modifiers = { hitWindowBonus: 20 }
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: { crowdDecay: 1.0 },
+        contextActions
+      })
+    )
+    act(() => {
+      result.current.handleHit(0)
+    })
+    expect(mockRhythmUtils.checkHit).toHaveBeenLastCalledWith(
+      gameStateRef.current.notes,
+      0,
+      1000,
+      100
+    )
+  })
+
+  test('exposes the effective lane window used for note expiry (#3389)', () => {
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: {
+          tempo: 0.5,
+          guitarDifficulty: 0.85,
+          timingWindowMultiplier: 1,
+          crowdDecay: 1.0
+        },
+        contextActions
+      })
+    )
+    // Guitar: 100 * 1.5 / 0.85 (difficulty floor permitting); bass has no divisor.
+    expect(result.current.getLaneHitWindow(2)).toBeCloseTo(150)
+    expect(result.current.getLaneHitWindow(0)).toBeGreaterThan(150)
+  })
+
+  test('registers a settler that charges every unhit note as a miss (#3387)', () => {
+    gameStateRef.current.notes = [
+      { time: 100, laneIndex: 0, hit: false, visible: true },
+      { time: 200, laneIndex: 1, hit: true, visible: false },
+      { time: 300, laneIndex: 2, hit: false, visible: true }
+    ]
+    gameStateRef.current.nextMissCheckIndex = 0
+    renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: { crowdDecay: 1.0 },
+        contextActions
+      })
+    )
+    act(() => {
+      gameStateRef.current.settleUnhitNotes()
+    })
+    expect(gameStateRef.current.stats.misses).toBe(2)
+    expect(gameStateRef.current.notes.every(n => !n.visible)).toBe(true)
+    expect(gameStateRef.current.nextMissCheckIndex).toBe(3)
+  })
+
   test('initializes and handles various hit/miss scenarios efficiently', () => {
     const { result, unmount } = renderHook(() =>
       useRhythmGameScoring({

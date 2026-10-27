@@ -167,6 +167,55 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
     })
 
+    it('keeps the accepted negotiated per-gig payout, bounded and catalog-owned', () => {
+      const base = BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.perGig
+      const accept = offer =>
+        handleUpdateSocial(baseState, {
+          activeDeals: [{ id: 'energy_drink_cx', remainingGigs: 3, offer }]
+        }).social.activeDeals[0]
+
+      assert.equal(accept({ perGig: 55 }).offer.perGig, 55)
+      assert.equal(
+        accept({ perGig: 55 }).offer.upfront,
+        BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.upfront
+      )
+      // Hostile terms fall back to, or are capped by, the catalog payout.
+      assert.equal(accept({ perGig: 1e9 }).offer.perGig, base * 2)
+      assert.equal(accept({ perGig: NaN }).offer.perGig, base)
+      assert.equal(accept({ perGig: '9999' }).offer.perGig, base)
+      assert.equal(accept(undefined).offer.perGig, base)
+      assert.equal(accept({ perGig: -5 }).offer.perGig, 0)
+      assert.equal(accept({ perGig: 55.9 }).offer.perGig, 55)
+      // An accessor must never run on untrusted input.
+      let accessorRead = false
+      const hostile = {
+        get perGig() {
+          accessorRead = true
+          return 9999
+        }
+      }
+      assert.equal(accept(hostile).offer.perGig, base)
+      assert.equal(accessorRead, false)
+    })
+
+    it('never runs a non-enumerable offer accessor on a deal payload', () => {
+      let getterCalls = 0
+      const deal = { id: 'energy_drink_cx', remainingGigs: 3 }
+      Object.defineProperty(deal, 'offer', {
+        enumerable: false,
+        get: () => {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+      const next = handleUpdateSocial(baseState, { activeDeals: [deal] })
+      assert.equal(getterCalls, 0)
+      assert.equal(
+        next.social.activeDeals[0].offer.perGig,
+        BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.perGig
+      )
+    })
+
     it('should return unchanged state if payload is not an object/function', () => {
       const nextState = handleUpdateSocial(baseState, 'string_payload')
       assert.strictEqual(nextState, baseState)
@@ -280,7 +329,11 @@ describe('socialReducer', () => {
       const stored = nextState.social.activeDeals[0]
       assert.strictEqual(stored.remainingGigs, 2)
       assert.strictEqual(stored.type, registryDeal.type)
-      assert.deepStrictEqual(stored.offer, registryDeal.offer)
+      // Only the per-gig payout is earned progress, and a forged one is capped.
+      assert.deepStrictEqual(stored.offer, {
+        ...registryDeal.offer,
+        perGig: registryDeal.offer.perGig * 2
+      })
       assert.strictEqual(Object.hasOwn(stored, 'injected'), false)
     })
   })

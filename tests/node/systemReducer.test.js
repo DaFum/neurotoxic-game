@@ -918,7 +918,9 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(deal.id, 'energy_drink_cx')
       assert.equal(deal.remainingGigs, 3)
       assert.equal(deal.type, 'SPONSORSHIP')
-      assert.equal(deal.offer.perGig, 50)
+      // The earned per-gig payout survives a load, capped at twice the
+      // catalog value so a tampered blob cannot mint money (#3385).
+      assert.equal(deal.offer.perGig, 100)
     }
   )
 

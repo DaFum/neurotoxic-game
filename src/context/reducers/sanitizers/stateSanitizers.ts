@@ -16,6 +16,7 @@ import { isRecordedAppliedValueValid } from '../../../utils/contrabandEffects'
 import { EVENTS_DB } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
+import { resolveActiveBrandDeal } from '../../../utils/brandDealLogic'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
 import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
@@ -1471,12 +1472,9 @@ export const sanitizeSocial = (value: unknown): SocialState => {
         if (!registryDeal) {
           return []
         }
-        return [
-          {
-            ...registryDeal,
-            remainingGigs
-          }
-        ]
+        // The earned per-gig payout (variant, negotiation) is the one term
+        // that is player progress rather than catalog data.
+        return [resolveActiveBrandDeal(registryDeal, remainingGigs, deal)]
       }
     )
   }

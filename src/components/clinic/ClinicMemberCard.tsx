@@ -1,6 +1,7 @@
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
 import { useState } from 'react'
@@ -61,8 +62,9 @@ export const ClinicMemberCard = ({
   )
   const hasGraft = hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
+  // Same fallback as the reducer: an upgraded `staminaMax` raises the ceiling.
   const isFullyHealed =
-    member.stamina >= 100 &&
+    member.stamina >= finiteNumberOr(member.staminaMax, 100) &&
     (CLINIC_CONFIG.HEAL_MOOD_GAIN <= 0 || member.mood >= 100)
   const missingMemberReason = !memberId
     ? t('ui:clinic.invalidMember', {

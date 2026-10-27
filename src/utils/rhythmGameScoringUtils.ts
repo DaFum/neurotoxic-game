@@ -73,6 +73,35 @@ export const calculateDynamicHitWindow = (
 }
 
 /**
+ * Effective hit window of one lane for the live performance.
+ *
+ * @param laneHitWindow - The lane's initialized window. Audio init has already
+ * folded the flat harmony, damaged-gear and Soundcheck adjustments into it, so
+ * they must not be applied again here.
+ * @param laneIndex - Lane the window belongs to.
+ * @param performance - Tempo (Neuro Overclock) bonus fraction, finale timing
+ * multiplier and guitar difficulty.
+ * @returns Hit window in milliseconds. Hit detection and note expiry share it.
+ */
+export const resolveLaneHitWindow = (
+  laneHitWindow: number,
+  laneIndex: number,
+  performance: {
+    tempoBonus: number
+    timingWindowMultiplier: number
+    guitarDifficulty: number
+  }
+): number =>
+  calculateDynamicHitWindow(
+    laneHitWindow *
+      (1 + performance.tempoBonus) *
+      performance.timingWindowMultiplier,
+    0,
+    laneIndex,
+    performance.guitarDifficulty
+  )
+
+/**
  * Resolves base note points before combo and toxic/corruption multipliers.
  *
  * @param laneIndex - Lane that received the hit.

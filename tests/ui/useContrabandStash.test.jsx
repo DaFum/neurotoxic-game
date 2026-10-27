@@ -45,6 +45,7 @@ describe('useContrabandStash', () => {
         instanceId: 'item1',
         type: 'consumable',
         effectType: 'stamina',
+        stacks: 5,
         name: 'Energy Drink'
       },
       c_guitar_strings: {
@@ -85,6 +86,85 @@ describe('useContrabandStash', () => {
       Object.values(defaultBand.stash)
     )
     expect(result.current.stashProps.members).toEqual(defaultBand.members)
+  })
+
+  it('lists only the packed cargo during an active Expedition', () => {
+    const mockState = {
+      band: defaultBand,
+      expedition: {
+        status: 'active',
+        cargo: {
+          contraband: [
+            { stashKey: 'c_energy_drink', instanceId: 'item1', stacks: 1 }
+          ]
+        }
+      },
+      useContraband: mockUseContraband,
+      addToast: mockAddToast
+    }
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
+    const { result } = renderHook(() => useContrabandStash())
+    expect(result.current.stashProps.stash.map(item => item.id)).toEqual([
+      'c_energy_drink'
+    ])
+    // Owned 5, packed 1: the list shows what can actually be used.
+    expect(result.current.stashProps.stash[0].stacks).toBe(1)
+  })
+
+  it('hides and refuses an item whose packed instance differs from the owned one', () => {
+    const mockState = {
+      band: defaultBand,
+      expedition: {
+        status: 'active',
+        cargo: {
+          contraband: [
+            { stashKey: 'c_energy_drink', instanceId: 'other', stacks: 1 }
+          ]
+        }
+      },
+      useContraband: mockUseContraband,
+      addToast: mockAddToast
+    }
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
+    const { result } = renderHook(() => useContrabandStash())
+    expect(result.current.stashProps.stash).toEqual([])
+    act(() => {
+      result.current.stashProps.handleUseItem(
+        'item1',
+        defaultBand.stash.c_energy_drink
+      )
+    })
+    expect(mockUseContraband).not.toHaveBeenCalled()
+  })
+
+  it('lists loadout-packed items for an older active save without cargo', () => {
+    const mockState = {
+      band: defaultBand,
+      expedition: {
+        status: 'active',
+        loadout: {
+          build: {
+            contraband: [
+              { stashKey: 'c_energy_drink', instanceId: 'item1', stacks: 2 }
+            ]
+          }
+        }
+      },
+      useContraband: mockUseContraband,
+      addToast: mockAddToast
+    }
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
+    const { result } = renderHook(() => useContrabandStash())
+    expect(result.current.stashProps.stash.map(item => item.id)).toEqual([
+      'c_energy_drink'
+    ])
+    expect(result.current.stashProps.stash[0].stacks).toBe(2)
   })
 
   it('toggles stash visibility with openStash and closeStash', () => {

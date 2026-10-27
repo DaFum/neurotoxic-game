@@ -6,6 +6,7 @@ import {
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
+import { resolveActiveExpeditionCargo } from '../domain/expedition/cargo'
 import type { ContrabandStashItem, StashItem } from '../types'
 import { useDisclosure } from './useDisclosure'
 
@@ -15,6 +16,16 @@ import { useDisclosure } from './useDisclosure'
  */
 export const useContrabandStash = () => {
   const band = useGameSelector(state => state.band)
+  const expedition = useGameSelector(state => state.expedition)
+  // The effective cargo also covers an older active save that never stored
+  // one; an active run whose cargo cannot be resolved shows nothing usable.
+  const packedContraband = useMemo(
+    () =>
+      expedition?.status === 'active'
+        ? (resolveActiveExpeditionCargo({ expedition })?.contraband ?? [])
+        : null,
+    [expedition]
+  )
   const { useContraband: dispatchUseContraband, addToast } = useGameActions()
   const {
     isOpen: showStash,
@@ -24,10 +35,21 @@ export const useContrabandStash = () => {
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])
 
-  const stashArray = useMemo<StashItem[]>(
-    () => Object.values(band.stash ?? {}) as StashItem[],
-    [band.stash]
-  )
+  // During a Tour only the committed cargo is usable, so only it is listed.
+  const stashArray = useMemo<StashItem[]>(() => {
+    const items = Object.values(band.stash ?? {}) as StashItem[]
+    if (packedContraband === null) return items
+    // Show the packed stack count, not the owned one: only that many can be used.
+    return items.flatMap(item => {
+      const packed = packedContraband.find(
+        entry =>
+          entry.stashKey === item.id &&
+          entry.stacks > 0 &&
+          (entry.instanceId === null || entry.instanceId === item.instanceId)
+      )
+      return packed ? [{ ...item, stacks: packed.stacks }] : []
+    })
+  }, [band.stash, packedContraband])
 
   const handleUseItem = useCallback(
     (instanceId: string, item: ContrabandStashItem) => {
@@ -67,7 +89,18 @@ export const useContrabandStash = () => {
       const entry = Object.hasOwn(stash, item.id)
         ? (stash[item.id] as Record<string, unknown> | undefined)
         : undefined
+      // During a Tour the reducer also needs a packed entry for this exact
+      // instance (a null packed instance matches any), so predict that too.
+      const isPacked =
+        packedContraband === null ||
+        packedContraband.some(
+          packed =>
+            packed.stashKey === item.id &&
+            packed.stacks > 0 &&
+            (packed.instanceId === null || packed.instanceId === instanceId)
+        )
       const willApply =
+        isPacked &&
         entry != null &&
         (entry.instanceId === undefined || entry.instanceId === instanceId) &&
         entry.applied !== true
@@ -86,7 +119,14 @@ export const useContrabandStash = () => {
       const message = getStashItemUseMessage(item, t)
       addToast(t(message.key, message.options), 'success')
     },
-    [band?.stash, dispatchUseContraband, selectedMember, addToast, t]
+    [
+      band?.stash,
+      packedContraband,
+      dispatchUseContraband,
+      selectedMember,
+      addToast,
+      t
+    ]
   )
 
   return {

@@ -120,6 +120,71 @@ describe('usePostGigDerivations', () => {
     )
   })
 
+  it('bounds sellable stock by the loadout manifest for an older active save without cargo', () => {
+    const legacyExpedition = {
+      status: 'active',
+      loadout: { build: { merch: [{ inventoryKey: 'shirts', quantity: 3 }] } }
+    } as unknown as import('../../../src/types').GameState['expedition']
+    renderHook(() =>
+      usePostGigDerivations({
+        ...defaultProps,
+        band: {
+          inventory: { shirts: 10 },
+          merchPrices: {}
+        } as unknown as BandState,
+        expedition: legacyExpedition
+      })
+    )
+    expect(
+      vi.mocked(postGigUtils.deriveFinancials).mock.calls.at(-1)?.[0]
+        .bandInventory
+    ).toEqual({ shirts: 3 })
+  })
+
+  it('caps sellable stock by the owned inventory when the manifest exceeds it', () => {
+    renderHook(() =>
+      usePostGigDerivations({
+        ...defaultProps,
+        band: {
+          inventory: { shirts: 2 },
+          merchPrices: {}
+        } as unknown as BandState,
+        expedition: {
+          status: 'active',
+          cargo: {
+            merch: [
+              { inventoryKey: 'shirts', quantity: 5 },
+              { inventoryKey: 'posters', quantity: 4 }
+            ]
+          }
+        } as unknown as import('../../../src/types').GameState['expedition']
+      })
+    )
+    expect(
+      vi.mocked(postGigUtils.deriveFinancials).mock.calls.at(-1)?.[0]
+        .bandInventory
+    ).toEqual({ shirts: 2, posters: 0 })
+  })
+
+  it('offers no Career stock during a Tour whose cargo cannot be resolved', () => {
+    renderHook(() =>
+      usePostGigDerivations({
+        ...defaultProps,
+        band: {
+          inventory: { shirts: 10 },
+          merchPrices: {}
+        } as unknown as BandState,
+        expedition: {
+          status: 'active'
+        } as unknown as import('../../../src/types').GameState['expedition']
+      })
+    )
+    expect(
+      vi.mocked(postGigUtils.deriveFinancials).mock.calls.at(-1)?.[0]
+        .bandInventory
+    ).toEqual({})
+  })
+
   it('does not trigger events if currentGig is null', () => {
     renderHook(() =>
       usePostGigDerivations({ ...defaultProps, currentGig: null })

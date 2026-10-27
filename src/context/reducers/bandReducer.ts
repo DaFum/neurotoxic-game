@@ -33,6 +33,7 @@ import {
   isStashFullFor
 } from '../../utils/contrabandStashUtils'
 import { QuestEvents } from '../../utils/questProgress'
+import { createHarmonyChangedQuestEvent } from '../../quests/producers/gigQuestEvents'
 import {
   createItemUsedQuestEvent,
   createItemCraftedQuestEvent
@@ -44,6 +45,7 @@ import {
 } from '../../data/inventoryItems'
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { resolveMerchRestock } from '../../utils/merchUtils'
 import {
@@ -703,6 +705,19 @@ export const handleUseContraband = (
   if (item.applied === true) return state
   const itemKey = contrabandId
 
+  // During a Tour only the committed, still-packed cargo is usable; items left
+  // at HQ or surrendered to Authority stay out of reach.
+  const isActiveRun = state.expedition?.status === 'active'
+  const activeCargo = resolveActiveExpeditionCargo(state)
+  const packed = activeCargo?.contraband ?? []
+  const packedIndex = packed.findIndex(
+    entry =>
+      entry.stashKey === contrabandId &&
+      entry.stacks > 0 &&
+      (entry.instanceId === null || entry.instanceId === instanceId)
+  )
+  if (isActiveRun && packedIndex === -1) return state
+
   const newBand = applyContrabandEffect(state.band, item, memberId)
   if (!newBand) return state
 
@@ -719,6 +734,22 @@ export const handleUseContraband = (
   }
 
   newBand.stash = newStash
+  const cargo = activeCargo
+  if (isActiveRun && cargo && item.type === 'consumable') {
+    const nextPacked = packed
+      .map((entry, index) =>
+        index === packedIndex ? { ...entry, stacks: entry.stacks - 1 } : entry
+      )
+      .filter(entry => entry.stacks > 0)
+    return {
+      ...state,
+      band: newBand,
+      expedition: {
+        ...state.expedition,
+        cargo: { ...cargo, contraband: nextPacked }
+      }
+    }
+  }
   return { ...state, band: newBand }
 }
 
@@ -785,7 +816,8 @@ const handleHoldBandMeeting = (state: GameState): GameState => {
     getActiveAssetModifiers(state.assets ?? []).trainingCostMultiplier
   )
   if (getExpeditionSpendableCash(state) < cost) return state
-  return {
+  const nextHarmony = clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN)
+  const paid: GameState = {
     ...state,
     player: {
       ...state.player,
@@ -793,9 +825,18 @@ const handleHoldBandMeeting = (state: GameState): GameState => {
     },
     band: {
       ...state.band,
-      harmony: clampBandHarmony(prevHarmony + BAND_MEETING_HARMONY_GAIN)
+      harmony: nextHarmony
     }
   }
+  // Harmony-threshold quests only advance on this event, so a paid meeting
+  // that reaches a target must report the applied delta and resulting value.
+  return QuestEvents.emit(
+    paid,
+    createHarmonyChangedQuestEvent({
+      amount: nextHarmony - prevHarmony,
+      newHarmony: nextHarmony
+    })
+  )
 }
 
 /**

@@ -10,7 +10,7 @@ import { getScheduledHitTimeMs } from '../../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../../context/AudioEngineContext'
 import { checkHit } from '../../../utils/rhythmUtils'
 import {
-  calculateDynamicHitWindow,
+  resolveLaneHitWindow,
   calculatePoints,
   calculateFinalScore,
   calculateHitCorruption,
@@ -125,12 +125,13 @@ export const useHandleHit = ({
         )
       }
 
-      const hitWindow = calculateDynamicHitWindow(
-        lane.hitWindow * (1 + tempoBonus) * timingWindowMultiplier,
-        state.modifiers.hitWindowBonus ?? 0,
-        laneIndex,
+      // The flat harmony/gear/Soundcheck bonus is already inside
+      // `lane.hitWindow` (audio init), so it is applied exactly once.
+      const hitWindow = resolveLaneHitWindow(lane.hitWindow, laneIndex, {
+        tempoBonus,
+        timingWindowMultiplier,
         guitarDifficulty
-      )
+      })
 
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
@@ -171,10 +172,15 @@ export const useHandleHit = ({
           audioEngine.playSFX('hit') // Fallback
         }
 
-        // Prefer the value written into modifiers by audio init (physics-aware), fall back to
-        // the static performance value if audio hasn't initialized yet.
+        // Audio init writes the trait/physics multiplier into modifiers; the
+        // equipment value (including the committed Expedition gear delta)
+        // arrives through `performance`. Both apply, so neither shadows the other.
+        // Rounded so float noise (1.5 * 1.2 = 1.7999999999999998) cannot
+        // floor a whole point away at scoring.
         const activeDrumMultiplier =
-          state.modifiers.drumMultiplier ?? drumMultiplier
+          Math.round(
+            (state.modifiers.drumMultiplier ?? 1) * drumMultiplier * 1e6
+          ) / 1e6
         const basePoints = calculatePoints(
           laneIndex,
           activeDrumMultiplier,

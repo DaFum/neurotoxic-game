@@ -14,6 +14,7 @@ import { finiteNumberOr } from './gameState'
 import { buildBrandOffer } from './brandOfferFlavor/index'
 import { selectTop3ByScore } from './topSelection'
 import type {
+  ActiveBrandDeal,
   BrandDeal,
   BrandDealNegotiationFeedbackKey,
   BrandDealNegotiationResult,
@@ -360,4 +361,51 @@ export const negotiateDeal = (
     feedbackKey,
     status
   }
+}
+
+/** Reads an own data property of an object, never invoking an accessor. */
+const readOwnDataValue = (source: unknown, key: string): unknown => {
+  if (typeof source !== 'object' || source === null) return undefined
+  const descriptor = Object.getOwnPropertyDescriptor(source, key)
+  return descriptor && 'value' in descriptor ? descriptor.value : undefined
+}
+
+/**
+ * Rebuilds an active deal from its catalog entry plus the accepted per-gig
+ * payout.
+ *
+ * @param registryDeal - Immutable catalog entry for the deal id.
+ * @param remainingGigs - Validated remaining gigs (player progress).
+ * @param rawDeal - Untrusted persisted or dispatched deal; only its own data
+ * property `offer.perGig` is read.
+ * @returns The catalog deal carrying `remainingGigs`, with `offer.perGig`
+ * replaced by the earned payout when it is a plausible one.
+ *
+ * @remarks
+ * Generated variants and PERSUASIVE negotiation move the per-gig payout above
+ * the catalog value; everything else stays catalog-owned. The earned value is
+ * accepted only as a finite number, floored to an integer and capped at twice
+ * the catalog payout (the largest legitimate variant × negotiation product is
+ * below that), so a hostile payload cannot mint money.
+ */
+export const resolveActiveBrandDeal = (
+  registryDeal: BrandDeal,
+  remainingGigs: number,
+  rawDeal: unknown
+): ActiveBrandDeal => {
+  const active: ActiveBrandDeal = { ...registryDeal, remainingGigs }
+  const basePerGig = registryDeal.offer.perGig
+  if (typeof basePerGig !== 'number' || !Number.isFinite(basePerGig)) {
+    return active
+  }
+  // Data-property reads only: an accessor must never run on untrusted input,
+  // at the deal level (`offer`) or the offer level (`perGig`).
+  const rawOffer = readOwnDataValue(rawDeal, 'offer')
+  const earned = readOwnDataValue(rawOffer, 'perGig')
+  if (typeof earned !== 'number' || !Number.isFinite(earned)) return active
+  active.offer = {
+    ...registryDeal.offer,
+    perGig: Math.min(Math.max(0, Math.floor(earned)), Math.ceil(basePerGig * 2))
+  }
+  return active
 }

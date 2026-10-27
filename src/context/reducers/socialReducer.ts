@@ -57,6 +57,7 @@ import {
 } from '../../quests/producers/venueQuestEvents'
 import { VENUES_BY_ID } from '../../data/venues'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import { resolveActiveBrandDeal } from '../../utils/brandDealLogic'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import { recordExpeditionArchiveObservations } from './careerReducer'
 import { sanitizeSocialUpdates } from './sanitizers/stateSanitizers'
@@ -341,7 +342,7 @@ export const handleUpdateSocial = (
           }
           const registryDeal = BRAND_DEALS_BY_ID.get(id)
           if (!registryDeal) return []
-          return [{ ...registryDeal, remainingGigs: safeRemainingGigs }]
+          return [resolveActiveBrandDeal(registryDeal, safeRemainingGigs, deal)]
         }
       )
       if (validDeals.length !== updates.activeDeals.length) {

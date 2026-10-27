@@ -27,6 +27,8 @@ interface RhythmTickArgs {
   setIsToxicMode: ToggleBooleanCallback
   setIsCorruptionBurstActive: ToggleBooleanCallback
   handleMiss: MissHandler
+  /** Effective lane hit window; a note stays hittable until it elapses. */
+  getLaneHitWindow?: (laneIndex: number) => number
   finalizeGigCallback: (stateRef: RhythmGameRefState) => void
   getGigTimeMs: () => number
   pauseAudio: AsyncVoidCallback
@@ -172,7 +174,8 @@ const processCorruptionBurst = (
 const processMissedNotes = (
   stateRef: RhythmGameRefState,
   now: number,
-  handleMiss: MissHandler
+  handleMiss: MissHandler,
+  getLaneHitWindow?: (laneIndex: number) => number
 ): void => {
   let missCount = 0
   const notes = stateRef.notes
@@ -204,7 +207,13 @@ const processMissedNotes = (
       continue
     }
 
-    if (now > note.time + NOTE_MISS_WINDOW_MS) {
+    // A boosted window outlives the fixed grace: expiring earlier would hide a
+    // note the player can still legitimately hit.
+    const missWindowMs = Math.max(
+      NOTE_MISS_WINDOW_MS,
+      getLaneHitWindow?.(note.laneIndex) ?? 0
+    )
+    if (now > note.time + missWindowMs) {
       note.visible = false
       missCount++
       if (i === stateRef.nextMissCheckIndex) {
@@ -296,6 +305,7 @@ export const processRhythmGameTick = ({
   setIsToxicMode,
   setIsCorruptionBurstActive,
   handleMiss,
+  getLaneHitWindow,
   finalizeGigCallback,
   getGigTimeMs,
   pauseAudio,
@@ -377,5 +387,5 @@ export const processRhythmGameTick = ({
     return
   }
 
-  processMissedNotes(stateRef, now, handleMiss)
+  processMissedNotes(stateRef, now, handleMiss, getLaneHitWindow)
 }

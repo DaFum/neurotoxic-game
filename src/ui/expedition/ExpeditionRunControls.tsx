@@ -52,6 +52,14 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
   const { t } = useTranslation('ui')
   const { changeScene, saveGameAfterStateCommit } = useGameActions()
   const status = useGameSelector(state => state.expedition?.status ?? 'idle')
+  // A Career ending finalizes the run too, but its scene is GAMEOVER: the
+  // Overworld stays mounted through its exit animation and must not
+  // redirect that ending to the run summary.
+  const isCareerEnded = useGameSelector(
+    state =>
+      state.terminalOutcome !== null ||
+      state.currentScene === GAME_PHASES.GAMEOVER
+  )
   const isAtExtractionWindow = useIsAtExtractionWindow()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -59,10 +67,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
     status === 'extracted' || status === 'completed' || status === 'failed'
 
   useEffect(() => {
-    if (!isFinalized) return
+    if (!isFinalized || isCareerEnded) return
     saveGameAfterStateCommit()
     changeScene(GAME_PHASES.RUN_SUMMARY)
-  }, [changeScene, isFinalized, saveGameAfterStateCommit])
+  }, [changeScene, isCareerEnded, isFinalized, saveGameAfterStateCommit])
 
   const openDialog = useCallback(() => setIsDialogOpen(true), [])
   const closeDialog = useCallback(() => setIsDialogOpen(false), [])

@@ -143,6 +143,11 @@ export type RhythmGameRefState = {
   notes: RhythmNote[]
   /** First note index still eligible for automatic miss detection. */
   nextMissCheckIndex: number
+  /**
+   * Registered by the scoring owner. Charges every unhit note as a miss, so a
+   * song that ends while the ticker was suspended cannot discard them.
+   */
+  settleUnhitNotes?: () => void
   lanes: RhythmLane[]
   speed: number
   modifiers: RhythmModifiers

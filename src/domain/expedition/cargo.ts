@@ -158,6 +158,31 @@ export const materializeExpeditionCargo = (
 }
 
 /**
+ * Resolves the cargo an active run actually carries.
+ *
+ * @param state - Current game state.
+ * @returns The materialized cargo, the cargo derived from the committed loadout
+ * for an older active save that never stored one, or `null` outside a run.
+ *
+ * @remarks
+ * Consumers that spend packed stock (stash use, merch sales) must read this
+ * rather than `expedition.cargo`, which such a save leaves absent; treating the
+ * absence as "empty" or "unrestricted" would refuse or over-allow the packed
+ * manifest. Persist the returned value when a consumer changes it.
+ */
+export const resolveActiveExpeditionCargo = (
+  state: Pick<GameState, 'expedition'>
+): ExpeditionCargoState | null => {
+  if (state.expedition?.status !== 'active') return null
+  if (state.expedition.cargo && typeof state.expedition.cargo === 'object') {
+    return state.expedition.cargo
+  }
+  return state.expedition.loadout
+    ? materializeExpeditionCargo(state.expedition.loadout)
+    : null
+}
+
+/**
  * Resolves the active Expedition cargo view for gameplay consumers.
  *
  * @param state - Current game state.

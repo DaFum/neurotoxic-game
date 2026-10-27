@@ -46,6 +46,7 @@ import {
 import { normalizeSetlistForSave } from '../../utils/gameState'
 import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import { applyExpeditionSalvageRights } from '../../domain/expedition/legendaries'
 import {
@@ -687,25 +688,33 @@ export const handleSettleSoldMerch = (
   ) {
     return state
   }
-  if (
-    state.expedition?.status === 'active' &&
-    Array.isArray(state.expedition.cargo?.merch)
-  ) {
-    const currentCargo = state.expedition.cargo
+  const currentCargo = resolveActiveExpeditionCargo(state)
+  if (currentCargo && Array.isArray(currentCargo.merch)) {
+    // Units actually sold from the packed manifest; the owned stock loses the
+    // same units so they cannot be packed and sold again on a later Tour.
+    const actuallySold: Record<string, number> = Object.create(null)
     const nextMerch = currentCargo.merch.map(item => {
       const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
         ? soldMerch[item.inventoryKey]
         : 0
       const soldQty = isFiniteNumber(rawSold)
-        ? Math.max(0, Math.floor(rawSold))
+        ? Math.min(item.quantity, Math.max(0, Math.floor(rawSold)))
         : 0
+      if (soldQty > 0) {
+        actuallySold[item.inventoryKey] =
+          (actuallySold[item.inventoryKey] ?? 0) + soldQty
+      }
       return {
         ...item,
-        quantity: Math.max(0, item.quantity - soldQty)
+        quantity: item.quantity - soldQty
       }
     })
     return {
       ...state,
+      band: {
+        ...state.band,
+        inventory: buildSoldMerchInventory(state.band.inventory, actuallySold)
+      },
       expedition: {
         ...state.expedition,
         cargo: {
