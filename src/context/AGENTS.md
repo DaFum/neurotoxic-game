@@ -9,6 +9,7 @@
 - `UPDATE_SOCIAL` has one whitelist, `sanitizeSocialUpdates` (`stateSanitizers.ts`), run by both `createUpdateSocialAction` and `handleUpdateSocial`: unknown and hostile keys (`__proto__`, `constructor`, `prototype`) are dropped, non-finite values on the numeric `SocialState` fields are dropped (`null` survives only on the nullable `last*` fields), and follower counts, `reputationCooldown` and the `last*Day` markers are floored at 0. The creator wraps the functional updater so sanitization also runs after it resolves. Reducer-side checks (`trend`, `activeDeals`, range clamps) remain final authority — do not remove them.
 - `createUpdateSettingsAction` delegates to `sanitizeSettingsPayload` (the canonical sanitizer in `src/utils/settingsSanitizer.ts`, shared by the reducer's `LOAD_GAME`/`UPDATE_SETTINGS` handling and the global-storage write), which owns the key whitelist (`crtEnabled`, `tutorialSeen`, `logLevel`) and the per-value validation. Adding a new settings field means extending `sanitizeSettingsPayload` only.
 - `updateSettings` must run `sanitizeSettingsPayload(updates)` before `writeGlobalSettings`; never spread raw `updates` into global storage, or malformed/unknown keys (e.g. a non-numeric `logLevel`) bypass the reducer's validation and persist globally.
+- `gig_intro` / `gig_mid` events are exempt from `useEventSystem`'s GIG-scene block and daily `eventsTriggeredToday` cap; do not re-block them. See `triggerEvent` in `src/utils/AGENTS.md`.
 
 ## Persistence
 

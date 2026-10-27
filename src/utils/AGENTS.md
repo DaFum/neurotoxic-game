@@ -27,6 +27,10 @@
 - `GeneratedMapNode.type` union includes `'SUPPLY_STOP'` (legacy saves with `'supplyStop'` are migrated on load in `systemReducer`). When adding map node types, use SCREAMING_SNAKE_CASE and update the union, `_populateCityStates`, rollout logic, and any consumers that switch on `type`.
 - Attention span in `deriveCityTraits` (`mapGenerator/cityTraits.ts`) is hash-derived: `15 + ((h >>> 8) % 45)` (range 15–59). It must stay deterministic from the city key — do not switch it to `Math.random()` or `getSafeRandom()`.
 
+## Gig modifiers
+
+- The `damaged_gear` gigModifier (set by botched setup minigames in `minigameReducer`) is consumed in `getGigModifiers` (`gigModifiersUtils.ts`): it forces `noteJitter`, subtracts 10ms `hitWindowBonus`, and multiplies `guitarScoreMult` by 0.9. It is a live mechanic — do not treat it as dead code or remove the setter.
+
 ## Crypto / probability
 
 - `crypto.ts` exposes `__testInternals` only when `process.env.NODE_ENV === 'test'` (compiled away in production). Test setup must set `NODE_ENV='test'` before importing; tests must fail fast if `__testInternals` is missing.
@@ -56,3 +60,7 @@
 - Crowdfund success grants the materialized asset plus `fameStake` only — `targetAmount` is NOT paid out as cash on top (the raised funds pay for the build). Paying it out would make crowdfunding strictly dominate cash/loan acquisition.
 - `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview and `startCrowdfund` uses it to stamp `plannedSuccessProbability` on the campaign (the caller supplies neither odds nor roll); `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
+
+## triggerEvent
+
+- `gig_intro` / `gig_mid` are the only trigger points that fire _during_ the GIG scene. `useEventSystem`'s `triggerEvent` deliberately exempts them from both the GIG-scene block and the daily `eventsTriggeredToday` cap (and does not increment that counter) — they are gig-moment beats, not part of the daily random-event budget. They are fired once each per gig from `useRhythmGameLogic`'s `update` wrapper via `maybeFireGigProgressEvent` in `rhythmGameLoopUtils.ts` (at gig start, then progress ≥ 50, guarded by the `gigIntroFired`/`gigMidFired` ref flags), limited to at most one _shown_ event per setlist song by the `lastGigEventSongIndex` ref flag — only a successful `triggerEvent` consumes the song slot; a missed chance roll spends that event's single attempt but lets the other event still try in the same song. The helper is inert while `songTransitioning` (progress is stale from the previous song) and after `hasSubmittedResults`, and `processRhythmGameTick` pauses audio while the resulting `activeEvent` modal is open. Do NOT re-block GIG-scene events or remove the exemption: the `src/data/events/gig.ts` events, the `showman` trait, and the `stage_diver` milestone all depend on it.

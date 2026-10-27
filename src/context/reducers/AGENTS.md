@@ -11,6 +11,7 @@
 
 ## Reducer Flow
 
+- Prototype-pollution rejection in reducers must return the **identical memory reference** (`nextState === baseState`), not just a deep-equal copy. `{ ...state }` "safe copy" still fails `tests/node/reducerInvariants.test.js` and `tests/node/bandReducer.security.test.js` — the forbidden-key branch must short-circuit before any state copy.
 - Reducer-side numeric payload handling must reject/drop non-finite numbers with `Number.isFinite` or `finiteNumberOr` before clamping. Do not rely on clamps turning `NaN`/`Infinity` into `0`; malformed direct dispatches should leave the field unchanged unless a reducer has an explicit legacy fallback contract.
 - Toast ids created inside reducers must come from `buildDeterministicToastId(prefix, state.toasts)` (`toastSanitizers.ts`) or a pre-generated payload id — never `getSafeUUID()`/RNG (reducer purity).
 - Reducers that emit quest-progress events (`QuestEvents.emit`) must emit only when the state actually changed; e.g. `handleConsumeItem` returns the original state (no event) for unowned or zero-count items so quests can't be farmed via no-op dispatches.

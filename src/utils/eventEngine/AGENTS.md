@@ -13,7 +13,3 @@
 ## Events
 
 - `resolveChoice` skillCheck in `eventEngine.ts` must branch `stat === 'luck'` BEFORE the `gameState.band[stat]` fallthrough. `band.luck` exists (default 0), so checking band stats first turns the random luck roll into a static 0.
-
-## triggerEvent
-
-- `gig_intro` / `gig_mid` are the only trigger points that fire _during_ the GIG scene. `useEventSystem`'s `triggerEvent` deliberately exempts them from both the GIG-scene block and the daily `eventsTriggeredToday` cap (and does not increment that counter) — they are gig-moment beats, not part of the daily random-event budget. They are fired once each per gig from `useRhythmGameLogic`'s `update` wrapper via `maybeFireGigProgressEvent` in `rhythmGameLoopUtils.ts` (at gig start, then progress ≥ 50, guarded by the `gigIntroFired`/`gigMidFired` ref flags), limited to at most one _shown_ event per setlist song by the `lastGigEventSongIndex` ref flag — only a successful `triggerEvent` consumes the song slot; a missed chance roll spends that event's single attempt but lets the other event still try in the same song. The helper is inert while `songTransitioning` (progress is stale from the previous song) and after `hasSubmittedResults`, and `processRhythmGameTick` pauses audio while the resulting `activeEvent` modal is open. Do NOT re-block GIG-scene events or remove the exemption: the `src/data/events/gig.ts` events, the `showman` trait, and the `stage_diver` milestone all depend on it.

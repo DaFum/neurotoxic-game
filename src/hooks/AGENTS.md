@@ -9,6 +9,7 @@
 - `deriveFinancials` in `src/utils/postGig/` accepts optional `bandMerchPrices`; pass `band.merchPrices` from post-gig hooks.
 - Use `?? 0` (not `|| 0`) when reading numeric inventory or merch values that can legitimately be `0`.
 - `useSettingsActions` intentionally omits `settings.crtEnabled` from its `useCallback` dep array — the latest value is mirrored into a ref via `useLayoutEffect` so the toggle callback identity stays stable. Adding `crtEnabled` to deps (e.g. to silence a lint rule) re-creates the callback on every toggle and breaks downstream memoization.
+- `gig_intro` / `gig_mid` events are exempt from `useEventSystem`'s GIG-scene block and daily `eventsTriggeredToday` cap; do not re-block them. See `triggerEvent` in `src/utils/AGENTS.md`.
 
 ## Travel / Arrival
 
