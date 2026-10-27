@@ -271,7 +271,7 @@ test('falls back to the clock for a stored revision the API would reject', async
 test('does not record a failed request as synced', async () => {
   const t = setup({ script: [failResponse(500)] })
   await t.submit(snap(500))
-  assert.equal(t.storage.has(LAST_KEY('p')), false)
+  assert.ok(!t.storage.get(LAST_KEY('p'))) // no confirmed snapshot (a dispatched write clears it)
   assert.equal(t.logs.warn.length, 1)
 })
 
@@ -408,6 +408,89 @@ test('clears the stored confirmed-snapshot marker when a stale response arrives'
   assert.equal(t.storage.get(LAST_KEY('p')), '')
 })
 
+describe('ambiguous writes after a confirmed snapshot (#3408)', () => {
+  const lostOutcomes = {
+    'a timeout': () => never,
+    'a network error': () => () => {
+      throw new Error('network down')
+    },
+    'a server error': () => failResponse(500)
+  }
+
+  for (const [name, makeOutcome] of Object.entries(lostOutcomes)) {
+    test(`returning to the confirmed snapshot after ${name} resends it`, async () => {
+      const t = setup({
+        requestTimeoutMs: TIMEOUT_MS,
+        script: [okResponse(), makeOutcome()]
+      })
+      await t.submit(snap(500)) // A confirmed
+      await t.submit(snap(400)) // B: the server may apply it, the reply is lost
+      await t.advance(MIN_SYNC_INTERVAL_MS)
+      assert.equal(t.bodies.length, 2)
+      assert.equal(t.storage.get(LAST_KEY('p')), '') // marker dropped in flight
+
+      await t.submit(snap(500)) // back to A while B's outcome is unknown
+      await t.advance(TIMEOUT_MS)
+      await t.advance(MIN_SYNC_INTERVAL_MS)
+
+      const last = t.bodies.at(-1)
+      assert.equal(last.money, 500)
+      assert.ok(last.revision > t.bodies[1].revision)
+      assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+      assert.equal(t.bodies.filter(b => b.money === 400).length, 1)
+    })
+  }
+
+  test('returning to A during B retry backoff sends A, not B', async () => {
+    const t = setup({ script: [okResponse(), failResponse(500)] })
+    await t.submit(snap(500)) // A confirmed
+    await t.submit(snap(400))
+    await t.advance(MIN_SYNC_INTERVAL_MS) // B failed; its retry is backing off
+    assert.equal(t.bodies.length, 2)
+
+    await t.submit(snap(500)) // back to A
+    await t.advance(60 * 60 * 1000)
+
+    assert.deepEqual(
+      t.bodies.map(b => b.money),
+      [500, 400, 500]
+    )
+    assert.ok(t.bodies[2].revision > t.bodies[1].revision)
+    assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+  })
+
+  test('a recreated controller still sends A after B was lost', async () => {
+    const first = setup({
+      requestTimeoutMs: TIMEOUT_MS,
+      script: [okResponse(), never]
+    })
+    await first.submit(snap(500))
+    await first.submit(snap(400))
+    await first.advance(MIN_SYNC_INTERVAL_MS)
+    await first.advance(TIMEOUT_MS)
+
+    // A reload: same storage, new controller.
+    const second = setup()
+    for (const [key, value] of first.storage) second.storage.set(key, value)
+    await second.submit(snap(500))
+
+    assert.equal(second.bodies.length, 1)
+    assert.equal(second.bodies[0].money, 500)
+    assert.ok(second.bodies[0].revision > first.bodies[1].revision)
+  })
+
+  test('a recreated controller still skips a snapshot that was confirmed', async () => {
+    const first = setup()
+    await first.submit(snap(500))
+
+    const second = setup()
+    for (const [key, value] of first.storage) second.storage.set(key, value)
+    await second.submit(snap(500))
+
+    assert.equal(second.bodies.length, 0)
+  })
+})
+
 test('backs off when the server keeps answering stale', async () => {
   const t = setup({ script: [staleResponse(5e12), staleResponse(6e12)] })
   await t.submit(snap(500))
@@ -462,7 +545,7 @@ test('sends nothing, and burns no revision, while sync is disabled', async () =>
   await t.submit(snap(500))
   assert.equal(t.bodies.length, 0)
   assert.equal(t.storage.has(REVISION_KEY('p')), false)
-  assert.equal(t.storage.has(LAST_KEY('p')), false)
+  assert.ok(!t.storage.get(LAST_KEY('p'))) // no confirmed snapshot (a dispatched write clears it)
 })
 
 test('dispose cancels a pending timer and forgets all state', async () => {
@@ -489,7 +572,7 @@ test('a request that never answers expires, frees the slot and is retried', asyn
   // The deadline aborts the request and counts as a failure that can clear up.
   assert.equal(t.signals[0].aborted, true)
   assert.equal(t.logs.warn.length, 1)
-  assert.equal(t.storage.has(LAST_KEY('p')), false)
+  assert.ok(!t.storage.get(LAST_KEY('p'))) // no confirmed snapshot (a dispatched write clears it)
 
   // First retry after the 30 s backoff, counted from the send.
   await t.advance(30_000 - TIMEOUT_MS - 1)
@@ -509,7 +592,7 @@ test('a response body that never finishes expires the same way', async () => {
   await t.advance(TIMEOUT_MS)
   assert.equal(t.signals[0].aborted, true)
   assert.equal(t.logs.warn.length, 1)
-  assert.equal(t.storage.has(LAST_KEY('p')), false)
+  assert.ok(!t.storage.get(LAST_KEY('p'))) // no confirmed snapshot (a dispatched write clears it)
 
   await t.advance(30_000)
   assert.equal(t.bodies.length, 2)
@@ -664,7 +747,10 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
       assert.equal(url, '/api/leaderboard/stats')
       const body = JSON.parse(init.body)
 
-      if (windowStartMs === null || nowMs >= windowStartMs + RATE_LIMIT_WINDOW_MS) {
+      if (
+        windowStartMs === null ||
+        nowMs >= windowStartMs + RATE_LIMIT_WINDOW_MS
+      ) {
         windowStartMs = nowMs
         requestCount = 0
       }
@@ -772,20 +858,31 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
 
     // Assert first 5 requests received 200 OK
     for (let i = 0; i < 5; i++) {
-      assert.equal(cluster.requestLog[i].status, 200, `Request ${i + 1} should be 200`)
+      assert.equal(
+        cluster.requestLog[i].status,
+        200,
+        `Request ${i + 1} should be 200`
+      )
       const pid = cluster.requestLog[i].playerId
-      assert.equal(cluster.storage.get(LAST_KEY(pid)), snapshotKey(snap(100, pid)))
+      assert.equal(
+        cluster.storage.get(LAST_KEY(pid)),
+        snapshotKey(snap(100, pid))
+      )
     }
 
     // Assert remaining 2 requests (6th and 7th) received 429 Too Many Requests
     assert.equal(cluster.requestLog[5].status, 429, '6th request should be 429')
     assert.equal(cluster.requestLog[6].status, 429, '7th request should be 429')
-    assert.equal(cluster.storage.has(LAST_KEY('p6')), false)
-    assert.equal(cluster.storage.has(LAST_KEY('p7')), false)
+    assert.ok(!cluster.storage.get(LAST_KEY('p6'))) // no confirmed snapshot (a dispatched write clears it)
+    assert.ok(!cluster.storage.get(LAST_KEY('p7'))) // no confirmed snapshot (a dispatched write clears it)
 
     // Advance 15,000 ms: backoff for 1st failure is 30,000 ms (min(300s, 15s * 2^1)), so no early retry
     await cluster.advance(15_000)
-    assert.equal(cluster.requestLog.length, 7, 'No early retries before 30s backoff timer')
+    assert.equal(
+      cluster.requestLog.length,
+      7,
+      'No early retries before 30s backoff timer'
+    )
 
     await cluster.advance(14_999)
     assert.equal(cluster.requestLog.length, 7, 'No early retries at 29,999 ms')
@@ -811,8 +908,16 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     // At t = 90,000 ms: backoff timers fire. Server window reset at t = 60,000 ms, so request count resets.
     await cluster.advance(1)
     assert.equal(cluster.requestLog.length, 11, 'Retries sent at 90,000 ms')
-    assert.equal(cluster.requestLog[9].status, 200, 'p6 retry after window expiry succeeds with 200')
-    assert.equal(cluster.requestLog[10].status, 200, 'p7 retry after window expiry succeeds with 200')
+    assert.equal(
+      cluster.requestLog[9].status,
+      200,
+      'p6 retry after window expiry succeeds with 200'
+    )
+    assert.equal(
+      cluster.requestLog[10].status,
+      200,
+      'p7 retry after window expiry succeeds with 200'
+    )
 
     // Assert all players' newest snapshots are confirmed and stored under neurotoxic_last_synced_snapshot:${playerId}
     for (const pid of players) {
@@ -825,7 +930,9 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
 
     // Verify 429 did NOT disable sync (unlike 404): no 404 endpoint unavailable log was recorded
     assert.equal(
-      cluster.logs.info.some(args => args[1]?.includes('endpoint unavailable (404)')),
+      cluster.logs.info.some(args =>
+        args[1]?.includes('endpoint unavailable (404)')
+      ),
       false,
       '429 response must not disable stat sync'
     )
@@ -848,7 +955,11 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     await flush()
 
     assert.equal(cluster.requestLog.length, 6)
-    assert.equal(cluster.requestLog[5].status, 429, 'p6 gets 429 and enters backoff')
+    assert.equal(
+      cluster.requestLog[5].status,
+      429,
+      'p6 gets 429 and enters backoff'
+    )
 
     // At t = 10,000 ms: Submit a NEW snapshot for p6 during backoff
     await cluster.advance(10_000)
@@ -859,12 +970,24 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     // A newer snapshot with a different key resets retrying state and schedules at base pacing (MIN_SYNC_INTERVAL_MS = 15s).
     // Elapsed since lastSentAt (t=0) is 10s, so wait is max(0, 15s - 10s) = 5s (scheduled at t = 15,000 ms).
     await cluster.advance(4_999)
-    assert.equal(cluster.requestLog.length, 6, 'p6 new snapshot does not fire before 15s base interval')
+    assert.equal(
+      cluster.requestLog.length,
+      6,
+      'p6 new snapshot does not fire before 15s base interval'
+    )
 
     await cluster.advance(1)
-    assert.equal(cluster.requestLog.length, 7, 'p6 new snapshot fires at 15s base interval')
+    assert.equal(
+      cluster.requestLog.length,
+      7,
+      'p6 new snapshot fires at 15s base interval'
+    )
     assert.equal(cluster.requestLog[6].key, snapshotKey(snap(999, 'p6')))
-    assert.equal(cluster.requestLog[6].status, 429, 'p6 new snapshot at t=15s gets 429 as window is still full')
+    assert.equal(
+      cluster.requestLog[6].status,
+      429,
+      'p6 new snapshot at t=15s gets 429 as window is still full'
+    )
 
     // Stop state changes at t = 15,000 ms
     // Derivation of Explicit Upper Bound for Confirmation after State Changes Stop:
@@ -893,7 +1016,9 @@ describe('shared-IP contention, 429 backoff, and recovery', () => {
     const requestsInSecondWindow = cluster.requestLog.filter(
       r => r.time >= 1_060_000 && r.time < 1_120_000
     )
-    const deniedInSecondWindow = requestsInSecondWindow.filter(r => r.status === 429)
+    const deniedInSecondWindow = requestsInSecondWindow.filter(
+      r => r.status === 429
+    )
     assert.ok(
       deniedInSecondWindow.length <= 1,
       `Denied requests in window (${deniedInSecondWindow.length}) <= 1 backing-off player`
