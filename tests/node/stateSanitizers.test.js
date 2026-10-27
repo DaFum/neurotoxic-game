@@ -14,6 +14,7 @@ import {
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 import { EVENTS_DB } from '../../src/data/events'
+import { BRAND_DEALS_BY_ID } from '../../src/data/brandDeals'
 import { calculateAppliedDelta } from '../../src/utils/gameState'
 
 describe('stateSanitizers', () => {
@@ -720,6 +721,21 @@ describe('stateSanitizers', () => {
         sanitizePlayer({ tutorialStep: Number.NaN }).tutorialStep,
         0
       )
+    })
+  })
+
+  describe('sanitizeSocial activeDeals per-gig terms', () => {
+    it('round-trips an earned per-gig payout and caps hostile ones', () => {
+      const base = BRAND_DEALS_BY_ID.get('energy_drink_cx').offer.perGig
+      const load = perGig =>
+        sanitizeSocial({
+          activeDeals: [
+            { id: 'energy_drink_cx', remainingGigs: 2, offer: { perGig } }
+          ]
+        }).activeDeals[0].offer.perGig
+      assert.equal(load(base + 5), base + 5)
+      assert.equal(load(1e9), base * 2)
+      assert.equal(load(Infinity), base)
     })
   })
 

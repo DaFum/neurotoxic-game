@@ -14,6 +14,7 @@ import { finiteNumberOr } from './gameState'
 import { buildBrandOffer } from './brandOfferFlavor/index'
 import { selectTop3ByScore } from './topSelection'
 import type {
+  ActiveBrandDeal,
   BrandDeal,
   BrandDealNegotiationFeedbackKey,
   BrandDealNegotiationResult,
@@ -360,4 +361,48 @@ export const negotiateDeal = (
     feedbackKey,
     status
   }
+}
+
+/**
+ * Rebuilds an active deal from its catalog entry plus the accepted per-gig
+ * payout.
+ *
+ * @param registryDeal - Immutable catalog entry for the deal id.
+ * @param remainingGigs - Validated remaining gigs (player progress).
+ * @param rawOffer - Untrusted persisted or dispatched offer terms.
+ * @returns The catalog deal carrying `remainingGigs`, with `offer.perGig`
+ * replaced by the earned payout when it is a plausible one.
+ *
+ * @remarks
+ * Generated variants and PERSUASIVE negotiation move the per-gig payout above
+ * the catalog value; everything else stays catalog-owned. The earned value is
+ * accepted only as a finite number, floored to an integer and capped at twice
+ * the catalog payout (the largest legitimate variant × negotiation product is
+ * below that), so a hostile payload cannot mint money.
+ */
+export const resolveActiveBrandDeal = (
+  registryDeal: BrandDeal,
+  remainingGigs: number,
+  rawOffer: unknown
+): ActiveBrandDeal => {
+  const active: ActiveBrandDeal = { ...registryDeal, remainingGigs }
+  const basePerGig = registryDeal.offer.perGig
+  if (
+    typeof basePerGig !== 'number' ||
+    !Number.isFinite(basePerGig) ||
+    typeof rawOffer !== 'object' ||
+    rawOffer === null ||
+    !Object.hasOwn(rawOffer, 'perGig')
+  ) {
+    return active
+  }
+  // Data-property read only: an accessor must never run on untrusted input.
+  const descriptor = Object.getOwnPropertyDescriptor(rawOffer, 'perGig')
+  const earned: unknown = descriptor?.value
+  if (typeof earned !== 'number' || !Number.isFinite(earned)) return active
+  active.offer = {
+    ...registryDeal.offer,
+    perGig: Math.min(Math.max(0, Math.floor(earned)), Math.ceil(basePerGig * 2))
+  }
+  return active
 }
