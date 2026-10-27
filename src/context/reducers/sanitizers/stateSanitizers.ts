@@ -449,6 +449,16 @@ const copySafeMapNodeArray = (
   return copied
 }
 
+/**
+ * Sanitizes and reconstructs a GameMap object from loaded state data.
+ *
+ * @remarks
+ * Validates map nodes and their coordinate properties. Silently drops invalid nodes
+ * and strips forbidden keys or improperly shaped attributes to prevent runtime errors.
+ *
+ * @param gameMap - The raw, untrusted game map data payload
+ * @returns A validated map object, or null if the payload structure is entirely malformed
+ */
 export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   if (typeof gameMap !== 'object' || gameMap === null) {
     return null
@@ -1158,6 +1168,16 @@ export const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
+/**
+ * Migrates legacy player location strings to the modern standardized format.
+ *
+ * @remarks
+ * Normalizes older string structures (e.g. without the `venues:` prefix or missing the `.name` suffix)
+ * into a standard format usable by the translation system and location matching.
+ *
+ * @param location - The untrusted or potentially legacy location string
+ * @returns A normalized string formatted correctly for the current system
+ */
 export const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
@@ -1174,6 +1194,18 @@ export const migratePlayerLocation = (location: unknown): string => {
   return `venues:${normalizedLocation}.name`
 }
 
+/**
+ * Normalizes an older venue identifier to its current form for backwards compatibility.
+ *
+ * @remarks
+ * This function performs syntactic normalization (such as stripping legacy decoration) but does not
+ * validate whether the resulting identifier actually corresponds to an existing, valid venue in the game's data.
+ * If the normalized identifier is empty or missing, it passes through the original un-normalized input.
+ * A caller relying on this contract could mistakenly treat arbitrary input as a validated venue ID.
+ *
+ * @param id - The legacy venue identifier
+ * @returns A normalized venue ID string, or the original input if normalization yields an empty result
+ */
 export const migrateLegacyVenueId = (id: unknown): string => {
   if (typeof id !== 'string') return ''
   return normalizeVenueId(id) ?? id
