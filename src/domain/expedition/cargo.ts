@@ -158,6 +158,24 @@ export const materializeExpeditionCargo = (
 }
 
 /**
+ * Whether a packed contraband entry covers one owned stash stack.
+ *
+ * @param entry - Packed (committed) contraband selection.
+ * @param stashKey - Contraband id of the stash stack.
+ * @param instanceId - Instance id of the stash stack, when it has one.
+ * @returns True for a non-empty entry on the same id whose `null` instance
+ * matches any instance and whose instance otherwise matches exactly.
+ */
+export const isPackedContrabandEntry = (
+  entry: ExpeditionContrabandSelection,
+  stashKey: unknown,
+  instanceId: unknown
+): boolean =>
+  entry.stashKey === stashKey &&
+  entry.stacks > 0 &&
+  (entry.instanceId === null || entry.instanceId === instanceId)
+
+/**
  * Resolves the cargo an active run actually carries.
  *
  * @param state - Current game state.

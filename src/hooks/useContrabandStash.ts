@@ -6,7 +6,10 @@ import {
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
-import { resolveActiveExpeditionCargo } from '../domain/expedition/cargo'
+import {
+  isPackedContrabandEntry,
+  resolveActiveExpeditionCargo
+} from '../domain/expedition/cargo'
 import type { ContrabandStashItem, StashItem } from '../types'
 import { useDisclosure } from './useDisclosure'
 
@@ -41,11 +44,8 @@ export const useContrabandStash = () => {
     if (packedContraband === null) return items
     // Show the packed stack count, not the owned one: only that many can be used.
     return items.flatMap(item => {
-      const packed = packedContraband.find(
-        entry =>
-          entry.stashKey === item.id &&
-          entry.stacks > 0 &&
-          (entry.instanceId === null || entry.instanceId === item.instanceId)
+      const packed = packedContraband.find(entry =>
+        isPackedContrabandEntry(entry, item.id, item.instanceId)
       )
       return packed ? [{ ...item, stacks: packed.stacks }] : []
     })
@@ -93,11 +93,8 @@ export const useContrabandStash = () => {
       // instance (a null packed instance matches any), so predict that too.
       const isPacked =
         packedContraband === null ||
-        packedContraband.some(
-          packed =>
-            packed.stashKey === item.id &&
-            packed.stacks > 0 &&
-            (packed.instanceId === null || packed.instanceId === instanceId)
+        packedContraband.some(packed =>
+          isPackedContrabandEntry(packed, item.id, instanceId)
         )
       const willApply =
         isPacked &&

@@ -19,8 +19,8 @@ import {
 import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGig'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
+import { buildSoldMerchInventory } from '../../../utils/merchUtils'
 import {
-  buildSoldMerchInventory,
   derivePostGigContinueEffects,
   dispatchEconomyQuests,
   drainBandStamina,
