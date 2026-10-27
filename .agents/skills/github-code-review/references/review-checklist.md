@@ -23,7 +23,7 @@ Use this file after changed files are known. Run only the checklists that match 
 
 ## 1. Reducers
 
-Files: `src/context/reducers/*.ts` (excluding sanitizers/ and migrations/)
+Files: `src/context/reducers/*.ts`, `src/context/reducers/assets/assetReducer.ts` (excluding sanitizers/ and migrations/)
 
 - [ ] All state changes go through dispatched typed actions; no direct state mutation
 - [ ] New actions are wired through `actionTypes.ts`, `actionCreators.ts`, and reducer handling
@@ -43,7 +43,7 @@ Files: `src/context/reducers/*.ts` (excluding sanitizers/ and migrations/)
 
 ## 2. Action Creators / Types
 
-Files: `src/context/actionCreators.ts`, `src/context/actionTypes.ts`
+Files: `src/context/actionCreators.ts`, `src/context/actionTypes.ts`, `src/context/assets/assetActionCreators.ts`
 
 - [ ] New action type is added to the canonical `ActionTypes` `as const` object; no duplicate raw action string
 - [ ] Literal action discriminants remain narrow; no widening to plain `string`
@@ -149,7 +149,7 @@ Missing coverage alone is not automatically Important. Escalate only when the un
 
 ## 9. Sanitizers
 
-Files: `src/context/reducers/sanitizers/`
+Files: `src/context/reducers/sanitizers/`, `src/context/reducers/assets/assetSanitizers.ts`
 
 - [ ] Strict runtime narrowing rejects malformed types; do not trust TypeScript casts after parsed data
 - [ ] `Object.hasOwn` guards `for...in` loops over default-shape constants

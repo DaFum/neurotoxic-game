@@ -393,6 +393,26 @@ test('handleInstallModule - rejects insufficient funds', () => {
   assert.strictEqual(next, startState)
 })
 
+test('handleInstallModule - replayed install is a no-op and is not charged again', () => {
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+      }
+    ]
+  }
+  const payload = { assetId: 'a1', slotId: 's1', moduleId: 'test_mod' }
+
+  const installed = handleInstallModule(startState, payload)
+  const replayed = handleInstallModule(installed, payload)
+
+  assert.notStrictEqual(installed, startState)
+  assert.strictEqual(replayed, installed)
+  assert.strictEqual(replayed.player.money, installed.player.money)
+})
+
 test('handleUpgradeChassisTier - rejects insufficient funds', () => {
   CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
     price: 4000,

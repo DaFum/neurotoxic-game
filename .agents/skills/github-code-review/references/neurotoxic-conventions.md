@@ -44,7 +44,7 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 | `isFiniteNumber` in sanitizer paths               | **Critical**  | Sanitizers are the last line of defense before corrupt data reaches the state tree. Using `Number()` coercion here is Critical (vs Important elsewhere). | `src/context/reducers/AGENTS.md §Load Sanitization` |
 | `Number.isFinite` is acceptable in sanitizers     | **n/a**       | Sanitizer files may use `Number.isFinite` directly (standard JS). Not a violation.                                                                       | `src/context/reducers/AGENTS.md §Load Sanitization` |
 | `WeakSet` for cycle safety in recursive utilities | **Important** | Recursive traversers/freezers/sanitizers need `WeakSet<object>` guards and must continue traversal through already-frozen parents.                       | `AGENTS.md §Architecture`                           |
-| Clamp probabilities to valid range                | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern.                            | `src/context/reducers/AGENTS.md §Long-Term Assets`  |
+| Clamp probabilities to valid range                | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern.                            | `src/context/reducers/assets/AGENTS.md §Long-Term Assets`  |
 
 ---
 
@@ -112,10 +112,10 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 | Rule                                                        | Severity      | What to look for                                                                                                                     | Source                                             |
 | ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | `CHASSIS_CONFIG` and `MODULE_REGISTRY` are sources of truth | **Important** | Asset reducers read config directly. `buildDiyTier` belongs in `assetConfig.ts` only.                                                | `AGENTS.md §Architecture`                          |
-| Tick functions are the daily authority                      | **Critical**  | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| `handleInstallModule` charges only on slot transition       | **Critical**  | Cost is deducted only when a slot transitions `null → module`. Do not remove the stale-replay guard.                                 | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| Child modules must be uninstalled first                     | **Important** | `handleRemoveModule` rejects removal if any slot added by the module still has an `installedModuleId`.                               | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| Loan-mode chassis payload requires valid `loanProfileId`    | **Critical**  | Missing/invalid `loanProfileId` → return state unchanged (defense against free-chassis exploits).                                    | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| Tick functions are the daily authority                      | **Critical**  | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| `handleInstallModule` charges only on slot transition       | **Critical**  | Cost is deducted only when a slot transitions `null → module`. Do not remove the stale-replay guard.                                 | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
+| Child modules must be uninstalled first                     | **Important** | `handleRemoveModule` rejects removal if any slot added by the module still has an `installedModuleId`.                               | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
+| Loan-mode chassis payload requires valid `loanProfileId`    | **Critical**  | Missing/invalid `loanProfileId` → return state unchanged (defense against free-chassis exploits).                                    | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
 
 ---
 
