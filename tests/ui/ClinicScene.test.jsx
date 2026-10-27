@@ -131,6 +131,34 @@ describe('ClinicScene', () => {
     expect(enhanceButtons[1]).toBeDisabled()
   })
 
+  it('keeps Heal available below an upgraded stamina maximum (#3391)', () => {
+    const member = stamina => ({
+      id: 'm9',
+      name: 'M9',
+      stamina,
+      staminaMax: 110,
+      mood: 100,
+      traits: {}
+    })
+    const render = stamina => {
+      useClinicLogic.mockReturnValue({
+        player: { money: 100, fame: 100 },
+        band: { members: [member(stamina)] },
+        healCostMoney: 50,
+        enhanceCostFame: 50,
+        healMember: vi.fn(),
+        enhanceMember: vi.fn(),
+        leaveClinic: vi.fn()
+      })
+      return renderComponent()
+    }
+    const first = render(100)
+    expect(screen.getByRole('button', { name: /HEAL/i })).not.toBeDisabled()
+    first.unmount()
+    render(110)
+    expect(screen.getByRole('button', { name: /HEAL/i })).toBeDisabled()
+  })
+
   it('calls leaveClinic when leave button is clicked', () => {
     renderComponent()
 
