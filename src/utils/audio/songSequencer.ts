@@ -148,8 +148,14 @@ export const playSongSequence = async (
     gameStateRef.current.lastEndedSongIndex = index
 
     // Notes still pending at the source end are misses; settling them first
-    // lets a health collapse stop the gig before the chart is discarded.
-    gameStateRef.current.settleUnhitNotes?.()
+    // lets a health collapse stop the gig before the chart is discarded. A gig
+    // that was already stopped or submitted takes no further consequences.
+    if (
+      !gameStateRef.current.isGameOver &&
+      !gameStateRef.current.hasSubmittedResults
+    ) {
+      gameStateRef.current.settleUnhitNotes?.()
+    }
 
     if (
       gameStateRef.current.isGameOver ||

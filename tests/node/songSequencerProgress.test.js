@@ -166,3 +166,34 @@ test('natural song end settles pending misses before stats and honors a collapse
   assert.equal(playAudioForSong.mock.calls.length, callsBefore)
   assert.equal(state.stats.misses, 4)
 })
+
+test('a gig already stopped or submitted settles no misses at source end', async () => {
+  let settled = 0
+  const state = {
+    progress: 0,
+    lastEndedSongIndex: -1,
+    songTransitioning: false,
+    hasSubmittedResults: false,
+    isGameOver: false,
+    setlistCompleted: false,
+    notes: [],
+    nextMissCheckIndex: 0,
+    notesVersion: 0,
+    totalDuration: 0,
+    score: 0,
+    stats: { perfectHits: 0, hits: 0, misses: 0 },
+    songStats: [],
+    settleUnhitNotes: () => {
+      settled++
+    }
+  }
+  const ref = { current: state }
+  const setlist = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' }
+  ]
+  await playSongSequence(0, setlist, ref, () => {}, undefined)
+  state.hasSubmittedResults = true
+  await playAudioForSong.mock.calls.at(-1).arguments[2]()
+  assert.equal(settled, 0)
+})
