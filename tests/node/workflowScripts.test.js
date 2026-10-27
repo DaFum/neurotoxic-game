@@ -105,3 +105,13 @@ describe('lint-fix-preview sticky report (#3377)', () => {
     assert.equal(calls.creates.length, 1)
   })
 })
+
+describe('pr-comment-tracker triggers (#3362)', () => {
+  test('re-runs when a review thread is resolved or reopened', () => {
+    const { on } = loadWorkflow('pr-comment-tracker.yml')
+    assert.deepEqual(on.pull_request_review_thread.types, [
+      'resolved',
+      'unresolved'
+    ])
+  })
+})

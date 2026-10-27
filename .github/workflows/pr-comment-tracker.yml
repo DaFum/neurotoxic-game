@@ -7,6 +7,10 @@ on:
     types: [opened, reopened, synchronize]
   pull_request_review:
     types: [submitted, edited]
+  # Resolving or reopening a thread changes nothing else on the PR, so without
+  # this the failed check and summary stay stale until an unrelated event.
+  pull_request_review_thread:
+    types: [resolved, unresolved]
 
 jobs:
   update-summary-and-check:
