@@ -141,6 +141,31 @@ describe('usePostGigDerivations', () => {
     ).toEqual({ shirts: 3 })
   })
 
+  it('caps sellable stock by the owned inventory when the manifest exceeds it', () => {
+    renderHook(() =>
+      usePostGigDerivations({
+        ...defaultProps,
+        band: {
+          inventory: { shirts: 2 },
+          merchPrices: {}
+        } as unknown as BandState,
+        expedition: {
+          status: 'active',
+          cargo: {
+            merch: [
+              { inventoryKey: 'shirts', quantity: 5 },
+              { inventoryKey: 'posters', quantity: 4 }
+            ]
+          }
+        } as unknown as import('../../../src/types').GameState['expedition']
+      })
+    )
+    expect(
+      vi.mocked(postGigUtils.deriveFinancials).mock.calls.at(-1)?.[0]
+        .bandInventory
+    ).toEqual({ shirts: 2, posters: 0 })
+  })
+
   it('offers no Career stock during a Tour whose cargo cannot be resolved', () => {
     renderHook(() =>
       usePostGigDerivations({

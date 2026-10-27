@@ -42,7 +42,10 @@ export const useContrabandStash = () => {
     // Show the packed stack count, not the owned one: only that many can be used.
     return items.flatMap(item => {
       const packed = packedContraband.find(
-        entry => entry.stashKey === item.id && entry.stacks > 0
+        entry =>
+          entry.stashKey === item.id &&
+          entry.stacks > 0 &&
+          (entry.instanceId === null || entry.instanceId === item.instanceId)
       )
       return packed ? [{ ...item, stacks: packed.stacks }] : []
     })
@@ -86,7 +89,18 @@ export const useContrabandStash = () => {
       const entry = Object.hasOwn(stash, item.id)
         ? (stash[item.id] as Record<string, unknown> | undefined)
         : undefined
+      // During a Tour the reducer also needs a packed entry for this exact
+      // instance (a null packed instance matches any), so predict that too.
+      const isPacked =
+        packedContraband === null ||
+        packedContraband.some(
+          packed =>
+            packed.stashKey === item.id &&
+            packed.stacks > 0 &&
+            (packed.instanceId === null || packed.instanceId === instanceId)
+        )
       const willApply =
+        isPacked &&
         entry != null &&
         (entry.instanceId === undefined || entry.instanceId === instanceId) &&
         entry.applied !== true
@@ -105,7 +119,14 @@ export const useContrabandStash = () => {
       const message = getStashItemUseMessage(item, t)
       addToast(t(message.key, message.options), 'success')
     },
-    [band?.stash, dispatchUseContraband, selectedMember, addToast, t]
+    [
+      band?.stash,
+      packedContraband,
+      dispatchUseContraband,
+      selectedMember,
+      addToast,
+      t
+    ]
   )
 
   return {

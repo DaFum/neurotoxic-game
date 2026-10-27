@@ -113,6 +113,34 @@ describe('useContrabandStash', () => {
     expect(result.current.stashProps.stash[0].stacks).toBe(1)
   })
 
+  it('hides and refuses an item whose packed instance differs from the owned one', () => {
+    const mockState = {
+      band: defaultBand,
+      expedition: {
+        status: 'active',
+        cargo: {
+          contraband: [
+            { stashKey: 'c_energy_drink', instanceId: 'other', stacks: 1 }
+          ]
+        }
+      },
+      useContraband: mockUseContraband,
+      addToast: mockAddToast
+    }
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
+    const { result } = renderHook(() => useContrabandStash())
+    expect(result.current.stashProps.stash).toEqual([])
+    act(() => {
+      result.current.stashProps.handleUseItem(
+        'item1',
+        defaultBand.stash.c_energy_drink
+      )
+    })
+    expect(mockUseContraband).not.toHaveBeenCalled()
+  })
+
   it('lists loadout-packed items for an older active save without cargo', () => {
     const mockState = {
       band: defaultBand,
