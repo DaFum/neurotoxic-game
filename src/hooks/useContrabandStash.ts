@@ -15,6 +15,11 @@ import { useDisclosure } from './useDisclosure'
  */
 export const useContrabandStash = () => {
   const band = useGameSelector(state => state.band)
+  const packedContraband = useGameSelector(state =>
+    state.expedition?.status === 'active'
+      ? (state.expedition.cargo?.contraband ?? [])
+      : null
+  )
   const { useContraband: dispatchUseContraband, addToast } = useGameActions()
   const {
     isOpen: showStash,
@@ -24,10 +29,16 @@ export const useContrabandStash = () => {
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])
 
-  const stashArray = useMemo<StashItem[]>(
-    () => Object.values(band.stash ?? {}) as StashItem[],
-    [band.stash]
-  )
+  // During a Tour only the committed cargo is usable, so only it is listed.
+  const stashArray = useMemo<StashItem[]>(() => {
+    const items = Object.values(band.stash ?? {}) as StashItem[]
+    if (packedContraband === null) return items
+    return items.filter(item =>
+      packedContraband.some(
+        entry => entry.stashKey === item.id && entry.stacks > 0
+      )
+    )
+  }, [band.stash, packedContraband])
 
   const handleUseItem = useCallback(
     (instanceId: string, item: ContrabandStashItem) => {

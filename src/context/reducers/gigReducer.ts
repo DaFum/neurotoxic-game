@@ -692,20 +692,31 @@ export const handleSettleSoldMerch = (
     Array.isArray(state.expedition.cargo?.merch)
   ) {
     const currentCargo = state.expedition.cargo
+    // Units actually sold from the packed manifest; the owned stock loses the
+    // same units so they cannot be packed and sold again on a later Tour.
+    const actuallySold: Record<string, number> = Object.create(null)
     const nextMerch = currentCargo.merch.map(item => {
       const rawSold = Object.hasOwn(soldMerch, item.inventoryKey)
         ? soldMerch[item.inventoryKey]
         : 0
       const soldQty = isFiniteNumber(rawSold)
-        ? Math.max(0, Math.floor(rawSold))
+        ? Math.min(item.quantity, Math.max(0, Math.floor(rawSold)))
         : 0
+      if (soldQty > 0) {
+        actuallySold[item.inventoryKey] =
+          (actuallySold[item.inventoryKey] ?? 0) + soldQty
+      }
       return {
         ...item,
-        quantity: Math.max(0, item.quantity - soldQty)
+        quantity: item.quantity - soldQty
       }
     })
     return {
       ...state,
+      band: {
+        ...state.band,
+        inventory: buildSoldMerchInventory(state.band.inventory, actuallySold)
+      },
       expedition: {
         ...state.expedition,
         cargo: {

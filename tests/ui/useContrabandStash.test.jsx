@@ -87,6 +87,29 @@ describe('useContrabandStash', () => {
     expect(result.current.stashProps.members).toEqual(defaultBand.members)
   })
 
+  it('lists only the packed cargo during an active Expedition', () => {
+    const mockState = {
+      band: defaultBand,
+      expedition: {
+        status: 'active',
+        cargo: {
+          contraband: [
+            { stashKey: 'c_energy_drink', instanceId: 'item1', stacks: 1 }
+          ]
+        }
+      },
+      useContraband: mockUseContraband,
+      addToast: mockAddToast
+    }
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
+    const { result } = renderHook(() => useContrabandStash())
+    expect(result.current.stashProps.stash.map(item => item.id)).toEqual([
+      'c_energy_drink'
+    ])
+  })
+
   it('toggles stash visibility with openStash and closeStash', () => {
     const { result } = renderHook(() => useContrabandStash())
 

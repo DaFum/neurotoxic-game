@@ -703,6 +703,18 @@ export const handleUseContraband = (
   if (item.applied === true) return state
   const itemKey = contrabandId
 
+  // During a Tour only the committed, still-packed cargo is usable; items left
+  // at HQ or surrendered to Authority stay out of reach.
+  const isActiveRun = state.expedition?.status === 'active'
+  const packed = isActiveRun ? (state.expedition.cargo?.contraband ?? []) : []
+  const packedIndex = packed.findIndex(
+    entry =>
+      entry.stashKey === contrabandId &&
+      entry.stacks > 0 &&
+      (entry.instanceId === null || entry.instanceId === instanceId)
+  )
+  if (isActiveRun && packedIndex === -1) return state
+
   const newBand = applyContrabandEffect(state.band, item, memberId)
   if (!newBand) return state
 
@@ -719,6 +731,22 @@ export const handleUseContraband = (
   }
 
   newBand.stash = newStash
+  const cargo = state.expedition?.cargo
+  if (isActiveRun && cargo && item.type === 'consumable') {
+    const nextPacked = packed
+      .map((entry, index) =>
+        index === packedIndex ? { ...entry, stacks: entry.stacks - 1 } : entry
+      )
+      .filter(entry => entry.stacks > 0)
+    return {
+      ...state,
+      band: newBand,
+      expedition: {
+        ...state.expedition,
+        cargo: { ...cargo, contraband: nextPacked }
+      }
+    }
+  }
   return { ...state, band: newBand }
 }
 

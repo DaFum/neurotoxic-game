@@ -524,5 +524,28 @@ describe('gigReducer', () => {
       )
       assert.strictEqual(getterCalls, 0)
     })
+
+    it('deducts active-run sales from owned stock too, bounded by the manifest', () => {
+      const state = {
+        band: { inventory: { shirts: 10, posters: 4 } },
+        expedition: {
+          status: 'active',
+          cargo: {
+            merch: [
+              { inventoryKey: 'shirts', quantity: 6 },
+              { inventoryKey: 'posters', quantity: 2 }
+            ]
+          }
+        }
+      }
+      // 9 shirts requested but only 6 were packed; posters sell partially.
+      const next = handleSettleSoldMerch(state, { shirts: 9, posters: 1 })
+      assert.deepEqual(
+        next.expedition.cargo.merch.map(m => m.quantity),
+        [0, 1]
+      )
+      assert.equal(next.band.inventory.shirts, 4)
+      assert.equal(next.band.inventory.posters, 3)
+    })
   })
 })
