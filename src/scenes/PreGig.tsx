@@ -2,9 +2,10 @@ import { SONGS_DB, SONGS_BY_ID } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
+import { ExpeditionDecisionHost } from '../ui/expedition/ExpeditionDecisionHost'
 import { ExpeditionServicePanel } from '../ui/expedition/ExpeditionServicePanel'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
 import { createRovingTabs } from '../ui/shared/rovingTabs'
@@ -17,6 +18,9 @@ const PREGIG_TABS = ['logistics', 'merch'] as const
 export const PreGig = () => {
   const [activeTab, setActiveTab] =
     useState<(typeof PREGIG_TABS)[number]>('logistics')
+  const [isExtractionOpen, setIsExtractionOpen] = useState(false)
+  const openExtraction = useCallback(() => setIsExtractionOpen(true), [])
+  const closeExtraction = useCallback(() => setIsExtractionOpen(false), [])
 
   const { getTabProps } = createRovingTabs({
     ids: PREGIG_TABS,
@@ -165,6 +169,15 @@ export const PreGig = () => {
           group blocks Start, and without a reachable repair or termination
           control that block would be a softlock. */}
       <ExpeditionServicePanel />
+
+      {/* Accepting a technical failure here raises the crisis; it has to be
+          answerable on this screen, and a confirmed failure has to reach the
+          run summary without a reload. */}
+      <ExpeditionDecisionHost
+        isExtractionOpen={isExtractionOpen}
+        onOpenExtraction={openExtraction}
+        onCloseExtraction={closeExtraction}
+      />
 
       <PreGigStartButton
         t={t}
