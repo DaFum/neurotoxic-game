@@ -134,6 +134,14 @@ describe('roadie minigame protected cash', () => {
         stash: {
           [stashKey]: { type: 'contraband', stacks: 2, instanceId: 'inst_1' }
         }
+      },
+      // A Tour only delivers what it carries (#3404).
+      expedition: {
+        ...state.expedition,
+        cargo: {
+          ...state.expedition.cargo,
+          contraband: [{ stashKey, instanceId: 'inst_1', stacks: 2 }]
+        }
       }
     }
 
