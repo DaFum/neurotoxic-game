@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { finiteNumberOr } from '../../utils/gameState'
+import { getCarriedContrabandStash } from '../../domain/expedition/cargo'
 import {
   checkCollision,
   handleCrash,
@@ -193,6 +194,7 @@ function useRoadieSceneTransition(
 export const useRoadieLogic = () => {
   const currentScene = useGameSelector(state => state.currentScene)
   const band = useGameSelector(state => state.band)
+  const expedition = useGameSelector(state => state.expedition)
   const { completeRoadieMinigame, changeScene } = useGameActions()
 
   // Pick the first real stash item to escort, if any; capture its id for
@@ -205,7 +207,12 @@ export const useRoadieLogic = () => {
     null as unknown as RoadieLogicState
   )
   if (!gameStateRef.current) {
-    const stashItemId = Object.keys(band?.stash ?? {})[0] ?? null
+    // During a Tour only packed cargo can be escorted, matching what the
+    // reducer will accept on delivery.
+    const stashItemId =
+      Object.keys(
+        getCarriedContrabandStash(band?.stash, expedition) ?? {}
+      )[0] ?? null
     stashItemIdRef.current = stashItemId
     gameStateRef.current = getInitialGameState(stashItemId)
   }

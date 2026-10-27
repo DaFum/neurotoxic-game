@@ -39,14 +39,23 @@ import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper, buildStashFullToast } from './bandReducer'
 import { isStashEntry } from '../../utils/gameState/checks'
-import { getStashStackCount } from '../../utils/contrabandStashUtils'
+import {
+  clampSharedBandEffectResult,
+  getStashStackCount
+} from '../../utils/contrabandStashUtils'
 import { pickContrabandDropFromRoll } from '../../utils/contrabandUtils'
 import { pickIndex } from '../../utils/selectionUtils'
 import { mulberry32 } from '../../utils/seededRng'
 import {
   applySharedBandEffect,
-  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS,
+  getEquipmentRevertValue
 } from '../../utils/contrabandEffects'
+import {
+  debitPackedContraband,
+  isPackedContrabandEntry,
+  resolveActiveExpeditionCargo
+} from '../../domain/expedition/cargo'
 import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
@@ -798,11 +807,23 @@ export const handleCompleteRoadieMinigame = (
     safeItemId !== null ? getStashStackCount(stash, safeItemId) : 0
   const stashItemPresent = stashStacks > 0
 
+  // During a Tour only packed cargo can be delivered: an item left at HQ earns
+  // no bonus and is not consumed.
+  const isActiveRun = state.expedition?.status === 'active'
+  const activeCargo = resolveActiveExpeditionCargo(state)
+  const isCarried =
+    !isActiveRun ||
+    (safeItemId !== null &&
+      (activeCargo?.contraband ?? []).some(entry =>
+        isPackedContrabandEntry(entry, safeItemId, stashEntry?.instanceId)
+      ))
+
   // Effective contraband count: only credit a positive, real delivery, clamped
   // non-negative so a malformed payload cannot grant a reverse bonus.
-  const effectiveContrabandDelivered = stashItemPresent
-    ? clampUnit(finiteNumberOr(contrabandDelivered, 0))
-    : 0
+  const effectiveContrabandDelivered =
+    stashItemPresent && isCarried
+      ? clampUnit(finiteNumberOr(contrabandDelivered, 0))
+      : 0
 
   // Apply Results
   const { stress, repairCost, contrabandBonus } = calculateRoadieMinigameResult(
@@ -840,12 +861,15 @@ export const handleCompleteRoadieMinigame = (
         stashEntry.applyOnAdd === true &&
         stashEntry.applied === true
       ) {
+        // Reverse what acquisition actually applied, not the catalogue value,
+        // and bring the stats back into range like the other removal paths.
         applySharedBandEffect(
           nextBand,
           stashEntry.effectType,
-          -finiteNumberOr(stashEntry.value, 0),
+          -getEquipmentRevertValue(stashEntry),
           EQUIPMENT_APPLY_ON_ADD_EFFECTS
         )
+        clampSharedBandEffectResult(nextBand, stashEntry.effectType)
       }
       delete newStash[safeItemId]
     }
@@ -896,6 +920,23 @@ export const handleCompleteRoadieMinigame = (
     gigModifiers: nextModifiers,
     toasts: nextToasts,
     minigame: { ...state.minigame, active: false }
+  }
+  // The delivered unit leaves the packed manifest together with the stash.
+  if (effectiveContrabandDelivered > 0 && isActiveRun && activeCargo) {
+    nextState = {
+      ...nextState,
+      expedition: {
+        ...state.expedition,
+        cargo: {
+          ...activeCargo,
+          contraband: debitPackedContraband(
+            activeCargo.contraband,
+            safeItemId as string,
+            1
+          )
+        }
+      }
+    }
   }
 
   nextState = QuestEvents.emit(
