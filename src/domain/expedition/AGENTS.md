@@ -8,7 +8,6 @@
 ## Route determinism
 
 - `buildExpeditionMap` stays pure in `(runSeed, tourTypeId, regionId)`. Tour Prep preview and the played route are compared by `mapHash`, so no value a build edit can change may reach it — that is why registry-only composers such as `getExpeditionRegistryRareRewardChanceMultiplier` exist, and why chassis, modules and Crew cannot contribute to route content.
-- Adding or removing an `rng()` call in the builder shifts the seeded stream and changes every route on every seed. Expect fixture churn; see `tests/node/AGENTS.md`.
 
 ## Reward proof
 
@@ -17,10 +16,8 @@
 
 ## Protected cash
 
-- `getExpeditionProtectedCash`, `getExpeditionSpendableCash` and `withExpeditionSpendableCash` live in `spendableCash.ts`, free of heavy imports so the event engine and UI can use them; `loadout.ts` re-exports the first two.
 - `APPLY_EVENT_DELTA` is not exempt from the cash floor: `enforceExpeditionCashFloor` keeps its non-cash effects and holds only the cash debit at the floor. Whether an optional cost may be chosen is decided earlier, by `isOptionAffordable` (see `src/utils/eventEngine/AGENTS.md`), so clipping normally never buys a full reward for a partial payment. The one exception is the lockout fallback: when no sibling option is choosable, `isOptionAffordable` allows a cost above spendable cash, the floor clips only the debit and the option's other effects still apply.
 - `SET_TERMINAL_OUTCOME` is exempt from the floor like the other terminal actions, and `event_game_over` is a terminal-only failure reason: it is never derived as a pending crisis.
-- `checkSoftlock` takes the effective `fuelMultiplier` so the stranded verdict prices a leg at the litres settlement burns.
 
 ## Composition
 
