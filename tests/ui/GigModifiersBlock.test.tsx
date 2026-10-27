@@ -95,7 +95,7 @@ describe('GigModifiersBlock', () => {
     expect(defaultProps.handleBandMeeting).toHaveBeenCalledTimes(1)
   })
 
-  it('disables the band meeting button when the meeting is unaffordable', () => {
+  it('disables the band meeting button and shows a tooltip when the meeting is unaffordable', () => {
     const handleBandMeeting = vi.fn()
     render(
       <GigModifiersBlock
@@ -110,6 +110,11 @@ describe('GigModifiersBlock', () => {
     expect(button).toBeDisabled()
     if (button) fireEvent.click(button)
     expect(handleBandMeeting).not.toHaveBeenCalled()
+
+    // Hover or focus to reveal tooltip
+    const wrapper = button?.parentElement
+    if (wrapper) fireEvent.mouseEnter(wrapper)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('renders active effects from currentModifiers', () => {

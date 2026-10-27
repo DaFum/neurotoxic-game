@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'
 import { formatCurrency } from '../../utils/numberUtils'
 import { copySafePrimitiveEntries } from '../../utils/objectUtils'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
 import type { ActiveEffectEntry } from '../../types/components'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -69,24 +70,45 @@ export const GigModifiersBlock = ({
         ))}
 
         <div className='border-t border-ash-gray/20 pt-2.5'>
-          <button
-            type='button'
-            onClick={handleBandMeeting}
-            disabled={!canAffordBandMeeting}
-            className='w-full flex justify-between items-center p-3 border-2 border-warning-yellow/30 hover:border-warning-yellow text-warning-yellow/70 hover:text-warning-yellow transition-all group disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-          >
-            <span className='flex flex-col text-left'>
-              <span className='font-bold text-sm'>
-                {t('ui:pregig.bandMeeting.label')}
-              </span>
-              <span className='text-xs opacity-70'>
-                {t('ui:pregig.bandMeeting.desc')}
-              </span>
-            </span>
-            <span className='font-mono text-sm font-bold tabular-nums'>
-              {formatCurrency(bandMeetingCost, i18n.language)}
-            </span>
-          </button>
+          {(() => {
+            const meetingDisabledReason = !canAffordBandMeeting
+              ? t('ui:pregig.merchStrategy.unaffordable', {
+                  cost: formatCurrency(bandMeetingCost, i18n.language),
+                  defaultValue: 'Insufficient funds ({{cost}})'
+                })
+              : undefined
+
+            const meetingButton = (
+              <button
+                type='button'
+                onClick={handleBandMeeting}
+                disabled={!canAffordBandMeeting}
+                className='w-full flex justify-between items-center p-3 border-2 border-warning-yellow/30 hover:border-warning-yellow text-warning-yellow/70 hover:text-warning-yellow transition-all group disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              >
+                <span className='flex flex-col text-left'>
+                  <span className='font-bold text-sm'>
+                    {t('ui:pregig.bandMeeting.label')}
+                  </span>
+                  <span className='text-xs opacity-70'>
+                    {t('ui:pregig.bandMeeting.desc')}
+                  </span>
+                </span>
+                <span className='font-mono text-sm font-bold tabular-nums'>
+                  {formatCurrency(bandMeetingCost, i18n.language)}
+                </span>
+              </button>
+            )
+
+            if (meetingDisabledReason) {
+              return (
+                <Tooltip content={meetingDisabledReason}>
+                  {meetingButton}
+                </Tooltip>
+              )
+            }
+
+            return meetingButton
+          })()}
         </div>
       </div>
 
