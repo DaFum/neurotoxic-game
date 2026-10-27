@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { clampUnit } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { resolveLaneHitWindow } from '../../utils/rhythmGameScoringUtils'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -57,6 +58,8 @@ type RhythmGameScoringParams = {
 type RhythmGameScoringReturn = {
   handleHit: (laneIndex: number) => boolean
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
+  /** Effective hit window of a lane; the loop expires notes against it. */
+  getLaneHitWindow: (laneIndex: number) => number
   activateToxicMode: () => void
   gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
 }
@@ -148,9 +151,46 @@ export const useRhythmGameScoring = ({
     handleMiss
   })
 
+  // Natural song completion can arrive while the frame ticker is suspended
+  // (background tab); the sequencer calls this so due notes still cost health
+  // and count against accuracy before the chart is replaced or finalized.
+  useEffect(() => {
+    const state = gameStateRef.current
+    state.settleUnhitNotes = () => {
+      let missCount = 0
+      for (let i = state.nextMissCheckIndex; i < state.notes.length; i++) {
+        const note = state.notes[i]
+        if (note && note.visible && !note.hit) {
+          note.visible = false
+          missCount++
+        }
+      }
+      state.nextMissCheckIndex = state.notes.length
+      if (missCount > 0) handleMiss(missCount, false)
+    }
+    return () => {
+      delete state.settleUnhitNotes
+    }
+  }, [gameStateRef, handleMiss])
+
+  const getLaneHitWindow = useCallback(
+    (laneIndex: number): number => {
+      const lane = gameStateRef.current.lanes[laneIndex]
+      return lane
+        ? resolveLaneHitWindow(lane.hitWindow, laneIndex, {
+            tempoBonus,
+            timingWindowMultiplier,
+            guitarDifficulty
+          })
+        : 0
+    },
+    [gameStateRef, tempoBonus, timingWindowMultiplier, guitarDifficulty]
+  )
+
   return {
     handleHit,
     handleMiss,
+    getLaneHitWindow,
     activateToxicMode,
     gameOverTimerRef // Exposed for cleanup if needed
   }

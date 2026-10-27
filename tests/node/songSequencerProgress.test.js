@@ -127,3 +127,42 @@ test('a gig that ended while the next song loaded neither writes state nor toast
   assert.strictEqual(gameStateRef.current.notesVersion, 0)
   assert.deepStrictEqual(gameStateRef.current.notes, [])
 })
+
+test('natural song end settles pending misses before stats and honors a collapse (#3387)', async () => {
+  const state = {
+    progress: 0,
+    lastEndedSongIndex: -1,
+    songTransitioning: false,
+    hasSubmittedResults: false,
+    isGameOver: false,
+    setlistCompleted: false,
+    notes: [],
+    nextMissCheckIndex: 0,
+    notesVersion: 0,
+    totalDuration: 0,
+    score: 0,
+    stats: { perfectHits: 0, hits: 0, misses: 0 },
+    songStats: [],
+    currentSongStartScore: 0,
+    currentSongStartPerfectHits: 0,
+    currentSongStartHits: 0,
+    currentSongStartMisses: 0,
+    // Stands in for the scoring owner: 4 unhit notes cost 4 misses and, on the
+    // last one, the band collapses.
+    settleUnhitNotes: () => {
+      state.stats.misses += 4
+      state.isGameOver = true
+    }
+  }
+  const ref = { current: state }
+  const setlist = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' }
+  ]
+  await playSongSequence(0, setlist, ref, () => {}, undefined)
+  const callsBefore = playAudioForSong.mock.calls.length
+  await playAudioForSong.mock.calls.at(-1).arguments[2]()
+  // The collapse stops the chain: no next song is started.
+  assert.equal(playAudioForSong.mock.calls.length, callsBefore)
+  assert.equal(state.stats.misses, 4)
+})
