@@ -176,41 +176,50 @@ export const isPackedContrabandEntry = (
   (entry.instanceId === null || entry.instanceId === instanceId)
 
 /**
- * Counts the packed stacks of one contraband id.
+ * Counts the packed stacks that cover one owned stash stack.
  *
  * @param contraband - Packed contraband entries.
  * @param stashKey - Contraband id to count.
- * @returns Total stacks packed for that id, across all of its entries.
+ * @param instanceId - Instance id of the owned stash stack, when it has one.
+ * @returns Total stacks of the entries that {@link isPackedContrabandEntry}
+ * accepts for that stack; a packed row for another instance does not count.
  */
 export const countPackedContraband = (
   contraband: readonly ExpeditionContrabandSelection[],
-  stashKey: string
+  stashKey: string,
+  instanceId: unknown
 ): number =>
   contraband.reduce(
     (sum, entry) =>
-      entry.stashKey === stashKey && entry.stacks > 0
+      isPackedContrabandEntry(entry, stashKey, instanceId)
         ? sum + entry.stacks
         : sum,
     0
   )
 
 /**
- * Removes stacks of one contraband id from the packed entries.
+ * Removes stacks of one owned stash stack from the packed entries.
  *
  * @param contraband - Packed contraband entries.
  * @param stashKey - Contraband id to debit.
- * @param stacks - Stacks to remove, taken from the first entries that hold them.
- * @returns New entry list; emptied entries are dropped.
+ * @param instanceId - Instance id of the owned stash stack, when it has one.
+ * @param stacks - Stacks to remove, taken from the first covering entries.
+ * @returns New entry list; emptied entries are dropped and rows for another
+ * instance of the same id are left alone.
  */
 export const debitPackedContraband = (
   contraband: readonly ExpeditionContrabandSelection[],
   stashKey: string,
+  instanceId: unknown,
   stacks: number
 ): ExpeditionContrabandSelection[] => {
   let remaining = stacks
   const next: ExpeditionContrabandSelection[] = []
   for (const entry of contraband) {
-    if (entry.stashKey !== stashKey || remaining <= 0 || entry.stacks <= 0) {
+    if (
+      remaining <= 0 ||
+      !isPackedContrabandEntry(entry, stashKey, instanceId)
+    ) {
       next.push(entry)
       continue
     }
@@ -263,7 +272,11 @@ export const getCarriedContrabandStash = (
   const packed = resolveActiveExpeditionCargo({ expedition })?.contraband ?? []
   const carried: Record<string, unknown> = {}
   for (const [id, entry] of Object.entries(stash ?? {})) {
-    const count = countPackedContraband(packed, id)
+    const count = countPackedContraband(
+      packed,
+      id,
+      (entry as { instanceId?: unknown } | null)?.instanceId
+    )
     if (count <= 0 || typeof entry !== 'object' || entry === null) continue
     const owned = (entry as { stacks?: unknown }).stacks
     carried[id] = {

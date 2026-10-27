@@ -932,6 +932,7 @@ export const handleCompleteRoadieMinigame = (
           contraband: debitPackedContraband(
             activeCargo.contraband,
             safeItemId as string,
+            stashEntry?.instanceId,
             1
           )
         }

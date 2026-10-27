@@ -294,6 +294,49 @@ describe('bandReducer - handleCraftItem', () => {
       assert.equal(next.expedition.cargo.contraband[0].stacks, 1)
     })
 
+    it('refuses ingredients packed under another instance', () => {
+      const state = withCargo(
+        {
+          c_sticky_plectrum: {
+            id: 'c_sticky_plectrum',
+            stacks: 2,
+            instanceId: 'new'
+          }
+        },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: 'old', stacks: 2 }]
+      )
+      const next = craftPick(state)
+
+      assert.equal(next.band.stash.c_sticky_plectrum.stacks, 2)
+      assert.ok(!Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+      assert.equal(next.expedition.cargo.contraband[0].instanceId, 'old')
+    })
+
+    it('debits only the row that covers the owned instance', () => {
+      const state = withCargo(
+        {
+          c_sticky_plectrum: {
+            id: 'c_sticky_plectrum',
+            stacks: 2,
+            instanceId: 'mine'
+          }
+        },
+        [
+          { stashKey: 'c_sticky_plectrum', instanceId: 'other', stacks: 5 },
+          { stashKey: 'c_sticky_plectrum', instanceId: 'mine', stacks: 2 }
+        ]
+      )
+      const next = craftPick(state)
+
+      const rows = next.expedition.cargo.contraband.filter(
+        e => e.stashKey === 'c_sticky_plectrum'
+      )
+      assert.deepEqual(rows, [
+        { stashKey: 'c_sticky_plectrum', instanceId: 'other', stacks: 5 }
+      ])
+      assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+    })
+
     it('keeps the original behavior outside an active run', () => {
       const state = makeState({
         c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 }

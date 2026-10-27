@@ -193,6 +193,20 @@ describe('roadie delivery during a Tour (#3404)', () => {
     assert.equal(next.band.stash.c_gig_program.stacks, 1)
   })
 
+  it('debits the row of the delivered instance, not an earlier row of the same id', () => {
+    const state = tourWithStash({ c_gig_program: item('c_gig_program', 3) }, [
+      { stashKey: 'c_gig_program', instanceId: 'someone_else', stacks: 4 },
+      { stashKey: 'c_gig_program', instanceId: 'inst_c_gig_program', stacks: 2 }
+    ])
+    const next = deliver(state, 'c_gig_program')
+
+    assert.equal(next.player.money, state.player.money + 50)
+    assert.deepEqual(next.expedition.cargo.contraband, [
+      { stashKey: 'c_gig_program', instanceId: 'someone_else', stacks: 4 },
+      { stashKey: 'c_gig_program', instanceId: 'inst_c_gig_program', stacks: 1 }
+    ])
+  })
+
   it('pays only once when the completion is repeated', () => {
     const state = tourWithStash({ c_gig_program: item('c_gig_program', 2) }, [
       { stashKey: 'c_gig_program', instanceId: null, stacks: 2 }

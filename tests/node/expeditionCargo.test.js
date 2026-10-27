@@ -214,22 +214,35 @@ test('isPackedContrabandEntry matches id, positive stacks and instance', () => {
   assert.equal(isPackedContrabandEntry(packed('i1', 0), 'item_a', 'i1'), false)
 })
 
-test('packed contraband helpers count, debit and credit by id', () => {
+test('packed contraband helpers count, debit and credit per owned instance', () => {
   const manifest = [
     { stashKey: 'item_a', instanceId: 'i1', stacks: 2 },
     { stashKey: 'item_b', instanceId: null, stacks: 1 },
     { stashKey: 'item_a', instanceId: 'i2', stacks: 3 }
   ]
 
-  assert.equal(countPackedContraband(manifest, 'item_a'), 5)
-  assert.equal(countPackedContraband(manifest, 'item_c'), 0)
+  // Only the row for the owned instance covers it.
+  assert.equal(countPackedContraband(manifest, 'item_a', 'i1'), 2)
+  assert.equal(countPackedContraband(manifest, 'item_a', 'i2'), 3)
+  assert.equal(countPackedContraband(manifest, 'item_a', 'other'), 0)
+  assert.equal(countPackedContraband(manifest, 'item_c', 'i1'), 0)
+  // A null packed instance is the documented wildcard.
+  assert.equal(countPackedContraband(manifest, 'item_b', 'anything'), 1)
 
-  // Debits take from the first entries and drop the ones they empty.
-  assert.deepEqual(debitPackedContraband(manifest, 'item_a', 3), [
+  // Debits touch the matching row only and drop the ones they empty.
+  assert.deepEqual(debitPackedContraband(manifest, 'item_a', 'i2', 2), [
+    { stashKey: 'item_a', instanceId: 'i1', stacks: 2 },
     { stashKey: 'item_b', instanceId: null, stacks: 1 },
-    { stashKey: 'item_a', instanceId: 'i2', stacks: 2 }
+    { stashKey: 'item_a', instanceId: 'i2', stacks: 1 }
   ])
-  assert.deepEqual(debitPackedContraband(manifest, 'item_c', 1), manifest)
+  assert.deepEqual(debitPackedContraband(manifest, 'item_a', 'i1', 2), [
+    { stashKey: 'item_b', instanceId: null, stacks: 1 },
+    { stashKey: 'item_a', instanceId: 'i2', stacks: 3 }
+  ])
+  assert.deepEqual(
+    debitPackedContraband(manifest, 'item_a', 'other', 1),
+    manifest
+  )
   assert.equal(manifest[0].stacks, 2) // input is not mutated
 
   // Credits merge into a covering entry, else add one.
@@ -264,4 +277,17 @@ test('getCarriedContrabandStash narrows the stash only during an active run', ()
   assert.deepEqual(Object.keys(carried).sort(), ['item_a', 'item_c'])
   assert.equal(carried.item_a.stacks, 3)
   assert.equal(carried.item_c.stacks, 1)
+
+  // A packed row for another instance does not cover the owned one.
+  const mismatched = getCarriedContrabandStash(
+    { item_a: { id: 'item_a', instanceId: 'new', stacks: 2 } },
+    {
+      status: 'active',
+      cargo: {
+        ...cargo,
+        contraband: [{ stashKey: 'item_a', instanceId: 'old', stacks: 2 }]
+      }
+    }
+  )
+  assert.deepEqual(mismatched, {})
 })

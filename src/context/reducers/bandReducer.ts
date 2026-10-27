@@ -498,7 +498,12 @@ export const handleCraftItem = (
       typeof qty !== 'number' ||
       Number.isNaN(qty) ||
       getStashStackCount(stash, itemId) < qty ||
-      (isActiveRun && countPackedContraband(packed, itemId) < qty)
+      (isActiveRun &&
+        countPackedContraband(
+          packed,
+          itemId,
+          (stash[itemId] as { instanceId?: unknown } | undefined)?.instanceId
+        ) < qty)
     ) {
       return {
         ...state,
@@ -523,8 +528,15 @@ export const handleCraftItem = (
   for (const itemId in recipe.inputs) {
     if (!Object.hasOwn(recipe.inputs, itemId)) continue
     const qty = recipe.inputs[itemId] as number
-    if (isActiveRun) nextPacked = debitPackedContraband(nextPacked, itemId, qty)
     const entry = newStash[itemId] as Record<string, unknown>
+    if (isActiveRun) {
+      nextPacked = debitPackedContraband(
+        nextPacked,
+        itemId,
+        entry.instanceId,
+        qty
+      )
+    }
     const current = getStashStackCount(newStash, itemId)
 
     // Revert apply-on-add equipment effects if the item is being fully deleted
