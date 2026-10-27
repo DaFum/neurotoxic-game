@@ -1,7 +1,7 @@
 /**
  * @fileoverview Guards the generated Copilot instruction file against drift.
  *
- * `.github/copilot-instructions.md` declares itself generated from `AGENTS.md`,
+ * `.github/copilot-instructions.md` (and `GEMINI.md`) declare themselves generated from `AGENTS.md`,
  * but nothing enforced that. It silently diverged into a hand-edited file
  * carrying rules that were never in `AGENTS.md` at all -- including a testing
  * rule that produced a wrong code-review finding. This test is the enforcement
@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs'
 const readNormalised = path =>
   readFileSync(path, 'utf8').replaceAll('\r\n', '\n')
 
-const GENERATED = '.github/copilot-instructions.md'
+const GENERATED_FILES = ['.github/copilot-instructions.md', 'GEMINI.md']
 const SOURCE = 'AGENTS.md'
 
 // The exact block `scripts/sync-agent-instructions.mjs` writes. Pinning it
@@ -41,25 +41,27 @@ const EXPECTED_HEADER = [
 const HEADER_LINES = EXPECTED_HEADER.split('\n').length
 
 describe('generated agent instruction files', () => {
-  it('keeps the Copilot file byte-identical to AGENTS.md below its header', () => {
-    const generated = readNormalised(GENERATED)
-    const source = readNormalised(SOURCE)
-    const body = generated.split('\n').slice(HEADER_LINES).join('\n')
+  for (const GENERATED of GENERATED_FILES) {
+    it(`keeps ${GENERATED} byte-identical to AGENTS.md below its header`, () => {
+      const generated = readNormalised(GENERATED)
+      const source = readNormalised(SOURCE)
+      const body = generated.split('\n').slice(HEADER_LINES).join('\n')
 
-    assert.equal(
-      body,
-      source,
-      `${GENERATED} has drifted from ${SOURCE}. Run: pnpm run sync:agents`
-    )
-  })
+      assert.equal(
+        body,
+        source,
+        `${GENERATED} has drifted from ${SOURCE}. Run: pnpm run sync:agents`
+      )
+    })
 
-  it('opens with the exact generated-file header', () => {
-    const generated = readNormalised(GENERATED)
+    it(`opens ${GENERATED} with the exact generated-file header`, () => {
+      const generated = readNormalised(GENERATED)
 
-    assert.equal(
-      generated.slice(0, EXPECTED_HEADER.length),
-      EXPECTED_HEADER,
-      `${GENERATED} header does not match the generator. Run: pnpm run sync:agents`
-    )
-  })
+      assert.equal(
+        generated.slice(0, EXPECTED_HEADER.length),
+        EXPECTED_HEADER,
+        `${GENERATED} header does not match the generator. Run: pnpm run sync:agents`
+      )
+    })
+  }
 })
