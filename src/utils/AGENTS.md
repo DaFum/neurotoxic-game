@@ -20,33 +20,6 @@
 
 - `contrabandEffects.ts` (`applySharedBandEffect`, `ADDITIVE_BAND_EFFECT_FIELDS`, `EQUIPMENT_APPLY_ON_ADD_EFFECTS`) is the single source of truth for applying additive band-stat effects. `bandReducer` (apply) and `gameState/delta.ts` (revert on stash confiscation, via a negated value) both consume it — do not reinline the field map or the apply/clamp math. Passing a negated `value` is the canonical revert — an exact additive inverse (no floor; the rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time). Harmony and stress are re-clamped after an equipment add/revert (`clampSharedBandEffectResult`); because a clamped add moves the stat by less than `value`, the stash entry records `appliedValue` and the revert negates `getEquipmentRevertValue(entry)` instead of the catalog value.
 
-## Economy invariants
-
-Source-of-truth priority: runtime helpers/constants win. If simulations,
-tooltips, or docs disagree with `economy/`, `gameState/`, or
-`postGig/`, update the consumers and rerun the required simulation
-baseline instead of duplicating formulas.
-
-### Gig financial reconciliation
-
-- `MAX_GIG_NET` in `economy/constants.ts` is the live gig-net cap. Excess net is added back to expenses as an `overageFee` line (`economy:gigExpenses.overageFee.*` i18n keys), not silently truncated. `calculateGigFinancials()` must reconcile `net === income.total - expenses.total`; do not duplicate the cap value in guidance or consumers.
-- Management cut is fame-progressive: `MANAGEMENT_CUT_RATE (0.15) × Math.min(1, playerFame / 200)`. Required to keep Bootstrap bankruptcy below the simulation gate.
-
-### Shared formulas and simulations
-
-- `MAX_GIG_NET`, `MANAGEMENT_CUT_RATE`, and `BASE_DRAW_RATIO` are mirrored by `scripts/game-balance-simulation.mjs` via direct import. Changing them invalidates `reports/game-balance-simulation-baseline.json`; re-run `pnpm run simulate:balance:baseline`.
-- Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameState/`). External formulas (sim scripts, tooltips) must import this helper, not duplicate the math.
-- Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGig/`. Simulation scripts must import `calculatePerformanceScore()` rather than re-implement it.
-- The `damaged_gear` gigModifier (set by botched setup minigames in `minigameReducer`) is consumed in `getGigModifiers` (`gigModifiersUtils.ts`): it forces `noteJitter`, subtracts 10ms `hitWindowBonus`, and multiplies `guitarScoreMult` by 0.9. It is a live mechanic — do not treat it as dead code or remove the setter.
-
-## Gig / merch threading
-
-- `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; its 50% damage-to-condition scaling must stay aligned with the reducer and completion UI.
-- `postGig.calculatePostGigStateUpdates` reads `social.activeDeals` (pre-decrement), not `updatedSocial.activeDeals`, for `comm_sellout_ad` penalty resolution; otherwise sponsorship penalties on the deal's final expiring gig are silently dropped.
-- `EconomyContext.merchPrices` is a direct top-level field, not nested under `context.social`. Passing via `context.social.merchPrices` is silently ignored by `calculateMerchIncome`.
-- Post-gig merch derives `context.cityTraits?: CityTraitState` from the normalized venue ID city key: use `state.gameMap?.cityStates?.[cityKey]` when present, otherwise call `deriveCityTraits(cityKey)`. If the city key is empty or `context.cityTraits` is omitted, `calculateMerchIncome` uses neutral 1.0 multipliers. Unrecognized trait fields fall through to merch profile lookup defaults; never read `cityStates` from top-level `GameState`.
-- Per-item merch demand profiles live in `src/data/merch.ts` (`MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`). `DEFAULT_MERCH_PRICES` is re-exported from there; do not redefine merch prices in `economy/`.
-
 ## Map / venues
 
 - `getCityKeyFromVenueId(venueId)` in `mapGenerator.ts` extracts the prefix before the first `_`; returns `''` if no underscore. Use this helper instead of `node.venue.city` (which does not exist).
@@ -59,21 +32,9 @@ baseline instead of duplicating formulas.
 - `crypto.ts` exposes `__testInternals` only when `process.env.NODE_ENV === 'test'` (compiled away in production). Test setup must set `NODE_ENV='test'` before importing; tests must fail fast if `__testInternals` is missing.
 - Probability inputs must clamp to `[0, 1]` and guard non-finite values before use (`eventEngine`, `mapGenerator`, `contrabandUtils`, `audio/AudioManager`).
 
-## Events
-
-- `resolveChoice` skillCheck in `eventEngine.ts` must branch `stat === 'luck'` BEFORE the `gameState.band[stat]` fallthrough. `band.luck` exists (default 0), so checking band stats first turns the random luck roll into a static 0.
-
-## Merch demand
-
-- `calculateMerchIncome` in `economy/` computes `rawShare` for every item regardless of inventory; the cap is applied only at allocation (`sold = min(desired, inventory)`). Out-of-stock demand is intentionally lost, not redistributed — skipping zero-stock items at the share step would normalize in-stock shares to 1.0 and silently absorb missed sales.
-
 ## Purchase effects
 
 - `EffectHandler` in `purchaseLogicUtils.ts` declares `band: BandState | null`, but several handlers forward it via `band as BandState` casts. Helper functions behind those casts must access band fields null-safely (`band?.harmony`) — the static non-null type is a lie at runtime.
-
-## triggerEvent
-
-- `gig_intro` / `gig_mid` are the only trigger points that fire _during_ the GIG scene. `useEventSystem`'s `triggerEvent` deliberately exempts them from both the GIG-scene block and the daily `eventsTriggeredToday` cap (and does not increment that counter) — they are gig-moment beats, not part of the daily random-event budget. They are fired once each per gig from `useRhythmGameLogic`'s `update` wrapper via `maybeFireGigProgressEvent` in `rhythmGameLoopUtils.ts` (at gig start, then progress ≥ 50, guarded by the `gigIntroFired`/`gigMidFired` ref flags), limited to at most one _shown_ event per setlist song by the `lastGigEventSongIndex` ref flag — only a successful `triggerEvent` consumes the song slot; a missed chance roll spends that event's single attempt but lets the other event still try in the same song. The helper is inert while `songTransitioning` (progress is stale from the previous song) and after `hasSubmittedResults`, and `processRhythmGameTick` pauses audio while the resulting `activeEvent` modal is open. Do NOT re-block GIG-scene events or remove the exemption: the `src/data/events/gig.ts` events, the `showman` trait, and the `stage_diver` milestone all depend on it.
 
 ## Long-Term Assets
 
@@ -83,7 +44,6 @@ baseline instead of duplicating formulas.
 - `MODULE_PROMPTS` is keyed by `AssetModule.imagePromptKey` (multiple modules may share a key). A test enforces that every module's key exists in the map.
 - `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) is the identity for `AssetModifiers` aggregation: multipliers = 1.0, additives = 0, flags = false. Economy functions accept the modifiers parameter as optional with this default.
 - `getActiveAssetModifiers` aggregates multipliers with `!== undefined` checks (not truthy) so a legit `fuelMultiplier: 0` ("free fuel") still applies; truthy guards would silently drop it.
-- `fuelMultiplier` is a CONSUMPTION modifier: it scales liters burned per trip in `calculateFuelCost` only. `calculateRefuelCost` must NOT apply it to the pump price — the tank deficit is physical liters, so discounting the price as well squares the discount (0.85 → ~28% instead of the advertised 15%).
 - `calculateChassisRepairCost(condition)` in `assetConfig.ts` is the single rounded (whole-euro) source of truth for chassis repair costs. `RepairConfirmModal`, the `repairChassis` action creator, and `handleRepairChassis` must all call it — condition decays fractionally (0.3/day), so independent computations drift between displayed and charged amounts.
 - `getTotalDailyObligations` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments`. This is the SoT for the bankruptcy check and for any same-day affordability/resource check that covers an imminent `advanceDay()` tick.
 - `getTotalDebt(state)` = sum of `liability.principalRemaining`. UI status surfaces (e.g. `AssetsStatusStrip`) must use this selector — never reduce `state.liabilities` inline.
@@ -95,5 +55,4 @@ baseline instead of duplicating formulas.
 - `processLiabilityTick` splits each payment into an interest portion (`principalRemaining × interestRate / 365`) and a principal reduction so `principalRemaining` tracks the amortization balance priced by `computeAmortization`; the final payment charges `min(dailyPayment, payoff)`, never a full installment past the payoff. Do not revert to subtracting the whole payment from principal.
 - Crowdfund success grants the materialized asset plus `fameStake` only — `targetAmount` is NOT paid out as cash on top (the raised funds pay for the build). Paying it out would make crowdfunding strictly dominate cash/loan acquisition.
 - `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview and `startCrowdfund` uses it to stamp `plannedSuccessProbability` on the campaign (the caller supplies neither odds nor roll); `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
-- `economy.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
