@@ -139,7 +139,7 @@ These are easy to get wrong and worth checking explicitly in any PR touching the
 | `START_GIG` side effects       | Resets `gigModifiers` AND minigame state. Completion reducers must not navigate.               | Reducer calling `navigate()` or changing `currentScene` on completion |
 | `lastGigStats.score` is raw    | Raw score is in thousands. Outcome logic uses `accuracy` (0–100) + `failed` flag.              | Comparing raw score to percentage thresholds                          |
 | `advanceDay`                   | Use typed `advanceDay(state)` from `src/context/actionCreators.ts:1226`.                       | Dispatching `createAdvanceDayAction()` without payload                |
-| Bankruptcy check               | Uses `getTotalDailyObligations(state)` from `src/utils/assetSelectors/stateAggregation.ts:75`. | Manual obligation sum in reducer                                      |
+| Bankruptcy check               | Uses `getTotalDailyObligations(state)` from `src/utils/assets/assetSelectors/stateAggregation.ts:75`. | Manual obligation sum in reducer                                      |
 | Contraband duration            | Measured in days, decremented on `ADVANCE_DAY` only — never per-gig.                           | Decrementing duration on gig events                                   |
 | Stash hydration spread order   | `{ ...itemObj, ...baseItem }` — base definition fields always win.                             | `{ ...baseItem, ...itemObj }` — save data overrides definition        |
 
