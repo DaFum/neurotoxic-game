@@ -1,5 +1,5 @@
 import {
-  clamp0to100,
+  clampPercent,
   finiteNumberOr,
   isFiniteNumber,
   isLooseRecord
@@ -375,7 +375,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       kind,
       chassisFlavor: flavor,
       chassisTier,
-      condition: clamp0to100(finiteNumberOr(clean.condition, 100)),
+      condition: clampPercent(clean.condition, 100),
       baseUpkeep: configTier.upkeep,
       baseDailyRevenue: configTier.revenue,
       slots: sanitizedSlots,

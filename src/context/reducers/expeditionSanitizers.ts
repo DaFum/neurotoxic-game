@@ -51,6 +51,7 @@ import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
+  readExpeditionSignalStep,
   getExpeditionConstraintRunVerdict,
   hasExpeditionRestSignal,
   materializeContractConstraints
@@ -71,6 +72,8 @@ import type {
   ExpeditionRewardLedgerEntry,
   ExpeditionSettlement,
   ExpeditionRunDraftOffer,
+  ExpeditionDoubleDownState,
+  ExpeditionGigOutcome,
   ExpeditionState,
   ExpeditionStatus,
   ExpeditionTechnicalCondition,
@@ -712,11 +715,26 @@ export const sanitizeExpeditionState = (
     if (
       !outcome?.contactIntel ||
       !preparedMap ||
-      !Array.isArray(rawIntelGrants) ||
       !Array.isArray(resolvedSourceIds)
     ) {
       return false
     }
+    // The durable marker written when the Contact resolved: it does not depend
+    // on the optional intel grant, which a different route choice abandons.
+    if (
+      resolvedSourceIds.some(id => {
+        if (typeof id !== 'string') return false
+        const prefix = `${sourceId}:contact_resolved:`
+        if (!id.startsWith(prefix)) return false
+        const step = id.slice(prefix.length)
+        return (
+          ROUTE_STEP_KEY.test(step) && Number.parseInt(step, 10) <= routeStep
+        )
+      })
+    ) {
+      return true
+    }
+    if (!Array.isArray(rawIntelGrants)) return false
     const currentNodeId = validVisitedPath.at(-1)
     return rawIntelGrants.some(rawGrant => {
       const grant = sanitizeIntelGrant(rawGrant)
@@ -1401,9 +1419,8 @@ const sanitizeGigOutcomeMap = (
   lastGigStats?: unknown,
   routeStep?: number,
   resolvedObligationSignalIds: string[] = []
-): Record<number, { venueId: string; accuracy: number }> => {
-  const result: Record<number, { venueId: string; accuracy: number }> =
-    Object.create(null)
+): Record<number, ExpeditionGigOutcome> => {
+  const result: Record<number, ExpeditionGigOutcome> = Object.create(null)
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
     // Canonical integer keys only: `Number('')` is 0 and `Number(' 1 ')` is 1,
@@ -1452,7 +1469,10 @@ const sanitizeGigOutcomeMap = (
       if (!hasProof) continue
     }
 
-    result[step] = { venueId, accuracy }
+    result[step] =
+      entry.failed === true
+        ? { venueId, accuracy, failed: true }
+        : { venueId, accuracy }
   }
   return result
 }
@@ -1534,6 +1554,36 @@ const sanitizeSocialResultProof = (
   }
 }
 
+/**
+ * Whether persisted run evidence shows the accepted double-down breached.
+ *
+ * @remarks
+ * Signals at the acceptance step count too: acceptance is refused while a
+ * matching signal already exists at that step (`isExpeditionDoubleDownAcceptable`).
+ */
+const isDoubleDownBreached = (
+  doubleDown: ExpeditionDoubleDownState,
+  signalIds: readonly string[],
+  heat: number
+): boolean => {
+  const after = (prefix: string): boolean =>
+    signalIds.some(signalId => {
+      if (!signalId.startsWith(prefix)) return false
+      const step = readExpeditionSignalStep(signalId)
+      return step !== null && step >= doubleDown.acceptedAtRouteStep
+    })
+  switch (doubleDown.addedConstraint.kind) {
+    case 'no_more_rest':
+      return after('rest:')
+    case 'social_silence':
+      return after('social_post:')
+    case 'heat_cap':
+      return heat > doubleDown.addedConstraint.maxHeat
+    default:
+      return false
+  }
+}
+
 const sanitizeActiveObligations = (
   value: unknown,
   runId: string | null,
@@ -1544,7 +1594,7 @@ const sanitizeActiveObligations = (
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
   lastSocialResult: ExpeditionState['lastSocialResult'] = null,
-  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {},
+  gigOutcomeByStep: Record<number, ExpeditionGigOutcome> = {},
   heat = 0,
   finaleType: ExpeditionState['finaleType'] = null
 ): ExpeditionState['activeObligations'] => {
@@ -1554,8 +1604,7 @@ const sanitizeActiveObligations = (
 
   const countQualifyingGigSignals = (minAccuracy: number): number => {
     let qualifyingCount = 0
-    for (let step = 0; step < validVisitedPath.length; step++) {
-      const expNodeId = validVisitedPath[step]
+    for (const expNodeId of validVisitedPath) {
       if (!expNodeId || !preparedMap) continue
       const metaNode = preparedMap.meta[expNodeId]
       const isGigClass =
@@ -1564,8 +1613,10 @@ const sanitizeActiveObligations = (
           metaNode.nodeClass === 'FESTIVAL' ||
           metaNode.nodeClass === 'FINALE')
       if (!isGigClass) continue
-      const outcome = gigOutcomeByStep[step]
-      if (!outcome) continue
+      // Keyed by the node's canonical route step, not its position in the
+      // visited path: a Nemesis Key jump makes the two differ.
+      const outcome = gigOutcomeByStep[metaNode.routeStep]
+      if (!outcome || outcome.failed === true) continue
       const node = preparedMap.nodes[expNodeId]
       if (outcome.venueId !== node?.venueId && outcome.venueId !== expNodeId)
         continue
@@ -1731,16 +1782,24 @@ const sanitizeActiveObligations = (
     // from, so theirs is kept.
     let derivedStatus: 'active' | 'completed' | 'failed' =
       progressList.length > 0 ? 'active' : status
-    if (progressList.some(item => item.failed)) derivedStatus = 'failed'
-    else if (
+    // The accepted double-down is rebuilt from the same persisted run evidence
+    // the base constraints use: a breach after its acceptance step, or the
+    // Finale signal for `finale_required`.
+    const doubleDownBreached =
+      doubleDown !== null &&
+      progressList.length > 0 &&
+      isDoubleDownBreached(doubleDown, resolvedObligationSignalIds, heat)
+    if (progressList.some(item => item.failed) || doubleDownBreached) {
+      derivedStatus = 'failed'
+    } else if (
       progressList.length > 0 &&
       progressList.every(item => item.satisfied)
     ) {
-      if (doubleDown?.addedConstraint.kind === 'finale_required') {
-        derivedStatus = 'active'
-      } else {
-        derivedStatus = 'completed'
-      }
+      derivedStatus =
+        doubleDown?.addedConstraint.kind === 'finale_required' &&
+        !hasFinaleSignal
+          ? 'active'
+          : 'completed'
     }
 
     seen.add(id)

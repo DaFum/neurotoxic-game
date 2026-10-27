@@ -303,7 +303,16 @@ export const processRhythmGameTick = ({
   setCorruptionState,
   disableCorruptionBurstAudio
 }: RhythmTickArgs): void => {
-  if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
+  // The player's pause menu stops the tick too. A playback start that was
+  // still loading when Pause opened lands on a running transport afterwards;
+  // without this guard notes would advance and miss under the open menu, and
+  // the stray transport is paused again through the same overlay path.
+  if (
+    activeEvent ||
+    stateRef.isGameOver ||
+    stateRef.songTransitioning ||
+    stateRef.userPaused
+  ) {
     handleOverlayPause(stateRef, isTransportRunning, pauseAudio)
     return
   }

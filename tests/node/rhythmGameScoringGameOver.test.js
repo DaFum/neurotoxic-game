@@ -70,7 +70,6 @@ const _stableI18n = {
 }
 mock.module('react-i18next', {
   namedExports: {
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useTranslation: () => _stableI18n,
     Trans: ({ i18nKey }) => i18nKey,
     initReactI18next: { type: '3rdParty', init: () => {} }
@@ -78,15 +77,14 @@ mock.module('react-i18next', {
 })
 mock.module('react', {
   namedExports: {
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useCallback: fn => fn,
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+
     useRef: initialValue => ({ current: initialValue }),
     useEffect: () => {},
     // `useAudioEngine` reads its context; without a provider this yields the
     // context default, which is the (mocked) real engine.
     createContext: defaultValue => ({ _defaultValue: defaultValue }),
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+
     use: context => context._defaultValue
   }
 })

@@ -74,6 +74,13 @@ describe('sanitizeAssets', () => {
     assert.equal(out2[0].condition, 0)
   })
 
+  it('preserves fractional condition across load (#3372)', () => {
+    for (const condition of [99.7, 0.7, 20.1, 0.3]) {
+      const out = sanitizeAssets([validAsset({ condition })])
+      assert.equal(out[0].condition, condition)
+    }
+  })
+
   it('rebuilds chassis economy fields from CHASSIS_CONFIG', () => {
     const out = sanitizeAssets([
       validAsset({

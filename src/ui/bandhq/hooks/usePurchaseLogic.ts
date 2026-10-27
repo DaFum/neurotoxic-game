@@ -450,6 +450,7 @@ export const usePurchaseLogic = ({
       player,
       band,
       social,
+      spendableCash,
       updatePlayer,
       updateBand,
       addToast,

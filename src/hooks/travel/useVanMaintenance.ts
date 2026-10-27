@@ -42,6 +42,8 @@ export const useVanMaintenance = ({
   advanceDay,
   dailyObligations,
   protectedCash = 0,
+  expeditionStatus,
+  recordExpeditionObligationSignal,
   addToast
 }: VanMaintenanceParams) => {
   const pendingRestRef = useRef(false)
@@ -209,6 +211,12 @@ export const useVanMaintenance = ({
     })
 
     updateBand({ members: newMembers })
+    // A rest from the menu is still a rest: it breaks a no-rest Contract or
+    // double-down exactly as a REST_STOP arrival does. The signal is banked
+    // against the node the run stands on, so repeats there count once.
+    if (expeditionStatus === 'active' && player.currentNodeId) {
+      recordExpeditionObligationSignal?.('rest', player.currentNodeId)
+    }
     advanceDay()
 
     addToast(
@@ -217,7 +225,17 @@ export const useVanMaintenance = ({
       }),
       'success'
     )
-  }, [band, updateBand, advanceDay, dailyObligations, addToast, isTravelingRef])
+  }, [
+    band,
+    updateBand,
+    advanceDay,
+    dailyObligations,
+    addToast,
+    isTravelingRef,
+    expeditionStatus,
+    recordExpeditionObligationSignal,
+    player.currentNodeId
+  ])
 
   return { handleRefuel, handleRepair, handleRestInVan }
 }

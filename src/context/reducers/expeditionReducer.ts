@@ -140,6 +140,8 @@ import {
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import {
   deriveExpeditionDoubleDownOffer,
+  isExpeditionDoubleDownAcceptable,
+  getCriticalContractFailureSignal,
   materializeCommittedContracts
 } from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
@@ -673,6 +675,17 @@ export const handleStartExpedition = (
         )
       },
       technicalCondition: createDefaultTechnicalCondition(),
+      // Band injuries the Career carried out of earlier Tours (net of any paid
+      // rehab) are the starting state of this one: the injury maps and the
+      // performance and eligibility rules that read them are run-scoped.
+      bandInjuryByMemberId: Object.assign(
+        Object.create(null),
+        Object.fromEntries(
+          Object.entries(state.career.bandConsequenceByMemberId ?? {}).filter(
+            ([, stage]) => stage !== 'none'
+          )
+        )
+      ) as NonNullable<GameState['expedition']['bandInjuryByMemberId']>,
       preparedSponsorOffers: [],
       preparedSponsorProvenance: undefined,
       activeObligations
@@ -1348,6 +1361,21 @@ export const handleCompleteExpedition = (
     state.expedition.lastGigResolvedAtRouteStep !== state.expedition.routeStep
   ) {
     return state
+  }
+
+  // A breached tour-ending Contract outranks a Finale that was played well:
+  // the Continue handler settles this gig's obligation signals before it
+  // completes the run, so the breach is already on the state here. Routing it
+  // through the failure owner keeps both live Continue and the pending-gig
+  // load recovery on the failed verdict, with no completion payout or event.
+  if (getCriticalContractFailureSignal(state)) {
+    const breach = deriveExpeditionPendingFailure(state)
+    if (!breach) return state
+    return finalizeExpedition(state, 'failed', {
+      reason: breach.reason,
+      finaleResultId: null,
+      explicitRareRewardIds: []
+    })
   }
 
   let completionState = state
@@ -2377,9 +2405,30 @@ const applyExpeditionEventDeltaOnce = (
     payload.sourceOptionId,
     resultIds
   )
-  const resolved = syncExpeditionPendingFailure(
+  const withEventHeat = syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+  // Heat an event adds is a gain like any other: an invariant it breaches
+  // (a max-Heat Contract, a Heat-cap double-down) fails the obligation in this
+  // same commit instead of waiting for the next unrelated signal, which a
+  // reload in between would turn into a failure with no penalty.
+  const resolved =
+    heatDelta > 0 &&
+    withEventHeat.expedition.activeObligations.some(
+      obligation => obligation.status === 'active'
+    )
+      ? syncExpeditionPendingFailure(
+          applyObligationSignal(
+            withEventHeat,
+            {
+              signalType: 'heat',
+              sourceId: `event:${payload.sourceEventId}:${payload.sourceOptionId}`,
+              expectedRouteStep: withEventHeat.expedition.routeStep
+            },
+            `event:${payload.sourceEventId}:${payload.sourceOptionId}`
+          )
+        )
+      : withEventHeat
 
   // Both consequences of this resolution read the run's route, so build it once.
   const eventRewardLoadout = resolved.expedition.loadout
@@ -2503,65 +2552,18 @@ export const handleApplyExpeditionEventDelta = (
 }
 
 /**
- * Processes a signal against all active expedition obligations and attempts to progress their resolution.
+ * Settles one obligation signal whose source the caller has already proven.
  *
  * @param state - The current game state object
- * @param payload - The event provenance including signal type, source identifier, and route step
- * @returns A new state with all applicable obligations updated and potential rewards applied
+ * @param payload - The signal being settled
+ * @param canonicalSourceId - The state-derived source id the signal is banked under
+ * @returns A new state with every active obligation re-evaluated, or the same state for a replay
  */
-export const handleRecordExpeditionObligationSignal = (
+const applyObligationSignal = (
   state: GameState,
-  payload: RecordExpeditionObligationSignalPayload
+  payload: RecordExpeditionObligationSignalPayload,
+  canonicalSourceId: string
 ): GameState => {
-  if (payload === null || typeof payload !== 'object') return state
-  if (
-    state.expedition.status !== 'active' ||
-    payload.expectedRouteStep !== state.expedition.routeStep
-  )
-    return state
-  if (typeof payload.sourceId !== 'string' || payload.sourceId.length === 0)
-    return state
-  // A `finale` signal pays Contracts out, so the gig proof alone is not enough:
-  // the run must stand on the route's Finale node and the gig must have passed.
-  // A state without a committed route has no Finale to stand on and keeps the
-  // gig proof as its only evidence.
-  if (payload.signalType === 'finale') {
-    if (state.lastGigStats?.failed === true) return state
-    const finaleMap = getActiveExpeditionMap(state)
-    const visited = state.expedition.visitedNodeIds
-    if (finaleMap && visited[visited.length - 1] !== finaleMap.finaleNodeId) {
-      return state
-    }
-  }
-  const canonicalSourceId = (() => {
-    switch (payload.signalType) {
-      case 'gig':
-      case 'finale':
-        // Bound to the step the gig resolved at, not the step the caller is
-        // standing on: `applyExpeditionRouteAdvance` carries `lastGigStats`
-        // and `currentGig` forward, so an unbound source would let a single
-        // gig produce a fresh signal id at every later route step.
-        return state.lastGigStats &&
-          state.currentGig?.id &&
-          state.expedition.lastGigResolvedAtRouteStep ===
-            payload.expectedRouteStep
-          ? state.currentGig.id
-          : null
-      case 'arrival':
-      case 'rest':
-        return state.player.currentNodeId
-      case 'heat':
-        return state.expedition.pressure.lastSevereEventId
-      case 'social_post':
-        // Same replay window as a gig: the settled result proof persists
-        // across advances, so it only counts at the step it resolved at.
-        return state.expedition.lastSocialResult?.resolvedAtRouteStep ===
-          payload.expectedRouteStep
-          ? (state.expedition.lastSocialResult?.id ?? null)
-          : null
-    }
-  })()
-  if (canonicalSourceId !== payload.sourceId) return state
   const signalId =
     payload.signalType === 'gig' && state.lastGigStats
       ? `gig:${canonicalSourceId}:${payload.expectedRouteStep}:${Math.round(
@@ -2595,8 +2597,10 @@ export const handleRecordExpeditionObligationSignal = (
         const prior = progressByConstraintId[constraint.id]
         if (!prior) continue
         const evidence = {
+          // A failed or forfeited gig keeps its accuracy on record but never
+          // qualifies as a good gig, so it carries no accuracy evidence.
           accuracy:
-            payload.signalType === 'gig'
+            payload.signalType === 'gig' && state.lastGigStats?.failed !== true
               ? state.lastGigStats?.accuracy
               : undefined,
           heat: currentHeat,
@@ -2733,7 +2737,8 @@ export const handleRecordExpeditionObligationSignal = (
           ...(state.expedition.gigOutcomeByStep ?? {}),
           [payload.expectedRouteStep]: {
             venueId: canonicalSourceId,
-            accuracy: accuracy ?? 0
+            accuracy: accuracy ?? 0,
+            ...(state.lastGigStats?.failed === true ? { failed: true } : {})
           }
         }
       : state.expedition.gigOutcomeByStep
@@ -2832,6 +2837,70 @@ export const handleRecordExpeditionObligationSignal = (
 }
 
 /**
+ * Processes a signal against all active expedition obligations and attempts to progress their resolution.
+ *
+ * @param state - The current game state object
+ * @param payload - The event provenance including signal type, source identifier, and route step
+ * @returns A new state with all applicable obligations updated and potential rewards applied
+ */
+export const handleRecordExpeditionObligationSignal = (
+  state: GameState,
+  payload: RecordExpeditionObligationSignalPayload
+): GameState => {
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  if (typeof payload.sourceId !== 'string' || payload.sourceId.length === 0)
+    return state
+  // A `finale` signal pays Contracts out, so the gig proof alone is not enough:
+  // the run must stand on the route's Finale node and the gig must have passed.
+  // A state without a committed route has no Finale to stand on and keeps the
+  // gig proof as its only evidence.
+  if (payload.signalType === 'finale') {
+    if (state.lastGigStats?.failed === true) return state
+    const finaleMap = getActiveExpeditionMap(state)
+    const visited = state.expedition.visitedNodeIds
+    if (finaleMap && visited[visited.length - 1] !== finaleMap.finaleNodeId) {
+      return state
+    }
+  }
+  const canonicalSourceId = (() => {
+    switch (payload.signalType) {
+      case 'gig':
+      case 'finale':
+        // Bound to the step the gig resolved at, not the step the caller is
+        // standing on: `applyExpeditionRouteAdvance` carries `lastGigStats`
+        // and `currentGig` forward, so an unbound source would let a single
+        // gig produce a fresh signal id at every later route step.
+        return state.lastGigStats &&
+          state.currentGig?.id &&
+          state.expedition.lastGigResolvedAtRouteStep ===
+            payload.expectedRouteStep
+          ? state.currentGig.id
+          : null
+      case 'arrival':
+      case 'rest':
+        return state.player.currentNodeId
+      case 'heat':
+        return state.expedition.pressure.lastSevereEventId
+      case 'social_post':
+        // Same replay window as a gig: the settled result proof persists
+        // across advances, so it only counts at the step it resolved at.
+        return state.expedition.lastSocialResult?.resolvedAtRouteStep ===
+          payload.expectedRouteStep
+          ? (state.expedition.lastSocialResult?.id ?? null)
+          : null
+    }
+  })()
+  if (canonicalSourceId === null || canonicalSourceId !== payload.sourceId)
+    return state
+  return applyObligationSignal(state, payload, canonicalSourceId)
+}
+
+/**
  * Processes a double-down attempt on an existing expedition obligation.
  *
  * @remarks
@@ -2865,6 +2934,15 @@ export const handleDoubleDownExpeditionObligation = (
     state.expedition.routeStep
   )
   if (payload.offerId !== derived.acceptedOfferId) return state
+  if (
+    !isExpeditionDoubleDownAcceptable(
+      derived,
+      state.expedition.resolvedObligationSignalIds,
+      state.expedition.routeStep,
+      finiteNumberOr(state.expedition.pressure.heat, 0)
+    )
+  )
+    return state
   const activeObligations = [...state.expedition.activeObligations]
   const obligation = activeObligations[index]
   if (!obligation) return state

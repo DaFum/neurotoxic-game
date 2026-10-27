@@ -7,7 +7,10 @@ import {
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout.ts'
 import { validateExpeditionCrewSelection } from '../../src/domain/expedition/crew.ts'
-import { getCrewStressBand } from '../../src/domain/expedition/crewStress.ts'
+import {
+  classifyGigCrewStress,
+  getCrewStressBand
+} from '../../src/domain/expedition/crewStress.ts'
 import { createCrewDevelopmentEligibilityProof } from '../../src/domain/expedition/career.ts'
 import {
   canResolveCrewRecoveryDebt,
@@ -140,4 +143,57 @@ test('typed creator surfaces derive route guards and career proof actions', () =
   )
   assert.equal(createCrewDevelopmentEligibilityProof(state, 'mika'), null)
   assert.equal(typeof validateExpeditionBuildCommitment, 'function')
+})
+
+test('gig Crew stress classification never rewards a failed gig (#3371)', () => {
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 100, failed: true }),
+    'poor_gig'
+  )
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 70, failed: true }),
+    'poor_gig'
+  )
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 59, failed: false }),
+    'poor_gig'
+  )
+  assert.equal(classifyGigCrewStress({ accuracy: 70, failed: false }), null)
+  assert.equal(
+    classifyGigCrewStress({ accuracy: 80, failed: false }),
+    'successful_gig'
+  )
+  assert.equal(classifyGigCrewStress({ accuracy: NaN }), null)
+  assert.equal(classifyGigCrewStress({}), null)
+})
+
+test('the next Tour starts with the Band injuries the Career carried over (#3374)', async () => {
+  const { gameReducer } = await import('../../src/context/gameReducer.ts')
+  const { ActionTypes } = await import('../../src/context/actionTypes.ts')
+  const { preparedState, fixtureLoadout } =
+    await import('../expeditionLifecycleFixture.js')
+  const startWith = consequences => {
+    const prepared = preparedState()
+    const withCareer = {
+      ...prepared,
+      career: { ...prepared.career, bandConsequenceByMemberId: consequences }
+    }
+    return gameReducer(withCareer, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: prepared.expedition.prep.prepId,
+        expectedRunSeed: prepared.runSeed,
+        loadout: fixtureLoadout()
+      }
+    })
+  }
+
+  const carried = startWith({ matze: 'light', lars: 'none' })
+  assert.equal(carried.expedition.status, 'active')
+  assert.equal(carried.expedition.bandInjuryByMemberId.matze, 'light')
+  assert.equal(carried.expedition.bandInjuryByMemberId.lars, undefined)
+
+  // After paid rehab the Career holds one stage less, and so does the run.
+  const rehabbed = startWith({ matze: 'none' })
+  assert.deepEqual({ ...rehabbed.expedition.bandInjuryByMemberId }, {})
 })

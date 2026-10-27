@@ -2515,3 +2515,420 @@ test('Authority route_detour treats NaN van fuel as empty', () => {
   state.player.van.fuel = NaN
   assert.ok(!getAvailableAuthoritySafeExits(state).includes('route_detour'))
 })
+
+test('a failed or quit gig never counts toward gig_accuracy_count (#3366)', () => {
+  const failed = activeState()
+  failed.lastGigStats = { accuracy: 100, failed: true }
+  failed.expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value = 2
+  const payload = {
+    signalType: 'gig',
+    sourceId: 'gig-proof',
+    expectedRouteStep: 1
+  }
+
+  const after = handleRecordExpeditionObligationSignal(failed, payload)
+  const obligation = after.expedition.activeObligations[0]
+  assert.equal(obligation.progressByConstraintId.three_good_gigs.value, 2)
+  assert.equal(obligation.status, 'active')
+  assert.equal(obligation.settled, false)
+  assert.equal(after.player.money, failed.player.money)
+  // The failure stays on the historical record instead of being dropped.
+  assert.equal(after.expedition.gigOutcomeByStep[1].failed, true)
+
+  const passed = activeState()
+  passed.lastGigStats = { accuracy: 100, failed: false }
+  passed.expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value = 2
+  const settled = handleRecordExpeditionObligationSignal(passed, payload)
+  assert.equal(settled.player.money, passed.player.money + 1500)
+  assert.equal(settled.expedition.gigOutcomeByStep[1].failed, undefined)
+})
+
+const contractRunOnCanonicalMap = () => {
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: {
+        ...fixtureLoadout(),
+        nativeContracts: [
+          { templateId: 'contract_three_good_gigs', targetNodeId: null }
+        ]
+      }
+    }
+  })
+  const loadout = started.expedition.loadout
+  const map = buildExpeditionMap(
+    started.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const walked = [map.startNodeId]
+  for (let step = 1; step <= map.meta[map.finaleNodeId].routeStep; step++) {
+    const edge = map.connections.find(
+      conn =>
+        conn.from === walked.at(-1) && map.meta[conn.to]?.routeStep === step
+    )
+    if (!edge) break
+    walked.push(edge.to)
+  }
+  return { started, map, walked }
+}
+
+const isGigClass = (map, nodeId) =>
+  ['CLUB_GIG', 'FESTIVAL', 'FINALE'].includes(map.meta[nodeId]?.nodeClass)
+
+const gigProgressAfterSanitize = ({ started, expedition, lastGigStats }) =>
+  sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      ...expedition,
+      // The save claims one good gig; load keeps it only with canonical proof.
+      activeObligations: started.expedition.activeObligations.map(
+        obligation => ({
+          ...obligation,
+          progressByConstraintId: {
+            three_good_gigs: {
+              ...obligation.progressByConstraintId.three_good_gigs,
+              value: 1
+            }
+          }
+        })
+      )
+    },
+    started.runSeed,
+    lastGigStats
+  ).activeObligations[0].progressByConstraintId.three_good_gigs.value
+
+test('load keeps gig contract progress after a Nemesis Key jump (#3369)', () => {
+  const { started, map, walked } = contractRunOnCanonicalMap()
+  // Skip walked[1]: the path then holds route steps [0, 2, ...] and every
+  // later array position trails its route step by one.
+  const jumpStep = walked.findIndex(
+    (id, step) => step >= 2 && isGigClass(map, id)
+  )
+  assert.ok(jumpStep >= 2, 'the walked route must reach a gig past step 1')
+  const visitedNodeIds = [walked[0], ...walked.slice(2, jumpStep + 1)]
+  const gigNodeId = walked[jumpStep]
+  const venueId = map.nodes[gigNodeId]?.venueId || gigNodeId
+
+  const progress = gigProgressAfterSanitize({
+    started,
+    lastGigStats: { score: 1000, accuracy: 100, failed: false },
+    expedition: {
+      visitedNodeIds,
+      routeStep: jumpStep,
+      consumedLegendaryIds: ['nemesis_key'],
+      resolvedObligationSignalIds: [],
+      gigOutcomeByStep: { [jumpStep]: { venueId, accuracy: 100 } }
+    }
+  })
+  assert.equal(progress, 1)
+})
+
+test('load does not count a historical failed gig toward the contract (#3366)', () => {
+  const { started, map, walked } = contractRunOnCanonicalMap()
+  const gigStep = walked.findIndex(
+    (id, step) => step > 0 && isGigClass(map, id)
+  )
+  assert.ok(gigStep > 0 && gigStep < walked.length - 1)
+  const venueId = map.nodes[walked[gigStep]]?.venueId || walked[gigStep]
+  const expedition = failed => ({
+    visitedNodeIds: walked.slice(0, gigStep + 2),
+    routeStep: gigStep + 1,
+    resolvedObligationSignalIds: [`gig:${venueId}:${gigStep}:100`],
+    gigOutcomeByStep: {
+      [gigStep]: failed
+        ? { venueId, accuracy: 100, failed: true }
+        : { venueId, accuracy: 100 }
+    }
+  })
+
+  assert.equal(
+    gigProgressAfterSanitize({
+      started,
+      lastGigStats: null,
+      expedition: expedition(false)
+    }),
+    1,
+    'a passed historical gig with signal proof still counts'
+  )
+  assert.equal(
+    gigProgressAfterSanitize({
+      started,
+      lastGigStats: null,
+      expedition: expedition(true)
+    }),
+    0
+  )
+})
+
+test('a rest signal on a non-rest node still breaks a no-rest contract (#3365)', () => {
+  const state = activeState()
+  state.player.currentNodeId = 'exp_2_0'
+  state.expedition.activeObligations = [
+    {
+      id: 'run-1:contract_no_rest_finale',
+      sourceType: 'native',
+      sourceId: 'contract_no_rest_finale',
+      constraints: [{ id: 'no_rest', kind: 'no_rest_before_finale' }],
+      progressByConstraintId: {
+        no_rest: {
+          constraintId: 'no_rest',
+          value: 0,
+          satisfied: false,
+          failed: false
+        }
+      },
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    }
+  ]
+  const payload = {
+    signalType: 'rest',
+    sourceId: 'exp_2_0',
+    expectedRouteStep: 1
+  }
+  const once = handleRecordExpeditionObligationSignal(state, payload)
+  assert.equal(once.expedition.activeObligations[0].status, 'failed')
+  // Resting again at the same node banks no second breach or penalty.
+  assert.strictEqual(
+    handleRecordExpeditionObligationSignal(once, payload),
+    once
+  )
+})
+
+import { deriveExpeditionDoubleDownOffer } from '../../src/domain/expedition/contracts.ts'
+
+/** Loads the run with a double-down of `kind` accepted, given run evidence. */
+const loadWithDoubleDown = (kind, { signalIds = [], heat } = {}) => {
+  const { started, walked } = contractRunOnCanonicalMap()
+  const routeStep = 7
+  const obligation = started.expedition.activeObligations[0]
+  let acceptedAt = -1
+  let offer = null
+  for (let step = 0; step < routeStep && !offer; step++) {
+    const candidate = deriveExpeditionDoubleDownOffer(
+      started.runSeed,
+      obligation.id,
+      step
+    )
+    if (candidate.addedConstraint.kind === kind) {
+      offer = candidate
+      acceptedAt = step
+    }
+  }
+  assert.ok(offer, `an offer of kind ${kind} must be derivable`)
+  const loaded = sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      visitedNodeIds: walked.slice(0, routeStep + 1),
+      routeStep,
+      resolvedObligationSignalIds: signalIds(acceptedAt),
+      pressure:
+        heat === undefined
+          ? started.expedition.pressure
+          : { ...started.expedition.pressure, heat },
+      activeObligations: [{ ...obligation, doubleDown: offer }]
+    },
+    started.runSeed,
+    null
+  )
+  return loaded.activeObligations[0]
+}
+
+test('load keeps a contract failed by its double-down restriction failed and settled (#3367)', () => {
+  const none = () => []
+  for (const [kind, signal] of [
+    ['no_more_rest', at => `rest:exp_5_0:${at + 1}`],
+    ['social_silence', at => `social_post:post_1:${at + 1}`]
+  ]) {
+    const breached = loadWithDoubleDown(kind, {
+      signalIds: at => [signal(at)]
+    })
+    assert.equal(breached.status, 'failed', `${kind} breach stays failed`)
+    assert.equal(breached.settled, true)
+
+    const clean = loadWithDoubleDown(kind, { signalIds: none })
+    assert.equal(clean.status, 'active', `${kind} without breach stays active`)
+  }
+  assert.equal(
+    loadWithDoubleDown('heat_cap', { signalIds: none, heat: 61 }).status,
+    'failed'
+  )
+  assert.equal(
+    loadWithDoubleDown('heat_cap', { signalIds: none, heat: 60 }).status,
+    'active'
+  )
+})
+
+const heatBreachFixture = () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  return {
+    ...started,
+    activeEvent: { id: 'expedition_authority_patrol' },
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        heat: 35,
+        pendingDirectorEventId: 'expedition_authority_patrol'
+      },
+      activeObligations: [
+        {
+          id: `${started.expedition.runId}:contract_keep_it_clean`,
+          sourceType: 'native',
+          sourceId: 'contract_keep_it_clean',
+          constraints: [{ id: 'keep_clean', kind: 'max_heat', maxHeat: 40 }],
+          progressByConstraintId: {
+            keep_clean: {
+              constraintId: 'keep_clean',
+              value: 0,
+              satisfied: false,
+              failed: false
+            }
+          },
+          status: 'active',
+          settled: false,
+          doubleDown: null
+        }
+      ]
+    }
+  }
+}
+
+test('Heat an event adds fails a max-Heat contract in the same commit, once (#3368)', () => {
+  const pending = heatBreachFixture()
+  const payload = {
+    expectedRouteStep: pending.expedition.routeStep,
+    sourceEventId: 'expedition_authority_patrol',
+    sourceOptionId: 'wave_through',
+    resultIds: ['attention_drawn']
+  }
+  const resolved = handleApplyExpeditionEventDelta(pending, payload)
+  const obligation = resolved.expedition.activeObligations[0]
+  assert.equal(obligation.status, 'failed')
+  assert.equal(obligation.settled, true)
+  // 35 + 8 event Heat, plus the template's own failure Heat once.
+  assert.ok(resolved.expedition.pressure.heat >= 43 + 10)
+  assert.equal(
+    resolved.expedition.resolvedObligationSignalIds.filter(id =>
+      id.startsWith('heat:')
+    ).length,
+    1
+  )
+
+  // Below the cap nothing fails.
+  const calm = handleApplyExpeditionEventDelta(
+    {
+      ...pending,
+      expedition: {
+        ...pending.expedition,
+        pressure: { ...pending.expedition.pressure, heat: 20 }
+      }
+    },
+    payload
+  )
+  assert.equal(calm.expedition.activeObligations[0].status, 'active')
+})
+
+test('a double-down already broken at this step is refused, later breaches at the step fail on load (#3380 review)', () => {
+  const { started, walked } = contractRunOnCanonicalMap()
+  const obligation = started.expedition.activeObligations[0]
+  let step = -1
+  for (let candidate = 0; candidate < 8 && step < 0; candidate++) {
+    if (
+      deriveExpeditionDoubleDownOffer(started.runSeed, obligation.id, candidate)
+        .addedConstraint.kind === 'no_more_rest'
+    )
+      step = candidate
+  }
+  assert.ok(step >= 0)
+  const atStep = walkTo(startedState(), 0)
+  const base = {
+    ...started,
+    expedition: { ...started.expedition, routeStep: step }
+  }
+  const offer = deriveExpeditionDoubleDownOffer(
+    started.runSeed,
+    obligation.id,
+    step
+  )
+  const action = {
+    type: ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION,
+    payload: {
+      obligationId: obligation.id,
+      offerId: offer.acceptedOfferId,
+      expectedRouteStep: step
+    }
+  }
+  assert.ok(atStep)
+  const accepted = gameReducer(base, action)
+  assert.notStrictEqual(accepted, base, 'accepted without a prior rest')
+
+  const rested = {
+    ...base,
+    expedition: {
+      ...base.expedition,
+      resolvedObligationSignalIds: [`rest:${walked[0]}:${step}`]
+    }
+  }
+  assert.strictEqual(gameReducer(rested, action), rested)
+
+  // A rest banked at the acceptance step after accepting still fails on load.
+  const loaded = loadWithDoubleDown('no_more_rest', {
+    signalIds: at => [`rest:exp_5_0:${at}`]
+  })
+  assert.equal(loaded.status, 'failed')
+})
+
+test('a heat_cap double-down is refused while Heat is already above its cap', () => {
+  const { started } = contractRunOnCanonicalMap()
+  const obligation = started.expedition.activeObligations[0]
+  let step = -1
+  for (let candidate = 0; candidate < 12 && step < 0; candidate++) {
+    if (
+      deriveExpeditionDoubleDownOffer(started.runSeed, obligation.id, candidate)
+        .addedConstraint.kind === 'heat_cap'
+    )
+      step = candidate
+  }
+  assert.ok(step >= 0)
+  const offer = deriveExpeditionDoubleDownOffer(
+    started.runSeed,
+    obligation.id,
+    step
+  )
+  const withHeat = heat => ({
+    ...started,
+    expedition: {
+      ...started.expedition,
+      routeStep: step,
+      pressure: { ...started.expedition.pressure, heat }
+    }
+  })
+  const action = {
+    type: ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION,
+    payload: {
+      obligationId: obligation.id,
+      offerId: offer.acceptedOfferId,
+      expectedRouteStep: step
+    }
+  }
+  const over = withHeat(offer.addedConstraint.maxHeat + 1)
+  assert.strictEqual(gameReducer(over, action), over)
+  const under = withHeat(offer.addedConstraint.maxHeat)
+  assert.notStrictEqual(gameReducer(under, action), under)
+})

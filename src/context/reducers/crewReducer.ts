@@ -13,6 +13,7 @@ import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import {
   applyCrewStressDelta,
+  classifyGigCrewStress,
   CREW_STRESS_SOURCE_DELTAS,
   EXPEDITION_SUPPLY_REST_STRESS_BONUS
 } from '../../domain/expedition/crewStress'
@@ -42,6 +43,9 @@ const rememberSource = (state: GameState, sourceId: string): string[] => [
 
 const eventProofId = (state: GameState, sourceId: string): string =>
   `${sourceId}:resolved:${state.expedition.routeStep}`
+
+const contactResolvedMarkerId = (sourceId: string, routeStep: number): string =>
+  `${sourceId}:contact_resolved:${routeStep}`
 
 const hasResolvedEventProof = (state: GameState, sourceId: string): boolean =>
   (state.expedition.resolvedCrewSourceIds ?? []).includes(
@@ -81,11 +85,8 @@ const hasCanonicalStressSource = (
     payload.sourceType === 'poor_gig' ||
     payload.sourceType === 'successful_gig'
   ) {
-    const accuracy = state.lastGigStats?.accuracy
     const correctOutcome =
-      typeof accuracy === 'number' &&
-      Number.isFinite(accuracy) &&
-      (payload.sourceType === 'poor_gig' ? accuracy < 60 : accuracy >= 80)
+      classifyGigCrewStress(state.lastGigStats ?? {}) === payload.sourceType
     return (
       correctOutcome &&
       payload.sourceId ===
@@ -561,9 +562,17 @@ export const applyResolvedCrewEventOutcome = (
     ...next,
     expedition: {
       ...next.expedition,
-      resolvedCrewSourceIds: (
-        next.expedition.resolvedCrewSourceIds ?? []
-      ).filter(id => id !== proofId)
+      resolvedCrewSourceIds: [
+        ...(next.expedition.resolvedCrewSourceIds ?? []).filter(
+          id => id !== proofId
+        ),
+        // The Contact itself stays on record, independent of the optional
+        // intel grant (which can be absent or abandoned with the route), so
+        // the secured reward it earned still has evidence after a reload.
+        ...(outcome.contactIntel
+          ? [contactResolvedMarkerId(sourceId, state.expedition.routeStep)]
+          : [])
+      ]
     }
   }
 }

@@ -49,3 +49,25 @@ export const getCrewStressBand = (
       : stress >= 40
         ? 'tense'
         : 'stable'
+
+/**
+ * Classifies a finished gig's Crew stress consequence.
+ *
+ * @remarks
+ * A failed or forfeited gig never earns the successful-gig relief, however
+ * accurate the notes played before it ended: it counts as a poor gig. Between
+ * 60 and 80 accuracy a completed gig has no Crew consequence.
+ *
+ * @param stats - Terminal gig flag and accuracy (0-100).
+ * @returns The stress source type, or `null` when the gig has no consequence.
+ */
+export const classifyGigCrewStress = (stats: {
+  accuracy?: unknown
+  failed?: unknown
+}): 'poor_gig' | 'successful_gig' | null => {
+  if (stats.failed === true) return 'poor_gig'
+  const accuracy = stats.accuracy
+  if (typeof accuracy !== 'number' || !Number.isFinite(accuracy)) return null
+  if (accuracy < 60) return 'poor_gig'
+  return accuracy >= 80 ? 'successful_gig' : null
+}

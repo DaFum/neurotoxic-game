@@ -50,7 +50,8 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/projectDeclarationsLibCheck.test.js',
   'tests/node/testRunners.test.js',
   'tests/node/updateSymbols.test.js',
-  'tests/node/vitePwaConfig.test.js'
+  'tests/node/vitePwaConfig.test.js',
+  'tests/node/workflowScripts.test.js'
 ])
 
 const toolingNodeTestSet = new Set(TOOLING_NODE_TESTS)

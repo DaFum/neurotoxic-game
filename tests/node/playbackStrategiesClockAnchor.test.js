@@ -12,6 +12,7 @@ const RAW_NOW_SEC = 100
 const LOOK_AHEAD_SEC = 0.15
 
 const mockStartGigClock = mock.fn()
+const mockPlayMidiFile = mock.fn(async () => false)
 const mockPlaySongFromData = mock.fn(async () => true)
 const mockStartMetalGenerator = mock.fn(async () => true)
 
@@ -34,7 +35,7 @@ mock.module(
   new URL('../../src/utils/audio/midiPlayback.ts', import.meta.url).href,
   {
     namedExports: {
-      playMidiFile: mock.fn(async () => false),
+      playMidiFile: mockPlayMidiFile,
       playSongFromData: mockPlaySongFromData
     }
   }
@@ -66,6 +67,7 @@ const expectedStartSec = RAW_NOW_SEC + GIG_LEAD_IN_MS / 1000 + LOOK_AHEAD_SEC
 const reset = () => {
   mockStartGigClock.mock.resetCalls()
   mockPlaySongFromData.mock.resetCalls()
+  mockPlayMidiFile.mock.resetCalls()
   mockStartMetalGenerator.mock.resetCalls()
 }
 
@@ -98,4 +100,48 @@ test('procedural metal starts the transport where the gig clock is anchored', as
   const options = mockStartMetalGenerator.mock.calls[0].arguments[2]
   assert.ok(Math.abs(clockStart - expectedStartSec) < 1e-9)
   assert.strictEqual(options.startTimeSec, clockStart)
+})
+
+test('MIDI synthesis anchors the clock only once the MIDI has loaded (#3376)', async () => {
+  reset()
+  let loaded = false
+  mockPlayMidiFile.mock.mockImplementationOnce(async (_f, _o, _l, _d, opts) => {
+    // The fetch is still pending: nothing may be anchored yet.
+    assert.equal(mockStartGigClock.mock.callCount(), 0)
+    loaded = true
+    const startTimeSec = opts.resolveStartTimeSec()
+    assert.equal(mockStartGigClock.mock.callCount(), 1)
+    assert.strictEqual(
+      mockStartGigClock.mock.calls[0].arguments[0].startTimeSec,
+      startTimeSec
+    )
+    assert.ok(Math.abs(startTimeSec - expectedStartSec) < 1e-9)
+    return true
+  })
+  const notes = [{ time: 1000, laneIndex: 0, hit: false, visible: true }]
+  const ok = await playAudioForSong(
+    { id: 'song', name: 'Song', bpm: 120, notes, sourceMid: 'song.mid' },
+    notes,
+    () => {},
+    () => 0.5
+  )
+  assert.ok(ok)
+  assert.equal(loaded, true)
+})
+
+test('a failed MIDI load never starts the gig clock (#3376)', async () => {
+  reset()
+  const notes = [{ time: 1000, laneIndex: 0, hit: false, visible: true }]
+  await playAudioForSong(
+    { id: 'song', name: 'Song', bpm: 120, notes, sourceMid: 'song.mid' },
+    notes,
+    () => {},
+    () => 0.5
+  )
+  // playMidiFile returned false without resolving a start time; the later
+  // synthesis fallbacks anchor their own clock, so only one start may exist.
+  assert.equal(mockStartGigClock.mock.callCount(), 1)
+  assert.ok(
+    Number.isFinite(mockStartGigClock.mock.calls[0].arguments[0].startTimeSec)
+  )
 })

@@ -90,7 +90,8 @@ export const Overworld = () => {
     changeScene,
     startTravelMinigame,
     spawnRivalBand,
-    updateRivalBand
+    updateRivalBand,
+    recordExpeditionObligationSignal
   } = useGameActions()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
@@ -120,6 +121,7 @@ export const Overworld = () => {
     reputationByRegion,
     venueBlacklist,
     expeditionStatus,
+    recordExpeditionObligationSignal,
     expeditionDraftPending,
     expeditionFuelMultiplier,
     expeditionProtectedCash,

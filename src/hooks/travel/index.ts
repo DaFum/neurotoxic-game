@@ -65,6 +65,8 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     advanceDay: params.advanceDay,
     dailyObligations,
     protectedCash: params.expeditionProtectedCash,
+    expeditionStatus: params.expeditionStatus,
+    recordExpeditionObligationSignal: params.recordExpeditionObligationSignal,
     addToast: params.addToast
   })
 

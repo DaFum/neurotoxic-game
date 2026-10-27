@@ -50,6 +50,11 @@ export type TravelLogicParams = {
   venueBlacklist?: string[]
   /** Expedition run status, so a gig re-entry honours the Fame booking lock. */
   expeditionStatus?: GameState['expedition']['status']
+  /** Banks a run obligation signal; the van rest records its `rest` breach here. */
+  recordExpeditionObligationSignal?: (
+    signalType: 'rest',
+    sourceId: string
+  ) => void
   /** A Run Draft offer is waiting; the route refuses travel until it is picked. */
   expeditionDraftPending?: boolean
   /**
@@ -149,5 +154,11 @@ export interface VanMaintenanceParams {
   dailyObligations: number
   /** Career cash an active run may not spend; `0` outside a run. */
   protectedCash?: number
+  /** Run status, so only a rest inside an active run is banked as a breach. */
+  expeditionStatus?: GameState['expedition']['status']
+  recordExpeditionObligationSignal?: (
+    signalType: 'rest',
+    sourceId: string
+  ) => void
   addToast: OptionalToastCallback
 }

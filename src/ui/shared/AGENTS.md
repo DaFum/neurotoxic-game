@@ -18,3 +18,4 @@
 - Dialog behaviour (modal stack, Tab trap, `inert` background, focus restore, the single window-level Escape handler) lives in `useModalBehavior`. `Modal` uses it; hand-styled shells (`BandHQ`, `BloodBankModal`) and the critical dialogs (`EventModal`, `CrisisModal` via `CriticalDialogShell`) attach its `overlayRef`/`dialogRef` and must not add their own Escape/focus-trap listeners.
 - Tablists use `createRovingTabs` (`getTabProps(id)`) for Arrow/Home/End and roving `tabIndex`; do not hand-roll tab keyboard handling.
 - Meters use `ProgressBar` (clamped width, `role='progressbar'`); pass `trackClassName`/`fillClassName` to keep a compact HUD frame instead of re-inlining a bar.
+- `GeneratedImagePanel` appends `sizeHint` only to the remote generated URL. The bundled offline fallback stays byte-identical to its precache entry (a size query misses the Workbox precache and fails offline).

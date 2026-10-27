@@ -4,6 +4,7 @@ import {
 } from '../../data/expedition/contracts'
 import type { GameState } from '../../types'
 import type {
+  ExpeditionDoubleDownState,
   ActiveObligationState,
   ExpeditionContractConstraint,
   ExpeditionContractTemplate,
@@ -240,6 +241,48 @@ export const materializeCommittedContracts = (
       commitment.targetNodeId
     )
   }))
+
+/** Route step a `<kind>:<id>:<step>` signal id was banked at, else `null`. */
+export const readExpeditionSignalStep = (signalId: string): number | null => {
+  const tail = signalId.slice(signalId.lastIndexOf(':') + 1)
+  return /^(?:0|[1-9]\d*)$/.test(tail) ? Number.parseInt(tail, 10) : null
+}
+
+/**
+ * Whether a double-down can still be accepted at this step.
+ *
+ * @remarks
+ * A restriction already broken by a signal banked at the same step would be
+ * accepted already failed. Refusing it keeps load honest: every matching
+ * signal at or after the acceptance step is then provably a later breach.
+ */
+export const isExpeditionDoubleDownAcceptable = (
+  offer: Pick<ExpeditionDoubleDownState, 'addedConstraint'>,
+  resolvedObligationSignalIds: readonly string[],
+  routeStep: number,
+  heat = 0
+): boolean => {
+  // A Heat cap already exceeded would be accepted failed: the next signal (or
+  // a reload) fails the obligation and charges the double-down penalty.
+  if (
+    offer.addedConstraint.kind === 'heat_cap' &&
+    heat > offer.addedConstraint.maxHeat
+  ) {
+    return false
+  }
+  const prefix =
+    offer.addedConstraint.kind === 'no_more_rest'
+      ? 'rest:'
+      : offer.addedConstraint.kind === 'social_silence'
+        ? 'social_post:'
+        : null
+  if (prefix === null) return true
+  return !resolvedObligationSignalIds.some(
+    signalId =>
+      signalId.startsWith(prefix) &&
+      readExpeditionSignalStep(signalId) === routeStep
+  )
+}
 
 export const deriveExpeditionDoubleDownOffer = (
   runSeed: number,
