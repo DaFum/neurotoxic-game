@@ -448,6 +448,16 @@ const copySafeMapNodeArray = (
   return copied
 }
 
+/**
+ * Sanitizes and reconstructs a GameMap object from loaded state data.
+ *
+ * @remarks
+ * Validates map nodes and their coordinate properties. Silently drops invalid nodes
+ * and strips forbidden keys or improperly shaped attributes to prevent runtime errors.
+ *
+ * @param gameMap - The raw, untrusted game map data payload
+ * @returns A validated map object, or null if the payload structure is entirely malformed
+ */
 export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   if (typeof gameMap !== 'object' || gameMap === null) {
     return null
@@ -1157,6 +1167,16 @@ export const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
+/**
+ * Migrates legacy player location strings to the modern standardized format.
+ *
+ * @remarks
+ * Normalizes older string structures (e.g. without the `venues:` prefix or missing the `.name` suffix)
+ * into a standard format usable by the translation system and location matching.
+ *
+ * @param location - The untrusted or potentially legacy location string
+ * @returns A normalized string formatted correctly for the current system
+ */
 export const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
@@ -1173,6 +1193,16 @@ export const migratePlayerLocation = (location: unknown): string => {
   return `venues:${normalizedLocation}.name`
 }
 
+/**
+ * Normalizes an older venue identifier to its current valid form.
+ *
+ * @remarks
+ * Applies validation and normalization to venue identifiers to ensure backward
+ * compatibility with older save files where venue IDs may have varied.
+ *
+ * @param id - The legacy venue identifier
+ * @returns A normalized venue ID string
+ */
 export const migrateLegacyVenueId = (id: unknown): string => {
   if (typeof id !== 'string') return ''
   return normalizeVenueId(id) ?? id
