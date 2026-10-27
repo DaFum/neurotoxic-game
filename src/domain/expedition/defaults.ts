@@ -9,6 +9,7 @@
  */
 
 import type {
+  ExpeditionGigOutcome,
   ExpeditionBandInjuryStage,
   ExpeditionCrewInjuryStage,
   ExpeditionRouteProfile,
@@ -161,8 +162,5 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   lastSocialResult: null,
   pendingSocialSettlement: null,
   lastGigResolvedAtRouteStep: null,
-  gigOutcomeByStep: Object.create(null) as Record<
-    number,
-    { venueId: string; accuracy: number; failed?: boolean }
-  >
+  gigOutcomeByStep: Object.create(null) as Record<number, ExpeditionGigOutcome>
 })

@@ -2893,3 +2893,42 @@ test('a double-down already broken at this step is refused, later breaches at th
   })
   assert.equal(loaded.status, 'failed')
 })
+
+test('a heat_cap double-down is refused while Heat is already above its cap', () => {
+  const { started } = contractRunOnCanonicalMap()
+  const obligation = started.expedition.activeObligations[0]
+  let step = -1
+  for (let candidate = 0; candidate < 12 && step < 0; candidate++) {
+    if (
+      deriveExpeditionDoubleDownOffer(started.runSeed, obligation.id, candidate)
+        .addedConstraint.kind === 'heat_cap'
+    )
+      step = candidate
+  }
+  assert.ok(step >= 0)
+  const offer = deriveExpeditionDoubleDownOffer(
+    started.runSeed,
+    obligation.id,
+    step
+  )
+  const withHeat = heat => ({
+    ...started,
+    expedition: {
+      ...started.expedition,
+      routeStep: step,
+      pressure: { ...started.expedition.pressure, heat }
+    }
+  })
+  const action = {
+    type: ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION,
+    payload: {
+      obligationId: obligation.id,
+      offerId: offer.acceptedOfferId,
+      expectedRouteStep: step
+    }
+  }
+  const over = withHeat(offer.addedConstraint.maxHeat + 1)
+  assert.strictEqual(gameReducer(over, action), over)
+  const under = withHeat(offer.addedConstraint.maxHeat)
+  assert.notStrictEqual(gameReducer(under, action), under)
+})

@@ -73,6 +73,7 @@ import type {
   ExpeditionSettlement,
   ExpeditionRunDraftOffer,
   ExpeditionDoubleDownState,
+  ExpeditionGigOutcome,
   ExpeditionState,
   ExpeditionStatus,
   ExpeditionTechnicalCondition,
@@ -1418,11 +1419,8 @@ const sanitizeGigOutcomeMap = (
   lastGigStats?: unknown,
   routeStep?: number,
   resolvedObligationSignalIds: string[] = []
-): Record<number, { venueId: string; accuracy: number; failed?: boolean }> => {
-  const result: Record<
-    number,
-    { venueId: string; accuracy: number; failed?: boolean }
-  > = Object.create(null)
+): Record<number, ExpeditionGigOutcome> => {
+  const result: Record<number, ExpeditionGigOutcome> = Object.create(null)
   if (!isLooseRecord(value)) return result
   for (const [key, entry] of Object.entries(value)) {
     // Canonical integer keys only: `Number('')` is 0 and `Number(' 1 ')` is 1,
@@ -1596,10 +1594,7 @@ const sanitizeActiveObligations = (
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
   lastSocialResult: ExpeditionState['lastSocialResult'] = null,
-  gigOutcomeByStep: Record<
-    number,
-    { venueId: string; accuracy: number; failed?: boolean }
-  > = {},
+  gigOutcomeByStep: Record<number, ExpeditionGigOutcome> = {},
   heat = 0,
   finaleType: ExpeditionState['finaleType'] = null
 ): ExpeditionState['activeObligations'] => {

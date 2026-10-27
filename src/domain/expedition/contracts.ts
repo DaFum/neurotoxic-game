@@ -259,8 +259,17 @@ export const readExpeditionSignalStep = (signalId: string): number | null => {
 export const isExpeditionDoubleDownAcceptable = (
   offer: Pick<ExpeditionDoubleDownState, 'addedConstraint'>,
   resolvedObligationSignalIds: readonly string[],
-  routeStep: number
+  routeStep: number,
+  heat = 0
 ): boolean => {
+  // A Heat cap already exceeded would be accepted failed: the next signal (or
+  // a reload) fails the obligation and charges the double-down penalty.
+  if (
+    offer.addedConstraint.kind === 'heat_cap' &&
+    heat > offer.addedConstraint.maxHeat
+  ) {
+    return false
+  }
   const prefix =
     offer.addedConstraint.kind === 'no_more_rest'
       ? 'rest:'

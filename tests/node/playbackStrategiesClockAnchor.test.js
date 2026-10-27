@@ -140,10 +140,8 @@ test('a failed MIDI load never starts the gig clock (#3376)', async () => {
   )
   // playMidiFile returned false without resolving a start time; the later
   // synthesis fallbacks anchor their own clock, so only one start may exist.
-  assert.equal(
-    mockStartGigClock.mock.calls.filter(
-      call => call.arguments[0].startTimeSec === undefined
-    ).length,
-    0
+  assert.equal(mockStartGigClock.mock.callCount(), 1)
+  assert.ok(
+    Number.isFinite(mockStartGigClock.mock.calls[0].arguments[0].startTimeSec)
   )
 })

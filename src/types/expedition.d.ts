@@ -585,6 +585,12 @@ export type ExpeditionDoubleDownConstraint =
   | { kind: 'heat_cap'; maxHeat: 60 }
   | { kind: 'finale_required' }
   | { kind: 'social_silence'; maxPosts: 0 }
+/** A resolved gig as the run records it; `failed` marks a quit or lost gig. */
+export interface ExpeditionGigOutcome {
+  venueId: string
+  accuracy: number
+  failed?: boolean
+}
 export interface ExpeditionDoubleDownState {
   acceptedOfferId: string
   derivationKey: string
@@ -772,10 +778,7 @@ export interface ExpeditionState {
   lastSocialResult: ExpeditionSocialResultProof | null
   pendingSocialSettlement?: { routeStep: number; gigId: string | null } | null
   lastGigResolvedAtRouteStep?: number | null
-  gigOutcomeByStep?: Record<
-    number,
-    { venueId: string; accuracy: number; failed?: boolean }
-  >
+  gigOutcomeByStep?: Record<number, ExpeditionGigOutcome>
 }
 
 export type ExpeditionCrewRole =

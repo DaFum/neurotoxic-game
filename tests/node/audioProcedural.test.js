@@ -401,6 +401,41 @@ test('playMidiFile Tests', async t => {
     }
   )
 
+  await t.test(
+    'Options: resolveStartTimeSec runs only after the MIDI load completes (#3376)',
+    async () => {
+      let releaseFetch
+      global.fetch.mock.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            releaseFetch = () =>
+              resolve({
+                ok: true,
+                arrayBuffer: async () => new ArrayBuffer(10)
+              })
+          })
+      )
+      const resolveStartTimeSec = mock.fn(() => 42)
+      const playback = playMidiFile('test.mid', 0, false, 0, {
+        resolveStartTimeSec
+      })
+      // Let the call reach its pending fetch.
+      while (!releaseFetch) await new Promise(resolve => setImmediate(resolve))
+      assert.strictEqual(
+        resolveStartTimeSec.mock.callCount(),
+        0,
+        'the start time must not be chosen while the MIDI is still loading'
+      )
+
+      releaseFetch()
+      assert.strictEqual(await playback, true)
+      assert.strictEqual(resolveStartTimeSec.mock.callCount(), 1)
+      const startCall = mockTransport.start.mock.calls.at(-1)
+      assert.ok(startCall, 'the transport starts after the load')
+      assert.strictEqual(startCall.arguments[0], 42)
+    }
+  )
+
   await t.test('Options: stopAfterSeconds schedules stop', async () => {
     const result = await playMidiFile('test.mid', 0, false, 0, {
       stopAfterSeconds: 5

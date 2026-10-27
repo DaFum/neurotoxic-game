@@ -161,6 +161,7 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
   const resolvedSignalIds = useGameSelector(
     state => state.expedition?.resolvedObligationSignalIds
   )
+  const heat = useGameSelector(state => state.expedition?.pressure?.heat ?? 0)
   const routeStep = useGameSelector(state => state.expedition?.routeStep ?? 0)
 
   if (!activeObligations || activeObligations.length === 0) return null
@@ -186,7 +187,8 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
           isExpeditionDoubleDownAcceptable(
             derivedOffer,
             resolvedSignalIds ?? [],
-            routeStep
+            routeStep,
+            heat
           )
             ? derivedOffer
             : null

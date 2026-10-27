@@ -2938,7 +2938,8 @@ export const handleDoubleDownExpeditionObligation = (
     !isExpeditionDoubleDownAcceptable(
       derived,
       state.expedition.resolvedObligationSignalIds,
-      state.expedition.routeStep
+      state.expedition.routeStep,
+      finiteNumberOr(state.expedition.pressure.heat, 0)
     )
   )
     return state
