@@ -1,5 +1,6 @@
 import { finiteNumberOr } from './gameState'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
+import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
 /**
@@ -117,4 +118,25 @@ export const resolveMerchRestock = (
       bundleAmount
     })
   }
+}
+
+/**
+ * Decrements sold-merch counts from a band inventory, clamped at zero (pure).
+ * @param inventory - Current band inventory.
+ * @param soldMerch - Quantities sold this gig, keyed by merch id.
+ * @returns A new inventory record with sold quantities removed.
+ */
+export function buildSoldMerchInventory(
+  inventory: BandState['inventory'] | undefined | null,
+  soldMerch: Record<string, number>
+): BandState['inventory'] {
+  const updatedInventory = { ...(inventory || {}) }
+  for (const merchKey in soldMerch) {
+    if (Object.hasOwn(soldMerch, merchKey)) {
+      const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
+      const currentAmount = finiteNumberOr(updatedInventory[merchKey], 0)
+      updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
+    }
+  }
+  return updatedInventory
 }

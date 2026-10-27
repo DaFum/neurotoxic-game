@@ -3,7 +3,7 @@ import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
-import { buildSoldMerchInventory } from '../../hooks/postGig/handlers/continueHandlerUtils'
+import { buildSoldMerchInventory } from '../../utils/merchUtils'
 import {
   hasForbiddenKeysDeep,
   hasForbiddenOwnKeys

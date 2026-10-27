@@ -45,7 +45,10 @@ import {
 } from '../../data/inventoryItems'
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
-import { resolveActiveExpeditionCargo } from '../../domain/expedition/cargo'
+import {
+  isPackedContrabandEntry,
+  resolveActiveExpeditionCargo
+} from '../../domain/expedition/cargo'
 import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
 import { resolveMerchRestock } from '../../utils/merchUtils'
 import {
@@ -710,11 +713,8 @@ export const handleUseContraband = (
   const isActiveRun = state.expedition?.status === 'active'
   const activeCargo = resolveActiveExpeditionCargo(state)
   const packed = activeCargo?.contraband ?? []
-  const packedIndex = packed.findIndex(
-    entry =>
-      entry.stashKey === contrabandId &&
-      entry.stacks > 0 &&
-      (entry.instanceId === null || entry.instanceId === instanceId)
+  const packedIndex = packed.findIndex(entry =>
+    isPackedContrabandEntry(entry, contrabandId, instanceId)
   )
   if (isActiveRun && packedIndex === -1) return state
 

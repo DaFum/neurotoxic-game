@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  isPackedContrabandEntry,
   materializeExpeditionCargo,
   getExpeditionCargoView
 } from '../../src/domain/expedition/cargo'
@@ -187,4 +188,24 @@ test('Task 4: Expedition Cargo Manifest and Capacity Model', async t => {
       assert.equal(cargoView.technicalGearItemIds.includes(GEAR_3), false)
     }
   )
+})
+
+test('isPackedContrabandEntry matches id, positive stacks and instance', () => {
+  const packed = (instanceId, stacks = 1) => ({
+    stashKey: 'item_a',
+    instanceId,
+    stacks
+  })
+
+  assert.equal(isPackedContrabandEntry(packed('i1'), 'item_a', 'i1'), true)
+  // A null packed instance covers any instance of the same contraband.
+  assert.equal(isPackedContrabandEntry(packed(null), 'item_a', 'i2'), true)
+  assert.equal(isPackedContrabandEntry(packed(null), 'item_a', undefined), true)
+  assert.equal(isPackedContrabandEntry(packed('i1'), 'item_a', 'i2'), false)
+  assert.equal(
+    isPackedContrabandEntry(packed('i1'), 'item_a', undefined),
+    false
+  )
+  assert.equal(isPackedContrabandEntry(packed('i1'), 'item_b', 'i1'), false)
+  assert.equal(isPackedContrabandEntry(packed('i1', 0), 'item_a', 'i1'), false)
 })

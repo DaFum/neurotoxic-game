@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import {
-  buildSoldMerchInventory,
-  buildStoryFlagQuests
-} from '../../src/hooks/postGig/handlers/continueHandlerUtils'
+import { buildSoldMerchInventory } from '../../src/utils/merchUtils'
+import { buildStoryFlagQuests } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 import {
   QUEST_APOLOGY_TOUR,
   QUEST_EGO_MANAGEMENT

@@ -40,27 +40,6 @@ import { FLAGS } from '../../../data/flags.registry'
 
 type AddQuestInput = Parameters<HandlerDispatchers['addQuest']>[0]
 
-/**
- * Decrements sold-merch counts from a band inventory, clamped at zero (pure).
- * @param inventory - Current band inventory.
- * @param soldMerch - Quantities sold this gig, keyed by merch id.
- * @returns A new inventory record with sold quantities removed.
- */
-export function buildSoldMerchInventory(
-  inventory: BandState['inventory'] | undefined | null,
-  soldMerch: Record<string, number>
-): BandState['inventory'] {
-  const updatedInventory = { ...(inventory || {}) }
-  for (const merchKey in soldMerch) {
-    if (Object.hasOwn(soldMerch, merchKey)) {
-      const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
-      const currentAmount = finiteNumberOr(updatedInventory[merchKey], 0)
-      updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
-    }
-  }
-  return updatedInventory
-}
-
 const STORY_QUEST_MAPPING = [
   { flag: FLAGS.CANCEL_QUEST_ACTIVE, questId: QUEST_APOLOGY_TOUR },
   { flag: FLAGS.BREAKUP_QUEST_ACTIVE, questId: QUEST_EGO_MANAGEMENT }
