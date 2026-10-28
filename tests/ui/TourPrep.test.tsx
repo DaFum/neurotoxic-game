@@ -493,4 +493,13 @@ describe('TourPrep scene', () => {
     )
     expect(actions.changeScene).toHaveBeenCalledWith('MENU')
   })
+
+  it('does not add top clearance for a global HUD that is hidden on TourPrep', () => {
+    state.current = buildState()
+    const { container } = render(<TourPrep />)
+    const root = container.firstElementChild
+    expect(root?.className).not.toContain('pt-48')
+    expect(root?.className).not.toContain('sm:pt-44')
+    expect(root?.className).not.toContain('lg:pt-44')
+  })
 })

@@ -127,7 +127,7 @@ export const RunSummary = () => {
   const { settlement } = outcome
 
   return (
-    <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 max-sm:pt-44 sm:p-6 lg:p-8'>
+    <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8'>
       <div
         className='z-10 w-full max-w-2xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 flex flex-col gap-4'
         data-testid='expedition-run-summary'

@@ -207,14 +207,14 @@ describe('Between-Tour decisions name their target', () => {
   })
 })
 
-describe('the summary clears the global HUD on phone', () => {
-  it('reserves phone padding above the title', () => {
+describe('the summary needs no global HUD phone clearance', () => {
+  it('does not reserve phone padding for the hidden global HUD', () => {
     claimResult = 'not_applicable'
     owesLegendary = false
     render(<RunSummary />)
 
     expect(
       screen.getByTestId('expedition-run-summary').parentElement?.className
-    ).toContain('max-sm:pt-44')
+    ).not.toContain('max-sm:pt-44')
   })
 })
