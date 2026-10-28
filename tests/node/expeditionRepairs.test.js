@@ -255,7 +255,7 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
   )
 
   await t.test(
-    'A second same-step repair of the same group adds no duplicate defect id',
+    'A second improvise attempt at the cap preserves state and defects',
     () => {
       // Defect ids are unique per run: every transition addresses a defect by
       // id, so a second copy could never be revealed, triggered or resolved.
@@ -270,7 +270,7 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
       )
       assert.equal(once.expedition.technicalCondition.defects.length, 1)
       const twice = handleExecuteExpeditionRepair(once, payload)
-      assert.notEqual(twice, once)
+      assert.equal(twice, once)
       assert.deepEqual(
         twice.expedition.technicalCondition.defects,
         once.expedition.technicalCondition.defects
@@ -345,6 +345,137 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
         expectedRouteStep: 3
       })
       assert.equal(sameGroupRes.ok, false)
+    }
+  )
+
+  for (const condition of [45, 46, 49, 50]) {
+    await t.test(
+      `Improvise refuses condition ${condition} without changing state`,
+      () => {
+        const state = createActiveExpeditionState()
+        state.expedition.technicalCondition.pa = condition
+        const before = JSON.stringify(state)
+        const intent = {
+          mode: 'improvise',
+          targetGroup: 'pa',
+          expectedRouteStep: 3
+        }
+        assert.deepEqual(resolveExpeditionRepair(state, intent), {
+          ok: false,
+          reason:
+            condition >= 50 ? 'CONDITION_NOT_CRITICAL' : 'NOTHING_TO_REPAIR'
+        })
+        assert.equal(handleExecuteExpeditionRepair(state, intent), state)
+        assert.equal(JSON.stringify(state), before)
+      }
+    )
+  }
+
+  await t.test(
+    'Improvise at 44 restores one point and adds its hidden defect',
+    () => {
+      const state = createActiveExpeditionState()
+      state.expedition.technicalCondition.pa = 44
+      const next = handleExecuteExpeditionRepair(state, {
+        mode: 'improvise',
+        targetGroup: 'pa',
+        expectedRouteStep: 3
+      })
+      assert.notEqual(next, state)
+      assert.equal(next.expedition.technicalCondition.pa, 45)
+      assert.equal(next.expedition.technicalCondition.defects.length, 1)
+      assert.equal(
+        next.expedition.technicalCondition.defects[0].status,
+        'hidden'
+      )
+    }
+  )
+
+  const cannibalizeIntent = {
+    mode: 'cannibalize',
+    targetGroup: 'pa',
+    sourceGroup: 'instruments',
+    expectedRouteStep: 3
+  }
+  for (const condition of [60, 61, 81, 100]) {
+    for (const kind of ['none', 'hidden', 'resolved', 'wrong-group']) {
+      await t.test(
+        `Cannibalize refuses condition ${condition} with ${kind} defect`,
+        () => {
+          const state = createActiveExpeditionState()
+          state.expedition.technicalCondition.pa = condition
+          if (kind !== 'none') {
+            state.expedition.technicalCondition.defects = [
+              {
+                id: 'target_defect',
+                group: kind === 'wrong-group' ? 'instruments' : 'pa',
+                severity: 1,
+                status: kind === 'wrong-group' ? 'revealed' : kind,
+                source: 'field_repair',
+                createdAtRouteStep: 1,
+                triggerAt: 'pre_gig',
+                triggerRouteStep: 5
+              }
+            ]
+          }
+          const before = JSON.stringify(state)
+          assert.deepEqual(resolveExpeditionRepair(state, cannibalizeIntent), {
+            ok: false,
+            reason: 'NOTHING_TO_REPAIR'
+          })
+          assert.equal(
+            handleExecuteExpeditionRepair(state, cannibalizeIntent),
+            state
+          )
+          assert.equal(state.expedition.technicalCondition.instruments, 70)
+          assert.equal(JSON.stringify(state), before)
+        }
+      )
+    }
+    for (const status of ['revealed', 'triggered']) {
+      await t.test(
+        `Cannibalize at ${condition} resolves a ${status} target defect`,
+        () => {
+          const state = createActiveExpeditionState()
+          state.expedition.technicalCondition.pa = condition
+          state.expedition.technicalCondition.defects = [
+            {
+              id: 'target_defect',
+              group: 'pa',
+              severity: 1,
+              status,
+              source: 'field_repair',
+              createdAtRouteStep: 1,
+              triggerAt: 'pre_gig',
+              triggerRouteStep: 5
+            }
+          ]
+          const resolution = resolveExpeditionRepair(state, cannibalizeIntent)
+          assert.equal(resolution.ok, true)
+          assert.equal(resolution.result.targetRestore, 0)
+          const next = handleExecuteExpeditionRepair(state, cannibalizeIntent)
+          assert.notEqual(next, state)
+          assert.equal(next.expedition.technicalCondition.pa, condition)
+          assert.equal(next.expedition.technicalCondition.instruments, 55)
+          assert.equal(
+            next.expedition.technicalCondition.defects[0].status,
+            'resolved'
+          )
+        }
+      )
+    }
+  }
+
+  await t.test(
+    'Cannibalize at 59 restores the last point below the cap',
+    () => {
+      const state = createActiveExpeditionState()
+      state.expedition.technicalCondition.pa = 59
+      const next = handleExecuteExpeditionRepair(state, cannibalizeIntent)
+      assert.notEqual(next, state)
+      assert.equal(next.expedition.technicalCondition.pa, 60)
+      assert.equal(next.expedition.technicalCondition.instruments, 55)
+      assert.deepEqual(next.expedition.technicalCondition.defects, [])
     }
   )
 

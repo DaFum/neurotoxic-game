@@ -10,7 +10,7 @@
  * dispatch regardless.
  */
 
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
@@ -18,13 +18,17 @@ import { FieldRepairDialog } from './FieldRepairDialog'
 import { ActionButton } from '../shared/ActionButton'
 import {
   EXPEDITION_CONDITION_GROUPS,
+  getExpeditionConditionTier,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
 import {
   getVisibleExpeditionDefects,
   type VisibleDefectView
 } from '../../domain/expedition/defects'
-import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
+import {
+  resolveExpeditionRepair,
+  type ExpeditionRepairResolution
+} from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import { canClaimExpeditionInsurance } from '../../domain/expedition/insurance'
 import type { GameState } from '../../types'
@@ -55,8 +59,8 @@ interface RepairOption {
   mode: ExpeditionRepairMode
   targetGroup: ConditionGroup
   sourceGroup?: ConditionGroup
-  legal: boolean
-  moneyCost: number
+  resolution: ExpeditionRepairResolution
+  bestFieldRestore?: number
 }
 
 /**
@@ -122,8 +126,22 @@ const selectServiceView = (state: GameState): ServiceView => {
             mode,
             targetGroup,
             ...(sourceGroup ? { sourceGroup } : {}),
-            legal: resolution.ok,
-            moneyCost: resolution.ok ? resolution.result.moneyCost : 0
+            resolution,
+            ...(mode === 'field' && resolution.ok
+              ? {
+                  bestFieldRestore: (() => {
+                    const best = resolveExpeditionRepair(state, {
+                      mode,
+                      targetGroup,
+                      expectedRouteStep: routeStep,
+                      quality: 1
+                    })
+                    return best.ok
+                      ? best.result.targetRestore
+                      : resolution.result.targetRestore
+                  })()
+                }
+              : {})
           })
         }
       }
@@ -174,6 +192,16 @@ const selectServiceView = (state: GameState): ServiceView => {
 export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
   const { t, i18n } = useTranslation('ui')
   const view = useGameSelector(selectServiceView)
+  const urgent =
+    view.visibleDefects.length > 0 ||
+    EXPEDITION_CONDITION_GROUPS.some(group =>
+      ['damaged', 'breaking', 'disabled'].includes(
+        getExpeditionConditionTier(view.condition[group])
+      )
+    )
+  const [userExpanded, setUserExpanded] = useState(false)
+  const expanded = urgent || userExpanded
+  const detailsId = useId()
   const [fieldRepair, setFieldRepair] = useState<{
     targetGroup: ConditionGroup
     routeStep: number
@@ -195,11 +223,28 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
     view.repairOptions.length > 0 || view.visibleDefects.length > 0
   if (!needsRepair && legalInspections.length === 0) return null
 
-  const legalRepairs = view.repairOptions.filter(option => option.legal)
+  const legalRepairs = view.repairOptions.filter(option => option.resolution.ok)
+  const refusals = new Map<
+    string,
+    { mode: ExpeditionRepairMode; reason: string; options: RepairOption[] }
+  >()
+  for (const option of view.repairOptions) {
+    if (option.resolution.ok) continue
+    const key = `${option.mode}:${option.resolution.reason}`
+    const existing = refusals.get(key)
+    if (existing) existing.options.push(option)
+    else
+      refusals.set(key, {
+        mode: option.mode,
+        reason: option.resolution.reason,
+        options: [option]
+      })
+  }
 
   return (
     <section
-      className='w-full border border-steel-gray bg-charcoal-gray p-3 flex flex-col gap-3'
+      className='expedition-service w-full border border-steel-gray bg-charcoal-gray p-3 flex flex-col gap-3'
+      data-urgent={urgent}
       data-testid='expedition-service-panel'
       aria-label={t('ui:expedition.service.title')}
     >
@@ -228,118 +273,239 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
         ))}
       </ul>
 
-      {view.visibleDefects.length > 0 ? (
-        <ul
-          className='flex flex-col gap-1 text-xs font-mono text-warning-yellow'
-          data-testid='expedition-service-defects'
+      {urgent ? (
+        <p className='text-xs font-mono text-ash-gray'>
+          {t('ui:expedition.service.urgentExpanded')}
+        </p>
+      ) : (
+        <ActionButton
+          variant='secondary'
+          className='px-3 py-2 text-xs'
+          data-testid='expedition-service-toggle'
+          aria-expanded={expanded}
+          aria-controls={detailsId}
+          onClick={() => setUserExpanded(value => !value)}
         >
-          {view.visibleDefects.map(defect => (
-            <li key={defect.id}>
-              {t('ui:expedition.service.defect', {
-                group: t(`ui:expedition.condition.group.${defect.group}`),
-                severity: defect.severity
-              })}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+          {t(
+            expanded
+              ? 'ui:expedition.service.hide'
+              : 'ui:expedition.service.show'
+          )}
+        </ActionButton>
+      )}
+      <div
+        id={detailsId}
+        hidden={!expanded}
+        className={expanded ? 'flex flex-col gap-3' : 'hidden'}
+      >
+        {view.visibleDefects.length > 0 ? (
+          <ul
+            className='flex flex-col gap-1 text-xs font-mono text-warning-yellow'
+            data-testid='expedition-service-defects'
+          >
+            {view.visibleDefects.map(defect => (
+              <li key={defect.id}>
+                {t('ui:expedition.service.defect', {
+                  group: t(`ui:expedition.condition.group.${defect.group}`),
+                  severity: defect.severity
+                })}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-      {legalRepairs.length > 0 ? (
+        {legalRepairs.length > 0 ? (
+          <div className='flex flex-wrap gap-2'>
+            {legalRepairs.map(option =>
+              option.resolution.ok ? (
+                <div
+                  key={`${option.mode}:${option.targetGroup}:${option.sourceGroup ?? ''}`}
+                  className='flex flex-col gap-1'
+                >
+                  <ActionButton
+                    variant='secondary'
+                    className='px-3 py-2 text-xs'
+                    data-testid={`expedition-repair-${option.mode}-${option.targetGroup}${
+                      option.sourceGroup ? `-from-${option.sourceGroup}` : ''
+                    }`}
+                    onClick={() => {
+                      if (option.mode === 'field') {
+                        setFieldRepair({
+                          targetGroup: option.targetGroup,
+                          routeStep: view.routeStep,
+                          runId: view.runId
+                        })
+                        return
+                      }
+                      executeExpeditionRepair({
+                        mode: option.mode,
+                        targetGroup: option.targetGroup,
+                        ...(option.sourceGroup
+                          ? { sourceGroup: option.sourceGroup }
+                          : {}),
+                        expectedRouteStep: view.routeStep
+                      })
+                    }}
+                  >
+                    {option.sourceGroup ? (
+                      t('ui:expedition.service.cannibalize', {
+                        source: t(
+                          `ui:expedition.condition.group.${option.sourceGroup}`
+                        ),
+                        target: t(
+                          `ui:expedition.condition.group.${option.targetGroup}`
+                        )
+                      })
+                    ) : (
+                      <>
+                        {t(`ui:expedition.repair.mode.${option.mode}`)}{' '}
+                        {t(
+                          `ui:expedition.condition.group.${option.targetGroup}`
+                        )}
+                      </>
+                    )}{' '}
+                    {option.resolution.result.moneyCost > 0
+                      ? formatCurrency(
+                          option.resolution.result.moneyCost,
+                          i18n.language
+                        )
+                      : null}
+                  </ActionButton>
+                  <p
+                    className='text-xs font-mono text-ash-gray'
+                    data-testid={`expedition-preview-${option.mode}-${option.targetGroup}${option.sourceGroup ? `-from-${option.sourceGroup}` : ''}`}
+                  >
+                    {option.mode === 'field'
+                      ? t('ui:expedition.service.fieldPreview', {
+                          parts: option.resolution.result.sparePartsCost,
+                          group: t(
+                            `ui:expedition.condition.group.${option.targetGroup}`
+                          ),
+                          before: view.condition[option.targetGroup],
+                          min: Math.min(
+                            100,
+                            view.condition[option.targetGroup] +
+                              option.resolution.result.targetRestore
+                          ),
+                          max: Math.min(
+                            100,
+                            view.condition[option.targetGroup] +
+                              (option.bestFieldRestore ??
+                                option.resolution.result.targetRestore)
+                          )
+                        })
+                      : t('ui:expedition.service.conditionPreview', {
+                          group: t(
+                            `ui:expedition.condition.group.${option.targetGroup}`
+                          ),
+                          before: view.condition[option.targetGroup],
+                          after: Math.min(
+                            100,
+                            view.condition[option.targetGroup] +
+                              option.resolution.result.targetRestore
+                          )
+                        })}
+                    {option.sourceGroup
+                      ? ` ${t('ui:expedition.service.conditionPreview', { group: t(`ui:expedition.condition.group.${option.sourceGroup}`), before: view.condition[option.sourceGroup], after: Math.max(0, view.condition[option.sourceGroup] - option.resolution.result.sourceDamage) })}`
+                      : null}
+                    {option.resolution.result.resolvesTargetDefects &&
+                    view.visibleDefects.some(
+                      defect => defect.group === option.targetGroup
+                    )
+                      ? ` ${t(option.mode === 'cannibalize' ? 'ui:expedition.service.clearsOneDefect' : 'ui:expedition.service.clearsDefects')}`
+                      : null}
+                    {option.resolution.result.createsHiddenDefect
+                      ? ` ${t(option.mode === 'field' ? 'ui:expedition.service.fieldDefectRisk' : 'ui:expedition.service.defectRisk')}`
+                      : null}
+                  </p>
+                </div>
+              ) : null
+            )}
+          </div>
+        ) : needsRepair ? (
+          <p
+            className='text-xs font-mono text-ash-gray'
+            data-testid='expedition-service-no-repair'
+          >
+            {t('ui:expedition.service.noRepair')}
+          </p>
+        ) : null}
+
+        {[...refusals.values()].map(({ mode, reason, options }) => (
+          <p
+            key={`${mode}:${reason}`}
+            className='text-xs font-mono text-ash-gray'
+          >
+            {t(`ui:expedition.repair.mode.${mode}`)} (
+            {options
+              .map(option =>
+                option.sourceGroup
+                  ? t('ui:expedition.service.refusalPair', {
+                      source: t(
+                        `ui:expedition.condition.group.${option.sourceGroup}`
+                      ),
+                      target: t(
+                        `ui:expedition.condition.group.${option.targetGroup}`
+                      )
+                    })
+                  : t(`ui:expedition.condition.group.${option.targetGroup}`)
+              )
+              .join(', ')}
+            ): {t(`ui:expedition.service.refusal.${reason}`)}
+          </p>
+        ))}
+
         <div className='flex flex-wrap gap-2'>
-          {legalRepairs.map(option => (
+          {legalInspections.map(option => (
             <ActionButton
-              key={`${option.mode}:${option.targetGroup}:${option.sourceGroup ?? ''}`}
+              key={option.mode}
               variant='secondary'
               className='px-3 py-2 text-xs'
-              data-testid={`expedition-repair-${option.mode}-${option.targetGroup}${
-                option.sourceGroup ? `-from-${option.sourceGroup}` : ''
-              }`}
-              onClick={() => {
-                if (option.mode === 'field') {
-                  setFieldRepair({
-                    targetGroup: option.targetGroup,
-                    routeStep: view.routeStep,
-                    runId: view.runId
-                  })
-                  return
-                }
-                executeExpeditionRepair({
+              data-testid={`expedition-inspection-${option.mode}`}
+              onClick={() =>
+                executeExpeditionInspection({
                   mode: option.mode,
-                  targetGroup: option.targetGroup,
-                  ...(option.sourceGroup
-                    ? { sourceGroup: option.sourceGroup }
-                    : {}),
                   expectedRouteStep: view.routeStep
                 })
-              }}
+              }
             >
-              {t(`ui:expedition.repair.mode.${option.mode}`)}{' '}
-              {t(`ui:expedition.condition.group.${option.targetGroup}`)}{' '}
-              {option.moneyCost > 0
-                ? formatCurrency(option.moneyCost, i18n.language)
+              {t(`ui:expedition.inspection.mode.${option.mode}`)}{' '}
+              {option.diagnosticFee > 0
+                ? formatCurrency(option.diagnosticFee, i18n.language)
                 : null}
             </ActionButton>
           ))}
+
+          {view.technicalInsuranceGroups.map(group => (
+            <ActionButton
+              key={group}
+              variant='secondary'
+              className='px-3 py-2 text-xs'
+              data-testid={`expedition-service-insurance-claim-${group}`}
+              onClick={() =>
+                claimExpeditionInsurance({
+                  claimType: 'technical',
+                  targetGroup: group
+                })
+              }
+            >
+              {t('ui:expedition.crisis.choice.insurance_claim')}{' '}
+              {t(`ui:expedition.condition.group.${group}`)}
+            </ActionButton>
+          ))}
         </div>
-      ) : needsRepair ? (
-        <p
-          className='text-xs font-mono text-ash-gray'
-          data-testid='expedition-service-no-repair'
-        >
-          {t('ui:expedition.service.noRepair')}
-        </p>
-      ) : null}
 
-      <div className='flex flex-wrap gap-2'>
-        {legalInspections.map(option => (
+        {view.disabledGroups.length > 0 ? (
           <ActionButton
-            key={option.mode}
-            variant='secondary'
+            variant='danger'
             className='px-3 py-2 text-xs'
-            data-testid={`expedition-inspection-${option.mode}`}
-            onClick={() =>
-              executeExpeditionInspection({
-                mode: option.mode,
-                expectedRouteStep: view.routeStep
-              })
-            }
+            data-testid='expedition-service-accept-technical-failure'
+            onClick={acceptExpeditionTechnicalFailure}
           >
-            {t(`ui:expedition.inspection.mode.${option.mode}`)}{' '}
-            {option.diagnosticFee > 0
-              ? formatCurrency(option.diagnosticFee, i18n.language)
-              : null}
+            {t('ui:expedition.service.acceptTechnicalFailure')}
           </ActionButton>
-        ))}
-
-        {view.technicalInsuranceGroups.map(group => (
-          <ActionButton
-            key={group}
-            variant='secondary'
-            className='px-3 py-2 text-xs'
-            data-testid={`expedition-service-insurance-claim-${group}`}
-            onClick={() =>
-              claimExpeditionInsurance({
-                claimType: 'technical',
-                targetGroup: group
-              })
-            }
-          >
-            {t('ui:expedition.crisis.choice.insurance_claim')}{' '}
-            {t(`ui:expedition.condition.group.${group}`)}
-          </ActionButton>
-        ))}
+        ) : null}
       </div>
-
-      {view.disabledGroups.length > 0 ? (
-        <ActionButton
-          variant='danger'
-          className='px-3 py-2 text-xs'
-          data-testid='expedition-service-accept-technical-failure'
-          onClick={acceptExpeditionTechnicalFailure}
-        >
-          {t('ui:expedition.service.acceptTechnicalFailure')}
-        </ActionButton>
-      ) : null}
       {fieldRepair ? (
         <FieldRepairDialog {...fieldRepair} onClose={closeFieldRepair} />
       ) : null}

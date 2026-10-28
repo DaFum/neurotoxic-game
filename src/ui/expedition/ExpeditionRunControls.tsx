@@ -65,7 +65,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
   if (status !== 'active') return decisionHost
 
   return (
-    <div data-testid='expedition-run-controls'>
+    <div
+      className='expedition-run-controls'
+      data-testid='expedition-run-controls'
+    >
       {/* A pending Run Draft is the run's live decision, so it sits above the
           standing obligations rather than in a scene of its own. */}
       <ExpeditionRunDraftPicker />
@@ -154,7 +157,9 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
   const heat = useGameSelector(state => state.expedition?.pressure?.heat ?? 0)
   const routeStep = useGameSelector(state => state.expedition?.routeStep ?? 0)
 
-  if (!activeObligations || activeObligations.length === 0) return null
+  const active =
+    activeObligations?.filter(item => item.status === 'active') ?? []
+  if (active.length === 0) return null
 
   return (
     <div
@@ -164,8 +169,7 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
       <span className='text-[0.625rem] uppercase tracking-widest text-ash-gray font-mono w-full'>
         {t('ui:expedition.obligations.title', { defaultValue: 'Obligations' })}
       </span>
-      {activeObligations.map(item => {
-        if (item.status !== 'active') return null
+      {active.map(item => {
         const derivedOffer =
           item.doubleDown === null && runSeed !== undefined && runSeed !== null
             ? deriveExpeditionDoubleDownOffer(runSeed, item.id, routeStep)

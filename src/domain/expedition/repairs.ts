@@ -212,6 +212,9 @@ export const resolveExpeditionRepair = (
 
       const newCondition = Math.min(45, targetCondition + 20)
       const targetRestore = Math.max(0, newCondition - targetCondition)
+      if (targetRestore <= 0) {
+        return { ok: false, reason: 'NOTHING_TO_REPAIR' }
+      }
 
       return {
         ok: true,
@@ -243,6 +246,14 @@ export const resolveExpeditionRepair = (
       const targetCondition = tc[targetGroup]
       const newTarget = Math.min(60, targetCondition + 25)
       const targetRestore = Math.max(0, newTarget - targetCondition)
+      const hasKnownTargetDefect = tc.defects.some(
+        defect =>
+          defect.group === targetGroup &&
+          (defect.status === 'revealed' || defect.status === 'triggered')
+      )
+      if (targetRestore <= 0 && !hasKnownTargetDefect) {
+        return { ok: false, reason: 'NOTHING_TO_REPAIR' }
+      }
 
       return {
         ok: true,
