@@ -90,7 +90,7 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
                 className='text-condition-blue inline shrink-0'
                 aria-hidden='true'
               />
-              {formattedCondition}
+              {conditionLabel} {formattedCondition}
             </span>
           </p>
         ) : (

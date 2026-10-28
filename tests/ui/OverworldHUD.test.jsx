@@ -101,7 +101,9 @@ describe('OverworldHUD', () => {
     expect(getByText(/Berlin/)).toBeInTheDocument()
     expect(getByText(/FAME/)).toBeInTheDocument()
     expect(getByText('Member 1')).toBeInTheDocument()
-    expect(getByRole('img', { name: 'Van Condition: 65%' })).toBeInTheDocument()
+    expect(getByRole('img', { name: 'Van Condition: 65%' })).toHaveTextContent(
+      'Van Condition 65%'
+    )
 
     // Duplicate resources owned by ExpeditionStatusStrip are not rendered in OverworldHUD
     expect(queryByRole('progressbar', { name: 'Fuel Level' })).toBeNull()
