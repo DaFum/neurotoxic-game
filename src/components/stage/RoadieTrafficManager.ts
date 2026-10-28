@@ -76,10 +76,17 @@ export class RoadieTrafficManager {
     if (sprite) return sprite
 
     if (this.textures.cars.length > 0) {
-      const textureHash = finiteNumberOr(
-        car.textureHash,
-        hash31(String(car.id ?? `car_${car.row}_${car.speed}`))
-      )
+      // ⚡ BOLT OPTIMIZATION: Direct check for finite numeric textureHash avoids template string allocations and hash31 string iteration
+      // What: Checked `Number.isFinite(car.textureHash)` directly before falling back to `hash31(...)` and string template formatting.
+      // Why: When cars carry a valid finite textureHash (the standard path from spawnTraffic), evaluating hash31 and String(...) created unnecessary string allocations while ensuring non-finite values (NaN/Infinity) fall back cleanly.
+      // Impact: Avoids string allocations and polynomial string hashing on new car sprite creation while safely rejecting non-finite hashes.
+      const textureHash =
+        Number.isFinite(car.textureHash)
+          ? (car.textureHash as number)
+          : finiteNumberOr(
+              car.textureHash,
+              hash31(String(car.id ?? `car_${car.row}_${car.speed}`))
+            )
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       const texture = this.textures.cars[texIndex]
