@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { SAVE_KEY, buildFixture, seedSaveOnce } from './helpers.js'
+import { resume } from './helpers.js'
 
 const tabTo = async (page, locator) => {
   await page.evaluate(() => document.activeElement.blur())
@@ -8,21 +8,6 @@ const tabTo = async (page, locator) => {
     if (await locator.evaluate(el => el === document.activeElement)) return
   }
   throw new Error('Target was not reached by Tab')
-}
-
-const resume = async (page, name, language) => {
-  await page.goto('/?events=off', { waitUntil: 'domcontentloaded' })
-  const fixture = await buildFixture(page, name)
-  await seedSaveOnce(
-    page,
-    { [SAVE_KEY]: fixture.save, i18nextLng: language },
-    { url: '/?events=off' }
-  )
-  const skip = page.getByRole('button', { name: /skip all|alle überspringen/i })
-  if (await skip.first().isVisible()) await skip.first().click()
-  await page.getByRole('button', { name: /load game|spiel laden/i }).click()
-  await expect(page.getByTestId('expedition-service-panel')).toBeVisible()
-  await page.emulateMedia({ reducedMotion: 'reduce' })
 }
 
 for (const [width, height] of [

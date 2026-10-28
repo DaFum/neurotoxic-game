@@ -81,12 +81,27 @@
     overflow-x: hidden;
     overflow-y: auto;
     padding-top: 190px;
+    padding-bottom: 96px;
+    scroll-padding-bottom: 96px;
     gap: 8px;
   }
   .scene--expedition .event-log {
     position: static;
     width: 100%;
     max-width: 1152px;
+  }
+
+  .scene--expedition .expedition-run-controls {
+    display: contents;
+  }
+
+  .scene--expedition .expedition-run-controls > * {
+    width: 100%;
+    max-width: 1152px;
+  }
+
+  .scene--expedition .expedition-run-draft {
+    order: -1;
   }
 
   /* Leave room under the map for the resource strip (3 columns = 2 rows here)
@@ -280,7 +295,7 @@
 
 /* Menu */
 .ow-menu {
-  position: absolute;
+  position: fixed;
   bottom: 32px;
   right: 32px;
   z-index: var(--z-hud);

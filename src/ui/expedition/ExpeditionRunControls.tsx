@@ -114,7 +114,7 @@ const ExpeditionRunDraftPicker = memo(function ExpeditionRunDraftPicker() {
 
   return (
     <div
-      className='mb-2 border border-toxic-green bg-charcoal-gray p-2 flex flex-wrap gap-2 items-center text-xs font-mono'
+      className='expedition-run-draft mb-2 border border-toxic-green bg-charcoal-gray p-2 flex flex-wrap gap-2 items-center text-xs font-mono'
       data-testid='expedition-run-draft-offer'
     >
       <span className='text-[0.625rem] uppercase tracking-widest text-toxic-green font-mono w-full'>
