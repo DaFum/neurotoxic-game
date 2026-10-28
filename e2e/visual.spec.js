@@ -296,12 +296,25 @@ test.describe('Visual smoke tests', () => {
       .toEqual({ hidden: false, insideViewport: true })
   })
 
-  test('Tour Prep HUD panels do not overlap and band details collapse on phones', async ({
+  test('PreGig HUD panels do not overlap and band details collapse on phones', async ({
     page
   }) => {
-    await skipToMenu(page)
-    await page.getByRole('button', { name: /start expedition/i }).click()
-    await page.getByRole('heading', { name: /tour prep/i }).waitFor()
+    const url = '/?events=off'
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    const fixture = await buildFixture(page, 'ordinaryGigFixture')
+    await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+    await loadSavedGame(page)
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('OVERWORLD')
+    await dismissTutorial(page)
+    await page
+      .locator('.map-node')
+      .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+      .click()
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('PREGIG')
     await expect(page.getByText(/band status/i).first()).toBeVisible()
 
     const rects = await page.evaluate(() => {
@@ -346,7 +359,7 @@ test.describe('Visual smoke tests', () => {
       rects.band.top < rects.player.bottom
     expect(overlaps).toBe(false)
 
-    const toggle = page.getByRole('button', { name: /band details/i })
+    const toggle = page.getByRole('button', { name: /band details/i }).first()
     const member = page.getByText('Matze', { exact: true }).first()
     const isPhone = page.viewportSize().width < 640
     if (isPhone) {
