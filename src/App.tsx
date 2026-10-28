@@ -26,6 +26,13 @@ import { AssetNotifications } from './components/assets/AssetNotifications'
 import { useNeuroDecimatorAudioSync } from './hooks/useNeuroDecimatorAudioSync'
 import type { GamePhase } from './types/game'
 
+/**
+ * A set of game phases that should not render the global HUD.
+ *
+ * @remarks
+ * Used to conditionally hide the global Heads Up Display when the scene provides
+ * its own specialized UI overlays or intentionally suppresses the HUD (e.g., cutscenes, menus).
+ */
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.INTRO,
   GAME_PHASES.MENU,
@@ -38,6 +45,17 @@ const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.ASSETS
 ])
 
+/**
+ * Parses environment variables to extract a boolean flag value across differing runtime environments.
+ *
+ * @remarks
+ * Evaluates the Vite-injected variable first, falling back to the process-level environment variable.
+ * Resolves `'true'` (case-insensitive) to the boolean `true`.
+ *
+ * @param viteFlag - The environment variable value as injected by Vite
+ * @param processFlag - The environment variable value as injected by the Node process
+ * @returns The resolved boolean flag, or undefined if neither flag is explicitly set
+ */
 const parseBooleanEnvFlag = (
   viteFlag: string | undefined,
   processFlag: string | undefined
@@ -81,6 +99,13 @@ const resolveVercelTelemetryEnabled = () => {
 
   return import.meta.env?.PROD ?? false
 }
+
+/**
+ * Globally indicates if Vercel telemetry, analytics, and speed insights are active.
+ *
+ * @remarks
+ * Computed once at startup by evaluating `resolveVercelTelemetryEnabled()`.
+ */
 const VERCEL_TELEMETRY_ENABLED = resolveVercelTelemetryEnabled()
 
 /**
