@@ -835,9 +835,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -2309,5 +2307,16 @@
   "zealotry.not_enough_controversy": "Not enough controversy",
   "zealotry.not_enough_harmony": "Not enough band harmony",
   "zealotry.not_enough_money": "Not enough money",
-  "zealotry.not_enough_zealotry": "Not enough zealotry"
+  "zealotry.not_enough_zealotry": "Not enough zealotry",
+  "expedition.service.show": "Show service options",
+  "expedition.service.hide": "Hide service options",
+  "expedition.service.cannibalize": "Cannibalize {{source}} for {{target}}",
+  "expedition.service.conditionPreview": "{{group}}: {{before}} → {{after}}",
+  "expedition.service.fieldPreview": "Uses {{parts}} spare part. {{group}}: {{before}} → {{min}}–{{max}}, depending on minigame quality; poor quality can create a hidden defect.",
+  "expedition.service.clearsDefects": "Removes known defects.",
+  "expedition.service.defectRisk": "Risk: creates a hidden defect.",
+  "expedition.service.refusal.INSUFFICIENT_SPARE_PARTS": "Requires a spare part.",
+  "expedition.service.refusal.SERVICE_UNAVAILABLE_AT_LOCATION": "Requires a service location.",
+  "expedition.service.refusal.INSUFFICIENT_SPENDABLE_CASH": "Not enough spendable cash.",
+  "expedition.service.refusal.SOURCE_CONDITION_TOO_LOW": "Donor condition is too low."
 }

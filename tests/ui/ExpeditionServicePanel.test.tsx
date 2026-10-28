@@ -1,4 +1,7 @@
 import { useEffect, useReducer } from 'react'
+import i18next from 'i18next'
+import en from '../../public/locales/en/ui.json'
+import de from '../../public/locales/de/ui.json'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { ExpeditionServicePanel } from '../../src/ui/expedition/ExpeditionServicePanel'
@@ -14,6 +17,10 @@ import { gameReducer } from '../../src/context/gameReducer'
 const state: { current: GameState; listeners: Set<() => void> } = vi.hoisted(
   () => ({ current: null, listeners: new Set<() => void>() }) as never
 )
+const translation = vi.hoisted(() => ({
+  t: null as null | ((key: string, options?: object) => string),
+  language: 'en'
+}))
 const stage = vi.hoisted(() => ({
   update: null as ((ms: number) => void) | null
 }))
@@ -56,7 +63,11 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ i18n: { language: 'en' }, t: (key: string) => key })
+  useTranslation: () => ({
+    i18n: { language: translation.language },
+    t: (key: string, options?: object) =>
+      translation.t ? translation.t(key, options) : key
+  })
 }))
 
 const ROUTE_STEP = 2
@@ -92,6 +103,8 @@ const buildState = ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  translation.t = null
+  translation.language = 'en'
   vi.useFakeTimers()
   stage.update = null
   state.current = buildState()
@@ -111,22 +124,126 @@ const playRepair = (dial: number) => {
   }
 }
 
+const renderOpen = () => {
+  const result = render(<ExpeditionServicePanel />)
+  const toggle = screen.queryByTestId('expedition-service-toggle')
+  if (toggle?.getAttribute('aria-expanded') === 'false') fireEvent.click(toggle)
+  return result
+}
+
+const setRealTranslation = async (language: 'en' | 'de') => {
+  const instance = i18next.createInstance()
+  await instance.init({
+    lng: language,
+    resources: { en: { ui: en }, de: { ui: de } },
+    ns: ['ui'],
+    defaultNS: 'ui',
+    keySeparator: false,
+    interpolation: { escapeValue: false }
+  })
+  translation.language = language
+  translation.t = (key, options) => instance.t(key, options)
+}
+
+describe('service guidance', () => {
+  it('starts compact for noncritical condition and expands urgent condition', () => {
+    state.current = buildState({ pa: 40, spareParts: 1 })
+    const { unmount } = render(<ExpeditionServicePanel />)
+    expect(
+      screen.getByTestId('expedition-service-panel').getAttribute('data-urgent')
+    ).toBe('false')
+    expect(
+      screen
+        .getByTestId('expedition-service-toggle')
+        .getAttribute('aria-expanded')
+    ).toBe('false')
+    expect(
+      screen.getByTestId('expedition-repair-field-pa').closest('[hidden]')
+    ).toBeTruthy()
+    fireEvent.click(screen.getByTestId('expedition-service-toggle'))
+    expect(screen.getByTestId('expedition-repair-field-pa')).toBeTruthy()
+    unmount()
+    state.current = buildState({ pa: 39 })
+    render(<ExpeditionServicePanel />)
+    expect(
+      screen.getByTestId('expedition-service-panel').getAttribute('data-urgent')
+    ).toBe('true')
+    expect(
+      screen
+        .getByTestId('expedition-service-toggle')
+        .getAttribute('aria-expanded')
+    ).toBe('true')
+  })
+
+  it.each(['en', 'de'] as const)(
+    'shows localized source, target and actual effects in %s',
+    async language => {
+      await setRealTranslation(language)
+      state.current = buildState({ pa: 50, instruments: 60, spareParts: 1 })
+      renderOpen()
+      const button = screen.getByTestId(
+        'expedition-repair-cannibalize-pa-from-instruments'
+      )
+      expect(button.textContent).toContain(
+        language === 'en' ? 'Instruments' : 'Instrumente'
+      )
+      expect(button.textContent).toContain('PA')
+      expect(
+        screen.getByRole('button', {
+          name:
+            language === 'en'
+              ? 'Cannibalize Instruments for PA'
+              : 'Instrumente für PA ausschlachten'
+        })
+      ).toBeTruthy()
+      expect(
+        screen.getByTestId('expedition-preview-cannibalize-pa-from-instruments')
+          .textContent
+      ).toContain('50 → 60')
+      expect(
+        screen.getByTestId('expedition-preview-cannibalize-pa-from-instruments')
+          .textContent
+      ).toContain('60 → 45')
+      expect(
+        screen.getByTestId('expedition-preview-field-pa').textContent
+      ).toContain(language === 'en' ? 'quality' : 'Qualität')
+      expect(
+        screen.getByTestId('expedition-preview-field-pa').textContent
+      ).toContain('1')
+      expect(
+        screen.getByTestId('expedition-preview-field-pa').textContent
+      ).toContain('50 → 70–100')
+    }
+  )
+
+  it('explains unavailable modes and defect risks without hidden defect details', async () => {
+    await setRealTranslation('en')
+    state.current = buildState({ pa: 10, instruments: 20, stageGear: 20 })
+    renderOpen()
+    expect(screen.getByText(/spare part/i)).toBeTruthy()
+    expect(screen.getByText(/service location/i)).toBeTruthy()
+    expect(
+      screen.getByTestId('expedition-preview-improvise-pa').textContent
+    ).toMatch(/hidden defect/i)
+  })
+})
+
 describe('reachability', () => {
   it('renders nothing outside an active run', () => {
     state.current = buildState({ status: 'idle' })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
   })
 
   it('renders nothing when every group is untouched', () => {
     state.current = buildState({ pa: 100 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
   })
 
   it('reports each group and marks a dead one', () => {
     state.current = buildState({ pa: 0 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     expect(
       screen.getByTestId('expedition-service-condition-pa').textContent
     ).toContain('ui:expedition.service.disabled')
@@ -139,18 +256,18 @@ describe('reachability', () => {
 describe('repair controls', () => {
   it('offers a field repair only while spare parts are aboard', () => {
     state.current = buildState({ spareParts: 0 })
-    const { unmount } = render(<ExpeditionServicePanel />)
+    const { unmount } = renderOpen()
     expect(screen.queryByTestId('expedition-repair-field-pa')).toBeNull()
     unmount()
 
     state.current = buildState({ spareParts: 1 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     expect(screen.getByTestId('expedition-repair-field-pa')).toBeTruthy()
   })
 
   it('plays calibration before dispatching quality and consuming one spare part', () => {
     state.current = buildState({ spareParts: 2, pa: 10 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
     expect(actions.executeExpeditionRepair).not.toHaveBeenCalled()
     expect(screen.getByRole('dialog')).toBeTruthy()
@@ -178,7 +295,7 @@ describe('repair controls', () => {
 
   it('bounds a played overdrive score above 100 percent to perfect repair quality', () => {
     state.current = buildState({ spareParts: 1, pa: 10 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
     fireEvent.change(screen.getByRole('slider'), { target: { value: 892 } })
     fireEvent.click(
@@ -208,7 +325,7 @@ describe('repair controls', () => {
       type: 'AMP_CALIBRATION',
       active: true
     }
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
     expect(
       screen.queryByRole('button', { name: 'ui:minigames.skip' })
@@ -218,7 +335,7 @@ describe('repair controls', () => {
 
   it('maps poor played stability to less restoration and a hidden defect on fallback', () => {
     state.current = buildState({ spareParts: 1, pa: 10 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
     playRepair(0)
     expect(actions.executeExpeditionRepair).not.toHaveBeenCalled()
@@ -238,7 +355,7 @@ describe('repair controls', () => {
     'cancels %s repair without cost or scene change',
     phase => {
       state.current = buildState({ spareParts: 1 })
-      render(<ExpeditionServicePanel />)
+      renderOpen()
       fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
       if (phase === 'completed') playRepair(892)
       fireEvent.keyDown(window, { key: 'Escape' })
@@ -254,7 +371,7 @@ describe('repair controls', () => {
     'rejects an outdated repair after %s changes',
     field => {
       state.current = buildState({ spareParts: 1 })
-      const { rerender } = render(<ExpeditionServicePanel />)
+      const { rerender } = renderOpen()
       fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
       playRepair(892)
       state.current = {
@@ -276,7 +393,7 @@ describe('repair controls', () => {
 
   it('clears the completed repair fallback on panel unmount', () => {
     state.current = buildState({ spareParts: 1 })
-    const { unmount } = render(<ExpeditionServicePanel />)
+    const { unmount } = renderOpen()
     fireEvent.click(screen.getByTestId('expedition-repair-field-pa'))
     playRepair(892)
     unmount()
@@ -289,7 +406,7 @@ describe('repair controls', () => {
     // Cannibalize takes from another group, so each donor is its own offer —
     // the player picks which instrument to strip, not just the mode.
     state.current = buildState({ pa: 10, instruments: 100, stageGear: 100 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(
       screen.getByTestId('expedition-repair-cannibalize-pa-from-instruments')
     )
@@ -336,6 +453,14 @@ describe('repair controls', () => {
     state.current.expedition.visitedNodeIds = ['service_node']
     render(<ExpeditionServicePanel />)
 
+    expect(
+      screen
+        .getByTestId('expedition-service-toggle')
+        .getAttribute('aria-expanded')
+    ).toBe('true')
+    expect(
+      screen.getByTestId('expedition-preview-professional-pa').textContent
+    ).toContain('ui:expedition.service.clearsDefects')
     expect(screen.getByTestId('expedition-repair-professional-pa')).toBeTruthy()
     // The healthy groups stay without an offer.
     expect(
@@ -347,7 +472,7 @@ describe('repair controls', () => {
     // No spare parts, no service location, nothing critical enough to
     // improvise on, and no donor above the cannibalize threshold.
     state.current = buildState({ pa: 54, instruments: 54, stageGear: 54 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     expect(screen.getByTestId('expedition-service-no-repair')).toBeTruthy()
   })
 })
@@ -362,7 +487,7 @@ describe('inspections and termination', () => {
         claimExpeditionInsurance(state.current, intent)
       )
     })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(
       screen.getByTestId('expedition-service-insurance-claim-instruments')
     )
@@ -376,7 +501,7 @@ describe('inspections and termination', () => {
   })
 
   it('does not offer inspections that would reveal nothing', () => {
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     // The quick check only returned condition bands the panel never showed.
     expect(screen.queryByTestId('expedition-inspection-quick_check')).toBeNull()
     expect(
@@ -419,7 +544,7 @@ describe('inspections and termination', () => {
         defects: [hiddenDefect]
       })
       atServiceLocation()
-      render(<ExpeditionServicePanel />)
+      renderOpen()
 
       expect(screen.getByTestId('expedition-service-panel')).toBeTruthy()
       expect(
@@ -434,7 +559,7 @@ describe('inspections and termination', () => {
     it('stays hidden when no inspection would do anything', () => {
       state.current = buildState({ pa: 100, instruments: 100, stageGear: 100 })
       atServiceLocation()
-      render(<ExpeditionServicePanel />)
+      renderOpen()
 
       expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
     })
@@ -446,21 +571,21 @@ describe('inspections and termination', () => {
         stageGear: 100,
         defects: [hiddenDefect]
       })
-      render(<ExpeditionServicePanel />)
+      renderOpen()
 
       expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
     })
   })
 
   it('offers termination only once a group is dead', () => {
-    const { unmount } = render(<ExpeditionServicePanel />)
+    const { unmount } = renderOpen()
     expect(
       screen.queryByTestId('expedition-service-accept-technical-failure')
     ).toBeNull()
     unmount()
 
     state.current = buildState({ pa: 0 })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     fireEvent.click(
       screen.getByTestId('expedition-service-accept-technical-failure')
     )
@@ -493,7 +618,7 @@ describe('inspections and termination', () => {
         }
       ]
     })
-    render(<ExpeditionServicePanel />)
+    renderOpen()
     const list = screen.getByTestId('expedition-service-defects')
     expect(list.children).toHaveLength(1)
     expect(list.textContent).not.toContain('instruments')
