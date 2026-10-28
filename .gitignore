@@ -49,3 +49,4 @@ diff*.txt
 symbols.json
 src/__symbolIndexFixtures/SymbolIndexCrLfParam.ts
 src/__symbolIndexFixtures
+.worktrees/
