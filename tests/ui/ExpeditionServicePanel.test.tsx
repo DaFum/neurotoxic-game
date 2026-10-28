@@ -146,6 +146,47 @@ const setRealTranslation = async (language: 'en' | 'de') => {
 }
 
 describe('service guidance', () => {
+  it.each(['en', 'de'] as const)(
+    'identifies the equipment affected by mixed-condition refusals in %s',
+    async language => {
+      await setRealTranslation(language)
+      state.current = buildState({ pa: 30, instruments: 82, stageGear: 82 })
+      renderOpen()
+      expect(screen.getByTestId('expedition-repair-improvise-pa')).toBeTruthy()
+      const refusal = screen.getByText(
+        language === 'en'
+          ? /condition is not critical/i
+          : /zustand ist nicht kritisch/i
+      )
+      expect(refusal.textContent).toContain(
+        language === 'en' ? 'Instruments' : 'Instrumente'
+      )
+      expect(refusal.textContent).toContain(
+        language === 'en' ? 'Stage gear' : 'Bühnentechnik'
+      )
+      expect(refusal.textContent).not.toMatch(/\bPA\b/)
+    }
+  )
+
+  it.each(['en', 'de'] as const)(
+    'names donor and target for donor-specific refusals in %s',
+    async language => {
+      await setRealTranslation(language)
+      state.current = buildState({ pa: 30, instruments: 30, stageGear: 82 })
+      renderOpen()
+      const refusal = screen.getByText(
+        language === 'en'
+          ? /donor condition is too low/i
+          : /zustand des spenders ist zu niedrig/i
+      )
+      expect(refusal.textContent).toContain(
+        language === 'en' ? 'Instruments for PA' : 'Instrumente für PA'
+      )
+      expect(refusal.textContent).toContain(
+        language === 'en' ? 'PA for Instruments' : 'PA für Instrumente'
+      )
+    }
+  )
   it('starts compact for noncritical condition and expands urgent condition', () => {
     state.current = buildState({ pa: 40, spareParts: 1 })
     const { unmount } = render(<ExpeditionServicePanel />)
@@ -168,11 +209,10 @@ describe('service guidance', () => {
     expect(
       screen.getByTestId('expedition-service-panel').getAttribute('data-urgent')
     ).toBe('true')
+    expect(screen.queryByTestId('expedition-service-toggle')).toBeNull()
     expect(
-      screen
-        .getByTestId('expedition-service-toggle')
-        .getAttribute('aria-expanded')
-    ).toBe('true')
+      screen.getByText('ui:expedition.service.urgentExpanded')
+    ).toBeTruthy()
   })
 
   it.each(['en', 'de'] as const)(
@@ -222,12 +262,10 @@ describe('service guidance', () => {
   it('keeps urgent recovery open as critical condition and known defects change', () => {
     state.current = buildState({ pa: 20 })
     render(<ExpeditionServicePanel />)
-    fireEvent.click(screen.getByTestId('expedition-service-toggle'))
+    expect(screen.queryByTestId('expedition-service-toggle')).toBeNull()
     expect(
-      screen
-        .getByTestId('expedition-service-toggle')
-        .getAttribute('aria-expanded')
-    ).toBe('true')
+      screen.getByText('ui:expedition.service.urgentExpanded')
+    ).toBeTruthy()
     state.current.expedition.technicalCondition.pa = 0
     act(() => state.listeners.forEach(notify => notify()))
     expect(
@@ -551,11 +589,10 @@ describe('repair controls', () => {
     state.current.expedition.visitedNodeIds = ['service_node']
     render(<ExpeditionServicePanel />)
 
+    expect(screen.queryByTestId('expedition-service-toggle')).toBeNull()
     expect(
-      screen
-        .getByTestId('expedition-service-toggle')
-        .getAttribute('aria-expanded')
-    ).toBe('true')
+      screen.getByText('ui:expedition.service.urgentExpanded')
+    ).toBeTruthy()
     expect(
       screen.getByTestId('expedition-preview-professional-pa').textContent
     ).toContain('ui:expedition.service.clearsDefects')

@@ -224,20 +224,22 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
   if (!needsRepair && legalInspections.length === 0) return null
 
   const legalRepairs = view.repairOptions.filter(option => option.resolution.ok)
-  const refusals = [
-    ...new Map(
-      view.repairOptions.flatMap(option =>
-        !option.resolution.ok
-          ? [
-              [
-                `${option.mode}:${option.resolution.reason}`,
-                { mode: option.mode, reason: option.resolution.reason }
-              ] as const
-            ]
-          : []
-      )
-    ).values()
-  ]
+  const refusals = new Map<
+    string,
+    { mode: ExpeditionRepairMode; reason: string; options: RepairOption[] }
+  >()
+  for (const option of view.repairOptions) {
+    if (option.resolution.ok) continue
+    const key = `${option.mode}:${option.resolution.reason}`
+    const existing = refusals.get(key)
+    if (existing) existing.options.push(option)
+    else
+      refusals.set(key, {
+        mode: option.mode,
+        reason: option.resolution.reason,
+        options: [option]
+      })
+  }
 
   return (
     <section
@@ -271,19 +273,26 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
         ))}
       </ul>
 
-      <ActionButton
-        variant='secondary'
-        className='px-3 py-2 text-xs'
-        data-testid='expedition-service-toggle'
-        aria-expanded={expanded}
-        aria-controls={detailsId}
-        disabled={urgent}
-        onClick={() => setUserExpanded(value => !value)}
-      >
-        {t(
-          expanded ? 'ui:expedition.service.hide' : 'ui:expedition.service.show'
-        )}
-      </ActionButton>
+      {urgent ? (
+        <p className='text-xs font-mono text-ash-gray'>
+          {t('ui:expedition.service.urgentExpanded')}
+        </p>
+      ) : (
+        <ActionButton
+          variant='secondary'
+          className='px-3 py-2 text-xs'
+          data-testid='expedition-service-toggle'
+          aria-expanded={expanded}
+          aria-controls={detailsId}
+          onClick={() => setUserExpanded(value => !value)}
+        >
+          {t(
+            expanded
+              ? 'ui:expedition.service.hide'
+              : 'ui:expedition.service.show'
+          )}
+        </ActionButton>
+      )}
       <div
         id={detailsId}
         hidden={!expanded}
@@ -422,13 +431,27 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
           </p>
         ) : null}
 
-        {refusals.map(({ mode, reason }) => (
+        {[...refusals.values()].map(({ mode, reason, options }) => (
           <p
             key={`${mode}:${reason}`}
             className='text-xs font-mono text-ash-gray'
           >
-            {t(`ui:expedition.repair.mode.${mode}`)}:{' '}
-            {t(`ui:expedition.service.refusal.${reason}`)}
+            {t(`ui:expedition.repair.mode.${mode}`)} (
+            {options
+              .map(option =>
+                option.sourceGroup
+                  ? t('ui:expedition.service.refusalPair', {
+                      source: t(
+                        `ui:expedition.condition.group.${option.sourceGroup}`
+                      ),
+                      target: t(
+                        `ui:expedition.condition.group.${option.targetGroup}`
+                      )
+                    })
+                  : t(`ui:expedition.condition.group.${option.targetGroup}`)
+              )
+              .join(', ')}
+            ): {t(`ui:expedition.service.refusal.${reason}`)}
           </p>
         ))}
 

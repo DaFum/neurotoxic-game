@@ -2310,6 +2310,8 @@
   "zealotry.not_enough_zealotry": "Not enough zealotry",
   "expedition.service.show": "Show service options",
   "expedition.service.hide": "Hide service options",
+  "expedition.service.urgentExpanded": "Service options are expanded because equipment needs attention.",
+  "expedition.service.refusalPair": "{{source}} for {{target}}",
   "expedition.service.cannibalize": "Cannibalize {{source}} for {{target}}",
   "expedition.service.conditionPreview": "{{group}}: {{before}} → {{after}}",
   "expedition.service.fieldPreview": "Uses {{parts}} spare part. {{group}}: {{before}} → {{min}}–{{max}}, depending on minigame quality.",

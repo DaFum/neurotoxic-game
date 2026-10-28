@@ -1,6 +1,15 @@
 import { test, expect } from '@playwright/test'
 import { SAVE_KEY, buildFixture, seedSaveOnce } from './helpers.js'
 
+const tabTo = async (page, locator) => {
+  await page.evaluate(() => document.activeElement.blur())
+  for (let i = 0; i < 100; i++) {
+    await page.keyboard.press('Tab')
+    if (await locator.evaluate(el => el === document.activeElement)) return
+  }
+  throw new Error('Target was not reached by Tab')
+}
+
 const resume = async (page, name, language) => {
   await page.goto('/?events=off', { waitUntil: 'domcontentloaded' })
   const fixture = await buildFixture(page, name)
@@ -36,6 +45,10 @@ for (const [width, height] of [
     const menuBox = await page.locator('.ow-menu').boundingBox()
     expect(menuBox.y - mapBox.y).toBeGreaterThanOrEqual(44)
     expect(mapBox.y).toBeLessThan(serviceBox.y)
+    const node = map.getByRole('button').first()
+    await expect(node).toBeVisible()
+    await node.focus()
+    await expect(node).toBeFocused()
     await page.screenshot({ path: testInfo.outputPath(`compact-${width}.png`) })
     const initialRadioY = (await radio.boundingBox()).y
     for (const y of [80, 160]) {
@@ -66,8 +79,7 @@ for (const [width, height] of [
       expect(overlaps).toBe(false)
     }
     await expect(radio).toBeAttached()
-    await toggle.scrollIntoViewIfNeeded()
-    await toggle.focus()
+    await tabTo(page, toggle)
     await page.keyboard.press('Enter')
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
     await expect(
@@ -87,10 +99,11 @@ for (const language of ['de', 'en']) {
     await resume(page, 'recoveryEquipmentFixture', language)
     const service = page.getByTestId('expedition-service-panel')
     await expect(service).toHaveAttribute('data-urgent', 'true')
-    await expect(page.getByTestId('expedition-service-toggle')).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    )
+    await expect(
+      service.getByText(
+        /service options are expanded|serviceoptionen sind geöffnet/i
+      )
+    ).toBeVisible()
     const donor = service.getByRole('button', {
       name:
         language === 'de'
@@ -126,10 +139,12 @@ test('zero condition recovery is immediately expanded', async ({ page }) => {
     'data-urgent',
     'true'
   )
-  await expect(page.getByTestId('expedition-service-toggle')).toHaveAttribute(
-    'aria-expanded',
-    'true'
+  const recovery = page.getByTestId(
+    'expedition-service-accept-technical-failure'
   )
+  await expect(recovery).toBeVisible()
+  await tabTo(page, recovery)
+  await expect(recovery).toBeFocused()
 })
 
 test('desktop keeps the radio above a reachable route', async ({

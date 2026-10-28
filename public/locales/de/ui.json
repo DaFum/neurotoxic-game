@@ -2310,6 +2310,8 @@
   "zealotry.not_enough_zealotry": "Nicht genug Fanatismus",
   "expedition.service.show": "Serviceoptionen anzeigen",
   "expedition.service.hide": "Serviceoptionen ausblenden",
+  "expedition.service.urgentExpanded": "Serviceoptionen sind geöffnet, weil Ausrüstung Aufmerksamkeit benötigt.",
+  "expedition.service.refusalPair": "{{source}} für {{target}}",
   "expedition.service.cannibalize": "{{source}} für {{target}} ausschlachten",
   "expedition.service.conditionPreview": "{{group}}: {{before}} → {{after}}",
   "expedition.service.fieldPreview": "Verbraucht {{parts}} Ersatzteil. {{group}}: {{before}} → {{min}}–{{max}}, abhängig von der Qualität im Minispiel.",
