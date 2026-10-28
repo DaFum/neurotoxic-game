@@ -78,7 +78,7 @@ describe('OverworldHUD', () => {
     expect(mockToggleMute).toHaveBeenCalledOnce()
   })
 
-  it('shows the compact career summary without duplicate cash/fuel/van/harmony readouts when expeditionActive is true', () => {
+  it('shows the compact career summary with van condition and without duplicate cash/fuel/harmony readouts when expeditionActive is true', () => {
     const player = {
       money: 500,
       day: 3,
@@ -93,14 +93,15 @@ describe('OverworldHUD', () => {
       members: [{ id: 'm1', name: 'Member 1', mood: 60, stamina: 70 }]
     }
 
-    const { getByText, queryByText, queryByRole } = render(
+    const { getByText, getByRole, queryByText, queryByRole } = render(
       <OverworldHUD player={player} band={band} expeditionActive={true} />
     )
 
-    // Career summary and band member rows stay visible
+    // Career summary, van condition (which gates OverworldMenu repair) and band member rows stay visible
     expect(getByText(/Berlin/)).toBeInTheDocument()
     expect(getByText(/FAME/)).toBeInTheDocument()
     expect(getByText('Member 1')).toBeInTheDocument()
+    expect(getByRole('img', { name: 'Van Condition: 65%' })).toBeInTheDocument()
 
     // Duplicate resources owned by ExpeditionStatusStrip are not rendered in OverworldHUD
     expect(queryByRole('progressbar', { name: 'Fuel Level' })).toBeNull()

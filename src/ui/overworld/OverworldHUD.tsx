@@ -1,8 +1,10 @@
 import { useState, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Wrench } from 'lucide-react'
 import type { PlayerState } from '../../types/player'
 import type { BandState } from '../../types/band'
 import { readVanCondition } from '../../utils/gameState'
+import { formatPercent } from '../../utils/numberUtils'
 import {
   KeyboardShortcutsPanel,
   ShortcutsToggle,
@@ -15,13 +17,17 @@ import {
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
+/** Same warning threshold as the van condition bar in PlayerStatusCard / OverworldPhoneResources. */
+const LOW_CONDITION_THRESHOLD = 25
+
 interface OverworldHUDProps {
   player?: PlayerState
   band?: BandState
   /**
    * While an Expedition runs, the status strip already shows cash, fuel,
-   * condition and harmony, so the Overworld HUD renders the compact career
-   * summary (day, location, fame, level, distance) instead of duplicating them.
+   * equipment condition and harmony, so the Overworld HUD renders the compact
+   * career summary (day, location, fame, level, distance) plus van condition
+   * (which gates the OverworldMenu repair action) instead of duplicating them.
    */
   expeditionActive?: boolean
 }
@@ -40,6 +46,10 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
   const day = player?.day ?? 0
   const fuel = player?.van?.fuel ?? 0
   const condition = readVanCondition(player?.van?.condition)
+  const conditionLabel = t('ui:hud.vanCondition', {
+    defaultValue: 'Van Condition'
+  })
+  const formattedCondition = formatPercent(condition / 100, i18n.language)
 
   const locationName = translateLocation(t, location, location)
 
@@ -69,6 +79,19 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
             {' · '}
             {t('ui:overworld.career_dist', { defaultValue: 'KM' })}{' '}
             {player?.stats?.totalDistance ?? 0}
+            {' · '}
+            <span
+              className={`inline-flex items-center gap-1 tabular-nums ${condition < LOW_CONDITION_THRESHOLD ? 'text-blood-red font-bold' : ''}`}
+              aria-label={`${conditionLabel}: ${formattedCondition}`}
+              role='img'
+            >
+              <Wrench
+                size={13}
+                className='text-condition-blue inline shrink-0'
+                aria-hidden='true'
+              />
+              {formattedCondition}
+            </span>
           </p>
         ) : (
           <div>
