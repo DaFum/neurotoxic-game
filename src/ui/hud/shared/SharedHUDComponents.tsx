@@ -212,10 +212,10 @@ interface BandStatusPanelProps {
   t: TFunction
   variant?: 'hud' | 'compact'
   /**
-   * Drops the harmony summary row on phones while the panel is collapsed, for
-   * screens that already show harmony elsewhere (the Expedition status strip).
+   * Drops the harmony summary row on screens that already show harmony
+   * elsewhere (the Expedition status strip).
    */
-  hideSummaryOnPhone?: boolean
+  hideHarmonySummary?: boolean
 }
 
 export const BandStatusPanel = memo(
@@ -223,7 +223,7 @@ export const BandStatusPanel = memo(
     band,
     t,
     variant = 'compact',
-    hideSummaryOnPhone = false
+    hideHarmonySummary = false
   }: BandStatusPanelProps) => {
     const { i18n } = useTranslation()
     const safeHarmony = finiteNumberOr(band?.harmony, 0)
@@ -279,30 +279,30 @@ export const BandStatusPanel = memo(
             />
           ))}
         </div>
-        <div
-          className={`mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between ${hideSummaryOnPhone && !expanded ? 'max-sm:hidden' : ''}`}
-        >
-          <span className={harmonyLabelClassName}>
-            {t('ui:harmony', { defaultValue: 'HARMONY' })}
-          </span>
-          <div className={barWrapperClassName}>
-            <div
-              className={`${harmonyValueClassName} ${safeHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
-            >
-              {formatPercent(Math.floor(safeHarmony) / 100, i18n.language)}
+        {!hideHarmonySummary && (
+          <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between'>
+            <span className={harmonyLabelClassName}>
+              {t('ui:harmony', { defaultValue: 'HARMONY' })}
+            </span>
+            <div className={barWrapperClassName}>
+              <div
+                className={`${harmonyValueClassName} ${safeHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+              >
+                {formatPercent(Math.floor(safeHarmony) / 100, i18n.language)}
+              </div>
+              <ProgressBar
+                value={safeHarmony}
+                max={100}
+                color={safeHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
+                size={barSize}
+                showValue={false}
+                aria-label={t('ui:hud.bandHarmony', {
+                  defaultValue: 'Band Harmony'
+                })}
+              />
             </div>
-            <ProgressBar
-              value={safeHarmony}
-              max={100}
-              color={safeHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
-              size={barSize}
-              showValue={false}
-              aria-label={t('ui:hud.bandHarmony', {
-                defaultValue: 'Band Harmony'
-              })}
-            />
           </div>
-        </div>
+        )}
       </div>
     )
   }

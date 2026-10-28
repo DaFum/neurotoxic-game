@@ -37,6 +37,12 @@ vi.mock('../../src/components/SceneRouter.tsx', () => ({
         return <div data-testid='roadie-scene'>Roadie</div>
       case GAME_PHASES.CLINIC:
         return <div data-testid='clinic-scene'>Clinic</div>
+      case GAME_PHASES.ASSETS:
+        return <div data-testid='assets-scene'>Assets</div>
+      case GAME_PHASES.TOUR_PREP:
+        return <div data-testid='tourprep-scene'>TourPrep</div>
+      case GAME_PHASES.RUN_SUMMARY:
+        return <div data-testid='runsummary-scene'>RunSummary</div>
       case GAME_PHASES.MENU:
       default:
         return <div data-testid='main-menu-scene'>Main Menu</div>
@@ -240,7 +246,10 @@ describe('App', () => {
       GAME_PHASES.OVERWORLD,
       GAME_PHASES.TRAVEL_MINIGAME,
       GAME_PHASES.PRE_GIG_MINIGAME,
-      GAME_PHASES.CLINIC
+      GAME_PHASES.CLINIC,
+      GAME_PHASES.ASSETS,
+      GAME_PHASES.TOUR_PREP,
+      GAME_PHASES.RUN_SUMMARY
     ]
 
     for (const scene of scenesWithoutHud) {
