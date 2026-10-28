@@ -715,7 +715,7 @@
   "expedition.service.acceptTechnicalFailure": "Tour abbrechen",
   "expedition.service.defect": "Defekt an {{group}} — Schwere {{severity}}",
   "expedition.service.disabled": "TOT",
-  "expedition.service.noRepair": "Hier ist gerade nichts zu reparieren.",
+  "expedition.service.noRepair": "Für diese Ausrüstung ist hier gerade keine Reparatur verfügbar.",
   "expedition.service.title": "Equipment-Service",
   "expedition.startExpedition": "EXPEDITION STARTEN",
   "expedition.summary.continue": "Weiter",
@@ -2312,11 +2312,15 @@
   "expedition.service.hide": "Serviceoptionen ausblenden",
   "expedition.service.cannibalize": "{{source}} für {{target}} ausschlachten",
   "expedition.service.conditionPreview": "{{group}}: {{before}} → {{after}}",
-  "expedition.service.fieldPreview": "Verbraucht {{parts}} Ersatzteil. {{group}}: {{before}} → {{min}}–{{max}}, abhängig von der Qualität im Minispiel; schlechte Qualität kann einen versteckten Defekt erzeugen.",
+  "expedition.service.fieldPreview": "Verbraucht {{parts}} Ersatzteil. {{group}}: {{before}} → {{min}}–{{max}}, abhängig von der Qualität im Minispiel.",
   "expedition.service.clearsDefects": "Entfernt bekannte Defekte.",
   "expedition.service.defectRisk": "Risiko: Erzeugt einen versteckten Defekt.",
   "expedition.service.refusal.INSUFFICIENT_SPARE_PARTS": "Ein Ersatzteil wird benötigt.",
   "expedition.service.refusal.SERVICE_UNAVAILABLE_AT_LOCATION": "Ein Serviceort wird benötigt.",
   "expedition.service.refusal.INSUFFICIENT_SPENDABLE_CASH": "Nicht genug verfügbares Geld.",
-  "expedition.service.refusal.SOURCE_CONDITION_TOO_LOW": "Zustand des Spenders ist zu niedrig."
+  "expedition.service.refusal.SOURCE_CONDITION_TOO_LOW": "Zustand des Spenders ist zu niedrig.",
+  "expedition.service.fieldDefectRisk": "Schlechte Qualität kann einen versteckten Defekt erzeugen.",
+  "expedition.service.clearsOneDefect": "Entfernt einen bekannten Defekt.",
+  "expedition.service.refusal.CONDITION_NOT_CRITICAL": "Der Zustand ist nicht kritisch genug für diese Reparatur.",
+  "expedition.service.refusal.NOTHING_TO_REPAIR": "Für manche Ausrüstung bringt diese Reparatur keinen Nutzen."
 }

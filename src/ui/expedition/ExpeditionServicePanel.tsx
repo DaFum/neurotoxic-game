@@ -199,13 +199,9 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
         getExpeditionConditionTier(view.condition[group])
       )
     )
-  const [expanded, setExpanded] = useState(urgent)
+  const [userExpanded, setUserExpanded] = useState(false)
+  const expanded = urgent || userExpanded
   const detailsId = useId()
-  const [previousUrgent, setPreviousUrgent] = useState(urgent)
-  if (urgent !== previousUrgent) {
-    setPreviousUrgent(urgent)
-    if (urgent) setExpanded(true)
-  }
   const [fieldRepair, setFieldRepair] = useState<{
     targetGroup: ConditionGroup
     routeStep: number
@@ -231,10 +227,7 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
   const refusals = [
     ...new Map(
       view.repairOptions.flatMap(option =>
-        !option.resolution.ok &&
-        !['NOTHING_TO_REPAIR', 'CONDITION_NOT_CRITICAL'].includes(
-          option.resolution.reason
-        )
+        !option.resolution.ok
           ? [
               [
                 `${option.mode}:${option.resolution.reason}`,
@@ -284,7 +277,8 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
         data-testid='expedition-service-toggle'
         aria-expanded={expanded}
         aria-controls={detailsId}
-        onClick={() => setExpanded(value => !value)}
+        disabled={urgent}
+        onClick={() => setUserExpanded(value => !value)}
       >
         {t(
           expanded ? 'ui:expedition.service.hide' : 'ui:expedition.service.show'
@@ -409,11 +403,10 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
                     view.visibleDefects.some(
                       defect => defect.group === option.targetGroup
                     )
-                      ? ` ${t('ui:expedition.service.clearsDefects')}`
+                      ? ` ${t(option.mode === 'cannibalize' ? 'ui:expedition.service.clearsOneDefect' : 'ui:expedition.service.clearsDefects')}`
                       : null}
-                    {option.resolution.result.createsHiddenDefect &&
-                    option.mode !== 'field'
-                      ? ` ${t('ui:expedition.service.defectRisk')}`
+                    {option.resolution.result.createsHiddenDefect
+                      ? ` ${t(option.mode === 'field' ? 'ui:expedition.service.fieldDefectRisk' : 'ui:expedition.service.defectRisk')}`
                       : null}
                   </p>
                 </div>

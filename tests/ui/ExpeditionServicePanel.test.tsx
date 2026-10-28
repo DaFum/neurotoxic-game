@@ -209,12 +209,110 @@ describe('service guidance', () => {
       ).toContain(language === 'en' ? 'quality' : 'Qualität')
       expect(
         screen.getByTestId('expedition-preview-field-pa').textContent
+      ).toMatch(language === 'en' ? /hidden defect/i : /versteckten Defekt/i)
+      expect(
+        screen.getByTestId('expedition-preview-field-pa').textContent
       ).toContain('1')
       expect(
         screen.getByTestId('expedition-preview-field-pa').textContent
       ).toContain('50 → 70–100')
     }
   )
+
+  it('keeps urgent recovery open as critical condition and known defects change', () => {
+    state.current = buildState({ pa: 20 })
+    render(<ExpeditionServicePanel />)
+    fireEvent.click(screen.getByTestId('expedition-service-toggle'))
+    expect(
+      screen
+        .getByTestId('expedition-service-toggle')
+        .getAttribute('aria-expanded')
+    ).toBe('true')
+    state.current.expedition.technicalCondition.pa = 0
+    act(() => state.listeners.forEach(notify => notify()))
+    expect(
+      screen
+        .getByTestId('expedition-service-accept-technical-failure')
+        .closest('[hidden]')
+    ).toBeNull()
+    state.current.expedition.technicalCondition.defects.push({
+      id: 'known',
+      group: 'pa',
+      severity: 2,
+      status: 'revealed',
+      source: 'field_repair',
+      createdAtRouteStep: 1,
+      triggerAt: 'pre_gig',
+      triggerRouteStep: 3
+    })
+    act(() => state.listeners.forEach(notify => notify()))
+    expect(
+      screen.getByTestId('expedition-service-defects').closest('[hidden]')
+    ).toBeNull()
+  })
+
+  it.each(['en', 'de'] as const)(
+    'honors field engineer risk protection in %s',
+    async language => {
+      await setRealTranslation(language)
+      state.current = buildState({ pa: 20, spareParts: 1 })
+      state.current.expedition.runDraftTraitIds = ['field_engineer']
+      renderOpen()
+      const preview =
+        screen.getByTestId('expedition-preview-field-pa').textContent ?? ''
+      expect(preview).not.toMatch(/hidden defect|versteckten Defekt/i)
+    }
+  )
+
+  it.each(['en', 'de'] as const)(
+    'explains noncritical refusal in %s',
+    async language => {
+      await setRealTranslation(language)
+      state.current = buildState({ pa: 81, instruments: 82, stageGear: 82 })
+      renderOpen()
+      expect(
+        screen.getByText(
+          language === 'en'
+            ? /condition is not critical/i
+            : /zustand ist nicht kritisch/i
+        )
+      ).toBeTruthy()
+    }
+  )
+
+  it('describes cannibalizing as removing only one known defect', async () => {
+    await setRealTranslation('en')
+    state.current = buildState({
+      pa: 20,
+      defects: [
+        {
+          id: 'known1',
+          group: 'pa',
+          severity: 2,
+          status: 'revealed',
+          source: 'field_repair',
+          createdAtRouteStep: 1,
+          triggerAt: 'pre_gig',
+          triggerRouteStep: 3
+        },
+        {
+          id: 'known2',
+          group: 'pa',
+          severity: 2,
+          status: 'revealed',
+          source: 'field_repair',
+          createdAtRouteStep: 1,
+          triggerAt: 'pre_gig',
+          triggerRouteStep: 3
+        }
+      ]
+    })
+    renderOpen()
+    expect(
+      screen.getByTestId('expedition-preview-cannibalize-pa-from-instruments')
+        .textContent
+    ).toMatch(/removes one known defect/i)
+  })
 
   it('explains unavailable modes and defect risks without hidden defect details', async () => {
     await setRealTranslation('en')
