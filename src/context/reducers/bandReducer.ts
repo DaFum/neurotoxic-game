@@ -46,6 +46,9 @@ import {
 import { isExpeditionLegacyHqEffectActive } from '../../domain/expedition/legacyHqPolicy'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import {
+  countPackedContraband,
+  creditPackedContraband,
+  debitPackedContraband,
   isPackedContrabandEntry,
   resolveActiveExpeditionCargo
 } from '../../domain/expedition/cargo'
@@ -481,6 +484,12 @@ export const handleCraftItem = (
 
   const stash = state.band.stash || {}
 
+  // During a Tour crafting works on the committed cargo: only packed stock can
+  // be used as input, and the cargo is reconciled with the stash below.
+  const isActiveRun = state.expedition?.status === 'active'
+  const activeCargo = resolveActiveExpeditionCargo(state)
+  const packed = activeCargo?.contraband ?? []
+
   // Verify every input is available in the required quantity.
   for (const itemId in recipe.inputs) {
     if (!Object.hasOwn(recipe.inputs, itemId)) continue
@@ -488,7 +497,13 @@ export const handleCraftItem = (
     if (
       typeof qty !== 'number' ||
       Number.isNaN(qty) ||
-      getStashStackCount(stash, itemId) < qty
+      getStashStackCount(stash, itemId) < qty ||
+      (isActiveRun &&
+        countPackedContraband(
+          packed,
+          itemId,
+          (stash[itemId] as { instanceId?: unknown } | undefined)?.instanceId
+        ) < qty)
     ) {
       return {
         ...state,
@@ -508,11 +523,20 @@ export const handleCraftItem = (
   // Consume inputs.
   const newStash = Object.assign(Object.create(null), stash)
   const consumedBand = { ...state.band }
+  let nextPacked = packed
 
   for (const itemId in recipe.inputs) {
     if (!Object.hasOwn(recipe.inputs, itemId)) continue
     const qty = recipe.inputs[itemId] as number
     const entry = newStash[itemId] as Record<string, unknown>
+    if (isActiveRun) {
+      nextPacked = debitPackedContraband(
+        nextPacked,
+        itemId,
+        entry.instanceId,
+        qty
+      )
+    }
     const current = getStashStackCount(newStash, itemId)
 
     // Revert apply-on-add equipment effects if the item is being fully deleted
@@ -539,7 +563,15 @@ export const handleCraftItem = (
 
   const consumedState: GameState = {
     ...state,
-    band: consumedBand
+    band: consumedBand,
+    ...(isActiveRun && activeCargo
+      ? {
+          expedition: {
+            ...state.expedition,
+            cargo: { ...activeCargo, contraband: nextPacked }
+          }
+        }
+      : {})
   }
 
   // Add the output. Abort (without consuming) if it cannot be added, e.g. a
@@ -563,10 +595,34 @@ export const handleCraftItem = (
     }
   }
 
+  // The output has to travel with the run to be usable. It always fits: a
+  // recipe consumes at least one packed stack of contraband, which is what
+  // the output takes in the cargo.
+  let cargoState = craftedState
+  if (isActiveRun && activeCargo) {
+    const output = craftedState.band.stash?.[recipe.output] as
+      Record<string, unknown> | undefined
+    cargoState = {
+      ...craftedState,
+      expedition: {
+        ...craftedState.expedition,
+        cargo: {
+          ...activeCargo,
+          contraband: creditPackedContraband(
+            nextPacked,
+            recipe.output,
+            typeof output?.instanceId === 'string' ? output.instanceId : null,
+            1
+          )
+        }
+      }
+    }
+  }
+
   const withToast: GameState = {
-    ...craftedState,
+    ...cargoState,
     toasts: [
-      ...(craftedState.toasts || []),
+      ...(cargoState.toasts || []),
       {
         id: toastId,
         messageKey: 'ui:toast.crafted',

@@ -188,9 +188,12 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
   } = useGameActions()
 
   if (!view.isActive) return null
-  const hasSomethingToDo =
+  // An inspection that does something keeps the panel up even at full
+  // condition, where it is the only way to surface a hidden defect.
+  const legalInspections = view.inspectionOptions.filter(option => option.legal)
+  const needsRepair =
     view.repairOptions.length > 0 || view.visibleDefects.length > 0
-  if (!hasSomethingToDo) return null
+  if (!needsRepair && legalInspections.length === 0) return null
 
   const legalRepairs = view.repairOptions.filter(option => option.legal)
 
@@ -278,37 +281,35 @@ export const ExpeditionServicePanel = memo(function ExpeditionServicePanel() {
             </ActionButton>
           ))}
         </div>
-      ) : (
+      ) : needsRepair ? (
         <p
           className='text-xs font-mono text-ash-gray'
           data-testid='expedition-service-no-repair'
         >
           {t('ui:expedition.service.noRepair')}
         </p>
-      )}
+      ) : null}
 
       <div className='flex flex-wrap gap-2'>
-        {view.inspectionOptions
-          .filter(option => option.legal)
-          .map(option => (
-            <ActionButton
-              key={option.mode}
-              variant='secondary'
-              className='px-3 py-2 text-xs'
-              data-testid={`expedition-inspection-${option.mode}`}
-              onClick={() =>
-                executeExpeditionInspection({
-                  mode: option.mode,
-                  expectedRouteStep: view.routeStep
-                })
-              }
-            >
-              {t(`ui:expedition.inspection.mode.${option.mode}`)}{' '}
-              {option.diagnosticFee > 0
-                ? formatCurrency(option.diagnosticFee, i18n.language)
-                : null}
-            </ActionButton>
-          ))}
+        {legalInspections.map(option => (
+          <ActionButton
+            key={option.mode}
+            variant='secondary'
+            className='px-3 py-2 text-xs'
+            data-testid={`expedition-inspection-${option.mode}`}
+            onClick={() =>
+              executeExpeditionInspection({
+                mode: option.mode,
+                expectedRouteStep: view.routeStep
+              })
+            }
+          >
+            {t(`ui:expedition.inspection.mode.${option.mode}`)}{' '}
+            {option.diagnosticFee > 0
+              ? formatCurrency(option.diagnosticFee, i18n.language)
+              : null}
+          </ActionButton>
+        ))}
 
         {view.technicalInsuranceGroups.map(group => (
           <ActionButton

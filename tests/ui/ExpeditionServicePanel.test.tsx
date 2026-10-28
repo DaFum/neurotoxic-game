@@ -384,6 +384,74 @@ describe('inspections and termination', () => {
     ).toBeNull()
   })
 
+  describe('inspections at full condition (#3406)', () => {
+    const hiddenDefect = {
+      id: 'defect_hidden',
+      group: 'pa' as const,
+      severity: 2 as const,
+      status: 'hidden' as const,
+      source: 'field_repair' as const,
+      createdAtRouteStep: 1,
+      triggerAt: 'pre_gig' as const,
+      triggerRouteStep: 5
+    }
+    const atServiceLocation = () => {
+      state.current.player.currentNodeId = 'service_node'
+      state.current.gameMap = {
+        nodes: {
+          service_node: {
+            id: 'service_node',
+            type: 'SUPPLY_STOP',
+            label: 'Supply Stop',
+            layer: 0
+          }
+        },
+        connections: []
+      } as never
+      state.current.expedition.visitedNodeIds = ['service_node']
+    }
+
+    it('keeps the panel up for an inspection that reveals a hidden defect', () => {
+      state.current = buildState({
+        pa: 100,
+        instruments: 100,
+        stageGear: 100,
+        defects: [hiddenDefect]
+      })
+      atServiceLocation()
+      render(<ExpeditionServicePanel />)
+
+      expect(screen.getByTestId('expedition-service-panel')).toBeTruthy()
+      expect(
+        screen.getByTestId('expedition-inspection-full_service')
+      ).toBeTruthy()
+      // Nothing is repairable, so no misleading "no repair" line, and the
+      // hidden defect stays unlisted.
+      expect(screen.queryByTestId('expedition-service-no-repair')).toBeNull()
+      expect(screen.queryByTestId('expedition-service-defects')).toBeNull()
+    })
+
+    it('stays hidden when no inspection would do anything', () => {
+      state.current = buildState({ pa: 100, instruments: 100, stageGear: 100 })
+      atServiceLocation()
+      render(<ExpeditionServicePanel />)
+
+      expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
+    })
+
+    it('does not offer an inspection that is not legal at this location', () => {
+      state.current = buildState({
+        pa: 100,
+        instruments: 100,
+        stageGear: 100,
+        defects: [hiddenDefect]
+      })
+      render(<ExpeditionServicePanel />)
+
+      expect(screen.queryByTestId('expedition-service-panel')).toBeNull()
+    })
+  })
+
   it('offers termination only once a group is dead', () => {
     const { unmount } = render(<ExpeditionServicePanel />)
     expect(

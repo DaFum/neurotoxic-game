@@ -26,6 +26,7 @@ export const DetailedStatsTab = ({
   reputationByRegion = {},
   onMakeAmends,
   onCraft,
+  craftableStash,
   onConsumeItem
 }: {
   player: PlayerState
@@ -36,6 +37,8 @@ export const DetailedStatsTab = ({
   reputationByRegion?: Record<string, number>
   onMakeAmends?: (venueId: string) => void
   onCraft?: (recipeId: string) => void
+  /** Stock the Workshop may use; defaults to the whole stash. */
+  craftableStash?: Record<string, unknown>
   onConsumeItem?: (itemId: string) => void
 }) => {
   const { t } = useTranslation([
@@ -80,7 +83,11 @@ export const DetailedStatsTab = ({
 
       {/* Workshop */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        <CraftingSection stash={band.stash} onCraft={onCraft} t={t} />
+        <CraftingSection
+          stash={craftableStash ?? band.stash}
+          onCraft={onCraft}
+          t={t}
+        />
       </div>
 
       {/* Members Detail */}

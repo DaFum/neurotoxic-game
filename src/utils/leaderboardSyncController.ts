@@ -217,6 +217,15 @@ export const createLeaderboardSyncController = (
   }
 
   /**
+   * Forgets the last confirmed snapshot, in memory and in storage. `''` never
+   * equals a real snapshot key, so a reload restores "nothing confirmed".
+   */
+  const forgetConfirmedKey = (slot: SyncSlot, playerId: string): void => {
+    slot.lastSentKey = null
+    deps.storage.write(lastSyncedKeyStorageKey(playerId), '')
+  }
+
+  /**
    * Sends the payload to the leaderboard API.
    *
    * @returns `synced` when applied, `stale` with the server's revision when a
@@ -321,7 +330,15 @@ export const createLeaderboardSyncController = (
     try {
       const result = await send(
         payload,
-        () => nextRevision(payload.playerId, clock),
+        () => {
+          // Once a request is on the wire the server may apply it even when
+          // the response is lost or late, so the last confirmed key no longer
+          // says what is stored. Only a confirmed result below restores it;
+          // otherwise a return to the old snapshot would be skipped as
+          // "already synced" while the board stays on the lost write.
+          forgetConfirmedKey(slot, payload.playerId)
+          return nextRevision(payload.playerId, clock)
+        },
         abort
       )
       if (disposed) return
@@ -336,11 +353,9 @@ export const createLeaderboardSyncController = (
         // The server holds a newer revision than this client has used. Adopt it
         // and send the snapshot again, or the board would stay on the old one.
         adoptServerRevision(payload.playerId, result.revision)
-        // The server holds a snapshot this client never confirmed, so the last
-        // confirmed key no longer says what is stored: forget it, or a pending
-        // snapshot that equals it would be skipped and the board left behind.
-        slot.lastSentKey = null
-        deps.storage.write(lastSyncedKeyStorageKey(payload.playerId), '')
+        // The confirmed key was already forgotten when the request went out and
+        // stays forgotten: the server holds a snapshot this client never
+        // confirmed.
         slot.pending ??= payload
         // The first catch-up goes out at the base interval; if the server is
         // still ahead (a second tab or device), back off like a failure.

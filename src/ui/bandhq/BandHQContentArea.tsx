@@ -9,6 +9,7 @@ import { usePurchaseLogic } from './hooks/usePurchaseLogic'
 import { useBandHQLogic } from './hooks/useBandHQLogic'
 import { useGameActions, useGameSelector } from '../../context/GameState.tsx'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import { getCarriedContrabandStash } from '../../domain/expedition/cargo'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
 import { StatsTab } from './StatsTab.tsx'
@@ -39,6 +40,12 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
 
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
+  const expedition = useGameSelector(state => state.expedition)
+  // During a Tour the Workshop works on the packed cargo only.
+  const craftableStash = useMemo(
+    () => getCarriedContrabandStash(band.stash, expedition),
+    [band.stash, expedition]
+  )
   const social = useGameSelector(state => state.social)
   const spendableCash = useGameSelector(getExpeditionSpendableCash)
   const settings = useGameSelector(state => state.settings)
@@ -165,6 +172,7 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
             reputationByRegion={reputationByRegion}
             onMakeAmends={unblacklistVenue}
             onCraft={craftItem}
+            craftableStash={craftableStash}
             onConsumeItem={consumeItem}
           />
         )}

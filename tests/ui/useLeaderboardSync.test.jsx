@@ -258,11 +258,12 @@ describe('useLeaderboardSync', () => {
       'Leaderboard',
       'Stats endpoint unavailable (404). Disabling stat sync for this session.'
     )
-    expect(
-      localStorage.getItem(
-        'neurotoxic_last_synced_snapshot:missing-endpoint-player'
-      )
-    ).toBeNull()
+    // Nothing was confirmed; a dispatched write leaves the marker empty
+    // (stored JSON-encoded).
+    const marker = localStorage.getItem(
+      'neurotoxic_last_synced_snapshot:missing-endpoint-player'
+    )
+    expect(marker === null ? '' : JSON.parse(marker)).toBe('')
 
     rerender(makeMissingState(7))
     await act(async () => {})

@@ -84,6 +84,62 @@ describe('useRoadieLogic', () => {
     })
   }
 
+  describe('escorted stash item during a Tour (#3404)', () => {
+    const stash = {
+      c_left_at_hq: { id: 'c_left_at_hq', stacks: 1 },
+      c_packed: { id: 'c_packed', stacks: 2 }
+    }
+    const withState = (expedition, fn) => {
+      const originalImplementation = mockUseGameState.getMockImplementation()
+      mockUseGameState.mockImplementation(() => ({
+        completeRoadieMinigame: mockCompleteRoadieMinigame,
+        currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+        band: { stash },
+        expedition,
+        changeScene: mockChangeScene
+      }))
+      try {
+        return fn()
+      } finally {
+        mockUseGameState.mockImplementation(originalImplementation)
+      }
+    }
+    const escortedId = () => {
+      const { result, unmount } = renderHook(() => useRoadieLogic())
+      // The escorted stash item is the first load the player carries.
+      const carrying = result.current.gameStateRef.current.carrying
+      const id = carrying?.type === 'CONTRABAND' ? carrying.id : undefined
+      unmount()
+      return id
+    }
+
+    test('escorts the first packed item, not one left at HQ', () => {
+      const id = withState(
+        {
+          status: 'active',
+          cargo: {
+            contraband: [{ stashKey: 'c_packed', instanceId: null, stacks: 1 }]
+          }
+        },
+        escortedId
+      )
+      expect(id).toBe('c_packed')
+    })
+
+    test('escorts nothing when no cargo is packed', () => {
+      const id = withState(
+        { status: 'active', cargo: { contraband: [] } },
+        escortedId
+      )
+      expect(id).toBeUndefined()
+    })
+
+    test('keeps the whole stash outside a Tour', () => {
+      const id = withState({ status: 'idle' }, escortedId)
+      expect(id).toBe('c_left_at_hq')
+    })
+  })
+
   test('rejects nonfinite deltas and clamps simulation time to 0..100 ms', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current

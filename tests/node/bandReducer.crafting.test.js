@@ -211,4 +211,157 @@ describe('bandReducer - handleCraftItem', () => {
 
     assert.equal(next.band.luck, 0)
   })
+
+  describe('during an active Tour (#3403)', () => {
+    const withCargo = (stash, contraband) => {
+      const state = makeState(stash)
+      state.expedition = {
+        status: 'active',
+        runId: 'run_1',
+        loadout: null,
+        cargo: {
+          spareParts: 0,
+          supplies: 0,
+          technicalGearItemIds: [],
+          merch: [],
+          contraband
+        }
+      }
+      return state
+    }
+    const craftPick = state =>
+      handleCraftItem(state, {
+        recipeId: 'recipe_cursed_pick',
+        instanceId: 'crafted-pick',
+        toastId: 'craft_toast'
+      })
+
+    it('debits the stash and the packed manifest together', () => {
+      const state = withCargo(
+        { c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 3 } },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: null, stacks: 3 }]
+      )
+      const next = craftPick(state)
+
+      assert.equal(next.band.stash.c_sticky_plectrum.stacks, 1)
+      const cargo = next.expedition.cargo.contraband
+      assert.equal(
+        cargo.find(e => e.stashKey === 'c_sticky_plectrum').stacks,
+        1
+      )
+      // The output travels with the run so it stays usable.
+      assert.equal(cargo.find(e => e.stashKey === 'c_cursed_pick').stacks, 1)
+    })
+
+    it('drops a packed entry that is crafted away entirely', () => {
+      const state = withCargo(
+        { c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 } },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: null, stacks: 2 }]
+      )
+      const next = craftPick(state)
+
+      assert.ok(
+        !next.expedition.cargo.contraband.some(
+          e => e.stashKey === 'c_sticky_plectrum'
+        )
+      )
+      assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+    })
+
+    it('refuses ingredients left at HQ and consumes nothing', () => {
+      const state = withCargo(
+        { c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 } },
+        []
+      )
+      const next = craftPick(state)
+
+      assert.equal(next.band.stash.c_sticky_plectrum.stacks, 2)
+      assert.ok(!Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+      assert.deepEqual(next.expedition.cargo.contraband, [])
+      assert.ok(
+        next.toasts.some(t => t.messageKey === 'ui:toast.craftMissingInputs')
+      )
+    })
+
+    it('refuses when only part of the required stacks is packed', () => {
+      const state = withCargo(
+        { c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 3 } },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: null, stacks: 1 }]
+      )
+      const next = craftPick(state)
+
+      assert.equal(next.band.stash.c_sticky_plectrum.stacks, 3)
+      assert.equal(next.expedition.cargo.contraband[0].stacks, 1)
+    })
+
+    it('refuses ingredients packed under another instance', () => {
+      const state = withCargo(
+        {
+          c_sticky_plectrum: {
+            id: 'c_sticky_plectrum',
+            stacks: 2,
+            instanceId: 'new'
+          }
+        },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: 'old', stacks: 2 }]
+      )
+      const next = craftPick(state)
+
+      assert.equal(next.band.stash.c_sticky_plectrum.stacks, 2)
+      assert.ok(!Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+      assert.equal(next.expedition.cargo.contraband[0].instanceId, 'old')
+    })
+
+    it('debits only the row that covers the owned instance', () => {
+      const state = withCargo(
+        {
+          c_sticky_plectrum: {
+            id: 'c_sticky_plectrum',
+            stacks: 2,
+            instanceId: 'mine'
+          }
+        },
+        [
+          { stashKey: 'c_sticky_plectrum', instanceId: 'other', stacks: 5 },
+          { stashKey: 'c_sticky_plectrum', instanceId: 'mine', stacks: 2 }
+        ]
+      )
+      const next = craftPick(state)
+
+      const rows = next.expedition.cargo.contraband.filter(
+        e => e.stashKey === 'c_sticky_plectrum'
+      )
+      assert.deepEqual(rows, [
+        { stashKey: 'c_sticky_plectrum', instanceId: 'other', stacks: 5 }
+      ])
+      assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+    })
+
+    it('keeps the original behavior outside an active run', () => {
+      const state = makeState({
+        c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 }
+      })
+      state.expedition = { status: 'prepared' }
+      const next = craftPick(state)
+
+      assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+      assert.equal(next.expedition.status, 'prepared')
+    })
+
+    it('stays a pure no-op on a repeated identical request', () => {
+      const state = withCargo(
+        { c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 } },
+        [{ stashKey: 'c_sticky_plectrum', instanceId: null, stacks: 2 }]
+      )
+      const once = craftPick(state)
+      const twice = craftPick(once)
+
+      // The second request has no packed inputs left, so nothing more is spent.
+      assert.ok(
+        twice.toasts.some(t => t.messageKey === 'ui:toast.craftMissingInputs')
+      )
+      assert.deepEqual(twice.expedition.cargo, once.expedition.cargo)
+      assert.deepEqual(twice.band.stash, once.band.stash)
+    })
+  })
 })

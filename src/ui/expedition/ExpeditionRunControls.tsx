@@ -2,16 +2,14 @@
  * Run-level Expedition controls mounted on the Overworld.
  */
 
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
 import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExpeditionIntelPanel } from './ExpeditionIntelPanel'
-import { ExtractionDialog } from './ExtractionDialog'
-import { FailureCrisisDialog } from './FailureCrisisDialog'
+import { ExpeditionDecisionHost } from './ExpeditionDecisionHost'
 import { AuthorityEncounterDialog } from './AuthorityEncounterDialog'
 import {
   deriveExpeditionDoubleDownOffer,
@@ -40,42 +38,31 @@ const useIsAtExtractionWindow = (): boolean =>
   })
 
 /**
- * Offers voluntary extraction and routes a finalized run to its summary.
+ * Offers voluntary extraction on the Overworld.
  *
  * @remarks
- * Terminal navigation lives here rather than in the reducer: the reducer
- * settles the run, and this component persists that committed state and then
- * moves to the run summary — which is also where the settlement is read before
- * `PREPARE_NEXT_EXPEDITION` clears the ledger it describes.
+ * The crisis dialog, the extraction confirmation and the run-summary
+ * navigation belong to `ExpeditionDecisionHost`, which is mounted even when no
+ * run is active so a finalized run still reaches its summary.
  */
 export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
   const { t } = useTranslation('ui')
-  const { changeScene, saveGameAfterStateCommit } = useGameActions()
   const status = useGameSelector(state => state.expedition?.status ?? 'idle')
-  // A Career ending finalizes the run too, but its scene is GAMEOVER: the
-  // Overworld stays mounted through its exit animation and must not
-  // redirect that ending to the run summary.
-  const isCareerEnded = useGameSelector(
-    state =>
-      state.terminalOutcome !== null ||
-      state.currentScene === GAME_PHASES.GAMEOVER
-  )
   const isAtExtractionWindow = useIsAtExtractionWindow()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-
-  const isFinalized =
-    status === 'extracted' || status === 'completed' || status === 'failed'
-
-  useEffect(() => {
-    if (!isFinalized || isCareerEnded) return
-    saveGameAfterStateCommit()
-    changeScene(GAME_PHASES.RUN_SUMMARY)
-  }, [changeScene, isCareerEnded, isFinalized, saveGameAfterStateCommit])
 
   const openDialog = useCallback(() => setIsDialogOpen(true), [])
   const closeDialog = useCallback(() => setIsDialogOpen(false), [])
 
-  if (status !== 'active') return null
+  const decisionHost = (
+    <ExpeditionDecisionHost
+      isExtractionOpen={isDialogOpen}
+      onOpenExtraction={openDialog}
+      onCloseExtraction={closeDialog}
+    />
+  )
+
+  if (status !== 'active') return decisionHost
 
   return (
     <div data-testid='expedition-run-controls'>
@@ -104,16 +91,11 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
         </ActionButton>
       ) : null}
 
-      {/* The crisis dialog lives here rather than in the scene so its
-          extraction escape has an owner: it opens the same confirmation the
-          extraction button does, instead of rendering a dead button. */}
-      <FailureCrisisDialog onExtract={openDialog} />
-
       {/* Cornered by the Authority with a way out: the decision the crisis
           would otherwise be. Hidden while a crisis is pending. */}
       <AuthorityEncounterDialog suppressed={isDialogOpen} />
 
-      <ExtractionDialog isOpen={isDialogOpen} onClose={closeDialog} />
+      {decisionHost}
     </div>
   )
 })
