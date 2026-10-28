@@ -71,6 +71,7 @@ interface CrisisModalProps {
  */
 export const UplinkButton = memo(
   ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
+    const { t } = useTranslation(['ui'])
     // Only absolute http(s) URLs navigate; unsafe values render inertly.
     const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
     const safeUrl = isSafeUrl ? url.trim() : '#'
@@ -84,12 +85,21 @@ export const UplinkButton = memo(
       [isSafeUrl]
     )
 
+    const opensInNewTabNotice = t('ui:social_links.opens_in_new_tab', {
+      defaultValue: 'opens in a new tab'
+    })
+
+    const ariaLabel = isSafeUrl
+      ? [title, subtitle, `(${opensInNewTabNotice})`].filter(Boolean).join(' ')
+      : undefined
+
     return (
       <a
         href={safeUrl}
         target={isSafeUrl ? '_blank' : undefined}
         rel={isSafeUrl ? 'noopener noreferrer' : undefined}
         onClick={handleClick}
+        aria-label={ariaLabel}
         className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
       >
         {/* Glitch Background on Hover */}
