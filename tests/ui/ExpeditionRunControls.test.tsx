@@ -13,7 +13,8 @@ const actions = vi.hoisted(() => ({
   changeScene: vi.fn(),
   saveGameAfterStateCommit: vi.fn(),
   extractExpedition: vi.fn(),
-  selectExpeditionDraft: vi.fn()
+  selectExpeditionDraft: vi.fn(),
+  doubleDownExpeditionObligation: vi.fn()
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -284,5 +285,49 @@ describe('Run draft picker', () => {
     )
     expect(button).toHaveTextContent('Unknown trait')
     expect(button).not.toHaveTextContent('trait_from_a_newer_save')
+  })
+})
+
+describe('Obligations', () => {
+  const obligation = (
+    id: string,
+    status: 'active' | 'completed' | 'failed'
+  ) => ({
+    id,
+    status,
+    sourceType: 'native' as const,
+    sourceId: id,
+    constraints: [],
+    progressByConstraintId: {},
+    settled: status !== 'active',
+    doubleDown: null
+  })
+
+  it.each([
+    [[]],
+    [[obligation('done', 'completed'), obligation('failed', 'failed')]]
+  ])('hides the panel when there are no active obligations', obligations => {
+    state.current = buildState()
+    state.current.expedition.activeObligations = obligations
+    render(<ExpeditionRunControls />)
+    expect(screen.queryByTestId('expedition-active-obligations')).toBeNull()
+  })
+
+  it('shows only active obligations and dispatches their double down', () => {
+    state.current = buildState({ routeStep: 0 })
+    state.current.expedition.activeObligations = [
+      obligation('done', 'completed'),
+      obligation('live', 'active')
+    ]
+    render(<ExpeditionRunControls />)
+    const panel = screen.getByTestId('expedition-active-obligations')
+    expect(
+      panel.querySelectorAll('[data-testid^="double-down-"]')
+    ).toHaveLength(1)
+    fireEvent.click(screen.getByTestId('double-down-live'))
+    expect(actions.doubleDownExpeditionObligation).toHaveBeenCalledWith(
+      'live',
+      expect.any(String)
+    )
   })
 })

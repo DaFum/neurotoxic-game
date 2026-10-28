@@ -16,6 +16,7 @@ import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 import { CURRENT_SAVE_VERSION } from '../../src/context/reducers/migrations/index.ts'
 import { createPersistedState } from '../../src/context/usePersistence.ts'
+import { deriveExpeditionDraftCandidates } from '../../src/domain/expedition/runDrafts.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash.ts'
@@ -290,4 +291,41 @@ export const convertedNodeFixture = () => {
     }
   }
   return fail('no seed offered a Nemesis shortcut onto a base GIG node')
+}
+
+/** Service condition examples on a real, resumed Expedition run. */
+export const equipmentServiceFixture = (pa = 81) => {
+  const fixture = ordinaryGigFixture()
+  const state = JSON.parse(fixture.save)
+  state.settings.tutorialSeen = true
+  state.player.tutorialStep = -1
+  state.player.money = 470
+  state.expedition.technicalCondition = {
+    pa,
+    instruments: 82,
+    stageGear: 82,
+    defects: []
+  }
+  state.expedition.cargo.spareParts = 0
+  return { save: JSON.stringify(state) }
+}
+
+export const normalEquipmentFixture = () => equipmentServiceFixture(81)
+export const recoveryEquipmentFixture = () => equipmentServiceFixture(30)
+export const zeroEquipmentFixture = () => equipmentServiceFixture(0)
+
+/** Pending draft blocks route choice until the player selects a trait. */
+export const pendingDraftEquipmentFixture = () => {
+  const state = JSON.parse(normalEquipmentFixture().save)
+  state.expedition.pendingRunDraftOffer = {
+    sourceType: 'supply',
+    sourceKey: 'fixture_supply',
+    offeredAtRouteStep: state.expedition.routeStep,
+    candidateTraitIds: deriveExpeditionDraftCandidates(
+      state.runSeed,
+      `supply:fixture_supply:${state.expedition.routeStep}`,
+      state.expedition.runDraftTraitIds
+    )
+  }
+  return { save: JSON.stringify(state) }
 }
