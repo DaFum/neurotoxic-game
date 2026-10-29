@@ -6,7 +6,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ i18n: { language: 'en' }, t: key => key })
 }))
 
-import { AlertIcon, HexNode } from '../../src/ui/shared/BrutalistUI.tsx'
+import { AlertIcon, HexNode, UplinkButton } from '../../src/ui/shared/BrutalistUI.tsx'
 
 describe.each([
   ['AlertIcon', AlertIcon, '0 0 24 24'],
@@ -49,5 +49,39 @@ describe.each([
     )
     const ids = [...container.querySelectorAll('title')].map(el => el.id)
     expect(new Set(ids).size).toBe(2)
+  })
+})
+
+describe('UplinkButton', () => {
+  test('renders external anchor tag with accessible aria-label announcing target', () => {
+    const { container } = render(
+      <UplinkButton
+        title='Bandcamp'
+        subtitle='neurotoxic.bandcamp.com'
+        url='https://neurotoxic.bandcamp.com'
+      />
+    )
+    const anchor = container.querySelector('a')
+    expect(anchor).not.toBeNull()
+    expect(anchor.getAttribute('target')).toBe('_blank')
+    expect(anchor.getAttribute('rel')).toBe('noopener noreferrer')
+    expect(anchor.getAttribute('aria-label')).toBe(
+      'Bandcamp neurotoxic.bandcamp.com (ui:social_links.opens_in_new_tab)'
+    )
+  })
+
+  test('prevents navigation on unsafe URL and omits opens in new tab aria-label', () => {
+    const { container } = render(
+      <UplinkButton
+        title='Unsafe Link'
+        subtitle='ftp://example.com'
+        url='ftp://example.com'
+      />
+    )
+    const anchor = container.querySelector('a')
+    expect(anchor).not.toBeNull()
+    expect(anchor.getAttribute('href')).toBe('#')
+    expect(anchor.hasAttribute('target')).toBe(false)
+    expect(anchor.hasAttribute('aria-label')).toBe(false)
   })
 })
