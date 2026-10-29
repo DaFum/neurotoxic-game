@@ -1,6 +1,60 @@
 import { test, expect } from '@playwright/test'
 import { resume } from './helpers.js'
 
+/**
+ * Verifies that required and visible optional run control/log sections
+ * are not covered by the fixed menu toggle and remain reachable by hit-testing.
+ */
+async function verifySectionCoverageAndReachability(page) {
+  // Required sections for this fixture
+  await expect(page.getByTestId('expedition-service-panel')).toBeVisible()
+  await expect(page.locator('.event-log')).toBeVisible()
+
+  const sectionLocators = [
+    { name: 'obligations', loc: page.getByTestId('expedition-active-obligations') },
+    { name: 'intel', loc: page.getByTestId('expedition-intel-panel') },
+    { name: 'service', loc: page.getByTestId('expedition-service-panel') },
+    { name: 'eventLog', loc: page.locator('.event-log') }
+  ]
+
+  for (const { loc } of sectionLocators) {
+    if ((await loc.count()) > 0 && (await loc.first().isVisible())) {
+      await loc.first().scrollIntoViewIfNeeded()
+
+      const isCoveredByToggle = await loc.first().evaluate(el => {
+        const menu = document.querySelector('.ow-menu')
+        if (!menu) return false
+        const menuR = menu.getBoundingClientRect()
+        const elR = el.getBoundingClientRect()
+        return (
+          elR.left < menuR.right &&
+          elR.right > menuR.left &&
+          elR.top < menuR.bottom &&
+          elR.bottom > menuR.top
+        )
+      })
+      expect(isCoveredByToggle).toBe(false)
+
+      const isReachable = await loc.first().evaluate(el => {
+        const menu = document.querySelector('.ow-menu')
+        const isPointerNone = getComputedStyle(el).pointerEvents === 'none'
+        const r = el.getBoundingClientRect()
+        const x = r.left + Math.min(r.width / 2, 50)
+        const y = r.top + Math.min(r.height / 2, 20)
+        if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
+          return false
+        }
+        const hit = document.elementFromPoint(x, y)
+        if (!hit) return false
+        if (menu && menu.contains(hit)) return false
+        if (isPointerNone) return true
+        return el.contains(hit)
+      })
+      expect(isReachable).toBe(true)
+    }
+  }
+}
+
 test.describe('Expedition Desktop Layout & Draft Placement', () => {
   test.use({ viewport: { width: 1920, height: 945 } })
 
@@ -33,10 +87,13 @@ test.describe('Expedition Desktop Layout & Draft Placement', () => {
     const draft = page.getByTestId('expedition-run-draft-offer')
     await expect(draft).toBeVisible()
 
-    // Verify draft card and all candidate buttons are inside viewport
+    // Verify draft card is above map in layout order
     const draftBox = await draft.boundingBox()
+    const mapBoxInitial = await page.locator('.map-wrap').boundingBox()
     expect(draftBox).not.toBeNull()
+    expect(mapBoxInitial).not.toBeNull()
     expect(draftBox.y).toBeGreaterThanOrEqual(0)
+    expect(draftBox.y).toBeLessThan(mapBoxInitial.y)
     expect(draftBox.y + draftBox.height).toBeLessThanOrEqual(945)
 
     const candidateButtons = draft.getByRole('button')
@@ -138,52 +195,14 @@ test.describe('Expedition Desktop Layout & Draft Placement', () => {
     expect(scrolledIntersections).toBe(false)
 
     // Scroll obligations, intel, service, and EventLog into view and check reachability and menu non-coverage
-    const sectionLocators = [
-      { name: 'obligations', loc: page.getByTestId('expedition-active-obligations') },
-      { name: 'intel', loc: page.getByTestId('expedition-intel-panel') },
-      { name: 'service', loc: page.getByTestId('expedition-service-panel') },
-      { name: 'eventLog', loc: page.locator('.event-log') }
-    ]
-    for (const { loc } of sectionLocators) {
-      if ((await loc.count()) > 0 && (await loc.first().isVisible())) {
-        await loc.first().scrollIntoViewIfNeeded()
+    await verifySectionCoverageAndReachability(page)
 
-        const isCoveredByToggle = await loc.first().evaluate(el => {
-          const menu = document.querySelector('.ow-menu')
-          if (!menu) return false
-          const menuR = menu.getBoundingClientRect()
-          const elR = el.getBoundingClientRect()
-          return (
-            elR.left < menuR.right &&
-            elR.right > menuR.left &&
-            elR.top < menuR.bottom &&
-            elR.bottom > menuR.top
-          )
-        })
-        expect(isCoveredByToggle).toBe(false)
-
-        const isReachable = await loc.first().evaluate(el => {
-          const menu = document.querySelector('.ow-menu')
-          const isPointerNone =
-            getComputedStyle(el).pointerEvents === 'none'
-          const r = el.getBoundingClientRect()
-          const x = r.left + Math.min(r.width / 2, 50)
-          const y = r.top + Math.min(r.height / 2, 20)
-          if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
-            return false
-          }
-          const hit = document.elementFromPoint(x, y)
-          if (!hit) return false
-          if (menu && menu.contains(hit)) return false
-          if (isPointerNone) return true
-          return el.contains(hit)
-        })
-        expect(isReachable).toBe(true)
-      }
-    }
-
-    // Select a draft candidate
+    // Select a draft candidate and capture its trait ID from data-testid
     const candidateBtn = draft.getByRole('button').first()
+    const candidateTestId = await candidateBtn.getAttribute('data-testid')
+    const selectedTraitId = candidateTestId?.replace('expedition-run-draft-', '') ?? null
+    expect(selectedTraitId).not.toBeNull()
+
     await candidateBtn.click()
     await expect(page.getByTestId('expedition-run-draft-offer')).toHaveCount(0)
 
@@ -194,12 +213,17 @@ test.describe('Expedition Desktop Layout & Draft Placement', () => {
       .boundingBox()
     expect(mapBox.y).toBeLessThan(serviceBox.y)
 
-    // Save, reload, and verify that selected trait persists
+    // Save, reload, and verify that selected trait persists in state
     await page.evaluate(() => window.gameState.saveGame())
     await page.reload({ waitUntil: 'domcontentloaded' })
     await page.getByRole('button', { name: /spiel laden|load game/i }).click()
     await expect(page.getByTestId('expedition-service-panel')).toBeVisible()
     await expect(page.getByTestId('expedition-run-draft-offer')).toHaveCount(0)
+
+    const savedTraits = await page.evaluate(
+      () => window.gameState.expedition.runDraftTraitIds
+    )
+    expect(savedTraits).toContain(selectedTraitId)
   })
 })
 
@@ -235,8 +259,11 @@ test.describe('Expedition 640px Breakpoint Layout', () => {
     await expect(draft).toBeVisible()
 
     const draftBox = await draft.boundingBox()
+    const mapBox = await page.locator('.map-wrap').boundingBox()
     expect(draftBox).not.toBeNull()
+    expect(mapBox).not.toBeNull()
     expect(draftBox.y).toBeGreaterThanOrEqual(0)
+    expect(draftBox.y).toBeLessThan(mapBox.y)
 
     const candidateButtons = draft.getByRole('button')
     const candidateCount = await candidateButtons.count()
@@ -266,5 +293,8 @@ test.describe('Expedition 640px Breakpoint Layout', () => {
     const scrolledToggleBox = await menuToggle.boundingBox()
     expect(scrolledToggleBox.x).toBeCloseTo(initialToggleBox.x, 0)
     expect(scrolledToggleBox.y).toBeCloseTo(initialToggleBox.y, 0)
+
+    // Check section coverage & reachability at 640px
+    await verifySectionCoverageAndReachability(page)
   })
 })
