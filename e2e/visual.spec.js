@@ -593,7 +593,7 @@ test.describe('Visual smoke tests', () => {
             '[data-testid="overworld-phone-resources"]'
           )
           return {
-            phoneCss: getComputedStyle(menu).position === 'fixed',
+            phoneCss: getComputedStyle(menu).left === '8px',
             stripShown:
               strip !== null && getComputedStyle(strip).display !== 'none'
           }

@@ -295,3 +295,25 @@ export async function dismissTutorial(page) {
   await tutorial.getByRole('button', { name: /skip all/i }).click()
   await expect(tutorial).toHaveCount(0)
 }
+
+/**
+ * Seeding helper that loads a save fixture and enters the Overworld.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @param {string} name - Fixture name.
+ * @param {string} language - i18next language code.
+ */
+export async function resume(page, name, language) {
+  await page.goto('/?events=off', { waitUntil: 'domcontentloaded' })
+  const fixture = await buildFixture(page, name)
+  await seedSaveOnce(
+    page,
+    { [SAVE_KEY]: fixture.save, i18nextLng: language },
+    { url: '/?events=off' }
+  )
+  const skip = page.getByRole('button', { name: /skip all|alle überspringen/i })
+  if (await skip.first().isVisible()) await skip.first().click()
+  await page.getByRole('button', { name: /load game|spiel laden/i }).click()
+  await expect(page.getByTestId('expedition-service-panel')).toBeVisible()
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+}
