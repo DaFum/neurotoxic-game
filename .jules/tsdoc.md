@@ -29,3 +29,4 @@
 | 2026-10-23 | src/data/expedition/crewSignatureTraits.ts | EXPEDITION_CREW_SIGNATURE_BY_ROLE |
 | 2026-10-25 | src/context/GameState.tsx | useRequiredContext, replaceState, isShallowEqual, useGameSelector |
 | 2026-10-25 | src/App.tsx | SCENES_WITHOUT_HUD, parseBooleanEnvFlag, VERCEL_TELEMETRY_ENABLED |
+| 2026-10-26 | src/utils/brandOfferFlavor/hooks.ts | pickContextualHook |

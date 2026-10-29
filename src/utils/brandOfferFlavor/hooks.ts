@@ -27,6 +27,20 @@ const HOOK_DEFAULTS: Record<HookId, string> = {
   newcomer: 'A scout caught a clip. Small offer, but it’s a foot in the door.'
 }
 
+/**
+ * Selects a contextual brand offer hook based on the current social and player state.
+ *
+ * @remarks
+ * This function evaluates the player's fame, controversy, social trends, and overall follower count
+ * to determine the most appropriate narrative hook for a brand offer. It also assigns an urgency
+ * level which dictates how the brand offer is presented.
+ *
+ * @param gameState - The current state of the game, including social metrics and player status
+ * @param isStretched - Indicates if the player's resources or capabilities are currently overextended
+ * @param totalFollowers - The cumulative number of followers the player has acquired
+ * @param rng - A random number generator function for evaluating probabilistic outcomes
+ * @returns An object containing the localization key, default flavor text, and urgency of the chosen hook
+ */
 export const pickContextualHook = (
   gameState: SocialEngineGameState,
   isStretched: boolean,
