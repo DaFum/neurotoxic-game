@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { Tooltip } from '../shared/Tooltip'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
+import { getContrabandIconGlyph } from '../contrabandIcons'
 import type { PlayerState } from '../../types'
 import type { VoidTraderItem } from '../../types/components'
 import { finiteNumberOr } from '../../utils/gameState'
@@ -106,6 +107,16 @@ export const VoidTraderTab = ({
                   })
                 : undefined
 
+          const itemName = t(item.name)
+          const iconGlyph =
+            getContrabandIconGlyph(item.id, item.icon) ?? '?'
+
+          const buttonAriaLabel = isProcessingThis
+            ? `${t('ui:loading', { defaultValue: 'PROCESSING...' })} ${itemName}`
+            : isOwned
+              ? `${itemName}: ${t('ui:hq.owned', { defaultValue: 'OWNED' })}`
+              : `${t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })} ${itemName} (${item.fameCost} ${t('ui:hq.voidTrader.fame', { defaultValue: 'FAME' })})`
+
           const tradeButton = (
             <ActionButton
               variant='primary'
@@ -117,6 +128,8 @@ export const VoidTraderTab = ({
                 handleTrade(item)
               }}
               aria-disabled={disabled}
+              aria-busy={isProcessingThis}
+              aria-label={buttonAriaLabel}
               className='text-xs min-h-11 py-2 px-4 min-w-32'
             >
               {isProcessingThis
@@ -134,12 +147,11 @@ export const VoidTraderTab = ({
             >
               <div className='flex items-start gap-4 mb-4'>
                 <div className='w-16 h-16 border border-toxic-green/30 bg-void-black flex items-center justify-center shrink-0'>
-                  {/* Placeholder for icon, text icon instead */}
                   <span
-                    className='text-2xl opacity-50 text-toxic-green'
+                    className='text-2xl text-toxic-green'
                     aria-hidden='true'
                   >
-                    ?
+                    {iconGlyph}
                   </span>
                 </div>
                 <div className='flex-1'>

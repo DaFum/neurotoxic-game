@@ -224,3 +224,8 @@
 
 **Learning:** Standalone minigame pause overlays (such as `PauseOverlay.tsx`) that don't use shared `Modal` dialog wrappers were missing full modal semantics (`useModalBehavior`). This allowed keyboard focus to escape into the background gameplay stage during pause state and omitted global Escape key listening and background `inert` / `aria-hidden` background muting.
 **Action:** Wrap custom pause overlays in `useModalBehavior(isPaused, onResume)`, supplying `data-modal-overlay=""` on the backdrop and `ref={dialogRef}`, `role="dialog"`, `tabIndex={-1}`, and `aria-labelledby` on the inner dialog container.
+
+## 2026-11-04 - Contextual ARIA Labels & Glyphs in Item Grid Action Buttons
+
+**Learning:** In catalog and barter grids (like VoidTraderTab), action buttons with generic labels (such as "BARTER" or "PROCESSING...") lack item context when screen reader users navigate controls by landmarks or list shortcuts. Furthermore, item cards relying on plain text placeholders like "?" hide visual cues for rare contraband items.
+**Action:** Always construct dynamic `aria-label`s on grid item action buttons combining the action, item name, cost, and state (e.g. `BARTER Phantom Strings (1000 FAME)`), bind `aria-busy` during processing states, and map item IDs to visual contraband icon glyphs using `getContrabandIconGlyph`.
