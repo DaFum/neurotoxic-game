@@ -20,6 +20,7 @@ type VoidTraderCatalogItem = VoidTraderItem & {
   name: string
   description: string
   fameCost: number
+  icon?: string
 }
 
 /**

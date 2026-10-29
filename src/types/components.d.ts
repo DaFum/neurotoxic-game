@@ -574,6 +574,7 @@ export interface PurchaseItem {
   category?: string
   description?: string
   img?: string
+  icon?: string
   effect?: Effect
   effects?: Effect[]
   oneTime?: boolean
