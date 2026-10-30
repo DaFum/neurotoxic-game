@@ -1,4 +1,4 @@
-import { GamepadHint } from '../../../ui/shared/InputHint'
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar } from '../../../ui/shared/ProgressBar'
 import { formatPercent } from '../../../utils/numberUtils'

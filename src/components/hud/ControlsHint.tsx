@@ -1,4 +1,4 @@
-import { InputHint } from '../../ui/shared/InputHint'
+import { InputHint } from '../../ui/gamepad/InputHint'
 import { useActiveInputSource } from '../../utils/gamepad/inputSource'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'

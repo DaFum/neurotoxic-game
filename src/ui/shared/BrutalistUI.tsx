@@ -1,4 +1,3 @@
-import { GamepadHint } from './InputHint'
 import { registerHoldTarget } from '../../utils/gamepad/holdTargets'
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
@@ -50,6 +49,7 @@ interface DeadmanButtonProps {
   label: string
   disabled?: boolean
   onConfirm?: () => void
+  hint?: ReactNode
 }
 
 interface CrisisModalProps {
@@ -408,7 +408,7 @@ export const CrisisModal = memo(
  * @param props - Button label and confirmation callback.
  */
 export const DeadmanButton = memo(
-  ({ label, disabled = false, onConfirm }: DeadmanButtonProps) => {
+  ({ label, disabled = false, onConfirm, hint }: DeadmanButtonProps) => {
     const { t } = useTranslation()
     const [progress, setProgress] = useState<number>(0)
     const [isHolding, setIsHolding] = useState<boolean>(false)
@@ -505,10 +505,7 @@ export const DeadmanButton = memo(
     return (
       <div className='w-full flex flex-col gap-1'>
         <span className='text-xs tracking-widest uppercase opacity-50 text-center'>
-          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}{' '}
-          <GamepadHint action='confirm'>
-            {t('ui:controller.hold', { defaultValue: 'Hold' })}
-          </GamepadHint>
+          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')} {hint}
         </span>
         <button
           ref={gamepadButtonRef}

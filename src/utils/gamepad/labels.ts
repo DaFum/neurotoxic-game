@@ -1,7 +1,8 @@
 import type { LayoutFamily } from './logic'
 export function gamepadButtonLabel(
   button: number,
-  family: LayoutFamily
+  family: LayoutFamily,
+  formatButton: (button: number) => string
 ): string {
   const face =
     family === 'playstation'
@@ -13,5 +14,5 @@ export function gamepadButtonLabel(
   if (button === 8 && family !== 'generic')
     return family === 'playstation' ? 'SHARE' : 'VIEW'
   if (button === 9) return family === 'playstation' ? 'OPTIONS' : '≡'
-  return `Button ${button}`
+  return formatButton(button)
 }

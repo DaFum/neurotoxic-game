@@ -1,4 +1,4 @@
-import { InputHint } from './InputHint'
+import { InputHint } from '../gamepad/InputHint'
 import { useActiveInputSource } from '../../utils/gamepad/inputSource'
 import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useEffect } from 'react'

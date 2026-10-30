@@ -1,4 +1,4 @@
-import { GamepadHint } from '../../../ui/shared/InputHint'
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { RoadieControlsProps } from '../../../types/components'

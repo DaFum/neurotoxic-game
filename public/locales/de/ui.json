@@ -229,6 +229,7 @@
   "deals.upfront": "Vorschuss",
   "delete_save": "SPEICHERSTAND LÖSCHEN",
   "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
+  "controller.button": "Taste {{number}}",
   "controller.confirm": "Bestätigen",
   "controller.back": "Zurück",
   "controller.menu": "Menü / Pause",

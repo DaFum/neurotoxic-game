@@ -229,6 +229,7 @@
   "deals.upfront": "Upfront",
   "delete_save": "DELETE SAVE",
   "delete_warning": "WARNING: This action is irreversible. All tour progress will be lost.",
+  "controller.button": "Button {{number}}",
   "controller.confirm": "Confirm",
   "controller.back": "Back",
   "controller.menu": "Menu / Pause",

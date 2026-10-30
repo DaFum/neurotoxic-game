@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGamepadController } from '../../hooks/gamepad/GamepadContext'
 import { GAMEPAD_BUTTON } from '../../utils/gamepad/constants'
-import { gamepadButtonLabel } from '../../utils/gamepad/labels'
+import { useGamepadButtonLabel } from '../gamepad/InputHint'
 import { setActiveInputSource } from '../../utils/gamepad/inputSource'
 
 type Props = {
@@ -66,6 +66,7 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
     window.addEventListener('keydown', cancelOnEscape, true)
     return () => window.removeEventListener('keydown', cancelOnEscape, true)
   }, [lane])
+  const gamepadButtonLabel = useGamepadButtonLabel()
   const family = controller?.status.devices[0]?.family ?? 'generic'
   return (
     <section>

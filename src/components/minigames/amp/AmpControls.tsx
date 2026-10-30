@@ -1,4 +1,4 @@
-import { GamepadHint } from '../../../ui/shared/InputHint'
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpControlsProps } from '../../../types/components'

@@ -1,4 +1,4 @@
-import { GamepadHint } from '../../../ui/shared/InputHint'
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import { useModalBehavior } from '../../../ui/shared/useModalBehavior'
