@@ -54,7 +54,11 @@ const seededRandom = seed => {
   }
 }
 
-const deterministicBootstrapConfidence = (values, seed, resamples = 2000) => {
+const deterministicBootstrapConfidence = (
+  values,
+  seed,
+  resamples = 2000
+) => {
   if (!values.length)
     return {
       mean: { lower: null, upper: null, method: 'paired-bootstrap', resamples },

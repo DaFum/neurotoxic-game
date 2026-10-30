@@ -6,11 +6,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ i18n: { language: 'en' }, t: key => key })
 }))
 
-import {
-  AlertIcon,
-  HexNode,
-  UplinkButton
-} from '../../src/ui/shared/BrutalistUI.tsx'
+import { AlertIcon, HexNode, UplinkButton } from '../../src/ui/shared/BrutalistUI.tsx'
 
 describe.each([
   ['AlertIcon', AlertIcon, '0 0 24 24'],

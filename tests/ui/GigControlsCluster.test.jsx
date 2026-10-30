@@ -14,9 +14,7 @@ describe('GigControlsCluster', () => {
   test('renders menu toggle button and expands controls on click', () => {
     render(<GigControlsCluster onTogglePause={vi.fn()} />)
 
-    const menuToggle = screen.getByRole('button', {
-      name: /toggle game controls/i
-    })
+    const menuToggle = screen.getByRole('button', { name: /toggle game controls/i })
     expect(menuToggle).toBeInTheDocument()
 
     // Expand controls
@@ -29,13 +27,9 @@ describe('GigControlsCluster', () => {
 
   test('pause button uses aria-disabled and does not invoke callback when isGameOver is true', () => {
     const onTogglePause = vi.fn()
-    render(
-      <GigControlsCluster onTogglePause={onTogglePause} isGameOver={true} />
-    )
+    render(<GigControlsCluster onTogglePause={onTogglePause} isGameOver={true} />)
 
-    const menuToggle = screen.getByRole('button', {
-      name: /toggle game controls/i
-    })
+    const menuToggle = screen.getByRole('button', { name: /toggle game controls/i })
     fireEvent.click(menuToggle)
 
     const pauseButton = screen.getByRole('button', { name: /pause game/i })

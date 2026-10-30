@@ -11,10 +11,7 @@ async function verifySectionCoverageAndReachability(page) {
   await expect(page.locator('.event-log')).toBeVisible()
 
   const sectionLocators = [
-    {
-      name: 'obligations',
-      loc: page.getByTestId('expedition-active-obligations')
-    },
+    { name: 'obligations', loc: page.getByTestId('expedition-active-obligations') },
     { name: 'intel', loc: page.getByTestId('expedition-intel-panel') },
     { name: 'service', loc: page.getByTestId('expedition-service-panel') },
     { name: 'eventLog', loc: page.locator('.event-log') }
@@ -203,8 +200,7 @@ test.describe('Expedition Desktop Layout & Draft Placement', () => {
     // Select a draft candidate and capture its trait ID from data-testid
     const candidateBtn = draft.getByRole('button').first()
     const candidateTestId = await candidateBtn.getAttribute('data-testid')
-    const selectedTraitId =
-      candidateTestId?.replace('expedition-run-draft-', '') ?? null
+    const selectedTraitId = candidateTestId?.replace('expedition-run-draft-', '') ?? null
     expect(selectedTraitId).not.toBeNull()
 
     await candidateBtn.click()

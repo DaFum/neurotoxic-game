@@ -29,7 +29,11 @@ describe('PauseOverlay Component', () => {
     const onResumeMock = vi.fn()
 
     render(
-      <PauseOverlay isPaused={true} onResume={onResumeMock} onQuit={() => {}} />
+      <PauseOverlay
+        isPaused={true}
+        onResume={onResumeMock}
+        onQuit={() => {}}
+      />
     )
 
     await user.keyboard('{Escape}')

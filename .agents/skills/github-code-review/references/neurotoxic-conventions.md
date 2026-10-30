@@ -37,14 +37,14 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 
 ## 2. Numeric Safety
 
-| Rule                                              | Severity      | What to look for                                                                                                                                         | Source                                                    |
-| ------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `isFiniteNumber(val)` not `Number(val)`           | **Important** | `Number()` silently accepts booleans, arrays, strings. Use `isFiniteNumber` from `src/utils/finiteNumber.ts`.                                            | `src/utils/finiteNumber.ts:27`                            |
-| `finiteNumberOr(value, fallback)` before clamping | **Important** | For any persisted number arithmetic, wrap the stored addend with `finiteNumberOr`. `??` and `typeof value === 'number'` both pass `NaN`/`Infinity`.      | `src/utils/finiteNumber.ts:16`                            |
-| `isFiniteNumber` in sanitizer paths               | **Critical**  | Sanitizers are the last line of defense before corrupt data reaches the state tree. Using `Number()` coercion here is Critical (vs Important elsewhere). | `src/context/reducers/AGENTS.md §Load Sanitization`       |
-| `Number.isFinite` is acceptable in sanitizers     | **n/a**       | Sanitizer files may use `Number.isFinite` directly (standard JS). Not a violation.                                                                       | `src/context/reducers/AGENTS.md §Load Sanitization`       |
-| `WeakSet` for cycle safety in recursive utilities | **Important** | Recursive traversers/freezers/sanitizers need `WeakSet<object>` guards and must continue traversal through already-frozen parents.                       | `AGENTS.md §Architecture`                                 |
-| Clamp probabilities to valid range                | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern.                            | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
+| Rule                                              | Severity      | What to look for                                                                                                                                         | Source                                              |
+| ------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `isFiniteNumber(val)` not `Number(val)`           | **Important** | `Number()` silently accepts booleans, arrays, strings. Use `isFiniteNumber` from `src/utils/finiteNumber.ts`.                                            | `src/utils/finiteNumber.ts:27`                      |
+| `finiteNumberOr(value, fallback)` before clamping | **Important** | For any persisted number arithmetic, wrap the stored addend with `finiteNumberOr`. `??` and `typeof value === 'number'` both pass `NaN`/`Infinity`.      | `src/utils/finiteNumber.ts:16`                      |
+| `isFiniteNumber` in sanitizer paths               | **Critical**  | Sanitizers are the last line of defense before corrupt data reaches the state tree. Using `Number()` coercion here is Critical (vs Important elsewhere). | `src/context/reducers/AGENTS.md §Load Sanitization` |
+| `Number.isFinite` is acceptable in sanitizers     | **n/a**       | Sanitizer files may use `Number.isFinite` directly (standard JS). Not a violation.                                                                       | `src/context/reducers/AGENTS.md §Load Sanitization` |
+| `WeakSet` for cycle safety in recursive utilities | **Important** | Recursive traversers/freezers/sanitizers need `WeakSet<object>` guards and must continue traversal through already-frozen parents.                       | `AGENTS.md §Architecture`                           |
+| Clamp probabilities to valid range                | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern.                            | `src/context/reducers/assets/AGENTS.md §Long-Term Assets`  |
 
 ---
 
@@ -109,10 +109,10 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 
 ## 8. Asset and Module System
 
-| Rule                                                        | Severity      | What to look for                                                                                                                     | Source                                                    |
-| ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| `CHASSIS_CONFIG` and `MODULE_REGISTRY` are sources of truth | **Important** | Asset reducers read config directly. `buildDiyTier` belongs in `assetConfig.ts` only.                                                | `AGENTS.md §Architecture`                                 |
-| Tick functions are the daily authority                      | **Critical**  | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Reducer Flow`            |
+| Rule                                                        | Severity      | What to look for                                                                                                                     | Source                                             |
+| ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `CHASSIS_CONFIG` and `MODULE_REGISTRY` are sources of truth | **Important** | Asset reducers read config directly. `buildDiyTier` belongs in `assetConfig.ts` only.                                                | `AGENTS.md §Architecture`                          |
+| Tick functions are the daily authority                      | **Critical**  | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Reducer Flow` |
 | `handleInstallModule` charges only on slot transition       | **Critical**  | Cost is deducted only when a slot transitions `null → module`. Do not remove the stale-replay guard.                                 | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
 | Child modules must be uninstalled first                     | **Important** | `handleRemoveModule` rejects removal if any slot added by the module still has an `installedModuleId`.                               | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
 | Loan-mode chassis payload requires valid `loanProfileId`    | **Critical**  | Missing/invalid `loanProfileId` → return state unchanged (defense against free-chassis exploits).                                    | `src/context/reducers/assets/AGENTS.md §Long-Term Assets` |
@@ -132,16 +132,16 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 
 These are easy to get wrong and worth checking explicitly in any PR touching the named areas:
 
-| Gotcha                         | Correct pattern                                                                                       | Wrong pattern                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Location / city derivation     | `getRegionKeyForLocation(player.location)` from `src/utils/mapUtils.ts:144`                           | `player.location` directly in region-keyed state                      |
-| `currentGig` is a venue object | `currentGig` holds the venue. Do not use it as a city key.                                            | `state.currentGig` used as a location string                          |
-| `START_GIG` side effects       | Resets `gigModifiers` AND minigame state. Completion reducers must not navigate.                      | Reducer calling `navigate()` or changing `currentScene` on completion |
-| `lastGigStats.score` is raw    | Raw score is in thousands. Outcome logic uses `accuracy` (0–100) + `failed` flag.                     | Comparing raw score to percentage thresholds                          |
-| `advanceDay`                   | Use typed `advanceDay(state)` from `src/context/actionCreators.ts:1226`.                              | Dispatching `createAdvanceDayAction()` without payload                |
+| Gotcha                         | Correct pattern                                                                                | Wrong pattern                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Location / city derivation     | `getRegionKeyForLocation(player.location)` from `src/utils/mapUtils.ts:144`                    | `player.location` directly in region-keyed state                      |
+| `currentGig` is a venue object | `currentGig` holds the venue. Do not use it as a city key.                                     | `state.currentGig` used as a location string                          |
+| `START_GIG` side effects       | Resets `gigModifiers` AND minigame state. Completion reducers must not navigate.               | Reducer calling `navigate()` or changing `currentScene` on completion |
+| `lastGigStats.score` is raw    | Raw score is in thousands. Outcome logic uses `accuracy` (0–100) + `failed` flag.              | Comparing raw score to percentage thresholds                          |
+| `advanceDay`                   | Use typed `advanceDay(state)` from `src/context/actionCreators.ts:1226`.                       | Dispatching `createAdvanceDayAction()` without payload                |
 | Bankruptcy check               | Uses `getTotalDailyObligations(state)` from `src/utils/assets/assetSelectors/stateAggregation.ts:75`. | Manual obligation sum in reducer                                      |
-| Contraband duration            | Measured in days, decremented on `ADVANCE_DAY` only — never per-gig.                                  | Decrementing duration on gig events                                   |
-| Stash hydration spread order   | `{ ...itemObj, ...baseItem }` — base definition fields always win.                                    | `{ ...baseItem, ...itemObj }` — save data overrides definition        |
+| Contraband duration            | Measured in days, decremented on `ADVANCE_DAY` only — never per-gig.                           | Decrementing duration on gig events                                   |
+| Stash hydration spread order   | `{ ...itemObj, ...baseItem }` — base definition fields always win.                             | `{ ...baseItem, ...itemObj }` — save data overrides definition        |
 
 ---
 

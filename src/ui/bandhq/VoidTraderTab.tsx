@@ -109,7 +109,8 @@ export const VoidTraderTab = ({
                 : undefined
 
           const itemName = t(item.name)
-          const iconGlyph = getContrabandIconGlyph(item.id, item.icon) ?? '?'
+          const iconGlyph =
+            getContrabandIconGlyph(item.id, item.icon) ?? '?'
 
           const buttonAriaLabel = isProcessingThis
             ? `${t('ui:loading', { defaultValue: 'PROCESSING...' })} ${itemName}`

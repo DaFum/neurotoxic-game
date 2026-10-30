@@ -13,13 +13,7 @@ try {
     const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd()
     spawnSync(
       process.execPath,
-      [
-        resolve(root, 'node_modules/prettier/bin/prettier.cjs'),
-        '--write',
-        '--log-level',
-        'silent',
-        filePath
-      ],
+      [resolve(root, 'node_modules/prettier/bin/prettier.cjs'), '--write', '--log-level', 'silent', filePath],
       { cwd: root, stdio: 'ignore' }
     )
   }
