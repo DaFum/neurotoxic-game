@@ -265,6 +265,14 @@ export const maybeFireGigProgressEvent = (
   }
 }
 
+/**
+ * Finalizes the active gig session, submits performance results, and stops audio playback.
+ *
+ * @param stateRef - High-frequency rhythm game state carrying current score and statistics.
+ * @param setLastGigStats - Callback to persist the finalized gig performance metrics.
+ * @param endGig - Callback to cleanly terminate the rhythm game sequence.
+ * @param stopAudio - Callback to halt the underlying audio engine playback.
+ */
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
   setLastGigStats: SetLastGigStats,
