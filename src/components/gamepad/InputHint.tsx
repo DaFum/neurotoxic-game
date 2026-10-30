@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActiveInputSource } from '../../utils/gamepad/inputSourceStore';
 import { detectLayoutFamily, getButtonGlyph } from '../../utils/gamepad/layout';
-import { useGameSelector } from '../../context/GameState';
+import { useGameSelectorOptional } from '../../context/GameState';
 import { useGamepadInputOptional } from '../../context/GamepadInputContext';
 
 export interface InputHintProps {
@@ -26,18 +26,15 @@ export const InputHint: React.FC<InputHintProps> = ({
 }) => {
   const { t } = useTranslation('ui');
   const activeSource = useActiveInputSource();
-  let settings;
-  try {
-    settings = useGameSelector((s) => s?.settings);
-  } catch {
-    settings = undefined;
-  }
-  const laneBindings = settings?.gamepadLaneBindings ?? [2, 0, 1];
+  const settings = useGameSelectorOptional((s) => s.settings);
+  const gamepadCtx = useGamepadInputOptional();
 
   if (activeSource !== 'gamepad') {
     if (!keyboardText) return null;
     return <span className={`inline-block text-xs opacity-75 ${className}`}>{keyboardText}</span>;
   }
+
+  const laneBindings = settings?.gamepadLaneBindings ?? [2, 0, 1];
 
   // Determine button index
   let targetButton: number | undefined = buttonIndex;
@@ -61,7 +58,6 @@ export const InputHint: React.FC<InputHintProps> = ({
 
   if (targetButton === undefined) return null;
 
-  const gamepadCtx = useGamepadInputOptional();
   const layout = gamepadCtx?.activeLayoutFamily ?? detectLayoutFamily('xbox');
   const glyph = getButtonGlyph(targetButton, layout);
 

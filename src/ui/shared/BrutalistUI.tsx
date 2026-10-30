@@ -425,7 +425,7 @@ export const DeadmanButton = memo(
       }
     }, [disabled])
 
-    const startHold = () => {
+    const startHold = useCallback(() => {
       if (disabled || progressRef.current >= 100) return
       setIsHolding(true)
       if (drainIntervalRef.current != null)
@@ -446,9 +446,9 @@ export const DeadmanButton = memo(
         }
       }, 20) // 20ms tick
       intervalRef.current = intervalId
-    }
+    }, [disabled, onConfirm])
 
-    const stopHold = () => {
+    const stopHold = useCallback(() => {
       if (intervalRef.current != null) clearInterval(intervalRef.current)
       intervalRef.current = null
       setIsHolding(false)
@@ -471,7 +471,7 @@ export const DeadmanButton = memo(
         }, 20)
         drainIntervalRef.current = drainId
       }
-    }
+    }, [])
 
     useEffect(() => {
       const el = buttonRef.current
@@ -487,7 +487,7 @@ export const DeadmanButton = memo(
         intervalRef.current = null
         drainIntervalRef.current = null
       }
-    }, [])
+    }, [startHold, stopHold])
 
     const safeProgress = Math.min(100, Math.max(0, progress))
     const isComplete = safeProgress >= 100

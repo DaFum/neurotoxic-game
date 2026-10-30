@@ -32,7 +32,12 @@ mock.module(import.meta.resolve('../../src/utils/gigStats.ts'), {
   namedExports: { buildGigStatsSnapshot: mockGigStats.buildGigStatsSnapshot }
 })
 mock.module(import.meta.resolve('../../src/utils/errorHandler.ts'), {
-  namedExports: { handleError: mockErrorHandler.handleError }
+  namedExports: {
+    handleError: mockErrorHandler.handleError,
+    StateError: class StateError extends Error {},
+    StorageError: class StorageError extends Error {},
+    GameError: class GameError extends Error {}
+  }
 })
 // Mock dynamic import
 mock.module(import.meta.resolve('../../src/utils/audio/audioEngine.ts'), {
