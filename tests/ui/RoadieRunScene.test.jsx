@@ -31,7 +31,9 @@ vi.mock('../../src/components/stage/RoadieStageController', () => ({
 }))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameActions: () => ({ changeScene: vi.fn() })
+  useGameActions: () => ({ changeScene: vi.fn() }),
+  useGameSelector: fn => fn({ settings: { gamepadLaneBindings: [2, 0, 1] } }),
+  useGameSelectorOptional: fn => fn({ settings: { gamepadLaneBindings: [2, 0, 1] } })
 }))
 
 vi.mock('../../src/components/MinigameSceneFrame', () => ({

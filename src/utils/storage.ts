@@ -8,7 +8,7 @@ import {
   handleError,
   StorageError,
   runSafeStorageOperation
-} from './errors'
+} from './errorHandler'
 import { isLooseRecord, safeJsonParse } from './objectUtils'
 import { InMemoryAdapter, LocalStorageAdapter } from './storageAdapter'
 import type { IStorageAdapter, StorageFailureReporter } from './storageAdapter'

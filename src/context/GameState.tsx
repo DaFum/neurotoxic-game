@@ -2,7 +2,7 @@ import {
   type Context,
   type ReactNode,
   createContext,
-  use,
+  useContext,
   useReducer,
   useCallback,
   useEffect,
@@ -108,7 +108,7 @@ const IS_DEV =
  * @throws {@link Error} If the context value is null, indicating missing provider hierarchy.
  */
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
-  const value = use(context)
+  const value = useContext(context)
   if (value === null) {
     throw new Error(`${name} must be used within GameStateProvider`)
   }
@@ -337,7 +337,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
  * Hook to access stable game actions optional context.
  */
 export const useGameActionsOptional = (): GameDispatchActions | null => {
-  return use(GameDispatchContext)
+  return useContext(GameDispatchContext)
 }
 
 /**
@@ -391,10 +391,12 @@ const isShallowEqual = (a: unknown, b: unknown): boolean => {
  * @param selector - Function to extract the desired state slice.
  * @returns The specific state slice extracted by the selector.
  */
+const DEFAULT_FALLBACK_STATE: GameState = createInitialState()
+
 export function useGameSelectorOptional<T>(
   selector: (state: GameState) => T
 ): T | undefined {
-  const store = use(GameStateContext)
+  const store = useContext(GameStateContext)
   const instRef = useRef<{
     hasValue: boolean
     state: GameState | null
@@ -408,8 +410,7 @@ export function useGameSelectorOptional<T>(
   })
 
   const getSnapshot = useCallback(() => {
-    if (!store) return undefined as T
-    const nextState = store.getState()
+    const nextState = store ? store.getState() : DEFAULT_FALLBACK_STATE
     const inst = instRef.current
 
     if (

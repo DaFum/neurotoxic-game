@@ -8,6 +8,7 @@ vi.mock('../../src/utils/purchaseLogicUtils', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key, options) => {
       if (options?.defaultValue) return options.defaultValue

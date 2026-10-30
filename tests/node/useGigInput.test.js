@@ -36,7 +36,10 @@ mock.module(import.meta.resolve('../../src/utils/errorHandler.ts'), {
     handleError: mockErrorHandler.handleError,
     StateError: class StateError extends Error {},
     StorageError: class StorageError extends Error {},
-    GameError: class GameError extends Error {}
+    GameError: class GameError extends Error {},
+    runSafeStorageOperation: (name, op, fallback) => {
+      try { return op() } catch { return fallback }
+    }
   }
 })
 // Mock dynamic import

@@ -8,6 +8,7 @@ import {
 import { releaseAllLanes } from '../utils/rhythmGameInputUtils'
 import { hasActiveModal, closeTopmostModal, getActiveFocusScope } from '../ui/shared/useModalBehavior'
 import { useGamepadActions } from '../context/GamepadInputContext'
+import { useGameSelector } from '../context/GameState'
 import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
 import type { RhythmLane } from '../types/rhythmGame'
 
@@ -41,6 +42,7 @@ export const useGigInput = ({
   handleLaneInput: (index: number, active: boolean) => void
 } => {
   const hasUnlockedAudioRef = useRef(false)
+  const _settings = useGameSelector(s => s?.settings)
 
   const ensureAudioFromGesture = useCallback(() => {
     if (hasUnlockedAudioRef.current) return

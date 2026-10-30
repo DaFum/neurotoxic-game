@@ -664,7 +664,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
   )
 
   return (
-    <GamepadContext value={contextValue}>
+    <GamepadContext.Provider value={contextValue}>
       {children}
       <GamepadTextEntry
         isOpen={textEntryState.isOpen}
@@ -675,6 +675,6 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           setTextEntryState(prev => ({ ...prev, isOpen: false }))
         }
       />
-    </GamepadContext>
+    </GamepadContext.Provider>
   )
 }

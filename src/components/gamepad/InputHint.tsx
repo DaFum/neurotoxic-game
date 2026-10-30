@@ -26,7 +26,7 @@ export const InputHint: React.FC<InputHintProps> = ({
 }) => {
   const { t } = useTranslation('ui');
   const activeSource = useActiveInputSource();
-  const settings = useGameSelectorOptional((s) => s.settings);
+  const settings = useGameSelectorOptional((s) => s?.settings);
   const gamepadCtx = useGamepadInputOptional();
 
   if (activeSource !== 'gamepad') {
