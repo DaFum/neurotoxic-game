@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { RoadieControlsProps } from '../../../types/components'
 import { RoadieTouchSurface } from './RoadieTouchSurface'
 import { RoadieDPad } from './RoadieDPad'
+import { InputHint } from '../../gamepad/InputHint'
 
 /**
  * Provides touch, keyboard-hint, and optional desktop D-pad controls for Roadie movement.
@@ -41,8 +42,9 @@ export const RoadieControls = memo(function RoadieControls({
       </button>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-4 left-8 text-star-white/50 text-sm font-mono pointer-events-none hidden md:block'>
-        {t('ui:roadieRun.controls.movementHint')}
+      <div className='absolute bottom-4 left-8 text-star-white/50 text-sm font-mono pointer-events-none hidden md:block flex items-center gap-2'>
+        <span>{t('ui:roadieRun.controls.movementHint')}</span>
+        <InputHint action='direction' />
       </div>
 
       <div className='absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-(--z-stage-overlay) px-3 py-1 border border-star-white/20 bg-void-black/60 text-star-white/60 text-xs font-mono pointer-events-none md:hidden'>

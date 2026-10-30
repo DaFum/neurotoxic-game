@@ -14,6 +14,7 @@ import {
   useGameSelector,
   useGameActions
 } from './context/GameState'
+import { GamepadInputProvider } from './context/GamepadInputContext'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { NetworkStatusProvider } from './hooks/useNetworkStatus'
 import { AudioEngineProvider } from './context/AudioEngineContext'
@@ -220,7 +221,9 @@ export default function App() {
           <NetworkStatusProvider>
             <AudioEngineProvider>
               <GameStateProvider>
-                <GameContent />
+                <GamepadInputProvider>
+                  <GameContent />
+                </GamepadInputProvider>
               </GameStateProvider>
             </AudioEngineProvider>
           </NetworkStatusProvider>

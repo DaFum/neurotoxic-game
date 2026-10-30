@@ -145,6 +145,28 @@ export const isTopmostModalDialog = (dialog: Element | null): boolean =>
   dialog !== null && modalStack[modalStack.length - 1]?.dialog === dialog
 
 /**
+ * Closes the topmost open modal dialog via its registered onClose callback.
+ */
+export const closeTopmostModal = (): void => {
+  const activeModal = modalStack[modalStack.length - 1]
+  if (activeModal) {
+    activeModal.onCloseRef.current()
+  }
+}
+
+/**
+ * Returns the focus container element for spatial navigation.
+ * Returns the dialog of the topmost modal if open, otherwise document.body.
+ */
+export const getActiveFocusScope = (): HTMLElement | null => {
+  const activeModal = modalStack[modalStack.length - 1]
+  if (activeModal) {
+    return activeModal.dialog
+  }
+  return document.body
+}
+
+/**
  * Reports whether a key event originates from a text-entry element.
  *
  * @param target - The event target.

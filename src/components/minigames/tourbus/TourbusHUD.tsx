@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { TourbusHUDProps } from '../../../types/components'
+import { InputHint } from '../../gamepad/InputHint'
 
 /**
  * Displays tourbus travel distance and raw minigame damage while driving.
@@ -20,6 +21,10 @@ export const TourbusHUD = ({ distance, damage }: TourbusHUDProps) => {
         </p>
         <p>
           {t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })} {damage}%
+        </p>
+        <p className='mt-1 text-xs text-star-white/70 flex items-center gap-1'>
+          <span>Steer:</span>
+          <InputHint action='direction' />
         </p>
       </div>
     </div>

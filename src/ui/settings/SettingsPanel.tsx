@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { LanguageSettings } from './LanguageSettings'
 import { AudioSettings } from './AudioSettings'
 import { VisualSettings } from './VisualSettings'
+import { ControllerSettings } from './ControllerSettings'
 import { LogSettings } from './LogSettings'
 import { DataManagement } from './DataManagement'
 import { LOG_LEVELS } from '../../utils/logger'
@@ -11,7 +12,7 @@ import type { GameSettings } from '../../types'
  * Settings, audio state, and callbacks used by the settings control groups.
  */
 interface SettingsPanelProps {
-  settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
+  settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel' | 'gamepadLaneBindings'>
   musicVol?: number
   sfxVol?: number
   isMuted?: boolean
@@ -59,6 +60,9 @@ export const SettingsPanel = memo(function SettingsPanel({
         crtEnabled={settings?.crtEnabled ?? false}
         onToggleCRT={onToggleCRT}
       />
+
+      {/* Controller Settings */}
+      <ControllerSettings />
 
       {/* Log Settings */}
       {import.meta.env.DEV && (

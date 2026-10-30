@@ -32,6 +32,16 @@ export const GamepadTextEntry = ({
 }: GamepadTextEntryProps) => {
   const { t } = useTranslation()
   const [value, setValue] = useState(initialValue)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  const [prevInitialValue, setPrevInitialValue] = useState(initialValue)
+
+  if (isOpen && (!prevIsOpen || initialValue !== prevInitialValue)) {
+    setPrevIsOpen(true)
+    setPrevInitialValue(initialValue)
+    setValue(initialValue)
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false)
+  }
 
   if (!isOpen) return null
 
@@ -68,7 +78,7 @@ export const GamepadTextEntry = ({
     <Modal
       isOpen={isOpen}
       onClose={handleCancel}
-      title={t('controller.textEntryTitle', { defaultValue: 'Text Entry' })}
+      title={t('ui:controller.textEntryTitle', { defaultValue: 'Text Entry' })}
     >
       <div className='flex flex-col gap-4'>
         {/* Text preview */}
@@ -82,19 +92,22 @@ export const GamepadTextEntry = ({
         {/* On-screen grid */}
         <div className='grid grid-cols-10 gap-1.5 p-2 border border-toxic-green/40 bg-void-black/80'>
           {CHAR_GRID.flatMap((row, rIdx) =>
-            row.map((char, cIdx) => (
-              <button
-                key={`${rIdx}-${cIdx}-${char}`}
-                type='button'
-                onClick={() => handleAppend(char)}
-                className='h-10 border border-toxic-green/60 text-toxic-green font-mono text-lg flex items-center justify-center hover:bg-toxic-green hover:text-void-black focus:bg-toxic-green focus:text-void-black focus:outline-none transition-colors'
-                data-gamepad-autofocus={
-                  rIdx === 0 && cIdx === 0 ? 'true' : undefined
-                }
-              >
-                {char === ' ' ? '␣' : char}
-              </button>
-            ))
+            row.map((char, cIdx) => {
+              const cellKey = `grid-${char.charCodeAt(0)}-r${rIdx}-c${cIdx}`
+              return (
+                <button
+                  key={cellKey}
+                  type='button'
+                  onClick={() => handleAppend(char)}
+                  className='h-10 border border-toxic-green/60 text-toxic-green font-mono text-lg flex items-center justify-center hover:bg-toxic-green hover:text-void-black focus:bg-toxic-green focus:text-void-black focus:outline-none transition-colors'
+                  data-gamepad-autofocus={
+                    rIdx === 0 && cIdx === 0 ? 'true' : undefined
+                  }
+                >
+                  {char === ' ' ? '␣' : char}
+                </button>
+              )
+            })
           )}
         </div>
 
@@ -105,21 +118,21 @@ export const GamepadTextEntry = ({
             onClick={handleBackspace}
             className='flex-1 py-2 px-3 border-2 border-toxic-green/80 text-toxic-green font-mono text-sm hover:bg-toxic-green hover:text-void-black focus:bg-toxic-green focus:text-void-black transition-colors uppercase font-bold'
           >
-            {t('controller.backspace', { defaultValue: 'Backspace' })}
+            {t('ui:controller.backspace', { defaultValue: 'Backspace' })}
           </button>
           <button
             type='button'
             onClick={handleCancel}
             className='py-2 px-4 border-2 border-red-500 text-red-500 font-mono text-sm hover:bg-red-500 hover:text-void-black focus:bg-red-500 focus:text-void-black transition-colors uppercase font-bold'
           >
-            {t('controller.cancel', { defaultValue: 'Cancel' })}
+            {t('ui:controller.cancel', { defaultValue: 'Cancel' })}
           </button>
           <button
             type='button'
             onClick={handleDone}
             className='flex-1 py-2 px-3 border-2 border-toxic-green bg-toxic-green text-void-black font-mono text-sm hover:bg-white focus:bg-white transition-colors uppercase font-bold'
           >
-            {t('controller.done', { defaultValue: 'Done' })}
+            {t('ui:controller.done', { defaultValue: 'Done' })}
           </button>
         </div>
       </div>

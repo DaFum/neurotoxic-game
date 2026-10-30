@@ -49,23 +49,31 @@ export const sanitizeSettingsPayload = (
   }
 
   if (Object.hasOwn(rawSettings, 'gamepadLaneBindings')) {
-    const bindings = rawSettings.gamepadLaneBindings
-    if (Array.isArray(bindings) && bindings.length === 3) {
-      const isValid = bindings.every((val, idx) => {
-        return (
-          Object.hasOwn(bindings, idx) &&
+    const rawBindings = (rawSettings as Record<string, unknown>).gamepadLaneBindings
+    if (Array.isArray(rawBindings) && rawBindings.length === 3) {
+      const hasAllIndices =
+        Object.hasOwn(rawBindings, 0) &&
+        Object.hasOwn(rawBindings, 1) &&
+        Object.hasOwn(rawBindings, 2)
+
+      if (hasAllIndices) {
+        const b0 = rawBindings[0]
+        const b1 = rawBindings[1]
+        const b2 = rawBindings[2]
+
+        const isValidValue = (val: unknown): val is number =>
           typeof val === 'number' &&
           Number.isFinite(val) &&
           Number.isInteger(val) &&
           val >= 0 &&
           val <= 63 &&
           val !== RESERVED_START_BUTTON
-        )
-      })
-      if (isValid) {
-        const unique = new Set(bindings)
-        if (unique.size === 3) {
-          sanitized.gamepadLaneBindings = [bindings[0], bindings[1], bindings[2]]
+
+        if (isValidValue(b0) && isValidValue(b1) && isValidValue(b2)) {
+          const unique = new Set([b0, b1, b2])
+          if (unique.size === 3) {
+            sanitized.gamepadLaneBindings = [b0, b1, b2]
+          }
         }
       }
     }

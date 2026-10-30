@@ -70,7 +70,7 @@ export interface GamepadActionHandlers {
 
 export interface GamepadActionOptions {
   enabled?: boolean
-  consumes?: boolean
+  consumes?: boolean | string[]
   priority?: number
 }
 
@@ -96,6 +96,7 @@ interface GamepadContextValue {
 const GamepadContext = createContext<GamepadContextValue | null>(null)
 
 export function useGamepadInputOptional(): GamepadContextValue | null {
+  // eslint-disable-next-line @eslint-react/no-use-context
   return useContext(GamepadContext)
 }
 
@@ -131,6 +132,7 @@ export function useGamepadActions(
       },
       options
     )
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [ctx, options.enabled, options.priority, options.consumes])
 }
 
@@ -138,7 +140,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const { addToast } = useGameActions()
   const gamepadLaneBindings = useGameSelector(
-    state => state.settings.gamepadLaneBindings
+    state => state.settings?.gamepadLaneBindings ?? [2, 0, 1]
   )
 
   const [connectedPads, setConnectedPads] = useState<NormalizedGamepad[]>([])
@@ -234,11 +236,11 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           setActiveLayoutFamily(family)
 
           const connMsg = isReconnect
-            ? t('controller.reconnected', {
+            ? t('ui:controller.reconnected', {
                 name: pad.id,
                 defaultValue: `Controller reconnected: ${pad.id}`
               })
-            : t('controller.connected', {
+            : t('ui:controller.connected', {
                 name: pad.id,
                 defaultValue: `Controller connected: ${pad.id}`
               })
@@ -246,7 +248,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
 
           if (pad.mapping !== 'standard') {
             addToast(
-              t('controller.nonStandardMapping', {
+              t('ui:controller.nonStandardMapping', {
                 defaultValue: 'Non-standard controller mapping detected'
               }),
               'warning'
@@ -262,7 +264,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       if (!stillPresent) {
         knownMap.delete(index)
         addToast(
-          t('controller.disconnected', {
+          t('ui:controller.disconnected', {
             name: padId,
             defaultValue: `Controller disconnected: ${padId}`
           }),
@@ -277,6 +279,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setConnectedPads(prev => {
       if (
         prev.length === normalized.length &&
@@ -460,6 +463,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Check Lane Bindings (Guitar, Drums, Bass)
+        let laneConsumed = false
         const laneIdx = gamepadLaneBindings.indexOf(btnIdx)
         if (laneIdx !== -1) {
           if (modalActive) {
@@ -470,6 +474,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
                   if (consumer.heldLanes.has(laneIdx)) {
                     consumer.handlers.onLane(laneIdx, false)
                     consumer.heldLanes.delete(laneIdx)
+                    laneConsumed = true
                   }
                 }
               }
@@ -481,11 +486,18 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
                   const handled = consumer.handlers.onLane(laneIdx, isPressed)
                   if (isPressed) consumer.heldLanes.add(laneIdx)
                   else consumer.heldLanes.delete(laneIdx)
-                  if (handled || consumer.options.consumes) break
+                  if (handled || consumer.options.consumes) {
+                    laneConsumed = true
+                    break
+                  }
                 }
               }
             }
           }
+        }
+
+        if (laneConsumed) {
+          continue
         }
 
         // Button 0 (Confirm)
@@ -652,7 +664,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
   )
 
   return (
-    <GamepadContext.Provider value={contextValue}>
+    <GamepadContext value={contextValue}>
       {children}
       <GamepadTextEntry
         isOpen={textEntryState.isOpen}
@@ -663,6 +675,6 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           setTextEntryState(prev => ({ ...prev, isOpen: false }))
         }
       />
-    </GamepadContext.Provider>
+    </GamepadContext>
   )
 }

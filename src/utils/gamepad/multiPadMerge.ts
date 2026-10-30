@@ -42,19 +42,21 @@ export function mergeNormalizedGamepads(
   for (const pad of activePads) {
     for (let i = 0; i < pad.buttons.length; i++) {
       const b = pad.buttons[i]
-      if (!b) continue
+      const targetBtn = mergedButtons[i]
+      if (!b || !targetBtn) continue
       if (b.pressed) {
-        mergedButtons[i].pressed = true
+        targetBtn.pressed = true
       }
-      if (b.value > mergedButtons[i].value) {
-        mergedButtons[i].value = b.value
+      if (b.value > targetBtn.value) {
+        targetBtn.value = b.value
       }
     }
 
     for (let i = 0; i < pad.axes.length; i++) {
       const a = pad.axes[i]
+      const currentAxisVal = mergedAxes[i] ?? 0
       if (typeof a !== 'number') continue
-      if (Math.abs(a) > Math.abs(mergedAxes[i])) {
+      if (Math.abs(a) > Math.abs(currentAxisVal)) {
         mergedAxes[i] = a
       }
     }

@@ -25,6 +25,12 @@ export function registerDeadmanHold(
   }
 }
 
+export const registerHoldButton = (
+  element: HTMLButtonElement | null,
+  start: () => void,
+  stop: () => void
+): (() => void) => registerDeadmanHold(element, { start, stop })
+
 export function getDeadmanHold(
   element: Element | null
 ): HoldCallbacks | undefined {

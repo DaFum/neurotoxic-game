@@ -75,13 +75,19 @@ describe('Settings Sanitizer - gamepadLaneBindings', () => {
     )
   })
 
-  test('rejects non-arrays', () => {
+  test('rejects non-arrays and sparse arrays', () => {
     assert.equal(
       sanitizeSettingsPayload({ gamepadLaneBindings: 'invalid' }).gamepadLaneBindings,
       undefined
     )
     assert.equal(
       sanitizeSettingsPayload({ gamepadLaneBindings: { 0: 2, 1: 0, 2: 1 } }).gamepadLaneBindings,
+      undefined
+    )
+    // Sparse array with array hole [2, , 1]
+    const sparse = [2, , 1] // eslint-disable-line no-sparse-arrays
+    assert.equal(
+      sanitizeSettingsPayload({ gamepadLaneBindings: sparse }).gamepadLaneBindings,
       undefined
     )
   })

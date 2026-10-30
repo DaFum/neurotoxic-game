@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RHYTHM_LANES } from '../../utils/rhythmGameScoringUtils'
+import { InputHint } from '../gamepad/InputHint'
 
 /** Desktop arrow key bound to each lane. */
 const LANE_KEYS = {
@@ -58,6 +59,9 @@ export const ControlsHint = memo(function ControlsHint({
           <kbd className='border px-1.5 py-0.5 text-xs font-sans border-ash-gray/30'>
             {LANE_KEYS[id]}
           </kbd>
+          <InputHint
+            action={id === 'guitar' ? 'lane0' : id === 'drums' ? 'lane1' : 'lane2'}
+          />
           <span className='uppercase tracking-wider'>
             {t(`ui:rhythm.lane_${id}`)}
           </span>

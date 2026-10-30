@@ -217,7 +217,8 @@ const DEFAULT_SETTINGS = {
   logLevel:
     ((import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? true)
       ? LOG_LEVELS.DEBUG
-      : LOG_LEVELS.WARN
+      : LOG_LEVELS.WARN,
+  gamepadLaneBindings: [2, 0, 1] as [number, number, number]
 }
 
 /**

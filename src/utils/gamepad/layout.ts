@@ -90,3 +90,5 @@ export function getButtonLabel(index: number, layout: LayoutFamily = 'xbox'): st
       return `B${index}`
   }
 }
+
+export const getButtonGlyph = getButtonLabel

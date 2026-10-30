@@ -23,6 +23,7 @@ import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
+import { useGamepadActions } from '../context/GamepadInputContext'
 import { getExpeditionNodeFogByNodeId } from '../domain/expedition/nodeFog'
 import {
   getExpeditionOverlaySubtypeByNodeId,
@@ -141,6 +142,14 @@ export const Overworld = () => {
 
   const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  useGamepadActions(
+    {
+      onMenu: () => setIsMenuOpen(prev => !prev),
+      onBack: () => setIsMenuOpen(false)
+    },
+    { enabled: true, consumes: ['menu', 'back'] }
+  )
   const locationName = translateLocation(t, player.location, player.location)
   const openClinic = useCallback(() => {
     changeScene(GAME_PHASES.CLINIC)

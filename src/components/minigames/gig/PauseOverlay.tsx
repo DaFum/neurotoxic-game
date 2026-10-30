@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
+import { InputHint } from '../../gamepad/InputHint'
 import { useModalBehavior } from '../../../ui/shared/useModalBehavior'
 import type { PauseOverlayProps } from '../../../types/components'
 
@@ -41,7 +42,7 @@ export const PauseOverlay = ({
         </h2>
         <div className='flex flex-col gap-6 w-64'>
           <GlitchButton onClick={onResume}>
-            {t('ui:gig.resume', { defaultValue: 'RESUME' })}
+            {t('ui:gig.resume', { defaultValue: 'RESUME' })} <InputHint action='confirm' />
           </GlitchButton>
           <GlitchButton onClick={onQuit} variant='danger'>
             {t('ui:gig.quit', { defaultValue: 'QUIT GIG' })}

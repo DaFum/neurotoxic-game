@@ -7,11 +7,10 @@ import { getFocusableElements, getActiveFocusScope } from '../../ui/shared/useMo
 import type { DirectionName } from './hysteresis'
 
 export function getNavigableCandidates(): HTMLElement[] {
-  const scopes = getActiveFocusScope()
+  const scope = getActiveFocusScope()
   const candidates: HTMLElement[] = []
 
-  for (const scope of scopes) {
-    if (!scope || !scope.isConnected) continue
+  if (scope && scope.isConnected) {
     const elements = getFocusableElements(scope)
     for (const el of elements) {
       if (
@@ -122,12 +121,12 @@ export function getSpatialNextTarget(
     const currentIndex = candidates.indexOf(currentEl)
     if (currentIndex !== -1) {
       if (direction === 'right' || direction === 'down') {
-        bestTarget = candidates[(currentIndex + 1) % candidates.length]
+        bestTarget = candidates[(currentIndex + 1) % candidates.length] ?? null
       } else {
         bestTarget =
           candidates[
             (currentIndex - 1 + candidates.length) % candidates.length
-          ]
+          ] ?? null
       }
     }
   }

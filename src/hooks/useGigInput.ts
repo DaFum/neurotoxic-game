@@ -6,7 +6,9 @@ import {
   handleKeyUpLogic
 } from '../utils/gigInputUtils'
 import { releaseAllLanes } from '../utils/rhythmGameInputUtils'
-import { hasActiveModal } from '../ui/shared/useModalBehavior'
+import { hasActiveModal, closeTopmostModal, getActiveFocusScope } from '../ui/shared/useModalBehavior'
+import { useGamepadActions } from '../context/GamepadInputContext'
+import { useGameSelector } from '../context/GameState'
 import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
 import type { RhythmLane } from '../types/rhythmGame'
 
@@ -40,6 +42,13 @@ export const useGigInput = ({
   handleLaneInput: (index: number, active: boolean) => void
 } => {
   const hasUnlockedAudioRef = useRef(false)
+  let settings
+  try {
+    settings = useGameSelector(s => s?.settings)
+  } catch {
+    settings = undefined
+  }
+  const bindings = settings?.gamepadLaneBindings ?? [2, 0, 1]
 
   const ensureAudioFromGesture = useCallback(() => {
     if (hasUnlockedAudioRef.current) return
@@ -55,6 +64,49 @@ export const useGigInput = ({
         hasUnlockedAudioRef.current = false
       })
   }, [])
+
+  const handleLaneAction = useCallback(
+    (laneIndex: number, pressed: boolean) => {
+      if (pressed) {
+        if (hasActiveModal()) return
+        ensureAudioFromGesture()
+        actions.registerInput(laneIndex, true)
+        triggerBandAnimation(laneIndex)
+      } else {
+        actions.registerInput(laneIndex, false)
+      }
+    },
+    [actions, ensureAudioFromGesture, triggerBandAnimation]
+  )
+
+  const handleMenuAction = useCallback(() => {
+    if (!hasActiveModal()) {
+      if (onTogglePause) onTogglePause()
+    } else {
+      const scope = getActiveFocusScope()
+      if (scope?.querySelector('#pause-overlay-title')) {
+        closeTopmostModal()
+      }
+    }
+  }, [onTogglePause])
+
+  const handleDisconnect = useCallback(() => {
+    const state = gameStateRef.current
+    if (state) releaseAllLanes(state)
+    if (onTogglePause && !hasActiveModal()) {
+      onTogglePause()
+    }
+  }, [gameStateRef, onTogglePause])
+
+  useGamepadActions(
+    {
+      onLane: handleLaneAction,
+      onMenu: handleMenuAction,
+      onDisconnect: handleDisconnect
+    },
+    { enabled: true, consumes: ['lane0', 'lane1', 'lane2', 'menu'] }
+  )
+
 
   // Keyboard Event Handling
   useEffect(() => {

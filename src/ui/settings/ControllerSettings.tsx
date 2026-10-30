@@ -8,12 +8,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGamepadInputOptional } from '../../context/GamepadInputContext'
 import { getButtonLabel, RESERVED_START_BUTTON } from '../../utils/gamepad'
-import { useGameSelector, useGameActions } from '../../context/GameState'
+import { useGameSelectorOptional, useGameActionsOptional } from '../../context/GameState'
 
 export function ControllerSettings() {
   const { t } = useTranslation()
-  const { updateSettings } = useGameActions()
-  const bindings = useGameSelector(state => state.settings?.gamepadLaneBindings) ?? [2, 0, 1]
+  const gameActions = useGameActionsOptional()
+  const bindings = useGameSelectorOptional(state => state.settings?.gamepadLaneBindings) ?? [2, 0, 1]
   const gamepadContext = useGamepadInputOptional()
 
   const connectedPads = gamepadContext?.connectedPads ?? []
@@ -31,7 +31,7 @@ export function ControllerSettings() {
     gamepadContext.startBindingCapture((newButtonIndex: number) => {
       if (newButtonIndex === RESERVED_START_BUTTON) {
         setErrorMessage(
-          t('controller.reservedButtonError', {
+          t('ui:controller.reservedButtonError', {
             defaultValue: 'Button 9 (Start) is reserved for menu navigation.'
           })
         )
@@ -39,28 +39,36 @@ export function ControllerSettings() {
         return
       }
 
-      const nextBindings = [...bindings]
+      const nextBindings: [number, number, number] = [
+        bindings[0] ?? 2,
+        bindings[1] ?? 0,
+        bindings[2] ?? 1
+      ]
       const existingLaneIdx = nextBindings.indexOf(newButtonIndex)
 
       if (existingLaneIdx !== -1 && existingLaneIdx !== laneIndex) {
         // Swap bindings on collision
         const prevValue = nextBindings[laneIndex]
-        nextBindings[laneIndex] = newButtonIndex
-        nextBindings[existingLaneIdx] = prevValue
-        const msg = t('controller.swapAnnouncement', {
+        if (prevValue !== undefined && (laneIndex === 0 || laneIndex === 1 || laneIndex === 2)) {
+          nextBindings[laneIndex] = newButtonIndex
+          nextBindings[existingLaneIdx] = prevValue
+        }
+        const msg = t('ui:controller.swapAnnouncement', {
           defaultValue: 'Swapped controller lane bindings.'
         })
         setAnnouncement(msg)
       } else {
-        nextBindings[laneIndex] = newButtonIndex
+        if (laneIndex === 0 || laneIndex === 1 || laneIndex === 2) {
+          nextBindings[laneIndex] = newButtonIndex
+        }
         setAnnouncement(
-          t('controller.reboundAnnouncement', {
+          t('ui:controller.reboundAnnouncement', {
             defaultValue: 'Rebound lane control.'
           })
         )
       }
 
-      updateSettings({ gamepadLaneBindings: nextBindings })
+      gameActions?.updateSettings({ gamepadLaneBindings: nextBindings })
       setCapturingLane(null)
     })
   }
@@ -72,9 +80,9 @@ export function ControllerSettings() {
   }
 
   const handleResetBindings = () => {
-    updateSettings({ gamepadLaneBindings: [2, 0, 1] })
+    gameActions?.updateSettings({ gamepadLaneBindings: [2, 0, 1] })
     setAnnouncement(
-      t('controller.resetAnnouncement', {
+      t('ui:controller.resetAnnouncement', {
         defaultValue: 'Reset lane bindings to default.'
       })
     )
@@ -82,9 +90,9 @@ export function ControllerSettings() {
   }
 
   const laneNames = [
-    t('controller.laneGuitar', { defaultValue: 'Guitar (Lane 1)' }),
-    t('controller.laneDrums', { defaultValue: 'Drums (Lane 2)' }),
-    t('controller.laneBass', { defaultValue: 'Bass (Lane 3)' })
+    t('ui:controller.laneGuitar', { defaultValue: 'Guitar (Lane 1)' }),
+    t('ui:controller.laneDrums', { defaultValue: 'Drums (Lane 2)' }),
+    t('ui:controller.laneBass', { defaultValue: 'Bass (Lane 3)' })
   ]
 
   return (
@@ -97,11 +105,11 @@ export function ControllerSettings() {
       {/* Controller Status Header */}
       <div className='flex flex-col gap-2 border-b border-toxic-green/30 pb-4'>
         <h3 className='text-lg font-display text-toxic-green uppercase tracking-wider'>
-          {t('controller.statusTitle', { defaultValue: 'Controller Status' })}
+          {t('ui:controller.statusTitle', { defaultValue: 'Controller Status' })}
         </h3>
         {connectedPads.length === 0 ? (
           <p className='text-sm font-mono text-ash-gray'>
-            {t('controller.noController', {
+            {t('ui:controller.noController', {
               defaultValue: 'No controller connected'
             })}
           </p>
@@ -114,7 +122,7 @@ export function ControllerSettings() {
                 <span className='opacity-60'>({layoutFamily.toUpperCase()})</span>
                 {pad.mapping !== 'standard' && (
                   <span className='text-warning-yellow text-[10px] border border-warning-yellow px-1 uppercase'>
-                    {t('controller.nonStandardBadge', {
+                    {t('ui:controller.nonStandardBadge', {
                       defaultValue: 'Non-Standard Mapping'
                     })}
                   </span>
@@ -128,7 +136,7 @@ export function ControllerSettings() {
       {/* Rebinding Lane Section */}
       <div className='flex flex-col gap-4'>
         <h3 className='text-lg font-display text-toxic-green uppercase tracking-wider'>
-          {t('controller.bindingsTitle', {
+          {t('ui:controller.bindingsTitle', {
             defaultValue: 'Lane Button Bindings'
           })}
         </h3>
@@ -140,13 +148,14 @@ export function ControllerSettings() {
         )}
 
         <div className='flex flex-col gap-3'>
-          {bindings.map((btnIdx, idx) => {
+          {bindings.map((btnIdx: number, idx: number) => {
             const isTarget = capturingLane === idx
             const glyph = getButtonLabel(btnIdx, layoutFamily)
+            const laneKey = `lane-${idx}-btn-${btnIdx}`
 
             return (
               <div
-                key={idx}
+                key={laneKey}
                 className='flex items-center justify-between p-3 border border-toxic-green/30 bg-void-black/60'
               >
                 <span className='font-mono text-sm text-star-white'>
@@ -168,10 +177,10 @@ export function ControllerSettings() {
                     }`}
                   >
                     {isTarget
-                      ? t('controller.pressAnyButton', {
+                      ? t('ui:controller.pressAnyButton', {
                           defaultValue: 'Press Button...'
                         })
-                      : t('controller.rebind', { defaultValue: 'Rebind' })}
+                      : t('ui:controller.rebind', { defaultValue: 'Rebind' })}
                   </button>
                 </div>
               </div>
@@ -186,7 +195,7 @@ export function ControllerSettings() {
             onClick={handleResetBindings}
             className='px-4 py-2 border-2 border-toxic-green/60 text-toxic-green font-mono text-xs hover:bg-toxic-green hover:text-void-black transition-colors uppercase font-bold'
           >
-            {t('controller.resetDefaults', {
+            {t('ui:controller.resetDefaults', {
               defaultValue: 'Reset Default Bindings'
             })}
           </button>
@@ -196,7 +205,7 @@ export function ControllerSettings() {
               onClick={handleCancelRebind}
               className='px-4 py-2 border-2 border-blood-red text-blood-red font-mono text-xs hover:bg-blood-red hover:text-star-white transition-colors uppercase font-bold'
             >
-              {t('controller.cancelCapture', { defaultValue: 'Cancel Rebind' })}
+              {t('ui:controller.cancelCapture', { defaultValue: 'Cancel Rebind' })}
             </button>
           )}
         </div>
