@@ -19,3 +19,13 @@ export const GAMEPAD_BUTTON = {
 export const RESERVED_GAMEPAD_BUTTONS = new Set<number>([GAMEPAD_BUTTON.START])
 export const DEFAULT_GAMEPAD_LANE_BINDINGS: readonly [number, number, number] =
   [2, 0, 1]
+
+export function isAssignableGamepadButton(button: unknown): button is number {
+  return (
+    typeof button === 'number' &&
+    Number.isInteger(button) &&
+    button >= 0 &&
+    button <= 63 &&
+    !RESERVED_GAMEPAD_BUTTONS.has(button)
+  )
+}

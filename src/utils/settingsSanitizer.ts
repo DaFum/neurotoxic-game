@@ -1,4 +1,4 @@
-import { RESERVED_GAMEPAD_BUTTONS } from './gamepad/constants'
+import { isAssignableGamepadButton } from './gamepad/constants'
 import type { GameSettings, RawGameSettings } from '../types'
 import { isValidLogLevel } from './logger'
 
@@ -56,10 +56,7 @@ export const sanitizeSettingsPayload = (
     [0, 1, 2].every(
       index =>
         Object.hasOwn(bindings, index) &&
-        Number.isInteger(bindings[index]) &&
-        bindings[index] >= 0 &&
-        bindings[index] <= 63 &&
-        !RESERVED_GAMEPAD_BUTTONS.has(bindings[index])
+        isAssignableGamepadButton(bindings[index])
     ) &&
     new Set(bindings).size === 3
   ) {

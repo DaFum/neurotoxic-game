@@ -576,7 +576,7 @@ export const OverworldMenu = React.memo(
       },
       onMenu: () => {
         if (isMenuOpen) handleClose()
-        else setIsMenuOpen(true)
+        else if (!isTraveling) setIsMenuOpen(true)
       }
     })
 

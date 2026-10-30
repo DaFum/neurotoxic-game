@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { ControllerSettings } from '../../src/ui/settings/ControllerSettings'
 import { GamepadContext } from '../../src/hooks/gamepad/GamepadContext'
 
@@ -38,6 +38,60 @@ describe('controller settings', () => {
     expect(change).toHaveBeenCalledTimes(1)
     fireEvent.click(screen.getByText('Reset to default'))
     expect(reset).toHaveBeenCalledTimes(1)
+  })
+  it.each([-1, 0.5, NaN, Infinity, 64, 9])(
+    'rejects invalid captured button %s without updating bindings',
+    button => {
+      let captured
+      const change = vi.fn()
+      const controller = {
+        register: () => () => {},
+        capture: fn => {
+          captured = fn
+          return () => {}
+        },
+        status: { available: true, devices: [] },
+        bindings: [2, 0, 1]
+      }
+      render(
+        <GamepadContext value={controller}>
+          <ControllerSettings
+            bindings={[2, 0, 1]}
+            onChange={change}
+            onReset={() => {}}
+          />
+        </GamepadContext>
+      )
+      fireEvent.click(screen.getAllByText('Rebind')[0])
+      act(() => captured(button))
+      expect(change).not.toHaveBeenCalled()
+      expect(screen.getByText('This button is reserved.')).toBeTruthy()
+    }
+  )
+  it('accepts the highest assignable captured button', () => {
+    let captured
+    const change = vi.fn()
+    const controller = {
+      register: () => () => {},
+      capture: fn => {
+        captured = fn
+        return () => {}
+      },
+      status: { available: true, devices: [] },
+      bindings: [2, 0, 1]
+    }
+    render(
+      <GamepadContext value={controller}>
+        <ControllerSettings
+          bindings={[2, 0, 1]}
+          onChange={change}
+          onReset={() => {}}
+        />
+      </GamepadContext>
+    )
+    fireEvent.click(screen.getAllByText('Rebind')[0])
+    act(() => captured(63))
+    expect(change).toHaveBeenCalledWith([63, 0, 1])
   })
   it('cancels capture on Escape without changing bindings', () => {
     const change = vi.fn()

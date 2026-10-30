@@ -3,14 +3,14 @@ import { InputHint as SharedInputHint } from '../shared/InputHint'
 import { useGamepadController } from '../../hooks/gamepad/GamepadContext'
 import { useActiveInputSource } from '../../utils/gamepad/inputSource'
 import { gamepadButtonLabel } from '../../utils/gamepad/labels'
-import type { LayoutFamily } from '../../utils/gamepad/logic'
+import type { LayoutFamily } from '../../types/gamepad'
 import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../../utils/gamepad/constants'
 
 export function useGamepadButtonLabel() {
   const { t } = useTranslation('ui')
   return (button: number, family: LayoutFamily) =>
     gamepadButtonLabel(button, family, number =>
-      t('ui:controller.button', { defaultValue: `Button ${number}`, number })
+      t('ui:controller.button', { defaultValue: 'Button {{number}}', number })
     )
 }
 

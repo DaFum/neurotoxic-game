@@ -1,15 +1,15 @@
 import { GAMEPAD_BUTTON } from './constants'
 
-export type Direction = 'left' | 'right' | 'up' | 'down'
-export type GamepadSnapshot = {
-  index: number
-  id: string
-  mapping: string
-  standard: boolean
-  buttons: boolean[]
-  stick: [number, number]
-}
-export type LayoutFamily = 'xbox' | 'playstation' | 'generic'
+import type {
+  Direction,
+  GamepadSnapshot,
+  LayoutFamily
+} from '../../types/gamepad'
+export type {
+  Direction,
+  GamepadSnapshot,
+  LayoutFamily
+} from '../../types/gamepad'
 
 /** Copy the fields used by the input layer; browser Gamepad objects are live. */
 export function normalizeGamepad(

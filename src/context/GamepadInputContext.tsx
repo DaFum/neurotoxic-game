@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from './GameState'
 import { GamepadContext } from '../hooks/gamepad/GamepadContext'
 import type {
+  Direction,
   GamepadConsumer,
+  GamepadSnapshot,
   GamepadStatus
-} from '../hooks/gamepad/GamepadContext'
+} from '../types/gamepad'
 import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../utils/gamepad/constants'
 import { GAMEPAD_BUTTON } from '../utils/gamepad/constants'
 import {
@@ -19,7 +21,6 @@ import {
   normalizeGamepad,
   readGamepads
 } from '../utils/gamepad/logic'
-import type { Direction, GamepadSnapshot } from '../utils/gamepad/logic'
 import {
   getActiveInputSource,
   setActiveInputSource
@@ -131,6 +132,28 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
         tRef.current(`ui:controller.${key}`, { defaultValue: fallback, id }),
         'info'
       )
+    const confirm = (scope: HTMLElement[]) => {
+      const element = document.activeElement
+      if (
+        !(element instanceof HTMLElement || element instanceof SVGElement) ||
+        !scope.some(root => root.contains(element))
+      )
+        return
+      if (
+        (element instanceof HTMLInputElement &&
+          ['text', 'search', 'email', 'url', 'tel'].includes(element.type)) ||
+        element instanceof HTMLTextAreaElement
+      )
+        setTextTarget(element)
+      else {
+        const stop = activateGamepadElement(element as HTMLElement)
+        if (stop) {
+          releasesRef.current.set(GAMEPAD_BUTTON.SOUTH, stop)
+          activeHoldScopeRef.current = scope[0] ?? null
+          activeHoldElementRef.current = element as HTMLElement
+        }
+      }
+    }
     const route = (button: number, pressed: boolean) => {
       if (!pressed) {
         releasesRef.current.get(button)?.()
@@ -150,33 +173,7 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
           scope[0]?.hasAttribute('data-gamepad-pause')
         )
           closeTopmostModal()
-        else if (button === GAMEPAD_BUTTON.SOUTH) {
-          const focusedElement = document.activeElement
-          if (
-            !(
-              focusedElement instanceof HTMLElement ||
-              focusedElement instanceof SVGElement
-            ) ||
-            !scope.some(root => root.contains(focusedElement))
-          )
-            return
-          if (
-            (focusedElement instanceof HTMLInputElement &&
-              ['text', 'search', 'email', 'url', 'tel'].includes(
-                focusedElement.type
-              )) ||
-            focusedElement instanceof HTMLTextAreaElement
-          )
-            setTextTarget(focusedElement)
-          else {
-            const stop = activateGamepadElement(focusedElement as HTMLElement)
-            if (stop) {
-              releasesRef.current.set(button, stop)
-              activeHoldScopeRef.current = scope[0] ?? null
-              activeHoldElementRef.current = focusedElement as HTMLElement
-            }
-          }
-        }
+        else if (button === GAMEPAD_BUTTON.SOUTH) confirm(scope)
         return
       }
       const ordered = [...consumersRef.current].reverse()
@@ -228,28 +225,7 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
         scene?.handlers.current.onMenu?.()
       else if (button === GAMEPAD_BUTTON.BACK)
         scene?.handlers.current.onHelp?.()
-      else if (button === GAMEPAD_BUTTON.SOUTH) {
-        const element = document.activeElement
-        if (
-          !(element instanceof HTMLElement || element instanceof SVGElement) ||
-          !scope.some(root => root.contains(element))
-        )
-          return
-        if (
-          (element instanceof HTMLInputElement &&
-            ['text', 'search', 'email', 'url', 'tel'].includes(element.type)) ||
-          element instanceof HTMLTextAreaElement
-        )
-          setTextTarget(element)
-        else {
-          const stop = activateGamepadElement(element as HTMLElement)
-          if (stop) {
-            releasesRef.current.set(button, stop)
-            activeHoldScopeRef.current = scope[0] ?? null
-            activeHoldElementRef.current = element as HTMLElement
-          }
-        }
-      }
+      else if (button === GAMEPAD_BUTTON.SOUTH) confirm(scope)
     }
     const poll = (now: number) => {
       raf = null

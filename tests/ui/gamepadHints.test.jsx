@@ -1,16 +1,22 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { KeyboardShortcutsPanel } from '../../src/ui/shared/KeyboardShortcuts'
 import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
 import { GamepadContext } from '../../src/hooks/gamepad/GamepadContext'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key, options) => options?.defaultValue ?? key })
+  useTranslation: () => ({
+    t: (key, options) =>
+      (options?.defaultValue ?? key).replace(
+        /\{\{(\w+)\}\}/g,
+        (match, name) => options?.[name] ?? match
+      )
+  })
 }))
-afterEach(() => setActiveInputSource('keyboard'))
+afterEach(() => act(() => setActiveInputSource('keyboard')))
 
 it('labels controller actions and the remapped lanes in the help panel', () => {
-  setActiveInputSource('gamepad')
+  act(() => setActiveInputSource('gamepad'))
   const controller = {
     register: () => () => {},
     capture: () => () => {},

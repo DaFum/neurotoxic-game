@@ -1,4 +1,4 @@
-import type { LayoutFamily } from './logic'
+import type { LayoutFamily } from '../../types/gamepad'
 export function gamepadButtonLabel(
   button: number,
   family: LayoutFamily,

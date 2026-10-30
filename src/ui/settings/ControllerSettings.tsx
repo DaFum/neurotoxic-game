@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGamepadController } from '../../hooks/gamepad/GamepadContext'
-import { GAMEPAD_BUTTON } from '../../utils/gamepad/constants'
+import { isAssignableGamepadButton } from '../../utils/gamepad/constants'
 import { useGamepadButtonLabel } from '../gamepad/InputHint'
 import { setActiveInputSource } from '../../utils/gamepad/inputSource'
 
@@ -19,7 +19,7 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
   const onCaptured = useCallback(
     (button: number) => {
       if (lane === null) return
-      if (button === GAMEPAD_BUTTON.START || button > 63) {
+      if (!isAssignableGamepadButton(button)) {
         setMessage(
           t('ui:controller.reserved', {
             defaultValue: 'This button is reserved.'

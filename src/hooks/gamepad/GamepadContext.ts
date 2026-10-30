@@ -1,38 +1,17 @@
 import { createContext, use, useEffect, useRef } from 'react'
-import type { Direction, LayoutFamily } from '../../utils/gamepad/logic'
+import type { GamepadController, GamepadHandlers } from '../../types/gamepad'
+export type {
+  GamepadHandlers,
+  GamepadConsumer,
+  GamepadDevice,
+  GamepadStatus,
+  GamepadController
+} from '../../types/gamepad'
 
-export type GamepadHandlers = {
-  onButton?: (button: number, pressed: boolean) => void
-  onLane?: (index: number, pressed: boolean) => void
-  onBack?: () => void
-  onMenu?: () => void
-  onHelp?: () => void
-  onDirection?: (direction: Direction) => void
-  /** Called when the last connected controller is lost. */
-  onDisconnect?: () => void
-}
 type Options = {
   enabled?: boolean
   kind?: 'gameplay' | 'scene'
   consumes?: readonly number[]
-}
-export type GamepadConsumer = {
-  handlers: { current: GamepadHandlers }
-  kind: 'gameplay' | 'scene'
-  consumes: readonly number[]
-}
-export type GamepadDevice = {
-  index: number
-  id: string
-  standard: boolean
-  family: LayoutFamily
-}
-export type GamepadStatus = { available: boolean; devices: GamepadDevice[] }
-export type GamepadController = {
-  register: (consumer: GamepadConsumer) => () => void
-  capture: (callback: (button: number) => void) => () => void
-  status: GamepadStatus
-  bindings: readonly [number, number, number]
 }
 export const GamepadContext = createContext<GamepadController | null>(null)
 

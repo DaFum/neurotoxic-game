@@ -36,16 +36,18 @@ export function GamepadTextEntry({
         {value || '\u00a0'}
       </output>
       <div className='grid grid-cols-7 gap-2'>
-        {'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'.split('').map(character => (
-          <button
-            type='button'
-            key={character}
-            className='border border-toxic-green p-2'
-            onClick={() => add(character)}
-          >
-            {character}
-          </button>
-        ))}
+        {`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!"#$%&'()*+,-./:;<=>?@[\\]^_\`{|}~`
+          .split('')
+          .map(character => (
+            <button
+              type='button'
+              key={character}
+              className='border border-toxic-green p-2'
+              onClick={() => add(character)}
+            >
+              {character}
+            </button>
+          ))}
         <button
           type='button'
           className='border border-toxic-green p-2'

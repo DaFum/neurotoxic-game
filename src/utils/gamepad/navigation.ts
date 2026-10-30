@@ -1,6 +1,6 @@
 import { getFocusableElements } from '../../ui/shared/useModalBehavior'
 import { getHoldTarget } from './holdTargets'
-import type { Direction } from './logic'
+import type { Direction } from '../../types/gamepad'
 
 function candidatesFor(roots: HTMLElement[]): HTMLElement[] {
   return roots

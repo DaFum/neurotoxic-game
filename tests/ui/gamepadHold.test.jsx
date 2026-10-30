@@ -3,6 +3,7 @@ import { act, cleanup, render, screen } from '@testing-library/react'
 import { installGamepadFixture } from '../gamepadFixture'
 import { GamepadInputProvider } from '../../src/context/GamepadInputContext'
 import { DeadmanButton } from '../../src/ui/shared/BrutalistUI'
+import { Modal } from '../../src/ui/shared/Modal'
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({ addToast: vi.fn() }),
@@ -27,29 +28,38 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-it('cancels an early hold and confirms once after a full hold', () => {
-  const pad = fixture.makePad()
-  fixture.pads.push(pad)
-  const confirm = vi.fn()
-  render(
-    <GamepadInputProvider>
-      <DeadmanButton label='Execute' onConfirm={confirm} />
-    </GamepadInputProvider>
-  )
-  screen.getByRole('button', { name: /execute/i }).focus()
-  act(() => fixture.step(0))
-  pad.buttons[0].pressed = true
-  act(() => fixture.step(20))
-  act(() => vi.advanceTimersByTime(200))
-  pad.buttons[0].pressed = false
-  act(() => fixture.step(40))
-  act(() => vi.advanceTimersByTime(300))
-  expect(confirm).not.toHaveBeenCalled()
-  pad.buttons[0].pressed = true
-  act(() => fixture.step(60))
-  act(() => vi.advanceTimersByTime(1100))
-  expect(confirm).toHaveBeenCalledTimes(1)
-  pad.buttons[0].pressed = false
-  act(() => fixture.step(80))
-  expect(confirm).toHaveBeenCalledTimes(1)
-})
+it.each([false, true])(
+  'cancels early and confirms once for a hold (modal: %s)',
+  modal => {
+    const pad = fixture.makePad()
+    fixture.pads.push(pad)
+    const confirm = vi.fn()
+    render(
+      <GamepadInputProvider>
+        {modal ? (
+          <Modal isOpen onClose={() => {}} ariaLabel='Confirm'>
+            <DeadmanButton label='Execute' onConfirm={confirm} />
+          </Modal>
+        ) : (
+          <DeadmanButton label='Execute' onConfirm={confirm} />
+        )}
+      </GamepadInputProvider>
+    )
+    screen.getByRole('button', { name: /execute/i }).focus()
+    act(() => fixture.step(0))
+    pad.buttons[0].pressed = true
+    act(() => fixture.step(20))
+    act(() => vi.advanceTimersByTime(200))
+    pad.buttons[0].pressed = false
+    act(() => fixture.step(40))
+    act(() => vi.advanceTimersByTime(300))
+    expect(confirm).not.toHaveBeenCalled()
+    pad.buttons[0].pressed = true
+    act(() => fixture.step(60))
+    act(() => vi.advanceTimersByTime(1100))
+    expect(confirm).toHaveBeenCalledTimes(1)
+    pad.buttons[0].pressed = false
+    act(() => fixture.step(80))
+    expect(confirm).toHaveBeenCalledTimes(1)
+  }
+)
