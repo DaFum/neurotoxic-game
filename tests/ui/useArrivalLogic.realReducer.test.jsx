@@ -38,7 +38,8 @@ const spies = vi.hoisted(() => ({
 }))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: selector => {
+  useGameSelector: selector => {,
+  useGameSelectorOptional: selector => {
     const [, rerender] = useReducer(n => n + 1, 0)
     useEffect(() => {
       store.listeners.add(rerender)

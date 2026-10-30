@@ -17,7 +17,8 @@ vi.mock('../../src/context/GameState', () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene
   }),
-  useGameSelector: selector => selector(canonicalSelectorState)
+  useGameSelector: selector => selector(canonicalSelectorState),
+  useGameSelectorOptional: selector => selector(canonicalSelectorState)
 }))
 
 describe('useAmpLogic', () => {

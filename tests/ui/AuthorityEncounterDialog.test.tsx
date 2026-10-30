@@ -10,7 +10,8 @@ const state: { current: GameState } = vi.hoisted(
 const resolveExpeditionAuthorityExit = vi.hoisted(() => vi.fn())
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector: (s: GameState) => unknown) =>
+  useGameSelector: (selector: (s: GameState) => unknown) =>,
+  useGameSelectorOptional: (selector: (s: GameState) => unknown) =>
     selector(state.current),
   useGameActions: () => ({ resolveExpeditionAuthorityExit })
 }))

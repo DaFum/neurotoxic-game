@@ -184,7 +184,8 @@ vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   return {
     ...actual,
     useGameActions: () => mockGameState,
-    useGameSelector: selector => selector(mockGameState)
+    useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState)
   }
 })
 

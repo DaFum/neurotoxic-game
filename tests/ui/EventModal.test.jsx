@@ -68,7 +68,8 @@ vi.mock('../../src/context/GameState', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useGameSelector: selector =>
+    useGameSelector: selector =>,
+  useGameSelectorOptional: selector =>
       selector({
         player: { ...DEFAULT_PLAYER_STATE, money: 100 },
         band: {

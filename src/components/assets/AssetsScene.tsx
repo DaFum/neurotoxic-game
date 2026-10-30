@@ -7,6 +7,7 @@ import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { ASSET_SECTION_TABS, ASSET_SECTION_TABS_MAP } from './sectionTabs'
 import { SECTION_VIEWS } from './sectionRegistry'
+import { useGamepadActions } from '../../context/GamepadInputContext'
 import './assetsHub.css'
 
 /**
@@ -23,6 +24,13 @@ export const AssetsScene = () => {
 
   const { Component: ActiveSection, accent } = SECTION_VIEWS[active]
   const activeTab = ASSET_SECTION_TABS_MAP[active] ?? ASSET_SECTION_TABS[0]
+
+  useGamepadActions(
+    {
+      onBack: () => changeScene(GAME_PHASES.OVERWORLD)
+    },
+    { enabled: true, consumes: ['back'] }
+  )
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via

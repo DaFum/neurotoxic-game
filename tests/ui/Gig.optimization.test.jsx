@@ -100,7 +100,8 @@ const mockUseGigInput = {
 // We need to mock these modules to return our mock objects
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => mockUseGameState,
-  useGameSelector: selector => selector(mockUseGameState)
+  useGameSelector: selector => selector(mockUseGameState),
+  useGameSelectorOptional: selector => selector(mockUseGameState)
 }))
 vi.mock('../../src/hooks/useRhythmGameLogic', () => ({
   useRhythmGameLogic: () => mockUseRhythmGameLogic

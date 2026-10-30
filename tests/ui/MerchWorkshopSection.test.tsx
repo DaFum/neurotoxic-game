@@ -24,7 +24,8 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     refinanceLiability: mockRefinanceLiability
   }),
-  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>,
+  useGameSelectorOptional: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
 }))
 

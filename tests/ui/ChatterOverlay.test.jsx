@@ -31,7 +31,8 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   }
 
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: vi.fn(selector => selector(mockState))
+    useGameSelector: vi.fn(selector => selector(mockState)),
+  useGameSelectorOptional: vi.fn(selector => selector(mockState))
   }))
 
   // Dynamic import to apply mock
@@ -80,7 +81,8 @@ test('ChatterOverlay passes every player and band field chatter reads to getRand
   }
 
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: vi.fn(selector => selector(mockState))
+    useGameSelector: vi.fn(selector => selector(mockState)),
+  useGameSelectorOptional: vi.fn(selector => selector(mockState))
   }))
 
   const { ChatterOverlay } =

@@ -4,7 +4,8 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: selector =>
+  useGameSelector: selector =>,
+  useGameSelectorOptional: selector =>
     selector({
       toasts: [
         { id: 1, type: 'success', message: 'Saved' },

@@ -334,6 +334,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 }
 
 /**
+ * Hook to access stable game actions optional context.
+ */
+export const useGameActionsOptional = (): GameDispatchActions | null => {
+  return use(GameDispatchContext)
+}
+
+/**
  * Hook to access stable game actions only.
  *
  * @returns An object containing the bound game action dispatchers.
@@ -372,6 +379,72 @@ const isShallowEqual = (a: unknown, b: unknown): boolean => {
     }
   }
   return true
+}
+
+/**
+ * Hook to select a specific state slice.
+ *
+ * @remarks
+ * This is the preferred state surface for new code. Note that unrelated state updates do not rerender the consumer; `useSyncExternalStore` handles bail-out automatically when the selected value is shallow-equal to the previous one. `React.memo` is only needed to filter parent-driven prop renders.
+ *
+ * @typeParam T - The expected structure of the selected state slice.
+ * @param selector - Function to extract the desired state slice.
+ * @returns The specific state slice extracted by the selector.
+ */
+const DEFAULT_FALLBACK_STATE: GameState = createInitialState()
+
+export function useGameSelectorOptional<T>(
+  selector: (state: GameState) => T
+): T | undefined {
+  const store = use(GameStateContext)
+  const instRef = useRef<{
+    hasValue: boolean
+    state: GameState | null
+    selector: ((state: GameState) => T) | null
+    value: T | null
+  }>({
+    hasValue: false,
+    state: null,
+    selector: null,
+    value: null
+  })
+
+  const getSnapshot = useCallback(() => {
+    const nextState = store ? store.getState() : DEFAULT_FALLBACK_STATE
+    const inst = instRef.current
+
+    if (
+      inst.hasValue &&
+      inst.state === nextState &&
+      inst.selector === selector
+    ) {
+      return inst.value as T
+    }
+
+    const nextValue = selector(nextState)
+
+    if (inst.hasValue && isShallowEqual(inst.value, nextValue)) {
+      inst.state = nextState
+      inst.selector = selector
+      return inst.value as T
+    }
+
+    inst.hasValue = true
+    inst.state = nextState
+    inst.selector = selector
+    inst.value = nextValue
+    return nextValue
+  }, [store, selector])
+
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      if (!store) return () => {}
+      return store.subscribe(listener)
+    },
+    [store]
+  )
+
+  return useSyncExternalStore(subscribe, getSnapshot)
 }
 
 /**

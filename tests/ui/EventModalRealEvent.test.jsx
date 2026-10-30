@@ -26,7 +26,8 @@ vi.mock('../../src/context/GameState', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useGameSelector: selector => selector(store.state)
+    useGameSelector: selector => selector(store.state),
+  useGameSelectorOptional: selector => selector(store.state)
   }
 })
 

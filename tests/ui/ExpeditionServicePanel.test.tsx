@@ -48,7 +48,8 @@ const actions = vi.hoisted(() => ({
 }))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector: (s: GameState) => unknown) => {
+  useGameSelector: (selector: (s: GameState) => unknown) => {,
+  useGameSelectorOptional: (selector: (s: GameState) => unknown) => {
     const [, rerender] = useReducer((value: number) => value + 1, 0)
     useEffect(() => {
       state.listeners.add(rerender)

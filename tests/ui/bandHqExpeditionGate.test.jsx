@@ -19,6 +19,7 @@ const gameState = {
 
 vi.mock('../../src/context/GameState.tsx', () => ({
   useGameSelector: selector => selector(gameState),
+  useGameSelectorOptional: selector => selector(gameState),
   useGameActions: () => ({
     updatePlayer: vi.fn(),
     updateBand: vi.fn(),

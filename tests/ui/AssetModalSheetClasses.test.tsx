@@ -22,7 +22,8 @@ vi.mock('../../src/ui/shared/Modal', () => ({
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({ installModule: vi.fn() }),
-  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>,
+  useGameSelectorOptional: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
 }))
 

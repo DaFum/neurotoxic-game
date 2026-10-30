@@ -21,7 +21,8 @@ const mockState = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: vi.fn(selector => selector(mockState))
+  useGameSelector: vi.fn(selector => selector(mockState)),
+  useGameSelectorOptional: vi.fn(selector => selector(mockState))
 }))
 
 const realGetRect = Element.prototype.getBoundingClientRect

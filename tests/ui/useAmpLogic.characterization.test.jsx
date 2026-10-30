@@ -9,7 +9,8 @@ vi.mock('../../src/context/GameState', () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene
   }),
-  useGameSelector: selector => selector({})
+  useGameSelector: selector => selector({,
+  useGameSelectorOptional: selector => selector({})
 }))
 
 // High RNG suppresses the stochastic phases (anomaly/drift/hijack) so the

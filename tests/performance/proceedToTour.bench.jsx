@@ -22,7 +22,8 @@ const mockGameActions = {
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => mockGameActions,
-  useGameSelector: selector => selector(mockGameState)
+  useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState)
 }))
 
 vi.mock('../../src/hooks/useBandHQModal', () => ({

@@ -21,7 +21,8 @@ const mockGameState = {
 
 vi.mock('../../src/context/GameState.tsx', () => ({
   useGameActions: () => mockGameState,
-  useGameSelector: selector => selector(mockGameState)
+  useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState)
 }))
 
 // The tuning constants are module-private; production reads them through the

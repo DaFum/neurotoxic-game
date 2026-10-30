@@ -50,7 +50,8 @@ vi.mock('../../src/context/GameState', () => {
   }))
   return {
     useGameActions,
-    useGameSelector: selector => selector(useGameActions())
+    useGameSelector: selector => selector(useGameActions()),
+  useGameSelectorOptional: selector => selector(useGameActions())
   }
 })
 

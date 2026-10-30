@@ -165,6 +165,7 @@ vi.mock('../../src/context/GameState.tsx', () => ({
     <div data-testid='game-state-provider'>{children}</div>
   ),
   useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState),
   useGameActions: () => ({ resolveEvent: mockResolveEvent })
 }))
 

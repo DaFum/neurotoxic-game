@@ -23,7 +23,8 @@ const listeners = vi.hoisted(() => new Set<() => void>())
 vi.mock('../../src/context/GameState', async () => {
   const { useEffect, useReducer } = await import('react')
   return {
-    useGameSelector: (selector: (s: GameState) => unknown) => {
+    useGameSelector: (selector: (s: GameState) => unknown) => {,
+  useGameSelectorOptional: (selector: (s: GameState) => unknown) => {
       const [, forceRender] = useReducer((n: number) => n + 1, 0)
       useEffect(() => {
         listeners.add(forceRender)

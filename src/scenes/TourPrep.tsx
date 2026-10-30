@@ -4,6 +4,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { ActionButton } from '../ui/shared/ActionButton'
 import { TourPrepLoadout } from '../ui/expedition/TourPrepLoadout'
+import { useGamepadActions } from '../context/GamepadInputContext'
 
 /**
  * Hosts the pre-tour build: claims a run identity, then commits the build.
@@ -36,6 +37,13 @@ export const TourPrep = () => {
   const handleAbort = useCallback(() => {
     changeScene(GAME_PHASES.MENU)
   }, [changeScene])
+
+  useGamepadActions(
+    {
+      onBack: handleAbort
+    },
+    { enabled: true, consumes: ['back'] }
+  )
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8'>

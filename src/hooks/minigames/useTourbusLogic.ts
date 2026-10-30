@@ -1,5 +1,8 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { useGamepadActions } from '../../context/GamepadInputContext'
+import { hasActiveModal } from '../../ui/shared/useModalBehavior'
+import type { DirectionName } from '../../utils/gamepad'
 import { audioService } from '../../utils/audio/audioEngine'
 import { stepTourbusObstacles } from './tourbusLogicUtils'
 import {
@@ -286,6 +289,17 @@ export const useTourbusLogic = () => {
         }
       }),
     []
+  )
+
+  useGamepadActions(
+    {
+      onDirection: (direction: DirectionName) => {
+        if (gameStateRef.current.isGameOver || hasActiveModal()) return
+        if (direction === 'left') moveLeft()
+        else if (direction === 'right') moveRight()
+      }
+    },
+    { enabled: !uiState.isGameOver, consumes: ['direction'] }
   )
 
   // Setup keyboard controls

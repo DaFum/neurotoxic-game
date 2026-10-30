@@ -7,7 +7,8 @@ const state: { current: GameState } = vi.hoisted(
   () => ({ current: null }) as never
 )
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector: (state: GameState) => unknown) =>
+  useGameSelector: (selector: (state: GameState) => unknown) =>,
+  useGameSelectorOptional: (selector: (state: GameState) => unknown) =>
     selector(state.current)
 }))
 vi.mock('react-i18next', () => ({

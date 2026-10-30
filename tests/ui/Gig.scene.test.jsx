@@ -16,7 +16,8 @@ vi.mock('../../src/context/GameState', () => {
   const useGameActions = vi.fn()
   return {
     useGameActions,
-    useGameSelector: selector => selector(useGameActions())
+    useGameSelector: selector => selector(useGameActions()),
+  useGameSelectorOptional: selector => selector(useGameActions())
   }
 })
 vi.mock('../../src/utils/audio/audioEngine', () => ({

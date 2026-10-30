@@ -21,7 +21,8 @@ const mockGameState = {
 
 vi.mock('../../src/context/GameState.tsx', () => ({
   useGameActions: () => mockGameState,
-  useGameSelector: selector => selector(mockGameState)
+  useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState)
 }))
 
 describe('useVoidSermon', () => {

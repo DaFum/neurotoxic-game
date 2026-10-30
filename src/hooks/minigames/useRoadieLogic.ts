@@ -1,5 +1,8 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { useGamepadActions } from '../../context/GamepadInputContext'
+import { hasActiveModal } from '../../ui/shared/useModalBehavior'
+import type { DirectionName } from '../../utils/gamepad'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { finiteNumberOr } from '../../utils/gameState'
 import { getCarriedContrabandStash } from '../../domain/expedition/cargo'
@@ -340,6 +343,19 @@ export const useRoadieLogic = () => {
       }
     },
     [finishRoadie]
+  )
+
+  useGamepadActions(
+    {
+      onDirection: (direction: DirectionName) => {
+        if (gameStateRef.current.isGameOver || hasActiveModal()) return
+        if (direction === 'left') move(-1, 0)
+        else if (direction === 'right') move(1, 0)
+        else if (direction === 'up') move(0, -1)
+        else if (direction === 'down') move(0, 1)
+      }
+    },
+    { enabled: !uiState.isGameOver, consumes: ['direction'] }
   )
 
   useRoadieKeyboardControls(move)

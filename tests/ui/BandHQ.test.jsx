@@ -5,7 +5,8 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameSelector: selector =>
+  useGameSelector: selector =>,
+  useGameSelectorOptional: selector =>
     selector({
       player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
       band: { members: [] },

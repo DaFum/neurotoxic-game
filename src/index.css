@@ -462,6 +462,13 @@ button:focus-visible {
   box-shadow: 0 0 12px var(--color-toxic-green-20);
 }
 
+/* Gamepad focus indicator override */
+[data-input-source='gamepad'] *:focus-visible {
+  outline: 3px solid var(--color-warning-yellow) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 10px var(--color-warning-yellow) !important;
+}
+
 /* ── Toxic Mode Flash (Ultimativer Neon-Overdrive) ── */
 @keyframes toxic-border-flash-anim {
   0%,

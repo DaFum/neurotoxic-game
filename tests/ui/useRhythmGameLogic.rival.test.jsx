@@ -9,6 +9,7 @@ const { fixture, gameStateRef, scoring } = vi.hoisted(() => ({
 }))
 vi.mock('../../src/context/GameState.tsx', () => ({
   useGameSelector: selector => selector(fixture.current),
+  useGameSelectorOptional: selector => selector(fixture.current),
   useGameActions: () => ({})
 }))
 const engine = { stopAudio: vi.fn() }

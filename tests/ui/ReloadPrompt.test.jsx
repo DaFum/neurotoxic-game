@@ -22,7 +22,8 @@ vi.mock('virtual:pwa-register/react', () => ({
 }))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: selector => selector({ currentScene: mockScene.current })
+  useGameSelector: selector => selector({ currentScene: mockScene.current ,
+  useGameSelectorOptional: selector => selector({ currentScene: mockScene.current })
 }))
 
 vi.mock('react-i18next', () => ({

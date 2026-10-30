@@ -15,7 +15,8 @@ vi.mock('../../src/context/GameState', () => ({
     dismissForeclosureNotice: mockDismissForeclosureNotice,
     setPendingRiskEvent: mockSetPendingRiskEvent
   }),
-  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>,
+  useGameSelectorOptional: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
 }))
 

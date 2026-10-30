@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { HelpCircle, X } from 'lucide-react'
 import { Tooltip } from './Tooltip'
 import { hasActiveModal, isEditableKeyTarget } from './useModalBehavior'
+import { InputHint } from '../../components/gamepad/InputHint'
 
 // Array of explicit shortcut entries
 const SHORTCUTS = [
@@ -141,6 +142,12 @@ export function KeyboardShortcutsPanel({
             </kbd>
           </div>
         ))}
+        <div className='mt-2 pt-2 border-t border-warning-yellow/20 flex justify-between items-center text-xs'>
+          <span className='text-star-white/80'>
+            {t('ui:controller.bindings_list', { defaultValue: 'Controller Navigation' })}
+          </span>
+          <InputHint action='direction' />
+        </div>
       </div>
     </div>
   )

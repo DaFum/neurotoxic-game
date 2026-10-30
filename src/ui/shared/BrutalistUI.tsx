@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CriticalDialogShell } from './CriticalDialogShell'
+import { registerHoldButton } from '../../utils/gamepad/holdRegistry'
+import { InputHint } from '../../components/gamepad/InputHint'
 
 /** Visual risk treatment of a `CrisisModal` action. */
 export type CrisisActionVariant = 'safe' | 'risk' | 'danger'
@@ -400,6 +402,7 @@ export const DeadmanButton = memo(
     const { t } = useTranslation()
     const [progress, setProgress] = useState<number>(0)
     const [isHolding, setIsHolding] = useState<boolean>(false)
+    const buttonRef = useRef<HTMLButtonElement | null>(null)
     const progressRef = useRef<number>(0)
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const drainIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -422,7 +425,7 @@ export const DeadmanButton = memo(
       }
     }, [disabled])
 
-    const startHold = () => {
+    const startHold = useCallback(() => {
       if (disabled || progressRef.current >= 100) return
       setIsHolding(true)
       if (drainIntervalRef.current != null)
@@ -443,9 +446,9 @@ export const DeadmanButton = memo(
         }
       }, 20) // 20ms tick
       intervalRef.current = intervalId
-    }
+    }, [disabled, onConfirm])
 
-    const stopHold = () => {
+    const stopHold = useCallback(() => {
       if (intervalRef.current != null) clearInterval(intervalRef.current)
       intervalRef.current = null
       setIsHolding(false)
@@ -468,27 +471,35 @@ export const DeadmanButton = memo(
         }, 20)
         drainIntervalRef.current = drainId
       }
-    }
+    }, [])
 
     useEffect(() => {
+      const el = buttonRef.current
+      let unregister: (() => void) | undefined
+      if (el) {
+        unregister = registerHoldButton(el, startHold, stopHold)
+      }
       return () => {
+        if (unregister) unregister()
         if (intervalRef.current != null) clearInterval(intervalRef.current)
         if (drainIntervalRef.current != null)
           clearInterval(drainIntervalRef.current)
         intervalRef.current = null
         drainIntervalRef.current = null
       }
-    }, [])
+    }, [startHold, stopHold])
 
     const safeProgress = Math.min(100, Math.max(0, progress))
     const isComplete = safeProgress >= 100
 
     return (
       <div className='w-full flex flex-col gap-1'>
-        <span className='text-xs tracking-widest uppercase opacity-50 text-center'>
-          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}
+        <span className='text-xs tracking-widest uppercase opacity-50 text-center flex items-center justify-center gap-2'>
+          <span>{t('ui:holdToOverride', 'HOLD TO OVERRIDE')}</span>
+          <InputHint action='confirm' />
         </span>
         <button
+          ref={buttonRef}
           type='button'
           disabled={disabled}
           aria-disabled={disabled}

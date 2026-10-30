@@ -81,7 +81,8 @@ const extractActions = state => {
 // Mock modules - Correct path specifier
 vi.mock('../src/context/GameState.tsx', () => ({
   useGameActions: () => extractActions(mockUseGameState()),
-  useGameSelector: selector => selector(mockUseGameState())
+  useGameSelector: selector => selector(mockUseGameState()),
+  useGameSelectorOptional: selector => selector(mockUseGameState())
 }))
 
 // Mock utils

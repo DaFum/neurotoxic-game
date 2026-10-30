@@ -13,7 +13,8 @@ vi.mock('../../src/context/GameState', () => ({
     setCurrentGig: mockSetCurrentGig,
     changeScene: mockChangeScene
   }),
-  useGameSelector: selector => {
+  useGameSelector: selector => {,
+  useGameSelectorOptional: selector => {
     // Provide a default currentScene mock for the test
     return selector({ currentScene: 'OVERWORLD' })
   }

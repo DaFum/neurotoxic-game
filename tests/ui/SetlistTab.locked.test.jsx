@@ -7,7 +7,8 @@ const gameState = vi.hoisted(() => ({ current: {} }))
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({ setCurrentGig: vi.fn(), changeScene: vi.fn() }),
-  useGameSelector: selector => selector(gameState.current)
+  useGameSelector: selector => selector(gameState.current),
+  useGameSelectorOptional: selector => selector(gameState.current)
 }))
 
 const { SetlistTab } = await import('../../src/ui/bandhq/SetlistTab')

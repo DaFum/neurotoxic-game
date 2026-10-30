@@ -2,6 +2,7 @@ import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpControlsProps } from '../../../types/components'
 import { clampAmpDial } from '../../../utils/gameState'
+import { InputHint } from '../../gamepad/InputHint'
 
 /**
  * Presents amp dial tuning, overdrive, interference purge, and hijack override controls.
@@ -134,6 +135,7 @@ export const AmpControls = memo(function AmpControls({
           min='0'
           max='1000'
           step='10'
+          data-gamepad-autofocus
           value={dialValue}
           onChange={handleDialChange}
           onKeyDown={handleKeyDown}
@@ -162,10 +164,11 @@ export const AmpControls = memo(function AmpControls({
         </button>
       </div>
 
-      <div className='text-star-white font-mono uppercase tracking-widest mt-2'>
-        {t('ui:minigames.amp.controls.instruction', {
+      <div className='text-star-white font-mono uppercase tracking-widest mt-2 flex items-center gap-2'>
+        <span>{t('ui:minigames.amp.controls.instruction', {
           defaultValue: 'TUNE THE FREQUENCY'
-        })}
+        })}</span>
+        <InputHint action='direction' />
       </div>
 
       <div className='mt-2 flex gap-4'>

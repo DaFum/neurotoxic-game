@@ -11,7 +11,8 @@ const mockGameState = {
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => mockGameState,
-  useGameSelector: selector => selector(mockGameState)
+  useGameSelector: selector => selector(mockGameState),
+  useGameSelectorOptional: selector => selector(mockGameState)
 }))
 vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {

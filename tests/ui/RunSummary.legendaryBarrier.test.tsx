@@ -54,7 +54,8 @@ const mockState = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>,
+  useGameSelectorOptional: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState),
   useGameActions: () => ({
     prepareNextExpedition: vi.fn(),
