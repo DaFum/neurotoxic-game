@@ -51,8 +51,8 @@ importers:
         specifier: 6.3.0
         version: 6.3.0
       tone:
-        specifier: 15.5.57
-        version: 15.5.57
+        specifier: 15.5.62
+        version: 15.5.62
     devDependencies:
       '@dreamsicle.io/stylelint-config-tailwindcss':
         specifier: 1.2.2
@@ -709,6 +709,10 @@ packages:
     resolution: {integrity: sha512-HrcgcIESLm9aIR842yhJ5RWan/gebQUJ6E/E5+rf0y9o6oj7w0Br+sWuL6kEQ/o/AdfvR1Je9jG18/gnpwjEyA==}
     peerDependencies:
       '@babel/core': ^7.0.0-0 || ^8.0.0-0 <8.0.0
+
+  '@babel/runtime@7.29.10':
+    resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.2':
     resolution: {integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==}
@@ -3668,8 +3672,8 @@ packages:
     resolution: {integrity: sha512-28R/k+NAjeuf7+CKlTxWZVExJGwVVLwY06DgEnOMz2gEpfNkDcD7QvyiVPT0xy0XXhU8vHsd4Ot42OOPdJG7dQ==}
     hasBin: true
 
-  jschardet@4.0.0:
-    resolution: {integrity: sha512-EsNiLV+xzeMBtkGL/HeWoUivNkGIr8JmaC5A5j7DBlKnhp4CcBTWKEOtNg6vlmf+mkn9yQ9Wals47u7+LoTr7w==}
+  jschardet@4.1.0:
+    resolution: {integrity: sha512-ighRZ11mb6l4m+xSKoivuqNj44qkObODXsAnnkkfYcY4JfYRnEgAe/w1c3mbnJtTQmLtfebAUfXGsUGUJImexg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4883,8 +4887,8 @@ packages:
     resolution: {integrity: sha512-y8MN937s/HVhEoBU1SxfHC+wxCHkV1a9gW8eAdTadYh/bGyesZIVcbjI+mSpFbSVwQici/XjBjuUyri1dnXwBw==}
     engines: {node: '>=10.13.0'}
 
-  tone@15.5.57:
-    resolution: {integrity: sha512-sRdRh8MGzYjnPkWoR+Y0dUSI8nkpZQ+rtPGyyD5BzEYvCcmyPJIgC3Fw+XnrDiqb8BgRqwicr/4TV0gL1DzelQ==}
+  tone@15.5.62:
+    resolution: {integrity: sha512-j8EsMFRSoRDyVEfIaIFI5Llxo5q/3dgkyWeYV3QJcImCuJsuItS6n4h7wjnlkQ9POhg4SwWSKGGRgxqioIcIqg==}
 
   tough-cookie@6.0.2:
     resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
@@ -5995,6 +5999,8 @@ snapshots:
       '@babel/types': 7.29.7
       esutils: 2.0.3
 
+  '@babel/runtime@7.29.10': {}
+
   '@babel/runtime@7.29.2': {}
 
   '@babel/runtime@7.29.7': {}
@@ -6484,7 +6490,7 @@ snapshots:
   '@microsoft/eslint-formatter-sarif@3.1.0(supports-color@10.2.2)':
     dependencies:
       eslint: 8.57.1(supports-color@10.2.2)
-      jschardet: 4.0.0
+      jschardet: 4.1.0
       lodash: 4.18.1
       utf8: 3.0.0
     transitivePeerDependencies:
@@ -7362,7 +7368,7 @@ snapshots:
 
   automation-events@7.1.19:
     dependencies:
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.29.10
       tslib: 2.8.1
 
   autoprefixer@10.6.1(postcss@8.5.29):
@@ -8810,7 +8816,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jschardet@4.0.0: {}
+  jschardet@4.1.0: {}
 
   jscpd-darwin-arm64@5.3.3:
     optional: true
@@ -9947,7 +9953,7 @@ snapshots:
 
   standardized-audio-context@25.3.77:
     dependencies:
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.29.10
       automation-events: 7.1.19
       tslib: 2.8.1
 
@@ -10218,7 +10224,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tone@15.5.57:
+  tone@15.5.62:
     dependencies:
       standardized-audio-context: 25.3.77
       tslib: 2.8.1
