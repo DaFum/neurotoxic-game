@@ -84,7 +84,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.waveManager = new AmpWaveManager(this.container, this.app)
 
     this.syncState()
-    this.drawBackground()
+    this.drawBackground(true)
     this.renderWaves()
   }
 
@@ -241,6 +241,9 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       this.bg.destroy({ children: true })
       this.bg = null
     }
+    this.lastBgWidth = -1
+    this.lastBgHeight = -1
+    this.lastInterference = -1
     super.dispose()
   }
 }
