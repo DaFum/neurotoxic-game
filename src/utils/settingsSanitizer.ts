@@ -1,5 +1,6 @@
 import type { GameSettings, RawGameSettings } from '../types'
 import { isValidLogLevel } from './logger'
+import { RESERVED_START_BUTTON } from './gamepad/standardIndices'
 
 /**
  * Canonical sanitizer for game settings updates.
@@ -44,6 +45,29 @@ export const sanitizeSettingsPayload = (
     const flooredLevel = Math.floor(rawSettings.logLevel)
     if (isValidLogLevel(flooredLevel)) {
       sanitized.logLevel = flooredLevel
+    }
+  }
+
+  if (Object.hasOwn(rawSettings, 'gamepadLaneBindings')) {
+    const bindings = rawSettings.gamepadLaneBindings
+    if (Array.isArray(bindings) && bindings.length === 3) {
+      const isValid = bindings.every((val, idx) => {
+        return (
+          Object.hasOwn(bindings, idx) &&
+          typeof val === 'number' &&
+          Number.isFinite(val) &&
+          Number.isInteger(val) &&
+          val >= 0 &&
+          val <= 63 &&
+          val !== RESERVED_START_BUTTON
+        )
+      })
+      if (isValid) {
+        const unique = new Set(bindings)
+        if (unique.size === 3) {
+          sanitized.gamepadLaneBindings = [bindings[0], bindings[1], bindings[2]]
+        }
+      }
     }
   }
 
