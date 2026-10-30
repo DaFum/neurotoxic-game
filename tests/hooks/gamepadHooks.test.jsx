@@ -116,4 +116,32 @@ describe('Gamepad Hooks Integration', () => {
     expect(onDirection).not.toHaveBeenCalled()
     unmount()
   })
+
+  it('invokes onDisconnect exactly once when multiple gamepads disconnect simultaneously', () => {
+    const onDisconnect = vi.fn()
+    const { unmount } = renderHook(
+      () =>
+        useGamepadActions(
+          { onDisconnect },
+          { enabled: true }
+        ),
+      { wrapper }
+    )
+
+    const pad1 = { index: 0, id: 'Pad 1', connected: true, mapping: 'standard', buttons: [], axes: [] }
+    const pad2 = { index: 1, id: 'Pad 2', connected: true, mapping: 'standard', buttons: [], axes: [] }
+
+    act(() => {
+      window.navigator.getGamepads = () => [pad1, pad2]
+      window.dispatchEvent(new Event('gamepadconnected'))
+    })
+
+    act(() => {
+      window.navigator.getGamepads = () => []
+      window.dispatchEvent(new Event('gamepaddisconnected'))
+    })
+
+    expect(onDisconnect).toHaveBeenCalledTimes(1)
+    unmount()
+  })
 })

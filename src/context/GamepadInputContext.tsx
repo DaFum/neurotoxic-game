@@ -298,11 +298,15 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    const initialTrackedCount = knownMap.size
+    let removedAny = false
+
     // Check for disconnects
     for (const [index, padId] of Array.from(knownMap.entries())) {
       const stillPresent = normalized.some(p => p.index === index)
       if (!stillPresent) {
         knownMap.delete(index)
+        removedAny = true
         addToast(
           t('ui:controller.disconnected', {
             name: padId,
@@ -310,13 +314,14 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           }),
           'warning'
         )
-        // Notify disconnect handlers ONLY if NO gamepads remain
-        if (normalized.length === 0) {
-          for (const consumer of consumersRef.current) {
-            if (consumer.options.enabled !== false) {
-              consumer.handlers.onDisconnect?.()
-            }
-          }
+      }
+    }
+
+    // Notify disconnect handlers ONCE if all gamepads are now disconnected
+    if (removedAny && initialTrackedCount > 0 && normalized.length === 0) {
+      for (const consumer of consumersRef.current) {
+        if (consumer.options.enabled !== false) {
+          consumer.handlers.onDisconnect?.()
         }
       }
     }
