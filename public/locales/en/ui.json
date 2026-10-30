@@ -250,10 +250,14 @@
   "controller.move": "Move",
   "controller.nonStandard": "Non-standard mapping; buttons may differ.",
   "controller.none": "No controller connected.",
+  "controller.cancel_rebind_aria": "Cancel button rebind",
+  "controller.listening": "[ PRESS BUTTON ]",
   "controller.rebind": "Rebind",
+  "controller.rebind_lane_aria": "Rebind {{lane}} lane button",
   "controller.reconnected": "Controller reconnected: {{id}}",
   "controller.reserved": "This button is reserved.",
   "controller.reset": "Reset to default",
+  "controller.reset_aria": "Reset controller bindings to default",
   "controller.resume": "Resume",
   "controller.space": "Space",
   "controller.steer": "Steer one lane at a time",
@@ -867,9 +871,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {

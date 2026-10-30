@@ -74,20 +74,23 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
         {t('ui:controller.title', { defaultValue: 'Controller' })}
       </h2>
       {!controller?.status.available ? (
-        <p>
+        <p className='text-ash-gray font-mono text-sm mb-4'>
           {t('ui:controller.unavailable', {
             defaultValue: 'Controller API unavailable.'
           })}
         </p>
       ) : controller.status.devices.length === 0 ? (
-        <p>
+        <p className='text-ash-gray font-mono text-sm mb-4'>
           {t('ui:controller.none', {
             defaultValue: 'No controller connected.'
           })}
         </p>
       ) : (
         controller.status.devices.map(device => (
-          <p key={device.index}>
+          <p
+            key={device.index}
+            className='text-ash-gray font-mono text-sm mb-4'
+          >
             {device.id} ({device.family}){' '}
             {!device.standard &&
               t('ui:controller.nonStandard', {
@@ -96,51 +99,99 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
           </p>
         ))
       )}
-      {(['guitar', 'drums', 'bass'] as const).map((name, index) => (
-        <div
-          key={name}
-          className='flex items-center justify-between gap-3 py-2'
-        >
-          <span>
-            {t(`rhythm.lane_${name}`, { defaultValue: name })}:{' '}
-            {gamepadButtonLabel(bindings[index]!, family)}
-          </span>
-          <button
-            type='button'
-            className='border border-toxic-green p-2'
-            onClick={() => {
-              setMessage('')
-              setLane(index)
-            }}
-          >
-            {t('ui:controller.rebind', { defaultValue: 'Rebind' })}
-          </button>
-        </div>
-      ))}
+      <div className='space-y-2 mb-6'>
+        {(['guitar', 'drums', 'bass'] as const).map((name, index) => {
+          const isListening = lane === index
+          const laneLabel = t(`rhythm.lane_${name}`, { defaultValue: name })
+          return (
+            <div
+              key={name}
+              className={`flex items-center justify-between gap-3 p-3 border transition-colors ${
+                isListening
+                  ? 'border-toxic-green bg-toxic-green/10'
+                  : 'border-ash-gray/30 bg-void-black/60'
+              }`}
+            >
+              <span className='font-mono text-sm text-star-white'>
+                <span className='text-toxic-green font-bold uppercase'>
+                  {laneLabel}
+                </span>
+                :{' '}
+                <span className='bg-ash-gray/20 px-2 py-0.5 text-xs text-toxic-green font-mono border border-toxic-green/30'>
+                  {gamepadButtonLabel(bindings[index]!, family)}
+                </span>
+              </span>
+              <button
+                type='button'
+                onClick={() => {
+                  setMessage('')
+                  setLane(isListening ? null : index)
+                }}
+                aria-pressed={isListening}
+                aria-busy={isListening}
+                aria-label={t('ui:controller.rebind_lane_aria', {
+                  defaultValue: 'Rebind {{lane}} lane button',
+                  lane: laneLabel
+                })}
+                className={`font-mono text-xs uppercase px-3 py-1.5 border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  isListening
+                    ? 'border-toxic-green bg-toxic-green text-void-black font-bold animate-pulse'
+                    : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black'
+                }`}
+              >
+                {isListening
+                  ? t('ui:controller.listening', {
+                      defaultValue: '[ PRESS BUTTON ]'
+                    })
+                  : t('ui:controller.rebind', { defaultValue: 'Rebind' })}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
       {lane !== null && (
-        <div>
-          <p>
+        <div className='p-3 border border-toxic-green/50 bg-toxic-green/5 mb-4 flex items-center justify-between gap-4'>
+          <p
+            className='font-mono text-xs text-toxic-green animate-pulse'
+            aria-live='polite'
+          >
             {t('ui:controller.capture', {
               defaultValue: 'Press a button. Start cancels.'
             })}
           </p>
           <button
             type='button'
-            className='border border-toxic-green p-2'
             onClick={() => setLane(null)}
+            aria-label={t('ui:controller.cancel_rebind_aria', {
+              defaultValue: 'Cancel button rebind'
+            })}
+            className='font-mono text-xs uppercase px-3 py-1 border border-blood-red text-blood-red hover:bg-blood-red hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             {t('ui:controller.cancel', { defaultValue: 'Cancel' })}
           </button>
         </div>
       )}
-      <p aria-live='polite'>{message}</p>
+
+      {message && (
+        <p
+          className='font-mono text-xs text-warning-yellow mb-4'
+          aria-live='polite'
+        >
+          {message}
+        </p>
+      )}
+
       <button
         type='button'
-        className='border border-toxic-green p-2'
         onClick={() => {
           setLane(null)
           onReset()
         }}
+        aria-label={t('ui:controller.reset_aria', {
+          defaultValue: 'Reset controller bindings to default'
+        })}
+        className='font-mono text-xs uppercase px-3 py-2 border border-ash-gray/60 text-ash-gray hover:border-toxic-green hover:text-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
       >
         {t('ui:controller.reset', { defaultValue: 'Reset to default' })}
       </button>

@@ -229,3 +229,8 @@
 
 **Learning:** In catalog and barter grids (like VoidTraderTab), action buttons with generic labels (such as "BARTER" or "PROCESSING...") lack item context when screen reader users navigate controls by landmarks or list shortcuts. Furthermore, item cards relying on plain text placeholders like "?" hide visual cues for rare contraband items.
 **Action:** Always construct dynamic `aria-label`s on grid item action buttons combining the action, item name, cost, and state (e.g. `BARTER Phantom Strings (1000 FAME)`), bind `aria-busy` during processing states, and map item IDs to visual contraband icon glyphs using `getContrabandIconGlyph`.
+
+## 2026-11-15 - Contextual ARIA Labels & Listening Feedback for Rebind Controls
+
+**Learning:** Rebind controls (such as controller lane rebind buttons in `ControllerSettings.tsx`) that display generic action text like "Rebind" lack instrument lane context when screen reader users navigate by buttons or shortcuts. Furthermore, active capture states without `aria-pressed`, `aria-busy`, or `aria-live` leave keyboard and screen reader users unsure whether the control is actively capturing keypresses.
+**Action:** Always provide dynamic, contextual `aria-label`s on rebind controls (e.g. `Rebind Guitar lane button`), bind `aria-pressed={isListening}` and `aria-busy={isListening}` during capture, announce instructions in an `aria-live="polite"` region, and supply explicit `focus-visible:ring-2` outline styles.

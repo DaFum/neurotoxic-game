@@ -160,6 +160,7 @@ After travel, the band can acquire an item with special effects to use.
 **Feature:** Void Sermon (Overworld Side Hustle)
 
 **Description:**
+
 - Lore Integration:
   The band holds an illegal sermon to the Void, extracting dark donations and brainwashing attendees. It requires significant Zealotry and costs Band Harmony while spiking Controversy, but it generates an immediate burst of Fame and additional Zealotry, perfectly matching the Kranker Schrank lore.
 - State Impact:

@@ -1580,7 +1580,8 @@ export const executeDailyZealotryPolicy = (state, scenario, counters, day) => {
     } else if (
       finiteNumberOr(currentState.band?.harmony, 0) < harmonyCost ||
       (policy === 'sermon-reserve' &&
-        finiteNumberOr(currentState.band?.harmony, 0) - harmonyCost < reserveHarmonyFloor)
+        finiteNumberOr(currentState.band?.harmony, 0) - harmonyCost <
+          reserveHarmonyFloor)
     ) {
       rejectionReason = 'harmony'
     }
@@ -3243,7 +3244,9 @@ export const runSingleSimulation = (
       observeAttributedLoss('other', moneyBeforeZealotry)
       observeEarlyRunwayMoney()
       if (!counters.zealotryPolicy) {
-        counters.zealotryPolicy = createZealotryCounters(scenario.dailyActionPolicy)
+        counters.zealotryPolicy = createZealotryCounters(
+          scenario.dailyActionPolicy
+        )
       }
       if (finiteNumberOr(state.social?.controversyLevel, 0) >= 85) {
         counters.zealotryPolicy.daysAtControversy85OrHigher++

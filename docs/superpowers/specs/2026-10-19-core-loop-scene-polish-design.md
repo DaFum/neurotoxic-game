@@ -19,14 +19,14 @@ Intro (follow-up groups 2 and 3); any state, reducer, action or audio change.
 Baselines captured with `screenshot-state-inject.js` (1280×720) and `screenshot-mobile.js`
 (390×844). TourPrep and RunSummary have no fixtures yet, so they are unseen.
 
-| Scene | Desktop | Phone |
-| --- | --- | --- |
-| MainMenu | Title flush to top edge; subtitle contrast very low | Fine; footer wraps |
-| Overworld | Map node labels collide; title crowds radio widget | About 40% of screen is stacked HUD cards; labels pile up; map clipped by `[OPEN MENU]` |
-| PreGig | Budget list and setlist clipped at panel bottom | HUD overlaps "PREPARATION" title; fixed-height lists |
-| PostGig | Net profit "+€8" glyph mangled | HUD overlaps title and first income row; same glyph bug |
-| GameOver | Two identical toasts cover the title | Same; final-statistics panel mostly empty and dim |
-| Gig | Acceptable | HUD stacks without grouping; lanes very wide |
+| Scene     | Desktop                                             | Phone                                                                                  |
+| --------- | --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| MainMenu  | Title flush to top edge; subtitle contrast very low | Fine; footer wraps                                                                     |
+| Overworld | Map node labels collide; title crowds radio widget  | About 40% of screen is stacked HUD cards; labels pile up; map clipped by `[OPEN MENU]` |
+| PreGig    | Budget list and setlist clipped at panel bottom     | HUD overlaps "PREPARATION" title; fixed-height lists                                   |
+| PostGig   | Net profit "+€8" glyph mangled                      | HUD overlaps title and first income row; same glyph bug                                |
+| GameOver  | Two identical toasts cover the title                | Same; final-statistics panel mostly empty and dim                                      |
+| Gig       | Acceptable                                          | HUD stacks without grouping; lanes very wide                                           |
 
 ## Approach: shared fixes first, then per-scene
 
@@ -40,13 +40,13 @@ viewports as the "before" set.
 
 ### Phase 1 — Shared fixes
 
-| Issue | Suspected cause | Fix |
-| --- | --- | --- |
-| HUD overlaps scene titles on phone | `src/ui/HUD.tsx:58` is absolutely positioned at the top of every scene; scene wrappers only pad for it at `lg` | Reserve HUD height on phone in scene wrappers; collapse Band Status by default on phone |
-| Overworld HUD takes ~40% of phone screen | HUD cards render in flow above the map | Compact top strip; Band Status and Help become drawers |
-| PreGig lists clipped | `max-h-[48svh]` / `lg:h-[58svh]` in `SetlistBlock.tsx`, `GigModifiersBlock.tsx`, `PreGig.tsx` | Natural height on phone; visible scroll affordance on desktop |
-| Mangled net profit | `font-display` in `NetResult.tsx` likely lacks `+`/`€` glyphs | Sign and currency in the mono face, digits in the display face |
-| Duplicate GameOver toasts | Possible fixture artifact or dev double effect (`useSoftlockEffect`) | Root-cause first; dedupe only if it reproduces outside the fixture, otherwise file an issue |
+| Issue                                    | Suspected cause                                                                                                | Fix                                                                                         |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| HUD overlaps scene titles on phone       | `src/ui/HUD.tsx:58` is absolutely positioned at the top of every scene; scene wrappers only pad for it at `lg` | Reserve HUD height on phone in scene wrappers; collapse Band Status by default on phone     |
+| Overworld HUD takes ~40% of phone screen | HUD cards render in flow above the map                                                                         | Compact top strip; Band Status and Help become drawers                                      |
+| PreGig lists clipped                     | `max-h-[48svh]` / `lg:h-[58svh]` in `SetlistBlock.tsx`, `GigModifiersBlock.tsx`, `PreGig.tsx`                  | Natural height on phone; visible scroll affordance on desktop                               |
+| Mangled net profit                       | `font-display` in `NetResult.tsx` likely lacks `+`/`€` glyphs                                                  | Sign and currency in the mono face, digits in the display face                              |
+| Duplicate GameOver toasts                | Possible fixture artifact or dev double effect (`useSoftlockEffect`)                                           | Root-cause first; dedupe only if it reproduces outside the fixture, otherwise file an issue |
 
 ### Phase 2 — Per-scene polish
 

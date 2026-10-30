@@ -250,10 +250,14 @@
   "controller.move": "Bewegen",
   "controller.nonStandard": "Keine Standardbelegung; Tasten können abweichen.",
   "controller.none": "Kein Controller verbunden.",
+  "controller.cancel_rebind_aria": "Tasten-Neubelegung abbrechen",
+  "controller.listening": "[ TASTE DRÜCKEN ]",
   "controller.rebind": "Neu belegen",
+  "controller.rebind_lane_aria": "Taste für Spur {{lane}} neu belegen",
   "controller.reconnected": "Controller wieder verbunden: {{id}}",
   "controller.reserved": "Diese Taste ist reserviert.",
   "controller.reset": "Standard wiederherstellen",
+  "controller.reset_aria": "Controller-Belegung auf Standard zurücksetzen",
   "controller.resume": "Fortsetzen",
   "controller.space": "Leerzeichen",
   "controller.steer": "Spurweise lenken",
@@ -867,9 +871,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {
