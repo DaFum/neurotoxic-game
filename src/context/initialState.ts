@@ -1,3 +1,4 @@
+import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../utils/gamepad/constants'
 /**
  * Initial State Definition for the Game
  * This module defines the default state structure for the entire game.
@@ -214,6 +215,11 @@ const getSavedSettings = (adapter: IStorageAdapter) => {
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
+  gamepadLaneBindings: [...DEFAULT_GAMEPAD_LANE_BINDINGS] as [
+    number,
+    number,
+    number
+  ],
   logLevel:
     ((import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? true)
       ? LOG_LEVELS.DEBUG
@@ -338,6 +344,7 @@ export const createInitialState = (
   },
   settings: {
     ...DEFAULT_SETTINGS,
+    gamepadLaneBindings: [...DEFAULT_GAMEPAD_LANE_BINDINGS],
     ...sanitizeSettingsPayload(
       persistedData.savedSettings ??
         getSavedSettings(persistedData.storage ?? defaultStorageAdapter)

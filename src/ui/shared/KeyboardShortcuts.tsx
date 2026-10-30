@@ -1,3 +1,6 @@
+import { InputHint } from './InputHint'
+import { useActiveInputSource } from '../../utils/gamepad/inputSource'
+import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HelpCircle, X } from 'lucide-react'
@@ -33,6 +36,12 @@ export function useKeyboardShortcuts({
   setShowHelp,
   onToggleMute
 }: UseKeyboardShortcutsProps) {
+  useGamepadActions({
+    onHelp: () => {
+      if (!hasActiveModal() && !isEditableKeyTarget(document.activeElement))
+        setShowHelp(prev => !prev)
+    }
+  })
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // An open dialog owns the keyboard; background shortcuts stay silent.
@@ -88,6 +97,7 @@ export function KeyboardShortcutsPanel({
   className = ''
 }: KeyboardShortcutsPanelProps) {
   const { t } = useTranslation(['ui'])
+  const source = useActiveInputSource()
 
   if (!showHelp) return null
 
@@ -128,20 +138,65 @@ export function KeyboardShortcutsPanel({
           </button>
         )}
       </div>
-      <div className='flex flex-col gap-1.5'>
-        {SHORTCUTS.map(({ key, label }) => (
-          <div key={key} className='flex justify-between items-center text-xs'>
-            <span className='text-star-white/80'>
-              {t(label as Parameters<typeof t>[0], {
-                defaultValue: label.split('.').pop()
-              })}
-            </span>
-            <kbd className='bg-ash-gray text-void-black px-1.5 rounded font-bold min-w-5 text-center uppercase shadow-[1px_1px_0px_var(--color-star-white)]'>
-              {key}
-            </kbd>
-          </div>
-        ))}
-      </div>
+      {source === 'gamepad' ? (
+        <div className='flex flex-col gap-1.5'>
+          {(
+            [
+              [
+                'confirm',
+                t('ui:controller.confirm', { defaultValue: 'Confirm' })
+              ],
+              ['back', t('ui:controller.back', { defaultValue: 'Back' })],
+              [
+                'menu',
+                t('ui:controller.menu', { defaultValue: 'Menu / Pause' })
+              ],
+              ['help', t('ui:controller.help', { defaultValue: 'Help' })],
+              [
+                'direction',
+                t('ui:controller.direction', {
+                  defaultValue: 'Move / Navigate'
+                })
+              ]
+            ] as const
+          ).map(([action, label]) => (
+            <div
+              key={action}
+              className='flex justify-between items-center text-xs'
+            >
+              <span>{label}</span>
+              <InputHint action={action} />
+            </div>
+          ))}
+          {(['guitar', 'drums', 'bass'] as const).map((lane, index) => (
+            <div
+              key={lane}
+              className='flex justify-between items-center text-xs'
+            >
+              <span>{t(`ui:rhythm.lane_${lane}`)}</span>
+              <InputHint action='lane' lane={index} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className='flex flex-col gap-1.5'>
+          {SHORTCUTS.map(({ key, label }) => (
+            <div
+              key={key}
+              className='flex justify-between items-center text-xs'
+            >
+              <span className='text-star-white/80'>
+                {t(label as Parameters<typeof t>[0], {
+                  defaultValue: label.split('.').pop()
+                })}
+              </span>
+              <kbd className='bg-ash-gray text-void-black px-1.5 rounded font-bold min-w-5 text-center uppercase shadow-[1px_1px_0px_var(--color-star-white)]'>
+                {key}
+              </kbd>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

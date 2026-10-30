@@ -64,3 +64,13 @@ describe('updateSettings global storage sanitization', () => {
     expect(readGlobalSettings().logLevel).toBe(LOG_LEVELS.DEBUG)
   })
 })
+
+describe('controller bindings persistence', () => {
+  it('persists valid bindings and keeps them when a malformed tuple is submitted', () => {
+    const { result } = renderHook(() => useGameActions(), { wrapper })
+    act(() => result.current.updateSettings({ gamepadLaneBindings: [4, 5, 6] }))
+    expect(readGlobalSettings().gamepadLaneBindings).toEqual([4, 5, 6])
+    act(() => result.current.updateSettings({ gamepadLaneBindings: [4, 9, 6] }))
+    expect(readGlobalSettings().gamepadLaneBindings).toEqual([4, 5, 6])
+  })
+})

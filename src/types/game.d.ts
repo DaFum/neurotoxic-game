@@ -98,6 +98,7 @@ export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
   logLevel: number
+  gamepadLaneBindings: [number, number, number]
 }
 
 /**

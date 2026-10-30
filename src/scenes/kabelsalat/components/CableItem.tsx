@@ -7,6 +7,7 @@ import type { Cable, CableId } from '../kabelsalatConstants'
 interface CableItemProps {
   t: TFunction
   cable: Cable
+  gamepadAutofocus?: boolean
   isConnected: boolean
   isSelected: boolean
   isShocked: boolean
@@ -17,6 +18,7 @@ interface CableItemProps {
 const CableItemComponent: FC<CableItemProps> = ({
   t,
   cable,
+  gamepadAutofocus,
   isConnected,
   isSelected,
   isShocked,
@@ -48,6 +50,7 @@ const CableItemComponent: FC<CableItemProps> = ({
       onClick={canClick ? handleClick : undefined}
       onKeyDown={canClick ? handleKeyDown : undefined}
       role='button'
+      data-gamepad-autofocus={gamepadAutofocus ? '' : undefined}
       aria-pressed={isConnected ? undefined : isSelected}
       tabIndex={isInteractive || (isConnected && canClick) ? 0 : -1}
       className={

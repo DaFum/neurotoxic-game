@@ -1,3 +1,4 @@
+import { GamepadHint } from '../../../ui/shared/InputHint'
 import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpControlsProps } from '../../../types/components'
@@ -94,6 +95,11 @@ export const AmpControls = memo(function AmpControls({
         </button>
       )}
 
+      <GamepadHint action='direction'>
+        {t('ui:controller.amp', {
+          defaultValue: 'Adjust by 10; use buttons for fine tuning'
+        })}
+      </GamepadHint>
       <div className='flex justify-between w-full text-toxic-green font-mono text-sm'>
         <span>
           {t('ui:minigames.amp.controls.min', { defaultValue: '0Hz' })}
@@ -131,6 +137,7 @@ export const AmpControls = memo(function AmpControls({
 
         <input
           type='range'
+          data-gamepad-autofocus=''
           min='0'
           max='1000'
           step='10'

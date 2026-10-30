@@ -3,6 +3,8 @@ import { LanguageSettings } from './LanguageSettings'
 import { AudioSettings } from './AudioSettings'
 import { VisualSettings } from './VisualSettings'
 import { LogSettings } from './LogSettings'
+import { ControllerSettings } from './ControllerSettings'
+import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../../utils/gamepad/constants'
 import { DataManagement } from './DataManagement'
 import { LOG_LEVELS } from '../../utils/logger'
 import type { GameSettings } from '../../types'
@@ -11,7 +13,10 @@ import type { GameSettings } from '../../types'
  * Settings, audio state, and callbacks used by the settings control groups.
  */
 interface SettingsPanelProps {
-  settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
+  settings?: Pick<
+    GameSettings,
+    'crtEnabled' | 'logLevel' | 'gamepadLaneBindings'
+  >
   musicVol?: number
   sfxVol?: number
   isMuted?: boolean
@@ -20,6 +25,10 @@ interface SettingsPanelProps {
   onToggleMute?: () => void
   onToggleCRT?: () => void
   onLogLevelChange?: (level: number) => void
+  onGamepadLaneBindingsChange?: (
+    bindings: GameSettings['gamepadLaneBindings']
+  ) => void
+  onResetGamepadLaneBindings?: () => void
   onDeleteSave: () => void
 }
 
@@ -37,7 +46,9 @@ export const SettingsPanel = memo(function SettingsPanel({
   onToggleMute = () => {},
   onToggleCRT = () => {},
   onLogLevelChange = () => {},
-  onDeleteSave
+  onDeleteSave,
+  onGamepadLaneBindingsChange = () => {},
+  onResetGamepadLaneBindings = () => {}
 }: SettingsPanelProps) {
   return (
     <div className='space-y-8'>
@@ -67,6 +78,14 @@ export const SettingsPanel = memo(function SettingsPanel({
           onLogLevelChange={onLogLevelChange}
         />
       )}
+
+      <ControllerSettings
+        bindings={
+          settings?.gamepadLaneBindings ?? DEFAULT_GAMEPAD_LANE_BINDINGS
+        }
+        onChange={onGamepadLaneBindingsChange}
+        onReset={onResetGamepadLaneBindings}
+      />
 
       {/* Data Management */}
       <DataManagement onDeleteSave={onDeleteSave} />

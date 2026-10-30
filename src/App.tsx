@@ -17,6 +17,7 @@ import {
 import { ErrorBoundary } from './ui/CrashHandler'
 import { NetworkStatusProvider } from './hooks/useNetworkStatus'
 import { AudioEngineProvider } from './context/AudioEngineContext'
+import { GamepadInputProvider } from './context/GamepadInputContext'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
@@ -220,7 +221,9 @@ export default function App() {
           <NetworkStatusProvider>
             <AudioEngineProvider>
               <GameStateProvider>
-                <GameContent />
+                <GamepadInputProvider>
+                  <GameContent />
+                </GamepadInputProvider>
               </GameStateProvider>
             </AudioEngineProvider>
           </NetworkStatusProvider>

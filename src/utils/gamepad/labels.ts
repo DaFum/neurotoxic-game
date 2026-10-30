@@ -1,0 +1,17 @@
+import type { LayoutFamily } from './logic'
+export function gamepadButtonLabel(
+  button: number,
+  family: LayoutFamily
+): string {
+  const face =
+    family === 'playstation'
+      ? ['✕', '○', '□', '△']
+      : family === 'xbox'
+        ? ['A', 'B', 'X', 'Y']
+        : []
+  if (face[button]) return face[button]
+  if (button === 8 && family !== 'generic')
+    return family === 'playstation' ? 'SHARE' : 'VIEW'
+  if (button === 9) return family === 'playstation' ? 'OPTIONS' : '≡'
+  return `Button ${button}`
+}

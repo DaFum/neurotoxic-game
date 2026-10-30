@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createRovingTabs } from '../../src/ui/shared/rovingTabs'
+import { moveGamepadFocus } from '../../src/utils/gamepad/navigation'
 
 const IDS = ['one', 'two', 'three']
 
@@ -69,6 +70,16 @@ describe('createRovingTabs', () => {
     const [one, two] = screen.getAllByRole('tab')
 
     fireEvent.keyDown(one, { key: 'ArrowRight' })
+    expect(onSelect).not.toHaveBeenCalled()
+    expect(two).toHaveFocus()
+  })
+
+  it('keeps a locked tab unselected during controller navigation', () => {
+    const onSelect = vi.fn()
+    render(<Tabs onSelect={onSelect} isLocked={id => id === 'two'} />)
+    const [one, two] = screen.getAllByRole('tab')
+    one.focus()
+    moveGamepadFocus('right', [document.body])
     expect(onSelect).not.toHaveBeenCalled()
     expect(two).toHaveFocus()
   })

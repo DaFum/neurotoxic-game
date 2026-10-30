@@ -1,3 +1,4 @@
+import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
@@ -342,6 +343,17 @@ export const useRoadieLogic = () => {
     [finishRoadie]
   )
 
+  useGamepadActions(
+    {
+      onDirection: direction => {
+        if (direction === 'left') move(-1, 0)
+        else if (direction === 'right') move(1, 0)
+        else if (direction === 'up') move(0, -1)
+        else move(0, 1)
+      }
+    },
+    { kind: 'gameplay', enabled: !uiState.isGameOver }
+  )
   useRoadieKeyboardControls(move)
   useRoadieSceneTransition(uiState.isGameOver, currentScene, changeScene)
 

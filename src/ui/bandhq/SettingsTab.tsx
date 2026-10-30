@@ -23,10 +23,12 @@ export const SettingsTab = ({
   updateSettings,
   deleteSave
 }: SettingsTabProps) => {
-  const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
-    settings,
-    updateSettings
-  )
+  const {
+    handleToggleCRT,
+    handleLogLevelChange,
+    handleGamepadLaneBindingsChange,
+    handleResetGamepadLaneBindings
+  } = useSettingsActions(settings, updateSettings)
 
   return (
     <div className='max-w-3xl mx-auto'>
@@ -40,6 +42,8 @@ export const SettingsTab = ({
         onToggleMute={onAudioChange.toggleMute}
         onToggleCRT={handleToggleCRT}
         onLogLevelChange={handleLogLevelChange}
+        onGamepadLaneBindingsChange={handleGamepadLaneBindingsChange}
+        onResetGamepadLaneBindings={handleResetGamepadLaneBindings}
         onDeleteSave={deleteSave}
       />
     </div>

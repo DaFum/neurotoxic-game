@@ -1,3 +1,4 @@
+import { GamepadHint } from '../../../ui/shared/InputHint'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { RoadieControlsProps } from '../../../types/components'
@@ -40,6 +41,9 @@ export const RoadieControls = memo(function RoadieControls({
           : t('ui:roadieRun.controls.show')}
       </button>
 
+      <GamepadHint action='direction'>
+        {t('ui:controller.move', { defaultValue: 'Move' })}
+      </GamepadHint>
       {/* Controls Hint */}
       <div className='absolute bottom-4 left-8 text-star-white/50 text-sm font-mono pointer-events-none hidden md:block'>
         {t('ui:roadieRun.controls.movementHint')}

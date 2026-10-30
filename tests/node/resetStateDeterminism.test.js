@@ -121,8 +121,30 @@ describe('RESET_STATE determinism', () => {
     assert.deepEqual(next.settings, {
       crtEnabled: true,
       tutorialSeen: true,
-      logLevel: 0
+      logLevel: 0,
+      gamepadLaneBindings: [2, 0, 1]
     })
+  })
+
+  it('preserves and overrides gamepad bindings through the existing settings layers', () => {
+    const state = buildState()
+    state.settings.gamepadLaneBindings = [4, 5, 6]
+    const reset = overrides =>
+      gameReducer(state, {
+        type: ActionTypes.RESET_STATE,
+        payload: {
+          rngSeed: 1,
+          runSeed: 2,
+          savedSettings: { gamepadLaneBindings: [10, 11, 12] },
+          ...overrides
+        }
+      }).settings.gamepadLaneBindings
+    assert.deepEqual(reset({}), [4, 5, 6])
+    assert.deepEqual(reset({ settings: {} }), [10, 11, 12])
+    assert.deepEqual(
+      reset({ settings: { gamepadLaneBindings: [13, 14, 15] } }),
+      [13, 14, 15]
+    )
   })
 })
 
