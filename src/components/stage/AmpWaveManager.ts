@@ -18,6 +18,11 @@ export class AmpWaveManager {
     bloodRed: number
     warningYellow: number
   }
+  // ⚡ BOLT OPTIMIZATION: Reusable stroke style objects for wave drawing
+  // Why: Prevents creating fresh { width, color, alpha } object allocations twice per frame in 60 FPS update loops.
+  // Impact: Eliminates 120 object allocations per second (7,200/min) during amp wave rendering.
+  private targetStrokeStyle: PIXI.StrokeStyle
+  private currentStrokeStyle: PIXI.StrokeStyle
 
   /**
    * Initializes a new AmpWaveManager instance.
@@ -34,6 +39,8 @@ export class AmpWaveManager {
       bloodRed: getPixiColorFromToken('--blood-red'),
       warningYellow: getPixiColorFromToken('--warning-yellow')
     }
+    this.targetStrokeStyle = { width: 2, color: 0, alpha: 1 }
+    this.currentStrokeStyle = { width: 4, color: 0, alpha: 0.8 }
     container.addChild(this.waveGraphics)
   }
 
@@ -153,6 +160,16 @@ export class AmpWaveManager {
       if (!isHijackActive) finalTargetColor = this.colors.warningYellow
     }
 
+    this.targetStrokeStyle.width = isAnomalyActive ? 6 : isOverheat ? 4 : 2
+    this.targetStrokeStyle.color = finalTargetColor
+    this.targetStrokeStyle.alpha = isAnomalyActive
+      ? 1.0
+      : isMatching
+        ? 0.8
+        : isOverheat
+          ? 0.9
+          : 0.5
+
     this.drawSineWave(
       width,
       centerY,
@@ -160,11 +177,7 @@ export class AmpWaveManager {
       time,
       targetAmplitude,
       targetJitter,
-      {
-        width: isAnomalyActive ? 6 : isOverheat ? 4 : 2,
-        color: finalTargetColor,
-        alpha: isAnomalyActive ? 1.0 : isMatching ? 0.8 : isOverheat ? 0.9 : 0.5
-      }
+      this.targetStrokeStyle
     )
 
     // Draw Current Wave
@@ -198,6 +211,10 @@ export class AmpWaveManager {
       currentWidth = 12
     }
 
+    this.currentStrokeStyle.width = currentWidth
+    this.currentStrokeStyle.color = currentColor
+    this.currentStrokeStyle.alpha = 0.8
+
     this.drawSineWave(
       width,
       centerY,
@@ -205,11 +222,7 @@ export class AmpWaveManager {
       time,
       currentAmplitude,
       currentJitter,
-      {
-        width: currentWidth,
-        color: currentColor,
-        alpha: 0.8
-      }
+      this.currentStrokeStyle
     )
   }
 

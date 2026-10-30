@@ -34,6 +34,14 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     voidBlack: number
     bloodRed: number
   }
+  // ⚡ BOLT OPTIMIZATION: Reusable fill options and state tracking for background redrawing
+  // Why: Prevents clearing/rebuilding background graphics and creating fresh fill objects on every 60 FPS tick when dimensions and interference are unchanged.
+  // Impact: Eliminates unnecessary background draws and GC object allocations on 60 FPS update loops.
+  private voidBlackFill: { color: number; alpha: number }
+  private bloodRedFill: { color: number; alpha: number }
+  private lastBgWidth: number = -1
+  private lastBgHeight: number = -1
+  private lastInterference: number = -1
 
   /**
    * Initializes the AmpStageController with the provided options.
@@ -57,6 +65,8 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       voidBlack: getPixiColorFromToken('--void-black'),
       bloodRed: getPixiColorFromToken('--blood-red')
     }
+    this.voidBlackFill = { color: this.colors.voidBlack, alpha: 1 }
+    this.bloodRedFill = { color: this.colors.bloodRed, alpha: 0 }
   }
 
   /**
@@ -74,7 +84,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.waveManager = new AmpWaveManager(this.container, this.app)
 
     this.syncState()
-    this.drawBackground()
+    this.drawBackground(true)
     this.renderWaves()
   }
 
@@ -149,24 +159,41 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 
   /**
    * Clears and redraws the background graphic, applying visual tints based on active effects.
+   *
+   * @param force - If true, forces a background redraw regardless of state change detection.
    */
-  drawBackground() {
+  drawBackground(force: boolean = false) {
     if (!this.bg || !this.app) return
+
+    const width = this.app.screen.width
+    const height = this.app.screen.height
+
+    if (
+      !force &&
+      width === this.lastBgWidth &&
+      height === this.lastBgHeight &&
+      this.interference === this.lastInterference
+    ) {
+      return
+    }
+
+    this.lastBgWidth = width
+    this.lastBgHeight = height
+    this.lastInterference = this.interference
+
     this.bg.clear()
 
     // Slight red/yellow tint based on interference
     const tintValue =
       this.interference > 0 ? (this.interference / 100) * 0.2 : 0
 
-    this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-    this.bg.fill({ color: this.colors.voidBlack, alpha: 1 })
+    this.bg.rect(0, 0, width, height)
+    this.bg.fill(this.voidBlackFill)
 
     if (tintValue > 0) {
-      this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-      this.bg.fill({
-        color: this.colors.bloodRed,
-        alpha: tintValue
-      })
+      this.bloodRedFill.alpha = tintValue
+      this.bg.rect(0, 0, width, height)
+      this.bg.fill(this.bloodRedFill)
     }
   }
 
@@ -198,7 +225,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
    * Redraws the stage geometry, including the background and wave visualization.
    */
   draw() {
-    this.drawBackground()
+    this.drawBackground(true)
     this.renderWaves()
   }
 
@@ -214,6 +241,9 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       this.bg.destroy({ children: true })
       this.bg = null
     }
+    this.lastBgWidth = -1
+    this.lastBgHeight = -1
+    this.lastInterference = -1
     super.dispose()
   }
 }
