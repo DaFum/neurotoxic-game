@@ -76,7 +76,7 @@
     "motion": "14.0.0",
     "pixi.js": "8.22.0",
     "playwright": "1.64.1",
-    "react": "19.3.0",
+    "react": "19.3.1",
     "react-dom": "19.3.0",
     "react-i18next": "17.0.15",
     "redis": "6.3.0",
