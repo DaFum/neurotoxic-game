@@ -126,6 +126,7 @@ export function useGamepadActions(
   options: GamepadActionOptions = {}
 ): void {
   const ctx = useGamepadInputOptional()
+  const registerHandlers = ctx?.registerHandlers
   const handlersRef = useRef(handlers)
   useEffect(() => {
     handlersRef.current = handlers
@@ -138,7 +139,7 @@ export function useGamepadActions(
     : String(options.consumes ?? true)
 
   useEffect(() => {
-    if (!ctx) return
+    if (!registerHandlers) return
     const registeredHandlers: GamepadActionHandlers = {}
     if (handlersRef.current.onBack) {
       registeredHandlers.onBack = () => handlersRef.current.onBack?.()
@@ -162,13 +163,13 @@ export function useGamepadActions(
         handlersRef.current.onDisconnect?.()
     }
 
-    return ctx.registerHandlers(registeredHandlers, {
+    return registerHandlers(registeredHandlers, {
       enabled,
       priority,
       consumes: options.consumes
     })
     // eslint-disable-next-line @eslint-react/exhaustive-deps
-  }, [ctx, enabled, priority, consumesKey])
+  }, [registerHandlers, enabled, priority, consumesKey])
 }
 
 export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
@@ -309,10 +310,12 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           }),
           'warning'
         )
-        // Notify disconnect handlers
-        for (const consumer of consumersRef.current) {
-          if (consumer.options.enabled !== false) {
-            consumer.handlers.onDisconnect?.()
+        // Notify disconnect handlers ONLY if NO gamepads remain
+        if (normalized.length === 0) {
+          for (const consumer of consumersRef.current) {
+            if (consumer.options.enabled !== false) {
+              consumer.handlers.onDisconnect?.()
+            }
           }
         }
       }
@@ -356,6 +359,8 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [syncDevices])
 
+  const hasPads = connectedPads.length > 0
+
   // Polling RAF loop
   useEffect(() => {
     let animationFrameId: number | null = null
@@ -390,6 +395,8 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         setActiveInputSource('gamepad')
       }
 
+      const modalActive = hasActiveModal()
+
       // Handle Directional Navigation & Hysteresis
       const deadzoneRes = applyRadialDeadzone(
         merged.axes[AXIS_LEFT_X] ?? 0,
@@ -420,6 +427,8 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         // Route direction through consumer priority chain
         for (const consumer of consumersRef.current) {
           if (consumer.options.enabled === false) continue
+          // If a modal is active, skip scene-level directional handlers (priority < 20)
+          if (modalActive && (consumer.options.priority ?? 10) < 20) continue
           if (consumer.handlers.onDirection) {
             const res = consumer.handlers.onDirection(direction, isRepeat)
             if (isActionConsumed('direction', res, consumer.options)) {
@@ -483,7 +492,6 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Process Button Edges
-      const modalActive = hasActiveModal()
       const armed = armedEdgesRef.current
 
       for (let btnIdx = 0; btnIdx < merged.buttons.length; btnIdx++) {
@@ -669,7 +677,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    if (connectedPads.length > 0) {
+    if (hasPads) {
       animationFrameId = requestAnimationFrame(tick)
     }
 
@@ -703,7 +711,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
       onBlurOrHide()
     }
   }, [
-    connectedPads.length,
+    hasPads,
     gamepadLaneBindings,
     captureCallback,
     t

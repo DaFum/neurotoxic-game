@@ -101,4 +101,19 @@ describe('Gamepad Hooks Integration', () => {
     expect(onMenu).not.toHaveBeenCalled()
     unmount()
   })
+
+  it('minigames do not respond to directions when a modal is active', () => {
+    const onDirection = vi.fn()
+    const { unmount } = renderHook(
+      () =>
+        useGamepadActions(
+          { onDirection },
+          { enabled: true, consumes: ['direction'] }
+        ),
+      { wrapper }
+    )
+
+    expect(onDirection).not.toHaveBeenCalled()
+    unmount()
+  })
 })
