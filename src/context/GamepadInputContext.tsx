@@ -288,7 +288,7 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
       const merged = mergeGamepads(pads)
       for (const edge of edgesRef.current.update(merged))
         route(edge.button, edge.pressed)
-      if (disconnected.length)
+      if (disconnected.length && next.size === 0)
         for (const consumer of consumersRef.current)
           consumer.handlers.current.onDisconnect?.()
       const scope = getActiveFocusScope()

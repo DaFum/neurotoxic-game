@@ -8,6 +8,7 @@ export type GamepadHandlers = {
   onMenu?: () => void
   onHelp?: () => void
   onDirection?: (direction: Direction) => void
+  /** Called when the last connected controller is lost. */
   onDisconnect?: () => void
 }
 type Options = {
