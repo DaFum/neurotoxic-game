@@ -249,6 +249,7 @@
   "controller.keyboardTitle": "Text eingeben",
   "controller.move": "Bewegen",
   "controller.nonStandard": "Keine Standardbelegung; Tasten können abweichen.",
+  "controller.listening": "[ TASTE DRÜCKEN ]",
   "controller.none": "Kein Controller verbunden.",
   "controller.rebind": "Neu belegen",
   "controller.reconnected": "Controller wieder verbunden: {{id}}",

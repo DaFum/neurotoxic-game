@@ -249,6 +249,7 @@
   "controller.keyboardTitle": "Enter text",
   "controller.move": "Move",
   "controller.nonStandard": "Non-standard mapping; buttons may differ.",
+  "controller.listening": "[ PRESS BUTTON ]",
   "controller.none": "No controller connected.",
   "controller.rebind": "Rebind",
   "controller.reconnected": "Controller reconnected: {{id}}",
