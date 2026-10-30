@@ -339,6 +339,7 @@ export const createInitialState = (
   },
   settings: {
     ...DEFAULT_SETTINGS,
+    gamepadLaneBindings: [...DEFAULT_SETTINGS.gamepadLaneBindings],
     ...sanitizeSettingsPayload(
       persistedData.savedSettings ??
         getSavedSettings(persistedData.storage ?? defaultStorageAdapter)

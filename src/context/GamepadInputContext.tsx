@@ -81,6 +81,19 @@ interface ConsumerRegistration {
   heldLanes: Set<number>
 }
 
+const isActionConsumed = (
+  actionName: string,
+  result: boolean | void,
+  options: GamepadActionOptions
+): boolean => {
+  if (result === true) return true
+  if (result === false) return false
+  const consumes = options.consumes ?? true
+  if (consumes === true) return true
+  if (Array.isArray(consumes)) return consumes.includes(actionName)
+  return false
+}
+
 interface GamepadContextValue {
   connectedPads: NormalizedGamepad[]
   activeLayoutFamily: LayoutFamily
@@ -118,22 +131,44 @@ export function useGamepadActions(
     handlersRef.current = handlers
   })
 
+  const enabled = options.enabled ?? true
+  const priority = options.priority ?? 10
+  const consumesKey = Array.isArray(options.consumes)
+    ? options.consumes.slice().sort().join(',')
+    : String(options.consumes ?? true)
+
   useEffect(() => {
     if (!ctx) return
-    return ctx.registerHandlers(
-      {
-        onBack: () => handlersRef.current.onBack?.(),
-        onMenu: () => handlersRef.current.onMenu?.(),
-        onLane: (lane, pressed) => handlersRef.current.onLane?.(lane, pressed),
-        onDirection: (dir, repeat) =>
-          handlersRef.current.onDirection?.(dir, repeat),
-        onHelp: () => handlersRef.current.onHelp?.(),
-        onDisconnect: () => handlersRef.current.onDisconnect?.()
-      },
-      options
-    )
+    const registeredHandlers: GamepadActionHandlers = {}
+    if (handlersRef.current.onBack) {
+      registeredHandlers.onBack = () => handlersRef.current.onBack?.()
+    }
+    if (handlersRef.current.onMenu) {
+      registeredHandlers.onMenu = () => handlersRef.current.onMenu?.()
+    }
+    if (handlersRef.current.onLane) {
+      registeredHandlers.onLane = (lane, pressed) =>
+        handlersRef.current.onLane?.(lane, pressed)
+    }
+    if (handlersRef.current.onDirection) {
+      registeredHandlers.onDirection = (dir, repeat) =>
+        handlersRef.current.onDirection?.(dir, repeat)
+    }
+    if (handlersRef.current.onHelp) {
+      registeredHandlers.onHelp = () => handlersRef.current.onHelp?.()
+    }
+    if (handlersRef.current.onDisconnect) {
+      registeredHandlers.onDisconnect = () =>
+        handlersRef.current.onDisconnect?.()
+    }
+
+    return ctx.registerHandlers(registeredHandlers, {
+      enabled,
+      priority,
+      consumes: options.consumes
+    })
     // eslint-disable-next-line @eslint-react/exhaustive-deps
-  }, [ctx, options.enabled, options.priority, options.consumes])
+  }, [ctx, enabled, priority, consumesKey])
 }
 
 export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
@@ -173,6 +208,10 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
   const activeHoldButtonRef = useRef<HTMLButtonElement | null>(null)
 
   const activeInputSource = useActiveInputSource()
+  const activeInputSourceRef = useRef(activeInputSource)
+  useEffect(() => {
+    activeInputSourceRef.current = activeInputSource
+  }, [activeInputSource])
 
   const startBindingCapture = useCallback(
     (onCaptured: (buttonIndex: number) => void) => {
@@ -347,7 +386,7 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         merged.buttons.some(b => b.pressed) ||
         merged.axes.some(a => Math.abs(a) > 0.3)
 
-      if (hasGamepadActivity && activeInputSource !== 'gamepad') {
+      if (hasGamepadActivity && activeInputSourceRef.current !== 'gamepad') {
         setActiveInputSource('gamepad')
       }
 
@@ -382,8 +421,8 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         for (const consumer of consumersRef.current) {
           if (consumer.options.enabled === false) continue
           if (consumer.handlers.onDirection) {
-            const handled = consumer.handlers.onDirection(direction, isRepeat)
-            if (handled || consumer.options.consumes) {
+            const res = consumer.handlers.onDirection(direction, isRepeat)
+            if (isActionConsumed('direction', res, consumer.options)) {
               consumed = true
               break
             }
@@ -483,10 +522,14 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
             if (pressEdge || releaseEdge) {
               for (const consumer of consumersRef.current) {
                 if (consumer.options.enabled !== false && consumer.handlers.onLane) {
-                  const handled = consumer.handlers.onLane(laneIdx, isPressed)
+                  const res = consumer.handlers.onLane(laneIdx, isPressed)
                   if (isPressed) consumer.heldLanes.add(laneIdx)
                   else consumer.heldLanes.delete(laneIdx)
-                  if (handled || consumer.options.consumes) {
+                  const laneKey = `lane${laneIdx}`
+                  if (
+                    isActionConsumed(laneKey, res, consumer.options) ||
+                    isActionConsumed('lane', res, consumer.options)
+                  ) {
                     laneConsumed = true
                     break
                   }
@@ -549,17 +592,36 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         if (btnIdx === BUTTON_BACK) {
           if (pressEdge) {
             let handled = false
-            for (const consumer of consumersRef.current) {
-              if (consumer.options.enabled !== false && consumer.handlers.onBack) {
-                const res = consumer.handlers.onBack()
-                if (res || consumer.options.consumes) {
-                  handled = true
-                  break
+            if (modalActive) {
+              // High-priority modal handlers (priority >= 20) get first chance
+              for (const consumer of consumersRef.current) {
+                if (
+                  consumer.options.enabled !== false &&
+                  (consumer.options.priority ?? 10) >= 20 &&
+                  consumer.handlers.onBack
+                ) {
+                  const res = consumer.handlers.onBack()
+                  if (isActionConsumed('back', res, consumer.options)) {
+                    handled = true
+                    break
+                  }
                 }
               }
-            }
-            if (!handled && modalActive) {
-              closeTopmostModal()
+              if (!handled) {
+                closeTopmostModal()
+              }
+            } else {
+              for (const consumer of consumersRef.current) {
+                if (
+                  consumer.options.enabled !== false &&
+                  consumer.handlers.onBack
+                ) {
+                  const res = consumer.handlers.onBack()
+                  if (isActionConsumed('back', res, consumer.options)) {
+                    break
+                  }
+                }
+              }
             }
           }
         }
@@ -568,9 +630,12 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
         if (btnIdx === BUTTON_HELP) {
           if (pressEdge && !modalActive) {
             for (const consumer of consumersRef.current) {
-              if (consumer.options.enabled !== false && consumer.handlers.onHelp) {
+              if (
+                consumer.options.enabled !== false &&
+                consumer.handlers.onHelp
+              ) {
                 const res = consumer.handlers.onHelp()
-                if (res || consumer.options.consumes) break
+                if (isActionConsumed('help', res, consumer.options)) break
               }
             }
           }
@@ -581,18 +646,19 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
           if (pressEdge) {
             let handled = false
             for (const consumer of consumersRef.current) {
-              if (consumer.options.enabled !== false && consumer.handlers.onMenu) {
+              if (
+                consumer.options.enabled !== false &&
+                consumer.handlers.onMenu
+              ) {
                 const res = consumer.handlers.onMenu()
-                if (res || consumer.options.consumes) {
+                if (isActionConsumed('menu', res, consumer.options)) {
                   handled = true
                   break
                 }
               }
             }
-            if (!handled) {
-              if (modalActive) {
-                closeTopmostModal()
-              }
+            if (!handled && modalActive) {
+              closeTopmostModal()
             }
           }
         }
@@ -638,7 +704,6 @@ export const GamepadInputProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [
     connectedPads.length,
-    activeInputSource,
     gamepadLaneBindings,
     captureCallback,
     t
