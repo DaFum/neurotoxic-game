@@ -1,3 +1,4 @@
+import { isAssignableGamepadButton } from './gamepad/constants'
 import type { GameSettings, RawGameSettings } from '../types'
 import { isValidLogLevel } from './logger'
 
@@ -45,6 +46,21 @@ export const sanitizeSettingsPayload = (
     if (isValidLogLevel(flooredLevel)) {
       sanitized.logLevel = flooredLevel
     }
+  }
+
+  const bindings = rawSettings.gamepadLaneBindings
+  if (
+    Object.hasOwn(rawSettings, 'gamepadLaneBindings') &&
+    Array.isArray(bindings) &&
+    bindings.length === 3 &&
+    [0, 1, 2].every(
+      index =>
+        Object.hasOwn(bindings, index) &&
+        isAssignableGamepadButton(bindings[index])
+    ) &&
+    new Set(bindings).size === 3
+  ) {
+    sanitized.gamepadLaneBindings = [bindings[0], bindings[1], bindings[2]]
   }
 
   return sanitized

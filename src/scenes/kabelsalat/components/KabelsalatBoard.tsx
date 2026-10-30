@@ -1,3 +1,4 @@
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar } from '../../../ui/shared/ProgressBar'
 import { formatPercent } from '../../../utils/numberUtils'
@@ -56,6 +57,11 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   const { i18n } = useTranslation()
   return (
     <div className='relative w-full sm:mx-auto [@media(min-height:30rem)]:max-w-[min(100%,calc((100svh-14rem)*4/3))]'>
+      <GamepadHint action='confirm'>
+        {t('ui:controller.connectCable', {
+          defaultValue: 'Select a cable and connect it'
+        })}
+      </GamepadHint>
       {/* Void Surge Meter overlay - autonomous mechanic */}
       {!isGameOver && !isPoweredOn && (
         <div className='mb-2 flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3'>

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { OverworldMenu } from '../../src/ui/overworld/OverworldMenu.tsx'
 import { Modal } from '../../src/ui/shared/Modal.tsx'
+import { GamepadContext } from '../../src/hooks/gamepad/GamepadContext'
 
 /**
  * @param {string} key
@@ -50,6 +51,49 @@ const Harness = ({ actions }) => {
 }
 
 describe('OverworldMenu', () => {
+  it('prevents controller menu opening during travel while allowing closing', () => {
+    const register = vi.fn(() => () => {})
+    const setIsMenuOpen = vi.fn()
+    const controller = {
+      register,
+      capture: () => () => {},
+      status: { available: true, devices: [] },
+      bindings: [2, 0, 1]
+    }
+    const props = {
+      t,
+      setIsMenuOpen,
+      isTraveling: true,
+      vanFuel: 50,
+      vanCondition: 50,
+      isSaving: false,
+      ...defaultActions()
+    }
+    const view = render(
+      <GamepadContext value={controller}>
+        <OverworldMenu {...props} isMenuOpen={false} />
+      </GamepadContext>
+    )
+    const menu = () =>
+      act(() => register.mock.calls.at(-1)[0].handlers.current.onMenu())
+    menu()
+    expect(setIsMenuOpen).not.toHaveBeenCalled()
+    view.rerender(
+      <GamepadContext value={controller}>
+        <OverworldMenu {...props} isMenuOpen />
+      </GamepadContext>
+    )
+    menu()
+    expect(setIsMenuOpen).toHaveBeenLastCalledWith(false)
+    view.rerender(
+      <GamepadContext value={controller}>
+        <OverworldMenu {...props} isTraveling={false} isMenuOpen={false} />
+      </GamepadContext>
+    )
+    menu()
+    expect(setIsMenuOpen).toHaveBeenLastCalledWith(true)
+  })
+
   it('keeps Cult Indoctrination reachable from the hustles category', () => {
     const actions = defaultActions()
     render(<Harness actions={actions} />)

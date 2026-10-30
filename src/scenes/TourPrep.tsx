@@ -1,3 +1,4 @@
+import { useGamepadActions } from '../hooks/gamepad/GamepadContext'
 import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
@@ -36,6 +37,8 @@ export const TourPrep = () => {
   const handleAbort = useCallback(() => {
     changeScene(GAME_PHASES.MENU)
   }, [changeScene])
+
+  useGamepadActions({ onBack: handleAbort })
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-y-auto flex flex-col items-center p-3 sm:p-6 lg:p-8'>

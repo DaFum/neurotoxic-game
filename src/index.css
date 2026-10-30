@@ -451,12 +451,14 @@ button {
 }
 
 /* ── UX: Focus ring for keyboard navigation ── */
-:focus-visible {
+:focus-visible,
+[data-input-source='gamepad'] :focus {
   outline: 2px solid var(--color-toxic-green);
   outline-offset: 2px;
 }
 
-button:focus-visible {
+button:focus-visible,
+[data-input-source='gamepad'] button:focus {
   outline: 2px solid var(--color-toxic-green);
   outline-offset: 2px;
   box-shadow: 0 0 12px var(--color-toxic-green-20);

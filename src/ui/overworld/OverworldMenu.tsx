@@ -1,3 +1,4 @@
+import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { EXPENSE_CONSTANTS } from '../../utils/economy'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -566,6 +567,18 @@ export const OverworldMenu = React.memo(
       setActiveCat(null)
     }, [setIsMenuOpen])
     const handleBack = useCallback(() => setActiveCat(null), [])
+    useGamepadActions({
+      onBack: () => {
+        if (isMenuOpen) {
+          if (activeCat) handleBack()
+          else handleClose()
+        }
+      },
+      onMenu: () => {
+        if (isMenuOpen) handleClose()
+        else if (!isTraveling) setIsMenuOpen(true)
+      }
+    })
 
     const categoryMap = useMemo(() => {
       const map = new Map<string, MenuCategory>()

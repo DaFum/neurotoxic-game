@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
+import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
@@ -19,6 +20,8 @@ import './assetsHub.css'
 export const AssetsScene = () => {
   const { t } = useTranslation(['assets'])
   const { changeScene } = useGameActions()
+  const backRef = useRef<HTMLButtonElement>(null)
+  useGamepadActions({ onBack: () => backRef.current?.click() })
   const [active, setActive] = useState<AssetKind>('tourbus_chassis')
 
   const { Component: ActiveSection, accent } = SECTION_VIEWS[active]
@@ -43,6 +46,7 @@ export const AssetsScene = () => {
           {t(`assets:section.${activeTab.shortLabel}.description`)}
         </p>
         <button
+          ref={backRef}
           type='button'
           onClick={() => changeScene(GAME_PHASES.OVERWORLD)}
           className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-back-button min-h-11 shrink-0 border-2 px-3 py-2 text-xs uppercase'

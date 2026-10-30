@@ -1,3 +1,4 @@
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { useTranslation } from 'react-i18next'
 import type { TourbusHUDProps } from '../../../types/components'
 
@@ -13,6 +14,9 @@ export const TourbusHUD = ({ distance, damage }: TourbusHUDProps) => {
       <h2 className='text-2xl text-toxic-green'>
         {t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}
       </h2>
+      <GamepadHint action='direction'>
+        {t('ui:controller.steer', { defaultValue: 'Steer one lane at a time' })}
+      </GamepadHint>
       <div className='mt-2'>
         <p>
           {t('minigame:tourbus.distance', { defaultValue: 'DISTANCE:' })}{' '}

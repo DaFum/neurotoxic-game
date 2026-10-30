@@ -1,3 +1,4 @@
+import { useActiveInputSource } from '../../../utils/gamepad/inputSource'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
@@ -11,6 +12,7 @@ import type { AudioLockedOverlayProps } from '../../../types/components'
 export const AudioLockedOverlay = memo(
   ({ onInitializeAudio, onQuit }: AudioLockedOverlayProps) => {
     const { t } = useTranslation()
+    const source = useActiveInputSource()
 
     return (
       <div
@@ -35,6 +37,13 @@ export const AudioLockedOverlay = memo(
             defaultValue: 'Audio Interface requires manual override.'
           })}
         </p>
+        {source === 'gamepad' && (
+          <p className='text-ash-gray mb-4'>
+            {t('ui:controller.audioUnlock', {
+              defaultValue: 'A click or tap may be needed to enable audio.'
+            })}
+          </p>
+        )}
         <GlitchButton
           onClick={onInitializeAudio}
           className='scale-150'

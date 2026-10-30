@@ -187,7 +187,7 @@ export const BASE_STATE = {
     accumulatedDamage: 0,
     score: 0
   },
-  settings: { crtEnabled: true, tutorialSeen: true, logLevel: 'WARN' },
+  settings: { crtEnabled: true, tutorialSeen: true, logLevel: 'WARN', gamepadLaneBindings: [2, 0, 1] },
   toasts: [],
   setlist: [],
   activeStoryFlags: [],

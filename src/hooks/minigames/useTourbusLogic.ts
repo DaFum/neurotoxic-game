@@ -1,3 +1,4 @@
+import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { audioService } from '../../utils/audio/audioEngine'
@@ -303,6 +304,16 @@ export const useTourbusLogic = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [moveLeft, moveRight])
+
+  useGamepadActions(
+    {
+      onDirection: direction => {
+        if (direction === 'left') moveLeft()
+        else if (direction === 'right') moveRight()
+      }
+    },
+    { kind: 'gameplay', enabled: !uiState.isGameOver }
+  )
 
   return {
     gameStateRef, // Passed to Pixi

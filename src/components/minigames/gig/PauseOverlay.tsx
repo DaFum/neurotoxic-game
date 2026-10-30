@@ -1,3 +1,4 @@
+import { GamepadHint } from '../../../ui/gamepad/InputHint'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import { useModalBehavior } from '../../../ui/shared/useModalBehavior'
@@ -29,6 +30,7 @@ export const PauseOverlay = ({
         ref={dialogRef}
         tabIndex={-1}
         role='dialog'
+        data-gamepad-pause=''
         aria-modal='true'
         aria-labelledby='pause-overlay-title'
         className='flex flex-col items-center justify-center focus:outline-none'
@@ -39,6 +41,9 @@ export const PauseOverlay = ({
         >
           {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
         </h2>
+        <GamepadHint action='menu'>
+          {t('ui:controller.resume', { defaultValue: 'Resume' })}
+        </GamepadHint>
         <div className='flex flex-col gap-6 w-64'>
           <GlitchButton onClick={onResume}>
             {t('ui:gig.resume', { defaultValue: 'RESUME' })}

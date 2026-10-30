@@ -135,6 +135,24 @@ let stackOpener: HTMLElement | null = null
  */
 export const hasActiveModal = (): boolean => modalStack.length > 0
 
+/** The top dialog and its interactive companions, or the document root. */
+export const getActiveFocusScope = (): HTMLElement[] => {
+  const entry = modalStack[modalStack.length - 1]
+  if (!entry) return [document.documentElement]
+  return [
+    entry.dialog,
+    ...entry.companions.filter(
+      (element): element is HTMLElement =>
+        element instanceof HTMLElement && element.isConnected
+    )
+  ]
+}
+
+/** Close only the current modal using its existing close handler. */
+export const closeTopmostModal = (): void => {
+  modalStack[modalStack.length - 1]?.onCloseRef.current()
+}
+
 /**
  * Reports whether the given dialog is the topmost open modal.
  *

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useHandleTravel } from '../../../src/hooks/travel/actions/useHandleTravel'
 import { createInitialState } from '../../../src/context/initialState'
+import { activateGamepadElement } from '../../../src/utils/gamepad/navigation'
 
 // Expedition overlay edges (the Nemesis Key's two-step jump) reach a node the
 // layer rule would still dim. The route authorizes the move, so a connected
@@ -116,6 +117,18 @@ describe('useHandleTravel overlay override', () => {
     const { handleTravel, setPendingTravelNode } = renderTravel('active')
     handleTravel(TWO_STEPS_AHEAD)
     expect(setPendingTravelNode).toHaveBeenCalledWith(TWO_STEPS_AHEAD)
+  })
+
+  test('controller confirmation selects once before starting travel', () => {
+    const { handleTravel, setPendingTravelNode, startTravelSequence } =
+      renderTravel('active')
+    const node = document.createElement('button')
+    node.addEventListener('click', () => handleTravel(TWO_STEPS_AHEAD))
+    activateGamepadElement(node)
+    expect(setPendingTravelNode).toHaveBeenCalledTimes(1)
+    expect(startTravelSequence).not.toHaveBeenCalled()
+    activateGamepadElement(node)
+    expect(startTravelSequence).toHaveBeenCalledTimes(1)
   })
 
   test('the same connected node stays dimmed outside a run', () => {

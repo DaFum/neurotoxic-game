@@ -9,6 +9,7 @@ import { useGigSession } from '../hooks/useGigSession'
 import { useGigVisuals } from '../hooks/useGigVisuals'
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
+import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../utils/gamepad/constants'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
 
@@ -22,6 +23,9 @@ export const Gig = () => {
   const { t } = useTranslation()
   const currentGig = useGameSelector(state => state.currentGig)
   const band = useGameSelector(state => state.band)
+  const gamepadLaneBindings =
+    useGameSelector(state => state.settings?.gamepadLaneBindings) ??
+    DEFAULT_GAMEPAD_LANE_BINDINGS
   const { changeScene, addToast, setLastGigStats, endGig } = useGameActions()
 
   // An unlock attempt that returned false or rejected: the retry would fail
@@ -71,7 +75,18 @@ export const Gig = () => {
     actions,
     gameStateRef,
     triggerBandAnimation,
-    onTogglePause: handleTogglePause
+    onTogglePause: handleTogglePause,
+    gamepadLaneBindings,
+    isPaused,
+    gamepadEnabled:
+      stats.audioStatus !== 'blocked' && stats.audioStatus !== 'failed',
+    onGamepadDisconnect: () =>
+      addToast(
+        t('ui:controller.disconnectPause', {
+          defaultValue: 'Controller disconnected. Gig paused.'
+        }),
+        'info'
+      )
   })
 
   // Use extracted visuals hook

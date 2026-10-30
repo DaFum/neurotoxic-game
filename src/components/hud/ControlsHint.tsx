@@ -1,3 +1,5 @@
+import { InputHint } from '../../ui/gamepad/InputHint'
+import { useActiveInputSource } from '../../utils/gamepad/inputSource'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RHYTHM_LANES } from '../../utils/rhythmGameScoringUtils'
@@ -35,34 +37,46 @@ export const ControlsHint = memo(function ControlsHint({
   isToxicMode = false
 }: ControlsHintProps) {
   const { t } = useTranslation(['ui'])
+  const source = useActiveInputSource()
 
   // Below the hit line there are only ~38px, which the hint row and the
   // crowd-energy strip fill exactly. Toxic mode adds a warning row to that
   // strip, so yield rather than let the strip paint over this one: the key
   // mapping is static reference, the alarm is not.
-  if (isToxicMode) return null
+  if (isToxicMode && source !== 'gamepad') return null
 
   return (
     <div
       /* bottom-5 stacks this row between the hit targets and the crowd-energy
          strip now pinned to the bottom edge. */
-      className='absolute bottom-5 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
+      className={`absolute ${isToxicMode ? 'top-20' : 'bottom-5'} w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none ${source === 'gamepad' ? 'flex' : 'hidden md:flex'}`}
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >
-      {RHYTHM_LANES.map(({ id }) => (
+      {RHYTHM_LANES.map(({ id }, index) => (
         <div
           key={id}
           className='flex items-center gap-1 sm:gap-1.5 font-mono text-xs sm:text-xs text-ash-gray'
         >
           <kbd className='border px-1.5 py-0.5 text-xs font-sans border-ash-gray/30'>
-            {LANE_KEYS[id]}
+            {source === 'gamepad' ? (
+              <InputHint action='lane' lane={index} />
+            ) : (
+              LANE_KEYS[id]
+            )}
           </kbd>
           <span className='uppercase tracking-wider'>
             {t(`ui:rhythm.lane_${id}`)}
           </span>
         </div>
       ))}
+      {source === 'gamepad' && (
+        <span className='text-xs'>
+          {t('ui:controller.sustain', {
+            defaultValue: 'Hold for sustained notes'
+          })}
+        </span>
+      )}
     </div>
   )
 })

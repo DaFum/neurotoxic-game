@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { sanitizeSettingsPayload } from '../../../src/utils/settingsSanitizer.ts'
+import { createInitialState } from '../../../src/context/initialState.ts'
 
 describe('sanitizeSettingsPayload', () => {
   it('returns empty object for null, undefined, and non-object inputs', () => {
@@ -80,5 +81,59 @@ describe('sanitizeSettingsPayload', () => {
 
   it('handles empty objects correctly', () => {
     assert.deepEqual(sanitizeSettingsPayload({}), {})
+  })
+})
+
+describe('gamepad lane bindings', () => {
+  it('creates an independent default array for each state', () => {
+    const first = createInitialState({
+      savedSettings: {},
+      rngSeed: 1,
+      runSeed: 1
+    })
+    const second = createInitialState({
+      savedSettings: {},
+      rngSeed: 1,
+      runSeed: 1
+    })
+    assert.notStrictEqual(
+      first.settings.gamepadLaneBindings,
+      second.settings.gamepadLaneBindings
+    )
+    first.settings.gamepadLaneBindings[0] = 7
+    assert.deepEqual(second.settings.gamepadLaneBindings, [2, 0, 1])
+  })
+
+  it('accepts a valid tuple as a fresh copy', () => {
+    const bindings = [2, 0, 63]
+    const result = sanitizeSettingsPayload({ gamepadLaneBindings: bindings })
+    assert.deepEqual(result.gamepadLaneBindings, bindings)
+    assert.notStrictEqual(result.gamepadLaneBindings, bindings)
+  })
+
+  it('rejects invalid or sparse tuples atomically', () => {
+    const sparse = [2, 0, 1]
+    delete sparse[1]
+    for (const bindings of [
+      null,
+      '2,0,1',
+      [],
+      [2, 0],
+      [2, 0, 1, 3],
+      [2, 2, 1],
+      [2, 0.5, 1],
+      [2, '0', 1],
+      [2, NaN, 1],
+      [2, Infinity, 1],
+      [2, -1, 1],
+      [2, 64, 1],
+      [2, 9, 1],
+      sparse
+    ]) {
+      assert.deepEqual(
+        sanitizeSettingsPayload({ gamepadLaneBindings: bindings }),
+        {}
+      )
+    }
   })
 })

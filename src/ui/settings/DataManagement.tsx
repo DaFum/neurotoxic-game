@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeadmanButton } from '../shared/BrutalistUI'
+import { GamepadHint } from '../gamepad/InputHint'
 
 type DataManagementProps = {
   onDeleteSave: () => void
@@ -25,7 +26,15 @@ export const DataManagement = memo(function DataManagement({
           {t('ui:delete_warning')}
         </p>
         <div className='w-full sm:flex-1 sm:max-w-sm'>
-          <DeadmanButton label={t('ui:delete_save')} onConfirm={onDeleteSave} />
+          <DeadmanButton
+            label={t('ui:delete_save')}
+            onConfirm={onDeleteSave}
+            hint={
+              <GamepadHint action='confirm'>
+                {t('ui:controller.hold', { defaultValue: 'Hold' })}
+              </GamepadHint>
+            }
+          />
         </div>
       </div>
     </div>

@@ -1,4 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react'
+import { useGamepadActions } from '../hooks/gamepad/GamepadContext'
+import {
+  DEFAULT_GAMEPAD_LANE_BINDINGS,
+  GAMEPAD_BUTTON
+} from '../utils/gamepad/constants'
 import { audioService } from '../utils/audio/audioEngine'
 import {
   createKeyToLaneMap,
@@ -15,6 +20,10 @@ type GigInputParams = {
   gameStateRef: RhythmGameLogicReturn['gameStateRef']
   triggerBandAnimation: (laneIndex: number) => void
   onTogglePause?: () => void
+  gamepadLaneBindings?: readonly [number, number, number]
+  isPaused?: boolean
+  gamepadEnabled?: boolean
+  onGamepadDisconnect?: () => void
 }
 
 /**
@@ -35,7 +44,11 @@ export const useGigInput = ({
   actions,
   gameStateRef,
   triggerBandAnimation,
-  onTogglePause
+  onTogglePause,
+  gamepadLaneBindings = DEFAULT_GAMEPAD_LANE_BINDINGS,
+  isPaused = false,
+  gamepadEnabled = true,
+  onGamepadDisconnect
 }: GigInputParams): {
   handleLaneInput: (index: number, active: boolean) => void
 } => {
@@ -139,6 +152,28 @@ export const useGigInput = ({
       if (active) triggerBandAnimation(index)
     },
     [ensureAudioFromGesture, actions, triggerBandAnimation]
+  )
+
+  useGamepadActions(
+    {
+      onButton: (button, pressed) => {
+        if (button === GAMEPAD_BUTTON.START) {
+          if (pressed) onTogglePause?.()
+          return
+        }
+        const lane = gamepadLaneBindings.indexOf(button)
+        if (lane !== -1) handleLaneInput(lane, pressed)
+      },
+      onDisconnect: () => {
+        if (!isPaused) onTogglePause?.()
+        onGamepadDisconnect?.()
+      }
+    },
+    {
+      kind: 'gameplay',
+      enabled: gamepadEnabled,
+      consumes: [...gamepadLaneBindings, GAMEPAD_BUTTON.START]
+    }
   )
 
   return { handleLaneInput }

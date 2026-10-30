@@ -44,7 +44,7 @@ export const CableList = ({
 
   return (
     <>
-      {CABLES.map(cable => {
+      {CABLES.map((cable, index) => {
         const isConnected = connectedCableIds.has(cable.id)
         const isSelected = selectedCable === cable.id
 
@@ -53,6 +53,7 @@ export const CableList = ({
             key={cable.id}
             t={t}
             cable={cable}
+            gamepadAutofocus={index === 0}
             isConnected={isConnected}
             isSelected={isSelected}
             isShocked={isShocked}

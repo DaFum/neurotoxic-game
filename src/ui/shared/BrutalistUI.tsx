@@ -1,3 +1,4 @@
+import { registerHoldTarget } from '../../utils/gamepad/holdTargets'
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -48,6 +49,7 @@ interface DeadmanButtonProps {
   label: string
   disabled?: boolean
   onConfirm?: () => void
+  hint?: ReactNode
 }
 
 interface CrisisModalProps {
@@ -406,10 +408,11 @@ export const CrisisModal = memo(
  * @param props - Button label and confirmation callback.
  */
 export const DeadmanButton = memo(
-  ({ label, disabled = false, onConfirm }: DeadmanButtonProps) => {
+  ({ label, disabled = false, onConfirm, hint }: DeadmanButtonProps) => {
     const { t } = useTranslation()
     const [progress, setProgress] = useState<number>(0)
     const [isHolding, setIsHolding] = useState<boolean>(false)
+    const gamepadButtonRef = useRef<HTMLButtonElement | null>(null)
     const progressRef = useRef<number>(0)
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const drainIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -481,6 +484,12 @@ export const DeadmanButton = memo(
     }
 
     useEffect(() => {
+      const button = gamepadButtonRef.current
+      if (!button) return
+      return registerHoldTarget(button, { start: startHold, stop: stopHold })
+    })
+
+    useEffect(() => {
       return () => {
         if (intervalRef.current != null) clearInterval(intervalRef.current)
         if (drainIntervalRef.current != null)
@@ -496,9 +505,10 @@ export const DeadmanButton = memo(
     return (
       <div className='w-full flex flex-col gap-1'>
         <span className='text-xs tracking-widest uppercase opacity-50 text-center'>
-          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}
+          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')} {hint}
         </span>
         <button
+          ref={gamepadButtonRef}
           type='button'
           disabled={disabled}
           aria-disabled={disabled}

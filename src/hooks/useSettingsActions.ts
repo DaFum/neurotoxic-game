@@ -1,3 +1,4 @@
+import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../utils/gamepad/constants'
 import { useCallback, useRef, useLayoutEffect } from 'react'
 import type { GameSettings } from '../types'
 import type { useGameActions } from '../context/GameState'
@@ -9,6 +10,10 @@ type UpdateSettings = ReturnType<typeof useGameActions>['updateSettings']
  */
 export type UseSettingsActionsReturn = {
   handleToggleCRT: () => void
+  handleGamepadLaneBindingsChange: (
+    bindings: GameSettings['gamepadLaneBindings']
+  ) => void
+  handleResetGamepadLaneBindings: () => void
   handleLogLevelChange: (level: GameSettings['logLevel']) => void
 }
 
@@ -42,7 +47,18 @@ export const useSettingsActions = (
     [updateSettings]
   )
 
+  const handleGamepadLaneBindingsChange = useCallback(
+    (bindings: GameSettings['gamepadLaneBindings']) =>
+      updateSettings({ gamepadLaneBindings: bindings }),
+    [updateSettings]
+  )
+  const handleResetGamepadLaneBindings = useCallback(() => {
+    updateSettings({ gamepadLaneBindings: [...DEFAULT_GAMEPAD_LANE_BINDINGS] })
+  }, [updateSettings])
+
   return {
+    handleGamepadLaneBindingsChange,
+    handleResetGamepadLaneBindings,
     handleToggleCRT,
     handleLogLevelChange
   }
