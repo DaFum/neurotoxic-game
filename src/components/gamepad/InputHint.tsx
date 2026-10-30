@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActiveInputSource } from '../../utils/gamepad/inputSourceStore';
 import { detectLayoutFamily, getButtonGlyph } from '../../utils/gamepad/layout';
-import { useGameSelectorOptional } from '../../context/GameState';
+import * as GameStateModule from '../../context/GameState';
 import { useGamepadInputOptional } from '../../context/GamepadInputContext';
 
 export interface InputHintProps {
@@ -26,7 +26,15 @@ export const InputHint: React.FC<InputHintProps> = ({
 }) => {
   const { t } = useTranslation('ui');
   const activeSource = useActiveInputSource();
-  const settings = useGameSelectorOptional((s) => s?.settings);
+  let settings: { gamepadLaneBindings?: [number, number, number] } | undefined;
+  try {
+    const selectorFn = GameStateModule.useGameSelectorOptional ?? GameStateModule.useGameSelector;
+    if (typeof selectorFn === 'function') {
+      settings = selectorFn((s) => s?.settings);
+    }
+  } catch (_e) {
+    settings = undefined;
+  }
   const gamepadCtx = useGamepadInputOptional();
 
   if (activeSource !== 'gamepad') {

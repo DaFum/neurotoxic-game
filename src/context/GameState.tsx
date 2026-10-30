@@ -2,7 +2,7 @@ import {
   type Context,
   type ReactNode,
   createContext,
-  useContext,
+  use,
   useReducer,
   useCallback,
   useEffect,
@@ -108,7 +108,7 @@ const IS_DEV =
  * @throws {@link Error} If the context value is null, indicating missing provider hierarchy.
  */
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
-  const value = useContext(context)
+  const value = use(context)
   if (value === null) {
     throw new Error(`${name} must be used within GameStateProvider`)
   }
@@ -337,7 +337,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
  * Hook to access stable game actions optional context.
  */
 export const useGameActionsOptional = (): GameDispatchActions | null => {
-  return useContext(GameDispatchContext)
+  return use(GameDispatchContext)
 }
 
 /**
@@ -396,7 +396,7 @@ const DEFAULT_FALLBACK_STATE: GameState = createInitialState()
 export function useGameSelectorOptional<T>(
   selector: (state: GameState) => T
 ): T | undefined {
-  const store = useContext(GameStateContext)
+  const store = use(GameStateContext)
   const instRef = useRef<{
     hasValue: boolean
     state: GameState | null
