@@ -173,7 +173,11 @@ mock.module(
               typeof options?.onEnded === 'function' ? options.onEnded : null,
             startTimeSec: Number.isFinite(options?.startTimeSec)
               ? options.startTimeSec
-              : null
+              : null,
+            resolveStartTimeSec:
+              typeof options?.resolveStartTimeSec === 'function'
+                ? options.resolveStartTimeSec
+                : null
           }
         }
       }),
@@ -211,6 +215,22 @@ globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 // Import the function under test
 const { startMetalGenerator } =
   await import('../../src/utils/audio/proceduralMetal')
+
+/**
+ * A manually released `ensureAudioContext()` result, standing in for a slow
+ * closed-context rebuild.
+ *
+ * @returns {{ promise: Promise<boolean>, release: (value: boolean) => void }}
+ */
+const createAudioContextGate = () => {
+  /** @type {(value: boolean) => void} */
+  let release = () => {}
+  /** @type {Promise<boolean>} */
+  const promise = new Promise(resolve => {
+    release = resolve
+  })
+  return { promise, release }
+}
 
 // --- Tests ---
 
@@ -305,6 +325,91 @@ test('startMetalGenerator Tests', async t => {
     assert.strictEqual(result, true)
     assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1234.5)
   })
+
+  await t.test(
+    'resolves the deferred start only once the audio context is ready (#3459)',
+    async () => {
+      const gate = createAudioContextGate()
+      mockEnsureAudioContext.mock.mockImplementationOnce(() => gate.promise)
+      const resolveStartTimeSec = mock.fn(() => {
+        // The loop is already scheduled when the start time is chosen.
+        assert.ok(mockAudioState.loop instanceof MockSequence)
+        assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+        return 1500.25
+      })
+
+      const pending = startMetalGenerator(
+        { difficulty: 3, bpm: 120, duration: 30 },
+        2,
+        { resolveStartTimeSec }
+      )
+
+      assert.strictEqual(mockEnsureAudioContext.mock.calls.length, 1)
+      assert.strictEqual(resolveStartTimeSec.mock.calls.length, 0)
+      assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+      assert.strictEqual(mockAudioState.loop, null)
+
+      gate.release(true)
+
+      assert.strictEqual(await pending, true)
+      assert.strictEqual(resolveStartTimeSec.mock.calls.length, 1)
+      assert.strictEqual(mockTransport.start.mock.calls.length, 1)
+      assert.strictEqual(
+        mockTransport.start.mock.calls[0].arguments[0],
+        1500.25
+      )
+    }
+  )
+
+  await t.test('a resolved start time wins over startTimeSec', async () => {
+    const result = await startMetalGenerator(
+      { difficulty: 3, bpm: 120, duration: 30 },
+      2,
+      { startTimeSec: 1234.5, resolveStartTimeSec: () => 1500.25 }
+    )
+    assert.strictEqual(result, true)
+    assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1500.25)
+  })
+
+  await t.test(
+    'a non-finite resolved start time falls back to the delay',
+    async () => {
+      const result = await startMetalGenerator(
+        { difficulty: 3, bpm: 120, duration: 30 },
+        2,
+        { resolveStartTimeSec: () => Number.NaN }
+      )
+      assert.strictEqual(result, true)
+      // Tone.now() = 1000 plus the 2s delay.
+      assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1002)
+    }
+  )
+
+  await t.test(
+    'a failed or superseded preparation never resolves the start (#3459)',
+    async () => {
+      for (const supersede of [false, true]) {
+        mockTransport.start.mock.resetCalls()
+        mockAudioState.loop = null
+        const gate = createAudioContextGate()
+        mockEnsureAudioContext.mock.mockImplementationOnce(() => gate.promise)
+        const resolveStartTimeSec = mock.fn(() => 1500.25)
+
+        const pending = startMetalGenerator(
+          { difficulty: 3, bpm: 120, duration: 30 },
+          2,
+          { resolveStartTimeSec }
+        )
+        if (supersede) mockAudioState.playRequestId++
+        gate.release(supersede)
+
+        assert.strictEqual(await pending, false)
+        assert.strictEqual(resolveStartTimeSec.mock.calls.length, 0)
+        assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+        assert.strictEqual(mockAudioState.loop, null)
+      }
+    }
+  )
 
   await t.test(
     'AudioContext Locked: Returns false if context not ensured',

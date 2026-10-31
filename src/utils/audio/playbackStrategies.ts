@@ -27,6 +27,27 @@ const beginPlaybackAttempt = (start: () => Promise<boolean>) => {
   return { pending, requestId: audioState.playRequestId }
 }
 
+/**
+ * Anchors the shared gig clock and returns the matching transport start.
+ *
+ * @remarks
+ * Passed as `resolveStartTimeSec` to the synthesis backends, which call it only
+ * after their awaited preparation (audio-context unlock, MIDI fetch). Choosing
+ * the start up front let a slow preparation outlast the lead-in and auto-miss
+ * the opening notes. Tone schedules relative to `Tone.now()`, which runs
+ * `lookAhead` ahead of the raw context clock, so the clock and the transport
+ * share one absolute Tone time.
+ *
+ * @returns Absolute Tone.js time, in seconds, at which the transport starts.
+ */
+const anchorGigStart = (): number => {
+  const startTimeSec = getToneStartTimeSec(
+    getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+  )
+  startGigClock({ offsetMs: 0, startTimeSec })
+  return startTimeSec
+}
+
 const playOggBuffer = async (
   currentSong: ActiveSong,
   notes: RhythmNote[],
@@ -99,13 +120,7 @@ const playMidiSynthesis = async (
     false,
     0,
     {
-      resolveStartTimeSec: () => {
-        const toneGigStartTimeSec = getToneStartTimeSec(
-          getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-        )
-        startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
-        return toneGigStartTimeSec
-      },
+      resolveStartTimeSec: anchorGigStart,
       stopAfterSeconds: gigPlaybackSeconds,
       useCleanPlayback: false,
       onEnded: onSongEnded
@@ -128,16 +143,11 @@ const playNoteDataSynthesis = async (
 ): Promise<boolean> => {
   if (notes.length === 0) return false
 
-  // Tone schedules relative to Tone.now(), which runs `lookAhead` ahead of the
-  // raw context clock; anchor both the clock and the transport to one absolute
-  // time, as the MIDI path does.
-  const startTimeSec = getToneStartTimeSec(
-    getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-  )
-  startGigClock({ offsetMs: 0, startTimeSec })
+  // The backend calls the resolver once the audio context is ready, as the MIDI
+  // path does.
   const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000, {
     onEnded: onSongEnded,
-    startTimeSec
+    resolveStartTimeSec: anchorGigStart
   })
 
   if (success) {
@@ -155,14 +165,10 @@ const playProceduralMetal = async (
   rng: RandomFn
 ): Promise<boolean> => {
   const audioDelay = GIG_LEAD_IN_MS / 1000
-  const startTimeSec = getToneStartTimeSec(
-    getAudioContextTimeSec() + audioDelay
-  )
-  startGigClock({ offsetMs: 0, startTimeSec })
   const success = await startMetalGenerator(
     currentSong,
     audioDelay,
-    { onEnded: onSongEnded, startTimeSec },
+    { onEnded: onSongEnded, resolveStartTimeSec: anchorGigStart },
     rng
   )
 

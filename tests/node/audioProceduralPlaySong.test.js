@@ -176,7 +176,11 @@ mock.module(
               typeof options?.onEnded === 'function' ? options.onEnded : null,
             startTimeSec: Number.isFinite(options?.startTimeSec)
               ? options.startTimeSec
-              : null
+              : null,
+            resolveStartTimeSec:
+              typeof options?.resolveStartTimeSec === 'function'
+                ? options.resolveStartTimeSec
+                : null
           }
         }
       }),
@@ -193,6 +197,22 @@ globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
 const { playSongFromData } = await import('../../src/utils/audio/midiPlayback')
+
+/**
+ * A manually released `ensureAudioContext()` result, standing in for a slow
+ * closed-context rebuild.
+ *
+ * @returns {{ promise: Promise<boolean>, release: (value: boolean) => void }}
+ */
+const createAudioContextGate = () => {
+  /** @type {(value: boolean) => void} */
+  let release = () => {}
+  /** @type {Promise<boolean>} */
+  const promise = new Promise(resolve => {
+    release = resolve
+  })
+  return { promise, release }
+}
 
 // --- Tests ---
 
@@ -280,6 +300,80 @@ test('playSongFromData Tests', async t => {
     assert.strictEqual(result, true)
     assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1234.5)
   })
+
+  await t.test(
+    'resolves the deferred start only once the audio context is ready (#3459)',
+    async () => {
+      const gate = createAudioContextGate()
+      mockEnsureAudioContext.mock.mockImplementationOnce(() => gate.promise)
+      const resolveStartTimeSec = mock.fn(() => {
+        // The notes are already scheduled when the start time is chosen.
+        assert.strictEqual(MockPart.instances.length, 1)
+        assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+        return 1500.25
+      })
+
+      const pending = playSongFromData(validSong, 2, { resolveStartTimeSec })
+
+      assert.strictEqual(mockEnsureAudioContext.mock.calls.length, 1)
+      assert.strictEqual(resolveStartTimeSec.mock.calls.length, 0)
+      assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+      assert.strictEqual(MockPart.instances.length, 0)
+
+      gate.release(true)
+
+      assert.strictEqual(await pending, true)
+      assert.strictEqual(resolveStartTimeSec.mock.calls.length, 1)
+      assert.strictEqual(mockTransport.start.mock.calls.length, 1)
+      assert.strictEqual(
+        mockTransport.start.mock.calls[0].arguments[0],
+        1500.25
+      )
+    }
+  )
+
+  await t.test('a resolved start time wins over startTimeSec', async () => {
+    const result = await playSongFromData(validSong, 2, {
+      startTimeSec: 1234.5,
+      resolveStartTimeSec: () => 1500.25
+    })
+    assert.strictEqual(result, true)
+    assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1500.25)
+  })
+
+  await t.test(
+    'a non-finite resolved start time falls back to the delay',
+    async () => {
+      const result = await playSongFromData(validSong, 2, {
+        resolveStartTimeSec: () => Number.NaN
+      })
+      assert.strictEqual(result, true)
+      // Tone.now() = 1000 plus the 2s delay.
+      assert.strictEqual(mockTransport.start.mock.calls[0].arguments[0], 1002)
+    }
+  )
+
+  await t.test(
+    'a failed or superseded preparation never resolves the start (#3459)',
+    async () => {
+      for (const supersede of [false, true]) {
+        mockTransport.start.mock.resetCalls()
+        MockPart.instances = []
+        const gate = createAudioContextGate()
+        mockEnsureAudioContext.mock.mockImplementationOnce(() => gate.promise)
+        const resolveStartTimeSec = mock.fn(() => 1500.25)
+
+        const pending = playSongFromData(validSong, 2, { resolveStartTimeSec })
+        if (supersede) mockAudioState.playRequestId++
+        gate.release(supersede)
+
+        assert.strictEqual(await pending, false)
+        assert.strictEqual(resolveStartTimeSec.mock.calls.length, 0)
+        assert.strictEqual(mockTransport.start.mock.calls.length, 0)
+        assert.strictEqual(MockPart.instances.length, 0)
+      }
+    }
+  )
 
   await t.test(
     'AudioContext Locked: Returns false if context not ensured',
