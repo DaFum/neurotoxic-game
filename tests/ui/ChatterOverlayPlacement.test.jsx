@@ -33,16 +33,28 @@ const realGetRect = Element.prototype.getBoundingClientRect
 const stubRects = ({ overlay, obstacle }) => {
   Element.prototype.getBoundingClientRect = function () {
     if (this.getAttribute('role') === 'status') return overlay
-    if (this.hasAttribute('data-chatter-avoid')) return obstacle
+    if (this.hidden || this.hasAttribute('hidden')) {
+      return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+    }
+    if (
+      this.hasAttribute('data-chatter-avoid') ||
+      (typeof this.matches === 'function' &&
+        this.matches('input:not([type="hidden"]),select,textarea'))
+    ) {
+      return typeof obstacle === 'function' ? obstacle(this) : obstacle
+    }
     return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
   }
 }
 
 afterEach(() => {
+  mockState.currentScene = GAME_PHASES.GIG
   Element.prototype.getBoundingClientRect = realGetRect
-  document.querySelectorAll('[data-chatter-avoid]').forEach(el => {
-    el.remove()
-  })
+  document
+    .querySelectorAll('[data-chatter-avoid],input,select,textarea')
+    .forEach(el => {
+      el.remove()
+    })
 })
 
 test('chatter box moves off a `data-chatter-avoid` element it would cover', async () => {
@@ -108,6 +120,111 @@ test('chatter box keeps its CSS default when nothing is in the way', async () =>
   expect(getByRole('status').style.top).toBe('')
 }, 15000)
 
+describe('form controls and scene suppression', () => {
+  const OVERLAY_RECT = {
+    left: 312,
+    top: 624,
+    right: 712,
+    bottom: 704,
+    width: 400,
+    height: 80
+  }
+  const BLOCKING_RECT = {
+    left: 0,
+    top: window.innerHeight / 2,
+    right: window.innerWidth,
+    bottom: window.innerHeight,
+    width: window.innerWidth,
+    height: window.innerHeight / 2
+  }
+  const FULL_BLOCK_RECT = {
+    left: 0,
+    top: 0,
+    right: window.innerWidth,
+    bottom: window.innerHeight,
+    width: window.innerWidth,
+    height: window.innerHeight
+  }
+
+  test('range-input is recognized as an obstacle and moves the chatter box', async () => {
+    const range = document.createElement('input')
+    range.type = 'range'
+    document.body.appendChild(range)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: BLOCKING_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status')
+
+    expect(container.style.top).not.toBe('')
+    expect(Number.parseInt(container.style.top, 10)).toBeLessThan(
+      window.innerHeight / 2
+    )
+  }, 15000)
+
+  test('select element is recognized as an obstacle and moves the chatter box', async () => {
+    const select = document.createElement('select')
+    document.body.appendChild(select)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: BLOCKING_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status')
+
+    expect(container.style.top).not.toBe('')
+    expect(Number.parseInt(container.style.top, 10)).toBeLessThan(
+      window.innerHeight / 2
+    )
+  }, 15000)
+
+  test('hidden input is excluded from obstacles and chatter keeps default position', async () => {
+    const hiddenInput = document.createElement('input')
+    hiddenInput.type = 'hidden'
+    document.body.appendChild(hiddenInput)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: BLOCKING_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status')
+
+    expect(container.style.top).toBe('')
+  }, 15000)
+
+  test('desktop TourPrep suppresses chatter when all candidate anchors are blocked', async () => {
+    mockState.currentScene = GAME_PHASES.TOUR_PREP
+    const marked = document.createElement('div')
+    marked.setAttribute('data-chatter-avoid', '')
+    document.body.appendChild(marked)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: FULL_BLOCK_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status', { hidden: true })
+
+    expect(container.style.visibility).toBe('hidden')
+  }, 15000)
+
+  test('desktop non-expedition scene keeps default position when all candidate anchors are blocked', async () => {
+    mockState.currentScene = GAME_PHASES.GIG
+    const marked = document.createElement('div')
+    marked.setAttribute('data-chatter-avoid', '')
+    document.body.appendChild(marked)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: FULL_BLOCK_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status')
+
+    expect(container.style.visibility).not.toBe('hidden')
+    expect(container.style.top).toBe('')
+  }, 15000)
+})
+
 describe('observer lifecycle', () => {
   const OVERLAY_RECT = {
     left: 312,
@@ -141,7 +258,16 @@ describe('observer lifecycle', () => {
   const spyRects = obstacleRef => {
     const spy = vi.fn(function () {
       if (this.getAttribute('role') === 'status') return OVERLAY_RECT
-      if (this.hasAttribute('data-chatter-avoid')) return obstacleRef.current
+      if (this.hidden || this.hasAttribute('hidden')) return ZERO_RECT
+      if (
+        this.hasAttribute('data-chatter-avoid') ||
+        (typeof this.matches === 'function' &&
+          this.matches('input:not([type="hidden"]),select,textarea'))
+      ) {
+        return typeof obstacleRef.current === 'function'
+          ? obstacleRef.current(this)
+          : obstacleRef.current
+      }
       return ZERO_RECT
     })
     Element.prototype.getBoundingClientRect = spy
@@ -315,6 +441,77 @@ describe('observer lifecycle', () => {
     expect(measurements()).toBe(before + 1)
   }, 15000)
 
+  test('nested non-bubbling scroll with mutable geometry triggers one measurement per frame', async () => {
+    vi.useFakeTimers({
+      toFake: [
+        'requestAnimationFrame',
+        'cancelAnimationFrame',
+        'setTimeout',
+        'clearTimeout'
+      ]
+    })
+    const scrollContainer = document.createElement('div')
+    scrollContainer.className = 'overflow-y-auto'
+    document.body.appendChild(scrollContainer)
+
+    addObstacle(scrollContainer)
+    const obstacleGeometry = { current: ZERO_RECT }
+    const { measurements } = spyRects(obstacleGeometry)
+
+    const { getByRole } = await mountOverlay()
+    const container = getByRole('status')
+    expect(container.style.top).toBe('')
+
+    // Mutate geometry to block default position
+    obstacleGeometry.current = BLOCKING_RECT
+
+    const before = measurements()
+    act(() => {
+      // Non-bubbling scroll event from nested container
+      scrollContainer.dispatchEvent(new Event('scroll', { bubbles: false }))
+      scrollContainer.dispatchEvent(new Event('scroll', { bubbles: false }))
+    })
+    // Before frame runs, no extra measurements
+    expect(measurements()).toBe(before)
+
+    await act(async () => {
+      vi.advanceTimersToNextFrame()
+    })
+    // Throttled to at most one measurement per frame
+    expect(measurements()).toBe(before + 1)
+    expect(container.style.top).not.toBe('')
+    expect(Number.parseInt(container.style.top, 10)).toBeLessThan(
+      window.innerHeight / 2
+    )
+
+    scrollContainer.remove()
+  }, 15000)
+
+  test('debounced hidden attribute change triggers re-measurement after 200 ms', async () => {
+    vi.useFakeTimers()
+    const marked = addObstacle()
+    marked.hidden = true
+    const { measurements } = spyRects({ current: BLOCKING_RECT })
+    const { getByRole } = await mountOverlay()
+    const container = getByRole('status')
+    expect(container.style.top).toBe('')
+
+    // Reveal obstacle by unhiding
+    marked.hidden = false
+    await flushMutations()
+    await act(async () => {
+      vi.advanceTimersByTime(199)
+    })
+    expect(container.style.top).toBe('')
+
+    const before = measurements()
+    await act(async () => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(measurements()).toBe(before + 1)
+    expect(container.style.top).not.toBe('')
+  }, 15000)
+
   test('unmount disconnects the observer and cancels listeners, timers and frames', async () => {
     vi.useFakeTimers({
       toFake: [
@@ -325,7 +522,8 @@ describe('observer lifecycle', () => {
       ]
     })
     const disconnect = vi.spyOn(MutationObserver.prototype, 'disconnect')
-    const removeListener = vi.spyOn(window, 'removeEventListener')
+    const removeWindowListener = vi.spyOn(window, 'removeEventListener')
+    const removeDocListener = vi.spyOn(document, 'removeEventListener')
     const { measurements } = spyRects({ current: ZERO_RECT })
     const { unmount } = await mountOverlay()
 
@@ -334,12 +532,21 @@ describe('observer lifecycle', () => {
     await flushMutations()
     act(() => {
       window.dispatchEvent(new Event('resize'))
+      document.dispatchEvent(new Event('scroll', { bubbles: false }))
     })
     const before = measurements()
 
     unmount()
     expect(disconnect).toHaveBeenCalled()
-    expect(removeListener).toHaveBeenCalledWith('resize', expect.any(Function))
+    expect(removeWindowListener).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    )
+    expect(removeDocListener).toHaveBeenCalledWith(
+      'scroll',
+      expect.any(Function),
+      { capture: true }
+    )
 
     await act(async () => {
       vi.advanceTimersByTime(1000)
@@ -349,6 +556,7 @@ describe('observer lifecycle', () => {
     // Neither the removed listener nor the disconnected observer reacts now.
     act(() => {
       window.dispatchEvent(new Event('resize'))
+      document.dispatchEvent(new Event('scroll', { bubbles: false }))
     })
     addObstacle()
     await flushMutations()
@@ -357,6 +565,7 @@ describe('observer lifecycle', () => {
     })
     expect(measurements()).toBe(before)
     disconnect.mockRestore()
-    removeListener.mockRestore()
+    removeWindowListener.mockRestore()
+    removeDocListener.mockRestore()
   }, 15000)
 })

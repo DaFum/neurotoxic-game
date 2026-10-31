@@ -937,7 +937,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               </div>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2'>
-                <label className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'>
+                <label
+                  data-chatter-avoid
+                  className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'
+                >
                   {t('ui:expedition.prep.spareParts', { value: spareParts })}
                   <input
                     type='range'
@@ -949,7 +952,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     onChange={e => setSpareParts(Number(e.currentTarget.value))}
                   />
                 </label>
-                <label className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'>
+                <label
+                  data-chatter-avoid
+                  className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'
+                >
                   {t('ui:expedition.prep.supplies', { value: supplies })}
                   <input
                     type='range'
@@ -977,7 +983,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
                 {t('ui:expedition.prep.resources')}
               </legend>
-              <label className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'>
+              <label
+                data-chatter-avoid
+                className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray'
+              >
                 {t('ui:expedition.prep.fuelTarget', {
                   value: startingFuelTarget
                 })}
@@ -1103,6 +1112,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     return (
                       <label
                         key={item.stashKey}
+                        data-chatter-avoid
                         className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray border border-steel-gray/40 p-2'
                       >
                         <div className='flex justify-between text-star-white'>
@@ -1141,26 +1151,28 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
             </fieldset>
 
             <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
-              <legend
-                id='expedition-prep-protected-cash-label'
-                className='text-xs uppercase tracking-widest text-toxic-green px-1'
-              >
-                {t('ui:expedition.prep.protectedCash', {
-                  amount: formatCurrency(protectedCareerCash, i18n.language)
-                })}
-              </legend>
-              <input
-                type='range'
-                aria-labelledby='expedition-prep-protected-cash-label'
-                min={0}
-                max={Math.max(0, Math.floor(money))}
-                step={10}
-                value={protectedCareerCash}
-                data-testid='expedition-prep-protected-cash'
-                onChange={event =>
-                  setProtectedCareerCash(Number(event.currentTarget.value))
-                }
-              />
+              <div data-chatter-avoid className='flex flex-col gap-2'>
+                <legend
+                  id='expedition-prep-protected-cash-label'
+                  className='text-xs uppercase tracking-widest text-toxic-green px-1'
+                >
+                  {t('ui:expedition.prep.protectedCash', {
+                    amount: formatCurrency(protectedCareerCash, i18n.language)
+                  })}
+                </legend>
+                <input
+                  type='range'
+                  aria-labelledby='expedition-prep-protected-cash-label'
+                  min={0}
+                  max={Math.max(0, Math.floor(money))}
+                  step={10}
+                  value={protectedCareerCash}
+                  data-testid='expedition-prep-protected-cash'
+                  onChange={event =>
+                    setProtectedCareerCash(Number(event.currentTarget.value))
+                  }
+                />
+              </div>
               <p className='text-xs text-ash-gray'>
                 {t('ui:expedition.prep.protectedCashHint')}
               </p>
@@ -1200,6 +1212,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     return (
                       <label
                         key={item.inventoryKey}
+                        data-chatter-avoid
                         className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray border border-steel-gray/40 p-2'
                       >
                         <div className='flex justify-between text-star-white'>
@@ -1236,7 +1249,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
             </fieldset>
 
             <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
-              <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+              <legend
+                data-chatter-avoid
+                className='text-xs uppercase tracking-widest text-toxic-green px-1'
+              >
                 {t('ui:expedition.prep.sponsor')}
               </legend>
               <p className='text-xs text-ash-gray'>
