@@ -182,6 +182,7 @@ describe('form controls and scene suppression', () => {
   test('hidden input is excluded from obstacles and chatter keeps default position', async () => {
     const hiddenInput = document.createElement('input')
     hiddenInput.type = 'hidden'
+    hiddenInput.getBoundingClientRect = () => BLOCKING_RECT
     document.body.appendChild(hiddenInput)
 
     stubRects({ overlay: OVERLAY_RECT, obstacle: BLOCKING_RECT })
