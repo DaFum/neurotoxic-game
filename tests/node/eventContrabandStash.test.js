@@ -6,6 +6,9 @@ import { eventEngine } from '../../src/utils/eventEngine'
 import { addContrabandToBand } from '../../src/utils/contrabandStashUtils'
 import { addContrabandHelper } from '../../src/context/reducers/bandReducer'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
+import { gameReducer } from '../../src/context/gameReducer'
+import { createApplyEventDeltaAction } from '../../src/context/actionCreators'
+import { startedState } from '../expeditionLifecycleFixture'
 
 const stashAddDelta = entries => ({
   player: {},
@@ -115,4 +118,44 @@ test('addContrabandToBand returns the identical band reference when nothing chan
     addContrabandToBand(state.band, { contrabandId: '__proto__' }),
     state.band
   )
+})
+
+test('a stash_confiscate event during a Tour removes the item from stash and manifest (#3462)', () => {
+  const started = startedState({ money: 5000 })
+  const state = {
+    ...started,
+    band: {
+      ...started.band,
+      stash: {
+        c_gig_program: {
+          id: 'c_gig_program',
+          type: 'consumable',
+          instanceId: 'inst_program',
+          stacks: 1
+        }
+      }
+    },
+    expedition: {
+      ...started.expedition,
+      cargo: {
+        ...started.expedition.cargo,
+        contraband: [
+          { stashKey: 'c_gig_program', instanceId: 'inst_program', stacks: 1 }
+        ]
+      }
+    }
+  }
+  const delta = eventEngine.applyResult(
+    {
+      type: 'composite',
+      effects: [{ type: 'stash_confiscate', itemId: 'c_gig_program' }]
+    },
+    {}
+  )
+
+  const next = gameReducer(state, createApplyEventDeltaAction(delta))
+
+  assert.equal(Object.hasOwn(next.band.stash, 'c_gig_program'), false)
+  assert.deepEqual(next.expedition.cargo.contraband, [])
+  assert.equal(next.expedition.status, 'active')
 })

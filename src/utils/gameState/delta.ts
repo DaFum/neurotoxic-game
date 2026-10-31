@@ -6,8 +6,14 @@ import {
 } from '../contrabandEffects'
 import {
   addContrabandToBand,
-  clampSharedBandEffectResult
+  clampSharedBandEffectResult,
+  getStashStackCount
 } from '../contrabandStashUtils'
+import {
+  countPackedContraband,
+  debitPackedContraband,
+  resolveActiveExpeditionCargo
+} from '../../domain/expedition/cargo'
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
@@ -934,6 +940,11 @@ export const applyEventDelta = (
 
     if (delta.band.stashRemove && Array.isArray(delta.band.stashRemove)) {
       nextBand.stash = Object.assign(Object.create(null), nextBand.stash || {})
+      // During a Tour a confiscated packed item leaves the manifest in the
+      // same commit, like crafting and Roadie delivery (#3462).
+      const activeCargo = resolveActiveExpeditionCargo(nextState)
+      let packed = activeCargo?.contraband
+      let manifestChanged = false
       for (let i = 0; i < delta.band.stashRemove.length; i++) {
         const itemId = delta.band.stashRemove[i]
         if (!itemId) continue
@@ -961,7 +972,27 @@ export const applyEventDelta = (
             )
             clampSharedBandEffectResult(nextBand, entry.effectType)
           }
+          const stacks = getStashStackCount(nextBand.stash, itemId)
+          if (
+            packed &&
+            stacks > 0 &&
+            countPackedContraband(packed, itemId, entry?.instanceId) > 0
+          ) {
+            packed = debitPackedContraband(
+              packed,
+              itemId,
+              entry?.instanceId,
+              stacks
+            )
+            manifestChanged = true
+          }
           delete nextBand.stash[itemId]
+        }
+      }
+      if (manifestChanged && activeCargo && packed) {
+        nextState.expedition = {
+          ...nextState.expedition,
+          cargo: { ...activeCargo, contraband: packed }
         }
       }
     }
