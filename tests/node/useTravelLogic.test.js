@@ -608,6 +608,23 @@ describe('useTravelLogic', () => {
 
     assert.equal(props.updatePlayer.mock.calls.length, 0)
   })
+
+  test('blocks a refuel landing before the travel start re-renders (#3467)', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+    // Confirm and refuel in one batch: no re-render runs between them, so the
+    // guard must see the travel start through the ref written with the setter.
+    act(() => {
+      result.current.handleTravel(targetNode)
+      result.current.handleRefuel()
+    })
+
+    assert.equal(result.current.isTraveling, true)
+    assert.equal(props.updatePlayer.mock.calls.length, 0)
+  })
   test('prevents playing a gig at the same location consecutively', async () => {
     const defaults = createTravelLogicProps()
     const { result, props } = setupTravelScenario(useTravelLogic, {

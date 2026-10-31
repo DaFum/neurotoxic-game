@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import type { MapNode } from '../../types'
 import type {
   TravelLogicParams,
@@ -12,7 +12,7 @@ import type {
  *
  * @remarks
  * Initializes the `isTraveling`/`pendingTravelNode` state, the timeout refs,
- * and the param-mirror refs (kept in sync each render and via an effect).
+ * and the param-mirror refs (kept in sync via effects).
  * The returned `refs` and `setters` bundles are wrapped in
  * `useRef` so they hold a stable object identity, letting consumer hooks list
  * them in dependency arrays without re-creating their callbacks every render.
@@ -41,8 +41,12 @@ export const useTravelState = (params: TravelLogicParams) => {
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
-  isTravelingRef.current = isTraveling
-  pendingTravelNodeRef.current = pendingTravelNode
+  // Callers write these refs next to each setter call so guards see the
+  // change before the re-render; this only re-syncs them with committed state.
+  useLayoutEffect(() => {
+    isTravelingRef.current = isTraveling
+    pendingTravelNodeRef.current = pendingTravelNode
+  }, [isTraveling, pendingTravelNode])
 
   useEffect(() => {
     playerRef.current = params.player
