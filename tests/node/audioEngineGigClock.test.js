@@ -70,7 +70,8 @@ mock.module(
         source.onended = () => onEnded(source)
         sources.push(source)
         return source
-      })
+      }),
+      cleanupEndedSource: mock.fn()
     }
   }
 )

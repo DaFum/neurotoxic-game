@@ -171,6 +171,11 @@ export type RhythmGameRefState = {
   songStats: RhythmSongStatsEntry[]
   /** Index of the most recent setlist song that completed playback. */
   lastEndedSongIndex: number
+  /**
+   * Bumped by every `playSongSequence` call and by `resetGigStateTracking`; a
+   * call's song-end callback and post-playback writes apply only while it is current.
+   */
+  sequenceAttemptId: number
   currentSongStartScore: number
   rivalPenaltyActive: boolean
   currentSongStartHits: number

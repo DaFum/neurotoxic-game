@@ -32,3 +32,22 @@ export function createAndConnectBufferSource(
 
   return source
 }
+
+/**
+ * Detaches a finished buffer source from the audio graph.
+ *
+ * @remarks
+ * For sources that either never started (zero-length window) or already ended,
+ * so it does not call `stop()`. Clears `onended` first so the node cannot
+ * re-enter its end handler.
+ *
+ * @param source - The ended or never-started source node.
+ */
+export function cleanupEndedSource(source: AudioBufferSourceNode): void {
+  source.onended = null
+  try {
+    source.disconnect()
+  } catch {
+    // Source may already be disconnected
+  }
+}

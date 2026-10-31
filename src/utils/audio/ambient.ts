@@ -2,7 +2,10 @@ import { logger } from '../logger'
 import { audioState } from './state'
 import { stopAudio } from './transportControl'
 import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets'
-import { createAndConnectBufferSource } from './sharedBufferUtils'
+import {
+  cleanupEndedSource,
+  createAndConnectBufferSource
+} from './sharedBufferUtils'
 import { selectRandomItem } from '../selectionUtils'
 import { secureRandom } from '../crypto'
 import { ensureAudioContext } from './context'
@@ -151,6 +154,7 @@ export async function playRandomAmbientOgg(
   const chainReqId = audioState.playRequestId
 
   source.onended = () => {
+    cleanupEndedSource(source)
     if (audioState.ambientSource !== source) {
       logger.debug(
         'AudioEngine',
@@ -158,6 +162,7 @@ export async function playRandomAmbientOgg(
       )
       return
     }
+    audioState.ambientSource = null
     if (chainReqId !== audioState.playRequestId) {
       logger.debug(
         'AudioEngine',
@@ -165,7 +170,6 @@ export async function playRandomAmbientOgg(
       )
       return
     }
-    audioState.ambientSource = null
     logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
 
     // Capture the current reqId to check against after the async call starts

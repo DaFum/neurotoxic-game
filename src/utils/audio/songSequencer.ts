@@ -83,6 +83,13 @@ export const playSongSequence = async (
     return
   }
 
+  // A zero-length playback window ends the song inside `playAudioForSong`, so
+  // the next call (or the final-song completion) runs before this one returns.
+  // Only the latest call may act on its song end or publish its song.
+  const sequenceAttemptId =
+    finiteNumberOr(gameStateRef.current.sequenceAttemptId, 0) + 1
+  gameStateRef.current.sequenceAttemptId = sequenceAttemptId
+
   if (
     gameStateRef.current.hasSubmittedResults ||
     gameStateRef.current.isGameOver
@@ -142,6 +149,10 @@ export const playSongSequence = async (
       return Promise.resolve()
     }
 
+    if (gameStateRef.current.sequenceAttemptId !== sequenceAttemptId) {
+      return Promise.resolve()
+    }
+
     if (gameStateRef.current.lastEndedSongIndex === index) {
       return Promise.resolve()
     }
@@ -172,13 +183,20 @@ export const playSongSequence = async (
 
     logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
     gameStateRef.current.songTransitioning = true
-    return playSongSequence(
+    const chained = playSongSequence(
       index + 1,
       activeSetlist,
       gameStateRef,
       addToast,
       t
-    ).catch(err => {
+    )
+    // `playSongSequence` claims its attempt id synchronously, before its first
+    // await, so this is the id of the chained call.
+    const chainedAttemptId = gameStateRef.current?.sequenceAttemptId
+    return chained.catch(err => {
+      // A rejection that lands after a gig reset or a newer sequence belongs to
+      // a stale attempt: it must not flag the current gig's setlist as done.
+      if (gameStateRef.current?.sequenceAttemptId !== chainedAttemptId) return
       handleError(err, {
         addToast,
         fallbackMessage: t
@@ -205,11 +223,13 @@ export const playSongSequence = async (
     return
   }
 
-  // The gig may have ended while the audio loaded (collapse, unmount): neither
-  // write the song's state nor announce it.
+  // The gig may have ended while the audio loaded (collapse, unmount), or the
+  // song already ended and a later call took over: neither write the song's
+  // state nor announce it.
   if (
     gameStateRef.current.hasSubmittedResults ||
-    gameStateRef.current.isGameOver
+    gameStateRef.current.isGameOver ||
+    gameStateRef.current.sequenceAttemptId !== sequenceAttemptId
   ) {
     return
   }
@@ -258,6 +278,9 @@ export const resetGigStateTracking = (
 ): void => {
   if (gameStateRef.current) {
     gameStateRef.current.lastEndedSongIndex = -1
+    // Bumped, not reset, so song ends from the previous session stay stale.
+    gameStateRef.current.sequenceAttemptId =
+      finiteNumberOr(gameStateRef.current.sequenceAttemptId, 0) + 1
     gameStateRef.current.songStats = []
     gameStateRef.current.currentSongStartScore = 0
     gameStateRef.current.currentSongStartHits = 0

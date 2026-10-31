@@ -6,7 +6,10 @@ import {
   getAudioContextTimeSec,
   ensureAudioContext
 } from './context'
-import { createAndConnectBufferSource } from './sharedBufferUtils'
+import {
+  cleanupEndedSource,
+  createAndConnectBufferSource
+} from './sharedBufferUtils'
 import { loadAudioBuffer } from './assets'
 import { isFiniteNumber } from '../finiteNumber'
 import {
@@ -66,6 +69,8 @@ export function getGigTimeMs() {
  * @param source - The ended source node.
  */
 const handleGigSourceEnded = (source: AudioBufferSourceNode): void => {
+  // Detach only the ended node; a replacement the callback installs stays connected.
+  cleanupEndedSource(source)
   if (audioState.gigSource !== source || audioState.gigIsPaused) return
   const onEnded = audioState.gigOnEnded
   const endInfo = {

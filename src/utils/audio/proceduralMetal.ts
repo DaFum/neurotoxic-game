@@ -6,6 +6,7 @@ import { playDrumNote } from './drumMappings'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { selectRandomItem } from '../selectionUtils'
+import { isFiniteNumber } from '../finiteNumber'
 import type { Song } from '../../types/audio'
 
 /** Sequence value for a silent 16th step (see `startMetalGenerator`). */
@@ -90,6 +91,8 @@ function playProceduralDrums(
  * - `options.onEnded` - Callback invoked when playback ends.
  * - `options.stopAfterSeconds` - Number of seconds before playback stops.
  * - `options.startTimeSec` - Absolute Tone.js start time in seconds.
+ * - `options.resolveStartTimeSec` - Picks the start time once the audio
+ *   context is ready; wins over `startTimeSec`.
  * @param random - RNG function for deterministic generation. Defaults to `secureRandom`.
  * @returns Whether procedural playback started successfully after setup.
  */
@@ -102,7 +105,7 @@ export async function startMetalGenerator(
   const { success, reqId, normalizedOptions } =
     await prepareTransportPlayback(options)
   if (!success) return false
-  const { onEnded, startTimeSec } = normalizedOptions
+  const { onEnded, startTimeSec, resolveStartTimeSec } = normalizedOptions
 
   // Guard BPM against zero/negative/falsy values
   // Use ?? for difficulty to correctly handle 0 as a valid difficulty
@@ -171,7 +174,15 @@ export async function startMetalGenerator(
   }
 
   // An absolute start time lets the caller anchor the gig clock to the exact
-  // moment the transport starts.
-  startTransportAt(startTimeSec ?? Tone.now() + startDelay)
+  // moment the transport starts. The resolver runs only now, after the audio
+  // context is ready, so a slow context rebuild cannot consume the lead-in.
+  const requestedStartTimeSec = resolveStartTimeSec
+    ? resolveStartTimeSec()
+    : startTimeSec
+  startTransportAt(
+    isFiniteNumber(requestedStartTimeSec)
+      ? requestedStartTimeSec
+      : Tone.now() + startDelay
+  )
   return true
 }
