@@ -185,9 +185,11 @@ export const handleLoadGame = (
     typeof payload === 'object' && payload !== null ? payload : {}
   ) as Record<string, unknown>
 
+  // A payload without a marker predates versioning, as in `usePersistence`:
+  // it migrates from 0 rather than passing as the in-memory version.
   const rawVersion = Object.hasOwn(rawState, 'version')
     ? rawState.version
-    : state.version
+    : undefined
   const explicitVersion = parseSaveVersion(rawVersion) ?? 0
   if (explicitVersion > CURRENT_SAVE_VERSION) {
     logger.warn(

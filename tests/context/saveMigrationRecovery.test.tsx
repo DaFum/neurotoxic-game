@@ -15,6 +15,11 @@ vi.mock('../../src/utils/logger', async importOriginal => {
 })
 
 const { migrateLoadedSave } = await import('../../src/context/usePersistence')
+const { handleLoadGame } =
+  await import('../../src/context/reducers/systemReducer')
+const { createInitialState } = await import('../../src/context/initialState')
+const { GAME_PHASES } = await import('../../src/context/gameConstants')
+const { logger } = await import('../../src/utils/logger')
 const { runSaveMigrations } =
   await import('../../src/context/reducers/migrations')
 const { getQuarantineKey, quarantineSave } =
@@ -114,5 +119,55 @@ describe('quarantineSave', () => {
     } finally {
       setItem.mockRestore()
     }
+  })
+})
+
+describe('handleLoadGame version marker', () => {
+  beforeEach(() => {
+    vi.mocked(runSaveMigrations).mockReset()
+    vi.mocked(logger.error).mockClear()
+  })
+
+  it('migrates a versionless payload from version 0', () => {
+    vi.mocked(runSaveMigrations).mockImplementation((payload, fromVersion) =>
+      fromVersion < 2
+        ? { ...(payload as object), player: { money: 999 } }
+        : payload
+    )
+
+    const loaded = handleLoadGame(createInitialState(), {
+      player: { money: 100 }
+    })
+
+    expect(runSaveMigrations).toHaveBeenCalledWith(expect.anything(), 0)
+    expect(loaded.player.money).toBe(999)
+    expect(loaded.version).toBe(2)
+  })
+
+  it('still honors an explicit version marker', () => {
+    vi.mocked(runSaveMigrations).mockImplementation(payload => payload)
+
+    handleLoadGame(createInitialState(), { version: 1, player: {} })
+
+    expect(runSaveMigrations).toHaveBeenCalledWith(expect.anything(), 1)
+  })
+
+  it('loads the unmigrated payload when a versionless migration throws', () => {
+    vi.mocked(runSaveMigrations).mockImplementation((payload, fromVersion) => {
+      if (fromVersion < 2) throw new Error('v0 step exploded')
+      return payload
+    })
+
+    const loaded = handleLoadGame(createInitialState(), {
+      player: { money: 100 }
+    })
+
+    expect(loaded.player.money).toBe(100)
+    expect(loaded.currentScene).toBe(GAME_PHASES.OVERWORLD)
+    expect(logger.error).toHaveBeenCalledWith(
+      'GameState',
+      'Save migration from version 0 failed; loading unmigrated payload',
+      'v0 step exploded'
+    )
   })
 })
