@@ -134,6 +134,43 @@ describe('useRhythmGameLoop', () => {
     expect(endGig).toHaveBeenCalled()
   })
 
+  it('finalizes a completed setlist exactly once when no transport is running', () => {
+    mocks.getTransportState.mockReturnValue('stopped')
+    gameStateRef.current.setlistCompleted = true
+    gameStateRef.current.songTransitioning = false
+    const { result } = setup(null)
+
+    result.current.update(16)
+    result.current.update(16)
+    result.current.update(16)
+
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(mocks.stopAudio).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
+    expect(gameStateRef.current.hasSubmittedResults).toBe(true)
+  })
+
+  it.each([
+    ['userPaused', { userPaused: true }],
+    ['isGameOver', { isGameOver: true }]
+  ])(
+    'does not finalize a completed setlist without transport while %s',
+    (_label, overrides) => {
+      mocks.getTransportState.mockReturnValue('stopped')
+      gameStateRef.current.setlistCompleted = true
+      Object.assign(gameStateRef.current, overrides)
+      const { result } = setup(null)
+
+      result.current.update(16)
+      result.current.update(16)
+
+      expect(setLastGigStats).not.toHaveBeenCalled()
+      expect(mocks.stopAudio).not.toHaveBeenCalled()
+      expect(endGig).not.toHaveBeenCalled()
+      expect(gameStateRef.current.hasSubmittedResults).toBe(false)
+    }
+  )
+
   it('handles missed notes branch and increments misses', () => {
     mocks.getTransportState.mockReturnValue('started')
     mocks.getGigTimeMs.mockReturnValue(2000)

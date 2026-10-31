@@ -337,6 +337,14 @@ export const processRhythmGameTick = ({
 
   handleOverlayResume(stateRef, transportState, resumeAudio)
 
+  // A zero-length final song never starts the transport, so the near-end
+  // check below is unreachable; finalize here (idempotent via
+  // `hasSubmittedResults`) instead of leaving the gig soft-locked.
+  if (stateRef.setlistCompleted && !isTransportRunning) {
+    finalizeGigCallback(stateRef)
+    return
+  }
+
   if (!isTransportRunning) {
     return
   }
