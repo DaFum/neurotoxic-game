@@ -8,6 +8,7 @@ import {
   clampPercentageAmount,
   getPercentageMoneyBase
 } from './helpers'
+import { isValidItemTarget, isValidSocialSetTarget } from './effectTargets'
 import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
@@ -163,16 +164,14 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
   },
   item: (eff: EffectShape, delta: EventDelta) => {
-    if (typeof eff.item === 'string' && eff.item.length > 0) {
-      if (Number.isFinite(eff.value)) {
-        if (!delta.band.inventory) delta.band.inventory = {}
-        delta.band.inventory[eff.item] =
-          asNumber(delta.band.inventory[eff.item]) + asNumber(eff.value)
-      } else if (typeof eff.value !== 'number') {
-        if (!delta.band.inventory) delta.band.inventory = {}
-        const val = eff.value !== undefined ? eff.value : true
-        delta.band.inventory[eff.item] = val
-      }
+    const item = eff.item
+    if (!isValidItemTarget(item, eff.value)) return
+    if (!delta.band.inventory) delta.band.inventory = {}
+    if (isFiniteNumber(eff.value)) {
+      delta.band.inventory[item] =
+        asNumber(delta.band.inventory[item]) + eff.value
+    } else {
+      delta.band.inventory[item] = eff.value !== undefined ? eff.value : true
     }
   },
   unlock: (eff: EffectShape, delta: EventDelta) => {
@@ -209,9 +208,9 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
-    if (typeof eff.stat === 'string' && eff.stat.length > 0) {
-      delta.social[eff.stat] = eff.value
-    }
+    const stat = eff.stat
+    if (!isValidSocialSetTarget(stat, eff.value)) return
+    delta.social[stat] = eff.value
   },
   chain: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.eventId === 'string') {

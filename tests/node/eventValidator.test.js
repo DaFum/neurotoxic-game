@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { validateGameEvent } from '../../src/utils/eventValidator.ts'
-import { EVENTS_DB } from '../../src/data/events/index.ts'
+import { ALL_RAW_EVENTS, EVENTS_DB } from '../../src/data/events/index.ts'
 
 describe('validateGameEvent', () => {
   const baseEvent = {
@@ -106,4 +106,81 @@ describe('EVENTS_DB — all events pass validateGameEvent', () => {
       }
     })
   }
+})
+
+describe('validateGameEvent — social_set and item effect targets', () => {
+  const withEffect = effect => ({
+    id: 'target_event',
+    category: 'band',
+    title: 'events:test.title',
+    description: 'events:test.desc',
+    options: [
+      {
+        label: 'events:test.opt1.label',
+        outcomeText: 'events:test.opt1.outcome',
+        effect
+      }
+    ]
+  })
+
+  const rejected = [
+    ['a __proto__ stat', { type: 'social_set', stat: '__proto__', value: {} }],
+    [
+      'a constructor stat',
+      { type: 'social_set', stat: 'constructor', value: 1 }
+    ],
+    ['an unknown stat', { type: 'social_set', stat: 'followers', value: 5 }],
+    ['a NaN value', { type: 'social_set', stat: 'loyalty', value: Number.NaN }],
+    [
+      'an Infinity value',
+      { type: 'social_set', stat: 'loyalty', value: Number.POSITIVE_INFINITY }
+    ],
+    ['a string value', { type: 'social_set', stat: 'loyalty', value: '5' }],
+    ['an unknown trend', { type: 'social_set', stat: 'trend', value: 'HYPE' }],
+    ['a __proto__ item', { type: 'item', item: '__proto__', value: true }],
+    ['a constructor item', { type: 'item', item: 'constructor' }],
+    ['an unknown item', { type: 'item', item: 'laser_cannon' }],
+    ['a NaN item value', { type: 'item', item: 'strings', value: Number.NaN }],
+    ['a string item value', { type: 'item', item: 'strings', value: 'x' }]
+  ]
+  for (const [label, effect] of rejected) {
+    it(`rejects ${label}`, () => {
+      assert.throws(() => validateGameEvent(withEffect(effect)))
+    })
+  }
+
+  it('rejects a bad target inside a composite', () => {
+    const composite = {
+      type: 'composite',
+      effects: [{ type: 'social_set', stat: '__proto__', value: {} }]
+    }
+    assert.throws(() => validateGameEvent(withEffect(composite)))
+  })
+
+  const accepted = [
+    ['egoFocus null', { type: 'social_set', stat: 'egoFocus', value: null }],
+    ['egoFocus name', { type: 'social_set', stat: 'egoFocus', value: 'Matze' }],
+    ['a known trend', { type: 'social_set', stat: 'trend', value: 'DRAMA' }],
+    ['a finite stat', { type: 'social_set', stat: 'loyalty', value: 10 }],
+    ['a bare golden_pick grant', { type: 'item', item: 'golden_pick' }],
+    ['an item quantity', { type: 'item', item: 'strings', value: -2 }]
+  ]
+  for (const [label, effect] of accepted) {
+    it(`accepts ${label}`, () => {
+      assert.strictEqual(validateGameEvent(withEffect(effect)), true)
+    })
+  }
+})
+
+describe('ALL_RAW_EVENTS — the validator drops no shipped event', () => {
+  it('every raw registry event passes validateGameEvent', () => {
+    for (const event of ALL_RAW_EVENTS) {
+      assert.doesNotThrow(
+        () => validateGameEvent(event),
+        `event "${event?.id ?? '(no id)'}" is rejected`
+      )
+    }
+    const registered = Object.values(EVENTS_DB).flat().length
+    assert.equal(registered, ALL_RAW_EVENTS.length)
+  })
 })
