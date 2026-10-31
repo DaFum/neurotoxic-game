@@ -4,6 +4,7 @@ import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { buildSoldMerchInventory } from '../../utils/merchUtils'
+import { getOutcomeAccuracy } from '../../utils/gigStats'
 import {
   hasForbiddenKeysDeep,
   hasForbiddenOwnKeys
@@ -431,7 +432,7 @@ export const handleSetLastGigStats = (
   // `score` stays raw because leaderboards and display consume it unchanged.
   // Every real gig dispatch carries accuracy, so a missing/non-finite value
   // is a malformed payload and falls back to 0 (a bad show), never a pass.
-  const accuracy = clampPercent(safePayload.accuracy, 0)
+  const accuracy = getOutcomeAccuracy(safePayload)
   const gigFailed = safePayload.failed === true
   // Two keys, deliberately not one.
   //

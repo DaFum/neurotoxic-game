@@ -43,11 +43,24 @@ describe('Consequences Event Pool', () => {
       }),
       false
     )
+    // Missing/non-finite accuracy reads as a bad show, like the reducer.
     assert.strictEqual(
       venueComplaint.condition({
-        lastGigStats: { score: 1200 },
+        lastGigStats: { score: 1000 },
         eventCooldowns: []
       }),
+      true
+    )
+    assert.strictEqual(
+      venueComplaint.condition({
+        lastGigStats: { score: 1000, accuracy: Number.NaN },
+        eventCooldowns: []
+      }),
+      true
+    )
+    // No stats means no gig was played, which is not a bad show.
+    assert.strictEqual(
+      venueComplaint.condition({ lastGigStats: null, eventCooldowns: [] }),
       false
     )
     assert.strictEqual(

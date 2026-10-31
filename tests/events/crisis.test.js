@@ -88,6 +88,26 @@ describe('CRISIS_EVENTS', () => {
       }),
       true
     )
+    // Missing/non-finite accuracy reads as a bad show, like the reducer.
+    assert.strictEqual(
+      evt.condition({
+        lastGigStats: { score: 1000 },
+        eventCooldowns: []
+      }),
+      true
+    )
+    assert.strictEqual(
+      evt.condition({
+        lastGigStats: { score: 1000, accuracy: Number.POSITIVE_INFINITY },
+        eventCooldowns: []
+      }),
+      true
+    )
+    // No stats means no gig was played, which is not a bad show.
+    assert.strictEqual(
+      evt.condition({ lastGigStats: null, eventCooldowns: [] }),
+      false
+    )
     assert.strictEqual(
       evt.condition({
         lastGigStats: { score: 3200, accuracy: 29 },
