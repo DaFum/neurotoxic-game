@@ -262,6 +262,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   songTransitioning: false,
   songStats: [],
   lastEndedSongIndex: -1,
+  sequenceAttemptId: 0,
   currentSongStartScore: 0,
   rivalPenaltyActive: false,
   currentSongStartHits: 0,
