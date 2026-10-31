@@ -1,5 +1,6 @@
 import { finiteNumberOr } from './gameState'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
+import { MERCH_MAX_PRICES } from '../data/merch'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
@@ -121,7 +122,18 @@ export const resolveMerchRestock = (
 }
 
 /**
+ * Checks whether a key names a sellable merch item (a `MERCH_MAX_PRICES` key).
+ * @param key - Untrusted sold-merch key.
+ * @returns True only for canonical merch keys; gear, consumables, unknown and
+ * forbidden keys are rejected.
+ */
+export const isSoldMerchKey = (key: string): boolean =>
+  Object.hasOwn(MERCH_MAX_PRICES, key)
+
+/**
  * Decrements sold-merch counts from a band inventory, clamped at zero (pure).
+ * Keys that are not canonical merch keys are ignored, so a sold count can
+ * never zero out gear flags or add unknown inventory keys.
  * @param inventory - Current band inventory.
  * @param soldMerch - Quantities sold this gig, keyed by merch id.
  * @returns A new inventory record with sold quantities removed.
@@ -132,7 +144,7 @@ export function buildSoldMerchInventory(
 ): BandState['inventory'] {
   const updatedInventory = { ...(inventory || {}) }
   for (const merchKey in soldMerch) {
-    if (Object.hasOwn(soldMerch, merchKey)) {
+    if (Object.hasOwn(soldMerch, merchKey) && isSoldMerchKey(merchKey)) {
       const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
       const currentAmount = finiteNumberOr(updatedInventory[merchKey], 0)
       updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)

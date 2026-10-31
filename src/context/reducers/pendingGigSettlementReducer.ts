@@ -20,6 +20,7 @@ import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
 import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
 import { buildPerGigSocialReconciliation } from '../../utils/postGig/socialResolution'
 import { handleSettleSoldMerch } from './gigReducer'
+import { isSoldMerchKey } from '../../utils/merchUtils'
 import { handleUpdateSocial } from './socialReducer'
 import { handleAddQuest, handleApplyQuestEvent } from './questReducer'
 import {
@@ -76,6 +77,9 @@ export const sanitizePendingGigSettlement = (
   if (!isLooseRecord(soldMerch)) return null
   const sold: Record<string, number> = {}
   for (const key of Object.keys(soldMerch)) {
+    // Only canonical merch keys reach load-time settlement; gear, unknown and
+    // forbidden keys are dropped rather than persisted.
+    if (!isSoldMerchKey(key)) continue
     const value = soldMerch[key]
     if (!isFiniteNumber(value) || value < 0) return null
     sold[key] = value

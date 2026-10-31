@@ -50,6 +50,7 @@ import {
   createPirateBroadcastAction,
   createBloodBankDonateAction,
   createMerchPressAction,
+  createSettleSoldMerchAction,
   dismissForeclosureNotice,
   createSetPendingRiskEventAction
 } from '../../src/context/actionCreators'
@@ -372,6 +373,18 @@ describe('Action Creators', () => {
       it('creates correct action', () => {
         assert.deepStrictEqual(call(), expected)
       })
+    })
+  })
+
+  describe('createSettleSoldMerchAction', () => {
+    it('keeps only canonical merch keys from the sold counts', () => {
+      const action = createSettleSoldMerchAction({
+        shirts: 2,
+        strings: 1,
+        tape_glue: 3,
+        foo: 4
+      })
+      assert.deepStrictEqual(action.payload, { shirts: 2 })
     })
   })
 
