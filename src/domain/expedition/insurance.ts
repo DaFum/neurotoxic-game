@@ -20,6 +20,7 @@ import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { readVanCondition } from '../../utils/gameState/clamps'
 import { getExpeditionTechnicalCondition } from './condition'
+import { getExpeditionCheapestOnwardLegFuel } from './travel'
 import type { GameState } from '../../types'
 import type {
   ConditionGroup,
@@ -128,11 +129,12 @@ export const canClaimExpeditionInsurance = (
       EXPENSE_CONSTANTS.transport.maxFuel
     )
     const condition = readVanCondition(state.player.van?.condition)
-    const isMobilityFailure = crisisReason === 'fuel_stranded'
-    if (fuel > 0 && condition > 0 && !isMobilityFailure) {
-      return false
-    }
-    return true
+    if (fuel <= 0 || condition <= 0) return true
+    // A `fuel_stranded` label is not evidence: the protected-Cash floor raises
+    // it for a leg the tank could cover, and the claim only restores fuel and
+    // Condition. Only a tank short of every onward leg qualifies.
+    const cheapestLeg = getExpeditionCheapestOnwardLegFuel(state)
+    return cheapestLeg !== null && fuel < cheapestLeg
   }
 
   if (claimType === 'technical') {
