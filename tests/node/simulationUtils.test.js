@@ -670,3 +670,47 @@ test('calculateGigPhysics treats NaN member stamina as 0 so low-stamina drag app
   assert.strictEqual(physics.avgStamina, 0)
   assert.strictEqual(physics.speedModifier, 0.8)
 })
+
+test('calculateGigPhysics averages stamina over non-null members only', () => {
+  const band = buildBandState()
+  // Null entries represent malformed runtime input; they must not dilute the average.
+  band.members = [
+    { ...band.members[0], stamina: 100 },
+    null,
+    { ...band.members[2], stamina: 100 }
+  ]
+  const physics = calculateGigPhysics(band, { bpm: 120 })
+  assert.strictEqual(physics.avgStamina, 100)
+  assert.strictEqual(physics.speedModifier, 1)
+})
+
+test('calculateGigPhysics keeps normal speed when null members would drag the average below 40', () => {
+  const band = buildBandState()
+  band.members = [
+    { ...band.members[0], stamina: 40 },
+    null,
+    { ...band.members[2], stamina: 40 }
+  ]
+  const physics = calculateGigPhysics(band, { bpm: 120 })
+  assert.strictEqual(physics.avgStamina, 40)
+  assert.strictEqual(physics.speedModifier, 1)
+})
+
+test('calculateGigPhysics excludes members without finite stamina from the divisor', () => {
+  const band = buildBandState()
+  band.members = [
+    { ...band.members[0], stamina: 90 },
+    { ...band.members[1], stamina: NaN },
+    { ...band.members[2], stamina: 60 }
+  ]
+  const physics = calculateGigPhysics(band, { bpm: 120 })
+  assert.strictEqual(physics.avgStamina, 75)
+})
+
+test('calculateGigPhysics falls back to zero average for an all-null roster', () => {
+  const band = buildBandState()
+  band.members = [null, null, null]
+  const physics = calculateGigPhysics(band, { bpm: 120 })
+  assert.strictEqual(physics.avgStamina, 0)
+  assert.strictEqual(physics.speedModifier, 0.8)
+})
