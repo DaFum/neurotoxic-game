@@ -1,12 +1,40 @@
 import { finiteNumberOr } from '../gameState'
 import { isFiniteNumber } from '../finiteNumber'
 import { logger } from '../logger'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
+import type { GameState } from '../../types'
 import type { EngineEvent, EngineGameState } from './types'
 
 /**
  * Normalizes unknown numeric input for event-engine arithmetic.
  */
 export const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
+
+/**
+ * The balance a percentage money effect is taken of.
+ *
+ * @param gameState - Engine state snapshot; without a player slice nothing is
+ * spendable.
+ * @param runningDelta - Money the effects before this one already added or
+ * removed.
+ * @returns Spendable cash plus the running delta, never below 0.
+ *
+ * @remarks
+ * During an active run protected Career Cash is not spendable, so a percentage
+ * of the raw balance would charge it and the cash floor would then clip the
+ * debit to the whole spendable slice. Outside a run this is the full balance.
+ * Shared by the `percentage_resource` handler and the option preview, so the
+ * price shown is the price charged.
+ */
+export const getPercentageMoneyBase = (
+  gameState: EngineGameState | null | undefined,
+  runningDelta: unknown
+): number => {
+  const spendable = gameState?.player
+    ? getExpeditionSpendableCash(gameState as unknown as GameState)
+    : 0
+  return Math.max(0, spendable + asNumber(runningDelta))
+}
 
 /**
  * Computes a percentage-of-resource change, clamped by optional min/max bounds.

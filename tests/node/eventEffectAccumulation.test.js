@@ -60,3 +60,53 @@ test('relationship effects reject coerced values', () => {
     assert.equal(delta.band.relationshipChange, undefined, String(value))
   }
 })
+
+const moneyEffect = value => ({ type: 'resource', resource: 'money', value })
+const percentMoney = percentage => ({
+  type: 'percentage_resource',
+  resource: 'money',
+  percentage
+})
+
+// A percentage money effect is taken of spendable cash plus whatever the
+// composite has already added or removed, then clamped like a fixed amount.
+const percentageCompositeCases = [
+  {
+    label: 'a percentage after a debit is taken of what is left',
+    state: { player: { money: 100 } },
+    effects: [moneyEffect(-100), percentMoney(-50), moneyEffect(80)],
+    expected: -20
+  },
+  {
+    label: 'a percentage after a gain includes the gain',
+    state: { player: { money: 100 } },
+    effects: [moneyEffect(100), percentMoney(-50)],
+    expected: 0
+  },
+  {
+    label: 'two percentage losses compound',
+    state: { player: { money: 100 } },
+    effects: [percentMoney(-50), percentMoney(-50)],
+    expected: -75
+  },
+  {
+    label: 'during a run the percentage ignores protected cash',
+    state: {
+      player: { money: 500 },
+      expedition: { status: 'active', protectedCareerCash: 900 }
+    },
+    effects: [moneyEffect(100), percentMoney(-50)],
+    expected: 50
+  }
+]
+
+for (const { label, state, effects, expected } of percentageCompositeCases) {
+  test(`percentage money in a composite: ${label}`, () => {
+    const delta = eventEngine.applyResult(
+      { type: 'composite', effects },
+      {},
+      state
+    )
+    assert.equal(delta.player.money, expected)
+  })
+}

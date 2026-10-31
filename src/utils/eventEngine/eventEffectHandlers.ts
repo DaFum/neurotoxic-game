@@ -2,7 +2,12 @@ import type { EventDelta } from '../../types'
 import { finiteNumberOr, isFiniteNumber } from '../gameState'
 import { getSafeUUID } from '../crypto'
 import { resolveTemplateString } from './templateResolver'
-import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
+import {
+  asNumber,
+  clampMoneyChange,
+  clampPercentageAmount,
+  getPercentageMoneyBase
+} from './helpers'
 import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
@@ -60,6 +65,8 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
    * Note: for negative amounts, `min` acts as the maximum *loss* (a floor for the value)
    * enforced via Math.max, and `max` acts as the minimum *loss* (ceiling) enforced via Math.min.
    * Example: `min: -100` bedeutet "verliere maximal 100" bei negativen Prozentsätzen.
+   * Money is taken of spendable cash plus the running delta
+   * (`getPercentageMoneyBase`) and clamped like a fixed `resource` change.
    */
   percentage_resource: (
     eff: EffectShape,
@@ -70,14 +77,16 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (!gameState || !gameState.player) return
 
     if (eff.resource === 'money') {
-      const current = finiteNumberOr(gameState.player.money, 0)
+      const prevDelta = asNumber(delta.player.money)
       const amount = clampPercentageAmount(
-        current,
+        getPercentageMoneyBase(gameState, prevDelta),
         eff.percentage,
         eff.min,
         eff.max
       )
-      delta.player.money = asNumber(delta.player.money) + amount
+      const current = finiteNumberOr(gameState.player.money, 0)
+      delta.player.money =
+        prevDelta + clampMoneyChange(current, prevDelta, amount)
     }
   },
   stat: (
