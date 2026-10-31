@@ -1098,4 +1098,73 @@ test.describe('Visual smoke tests', () => {
       )
       .toBe(true)
   })
+
+  test('Overworld map node tooltip reveal on hover/focus triggers chatter repositioning', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width < 640, 'Desktop layout test')
+    await loadSeedOneExpedition(page)
+    await page.clock.install()
+
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          return page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            return overlay?.children.length ?? 0
+          })
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
+
+    // Hover reachable map node to open its tooltip
+    const nodeEl = page.locator('.map-node.clickable').first()
+    await nodeEl.hover()
+    await page.clock.fastForward(250)
+
+    // Verify chatter does not cover the open tooltip
+    await expect
+      .poll(
+        async () => {
+          return page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            if (!overlay) return false
+            if (getComputedStyle(overlay).visibility === 'hidden') return true
+
+            const box = overlay.getBoundingClientRect()
+            const tooltips = [
+              ...document.querySelectorAll('.map-node [data-chatter-avoid]')
+            ].filter(el => {
+              const r = el.getBoundingClientRect()
+              const style = getComputedStyle(el)
+              return (
+                r.width > 0 &&
+                r.height > 0 &&
+                style.display !== 'none' &&
+                style.visibility !== 'hidden'
+              )
+            })
+
+            for (const tip of tooltips) {
+              const r = tip.getBoundingClientRect()
+              const intersects =
+                box.left < r.right &&
+                box.right > r.left &&
+                box.top < r.bottom &&
+                box.bottom > r.top
+              if (intersects) return false
+            }
+            return true
+          })
+        },
+        { intervals: [250], timeout: 5000 }
+      )
+      .toBe(true)
+  })
 })

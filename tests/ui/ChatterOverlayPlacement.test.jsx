@@ -225,8 +225,26 @@ describe('form controls and scene suppression', () => {
     expect(container.style.top).toBe('')
   }, 15000)
 
-  test('desktop Overworld suppresses chatter when all candidate anchors are blocked', async () => {
+  test('desktop Overworld with idle expedition keeps default position when blocked', async () => {
     mockState.currentScene = GAME_PHASES.OVERWORLD
+    mockState.expedition = { status: 'idle' }
+    const marked = document.createElement('div')
+    marked.setAttribute('data-chatter-avoid', '')
+    document.body.appendChild(marked)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: FULL_BLOCK_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status')
+
+    expect(container.style.visibility).not.toBe('hidden')
+    expect(container.style.top).toBe('')
+  }, 15000)
+
+  test('desktop Overworld with active expedition suppresses chatter when blocked', async () => {
+    mockState.currentScene = GAME_PHASES.OVERWORLD
+    mockState.expedition = { status: 'active' }
     const marked = document.createElement('div')
     marked.setAttribute('data-chatter-avoid', '')
     document.body.appendChild(marked)

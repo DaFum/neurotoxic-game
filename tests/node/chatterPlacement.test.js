@@ -115,14 +115,22 @@ describe('shouldSuppressChatterWhenBlocked', () => {
     assert.equal(shouldSuppressChatterWhenBlocked(GAME_PHASES.MENU, true), true)
   })
 
-  it('suppresses on desktop for TourPrep and Overworld scenes', () => {
+  it('suppresses on desktop for TourPrep, and Overworld only when expedition is active', () => {
     assert.equal(
       shouldSuppressChatterWhenBlocked(GAME_PHASES.TOUR_PREP, false),
       true
     )
     assert.equal(
-      shouldSuppressChatterWhenBlocked(GAME_PHASES.OVERWORLD, false),
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.TOUR_PREP, false, false),
       true
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.OVERWORLD, false, true),
+      true
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.OVERWORLD, false, false),
+      false
     )
   })
 

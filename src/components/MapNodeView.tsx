@@ -286,6 +286,7 @@ const MapNodeTooltip = memo(
       const schedule = () => {
         cancelAnimationFrame(frame)
         frame = requestAnimationFrame(place)
+        document.dispatchEvent(new CustomEvent('chatter:remeasure'))
       }
       host.addEventListener('mouseenter', schedule)
       host.addEventListener('focusin', schedule)

@@ -56,6 +56,7 @@ export type ChatterGameState = Pick<
   GameState,
   'currentScene' | 'social' | 'lastGigStats' | 'gigModifiers'
 > & {
+  expedition?: Pick<GameState['expedition'], 'status'>
   band: Pick<BandState, 'members' | 'harmony' | 'luck' | 'inventory'>
   player: Pick<
     PlayerState,

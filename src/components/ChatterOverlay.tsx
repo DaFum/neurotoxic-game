@@ -440,7 +440,8 @@ const clearPositionOverride = (el: HTMLElement): void => {
 const useNonOverlappingPosition = (
   isOverworld: boolean,
   sceneKey: string,
-  revision: string
+  revision: string,
+  isExpeditionActive: boolean
 ): RefObject<HTMLDivElement | null> => {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -488,7 +489,8 @@ const useNonOverlappingPosition = (
         {
           suppressWhenBlocked: shouldSuppressChatterWhenBlocked(
             sceneKey,
-            isCompactViewport()
+            isCompactViewport(),
+            isExpeditionActive
           )
         }
       )
@@ -527,6 +529,7 @@ const useNonOverlappingPosition = (
       capture: true,
       passive: true
     })
+    document.addEventListener('chatter:remeasure', scheduleMeasureOnFrame)
     // Re-place when obstacles mount or unmount after the message appeared, so a
     // late board cannot be covered and a stale suppression does not outlive it.
     let settleTimer: ReturnType<typeof setTimeout> | undefined
@@ -581,10 +584,11 @@ const useNonOverlappingPosition = (
       document.removeEventListener('scroll', scheduleMeasureOnFrame, {
         capture: true
       })
+      document.removeEventListener('chatter:remeasure', scheduleMeasureOnFrame)
     }
     // `sceneKey` re-measures on scene navigation (this overlay is mounted
     // globally, so it does not remount between scenes).
-  }, [isOverworld, sceneKey, revision])
+  }, [isOverworld, sceneKey, revision, isExpeditionActive])
 
   return ref
 }
@@ -631,10 +635,13 @@ export const ChatterOverlay = memo(() => {
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const expeditionStatus = useGameSelector(state => state.expedition?.status)
+  const isExpeditionActive = expeditionStatus === 'active'
 
   const chatterState = useMemo<ChatterGameState>(
     () => ({
       currentScene,
+      expedition: expeditionStatus ? { status: expeditionStatus } : undefined,
       band: { members, harmony, luck, inventory },
       player: {
         currentNodeId,
@@ -669,7 +676,8 @@ export const ChatterOverlay = memo(() => {
       mapNodes,
       social,
       lastGigStats,
-      gigModifiers
+      gigModifiers,
+      expeditionStatus
     ]
   )
 
@@ -692,7 +700,12 @@ export const ChatterOverlay = memo(() => {
       revision += (i > 0 ? ',' : '') + msg.id
     }
   }
-  const ref = useNonOverlappingPosition(isOverworld, currentScene, revision)
+  const ref = useNonOverlappingPosition(
+    isOverworld,
+    currentScene,
+    revision,
+    isExpeditionActive
+  )
 
   return (
     <div

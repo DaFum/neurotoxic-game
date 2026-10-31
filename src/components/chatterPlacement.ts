@@ -17,15 +17,17 @@ export type ChatterPlacement =
  *
  * @param sceneKey - Active game phase/scene key.
  * @param isCompact - Whether the viewport is compact (phone layout).
+ * @param isExpeditionActive - Whether an expedition run is currently active.
  * @returns `true` when chatter should be hidden when all candidate anchors are blocked.
  */
 export const shouldSuppressChatterWhenBlocked = (
   sceneKey: string,
-  isCompact: boolean
+  isCompact: boolean,
+  isExpeditionActive: boolean = false
 ): boolean =>
   isCompact ||
   sceneKey === GAME_PHASES.TOUR_PREP ||
-  sceneKey === GAME_PHASES.OVERWORLD
+  (sceneKey === GAME_PHASES.OVERWORLD && isExpeditionActive)
 
 /**
  * Tests whether two rectangles overlap (touching edges do not count).
