@@ -545,7 +545,7 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
     const next = rawCrisisClaim(short)
     assert.equal(
       next.player.van.fuel,
-      Math.max(cheapest - 1, EXPEDITION_TOW_FUEL_RESTORED)
+      Math.max(EXPEDITION_TOW_FUEL_RESTORED, Math.ceil(cheapest))
     )
     assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.claimConsumed, true)
@@ -581,23 +581,35 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
 })
 
 /**
- * A touring-insured run at route step 1 (`exp_1_0`, onward to the SPECIAL
- * `exp_2_0` and the GIG `exp_2_1`) with the named onward nodes moved.
+ * A touring-insured run at route step 1 with the onward nodes derived from the
+ * built map: `gigId` is an onward GIG node, `otherId` another onward node.
+ * `positions` moves them by role (`gig`, `other`).
  */
 const onwardLegState = (positions, { fuel = 80 } = {}) => {
   const state = walkTo(
     startedState({ money: 5000 }, { insurancePolicyId: 'touring' }),
     1
   )
-  assert.equal(state.player.currentNodeId, 'exp_1_0')
-  for (const [nodeId, position] of Object.entries(positions)) {
-    state.gameMap.nodes[nodeId] = {
-      ...state.gameMap.nodes[nodeId],
+  const outgoing = state.gameMap.connections
+    .filter(edge => edge.from === state.player.currentNodeId)
+    .map(edge => edge.to)
+  const gigId = outgoing.find(id => state.gameMap.nodes[id].type === 'GIG')
+  const otherId = outgoing.find(id => id !== gigId)
+  assert.ok(gigId && otherId, 'fixture needs an onward GIG and one more node')
+  const ids = { gig: gigId, other: otherId }
+  for (const [role, position] of Object.entries(positions)) {
+    state.gameMap.nodes[ids[role]] = {
+      ...state.gameMap.nodes[ids[role]],
       ...position
     }
   }
   state.player.van.fuel = fuel
-  return state
+  return {
+    state,
+    gigId,
+    otherId,
+    gigVenueId: state.gameMap.nodes[gigId].venueId
+  }
 }
 
 /** Drops the consumed-claim flags, to ask whether the tank is still short. */
@@ -616,7 +628,7 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
   const FAR = { x: 36, y: 132.5 }
 
   it('tops the tank up to the cheapest onward leg when it costs more than the tow', () => {
-    const state = onwardLegState({ exp_2_0: FAR, exp_2_1: FAR }, { fuel: 40 })
+    const { state } = onwardLegState({ other: FAR, gig: FAR }, { fuel: 40 })
     const cheapest = getExpeditionCheapestOnwardLegFuel(state)
     assert.ok(cheapest !== null && cheapest >= 50)
     assert.ok(cheapest > EXPEDITION_TOW_FUEL_RESTORED)
@@ -638,11 +650,11 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
   })
 
   it('ignores a refused cheaper leg when deciding whether the tank is short', () => {
-    // The GIG leg stays short; the SPECIAL leg is the long one.
-    const open = onwardLegState({ exp_2_0: FAR })
+    // The GIG leg stays short; the other onward leg is the long one.
+    const { state: open } = onwardLegState({ other: FAR })
     const openCheapest = getExpeditionCheapestOnwardLegFuel(open)
-    const blockedState = onwardLegState({ exp_2_0: FAR })
-    blockedState.venueBlacklist = ['muenchen_feierwerk']
+    const { state: blockedState, gigVenueId } = onwardLegState({ other: FAR })
+    blockedState.venueBlacklist = [gigVenueId]
     const reachable = getExpeditionCheapestOnwardLegFuel(blockedState)
     assert.ok(openCheapest !== null && reachable !== null)
     assert.ok(openCheapest < reachable)
@@ -664,12 +676,12 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
   })
 
   it('reports no onward leg when every leg is refused', () => {
-    const state = onwardLegState({})
-    state.venueBlacklist = ['muenchen_feierwerk']
-    state.gameMap.nodes.exp_2_0 = {
-      ...state.gameMap.nodes.exp_2_0,
+    const { state, otherId, gigVenueId } = onwardLegState({})
+    state.venueBlacklist = [gigVenueId]
+    state.gameMap.nodes[otherId] = {
+      ...state.gameMap.nodes[otherId],
       type: 'GIG',
-      venueId: 'muenchen_feierwerk'
+      venueId: gigVenueId
     }
     assert.equal(getExpeditionCheapestOnwardLegFuel(state), null)
   })

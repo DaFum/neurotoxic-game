@@ -4,12 +4,7 @@ import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import {
-  asNumber,
-  clampMoneyChange,
-  clampPercentageAmount,
-  getPercentageMoneyBase
-} from './helpers'
+import { asNumber, clampMoneyChange, getPercentageMoneyChange } from './helpers'
 import {
   getExpeditionProtectedCash,
   getExpeditionSpendableCash,
@@ -173,14 +168,7 @@ export const getOptionPreviewMoney = (
       // Without a player slice the handler charges nothing, so a `min`/`max`
       // bound must not force a preview amount either.
       if (gameState?.player) {
-        const amount = clampPercentageAmount(
-          getPercentageMoneyBase(gameState, total),
-          e.percentage,
-          e.min,
-          e.max
-        )
-        const current = finiteNumberOr(gameState.player.money, 0)
-        total += clampMoneyChange(current, total, amount)
+        total += getPercentageMoneyChange(gameState, total, e)
       }
       found = true
     }

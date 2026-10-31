@@ -3,7 +3,7 @@ import { isFiniteNumber } from '../finiteNumber'
 import { logger } from '../logger'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import type { GameState } from '../../types'
-import type { EngineEvent, EngineGameState } from './types'
+import type { EffectShape, EngineEvent, EngineGameState } from './types'
 
 /**
  * Normalizes unknown numeric input for event-engine arithmetic.
@@ -26,7 +26,7 @@ export const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
  * Shared by the `percentage_resource` handler and the option preview, so the
  * price shown is the price charged.
  */
-export const getPercentageMoneyBase = (
+const getPercentageMoneyBase = (
   gameState: EngineGameState | null | undefined,
   runningDelta: unknown
 ): number => {
@@ -51,7 +51,7 @@ export const getPercentageMoneyBase = (
  * @param max - Optional upper bound on the computed amount.
  * @returns The clamped, rounded amount to apply.
  */
-export const clampPercentageAmount = (
+const clampPercentageAmount = (
   current: number,
   percentage: unknown,
   min: unknown,
@@ -84,6 +84,36 @@ export const clampMoneyChange = (
     return -(current + runningDelta)
   }
   return rawChange
+}
+
+/**
+ * The money change a `percentage_resource` money effect applies.
+ *
+ * @param gameState - Engine state snapshot; callers skip the effect without a
+ * player slice.
+ * @param runningDelta - Money the effects before this one already added or
+ * removed.
+ * @param eff - The effect's `percentage` and optional `min`/`max` bounds.
+ * @returns The change to add to the running delta, clamped so effective money
+ * never drops below 0.
+ *
+ * @remarks
+ * One implementation for the handler and the option preview, so the price
+ * shown is the price charged.
+ */
+export const getPercentageMoneyChange = (
+  gameState: EngineGameState,
+  runningDelta: number,
+  eff: EffectShape
+): number => {
+  const amount = clampPercentageAmount(
+    getPercentageMoneyBase(gameState, runningDelta),
+    eff.percentage,
+    eff.min,
+    eff.max
+  )
+  const current = finiteNumberOr(gameState.player?.money, 0)
+  return clampMoneyChange(current, runningDelta, amount)
 }
 
 /**
