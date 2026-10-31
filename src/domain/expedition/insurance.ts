@@ -182,10 +182,16 @@ export const resolveExpeditionInsuranceClaim = (
   }
 
   if (intent.claimType === 'vehicle') {
+    // A tow sized below the cheapest reachable leg would spend the claim and
+    // leave the van stranded, so the top-up covers that leg (whole litres).
+    const cheapestLeg = getExpeditionCheapestOnwardLegFuel(state)
     return {
       ok: true,
       claimType: 'vehicle',
-      restoredValue: EXPEDITION_TOW_FUEL_RESTORED
+      restoredValue: Math.max(
+        EXPEDITION_TOW_FUEL_RESTORED,
+        Math.ceil(finiteNumberOr(cheapestLeg, 0))
+      )
     }
   }
 
