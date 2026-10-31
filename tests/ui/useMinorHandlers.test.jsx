@@ -16,6 +16,12 @@ vi.mock('../../src/utils/postGig', () => ({
   }))
 }))
 
+vi.mock('../../src/utils/numberUtils', async importOriginal => {
+  const actual = await importOriginal()
+  return { ...actual, formatCurrency: vi.fn(actual.formatCurrency) }
+})
+
+import { formatCurrency } from '../../src/utils/numberUtils'
 import { useMinorHandlers } from '../../src/hooks/postGig/handlers/useMinorHandlers'
 
 const t = (key, opts) => opts?.defaultValue ?? key
@@ -42,6 +48,8 @@ function makeProps(overrides = {}) {
     social: { activeDeals: [{ id: 'deal_1', remainingGigs: 2 }] },
     currentGig: { id: 'berlin_club', diff: 3 },
     postOptionsDerivationError: null,
+    isProcessingActionRef: { current: false },
+    setIsProcessingAction: vi.fn(),
     hasSpunRef,
     setHasSpun,
     t,
@@ -65,6 +73,18 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
       expect.any(String),
       'success'
     )
+  })
+
+  it('bakes the signed money delta into the toast (#3467)', () => {
+    const props = makeProps()
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleSpinStory())
+
+    expect(formatCurrency).toHaveBeenCalledTimes(1)
+    const [value, , signDisplay] = formatCurrency.mock.calls[0]
+    expect(value).toBe(-100)
+    expect(signDisplay).toBe('always')
   })
 
   it('double-click only applies side-effects once (guard held after dispatch)', () => {
@@ -199,5 +219,37 @@ describe('useMinorHandlers — handleNextPhase', () => {
       expect.any(String),
       'error'
     )
+  })
+
+  it('reconciles, saves and toasts only once on a double "Next" (#3467)', () => {
+    const props = makeProps({
+      postOptionsDerivationError: new Error('boom'),
+      pendingSettlementId: null
+    })
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => {
+      result.current.handleNextPhase()
+      result.current.handleNextPhase()
+    })
+
+    expect(
+      props.dispatchers.applyGigSocialReconciliation
+    ).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.addToast).toHaveBeenCalledTimes(1)
+    expect(props.dispatchers.setPhase).toHaveBeenCalledTimes(1)
+    // The phase change releases the shared guard, not this handler.
+    expect(props.isProcessingActionRef.current).toBe(true)
+    expect(props.setIsProcessingAction).toHaveBeenCalledWith(true)
+  })
+
+  it('is a no-op while another post-gig action holds the shared guard', () => {
+    const props = makeProps({ isProcessingActionRef: { current: true } })
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleNextPhase())
+
+    expect(props.dispatchers.setPhase).not.toHaveBeenCalled()
   })
 })

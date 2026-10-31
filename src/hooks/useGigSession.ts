@@ -103,6 +103,9 @@ export const useGigSession = ({
   }, [])
 
   const handleQuitGig = useCallback(async () => {
+    // A second Quit, or a Quit after finalizeGig submitted, must not overwrite
+    // the submitted stats or end the gig again.
+    if (gameStateRef.current?.hasSubmittedResults) return
     if (gameStateRef.current) {
       gameStateRef.current.hasSubmittedResults = true
     }

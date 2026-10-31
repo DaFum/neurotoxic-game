@@ -10,13 +10,15 @@ import {
 } from '../../../utils/postGig'
 import type { HandlerDispatchers } from './types'
 
-/** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */
+/** Props for {@link useMinorHandlers}: state slices, the shared processing guard, the spin-specific one-shot guard, translator, and dispatchers. */
 interface UseMinorHandlersProps {
   player: GameState['player']
   expedition: GameState['expedition']
   social: GameState['social']
   currentGig: GameState['currentGig']
   postOptionsDerivationError: unknown
+  isProcessingActionRef: React.MutableRefObject<boolean>
+  setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   hasSpunRef: React.MutableRefObject<boolean>
   setHasSpun: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
@@ -37,6 +39,8 @@ export function useMinorHandlers({
   social,
   currentGig,
   postOptionsDerivationError,
+  isProcessingActionRef,
+  setIsProcessingAction,
   hasSpunRef,
   setHasSpun,
   t,
@@ -52,6 +56,11 @@ export function useMinorHandlers({
   }
 }: UseMinorHandlersProps) {
   const handleNextPhase = useCallback(() => {
+    // Guard intentionally NOT reset here: the phase change releases it, so a
+    // second "Next" before that commits cannot reconcile or save twice.
+    if (isProcessingActionRef.current) return
+    isProcessingActionRef.current = true
+    setIsProcessingAction(true)
     if (postOptionsDerivationError) {
       logger.error(
         'PostGig',
@@ -92,6 +101,8 @@ export function useMinorHandlers({
       setPhase('SOCIAL')
     }
   }, [
+    isProcessingActionRef,
+    setIsProcessingAction,
     setPhase,
     postOptionsDerivationError,
     player,
@@ -129,7 +140,7 @@ export function useMinorHandlers({
 
     const moneyText =
       updates.appliedDelta !== 0
-        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
+        ? ` (${formatCurrency(updates.appliedDelta, i18n.language, 'always')})`
         : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
