@@ -45,6 +45,7 @@ export const PostGig = () => {
     pedalHarmonyPenalty,
     isProcessingAction,
     hasSpun,
+    canAffordSpinStory,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,
@@ -134,6 +135,7 @@ export const PostGig = () => {
               pedalHarmonyPenalty={pedalHarmonyPenalty}
               isProcessingAction={isProcessingAction}
               hasSpun={hasSpun}
+              canAffordSpinStory={canAffordSpinStory}
             />
           )}
         </Suspense>

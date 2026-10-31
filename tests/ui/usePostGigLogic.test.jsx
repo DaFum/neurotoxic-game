@@ -617,6 +617,26 @@ describe('usePostGigLogic', () => {
       )
     })
 
+    it('reports spin story unaffordable when only protected Expedition cash covers it (#3464)', () => {
+      const { result: idle } = renderHook(() => usePostGigLogic())
+      expect(idle.current.canAffordSpinStory).toBe(true)
+
+      // 1000 on hand, 900 protected: 100 spendable is below the 200 cost.
+      mockGameState(
+        getBaseState({
+          player: { money: 1000, fame: 100, day: 5, location: 'berlin' },
+          expedition: {
+            status: 'active',
+            routeStep: 0,
+            loadout: null,
+            protectedCareerCash: 900
+          }
+        })
+      )
+      const { result } = renderHook(() => usePostGigLogic())
+      expect(result.current.canAffordSpinStory).toBe(false)
+    })
+
     it('handles continue flow and ego quests', async () => {
       let { result } = renderHook(() => usePostGigLogic())
       await waitFor(() => expect(result.current.financials).toBeTruthy())

@@ -344,6 +344,8 @@ export interface CompletePhaseProps {
   }
   isProcessingAction?: boolean
   hasSpun?: boolean
+  /** Spendable cash covers the spin; protected Expedition cash does not count. */
+  canAffordSpinStory?: boolean
   pedalHarmonyPenalty?: number
 }
 

@@ -9,6 +9,8 @@ import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
 import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
 import { getEffectiveExpeditionRules } from '../domain/expedition/effectiveRules'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import { SPIN_STORY_MONEY_COST } from '../utils/postGig'
 
 /**
  * Composes post-gig state, derived results, and action handlers for the post-gig scene.
@@ -68,6 +70,9 @@ export const usePostGigLogic = () => {
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
   const totalDailyObligations = useGameSelector(getTotalDailyObligations)
+  // Protected Expedition cash is not spendable; the spin handler refuses it.
+  const canAffordSpinStory =
+    useGameSelector(getExpeditionSpendableCash) >= SPIN_STORY_MONEY_COST
 
   // Game Actions
   const {
@@ -235,6 +240,7 @@ export const usePostGigLogic = () => {
     pedalHarmonyPenalty,
     isProcessingAction,
     hasSpun,
+    canAffordSpinStory,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,
