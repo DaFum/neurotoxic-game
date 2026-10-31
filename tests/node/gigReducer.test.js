@@ -306,12 +306,64 @@ describe('gigReducer', () => {
       assert.strictEqual(nextState.reputationByRegion.some, 10)
     })
 
-    it('treats missing accuracy as passing (legacy saves are not penalized)', () => {
+    it('treats missing accuracy as a bad show, not a 90%+ gig', () => {
+      // Every real gig dispatch carries accuracy (buildGigStatsSnapshot), so
+      // a payload without one is malformed and must not earn good-gig rewards.
       baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      baseState.player.stats.consecutiveBadShows = 1
       const nextState = handleSetLastGigStats(baseState, { score: 7100 })
 
-      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 0)
-      assert.strictEqual(nextState.reputationByRegion.some, 10)
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 2)
+      assert.strictEqual(nextState.reputationByRegion.some, -10)
+    })
+
+    it('clamps stored accuracy to 0-100 before outcome gating', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      const high = handleSetLastGigStats(baseState, {
+        score: 7100,
+        accuracy: 1e9
+      })
+      assert.strictEqual(high.lastGigStats.accuracy, 100)
+      assert.strictEqual(high.reputationByRegion.some, 10)
+
+      const low = handleSetLastGigStats(baseState, {
+        score: 7100,
+        accuracy: -50
+      })
+      assert.strictEqual(low.lastGigStats.accuracy, 0)
+      assert.strictEqual(low.reputationByRegion.some, -10)
+    })
+
+    it('rejects a payload with a nested forbidden key as the identical state', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      const payload = JSON.parse(
+        '{"score":7100,"accuracy":80,"songStats":[{"songId":"s1","__proto__":{"polluted":true}}]}'
+      )
+      assert.ok(Object.hasOwn(payload.songStats[0], '__proto__'))
+
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      assert.strictEqual(nextState, baseState)
+    })
+
+    it('uses the derived blacklist toast id when the payload toastId is not a string', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      baseState.reputationByRegion.some = -25
+      const nextState = handleSetLastGigStats(baseState, {
+        score: 2400,
+        accuracy: 20,
+        failed: true,
+        toastId: {}
+      })
+
+      assert.ok(nextState.venueBlacklist?.includes('v1'))
+      const toastIds = nextState.toasts.map(t => t.id)
+      assert.ok(toastIds.includes('v1-blacklisted'))
+      assert.ok(toastIds.every(id => typeof id === 'string'))
+      assert.strictEqual(
+        Object.hasOwn(nextState.lastGigStats, 'toastId'),
+        false
+      )
     })
 
     it('does not re-emit the bad-gig reputation event at the clamp floor', () => {
@@ -498,6 +550,23 @@ describe('gigReducer', () => {
   })
 
   describe('handleSettleSoldMerch', () => {
+    it('deducts only canonical merch keys and leaves gear and unknown keys alone', () => {
+      const state = {
+        band: { inventory: { shirts: 10, strings: true, tape_glue: 3 } }
+      }
+      const next = handleSettleSoldMerch(state, {
+        shirts: 2,
+        strings: 1,
+        tape_glue: 3,
+        foo: 1
+      })
+
+      assert.strictEqual(next.band.inventory.shirts, 8)
+      assert.strictEqual(next.band.inventory.strings, true)
+      assert.strictEqual(next.band.inventory.tape_glue, 3)
+      assert.strictEqual(Object.hasOwn(next.band.inventory, 'foo'), false)
+    })
+
     it('rejects accessor-bearing sold counts without invoking their getters', () => {
       let getterCalls = 0
       const soldMerch = {}
@@ -540,27 +609,54 @@ describe('gigReducer', () => {
       assert.equal(next.expedition.cargo.merch[0].quantity, 0)
     })
 
+    it('keeps a non-numeric stored merch value instead of rewriting it', () => {
+      for (const stored of [true, 'x', null, NaN, ['4'], { n: 4 }]) {
+        const state = { band: { inventory: { shirts: stored, hoodies: 4 } } }
+        const next = handleSettleSoldMerch(state, { shirts: 3, hoodies: 1 })
+        assert.deepEqual(next.band.inventory.shirts, stored)
+        assert.equal(next.band.inventory.hoodies, 3)
+      }
+    })
+
+    it('keeps a non-numeric stored merch value during an active run too', () => {
+      const state = {
+        band: { inventory: { shirts: 'x', hoodies: 4 } },
+        expedition: {
+          status: 'active',
+          cargo: {
+            merch: [
+              { inventoryKey: 'shirts', quantity: 3 },
+              { inventoryKey: 'hoodies', quantity: 2 }
+            ]
+          }
+        }
+      }
+      const next = handleSettleSoldMerch(state, { shirts: 2, hoodies: 1 })
+      assert.equal(next.band.inventory.shirts, 'x')
+      assert.equal(next.band.inventory.hoodies, 3)
+    })
+
     it('deducts active-run sales from owned stock too, bounded by the manifest', () => {
       const state = {
-        band: { inventory: { shirts: 10, posters: 4 } },
+        band: { inventory: { shirts: 10, hoodies: 4 } },
         expedition: {
           status: 'active',
           cargo: {
             merch: [
               { inventoryKey: 'shirts', quantity: 6 },
-              { inventoryKey: 'posters', quantity: 2 }
+              { inventoryKey: 'hoodies', quantity: 2 }
             ]
           }
         }
       }
-      // 9 shirts requested but only 6 were packed; posters sell partially.
-      const next = handleSettleSoldMerch(state, { shirts: 9, posters: 1 })
+      // 9 shirts requested but only 6 were packed; hoodies sell partially.
+      const next = handleSettleSoldMerch(state, { shirts: 9, hoodies: 1 })
       assert.deepEqual(
         next.expedition.cargo.merch.map(m => m.quantity),
         [0, 1]
       )
       assert.equal(next.band.inventory.shirts, 4)
-      assert.equal(next.band.inventory.posters, 3)
+      assert.equal(next.band.inventory.hoodies, 3)
     })
   })
 })

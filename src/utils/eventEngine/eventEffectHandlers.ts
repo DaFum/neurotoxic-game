@@ -2,7 +2,8 @@ import type { EventDelta } from '../../types'
 import { finiteNumberOr, isFiniteNumber } from '../gameState'
 import { getSafeUUID } from '../crypto'
 import { resolveTemplateString } from './templateResolver'
-import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
+import { asNumber, clampMoneyChange, getPercentageMoneyChange } from './helpers'
+import { isValidItemTarget, isValidSocialSetTarget } from './effectTargets'
 import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
@@ -60,6 +61,8 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
    * Note: for negative amounts, `min` acts as the maximum *loss* (a floor for the value)
    * enforced via Math.max, and `max` acts as the minimum *loss* (ceiling) enforced via Math.min.
    * Example: `min: -100` bedeutet "verliere maximal 100" bei negativen Prozentsätzen.
+   * Money is taken of spendable cash plus the running delta
+   * (`getPercentageMoneyChange`) and clamped like a fixed `resource` change.
    */
   percentage_resource: (
     eff: EffectShape,
@@ -70,14 +73,9 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (!gameState || !gameState.player) return
 
     if (eff.resource === 'money') {
-      const current = finiteNumberOr(gameState.player.money, 0)
-      const amount = clampPercentageAmount(
-        current,
-        eff.percentage,
-        eff.min,
-        eff.max
-      )
-      delta.player.money = asNumber(delta.player.money) + amount
+      const prevDelta = asNumber(delta.player.money)
+      delta.player.money =
+        prevDelta + getPercentageMoneyChange(gameState, prevDelta, eff)
     }
   },
   stat: (
@@ -154,16 +152,14 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
   },
   item: (eff: EffectShape, delta: EventDelta) => {
-    if (typeof eff.item === 'string' && eff.item.length > 0) {
-      if (Number.isFinite(eff.value)) {
-        if (!delta.band.inventory) delta.band.inventory = {}
-        delta.band.inventory[eff.item] =
-          asNumber(delta.band.inventory[eff.item]) + asNumber(eff.value)
-      } else if (typeof eff.value !== 'number') {
-        if (!delta.band.inventory) delta.band.inventory = {}
-        const val = eff.value !== undefined ? eff.value : true
-        delta.band.inventory[eff.item] = val
-      }
+    const item = eff.item
+    if (!isValidItemTarget(item, eff.value)) return
+    if (!delta.band.inventory) delta.band.inventory = {}
+    if (isFiniteNumber(eff.value)) {
+      delta.band.inventory[item] =
+        asNumber(delta.band.inventory[item]) + eff.value
+    } else {
+      delta.band.inventory[item] = eff.value !== undefined ? eff.value : true
     }
   },
   unlock: (eff: EffectShape, delta: EventDelta) => {
@@ -199,10 +195,17 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       }
     }
   },
+  /**
+   * social_set
+   * Only `egoFocus` and `trend` are true sets. A numeric counter's value goes
+   * into the additive social delta, so `applyEventDelta` adds it to the
+   * current counter ("set" acts as "add"); it also replaces anything earlier
+   * effects of the same option put into that delta slot.
+   */
   social_set: (eff: EffectShape, delta: EventDelta) => {
-    if (typeof eff.stat === 'string' && eff.stat.length > 0) {
-      delta.social[eff.stat] = eff.value
-    }
+    const stat = eff.stat
+    if (!isValidSocialSetTarget(stat, eff.value)) return
+    delta.social[stat] = eff.value
   },
   chain: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.eventId === 'string') {

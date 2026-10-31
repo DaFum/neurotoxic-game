@@ -1,6 +1,7 @@
 import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameState'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { getOutcomeAccuracy } from '../../utils/gigStats'
 import { isHighControversy } from '../../utils/socialThresholds'
 
 import { QUEST_APOLOGY_TOUR, QUEST_EGO_MANAGEMENT } from '../questsConstants'
@@ -229,11 +230,10 @@ export const CONSEQUENCE_EVENTS = [
     condition: (state: GameState) => {
       // Bad-gig gating uses 0–100 accuracy (or the failed flag); the raw
       // rhythm score reaches thousands and would never trip a < 30 check.
-      // Missing accuracy (pre-accuracy saves) falls back to 100 so the
-      // consequence never false-positives — same as crisis_poor_performance.
-      const accuracy = finiteNumberOr(state.lastGigStats?.accuracy, 100)
+      // Missing/non-finite accuracy reads as 0 (a bad show), as in the reducer.
       return (
-        (state.lastGigStats?.failed === true || accuracy < 30) &&
+        state.lastGigStats != null &&
+        getOutcomeAccuracy(state.lastGigStats) < 30 &&
         !hasStateItem(state.eventCooldowns, 'consequences_venue_complaint')
       )
     },

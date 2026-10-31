@@ -5,6 +5,7 @@ import { DEFAULT_GAMEPAD_LANE_BINDINGS } from '../utils/gamepad/constants'
  */
 
 import { CHARACTERS } from '../data/characters'
+import { DEFAULT_BAND_INVENTORY } from '../data/bandInventory'
 import { LOG_LEVELS } from '../utils/logger'
 import { getSecureRandomUint32 } from '../utils/crypto'
 import { readGlobalSettings, defaultStorageAdapter } from '../utils/storage'
@@ -120,33 +121,7 @@ export const DEFAULT_BAND_STATE: BandState = {
     drumMultiplier: 1.0,
     crowdDecay: 1.0
   },
-  inventory: {
-    shirts: 50,
-    hoodies: 20,
-    patches: 100,
-    cds: 30,
-    vinyl: 10,
-    neuro_cutting_board: 0,
-    neuro_lunchbox: 0,
-    neuro_mug: 0,
-    neuro_bowl: 0,
-    strings: true,
-    cables: true,
-    drum_parts: true,
-    golden_pick: false,
-    neurotoxicPedal: false,
-    neuroDecimator: false,
-    // HQ shop / quest-reward items; effects live in `data/inventoryItems.ts`.
-    sleeping_bags: false,
-    tape_glue: 0,
-    broken_pedal: false,
-    cheap_mics: 0,
-    diy_patch_kit: false,
-    canned_food: 0,
-    beer_bulk: 0,
-    lucky_pick: false,
-    energy_drink: false
-  },
+  inventory: { ...DEFAULT_BAND_INVENTORY },
   neuroDecimatorActive: false
 }
 

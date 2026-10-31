@@ -24,8 +24,13 @@
  */
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
+import { calculateTravelExpenses } from '../../utils/economy'
+import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
+import { getNodeAccessStatus } from '../../utils/travelUtils'
+import { VENUES_BY_ID } from '../../data/venues'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getActiveExpeditionMap } from './map'
+import { getExpeditionTravelMap } from './routeOverlay'
 import type { GameState } from '../../types'
 import type {
   ExpeditionRouteContext,
@@ -159,4 +164,69 @@ export const resolveExpeditionTravelCost = (
     // Route term scaled, player term added: see the module remarks.
     vehicleWear: Math.max(0, routeWear * wearMultiplier + minigameConditionLoss)
   }
+}
+
+/**
+ * Litres the cheapest reachable onward leg from the current node would burn.
+ *
+ * @param state - Current game state.
+ * @returns The smallest zero-pickup fuel quote over the route's outgoing
+ * edges whose target passes the booking gate (`getNodeAccessStatus`), or
+ * `null` outside an active run or when no such leg exists.
+ *
+ * @remarks
+ * Quoted exactly as the travel gate and {@link resolveExpeditionTravelCost}
+ * price a leg: helper litres for the van, band and assets, times the effective
+ * fuel multiplier. Only the run's own edges count; a run refuses an
+ * unconnected START, so there is no HQ fallback here. Cash plays no part, so a
+ * leg the protected-Cash floor refused is not a fuel shortage.
+ */
+export const getExpeditionCheapestOnwardLegFuel = (
+  state: GameState
+): number | null => {
+  if (state.expedition?.status !== 'active') return null
+  const travelMap = getExpeditionTravelMap(state)
+  const currentNodeId = state.player.currentNodeId
+  if (!travelMap || typeof currentNodeId !== 'string') return null
+  const nodes = travelMap.nodes
+  if (!Object.hasOwn(nodes, currentNodeId)) return null
+  const currentNode = nodes[currentNodeId]
+
+  const assetModifiers = getActiveAssetModifiers(state.assets ?? [])
+  const fuelMultiplier = Math.max(
+    0,
+    finiteNumberOr(
+      getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier,
+      1
+    )
+  )
+
+  let cheapest: number | null = null
+  for (const edge of travelMap.connections) {
+    if (edge.from !== currentNodeId || edge.to === currentNodeId) continue
+    if (!Object.hasOwn(nodes, edge.to)) continue
+    const targetNode = nodes[edge.to]
+    if (!targetNode) continue
+    // The same booking gate `useHandleTravel` enforces: a leg the player would
+    // be refused at is no way out, so its fuel cannot price the tank short.
+    const access = getNodeAccessStatus({
+      node: targetNode,
+      player: state.player,
+      reputationByRegion: state.reputationByRegion,
+      venueBlacklist: state.venueBlacklist,
+      venuesMap: VENUES_BY_ID,
+      getLocationName: name => name ?? ''
+    })
+    if (!access.allowed) continue
+    const { fuelLiters } = calculateTravelExpenses(
+      targetNode,
+      currentNode,
+      state.player,
+      state.band,
+      assetModifiers
+    )
+    const quote = readNonNegative(fuelLiters) * fuelMultiplier
+    if (cheapest === null || quote < cheapest) cheapest = quote
+  }
+  return cheapest
 }

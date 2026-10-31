@@ -145,7 +145,10 @@ export default async function handler(req, res) {
         !(
           typeof revision === 'number' &&
           Number.isSafeInteger(revision) &&
-          revision > 0
+          revision > 0 &&
+          // The client treats MAX_SAFE_INTEGER as exhausted and could never
+          // send a newer revision after it (readStoredRevision).
+          revision < Number.MAX_SAFE_INTEGER
         )
       ) {
         return res.status(400).json({ error: 'Invalid revision' })
@@ -234,5 +237,5 @@ export default async function handler(req, res) {
   }
 
   res.setHeader('Allow', ['GET', 'POST'])
-  return res.status(405).end(`Method ${req.method} Not Allowed`)
+  return res.status(405).json({ error: 'Method Not Allowed' })
 }

@@ -14,30 +14,53 @@ describe('buildSoldMerchInventory', () => {
     ).toEqual({ shirts: 6, pins: 3 })
   })
 
-  it('clamps results at zero and treats missing/non-number counts as zero', () => {
+  it('clamps results at zero', () => {
     expect(buildSoldMerchInventory({ shirts: 2 }, { shirts: 5 })).toEqual({
       shirts: 0
     })
-    expect(buildSoldMerchInventory({}, { shirts: 1 })).toEqual({ shirts: 0 })
-    expect(buildSoldMerchInventory({ shirts: 'x' }, { shirts: 2 })).toEqual({
-      shirts: 0
-    })
   })
 
-  it('normalizes non-finite stored inventory counts to zero before subtraction', () => {
+  it('leaves a canonical key without a numeric stored count untouched', () => {
+    // A missing key has no stock to sell; it is not created.
+    expect(buildSoldMerchInventory({}, { shirts: 1 })).toEqual({})
+    expect(buildSoldMerchInventory({ shirts: 'x' }, { shirts: 2 })).toEqual({
+      shirts: 'x'
+    })
+    expect(buildSoldMerchInventory({ shirts: true }, { shirts: 2 })).toEqual({
+      shirts: true
+    })
+    expect(buildSoldMerchInventory({ shirts: null }, { shirts: 2 })).toEqual({
+      shirts: null
+    })
+    expect(buildSoldMerchInventory({ shirts: ['4'] }, { shirts: 2 })).toEqual({
+      shirts: ['4']
+    })
+    expect(
+      buildSoldMerchInventory({ shirts: { n: 4 } }, { shirts: 2 })
+    ).toEqual({ shirts: { n: 4 } })
+  })
+
+  it('still decrements numeric siblings next to a non-numeric canonical key', () => {
+    expect(
+      buildSoldMerchInventory(
+        { shirts: 'x', hoodies: 5, pins: false },
+        { shirts: 2, hoodies: 2, pins: 1 }
+      )
+    ).toEqual({ shirts: 'x', hoodies: 3, pins: false })
+  })
+
+  it('leaves a non-finite stored count untouched', () => {
     expect(buildSoldMerchInventory({ shirts: NaN }, { shirts: 2 })).toEqual({
-      shirts: 0
+      shirts: NaN
     })
     expect(
       buildSoldMerchInventory({ shirts: Infinity }, { shirts: 2 })
-    ).toEqual({ shirts: 0 })
+    ).toEqual({ shirts: Infinity })
   })
 
   it('treats nullish inventory as empty inventory', () => {
-    expect(buildSoldMerchInventory(undefined, { shirts: 2 })).toEqual({
-      shirts: 0
-    })
-    expect(buildSoldMerchInventory(null, { shirts: 2 })).toEqual({ shirts: 0 })
+    expect(buildSoldMerchInventory(undefined, { shirts: 2 })).toEqual({})
+    expect(buildSoldMerchInventory(null, { shirts: 2 })).toEqual({})
   })
 
   it('sanitizes negative/NaN/Infinity sold amounts so inventory is never increased or corrupted', () => {

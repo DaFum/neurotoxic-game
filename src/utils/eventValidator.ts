@@ -4,6 +4,10 @@
  */
 import { EVENT_CATEGORIES } from '../data/events/categories'
 import { isFiniteNumber } from './finiteNumber'
+import {
+  isValidItemTarget,
+  isValidSocialSetTarget
+} from './eventEngine/effectTargets'
 
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES)
 const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
@@ -102,6 +106,30 @@ const validateEffect = (
           { cause: err }
         )
       }
+    }
+  } else if (ef.type === 'social_set') {
+    // A numeric counter target is accepted, but it is applied additively
+    // (see the `social_set` handler in eventEngine/eventEffectHandlers.ts).
+    if (!isValidSocialSetTarget(ef.stat, ef.value)) {
+      throw new Error(
+        'social_set effect has an invalid stat or value for "' +
+          String(ef.stat) +
+          '" at index ' +
+          idx +
+          ' for event ' +
+          eventId
+      )
+    }
+  } else if (ef.type === 'item') {
+    if (!isValidItemTarget(ef.item, ef.value)) {
+      throw new Error(
+        'item effect has an unknown item or invalid value for "' +
+          String(ef.item) +
+          '" at index ' +
+          idx +
+          ' for event ' +
+          eventId
+      )
     }
   }
   ancestors.delete(effect)

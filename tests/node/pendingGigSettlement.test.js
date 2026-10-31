@@ -62,6 +62,20 @@ const buildPostGigSnapshot = (settlement = {}) => {
 
 test('pending gig settlement reconciliation on load', async t => {
   await t.test(
+    'settles only canonical merch keys from a tampered record',
+    () => {
+      const loaded = handleLoadGame(
+        createInitialState(),
+        buildPostGigSnapshot({ soldMerch: { shirts: 4, strings: 1, foo: 2 } })
+      )
+
+      assert.equal(loaded.band.inventory.shirts, 6)
+      assert.equal(loaded.band.inventory.strings, true)
+      assert.equal(Object.hasOwn(loaded.band.inventory, 'foo'), false)
+    }
+  )
+
+  await t.test(
     'applies a positive net exactly once and lands on OVERWORLD',
     () => {
       const loaded = handleLoadGame(
@@ -701,6 +715,14 @@ test('pending gig settlement actions', async t => {
       ...record,
       socialReconciled: false
     })
+  })
+
+  await t.test('keeps only canonical merch keys in the sold counts', () => {
+    const next = gameReducer(postGigState(), {
+      type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
+      payload: { ...record, soldMerch: { shirts: 4, strings: 1, foo: 2 } }
+    })
+    assert.deepEqual(next.pendingGigSettlement?.soldMerch, { shirts: 4 })
   })
 
   await t.test(

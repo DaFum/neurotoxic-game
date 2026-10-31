@@ -4,6 +4,7 @@ import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { buildSoldMerchInventory } from '../../utils/merchUtils'
+import { getOutcomeAccuracy } from '../../utils/gigStats'
 import {
   hasForbiddenKeysDeep,
   hasForbiddenOwnKeys
@@ -26,6 +27,7 @@ import {
   clampBandStress,
   addClampedPercent,
   clampReputation,
+  clampPercent,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { handleAddVenueBlacklist } from './socialReducer'
@@ -335,10 +337,19 @@ export const handleSetLastGigStats = (
       lastGigStats: null
     }
   }
-  if (!isLooseRecord(payload)) return state
+  if (!isLooseRecord(payload) || hasForbiddenKeysDeep(payload)) return state
+
+  // The blacklist toast id is used verbatim as a toast `id`, so only a
+  // non-empty string is accepted; anything else is dropped from the stats.
+  const { toastId: rawToastId, ...payloadWithoutToastId } = payload
+  const toastId =
+    typeof rawToastId === 'string' && rawToastId.length > 0
+      ? rawToastId
+      : undefined
 
   const safePayload = {
-    ...payload,
+    ...payloadWithoutToastId,
+    ...(toastId !== undefined && { toastId }),
     // Only re-clamp numeric fields that are present so the stored stats never
     // gain explicit `undefined` keys.
     ...(payload.score !== undefined && {
@@ -348,7 +359,7 @@ export const handleSetLastGigStats = (
       misses: finiteNumberOr(payload.misses, 0)
     }),
     ...(payload.accuracy !== undefined && {
-      accuracy: finiteNumberOr(payload.accuracy, 0)
+      accuracy: clampPercent(payload.accuracy, 0)
     }),
     ...(payload.combo !== undefined && {
       combo: finiteNumberOr(payload.combo, 0)
@@ -419,9 +430,9 @@ export const handleSetLastGigStats = (
   // rhythm score accumulates BASE_POINTS (100) per hit and reaches thousands,
   // so gating on it made every completed gig register as a very good one;
   // `score` stays raw because leaderboards and display consume it unchanged.
-  // Missing/non-finite accuracy (legacy saves) falls back to 100 so it is
-  // treated as passing — matching the crisis/consequence event conditions.
-  const accuracy = finiteNumberOr(safePayload.accuracy, 100)
+  // Every real gig dispatch carries accuracy, so a missing/non-finite value
+  // is a malformed payload and falls back to 0 (a bad show), never a pass.
+  const accuracy = getOutcomeAccuracy(safePayload)
   const gigFailed = safePayload.failed === true
   // Two keys, deliberately not one.
   //
@@ -504,7 +515,7 @@ export const handleSetLastGigStats = (
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
-          toastId: payload.toastId || `${gigVenueId}-blacklisted`
+          toastId: toastId ?? `${gigVenueId}-blacklisted`
         })
       }
     }

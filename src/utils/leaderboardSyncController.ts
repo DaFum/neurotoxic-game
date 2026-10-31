@@ -27,6 +27,8 @@ const MAX_RETRY_INTERVAL_MS = 5 * 60 * 1000
  * A request still open then is aborted and retried like a network error.
  */
 const REQUEST_TIMEOUT_MS = 10000
+/** The highest revision the API accepts; it rejects `MAX_SAFE_INTEGER`. */
+const MAX_SENDABLE_REVISION = Number.MAX_SAFE_INTEGER - 1
 
 /** The part of a fetch Response the controller reads. */
 type SyncResponse = {
@@ -91,6 +93,11 @@ type SyncSlot = {
   staleStreak: number
   /** Snapshot key of the failed request a retry is waiting on. */
   retryKey: string | null
+  /**
+   * Set once the server holds a revision no sendable one can exceed: every
+   * resend would be stale again, so nothing more is sent for this player.
+   */
+  exhausted: boolean
   timer: unknown
   /** Aborts the request in flight, on its deadline or on dispose. */
   abort: AbortController | null
@@ -172,6 +179,7 @@ export const createLeaderboardSyncController = (
       failures: 0,
       staleStreak: 0,
       retryKey: null,
+      exhausted: false,
       timer: null,
       abort: null
     }
@@ -197,11 +205,13 @@ export const createLeaderboardSyncController = (
    * a retry or a reload can never reuse or lower a revision this client sent. A
    * revision the server holds beyond it (cleared storage, a clock set back) is
    * learned from the stale response and adopted by `adoptServerRevision`.
+   * Capped at the highest revision the API accepts: a server already holding it
+   * answers stale and the slot stops as exhausted.
    */
   const nextRevision = (playerId: string, clock: IClock): number => {
-    const revision = Math.max(
-      readStoredRevision(playerId) + 1,
-      Math.floor(clock.now())
+    const revision = Math.min(
+      Math.max(readStoredRevision(playerId) + 1, Math.floor(clock.now())),
+      MAX_SENDABLE_REVISION
     )
     deps.storage.write(revisionStorageKey(playerId), revision)
     return revision
@@ -353,16 +363,27 @@ export const createLeaderboardSyncController = (
         // The server holds a newer revision than this client has used. Adopt it
         // and send the snapshot again, or the board would stay on the old one.
         adoptServerRevision(payload.playerId, result.revision)
-        // The confirmed key was already forgotten when the request went out and
-        // stays forgotten: the server holds a snapshot this client never
-        // confirmed.
-        slot.pending ??= payload
-        // The first catch-up goes out at the base interval; if the server is
-        // still ahead (a second tab or device), back off like a failure.
-        slot.staleStreak += 1
-        if (slot.staleStreak > 1) {
-          slot.failures = slot.retryKey === key ? slot.failures + 1 : 1
-          slot.retryKey = key
+        if (result.revision >= MAX_SENDABLE_REVISION) {
+          // No revision the API accepts can exceed the server's, so a resend
+          // would be stale forever. Stop for this player instead (#3475).
+          slot.exhausted = true
+          slot.pending = null
+          deps.logger.warn(
+            'Leaderboard',
+            'Stats revision exhausted on the server. Disabling stat sync for this player.'
+          )
+        } else {
+          // The confirmed key was already forgotten when the request went out
+          // and stays forgotten: the server holds a snapshot this client never
+          // confirmed.
+          slot.pending ??= payload
+          // The first catch-up goes out at the base interval; if the server is
+          // still ahead (a second tab or device), back off like a failure.
+          slot.staleStreak += 1
+          if (slot.staleStreak > 1) {
+            slot.failures = slot.retryKey === key ? slot.failures + 1 : 1
+            slot.retryKey = key
+          }
         }
       }
     } catch (error) {
@@ -426,6 +447,7 @@ export const createLeaderboardSyncController = (
     submit: (payload, clock = deps.clock) => {
       if (disposed) return
       const slot = getSlot(payload.playerId)
+      if (slot.exhausted) return
       // What the server will hold once nothing is pending: the request on the
       // wire if there is one, else the last confirmed snapshot. Returning to an
       // older snapshot while a different one is in flight is therefore still a

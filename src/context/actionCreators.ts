@@ -28,6 +28,7 @@ import {
 import { sanitizeLoadedToast } from './reducers/toastSanitizers'
 import { sanitizePendingGigSettlement } from './reducers/pendingGigSettlementReducer'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
+import { isSoldMerchKey } from '../utils/merchUtils'
 import type { RivalBandState, TerminalOutcome } from '../types'
 import {
   clampNonNegative,
@@ -148,14 +149,21 @@ export const createUpdatePlayerAction = (
  *
  * @param soldMerch - Units sold keyed by merch item id. Non-objects are
  * dispatched as an empty record.
- * @returns SETTLE_SOLD_MERCH action with a shallow copy of the sold counts.
+ * @returns SETTLE_SOLD_MERCH action with a copy of the sold counts restricted
+ * to canonical merch keys.
  */
 export const createSettleSoldMerchAction = (
   soldMerch: Record<string, number>
-): Extract<GameAction, { type: typeof ActionTypes.SETTLE_SOLD_MERCH }> => ({
-  type: ActionTypes.SETTLE_SOLD_MERCH,
-  payload: soldMerch && typeof soldMerch === 'object' ? { ...soldMerch } : {}
-})
+): Extract<GameAction, { type: typeof ActionTypes.SETTLE_SOLD_MERCH }> => {
+  const payload: Record<string, number> = {}
+  if (soldMerch && typeof soldMerch === 'object') {
+    for (const key of Object.keys(soldMerch)) {
+      const value = soldMerch[key]
+      if (isSoldMerchKey(key) && value !== undefined) payload[key] = value
+    }
+  }
+  return { type: ActionTypes.SETTLE_SOLD_MERCH, payload }
+}
 
 /**
  * Creates an action recording the settlement the post-gig report presented.

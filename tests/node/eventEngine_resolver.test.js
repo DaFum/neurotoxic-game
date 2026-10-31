@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  eventEngine,
   resolveEventChoice,
+  getOptionPreviewMoney,
   isOptionAffordable
 } from '../../src/utils/eventEngine'
 
@@ -168,7 +170,7 @@ test('a costly option is not refused outside a run or without protected cash', (
   )
 })
 
-test('a percentage cost is priced against the real balance', () => {
+test('a percentage cost is priced against spendable cash during a run', () => {
   const theft = {
     label: 'Pay off the thief',
     effect: {
@@ -179,15 +181,61 @@ test('a percentage cost is priced against the real balance', () => {
     }
   }
   const walkAway = { label: 'Walk away' }
-  // 40% of €1,000 is €400, far above the €10 that is spendable.
+  // €1,000 total, €990 protected: 40% of the €10 spendable is €4.
   const state = eventWith([theft, walkAway], 1000, 990)
-  assert.equal(isOptionAffordable(theft, state), false)
-  assert.equal(resolveEventChoice(theft, state).result.outcome, 'rejected')
-  // With enough spendable cash the same option is fine.
-  assert.equal(
-    isOptionAffordable(theft, eventWith([theft, walkAway], 1000, 500)),
-    true
-  )
+  assert.equal(getOptionPreviewMoney(theft, state), -4)
+  assert.equal(isOptionAffordable(theft, state), true)
+  assert.notEqual(resolveEventChoice(theft, state).result.outcome, 'rejected')
+  // €500 spendable: the option costs €200 and stays payable.
+  const richer = eventWith([theft, walkAway], 1000, 500)
+  assert.equal(getOptionPreviewMoney(theft, richer), -200)
+  assert.equal(isOptionAffordable(theft, richer), true)
+})
+
+test('the preview of a composite money option equals its executed delta', () => {
+  const haggle = {
+    label: 'Haggle',
+    effect: {
+      type: 'composite',
+      effects: [
+        { type: 'resource', resource: 'money', value: -100 },
+        { type: 'percentage_resource', resource: 'money', percentage: -50 },
+        { type: 'resource', resource: 'money', value: 80 }
+      ]
+    }
+  }
+  for (const state of [
+    buildState(),
+    protectedRun(1000, 990),
+    protectedRun(1000, 500),
+    protectedRun(500, 900)
+  ]) {
+    const executed = eventEngine.applyResult(haggle.effect, {}, state)
+    assert.equal(getOptionPreviewMoney(haggle, state), executed.player.money)
+  }
+  // €10 spendable: the €100 debit leaves nothing for the percentage.
+  assert.equal(getOptionPreviewMoney(haggle, protectedRun(1000, 990)), -20)
+})
+
+// Execution charges nothing without a player slice, so a `min`/`max` bound
+// must not make the preview show a forced amount (#3477).
+test('a percentage money preview without a player slice matches execution', () => {
+  const bounded = [
+    { percentage: 10, min: 25 },
+    { percentage: -10, max: -25 }
+  ]
+  for (const bounds of bounded) {
+    const option = {
+      label: 'Bounded',
+      effect: { type: 'percentage_resource', resource: 'money', ...bounds }
+    }
+    for (const state of [null, {}, { band: buildState().band }]) {
+      const executed = eventEngine.applyResult(option.effect, {}, state)
+      const label = `${JSON.stringify(bounds)} ${JSON.stringify(state)}`
+      assert.equal(executed.player.money, undefined, label)
+      assert.equal(getOptionPreviewMoney(option, state), 0, label)
+    }
+  }
 })
 
 test('a disabled sibling is not an escape, so the event cannot lock', () => {

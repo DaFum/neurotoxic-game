@@ -26,8 +26,10 @@ import {
 import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/loadout.ts'
 import {
   EXPEDITION_TOW_FUEL_RESTORED,
+  deriveExpeditionPendingFailure,
   getExpeditionMobilityFailureSignal
 } from '../../src/domain/expedition/failure.ts'
+import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel.ts'
 import {
   FIXTURE_RUN_SEED,
   fixtureLoadout,
@@ -433,6 +435,255 @@ describe('integration with crisis resolution shell', () => {
     const signal = getExpeditionMobilityFailureSignal(state)
     assert.ok(signal)
     assert.equal(signal.choices.includes('insurance_claim'), false)
+  })
+})
+
+/**
+ * A run whose last leg the protected-Cash floor refused: the stranded crisis
+ * exists only because of `blockedTravelAtRouteStep`, with a full-enough tank
+ * and a running van unless the caller says otherwise.
+ */
+const cashBlockedState = ({ fuel = 80, condition = 90 } = {}) => {
+  const state = walkTo(
+    startedState({ money: 5000 }, { insurancePolicyId: 'touring' }),
+    1
+  )
+  state.player.van.fuel = fuel
+  state.player.van.condition = condition
+  state.expedition.blockedTravelAtRouteStep = state.expedition.routeStep
+  state.expedition.pendingFailure = null
+  // Stored as play stores it, so a refused action returns the same reference
+  // instead of one the root reducer's crisis sync rebuilt.
+  state.expedition.pendingFailure = deriveExpeditionPendingFailure(state)
+  return state
+}
+
+/** Dispatches the crisis response without the action creator's choice filter. */
+const rawCrisisClaim = state => {
+  const pending = deriveExpeditionPendingFailure(state)
+  assert.ok(pending)
+  return gameReducer(state, {
+    type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+    payload: {
+      pendingFailureId: pending.id,
+      choice: 'insurance_claim',
+      expectedRouteStep: state.expedition.routeStep
+    }
+  })
+}
+
+describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)', () => {
+  it('does not offer or accept a claim when the cash floor is the only evidence', () => {
+    const state = cashBlockedState()
+    const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+    assert.ok(cheapest !== null && cheapest < 80)
+
+    const signal = getExpeditionMobilityFailureSignal(state)
+    assert.ok(signal)
+    assert.equal(signal.reason, 'fuel_stranded')
+    assert.equal(signal.choices.includes('insurance_claim'), false)
+    assert.equal(
+      canClaimExpeditionInsurance(state, 'vehicle', undefined, {
+        crisisReason: 'fuel_stranded'
+      }),
+      false
+    )
+
+    // The crisis response is refused: the choice is not offered.
+    assert.equal(rawCrisisClaim(state), state)
+
+    // A direct claim is refused even against the stored stranded crisis.
+    assert.equal(state.expedition.pendingFailure?.reason, 'fuel_stranded')
+    const direct = gameReducer(
+      state,
+      claimExpeditionInsurance(state, { claimType: 'vehicle' })
+    )
+    assert.equal(direct, state)
+    assert.equal(direct.expedition.insuranceClaimConsumed, false)
+    assert.equal(direct.expedition.claimConsumed, false)
+    assert.equal(direct.player.van.fuel, 80)
+    assert.equal(
+      direct.expedition.blockedTravelAtRouteStep,
+      state.expedition.routeStep
+    )
+  })
+
+  it('still offers and accepts the claim on an empty tank', () => {
+    const state = cashBlockedState({ fuel: 0 })
+    const signal = getExpeditionMobilityFailureSignal(state)
+    assert.ok(signal?.choices.includes('insurance_claim'))
+
+    const next = rawCrisisClaim(state)
+    assert.notEqual(next, state)
+    assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
+    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.claimConsumed, true)
+  })
+
+  it('still offers and accepts the claim on a broken van', () => {
+    const state = cashBlockedState({ condition: 0 })
+    const signal = getExpeditionMobilityFailureSignal(state)
+    assert.ok(signal?.choices.includes('insurance_claim'))
+
+    const next = rawCrisisClaim(state)
+    assert.notEqual(next, state)
+    assert.equal(next.player.van.condition, 25)
+    assert.equal(next.player.van.fuel, 80)
+    assert.equal(next.expedition.insuranceClaimConsumed, true)
+  })
+
+  it('offers the claim when fuel is below the cheapest onward leg, not at it', () => {
+    const cheapest = getExpeditionCheapestOnwardLegFuel(cashBlockedState())
+    assert.ok(cheapest !== null && cheapest > 1)
+
+    const short = cashBlockedState({ fuel: cheapest - 1 })
+    assert.ok(
+      getExpeditionMobilityFailureSignal(short)?.choices.includes(
+        'insurance_claim'
+      )
+    )
+    const next = rawCrisisClaim(short)
+    assert.equal(
+      next.player.van.fuel,
+      Math.max(EXPEDITION_TOW_FUEL_RESTORED, Math.ceil(cheapest))
+    )
+    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.claimConsumed, true)
+
+    const exact = cashBlockedState({ fuel: cheapest })
+    const exactSignal = getExpeditionMobilityFailureSignal(exact)
+    assert.ok(exactSignal)
+    assert.equal(exactSignal.choices.includes('insurance_claim'), false)
+    assert.equal(rawCrisisClaim(exact), exact)
+  })
+
+  it('reports no onward leg outside an active run or off the map', () => {
+    const state = cashBlockedState()
+    assert.equal(
+      getExpeditionCheapestOnwardLegFuel({ ...state, gameMap: null }),
+      null
+    )
+    assert.equal(
+      getExpeditionCheapestOnwardLegFuel({
+        ...state,
+        expedition: { ...state.expedition, status: 'idle' }
+      }),
+      null
+    )
+    assert.equal(
+      getExpeditionCheapestOnwardLegFuel({
+        ...state,
+        player: { ...state.player, currentNodeId: 'no_such_node' }
+      }),
+      null
+    )
+  })
+})
+
+/**
+ * A touring-insured run at route step 1 with the onward nodes derived from the
+ * built map: `gigId` is an onward GIG node, `otherId` another onward node.
+ * `positions` moves them by role (`gig`, `other`).
+ */
+const onwardLegState = (positions, { fuel = 80 } = {}) => {
+  const state = walkTo(
+    startedState({ money: 5000 }, { insurancePolicyId: 'touring' }),
+    1
+  )
+  const outgoing = state.gameMap.connections
+    .filter(edge => edge.from === state.player.currentNodeId)
+    .map(edge => edge.to)
+  const gigId = outgoing.find(id => state.gameMap.nodes[id].type === 'GIG')
+  const otherId = outgoing.find(id => id !== gigId)
+  assert.ok(gigId && otherId, 'fixture needs an onward GIG and one more node')
+  const ids = { gig: gigId, other: otherId }
+  for (const [role, position] of Object.entries(positions)) {
+    state.gameMap.nodes[ids[role]] = {
+      ...state.gameMap.nodes[ids[role]],
+      ...position
+    }
+  }
+  state.player.van.fuel = fuel
+  return {
+    state,
+    gigId,
+    otherId,
+    gigVenueId: state.gameMap.nodes[gigId].venueId
+  }
+}
+
+/** Drops the consumed-claim flags, to ask whether the tank is still short. */
+const withUnspentClaim = state => ({
+  ...state,
+  expedition: {
+    ...state.expedition,
+    insuranceClaimConsumed: false,
+    claimConsumed: false
+  }
+})
+
+describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)', () => {
+  // Off the 0-100 grid on purpose: the fixture has no leg this long, and the
+  // distance is what makes the cheapest onward leg cost about 50 litres.
+  const FAR = { x: 36, y: 132.5 }
+
+  it('tops the tank up to the cheapest onward leg when it costs more than the tow', () => {
+    const { state } = onwardLegState({ other: FAR, gig: FAR }, { fuel: 40 })
+    const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+    assert.ok(cheapest !== null && cheapest >= 50)
+    assert.ok(cheapest > EXPEDITION_TOW_FUEL_RESTORED)
+    assert.equal(canClaimExpeditionInsurance(state, 'vehicle'), true)
+
+    const next = gameReducer(
+      state,
+      claimExpeditionInsurance(state, { claimType: 'vehicle' })
+    )
+    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.claimConsumed, true)
+    assert.equal(next.player.van.fuel, Math.ceil(cheapest))
+    assert.ok(next.player.van.fuel >= 50)
+    // The claim resolved the shortage: an unspent claim would not qualify again.
+    assert.equal(
+      canClaimExpeditionInsurance(withUnspentClaim(next), 'vehicle'),
+      false
+    )
+  })
+
+  it('ignores a refused cheaper leg when deciding whether the tank is short', () => {
+    // The GIG leg stays short; the other onward leg is the long one.
+    const { state: open } = onwardLegState({ other: FAR })
+    const openCheapest = getExpeditionCheapestOnwardLegFuel(open)
+    const { state: blockedState, gigVenueId } = onwardLegState({ other: FAR })
+    blockedState.venueBlacklist = [gigVenueId]
+    const reachable = getExpeditionCheapestOnwardLegFuel(blockedState)
+    assert.ok(openCheapest !== null && reachable !== null)
+    assert.ok(openCheapest < reachable)
+
+    // Enough for the refused GIG leg, short of the only reachable one.
+    const fuel = Math.ceil(openCheapest)
+    assert.ok(fuel < reachable)
+    open.player.van.fuel = fuel
+    blockedState.player.van.fuel = fuel
+    assert.equal(canClaimExpeditionInsurance(open, 'vehicle'), false)
+    assert.equal(canClaimExpeditionInsurance(blockedState, 'vehicle'), true)
+
+    const next = gameReducer(
+      blockedState,
+      claimExpeditionInsurance(blockedState, { claimType: 'vehicle' })
+    )
+    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.player.van.fuel, Math.ceil(reachable))
+  })
+
+  it('reports no onward leg when every leg is refused', () => {
+    const { state, otherId, gigVenueId } = onwardLegState({})
+    state.venueBlacklist = [gigVenueId]
+    state.gameMap.nodes[otherId] = {
+      ...state.gameMap.nodes[otherId],
+      type: 'GIG',
+      venueId: gigVenueId
+    }
+    assert.equal(getExpeditionCheapestOnwardLegFuel(state), null)
   })
 })
 

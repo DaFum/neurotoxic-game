@@ -4,7 +4,8 @@ import type { UnknownRecord } from '../../types'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
-import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
+import { hasStateItem } from '../../utils/gameState'
+import { getOutcomeAccuracy } from '../../utils/gigStats'
 import {
   isHighControversy,
   isScandalControversy
@@ -368,9 +369,9 @@ export const CRISIS_EVENTS = [
     condition: (gs: GameState) =>
       // Bad-gig gating uses 0–100 accuracy (or the failed flag); the raw
       // rhythm score reaches thousands and would never trip a < 30 check.
-      // Missing/non-finite accuracy falls back to 100 (never false-positive).
-      (gs.lastGigStats?.failed === true ||
-        finiteNumberOr(gs.lastGigStats?.accuracy, 100) < 30) &&
+      // Missing/non-finite accuracy reads as 0 (a bad show), as in the reducer.
+      gs.lastGigStats != null &&
+      getOutcomeAccuracy(gs.lastGigStats) < 30 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_poor_performance'),
     options: [
       {

@@ -4,7 +4,7 @@ import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
+import { asNumber, clampMoneyChange, getPercentageMoneyChange } from './helpers'
 import {
   getExpeditionProtectedCash,
   getExpeditionSpendableCash,
@@ -20,7 +20,8 @@ const directMoneyCost = (
   option: MoneyCostOption,
   gameState: EngineGameState
 ): number => {
-  // Priced against the real balance so a percentage cost is not read as zero.
+  // Priced exactly as execution charges it: a percentage cost is taken of
+  // spendable cash plus the running composite delta.
   const total = getOptionPreviewMoney(option, gameState)
   return total !== null && total < 0 ? -total : 0
 }
@@ -164,8 +165,11 @@ export const getOptionPreviewMoney = (
       total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
-      const current = finiteNumberOr(gameState?.player?.money, 0)
-      total += clampPercentageAmount(current, e.percentage, e.min, e.max)
+      // Without a player slice the handler charges nothing, so a `min`/`max`
+      // bound must not force a preview amount either.
+      if (gameState?.player) {
+        total += getPercentageMoneyChange(gameState, total, e)
+      }
       found = true
     }
     ancestors.delete(eff)

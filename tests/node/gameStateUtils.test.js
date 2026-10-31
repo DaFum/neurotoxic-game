@@ -413,6 +413,157 @@ test('applyEventDelta does not revert effect for an unapplied confiscated item',
   assert.equal(nextState.band.luck, 7)
 })
 
+// #3462: a confiscated packed item must leave the Tour manifest with the stash.
+const confiscationTour = (stash, contraband, extra = {}) => ({
+  band: { luck: 7, stash },
+  expedition: {
+    status: 'active',
+    runId: 'run_3462',
+    cargo: {
+      spareParts: 1,
+      supplies: 2,
+      technicalGearItemIds: [],
+      merch: [],
+      contraband
+    },
+    ...extra
+  }
+})
+const stashItem = (id, stacks, instanceId = `inst_${id}`) => ({
+  id,
+  type: 'consumable',
+  instanceId,
+  stacks
+})
+const confiscate = (state, ids) =>
+  applyEventDelta(state, { band: { stashRemove: ids } })
+
+test('applyEventDelta confiscation during a Tour debits the packed manifest', () => {
+  const packed = [
+    { stashKey: 'c_gig_program', instanceId: 'inst_c_gig_program', stacks: 2 },
+    { stashKey: 'c_other', instanceId: 'inst_c_other', stacks: 1 }
+  ]
+  const state = confiscationTour(
+    {
+      c_gig_program: stashItem('c_gig_program', 2),
+      c_other: stashItem('c_other', 1)
+    },
+    packed
+  )
+  const snapshot = structuredClone(state.expedition.cargo.contraband)
+
+  const next = confiscate(state, ['c_gig_program'])
+
+  assert.equal(Object.hasOwn(next.band.stash, 'c_gig_program'), false)
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_other', instanceId: 'inst_c_other', stacks: 1 }
+  ])
+  // Untouched rows keep their identity; other cargo and run metadata survive.
+  assert.equal(next.expedition.cargo.contraband[0], packed[1])
+  assert.equal(next.expedition.cargo.spareParts, 1)
+  assert.equal(next.expedition.cargo.supplies, 2)
+  assert.equal(next.expedition.runId, 'run_3462')
+  // The input state is not mutated.
+  assert.deepEqual(state.expedition.cargo.contraband, snapshot)
+  assert.equal(state.expedition.cargo.contraband, packed)
+})
+
+test('applyEventDelta confiscation keeps another instance and debits a null-instance row', () => {
+  const state = confiscationTour(
+    { c_gig_program: stashItem('c_gig_program', 1) },
+    [
+      { stashKey: 'c_gig_program', instanceId: 'inst_elsewhere', stacks: 1 },
+      { stashKey: 'c_gig_program', instanceId: null, stacks: 1 }
+    ]
+  )
+
+  const next = confiscate(state, ['c_gig_program'])
+
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_gig_program', instanceId: 'inst_elsewhere', stacks: 1 }
+  ])
+})
+
+test('applyEventDelta confiscation removes every packed stack of the entry and no more', () => {
+  const state = confiscationTour(
+    { c_gig_program: stashItem('c_gig_program', 5) },
+    [{ stashKey: 'c_gig_program', instanceId: 'inst_c_gig_program', stacks: 3 }]
+  )
+
+  const next = confiscate(state, ['c_gig_program', 'c_gig_program'])
+
+  assert.deepEqual(next.expedition.cargo.contraband, [])
+})
+
+test('applyEventDelta confiscation reverts equipment once and debits it during a Tour', () => {
+  const band = addContrabandToBand(
+    { luck: 7, harmony: 50, stash: {} },
+    { contrabandId: 'c_abyssal_pendant', instanceId: 'inst_pendant' }
+  )
+  const state = {
+    ...confiscationTour(band.stash, [
+      { stashKey: 'c_abyssal_pendant', instanceId: 'inst_pendant', stacks: 1 }
+    ]),
+    band
+  }
+
+  const next = confiscate(state, ['c_abyssal_pendant'])
+
+  assert.equal(Object.hasOwn(next.band.stash, 'c_abyssal_pendant'), false)
+  assert.equal(next.band.harmony, 50)
+  assert.deepEqual(next.expedition.cargo.contraband, [])
+})
+
+test('applyEventDelta confiscation leaves the expedition alone outside a match or a run', () => {
+  const stash = { c_gig_program: stashItem('c_gig_program', 1) }
+  const unmatched = confiscationTour(stash, [
+    { stashKey: 'c_other', instanceId: 'inst_c_other', stacks: 1 }
+  ])
+  assert.equal(
+    confiscate(unmatched, ['c_gig_program']).expedition,
+    unmatched.expedition
+  )
+
+  const inactive = confiscationTour(
+    stash,
+    [{ stashKey: 'c_gig_program', instanceId: null, stacks: 1 }],
+    { status: 'completed' }
+  )
+  assert.equal(
+    confiscate(inactive, ['c_gig_program']).expedition,
+    inactive.expedition
+  )
+})
+
+test('applyEventDelta confiscation persists the debited cargo of a legacy active save', () => {
+  const state = {
+    band: { stash: { c_gig_program: stashItem('c_gig_program', 1) } },
+    expedition: {
+      status: 'active',
+      loadout: {
+        cargo: { spareParts: 1, supplies: 0 },
+        build: {
+          equipment: { selectedGearItemIds: [] },
+          merch: [],
+          contraband: [
+            { stashKey: 'c_gig_program', instanceId: null, stacks: 1 },
+            { stashKey: 'c_other', instanceId: null, stacks: 1 }
+          ]
+        }
+      }
+    }
+  }
+
+  const next = confiscate(state, ['c_gig_program'])
+
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_other', instanceId: null, stacks: 1 }
+  ])
+  assert.equal(next.expedition.cargo.spareParts, 1)
+  assert.equal(state.expedition.cargo, undefined)
+  assert.equal(state.expedition.loadout.build.contraband.length, 2)
+})
+
 test('applyEventDelta applies per-member deltas', () => {
   const state = {
     band: {

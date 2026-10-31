@@ -499,6 +499,23 @@ describe('gameReducer', () => {
       assert.notDeepStrictEqual(warnArgs[2], action)
       mockWarn.mock.restore()
     })
+
+    it('routes non-object or typeless actions to the logged trap, not a TypeError', () => {
+      for (const action of [null, undefined, 42, {}]) {
+        const mockWarn = mock.method(logger, 'warn', () => {})
+        try {
+          assert.throws(
+            () => gameReducer(testState, action),
+            error =>
+              !(error instanceof TypeError) &&
+              /Unhandled action type: unknown/.test(error.message)
+          )
+          assert.strictEqual(mockWarn.mock.calls.length, 1)
+        } finally {
+          mockWarn.mock.restore()
+        }
+      }
+    })
   })
 
   describe('UNLOCK_TRAIT', () => {

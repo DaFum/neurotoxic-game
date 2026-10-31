@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   calculateAccuracy,
+  getOutcomeAccuracy,
   updateGigPerformanceStats,
   buildGigStatsSnapshot
 } from '../../src/utils/gigStats'
@@ -28,6 +29,26 @@ describe('gigStats', () => {
       expect(calculateAccuracy(1, 2)).toBe(33)
       // 2 / 3 = 66.66% -> 67
       expect(calculateAccuracy(2, 1)).toBe(67)
+    })
+  })
+
+  describe('getOutcomeAccuracy', () => {
+    it('returns a finite accuracy clamped to 0-100', () => {
+      expect(getOutcomeAccuracy({ accuracy: 72 })).toBe(72)
+      expect(getOutcomeAccuracy({ accuracy: 140 })).toBe(100)
+      expect(getOutcomeAccuracy({ accuracy: -5 })).toBe(0)
+    })
+
+    it('reads missing or non-finite accuracy as 0 (a bad show)', () => {
+      expect(getOutcomeAccuracy({ score: 1000 })).toBe(0)
+      expect(getOutcomeAccuracy({ accuracy: Number.NaN })).toBe(0)
+      expect(getOutcomeAccuracy({ accuracy: Number.POSITIVE_INFINITY })).toBe(0)
+      expect(getOutcomeAccuracy({ accuracy: '90' })).toBe(0)
+    })
+
+    it('never reads a failed gig as high accuracy', () => {
+      expect(getOutcomeAccuracy({ accuracy: 95, failed: true })).toBe(0)
+      expect(getOutcomeAccuracy({ accuracy: 95, failed: false })).toBe(95)
     })
   })
 

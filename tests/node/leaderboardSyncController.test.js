@@ -268,6 +268,14 @@ test('falls back to the clock for a stored revision the API would reject', async
   }
 })
 
+test('never derives the API-rejected MAX_SAFE_INTEGER revision (#3475)', async () => {
+  const t = setup({ startMs: 5000 })
+  t.storage.set(REVISION_KEY('p'), Number.MAX_SAFE_INTEGER - 1)
+  await t.submit(snap(500))
+  assert.equal(t.bodies[0].revision, Number.MAX_SAFE_INTEGER - 1)
+  assert.equal(t.storage.get(REVISION_KEY('p')), Number.MAX_SAFE_INTEGER - 1)
+})
+
 test('does not record a failed request as synced', async () => {
   const t = setup({ script: [failResponse(500)] })
   await t.submit(snap(500))
@@ -502,6 +510,39 @@ test('backs off when the server keeps answering stale', async () => {
   await t.advance(MIN_SYNC_INTERVAL_MS)
   assert.equal(t.bodies.length, 3)
 })
+
+for (const serverRevision of [
+  Number.MAX_SAFE_INTEGER - 1,
+  Number.MAX_SAFE_INTEGER
+]) {
+  test(`stops syncing a player whose server revision ${serverRevision} cannot be overtaken (#3475)`, async () => {
+    // The server would answer stale to every resend for this player.
+    const t = setup({
+      script: Array.from({ length: 50 }, () => staleResponse(serverRevision))
+    })
+    await t.submit(snap(500))
+    await t.advance(60 * 60 * 1000)
+    assert.equal(t.bodies.length, 1)
+    assert.equal(t.timers.length, 0)
+    assert.deepEqual(t.logs.warn, [
+      [
+        'Leaderboard',
+        'Stats revision exhausted on the server. Disabling stat sync for this player.'
+      ]
+    ])
+
+    // Later stat changes for that player are ignored without a request or log.
+    await t.submit(snap(900))
+    await t.advance(60 * 60 * 1000)
+    assert.equal(t.bodies.length, 1)
+    assert.equal(t.logs.warn.length, 1)
+
+    // Other players still send.
+    await t.submit(snap(500, 'q'))
+    assert.equal(t.bodies.length, 2)
+    assert.equal(t.bodies[1].playerId, 'q')
+  })
+}
 
 test('allocates no revision for a flush that is skipped', async () => {
   const t = setup({ script: [failResponse(404)] })

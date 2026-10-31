@@ -8,8 +8,10 @@
 ## Paid options during a run
 
 - Option `condition`s are evaluated against `withExpeditionSpendableCash(state)` (in `resolveChoice` and `EventModal`), so a money gate such as `money >= 45` cannot be met with protected cash.
-- `isOptionAffordable` derives a direct money cost from the option's effects (`getOptionPreviewMoney`, percentage costs priced against the real balance) and refuses it when only protected cash could pay and a sibling option is still choosable. If none is, the cost stays payable (clipped at the floor) so an event can never lock. It runs in `resolveEventChoice` and in the modal, and is a no-op outside a run.
+- Percentage money effects (`percentage_resource`) are taken of spendable cash plus the running composite delta (`getPercentageMoneyBase`; the full balance outside an active run), computed once in `getPercentageMoneyChange`, clamped with `clampMoneyChange` against the raw balance like a fixed `resource` change. The `percentage_resource` handler and `getOptionPreviewMoney` share this rule, so the previewed price is the executed one; without a player slice both charge nothing, whatever `min`/`max` say.
+- `isOptionAffordable` derives a direct money cost from the option's effects (`getOptionPreviewMoney`) and refuses it when only protected cash could pay and a sibling option is still choosable. If none is, the cost stays payable (clipped at the floor) so an event can never lock. It runs in `resolveEventChoice` and in the modal, and is a no-op outside a run.
 
 ## Events
 
+- `social_set` sets only `egoFocus` and `trend`. A numeric counter value (e.g. `loyalty`, `viral`) goes into the additive social delta, so `applyEventDelta` adds it to the current counter: "set" acts as "add". A real numeric set needs its own delta channel; until then, author numeric social changes as increments.
 - `resolveChoice` skillCheck in `eventEngine.ts` must branch `stat === 'luck'` BEFORE the `gameState.band[stat]` fallthrough. `band.luck` exists (default 0), so checking band stats first turns the random luck roll into a static 0.

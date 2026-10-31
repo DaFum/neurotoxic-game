@@ -1,4 +1,4 @@
-import { clamp0to100, finiteNumberOr } from './gameState'
+import { clamp0to100, clampPercent, finiteNumberOr } from './gameState'
 import type {
   GigStats,
   RhythmLiveStats,
@@ -25,6 +25,23 @@ export const calculateAccuracy = (
   if (total === 0) return 100
   return clamp0to100(Math.round((perfectHits / total) * 100))
 }
+
+/**
+ * Reads the 0–100 hit accuracy that post-gig outcome gates compare against.
+ *
+ * @remarks
+ * Every real gig dispatch carries accuracy, so a missing or non-finite value
+ * is malformed and reads as `0` (a bad show), never as a pass. A failed gig
+ * (`failed: true`) also reads as `0`, whatever accuracy it recorded.
+ * Callers gate on the stats being present: no stats means no gig was played,
+ * which is not a bad show.
+ * @param stats - The stored or incoming post-gig stats.
+ * @returns Accuracy clamped to 0–100, or `0` when missing, non-finite or failed.
+ */
+export const getOutcomeAccuracy = (stats: {
+  accuracy?: unknown
+  failed?: unknown
+}): number => (stats.failed === true ? 0 : clampPercent(stats.accuracy, 0))
 
 /**
  * Updates peak performance stats without mutating the original object.

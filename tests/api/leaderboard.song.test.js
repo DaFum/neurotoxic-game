@@ -600,8 +600,10 @@ describe('Leaderboard API - Song', () => {
       ])
 
       assert.strictEqual(res.status.mock.calls[0][0], 405)
-      assert.strictEqual(res.end.mock.calls.length, 1)
-      assert.deepStrictEqual(res.end.mock.calls[0], ['Method PUT Not Allowed'])
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Method Not Allowed'
+      })
+      assert.strictEqual(res.end.mock.calls.length, 0)
     })
   })
 

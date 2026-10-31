@@ -168,6 +168,112 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
     }
   )
 
+  /** The display name the endpoint handed to its persistence script. */
+  const persistedName = () => {
+    if (endpoint.name === 'stats') {
+      const [, options] = mockClient.eval.mock.calls.find(
+        ([script]) => script !== RATE_LIMIT_SCRIPT
+      )
+      return options.arguments[1]
+    }
+    const [, options] = mockClient.eval.mock.calls.find(
+      ([script]) => script === SET_NAME_IF_UNVERSIONED_SCRIPT
+    )
+    return options.arguments[1]
+  }
+
+  const postName = async playerName => {
+    const { res } = createApiRouteMocks()
+    await handler(
+      {
+        method: 'POST',
+        body: { ...endpoint.payload, playerId: 'player1', playerName }
+      },
+      res
+    )
+    return res
+  }
+
+  test.each([
+    ['zero-width space', '\u200B'],
+    ['zero-width run', '\u200B\u200C\u200D\u2060'],
+    ['byte order mark', '\uFEFF'],
+    ['Hangul filler', '\u3164'],
+    ['Hangul choseong/jungseong fillers', '\u115F\u1160'],
+    ['halfwidth Hangul filler', '\uFFA0'],
+    ['Braille blank', '\u2800'],
+    ['spaces around zero-width characters', ' \u200B \u2060 ']
+  ])('POST rejects an invisible name (%s) before writes', async (_, name) => {
+    const res = await postName(name)
+
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Invalid playerName length'
+    })
+    expect(
+      mockClient.eval.mock.calls.filter(
+        ([script]) => script !== RATE_LIMIT_SCRIPT
+      )
+    ).toEqual([])
+    expect(mockClient.hSet).not.toHaveBeenCalled()
+    expect(mockClient.multi).not.toHaveBeenCalled()
+  })
+
+  test('POST rejects a name with no visible character before writes', async () => {
+    const res = await postName('\u0301\u0308')
+
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid playerName' })
+    expect(
+      mockClient.eval.mock.calls.filter(
+        ([script]) => script !== RATE_LIMIT_SCRIPT
+      )
+    ).toEqual([])
+    expect(mockClient.multi).not.toHaveBeenCalled()
+  })
+
+  test.each([
+    ['Al\u200Bice', 'Alice'],
+    ['Alice\u200D', 'Alice'],
+    ['Alice\u3164', 'Alice'],
+    ['\u2060Alice\u2800', 'Alice']
+  ])(
+    'POST strips invisible characters from lookalike name %j',
+    async (name, stored) => {
+      const res = await postName(name)
+
+      expect(res.status).toHaveBeenCalledWith(200)
+      expect(persistedName()).toBe(stored)
+    }
+  )
+
+  test.each([
+    'Zoë Müller',
+    'Jose\u0301',
+    'Café 🤘',
+    '\u2764\uFE0F Band',
+    '東京ノイズ',
+    '!!!'
+  ])('POST keeps the visible name %j unchanged', async name => {
+    const res = await postName(name)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(persistedName()).toBe(name)
+  })
+
+  test.each(['PUT', 'DELETE'])(
+    '%s answers 405 with a JSON error body',
+    async method => {
+      const { res } = createApiRouteMocks()
+      await handler({ method }, res)
+
+      expect(res.setHeader).toHaveBeenCalledWith('Allow', ['GET', 'POST'])
+      expect(res.status).toHaveBeenCalledWith(405)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Method Not Allowed' })
+      expect(res.end).not.toHaveBeenCalled()
+    }
+  )
+
   test('POST counts each request in one atomic script and blocks the sixth before writes', async () => {
     const counts = [1, 5, 6]
     let counted = 0
