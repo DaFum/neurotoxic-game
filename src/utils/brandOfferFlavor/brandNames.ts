@@ -113,8 +113,15 @@ const getBrandParts = (alignment: string): BrandNameParts | null => {
 }
 
 /**
- * Generates a dynamic brand-style name (alignment-flavored). Used by both
- * rival band naming and brand-offer campaign codenames. Falls back to
+ * Generates a dynamic brand-style name (alignment-flavored).
+ *
+ * @param baseName - The fallback name used if the alignment is unknown or hostile.
+ * @param alignment - The ethical alignment key of the brand (e.g., 'EVIL', 'CORPORATE').
+ * @param rng - The random number generator callback used to pick name parts. Defaults to `secureRandom`.
+ * @returns A generated brand name string.
+ *
+ * @remarks
+ * Used by both rival band naming and brand-offer campaign codenames. Falls back to
  * `baseName` for unknown / hostile alignment strings.
  */
 export const generateBrandName = (
@@ -138,8 +145,14 @@ export const generateBrandName = (
 }
 
 /**
- * Codename only — used as the *campaign* label on an offer, NEVER replacing
- * the canonical `deal.name`.
+ * Generates a campaign codename based on the brand's alignment.
+ *
+ * @param alignment - The ethical alignment key of the brand.
+ * @param rng - The random number generator callback.
+ * @returns A generated campaign codename string.
+ *
+ * @remarks
+ * Used as the *campaign* label on an offer, NEVER replacing the canonical `deal.name`.
  */
 export const generateCampaignCodename = (
   alignment: string,
