@@ -322,3 +322,54 @@ test('a song end from a previous gig session neither settles nor chains (#3458)'
   assert.deepStrictEqual(state.songStats, [])
   assert.strictEqual(state.lastEndedSongIndex, -1)
 })
+
+test('a next-song failure from a previous gig session does not complete the new setlist (#3458)', async () => {
+  const state = makeSequencerState()
+  const ref = { current: state }
+  const setlist = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' }
+  ]
+  /** @type {string[]} */
+  const toasts = []
+  await playSongSequence(0, setlist, ref, text => toasts.push(text))
+  const onSongEnded = playAudioForSong.mock.calls.at(-1)?.arguments[2]
+  assert.equal(typeof onSongEnded, 'function')
+
+  /** @type {(reason: unknown) => void} */
+  let rejectNext = () => {}
+  playAudioForSong.mock.mockImplementationOnce(
+    () =>
+      new Promise((_resolve, reject) => {
+        rejectNext = reject
+      })
+  )
+  const ended = onSongEnded?.()
+  resetGigStateTracking(ref)
+  const toastsBefore = toasts.length
+  rejectNext(new Error('next song failed'))
+  await ended
+
+  assert.strictEqual(state.setlistCompleted, false)
+  assert.strictEqual(state.songTransitioning, false)
+  assert.strictEqual(toasts.length, toastsBefore)
+})
+
+test('a next-song failure of the current attempt still completes the setlist (#3458)', async () => {
+  const state = makeSequencerState()
+  const ref = { current: state }
+  const setlist = [
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' }
+  ]
+  await playSongSequence(0, setlist, ref, () => {})
+  const onSongEnded = playAudioForSong.mock.calls.at(-1)?.arguments[2]
+
+  playAudioForSong.mock.mockImplementationOnce(async () => {
+    throw new Error('next song failed')
+  })
+  await onSongEnded?.()
+
+  assert.strictEqual(state.setlistCompleted, true)
+  assert.strictEqual(state.songTransitioning, false)
+})

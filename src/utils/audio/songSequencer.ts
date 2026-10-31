@@ -183,13 +183,20 @@ export const playSongSequence = async (
 
     logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
     gameStateRef.current.songTransitioning = true
-    return playSongSequence(
+    const chained = playSongSequence(
       index + 1,
       activeSetlist,
       gameStateRef,
       addToast,
       t
-    ).catch(err => {
+    )
+    // `playSongSequence` claims its attempt id synchronously, before its first
+    // await, so this is the id of the chained call.
+    const chainedAttemptId = gameStateRef.current?.sequenceAttemptId
+    return chained.catch(err => {
+      // A rejection that lands after a gig reset or a newer sequence belongs to
+      // a stale attempt: it must not flag the current gig's setlist as done.
+      if (gameStateRef.current?.sequenceAttemptId !== chainedAttemptId) return
       handleError(err, {
         addToast,
         fallbackMessage: t
