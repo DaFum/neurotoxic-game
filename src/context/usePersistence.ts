@@ -310,8 +310,9 @@ const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
  * @param adapter - Storage backend the quarantine copy is written to.
  * @param options - `quarantine: false` runs the migration without writing the
  * quarantine copy or logging a failure, for a preview that must not write.
- * @returns Migrated payload stamped with the current version, or `null` when a
- * migration step threw.
+ * @returns `ok: true` with the payload stamped with the current version, or
+ * `ok: false` when a migration step threw, with `quarantined` telling whether
+ * the copy reached persistent storage (always `false` for a preview).
  *
  * @remarks
  * The raw payload is quarantined *before* the caller falls back to the initial
@@ -322,9 +323,12 @@ export const migrateLoadedSave = (
   rawSave: string,
   adapter: IStorageAdapter = defaultStorageAdapter,
   options: { quarantine?: boolean } = {}
-): Record<string, unknown> | null => {
+):
+  | { ok: true; migrated: Record<string, unknown> }
+  | { ok: false; quarantined: boolean } => {
   const storedVersion = readSaveVersion(parsedObj)
-  if (storedVersion >= CURRENT_SAVE_VERSION) return parsedObj
+  if (storedVersion >= CURRENT_SAVE_VERSION)
+    return { ok: true, migrated: parsedObj }
 
   try {
     const migrated = runSaveMigrations(parsedObj, storedVersion)
@@ -333,19 +337,22 @@ export const migrateLoadedSave = (
         `Migration from version ${storedVersion} produced a non-object payload`
       )
     }
-    return { ...migrated, version: CURRENT_SAVE_VERSION }
+    return {
+      ok: true,
+      migrated: { ...migrated, version: CURRENT_SAVE_VERSION }
+    }
   } catch (error) {
     // A preview only asks whether the save would load: it must not write the
     // quarantine copy or log the failure.
-    if (options.quarantine === false) return null
+    if (options.quarantine === false) return { ok: false, quarantined: false }
     const reason = error instanceof Error ? error.message : String(error)
-    quarantineSave(rawSave, storedVersion, reason, adapter)
+    const quarantined = quarantineSave(rawSave, storedVersion, reason, adapter)
     logger.error(
       'Persistence',
       `Save migration from version ${storedVersion} failed`,
       reason
     )
-    return null
+    return { ok: false, quarantined }
   }
 }
 
@@ -358,7 +365,11 @@ type LoadReporter = {
   incompatible: (saveVersion: number) => void
   parseFailed: () => void
   corruptFailed: (reason?: string) => void
-  migrationFailed: () => void
+  /**
+   * @param slotKey - Slot the save was read from.
+   * @param kept - Whether the recovery copy reached persistent storage.
+   */
+  migrationFailed: (slotKey: string, kept: boolean) => void
 }
 
 const SILENT_LOAD_REPORTER: LoadReporter = {
@@ -405,6 +416,7 @@ const evaluateStoredSave = (
 ): StoredSaveEvaluation => {
   let parsed: unknown
   let rawSave: string | undefined
+  let slotKey: string | undefined
   // Copies a refused payload aside before the caller falls back to the initial
   // state: the next autosave writes the same key and would destroy the only
   // copy of the run. A preview writes nothing.
@@ -428,7 +440,8 @@ const evaluateStoredSave = (
       report.incompatible(newerVersion)
       return { ok: false, reason: 'incompatible' }
     }
-    const saved = readStorageItem(resolveLoadSlotKey(storage), storage)
+    slotKey = resolveLoadSlotKey(storage)
+    const saved = readStorageItem(slotKey, storage)
     if (!saved) return { ok: false, reason: 'missing' }
     rawSave = saved
     parsed = safeJsonParse(saved)
@@ -469,13 +482,14 @@ const evaluateStoredSave = (
 
   const parsedObj = parsed as Record<string, unknown>
 
-  const migratedObj = migrateLoadedSave(parsedObj, rawSave, storage, {
+  const migration = migrateLoadedSave(parsedObj, rawSave, storage, {
     quarantine: !preview
   })
-  if (!migratedObj) {
-    report.migrationFailed()
+  if (!migration.ok) {
+    report.migrationFailed(slotKey, migration.quarantined)
     return { ok: false, reason: 'corrupt' }
   }
+  const migratedObj = migration.migrated
 
   const savedRaw = Array.isArray(parsedObj.unlocks) ? parsedObj.unlocks : []
   const savedUnlocks = savedRaw.filter(
@@ -591,6 +605,15 @@ export function usePersistence({
   // notice is shown once per session rather than on every autosave.
   const incompatibleNoticeShownRef = useRef(false)
 
+  // Slot holding a save whose migration failed and whose recovery copy could
+  // not be persisted: it is the only copy of that run, so saves into the slot
+  // are refused until the player starts a new run (the existing-save prompt
+  // is the confirmation; `resetState` releases the block).
+  const unprotectedSlotRef = useRef<string | null>(null)
+  const releaseUnprotectedSlot = useCallback(() => {
+    unprotectedSlotRef.current = null
+  }, [])
+
   /**
    * Writes the save, reporting whether the write actually landed.
    *
@@ -605,6 +628,13 @@ export function usePersistence({
       showToast = true,
       stateSnapshot: GameState = stateRef.current
     ): boolean => {
+      if (unprotectedSlotRef.current === getSaveSlotKey(CURRENT_SAVE_VERSION)) {
+        logger.warn(
+          'Persistence',
+          'Save skipped: the slot holds a save that failed to upgrade and has no recovery copy'
+        )
+        return false
+      }
       // A save from a newer build is the player's only copy of that progress;
       // this build cannot represent it, so it never writes over it.
       // Adapter reads report failure as `null` rather than throwing.
@@ -795,16 +825,23 @@ export function usePersistence({
           ),
           { addToast }
         ),
-      migrationFailed: () =>
+      migrationFailed: (slotKey, kept) => {
+        if (!kept) unprotectedSlotRef.current = slotKey
         handleError(
           new StateError(
-            tRef.current('ui:save.migrationFailed', {
-              defaultValue:
-                'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
-            })
+            kept
+              ? tRef.current('ui:save.migrationFailed', {
+                  defaultValue:
+                    'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
+                })
+              : tRef.current('ui:save.migrationFailedNotKept', {
+                  defaultValue:
+                    'Save file could not be upgraded, and no recovery copy could be stored. It was left untouched and saving is paused; starting a new tour will overwrite it.'
+                })
           ),
           { addToast }
         )
+      }
     }
     const refuseUnreadable = (): LoadGameResult => {
       report.unreadable()
@@ -887,6 +924,7 @@ export function usePersistence({
     saveGame,
     saveGameAfterStateCommit,
     loadGame,
-    previewLoadGame
+    previewLoadGame,
+    releaseUnprotectedSlot
   }
 }

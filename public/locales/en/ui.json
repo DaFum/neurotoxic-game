@@ -2128,6 +2128,7 @@
   "save.incompatibleVersion": "This save was made by a newer version of the game (save version {{saveVersion}}, this version supports up to {{supportedVersion}}). It was left untouched and will not be overwritten; update the game to continue it.",
   "save.loadUnreadable": "The save could not be read, so it was not loaded. Progress will not be saved until storage works again.",
   "save.migrationFailed": "Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.",
+  "save.migrationFailedNotKept": "Save file could not be upgraded, and no recovery copy could be stored. It was left untouched and saving is paused; starting a new tour will overwrite it.",
   "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
   "save.saveFailed": "Failed to save game.",
   "save.slotUnreadable": "The save could not be read, so saving was skipped to protect any existing save. Progress will not be saved until storage works again.",

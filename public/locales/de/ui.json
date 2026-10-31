@@ -2128,6 +2128,7 @@
   "save.incompatibleVersion": "Dieser Speicherstand stammt aus einer neueren Version des Spiels (Speicherstand-Version {{saveVersion}}, diese Version unterstützt bis {{supportedVersion}}). Er wurde nicht verändert und wird nicht überschrieben; aktualisiere das Spiel, um ihn fortzusetzen.",
   "save.loadUnreadable": "Der Speicherstand konnte nicht gelesen werden und wurde deshalb nicht geladen. Der Fortschritt wird erst wieder gespeichert, wenn der Speicher funktioniert.",
   "save.migrationFailed": "Speicherstand konnte nicht aktualisiert werden. Eine Kopie wurde zur Wiederherstellung gesichert; greife auf Anfangszustand zurück.",
+  "save.migrationFailedNotKept": "Speicherstand konnte nicht aktualisiert werden, und es konnte keine Kopie zur Wiederherstellung gesichert werden. Er bleibt unverändert und Speichern ist pausiert; eine neue Tour überschreibt ihn.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "save.saveFailed": "Spiel konnte nicht gespeichert werden.",
   "save.slotUnreadable": "Der Speicherstand konnte nicht gelesen werden, deshalb wurde das Speichern übersprungen, um einen vorhandenen Speicherstand zu schützen. Der Fortschritt wird erst wieder gespeichert, wenn der Speicher funktioniert.",

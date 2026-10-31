@@ -593,7 +593,8 @@ export function useGameDispatchActions({
     saveGame,
     saveGameAfterStateCommit,
     loadGame,
-    previewLoadGame
+    previewLoadGame,
+    releaseUnprotectedSlot
   } = usePersistence({
     currentScene: state.currentScene,
     stateRef,
@@ -713,12 +714,16 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
+    // Lifts the save block a failed, unrecoverable migration set. A new run
+    // only starts from the menu through the existing-save prompt while a save
+    // is stored, so the player has confirmed replacing it.
+    releaseUnprotectedSlot()
     // Same adapter initialization, save/load, and event unlocks use: reading
     // the module default here would let a reset overwrite the injected
     // backend's unlocks (or stored settings) with whatever sits in browser
     // storage.
     dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }, storage))
-  }, [dispatch, resetMapGenerationRetries, storage])
+  }, [dispatch, releaseUnprotectedSlot, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {
     const currentState = stateRef.current
