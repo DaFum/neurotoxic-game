@@ -609,6 +609,33 @@ describe('gigReducer', () => {
       assert.equal(next.expedition.cargo.merch[0].quantity, 0)
     })
 
+    it('keeps a non-numeric stored merch value instead of rewriting it', () => {
+      for (const stored of [true, 'x', null, NaN, ['4'], { n: 4 }]) {
+        const state = { band: { inventory: { shirts: stored, hoodies: 4 } } }
+        const next = handleSettleSoldMerch(state, { shirts: 3, hoodies: 1 })
+        assert.deepEqual(next.band.inventory.shirts, stored)
+        assert.equal(next.band.inventory.hoodies, 3)
+      }
+    })
+
+    it('keeps a non-numeric stored merch value during an active run too', () => {
+      const state = {
+        band: { inventory: { shirts: 'x', hoodies: 4 } },
+        expedition: {
+          status: 'active',
+          cargo: {
+            merch: [
+              { inventoryKey: 'shirts', quantity: 3 },
+              { inventoryKey: 'hoodies', quantity: 2 }
+            ]
+          }
+        }
+      }
+      const next = handleSettleSoldMerch(state, { shirts: 2, hoodies: 1 })
+      assert.equal(next.band.inventory.shirts, 'x')
+      assert.equal(next.band.inventory.hoodies, 3)
+    })
+
     it('deducts active-run sales from owned stock too, bounded by the manifest', () => {
       const state = {
         band: { inventory: { shirts: 10, hoodies: 4 } },

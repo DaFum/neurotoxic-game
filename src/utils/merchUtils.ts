@@ -1,4 +1,5 @@
 import { finiteNumberOr } from './gameState'
+import { isFiniteNumber } from './finiteNumber'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 import { MERCH_MAX_PRICES } from '../data/merch'
 import type { BandState } from '../types'
@@ -133,7 +134,9 @@ export const isSoldMerchKey = (key: string): boolean =>
 /**
  * Decrements sold-merch counts from a band inventory, clamped at zero (pure).
  * Keys that are not canonical merch keys are ignored, so a sold count can
- * never zero out gear flags or add unknown inventory keys.
+ * never zero out gear flags or add unknown inventory keys. A canonical key
+ * whose stored value is not a finite number is ignored too and keeps its
+ * stored value.
  * @param inventory - Current band inventory.
  * @param soldMerch - Quantities sold this gig, keyed by merch id.
  * @returns A new inventory record with sold quantities removed.
@@ -145,8 +148,12 @@ export function buildSoldMerchInventory(
   const updatedInventory = { ...(inventory || {}) }
   for (const merchKey in soldMerch) {
     if (Object.hasOwn(soldMerch, merchKey) && isSoldMerchKey(merchKey)) {
+      // A stored value that is not a finite number (a missing key, a flag, a
+      // string, NaN) is not a stock count: leave it as it is instead of
+      // rewriting it to a number.
+      const currentAmount = updatedInventory[merchKey]
+      if (!isFiniteNumber(currentAmount)) continue
       const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
-      const currentAmount = finiteNumberOr(updatedInventory[merchKey], 0)
       updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
     }
   }
