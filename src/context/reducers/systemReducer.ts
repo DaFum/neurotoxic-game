@@ -1072,12 +1072,13 @@ export const handleAddUnlock = (
  * @param state - Game state before updating the pending flag.
  * @param isOpen - Next pending open state.
  * @returns State with the pending flag changed, or the original state when it
- * already matches.
+ * already matches or the payload is not a boolean.
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,
   isOpen: boolean
 ): GameState => {
+  if (typeof isOpen !== 'boolean') return state
   if (state.pendingBandHQOpen === isOpen) return state
   return { ...state, pendingBandHQOpen: isOpen }
 }

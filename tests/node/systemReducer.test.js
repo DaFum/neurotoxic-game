@@ -1877,6 +1877,14 @@ test('systemReducer - pending modal state', async t => {
     }
   )
 
+  await t.test('rejects a non-boolean pending Band HQ flag', () => {
+    const state = { ...createInitialState(), pendingBandHQOpen: false }
+
+    for (const isOpen of ['yes', {}, undefined, 1, null]) {
+      assert.equal(handleSetPendingBandHQOpen(state, isOpen), state)
+    }
+  })
+
   await t.test(
     'keeps a well-formed pending supply stop inventory as it was',
     () => {

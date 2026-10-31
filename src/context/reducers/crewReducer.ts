@@ -11,6 +11,7 @@ import type {
 } from '../../types/expedition'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
+import { isLooseRecord } from '../../utils/objectUtils'
 import {
   applyCrewStressDelta,
   classifyGigCrewStress,
@@ -240,6 +241,10 @@ export const handleRecordExpeditionRelationshipOutcome = (
   const replayId = `${payload.sourceId}:relationship`
   if (
     !acceptsSource(state, payload.sourceId, payload.expectedRouteStep) ||
+    // A missing or primitive actor is rejected here rather than throwing from
+    // `validActor`'s property reads.
+    !isLooseRecord(payload.first) ||
+    !isLooseRecord(payload.second) ||
     !validActor(state, payload.first) ||
     !validActor(state, payload.second) ||
     (payload.first.kind === payload.second.kind &&

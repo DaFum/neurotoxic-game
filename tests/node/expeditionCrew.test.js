@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createInitialState } from '../../src/context/initialState.ts'
+import { handleRecordExpeditionRelationshipOutcome } from '../../src/context/reducers/crewReducer.ts'
 import { EXPEDITION_CREW } from '../../src/data/expedition/crew.ts'
 import {
   getAvailableCrewIds,
@@ -196,4 +197,31 @@ test('the next Tour starts with the Band injuries the Career carried over (#3374
   // After paid rehab the Career holds one stage less, and so does the run.
   const rehabbed = startWith({ matze: 'none' })
   assert.deepEqual({ ...rehabbed.expedition.bandInjuryByMemberId }, {})
+})
+
+test('relationship outcome rejects missing or primitive actors without throwing', () => {
+  const base = createInitialState()
+  const state = {
+    ...base,
+    expedition: { ...base.expedition, status: 'active', routeStep: 0 }
+  }
+  const valid = { kind: 'crew', id: 'mika' }
+  for (const [first, second] of [
+    [undefined, valid],
+    ['mika', valid],
+    [valid, undefined],
+    [valid, null]
+  ]) {
+    const payload = {
+      sourceType: 'crew_event',
+      sourceId: 'event:1',
+      expectedRouteStep: 0,
+      ...(first === undefined ? {} : { first }),
+      ...(second === undefined ? {} : { second })
+    }
+    assert.equal(
+      handleRecordExpeditionRelationshipOutcome(state, payload),
+      state
+    )
+  }
 })
