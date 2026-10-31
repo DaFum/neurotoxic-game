@@ -182,7 +182,7 @@ export const Overworld = () => {
       {/* Radio Widget */}
       <div
         data-testid='overworld-radio'
-        className='self-end shrink-0 order-first sm:absolute sm:top-8 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-(--z-overlay) pointer-events-auto bg-void-black border-2 border-toxic-green p-2 flex items-center gap-2 shadow-[0_0_10px_var(--color-toxic-green-20)] scale-100 origin-top-right sm:origin-center'
+        className='self-end shrink-0 order-first sm:absolute sm:top-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-(--z-overlay) pointer-events-auto bg-void-black border-2 border-toxic-green p-2 flex items-center gap-2 shadow-[0_0_10px_var(--color-toxic-green-20)] scale-100 origin-top-right sm:origin-center'
       >
         <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
         <span className='text-xs text-ash-gray font-mono'>
