@@ -431,21 +431,21 @@ export const gameReducer = (
 ): GameState => {
   let nextState: GameState
 
-  if (!isHandledAction(action)) {
+  // The shape guard runs before any `action.type` read (including the
+  // band-action routing below), so a null, primitive or typeless dispatch
+  // reaches the logged trap instead of throwing a TypeError.
+  const hasActionShape =
+    !!action && typeof action === 'object' && Object.hasOwn(action, 'type')
+
+  if (hasActionShape && !isHandledAction(action)) {
     nextState = bandReducer(state, action)
-  } else if (
-    action &&
-    typeof action === 'object' &&
-    Object.hasOwn(action, 'type') &&
-    Object.hasOwn(reducerMap, (action as { type: string }).type)
-  ) {
-    nextState = runHandledAction(state, action)
+  } else if (hasActionShape && Object.hasOwn(reducerMap, action.type)) {
+    nextState = runHandledAction(state, action as HandledAction)
   } else {
-    logger.warn(
-      'gameReducer',
-      `Unhandled action type: ${(action as { type?: unknown }).type}`,
-      (action as { type?: unknown }).type
-    )
+    const type = hasActionShape
+      ? (action as { type?: unknown }).type
+      : undefined
+    logger.warn('gameReducer', `Unhandled action type: ${String(type)}`, type)
 
     // Runtime safety net for malformed actions that bypass the dispatch
     // system. This is NOT an exhaustiveness check — the `as never` cast
