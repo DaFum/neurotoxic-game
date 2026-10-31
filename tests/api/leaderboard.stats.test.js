@@ -284,6 +284,31 @@ describe('Leaderboard Stats API', () => {
     assert.strictEqual(writeCalls().length, 0)
   })
 
+  // The client treats MAX_SAFE_INTEGER as exhausted (readStoredRevision), so a
+  // stored MAX would make every later client request stale forever (#3460).
+  test('POST rejects the exhausted revision Number.MAX_SAFE_INTEGER', async () => {
+    const { res } = createApiRouteMocks()
+    await statsModule.default(revisionRequest(Number.MAX_SAFE_INTEGER), res)
+
+    assert.strictEqual(res.status.mock.calls[0][0], 400)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
+      error: 'Invalid revision'
+    })
+    assert.strictEqual(writeCalls().length, 0)
+  })
+
+  test('POST accepts the largest revision below Number.MAX_SAFE_INTEGER', async () => {
+    const { res } = createApiRouteMocks()
+    await statsModule.default(revisionRequest(Number.MAX_SAFE_INTEGER - 1), res)
+
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.strictEqual(writeCalls().length, 1)
+    assert.strictEqual(
+      writeCalls()[0][1].arguments[1],
+      String(Number.MAX_SAFE_INTEGER - 1)
+    )
+  })
+
   test('POST rejects missing required fields', async () => {
     const req = {
       method: 'POST',
