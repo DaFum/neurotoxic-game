@@ -1151,28 +1151,28 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
             </fieldset>
 
             <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
-              <div data-chatter-avoid className='flex flex-col gap-2'>
-                <legend
-                  id='expedition-prep-protected-cash-label'
-                  className='text-xs uppercase tracking-widest text-toxic-green px-1'
-                >
-                  {t('ui:expedition.prep.protectedCash', {
-                    amount: formatCurrency(protectedCareerCash, i18n.language)
-                  })}
-                </legend>
-                <input
-                  type='range'
-                  aria-labelledby='expedition-prep-protected-cash-label'
-                  min={0}
-                  max={Math.max(0, Math.floor(money))}
-                  step={10}
-                  value={protectedCareerCash}
-                  data-testid='expedition-prep-protected-cash'
-                  onChange={event =>
-                    setProtectedCareerCash(Number(event.currentTarget.value))
-                  }
-                />
-              </div>
+              <legend
+                data-chatter-avoid
+                id='expedition-prep-protected-cash-label'
+                className='text-xs uppercase tracking-widest text-toxic-green px-1'
+              >
+                {t('ui:expedition.prep.protectedCash', {
+                  amount: formatCurrency(protectedCareerCash, i18n.language)
+                })}
+              </legend>
+              <input
+                data-chatter-avoid
+                type='range'
+                aria-labelledby='expedition-prep-protected-cash-label'
+                min={0}
+                max={Math.max(0, Math.floor(money))}
+                step={10}
+                value={protectedCareerCash}
+                data-testid='expedition-prep-protected-cash'
+                onChange={event =>
+                  setProtectedCareerCash(Number(event.currentTarget.value))
+                }
+              />
               <p className='text-xs text-ash-gray'>
                 {t('ui:expedition.prep.protectedCashHint')}
               </p>

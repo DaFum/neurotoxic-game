@@ -350,6 +350,22 @@ const isCompactViewport = (): boolean =>
     ? window.matchMedia('(width < 40rem)').matches
     : window.innerWidth < SM_BREAKPOINT_PX
 
+const isElementVisible = (el: HTMLElement): boolean => {
+  if (
+    el.getAttribute('data-declutter-hidden') === 'true' ||
+    el.closest('[data-declutter-hidden="true"]')
+  ) {
+    return false
+  }
+  if (typeof window.getComputedStyle === 'function') {
+    const style = window.getComputedStyle(el)
+    if (style.visibility === 'hidden' || style.display === 'none') {
+      return false
+    }
+  }
+  return true
+}
+
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []
   const selector = isCompactViewport()
@@ -357,6 +373,7 @@ const collectObstacleRects = (self: HTMLElement): Rect[] => {
     : OBSTACLE_SELECTOR
   for (const el of document.querySelectorAll<HTMLElement>(selector)) {
     if (self.contains(el) || el.contains(self)) continue
+    if (!isElementVisible(el)) continue
     const r = el.getBoundingClientRect()
     if (r.width > 0 && r.height > 0) {
       rects.push({ left: r.left, top: r.top, right: r.right, bottom: r.bottom })
@@ -551,7 +568,8 @@ const useNonOverlappingPosition = (
       attributeFilter: [
         'hidden',
         'data-chatter-avoid',
-        'data-chatter-avoid-compact'
+        'data-chatter-avoid-compact',
+        'data-declutter-hidden'
       ]
     })
     return () => {

@@ -223,6 +223,21 @@ describe('form controls and scene suppression', () => {
     expect(container.style.visibility).not.toBe('hidden')
     expect(container.style.top).toBe('')
   }, 15000)
+
+  test('desktop Overworld suppresses chatter when all candidate anchors are blocked', async () => {
+    mockState.currentScene = GAME_PHASES.OVERWORLD
+    const marked = document.createElement('div')
+    marked.setAttribute('data-chatter-avoid', '')
+    document.body.appendChild(marked)
+
+    stubRects({ overlay: OVERLAY_RECT, obstacle: FULL_BLOCK_RECT })
+    const { ChatterOverlay } =
+      await import('../../src/components/ChatterOverlay.tsx')
+    const { getByRole } = render(<ChatterOverlay />)
+    const container = getByRole('status', { hidden: true })
+
+    expect(container.style.visibility).toBe('hidden')
+  }, 15000)
 })
 
 describe('observer lifecycle', () => {
@@ -498,6 +513,31 @@ describe('observer lifecycle', () => {
 
     // Reveal obstacle by unhiding
     marked.hidden = false
+    await flushMutations()
+    await act(async () => {
+      vi.advanceTimersByTime(199)
+    })
+    expect(container.style.top).toBe('')
+
+    const before = measurements()
+    await act(async () => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(measurements()).toBe(before + 1)
+    expect(container.style.top).not.toBe('')
+  }, 15000)
+
+  test('decluttered labels with data-declutter-hidden are excluded and remeasured when toggled', async () => {
+    vi.useFakeTimers()
+    const marked = addObstacle()
+    marked.setAttribute('data-declutter-hidden', 'true')
+    const { measurements } = spyRects({ current: BLOCKING_RECT })
+    const { getByRole } = await mountOverlay()
+    const container = getByRole('status')
+    expect(container.style.top).toBe('')
+
+    // Reveal label by removing declutter flag
+    marked.removeAttribute('data-declutter-hidden')
     await flushMutations()
     await act(async () => {
       vi.advanceTimersByTime(199)
