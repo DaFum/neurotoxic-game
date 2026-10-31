@@ -16,6 +16,7 @@ import { useChatterLogic } from '../hooks/useChatterLogic'
 import {
   decideChatterPlacement,
   gapAnchors,
+  shouldSuppressChatterWhenBlocked,
   type Anchor,
   type Rect
 } from './chatterPlacement'
@@ -321,8 +322,20 @@ const SM_BREAKPOINT_PX = 640
 // them as flavour text and parked on the wordmark, the PreGig venue name and
 // the gig meters. Mark only headline/at-a-glance elements — marking body copy
 // brings back the "never finds a clear spot" problem the exclusion prevents.
+// Interactive / high-value elements the chatter box must never sit on top of.
+// (Static flavour text isn't included — the box would otherwise never find a
+// clear spot, since something is always behind it.)
+//
+// Form controls (inputs, selects, textareas) and buttons/links are protected
+// interactive obstacles. `data-chatter-avoid` is the opt-in for the
+// non-interactive exceptions: scene titles, the venue name and the gig HUD
+// readouts. Without it the box treated them as flavour text and parked on the
+// wordmark, the PreGig venue name and the gig meters. Mark only
+// headline/at-a-glance elements — marking body copy brings back the "never finds
+// a clear spot" problem the exclusion prevents. Do not mark large containers or
+// body copy.
 const OBSTACLE_SELECTOR =
-  'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"],[data-chatter-avoid]'
+  'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"],input:not([type="hidden"]),select,textarea,[data-chatter-avoid]'
 
 // `data-chatter-avoid-compact` marks a live playfield or readout (minigame
 // board, countdown) that only needs protecting on a phone: there is no spare
@@ -337,6 +350,22 @@ const isCompactViewport = (): boolean =>
     ? window.matchMedia('(width < 40rem)').matches
     : window.innerWidth < SM_BREAKPOINT_PX
 
+const isElementVisible = (el: HTMLElement): boolean => {
+  if (
+    el.getAttribute('data-declutter-hidden') === 'true' ||
+    el.closest('[data-declutter-hidden="true"]')
+  ) {
+    return false
+  }
+  if (typeof window.getComputedStyle === 'function') {
+    const style = window.getComputedStyle(el)
+    if (style.visibility === 'hidden' || style.display === 'none') {
+      return false
+    }
+  }
+  return true
+}
+
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []
   const selector = isCompactViewport()
@@ -344,6 +373,7 @@ const collectObstacleRects = (self: HTMLElement): Rect[] => {
     : OBSTACLE_SELECTOR
   for (const el of document.querySelectorAll<HTMLElement>(selector)) {
     if (self.contains(el) || el.contains(self)) continue
+    if (!isElementVisible(el)) continue
     const r = el.getBoundingClientRect()
     if (r.width > 0 && r.height > 0) {
       rects.push({ left: r.left, top: r.top, right: r.right, bottom: r.bottom })
@@ -410,7 +440,8 @@ const clearPositionOverride = (el: HTMLElement): void => {
 const useNonOverlappingPosition = (
   isOverworld: boolean,
   sceneKey: string,
-  revision: string
+  revision: string,
+  isExpeditionActive: boolean
 ): RefObject<HTMLDivElement | null> => {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -455,7 +486,13 @@ const useNonOverlappingPosition = (
         },
         anchors,
         obstacles,
-        { suppressWhenBlocked: isCompactViewport() }
+        {
+          suppressWhenBlocked: shouldSuppressChatterWhenBlocked(
+            sceneKey,
+            isCompactViewport(),
+            isExpeditionActive
+          )
+        }
       )
       if (placement.kind === 'default') return
       if (placement.kind === 'suppress') {
@@ -480,13 +517,19 @@ const useNonOverlappingPosition = (
     }
 
     reposition()
-    // Throttle resize to one measurement per frame to avoid  thrashing.
+    // Throttle resize and document/nested scroll to one measurement per frame
+    // to avoid layout thrashing.
     let rafId = 0
-    const handleResize = () => {
+    const scheduleMeasureOnFrame = () => {
       cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(reposition)
     }
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', scheduleMeasureOnFrame)
+    document.addEventListener('scroll', scheduleMeasureOnFrame, {
+      capture: true,
+      passive: true
+    })
+    document.addEventListener('chatter:remeasure', scheduleMeasureOnFrame)
     // Re-place when obstacles mount or unmount after the message appeared, so a
     // late board cannot be covered and a stale suppression does not outlive it.
     let settleTimer: ReturnType<typeof setTimeout> | undefined
@@ -501,7 +544,19 @@ const useNonOverlappingPosition = (
     }
     const observer =
       typeof MutationObserver === 'function'
-        ? new MutationObserver(() => {
+        ? new MutationObserver(records => {
+            // If every record belongs to nodes inside the chatter container itself,
+            // ignore them to avoid reacting to overlay self-mutations.
+            const hasExternalMutation = records.some(
+              record =>
+                !record.target ||
+                !(
+                  el.contains(record.target as Node) ||
+                  record.target === el
+                )
+            )
+            if (!hasExternalMutation) return
+
             clearTimeout(settleTimer)
             settleTimer = setTimeout(settle, DOM_SETTLE_MS)
             // Armed by the first mutation of a burst and not restarted by later
@@ -509,17 +564,31 @@ const useNonOverlappingPosition = (
             maxWaitTimer ??= setTimeout(settle, DOM_SETTLE_MAX_WAIT_MS)
           })
         : null
-    observer?.observe(document.body, { childList: true, subtree: true })
+    observer?.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: [
+        'hidden',
+        'data-chatter-avoid',
+        'data-chatter-avoid-compact',
+        'data-declutter-hidden'
+      ]
+    })
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(settleTimer)
       clearTimeout(maxWaitTimer)
       observer?.disconnect()
-      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('resize', scheduleMeasureOnFrame)
+      document.removeEventListener('scroll', scheduleMeasureOnFrame, {
+        capture: true
+      })
+      document.removeEventListener('chatter:remeasure', scheduleMeasureOnFrame)
     }
     // `sceneKey` re-measures on scene navigation (this overlay is mounted
     // globally, so it does not remount between scenes).
-  }, [isOverworld, sceneKey, revision])
+  }, [isOverworld, sceneKey, revision, isExpeditionActive])
 
   return ref
 }
@@ -566,10 +635,13 @@ export const ChatterOverlay = memo(() => {
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const expeditionStatus = useGameSelector(state => state.expedition?.status)
+  const isExpeditionActive = expeditionStatus === 'active'
 
   const chatterState = useMemo<ChatterGameState>(
     () => ({
       currentScene,
+      expedition: expeditionStatus ? { status: expeditionStatus } : undefined,
       band: { members, harmony, luck, inventory },
       player: {
         currentNodeId,
@@ -604,7 +676,8 @@ export const ChatterOverlay = memo(() => {
       mapNodes,
       social,
       lastGigStats,
-      gigModifiers
+      gigModifiers,
+      expeditionStatus
     ]
   )
 
@@ -627,7 +700,12 @@ export const ChatterOverlay = memo(() => {
       revision += (i > 0 ? ',' : '') + msg.id
     }
   }
-  const ref = useNonOverlappingPosition(isOverworld, currentScene, revision)
+  const ref = useNonOverlappingPosition(
+    isOverworld,
+    currentScene,
+    revision,
+    isExpeditionActive
+  )
 
   return (
     <div

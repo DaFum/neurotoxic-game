@@ -38,6 +38,20 @@ const enterKabelsalat = async page => {
 }
 
 /**
+ * Loads the route-seed-1 Expedition start and transitions to Tour Prep.
+ *
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ */
+const enterTourPrep = async page => {
+  await loadSeedOneExpedition(page)
+  await page.evaluate(() => {
+    window.gameState.expedition.status = 'idle'
+    window.gameState.changeScene('TOUR_PREP')
+  })
+  await expect(page.getByTestId('expedition-tour-prep-loadout')).toBeVisible()
+}
+
+/**
  * Loads the route-seed-1 Expedition start through the normal save loader and
  * waits for its travel targets to be interactive.
  *
@@ -896,5 +910,261 @@ test.describe('Visual smoke tests', () => {
     expect(result.messages).toBeGreaterThan(0)
     // A message may sit on the board only if it is not painted at all.
     expect(result.painted && result.overlaps).toBe(false)
+  })
+
+  test('TourPrep chatter is hidden or avoids inputs, marked elements, and tab-panel buttons', async ({
+    page
+  }) => {
+    await page.clock.install()
+    await enterTourPrep(page)
+
+    const measureChatter = () =>
+      page.evaluate(() => {
+        const overlay = [...document.querySelectorAll('[role="status"]')].find(
+          el => el.className.includes('z-(--z-chatter)')
+        )
+        if (!overlay) return null
+        return {
+          messages: overlay.children.length,
+          painted: getComputedStyle(overlay).visibility !== 'hidden'
+        }
+      })
+
+    let chatter = null
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          chatter = await measureChatter()
+          return chatter?.messages ?? 0
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
+
+    const tabIds = [
+      'route_performance',
+      'tourbus_cargo',
+      'risk_protection',
+      'commercial_contracts'
+    ]
+
+    for (const tabId of tabIds) {
+      await page.getByTestId(`expedition-prep-tab-${tabId}`).click()
+      await expect(
+        page.getByTestId(`expedition-prep-panel-${tabId}`)
+      ).toBeVisible()
+
+      // Scroll the container to the bottom
+      await page.evaluate(() => {
+        const scrollContainer = document.querySelector('.overflow-y-auto')
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight
+          scrollContainer.dispatchEvent(new Event('scroll', { bubbles: false }))
+        }
+      })
+
+      // Advance clock so requestAnimationFrame from scroll fires
+      await page.clock.fastForward(250)
+
+      // Assert that chatter is hidden or avoids every visible input, [data-chatter-avoid] element, and tab-panel button.
+      await expect
+        .poll(
+          async () => {
+            await page.clock.fastForward(100)
+            return page.evaluate(currentTabId => {
+              const overlay = [
+                ...document.querySelectorAll('[role="status"]')
+              ].find(el => el.className.includes('z-(--z-chatter)'))
+              if (!overlay) return false
+              if (getComputedStyle(overlay).visibility === 'hidden') return true
+
+              const box = overlay.getBoundingClientRect()
+              const panel = document.getElementById(`panel-${currentTabId}`)
+              if (!panel) return true
+
+              const obstacles = [
+                ...document.querySelectorAll(
+                  'input:not([type="hidden"]),[data-chatter-avoid]'
+                ),
+                ...panel.querySelectorAll('button')
+              ]
+
+              for (const el of obstacles) {
+                if (overlay.contains(el) || el.contains(overlay)) continue
+                const r = el.getBoundingClientRect()
+                if (r.width <= 0 || r.height <= 0) continue
+                const style = getComputedStyle(el)
+                if (style.display === 'none' || style.visibility === 'hidden')
+                  continue
+
+                const intersects =
+                  box.left < r.right &&
+                  box.right > r.left &&
+                  box.top < r.bottom &&
+                  box.bottom > r.top
+
+                if (intersects) return false
+              }
+              return true
+            }, tabId)
+          },
+          { intervals: [250], timeout: 5000 }
+        )
+        .toBe(true)
+    }
+  })
+
+  test('Active expedition Overworld chatter avoids map node roots and labels on scroll', async ({
+    page
+  }) => {
+    await page.clock.install()
+    await loadSeedOneExpedition(page)
+
+    const measureChatter = () =>
+      page.evaluate(() => {
+        const overlay = [...document.querySelectorAll('[role="status"]')].find(
+          el => el.className.includes('z-(--z-chatter)')
+        )
+        if (!overlay) return null
+        return {
+          messages: overlay.children.length,
+          painted: getComputedStyle(overlay).visibility !== 'hidden'
+        }
+      })
+
+    let chatter = null
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          chatter = await measureChatter()
+          return chatter?.messages ?? 0
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
+
+    // Scroll .scene--expedition
+    await page.evaluate(() => {
+      const scene = document.querySelector('.scene--expedition')
+      if (scene) {
+        scene.scrollTop = scene.scrollHeight
+        scene.dispatchEvent(new Event('scroll', { bubbles: false }))
+      }
+    })
+
+    await page.clock.fastForward(250)
+
+    // Assert no intersection with visible map node roots or labels
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(100)
+          return page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            if (!overlay) return false
+            if (getComputedStyle(overlay).visibility === 'hidden') return true
+
+            const box = overlay.getBoundingClientRect()
+            const targets = [
+              ...document.querySelectorAll(
+                '.map-node, [data-testid="map-node-label"]'
+              )
+            ]
+
+            for (const el of targets) {
+              if (overlay.contains(el) || el.contains(overlay)) continue
+              const r = el.getBoundingClientRect()
+              if (r.width <= 0 || r.height <= 0) continue
+              const style = getComputedStyle(el)
+              if (style.display === 'none' || style.visibility === 'hidden')
+                continue
+
+              const intersects =
+                box.left < r.right &&
+                box.right > r.left &&
+                box.top < r.bottom &&
+                box.bottom > r.top
+
+              if (intersects) return false
+            }
+            return true
+          })
+        },
+        { intervals: [250], timeout: 5000 }
+      )
+      .toBe(true)
+  })
+
+  test('Overworld map node tooltip reveal on hover/focus triggers chatter repositioning', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width < 640, 'Desktop layout test')
+    await page.clock.install()
+    await loadSeedOneExpedition(page)
+
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          return page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            return overlay?.children.length ?? 0
+          })
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBeGreaterThan(0)
+
+    // Hover reachable map node to open its tooltip
+    const nodeEl = page.locator('.map-node.clickable').first()
+    await nodeEl.hover()
+    await page.clock.fastForward(250)
+
+    // Verify chatter does not cover the open tooltip
+    await expect
+      .poll(
+        async () => {
+          return page.evaluate(() => {
+            const overlay = [
+              ...document.querySelectorAll('[role="status"]')
+            ].find(el => el.className.includes('z-(--z-chatter)'))
+            if (!overlay) return false
+            if (getComputedStyle(overlay).visibility === 'hidden') return true
+
+            const box = overlay.getBoundingClientRect()
+            const tooltips = [
+              ...document.querySelectorAll('.map-node [data-chatter-avoid]')
+            ].filter(el => {
+              const r = el.getBoundingClientRect()
+              const style = getComputedStyle(el)
+              return (
+                r.width > 0 &&
+                r.height > 0 &&
+                style.display !== 'none' &&
+                style.visibility !== 'hidden'
+              )
+            })
+
+            for (const tip of tooltips) {
+              const r = tip.getBoundingClientRect()
+              const intersects =
+                box.left < r.right &&
+                box.right > r.left &&
+                box.top < r.bottom &&
+                box.bottom > r.top
+              if (intersects) return false
+            }
+            return true
+          })
+        },
+        { intervals: [250], timeout: 5000 }
+      )
+      .toBe(true)
   })
 })

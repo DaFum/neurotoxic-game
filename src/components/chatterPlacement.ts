@@ -4,10 +4,30 @@ export type Rect = { left: number; top: number; right: number; bottom: number }
 export type Anchor = { left: number; top: number }
 
 /** Where the chatter box goes: its CSS default, a fallback anchor, or nowhere. */
+import { GAME_PHASES } from '../context/gameConstants'
+
 export type ChatterPlacement =
   | { kind: 'default' }
   | { kind: 'anchor'; anchor: Anchor }
   | { kind: 'suppress' }
+
+/**
+ * Determines whether blocked chatter should be suppressed instead of falling back
+ * to its default scene anchor.
+ *
+ * @param sceneKey - Active game phase/scene key.
+ * @param isCompact - Whether the viewport is compact (phone layout).
+ * @param isExpeditionActive - Whether an expedition run is currently active.
+ * @returns `true` when chatter should be hidden when all candidate anchors are blocked.
+ */
+export const shouldSuppressChatterWhenBlocked = (
+  sceneKey: string,
+  isCompact: boolean,
+  isExpeditionActive: boolean = false
+): boolean =>
+  isCompact ||
+  sceneKey === GAME_PHASES.TOUR_PREP ||
+  (sceneKey === GAME_PHASES.OVERWORLD && isExpeditionActive)
 
 /**
  * Tests whether two rectangles overlap (touching edges do not count).

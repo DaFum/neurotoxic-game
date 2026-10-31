@@ -3,8 +3,10 @@ import { describe, it } from 'node:test'
 import {
   decideChatterPlacement,
   gapAnchors,
-  rectsIntersect
+  rectsIntersect,
+  shouldSuppressChatterWhenBlocked
 } from '../../src/components/chatterPlacement.ts'
+import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 
 const box = (left, top, w = 288, h = 88) => ({
   left,
@@ -105,6 +107,49 @@ const kabelsalatDesktop = () => {
   ]
   return { obstacles, anchors, w, h, vw, vh, lefts: [center, right, left] }
 }
+
+describe('shouldSuppressChatterWhenBlocked', () => {
+  it('suppresses for compact viewports regardless of scene', () => {
+    assert.equal(shouldSuppressChatterWhenBlocked('SOME_SCENE', true), true)
+    assert.equal(shouldSuppressChatterWhenBlocked(GAME_PHASES.GIG, true), true)
+    assert.equal(shouldSuppressChatterWhenBlocked(GAME_PHASES.MENU, true), true)
+  })
+
+  it('suppresses on desktop for TourPrep, and Overworld only when expedition is active', () => {
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.TOUR_PREP, false),
+      true
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.TOUR_PREP, false, false),
+      true
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.OVERWORLD, false, true),
+      true
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.OVERWORLD, false, false),
+      false
+    )
+  })
+
+  it('does not suppress on desktop for non-expedition scenes', () => {
+    assert.equal(shouldSuppressChatterWhenBlocked(GAME_PHASES.GIG, false), false)
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.PRE_GIG, false),
+      false
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.MENU, false),
+      false
+    )
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.CLINIC, false),
+      false
+    )
+  })
+})
 
 describe('gapAnchors', () => {
   it('leaves the plugs uncovered on a desktop Kabelsalat board', () => {

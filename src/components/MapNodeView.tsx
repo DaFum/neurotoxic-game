@@ -286,6 +286,7 @@ const MapNodeTooltip = memo(
       const schedule = () => {
         cancelAnimationFrame(frame)
         frame = requestAnimationFrame(place)
+        document.dispatchEvent(new CustomEvent('chatter:remeasure'))
       }
       host.addEventListener('mouseenter', schedule)
       host.addEventListener('focusin', schedule)
@@ -310,6 +311,7 @@ const MapNodeTooltip = memo(
     return (
       <div
         ref={tooltipRef}
+        data-chatter-avoid
         /* Below the node, mt-[3.75rem] clears the tallest label stack (type
            label plus a three-line location name), which reaches 60px past the
            bottom of this box. Above the node there is no label stack, so a
@@ -562,6 +564,7 @@ export const MapNodeView = memo(
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
         <div
+          data-chatter-avoid
           className='absolute w-6 h-6 flex items-center justify-center text-star-white/60 pointer-events-none'
           style={positionStyle}
         >
@@ -572,6 +575,7 @@ export const MapNodeView = memo(
 
     return (
       <div
+        data-chatter-avoid
         data-label-priority={labelPriority}
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : isReachable ? 'z-(--z-stage)' : 'z-(--z-stage-bg)'}
@@ -641,7 +645,10 @@ export const MapNodeView = memo(
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
-          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-xs font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'>
+          <div
+            data-chatter-avoid
+            className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-xs font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'
+          >
             {t('ui:map.confirm_q')}
           </div>
         )}
@@ -656,6 +663,7 @@ export const MapNodeView = memo(
             cleanly instead of blending; the hovered/current node raises its
             z-index (above) so its label reads on top. */}
         <div
+          data-chatter-avoid
           data-testid='map-node-label'
           className={`data-[declutter-hidden=true]:invisible absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
