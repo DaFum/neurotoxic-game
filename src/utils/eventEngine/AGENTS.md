@@ -13,4 +13,5 @@
 
 ## Events
 
+- `social_set` sets only `egoFocus` and `trend`. A numeric counter value (e.g. `loyalty`, `viral`) goes into the additive social delta, so `applyEventDelta` adds it to the current counter: "set" acts as "add". A real numeric set needs its own delta channel; until then, author numeric social changes as increments.
 - `resolveChoice` skillCheck in `eventEngine.ts` must branch `stat === 'luck'` BEFORE the `gameState.band[stat]` fallthrough. `band.luck` exists (default 0), so checking band stats first turns the random luck roll into a static 0.

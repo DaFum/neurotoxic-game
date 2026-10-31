@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { eventEngine } from '../../src/utils/eventEngine'
 import { createInitialState } from '../../src/context/initialState'
+import { applyEventDelta } from '../../src/utils/gameState'
 
 const moodEffect = value => ({ type: 'stat', stat: 'mood', value })
 const staminaEffect = value => ({ type: 'stat', stat: 'stamina', value })
@@ -131,6 +132,16 @@ test('social_set still writes valid targets', () => {
       .trend,
     'DRAMA'
   )
+})
+
+// Pins the documented semantics: a numeric social_set is an increment, not a
+// set (#3477). Only egoFocus and trend are true sets.
+test('numeric social_set adds its value to the counter', () => {
+  const delta = applyOne({ type: 'social_set', stat: 'loyalty', value: 10 })
+  assert.equal(delta.social.loyalty, 10)
+  const state = createInitialState()
+  state.social.loyalty = 40
+  assert.equal(applyEventDelta(state, delta).social.loyalty, 50)
 })
 
 test('item effects ignore forbidden and unknown inventory ids', () => {

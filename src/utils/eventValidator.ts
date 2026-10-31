@@ -108,6 +108,8 @@ const validateEffect = (
       }
     }
   } else if (ef.type === 'social_set') {
+    // A numeric counter target is accepted, but it is applied additively
+    // (see the `social_set` handler in eventEngine/eventEffectHandlers.ts).
     if (!isValidSocialSetTarget(ef.stat, ef.value)) {
       throw new Error(
         'social_set effect has an invalid stat or value for "' +

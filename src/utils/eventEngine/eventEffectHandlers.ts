@@ -207,6 +207,13 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       }
     }
   },
+  /**
+   * social_set
+   * Only `egoFocus` and `trend` are true sets. A numeric counter's value goes
+   * into the additive social delta, so `applyEventDelta` adds it to the
+   * current counter ("set" acts as "add"); it also replaces anything earlier
+   * effects of the same option put into that delta slot.
+   */
   social_set: (eff: EffectShape, delta: EventDelta) => {
     const stat = eff.stat
     if (!isValidSocialSetTarget(stat, eff.value)) return
