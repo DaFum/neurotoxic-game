@@ -125,7 +125,9 @@
 .ow-title {
   position: absolute;
 
-  /* Sits in the row the radio widget leaves free, above the status box. */
+  /* Sits in the row the radio widget leaves free, above the status box.
+     Desktop radio spans 16px–80px, leaving a 12px gap to top: 92px that
+     clears the 10px radio shadow. */
   top: 92px;
   left: 50%;
   transform: translateX(-50%);

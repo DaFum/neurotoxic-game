@@ -88,6 +88,9 @@ describe('Overworld Component', () => {
     // Check for standard UI elements
     expect(screen.getByText(/TOUR PLAN/i)).toBeInTheDocument()
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
+    const radio = screen.getByTestId('overworld-radio')
+    expect(radio).toHaveClass('sm:top-4')
+    expect(radio).not.toHaveClass('sm:top-8')
 
     // Open the menu first
     const menuButton = screen.getByRole('button', { name: /OPEN MENU/i })
