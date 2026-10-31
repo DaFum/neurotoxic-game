@@ -8,7 +8,6 @@ import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { GraftModal } from './GraftModal'
 import { hasTrait, NEURO_OVERCLOCK_TRAIT_ID } from '../../utils/traitUtils'
-import { canAfford } from '../../utils/purchaseLogicUtils'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -47,6 +46,7 @@ const firstReason = (
 export const ClinicMemberCard = ({
   member,
   player,
+  spendableMoney,
   healCostMoney,
   enhanceCostFame,
   healMember,
@@ -55,11 +55,7 @@ export const ClinicMemberCard = ({
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = canAfford(
-    { currency: 'money' },
-    player,
-    CLINIC_GRAFT_COST
-  )
+  const canAffordGraft = spendableMoney >= CLINIC_GRAFT_COST
   const hasGraft = hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   // Same fallback as the reducer: an upgraded `staminaMax` raises the ceiling.
@@ -96,7 +92,7 @@ export const ClinicMemberCard = ({
         <ActionButtonWrapper
           disabledReason={firstReason(
             missingMemberReason,
-            player.money < healCostMoney &&
+            spendableMoney < healCostMoney &&
               t('ui:clinic.notEnoughMoney', {
                 defaultValue: 'Not enough money'
               }),

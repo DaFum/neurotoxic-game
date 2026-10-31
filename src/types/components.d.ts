@@ -216,7 +216,9 @@ export interface ClinicHeaderProps {
  */
 export interface ClinicMemberCardProps {
   member: BandMember
-  player: Pick<PlayerState, 'money' | 'fame'>
+  player: Pick<PlayerState, 'fame'>
+  /** Cash the player may spend: excludes protected Expedition cash. */
+  spendableMoney: number
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void

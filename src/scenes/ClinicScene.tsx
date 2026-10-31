@@ -12,6 +12,7 @@ export const ClinicScene = () => {
   const {
     player,
     band,
+    spendableMoney,
     healCostMoney,
     enhanceCostFame,
     healMember,
@@ -42,6 +43,7 @@ export const ClinicScene = () => {
               key={member.id}
               member={member}
               player={player}
+              spendableMoney={spendableMoney}
               healCostMoney={healCostMoney}
               enhanceCostFame={enhanceCostFame}
               healMember={healMember}

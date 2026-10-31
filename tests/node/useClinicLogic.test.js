@@ -155,6 +155,25 @@ describe('useClinicLogic', () => {
     assert.equal(mockAddToast.mock.calls[0].arguments[1], 'error')
   })
 
+  test('healMember refuses when only protected Expedition cash could pay (#3464)', () => {
+    mockGameState = {
+      ...mockGameState,
+      player: { ...mockGameState.player, money: 1000 },
+      expedition: { status: 'active', protectedCareerCash: 900 }
+    }
+
+    const { result } = renderHook(() => useClinicLogic())
+    assert.equal(result.current.spendableMoney, 100)
+
+    act(() => {
+      result.current.healMember('m1')
+    })
+
+    assert.equal(mockClinicHeal.mock.calls.length, 0)
+    assert.equal(mockAddToast.mock.calls.length, 1)
+    assert.equal(mockAddToast.mock.calls[0].arguments[0], 'Not enough money.')
+  })
+
   test('enhanceMember successful', () => {
     const { result } = renderHook(() => useClinicLogic())
 

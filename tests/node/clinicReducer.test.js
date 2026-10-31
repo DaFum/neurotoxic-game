@@ -1,9 +1,13 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { GAME_CONSTANTS } from '../../src/context/gameConstants.ts'
+import {
+  CLINIC_GRAFT_COST,
+  GAME_CONSTANTS
+} from '../../src/context/gameConstants.ts'
 import {
   handleBloodBankDonate,
+  handleClinicHeal,
   handleGraftNeuroOverclock
 } from '../../src/context/reducers/clinicReducer.ts'
 
@@ -16,6 +20,37 @@ describe('handleGraftNeuroOverclock - payload guard', () => {
     for (const hostile of [undefined, null, 'm1', 7, true]) {
       assert.strictEqual(handleGraftNeuroOverclock(state, hostile), state)
     }
+  })
+})
+
+describe('clinic money gates use spendable Expedition cash (#3464)', () => {
+  const runState = money => ({
+    player: { money, fame: 0, clinicVisits: 0 },
+    band: {
+      members: [
+        { id: 'm1', stamina: 10, staminaMax: 100, mood: 10, traits: {} }
+      ]
+    },
+    expedition: { status: 'active', protectedCareerCash: 900 }
+  })
+
+  it('refuses a heal only protected cash could pay', () => {
+    const state = runState(1000)
+    const next = handleClinicHeal(state, {
+      memberId: 'm1',
+      type: 'heal',
+      staminaGain: 20,
+      moodGain: 10
+    })
+    assert.strictEqual(next, state)
+  })
+
+  it('refuses the Neuro-Overclock graft when only protected cash could pay', () => {
+    const state = runState(CLINIC_GRAFT_COST + 100)
+    assert.strictEqual(
+      handleGraftNeuroOverclock(state, { memberId: 'm1' }),
+      state
+    )
   })
 })
 
