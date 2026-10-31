@@ -408,7 +408,7 @@ const evaluateStoredSave = (
   // Copies a refused payload aside before the caller falls back to the initial
   // state: the next autosave writes the same key and would destroy the only
   // copy of the run. A preview writes nothing.
-  const quarantineRejected = (version: number, reason: string): void => {
+  const quarantineRejected = (version: number | null, reason: string): void => {
     if (preview || !rawSave) return
     quarantineSave(rawSave, version, reason, storage)
   }
@@ -433,8 +433,10 @@ const evaluateStoredSave = (
     rawSave = saved
     parsed = safeJsonParse(saved)
   } catch (error) {
+    // No version can be read from it: `null` files it under its own slot, so
+    // it cannot overwrite a genuine v0 migration failure's copy.
     quarantineRejected(
-      0,
+      null,
       `Save JSON parsing failed: ${error instanceof Error ? error.message : String(error)}`
     )
     report.parseFailed()
@@ -442,7 +444,7 @@ const evaluateStoredSave = (
   }
 
   if (!isLooseRecord(parsed)) {
-    quarantineRejected(0, 'Stored save is not an object')
+    quarantineRejected(null, 'Stored save is not an object')
     report.corruptFailed()
     return { ok: false, reason: 'corrupt' }
   }
