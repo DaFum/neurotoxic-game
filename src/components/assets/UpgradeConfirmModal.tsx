@@ -12,6 +12,7 @@ import {
 } from '../../utils/assets/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
@@ -23,6 +24,9 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { upgradeChassisTier } = useGameActions()
   const money = useGameSelector(state => state.player.money)
+  // Protected Expedition cash cannot pay an upgrade; a negative raw balance
+  // still blocks it as before.
+  const spendableCash = useGameSelector(getExpeditionSpendableCash)
 
   const nextTier = getNextChassisTier(asset.chassisTier)
   const currentConfig =
@@ -35,7 +39,8 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
     currentConfig && targetConfig
       ? calculateChassisUpgradeCost(currentConfig, targetConfig)
       : 0
-  const insufficient = nextTier !== null && money < cost
+  const insufficient =
+    nextTier !== null && Math.min(money, spendableCash) < cost
   const commitmentLocked = useGameSelector(state =>
     isExpeditionChassisCommitmentLocked(state, asset.id)
   )

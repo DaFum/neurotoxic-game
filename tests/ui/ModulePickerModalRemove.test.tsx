@@ -167,6 +167,35 @@ vi.mock('react-i18next', () => ({
   })
 }))
 
+describe('ModulePickerModal install affordability (#3464)', () => {
+  beforeEach(() => {
+    mockInstallModule.mockClear()
+    mockState.expedition = undefined
+  })
+
+  it('disables install when only protected Expedition cash could pay', () => {
+    // 1000 on hand, 900 protected: 100 spendable, below the 500 module price.
+    mockState.expedition = { status: 'active', protectedCareerCash: 900 }
+    mockGetModulePoolForAsset.mockReturnValue([
+      { module: ecoInkModule, unlocked: true, lockReasons: [] }
+    ])
+
+    render(
+      <ModulePickerModal
+        asset={workshopAsset}
+        slotId='storage-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    const install = screen.getByRole('button', { name: 'Install' })
+    expect(install).toBeDisabled()
+    fireEvent.click(install)
+    expect(mockInstallModule).not.toHaveBeenCalled()
+  })
+})
+
 describe('ModulePickerModal remove flow', () => {
   beforeEach(() => {
     mockInstallModule.mockClear()

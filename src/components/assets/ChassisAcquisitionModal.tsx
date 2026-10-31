@@ -12,6 +12,7 @@ import type { LoanProfileId } from '../../utils/assets/loanProfiles'
 import { formatCurrency } from '../../utils/numberUtils'
 import { hasActiveAssetAcquisition } from '../../utils/assets/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import type {
   AcquisitionMode,
   AssetFlavor,
@@ -46,7 +47,8 @@ const MODES: readonly AcquisitionMode[] = ['cash', 'loan', 'crowdfund']
  */
 export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const { t } = useTranslation(['assets'])
-  const money = useGameSelector(s => s.player.money)
+  // Spendable, not raw: protected Expedition cash cannot pay a cash purchase.
+  const money = useGameSelector(getExpeditionSpendableCash)
   const acquisitionBlocked = useGameSelector(s =>
     hasActiveAssetAcquisition(s, kind)
   )
