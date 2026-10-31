@@ -170,17 +170,18 @@ export const getOptionPreviewMoney = (
       total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
-      let change = clampPercentageAmount(
-        getPercentageMoneyBase(gameState, total),
-        e.percentage,
-        e.min,
-        e.max
-      )
-      if (gameState) {
-        const current = finiteNumberOr(gameState.player?.money, 0)
-        change = clampMoneyChange(current, total, change)
+      // Without a player slice the handler charges nothing, so a `min`/`max`
+      // bound must not force a preview amount either.
+      if (gameState?.player) {
+        const amount = clampPercentageAmount(
+          getPercentageMoneyBase(gameState, total),
+          e.percentage,
+          e.min,
+          e.max
+        )
+        const current = finiteNumberOr(gameState.player.money, 0)
+        total += clampMoneyChange(current, total, amount)
       }
-      total += change
       found = true
     }
     ancestors.delete(eff)

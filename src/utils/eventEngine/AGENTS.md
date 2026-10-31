@@ -8,7 +8,7 @@
 ## Paid options during a run
 
 - Option `condition`s are evaluated against `withExpeditionSpendableCash(state)` (in `resolveChoice` and `EventModal`), so a money gate such as `money >= 45` cannot be met with protected cash.
-- Percentage money effects (`percentage_resource`) are taken of spendable cash plus the running composite delta (`getPercentageMoneyBase`; the full balance outside an active run), then clamped with `clampMoneyChange` against the raw balance like a fixed `resource` change. The `percentage_resource` handler and `getOptionPreviewMoney` share this rule, so the previewed price is the executed one.
+- Percentage money effects (`percentage_resource`) are taken of spendable cash plus the running composite delta (`getPercentageMoneyBase`; the full balance outside an active run), then clamped with `clampMoneyChange` against the raw balance like a fixed `resource` change. The `percentage_resource` handler and `getOptionPreviewMoney` share this rule, so the previewed price is the executed one; without a player slice both charge nothing, whatever `min`/`max` say.
 - `isOptionAffordable` derives a direct money cost from the option's effects (`getOptionPreviewMoney`) and refuses it when only protected cash could pay and a sibling option is still choosable. If none is, the cost stays payable (clipped at the floor) so an event can never lock. It runs in `resolveEventChoice` and in the modal, and is a no-op outside a run.
 
 ## Events

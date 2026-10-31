@@ -217,6 +217,27 @@ test('the preview of a composite money option equals its executed delta', () => 
   assert.equal(getOptionPreviewMoney(haggle, protectedRun(1000, 990)), -20)
 })
 
+// Execution charges nothing without a player slice, so a `min`/`max` bound
+// must not make the preview show a forced amount (#3477).
+test('a percentage money preview without a player slice matches execution', () => {
+  const bounded = [
+    { percentage: 10, min: 25 },
+    { percentage: -10, max: -25 }
+  ]
+  for (const bounds of bounded) {
+    const option = {
+      label: 'Bounded',
+      effect: { type: 'percentage_resource', resource: 'money', ...bounds }
+    }
+    for (const state of [null, {}, { band: buildState().band }]) {
+      const executed = eventEngine.applyResult(option.effect, {}, state)
+      const label = `${JSON.stringify(bounds)} ${JSON.stringify(state)}`
+      assert.equal(executed.player.money, undefined, label)
+      assert.equal(getOptionPreviewMoney(option, state), 0, label)
+    }
+  }
+})
+
 test('a disabled sibling is not an escape, so the event cannot lock', () => {
   const repair = paidOption('Pay for repair', 50)
   const walkAway = { label: 'Walk away', disabled: true }
