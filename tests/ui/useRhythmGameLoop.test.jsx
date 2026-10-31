@@ -150,6 +150,21 @@ describe('useRhythmGameLoop', () => {
     expect(gameStateRef.current.hasSubmittedResults).toBe(true)
   })
 
+  it('does not finalize a completed setlist while the transport is paused', () => {
+    mocks.getTransportState.mockReturnValue('paused')
+    gameStateRef.current.setlistCompleted = true
+    gameStateRef.current.songTransitioning = false
+    const { result } = setup(null)
+
+    result.current.update(16)
+    result.current.update(16)
+
+    expect(setLastGigStats).not.toHaveBeenCalled()
+    expect(mocks.stopAudio).not.toHaveBeenCalled()
+    expect(endGig).not.toHaveBeenCalled()
+    expect(gameStateRef.current.hasSubmittedResults).toBe(false)
+  })
+
   it.each([
     ['userPaused', { userPaused: true }],
     ['isGameOver', { isGameOver: true }]
