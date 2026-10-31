@@ -3,6 +3,7 @@ import test from 'node:test'
 import { eventEngine } from '../../src/utils/eventEngine'
 import { createInitialState } from '../../src/context/initialState'
 import { applyEventDelta } from '../../src/utils/gameState'
+import { DEFAULT_BAND_INVENTORY } from '../../src/data/bandInventory'
 
 const moodEffect = value => ({ type: 'stat', stat: 'mood', value })
 const staminaEffect = value => ({ type: 'stat', stat: 'stamina', value })
@@ -159,6 +160,15 @@ test('item effects accept every default band inventory id', () => {
     const delta = applyOne({ type: 'item', item })
     assert.equal(delta.band.inventory?.[item], true, item)
   }
+})
+
+// The item allow-list is derived from DEFAULT_BAND_INVENTORY; the initial
+// state must copy exactly that inventory so the two cannot drift (#3477).
+test('initial band inventory has exactly the item allow-list ids', () => {
+  assert.deepEqual(
+    Object.keys(createInitialState().band.inventory),
+    Object.keys(DEFAULT_BAND_INVENTORY)
+  )
 })
 
 test('item effects ignore string and null values', () => {

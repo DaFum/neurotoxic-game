@@ -5,6 +5,7 @@
  * reaches the delta either.
  */
 import { ALLOWED_TRENDS_SET } from '../../data/socialTrends'
+import { DEFAULT_BAND_INVENTORY } from '../../data/bandInventory'
 import { isFiniteNumber } from '../finiteNumber'
 import { isForbiddenKey } from '../objectUtils'
 
@@ -25,36 +26,12 @@ const NUMERIC_SOCIAL_STATS: ReadonlySet<string> = new Set([
 const TRENDS: ReadonlySet<string> = ALLOWED_TRENDS_SET
 
 /**
- * Band inventory ids an `item` effect may grant. Mirrors the keys of the
- * default band inventory in `src/context/initialState.ts`; a test pins that
- * every default key is accepted.
+ * Band inventory ids an `item` effect may grant: the keys of the default band
+ * inventory, the same source `DEFAULT_BAND_STATE.inventory` copies.
  */
-const EVENT_ITEM_IDS: Readonly<Record<string, true>> = Object.freeze({
-  shirts: true,
-  hoodies: true,
-  patches: true,
-  cds: true,
-  vinyl: true,
-  neuro_cutting_board: true,
-  neuro_lunchbox: true,
-  neuro_mug: true,
-  neuro_bowl: true,
-  strings: true,
-  cables: true,
-  drum_parts: true,
-  golden_pick: true,
-  neurotoxicPedal: true,
-  neuroDecimator: true,
-  sleeping_bags: true,
-  tape_glue: true,
-  broken_pedal: true,
-  cheap_mics: true,
-  diy_patch_kit: true,
-  canned_food: true,
-  beer_bulk: true,
-  lucky_pick: true,
-  energy_drink: true
-})
+const EVENT_ITEM_IDS: ReadonlySet<string> = new Set(
+  Object.keys(DEFAULT_BAND_INVENTORY)
+)
 
 /**
  * Whether a `social_set` effect names a known social field with a value of
@@ -89,7 +66,7 @@ export const isValidItemTarget = (
   value: unknown
 ): item is string => {
   if (typeof item !== 'string' || isForbiddenKey(item)) return false
-  if (!Object.hasOwn(EVENT_ITEM_IDS, item)) return false
+  if (!EVENT_ITEM_IDS.has(item)) return false
   return (
     value === undefined || typeof value === 'boolean' || isFiniteNumber(value)
   )
