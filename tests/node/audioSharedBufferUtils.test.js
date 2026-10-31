@@ -101,3 +101,35 @@ test('createAndConnectBufferSource', async t => {
     assert.strictEqual(result, null)
   })
 })
+
+test('cleanupEndedSource', async t => {
+  const { cleanupEndedSource } =
+    await import('../../src/utils/audio/sharedBufferUtils')
+
+  await t.test('detaches onended and disconnects the source once', () => {
+    const source = {
+      onended: () => {},
+      disconnect: mock.fn(),
+      stop: mock.fn()
+    }
+
+    cleanupEndedSource(source)
+
+    assert.strictEqual(source.onended, null)
+    assert.strictEqual(source.disconnect.mock.callCount(), 1)
+    assert.strictEqual(source.stop.mock.callCount(), 0)
+  })
+
+  await t.test('does not throw when disconnect throws', () => {
+    const source = {
+      onended: () => {},
+      disconnect: mock.fn(() => {
+        throw new Error('already disconnected')
+      })
+    }
+
+    assert.doesNotThrow(() => cleanupEndedSource(source))
+    assert.strictEqual(source.onended, null)
+    assert.strictEqual(source.disconnect.mock.callCount(), 1)
+  })
+})

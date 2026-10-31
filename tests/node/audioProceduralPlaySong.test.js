@@ -138,7 +138,8 @@ mock.module(
   new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
   {
     namedExports: {
-      createAndConnectBufferSource: mock.fn()
+      createAndConnectBufferSource: mock.fn(),
+      cleanupEndedSource: mock.fn()
     }
   }
 )
