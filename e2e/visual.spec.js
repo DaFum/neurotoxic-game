@@ -915,8 +915,8 @@ test.describe('Visual smoke tests', () => {
   test('TourPrep chatter is hidden or avoids inputs, marked elements, and tab-panel buttons', async ({
     page
   }) => {
-    await enterTourPrep(page)
     await page.clock.install()
+    await enterTourPrep(page)
 
     const measureChatter = () =>
       page.evaluate(() => {
@@ -1018,8 +1018,8 @@ test.describe('Visual smoke tests', () => {
   test('Active expedition Overworld chatter avoids map node roots and labels on scroll', async ({
     page
   }) => {
-    await loadSeedOneExpedition(page)
     await page.clock.install()
+    await loadSeedOneExpedition(page)
 
     const measureChatter = () =>
       page.evaluate(() => {
@@ -1103,8 +1103,8 @@ test.describe('Visual smoke tests', () => {
     page
   }) => {
     test.skip(page.viewportSize().width < 640, 'Desktop layout test')
-    await loadSeedOneExpedition(page)
     await page.clock.install()
+    await loadSeedOneExpedition(page)
 
     await expect
       .poll(
