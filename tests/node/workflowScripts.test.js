@@ -105,3 +105,44 @@ describe('lint-fix-preview sticky report (#3377)', () => {
     assert.equal(calls.creates.length, 1)
   })
 })
+
+describe('workflow hardening (#3466)', () => {
+  test('changed workflows pass expressions to run scripts only via env', () => {
+    for (const name of ['lint-fix-preview.yml', 'deploy.yml']) {
+      for (const [jobId, job] of Object.entries(loadWorkflow(name).jobs)) {
+        for (const step of job.steps ?? []) {
+          if (typeof step.run !== 'string') continue
+          assert.ok(
+            !step.run.includes('${{'),
+            `${name} job ${jobId} step "${step.name}" interpolates an expression into run:`
+          )
+        }
+      }
+    }
+  })
+
+  test('deploy.yml grants Pages/OIDC only to a deploy job that runs no repository code', () => {
+    const workflow = loadWorkflow('deploy.yml')
+    const privileged = permissions =>
+      permissions?.pages === 'write' || permissions?.['id-token'] === 'write'
+
+    assert.ok(!privileged(workflow.permissions))
+    const holders = Object.entries(workflow.jobs).filter(([, job]) =>
+      privileged(job.permissions)
+    )
+    assert.deepEqual(
+      holders.map(([id]) => id),
+      ['deploy']
+    )
+    const deploy = workflow.jobs.deploy
+    assert.equal(deploy.needs, 'build')
+    for (const step of deploy.steps) {
+      assert.equal(step.run, undefined)
+      assert.match(
+        step.uses,
+        /^actions\/(configure|deploy)-pages@[0-9a-f]{40}$/
+      )
+    }
+    assert.deepEqual(workflow.jobs.build.permissions, { contents: 'read' })
+  })
+})
