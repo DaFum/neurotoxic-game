@@ -442,6 +442,9 @@ export async function playSongFromData(
   transport.bpm.value = p.bpm
   audioState.part = createSongPart(res.events)
 
+  // Chosen only now that the audio context is ready and the notes are
+  // scheduled, so a slow context rebuild cannot run the shared lead-in out.
+  const { resolveStartTimeSec, startTimeSec } = prep.normalizedOptions
   const validDelay = isFiniteNumber(delay) ? Math.max(0, delay) : 0
   scheduleSongPlayback(
     res.lastTime,
@@ -449,7 +452,7 @@ export async function playSongFromData(
     prep.reqId,
     transport,
     prep.normalizedOptions.onEnded as (() => void) | null,
-    prep.normalizedOptions.startTimeSec
+    resolveStartTimeSec ? resolveStartTimeSec() : startTimeSec
   )
 
   return true

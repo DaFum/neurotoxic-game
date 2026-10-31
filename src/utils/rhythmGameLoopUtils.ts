@@ -337,6 +337,21 @@ export const processRhythmGameTick = ({
 
   handleOverlayResume(stateRef, transportState, resumeAudio)
 
+  // A zero-length final song never starts the transport, so the near-end
+  // check below is unreachable (the gig clock is reset and `totalDuration`
+  // still holds the previous song); finalize here (idempotent via
+  // `hasSubmittedResults`) instead of leaving the gig soft-locked. Only for a
+  // stopped transport: `paused` also covers an overlay pause or a deferred
+  // start that is about to resume, where the near-end check below still decides.
+  if (
+    stateRef.setlistCompleted &&
+    !isTransportRunning &&
+    transportState === 'stopped'
+  ) {
+    finalizeGigCallback(stateRef)
+    return
+  }
+
   if (!isTransportRunning) {
     return
   }

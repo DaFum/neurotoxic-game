@@ -55,12 +55,31 @@ mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
 })
 
 // Mock audio routing
-const mockSource = { start: mock.fn(), onended: null }
-const mockCreateAndConnect = mock.fn(() => mockSource)
+// Each call returns a distinct source so an ended node and its replacement can
+// be told apart.
+const createdSources = []
+const createMockSource = () => {
+  const source = { start: mock.fn(), disconnect: mock.fn(), onended: null }
+  createdSources.push(source)
+  return source
+}
+const mockCreateAndConnect = mock.fn(createMockSource)
 mock.module(
   new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
   {
-    namedExports: { createAndConnectBufferSource: mockCreateAndConnect }
+    namedExports: {
+      createAndConnectBufferSource: mockCreateAndConnect,
+      // Mirrors the real helper (covered in audioSharedBufferUtils.test.js) so
+      // the per-call source spies observe the cleanup ambient.ts performs.
+      cleanupEndedSource: source => {
+        source.onended = null
+        try {
+          source.disconnect()
+        } catch {
+          // ignore
+        }
+      }
+    }
   }
 )
 
@@ -118,10 +137,9 @@ describe('ambient.ts', () => {
     mockLoadAudioBuffer.mock.resetCalls()
     mockLoadAudioBuffer.mock.mockImplementation(defaultLoadAudioBufferImpl)
     mockCreateAndConnect.mock.resetCalls()
-    mockCreateAndConnect.mock.mockImplementation(() => mockSource)
+    mockCreateAndConnect.mock.mockImplementation(createMockSource)
     mockPlayMidiFileInternal.mock.resetCalls()
-    mockSource.start.mock.resetCalls()
-    mockSource.onended = null
+    createdSources.length = 0
     mockAudioState.playRequestId = 1
     mockAudioState.ambientSource = null
 
@@ -300,51 +318,75 @@ describe('ambient.ts', () => {
       const result = await playRandomAmbientOgg()
 
       assert.equal(result, true)
-      assert.equal(mockSource.start.mock.calls.length, 1)
-      assert.ok(mockSource.onended)
-      assert.equal(mockAudioState.ambientSource, mockSource)
+      assert.equal(createdSources.length, 1)
+      const source = createdSources[0]
+      assert.equal(source.start.mock.calls.length, 1)
+      assert.ok(source.onended)
+      assert.equal(mockAudioState.ambientSource, source)
     })
 
-    test('onended bails out if source mismatch', async () => {
+    test('onended disconnects the ended source but keeps a replacement on source mismatch', async () => {
       await playRandomAmbientOgg()
-      const onended = mockSource.onended
+      const ended = createdSources[0]
+      const onended = ended.onended
 
-      mockAudioState.ambientSource = {} // change source
+      const replacement = { disconnect: mock.fn() }
+      mockAudioState.ambientSource = replacement // change source
 
       if (onended) onended()
+      await new Promise(r => setTimeout(r, 0))
+
       assert.ok(
         loggerHistory.some(
           log => log[0] === 'debug' && log[2].includes('source mismatch')
         )
       )
+      assert.equal(ended.disconnect.mock.calls.length, 1)
+      assert.equal(ended.onended, null)
+      assert.equal(replacement.disconnect.mock.calls.length, 0)
+      assert.equal(mockAudioState.ambientSource, replacement)
+      assert.equal(createdSources.length, 1)
     })
 
-    test('onended bails out if reqId changed', async () => {
+    test('onended disconnects and clears the ended source without chaining if reqId changed', async () => {
       await playRandomAmbientOgg()
-      const onended = mockSource.onended
+      const ended = createdSources[0]
+      const onended = ended.onended
 
       mockAudioState.playRequestId += 1 // change req
 
       if (onended) onended()
+      await new Promise(r => setTimeout(r, 0))
+
       assert.ok(
         loggerHistory.some(
           log => log[0] === 'debug' && log[2].includes('chain cancelled')
         )
       )
+      assert.equal(ended.disconnect.mock.calls.length, 1)
+      assert.equal(ended.onended, null)
+      assert.equal(mockAudioState.ambientSource, null)
+      assert.equal(createdSources.length, 1)
+      assert.equal(ended.start.mock.calls.length, 1)
     })
 
-    test('onended chains next track if correct', async () => {
+    test('onended disconnects the ended source and chains next track if correct', async () => {
       await playRandomAmbientOgg()
-      const onended = mockSource.onended
-
-      mockSource.start.mock.resetCalls()
+      const ended = createdSources[0]
+      const onended = ended.onended
 
       if (onended) onended()
 
       // Wait a tick for async execution of playRandomAmbientOgg
       await new Promise(r => setTimeout(r, 0))
 
-      assert.equal(mockSource.start.mock.calls.length, 1)
+      assert.equal(ended.disconnect.mock.calls.length, 1)
+      assert.equal(ended.onended, null)
+      assert.equal(createdSources.length, 2)
+      const next = createdSources[1]
+      assert.equal(next.start.mock.calls.length, 1)
+      assert.equal(next.disconnect.mock.calls.length, 0)
+      assert.equal(mockAudioState.ambientSource, next)
     })
 
     test('bails out if playRequestId changes during async ensureAudioContext', async () => {

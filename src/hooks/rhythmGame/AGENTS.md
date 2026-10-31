@@ -2,7 +2,7 @@
 
 ## End Of Gig
 
-- Detecting final song/setlist completion uses `setlistCompleted` plus `isNearTrackEnd` in `processRhythmGameTick`; do not use or fall back to `audioPlaybackEnded`.
+- Detecting final song/setlist completion uses `setlistCompleted` plus `isNearTrackEnd` in `processRhythmGameTick`; do not use or fall back to `audioPlaybackEnded`. The one exception is a stopped transport (`transportState === 'stopped'`) with `setlistCompleted`: a zero-length final song never starts the transport, so the clock is reset and `totalDuration` is stale, and the tick finalizes on `setlistCompleted` alone. A `paused` transport (overlay pause, deferred start) never takes that path.
 
 ## Playback Windows
 

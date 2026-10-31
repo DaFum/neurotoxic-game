@@ -60,7 +60,17 @@ mock.module(
         source.onended = () => onEnded(source)
         sources.push(source)
         return source
-      })
+      }),
+      // Mirrors the real helper (covered in audioSharedBufferUtils.test.js) so
+      // the per-call source spies observe the cleanup gigPlayback performs.
+      cleanupEndedSource: source => {
+        source.onended = null
+        try {
+          source.disconnect()
+        } catch {
+          // ignore
+        }
+      }
     }
   }
 )
@@ -94,8 +104,13 @@ mock.module(
 const { playAudioForSong } =
   await import('../../src/utils/audio/playbackStrategies')
 
-const { startGigClock, startGigPlayback, stopGigPlayback } =
-  await import('../../src/utils/audio/gigPlayback')
+const {
+  startGigClock,
+  startGigPlayback,
+  stopGigPlayback,
+  pauseGigPlayback,
+  resumeGigPlayback
+} = await import('../../src/utils/audio/gigPlayback')
 const { audioState, resetGigState } =
   await import('../../src/utils/audio/state')
 
@@ -121,6 +136,63 @@ test('gig source onended keeps synchronous next-song clock state', async () => {
   sources[0].onended()
 
   assert.strictEqual(audioState.gigStartCtxTime, 42)
+})
+
+test('zero-duration gig start ends immediately and disconnects its unstarted source', async () => {
+  resetGigState()
+  sources.length = 0
+  transport.start.mock.resetCalls()
+
+  const onEnded = mock.fn()
+  const started = await startGigPlayback({
+    filename: 'empty.ogg',
+    durationMs: 0,
+    onEnded
+  })
+
+  assert.strictEqual(started, true)
+  assert.strictEqual(sources.length, 1)
+  const source = sources[0]
+  assert.strictEqual(onEnded.mock.callCount(), 1)
+  assert.strictEqual(source.start.mock.callCount(), 0)
+  assert.strictEqual(transport.start.mock.callCount(), 0)
+  assert.strictEqual(source.disconnect.mock.callCount(), 1)
+  assert.strictEqual(source.onended, null)
+  assert.strictEqual(audioState.gigSource, null)
+})
+
+test('resume with no remaining window ends immediately and disconnects its unstarted source', async () => {
+  resetGigState()
+  sources.length = 0
+  const initialTime = rawContext.currentTime
+  try {
+    const onEnded = mock.fn()
+    const started = await startGigPlayback({
+      filename: 'short.ogg',
+      durationMs: 1000,
+      onEnded
+    })
+    assert.strictEqual(started, true)
+
+    // Pause past the end of the 1s window so the resume has nothing left.
+    rawContext.currentTime = initialTime + 2
+    pauseGigPlayback()
+    assert.strictEqual(audioState.gigIsPaused, true)
+    transport.start.mock.resetCalls()
+
+    assert.strictEqual(resumeGigPlayback(), true)
+
+    assert.strictEqual(sources.length, 2)
+    const resumed = sources[1]
+    assert.strictEqual(onEnded.mock.callCount(), 1)
+    assert.strictEqual(resumed.start.mock.callCount(), 0)
+    assert.strictEqual(transport.start.mock.callCount(), 0)
+    assert.strictEqual(resumed.disconnect.mock.callCount(), 1)
+    assert.strictEqual(resumed.onended, null)
+    assert.strictEqual(audioState.gigSource, null)
+  } finally {
+    rawContext.currentTime = initialTime
+  }
 })
 
 test('gig playback aborts when stopped while audio context unlock is pending', async () => {
