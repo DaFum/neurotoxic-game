@@ -262,3 +262,24 @@ test('DealCard labels risk stats through locale keys with signed values', () => 
   expect(container).not.toHaveTextContent('mystery')
   expect(container).not.toHaveTextContent('raw')
 })
+
+test('DealCard ignores non-finite penalty values (#3485)', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'deal_nonfinite',
+        name: 'Broken Deal',
+        description: 'Has broken penalties',
+        offer: { upfront: 1000, duration: 3 },
+        penalty: { controversy: NaN, loyalty: Infinity, mystery: -Infinity }
+      }}
+      negotiationState={null}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(container).not.toHaveTextContent('NaN')
+  expect(container).not.toHaveTextContent('Infinity')
+})

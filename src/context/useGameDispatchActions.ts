@@ -271,7 +271,7 @@ type BaseGameDispatchActions = {
     targetTier: import('../types/assets').ChassisTier
   ) => void
   sellChassis: (assetId: string) => void
-  repairChassis: (assetId: string) => void
+  repairChassis: (assetId: string) => boolean
   refinanceLiability: (
     liabilityId: string,
     loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId

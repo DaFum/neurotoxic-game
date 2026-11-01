@@ -160,7 +160,7 @@ export const PreGig = () => {
             onRestock={handleRestockMerch}
             restockCostMultiplier={assetModifiers.merchCostMultiplier}
             merchCapacityBonus={assetModifiers.merchCapacityBonus}
-            playerMoney={player.money ?? 0}
+            playerMoney={spendableMoney}
             restockingEnabled={!isExpeditionActive}
           />
         </div>

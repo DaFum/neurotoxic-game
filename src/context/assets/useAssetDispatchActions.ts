@@ -93,12 +93,17 @@ export function useAssetDispatchActions({
           ActionTypes.SELL_CHASSIS_FAILED,
           'assets:sellFailed'
         ),
-      repairChassis: (assetId: string) =>
+      // Returns whether the repair was accepted, so a confirm modal can stay
+      // open (with the failure toast shown) when the creator refuses it.
+      repairChassis: (assetId: string): boolean => {
+        const action = repairChassisAction(assetId, stateRef.current)
         dispatchWithFailureToast(
-          repairChassisAction(assetId, stateRef.current),
+          action,
           ActionTypes.REPAIR_CHASSIS_FAILED,
           'assets:repairFailed'
-        ),
+        )
+        return action.type !== ActionTypes.REPAIR_CHASSIS_FAILED
+      },
       refinanceLiability: (liabilityId: string, loanProfileId: LoanProfileId) =>
         dispatchWithFailureToast(
           refinanceLiabilityAction(
