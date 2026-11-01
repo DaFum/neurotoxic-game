@@ -5,6 +5,7 @@
   "tourbus.distance": "DISTANCE:",
   "tourbus.moveLeft": "Move Left",
   "tourbus.moveRight": "Move Right",
+  "tourbus.steerHint": "Steer: ←/→ or A/D, or click/tap a side",
   "tourbus.title": "TOURBUS TERROR",
   "bandMembers.lars": "Lars",
   "bandMembers.marius": "Marius",

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import { TourbusScene } from '../../src/scenes/TourbusScene'
+import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
 
 const moveLeft = vi.fn()
 const moveRight = vi.fn()
@@ -79,5 +80,46 @@ describe('TourbusScene', () => {
     expect(moveLeft).toHaveBeenCalled()
     expect(moveRight).toHaveBeenCalled()
     expect(handleArrivalSequence).toHaveBeenCalled()
+  })
+
+  describe('steering guidance', () => {
+    const STEER_HINT = /←\/→ or A\/D/
+
+    afterEach(() => {
+      act(() => setActiveInputSource('keyboard'))
+    })
+
+    it.each(['keyboard', 'pointer', 'touch'])(
+      'shows the arrow glyphs for %s input',
+      source => {
+        act(() => setActiveInputSource(source))
+        render(<TourbusScene />)
+        for (const [name, glyph] of [
+          ['Move Left', '<'],
+          ['Move Right', '>']
+        ]) {
+          const button = screen.getByRole('button', { name })
+          // The glyph used to be `text-transparent` unless the pointer was
+          // coarse, so mouse and keyboard players saw no steering cue.
+          expect(button.className).not.toMatch(/text-transparent/)
+          const glyphNode = button.querySelector('[aria-hidden="true"]')
+          expect(glyphNode).toHaveTextContent(glyph)
+          expect(glyphNode.className).toMatch(/text-star-white\//)
+        }
+      }
+    )
+
+    it('shows the keyboard and mouse instruction outside gamepad play', () => {
+      render(<TourbusScene />)
+      expect(screen.getByText(STEER_HINT)).toBeInTheDocument()
+      expect(screen.queryByText('Steer one lane at a time')).toBeNull()
+    })
+
+    it('swaps the instruction for the gamepad hint on a controller', () => {
+      act(() => setActiveInputSource('gamepad'))
+      render(<TourbusScene />)
+      expect(screen.queryByText(STEER_HINT)).toBeNull()
+      expect(screen.getByText(/Steer one lane at a time/)).toBeInTheDocument()
+    })
   })
 })
