@@ -195,7 +195,9 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
           />
         )}
 
-        {currentTab === 'LEADERBOARD' && <LeaderboardTab />}
+        {currentTab === 'LEADERBOARD' && (
+          <LeaderboardTab playerId={player.playerId} />
+        )}
 
         {currentTab === 'VOID' &&
           isVoidTraderUnlocked(social.controversyLevel) && (

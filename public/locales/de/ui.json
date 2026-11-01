@@ -1508,6 +1508,7 @@
   "leaderboard.select_song": "SONG WÄHLEN:",
   "leaderboard.song_scores": "SONG-PUNKTE",
   "leaderboard.stage_dives": "STAGEDIVES",
+  "leaderboard.sync_disabled": "Die Statistik-Synchronisierung ist für diese Sitzung pausiert: Der Server-Eintrag dieses Spielers hat sein Limit erreicht. Die Ranglisten zeigen die zuletzt synchronisierten Werte.",
   "leaderboard.unavailable": "Ranglisten-Dienst im lokalen Modus nicht verfügbar.",
   "leaderboard.unknownPlayer": "Unbekannt",
   "load_game": "Spiel Laden",

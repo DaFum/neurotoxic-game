@@ -1508,6 +1508,7 @@
   "leaderboard.select_song": "SELECT SONG:",
   "leaderboard.song_scores": "SONG SCORES",
   "leaderboard.stage_dives": "STAGE DIVES",
+  "leaderboard.sync_disabled": "Stats sync is paused for this session: the server record for this player reached its limit. Rankings show the last synced values.",
   "leaderboard.unavailable": "Leaderboard service unavailable in local mode.",
   "leaderboard.unknownPlayer": "Unknown",
   "load_game": "Load Game",
