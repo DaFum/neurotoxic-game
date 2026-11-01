@@ -386,7 +386,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   // and a pick made before the upfront cost rose is clamped down with it.
   const maxProtectedCareerCash = Math.max(
     0,
-    Math.floor((money - upfrontCost) / PROTECTED_CASH_STEP) *
+    Math.floor((finiteNumberOr(money, 0) - upfrontCost) / PROTECTED_CASH_STEP) *
       PROTECTED_CASH_STEP
   )
   const protectedCareerCash = Math.min(
