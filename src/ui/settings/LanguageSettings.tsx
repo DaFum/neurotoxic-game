@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 
@@ -7,13 +7,21 @@ import { ActionButton } from '../shared/ActionButton'
  */
 export const LanguageSettings = memo(function LanguageSettings() {
   const { t, i18n } = useTranslation()
+  const headingId = useId()
 
   return (
     <div>
-      <h2 className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
+      <h2
+        id={headingId}
+        className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'
+      >
         {t('ui:language')}
       </h2>
-      <div className='flex flex-wrap gap-4'>
+      <div
+        role='group'
+        aria-labelledby={headingId}
+        className='flex flex-wrap gap-4'
+      >
         <ActionButton
           onClick={() => i18n.changeLanguage('en')}
           aria-pressed={!!i18n.language?.startsWith('en')}
