@@ -2,6 +2,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 import React from 'react'
 import { render, screen, cleanup } from '@testing-library/react'
+import { formatCurrency } from '../../src/utils/numberUtils'
 
 // The Career and run status the component reads, rewritten per test.
 const gameState = {
@@ -113,4 +114,15 @@ describe('Band HQ gates the legacy catalog on Expedition progress', () => {
     const button = await renderBuyButton()
     expect(button).toHaveAttribute('aria-disabled', 'false')
   })
+
+  test.each(['SHOP', 'UPGRADES'])(
+    '%s balance shows spendable, not protected, run cash (#3464)',
+    currentTab => {
+      gameState.expedition = { status: 'active', protectedCareerCash: 999000 }
+      render(React.createElement(BandHQContentArea, { currentTab }))
+
+      expect(screen.getByText(formatCurrency(999, 'en'))).toBeInTheDocument()
+      expect(screen.queryByText(formatCurrency(999999, 'en'))).toBeNull()
+    }
+  )
 })
