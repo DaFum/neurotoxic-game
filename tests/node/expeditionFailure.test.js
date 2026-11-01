@@ -29,6 +29,7 @@ import {
   isCurrentExpeditionFailureId
 } from '../../src/domain/expedition/failure'
 import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
+import { EXPENSE_CONSTANTS } from '../../src/utils/economy/constants'
 import {
   firstExtractionRouteStep,
   fixtureMap,
@@ -705,8 +706,14 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
    * with every onward node moved `distance` map units straight past the
    * current node. The crisis is stored as play stores it.
    */
-  const longLegRun = (distance, { fuel = 0 } = {}) => {
-    const state = walkTo(startedState({ money: 5000 }), 1)
+  const longLegRun = (
+    distance,
+    { fuel = 0, insurancePolicyId = null } = {}
+  ) => {
+    const state = walkTo(
+      startedState({ money: 5000 }, { insurancePolicyId }),
+      1
+    )
     const current = state.gameMap.nodes[state.player.currentNodeId]
     for (const edge of state.gameMap.connections) {
       if (edge.from !== current.id) continue
@@ -752,5 +759,91 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
       towOf(state).player.van.fuel,
       10 + EXPEDITION_TOW_FUEL_RESTORED
     )
+  })
+
+  const TANK = EXPENSE_CONSTANTS.transport.maxFuel
+  /** Every onward leg burns about 129 litres, more than a full tank. */
+  const beyondTankRun = () => longLegRun(300, { insurancePolicyId: 'touring' })
+  const crisisOf = (state, choice) =>
+    gameReducer(state, {
+      type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+      payload: {
+        pendingFailureId: state.expedition.pendingFailure?.id,
+        choice,
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+
+  it('keeps the insurance claim unspent when the cheapest leg exceeds the tank', () => {
+    const state = beyondTankRun()
+    assert.ok(getExpeditionCheapestOnwardLegFuel(state) > TANK)
+    assert.equal(state.expedition.pendingFailure?.reason, 'fuel_stranded')
+    assert.equal(
+      state.expedition.pendingFailure.choices.includes('insurance_claim'),
+      false
+    )
+
+    // Neither the crisis response nor a direct claim is accepted.
+    assert.equal(crisisOf(state, 'insurance_claim'), state)
+    const direct = gameReducer(state, {
+      type: ActionTypes.CLAIM_EXPEDITION_INSURANCE,
+      payload: {
+        claimType: 'vehicle',
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+    assert.equal(direct, state)
+    assert.equal(direct.expedition.insuranceClaimConsumed, false)
+    assert.equal(direct.expedition.claimConsumed, false)
+    assert.equal(direct.player.van.fuel, 0)
+  })
+
+  it('neither offers nor charges a tow or refuel when the cheapest leg exceeds the tank', () => {
+    const state = beyondTankRun()
+    assert.ok(getExpeditionCheapestOnwardLegFuel(state) > TANK)
+    const { choices } = state.expedition.pendingFailure
+    assert.equal(choices.includes('tow'), false)
+    assert.equal(choices.includes('refuel'), false)
+
+    for (const choice of ['tow', 'refuel']) {
+      const next = crisisOf(state, choice)
+      assert.equal(next, state)
+      assert.equal(next.player.money, state.player.money)
+      assert.equal(next.player.van.fuel, 0)
+    }
+  })
+
+  it('still lets the player accept the failure when the cheapest leg exceeds the tank', () => {
+    const state = beyondTankRun()
+    assert.deepEqual(state.expedition.pendingFailure?.choices, [
+      'accept_failure'
+    ])
+    const next = gameReducer(state, {
+      type: ActionTypes.ACCEPT_EXPEDITION_FAILURE,
+      payload: {
+        pendingFailureId: state.expedition.pendingFailure.id,
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+    assert.equal(next.expedition.status, 'failed')
+    assert.equal(next.expedition.outcome?.reason, 'fuel_stranded')
+  })
+
+  it('keeps every fuel rescue for a leg a full tank still covers', () => {
+    const state = longLegRun(200, { insurancePolicyId: 'touring' })
+    const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+    assert.ok(cheapest !== null && cheapest > 50 && cheapest <= TANK)
+    const { choices } = state.expedition.pendingFailure
+    for (const choice of ['refuel', 'tow', 'insurance_claim']) {
+      assert.ok(choices.includes(choice), choice)
+    }
+
+    const claimed = crisisOf(state, 'insurance_claim')
+    assert.equal(claimed.expedition.insuranceClaimConsumed, true)
+    assert.equal(claimed.player.van.fuel, Math.ceil(cheapest))
+
+    const towed = crisisOf(state, 'tow')
+    assert.equal(towed.player.money, state.player.money - EXPEDITION_TOW_COST)
+    assert.equal(towed.player.van.fuel, Math.ceil(cheapest))
   })
 })

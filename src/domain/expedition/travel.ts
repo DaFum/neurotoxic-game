@@ -25,6 +25,7 @@
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { calculateTravelExpenses } from '../../utils/economy'
+import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { getActiveAssetModifiers } from '../../utils/assets/assetSelectors'
 import { getNodeAccessStatus } from '../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../data/venues'
@@ -229,4 +230,23 @@ export const getExpeditionCheapestOnwardLegFuel = (
     if (cheapest === null || quote < cheapest) cheapest = quote
   }
   return cheapest
+}
+
+/**
+ * Whether the cheapest reachable onward leg burns more than a full tank holds.
+ *
+ * @param state - Current game state.
+ * @returns True only when {@link getExpeditionCheapestOnwardLegFuel} reports a
+ * leg above tank capacity.
+ *
+ * @remarks
+ * Every fuel rescue (refuel, paid tow, vehicle insurance claim) is clamped at
+ * tank capacity, so none of them can move the van here: such a strand is not
+ * rescuable by fuel, and only `accept_failure` (or an extraction) is offered.
+ */
+export const isExpeditionCheapestLegBeyondTank = (
+  state: GameState
+): boolean => {
+  const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+  return cheapest !== null && cheapest > EXPENSE_CONSTANTS.transport.maxFuel
 }

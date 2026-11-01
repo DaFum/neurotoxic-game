@@ -37,7 +37,10 @@ import { getCriticallyInjuredBandMemberId } from './injuryGate'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'
-import { getExpeditionCheapestOnwardLegFuel } from './travel'
+import {
+  getExpeditionCheapestOnwardLegFuel,
+  isExpeditionCheapestLegBeyondTank
+} from './travel'
 import { getExpeditionTravelMap } from './routeOverlay'
 import {
   canExtractExpedition,
@@ -224,13 +227,17 @@ export const getExpeditionMobilityFailureSignal = (
     ? state.player.van.fuel
     : 0
   const choices: ExpeditionFailureChoiceId[] = []
+  // A leg longer than a full tank defeats every fuel rescue (each clamps at
+  // capacity), so none is offered: the player would pay and stay stranded.
+  const fuelCanRescue = !isExpeditionCheapestLegBeyondTank(state)
   if (
+    fuelCanRescue &&
     calculateRefuelCost(currentFuel) > 0 &&
     spendable >= calculateRefuelCost(currentFuel)
   ) {
     choices.push('refuel')
   }
-  if (spendable >= EXPEDITION_TOW_COST) choices.push('tow')
+  if (fuelCanRescue && spendable >= EXPEDITION_TOW_COST) choices.push('tow')
   if (
     canClaimExpeditionInsurance(state, 'vehicle', undefined, {
       crisisReason: 'fuel_stranded'
