@@ -28,6 +28,9 @@ test('Task 8: Expedition Inspections', async t => {
         next_node: {
           id: 'next_node',
           type: 'GIG',
+          // A booking node must name its venue, or the booking gate refuses
+          // the only onward leg and the run counts as stranded.
+          venueId: 'muenchen_feierwerk',
           label: 'Gig Venue',
           layer: 1
         }
