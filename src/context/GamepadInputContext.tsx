@@ -36,6 +36,17 @@ import {
 } from '../ui/shared/useModalBehavior'
 import { GamepadTextEntry } from '../ui/shared/GamepadTextEntry'
 
+/**
+ * Mounts a centralized polling loop for connected gamepads and synchronizes controller inputs
+ * to consumer priorities.
+ *
+ * @remarks
+ * This provider intercepts gamepad activity globally to normalize layouts, debounce input noise, and
+ * emit synthetic events down to targeted react contexts or native DOM interactions (like spatial focus tracking).
+ * Modal precedence (e.g. escaping overlays) intercepts commands before gameplay mechanics consume them.
+ *
+ * @param children - The descendant component tree
+ */
 export function GamepadInputProvider({ children }: { children: ReactNode }) {
   const { addToast } = useGameActions()
   const bindings =
