@@ -1,6 +1,7 @@
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
 import { isFiniteNumber } from './finiteNumber'
+import { isLooseRecord } from './objectUtils'
 import { pickBoundedIndex } from './selectionUtils'
 import type { Note, Song } from '../types/audio'
 import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
@@ -74,6 +75,29 @@ export const generateNotesForSong = (
   }
 
   return notes
+}
+
+/**
+ * Keeps only tempo-map entries that both gameplay and audio can time against.
+ * An entry is kept when it has an own finite `tick >= 0` and an own finite
+ * `usPerBeat > 0`; everything else is dropped.
+ * @param raw - Untrusted tempo map, usually `song.tempoMap`.
+ * @returns New `{ tick, usPerBeat }` entries in source order; `[]` for non-arrays.
+ */
+export const sanitizeTempoMap = (raw: unknown): TempoMapEntry[] => {
+  if (!Array.isArray(raw)) return []
+  const result: TempoMapEntry[] = []
+  for (const entry of raw) {
+    if (!isLooseRecord(entry)) continue
+    if (!Object.hasOwn(entry, 'tick') || !Object.hasOwn(entry, 'usPerBeat')) {
+      continue
+    }
+    const { tick, usPerBeat } = entry
+    if (!isFiniteNumber(tick) || tick < 0) continue
+    if (!isFiniteNumber(usPerBeat) || usPerBeat <= 0) continue
+    result.push({ tick, usPerBeat })
+  }
+  return result
 }
 
 /**
@@ -241,11 +265,9 @@ export const parseSongNotes = (
   validNotes.sort((a, b) => (a.t ?? 0) - (b.t ?? 0))
 
   // Determine timing strategy: Tempo Map vs Constant BPM
-  const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
-  const rawTempoMap = useTempoMap
-    ? (song.tempoMap as TempoMapEntry[])
-    : undefined
-  const activeTempoMap = useTempoMap ? preprocessTempoMap(rawTempoMap, tpb) : []
+  const tempoMap = sanitizeTempoMap(song.tempoMap)
+  const useTempoMap = tempoMap.length > 0
+  const activeTempoMap = useTempoMap ? preprocessTempoMap(tempoMap, tpb) : []
 
   // 2. Map and filter in a single pass, processing only every 4th note
   const gameNotes: RhythmNote[] = []

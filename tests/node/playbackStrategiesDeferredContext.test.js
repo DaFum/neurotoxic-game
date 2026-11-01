@@ -164,7 +164,8 @@ mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
   namedExports: {
     generateNotesForSong: mockGenerateNotesForSong,
     calculateTimeFromTicks: mock.fn(() => 0),
-    preprocessTempoMap: mock.fn(() => [])
+    preprocessTempoMap: mock.fn(() => []),
+    sanitizeTempoMap: mock.fn(() => [])
   }
 })
 
