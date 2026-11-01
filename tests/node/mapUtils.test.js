@@ -10,6 +10,9 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
+    // The rest-income escape prices living costs; a flat figure keeps the
+    // fixtures' daily net equal to their `dailyObligations`.
+    calculateGuaranteedDailyCost: () => 80,
     // checkSoftlock reads MAX_FUEL for its refuel escape hatch.
     EXPENSE_CONSTANTS: { transport: { maxFuel: 100 } }
   }
@@ -381,6 +384,108 @@ describe('mapUtils', () => {
         }),
         false
       )
+    })
+
+    describe('rest income', () => {
+      // Harmony 10 and drained stamina rule out every donation, so resting is
+      // the only cash source in these fixtures.
+      const drainedBand = {
+        harmony: 10,
+        members: [{ stamina: 0, staminaMax: 100 }]
+      }
+      const restRecovery = { social: {} }
+
+      beforeEach(() => {
+        mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+          fuelLiters: 10,
+          totalCost: 100
+        }))
+        mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      })
+
+      test('positive daily net earned by resting defuses a stranded verdict', () => {
+        const player = {
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money: 50
+        }
+        // Two rest days at +30 lift 50 to 110, enough for the 100 trip.
+        const context = { dailyObligations: -30 }
+
+        assert.equal(checkSoftlock(gameMap, player, drainedBand, context), true)
+        assert.equal(
+          checkSoftlock(gameMap, player, drainedBand, {
+            ...context,
+            restRecovery
+          }),
+          false
+        )
+      })
+
+      test('rest recovery looks ahead exactly seven rest days', () => {
+        const context = { dailyObligations: -7, restRecovery }
+        const at = money => ({
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money
+        })
+
+        // 51 + 7 * 7 = 100 covers the trip on the seventh rest day.
+        assert.equal(
+          checkSoftlock(gameMap, at(51), drainedBand, context),
+          false
+        )
+        // 50 would need an eighth day.
+        assert.equal(checkSoftlock(gameMap, at(50), drainedBand, context), true)
+      })
+
+      test('a day that costs money is never counted as a rescue', () => {
+        const player = {
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money: 99
+        }
+
+        for (const dailyObligations of [0, 5]) {
+          assert.equal(
+            checkSoftlock(gameMap, player, drainedBand, {
+              dailyObligations,
+              restRecovery
+            }),
+            true
+          )
+        }
+      })
+
+      test('rest income combines with a donation made before resting', () => {
+        mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+          fuelLiters: 10,
+          totalCost: 560
+        }))
+        const player = {
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money: 0
+        }
+        // One marrow donation (500, harmony 50 -> 10 rules out blood) plus
+        // two rest days at +30 reach 560; neither does alone.
+        const band = {
+          harmony: 50,
+          members: [{ stamina: 100, staminaMax: 100 }]
+        }
+        const context = { dailyObligations: -30, restRecovery }
+
+        assert.equal(
+          checkSoftlock(gameMap, player, band, { dailyObligations: -30 }),
+          true
+        )
+        assert.equal(checkSoftlock(gameMap, player, drainedBand, context), true)
+        assert.equal(checkSoftlock(gameMap, player, band, context), false)
+      })
     })
 
     test('an unplayed FESTIVAL at the current node counts as an escape', () => {

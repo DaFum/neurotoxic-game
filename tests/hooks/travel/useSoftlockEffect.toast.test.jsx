@@ -92,6 +92,36 @@ describe('useSoftlockEffect fuel pricing', () => {
     )
     unmount()
   })
+
+  test('hands the social slice to the rest-income escape', () => {
+    const social = { youtube: 50000 }
+    const { unmount } = renderHook(() =>
+      useSoftlockEffect({
+        refs: { timeoutRef: { current: null } },
+        state: { isTraveling: false },
+        params: {
+          gameMap: { nodes: {}, connections: [] },
+          player: { currentNodeId: 'node_0', day: 1, money: 0 },
+          band: {},
+          social,
+          assets: [],
+          liabilities: [],
+          addToast: vi.fn(),
+          saveGame: vi.fn(),
+          changeScene: vi.fn(),
+          venueBlacklist: [],
+          reputationByRegion: {}
+        }
+      })
+    )
+    expect(checkSoftlock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({ restRecovery: { social } })
+    )
+    unmount()
+  })
 })
 
 describe('useSoftlockEffect during an active run', () => {

@@ -1,4 +1,5 @@
 import {
+  calculateGuaranteedDailyCost,
   calculateRefuelCost,
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
@@ -7,6 +8,7 @@ import {
   getBloodBankDonation,
   validateBloodBankDonation
 } from './bloodBankUtils'
+import { calculateDailyNetCost } from './dailyNetCost'
 import { finiteNumberOr } from './finiteNumber'
 import {
   clampBandHarmony,
@@ -14,7 +16,7 @@ import {
   readVanCondition
 } from './gameState/clamps'
 import { getCityPrefix } from './mapGenerator/cityTraits'
-import type { BandState } from '../types'
+import type { BandState, SocialState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
 type RawMapConnection = { from?: unknown; to?: unknown }
@@ -133,6 +135,17 @@ interface SoftlockContext {
    * keeps legacy callers conservative.
    */
   isNodeAccessible?: (node: unknown) => boolean
+  /**
+   * Enables the rest-in-van escape: days of positive net income (asset revenue
+   * or YouTube ad revenue above the obligations) earned by resting. Pass it
+   * for ordinary play only; an active Expedition settles days from its own
+   * spendable slice. `dailyObligations` must then be the full
+   * `getTotalDailyObligations` figure.
+   */
+  restRecovery?: {
+    /** Social slice supplying the YouTube followers the day tick pays on. */
+    social: Partial<Pick<SocialState, 'youtube'>>
+  }
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -143,6 +156,16 @@ const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
  * donate at most six times in a row; the bound only guards corrupted state.
  */
 const MAX_SIMULATED_DONATIONS = 8
+
+/**
+ * Rest days the softlock check looks ahead when resting earns money. One week:
+ * long enough for modest income to close a typical shortfall, short enough
+ * that the inputs held constant (follower decay, loan terms, asset wear) stay
+ * close to what the real ticks settle. Each real rest re-runs the check on the
+ * settled state, so an optimistic look-ahead only postpones a verdict that the
+ * settled numbers then confirm.
+ */
+const MAX_SIMULATED_REST_DAYS = 7
 
 /**
  * Cumulative cash a run of back-to-back blood-bank donations raises, one entry
@@ -263,7 +286,9 @@ export const nodeToPercentPosition = (
  * stranded verdict: the current node is a playable gig (GIG/FESTIVAL/FINALE
  * not yet played, i.e. not `lastGigNodeId`), a run of legal blood-bank
  * donations (alone or on top of any asset-sale combination) raises enough
- * cash without traveling, or an affordable refuel would make a neighbor
+ * cash without traveling, up to {@link MAX_SIMULATED_REST_DAYS} days of
+ * positive net income earned by resting (only with `context.restRecovery`)
+ * reach the cash, or an affordable refuel would make a neighbor
  * reachable. The FINALE node is never reported as stranded:
  * it has no outgoing connections by map design, so being there is the end of
  * the route, not a resource failure.
@@ -459,6 +484,36 @@ export const checkSoftlock = (
   }
 
   if (evaluateWithDonations(playerMoney)) return false
+
+  // Escape hatch: resting in the van while the day pays more than it costs.
+  // Each day is priced as the tick settles it: the deterministic living cost
+  // from the shared helper plus the asset and loan terms already folded into
+  // `dailyObligations`. Donations stay available on top of the rest income.
+  const restRecovery = context.restRecovery
+  if (restRecovery) {
+    const bandForRest = bandStateForTravel ?? { members: [] }
+    const assetAndLoanCost =
+      dailyObligations -
+      calculateGuaranteedDailyCost(
+        playerStateForTravel,
+        bandForRest,
+        restRecovery.social
+      )
+    const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
+    let restedMoney = playerMoney
+    for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
+      const dayCost =
+        assetAndLoanCost +
+        calculateDailyNetCost(
+          { day: today + restDay, fameLevel: playerStateForTravel.fameLevel },
+          bandForRest,
+          restRecovery.social
+        )
+      if (!(dayCost < 0)) break
+      restedMoney -= dayCost
+      if (evaluateWithDonations(restedMoney)) return false
+    }
+  }
 
   // Escape hatch: non-negative net asset proceeds across possible sale combinations.
   if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
