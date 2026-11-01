@@ -2,8 +2,30 @@ import {
   getTotalDailyObligations,
   getActiveAssetModifiers
 } from './assets/assetSelectors'
+import { getAssetTotalUpkeep } from './assets/assetSelectors/assetFinancials'
 import { getAssetSaleQuote } from './assets/assetSelectors/assetSaleQuote'
 import type { GameState, PlayerState, BandState, SocialState } from '../types'
+
+/**
+ * Whether selling the asset drops a daily cost: its upkeep or a loan tied to it.
+ *
+ * @param asset - Asset under consideration for sale.
+ * @param liabilities - Active liabilities keyed by id.
+ * @returns True when the asset has upkeep or at least one attached liability.
+ */
+const saleRemovesObligation = (
+  asset: NonNullable<GameState['assets']>[number],
+  liabilities: GameState['liabilities']
+): boolean => {
+  if (getAssetTotalUpkeep(asset) > 0) return true
+  const current = liabilities ?? {}
+  for (const id in current) {
+    if (Object.hasOwn(current, id) && current[id]?.assetId === asset.id) {
+      return true
+    }
+  }
+  return false
+}
 
 /**
  * Calculates the net sale value for all valid player assets.
@@ -11,8 +33,9 @@ import type { GameState, PlayerState, BandState, SocialState } from '../types'
  * @remarks
  * Iterates over the player's assets to calculate the gross sale value on the given day,
  * subtracting any outstanding principal remaining on associated liabilities to determine
- * the true net yield if liquidated. Only assets that return a net yield greater than zero
- * are returned.
+ * the true net yield if liquidated. Assets with a positive net yield are returned, and so
+ * are zero-net assets whose sale sheds a loan or upkeep: the sell reducer accepts any
+ * non-blocked quote, and dropping those daily costs can make a route affordable.
  *
  * @param assets - The current list of owned assets from the game state.
  * @param liabilities - The active liabilities dictionary mapping IDs to debt obligations.
@@ -29,7 +52,8 @@ export const getSellableAssets = (
   if (assets) {
     for (const asset of assets) {
       const { net, blocked } = getAssetSaleQuote(asset, liabilities, playerDay)
-      if (!blocked && net > 0) {
+      if (blocked || net < 0) continue
+      if (net > 0 || saleRemovesObligation(asset, liabilities)) {
         sellableAssets.push({ id: asset.id, net })
       }
     }

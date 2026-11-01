@@ -5,6 +5,9 @@ import {
   getPostSaleScenarios
 } from '../../src/utils/travelSoftlockUtils.ts'
 import { getAssetSaleQuote } from '../../src/utils/assets/assetSelectors/assetSaleQuote.ts'
+import { getTotalDailyObligations } from '../../src/utils/assets/assetSelectors.ts'
+import { calculateTravelExpenses } from '../../src/utils/economy/index.ts'
+import { checkSoftlock } from '../../src/utils/mapUtils.ts'
 
 const makeAsset = id => ({
   id,
@@ -55,7 +58,7 @@ test('getAssetSaleQuote blocks a sale whose debt total overflows', () => {
   assert.ok(Number.isFinite(quote.net) && quote.net < 0)
 })
 
-test('getSellableAssets skips assets the quote blocks or values at zero', () => {
+test('getSellableAssets skips underwater and uncomputable (null-gross) quotes', () => {
   const assets = [
     makeAsset('a_blocked'),
     { ...makeAsset('a_bad'), kind: 'nope' }
@@ -64,6 +67,81 @@ test('getSellableAssets skips assets the quote blocks or values at zero', () => 
     l1: { id: 'l1', assetId: 'a_blocked', principalRemaining: 1e12 }
   }
   assert.deepStrictEqual(getSellableAssets(assets, liabilities, 30), [])
+})
+
+test('a zero-net sale that sheds a loan and upkeep makes a route affordable', () => {
+  const day = 30
+  const asset = { ...makeAsset('a_zero'), baseUpkeep: 40 }
+  const { gross } = getAssetSaleQuote(asset, {}, day)
+  assert.ok(gross > 0, 'fixture needs a computable gross value')
+  // The loan principal equals the sale value, so the real quote nets to 0.
+  const liabilities = {
+    l1: {
+      id: 'l1',
+      assetId: 'a_zero',
+      principalRemaining: gross,
+      dailyPayment: 50
+    }
+  }
+  const quote = getAssetSaleQuote(asset, liabilities, day)
+  assert.equal(quote.blocked, false)
+  assert.equal(quote.net, 0)
+
+  const sellable = getSellableAssets([asset], liabilities, day)
+  assert.deepStrictEqual(sellable, [{ id: 'a_zero', net: 0 }])
+
+  const band = { harmony: 50, members: [] }
+  const social = {}
+  const gameMap = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const van = { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  const { totalCost } = calculateTravelExpenses(
+    gameMap.nodes.B,
+    gameMap.nodes.A,
+    { money: 0, fameLevel: 0, van },
+    band
+  )
+  const basePlayer = { day, fameLevel: 0 }
+  const obligationsBefore = getTotalDailyObligations({
+    player: basePlayer,
+    band,
+    social,
+    assets: [asset],
+    liabilities
+  })
+  const obligationsAfter = getTotalDailyObligations({
+    player: basePlayer,
+    band,
+    social,
+    assets: [],
+    liabilities: {}
+  })
+  assert.ok(obligationsAfter < obligationsBefore, 'the sale must shed costs')
+
+  // Exactly enough for the trip once the loan and upkeep are gone.
+  const money = totalCost + obligationsAfter
+  assert.ok(money < 1000, 'stay below the cash-reserve logistics fee')
+  const player = { ...basePlayer, currentNodeId: 'A', money, van }
+  const scenarios = getPostSaleScenarios(
+    sellable,
+    [asset],
+    liabilities,
+    player,
+    band,
+    social
+  )
+  const context = { dailyObligations: obligationsBefore }
+
+  assert.equal(checkSoftlock(gameMap, player, band, context), true)
+  assert.equal(
+    checkSoftlock(gameMap, player, band, {
+      ...context,
+      postSaleScenarios: scenarios
+    }),
+    false
+  )
 })
 
 test('getPostSaleScenarios evaluates combinations correctly and accurately calculates retained assets and proceeds', () => {

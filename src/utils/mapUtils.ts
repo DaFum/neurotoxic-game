@@ -460,7 +460,7 @@ export const checkSoftlock = (
 
   if (evaluateWithDonations(playerMoney)) return false
 
-  // Escape hatch: positive net asset proceeds across possible sale combinations.
+  // Escape hatch: non-negative net asset proceeds across possible sale combinations.
   if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
     for (const scenario of context.postSaleScenarios) {
       const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
