@@ -1344,8 +1344,8 @@
   "wrong_turn.title": "WRONG TURN",
   "underground_synth_shop.title": "UNDERGROUND SYNTH SHOP",
   "underground_synth_shop.desc": "You stumble upon a hidden shop selling vintage and custom synthesizers. The owner claims one of them is legendary.",
-  "underground_synth_shop.opt1.label": "Buy the legendary synth [-250 Cash, +3 Skill, +20 Fame]",
+  "underground_synth_shop.opt1.label": "Buy the legendary synth [{{amount}}, +3 Skill, +20 Fame]",
   "underground_synth_shop.opt1.outcome": "The synth sounds incredible! Your musical skills increase and people notice the new sound.",
-  "underground_synth_shop.opt2.label": "Leave it [-2 Mood]",
+  "underground_synth_shop.opt2.label": "Leave it [{{amount}}]",
   "underground_synth_shop.opt2.outcome": "You leave the shop. The missed opportunity lingers on your mind."
 }

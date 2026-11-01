@@ -1,4 +1,5 @@
 import type { GameState } from '../../types'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 
 /** Raw special-location event definitions consumed by the event registry. */
 export const SPECIAL_EVENTS = [
@@ -306,6 +307,7 @@ export const SPECIAL_EVENTS = [
     options: [
       {
         label: 'events:underground_synth_shop.opt1.label',
+        condition: (state: GameState) => getExpeditionSpendableCash(state) >= 250,
         effect: {
           type: 'composite',
           effects: [
