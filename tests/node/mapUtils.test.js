@@ -342,6 +342,47 @@ describe('mapUtils', () => {
       assert.equal(checkSoftlock(gameMap, player, band), false)
     })
 
+    test('consecutive donations (marrow, then blood) defuse a stranded verdict', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 592
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 0 }
+      // Marrow alone pays 500 (< 592); marrow leaves harmony 40 and stamina
+      // 40, still enough for blood, and the pair pays 600 (>= 592).
+      const band = {
+        harmony: 80,
+        members: [{ stamina: 100, staminaMax: 100 }]
+      }
+
+      assert.equal(checkSoftlock(gameMap, player, band), false)
+    })
+
+    test('donations combine with asset-sale proceeds', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 550
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 0 }
+      // One marrow donation (500) and the sale (100) are each short of 550;
+      // together they cover it. Harmony 10 after marrow rules out blood.
+      const band = {
+        harmony: 50,
+        members: [{ stamina: 100, staminaMax: 100 }]
+      }
+
+      assert.equal(
+        checkSoftlock(gameMap, player, band, {
+          postSaleScenarios: [
+            { assetProceeds: 100, dailyObligations: 0, assetModifiers: {} }
+          ]
+        }),
+        false
+      )
+    })
+
     test('an unplayed FESTIVAL at the current node counts as an escape', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 30,
