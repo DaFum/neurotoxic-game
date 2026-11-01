@@ -44,6 +44,8 @@ export type RhythmGameLogicReturn = {
   stats: RhythmUiState
   actions: RhythmGameLogicActions
   update: (deltaMS: number) => void
+  /** Stable callback for the gig stage's one-shot readiness signal. */
+  onStageReady: () => void
 }
 
 /**
@@ -187,7 +189,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { activateToxicMode } = scoringActions
 
   // 3. Audio & Initialization
-  const { retryAudioInitialization } = useRhythmGameAudio({
+  const { retryAudioInitialization, onStageReady } = useRhythmGameAudio({
     gameStateRef,
     setters,
     contextState: {
@@ -260,8 +262,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       gameStateRef,
       stats,
       actions,
-      update
+      update,
+      onStageReady
     }),
-    [gameStateRef, stats, actions, update]
+    [gameStateRef, stats, actions, update, onStageReady]
   )
 }

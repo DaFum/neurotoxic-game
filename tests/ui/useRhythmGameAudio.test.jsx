@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
@@ -203,7 +203,7 @@ describe('useRhythmGameAudio', () => {
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: {
           current: {
@@ -223,6 +223,9 @@ describe('useRhythmGameAudio', () => {
         }
       })
     )
+    act(() => {
+      result.current.onStageReady()
+    })
 
     await waitFor(() => {
       expect(mocks.handleError).toHaveBeenCalledWith(
@@ -244,7 +247,7 @@ describe('useRhythmGameAudio', () => {
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: {
           current: {
@@ -264,6 +267,9 @@ describe('useRhythmGameAudio', () => {
         }
       })
     )
+    act(() => {
+      result.current.onStageReady()
+    })
 
     await waitFor(() => {
       expect(setAudioStatus).toHaveBeenCalledWith('failed')
@@ -283,7 +289,7 @@ describe('useRhythmGameAudio', () => {
       }
     }
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
         setters: { setAudioStatus, setIsGameOver },
@@ -296,6 +302,9 @@ describe('useRhythmGameAudio', () => {
         }
       })
     )
+    act(() => {
+      result.current.onStageReady()
+    })
 
     await waitFor(() => {
       expect(mocks.resetGigStateTracking).toHaveBeenCalledWith(gameStateRef)
@@ -396,7 +405,7 @@ describe('useRhythmGameAudio', () => {
     })
     const setAudioStatus = vi.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
         setters: { setAudioStatus, setIsGameOver: vi.fn() },
@@ -409,6 +418,9 @@ describe('useRhythmGameAudio', () => {
         }
       })
     )
+    act(() => {
+      result.current.onStageReady()
+    })
 
     await waitFor(() => {
       expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
@@ -492,9 +504,154 @@ describe('useRhythmGameAudio', () => {
       hitWindows: [100, 100, 100]
     })
 
-    await result.current.retryAudioInitialization()
+    const retry = result.current.retryAudioInitialization()
+    act(() => {
+      result.current.onStageReady()
+    })
+    await retry
 
     // It should have called setupGigPhysics again
     expect(mocks.setupGigPhysics).toHaveBeenCalled()
+  })
+})
+
+describe('useRhythmGameAudio stage readiness gate', () => {
+  const baseState = {
+    band: { harmony: 50 },
+    gameMap: { nodes: { n1: { layer: 0 } } },
+    player: { currentNodeId: 'n1' },
+    setlist: [{ id: 'song_1', name: 'Song 1', bpm: 120, duration: 60 }],
+    gigModifiers: {},
+    currentGig: { songId: 'song_1' }
+  }
+  // Mirrors the hook's unexported no-stage fallback (STAGE_READY_FALLBACK_MS).
+  const STAGE_READY_FALLBACK_MS = 15_000
+
+  const renderAudioHook = setAudioStatus =>
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: { current: { lanes: [{}, {}, {}] } },
+        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+  const advance = async ms => {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ms)
+    })
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('keeps gig audio unstarted while the stage is pending and starts the song clock once it is ready', async () => {
+    let songStartedAt = null
+    mocks.playSongSequence.mockImplementationOnce(async () => {
+      songStartedAt = Date.now()
+    })
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+
+    // Audio unlocks at once, but the stage needs 10 s (asset loads hitting
+    // their timeout) before its first frame.
+    await advance(10_000)
+    expect(mocks.ensureAudioContext).toHaveBeenCalled()
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+    expect(setAudioStatus).not.toHaveBeenCalledWith('ready')
+
+    const readyAt = Date.now()
+    await act(async () => {
+      result.current.onStageReady()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    // The song clock (and its lead-in) starts when the stage can draw, so no
+    // song time elapses unseen and the opening notes are still ahead of it.
+    expect(songStartedAt).toBe(readyAt)
+  })
+
+  it('starts right after the audio unlock when the stage was ready first', async () => {
+    const audioUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+    const { result } = renderAudioHook(vi.fn())
+
+    act(() => {
+      result.current.onStageReady()
+    })
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+
+    await act(async () => {
+      audioUnlock.resolve(true)
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to starting without a stage after the bounded wait', async () => {
+    renderAudioHook(vi.fn())
+
+    await advance(STAGE_READY_FALLBACK_MS - 1)
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+
+    await advance(1)
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+    expect(mocks.loggerWarn).toHaveBeenCalledWith(
+      'RhythmGame',
+      expect.stringContaining('stage')
+    )
+  })
+
+  it('waits for the remounted stage again after a blocked-audio retry', async () => {
+    mocks.ensureAudioContext.mockResolvedValueOnce(false)
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+
+    act(() => {
+      result.current.onStageReady()
+    })
+    await advance(0)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('blocked')
+
+    // The blocked overlay replaced the stage; the retry must leave it and
+    // wait for the new stage instead of trusting the old signal.
+    let retry
+    await act(async () => {
+      retry = result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+
+    await act(async () => {
+      result.current.onStageReady()
+      await retry
+    })
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+  })
+
+  it('never starts playback when unmounted while waiting for the stage', async () => {
+    const { unmount } = renderAudioHook(vi.fn())
+    await advance(0)
+
+    unmount()
+    await advance(STAGE_READY_FALLBACK_MS)
+
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+    expect(mocks.stopAudio).toHaveBeenCalled()
   })
 })

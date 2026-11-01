@@ -51,7 +51,7 @@ export const Gig = () => {
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic()
-  const { stats, actions, gameStateRef, update } = logic
+  const { stats, actions, gameStateRef, update, onStageReady } = logic
 
   // Use extracted session hook
   const { isPaused, handleTogglePause, handleQuitGig } = useGigSession({
@@ -149,6 +149,7 @@ export const Gig = () => {
       t={t}
       gameStateRef={gameStateRef}
       update={update}
+      onStageReady={onStageReady}
       stats={stats}
       handleLaneInput={handleLaneInput}
       handleTogglePause={handleTogglePause}
