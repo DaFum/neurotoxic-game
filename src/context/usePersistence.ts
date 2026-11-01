@@ -613,6 +613,9 @@ export function usePersistence({
   const releaseUnprotectedSlot = useCallback(() => {
     unprotectedSlotRef.current = null
   }, [])
+  // Autosaves keep being refused while the block holds, so the notice is shown
+  // once per block, and again on every save the player asks for.
+  const savePausedNoticeShownRef = useRef(false)
 
   /**
    * Writes the save, reporting whether the write actually landed.
@@ -633,6 +636,16 @@ export function usePersistence({
           'Persistence',
           'Save skipped: the slot holds a save that failed to upgrade and has no recovery copy'
         )
+        if (showToast || !savePausedNoticeShownRef.current) {
+          savePausedNoticeShownRef.current = true
+          addToast(
+            tRef.current('ui:save.savePaused', {
+              defaultValue:
+                'Not saved: saving is paused to protect a save that could not be upgraded and has no recovery copy. Starting a new tour will overwrite it.'
+            }),
+            'error'
+          )
+        }
         return false
       }
       // A save from a newer build is the player's only copy of that progress;
@@ -826,7 +839,10 @@ export function usePersistence({
           { addToast }
         ),
       migrationFailed: (slotKey, kept) => {
-        if (!kept) unprotectedSlotRef.current = slotKey
+        if (!kept) {
+          unprotectedSlotRef.current = slotKey
+          savePausedNoticeShownRef.current = false
+        }
         handleError(
           new StateError(
             kept

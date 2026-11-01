@@ -373,4 +373,79 @@ describe('failed migration whose recovery copy is refused', () => {
     })
     expect(adapter.get(SAVE_KEY)).not.toBe(v1Save)
   })
+
+  it('tells the player a save was refused, once per block and on every manual save', () => {
+    refuseQuarantineWrites()
+    const { result, addToast } = renderPersistence()
+    const pausedNotices = () =>
+      toastMessages(addToast).filter(m => m === 'ui:save.savePaused').length
+
+    act(() => {
+      result.current.loadGame()
+    })
+    expect(pausedNotices()).toBe(0)
+
+    act(() => {
+      result.current.saveGame(false)
+      result.current.saveGame(false)
+    })
+    expect(pausedNotices()).toBe(1)
+
+    act(() => {
+      expect(result.current.saveGame()).toBe(false)
+    })
+    expect(pausedNotices()).toBe(2)
+    expect(localStorage.getItem(SAVE_KEY)).toBe(v1Save)
+  })
+
+  describe('through the game actions', () => {
+    // Refuses only the recovery copy, like a quota the larger escaped copy
+    // exceeds while the smaller save still fits.
+    class QuarantineRefusingAdapter extends InMemoryAdapter {
+      override set(key: string, value: string): boolean {
+        if (key.startsWith('neurotoxic:save:quarantine:')) return false
+        return super.set(key, value)
+      }
+    }
+
+    const renderActionsAfterBlockedLoad = () => {
+      const adapter = new QuarantineRefusingAdapter()
+      adapter.set(SAVE_KEY, v1Save)
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <StorageProvider adapter={adapter}>
+          <GameStateProvider>{children}</GameStateProvider>
+        </StorageProvider>
+      )
+      const { result } = renderHook(() => useGameActions(), { wrapper })
+      act(() => {
+        result.current.loadGame()
+      })
+      return { result, adapter }
+    }
+
+    it('lifts the block when an Expedition run is committed', () => {
+      const { result, adapter } = renderActionsAfterBlockedLoad()
+
+      // TourPrep's commit releases the block before its save request.
+      act(() => {
+        result.current.releaseUnprotectedSlot()
+      })
+      act(() => {
+        result.current.saveGame(false)
+      })
+      expect(adapter.get(SAVE_KEY)).not.toBe(v1Save)
+    })
+
+    it('keeps the block through another Continue/Load', () => {
+      const { result, adapter } = renderActionsAfterBlockedLoad()
+
+      act(() => {
+        result.current.loadGame()
+      })
+      act(() => {
+        expect(result.current.saveGame(false)).toBe(false)
+      })
+      expect(adapter.get(SAVE_KEY)).toBe(v1Save)
+    })
+  })
 })

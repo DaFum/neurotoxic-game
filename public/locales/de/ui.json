@@ -2131,6 +2131,7 @@
   "save.migrationFailedNotKept": "Speicherstand konnte nicht aktualisiert werden, und es konnte keine Kopie zur Wiederherstellung gesichert werden. Er bleibt unverändert und Speichern ist pausiert; eine neue Tour überschreibt ihn.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "save.saveFailed": "Spiel konnte nicht gespeichert werden.",
+  "save.savePaused": "Nicht gespeichert: Speichern ist pausiert, um einen Speicherstand zu schützen, der nicht aktualisiert werden konnte und keine Wiederherstellungskopie hat. Eine neue Tour überschreibt ihn.",
   "save.slotUnreadable": "Der Speicherstand konnte nicht gelesen werden, deshalb wurde das Speichern übersprungen, um einen vorhandenen Speicherstand zu schützen. Der Fortschritt wird erst wieder gespeichert, wenn der Speicher funktioniert.",
   "save.storageUnavailable": "Speicher ist in diesem Browsermodus nicht verfügbar. Fortschritt bleibt nur für diese Sitzung erhalten und wird nicht gespeichert.",
   "scene.loading": "Szene wird geladen...",
