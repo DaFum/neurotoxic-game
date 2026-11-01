@@ -19,11 +19,13 @@ vi.mock('../../../../src/ui/shared', () => ({
     disabled?: boolean
     className?: string
     'aria-busy'?: boolean
+    'aria-describedby'?: string
   }) => (
     <button
       onClick={onClick}
       disabled={disabled}
       aria-busy={props['aria-busy']}
+      aria-describedby={props['aria-describedby']}
       className={className}
       data-testid='action-button'
     >
@@ -110,5 +112,78 @@ describe('PreGigStartButton', () => {
         'ui:bandhq.setlist.selectOne'
       )
     }
+  })
+
+  it.each([
+    [
+      'an empty setlist',
+      { isSetlistEmpty: true },
+      'ui:bandhq.setlist.selectOne'
+    ],
+    [
+      'a blocked start',
+      { isSetlistEmpty: false, isStartBlocked: true },
+      'ui:pregig.startBlocked'
+    ]
+  ])(
+    'explains %s inline and links the reason with aria-describedby',
+    (_label, flags, reasonKey) => {
+      render(
+        <PreGigStartButton
+          t={mockT}
+          isStarting={false}
+          onStartShow={vi.fn()}
+          {...flags}
+        />
+      )
+
+      const button = screen.getByTestId('action-button')
+      expect(button).toBeDisabled()
+      // Rendered without hovering or focusing anything. (toBeVisible cannot
+      // be used: the real motion wrapper keeps its initial opacity in jsdom.)
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+      const reason = screen.getByText(reasonKey)
+      expect(reason).not.toHaveAttribute('hidden')
+      expect(reason.id).not.toBe('')
+      expect(button.getAttribute('aria-describedby')?.split(' ')).toContain(
+        reason.id
+      )
+
+      // The tooltip wrapper stays keyboard focusable.
+      const wrapper = button.parentElement
+      expect(wrapper).toHaveAttribute('tabindex', '0')
+      if (wrapper) fireEvent.focus(wrapper)
+      expect(screen.getByRole('tooltip')).toHaveTextContent(reasonKey)
+      expect(wrapper?.getAttribute('aria-describedby')?.split(' ')).toContain(
+        reason.id
+      )
+    }
+  )
+
+  it('shows no inline reason while starting or when Start is available', () => {
+    const { rerender } = render(
+      <PreGigStartButton
+        t={mockT}
+        isStarting={false}
+        isSetlistEmpty={false}
+        onStartShow={vi.fn()}
+      />
+    )
+    expect(screen.getByTestId('action-button')).not.toHaveAttribute(
+      'aria-describedby'
+    )
+    expect(screen.queryByText('ui:pregig.startBlocked')).not.toBeInTheDocument()
+
+    rerender(
+      <PreGigStartButton
+        t={mockT}
+        isStarting={true}
+        isSetlistEmpty={false}
+        onStartShow={vi.fn()}
+      />
+    )
+    expect(screen.getByTestId('action-button')).not.toHaveAttribute(
+      'aria-describedby'
+    )
   })
 })

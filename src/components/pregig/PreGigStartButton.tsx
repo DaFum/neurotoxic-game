@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId } from 'react'
 import * as m from 'motion/react-m'
 import { Loader2 } from 'lucide-react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
@@ -37,12 +37,15 @@ export const PreGigStartButton = React.memo(
         : undefined
 
     const isDisabled = isSetlistEmpty || isStarting || Boolean(isStartBlocked)
+    const reasonId = useId()
+    const showReason = Boolean(disabledReason) && isDisabled
 
     const button = (
       <ActionButton
         onClick={onStartShow}
         disabled={isDisabled}
         aria-busy={isStarting}
+        aria-describedby={showReason ? reasonId : undefined}
         className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
       >
         {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
@@ -60,10 +63,20 @@ export const PreGigStartButton = React.memo(
         transition={{ delay: 0.5 }}
         className='relative z-10 mt-4 lg:mt-6 mb-4 lg:mb-0 w-full max-w-[20rem] sm:w-auto'
       >
-        {disabledReason && isDisabled ? (
+        {showReason ? (
           <Tooltip content={disabledReason}>{button}</Tooltip>
         ) : (
           button
+        )}
+        {/* Persistent copy of the block reason: a tooltip alone needs hover
+            or focus, which phones and first-time players rarely give it. */}
+        {showReason && (
+          <p
+            id={reasonId}
+            className='mt-2 text-center text-sm font-mono text-warning-yellow'
+          >
+            {disabledReason}
+          </p>
         )}
       </m.div>
     )
