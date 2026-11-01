@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { canAffordInState } from '../../context/assets/assetActionCreators'
+import { canAffordInState } from '../../context/assets/assetAffordability'
 import { Tooltip } from '../../ui/shared/Tooltip'
 import { LoanProfileModal } from './LoanProfileModal'
 import {
