@@ -27,17 +27,22 @@ export class BaseStageController<TState = unknown> {
   initPromise: Promise<void> | null
   container: Container | null
   resizeHandler: StageResizeHandler
+  /** One-shot readiness callback; see {@link _notifyReady}. */
+  private readonly onReady: (() => void) | null
+  private readyNotified = false
   /** When set, automatic Pixi frames are ignored and only `stepFrame` advances. */
   private manualFrames = false
   private manualStepActive = false
   constructor({
     containerRef,
     gameStateRef,
-    updateRef
+    updateRef,
+    onReady
   }: StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
+    this.onReady = onReady ?? null
     this.app = null
     this.isDisposed = false
     this.initPromise = null
@@ -96,6 +101,8 @@ export class BaseStageController<TState = unknown> {
 
     if (shouldRethrow) {
       logger.error(this.constructor.name, 'Init Failed', e)
+      // A broken stage is final: release anything waiting on it.
+      this._notifyReady()
     }
 
     // Ensure callers can retry init() after a failed attempt.
@@ -145,9 +152,25 @@ export class BaseStageController<TState = unknown> {
 
       this._setupResizeListeners(container)
       app.ticker.add(this.handleTicker)
+      this._notifyReady()
     } catch (e) {
       this._handleInitError(e, app)
     }
+  }
+
+  /**
+   * Fires the `onReady` option once: after `setup()` finished and the ticker
+   * runs (degraded or timed-out asset loads included, since `setup()` resolves
+   * with fallbacks), or after a real init failure.
+   *
+   * @remarks
+   * Never fires from a disposed controller, so a stage that was unmounted
+   * while loading cannot report readiness for its successor.
+   */
+  _notifyReady() {
+    if (this.readyNotified || this.isDisposed) return
+    this.readyNotified = true
+    this.onReady?.()
   }
 
   /**
@@ -158,7 +181,8 @@ export class BaseStageController<TState = unknown> {
    * duplicate apps. Subclasses provide renderer-specific setup through `setup`.
    *
    * @param options - Pixi application options merged over the shared defaults.
-   * @returns Promise that resolves after subclass setup and ticker registration.
+   * @returns Promise that resolves after subclass setup, ticker registration,
+   * and the readiness callback.
    */
   async init(options: Partial<ApplicationOptions> = {}) {
     this.isDisposed = false

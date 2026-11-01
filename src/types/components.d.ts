@@ -191,6 +191,11 @@ export interface StageControllerOptions<TState = unknown> {
    * the render loop without an `AudioContext`.
    */
   audioEngine?: import('../utils/audio/audioEngineInterface').IAudioEngine
+  /**
+   * Called once when the stage can draw (setup done, ticker running) or has
+   * failed for good. A disposed controller never calls it.
+   */
+  onReady?: () => void
 }
 
 /**
@@ -202,6 +207,11 @@ export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
   update: (deltaMS: number) => void
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
+  /**
+   * Forwarded to the controller's one-shot `onReady`. Read through a ref, so a
+   * new identity never re-creates the stage; never called after unmount.
+   */
+  onReady?: () => void
 }
 
 /**
