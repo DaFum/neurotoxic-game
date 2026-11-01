@@ -673,6 +673,44 @@ test('empty location / currentNodeId deltas never overwrite the stored values', 
   }
 })
 
+test('a top-level score without a player section is previewed and applied in lockstep', () => {
+  const before = buildState()
+  const preview = calculateAppliedDelta(buildState(), { score: 150 })
+  const after = applyEventDelta(buildState(), { score: 150 })
+
+  assert.equal(preview.score, 150)
+  assert.equal(after.player.score - before.player.score, 150)
+})
+
+test('both walkers select the same score when nested and top-level scores differ', () => {
+  for (const { player, expected } of [
+    { player: { score: 25 }, expected: 25 },
+    { player: { score: -30 }, expected: -30 },
+    { player: { score: NaN }, expected: 150 }
+  ]) {
+    const delta = withDelta({ score: 150, player })
+    const before = buildState()
+    const preview = calculateAppliedDelta(buildState(), delta)
+    const after = applyEventDelta(buildState(), delta)
+
+    assert.equal(preview.score, expected, String(player.score))
+    assert.equal(
+      after.player.score - before.player.score,
+      expected,
+      String(player.score)
+    )
+  }
+
+  // A finite nested zero wins over the top-level score and suppresses it.
+  const zero = withDelta({ score: 150, player: { score: 0 } })
+  const before = buildState()
+  assert.equal(calculateAppliedDelta(buildState(), zero).score, undefined)
+  assert.equal(
+    applyEventDelta(buildState(), zero).player.score,
+    before.player.score
+  )
+})
+
 test('EventDelta rejects sums that overflow to Infinity', () => {
   // Two finite numbers still sum to Infinity, and `Math.max(0, Infinity)` is
   // not a finite clamp: the next save would serialize the stat as `null`.

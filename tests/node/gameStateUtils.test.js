@@ -16,6 +16,7 @@ import {
   calculateGigFameReward,
   FAME_PROGRESS_CONSTANTS,
   calculateAppliedDelta,
+  hasActiveSponsorship,
   isForbiddenKey,
   isOnCooldown,
   isStashEntry,
@@ -810,6 +811,40 @@ test('calculateAppliedDelta emits empty applied delta for missing members', () =
     applied.band.membersDelta[1],
     Object.assign(Object.create(null), { moodChange: -10, staminaChange: -10 })
   )
+})
+
+test('hasActiveSponsorship treats only an absent remainingGigs as open-ended', () => {
+  const deal = fields => ({
+    activeDeals: [{ type: 'SPONSORSHIP', ...fields }]
+  })
+  assert.equal(hasActiveSponsorship(deal({})), true, 'absent')
+
+  const presentCounts = [
+    [3, true],
+    [1, true],
+    [0.5, true],
+    [0, false],
+    [-0, false],
+    [-1, false],
+    [NaN, false],
+    [Infinity, false],
+    [-Infinity, false],
+    ['5', false],
+    ['', false],
+    [null, false],
+    [undefined, false],
+    [true, false],
+    [false, false],
+    [[5], false],
+    [{}, false]
+  ]
+  for (const [remainingGigs, expected] of presentCounts) {
+    assert.equal(
+      hasActiveSponsorship(deal({ remainingGigs })),
+      expected,
+      `present ${String(remainingGigs)}`
+    )
+  }
 })
 
 test('clampVanFuel edge cases', () => {

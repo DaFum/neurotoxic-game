@@ -70,7 +70,12 @@ export const hasActiveSponsorship = (
   return activeDeals.some(deal => {
     if (!isLooseRecord(deal)) return false
     const d: SponsorshipDealLike = deal
-    return d.type === 'SPONSORSHIP' && finiteNumberOr(d.remainingGigs, 1) > 0
+    if (d.type !== 'SPONSORSHIP') return false
+    // Only an absent count means "open-ended"; a present malformed count fails closed.
+    const remainingGigs = Object.hasOwn(d, 'remainingGigs')
+      ? finiteNumberOr(d.remainingGigs, 0)
+      : 1
+    return remainingGigs > 0
   })
 }
 

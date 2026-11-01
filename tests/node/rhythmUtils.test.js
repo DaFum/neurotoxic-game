@@ -5,7 +5,8 @@ import {
   calculateTimeFromTicks,
   preprocessTempoMap,
   parseSongNotes,
-  generateNotesForSong
+  generateNotesForSong,
+  sanitizeTempoMap
 } from '../../src/utils/rhythmUtils'
 
 describe('rhythmUtils', () => {
@@ -453,6 +454,144 @@ describe('rhythmUtils', () => {
     test('should handle ticks beyond last segment (Optimized)', () => {
       const time = calculateTimeFromTicks(960, tpb, tempoMap, 'ms')
       assert.ok(Math.abs(time - 750) < 0.0001, `Expected 750, got ${time}`)
+    })
+  })
+
+  describe('sanitizeTempoMap', () => {
+    const VALID = { tick: 0, usPerBeat: 500000 }
+
+    test('returns an empty map for non-arrays', () => {
+      for (const raw of [undefined, null, 0, 'map', true, {}, { 0: VALID }]) {
+        assert.deepStrictEqual(sanitizeTempoMap(raw), [], String(raw))
+      }
+    })
+
+    test('rejects entries that are not records', () => {
+      const raw = [null, undefined, 0, 'entry', true, [0, 500000]]
+      assert.deepStrictEqual(sanitizeTempoMap(raw), [])
+    })
+
+    test('rejects entries missing tick or usPerBeat', () => {
+      assert.deepStrictEqual(
+        sanitizeTempoMap([{ tick: 0 }, { usPerBeat: 500000 }, {}]),
+        []
+      )
+    })
+
+    test('rejects inherited tick and usPerBeat', () => {
+      const inheritedBoth = Object.create(VALID)
+      const inheritedTick = Object.create({ tick: 0 })
+      inheritedTick.usPerBeat = 500000
+      const inheritedTempo = Object.create({ usPerBeat: 500000 })
+      inheritedTempo.tick = 0
+      assert.deepStrictEqual(
+        sanitizeTempoMap([inheritedBoth, inheritedTick, inheritedTempo]),
+        []
+      )
+    })
+
+    test('rejects non-finite, non-number and negative ticks', () => {
+      for (const tick of [NaN, Infinity, -Infinity, '0', true, null, [0], -1]) {
+        assert.deepStrictEqual(
+          sanitizeTempoMap([{ tick, usPerBeat: 500000 }]),
+          [],
+          String(tick)
+        )
+      }
+    })
+
+    test('rejects non-finite, non-number and non-positive usPerBeat', () => {
+      for (const usPerBeat of [
+        NaN,
+        Infinity,
+        -Infinity,
+        '500000',
+        true,
+        null,
+        [500000],
+        0,
+        -500000
+      ]) {
+        assert.deepStrictEqual(
+          sanitizeTempoMap([{ tick: 0, usPerBeat }]),
+          [],
+          String(usPerBeat)
+        )
+      }
+    })
+
+    test('keeps valid entries as new objects in source order', () => {
+      const first = { tick: 960, usPerBeat: 250000, extra: 'dropped' }
+      const second = { tick: 0, usPerBeat: 500000 }
+      const result = sanitizeTempoMap([first, { tick: -1 }, second])
+      assert.deepStrictEqual(result, [
+        { tick: 960, usPerBeat: 250000 },
+        { tick: 0, usPerBeat: 500000 }
+      ])
+      assert.notStrictEqual(result[0], first)
+      assert.notStrictEqual(result[1], second)
+    })
+  })
+
+  describe('parseSongNotes tempo map sanitization', () => {
+    const tpb = 480
+    // The 1-in-4 filter keeps indices 0, 4 and 8: ticks 0, 480 and 1440.
+    const notes = [0, 120, 240, 360, 480, 600, 720, 840, 1440].map(t => ({
+      t,
+      lane: 'guitar'
+    }))
+
+    test('ignores malformed entries between valid entries', () => {
+      const cleanMap = [
+        { tick: 0, usPerBeat: 500000 },
+        { tick: 960, usPerBeat: 250000 }
+      ]
+      const song = {
+        id: 'tempo-map-malformed-middle',
+        bpm: 60,
+        tpb,
+        notes,
+        tempoMap: [
+          cleanMap[0],
+          { tick: -1, usPerBeat: 1000000 },
+          Object.create({ tick: 480, usPerBeat: 1000000 }),
+          { tick: 960, usPerBeat: NaN },
+          { tick: 960, usPerBeat: 0 },
+          null,
+          cleanMap[1]
+        ]
+      }
+
+      const result = parseSongNotes(song, 100)
+      assert.deepStrictEqual(
+        result.map(note => note.time),
+        [0, 480, 1440].map(
+          tick => 100 + calculateTimeFromTicks(tick, tpb, cleanMap, 'ms')
+        )
+      )
+    })
+
+    test('falls back to constant BPM when no tempo entry is usable', () => {
+      const song = {
+        id: 'tempo-map-all-invalid',
+        bpm: 60,
+        tpb,
+        notes,
+        tempoMap: [
+          { tick: 0, usPerBeat: 0 },
+          { tick: -480, usPerBeat: 500000 },
+          Object.create({ tick: 0, usPerBeat: 500000 }),
+          { tick: 0, usPerBeat: '500000' },
+          null
+        ]
+      }
+
+      // 60 BPM: one beat (480 ticks) per second.
+      const result = parseSongNotes(song, 100)
+      assert.deepStrictEqual(
+        result.map(note => note.time),
+        [100, 1100, 3100]
+      )
     })
   })
 })

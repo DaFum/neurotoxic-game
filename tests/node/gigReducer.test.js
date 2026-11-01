@@ -212,6 +212,48 @@ describe('gigReducer', () => {
   })
 
   describe('handleSetLastGigStats', () => {
+    it('keeps the stats a current-step gig outcome depends on (#3486)', () => {
+      const stats = { score: 1000, accuracy: 80 }
+      const outcome = { venueId: 'v1', accuracy: 80 }
+      baseState.lastGigStats = stats
+      baseState.expedition = {
+        routeStep: 3,
+        lastGigResolvedAtRouteStep: 3,
+        gigOutcomeByStep: { 3: outcome }
+      }
+
+      const nextState = handleSetLastGigStats(baseState, null)
+
+      assert.strictEqual(nextState, baseState)
+      assert.strictEqual(nextState.lastGigStats, stats)
+      assert.strictEqual(nextState.expedition.gigOutcomeByStep[3], outcome)
+    })
+
+    it('clears the stats when no outcome is recorded at the current step', () => {
+      const outcome = { venueId: 'v1', accuracy: 80 }
+      for (const expedition of [
+        {
+          routeStep: 4,
+          lastGigResolvedAtRouteStep: 3,
+          gigOutcomeByStep: { 3: outcome }
+        },
+        { routeStep: 3, lastGigResolvedAtRouteStep: 3, gigOutcomeByStep: {} },
+        {
+          routeStep: 3,
+          lastGigResolvedAtRouteStep: null,
+          gigOutcomeByStep: { 3: outcome }
+        }
+      ]) {
+        baseState.lastGigStats = { score: 1000, accuracy: 80 }
+        baseState.expedition = expedition
+        assert.strictEqual(
+          handleSetLastGigStats(baseState, null).lastGigStats,
+          null,
+          JSON.stringify(expedition)
+        )
+      }
+    })
+
     it('should skip trait unlocks and reputation for practice gig', () => {
       baseState.currentGig = { isPractice: true }
       const payload = { score: 95 }

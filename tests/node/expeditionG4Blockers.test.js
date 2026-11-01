@@ -1320,6 +1320,47 @@ test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
   )
 })
 
+test('the Nemesis shortcut reads only an own Rival record with a finite level', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  assert.ok(started.rivalBand)
+  const map = fixtureMap()
+  const rivalId = started.rivalBand.id
+  const ownRecord = started.career.rivalsById[rivalId]
+  const withRivals = rivalsById => ({
+    ...started,
+    career: { ...started.career, rivalsById }
+  })
+  const withLevel = nemesisLevel => ({
+    [rivalId]: { ...ownRecord, history: { ...ownRecord.history, nemesisLevel } }
+  })
+  const shortcutCount = state =>
+    Object.keys(getEffectiveExpeditionRoute(state, map).subtypeByNodeId).length
+
+  // Control: an own record at level 2 opens the shortcut.
+  assert.equal(shortcutCount(withRivals(withLevel(2))), 1)
+  // A record inherited through the prototype is not the run's Rival.
+  assert.equal(shortcutCount(withRivals(Object.create(withLevel(2)))), 0)
+  // A record without history, a non-finite level, or no Rival map at all
+  // reads as below the tier instead of throwing or opening the shortcut.
+  assert.equal(
+    shortcutCount(
+      withRivals({ [rivalId]: { ...ownRecord, history: undefined } })
+    ),
+    0
+  )
+  assert.equal(shortcutCount(withRivals(withLevel(Infinity))), 0)
+  assert.equal(shortcutCount(withRivals(undefined)), 0)
+  assert.equal(shortcutCount({ ...started, career: undefined }), 0)
+})
+
 test('the Director weights by Cash pressure and route depth', () => {
   const base = keepItCleanState()
   base.expedition.pressure.heat = 20
@@ -2790,6 +2831,35 @@ test('load drops a current-step outcome when lastGigStats is not a record (#3469
       `lastGigStats ${JSON.stringify(hostile)} vouches for nothing`
     )
   }
+})
+
+test('a null SET_LAST_GIG_STATS keeps the current-step outcome through load (#3486)', () => {
+  const { written, gigStep, venueId, load } = gigResolvedOnCanonicalMap({
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+  const progressOf = expedition =>
+    expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value
+  assert.equal(progressOf(written.expedition), 1)
+
+  const cleared = gameReducer(written, {
+    type: ActionTypes.SET_LAST_GIG_STATS,
+    payload: null
+  })
+  assert.strictEqual(cleared, written)
+  assert.deepEqual(cleared.lastGigStats, {
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+
+  const loaded = load(cleared.expedition, cleared.lastGigStats)
+  assert.deepEqual(
+    { ...loaded.gigOutcomeByStep },
+    { [gigStep]: { venueId, accuracy: 80 } }
+  )
+  assert.equal(progressOf(loaded), 1)
 })
 
 test('load drops gig outcomes keyed past the current route step (#3469)', () => {

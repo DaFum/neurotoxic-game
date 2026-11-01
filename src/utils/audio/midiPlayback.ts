@@ -7,11 +7,15 @@ import { MIN_NOTE_DURATION, MAX_NOTE_DURATION } from './constants'
 import { ensureAudioContext } from './context'
 import { stopAudio, stopAudioInternal } from './transportControl'
 import { midiUrlMap } from './assets'
-import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
+import {
+  calculateTimeFromTicks,
+  preprocessTempoMap,
+  sanitizeTempoMap
+} from '../rhythmUtils'
 import { clampUnit } from '../numberUtils'
 import { isFiniteNumber } from '../finiteNumber'
 import { startTransportAt } from './transportStart'
-import type { ProcessedTempoMapEntry, TempoMapEntry } from '../../types/rhythm'
+import type { ProcessedTempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
   resolveAssetUrl,
@@ -347,46 +351,17 @@ function parseFiniteNumber(v: unknown, fallback: number): number {
   return isFiniteNumber(v) ? v : fallback
 }
 
-function isTempoEvent(e: unknown): e is Record<string, unknown> {
-  return typeof e === 'object' && e !== null && 'tick' in e && 'usPerBeat' in e
-}
-
-function sanitizeTempoEvents(rawTempo: unknown[]): TempoMapEntry[] {
-  const result: TempoMapEntry[] = []
-  for (let i = 0; i < rawTempo.length; i++) {
-    const e = rawTempo[i]
-    if (isTempoEvent(e)) {
-      if (
-        isFiniteNumber(e.tick) &&
-        isFiniteNumber(e.usPerBeat) &&
-        e.usPerBeat > 0
-      ) {
-        result.push({ tick: e.tick, usPerBeat: e.usPerBeat })
-      }
-    }
-  }
-  return result
-}
-
 function extractTempoMap(
   sObj: Record<string, unknown>,
   tpb: number
 ): { useTempoMap: boolean; activeTempoMap: ProcessedTempoMapEntry[] } {
-  const isArray = Array.isArray(sObj.tempoMap)
-  if (!isArray || (sObj.tempoMap as unknown[]).length === 0) {
-    return { useTempoMap: false, activeTempoMap: [] }
-  }
-
-  const rawTempo = sObj.tempoMap as unknown[]
-  const sanitized = sanitizeTempoEvents(rawTempo)
   // No usable tempo event left: fall back to constant-BPM timing, as for an
   // empty map, rather than timing every note against an empty map.
-  if (sanitized.length === 0) {
-    return { useTempoMap: false, activeTempoMap: [] }
-  }
+  const tempoMap = sanitizeTempoMap(sObj.tempoMap)
+  const useTempoMap = tempoMap.length > 0
   return {
-    useTempoMap: true,
-    activeTempoMap: preprocessTempoMap(sanitized, tpb)
+    useTempoMap,
+    activeTempoMap: useTempoMap ? preprocessTempoMap(tempoMap, tpb) : []
   }
 }
 

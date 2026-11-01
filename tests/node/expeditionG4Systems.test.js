@@ -9,6 +9,9 @@ import {
 } from '../../src/domain/expedition/pressure.ts'
 import { EXPEDITION_SOCIAL_RESULTS } from '../../src/domain/expedition/social.ts'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
+import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions.ts'
+import { EXPEDITION_TOUR_TYPES } from '../../src/data/expedition/tourTypes.ts'
+import { EXPEDITION_STARTER_PERKS } from '../../src/data/expedition/starterPerks.ts'
 import {
   getAuthorityCrisisSignal,
   getAvailableAuthoritySafeExits
@@ -80,6 +83,54 @@ test('pressure deltas cap an overflowing sum at the bounds instead of resetting'
   assert.equal(recovered.heat, 5)
   assert.equal(recovered.exposure, 6)
   assert.equal(recovered.crowdHype, 7)
+})
+
+test('a negative or NaN Exposure-gain multiplier is normalized before scaling a gain', () => {
+  // The composed multiplier is a product of registry factors; patch the ones
+  // this run's loadout names and restore them afterwards.
+  const region = EXPEDITION_REGIONS.festival_fields.numeric
+  const tour = EXPEDITION_TOUR_TYPES.standard_tour.numeric
+  const perk = EXPEDITION_STARTER_PERKS.press_pass.numeric
+  const snapshots = [region, tour, perk].map(numeric => [
+    numeric,
+    structuredClone(numeric)
+  ])
+  const base = activeState()
+  const state = {
+    ...base,
+    expedition: {
+      ...base.expedition,
+      loadout: {
+        ...base.expedition.loadout,
+        regionId: 'festival_fields',
+        tourTypeId: 'standard_tour',
+        starterPerkId: 'press_pass'
+      },
+      pressure: { ...base.expedition.pressure, exposure: 50 }
+    }
+  }
+  try {
+    // Negative: a gain never turns into a loss.
+    region.exposureGainMultiplier = -2
+    assert.equal(
+      applyExpeditionPressureDelta(state, { exposure: 10 }).exposure,
+      50
+    )
+
+    // NaN (finite factors overflowing to Infinity, then times 0): treated as 1.
+    region.exposureGainMultiplier = Number.MAX_VALUE
+    tour.exposureGainMultiplier = Number.MAX_VALUE
+    perk.exposureGainMultiplier = 0
+    assert.equal(
+      applyExpeditionPressureDelta(state, { exposure: 10 }).exposure,
+      60
+    )
+  } finally {
+    for (const [numeric, snapshot] of snapshots) {
+      for (const key of Object.keys(numeric)) delete numeric[key]
+      Object.assign(numeric, snapshot)
+    }
+  }
 })
 
 test('staged sponsor offers are deterministic and side-effect free', () => {

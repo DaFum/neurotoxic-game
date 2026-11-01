@@ -198,6 +198,7 @@ globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
 const { playSongFromData } = await import('../../src/utils/audio/midiPlayback')
+const { calculateTimeFromTicks } = await import('../../src/utils/rhythmUtils')
 
 /**
  * A manually released `ensureAudioContext()` result, standing in for a slow
@@ -557,6 +558,60 @@ test('playSongFromData Tests', async t => {
           String(usPerBeat)
         )
       }
+    }
+  )
+
+  await t.test(
+    'Tempo Map: malformed entries between valid entries are ignored',
+    async () => {
+      const cleanMap = [
+        { tick: 0, usPerBeat: 500000 },
+        { tick: 960, usPerBeat: 250000 }
+      ]
+      const notes = [0, 480, 960, 1440].map(tick => ({
+        t: tick,
+        p: 60,
+        v: 100,
+        lane: 'guitar'
+      }))
+      const result = await playSongFromData({
+        ...validSong,
+        notes,
+        tempoMap: [
+          cleanMap[0],
+          { tick: -1, usPerBeat: 1000000 },
+          Object.create({ tick: 480, usPerBeat: 1000000 }),
+          { tick: 960, usPerBeat: NaN },
+          null,
+          cleanMap[1]
+        ]
+      })
+      assert.strictEqual(result, true)
+      assert.deepStrictEqual(
+        MockPart.instances[0].events.map(event => event.time),
+        notes.map(note => calculateTimeFromTicks(note.t, 480, cleanMap, 's'))
+      )
+    }
+  )
+
+  await t.test(
+    'Tempo Map: a map with only negative-tick or inherited entries falls back to constant BPM',
+    async () => {
+      const result = await playSongFromData({
+        ...validSong,
+        tempoMap: [
+          { tick: -480, usPerBeat: 1000000 },
+          Object.create({ tick: 0, usPerBeat: 1000000 }),
+          [0, 1000000],
+          { tick: 0 }
+        ]
+      })
+      assert.strictEqual(result, true)
+      // validSong is 120 BPM at 480 tpb: one beat (480 ticks) per 0.5 s.
+      assert.deepStrictEqual(
+        MockPart.instances[0].events.map(event => event.time),
+        [0, 0.5, 1]
+      )
     }
   )
 })

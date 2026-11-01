@@ -423,7 +423,8 @@ export const applyExpeditionPressureDelta = (
     exposure: addClampedPercent(
       pressure.exposure,
       exposureDelta > 0
-        ? exposureDelta * effective.exposureGainMultiplier
+        ? exposureDelta *
+            Math.max(0, finiteNumberOr(effective.exposureGainMultiplier, 1))
         : exposureDelta
     ),
     crowdHype: addClampedPercent(

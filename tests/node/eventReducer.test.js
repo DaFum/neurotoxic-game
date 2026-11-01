@@ -247,6 +247,47 @@ describe('eventReducer', () => {
       assert.strictEqual(invalidNested.gigEventScoreDelta, 100)
     })
 
+    it('accumulates the score the delta walkers select', () => {
+      baseState.currentScene = 'GIG'
+      baseState.player.score = 0
+
+      const topLevelOnly = handleApplyEventDelta(baseState, { score: 150 })
+      assert.strictEqual(topLevelOnly.player.score, 150)
+      assert.strictEqual(topLevelOnly.gigEventScoreDelta, 150)
+
+      const nestedOnly = handleApplyEventDelta(baseState, {
+        player: { score: 25 }
+      })
+      assert.strictEqual(nestedOnly.player.score, 25)
+      assert.strictEqual(nestedOnly.gigEventScoreDelta, 25)
+
+      const nestedWins = handleApplyEventDelta(baseState, {
+        score: 150,
+        player: { score: 25 }
+      })
+      assert.strictEqual(nestedWins.player.score, 25)
+      assert.strictEqual(nestedWins.gigEventScoreDelta, 25)
+    })
+
+    it('does not accumulate a nested zero score that suppresses the top-level score', () => {
+      baseState.currentScene = 'GIG'
+      baseState.player.score = 0
+
+      const nextState = handleApplyEventDelta(baseState, {
+        score: 150,
+        player: { score: 0 }
+      })
+      assert.strictEqual(nextState.player.score, 0)
+      assert.strictEqual(Object.hasOwn(nextState, 'gigEventScoreDelta'), false)
+
+      baseState.gigEventScoreDelta = 40
+      const kept = handleApplyEventDelta(baseState, {
+        score: 150,
+        player: { score: 0 }
+      })
+      assert.strictEqual(kept.gigEventScoreDelta, 40)
+    })
+
     it('does not accumulate player.score outside GIG', () => {
       baseState.currentScene = 'OVERWORLD'
       baseState.gigEventScoreDelta = 0

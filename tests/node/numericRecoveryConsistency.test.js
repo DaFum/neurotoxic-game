@@ -208,16 +208,9 @@ describe('hasActiveSponsorship remainingGigs', () => {
     assert.equal(hasActiveSponsorship(sponsored(-0)), false)
   })
 
-  it('reads a non-finite count like a missing one', () => {
-    const missing = hasActiveSponsorship({
-      activeDeals: [{ type: 'SPONSORSHIP' }]
-    })
+  it('reads a present non-finite count as an expired deal', () => {
     for (const value of HOSTILE_NUMBERS) {
-      assert.equal(
-        hasActiveSponsorship(sponsored(value)),
-        missing,
-        String(value)
-      )
+      assert.equal(hasActiveSponsorship(sponsored(value)), false, String(value))
     }
   })
 })
