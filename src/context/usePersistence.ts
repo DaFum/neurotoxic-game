@@ -839,13 +839,17 @@ export function usePersistence({
           { addToast }
         ),
       migrationFailed: (slotKey, kept) => {
-        if (!kept) {
+        // A save in a lower slot is never written over (saves go to this
+        // build's own slot), so it stays where it is and nothing is paused.
+        const blocksSaves =
+          !kept && slotKey === getSaveSlotKey(CURRENT_SAVE_VERSION)
+        if (blocksSaves) {
           unprotectedSlotRef.current = slotKey
           savePausedNoticeShownRef.current = false
         }
         handleError(
           new StateError(
-            kept
+            !blocksSaves
               ? tRef.current('ui:save.migrationFailed', {
                   defaultValue:
                     'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'

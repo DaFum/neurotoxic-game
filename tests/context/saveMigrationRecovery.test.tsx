@@ -449,3 +449,79 @@ describe('failed migration whose recovery copy is refused', () => {
     })
   })
 })
+
+describe('failed migration of a save in a lower slot than this build writes', () => {
+  // Models the first build past the shared key: the failed save sits in
+  // SAVE_KEY while saves go to SAVE_KEY.v4, so nothing ever writes over it.
+  type PersistenceModule = typeof import('../../src/context/usePersistence')
+  type StorageContextModule = typeof import('../../src/context/StorageContext')
+  let futureBuild: PersistenceModule
+  let futureStorageContext: StorageContextModule
+
+  beforeEach(async () => {
+    vi.resetModules()
+    vi.doMock('../../src/context/reducers/migrations', () => ({
+      CURRENT_SAVE_VERSION: 4,
+      SAVE_MIGRATIONS: [],
+      runSaveMigrations: () => {
+        throw new Error('v1_to_v4 exploded')
+      }
+    }))
+    futureBuild = await import('../../src/context/usePersistence')
+    futureStorageContext = await import('../../src/context/StorageContext')
+  })
+
+  afterEach(() => {
+    vi.doUnmock('../../src/context/reducers/migrations')
+    vi.resetModules()
+  })
+
+  it('neither pauses saving nor says it is paused', () => {
+    class QuarantineRefusingAdapter extends InMemoryAdapter {
+      override set(key: string, value: string): boolean {
+        if (key.startsWith('neurotoxic:save:quarantine:')) return false
+        return super.set(key, value)
+      }
+    }
+    const adapter = new QuarantineRefusingAdapter()
+    const v1Save = JSON.stringify({
+      ...createPersistedState(createInitialState()),
+      version: 1
+    })
+    adapter.set(SAVE_KEY, v1Save)
+    const addToast = vi.fn()
+    const stateRef = { current: createInitialState({ unlocks: [] }) }
+    const tRef = { current: vi.fn((key: string) => key) }
+    const { StorageProvider: FutureStorageProvider } = futureStorageContext
+    const { result } = renderHook(
+      () =>
+        futureBuild.usePersistence({
+          currentScene: GAME_PHASES.MENU as string,
+          stateRef,
+          dispatch: vi.fn(),
+          addToast,
+          tRef: tRef as never
+        }),
+      {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <FutureStorageProvider adapter={adapter}>
+            {children}
+          </FutureStorageProvider>
+        )
+      }
+    )
+
+    act(() => {
+      result.current.loadGame()
+    })
+    const messages = addToast.mock.calls.map(call => String(call[0]))
+    expect(messages).toContain('ui:save.migrationFailed')
+    expect(messages).not.toContain('ui:save.migrationFailedNotKept')
+
+    act(() => {
+      expect(result.current.saveGame(false)).toBe(true)
+    })
+    expect(adapter.get(SAVE_KEY)).toBe(v1Save)
+    expect(adapter.get(`${SAVE_KEY}.v4`)).not.toBeNull()
+  })
+})
