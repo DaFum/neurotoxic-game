@@ -159,6 +159,38 @@ describe('the mobility axis', () => {
     }
   })
 
+  it('does not count a neighbour the booking gate refuses as a way out (#3479)', () => {
+    const state = walkTo(startedState({ money: 5000 }), 1)
+    const currentNodeId = state.player.currentNodeId
+    const onwardIds = state.gameMap.connections
+      .filter(edge => edge.from === currentNodeId)
+      .map(edge => edge.to)
+    const venueId = onwardIds
+      .map(id => state.gameMap.nodes[id]?.venueId)
+      .find(id => typeof id === 'string')
+    assert.ok(venueId, 'the fixture route offers an onward venue')
+    // Every onward leg books that one venue and HQ sits beyond any tank, so
+    // the venue's blacklist is the only thing between the van and the road.
+    for (const id of onwardIds) {
+      state.gameMap.nodes[id] = {
+        ...state.gameMap.nodes[id],
+        type: 'GIG',
+        venueId
+      }
+    }
+    for (const node of Object.values(state.gameMap.nodes)) {
+      if (node.type === 'START') {
+        state.gameMap.nodes[node.id] = { ...node, y: 1000 }
+      }
+    }
+    assert.equal(getExpeditionMobilityFailureSignal(state), null)
+
+    state.venueBlacklist = [venueId]
+    const signal = getExpeditionMobilityFailureSignal(state)
+    assert.equal(signal?.reason, 'fuel_stranded')
+    assert.ok(signal.choices.includes('accept_failure'))
+  })
+
   it('prices a tow above a full refuel so it is not the cheap default', () => {
     // A full tank from empty costs 175 at the canonical pump price.
     assert.ok(EXPEDITION_TOW_COST > 175)

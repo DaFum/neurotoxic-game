@@ -15,6 +15,8 @@
  */
 
 import { checkSoftlock } from '../../utils/mapUtils'
+import { getNodeAccessStatus } from '../../utils/travelUtils'
+import { VENUES_BY_ID } from '../../data/venues'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import {
   calculateRefuelCost,
@@ -135,7 +137,9 @@ export const getExpeditionEconomyFailureSignal = (
  *
  * @remarks
  * `checkSoftlock` is the canonical stranded authority and already accounts for
- * the travel gate, in-place gig escapes and an affordable refuel. It is given a
+ * the travel gate, in-place gig escapes and an affordable refuel; it is handed
+ * the booking gate (`getNodeAccessStatus`) so a refused neighbour is no
+ * escape. It is given a
  * player view whose cash is the Expedition-spendable slice, so the protected
  * Career Cash cannot silently defuse a stranded verdict, and whose current
  * node counts as played when the Fame access gate refuses to book it.
@@ -176,7 +180,18 @@ export const getExpeditionMobilityFailureSignal = (
     !checkSoftlock(state.gameMap, strandedView, state.band, {
       dailyObligations: getTotalDailyObligations(state),
       fuelMultiplier:
-        getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier
+        getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier,
+      // The booking gate `useHandleTravel` enforces: a neighbour the player
+      // would be refused at is no way out, as for the cheapest onward leg.
+      isNodeAccessible: (node: unknown) =>
+        getNodeAccessStatus({
+          node: node as Parameters<typeof getNodeAccessStatus>[0]['node'],
+          player: state.player,
+          reputationByRegion: state.reputationByRegion,
+          venueBlacklist: state.venueBlacklist,
+          venuesMap: VENUES_BY_ID,
+          getLocationName: name => name ?? ''
+        }).allowed
     })
   ) {
     return null
