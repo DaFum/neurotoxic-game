@@ -1346,6 +1346,6 @@
   "underground_synth_shop.desc": "Ihr stolpert über einen versteckten Laden, der alte und maßgeschneiderte Synthesizer verkauft. Der Besitzer behauptet, einer davon sei legendär.",
   "underground_synth_shop.opt1.label": "Den legendären Synth kaufen [{{amount}}, +3 Skill, +20 Ruhm]",
   "underground_synth_shop.opt1.outcome": "Der Synth klingt unglaublich! Eure musikalischen Fähigkeiten steigen und die Leute bemerken den neuen Sound.",
-  "underground_synth_shop.opt2.label": "Liegen lassen [{{amount}}]",
+  "underground_synth_shop.opt2.label": "Liegen lassen [-2 Stimmung]",
   "underground_synth_shop.opt2.outcome": "Ihr verlasst den Laden. Die verpasste Gelegenheit beschäftigt euch noch eine Weile."
 }
