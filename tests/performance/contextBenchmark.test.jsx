@@ -1,28 +1,32 @@
 import { expect, test } from 'vitest'
 
-import { JSDOM } from 'jsdom'
+// Use the jsdom environment that Vitest provides for this suite.
+// Overwriting global.window/document directly is not allowed in Vitest 5 because
+// the properties are getter-backed and read-only.
+const assignDomGlobals = () => {
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+      clear: () => {}
+    },
+    configurable: true,
+    writable: true
+  })
 
-// Setup JSDOM globally before imports
-const dom = new JSDOM('<!doctype html><html><body></body></html>', {
-  url: 'http://localhost'
-})
-global.window = dom.window
-global.document = dom.window.document
-Object.defineProperty(global, 'navigator', {
-  value: dom.window.navigator,
-  writable: true
-})
-global.localStorage = {
-  getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {}
+  Object.defineProperty(globalThis, 'matchMedia', {
+    value: () => ({
+      matches: false,
+      addListener: () => {},
+      removeListener: () => {}
+    }),
+    configurable: true,
+    writable: true
+  })
 }
-global.matchMedia = () => ({
-  matches: false,
-  addListener: () => {},
-  removeListener: () => {}
-})
+
+assignDomGlobals()
 
 test('GameStateProvider Re-render Benchmark', async () => {
   // Dynamic imports to ensure environment is ready
