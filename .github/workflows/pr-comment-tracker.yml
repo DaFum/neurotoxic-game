@@ -26,6 +26,8 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+          # Fork-PRs erhalten ein schreibgeschütztes Token (gleiches Muster wie dead-code-report.yml).
+          SAME_REPO_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
@@ -175,6 +177,15 @@ jobs:
 
             // Das endgültige Markdown für den Bot-Kommentar
             const body = marker + header + copyableBlock + footer + idsStateMarker;
+
+            // Fork-PRs: Das Token ist schreibgeschützt, Kommentar und gemeldete Thread-IDs
+            // können nicht gespeichert werden. Ohne Speicherung wäre jeder offene Thread bei
+            // jedem Lauf "neu"; der Lauf ist daher nur informativ: kein Schreiben, kein Gate.
+            if (process.env.SAME_REPO_PR !== 'true') {
+              core.notice(`Fork-PR: Zusammenfassung und gemeldete Thread-IDs werden nicht gespeichert, daher keine Prüfung auf neue Threads. ${validThreads.length} offene Review-Thread(s) stehen im Log.`);
+              console.log(copyableBlock);
+              return;
+            }
 
             // 6. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
             try {

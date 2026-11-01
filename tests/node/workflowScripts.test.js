@@ -202,6 +202,21 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     assert.match(log.failures[0], / 1 NEUE /)
     assert.ok(log.failures[0].includes(`${prefix} second`))
   })
+
+  test('fork runs write nothing, log a notice and do not gate on new threads', async () => {
+    const { calls, log } = await runTracker({
+      comments: [],
+      threads: [thread('T1', 'first'), thread('T2', 'second')],
+      sameRepo: 'false'
+    })
+
+    assert.deepEqual(calls.creates, [])
+    assert.deepEqual(calls.updates, [])
+    assert.equal(log.notices.length, 1)
+    assert.match(log.notices[0], /Fork/)
+    assert.deepEqual(log.failures, [])
+    assert.deepEqual(log.warnings, [])
+  })
 })
 
 describe('workflow hardening (#3466)', () => {
