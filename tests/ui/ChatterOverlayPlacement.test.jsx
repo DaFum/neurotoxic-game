@@ -13,7 +13,8 @@ vi.mock('../../src/hooks/useChatterLogic', () => ({
 const mockState = {
   currentScene: GAME_PHASES.GIG,
   band: { members: [] },
-  player: { currentNodeId: 'none' },
+  player: { currentNodeId: 'none', money: 500 },
+  crowdfundCampaigns: [],
   gameMap: { nodes: {} },
   social: {},
   lastGigStats: null,
@@ -22,6 +23,14 @@ const mockState = {
 
 vi.mock('../../src/context/GameState', () => ({
   useGameSelector: vi.fn(selector => selector(mockState))
+}))
+
+// The Assets strip reads these from full game state; the placement tests only
+// need the strip's markup.
+vi.mock('../../src/utils/assets/assetSelectors', async importOriginal => ({
+  ...(await importOriginal()),
+  getTotalDailyObligations: () => 0,
+  getTotalDebt: () => 0
 }))
 
 const realGetRect = Element.prototype.getBoundingClientRect
@@ -256,6 +265,93 @@ describe('form controls and scene suppression', () => {
     const container = getByRole('status', { hidden: true })
 
     expect(container.style.visibility).toBe('hidden')
+  }, 15000)
+})
+
+describe('compact Assets status strip', () => {
+  const ZERO_RECT = {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 0,
+    height: 0
+  }
+  // Phone layout: the strip sits at the top, title row above the metric grid.
+  const TITLE_RECT = {
+    left: 8,
+    top: 8,
+    right: 200,
+    bottom: 40,
+    width: 192,
+    height: 32
+  }
+  const GRID_RECT = {
+    left: 8,
+    top: 44,
+    right: window.innerWidth - 8,
+    bottom: 96,
+    width: window.innerWidth - 16,
+    height: 52
+  }
+  // The box at a spot that covers both the title and the metric grid.
+  const OVERLAY_RECT = {
+    left: 16,
+    top: 16,
+    right: 416,
+    bottom: 96,
+    width: 400,
+    height: 80
+  }
+
+  test('on a phone the chatter box moves off the strip title and metric grid', async () => {
+    mockState.currentScene = GAME_PHASES.ASSETS
+    const originalMatchMedia = window.matchMedia
+    window.matchMedia = query => ({
+      matches: query === '(width < 40rem)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    })
+    // Rects come from the strip's own elements, not from their attributes, so
+    // the test fails when the strip stops marking them.
+    Element.prototype.getBoundingClientRect = function () {
+      if (this.getAttribute('role') === 'status') return OVERLAY_RECT
+      if (this.tagName === 'H1' && this.closest('header')) return TITLE_RECT
+      if (
+        this.parentElement?.tagName === 'HEADER' &&
+        this.querySelector('strong')
+      ) {
+        return GRID_RECT
+      }
+      return ZERO_RECT
+    }
+    try {
+      const { AssetsStatusStrip } =
+        await import('../../src/components/assets/AssetsStatusStrip.tsx')
+      const { ChatterOverlay } =
+        await import('../../src/components/ChatterOverlay.tsx')
+      const { getByRole } = render(
+        <>
+          <AssetsStatusStrip />
+          <ChatterOverlay />
+        </>
+      )
+      const container = getByRole('status')
+
+      // The lower anchors are clear, so the box moves below the strip.
+      expect(container.style.visibility).not.toBe('hidden')
+      expect(container.style.top).not.toBe('')
+      expect(Number.parseInt(container.style.top, 10)).toBeGreaterThanOrEqual(
+        GRID_RECT.bottom
+      )
+    } finally {
+      window.matchMedia = originalMatchMedia
+    }
   }, 15000)
 })
 

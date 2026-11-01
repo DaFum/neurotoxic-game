@@ -71,14 +71,20 @@ export const AssetsStatusStrip = () => {
   return (
     <header className='assets-hub-panel assets-hub-reveal assets-status-strip mx-2 mt-2 overflow-hidden sm:mx-4'>
       <div className='assets-status-strip__header flex items-center justify-between border-b-2 px-2 py-1 sm:px-3'>
-        <h1 className='assets-hub-title truncate text-lg uppercase sm:text-2xl'>
+        <h1
+          className='assets-hub-title truncate text-lg uppercase sm:text-2xl'
+          data-chatter-avoid-compact=''
+        >
           {t('assets:scene.title')}
         </h1>
         <span className='assets-hub-control text-xxs uppercase opacity-60'>
           {t('assets:scene.subtitle')}
         </span>
       </div>
-      <div className='grid grid-cols-4 divide-x divide-ash-gray/35'>
+      <div
+        className='grid grid-cols-4 divide-x divide-ash-gray/35'
+        data-chatter-avoid-compact=''
+      >
         <StatusCell
           label={t('assets:hub.status.cash')}
           value={formatCurrency(money, i18n.language)}
