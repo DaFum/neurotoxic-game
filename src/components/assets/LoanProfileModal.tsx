@@ -4,9 +4,11 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getLoanProfileImagePrompt } from '../../utils/imageGen'
 import {
   LOAN_PROFILES_ARRAY,
+  calculateTotalRepayment,
+  computeAmortization,
   type LoanProfileId
 } from '../../utils/assets/loanProfiles'
-import { formatPercent } from '../../utils/numberUtils'
+import { formatCurrency, formatPercent } from '../../utils/numberUtils'
 import type { BaseModalProps } from '../../types/ui'
 
 interface Props extends BaseModalProps {
@@ -17,6 +19,8 @@ interface Props extends BaseModalProps {
 interface LoanProfileChoiceGridProps {
   value?: LoanProfileId
   onSelect: (profile: LoanProfileId) => void
+  /** Principal to price each profile's daily payment and total repayment. */
+  principal?: number
 }
 
 /**
@@ -25,13 +29,23 @@ interface LoanProfileChoiceGridProps {
  */
 export const LoanProfileChoiceGrid = ({
   value,
-  onSelect
+  onSelect,
+  principal
 }: LoanProfileChoiceGridProps) => {
   const { t, i18n } = useTranslation(['assets'])
   return (
     <div className='grid grid-cols-1 gap-3 font-mono text-sm sm:grid-cols-2'>
       {LOAN_PROFILES_ARRAY.map(profile => {
         const isActive = value === profile.id
+        // Same amortization the reducer stamps on the liability.
+        const dailyPayment =
+          principal === undefined
+            ? undefined
+            : computeAmortization(
+                principal,
+                profile.interestRate,
+                profile.termDays
+              )
         return (
           <button
             key={profile.id}
@@ -65,6 +79,17 @@ export const LoanProfileChoiceGrid = ({
                   })
                 })}
               </span>
+              {dailyPayment !== undefined && (
+                <span className='text-xs'>
+                  {t('assets:loan.quote', {
+                    daily: formatCurrency(dailyPayment, i18n.language),
+                    total: formatCurrency(
+                      calculateTotalRepayment(dailyPayment, profile.termDays),
+                      i18n.language
+                    )
+                  })}
+                </span>
+              )}
             </div>
           </button>
         )

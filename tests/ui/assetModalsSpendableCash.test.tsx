@@ -6,11 +6,18 @@ import {
   calculateChassisRepairCost,
   CHASSIS_CONFIG
 } from '../../src/utils/assets/assetConfig'
+import {
+  calculateTotalRepayment,
+  computeAmortization,
+  LOAN_PROFILES
+} from '../../src/utils/assets/loanProfiles'
+import { formatCurrency } from '../../src/utils/numberUtils'
 import type { LongTermAsset } from '../../src/types/assets'
 
 // #3464: the action creators gate on spendable cash, so the modals must too.
 // Each test holds exactly the price on hand but protects all of it.
 const repairChassisMock = vi.hoisted(() => vi.fn())
+const purchaseChassisMock = vi.hoisted(() => vi.fn())
 
 const mockState = vi.hoisted(() => ({
   expedition: undefined as unknown,
@@ -23,7 +30,7 @@ const mockState = vi.hoisted(() => ({
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     repairChassis: repairChassisMock,
-    purchaseChassis: vi.fn(),
+    purchaseChassis: purchaseChassisMock,
     startCrowdfund: vi.fn()
   }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
@@ -55,7 +62,9 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'en' },
-    t: (key: string) => key
+    // Interpolated values are appended so cost previews can be asserted.
+    t: (key: string, options?: Record<string, unknown>) =>
+      options ? `${key}(${Object.values(options).join('|')})` : key
   })
 }))
 
@@ -83,6 +92,7 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
     mockState.expedition = undefined
     mockState.player.money = 1000
     repairChassisMock.mockReset()
+    purchaseChassisMock.mockReset()
   })
 
   // #3485 item 4: a refusal keeps the modal open next to its toast.
@@ -133,5 +143,75 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
     expect(
       screen.getAllByText('assets:purchaseFailed.insufficient_funds').length
     ).toBeGreaterThan(0)
+  })
+
+  // #3499 finding 12: a refused purchase keeps the modal open (toast shown).
+  it('ChassisAcquisitionModal stays open when the purchase is refused', () => {
+    mockState.player.money = 100_000
+    const onClose = vi.fn()
+    purchaseChassisMock.mockReturnValue(false)
+    render(
+      <ChassisAcquisitionModal
+        kind='tourbus_chassis'
+        isOpen
+        onClose={onClose}
+      />
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'assets:actions.purchase' })
+    )
+    expect(purchaseChassisMock).toHaveBeenCalledTimes(1)
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('ChassisAcquisitionModal closes when the purchase is accepted', () => {
+    mockState.player.money = 100_000
+    const onClose = vi.fn()
+    purchaseChassisMock.mockReturnValue(true)
+    render(
+      <ChassisAcquisitionModal
+        kind='tourbus_chassis'
+        isOpen
+        onClose={onClose}
+      />
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'assets:actions.purchase' })
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  // #3499 finding 11: daily payment, upkeep and total repayment are visible
+  // before purchase, priced by the reducer's own loan math.
+  it('ChassisAcquisitionModal previews upkeep, daily payment and total repayment', () => {
+    const cfg = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+    render(
+      <ChassisAcquisitionModal
+        kind='tourbus_chassis'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+    expect(
+      screen.getByText(
+        `assets:chassisAcquisition.upkeep(${formatCurrency(cfg.upkeep, 'en')})`
+      )
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'assets:mode.loan' }))
+
+    const profile = LOAN_PROFILES.shortTerm
+    const daily = computeAmortization(
+      cfg.price,
+      profile.interestRate,
+      profile.termDays
+    )
+    const total = calculateTotalRepayment(daily, profile.termDays)
+    expect(total).toBeGreaterThan(cfg.price)
+    expect(
+      screen.getByText(
+        `assets:loan.quote(${formatCurrency(daily, 'en')}|${formatCurrency(total, 'en')})`
+      )
+    ).toBeInTheDocument()
   })
 })
