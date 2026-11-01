@@ -27,6 +27,7 @@ type TourbusLogicState = {
   isGameOver: boolean
   damage: number
   itemsCollected: TourbusObstacleType[]
+  collisionsBuffer: TourbusObstacleType[]
 }
 
 /**
@@ -103,14 +104,26 @@ const COLLISION_SFX: Record<TourbusObstacleType, AudioSfxType> = {
 /**
  * Moves obstacles and handles collisions with the bus.
  */
+// ⚡ BOLT OPTIMIZATION: Reused collisionsBuffer and indexed loop to eliminate per-frame allocations
+// What: Passed pre-allocated `game.collisionsBuffer` to `stepTourbusObstacles` and replaced `for...of` with indexed loop.
+// Why: `processObstacles` executes every frame (60 FPS) during active gameplay. Allocating a new `collisions` array and an array iterator on every tick causes continuous GC pressure (~3,600 array allocations/min).
+// Impact: Eliminates ~3,600 array allocations per minute in the 60 FPS update loop, preventing frame stutter.
 const processObstacles = (
   game: TourbusLogicState,
   deltaMS: number,
   upgrades: string[]
 ) => {
-  const collisions = stepTourbusObstacles(game, game.speed * deltaMS, upgrades)
-  for (const type of collisions) {
-    audioService.playSFX(COLLISION_SFX[type])
+  const collisions = stepTourbusObstacles(
+    game,
+    game.speed * deltaMS,
+    upgrades,
+    game.collisionsBuffer
+  )
+  for (let i = 0, len = collisions.length; i < len; i++) {
+    const type = collisions[i]
+    if (type) {
+      audioService.playSFX(COLLISION_SFX[type])
+    }
   }
 }
 
@@ -158,7 +171,8 @@ export const useTourbusLogic = () => {
     lastSpawnTime: 0,
     isGameOver: false,
     damage: 0,
-    itemsCollected: []
+    itemsCollected: [],
+    collisionsBuffer: []
   })
 
   // UI State (Triggers re-renders)
