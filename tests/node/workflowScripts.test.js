@@ -8,6 +8,7 @@ const loadWorkflow = name =>
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
 const MARKER = '<!-- lint-fix-preview: do-not-edit -->'
+const BOT = { login: 'github-actions[bot]', type: 'Bot' }
 
 const findScript = (workflow, needle) => {
   for (const job of Object.values(workflow.jobs)) {
@@ -69,7 +70,7 @@ describe('lint-fix-preview sticky report (#3377)', () => {
       id: i + 1,
       body: `chatter ${i}`
     }))
-    comments.push({ id: 500, body: `${MARKER}\nold report` })
+    comments.push({ id: 500, user: BOT, body: `${MARKER}\nold report` })
     const { github, calls, listComments } = createFakeGithub(comments)
 
     await runReport(github, `${MARKER}\nfirst`)
@@ -106,7 +107,6 @@ describe('lint-fix-preview sticky report (#3377)', () => {
   })
 })
 
-const BOT = { login: 'github-actions[bot]', type: 'Bot' }
 const TRACKER_MARKER = '<!-- PR_COMMENT_TRACKER_MARKER -->'
 
 const createFakeCore = () => {
@@ -217,6 +217,125 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     assert.deepEqual(log.failures, [])
     assert.deepEqual(log.warnings, [])
   })
+
+  test('ignores reported thread ids planted in a foreign marker comment', async () => {
+    const comments = [
+      {
+        id: 1,
+        user: { login: 'evil-app[bot]', type: 'Bot' },
+        body: `${TRACKER_MARKER}\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [thread('T1', 'blocking')]
+    })
+
+    assert.deepEqual(calls.updates, [])
+    assert.equal(calls.creates.length, 1)
+    assert.equal(log.failures.length, 1)
+  })
+})
+
+const DEAD_CODE_MARKER = '<!-- dead-code-report: do-not-edit -->'
+const TEST_FAILURE_MARKER = '<!-- test-failures -->'
+const FOREIGN = { login: 'evil-app[bot]', type: 'Bot' }
+
+const markerSites = [
+  {
+    name: 'lint-fix-preview.yml',
+    marker: MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      await runReport(github, `${MARKER}\nnew`)
+      return calls
+    }
+  },
+  {
+    name: 'dead-code-report.yml',
+    marker: DEAD_CODE_MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      const script = findScript(
+        loadWorkflow('dead-code-report.yml'),
+        DEAD_CODE_MARKER
+      )
+      const fakeFs = { readFileSync: () => `${DEAD_CODE_MARKER}\nnew` }
+      const context = { repo: { owner: 'o', repo: 'r' }, issue: { number: 7 } }
+      await runScript(script, { github, context, require: () => fakeFs })
+      return calls
+    }
+  },
+  {
+    name: 'post-test-failure-comment action',
+    marker: TEST_FAILURE_MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      const action = parse(
+        readFileSync(
+          '.github/actions/post-test-failure-comment/action.yml',
+          'utf8'
+        )
+      )
+      const { script } = action.runs.steps[0].with
+      const fakeFs = { existsSync: () => false, readFileSync: () => '' }
+      const context = {
+        serverUrl: 'https://github.example',
+        runId: 1,
+        repo: { owner: 'o', repo: 'r' },
+        issue: { number: 7 }
+      }
+      const { core } = createFakeCore()
+      await runScript(
+        script,
+        { github, context, core, require: () => fakeFs },
+        {
+          MARKER: TEST_FAILURE_MARKER,
+          FILE_PATH: 'missing.log',
+          REGEX: 'FAIL',
+          MAX_LINES: '5',
+          HEADER: '## Failures'
+        }
+      )
+      return calls
+    }
+  },
+  {
+    name: 'pr-comment-tracker.yml',
+    marker: TRACKER_MARKER,
+    run: async comments => (await runTracker({ comments, threads: [] })).calls
+  }
+]
+
+describe('sticky report markers require github-actions[bot] (#3499)', () => {
+  for (const site of markerSites) {
+    test(`${site.name} updates its own marker comment, not a foreign one`, async () => {
+      const foreignBody = `${site.marker}\nplanted`
+      const comments = [
+        { id: 1, user: FOREIGN, body: foreignBody },
+        { id: 2, user: BOT, body: `${site.marker}\nold` }
+      ]
+
+      const calls = await site.run(comments)
+
+      assert.equal(calls.creates.length, 0)
+      assert.deepEqual(
+        calls.updates.map(u => u.comment_id),
+        [2]
+      )
+      assert.equal(comments[0].body, foreignBody)
+    })
+
+    test(`${site.name} creates its own comment when only a foreign marker exists`, async () => {
+      const comments = [{ id: 1, user: FOREIGN, body: `${site.marker}\nx` }]
+
+      const calls = await site.run(comments)
+
+      assert.deepEqual(calls.updates, [])
+      assert.equal(calls.creates.length, 1)
+    })
+  }
 })
 
 describe('workflow hardening (#3466)', () => {

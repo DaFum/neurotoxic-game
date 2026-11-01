@@ -40,7 +40,7 @@ jobs:
             // 2. Den bestehenden Kommentar abrufen, um bereits gemeldete Threads zu identifizieren
             const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
             const existingBotComment = issueComments.find(
-              c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
+              c => c.body && c.body.startsWith(marker) && c.user && c.user.login === "github-actions[bot]"
             );
 
             // Bereits gemeldete Thread-IDs aus dem bestehenden Kommentar extrahieren
