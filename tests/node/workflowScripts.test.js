@@ -396,4 +396,13 @@ describe('workflow hardening (#3466)', () => {
     }
     assert.deepEqual(workflow.jobs.build.permissions, { contents: 'read' })
   })
+
+  test('deploy.yml builds the Pages bundle with leaderboard sync off (#3499)', () => {
+    const workflow = loadWorkflow('deploy.yml')
+    const build = workflow.jobs.build.steps.find(
+      step => step.run === 'pnpm run build'
+    )
+    assert.ok(build, 'deploy.yml build job has no `pnpm run build` step')
+    assert.equal(build.env?.VITE_ENABLE_LEADERBOARD_SYNC, 'false')
+  })
 })
