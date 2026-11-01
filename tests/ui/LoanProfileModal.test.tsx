@@ -12,6 +12,16 @@ const profileLabels: Record<string, string> = {
   'assets:loan.profile.coop': 'Co-op'
 }
 
+const mockState = vi.hoisted(() => ({
+  player: { fame: 0 },
+  social: { scenePresence: 100 }
+}))
+
+vi.mock('../../src/context/GameState', () => ({
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+    selector(mockState)
+}))
+
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
   GeneratedImagePanel: ({
     alt,
@@ -62,9 +72,9 @@ describe('LoanProfileModal', () => {
     }
   })
 
-  it('selects a profile and closes the modal', () => {
+  it('selects a profile and closes the modal once it is accepted', () => {
     const onClose = vi.fn()
-    const onSelect = vi.fn()
+    const onSelect = vi.fn(() => true)
 
     render(<LoanProfileModal isOpen onClose={onClose} onSelect={onSelect} />)
 
@@ -72,6 +82,19 @@ describe('LoanProfileModal', () => {
 
     expect(onSelect).toHaveBeenCalledWith('shortTerm')
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  // #3499 finding 12: a refused refinance keeps the modal open.
+  it('stays open when the selection is refused', () => {
+    const onClose = vi.fn()
+    const onSelect = vi.fn(() => false)
+
+    render(<LoanProfileModal isOpen onClose={onClose} onSelect={onSelect} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Short term/ }))
+
+    expect(onSelect).toHaveBeenCalledWith('shortTerm')
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('formats the interest rate with the locale percent formatter', () => {

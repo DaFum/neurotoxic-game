@@ -152,6 +152,8 @@
   "loan.defaultWarning": "Default in {{daysLeft}} days",
   "loan.profileMeta": "{{days}}d · {{rate}}",
   "loan.quote": "{{daily}}/day · {{total}} total",
+  "loan.requirement.fame": "Needs fame {{value}}",
+  "loan.requirement.scenePresence": "Needs scene presence {{value}}",
   "loan.refinance": "Refinance ({{fee}})",
   "loan.refinanceTitle": "Refinance Loan",
   "liability.termDays": "{{count}} days",

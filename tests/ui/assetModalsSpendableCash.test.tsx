@@ -214,4 +214,44 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
       )
     ).toBeInTheDocument()
   })
+
+  // #3499 finding 12: the grid applies the creator's eligibility predicate,
+  // so an ineligible profile cannot be submitted into a refusal.
+  describe('LoanProfileChoiceGrid eligibility', () => {
+    const renderLoanMode = () => {
+      render(
+        <ChassisAcquisitionModal
+          kind='tourbus_chassis'
+          isOpen
+          onClose={vi.fn()}
+        />
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'assets:mode.loan' }))
+      return screen.getByRole('button', { name: /assets:loan\.profile\.coop/ })
+    }
+
+    beforeEach(() => {
+      mockState.social.scenePresence = 0
+    })
+
+    it('disables a profile whose scene presence gate is unmet and names the requirement', () => {
+      const coop = renderLoanMode()
+      const minScenePresence = LOAN_PROFILES.coop.minScenePresenceRequired
+      expect(minScenePresence).toBe(50)
+
+      expect(coop).toBeDisabled()
+      const requirement = screen.getByText(
+        `assets:loan.requirement.scenePresence(${minScenePresence})`
+      )
+      expect(coop).toHaveAttribute('aria-describedby', requirement.id)
+      expect(
+        screen.getByRole('button', { name: /assets:loan\.profile\.shortTerm/ })
+      ).toBeEnabled()
+    })
+
+    it('enables the profile once scene presence meets the gate', () => {
+      mockState.social.scenePresence = 50
+      expect(renderLoanMode()).toBeEnabled()
+    })
+  })
 })

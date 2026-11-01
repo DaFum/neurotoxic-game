@@ -152,6 +152,8 @@
   "loan.defaultWarning": "Zahlungsausfall in {{daysLeft}} Tagen",
   "loan.profileMeta": "{{days}}T · {{rate}}",
   "loan.quote": "{{daily}}/Tag · {{total}} gesamt",
+  "loan.requirement.fame": "Benötigt Ruhm {{value}}",
+  "loan.requirement.scenePresence": "Benötigt Szene-Präsenz {{value}}",
   "loan.refinance": "Umschulden ({{fee}})",
   "loan.refinanceTitle": "Kredit umschulden",
   "liability.termDays": "{{count}} Tage",

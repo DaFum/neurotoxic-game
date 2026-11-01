@@ -31,9 +31,9 @@ export const LiabilitiesPanel = () => {
     ? liabilitiesMap[refinanceTargetId]
     : undefined
 
-  const handleRefinance = (profile: LoanProfileId) => {
-    if (!refinanceTarget) return
-    refinanceLiability(refinanceTarget.id, profile)
+  const handleRefinance = (profile: LoanProfileId): boolean => {
+    if (!refinanceTarget) return false
+    return refinanceLiability(refinanceTarget.id, profile)
   }
 
   if (liabilities.length === 0) {
