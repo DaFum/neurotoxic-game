@@ -203,6 +203,9 @@ export const getExpeditionMobilityFailureSignal = (
       // The booking gate `useHandleTravel` enforces: a neighbour the player
       // would be refused at is no way out, as for the cheapest onward leg.
       isNodeAccessible: (node: unknown) =>
+        // A run only travels forward (1 or 2 steps), so a START node is never
+        // a way out, however affordable it looks to the career travel gate.
+        (node as { type?: unknown } | null)?.type !== 'START' &&
         getNodeAccessStatus({
           node: node as Parameters<typeof getNodeAccessStatus>[0]['node'],
           player: state.player,

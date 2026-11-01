@@ -2773,6 +2773,25 @@ test('load takes the current-step failed flag from lastGigStats, not the save (#
   )
 })
 
+test('load drops a current-step outcome when lastGigStats is not a record (#3469)', () => {
+  const { written, gigStep, venueId, load } = gigResolvedOnCanonicalMap({
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+  const forged = {
+    ...written.expedition,
+    gigOutcomeByStep: { [gigStep]: { venueId, accuracy: 100 } }
+  }
+  for (const hostile of [[], 1, 'x', true]) {
+    assert.deepEqual(
+      { ...load(forged, hostile).gigOutcomeByStep },
+      {},
+      `lastGigStats ${JSON.stringify(hostile)} vouches for nothing`
+    )
+  }
+})
+
 test('load drops gig outcomes keyed past the current route step (#3469)', () => {
   const { written, walked, gigStep, venueId, load } = gigResolvedOnCanonicalMap(
     { score: 1000, accuracy: 80, failed: false }

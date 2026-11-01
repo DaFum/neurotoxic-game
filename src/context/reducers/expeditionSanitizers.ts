@@ -1468,7 +1468,7 @@ const sanitizeGigOutcomeMap = (
       isFiniteNumber(step) &&
       isFiniteNumber(routeStep) &&
       step === routeStep &&
-      !lastGigStats
+      !isLooseRecord(lastGigStats)
     ) {
       // Current step outcome present in save but no canonical lastGigStats evidence -> fail closed
       continue

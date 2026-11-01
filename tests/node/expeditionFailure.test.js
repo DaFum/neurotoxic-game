@@ -180,11 +180,6 @@ describe('the mobility axis', () => {
         venueId
       }
     }
-    for (const node of Object.values(state.gameMap.nodes)) {
-      if (node.type === 'START') {
-        state.gameMap.nodes[node.id] = { ...node, y: 1000 }
-      }
-    }
     assert.equal(getExpeditionMobilityFailureSignal(state), null)
 
     state.venueBlacklist = [venueId]
