@@ -1,6 +1,6 @@
 import { CHARACTERS } from '../data/characters'
 import { SLEEPING_BAGS_STAMINA_PER_DAY } from '../data/inventoryItems'
-import { calculateGuaranteedDailyCost } from './economy'
+import { calculateDailyNetCost } from './dailyNetCost'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
@@ -32,7 +32,6 @@ import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqP
 import type { PlayerState, BandState, GameState, SocialState } from '../types'
 import {
   ORIGINAL_CONTROL_BALANCE_TUNING,
-  getEarlyGameObligationMultiplier,
   type BalanceTuning
 } from './balanceTuning'
 
@@ -54,18 +53,12 @@ const updatePlayerFinances = (
   tuning: Readonly<BalanceTuning>,
   expeditionPolicy: ExpeditionDayPolicy
 ): number => {
-  const obligations = calculateGuaranteedDailyCost(nextPlayer, nextBand, {
-    youtube: 0
-  })
-  const netDailyCost = calculateGuaranteedDailyCost(
+  let dailyCost = calculateDailyNetCost(
     nextPlayer,
     nextBand,
-    nextSocial
+    nextSocial,
+    tuning
   )
-  const youtubeRevenue = obligations - netDailyCost
-  let dailyCost =
-    obligations * getEarlyGameObligationMultiplier(nextPlayer.day, tuning) -
-    youtubeRevenue
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {
