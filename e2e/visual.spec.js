@@ -478,7 +478,9 @@ test.describe('Visual smoke tests', () => {
         Math.min(map.bottom, menuBar.top, window.innerHeight) -
           Math.max(map.top, 0)
       )
+      // A label hidden by the map's declutter pass is `invisible`, not removed.
       const labels = [...document.querySelectorAll('.map-node span.uppercase')]
+        .filter(el => getComputedStyle(el).visibility !== 'hidden')
         .map(el => el.getBoundingClientRect())
         .filter(r => r.width > 0 && r.height > 0)
       let overlaps = 0
@@ -521,6 +523,82 @@ test.describe('Visual smoke tests', () => {
     expect(m.stripBottom).toBeLessThanOrEqual(m.mapTop)
     // Visible node labels in the start cluster never stack on each other.
     expect(m.overlaps).toBe(0)
+  })
+
+  test('Career destination names show at 320px without a tap (#3499)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width >= 360, 'Below-360px label rule')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    // Seed 2's start cluster stacks three destination chips at 320px.
+    await skipToMenu(page, { url: '/?seed=2' })
+    await page.getByRole('button', { name: /start tour/i }).click()
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await page.waitForTimeout(800)
+
+    const m = await page.evaluate(() => {
+      const shown = el =>
+        getComputedStyle(el).visibility !== 'hidden' &&
+        el.getBoundingClientRect().width > 0
+      const labels = [
+        ...document.querySelectorAll('[data-testid="map-node-label"]')
+      ].filter(shown)
+      const destinationNames = [
+        ...document.querySelectorAll('.map-node[role="button"]')
+      ]
+        .filter(node => /^travel to/i.test(node.getAttribute('aria-label')))
+        .map(node => node.querySelector('[data-testid="map-node-label"]'))
+        .filter(label => label && label.lastElementChild)
+        .filter(label => shown(label.lastElementChild))
+        .map(label => label.lastElementChild.textContent)
+      const boxes = labels.map(label =>
+        [...label.children]
+          .filter(child => getComputedStyle(child).display !== 'none')
+          .map(child => child.getBoundingClientRect())
+          .filter(r => r.width > 0 && r.height > 0)
+      )
+      const hud = [
+        ...document.querySelectorAll(
+          '.ow-menu button, [data-testid="overworld-phone-resources"]'
+        ),
+        ...[...document.querySelectorAll('button')].filter(b =>
+          /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
+        )
+      ]
+        .map(el => el.getBoundingClientRect())
+        .filter(r => r.width > 0 && r.height > 0)
+      const hit = (a, b) =>
+        a.left < b.right &&
+        b.left < a.right &&
+        a.top < b.bottom &&
+        b.top < a.bottom
+      let overlaps = 0
+      let hudOverlaps = 0
+      for (let i = 0; i < boxes.length; i++) {
+        for (const a of boxes[i]) {
+          for (let j = i + 1; j < boxes.length; j++) {
+            overlaps += boxes[j].filter(b => hit(a, b)).length
+          }
+          hudOverlaps += hud.filter(b => hit(a, b)).length
+        }
+      }
+      return { destinationNames, overlaps, hudOverlaps }
+    })
+    // Names are readable at rest, so reading one needs no travel-confirm tap.
+    expect(m.destinationNames.length).toBeGreaterThan(0)
+    await expect(page.getByText('CONFIRM?')).toHaveCount(0)
+    // The declutter pass keeps the shown chips apart and off the HUD.
+    expect(m.overlaps).toBe(0)
+    expect(m.hudOverlaps).toBe(0)
   })
 
   // The tooltip cap and the node box are in rem, so enlarged text (a browser or
