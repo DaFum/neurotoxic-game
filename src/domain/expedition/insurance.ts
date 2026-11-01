@@ -15,7 +15,7 @@
  * Run state stores only policy id and whether the claim has been consumed.
  */
 
-import { EXPEDITION_TOW_FUEL_RESTORED } from './failure'
+import { getExpeditionRescueFuelFloor } from './failure'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { readVanCondition } from '../../utils/gameState/clamps'
@@ -184,14 +184,10 @@ export const resolveExpeditionInsuranceClaim = (
   if (intent.claimType === 'vehicle') {
     // A tow sized below the cheapest reachable leg would spend the claim and
     // leave the van stranded, so the top-up covers that leg (whole litres).
-    const cheapestLeg = getExpeditionCheapestOnwardLegFuel(state)
     return {
       ok: true,
       claimType: 'vehicle',
-      restoredValue: Math.max(
-        EXPEDITION_TOW_FUEL_RESTORED,
-        Math.ceil(finiteNumberOr(cheapestLeg, 0))
-      )
+      restoredValue: getExpeditionRescueFuelFloor(state)
     }
   }
 

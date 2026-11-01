@@ -19,6 +19,7 @@ import {
 import {
   EXPEDITION_FAILURE_PRIORITY,
   EXPEDITION_TOW_COST,
+  EXPEDITION_TOW_FUEL_RESTORED,
   buildExpeditionFailureId,
   composeExpeditionFailureSignal,
   deriveExpeditionPendingFailure,
@@ -27,6 +28,7 @@ import {
   getExpeditionMobilityFailureSignal,
   isCurrentExpeditionFailureId
 } from '../../src/domain/expedition/failure'
+import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
 import {
   firstExtractionRouteStep,
   fixtureMap,
@@ -699,5 +701,61 @@ describe('RESOLVE_EXPEDITION_CRISIS', () => {
     assert.ok(action)
     assert.equal(action.payload.choice, 'refuel')
     assert.equal(gameReducer(state, action).player.van.fuel, 100)
+  })
+})
+
+describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
+  /**
+   * A run at route step 1 whose last leg the protected-Cash floor refused,
+   * with every onward node moved `distance` map units straight past the
+   * current node. The crisis is stored as play stores it.
+   */
+  const longLegRun = (distance, { fuel = 0 } = {}) => {
+    const state = walkTo(startedState({ money: 5000 }), 1)
+    const current = state.gameMap.nodes[state.player.currentNodeId]
+    for (const edge of state.gameMap.connections) {
+      if (edge.from !== current.id) continue
+      state.gameMap.nodes[edge.to] = {
+        ...state.gameMap.nodes[edge.to],
+        x: current.x,
+        y: current.y + distance
+      }
+    }
+    state.player.van.fuel = fuel
+    state.expedition.blockedTravelAtRouteStep = state.expedition.routeStep
+    state.expedition.pendingFailure = deriveExpeditionPendingFailure(state)
+    return state
+  }
+
+  const towOf = state =>
+    gameReducer(state, {
+      type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+      payload: {
+        pendingFailureId: state.expedition.pendingFailure?.id,
+        choice: 'tow',
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+
+  it('tops a tow up to a leg longer than the flat refill', () => {
+    const state = longLegRun(114)
+    const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+    assert.ok(cheapest !== null && cheapest >= 50 && cheapest < 100)
+    assert.ok(state.expedition.pendingFailure?.choices.includes('tow'))
+
+    const next = towOf(state)
+    assert.equal(next.player.money, state.player.money - EXPEDITION_TOW_COST)
+    assert.equal(next.player.van.fuel, Math.ceil(cheapest))
+  })
+
+  it('keeps the flat refill when it already covers the leg', () => {
+    const state = longLegRun(0, { fuel: 10 })
+    const cheapest = getExpeditionCheapestOnwardLegFuel(state)
+    assert.ok(cheapest !== null && cheapest < EXPEDITION_TOW_FUEL_RESTORED)
+    assert.ok(state.expedition.pendingFailure?.choices.includes('tow'))
+    assert.equal(
+      towOf(state).player.van.fuel,
+      10 + EXPEDITION_TOW_FUEL_RESTORED
+    )
   })
 })
