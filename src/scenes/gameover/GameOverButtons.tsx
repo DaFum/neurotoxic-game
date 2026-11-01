@@ -4,9 +4,11 @@ import { GlitchButton } from '../../ui/GlitchButton'
 
 /**
  * What the last save allows: `pending` until it has been evaluated, `available`
- * when loading it plays on, `ending` when the save only records this ending.
+ * when loading it plays on, `ending` when the save only records this ending,
+ * `none` when there is no save that can be loaded.
  */
-export type GameOverLoadAvailability = 'pending' | 'available' | 'ending'
+export type GameOverLoadAvailability =
+  'pending' | 'available' | 'ending' | 'none'
 
 type GameOverButtonsProps = {
   loadAvailability: GameOverLoadAvailability

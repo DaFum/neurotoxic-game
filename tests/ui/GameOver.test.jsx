@@ -115,21 +115,63 @@ describe('GameOver Scene', () => {
     })
   })
 
-  test('LOAD LAST SAVE without a save returns to the menu', async () => {
-    const { getByText, findByText, getByTestId } = render(
+  // Load is offered only for a save that resumes play. A missing or refused
+  // save hides it without the ending notice; Return to Menu stays.
+  test.each([
+    ['no save', null],
+    ['a corrupt save', 'not json'],
+    ['a save from a newer version', JSON.stringify({ version: 999999 })]
+  ])('%s hides Load and keeps Return to Menu', async (_label, stored) => {
+    if (stored !== null) localStorage.setItem(SAVE_KEY, stored)
+    vi.useFakeTimers()
+    try {
+      const { getByText, queryByText, getByTestId } = render(
+        <GameStateProvider>
+          <GameOverTestHarness>
+            <GameOver />
+          </GameOverTestHarness>
+        </GameStateProvider>
+      )
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(queryByText('ui:gameOver.loadLastSave')).toBeNull()
+      expect(queryByText('ui:gameOver.lastSaveIsEnding')).toBeNull()
+
+      fireEvent.click(getByText('ui:gameOver.returnToMenu'))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
+      expect(loadGameSpy).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('a save that disappears after mount hides Load on activation instead of loading', async () => {
+    localStorage.setItem(SAVE_KEY, RESUMABLE_SAVE())
+    const { getByText, findByText, queryByText, getByTestId } = render(
       <GameStateProvider>
         <GameOverTestHarness>
           <GameOver />
         </GameOverTestHarness>
       </GameStateProvider>
     )
-
     await findByText('ui:gameOver.loadLastSave')
+
+    const sceneBefore = getByTestId('scene').textContent
+    localStorage.removeItem(SAVE_KEY)
     fireEvent.click(getByText('ui:gameOver.loadLastSave'))
 
     await waitFor(() => {
-      expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
+      expect(queryByText('ui:gameOver.loadLastSave')).toBeNull()
     })
+    expect(getByText('ui:gameOver.returnToMenu')).toBeInTheDocument()
+    // Stays on this screen instead of being sent to the menu.
+    expect(getByTestId('scene').textContent).toBe(sceneBefore)
+    expect(loadGameSpy).not.toHaveBeenCalled()
   })
   test('a save that only records the ending hides Load and keeps Return to Menu', async () => {
     localStorage.setItem(SAVE_KEY, ENDING_SAVE())
