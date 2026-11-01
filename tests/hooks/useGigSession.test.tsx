@@ -117,6 +117,75 @@ describe('useGigSession', () => {
     expect(mockGameStateRef.current.hasSubmittedResults).toBe(true)
   })
 
+  it('quits only once when Quit fires twice before the scene change (#3467)', async () => {
+    const mockSetLastGigStats = vi.fn()
+    const mockEndGig = vi.fn()
+    const gameStateRef = {
+      current: {
+        score: 100,
+        stats: {},
+        toxicTimeTotal: 0,
+        songStats: [],
+        hasSubmittedResults: false
+      } as unknown as RhythmGameRefState
+    }
+
+    const { result } = renderHook(() =>
+      useGigSession({
+        addToast: vi.fn(),
+        setLastGigStats: mockSetLastGigStats,
+        endGig: mockEndGig,
+        tRef: {
+          current: vi.fn(
+            (key, options) => options.defaultValue
+          ) as unknown as TFunction
+        },
+        gameStateRef
+      })
+    )
+
+    await act(async () => {
+      await result.current.handleQuitGig()
+      await result.current.handleQuitGig()
+    })
+
+    expect(stopAudio).toHaveBeenCalledTimes(1)
+    expect(mockSetLastGigStats).toHaveBeenCalledTimes(1)
+    expect(mockEndGig).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not overwrite results finalizeGig already submitted (#3467)', async () => {
+    const mockSetLastGigStats = vi.fn()
+    const mockEndGig = vi.fn()
+
+    const { result } = renderHook(() =>
+      useGigSession({
+        addToast: vi.fn(),
+        setLastGigStats: mockSetLastGigStats,
+        endGig: mockEndGig,
+        tRef: {
+          current: vi.fn(
+            (key, options) => options.defaultValue
+          ) as unknown as TFunction
+        },
+        gameStateRef: {
+          current: {
+            score: 100,
+            hasSubmittedResults: true
+          } as unknown as RhythmGameRefState
+        }
+      })
+    )
+
+    await act(async () => {
+      await result.current.handleQuitGig()
+    })
+
+    expect(buildGigStatsSnapshot).not.toHaveBeenCalled()
+    expect(mockSetLastGigStats).not.toHaveBeenCalled()
+    expect(mockEndGig).not.toHaveBeenCalled()
+  })
+
   it('handles handleQuitGig gracefully when gameStateRef.current is undefined', async () => {
     const mockAddToast = vi.fn()
     const mockSetLastGigStats = vi.fn()

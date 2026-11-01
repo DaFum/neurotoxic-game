@@ -516,4 +516,47 @@ test('playSongFromData Tests', async t => {
       'Event time should be number'
     )
   })
+
+  const HOSTILE_NUMBERS = [NaN, Infinity, true, '5', '1e3', [5], null]
+
+  await t.test(
+    'Song parameters: only finite numbers override bpm/tpb defaults',
+    async () => {
+      for (const value of HOSTILE_NUMBERS) {
+        MockPart.instances = []
+        const result = await playSongFromData({
+          ...validSong,
+          bpm: value,
+          tpb: value
+        })
+        assert.strictEqual(result, true, String(value))
+        assert.strictEqual(mockTransport.bpm.value, 120, String(value))
+        // Default tpb 480 at 120 BPM puts tick 480 at 0.5 s.
+        assert.strictEqual(
+          MockPart.instances[0].events[1].time,
+          0.5,
+          String(value)
+        )
+      }
+    }
+  )
+
+  await t.test(
+    'Tempo Map: unusable events fall back to constant-BPM timing',
+    async () => {
+      for (const usPerBeat of [...HOSTILE_NUMBERS, 0, -500000]) {
+        MockPart.instances = []
+        const result = await playSongFromData({
+          ...validSong,
+          tempoMap: [{ tick: 0, usPerBeat }]
+        })
+        assert.strictEqual(result, true, String(usPerBeat))
+        assert.deepStrictEqual(
+          MockPart.instances[0].events.map(event => event.time),
+          [0, 0.5, 1],
+          String(usPerBeat)
+        )
+      }
+    }
+  )
 })

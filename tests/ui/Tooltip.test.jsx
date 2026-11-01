@@ -42,6 +42,43 @@ describe('Tooltip Component', () => {
     expect(queryByText('Tooltip Content')).toBeNull()
   })
 
+  test('Escape dismisses a focused tooltip and keeps the child onKeyDown', () => {
+    const onKeyDown = vi.fn()
+    const { getByText, queryByText } = render(
+      <Tooltip content='Tooltip Content'>
+        <button type='button' onKeyDown={onKeyDown}>
+          Hover Me
+        </button>
+      </Tooltip>
+    )
+
+    const trigger = getByText('Hover Me')
+    fireEvent.focus(trigger)
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
+
+    fireEvent.keyDown(trigger, { key: 'Escape' })
+    expect(queryByText('Tooltip Content')).toBeNull()
+    expect(trigger).not.toHaveAttribute('aria-describedby')
+    expect(onKeyDown).toHaveBeenCalledTimes(1)
+  })
+
+  test('Escape dismisses the tooltip of a disabled child', () => {
+    const { getByText, queryByText } = render(
+      <Tooltip content='Tooltip Content'>
+        <button type='button' disabled>
+          Disabled Button
+        </button>
+      </Tooltip>
+    )
+
+    const triggerWrapper = getByText('Disabled Button').parentElement
+    fireEvent.focus(triggerWrapper)
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
+
+    fireEvent.keyDown(triggerWrapper, { key: 'Escape' })
+    expect(queryByText('Tooltip Content')).toBeNull()
+  })
+
   test('regression: does not call child event handlers if disabled and wrapper has cursor-not-allowed', () => {
     const onMouseEnter = vi.fn()
     const onMouseLeave = vi.fn()

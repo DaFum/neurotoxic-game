@@ -1,23 +1,24 @@
 import React from 'react'
 import * as m from 'motion/react-m'
 import { formatCurrency } from '../../utils/numberUtils'
-import type { PlayerState, Venue } from '../../types'
+import type { Venue } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 
 type PreGigHeaderProps = {
   t: TranslationCallback
   i18n: { language: string }
   currentGig: Venue | null
-  player: Pick<PlayerState, 'money'>
+  /** Spendable cash; protected Expedition cash is excluded during a run. */
+  budget: number
   calculatedBudget: number
 }
 
 /**
  * Displays venue metadata and pre-gig heading information.
- * @param props - Translator, locale, current gig, player state, and calculated pre-gig budget.
+ * @param props - Translator, locale, current gig, spendable budget, and calculated pre-gig costs.
  */
 export const PreGigHeader = React.memo(
-  ({ t, i18n, currentGig, player, calculatedBudget }: PreGigHeaderProps) => {
+  ({ t, i18n, currentGig, budget, calculatedBudget }: PreGigHeaderProps) => {
     return (
       <m.div
         initial={{ opacity: 0, y: -10 }}
@@ -36,7 +37,7 @@ export const PreGigHeader = React.memo(
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-toxic-green font-bold tabular-nums'>
-              {formatCurrency(player.money, i18n.language)}
+              {formatCurrency(budget, i18n.language)}
             </span>
           </span>
           <span className='text-ash-gray/30'>|</span>

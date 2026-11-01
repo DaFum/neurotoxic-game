@@ -47,11 +47,15 @@ const renderPersistence = () => {
   return { ...hook, dispatch }
 }
 
-const readQuarantine = (version: number) => {
+const readQuarantine = (version: number | null) => {
   const stored = localStorage.getItem(getQuarantineKey(version))
   return stored === null
     ? null
-    : (JSON.parse(stored) as { version: number; reason: string; raw: string })
+    : (JSON.parse(stored) as {
+        version: number | null
+        reason: string
+        raw: string
+      })
 }
 
 describe('rejected save quarantine', () => {
@@ -66,8 +70,8 @@ describe('rejected save quarantine', () => {
   })
 
   it.each([
-    ['truncated JSON', TRUNCATED, 0, 'Save JSON parsing failed'],
-    ['non-object root', NOT_AN_OBJECT, 0, 'Stored save is not an object'],
+    ['truncated JSON', TRUNCATED, null, 'Save JSON parsing failed'],
+    ['non-object root', NOT_AN_OBJECT, null, 'Stored save is not an object'],
     [
       'failed validation',
       INVALID_FIELD,
@@ -90,8 +94,33 @@ describe('rejected save quarantine', () => {
   })
 
   it.each([
-    ['truncated JSON', TRUNCATED, 0],
-    ['non-object root', NOT_AN_OBJECT, 0],
+    ['truncated JSON', TRUNCATED],
+    ['non-object root', NOT_AN_OBJECT]
+  ])(
+    'files an unreadable %s save apart from an earlier v0 migration copy',
+    (_name, raw) => {
+      const v0Copy = JSON.stringify({
+        version: 0,
+        reason: 'v0 migration failed',
+        raw: '{"player":{"money":5000}}'
+      })
+      localStorage.setItem(getQuarantineKey(0), v0Copy)
+      localStorage.setItem(SAVE_KEY, raw)
+      const { result } = renderPersistence()
+
+      act(() => {
+        result.current.loadGame()
+      })
+
+      expect(localStorage.getItem(getQuarantineKey(0))).toBe(v0Copy)
+      expect(getQuarantineKey(null)).toBe('neurotoxic:save:quarantine:vunknown')
+      expect(readQuarantine(null)).toMatchObject({ version: null, raw })
+    }
+  )
+
+  it.each([
+    ['truncated JSON', TRUNCATED, null],
+    ['non-object root', NOT_AN_OBJECT, null],
     ['failed validation', INVALID_FIELD, CURRENT_SAVE_VERSION]
   ])('writes nothing when previewing a %s save', (_name, raw, version) => {
     localStorage.setItem(SAVE_KEY, raw)

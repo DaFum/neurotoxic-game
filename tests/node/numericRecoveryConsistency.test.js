@@ -7,8 +7,13 @@ import {
   DEFAULT_VAN_CONDITION,
   applyEventDelta,
   clampCrewLoyalty,
+  hasActiveSponsorship,
   readVanCondition
 } from '../../src/utils/gameState'
+import { generateRivalBand } from '../../src/utils/rivalEngine'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic'
+import { calculateDailyUpdates } from '../../src/utils/dailyTickLogic'
+import { derivePressureDirectorContext } from '../../src/domain/expedition/pressure'
 import { applyCrewStressDelta } from '../../src/domain/expedition/crewStress'
 import { applyBetweenTourDecisionOption } from '../../src/domain/expedition/betweenTour'
 import { parseQuestPayload } from '../../src/domain/questPayload'
@@ -169,6 +174,152 @@ describe('quest deadlineOffset strings', () => {
       const result = parseQuestPayload({ id: 'q1', deadlineOffset }, 10)
       assert.equal(result.ok, false, deadlineOffset)
       assert.equal(result.reason, 'invalid-deadline-offset')
+    }
+  })
+})
+
+describe('quest deadlineOffset numbers', () => {
+  it('accepts only safe-integer numbers', () => {
+    assert.equal(
+      parseQuestPayload({ id: 'q1', deadlineOffset: 3 }, 10).payload.quest
+        .deadline,
+      13
+    )
+    for (const deadlineOffset of [2.5, NaN, Infinity, true, [5]]) {
+      const result = parseQuestPayload({ id: 'q1', deadlineOffset }, 10)
+      assert.equal(result.ok, false, String(deadlineOffset))
+      assert.equal(result.reason, 'invalid-deadline-offset')
+    }
+  })
+})
+
+// Hostile stored numbers: each must read like the documented fallback, never
+// leak through as NaN/Infinity or a coerced string/boolean/array.
+const HOSTILE_NUMBERS = [NaN, Infinity, true, '5', [5], null]
+
+describe('hasActiveSponsorship remainingGigs', () => {
+  const sponsored = remainingGigs => ({
+    activeDeals: [{ type: 'SPONSORSHIP', remainingGigs }]
+  })
+
+  it('keeps the finite verdicts', () => {
+    assert.equal(hasActiveSponsorship(sponsored(2)), true)
+    assert.equal(hasActiveSponsorship(sponsored(0)), false)
+    assert.equal(hasActiveSponsorship(sponsored(-0)), false)
+  })
+
+  it('reads a non-finite count like a missing one', () => {
+    const missing = hasActiveSponsorship({
+      activeDeals: [{ type: 'SPONSORSHIP' }]
+    })
+    for (const value of HOSTILE_NUMBERS) {
+      assert.equal(
+        hasActiveSponsorship(sponsored(value)),
+        missing,
+        String(value)
+      )
+    }
+  })
+})
+
+describe('generateRivalBand day', () => {
+  it('derives power from a finite day', () => {
+    assert.equal(generateRivalBand(10, () => 0.5).powerLevel, 3)
+  })
+
+  it('treats a non-finite day as day 1', () => {
+    for (const day of HOSTILE_NUMBERS) {
+      assert.equal(generateRivalBand(day, () => 0.5).powerLevel, 1, String(day))
+    }
+  })
+})
+
+describe('generateBrandOffers rival power', () => {
+  const offerState = powerLevel => ({
+    player: { currentNodeId: 'node_a', fame: 0 },
+    social: { instagram: 50000, tiktok: 50000, youtube: 10000 },
+    band: { members: [], traits: {} },
+    rivalBand: { powerLevel, currentLocationId: 'node_a' }
+  })
+  const offerIds = powerLevel => {
+    let seed = 0
+    const rng = () => {
+      seed = (seed * 9301 + 49297) % 233280
+      return seed / 233280
+    }
+    return generateBrandOffers(offerState(powerLevel), rng).map(
+      offer => offer.id
+    )
+  }
+
+  it('ranks offers under a non-finite power like power 0', () => {
+    const baseline = offerIds(0)
+    assert.equal(baseline.length, 3)
+    for (const powerLevel of HOSTILE_NUMBERS) {
+      assert.deepEqual(offerIds(powerLevel), baseline, String(powerLevel))
+    }
+  })
+})
+
+describe('daily controversy decay', () => {
+  const withControversy = controversyLevel => {
+    const base = createInitialState()
+    return { ...base, social: { ...base.social, controversyLevel } }
+  }
+
+  it('decays a finite level and stays in 0..100', () => {
+    const { social } = calculateDailyUpdates(withControversy(50), () => 0.99)
+    assert.ok(social.controversyLevel < 50 && social.controversyLevel >= 0)
+  })
+
+  it('writes a non-finite level back as 0', () => {
+    for (const value of HOSTILE_NUMBERS) {
+      const { social } = calculateDailyUpdates(
+        withControversy(value),
+        () => 0.99
+      )
+      assert.equal(social.controversyLevel, 0, String(value))
+    }
+  })
+})
+
+describe('expedition cash pressure', () => {
+  const runState = (money, protectedCareerCash) => {
+    const base = createInitialState()
+    return {
+      ...base,
+      runSeed: 123,
+      player: { ...base.player, money },
+      expedition: {
+        ...base.expedition,
+        status: 'active',
+        runId: 'run-1',
+        protectedCareerCash
+      }
+    }
+  }
+  const cashPressure = (money, protectedCareerCash) =>
+    derivePressureDirectorContext(runState(money, protectedCareerCash))
+      .cashPressure
+
+  it('keeps the finite spendable verdicts', () => {
+    assert.equal(cashPressure(150, 100), 0)
+    assert.equal(cashPressure(100, 100), 100)
+  })
+
+  it('reads non-finite money as nothing spendable', () => {
+    for (const money of HOSTILE_NUMBERS) {
+      assert.equal(cashPressure(money, 100), 100, String(money))
+    }
+  })
+
+  it('fails closed on a corrupt protected slice', () => {
+    for (const protectedCareerCash of [NaN, Infinity, '5', null]) {
+      assert.equal(
+        cashPressure(500, protectedCareerCash),
+        100,
+        String(protectedCareerCash)
+      )
     }
   })
 })

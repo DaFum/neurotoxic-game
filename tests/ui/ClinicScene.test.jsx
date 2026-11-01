@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ClinicScene } from '../../src/scenes/ClinicScene.tsx'
 import { useClinicLogic } from '../../src/hooks/useClinicLogic'
+import { formatCurrency } from '../../src/utils/numberUtils'
 
 vi.mock('../../src/context/gameConstants', async importOriginal => {
   const actual = await importOriginal()
@@ -44,6 +45,7 @@ const mockState = {
       }
     ]
   },
+  spendableMoney: 1000,
   healCostMoney: 150,
   enhanceCostFame: 500,
   healMember: vi.fn(),
@@ -96,6 +98,7 @@ describe('ClinicScene', () => {
     // M2 has 'cyber_lungs', so their enhance button should be disabled
     useClinicLogic.mockReturnValue({
       player: { money: 100, fame: 100 }, // Ensure player has enough resources to not trigger disable due to funds
+      spendableMoney: 100,
       band: {
         members: [
           { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
@@ -145,6 +148,7 @@ describe('ClinicScene', () => {
     const render = stamina => {
       useClinicLogic.mockReturnValue({
         player: { money: 100, fame: 100 },
+        spendableMoney: 100,
         band: { members: [member(stamina)] },
         healCostMoney: 50,
         enhanceCostFame: 50,
@@ -159,6 +163,39 @@ describe('ClinicScene', () => {
     first.unmount()
     render(110)
     expect(screen.getByRole('button', { name: /HEAL/i })).toBeDisabled()
+  })
+
+  it('gates Heal and Neuro-Overclock on spendable, not raw, money (#3464)', () => {
+    // Active Expedition: 1000 on hand, 900 protected, so 100 is spendable.
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      player: { money: 1000, fame: 500, clinicVisits: 0 },
+      spendableMoney: 100,
+      healCostMoney: 300
+    })
+
+    renderComponent()
+
+    const healButtons = screen.getAllByRole('button', { name: /HEAL/i })
+    expect(healButtons[0]).toBeDisabled()
+    const graftButtons = screen.getAllByRole('button', {
+      name: /NEURO-OVERCLOCK/i
+    })
+    expect(graftButtons[0]).toBeDisabled()
+  })
+
+  it('header FUNDS shows spendable, not raw, money (#3464)', () => {
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      player: { money: 1000, fame: 500, clinicVisits: 0 },
+      spendableMoney: 100
+    })
+
+    renderComponent()
+
+    const funds = screen.getByText(/FUNDS:/i)
+    expect(funds).toHaveTextContent(formatCurrency(100, 'en'))
+    expect(funds).not.toHaveTextContent(formatCurrency(1000, 'en'))
   })
 
   it('calls leaveClinic when leave button is clicked', () => {

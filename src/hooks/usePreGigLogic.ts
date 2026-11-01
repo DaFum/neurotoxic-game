@@ -44,6 +44,8 @@ interface PreGigLogicReturn {
   i18n: { language: string }
   currentGig: Venue | null
   player: PlayerState
+  /** Cash the player may spend; protected Expedition cash is excluded. */
+  spendableMoney: number
   setlist: RhythmSetlistEntry[]
   /** Songs the setlist may hold: the committed Expedition set, else three. */
   setlistMax: number
@@ -213,6 +215,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     i18n,
     currentGig,
     player,
+    spendableMoney,
     setlist,
     setlistMax,
     gigModifiers,

@@ -339,6 +339,44 @@ test('calculatePostGigStateUpdates independently applies the viral roll', () => 
   )
 })
 
+test('calculatePostGigStateUpdates never takes the accuracy viral shortcut for a failed gig', () => {
+  const params = buildPostGigParams()
+  const common = { ...params, perfScore: 50 }
+  const failed = calculatePostGigStateUpdates({
+    ...common,
+    lastGigStats: { accuracy: 99, maxCombo: 0, score: 1000, failed: true }
+  })
+  const missing = calculatePostGigStateUpdates({
+    ...common,
+    lastGigStats: { score: 1000 }
+  })
+  const clean = calculatePostGigStateUpdates({
+    ...common,
+    lastGigStats: { accuracy: 99, maxCombo: 0, score: 1000 }
+  })
+
+  // viralRandomValue 0.99 never wins the roll, so only the >95 shortcut adds 1.
+  assert.equal(clean.updatedSocial.viral, failed.updatedSocial.viral + 1)
+  assert.equal(missing.updatedSocial.viral, failed.updatedSocial.viral)
+})
+
+test('perf_sound_guy_rant reads a failed gig or missing accuracy as a bad show', () => {
+  const option = POST_OPTIONS.find(
+    candidate => candidate.id === 'perf_sound_guy_rant'
+  )
+  assert.ok(option)
+  assert.equal(option.condition({ lastGigStats: { score: 1000 } }), true)
+  assert.equal(
+    option.condition({
+      lastGigStats: { accuracy: 95, score: 1000, failed: true }
+    }),
+    true
+  )
+  assert.equal(option.condition({ lastGigStats: { accuracy: 59 } }), true)
+  assert.equal(option.condition({ lastGigStats: { accuracy: 85 } }), false)
+  assert.equal(option.condition({ lastGigStats: null }), false)
+})
+
 test('calculatePostGigStateUpdates does not soften follower losses via affinity', () => {
   const params = buildPostGigParams({
     result: { followers: -500, success: false }

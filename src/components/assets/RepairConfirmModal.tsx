@@ -8,6 +8,7 @@ import { getRepairImagePrompt } from '../../utils/imageGen'
 import { calculateChassisRepairCost } from '../../utils/assets/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**
@@ -17,7 +18,9 @@ import type { AssetConfirmModalProps as Props } from '../../types/ui'
 export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { repairChassis } = useGameActions()
-  const money = useGameSelector(state => state.player.money)
+  // Spendable, not raw: the creator refuses a repair only protected
+  // Expedition cash could pay.
+  const money = useGameSelector(getExpeditionSpendableCash)
   const cost = calculateChassisRepairCost(asset.condition)
 
   return (

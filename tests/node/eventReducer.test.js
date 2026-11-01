@@ -202,6 +202,66 @@ describe('eventReducer', () => {
       assert.strictEqual(decreased.gigEventScoreDelta, -150)
     })
 
+    it('accumulates player.score with the same precedence applyEventDelta uses', () => {
+      baseState.currentScene = 'GIG'
+      baseState.gigEventScoreDelta = 0
+      baseState.player.score = 0
+
+      const nestedOnly = handleApplyEventDelta(baseState, {
+        player: { score: 25 },
+        band: {},
+        social: {},
+        flags: {}
+      })
+      assert.strictEqual(nestedOnly.player.score, 25)
+      assert.strictEqual(nestedOnly.gigEventScoreDelta, 25)
+
+      const nestedWins = handleApplyEventDelta(baseState, {
+        score: 100,
+        player: { score: 25 },
+        band: {},
+        social: {},
+        flags: {}
+      })
+      assert.strictEqual(nestedWins.player.score, 25)
+      assert.strictEqual(nestedWins.gigEventScoreDelta, 25)
+
+      const nestedZero = handleApplyEventDelta(baseState, {
+        score: 100,
+        player: { score: 0 },
+        band: {},
+        social: {},
+        flags: {}
+      })
+      assert.strictEqual(nestedZero.player.score, 0)
+      assert.strictEqual(nestedZero.gigEventScoreDelta, 0)
+
+      const invalidNested = handleApplyEventDelta(baseState, {
+        score: 100,
+        player: { score: NaN },
+        band: {},
+        social: {},
+        flags: {}
+      })
+      assert.strictEqual(invalidNested.player.score, 100)
+      assert.strictEqual(invalidNested.gigEventScoreDelta, 100)
+    })
+
+    it('does not accumulate player.score outside GIG', () => {
+      baseState.currentScene = 'OVERWORLD'
+      baseState.gigEventScoreDelta = 0
+      baseState.player.score = 0
+
+      const nextState = handleApplyEventDelta(baseState, {
+        player: { score: 25 },
+        band: {},
+        social: {},
+        flags: {}
+      })
+      assert.strictEqual(nextState.player.score, 25)
+      assert.strictEqual(nextState.gigEventScoreDelta, 0)
+    })
+
     it('advances quest_payday from a positive event-delta money gain', () => {
       // Regression: money used to reach the player only through
       // `applyEventDelta`, while `economy.moneyEarned` was emitted at selected

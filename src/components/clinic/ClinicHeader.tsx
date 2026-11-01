@@ -4,9 +4,9 @@ import type { ClinicHeaderProps } from '../../types/components'
 
 /**
  * Shows the clinic title, flavor copy, and spendable player resources.
- * @param props - Player money and fame available for clinic actions.
+ * @param props - Spendable money and player fame available for clinic actions.
  */
-export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
+export const ClinicHeader = ({ player, spendableMoney }: ClinicHeaderProps) => {
   const { t, i18n } = useTranslation(['ui'])
 
   return (
@@ -23,7 +23,7 @@ export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
       <div className='flex gap-4 mt-4 text-xs font-mono text-star-white'>
         <span>
           {t('ui:clinic.funds', { defaultValue: 'FUNDS:' })}{' '}
-          {formatCurrency(player.money ?? 0, i18n.language)}
+          {formatCurrency(spendableMoney, i18n.language)}
         </span>
         <span>
           {t('ui:clinic.fame', { defaultValue: 'FAME:' })} {player.fame}

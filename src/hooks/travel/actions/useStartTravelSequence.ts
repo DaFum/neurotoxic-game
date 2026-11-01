@@ -45,6 +45,7 @@ export const useStartTravelSequence = ({
 
       try {
         setters.setIsTraveling(true)
+        refs.isTravelingRef.current = true
 
         audioService
           .ensureAudioContext()
@@ -73,6 +74,7 @@ export const useStartTravelSequence = ({
           context: { node }
         })
         setters.setIsTraveling(false)
+        refs.isTravelingRef.current = false
       }
     },
     [clearPendingTravel, setters, refs, onStartTravelMinigame, addToast]

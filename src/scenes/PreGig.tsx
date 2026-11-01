@@ -32,6 +32,7 @@ export const PreGig = () => {
     i18n,
     currentGig,
     player,
+    spendableMoney,
     merchInventory,
     isExpeditionActive,
     isSetlistFrozen,
@@ -63,7 +64,7 @@ export const PreGig = () => {
         t={t}
         i18n={i18n}
         currentGig={currentGig}
-        player={player}
+        budget={spendableMoney}
         calculatedBudget={calculatedBudget}
       />
 

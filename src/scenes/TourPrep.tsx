@@ -18,8 +18,12 @@ import { TourPrepLoadout } from '../ui/expedition/TourPrepLoadout'
  */
 export const TourPrep = () => {
   const { t } = useTranslation(['ui'])
-  const { prepareExpeditionRun, changeScene, saveGameAfterStateCommit } =
-    useGameActions()
+  const {
+    prepareExpeditionRun,
+    changeScene,
+    saveGameAfterStateCommit,
+    releaseUnprotectedSlot
+  } = useGameActions()
   const status = useGameSelector(state => state.expedition.status)
 
   useEffect(() => {
@@ -29,10 +33,13 @@ export const TourPrep = () => {
   useEffect(() => {
     if (status !== 'active') return
     // The run is committed: persist it before leaving, because this scene
-    // unmounts before it could observe the committed state itself.
+    // unmounts before it could observe the committed state itself. Committing
+    // is starting a new tour, which is what the failed-upgrade notice promised
+    // would overwrite a save it could not keep a recovery copy of.
+    releaseUnprotectedSlot()
     saveGameAfterStateCommit()
     changeScene(GAME_PHASES.OVERWORLD)
-  }, [changeScene, saveGameAfterStateCommit, status])
+  }, [changeScene, releaseUnprotectedSlot, saveGameAfterStateCommit, status])
 
   const handleAbort = useCallback(() => {
     changeScene(GAME_PHASES.MENU)

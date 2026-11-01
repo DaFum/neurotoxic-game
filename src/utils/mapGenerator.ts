@@ -213,10 +213,10 @@ export class MapGenerator {
   }
 
   /**
-   * Generates intermediate layers of the map.
-   * @param map - Mutable map state being populated.
-   * @param depth - The total depth of the map.
-   * @param pools - The available and fallback venue pools.
+   * Counts the venues in a pool that have not been placed on the map yet.
+   * @param pool - Venues to check.
+   * @param usedVenueIds - Ids of venues already placed on the map.
+   * @returns Number of venues in `pool` whose id is not in `usedVenueIds`.
    */
   _countAvailableVenues(pool: Venue[], usedVenueIds: Set<string>): number {
     let available = 0

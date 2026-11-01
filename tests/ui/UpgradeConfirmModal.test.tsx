@@ -6,6 +6,7 @@ import type { LongTermAsset } from '../../src/types/assets'
 
 const mockUpgradeChassisTier = vi.fn()
 const mockState = vi.hoisted(() => ({
+  expedition: undefined as unknown,
   player: { money: 10000 }
 }))
 const originalTourbusLegitConfig = structuredClone(
@@ -79,6 +80,7 @@ vi.mock('react-i18next', () => ({
 describe('UpgradeConfirmModal', () => {
   beforeEach(() => {
     mockState.player.money = 10000
+    mockState.expedition = undefined
     mockUpgradeChassisTier.mockClear()
   })
 
@@ -100,6 +102,15 @@ describe('UpgradeConfirmModal', () => {
 
   it('keeps confirmation disabled when the player cannot afford the upgrade', () => {
     mockState.player.money = 0
+
+    render(<UpgradeConfirmModal asset={asset} isOpen onClose={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Upgrade' })).toBeDisabled()
+    expect(screen.getByText('Not enough money.')).toBeInTheDocument()
+  })
+
+  it('disables the upgrade when only protected Expedition cash could pay (#3464)', () => {
+    mockState.expedition = { status: 'active', protectedCareerCash: 9999 }
 
     render(<UpgradeConfirmModal asset={asset} isOpen onClose={vi.fn()} />)
 

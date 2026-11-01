@@ -9,7 +9,9 @@ vi.mock('react-i18next', () => ({
         'economy:brandDeals.energy_drink_cx.description':
           'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
         'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink',
-        'items:golden_pick.name': 'Golden Pick'
+        'items:golden_pick.name': 'Golden Pick',
+        'ui:stats.controversy': 'Kontroverse',
+        'ui:stats.loyalty': 'Loyalität'
       }
       return translations[key] ?? options?.defaultValue ?? key
     },
@@ -234,4 +236,29 @@ test('DealCard falls back to an unknown-item label for an id without a locale en
 
   expect(container).toHaveTextContent('Unknown item')
   expect(container).not.toHaveTextContent('not_in_locale')
+})
+
+test('DealCard labels risk stats through locale keys with signed values', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'deal_risk',
+        name: 'Risk Deal',
+        description: 'Has penalties',
+        offer: { upfront: 1000, duration: 3 },
+        penalty: { controversy: 5, loyalty: -10, mystery: 2, note: 'raw' }
+      }}
+      negotiationState={null}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(container).toHaveTextContent(
+    'Risk: Kontroverse: +5, Loyalität: -10, Unknown effect: +2'
+  )
+  expect(container).not.toHaveTextContent('controversy')
+  expect(container).not.toHaveTextContent('mystery')
+  expect(container).not.toHaveTextContent('raw')
 })

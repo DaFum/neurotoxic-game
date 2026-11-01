@@ -115,7 +115,9 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
   // generic CatalogItem surface, so the cast is centralized here once instead
   // of being repeated per tab.
   const catalogTabProps = {
-    player,
+    // The balance shown beside the catalog is what a purchase may spend:
+    // protected Expedition cash is excluded during a run.
+    player: { ...player, money: spendableCash },
     handleBuy: (item: CatalogItem) => {
       if (!isExpeditionUnlocked(item)) {
         addToast(

@@ -10,6 +10,7 @@ import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionRoutePressureProfile } from './routeProfile'
 import { getExpeditionFameProfile } from './fame'
+import { getExpeditionSpendableCash } from './spendableCash'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 interface PressureDirectorContext {
@@ -95,7 +96,7 @@ export const derivePressureDirectorContext = (
       getExpeditionFameProfile(state).expectationPressure
     ),
     cashPressure: clampPercent(
-      state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
+      getExpeditionSpendableCash(state) <= 0 ? 100 : 0
     ),
     technicalConditionPressure: clampPercent(100 - conditionAverage),
     crewStressPressure: clampPercent(maxCrewStress),

@@ -8,6 +8,7 @@
 
 - A saved active event is rehydrated from this registry on load (`rehydrateRegistryEvent` in `stateSanitizers.ts`): options, composite effects, conditions and `tags` are restored only when the saved option list still matches by length and per-index `id` and `label`. Reordering or relabelling options of an existing event makes saves in flight fall back to the sanitized (lossy) copy, so change them deliberately.
 - Option `condition`s run against a state whose `player.money` is only the spendable cash during an active run (`withExpeditionSpendableCash`), so a money gate like `money >= 45` already respects protected cash. Options with a direct money cost but no such condition are covered by `isOptionAffordable`; see `src/utils/eventEngine/AGENTS.md`.
+- Event-level `condition` and functional `chance` are deliberately evaluated by `selectEvent` against raw `player.money`, not the spendable view: they decide whether an event happens, not what the player may spend. Put any money gate on the option `condition`, which does see spendable cash.
 
 ## Special Events
 

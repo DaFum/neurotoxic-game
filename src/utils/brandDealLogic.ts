@@ -220,7 +220,7 @@ export const generateBrandOffers = (
     rivalInLocation && gameState.rivalBand
       ? Math.min(
           MAX_RIVAL_DEAL_CHANCE_PENALTY * 100,
-          (gameState.rivalBand.powerLevel ?? 0) *
+          finiteNumberOr(gameState.rivalBand.powerLevel, 0) *
             RIVAL_POWER_TO_DEAL_CHANCE_FACTOR *
             100
         )

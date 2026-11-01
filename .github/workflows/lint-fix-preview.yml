@@ -59,16 +59,24 @@ jobs:
 
       - name: Run lint/format preview (produces comment.md and outputs)
         id: lint-preview
+        # Expressions go through env, never into the script text: a branch
+        # name is attacker-chosen data, not shell source.
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          BASE_REF="${{ github.event.pull_request.base.ref }}"
           ./scripts/lint-fix-preview.sh "$BASE_REF"
 
       - name: Debug lint-preview outputs
+        env:
+          HAS_DIFF: ${{ steps.lint-preview.outputs.has_diff }}
+          HAS_DUP: ${{ steps.lint-preview.outputs.has_dup }}
+          DUP_TOTAL: ${{ steps.lint-preview.outputs.dup_total }}
+          SHOULD_COMMENT: ${{ steps.lint-preview.outputs.should_comment }}
         run: |
-          echo "has_diff=${{ steps.lint-preview.outputs.has_diff }}"
-          echo "has_dup=${{ steps.lint-preview.outputs.has_dup }}"
-          echo "dup_total=${{ steps.lint-preview.outputs.dup_total }}"
-          echo "should_comment=${{ steps.lint-preview.outputs.should_comment }}"
+          echo "has_diff=$HAS_DIFF"
+          echo "has_dup=$HAS_DUP"
+          echo "dup_total=$DUP_TOTAL"
+          echo "should_comment=$SHOULD_COMMENT"
           echo "POST_ON_DIFF_ONLY=$POST_ON_DIFF_ONLY"
 
       - name: Post lint preview comment to PR

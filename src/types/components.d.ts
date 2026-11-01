@@ -208,7 +208,9 @@ export interface PixiStageProps<TState = unknown> {
  * Player resource slice displayed in the clinic header.
  */
 export interface ClinicHeaderProps {
-  player: Pick<PlayerState, 'money' | 'fame'>
+  player: Pick<PlayerState, 'fame'>
+  /** Protected Expedition cash is excluded during a run. */
+  spendableMoney: number
 }
 
 /**
@@ -216,7 +218,9 @@ export interface ClinicHeaderProps {
  */
 export interface ClinicMemberCardProps {
   member: BandMember
-  player: Pick<PlayerState, 'money' | 'fame'>
+  player: Pick<PlayerState, 'fame'>
+  /** Cash the player may spend: excludes protected Expedition cash. */
+  spendableMoney: number
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void
@@ -342,6 +346,8 @@ export interface CompletePhaseProps {
   }
   isProcessingAction?: boolean
   hasSpun?: boolean
+  /** Spendable cash covers the spin; protected Expedition cash does not count. */
+  canAffordSpinStory?: boolean
   pedalHarmonyPenalty?: number
 }
 

@@ -134,6 +134,22 @@ describe('useRhythmGameLoop', () => {
     expect(endGig).toHaveBeenCalled()
   })
 
+  it('still ends the gig when stopping the audio throws during finalization', () => {
+    mocks.getTransportState.mockReturnValue('started')
+    mocks.getGigTimeMs.mockReturnValue(999)
+    gameStateRef.current.setlistCompleted = true
+    mocks.stopAudio.mockImplementationOnce(() => {
+      throw new Error('audio stop failed')
+    })
+    const { result } = setup(null)
+
+    expect(() => result.current.update(16)).toThrow('audio stop failed')
+
+    // Results are already submitted, so Quit can no longer end the gig.
+    expect(gameStateRef.current.hasSubmittedResults).toBe(true)
+    expect(endGig).toHaveBeenCalledTimes(1)
+  })
+
   it('finalizes a completed setlist exactly once when no transport is running', () => {
     mocks.getTransportState.mockReturnValue('stopped')
     gameStateRef.current.setlistCompleted = true

@@ -16,6 +16,7 @@ import {
   clampBandHarmony,
   appendToRegionalGigHistory
 } from '../gameState'
+import { getOutcomeAccuracy } from '../gigStats'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getActiveDealBenefits } from '../brandDealBenefits'
@@ -311,7 +312,7 @@ export const calculatePostGigStateUpdates = (
     lastGigStats &&
     checkViralEvent(
       {
-        accuracy: lastGigStats.accuracy ?? 0,
+        accuracy: getOutcomeAccuracy(lastGigStats),
         maxCombo: lastGigStats.maxCombo ?? lastGigStats.combo ?? 0,
         score: lastGigStats.score ?? 0
       },

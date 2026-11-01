@@ -26,7 +26,8 @@ export const CompletePhase = ({
   social,
   pedalHarmonyPenalty = 0,
   isProcessingAction = false,
-  hasSpun = false
+  hasSpun = false,
+  canAffordSpinStory = true
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
@@ -124,7 +125,7 @@ export const CompletePhase = ({
           {hasPR && isScandal && onSpinStory && (
             <ActionButton
               onClick={onSpinStory}
-              disabled={isProcessingAction || hasSpun}
+              disabled={isProcessingAction || hasSpun || !canAffordSpinStory}
               className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {

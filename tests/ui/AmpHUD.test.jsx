@@ -2,13 +2,24 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { AmpHUD } from '../../src/components/minigames/amp/AmpHUD'
 
-const locale = vi.hoisted(() => ({ language: 'en' }))
+const locale = vi.hoisted(() => ({
+  language: 'en',
+  translations: { de: { 'ui:unit.seconds': '{{value}} Sek.' } }
+}))
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: locale.language },
-    t: (key, options) => options?.defaultValue ?? key
+    t: (key, options) => {
+      const template =
+        locale.translations[locale.language]?.[key] ??
+        options?.defaultValue ??
+        key
+      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+        String(options?.[token] ?? `{{${token}}}`)
+      )
+    }
   })
 }))
 
@@ -61,6 +72,16 @@ describe('AmpHUD meters', () => {
     render(<AmpHUD {...baseProps} timeLeft={12.34} />)
 
     expect(screen.getByText('12.3s')).toBeInTheDocument()
+  })
+
+  it('localizes the seconds unit', () => {
+    locale.language = 'de'
+    try {
+      render(<AmpHUD {...baseProps} timeLeft={12.34} />)
+      expect(screen.getByText('12,3 Sek.')).toBeInTheDocument()
+    } finally {
+      locale.language = 'en'
+    }
   })
 
   it('renders stability and meter readouts as locale-aware percentages', () => {

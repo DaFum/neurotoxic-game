@@ -15,7 +15,8 @@ const actions = vi.hoisted(() => ({
   prepareExpeditionSponsorOffers: vi.fn(),
   startExpedition: vi.fn(),
   changeScene: vi.fn(),
-  saveGameAfterStateCommit: vi.fn()
+  saveGameAfterStateCommit: vi.fn(),
+  releaseUnprotectedSlot: vi.fn()
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -93,6 +94,23 @@ describe('TourPrep scene', () => {
     // observe the committed state itself.
     expect(actions.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
     expect(actions.changeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('lifts the failed-upgrade save block before saving the committed run', () => {
+    state.current = buildState({ status: 'active' })
+    render(<TourPrep />)
+    // Committing starts a new tour, which the failed-upgrade notice promised
+    // would overwrite the save it could not keep a recovery copy of.
+    expect(actions.releaseUnprotectedSlot).toHaveBeenCalledTimes(1)
+    expect(
+      actions.releaseUnprotectedSlot.mock.invocationCallOrder[0]
+    ).toBeLessThan(actions.saveGameAfterStateCommit.mock.invocationCallOrder[0])
+  })
+
+  it('keeps the save block while the run is only being prepared', () => {
+    state.current = buildState({ status: 'prepared' })
+    render(<TourPrep />)
+    expect(actions.releaseUnprotectedSlot).not.toHaveBeenCalled()
   })
 
   it('offers no starter perk until its unlock set is owned', () => {

@@ -4,7 +4,7 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { generateBrandName } from './brandOfferFlavor/index'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
-import { isEmptyObject } from './gameState'
+import { finiteNumberOr, isEmptyObject } from './gameState'
 import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
 
 // ⚡ BOLT OPTIMIZATION: Pre-calculate brand alignments array at module scope.
@@ -29,7 +29,7 @@ export const generateRivalBand = (
     selectRandomItem(BRAND_ALIGNMENT_VALUES, rng) ??
     (BRAND_ALIGNMENTS.NEUTRAL as BrandAlignment)
 
-  const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
+  const powerLevel = Math.max(1, Math.floor(finiteNumberOr(day, 1) / 5) + 1)
 
   return {
     id: 'rival_' + pickBoundedIndex(1000000000, rng),

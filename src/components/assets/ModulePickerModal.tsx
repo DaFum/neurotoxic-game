@@ -16,6 +16,7 @@ import {
   type ModuleUnlockState
 } from '../../utils/assets/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 import type { AssetConfirmModalProps } from '../../types/ui'
 
@@ -78,6 +79,9 @@ export const ModulePickerModal = memo(
     // state tree (`s => s`) re-rendered on every tick.
     const fame = useGameSelector(s => s.player.fame)
     const money = useGameSelector(s => s.player.money)
+    // Unlock rules read the raw balance (as `validateModuleInstall` does); the
+    // install price is gated on what an active Expedition may spend.
+    const spendableCash = useGameSelector(getExpeditionSpendableCash)
     const scenePresence = useGameSelector(
       s => (s.social as { scenePresence?: number }).scenePresence ?? 0
     )
@@ -224,7 +228,7 @@ export const ModulePickerModal = memo(
               {pool.map(({ module, unlocked, lockReasons }) => {
                 const conflict = getSlotConflicts(asset, module.id)
                 const installCost = module.cost + module.installCost
-                const insufficientFunds = money < installCost
+                const insufficientFunds = spendableCash < installCost
                 const blocked =
                   !unlocked || !conflict.canInstall || insufficientFunds
                 return (

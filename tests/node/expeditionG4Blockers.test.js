@@ -2666,6 +2666,163 @@ test('load does not count a historical failed gig toward the contract (#3366)', 
   )
 })
 
+/** The canonical run standing on its first walked gig, which just resolved. */
+const gigResolvedOnCanonicalMap = lastGigStats => {
+  const { started, map, walked } = contractRunOnCanonicalMap()
+  const gigStep = walked.findIndex(
+    (id, step) => step > 0 && isGigClass(map, id)
+  )
+  assert.ok(gigStep > 0 && gigStep < walked.length - 1)
+  const venueId = map.nodes[walked[gigStep]]?.venueId || walked[gigStep]
+  const state = {
+    ...started,
+    player: { ...started.player, currentNodeId: walked[gigStep] },
+    currentGig: { id: venueId },
+    lastGigStats,
+    expedition: {
+      ...started.expedition,
+      visitedNodeIds: walked.slice(0, gigStep + 1),
+      routeStep: gigStep,
+      lastGigResolvedAtRouteStep: gigStep
+    }
+  }
+  const written = handleRecordExpeditionObligationSignal(state, {
+    signalType: 'gig',
+    sourceId: venueId,
+    expectedRouteStep: gigStep
+  })
+  const load = (expedition, stats = lastGigStats) =>
+    sanitizeExpeditionState(expedition, written.runSeed, stats)
+  return { written, walked, gigStep, venueId, load }
+}
+
+test('load round-trips the gig outcome the reducer writes, failed or passed (#3469)', () => {
+  for (const failed of [true, false]) {
+    const { written, walked, gigStep, venueId, load } =
+      gigResolvedOnCanonicalMap({ score: 1000, accuracy: 80, failed })
+    const expected = {
+      [gigStep]: failed
+        ? { venueId, accuracy: 80, failed: true }
+        : { venueId, accuracy: 80 }
+    }
+    assert.deepEqual({ ...written.expedition.gigOutcomeByStep }, expected)
+
+    const loaded = load(written.expedition)
+    assert.equal(loaded.status, 'active')
+    assert.deepEqual(
+      { ...loaded.gigOutcomeByStep },
+      expected,
+      `current step, failed: ${failed}`
+    )
+    assert.deepEqual(
+      { ...load(loaded).gigOutcomeByStep },
+      expected,
+      `load -> save -> load is stable, failed: ${failed}`
+    )
+    // Once the run moves on, the signal proof carries the entry instead.
+    const moved = load(
+      {
+        ...loaded,
+        visitedNodeIds: walked.slice(0, gigStep + 2),
+        routeStep: gigStep + 1
+      },
+      null
+    )
+    assert.deepEqual(
+      { ...moved.gigOutcomeByStep },
+      expected,
+      `historical step, failed: ${failed}`
+    )
+  }
+})
+
+test('load takes the current-step failed flag from lastGigStats, not the save (#3469)', () => {
+  const { written, gigStep, venueId, load } = gigResolvedOnCanonicalMap({
+    score: 1000,
+    accuracy: 80,
+    failed: true
+  })
+  const withOutcome = outcome => ({
+    ...written.expedition,
+    gigOutcomeByStep: { [gigStep]: outcome }
+  })
+
+  assert.deepEqual(
+    { ...load(withOutcome({ venueId, accuracy: 80 })).gigOutcomeByStep },
+    { [gigStep]: { venueId, accuracy: 80, failed: true } },
+    'a save cannot erase the failure lastGigStats records'
+  )
+  assert.deepEqual(
+    {
+      ...load(withOutcome({ venueId, accuracy: 80, failed: true }), {
+        score: 1000,
+        accuracy: 80,
+        failed: false
+      }).gigOutcomeByStep
+    },
+    { [gigStep]: { venueId, accuracy: 80 } },
+    'a passed gig loads as the reducer writes it'
+  )
+  assert.deepEqual(
+    {
+      ...load(withOutcome({ venueId, accuracy: 100, failed: true }))
+        .gigOutcomeByStep
+    },
+    {},
+    'a failed outcome still needs the canonical accuracy'
+  )
+})
+
+test('load drops a current-step outcome when lastGigStats is not a record (#3469)', () => {
+  const { written, gigStep, venueId, load } = gigResolvedOnCanonicalMap({
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+  const forged = {
+    ...written.expedition,
+    gigOutcomeByStep: { [gigStep]: { venueId, accuracy: 100 } }
+  }
+  for (const hostile of [[], 1, 'x', true]) {
+    assert.deepEqual(
+      { ...load(forged, hostile).gigOutcomeByStep },
+      {},
+      `lastGigStats ${JSON.stringify(hostile)} vouches for nothing`
+    )
+  }
+})
+
+test('load drops gig outcomes keyed past the current route step (#3469)', () => {
+  const { written, walked, gigStep, venueId, load } = gigResolvedOnCanonicalMap(
+    { score: 1000, accuracy: 80, failed: false }
+  )
+  const finaleStep = walked.length - 1
+  assert.ok(finaleStep > gigStep + 1)
+  const venueAt = step => walked[step]
+  const loaded = load({
+    ...written.expedition,
+    // Signal proofs for the future steps do not vouch for them either.
+    resolvedObligationSignalIds: [
+      ...written.expedition.resolvedObligationSignalIds,
+      `gig:${venueAt(gigStep + 1)}:${gigStep + 1}:100`,
+      `gig:${venueAt(finaleStep)}:${finaleStep}:100`
+    ],
+    gigOutcomeByStep: {
+      ...written.expedition.gigOutcomeByStep,
+      [gigStep + 1]: { venueId: venueAt(gigStep + 1), accuracy: 100 },
+      [finaleStep]: { venueId: venueAt(finaleStep), accuracy: 100 }
+    }
+  })
+
+  assert.equal(loaded.status, 'active')
+  assert.equal(Object.hasOwn(loaded.gigOutcomeByStep, gigStep + 1), false)
+  assert.equal(Object.hasOwn(loaded.gigOutcomeByStep, finaleStep), false)
+  assert.deepEqual(
+    { ...loaded.gigOutcomeByStep },
+    { [gigStep]: { venueId, accuracy: 80 } }
+  )
+})
+
 test('a rest signal on a non-rest node still breaks a no-rest contract (#3365)', () => {
   const state = activeState()
   state.player.currentNodeId = 'exp_2_0'

@@ -290,8 +290,13 @@ export const finalizeGig = (
       false
     )
   )
-  stopAudio()
-  endGig()
+  // `hasSubmittedResults` is already set, so a Quit can no longer end the gig:
+  // a failing audio stop must not skip `endGig` and leave the scene stuck.
+  try {
+    stopAudio()
+  } finally {
+    endGig()
+  }
 }
 
 /**

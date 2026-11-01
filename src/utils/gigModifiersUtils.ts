@@ -220,13 +220,16 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   // 2. Scroll Speed based on Global Stamina
   // Avg Stamina:
   // members array is already guarded above
+  // Only members with a finite stamina value count toward the divisor.
   let totalStamina = 0
+  let staminaCount = 0
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
-    if (!m) continue
-    totalStamina += finiteNumberOr(m.stamina, 0)
+    if (!m || !isFiniteNumber(m.stamina)) continue
+    totalStamina += m.stamina
+    staminaCount++
   }
-  const avgStamina = members.length ? totalStamina / members.length : 0
+  const avgStamina = staminaCount > 0 ? totalStamina / staminaCount : 0
 
   // Normal Speed = 500 (pixels per second approx or whatever engine uses)
   // If Stamina < 40, slow down draggingly

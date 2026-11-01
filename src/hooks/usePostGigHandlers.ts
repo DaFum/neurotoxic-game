@@ -254,6 +254,8 @@ export function usePostGigHandlers({
     social,
     currentGig,
     postOptionsDerivationError,
+    isProcessingActionRef,
+    setIsProcessingAction,
     hasSpunRef,
     setHasSpun,
     t,

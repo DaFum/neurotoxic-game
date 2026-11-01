@@ -92,11 +92,16 @@ vi.mock('../../src/components/postGig/CompletePhase', () => ({
     onContinue,
     onSpinStory,
     player,
+    canAffordSpinStory,
     _social,
     _result,
     ...layoutProps
   }) => (
-    <div data-testid='mock-complete-phase' {...layoutProps}>
+    <div
+      data-testid='mock-complete-phase'
+      data-can-afford-spin={String(canAffordSpinStory)}
+      {...layoutProps}
+    >
       {player && (
         <button type='button' onClick={onSpinStory}>
           spin
@@ -732,6 +737,12 @@ describe('PostGig Component - Complete Phase', () => {
     await proceedToSocialAndSelectPost()
 
     const initialUpdateSocialCalls = mockUpdateSocial.mock.calls.length
+
+    // #3464: the scene hands the spendable-cash gate to CompletePhase.
+    expect(screen.getByTestId('mock-complete-phase')).toHaveAttribute(
+      'data-can-afford-spin',
+      'false'
+    )
 
     const spinBtn = await screen.findByRole('button', { name: /spin/i })
     fireEvent.click(spinBtn)

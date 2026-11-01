@@ -222,7 +222,9 @@ const mockRhythmUtils = {
 const mockGigStats = {
   buildGigStatsSnapshot: mock.fn(() => ({})),
   updateGigPerformanceStats: mock.fn(stats => stats),
-  calculateAccuracy: mock.fn(() => 100)
+  calculateAccuracy: mock.fn(() => 100),
+  // postOptions imports it at module load; the rhythm tests never call it.
+  getOutcomeAccuracy: mock.fn(() => 100)
 }
 
 // Register mocks BEFORE import

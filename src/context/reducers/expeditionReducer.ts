@@ -112,6 +112,7 @@ import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
+  getExpeditionRescueFuelFloor,
   isCurrentExpeditionFailureId,
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
@@ -1643,9 +1644,13 @@ export const handleResolveExpeditionCrisis = (
   const nextFuel =
     choice === 'refuel'
       ? EXPENSE_CONSTANTS.transport.maxFuel
-      : Math.min(
-          EXPENSE_CONSTANTS.transport.maxFuel,
-          currentFuel + EXPEDITION_TOW_FUEL_RESTORED
+      : // The partial refill still covers the cheapest reachable leg, or the
+        // tow would be paid for and leave the van stranded.
+        clampVanFuel(
+          Math.max(
+            currentFuel + EXPEDITION_TOW_FUEL_RESTORED,
+            getExpeditionRescueFuelFloor(state)
+          )
         )
 
   return {

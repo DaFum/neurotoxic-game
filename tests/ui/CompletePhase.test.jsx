@@ -307,6 +307,21 @@ describe('CompletePhase', () => {
     expect(mockSpinStory).toHaveBeenCalledOnce()
   })
 
+  test('disables spin story when spendable cash cannot cover it (#3464)', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        onSpinStory={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+        canAffordSpinStory={false}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: /Spin Story/i })).toBeDisabled()
+  })
+
   test('handles missing optional props gracefully', async () => {
     const mockContinue = vi.fn()
 

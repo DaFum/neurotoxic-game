@@ -282,6 +282,27 @@ describe('TourPrepLoadout', () => {
     ).toHaveAccessibleName('ui:expedition.prep.protectedCash')
   })
 
+  it('caps protected cash at money minus the upfront cost', () => {
+    state.current = createInitialState()
+    state.current.player.money = 1005
+    render(<TourPrepLoadout />)
+
+    const slider = screen.getByTestId('expedition-prep-protected-cash')
+    expect(slider).toHaveAttribute('max', '1000')
+    fireEvent.change(slider, { target: { value: '1000' } })
+    expect(slider).toHaveValue('1000')
+
+    // Roadside insurance costs 300 upfront: the slider and the protected
+    // amount both drop to what validation accepts.
+    fireEvent.click(screen.getByTestId('expedition-prep-insurance-roadside'))
+    expect(slider).toHaveAttribute('max', '700')
+    expect(slider).toHaveValue('700')
+    expect(
+      tCalls.filter(c => c.key === 'ui:expedition.prep.protectedCash').at(-1)
+        ?.options
+    ).toEqual({ amount: '€700' })
+  })
+
   it('offers owned non-stackable contraband (stacks: null) as one packable unit', () => {
     state.current = createInitialState()
     state.current.band.stash = {

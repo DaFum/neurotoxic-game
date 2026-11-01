@@ -12,6 +12,7 @@ export const ClinicScene = () => {
   const {
     player,
     band,
+    spendableMoney,
     healCostMoney,
     enhanceCostFame,
     healMember,
@@ -34,7 +35,7 @@ export const ClinicScene = () => {
       />
 
       <div className='z-10 w-full max-h-full max-w-4xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col'>
-        <ClinicHeader player={player} />
+        <ClinicHeader player={player} spendableMoney={spendableMoney} />
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 flex-1 min-h-0 overflow-y-auto py-4 sm:py-6 custom-scrollbar pr-2'>
           {band.members.map(member => (
@@ -42,6 +43,7 @@ export const ClinicScene = () => {
               key={member.id}
               member={member}
               player={player}
+              spendableMoney={spendableMoney}
               healCostMoney={healCostMoney}
               enhanceCostFame={enhanceCostFame}
               healMember={healMember}

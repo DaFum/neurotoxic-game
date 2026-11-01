@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import type { BandMember } from '../types'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
+import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState, BandState } from '../types'
@@ -23,6 +24,7 @@ import {
 export const useClinicLogic = (): {
   player: PlayerState | undefined | null
   band: BandState | undefined | null
+  spendableMoney: number
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void
@@ -33,6 +35,9 @@ export const useClinicLogic = (): {
   const { t } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
+  // Protected Expedition cash is not spendable; the cash floor would roll the
+  // debit back without a toast.
+  const spendableMoney = useGameSelector(getExpeditionSpendableCash)
   const {
     changeScene,
     addToast,
@@ -83,7 +88,7 @@ export const useClinicLogic = (): {
       const member = findMember(memberId)
       const validation = validateHealMember(
         member,
-        finiteNumberOr(player?.money, 0),
+        spendableMoney,
         healCostMoney
       )
       if (!reportRejection(validation)) return
@@ -107,7 +112,7 @@ export const useClinicLogic = (): {
         })
       })
     },
-    [player?.money, healCostMoney, findMember, reportRejection, clinicHeal, t]
+    [spendableMoney, healCostMoney, findMember, reportRejection, clinicHeal, t]
   )
 
   const enhanceMember = useCallback(
@@ -151,6 +156,7 @@ export const useClinicLogic = (): {
   return {
     player,
     band,
+    spendableMoney,
     healCostMoney,
     enhanceCostFame,
     healMember,

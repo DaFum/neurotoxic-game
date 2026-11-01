@@ -1441,6 +1441,7 @@ const sanitizeGigOutcomeMap = (
     const venueId = readString(entry, 'venueId')
     const accuracy = readCount(entry, 'accuracy', -1)
     if (!venueId || accuracy < 0 || accuracy > 100) continue
+    let failed = entry.failed === true
 
     // Validate against canonical lastGigStats if step matches current routeStep
     if (
@@ -1454,16 +1455,20 @@ const sanitizeGigOutcomeMap = (
         : null
       if (
         canonicalAccuracy === null ||
-        lastGigStats.failed === true ||
         Math.round(canonicalAccuracy) !== Math.round(accuracy)
       ) {
         continue
       }
+      // The reducer records a failed gig too, flagged from `lastGigStats`, so
+      // the same flag is authoritative here: a save can neither erase nor add
+      // the failure. A failed outcome is kept but never counts toward a
+      // Contract (`countQualifyingGigSignals` skips it).
+      failed = lastGigStats.failed === true
     } else if (
       isFiniteNumber(step) &&
       isFiniteNumber(routeStep) &&
       step === routeStep &&
-      !lastGigStats
+      !isLooseRecord(lastGigStats)
     ) {
       // Current step outcome present in save but no canonical lastGigStats evidence -> fail closed
       continue
@@ -1476,12 +1481,21 @@ const sanitizeGigOutcomeMap = (
       const expectedSignal = `gig:${venueId}:${step}:${Math.round(accuracy)}`
       const hasProof = resolvedObligationSignalIds.includes(expectedSignal)
       if (!hasProof) continue
+    } else if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step > routeStep
+    ) {
+      // The reducer keys an outcome by the step the gig resolved at, which is
+      // always the current `routeStep`, and the route only moves forward (a
+      // Nemesis Key jump lands on the target node's own step). No legitimate
+      // save holds an outcome past the current step.
+      continue
     }
 
-    result[step] =
-      entry.failed === true
-        ? { venueId, accuracy, failed: true }
-        : { venueId, accuracy }
+    result[step] = failed
+      ? { venueId, accuracy, failed: true }
+      : { venueId, accuracy }
   }
   return result
 }

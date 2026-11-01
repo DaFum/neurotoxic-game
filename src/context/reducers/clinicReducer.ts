@@ -41,6 +41,7 @@ import {
   validateBloodBankDonation
 } from '../../utils/bloodBankUtils'
 import { QuestEvents } from '../../utils/questProgress'
+import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
 
 type MemberUpdaterResult = { updatedMember: BandMember; toastArgs?: number[] }
@@ -100,8 +101,10 @@ const executeClinicAction = (
     return state
   }
 
-  // Ensure player stats are valid before comparison
-  const playerMoney = Math.max(0, finiteNumberOr(state.player.money, 0))
+  // Ensure player stats are valid before comparison. Spendable, not raw: the
+  // Expedition cash floor would roll back a debit into protected cash.
+  const playerMoney = getExpeditionSpendableCash(state)
+  const rawMoney = Math.max(0, finiteNumberOr(state.player.money, 0))
   const playerFame = Math.max(0, finiteNumberOr(state.player.fame, 0))
 
   if (playerMoney < cost || playerFame < fameCost) {
@@ -130,7 +133,9 @@ const executeClinicAction = (
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(playerMoney - cost),
+      // Debit the raw balance: `playerMoney` is the spendable slice, so
+      // subtracting from it would also wipe the protected Career Cash.
+      money: clampPlayerMoney(rawMoney - cost),
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame),
       clinicVisits: currentVisits + 1
@@ -413,8 +418,8 @@ export const handleGraftNeuroOverclock = (
   if (!isFiniteNumber(state.player.money)) {
     return state // Corrupted funds state
   }
-  if (state.player.money < CLINIC_GRAFT_COST) {
-    return state // Can't afford
+  if (getExpeditionSpendableCash(state) < CLINIC_GRAFT_COST) {
+    return state // Can't afford (protected Expedition cash is not spendable)
   }
 
   const { memberId } = payload

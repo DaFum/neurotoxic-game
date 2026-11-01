@@ -198,6 +198,11 @@ type BaseGameDispatchActions = {
   previewLoadGame: () => LoadPreviewResult
   deleteSave: () => void
   resetState: () => void
+  /**
+   * Lifts the save block a failed, unrecoverable migration set, for a new run
+   * that starts without `resetState` (the Expedition). Never for a load.
+   */
+  releaseUnprotectedSlot: () => void
   updateSettings: (
     settings: Parameters<typeof createUpdateSettingsAction>[0]
   ) => void
@@ -593,7 +598,8 @@ export function useGameDispatchActions({
     saveGame,
     saveGameAfterStateCommit,
     loadGame,
-    previewLoadGame
+    previewLoadGame,
+    releaseUnprotectedSlot
   } = usePersistence({
     currentScene: state.currentScene,
     stateRef,
@@ -713,12 +719,17 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
+    // Lifts the save block a failed, unrecoverable migration set. A new tour
+    // only starts from the menu through the existing-save prompt while a save
+    // is stored, so the player has confirmed replacing it. The Expedition
+    // releases it itself when its run is committed (TourPrep).
+    releaseUnprotectedSlot()
     // Same adapter initialization, save/load, and event unlocks use: reading
     // the module default here would let a reset overwrite the injected
     // backend's unlocks (or stored settings) with whatever sits in browser
     // storage.
     dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }, storage))
-  }, [dispatch, resetMapGenerationRetries, storage])
+  }, [dispatch, releaseUnprotectedSlot, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {
     const currentState = stateRef.current
@@ -970,6 +981,7 @@ export function useGameDispatchActions({
       previewLoadGame,
       deleteSave,
       resetState,
+      releaseUnprotectedSlot,
       endGig,
       ...simpleActions,
       ...minigameActions,
@@ -999,6 +1011,7 @@ export function useGameDispatchActions({
       previewLoadGame,
       deleteSave,
       resetState,
+      releaseUnprotectedSlot,
       endGig,
       simpleActions,
       minigameActions,

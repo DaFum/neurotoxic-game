@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { MINIGAME_TYPES } from '../context/gameConstants'
 import { logger } from '../utils/logger'
+import { getCarriedContrabandStash } from '../domain/expedition/cargo'
 import type { MinigameLogicBase } from '../types/components'
 
 /**
@@ -38,6 +39,7 @@ export const useMinigameSceneLogic = ({
   escapeCompletes = true
 }: UseMinigameSceneLogicProps) => {
   const band = useGameSelector(state => state?.band)
+  const expedition = useGameSelector(state => state?.expedition)
   const minigameType = useGameSelector(state => state?.minigame?.type)
   const { completeRoadieMinigame, completeAmpCalibration } = useGameActions()
 
@@ -122,8 +124,9 @@ export const useMinigameSceneLogic = ({
   //    not powered, so onComplete forfeits with isPoweredOn:false and reports
   //    voidSurgesPurged. A dispatch here would clear minigame.active first and
   //    make the reducer drop the purge stress.
-  //  - Roadie max equipment damage (> 50 → failed) AND the escorted contraband
-  //    is consumed (stashItemId), so skipping can't dodge damage or keep it.
+  //  - Roadie max equipment damage (> 50 → failed), reporting the escorted
+  //    stashItemId (the one useRoadieLogic picks); nothing is delivered, so
+  //    the reducer neither credits nor consumes it.
   // Travel (Tourbus) is deliberately excluded: its arrival continuation reads
   // not-yet-committed travel state, so a synchronous skip would misroute arrival.
   // The completion reducers reset minigame state and leave currentScene
@@ -132,7 +135,10 @@ export const useMinigameSceneLogic = ({
     if (uiState?.isGameOver) return
     switch (minigameType) {
       case MINIGAME_TYPES.ROADIE: {
-        const stashItemId = band?.stash ? Object.keys(band.stash)[0] : undefined
+        // Same pick as useRoadieLogic: during a Tour only packed cargo is escorted.
+        const stashItemId = Object.keys(
+          getCarriedContrabandStash(band?.stash, expedition) ?? {}
+        )[0]
         completeRoadieMinigame(100, 0, stashItemId)
         break
       }
@@ -150,6 +156,7 @@ export const useMinigameSceneLogic = ({
     uiState?.isGameOver,
     minigameType,
     band,
+    expedition,
     completeRoadieMinigame,
     completeAmpCalibration
   ])

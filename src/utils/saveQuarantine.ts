@@ -11,10 +11,12 @@ const SAVE_QUARANTINE_KEY_PREFIX = 'neurotoxic:save:quarantine:'
 /**
  * Builds the quarantine key for a given save version.
  *
- * @param version - Version marker the failing payload carried.
- * @returns Storage key the raw payload is copied to.
+ * @param version - Version marker the failing payload carried, or `null` when
+ * the payload could not be read far enough to have one.
+ * @returns Storage key the raw payload is copied to; an unknown version gets
+ * its own `vunknown` slot, so it never overwrites a real version's copy.
  */
-export const getQuarantineKey = (version: number): string =>
+export const getQuarantineKey = (version: number | null): string =>
   `${SAVE_QUARANTINE_KEY_PREFIX}v${Number.isFinite(version) ? version : 'unknown'}`
 
 /**
@@ -22,7 +24,7 @@ export const getQuarantineKey = (version: number): string =>
  * recoverable instead of being overwritten by the next autosave.
  *
  * @param raw - Exact serialized payload as read from storage.
- * @param version - Version marker the payload carried.
+ * @param version - Version marker the payload carried, or `null` when unknown.
  * @param reason - Failure description recorded alongside the payload.
  * @param adapter - Storage backend; defaults to the production singleton.
  * @returns `true` when the copy was written, `false` when storage refused it.
@@ -33,7 +35,7 @@ export const getQuarantineKey = (version: number): string =>
  */
 export const quarantineSave = (
   raw: string,
-  version: number,
+  version: number | null,
   reason: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): boolean => {

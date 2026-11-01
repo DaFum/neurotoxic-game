@@ -15,6 +15,8 @@
  */
 
 import { checkSoftlock } from '../../utils/mapUtils'
+import { getNodeAccessStatus } from '../../utils/travelUtils'
+import { VENUES_BY_ID } from '../../data/venues'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import {
   calculateRefuelCost,
@@ -35,6 +37,8 @@ import { getCriticallyInjuredBandMemberId } from './injuryGate'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'
+import { getExpeditionCheapestOnwardLegFuel } from './travel'
+import { getExpeditionTravelMap } from './routeOverlay'
 import {
   canExtractExpedition,
   isAtExpeditionExtractionWindow
@@ -68,6 +72,24 @@ export const EXPEDITION_TOW_COST = 180 as const
  * affordable.
  */
 export const EXPEDITION_TOW_FUEL_RESTORED = 35 as const
+
+/**
+ * Litres a fuel rescue (paid tow or vehicle insurance claim) must leave in
+ * the tank.
+ *
+ * @param state - Current game state.
+ * @returns `max(EXPEDITION_TOW_FUEL_RESTORED, ceil(cheapest reachable leg))`.
+ *
+ * @remarks
+ * A rescue sized below the cheapest reachable leg would charge for it and
+ * leave the van stranded, so it covers that leg in whole litres. The caller
+ * clamps to tank capacity.
+ */
+export const getExpeditionRescueFuelFloor = (state: GameState): number =>
+  Math.max(
+    EXPEDITION_TOW_FUEL_RESTORED,
+    Math.ceil(finiteNumberOr(getExpeditionCheapestOnwardLegFuel(state), 0))
+  )
 
 /**
  * Order in which competing failure signals are resolved.
@@ -135,7 +157,9 @@ export const getExpeditionEconomyFailureSignal = (
  *
  * @remarks
  * `checkSoftlock` is the canonical stranded authority and already accounts for
- * the travel gate, in-place gig escapes and an affordable refuel. It is given a
+ * the travel gate, in-place gig escapes and an affordable refuel; it is handed
+ * the booking gate (`getNodeAccessStatus`) so a refused neighbour is no
+ * escape. It is given a
  * player view whose cash is the Expedition-spendable slice, so the protected
  * Career Cash cannot silently defuse a stranded verdict, and whose current
  * node counts as played when the Fame access gate refuses to book it.
@@ -173,10 +197,24 @@ export const getExpeditionMobilityFailureSignal = (
     isFiniteNumber(blockedAt) && blockedAt === state.expedition.routeStep
   if (
     !travelBlockedHere &&
-    !checkSoftlock(state.gameMap, strandedView, state.band, {
+    !checkSoftlock(getExpeditionTravelMap(state), strandedView, state.band, {
       dailyObligations: getTotalDailyObligations(state),
       fuelMultiplier:
-        getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier
+        getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier,
+      // The booking gate `useHandleTravel` enforces: a neighbour the player
+      // would be refused at is no way out, as for the cheapest onward leg.
+      isNodeAccessible: (node: unknown) =>
+        // A run only travels forward (1 or 2 steps), so a START node is never
+        // a way out, however affordable it looks to the career travel gate.
+        (node as { type?: unknown } | null)?.type !== 'START' &&
+        getNodeAccessStatus({
+          node: node as Parameters<typeof getNodeAccessStatus>[0]['node'],
+          player: state.player,
+          reputationByRegion: state.reputationByRegion,
+          venueBlacklist: state.venueBlacklist,
+          venuesMap: VENUES_BY_ID,
+          getLocationName: name => name ?? ''
+        }).allowed
     })
   ) {
     return null
