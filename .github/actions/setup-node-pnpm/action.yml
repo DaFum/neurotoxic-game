@@ -44,4 +44,7 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install ${{ inputs.install-args }}
+      env:
+        INSTALL_ARGS: ${{ inputs.install-args }}
+      # Unquoted on purpose: install-args may hold several flags to word-split.
+      run: pnpm install $INSTALL_ARGS

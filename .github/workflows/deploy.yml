@@ -17,6 +17,8 @@ jobs:
   # Installs dependencies (lifecycle scripts enabled) and builds, so it must
   # not hold the Pages/OIDC grant; only the deploy job below does.
   build:
+    # Skip install/build on refs the github-pages environment would reject.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
