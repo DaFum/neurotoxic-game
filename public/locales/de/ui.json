@@ -1802,6 +1802,7 @@
   "postGig.socialOptionsUnavailable": "Social-Optionen sind gerade nicht verfügbar.",
   "postGig.socialPhase.altZealotryCult": "Zealot-Kult",
   "postGig.spinStory": "Story drehen ({{cost}}, -{{controversy}} Kontroverse)",
+  "postGig.spinStoryNeedsSpendable": "Nicht genug verfügbares Geld: geschütztes Karrierebargeld kann während des Laufs nicht ausgegeben werden.",
   "postGig.storySpunControversyReduced": "Story gedreht. Kontroverse reduziert.{{moneyText}}",
   "postGig.tallyingReceipts": "ABRECHNUNG WIRD ERSTELLT...",
   "postGig.tourComplete": "TOUR VOLLENDET: Ihr habt die Void-Tour überlebt!",

@@ -31,6 +31,12 @@ export const CompletePhase = ({
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
+  const spinStoryReason = canAffordSpinStory
+    ? undefined
+    : t('ui:postGig.spinStoryNeedsSpendable', {
+        defaultValue:
+          'Not enough spendable cash: protected career cash cannot be spent during the run.'
+      })
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   // Same inclusive scandal tier as the crisis events and post options.
   const isScandal = isScandalControversy(social?.controversyLevel)
@@ -126,6 +132,10 @@ export const CompletePhase = ({
             <ActionButton
               onClick={onSpinStory}
               disabled={isProcessingAction || hasSpun || !canAffordSpinStory}
+              title={spinStoryReason}
+              aria-describedby={
+                spinStoryReason ? 'spin-story-reason' : undefined
+              }
               className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {
@@ -139,6 +149,14 @@ export const CompletePhase = ({
                   'Spin Story ({{cost}}, -{{controversy}} Controversy)'
               })}
             </ActionButton>
+          )}
+          {hasPR && isScandal && onSpinStory && spinStoryReason && (
+            <p
+              id='spin-story-reason'
+              className='text-xs text-center font-mono text-star-white/70'
+            >
+              {spinStoryReason}
+            </p>
           )}
 
           <ActionButton

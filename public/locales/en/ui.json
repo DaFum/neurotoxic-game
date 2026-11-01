@@ -1802,6 +1802,7 @@
   "postGig.socialOptionsUnavailable": "Social options are unavailable right now.",
   "postGig.socialPhase.altZealotryCult": "Zealotry Cult",
   "postGig.spinStory": "Spin Story ({{cost}}, -{{controversy}} Controversy)",
+  "postGig.spinStoryNeedsSpendable": "Not enough spendable cash: protected career cash cannot be spent during the run.",
   "postGig.storySpunControversyReduced": "Story Spun. Controversy reduced.{{moneyText}}",
   "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
   "postGig.tourComplete": "TOUR COMPLETE: You survived the void tour!",
