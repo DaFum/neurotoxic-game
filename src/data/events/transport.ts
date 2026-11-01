@@ -1,4 +1,5 @@
 import type { GameState } from '../../types'
+import { getCarriedContrabandStash } from '../../domain/expedition/cargo'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 import { isStashFullFor } from '../../utils/contrabandStashUtils'
 import { finiteNumberOr } from '../../utils/gameState'
@@ -238,8 +239,12 @@ export const TRANSPORT_EVENTS = [
     // The condition gates eligibility; the chance field provides final probability.
     chance: 0.1,
     condition: (state: GameState) => {
+      // During a Tour only packed cargo can be searched; items left at HQ
+      // neither add risk nor become the confiscated item (#3499).
       const { bustChance, highestRiskItemId, highestRarity } =
-        computeStashBustRisk(state.band?.stash)
+        computeStashBustRisk(
+          getCarriedContrabandStash(state.band?.stash, state.expedition)
+        )
       if (bustChance <= 0 || !highestRiskItemId) return null
       return { riskItemId: highestRiskItemId, rarity: highestRarity }
     },

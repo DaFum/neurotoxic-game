@@ -494,6 +494,26 @@ test('applyEventDelta confiscation removes every packed stack of the entry and n
   const next = confiscate(state, ['c_gig_program', 'c_gig_program'])
 
   assert.deepEqual(next.expedition.cargo.contraband, [])
+  // Intentional behaviour change (#3499): during a Tour the police take only
+  // the 3 packed stacks. The 2 stacks left at HQ were never in the van, so the
+  // stash keeps them instead of losing the whole stack of 5. The duplicate id
+  // takes nothing more, because nothing of the entry is still packed.
+  assert.equal(next.band.stash.c_gig_program.stacks, 2)
+})
+
+test('applyEventDelta confiscation during a Tour leaves an unpacked item at HQ (#3499)', () => {
+  const state = confiscationTour(
+    { c_gig_program: stashItem('c_gig_program', 1) },
+    []
+  )
+
+  const next = confiscate(state, ['c_gig_program'])
+
+  assert.deepEqual(
+    next.band.stash.c_gig_program,
+    state.band.stash.c_gig_program
+  )
+  assert.equal(next.expedition, state.expedition)
 })
 
 test('applyEventDelta confiscation reverts equipment once and debits it during a Tour', () => {
