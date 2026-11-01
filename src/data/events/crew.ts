@@ -11,7 +11,7 @@ import { getExpeditionRelationshipTier } from '../../domain/expedition/relations
 const activeWithCrew =
   (crewIds: readonly string[]) =>
   (state: GameState): boolean =>
-    state.expedition.status === 'active' &&
+    state.expedition?.status === 'active' &&
     crewIds.every(id => state.expedition.loadout?.crewIds.includes(id))
 
 const MIKA: ExpeditionRelationshipActorRef = { kind: 'crew', id: 'mika' }

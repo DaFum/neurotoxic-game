@@ -295,5 +295,33 @@ export const SPECIAL_EVENTS = [
         outcomeText: 'events:creepy_motel.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'underground_synth_shop',
+    category: 'special',
+    title: 'events:underground_synth_shop.title',
+    description: 'events:underground_synth_shop.desc',
+    trigger: 'special_location',
+    chance: 0.25,
+    options: [
+      {
+        label: 'events:underground_synth_shop.opt1.label',
+        condition: (state: GameState) => state.player.money >= 250,
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -250 },
+            { type: 'stat', stat: 'skill', value: 3 },
+            { type: 'stat', stat: 'fame', value: 20 }
+          ]
+        },
+        outcomeText: 'events:underground_synth_shop.opt1.outcome'
+      },
+      {
+        label: 'events:underground_synth_shop.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:underground_synth_shop.opt2.outcome'
+      }
+    ]
   }
 ]

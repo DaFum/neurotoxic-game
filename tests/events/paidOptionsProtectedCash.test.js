@@ -140,4 +140,21 @@ describe('paid event options under protected expedition cash', () => {
       }
     }
   })
+
+  test('underground_synth_shop applies money requirement accurately relative to total balance', () => {
+    const event = events.find(e => e.id === 'underground_synth_shop')
+    assert.ok(event, 'underground_synth_shop event not found')
+
+    const stateSufficient = stateFor(event, 300) // 300 available = 500 balance - 200 protected
+    stateSufficient.player.money = 500
+    stateSufficient.expedition.protectedCareerCash = 200
+
+    const stateInsufficient = stateFor(event, 249) // 249 available = 449 balance - 200 protected
+    stateInsufficient.player.money = 449
+    stateInsufficient.expedition.protectedCareerCash = 200
+
+    const purchaseOption = event.options.find(o => o.effect?.effects?.some(e => e.resource === 'money'))
+    assert.equal(choosableIgnoringRule(purchaseOption, stateSufficient), true, 'should be choosable with 500 total / 200 protected')
+    assert.equal(choosableIgnoringRule(purchaseOption, stateInsufficient), false, 'should not be choosable with 249 total / 200 protected')
+  })
 })
