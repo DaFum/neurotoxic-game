@@ -344,12 +344,7 @@ function scheduleSongPlayback(
  * @param delay - Delay in seconds before starting. Defaults to `0`.
  */
 function parseFiniteNumber(v: unknown, fallback: number): number {
-  if (isFiniteNumber(v)) return v
-  if (typeof v === 'string' && v.trim() !== '') {
-    const num = Number(v)
-    if (Number.isFinite(num)) return num
-  }
-  return fallback
+  return isFiniteNumber(v) ? v : fallback
 }
 
 function isTempoEvent(e: unknown): e is Record<string, unknown> {
@@ -361,7 +356,11 @@ function sanitizeTempoEvents(rawTempo: unknown[]): TempoMapEntry[] {
   for (let i = 0; i < rawTempo.length; i++) {
     const e = rawTempo[i]
     if (isTempoEvent(e)) {
-      if (typeof e.tick === 'number' && typeof e.usPerBeat === 'number') {
+      if (
+        isFiniteNumber(e.tick) &&
+        isFiniteNumber(e.usPerBeat) &&
+        e.usPerBeat > 0
+      ) {
         result.push({ tick: e.tick, usPerBeat: e.usPerBeat })
       }
     }
@@ -380,6 +379,11 @@ function extractTempoMap(
 
   const rawTempo = sObj.tempoMap as unknown[]
   const sanitized = sanitizeTempoEvents(rawTempo)
+  // No usable tempo event left: fall back to constant-BPM timing, as for an
+  // empty map, rather than timing every note against an empty map.
+  if (sanitized.length === 0) {
+    return { useTempoMap: false, activeTempoMap: [] }
+  }
   return {
     useTempoMap: true,
     activeTempoMap: preprocessTempoMap(sanitized, tpb)
