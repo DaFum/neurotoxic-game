@@ -4,6 +4,9 @@ import { QuestLifecycle } from '../../../src/domain/questLifecycle.ts'
 import { QuestEvents } from '../../../src/utils/questProgress.ts'
 import { calculateFameLevel } from '../../../src/utils/gameState/index.ts'
 import { handleApplyEventDelta } from '../../../src/context/reducers/eventReducer.ts'
+import { gameReducer } from '../../../src/context/gameReducer.ts'
+import { ActionTypes } from '../../../src/context/actionTypes.ts'
+import { createInitialState } from '../../../src/context/initialState.ts'
 
 const incomeQuest = (id, event, overrides = {}) => ({
   id,
@@ -216,4 +219,60 @@ test('event money and fame gains exclude nested quest reward gains from their ow
   assert.equal(progress(next, 'cash-observer'), 100)
   assert.deepEqual(next.completedQuestIds, ['quest_payday'])
   assert.equal(progress(state, 'quest_payday'), 900)
+})
+
+test('a quest harmony reward reports the applied change to harmony-threshold quests', () => {
+  const initial = createInitialState()
+  const day = initial.player.day
+  const state = {
+    ...initial,
+    band: {
+      ...initial.band,
+      harmony: 65,
+      inventory: { ...initial.band.inventory, strings: 1 }
+    },
+    activeQuests: [
+      { id: 'quest_best_before', progress: 2, required: 3, deadline: day + 5 },
+      { id: 'quest_band_pact', progress: 65, required: 70, deadline: day + 5 }
+    ]
+  }
+  const next = gameReducer(state, {
+    type: ActionTypes.CONSUME_ITEM,
+    payload: 'strings'
+  })
+  // Best Before pays harmony 65 -> 75, which carries Band Pact past its 70
+  // target; its own +15 then lands on top.
+  assert.deepEqual(next.completedQuestIds.slice().sort(), [
+    'quest_band_pact',
+    'quest_best_before'
+  ])
+  assert.equal(next.band.harmony, 90)
+  assert.equal(next.activeQuests.length, 0)
+})
+
+test('the quest harmony event carries the clamped delta and resulting harmony', () => {
+  const state = freeze({
+    player: { money: 0, fame: 0, day: 1 },
+    band: { harmony: 95, members: [] },
+    activeQuests: [
+      { id: 'payout', rewards: [{ type: 'band.harmony', amount: 10 }] },
+      incomeQuest('delta-observer', 'band.harmonyChanged'),
+      {
+        id: 'level-observer',
+        required: 1000,
+        progress: 0,
+        progressRules: [
+          {
+            event: 'band.harmonyChanged',
+            amount: 'threshold',
+            thresholdField: 'band.harmony'
+          }
+        ]
+      }
+    ]
+  })
+  const next = QuestLifecycle.completeQuest(state, { questId: 'payout' })
+  assert.equal(next.band.harmony, 100)
+  assert.equal(progress(next, 'delta-observer'), 5)
+  assert.equal(progress(next, 'level-observer'), 100)
 })
