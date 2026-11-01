@@ -17,7 +17,9 @@ import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
  * balance counts as protected, so {@link getExpeditionSpendableCash} reports
  * nothing spendable rather than treating the protection as gone.
  */
-export const getExpeditionProtectedCash = (state: GameState): number => {
+export const getExpeditionProtectedCash = (
+  state: Pick<GameState, 'player' | 'expedition'>
+): number => {
   if (state.expedition?.status !== 'active') return 0
   const protectedCash = state.expedition.protectedCareerCash
   if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
@@ -38,7 +40,9 @@ export const getExpeditionProtectedCash = (state: GameState): number => {
  * safety decision — the design requires Cash to be a tool for controlling risk,
  * not an unlimited rescue. Outside a run the full balance is spendable.
  */
-export const getExpeditionSpendableCash = (state: GameState): number =>
+export const getExpeditionSpendableCash = (
+  state: Pick<GameState, 'player' | 'expedition'>
+): number =>
   Math.max(
     0,
     finiteNumberOr(state.player.money, 0) - getExpeditionProtectedCash(state)

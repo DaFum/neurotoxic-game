@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { canAffordInState } from '../../context/assets/assetActionCreators'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import { LoanProfileModal } from './LoanProfileModal'
 import {
   calculateRefinanceFee,
@@ -19,6 +21,8 @@ export const LiabilitiesPanel = () => {
   const { t, i18n } = useTranslation(['assets'])
   const liabilitiesMap = useGameSelector(s => s.liabilities)
   const liabilities = Object.values(liabilitiesMap || {})
+  const player = useGameSelector(s => s.player)
+  const expedition = useGameSelector(s => s.expedition)
   const { refinanceLiability } = useGameActions()
   const [refinanceTargetId, setRefinanceTargetId] = useState<string | null>(
     null
@@ -47,6 +51,11 @@ export const LiabilitiesPanel = () => {
           const refinanceFee = calculateRefinanceFee(l.principalRemaining)
           const defaultCounter = finiteNumberOr(l.defaultCounter, 0)
           const canRefinance = l.source === 'loan' && defaultCounter <= 0
+          // The creator's own fee check, spendable view included in a run.
+          const canAffordFee = canAffordInState(
+            { player, expedition },
+            refinanceFee
+          )
           return (
             <li
               key={l.id}
@@ -81,19 +90,28 @@ export const LiabilitiesPanel = () => {
                 </span>
               )}
               {canRefinance && (
-                <button
-                  type='button'
-                  onClick={() => setRefinanceTargetId(l.id)}
-                  className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-secondary-button border px-2 py-1 uppercase'
-                  style={{
-                    borderColor:
-                      'var(--section-accent, var(--color-toxic-green))'
-                  }}
+                <Tooltip
+                  content={
+                    canAffordFee
+                      ? undefined
+                      : t('assets:refinanceFailed.insufficient_funds')
+                  }
                 >
-                  {t('assets:loan.refinance', {
-                    fee: formatCurrency(refinanceFee, i18n.language)
-                  })}
-                </button>
+                  <button
+                    type='button'
+                    onClick={() => setRefinanceTargetId(l.id)}
+                    disabled={!canAffordFee}
+                    className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-secondary-button border px-2 py-1 uppercase disabled:opacity-40 disabled:cursor-not-allowed'
+                    style={{
+                      borderColor:
+                        'var(--section-accent, var(--color-toxic-green))'
+                    }}
+                  >
+                    {t('assets:loan.refinance', {
+                      fee: formatCurrency(refinanceFee, i18n.language)
+                    })}
+                  </button>
+                </Tooltip>
               )}
             </li>
           )
