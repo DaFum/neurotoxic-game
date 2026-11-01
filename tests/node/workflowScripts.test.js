@@ -106,6 +106,104 @@ describe('lint-fix-preview sticky report (#3377)', () => {
   })
 })
 
+const BOT = { login: 'github-actions[bot]', type: 'Bot' }
+const TRACKER_MARKER = '<!-- PR_COMMENT_TRACKER_MARKER -->'
+
+const createFakeCore = () => {
+  const log = { notices: [], warnings: [], failures: [] }
+  const core = {
+    notice: message => log.notices.push(message),
+    warning: message => log.warnings.push(message),
+    setFailed: message => log.failures.push(message)
+  }
+  return { core, log }
+}
+
+/** Runs a github-script body with the given globals and temporary env vars. */
+const runScript = async (script, globals, env = {}) => {
+  const saved = Object.keys(env).map(key => [key, process.env[key]])
+  Object.assign(process.env, env)
+  try {
+    await new AsyncFunction(...Object.keys(globals), script)(
+      ...Object.values(globals)
+    )
+  } finally {
+    for (const [key, value] of saved) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
+  }
+}
+
+const thread = (id, body, login = 'reviewer') => ({
+  id,
+  isResolved: false,
+  comments: { nodes: [{ author: { login }, body }] }
+})
+
+const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
+  const { github, calls } = createFakeGithub(comments)
+  github.graphql = async () => ({
+    repository: {
+      pullRequest: {
+        reviewThreads: {
+          pageInfo: { hasNextPage: false, endCursor: null },
+          nodes: threads
+        }
+      }
+    }
+  })
+  const { core, log } = createFakeCore()
+  const script = findScript(
+    loadWorkflow('pr-comment-tracker.yml'),
+    'PR_COMMENT_TRACKER_MARKER'
+  )
+  const context = {
+    repo: { owner: 'o', repo: 'r' },
+    payload: { pull_request: { number: 7 } }
+  }
+  await runScript(
+    script,
+    { github, context, core, console: { log: () => {} } },
+    { SAME_REPO_PR: sameRepo }
+  )
+  return { calls, log }
+}
+
+describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('tracks threads with an identical 80-character prefix by thread id', async () => {
+    const prefix = 'p'.repeat(80)
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [
+        thread('T1', `${prefix} first`),
+        thread('T2', `${prefix} second`)
+      ]
+    })
+
+    assert.equal(calls.creates.length, 0)
+    assert.deepEqual(
+      calls.updates.map(u => u.comment_id),
+      [9]
+    )
+    const { body } = calls.updates[0]
+    assert.ok(body.includes(`- [reviewer]: ${prefix} first`))
+    assert.ok(body.includes(`- [reviewer]: ${prefix} second`))
+    assert.ok(body.includes('<!-- REPORTED_THREADS: T1,T2 -->'))
+    assert.equal(log.failures.length, 1)
+    assert.match(log.failures[0], / 1 NEUE /)
+    assert.ok(log.failures[0].includes(`${prefix} second`))
+  })
+})
+
 describe('workflow hardening (#3466)', () => {
   test('every workflow and composite action passes expressions to scripts only via env', () => {
     const files = [

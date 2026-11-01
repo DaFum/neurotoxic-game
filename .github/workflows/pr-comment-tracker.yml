@@ -129,7 +129,6 @@ jobs:
             }
 
             // 5. Den kopierbaren Block formatieren - NUR offene Review Threads
-            const seenSignatures = new Set();
             const validThreads = [];
             const newThreads = [];
             const newThreadIds = new Set(reportedThreadIds);
@@ -143,14 +142,8 @@ jobs:
 
               const cleanBody = sanitizeComment(firstComment.body);
 
-              // Deduplizierung: Wir prüfen für alle Threads, ob wir exakt diesen Kommentar schon gelistet haben
-              // Wir nutzen den Autoren-Namen + die ersten 80 Zeichen als eindeutige Signatur
-              const signature = `${login}:${cleanBody.substring(0, 80)}`;
-              if (seenSignatures.has(signature)) {
-                return null; // Überspringen, Thread (identischer Kommentar) wurde bereits erfasst
-              }
-              seenSignatures.add(signature);
-
+              // Keine Deduplizierung über den Text: Jeder Thread wird über seine
+              // GraphQL-ID verfolgt, auch wenn zwei Threads gleich beginnen.
               validThreads.push(t);
               newThreadIds.add(t.id); // Alle gültigen aktuellen Thread-IDs merken
 
