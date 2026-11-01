@@ -70,10 +70,7 @@ export const hasActiveSponsorship = (
   return activeDeals.some(deal => {
     if (!isLooseRecord(deal)) return false
     const d: SponsorshipDealLike = deal
-    return (
-      d.type === 'SPONSORSHIP' &&
-      (typeof d.remainingGigs === 'number' ? d.remainingGigs : 1) > 0
-    )
+    return d.type === 'SPONSORSHIP' && finiteNumberOr(d.remainingGigs, 1) > 0
   })
 }
 

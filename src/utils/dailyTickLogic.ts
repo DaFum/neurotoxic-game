@@ -19,6 +19,7 @@ import {
   readMemberMood,
   readMemberStamina,
   clampMemberMood,
+  clampControversyLevel,
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameState'
@@ -240,14 +241,14 @@ const updateSocialDecay = (
   // Controversy/Shadowban Decay
   // Note: Intentionally using the live nextSocial.controversyLevel here (not the snapshot)
   // so the daily decay is correctly applied to the actual state value.
+  nextSocial.controversyLevel = finiteNumberOr(nextSocial.controversyLevel, 0)
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown — accelerated above threshold to prevent death spirals
     const decayAmount =
       nextSocial.controversyLevel > CONTROVERSY_ACCELERATED_DECAY_THRESHOLD
         ? CONTROVERSY_ACCELERATED_DECAY_AMOUNT
         : CONTROVERSY_NORMAL_DECAY_AMOUNT
-    nextSocial.controversyLevel = Math.max(
-      0,
+    nextSocial.controversyLevel = clampControversyLevel(
       nextSocial.controversyLevel - decayAmount
     )
   }

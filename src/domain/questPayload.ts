@@ -76,10 +76,10 @@ const DEADLINE_OFFSET_STRING = /^[+-]?\d+$/
  * read as a day count.
  *
  * @param raw - Raw offset value.
- * @returns The finite offset, or `null` when it cannot be trusted.
+ * @returns The safe-integer offset, or `null` when it cannot be trusted.
  */
 const normalizeDeadlineOffset = (raw: unknown): number | null => {
-  if (isFiniteNumber(raw)) return raw
+  if (isFiniteNumber(raw)) return Number.isSafeInteger(raw) ? raw : null
   if (typeof raw !== 'string') return null
   const trimmed = raw.trim()
   if (!DEADLINE_OFFSET_STRING.test(trimmed)) return null
