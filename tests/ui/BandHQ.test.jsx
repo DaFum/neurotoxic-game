@@ -1,7 +1,14 @@
 import { describe, expect, test, vi, beforeAll, afterEach } from 'vitest'
 
 import React from 'react'
-import { render, screen, cleanup, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  cleanup,
+  waitFor,
+  act,
+  fireEvent
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 vi.mock('../../src/context/GameState.tsx', () => ({
@@ -185,5 +192,89 @@ describe('BandHQ UI tests', () => {
     await user.keyboard('{Home}')
     expect(statsTab).toHaveAttribute('tabindex', '0')
     expect(screen.getByRole('tabpanel', { name: /stats/i })).toBeVisible()
+  })
+
+  test('tabs keep a 44px minimum touch target', () => {
+    render(React.createElement(BandHQ, { onClose: () => {} }))
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs).toHaveLength(11)
+    for (const tab of tabs) expect(tab).toHaveClass('min-h-11')
+  })
+
+  test('tab strip overflow cue follows scroll position and strip size', () => {
+    const observers = []
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback) {
+          this.callback = callback
+          observers.push(this)
+        }
+        observe = vi.fn()
+        unobserve = vi.fn()
+        disconnect = vi.fn()
+      }
+    )
+    try {
+      const { unmount } = render(
+        React.createElement(BandHQ, { onClose: () => {} })
+      )
+      const tablist = screen.getByRole('tablist', {
+        name: /band hq sections/i
+      })
+      const cue = side =>
+        document.querySelector(`[data-overflow-cue="${side}"]`)
+
+      // jsdom lays nothing out, so the strip "fits": no cue at all.
+      expect(cue('start')).toBeNull()
+      expect(cue('end')).toBeNull()
+
+      const metrics = { scrollWidth: 1200, clientWidth: 400, scrollLeft: 0 }
+      for (const key of Object.keys(metrics)) {
+        Object.defineProperty(tablist, key, {
+          configurable: true,
+          get: () => metrics[key]
+        })
+      }
+      const stripObserver = observers.find(o =>
+        o.observe.mock.calls.some(([el]) => el === tablist)
+      )
+      expect(stripObserver).toBeDefined()
+
+      // Overflowing at the start edge: only the end side hints at more tabs.
+      act(() => stripObserver.callback([]))
+      expect(cue('start')).toBeNull()
+      expect(cue('end')).not.toBeNull()
+
+      metrics.scrollLeft = 400
+      fireEvent.scroll(tablist)
+      expect(cue('start')).not.toBeNull()
+      expect(cue('end')).not.toBeNull()
+
+      // Reaching the end edge hides that side's cue.
+      metrics.scrollLeft = 800
+      fireEvent.scroll(tablist)
+      expect(cue('start')).not.toBeNull()
+      expect(cue('end')).toBeNull()
+
+      // The cue is decoration only.
+      const startCue = cue('start')
+      expect(startCue).toHaveAttribute('aria-hidden', 'true')
+      expect(startCue).toHaveClass('pointer-events-none')
+      expect(tablist.contains(startCue)).toBe(false)
+
+      // Widening the strip until everything fits removes every cue.
+      metrics.clientWidth = 1200
+      metrics.scrollLeft = 0
+      act(() => stripObserver.callback([]))
+      expect(cue('start')).toBeNull()
+      expect(cue('end')).toBeNull()
+
+      unmount()
+      expect(stripObserver.disconnect).toHaveBeenCalled()
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

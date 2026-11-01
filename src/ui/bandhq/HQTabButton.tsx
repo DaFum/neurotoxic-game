@@ -40,7 +40,7 @@ export const HQTabButton = ({
     onClick={onClick}
     onKeyDown={onKeyDown}
     aria-disabled={tab.isLocked}
-    className={`flex-1 w-full max-sm:flex-auto max-sm:shrink-0 max-sm:w-auto min-w-26 sm:min-w-32 py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal wrap-break-word focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
+    className={`flex-1 w-full max-sm:flex-auto max-sm:shrink-0 max-sm:w-auto min-w-26 sm:min-w-32 min-h-11 py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal wrap-break-word focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
       ${tab.isLocked ? 'opacity-50 grayscale' : ''}
       ${
         isActive

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../shared/Tooltip.tsx'
 import { createRovingTabs } from '../shared/rovingTabs.ts'
@@ -47,47 +47,97 @@ export const BandHQTabsList = ({
     isLocked: id => tabs.find(tab => tab.id === id)?.isLocked === true
   })
 
-  return (
-    <div
-      role='tablist'
-      aria-label={t('ui:hq.sectionsLabel', {
-        defaultValue: 'Band HQ Sections'
-      })}
-      /* From `sm` up the strip wraps onto a second row so every tab is
-         visible: the ten tabs need 1280px of min-width inside an 888px panel,
-         and because the scrollbar is hidden the overflowing tabs (Settings,
-         Glossary, Void Trader) had no affordance hinting they existed. Mobile
-         keeps the swipeable scroll container, where there is no room for rows
-         and touch-pan is the discoverable convention. */
-      className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden sm:flex-wrap sm:overflow-x-visible'
-    >
-      {tabs.map(tab => {
-        const isActive = currentTab === tab.id
-        const button = (
-          <HQTabButton
-            tab={tab}
-            isActive={isActive}
-            label={t(tab.key)}
-            onClick={() => !tab.isLocked && setActiveTab(tab.id)}
-            onKeyDown={getTabProps(tab.id).onKeyDown}
-          />
-        )
+  const stripRef = useRef<HTMLDivElement>(null)
+  const [overflow, setOverflow] = useState({ start: false, end: false })
 
-        return (
-          <React.Fragment key={tab.id}>
-            {tab.isLocked ? (
-              <Tooltip
-                content={t('ui:hq.voidTraderLockedTooltip')}
-                className='flex-1 flex max-sm:flex-auto max-sm:shrink-0'
-              >
-                {button}
-              </Tooltip>
-            ) : (
-              button
-            )}
-          </React.Fragment>
-        )
-      })}
+  useEffect(() => {
+    const strip = stripRef.current
+    if (!strip) return undefined
+    const update = () => {
+      // 1px slack absorbs sub-pixel scroll positions at either edge.
+      const start = strip.scrollLeft > 1
+      const end = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1
+      setOverflow(prev =>
+        prev.start === start && prev.end === end ? prev : { start, end }
+      )
+    }
+    update()
+    strip.addEventListener('scroll', update, { passive: true })
+    // Observing the tabs as well catches label-width changes (language
+    // switch) that alter scrollWidth without resizing the strip itself.
+    const observer =
+      typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null
+    observer?.observe(strip)
+    for (const child of Array.from(strip.children)) observer?.observe(child)
+    return () => {
+      strip.removeEventListener('scroll', update)
+      observer?.disconnect()
+    }
+    // Unlocking the Void Trader swaps its Tooltip wrapper for a bare tab, so
+    // the observed children change.
+  }, [isVoidTraderUnlocked])
+
+  const fadeClass =
+    'pointer-events-none absolute top-0 bottom-1 w-8 from-void-black to-transparent'
+
+  return (
+    <div className='relative shrink-0'>
+      <div
+        ref={stripRef}
+        role='tablist'
+        aria-label={t('ui:hq.sectionsLabel', {
+          defaultValue: 'Band HQ Sections'
+        })}
+        /* From `sm` up the strip wraps onto a second row so every tab is
+           visible: the tabs need far more min-width than the panel offers, and
+           because the scrollbar is hidden the overflowing tabs had no
+           affordance hinting they existed. Phones keep the swipeable scroll
+           container (no room for rows); there, edge fades on whichever side
+           still has tabs make the overflow discoverable. */
+        className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden sm:flex-wrap sm:overflow-x-visible'
+      >
+        {tabs.map(tab => {
+          const isActive = currentTab === tab.id
+          const button = (
+            <HQTabButton
+              tab={tab}
+              isActive={isActive}
+              label={t(tab.key)}
+              onClick={() => !tab.isLocked && setActiveTab(tab.id)}
+              onKeyDown={getTabProps(tab.id).onKeyDown}
+            />
+          )
+
+          return (
+            <React.Fragment key={tab.id}>
+              {tab.isLocked ? (
+                <Tooltip
+                  content={t('ui:hq.voidTraderLockedTooltip')}
+                  className='flex-1 flex max-sm:flex-auto max-sm:shrink-0'
+                >
+                  {button}
+                </Tooltip>
+              ) : (
+                button
+              )}
+            </React.Fragment>
+          )
+        })}
+      </div>
+      {overflow.start && (
+        <div
+          aria-hidden='true'
+          data-overflow-cue='start'
+          className={`${fadeClass} left-0 bg-linear-to-r`}
+        />
+      )}
+      {overflow.end && (
+        <div
+          aria-hidden='true'
+          data-overflow-cue='end'
+          className={`${fadeClass} right-0 bg-linear-to-l`}
+        />
+      )}
     </div>
   )
 }
