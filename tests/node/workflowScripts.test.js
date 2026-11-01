@@ -110,7 +110,7 @@ describe('workflow hardening (#3466)', () => {
   test('every workflow and composite action passes expressions to scripts only via env', () => {
     const files = [
       ...readdirSync('.github/workflows')
-        .filter(name => name.endsWith('.yml'))
+        .filter(name => /\.ya?ml$/.test(name))
         .map(name => `.github/workflows/${name}`),
       ...readdirSync('.github/actions').map(
         dir => `.github/actions/${dir}/action.yml`

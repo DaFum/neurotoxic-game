@@ -9,6 +9,14 @@ import { resetStorageFallback } from '../../src/utils/storage'
 
 // Start Expedition commits a run without `resetState`, so it asks before
 // saving over a stored save only when that save is not this session's own.
+// A quota failure: the adapter refuses every write, so saves land in the
+// in-memory fallback instead.
+class RefusingAdapter extends InMemoryAdapter {
+  override set(): boolean {
+    return false
+  }
+}
+
 describe('hasOtherStoredSave', () => {
   const renderActions = (adapter: InMemoryAdapter) => {
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -98,5 +106,15 @@ describe('hasOtherStoredSave', () => {
       result.current.releaseUnprotectedSlot()
     })
     expect(result.current.hasOtherStoredSave()).toBe(true)
+  })
+
+  it('is false once this session saved into the in-memory fallback', () => {
+    const result = renderActions(new RefusingAdapter())
+
+    act(() => {
+      result.current.saveGame(false)
+    })
+
+    expect(result.current.hasOtherStoredSave()).toBe(false)
   })
 })

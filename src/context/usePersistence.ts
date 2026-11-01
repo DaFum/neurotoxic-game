@@ -753,6 +753,9 @@ export function usePersistence({
         }
         logger.info('System', 'Game Saved Successfully', null)
       } else if (isStorageDegraded(storage)) {
+        // The in-memory fallback holds this session's own save, so it must not
+        // read as a foreign save to the Start Expedition prompt.
+        sessionOwnsStoredSaveRef.current = true
         notifyStorageDegraded()
         logger.warn('System', 'Game saved to in-memory fallback store')
       } else {
