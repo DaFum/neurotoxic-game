@@ -30,6 +30,8 @@ describe('useEventSystem.triggerEvent pending-queue drain', () => {
       saveGame: vi.fn(),
       tRef: { current: key => key }
     }
+    // No dispatch is pending, so rendered and latest state are one ref.
+    params.latestStateRef = params.stateRef
   })
 
   it('pops an unknown queue head and returns false without selecting an event', () => {
@@ -114,6 +116,7 @@ describe('useEventSystem.triggerEvent daily cap with a corrupt counter', () => {
       saveGame: vi.fn(),
       tRef: { current: key => key }
     }
+    params.latestStateRef = params.stateRef
     const { result } = renderHook(() => useEventSystem(params))
     return { result, dispatch }
   }
@@ -202,14 +205,18 @@ describe('useEventSystem.triggerEvent DEV ?events=off switch', () => {
     social: {},
     assets: []
   })
-  const buildParams = dispatch => ({
-    stateRef: { current: buildState() },
-    dispatch,
-    addToast: vi.fn(),
-    changeScene: vi.fn(),
-    saveGame: vi.fn(),
-    tRef: { current: key => key }
-  })
+  const buildParams = dispatch => {
+    const stateRef = { current: buildState() }
+    return {
+      stateRef,
+      latestStateRef: stateRef,
+      dispatch,
+      addToast: vi.fn(),
+      changeScene: vi.fn(),
+      saveGame: vi.fn(),
+      tRef: { current: key => key }
+    }
+  }
 
   afterEach(() => {
     window.history.replaceState(null, '', '/')

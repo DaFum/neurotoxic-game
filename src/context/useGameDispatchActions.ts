@@ -609,6 +609,7 @@ export function useGameDispatchActions({
   const { setActiveEvent, setScreenshotMode, triggerEvent, resolveEvent } =
     useEventSystem({
       stateRef,
+      latestStateRef,
       dispatch,
       addToast,
       changeScene,
