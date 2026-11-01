@@ -208,7 +208,9 @@ export interface PixiStageProps<TState = unknown> {
  * Player resource slice displayed in the clinic header.
  */
 export interface ClinicHeaderProps {
-  player: Pick<PlayerState, 'money' | 'fame'>
+  player: Pick<PlayerState, 'fame'>
+  /** Protected Expedition cash is excluded during a run. */
+  spendableMoney: number
 }
 
 /**

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
 import { render, fireEvent, renderHook, act } from '@testing-library/react'
+import { formatCurrency } from '../../src/utils/numberUtils'
 
 // Mocks
 
@@ -463,6 +464,20 @@ describe('PreGig', () => {
     fireEvent.click(meetingBtn)
 
     expect(mockUseGameState.holdBandMeeting).not.toHaveBeenCalled()
+  })
+
+  test('header budget shows spendable, not protected, run cash (#3464)', async () => {
+    mockUseGameState.player.money = 10000
+    mockUseGameState.band.members = []
+    mockUseGameState.expedition = {
+      status: 'active',
+      protectedCareerCash: 9999
+    }
+
+    const { findByText, queryByText } = render(React.createElement(PreGig))
+
+    expect(await findByText(formatCurrency(1, 'en'))).toBeInTheDocument()
+    expect(queryByText(formatCurrency(10000, 'en'))).toBeNull()
   })
 
   test('band meeting at max harmony refuses without dispatching', async () => {

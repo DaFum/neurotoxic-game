@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ClinicScene } from '../../src/scenes/ClinicScene.tsx'
 import { useClinicLogic } from '../../src/hooks/useClinicLogic'
+import { formatCurrency } from '../../src/utils/numberUtils'
 
 vi.mock('../../src/context/gameConstants', async importOriginal => {
   const actual = await importOriginal()
@@ -181,6 +182,20 @@ describe('ClinicScene', () => {
       name: /NEURO-OVERCLOCK/i
     })
     expect(graftButtons[0]).toBeDisabled()
+  })
+
+  it('header FUNDS shows spendable, not raw, money (#3464)', () => {
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      player: { money: 1000, fame: 500, clinicVisits: 0 },
+      spendableMoney: 100
+    })
+
+    renderComponent()
+
+    const funds = screen.getByText(/FUNDS:/i)
+    expect(funds).toHaveTextContent(formatCurrency(100, 'en'))
+    expect(funds).not.toHaveTextContent(formatCurrency(1000, 'en'))
   })
 
   it('calls leaveClinic when leave button is clicked', () => {
