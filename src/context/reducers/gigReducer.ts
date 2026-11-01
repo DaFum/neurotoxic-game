@@ -332,6 +332,19 @@ export const handleSetLastGigStats = (
   payload: PostGigSummary | null
 ): GameState => {
   if (payload === null) {
+    // Load keeps a current-step gig outcome only while `lastGigStats` vouches
+    // for it (`sanitizeGigOutcomeMap`), so clearing the stats here would drop
+    // the outcome, and the Contract progress it carries, on the next reload.
+    const expedition = state.expedition
+    const resolvedStep = expedition?.lastGigResolvedAtRouteStep
+    if (
+      isFiniteNumber(resolvedStep) &&
+      resolvedStep === expedition?.routeStep &&
+      expedition.gigOutcomeByStep !== undefined &&
+      Object.hasOwn(expedition.gigOutcomeByStep, resolvedStep)
+    ) {
+      return state
+    }
     return {
       ...state,
       lastGigStats: null

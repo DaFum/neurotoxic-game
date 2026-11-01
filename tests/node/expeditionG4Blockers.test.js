@@ -2792,6 +2792,35 @@ test('load drops a current-step outcome when lastGigStats is not a record (#3469
   }
 })
 
+test('a null SET_LAST_GIG_STATS keeps the current-step outcome through load (#3486)', () => {
+  const { written, gigStep, venueId, load } = gigResolvedOnCanonicalMap({
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+  const progressOf = expedition =>
+    expedition.activeObligations[0].progressByConstraintId.three_good_gigs.value
+  assert.equal(progressOf(written.expedition), 1)
+
+  const cleared = gameReducer(written, {
+    type: ActionTypes.SET_LAST_GIG_STATS,
+    payload: null
+  })
+  assert.strictEqual(cleared, written)
+  assert.deepEqual(cleared.lastGigStats, {
+    score: 1000,
+    accuracy: 80,
+    failed: false
+  })
+
+  const loaded = load(cleared.expedition, cleared.lastGigStats)
+  assert.deepEqual(
+    { ...loaded.gigOutcomeByStep },
+    { [gigStep]: { venueId, accuracy: 80 } }
+  )
+  assert.equal(progressOf(loaded), 1)
+})
+
 test('load drops gig outcomes keyed past the current route step (#3469)', () => {
   const { written, walked, gigStep, venueId, load } = gigResolvedOnCanonicalMap(
     { score: 1000, accuracy: 80, failed: false }
