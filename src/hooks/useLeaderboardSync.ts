@@ -5,6 +5,7 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
 import { systemClock, type IClock } from '../utils/clock'
 import { createLeaderboardSyncController } from '../utils/leaderboardSyncController'
+import { isLeaderboardSyncEnabled } from '../utils/leaderboardSyncFlag'
 import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import type { GameState } from '../types'
 import type { LeaderboardStatsPayload } from '../types/leaderboard'
@@ -27,34 +28,13 @@ const controller = createLeaderboardSyncController({
       globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>)
   },
   logger,
-  isEnabled: () => getLeaderboardSyncEnabledFlag()
+  isEnabled: isLeaderboardSyncEnabled
 })
 
 // Disposal is terminal: the reloaded module builds a fresh controller, and the
 // old one aborts its requests and ignores anything that settles afterwards.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => controller.dispose())
-}
-
-const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
-  if (typeof viteFlag === 'string') {
-    return viteFlag.toLowerCase() !== 'false'
-  }
-
-  const processEnvSource = globalThis as {
-    process?: { env?: Record<string, string | undefined> }
-  }
-  const processFlag =
-    processEnvSource.process != null &&
-    typeof processEnvSource.process === 'object'
-      ? processEnvSource.process.env?.VITE_ENABLE_LEADERBOARD_SYNC
-      : undefined
-  if (typeof processFlag === 'string') {
-    return processFlag.toLowerCase() !== 'false'
-  }
-
-  return true
 }
 
 /**

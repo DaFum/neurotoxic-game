@@ -5,6 +5,7 @@ import { SONGS_DB } from '../../../data/songs'
 import { logger } from '../../../utils/logger'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
 import { useLeaderboardSyncExhausted } from '../../../hooks/useLeaderboardSync'
+import { isLeaderboardSyncEnabled } from '../../../utils/leaderboardSyncFlag'
 
 import { LeaderboardView, LeaderboardEntry } from './types'
 import { LeaderboardTabs } from './components/LeaderboardTabs'
@@ -55,7 +56,13 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
     return SONGS_DB[0]?.leaderboardId ?? ''
   }, [selectedSongId, view])
 
+  // A build without the API (GitHub Pages) shows the same state as a missing
+  // endpoint instead of requesting one.
+  const isSyncEnabled = isLeaderboardSyncEnabled()
+
   useEffect(() => {
+    if (!isSyncEnabled) return
+
     const controller = new AbortController()
 
     const fetchLeaderboard = async () => {
@@ -142,7 +149,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
     return () => {
       controller.abort()
     }
-  }, [activeSongId, t, view])
+  }, [activeSongId, isSyncEnabled, t, view])
 
   const views: Array<{ id: LeaderboardView; label: string }> = useMemo(
     () => [
@@ -194,7 +201,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
         view={view}
         isLoading={isLoading}
         error={error}
-        isUnavailable={isUnavailable}
+        isUnavailable={!isSyncEnabled || isUnavailable}
         rankings={rankings}
       />
 

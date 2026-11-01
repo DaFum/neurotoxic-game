@@ -90,4 +90,55 @@ describe('leaderboardUtils', () => {
       )
     })
   })
+
+  describe('VITE_ENABLE_LEADERBOARD_SYNC gate', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it('sends no request and resolves quietly when the flag is false', async () => {
+      vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'false')
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        submitLeaderboardScores({
+          player,
+          lastGigStats,
+          currentGig: null,
+          setlist: []
+        })
+      ).resolves.toBeUndefined()
+
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('posts the batch unchanged when the flag is on', async () => {
+      vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'true')
+      const fetchMock = vi.fn().mockResolvedValueOnce({ ok: true, status: 200 })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await submitLeaderboardScores({
+        player,
+        lastGigStats,
+        currentGig: null,
+        setlist: []
+      })
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'p1',
+            playerName: 'Player One',
+            scores: [{ songId: 'lb_song1', score: 100, accuracy: 95 }]
+          })
+        })
+      )
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+  })
 })

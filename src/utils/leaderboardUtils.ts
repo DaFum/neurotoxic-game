@@ -3,6 +3,7 @@ import type { RhythmSongStatsEntry } from '../types/rhythmGame'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 import { finiteNumberOr } from './gameState'
+import { isLeaderboardSyncEnabled } from './leaderboardSyncFlag'
 
 /**
  * Per-song score payload accepted by the song leaderboard endpoint.
@@ -37,6 +38,10 @@ const toLeaderboardScore = (
 /**
  * Submits per-song leaderboard scores for the last gig.
  *
+ * @remarks
+ * Does nothing while `VITE_ENABLE_LEADERBOARD_SYNC` is off (see
+ * {@link isLeaderboardSyncEnabled}).
+ *
  * @param params - Submission context containing player identity, last gig stats,
  * current gig, and setlist fallback data.
  */
@@ -51,6 +56,7 @@ export const submitLeaderboardScores = async ({
   currentGig: Venue | null
   setlist: GameState['setlist']
 }) => {
+  if (!isLeaderboardSyncEnabled()) return
   if (!player.playerId || !player.playerName) return
 
   const scoresToSubmit: SongStat[] = []
