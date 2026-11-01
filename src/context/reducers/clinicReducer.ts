@@ -104,6 +104,7 @@ const executeClinicAction = (
   // Ensure player stats are valid before comparison. Spendable, not raw: the
   // Expedition cash floor would roll back a debit into protected cash.
   const playerMoney = getExpeditionSpendableCash(state)
+  const rawMoney = Math.max(0, finiteNumberOr(state.player.money, 0))
   const playerFame = Math.max(0, finiteNumberOr(state.player.fame, 0))
 
   if (playerMoney < cost || playerFame < fameCost) {
@@ -132,7 +133,9 @@ const executeClinicAction = (
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(playerMoney - cost),
+      // Debit the raw balance: `playerMoney` is the spendable slice, so
+      // subtracting from it would also wipe the protected Career Cash.
+      money: clampPlayerMoney(rawMoney - cost),
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame),
       clinicVisits: currentVisits + 1

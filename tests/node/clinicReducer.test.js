@@ -7,6 +7,7 @@ import {
 } from '../../src/context/gameConstants.ts'
 import {
   handleBloodBankDonate,
+  handleClinicEnhance,
   handleClinicHeal,
   handleGraftNeuroOverclock
 } from '../../src/context/reducers/clinicReducer.ts'
@@ -43,6 +44,46 @@ describe('clinic money gates use spendable Expedition cash (#3464)', () => {
       moodGain: 10
     })
     assert.strictEqual(next, state)
+  })
+
+  it('debits a paid heal from the raw balance, not the spendable slice', () => {
+    // Protected cash (300) is below what the heal costs: the heal is allowed
+    // and must leave the protected slice alone.
+    const run = {
+      ...runState(1000),
+      expedition: { status: 'active', protectedCareerCash: 300 }
+    }
+    const payload = {
+      memberId: 'm1',
+      type: 'heal',
+      staminaGain: 20,
+      moodGain: 10
+    }
+    const outsideRun = handleClinicHeal(
+      { ...run, expedition: undefined },
+      payload
+    )
+    const cost = 1000 - outsideRun.player.money
+    assert.ok(cost > 0)
+
+    const inRun = handleClinicHeal(run, payload)
+    assert.notStrictEqual(inRun, run)
+    assert.equal(inRun.player.money, 1000 - cost)
+  })
+
+  it('leaves money untouched on a fame-only enhance during a run', () => {
+    const run = {
+      ...runState(1000),
+      player: { money: 1000, fame: 500, clinicVisits: 0 },
+      expedition: { status: 'active', protectedCareerCash: 300 }
+    }
+    const next = handleClinicEnhance(run, {
+      memberId: 'm1',
+      type: 'enhance',
+      trait: 'cyber_lungs'
+    })
+    assert.notStrictEqual(next, run)
+    assert.equal(next.player.money, 1000)
   })
 
   it('refuses the Neuro-Overclock graft when only protected cash could pay', () => {
