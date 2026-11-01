@@ -8,7 +8,7 @@ import type {
   SocialState,
   Venue
 } from '../../types'
-import type { OptionalToastCallback } from '../../types/callbacks'
+import type { OptionalToastCallback, ToastType } from '../../types/callbacks'
 import type { UpdateBandPayload } from '../../types/actions'
 
 /**
@@ -44,7 +44,9 @@ export type TravelLogicParams = {
   advanceDay: () => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   startGig: (venue: Venue) => void
-  addToast: OptionalToastCallback
+  /** Queues a toast and returns its id, so the confirmation prompt can be removed. */
+  addToast: (message: string, type?: ToastType) => string | null
+  removeToast: (id: string) => void
   changeScene: (scene: GamePhase) => void
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
@@ -94,6 +96,8 @@ export interface TravelRefsBundle {
   pendingTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
   > | null>
+  /** Id of the "click again to confirm" toast while a node is pending. */
+  pendingToastIdRef: React.MutableRefObject<string | null>
   timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
   playerRef: React.MutableRefObject<PlayerState>
   bandRef: React.MutableRefObject<BandState>

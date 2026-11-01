@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 import type { TravelActionsParams } from '../types'
 
 /**
- * Clears any pending travel timeout and resets the pending travel node state.
+ * Clears any pending travel timeout, removes the confirmation toast, and resets
+ * the pending travel node state.
  *
  * @remarks
  * This hook is used to abort or clean up travel actions that are queued but have not yet executed.
@@ -12,15 +13,20 @@ import type { TravelActionsParams } from '../types'
  * @returns A stable callback function that executes the clear operation when invoked.
  */
 export const useClearPendingTravel = (
-  params: Pick<TravelActionsParams, 'refs' | 'setters'>
+  params: Pick<TravelActionsParams, 'refs' | 'setters' | 'params'>
 ) => {
   const { refs, setters } = params
+  const { removeToast } = params.params
   return useCallback(() => {
     if (refs.pendingTimeoutRef.current) {
       clearTimeout(refs.pendingTimeoutRef.current)
       refs.pendingTimeoutRef.current = null
     }
+    if (refs.pendingToastIdRef.current) {
+      removeToast(refs.pendingToastIdRef.current)
+      refs.pendingToastIdRef.current = null
+    }
     setters.setPendingTravelNode(null)
     refs.pendingTravelNodeRef.current = null
-  }, [setters, refs])
+  }, [setters, refs, removeToast])
 }

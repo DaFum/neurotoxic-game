@@ -174,10 +174,11 @@ type BaseGameDispatchActions = {
     description: string
     result: unknown
   }
+  /** Queues a toast; returns its id (for `removeToast`), or null if dropped. */
   addToast: (
     message: Parameters<typeof createAddToastAction>[0],
     type?: ToastType
-  ) => void
+  ) => string | null
   removeToast: (id: Parameters<typeof createRemoveToastAction>[0]) => void
   setGigModifiers: (
     modifiers: Parameters<typeof createSetGigModifiersAction>[0]
@@ -585,7 +586,9 @@ export function useGameDispatchActions({
       type: Parameters<typeof createAddToastAction>[1] = 'info'
     ) => {
       const action = createAddToastAction(message, type)
-      if (action) dispatch(action)
+      if (!action) return null
+      dispatch(action)
+      return action.payload.id
     },
     [dispatch]
   )
