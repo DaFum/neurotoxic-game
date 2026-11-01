@@ -638,9 +638,18 @@ export function usePersistence({
   // are refused until the player starts a new run (the existing-save prompt
   // is the confirmation; `resetState` releases the block).
   const unprotectedSlotRef = useRef<string | null>(null)
+  // Whether the stored save is this session's own: written or loaded by it. A
+  // new run (released below) stops owning it until its first save lands, so
+  // starting one over a save the player has not seen still asks first.
+  const sessionOwnsStoredSaveRef = useRef(false)
   const releaseUnprotectedSlot = useCallback(() => {
     unprotectedSlotRef.current = null
+    sessionOwnsStoredSaveRef.current = false
   }, [])
+  const hasOtherStoredSave = useCallback(
+    (): boolean => !sessionOwnsStoredSaveRef.current && hasStoredSave(storage),
+    [storage]
+  )
   // Autosaves keep being refused while the block holds, so the notice is shown
   // once per block, and again on every save the player asks for.
   const savePausedNoticeShownRef = useRef(false)
@@ -738,6 +747,7 @@ export function usePersistence({
       )
 
       if (success) {
+        sessionOwnsStoredSaveRef.current = true
         if (showToast) {
           addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
@@ -923,6 +933,7 @@ export function usePersistence({
             createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
           )
         )
+        sessionOwnsStoredSaveRef.current = true
         // LOAD_GAME consumes a pending gig settlement in memory only; persist
         // the settled ledger and the cleared record in the same commit.
         if (isLooseRecord(evaluation.migrated.pendingGigSettlement)) {
@@ -991,6 +1002,7 @@ export function usePersistence({
     saveGameAfterStateCommit,
     loadGame,
     previewLoadGame,
-    releaseUnprotectedSlot
+    releaseUnprotectedSlot,
+    hasOtherStoredSave
   }
 }

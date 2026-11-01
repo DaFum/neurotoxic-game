@@ -200,9 +200,16 @@ type BaseGameDispatchActions = {
   resetState: () => void
   /**
    * Lifts the save block a failed, unrecoverable migration set, for a new run
-   * that starts without `resetState` (the Expedition). Never for a load.
+   * that starts without `resetState` (the Expedition). Never for a load. The
+   * stored save also stops counting as this session's own (`hasOtherStoredSave`)
+   * until the new run's first save lands.
    */
   releaseUnprotectedSlot: () => void
+  /**
+   * Whether a save is stored that this session has neither written nor
+   * loaded, so starting a run without `resetState` would overwrite it unseen.
+   */
+  hasOtherStoredSave: () => boolean
   updateSettings: (
     settings: Parameters<typeof createUpdateSettingsAction>[0]
   ) => void
@@ -589,7 +596,8 @@ export function useGameDispatchActions({
     saveGameAfterStateCommit,
     loadGame,
     previewLoadGame,
-    releaseUnprotectedSlot
+    releaseUnprotectedSlot,
+    hasOtherStoredSave
   } = usePersistence({
     currentScene: state.currentScene,
     stateRef,
@@ -972,6 +980,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       releaseUnprotectedSlot,
+      hasOtherStoredSave,
       endGig,
       ...simpleActions,
       ...minigameActions,
@@ -1002,6 +1011,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       releaseUnprotectedSlot,
+      hasOtherStoredSave,
       endGig,
       simpleActions,
       minigameActions,
