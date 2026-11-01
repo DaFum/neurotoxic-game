@@ -273,7 +273,9 @@ type BaseGameDispatchActions = {
   // delegates to the asset action creators. Failures surface as typed
   // *_FAILED actions which the reducer handles as no-ops; the dispatch
   // boundary tracks them so middleware can translate to toasts in future.
-  purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) => void
+  purchaseChassis: (
+    input: Parameters<typeof purchaseChassisAction>[0]
+  ) => boolean
   upgradeChassisTier: (
     assetId: string,
     targetTier: import('../types/assets').ChassisTier
@@ -283,7 +285,7 @@ type BaseGameDispatchActions = {
   refinanceLiability: (
     liabilityId: string,
     loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId
-  ) => void
+  ) => boolean
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void

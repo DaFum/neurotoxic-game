@@ -2,13 +2,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { useAssetDispatchActions } from '../../src/context/assets/useAssetDispatchActions'
-import { sellChassis } from '../../src/context/assets/assetActionCreators'
+import {
+  purchaseChassis,
+  refinanceLiability,
+  sellChassis
+} from '../../src/context/assets/assetActionCreators'
 
 vi.mock(
   '../../src/context/assets/assetActionCreators',
   async importOriginal => {
     const actual = await importOriginal()
-    return { ...actual, sellChassis: vi.fn() }
+    return {
+      ...actual,
+      sellChassis: vi.fn(),
+      purchaseChassis: vi.fn(),
+      refinanceLiability: vi.fn()
+    }
   }
 )
 
@@ -88,5 +97,65 @@ describe('useAssetDispatchActions removeModule', () => {
     expect(dispatch).toHaveBeenCalledWith(
       expect.objectContaining({ type: ActionTypes.REMOVE_MODULE })
     )
+  })
+})
+
+// #3499: purchase and refinance follow the repair acceptance contract so the
+// modals stay open next to the failure toast when the creator refuses.
+describe('useAssetDispatchActions acceptance results', () => {
+  const purchaseInput = {
+    kind: 'tourbus_chassis',
+    flavor: 'legit',
+    tier: 1,
+    mode: 'loan',
+    loanProfileId: 'coop'
+  }
+
+  it('purchaseChassis returns false for PURCHASE_CHASSIS_FAILED', () => {
+    vi.mocked(purchaseChassis).mockReturnValueOnce({
+      type: ActionTypes.PURCHASE_CHASSIS_FAILED,
+      payload: { reason: 'LOAN_PROFILE_INELIGIBLE' }
+    })
+    const { result, addToast } = renderAssetActions()
+
+    expect(result.current.purchaseChassis(purchaseInput)).toBe(false)
+    expect(addToast).toHaveBeenCalledWith(
+      't:assets:purchaseFailed.loan_profile_ineligible',
+      'error'
+    )
+  })
+
+  it('purchaseChassis returns true for an accepted purchase', () => {
+    vi.mocked(purchaseChassis).mockReturnValueOnce({
+      type: ActionTypes.PURCHASE_CHASSIS,
+      payload: {}
+    })
+    const { result } = renderAssetActions()
+
+    expect(result.current.purchaseChassis(purchaseInput)).toBe(true)
+  })
+
+  it('refinanceLiability returns false for REFINANCE_LIABILITY_FAILED', () => {
+    vi.mocked(refinanceLiability).mockReturnValueOnce({
+      type: ActionTypes.REFINANCE_LIABILITY_FAILED,
+      payload: { reason: 'LOAN_PROFILE_INELIGIBLE' }
+    })
+    const { result, addToast } = renderAssetActions()
+
+    expect(result.current.refinanceLiability('loan_1', 'coop')).toBe(false)
+    expect(addToast).toHaveBeenCalledWith(
+      't:assets:refinanceFailed.loan_profile_ineligible',
+      'error'
+    )
+  })
+
+  it('refinanceLiability returns true for an accepted refinance', () => {
+    vi.mocked(refinanceLiability).mockReturnValueOnce({
+      type: ActionTypes.REFINANCE_LIABILITY,
+      payload: { liabilityId: 'loan_1', loanProfileId: 'coop', fee: 0 }
+    })
+    const { result } = renderAssetActions()
+
+    expect(result.current.refinanceLiability('loan_1', 'coop')).toBe(true)
   })
 })
