@@ -16,7 +16,7 @@ export const GAMEPAD_BUTTON = {
   RIGHT: 15
 } as const
 
-export const RESERVED_GAMEPAD_BUTTONS = new Set<number>([GAMEPAD_BUTTON.START])
+const RESERVED_GAMEPAD_BUTTONS = new Set<number>([GAMEPAD_BUTTON.START])
 export const DEFAULT_GAMEPAD_LANE_BINDINGS: readonly [number, number, number] =
   [2, 0, 1]
 

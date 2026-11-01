@@ -1,12 +1,6 @@
 import { createContext, use, useEffect, useRef } from 'react'
 import type { GamepadController, GamepadHandlers } from '../../types/gamepad'
-export type {
-  GamepadHandlers,
-  GamepadConsumer,
-  GamepadDevice,
-  GamepadStatus,
-  GamepadController
-} from '../../types/gamepad'
+export type { GamepadHandlers, GamepadController } from '../../types/gamepad'
 
 type Options = {
   enabled?: boolean
