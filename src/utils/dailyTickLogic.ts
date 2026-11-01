@@ -241,7 +241,9 @@ const updateSocialDecay = (
   // Controversy/Shadowban Decay
   // Note: Intentionally using the live nextSocial.controversyLevel here (not the snapshot)
   // so the daily decay is correctly applied to the actual state value.
-  nextSocial.controversyLevel = finiteNumberOr(nextSocial.controversyLevel, 0)
+  nextSocial.controversyLevel = clampControversyLevel(
+    nextSocial.controversyLevel
+  )
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown — accelerated above threshold to prevent death spirals
     const decayAmount =

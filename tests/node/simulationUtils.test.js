@@ -503,6 +503,33 @@ test('calculateDailyUpdates handles missing lastGigDay safely', () => {
   assert.equal(social.instagram, 100, 'Should not decay if lastGigDay missing')
 })
 
+// Controversy is normalized to 0..100 first, then decays 3 above 55, else 1.
+const controversyDecayVariants = [
+  { label: 'at the threshold 55 decays by 1', level: 55, expected: 54 },
+  { label: 'above the threshold 56 decays by 3', level: 56, expected: 53 },
+  {
+    label: 'above 100 is clamped to 100 before decaying',
+    level: 150,
+    expected: 97
+  },
+  { label: 'negative is clamped to 0 and stays there', level: -5, expected: 0 },
+  { label: 'NaN is normalized to 0', level: NaN, expected: 0 }
+]
+
+controversyDecayVariants.forEach(variant => {
+  test(`calculateDailyUpdates controversy ${variant.label}`, () => {
+    const currentState = {
+      player: { day: 10, money: 100, van: { condition: 100 } },
+      band: { members: [], harmony: 50 },
+      social: { controversyLevel: variant.level }
+    }
+
+    const { social } = calculateDailyUpdates(currentState, () => 0.99)
+
+    assert.equal(social.controversyLevel, variant.expected)
+  })
+})
+
 test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   const song = { bpm: 120 }
 
@@ -663,7 +690,7 @@ test('getGigModifiers without damaged_gear is unaffected', () => {
   )
 })
 
-test('calculateGigPhysics treats NaN member stamina as 0 so low-stamina drag applies', () => {
+test('calculateGigPhysics uses average 0 when no member has finite stamina, so low-stamina drag applies', () => {
   const band = buildBandState()
   band.members = band.members.map(m => ({ ...m, stamina: NaN }))
   const physics = calculateGigPhysics(band, { bpm: 140, difficulty: 2 })
@@ -705,6 +732,7 @@ test('calculateGigPhysics excludes members without finite stamina from the divis
   ]
   const physics = calculateGigPhysics(band, { bpm: 120 })
   assert.strictEqual(physics.avgStamina, 75)
+  assert.strictEqual(physics.speedModifier, 1)
 })
 
 test('calculateGigPhysics falls back to zero average for an all-null roster', () => {

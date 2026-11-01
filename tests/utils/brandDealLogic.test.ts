@@ -3,6 +3,7 @@ import {
   generateBrandOffers,
   negotiateDeal
 } from '../../src/utils/brandDealLogic'
+import { selectTop3ByScore } from '../../src/utils/topSelection'
 import {
   SocialEngineGameState,
   BrandDeal,
@@ -23,6 +24,38 @@ vi.mock('../../src/utils/brandOfferFlavor', async importOriginal => {
     buildBrandOffer: vi.fn((deal, ctx) => ({ ...deal, _testCtx: ctx }))
   }
 })
+
+// Wrap the real selector so a test can read the score each pool entry gets.
+vi.mock('../../src/utils/topSelection', async importOriginal => {
+  const actual =
+    await importOriginal<typeof import('../../src/utils/topSelection')>()
+  return { ...actual, selectTop3ByScore: vi.fn(actual.selectTop3ByScore) }
+})
+
+/** Score of the first pool entry, with zero jitter. */
+const firstEntryScore = (gameState: SocialEngineGameState): number => {
+  const selector = vi.mocked(selectTop3ByScore)
+  selector.mockClear()
+  generateBrandOffers(gameState, () => 0)
+  const call = selector.mock.calls[0]
+  if (!call) throw new Error('selectTop3ByScore was not called')
+  const [pool, scoreOf] = call
+  return scoreOf(pool[0])
+}
+
+/** Score penalty a co-located rival of the given power applies to an offer. */
+const rivalPenaltyFor = (powerLevel: number): number => {
+  const base = {
+    social: { instagram: 1000 },
+    band: {},
+    player: { currentNodeId: 'loc1' }
+  } as unknown as SocialEngineGameState
+  const withRival = {
+    ...base,
+    rivalBand: { currentLocationId: 'loc1', powerLevel }
+  } as unknown as SocialEngineGameState
+  return firstEntryScore(base) - firstEntryScore(withRival)
+}
 
 describe('brandDealLogic', () => {
   describe('generateBrandOffers', () => {
@@ -75,6 +108,17 @@ describe('brandDealLogic', () => {
       const ids = offers.map(o => o.id)
       const uniqueIds = new Set(ids)
       expect(uniqueIds.size).toBe(3) // All 3 must be unique
+    })
+
+    it('scales the rival penalty with power and caps it at 20 from power 10', () => {
+      expect(rivalPenaltyFor(10)).toBe(20)
+      expect(rivalPenaltyFor(15)).toBe(20)
+    })
+
+    it('floors negative and non-finite rival power at a zero penalty', () => {
+      expect(rivalPenaltyFor(-5)).toBe(0)
+      expect(rivalPenaltyFor(NaN)).toBe(0)
+      expect(rivalPenaltyFor(Infinity)).toBe(0)
     })
   })
 
