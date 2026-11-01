@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import * as tourbusLogicUtils from '../../src/hooks/minigames/tourbusLogicUtils'
 
 // Mock dependencies BEFORE import
 const mockGameState = {
@@ -33,39 +34,46 @@ describe('TourbusLogic Performance', () => {
     useTourbusLogic = module.useTourbusLogic
   })
 
-  test('update loop performance with obstacles and collisions', () => {
+  test('recycles collisions buffer across frame ticks with zero buffer reallocations', () => {
+    const stepSpy = vi.spyOn(tourbusLogicUtils, 'stepTourbusObstacles')
+
     const { result, unmount } = renderHook(() => useTourbusLogic())
     const update = result.current.update
-
     const game = result.current.gameStateRef.current
-    // Seed obstacles across multiple lanes to simulate real minigame load
-    const obstacleCount = 60
-    for (let i = 0; i < obstacleCount; i++) {
+    const initialBuffer = game.collisionsBuffer
+
+    expect(Array.isArray(initialBuffer)).toBe(true)
+
+    // Seed obstacles across lanes to trigger obstacle processing
+    for (let i = 0; i < 10; i++) {
       game.obstacles.push({
         id: ++game.nextObstacleId,
         lane: i % 3,
-        y: 10 + (i % 80),
-        type: i % 5 === 0 ? 'FUEL' : i % 7 === 0 ? 'VOID_HAZARD' : 'OBSTACLE',
+        y: 10 + i * 5,
+        type: i % 2 === 0 ? 'OBSTACLE' : 'FUEL',
         collided: false
       })
     }
 
-    const start = performance.now()
-    const iterations = 50000
-
+    const frameCount = 100
     act(() => {
-      for (let i = 0; i < iterations; i++) {
+      for (let i = 0; i < frameCount; i++) {
         update(16)
       }
     })
 
-    const end = performance.now()
-    const duration = end - start
-    console.log(
-      `[Perf] 50k Tourbus updates with ${obstacleCount} obstacles took: ${duration.toFixed(2)}ms`
-    )
+    // Performance budget: exactly frameCount calls, every single call must receive the preallocated buffer
+    expect(stepSpy).toHaveBeenCalledTimes(frameCount)
+    for (let i = 0; i < frameCount; i++) {
+      const callArgs = stepSpy.mock.calls[i]
+      // 4th argument must be the reusable collisionsBuffer
+      expect(callArgs?.[3]).toBe(initialBuffer)
+    }
 
-    expect(game.distance).toBeGreaterThan(0)
+    // Performance budget: 0 buffer reallocations (reference identity preserved across all frame ticks)
+    expect(game.collisionsBuffer).toBe(initialBuffer)
+
+    stepSpy.mockRestore()
     unmount()
   })
 })
