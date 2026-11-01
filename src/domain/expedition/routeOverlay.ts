@@ -16,6 +16,7 @@ import type {
   ExpeditionOverlaySource,
   ExpeditionSpecialNodeSubtype
 } from '../../types/expedition'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import { buildExpeditionMap, hashExpeditionRoute } from './map'
 import {
   deriveExpeditionGhostRouteTarget,
@@ -163,10 +164,15 @@ export const getEffectiveExpeditionRoute = (
   const sourceByNodeId: Record<string, ExpeditionOverlaySource> =
     Object.create(null)
 
-  const rivalRecord = state.rivalBand
-    ? state.career.rivalsById[state.rivalBand.id]
-    : undefined
-  const nemesisTierReached = (rivalRecord?.history.nemesisLevel ?? 0) >= 2
+  const rivalsById = state.career?.rivalsById
+  const rivalRecord =
+    state.rivalBand &&
+    rivalsById &&
+    Object.hasOwn(rivalsById, state.rivalBand.id)
+      ? rivalsById[state.rivalBand.id]
+      : undefined
+  const nemesisLevel = rivalRecord?.history?.nemesisLevel
+  const nemesisTierReached = isFiniteNumber(nemesisLevel) && nemesisLevel >= 2
 
   const addOverlay = (
     nodeId: string | null,
