@@ -23,7 +23,6 @@ import {
   EXPEDITION_SALVAGE_RIGHTS_FLOOR,
   isExpeditionLegendaryAvailable
 } from '../src/domain/expedition/legendaries.ts'
-import { advanceExpeditionRoute } from '../src/context/expeditionActionCreators.ts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../src/data/expedition/contracts.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import {
@@ -31,6 +30,7 @@ import {
   fixtureMap,
   walkTo
 } from '../tests/expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../tests/expeditionRouteAdvanceFixture.js'
 
 /** The Career a Legendary is only ever held by. */
 const HEADLINER_CAREER = {
@@ -217,7 +217,7 @@ const verifyNemesisKey = () =>
       `seed ${NEMESIS_SEED} no longer offers a Rival Encounter two steps ahead`
     )
 
-    const advanced = gameReducer(state, advanceExpeditionRoute(state, target))
+    const advanced = advanceRouteForFixture(state, target)
     require_(
       advanced.player.currentNodeId === target,
       'the shortcut did not move the player to the Rival Encounter'
@@ -270,10 +270,7 @@ const verifyGhostRoute = () =>
       'Ghost Route produced no Underground detour target'
     )
 
-    const advanced = gameReducer(
-      state,
-      advanceExpeditionRoute(state, detourTarget)
-    )
+    const advanced = advanceRouteForFixture(state, detourTarget)
     require_(
       advanced.player.currentNodeId === detourTarget,
       'the detour did not move the player to the Underground node'

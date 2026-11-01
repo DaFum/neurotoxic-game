@@ -43,6 +43,8 @@ import {
   walkTo,
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../expeditionRouteAdvanceFixture.js'
+import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer'
 
 const map = fixtureMap()
 
@@ -462,10 +464,7 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
   it('is spent by travelling it, and only once', () => {
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)
-    const jumped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const jumped = advanceRouteForFixture(owned, target)
     assert.equal(jumped.expedition.routeStep, owned.expedition.routeStep + 2)
     assert.deepEqual(jumped.expedition.consumedLegendaryIds, ['nemesis_key'])
     assert.equal(isExpeditionLegendaryAvailable(jumped, 'nemesis_key'), false)
@@ -478,10 +477,7 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
     // move and collapsed the whole active run to idle.
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)
-    const jumped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const jumped = advanceRouteForFixture(owned, target)
     assert.equal(jumped.expedition.routeStep, owned.expedition.routeStep + 2)
 
     const reloaded = sanitizeExpeditionState(
@@ -497,10 +493,7 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
   it('refuses a two-layer gap the Legendary did not pay for', () => {
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)
-    const jumped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const jumped = advanceRouteForFixture(owned, target)
     // Same path, but the save no longer claims the Legendary was spent - so
     // the gap is unauthorized and the run must not resume across it.
     const forged = sanitizeExpeditionState(
@@ -516,16 +509,7 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)
     const unowned = startedState({ money: 5000 })
-    assert.equal(
-      gameReducer(unowned, {
-        type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-        payload: {
-          nodeId: target,
-          expectedRouteStep: unowned.expedition.routeStep
-        }
-      }),
-      unowned
-    )
+    assert.equal(applyExpeditionRouteAdvance(unowned, target), unowned)
   })
 })
 
@@ -576,10 +560,7 @@ describe('G5 — Ghost Route is the Underground way out', () => {
   it('is spent by taking the detour', () => {
     const owned = cornered(['ghost_route'])
     const target = deriveExpeditionGhostRouteTarget(owned, map)
-    const escaped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const escaped = advanceRouteForFixture(owned, target)
     assert.deepEqual(escaped.expedition.consumedLegendaryIds, ['ghost_route'])
     // Spent, so the same pressure is terminal again.
     const corneredAgain = {
@@ -603,10 +584,7 @@ describe('G5 — Ghost Route is the Underground way out', () => {
     // The point of the record: the node the detour lands on is not itself an
     // Underground node, so its own class would resolve the arrival.
     assert.equal(map.meta[target].specialSubtype, null)
-    const escaped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const escaped = advanceRouteForFixture(owned, target)
     assert.deepEqual(escaped.expedition.arrivedOverlay, {
       nodeId: target,
       subtype: 'UNDERGROUND_MARKET',
@@ -621,10 +599,7 @@ describe('G5 — Ghost Route is the Underground way out', () => {
   it('survives a reload only as far as the run can prove it', () => {
     const owned = cornered(['ghost_route'])
     const target = deriveExpeditionGhostRouteTarget(owned, map)
-    const escaped = gameReducer(owned, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
-    })
+    const escaped = advanceRouteForFixture(owned, target)
 
     const reloaded = sanitizeExpeditionState(
       JSON.parse(JSON.stringify(escaped.expedition)),

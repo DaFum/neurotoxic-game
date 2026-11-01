@@ -292,16 +292,6 @@ type BaseGameDispatchActions = {
   startExpedition: (
     loadout: import('../types/expedition').ExpeditionLoadout
   ) => void
-  /**
-   * Typed G1 intent for a one-step route advance.
-   *
-   * @remarks
-   * Composition-only in play: arrival advances the route inside the travel
-   * reducer through `applyExpeditionRouteAdvance` (`minigameReducer`), in the
-   * same commit that moves the player, so the two can never disagree. This
-   * stale-guarded wrapper stays for scripts and tests; no UI should call it.
-   */
-  advanceExpeditionRoute: (nodeId: string) => void
   revealExpeditionNodeIntel: (input: {
     nodeId: string
     source: import('../types/expedition').ExpeditionIntelSource

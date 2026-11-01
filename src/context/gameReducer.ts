@@ -81,7 +81,6 @@ import {
   handleAcceptExpeditionTechnicalFailure,
   handleApplyExpeditionEventDelta,
   handleAddExpeditionReward,
-  handleAdvanceExpeditionRoute,
   handleClaimExpeditionInsurance,
   handleCompleteExpedition,
   handleExecuteExpeditionInspection,
@@ -290,7 +289,6 @@ const reducerMap: ReducerMap = {
   [ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS]:
     handlePrepareExpeditionSponsorOffers,
   [ActionTypes.START_EXPEDITION]: handleStartExpedition,
-  [ActionTypes.ADVANCE_EXPEDITION_ROUTE]: handleAdvanceExpeditionRoute,
   [ActionTypes.REVEAL_EXPEDITION_NODE_INTEL]: handleRevealExpeditionNodeIntel,
   [ActionTypes.ADD_EXPEDITION_REWARD]: handleAddExpeditionReward,
   [ActionTypes.EXTRACT_EXPEDITION]: handleExtractExpedition,

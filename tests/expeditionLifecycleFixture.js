@@ -13,6 +13,7 @@ import { gameReducer } from '../src/context/gameReducer.ts'
 import { ActionTypes } from '../src/context/actionTypes.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { SONGS_BY_ID } from '../src/data/songs.ts'
+import { advanceRouteForFixture } from './expeditionRouteAdvanceFixture.js'
 
 /** Seed used by every lifecycle fixture, so route assertions stay stable. */
 export const FIXTURE_RUN_SEED = 4242
@@ -213,19 +214,7 @@ export const walkTo = (state, targetRouteStep) => {
       ]
     const next = map.connections.find(edge => edge.from === from)
     assert.ok(next, `no outgoing edge from ${from}`)
-    const advanced = gameReducer(current, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: {
-        nodeId: next.to,
-        expectedRouteStep: current.expedition.routeStep
-      }
-    })
-    assert.notEqual(
-      advanced,
-      current,
-      `route advance to ${next.to} was refused`
-    )
-    current = advanced
+    current = advanceRouteForFixture(current, next.to)
   }
   return current
 }
@@ -247,19 +236,7 @@ export const walkToFinale = state => {
       ]
     const edges = map.connections.filter(edge => edge.from === from)
     assert.ok(edges.length > 0, `dead end at ${from}`)
-    const advanced = gameReducer(current, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: {
-        nodeId: edges[0].to,
-        expectedRouteStep: current.expedition.routeStep
-      }
-    })
-    assert.notEqual(
-      advanced,
-      current,
-      `route advance to ${edges[0].to} refused`
-    )
-    current = advanced
+    current = advanceRouteForFixture(current, edges[0].to)
   }
   return current
 }

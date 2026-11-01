@@ -151,7 +151,6 @@ import type {
   AcceptExpeditionFailurePayload,
   AcceptExpeditionTechnicalFailurePayload,
   AddExpeditionRewardPayload,
-  AdvanceExpeditionRoutePayload,
   ApplyExpeditionEventDeltaPayload,
   ClaimExpeditionInsurancePayload,
   CompleteExpeditionPayload,
@@ -704,42 +703,6 @@ export const handleStartExpedition = (
 }
 
 /**
- * Advances the run to the next node on the prepared route.
- *
- * @param state - Current game state.
- * @param payload - Target node and the route step the caller believes it is on.
- * @returns Next state, or the identical reference for an illegal move.
- *
- * @remarks
- * Route progression is reducer-authoritative: the target must be a real
- * neighbour of the current node on the route rebuilt from the canonical seed,
- * and must sit exactly one route step deeper. That makes a forged jump to the
- * Finale — and a replayed arrival — a no-op rather than free progress. The
- * extraction windows the run has seen are recorded here, because a window the
- * player passed up is what makes the extraction decision a real one.
- *
- * This is a thin stale-guarded wrapper over {@link applyExpeditionRouteAdvance},
- * the single implementation. Travel arrival already applies that helper
- * automatically, so a run does not need this action to progress; it exists for
- * callers that advance the route outside the arrival flow.
- */
-export const handleAdvanceExpeditionRoute = (
-  state: GameState,
-  payload: AdvanceExpeditionRoutePayload
-): GameState => {
-  if (state.expedition.status !== 'active') return state
-  if (payload === null || typeof payload !== 'object') return state
-  const { expectedRouteStep } = payload
-  if (
-    !isFiniteNumber(expectedRouteStep) ||
-    expectedRouteStep !== state.expedition.routeStep
-  ) {
-    return state
-  }
-  return applyExpeditionRouteAdvance(state, payload.nodeId)
-}
-
-/**
  * Emits the node-resolved quest event for a committed route advance.
  *
  * @param state - State that has already advanced.
@@ -756,7 +719,7 @@ const withNodeResolved = (state: GameState): GameState =>
   )
 
 /**
- * Advances the run one node deeper, without the public stale guard.
+ * Advances the run one node deeper along the prepared route.
  *
  * @param state - Current game state.
  * @param nodeId - Target node.
@@ -766,9 +729,18 @@ const withNodeResolved = (state: GameState): GameState =>
  * A pure state-to-state helper rather than a dispatched action, so the travel
  * reducer can commit the player's move and the run's route step in one atomic
  * pass — two dispatches could leave `player.currentNodeId` a node deeper than
- * `expedition.routeStep`. Same authority as the public action: the target must
- * be a real neighbour exactly one step deeper, and a run that is not active
- * leaves the state untouched.
+ * `expedition.routeStep`. Route progression is reducer-authoritative: the
+ * target must be a real neighbour of the current node on the route rebuilt from
+ * the canonical seed, one step deeper (two only along a Nemesis Key overlay
+ * edge), so a forged jump to the Finale or a replayed arrival is a no-op. A run
+ * that is not active leaves the state untouched. The extraction windows the run
+ * has seen are recorded here, because a window the player passed up is what
+ * makes the extraction decision a real one.
+ *
+ * Tourbus settlement in `minigameReducer` is the only production commit path;
+ * there is no public action for it, so a raw dispatch cannot move the player.
+ * This helper does not check fuel, travel cost or a pending crisis - the
+ * settlement that calls it owns those gates.
  */
 export const applyExpeditionRouteAdvance = (
   state: GameState,

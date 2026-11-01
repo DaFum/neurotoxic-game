@@ -273,29 +273,6 @@ export const startExpedition = (
 })
 
 /**
- * Builds the action advancing the run to a neighbouring route node.
- *
- * @param state - Current game state, read for the stale-guard route step.
- * @param nodeId - Target node.
- * @returns Typed `ADVANCE_EXPEDITION_ROUTE` action.
- *
- * @remarks
- * Travel arrival already advances the route automatically through
- * `applyExpeditionRouteAdvance`, and the reducer for this action delegates to
- * that same helper, so dispatching it is only needed outside the arrival flow.
- */
-export const advanceExpeditionRoute = (
-  state: GameState,
-  nodeId: string
-): Extract<
-  GameAction,
-  { type: typeof ActionTypes.ADVANCE_EXPEDITION_ROUTE }
-> => ({
-  type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-  payload: { nodeId, expectedRouteStep: state.expedition.routeStep }
-})
-
-/**
  * Builds an intel-reveal action for one node.
  *
  * @param state - Current game state, read for the stale guards.

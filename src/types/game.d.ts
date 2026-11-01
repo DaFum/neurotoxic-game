@@ -503,10 +503,6 @@ export type GameAction =
       import('./actions').StartExpeditionPayload
     >
   | Action<
-      (typeof ActionTypes)['ADVANCE_EXPEDITION_ROUTE'],
-      import('./actions').AdvanceExpeditionRoutePayload
-    >
-  | Action<
       (typeof ActionTypes)['REVEAL_EXPEDITION_NODE_INTEL'],
       import('./actions').RevealExpeditionNodeIntelPayload
     >
