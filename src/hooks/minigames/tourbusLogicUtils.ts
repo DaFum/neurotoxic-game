@@ -53,20 +53,25 @@ export interface TourbusObstacleStepState {
  * @param game - Mutable tourbus state; obstacles, damage and pickups are updated in place.
  * @param travel - Distance in screen percent every obstacle moves this step.
  * @param upgrades - Van upgrade ids currently installed.
+ * @param outCollisions - Optional pre-allocated buffer reused across frame ticks to receive collision types.
  * @returns Types of the obstacles that collided this step, in obstacle order.
  */
-// ⚡ BOLT OPTIMIZATION: In-place array compaction for tourbus obstacle stepping
-// What: Replaced intermediate `survivingObstacles` array allocation with two-pointer in-place array compaction.
-// Why: `stepTourbusObstacles` executes on every frame (~60 FPS) during tourbus minigame gameplay. Creating a new array `[]` and pushing elements onto it on every tick triggers continuous GC allocations.
-// Impact: Eliminates ~3,600 temporary array allocations per minute during tourbus minigame gameplay, reducing GC pressure and frame stutter.
+// ⚡ BOLT OPTIMIZATION: In-place array compaction and reusable collisions buffer for tourbus obstacle stepping
+// What: Replaced intermediate `survivingObstacles` array allocation with two-pointer in-place array compaction,
+// and accepted an optional `outCollisions` buffer to eliminate per-frame collision array allocations.
+// Why: `stepTourbusObstacles` executes on every frame (~60 FPS) during tourbus minigame gameplay. Allocating a new
+// array on every tick creates ~3,600 temporary array allocations per minute, triggering continuous GC pressure.
+// Impact: Eliminates per-frame collision array allocations in 60 FPS update loop, reducing GC pause risk and frame stutter.
 export const stepTourbusObstacles = (
   game: TourbusObstacleStepState,
   travel: number,
-  upgrades: string[]
+  upgrades: string[],
+  outCollisions?: TourbusObstacleType[]
 ): TourbusObstacleType[] => {
   const hitTop = TOURBUS_BUS_Y_PERCENT
   const hitBottom = TOURBUS_BUS_Y_PERCENT + TOURBUS_BUS_HEIGHT_PERCENT
-  const collisions: TourbusObstacleType[] = []
+  const collisions = outCollisions ?? []
+  collisions.length = 0
   const obstacles = game.obstacles
   let writeIdx = 0
 

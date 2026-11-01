@@ -92,6 +92,21 @@ describe('stepTourbusObstacles swept collision', () => {
     assert.equal(game.obstacles.length, 0)
   })
 
+  test('reuses provided outCollisions buffer in place across steps', () => {
+    const buffer = ['STALE_VALUE']
+    const game = makeGame(HIT_TOP - 1, 'FUEL')
+    const result = stepTourbusObstacles(game, 12, [], buffer)
+
+    // Returned reference must be the exact same buffer passed in
+    assert.strictEqual(result, buffer)
+    assert.deepEqual(buffer, ['FUEL'])
+
+    // Next step with no collision clears and reuses the buffer in place
+    const secondResult = stepTourbusObstacles(game, 2, [], buffer)
+    assert.strictEqual(secondResult, buffer)
+    assert.deepEqual(buffer, [])
+  })
+
   test('small frames and one long frame give identical outcomes, boundaries included', () => {
     const totalTravel = 12
     // Every split is exact in binary floating point, so positions match.
