@@ -217,6 +217,83 @@ test('the preview of a composite money option equals its executed delta', () => 
   assert.equal(getOptionPreviewMoney(haggle, protectedRun(1000, 990)), -20)
 })
 
+const withMoney = money => ({
+  ...buildState(),
+  player: { ...buildState().player, money }
+})
+
+// The label shows the price the option asks, not the debit clipped to the
+// balance, so a disabled paid option keeps its real threshold (#3492).
+test('the offer price of a fixed cost is not clipped to the balance', () => {
+  const buy = {
+    label: 'Buy the legendary synth',
+    condition: state => state.player.money >= 250,
+    effect: { type: 'resource', resource: 'money', value: -250 }
+  }
+  const state = withMoney(100)
+  assert.equal(
+    getOptionPreviewMoney(buy, state, { clampToBalance: false }),
+    -250
+  )
+  // What would be charged is still clipped at the balance, and the option's
+  // own condition keeps it unavailable.
+  assert.equal(getOptionPreviewMoney(buy, state), -100)
+  assert.equal(
+    eventEngine.applyResult(buy.effect, {}, state).player.money,
+    -100
+  )
+  assert.equal(buy.condition(state), false)
+})
+
+test('the offer price of a percentage cost keeps its bounds without the balance clip', () => {
+  const tithe = {
+    label: 'Tithe',
+    effect: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: -10,
+      min: -500,
+      max: -40
+    }
+  }
+  const state = withMoney(15)
+  // 10% of €15 rounds to €2, raised to the €40 minimum loss.
+  assert.equal(
+    getOptionPreviewMoney(tithe, state, { clampToBalance: false }),
+    -40
+  )
+  assert.equal(getOptionPreviewMoney(tithe, state), -15)
+  assert.equal(
+    eventEngine.applyResult(tithe.effect, {}, state).player.money,
+    -15
+  )
+  // The `min` bound still caps the offer on a large balance.
+  assert.equal(
+    getOptionPreviewMoney(tithe, withMoney(9000), { clampToBalance: false }),
+    -500
+  )
+})
+
+test('the offer price of a composite option sums its unclipped effects', () => {
+  const trade = {
+    label: 'Trade in',
+    effect: {
+      type: 'composite',
+      effects: [
+        { type: 'resource', resource: 'money', value: -250 },
+        { type: 'resource', resource: 'money', value: 100 }
+      ]
+    }
+  }
+  const state = withMoney(100)
+  assert.equal(
+    getOptionPreviewMoney(trade, state, { clampToBalance: false }),
+    -150
+  )
+  assert.equal(getOptionPreviewMoney(trade, state), 0)
+  assert.equal(eventEngine.applyResult(trade.effect, {}, state).player.money, 0)
+})
+
 // Execution charges nothing without a player slice, so a `min`/`max` bound
 // must not make the preview show a forced amount (#3477).
 test('a percentage money preview without a player slice matches execution', () => {

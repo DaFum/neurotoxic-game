@@ -4,7 +4,12 @@ import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import { asNumber, clampMoneyChange, getPercentageMoneyChange } from './helpers'
+import {
+  asNumber,
+  clampMoneyChange,
+  getPercentageMoneyAmount,
+  getPercentageMoneyChange
+} from './helpers'
 import {
   getExpeditionProtectedCash,
   getExpeditionSpendableCash,
@@ -133,15 +138,23 @@ export const resolveEventChoice = (
 
 /**
  * Computes the deterministic money delta an option's direct effect(s) would
- * apply, for previewing the cost/reward inside a localized option label via an
- * `{{amount}}` interpolation. Mirrors the `resource` and `percentage_resource`
- * money handlers exactly (no RNG, so the preview is stable across renders).
- * Returns null when the option has no money-affecting effect, letting callers
- * fall back to a zero amount rather than leaking an unresolved placeholder.
+ * apply (no RNG, so the preview is stable across renders).
+ *
+ * @param option - The option whose direct effect(s) are priced.
+ * @param gameState - Engine state snapshot.
+ * @param options - `clampToBalance` (default true) mirrors the `resource` and
+ * `percentage_resource` money handlers exactly, clipping each debit at the
+ * balance. Pass false for the offer price an option label's `{{amount}}`
+ * shows: the bounded amount the option asks for, so a price the player cannot
+ * meet is not displayed as the smaller sum that would be charged.
+ * @returns The summed money delta, or null when the option has no
+ * money-affecting effect, letting callers fall back to a zero amount rather
+ * than leaking an unresolved placeholder.
  */
 export const getOptionPreviewMoney = (
   option: { effect?: unknown; effects?: unknown } | null | undefined,
-  gameState: EngineGameState | null | undefined
+  gameState: EngineGameState | null | undefined,
+  { clampToBalance = true }: { clampToBalance?: boolean } = {}
 ): number | null => {
   if (!option) return null
 
@@ -158,7 +171,7 @@ export const getOptionPreviewMoney = (
     }
     if (e.type === 'resource' && e.resource === 'money') {
       let change = asNumber(e.value)
-      if (gameState) {
+      if (gameState && clampToBalance) {
         const current = finiteNumberOr(gameState.player?.money, 0)
         change = clampMoneyChange(current, total, change)
       }
@@ -168,7 +181,9 @@ export const getOptionPreviewMoney = (
       // Without a player slice the handler charges nothing, so a `min`/`max`
       // bound must not force a preview amount either.
       if (gameState?.player) {
-        total += getPercentageMoneyChange(gameState, total, e)
+        total += clampToBalance
+          ? getPercentageMoneyChange(gameState, total, e)
+          : getPercentageMoneyAmount(gameState, total, e)
       }
       found = true
     }

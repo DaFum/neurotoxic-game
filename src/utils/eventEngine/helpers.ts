@@ -87,6 +87,29 @@ export const clampMoneyChange = (
 }
 
 /**
+ * The amount a `percentage_resource` money effect asks for, before the balance
+ * clamp.
+ *
+ * @param gameState - Engine state snapshot; callers skip the effect without a
+ * player slice.
+ * @param runningDelta - Money the effects before this one already added or
+ * removed.
+ * @param eff - The effect's `percentage` and optional `min`/`max` bounds.
+ * @returns The bounded percentage of spendable cash plus the running delta.
+ */
+export const getPercentageMoneyAmount = (
+  gameState: EngineGameState,
+  runningDelta: number,
+  eff: EffectShape
+): number =>
+  clampPercentageAmount(
+    getPercentageMoneyBase(gameState, runningDelta),
+    eff.percentage,
+    eff.min,
+    eff.max
+  )
+
+/**
  * The money change a `percentage_resource` money effect applies.
  *
  * @param gameState - Engine state snapshot; callers skip the effect without a
@@ -106,12 +129,7 @@ export const getPercentageMoneyChange = (
   runningDelta: number,
   eff: EffectShape
 ): number => {
-  const amount = clampPercentageAmount(
-    getPercentageMoneyBase(gameState, runningDelta),
-    eff.percentage,
-    eff.min,
-    eff.max
-  )
+  const amount = getPercentageMoneyAmount(gameState, runningDelta, eff)
   const current = finiteNumberOr(gameState.player?.money, 0)
   return clampMoneyChange(current, runningDelta, amount)
 }
