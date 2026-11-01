@@ -52,7 +52,9 @@ import {
   getEquipmentRevertValue
 } from '../../utils/contrabandEffects'
 import {
+  creditPackedContraband,
   debitPackedContraband,
+  getExpeditionCargoView,
   isPackedContrabandEntry,
   resolveActiveExpeditionCargo
 } from '../../domain/expedition/cargo'
@@ -419,6 +421,33 @@ export const handleCompleteTravelMinigame = (
             type: 'success'
           }
         ]
+        // During a Tour the drop rides with the run only when the van has a
+        // free contraband slot; otherwise it is owned but stays at HQ.
+        const activeCargo = resolveActiveExpeditionCargo(newState)
+        if (activeCargo) {
+          const view = getExpeditionCargoView(newState)
+          if (view.availableHiddenSlots + view.availableVisibleSlots > 0) {
+            const dropped = newState.band.stash?.[contrabandId] as
+              Record<string, unknown> | undefined
+            newState = {
+              ...newState,
+              expedition: {
+                ...newState.expedition,
+                cargo: {
+                  ...activeCargo,
+                  contraband: creditPackedContraband(
+                    activeCargo.contraband,
+                    contrabandId,
+                    typeof dropped?.instanceId === 'string'
+                      ? dropped.instanceId
+                      : null,
+                    1
+                  )
+                }
+              }
+            }
+          }
+        }
         newState = QuestEvents.emit(
           newState,
           createItemCollectedQuestEvent({ itemId: contrabandId })
