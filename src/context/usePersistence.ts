@@ -309,7 +309,8 @@ const resolveLoadSlotKey = (storage: IStorageAdapter): string => {
  * @param rawSave - Exact serialized payload, copied aside on failure.
  * @param adapter - Storage backend the quarantine copy is written to.
  * @param options - `quarantine: false` runs the migration without writing the
- * quarantine copy or logging a failure, for a preview that must not write.
+ * quarantine copy or logging a failure, for a preview that must not write;
+ * `clock` stamps the quarantine copy's key.
  * @returns `ok: true` with the payload stamped with the current version, or
  * `ok: false` when a migration step threw, with `quarantined` telling whether
  * the copy reached persistent storage (always `false` for a preview).
@@ -322,7 +323,7 @@ export const migrateLoadedSave = (
   parsedObj: Record<string, unknown>,
   rawSave: string,
   adapter: IStorageAdapter = defaultStorageAdapter,
-  options: { quarantine?: boolean } = {}
+  options: { quarantine?: boolean; clock?: IClock } = {}
 ):
   | { ok: true; migrated: Record<string, unknown> }
   | { ok: false; quarantined: boolean } => {
@@ -346,7 +347,15 @@ export const migrateLoadedSave = (
     // quarantine copy or log the failure.
     if (options.quarantine === false) return { ok: false, quarantined: false }
     const reason = error instanceof Error ? error.message : String(error)
-    const quarantined = quarantineSave(rawSave, storedVersion, reason, adapter)
+    const quarantined = quarantineSave(
+      rawSave,
+      storedVersion,
+      reason,
+      adapter,
+      {
+        clock: options.clock
+      }
+    )
     logger.error(
       'Persistence',
       `Save migration from version ${storedVersion} failed`,
@@ -411,6 +420,7 @@ type StoredSaveEvaluation =
  * @param preview - Skips every write: the quarantine copy of a refused or
  * migration-failed save. Reads and
  * the unlock merge are unchanged, so a preview reaches the verdict a load would.
+ * @param clock - Stamps the key of a quarantine copy.
  * @returns The accepted payload, or the reason the save is refused.
  *
  * @remarks
@@ -421,7 +431,8 @@ type StoredSaveEvaluation =
 const evaluateStoredSave = (
   storage: IStorageAdapter,
   report: LoadReporter,
-  preview: boolean
+  preview: boolean,
+  clock: IClock
 ): StoredSaveEvaluation => {
   let parsed: unknown
   let rawSave: string | undefined
@@ -434,7 +445,10 @@ const evaluateStoredSave = (
     if (preview || !rawSave || !slotKey) return
     report.rejectedCopied(
       slotKey,
-      quarantineSave(rawSave, version, reason, storage)
+      quarantineSave(rawSave, version, reason, storage, {
+        kind: 'rejected',
+        clock
+      })
     )
   }
   try {
@@ -459,8 +473,8 @@ const evaluateStoredSave = (
     rawSave = saved
     parsed = safeJsonParse(saved)
   } catch (error) {
-    // No version can be read from it: `null` files it under its own slot, so
-    // it cannot overwrite a genuine v0 migration failure's copy.
+    // No version can be read from it: `null` files it under its own family,
+    // so it cannot prune a genuine v0 migration failure's copies.
     quarantineRejected(
       null,
       `Save JSON parsing failed: ${error instanceof Error ? error.message : String(error)}`
@@ -496,7 +510,8 @@ const evaluateStoredSave = (
   const parsedObj = parsed as Record<string, unknown>
 
   const migration = migrateLoadedSave(parsedObj, rawSave, storage, {
-    quarantine: !preview
+    quarantine: !preview,
+    clock
   })
   if (!migration.ok) {
     report.migrationFailed(slotKey, migration.quarantined)
@@ -898,7 +913,7 @@ export function usePersistence({
     const result = safeStorageOperation(
       'loadGame',
       (): LoadGameResult => {
-        const evaluation = evaluateStoredSave(storage, report, false)
+        const evaluation = evaluateStoredSave(storage, report, false, clock)
         if (!evaluation.ok) return { ok: false, reason: evaluation.reason }
 
         for (const unlockId of evaluation.unlocks) addUnlock(unlockId, storage)
@@ -921,6 +936,7 @@ export function usePersistence({
     return result === storageFailed ? refuseUnreadable() : result
   }, [
     addToast,
+    clock,
     dispatch,
     incompatibleSaveMessage,
     saveGameAfterStateCommit,
@@ -943,7 +959,12 @@ export function usePersistence({
   const previewLoadGame = useCallback((): LoadPreviewResult => {
     let evaluation: StoredSaveEvaluation
     try {
-      evaluation = evaluateStoredSave(storage, SILENT_LOAD_REPORTER, true)
+      evaluation = evaluateStoredSave(
+        storage,
+        SILENT_LOAD_REPORTER,
+        true,
+        clock
+      )
     } catch (_error) {
       return { status: 'unavailable', reason: 'unreadable' }
     }
@@ -962,7 +983,7 @@ export function usePersistence({
     return loaded.currentScene === GAME_PHASES.GAMEOVER
       ? { status: 'terminal' }
       : { status: 'resumable' }
-  }, [storage])
+  }, [clock, storage])
 
   return {
     deleteSave,
