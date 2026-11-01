@@ -552,10 +552,11 @@ test.describe('Visual smoke tests', () => {
       const labels = [
         ...document.querySelectorAll('[data-testid="map-node-label"]')
       ].filter(shown)
+      // Travel targets other than the current (van) node.
       const destinationNames = [
         ...document.querySelectorAll('.map-node[role="button"]')
       ]
-        .filter(node => /^travel to/i.test(node.getAttribute('aria-label')))
+        .filter(node => !node.querySelector('img[alt="Van"]'))
         .map(node => node.querySelector('[data-testid="map-node-label"]'))
         .filter(label => label && label.lastElementChild)
         .filter(label => shown(label.lastElementChild))
