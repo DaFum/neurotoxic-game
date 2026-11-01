@@ -2,7 +2,14 @@ import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { GameState, PostGigSummary, Venue } from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { PostGigFinancials } from '../types/economy'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import i18n from '../i18n'
 import { generateBrandOffers } from '../utils/brandDealLogic'
 import { secureRandom } from '../utils/crypto'
@@ -109,15 +116,20 @@ export function usePostGigHandlers({
   const [hasSpun, setHasSpun] = useState(false)
   // Release the shared guard and spin guard on every phase change so each new
   // phase starts unblocked (e.g. fresh post-gig after returning to overworld).
-  // Uses the render-phase "store previous prop" pattern to avoid setState-in-effect.
+  // The state flags use the render-phase "store previous prop" pattern to avoid
+  // setState-in-effect; a discarded render discards those updates with it.
   const [prevPhase, setPrevPhase] = useState(phase)
   if (phase !== prevPhase) {
     setPrevPhase(phase)
-    isProcessingActionRef.current = false
     setIsProcessingAction(false)
-    hasSpunRef.current = false
     setHasSpun(false)
   }
+  // The refs are released on commit, not during render, so a discarded
+  // concurrent render cannot unlock a guard the committed phase still holds.
+  useLayoutEffect(() => {
+    isProcessingActionRef.current = false
+    hasSpunRef.current = false
+  }, [phase, isProcessingActionRef])
   // Brand offers after a social post are generated post-commit: the post's
   // dispatches can complete a quest whose rewards change social, money or
   // harmony, and offers must see those committed values, not the projection.
