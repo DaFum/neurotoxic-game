@@ -11,6 +11,7 @@ import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
 import { pickIndex, selectRandomItem } from '../utils/selectionUtils'
 import { isCultAudience, isScandalControversy } from '../utils/socialThresholds'
 import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import { getOutcomeAccuracy } from '../utils/gigStats'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -510,8 +511,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
+    // A failed gig or malformed stats read as a bad show; no stats means no gig.
     condition: ({ lastGigStats }: GameState) =>
-      typeof lastGigStats?.accuracy === 'number' && lastGigStats.accuracy < 60,
+      lastGigStats != null && getOutcomeAccuracy(lastGigStats) < 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
