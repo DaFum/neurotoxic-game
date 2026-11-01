@@ -156,6 +156,7 @@
   "loan.requirement.scenePresence": "Needs scene presence {{value}}",
   "loan.refinance": "Refinance ({{fee}})",
   "loan.refinanceTitle": "Refinance Loan",
+  "loan.refinanceCurrent": "Current: {{daily}}/day · {{total}} total",
   "liability.termDays": "{{count}} days",
   "liability.termDays_one": "{{count}} day",
   "liability.termDays_other": "{{count}} days",

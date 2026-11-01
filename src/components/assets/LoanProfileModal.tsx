@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
@@ -19,6 +19,10 @@ interface Props extends BaseModalProps {
   /** Returns whether the selection was accepted; the modal closes only then. */
   onSelect: (profile: LoanProfileId) => boolean
   title?: string
+  /** Principal each profile's daily payment and total repayment price. */
+  principal?: number
+  /** Content above the profiles, e.g. the current loan terms. */
+  children?: ReactNode
 }
 
 interface LoanProfileChoiceGridProps {
@@ -143,7 +147,9 @@ export const LoanProfileModal = ({
   isOpen,
   onClose,
   onSelect,
-  title
+  title,
+  principal,
+  children
 }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
@@ -153,8 +159,10 @@ export const LoanProfileModal = ({
       title={title ?? t('assets:mode.loan')}
       className='assets-modal-sheet max-w-2xl'
     >
-      <div className='p-4'>
+      <div className='flex flex-col gap-3 p-4'>
+        {children}
         <LoanProfileChoiceGrid
+          principal={principal}
           onSelect={profile => {
             if (onSelect(profile)) onClose()
           }}

@@ -7,6 +7,7 @@ import { Tooltip } from '../../ui/shared/Tooltip'
 import { LoanProfileModal } from './LoanProfileModal'
 import {
   calculateRefinanceFee,
+  calculateTotalRepayment,
   type LoanProfileId
 } from '../../utils/assets/loanProfiles'
 import { finiteNumberOr } from '../../utils/gameState'
@@ -122,7 +123,30 @@ export const LiabilitiesPanel = () => {
         onClose={() => setRefinanceTargetId(null)}
         onSelect={handleRefinance}
         title={t('assets:loan.refinanceTitle')}
-      />
+        principal={
+          refinanceTarget
+            ? finiteNumberOr(refinanceTarget.principalRemaining, 0)
+            : undefined
+        }
+      >
+        {refinanceTarget && (
+          <p className='font-mono text-xs'>
+            {t('assets:loan.refinanceCurrent', {
+              daily: formatCurrency(
+                finiteNumberOr(refinanceTarget.dailyPayment, 0),
+                i18n.language
+              ),
+              total: formatCurrency(
+                calculateTotalRepayment(
+                  finiteNumberOr(refinanceTarget.dailyPayment, 0),
+                  finiteNumberOr(refinanceTarget.termDaysRemaining, 0)
+                ),
+                i18n.language
+              )
+            })}
+          </p>
+        )}
+      </LoanProfileModal>
     </>
   )
 }

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RepairConfirmModal } from '../../src/components/assets/RepairConfirmModal'
 import { ChassisAcquisitionModal } from '../../src/components/assets/ChassisAcquisitionModal'
+import { LiabilitiesPanel } from '../../src/components/assets/LiabilitiesPanel'
 import {
   calculateChassisRepairCost,
   CHASSIS_CONFIG
@@ -18,19 +19,33 @@ import type { LongTermAsset } from '../../src/types/assets'
 // Each test holds exactly the price on hand but protects all of it.
 const repairChassisMock = vi.hoisted(() => vi.fn())
 const purchaseChassisMock = vi.hoisted(() => vi.fn())
+const refinanceLiabilityMock = vi.hoisted(() => vi.fn())
 
 const mockState = vi.hoisted(() => ({
   expedition: undefined as unknown,
   player: { money: 1000, fame: 0 },
   social: { scenePresence: 0 },
   assets: [],
-  acquisitionCampaigns: []
+  acquisitionCampaigns: [],
+  liabilities: {
+    'loan-1': {
+      id: 'loan-1',
+      source: 'loan',
+      assetId: 'asset-1',
+      principalRemaining: 2000,
+      interestRate: 0.1,
+      dailyPayment: 50,
+      termDaysRemaining: 30,
+      defaultCounter: 0
+    }
+  }
 }))
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     repairChassis: repairChassisMock,
     purchaseChassis: purchaseChassisMock,
+    refinanceLiability: refinanceLiabilityMock,
     startCrowdfund: vi.fn()
   }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
@@ -93,6 +108,7 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
     mockState.player.money = 1000
     repairChassisMock.mockReset()
     purchaseChassisMock.mockReset()
+    refinanceLiabilityMock.mockReset()
   })
 
   // #3485 item 4: a refusal keeps the modal open next to its toast.
@@ -252,6 +268,61 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
     it('enables the profile once scene presence meets the gate', () => {
       mockState.social.scenePresence = 50
       expect(renderLoanMode()).toBeEnabled()
+    })
+  })
+
+  // #3499 findings 11 and 12: the refinance dialog compares the current terms
+  // with each profile's terms and stays open on a refused refinance.
+  describe('LiabilitiesPanel refinance', () => {
+    const openRefinance = () => {
+      render(<LiabilitiesPanel />)
+      fireEvent.click(
+        screen.getByRole('button', { name: /assets:loan\.refinance\(/ })
+      )
+      return screen.getByRole('dialog', { name: 'assets:loan.refinanceTitle' })
+    }
+
+    it('shows daily payment and total repayment before and after refinancing', () => {
+      openRefinance()
+      expect(
+        screen.getByText(
+          `assets:loan.refinanceCurrent(${formatCurrency(50, 'en')}|${formatCurrency(calculateTotalRepayment(50, 30), 'en')})`
+        )
+      ).toBeInTheDocument()
+      const profile = LOAN_PROFILES.longTerm
+      const daily = computeAmortization(
+        2000,
+        profile.interestRate,
+        profile.termDays
+      )
+      expect(
+        screen.getByText(
+          `assets:loan.quote(${formatCurrency(daily, 'en')}|${formatCurrency(calculateTotalRepayment(daily, profile.termDays), 'en')})`
+        )
+      ).toBeInTheDocument()
+    })
+
+    it('stays open when the refinance is refused', () => {
+      refinanceLiabilityMock.mockReturnValue(false)
+      openRefinance()
+      fireEvent.click(
+        screen.getByRole('button', { name: /assets:loan\.profile\.shortTerm/ })
+      )
+      expect(refinanceLiabilityMock).toHaveBeenCalledWith('loan-1', 'shortTerm')
+      expect(
+        screen.getByRole('dialog', { name: 'assets:loan.refinanceTitle' })
+      ).toBeInTheDocument()
+    })
+
+    it('closes when the refinance is accepted', () => {
+      refinanceLiabilityMock.mockReturnValue(true)
+      openRefinance()
+      fireEvent.click(
+        screen.getByRole('button', { name: /assets:loan\.profile\.shortTerm/ })
+      )
+      expect(
+        screen.queryByRole('dialog', { name: 'assets:loan.refinanceTitle' })
+      ).not.toBeInTheDocument()
     })
   })
 })
