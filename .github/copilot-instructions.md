@@ -98,7 +98,7 @@ Process skills come first: per `using-superpowers`, start new work with `brainst
 - Recursive object utilities (freezers, traversers, sanitizers) must use `WeakSet<object>` for cycle safety and continue traversal through already-frozen parent objects.
 - When modifying imports/exports or barrel files, verify that `pnpm run deadcode:check` does not exceed `.ci/dead-code-budget.json`.
 - Use `audioEngine.getGigTimeMs()` for gameplay timing, never direct Tone.js time reads. Non-gameplay time (timestamps, cooldowns, persistence metadata) goes through the injected `IClock` from `src/utils/clock.ts` (`useClock()` in components, an `IClock` parameter defaulting to `systemClock` in pure helpers).
-- User-facing text uses namespaced i18n keys. Update matching English and German locale JSON together. Currency baked into dispatched toast options must use `formatCurrency(value, i18n.language, signDisplay)`.
+- User-facing text uses namespaced i18n keys. Update matching English and German locale JSON together. Currency baked into dispatched toast options goes through `formatCurrency(value, i18n.language)`; signed deltas (gains/losses shown with +/-) also pass `signDisplay` (e.g. `'always'`), while unsigned prices and costs keep the default.
 - `src/utils/unlockManager.ts` owns unlock persistence; `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not mix these responsibilities.
 - `CHASSIS_CONFIG` and `MODULE_REGISTRY` are the chassis/module sources of truth. Asset reducers and tick functions stay pure; generate UUIDs in action creators.
 
