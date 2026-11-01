@@ -163,6 +163,19 @@ describe('OverworldMap overlay wiring', () => {
     }
   )
 
+  test('marks the map as a chatter obstacle only during an Expedition (#3424)', () => {
+    const { container, rerender } = render(<OverworldMap {...baseProps} />)
+    const mapWrap = container.querySelector('.map-wrap')
+    expect(mapWrap).not.toBeNull()
+    // Career map: the chatter keeps its corner next to the event log.
+    expect(mapWrap.hasAttribute('data-chatter-avoid')).toBe(false)
+
+    rerender(<OverworldMap {...baseProps} expeditionFogByNodeId={{}} />)
+    expect(
+      container.querySelector('.map-wrap').hasAttribute('data-chatter-avoid')
+    ).toBe(true)
+  })
+
   test('keeps a current non-actionable node unreachable from itself', () => {
     const plainMap = {
       ...travelMap,

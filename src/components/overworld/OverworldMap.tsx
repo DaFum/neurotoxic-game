@@ -300,8 +300,15 @@ export const OverworldMap = React.memo(
       hoveredNode?.id ?? null
     )
 
+    // During an Expedition the event log leaves the map corner, so the whole
+    // map is a chatter obstacle there (#3424): the chatter finds a clear spot
+    // or, as ChatterOverlay does for an active run, hides.
     return (
-      <div className='map-wrap' ref={mapRef}>
+      <div
+        className='map-wrap'
+        ref={mapRef}
+        data-chatter-avoid={expeditionFogByNodeId ? '' : undefined}
+      >
         <FallbackImage
           src={mapBgUrl}
           alt=''
