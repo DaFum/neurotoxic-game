@@ -75,7 +75,7 @@ export const MinigameSceneFrame = <TState,>({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`${embedded ? 'absolute p-4 text-center' : 'fixed'} inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto`}
-          role={embedded ? undefined : 'dialog'}
+          role={embedded ? 'region' : 'dialog'}
           aria-modal={embedded ? undefined : true}
           aria-labelledby='completion-title'
         >

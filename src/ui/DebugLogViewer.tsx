@@ -28,6 +28,10 @@ const getLevelColor = (level: string) => {
   }
 }
 
+// Stable references so useSyncExternalStore does not resubscribe per render.
+const subscribeToLogs = logger.subscribe.bind(logger)
+const getLogsSnapshot = () => logger.logs
+
 const LogRow = ({ log }: { log: LogEntry }) => (
   <div className='flex gap-2 hover:bg-star-white/5'>
     <span className='text-ash-gray shrink-0'>
@@ -59,10 +63,7 @@ const DebugLogViewerContent = ({
   filterLevel: number
   setFilterLevel: (level: number) => void
 }) => {
-  const logs = useSyncExternalStore(
-    logger.subscribe.bind(logger),
-    () => logger.logs
-  )
+  const logs = useSyncExternalStore(subscribeToLogs, getLogsSnapshot)
   const { t } = useTranslation()
 
   return (
@@ -75,11 +76,16 @@ const DebugLogViewerContent = ({
         <div className='flex justify-between items-center p-2 bg-shadow-black border-b border-ash-gray'>
           <div className='flex gap-2'>
             <span className='text-toxic-green font-bold'>
-              NEUROTOXIC DEBUGGER
+              {t('ui:debugViewer.title', {
+                defaultValue: 'NEUROTOXIC DEBUGGER'
+              })}
             </span>
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(parseInt(e.target.value, 10))}
+              aria-label={t('ui:debugViewer.levelFilter', {
+                defaultValue: 'Log level filter'
+              })}
               className='bg-void-black text-star-white border-2 border-ash-gray px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black transition-colors cursor-pointer'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
@@ -100,7 +106,7 @@ const DebugLogViewerContent = ({
               })}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
-              DUMP TO CONSOLE
+              {t('ui:action_dump_logs', { defaultValue: 'DUMP TO CONSOLE' })}
             </button>
             <button
               type='button'
@@ -139,7 +145,7 @@ const DebugLogViewerContent = ({
             aria-label={t('ui:action_close')}
             className='border-2 border-blood-red bg-void-black text-blood-red px-2 py-1 shadow-[4px_4px_0px_var(--color-blood-red)] hover:bg-blood-red hover:text-void-black uppercase font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
-            CLOSE
+            {t('ui:action_close')}
           </button>
         </div>
 

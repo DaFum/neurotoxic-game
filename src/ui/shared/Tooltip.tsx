@@ -7,7 +7,12 @@ import React, {
   useRef
 } from 'react'
 import { logger } from '../../utils/logger'
-import type { ReactElement, ReactNode, SyntheticEvent } from 'react'
+import type {
+  KeyboardEvent,
+  ReactElement,
+  ReactNode,
+  SyntheticEvent
+} from 'react'
 
 const getOwn = <T,>(
   obj: Record<string, unknown>,
@@ -100,6 +105,18 @@ export const Tooltip = ({
     [isDisabled]
   )
 
+  // WCAG 1.4.13: Escape dismisses the tooltip without moving focus. The event
+  // keeps propagating so an enclosing dialog's Escape handling still runs.
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsVisible(false)
+      const fn = getOwn<unknown>(childPropsRef.current, 'onKeyDown')
+      if (!isDisabled && typeof fn === 'function')
+        (fn as (...args: unknown[]) => void)(e)
+    },
+    [isDisabled]
+  )
+
   React.useEffect(() => {
     if (!isValid) {
       logger.warn(
@@ -145,6 +162,7 @@ export const Tooltip = ({
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       aria-describedby={computedAriaDescribedBy}
     >
       {children}
@@ -156,6 +174,7 @@ export const Tooltip = ({
       onMouseLeave: handleMouseLeave,
       onFocus: handleFocus,
       onBlur: handleBlur,
+      onKeyDown: handleKeyDown,
       'aria-describedby': computedAriaDescribedBy
     })
   )

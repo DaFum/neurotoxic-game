@@ -275,6 +275,22 @@ describe('MinigameSceneFrame', () => {
     expect(dialog?.getAttribute('aria-labelledby')).toBe('completion-title')
   })
 
+  test('embedded completion overlay is a named region, not a modal dialog', async () => {
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: true }}
+        onComplete={mockOnComplete}
+        embedded
+      />
+    )
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    const region = screen.getByRole('region', { name: 'ui:minigames.complete' })
+    expect(region).not.toHaveAttribute('aria-modal')
+  })
+
   test('passes logic.update and logic.gameStateRef to PixiStage', async () => {
     const customLogic = {
       gameStateRef: { current: { test: 'value' } },

@@ -5,9 +5,10 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { IMG_PROMPTS } from '../../utils/imageGen'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 import { getActiveDealBenefits } from '../../utils/brandDealBenefits'
 import { isLooseRecord } from '../../utils/objectUtils'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import type {
   DealImageProps,
   DealInfoProps,
@@ -15,6 +16,7 @@ import type {
   DealCardProps
 } from '../../types/components'
 import type { BrandAlignment } from '../../types/social'
+import type { TFunction } from 'i18next'
 
 const getNegotiationStatus = (value: unknown): string | undefined => {
   if (
@@ -134,7 +136,9 @@ const urgencyClass = (urgency: string | undefined): string => {
 }
 
 const formatPenalty = (
-  penalty: Record<string, unknown> | undefined
+  penalty: Record<string, unknown> | undefined,
+  t: TFunction,
+  language: string
 ): string => {
   if (!penalty || typeof penalty !== 'object' || Array.isArray(penalty))
     return ''
@@ -142,10 +146,16 @@ const formatPenalty = (
   for (const k in penalty) {
     if (Object.hasOwn(penalty, k)) {
       const val = penalty[k]
-      if (val !== null && typeof val === 'object') continue
+      if (!isFiniteNumber(val)) continue
 
+      const label = t(`ui:stats.${k}`, {
+        defaultValue: t('ui:deals.penaltyUnknown', {
+          defaultValue: 'Unknown effect'
+        })
+      })
+      const sign = val > 0 ? '+' : ''
       if (result) result += ', '
-      result += `${k}: ${String(val)}`
+      result += `${label}: ${sign}${formatNumber(val, language)}`
     }
   }
   return result
@@ -160,7 +170,11 @@ const DealInfo = memo(
       alignment != null ? brandReputation?.[alignment] : undefined
     const flavor = displayDeal.flavor
     const formattedPenalty = displayDeal.penalty
-      ? formatPenalty(displayDeal.penalty as Record<string, unknown>)
+      ? formatPenalty(
+          displayDeal.penalty as Record<string, unknown>,
+          t,
+          i18n.language
+        )
       : ''
     // Same registry-backed terms the post-gig and daily ticks apply.
     const terms = getActiveDealBenefits([displayDeal])

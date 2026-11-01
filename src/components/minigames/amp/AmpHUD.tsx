@@ -210,7 +210,10 @@ export const AmpHUD = memo(function AmpHUD({
                 : 'text-toxic-green'
             }
           >
-            {formatNumber(timeLeft, i18n.language, 1)}s
+            {t('ui:unit.seconds', {
+              value: formatNumber(timeLeft, i18n.language, 1),
+              defaultValue: '{{value}}s'
+            })}
           </span>
         </div>
         <div className='flex justify-between w-48'>

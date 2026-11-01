@@ -2,6 +2,17 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { DebugLogViewer } from '../../src/ui/DebugLogViewer.tsx'
 
+const locale = vi.hoisted(() => ({ translations: {} }))
+
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key, options) =>
+      locale.translations[key] ?? options?.defaultValue ?? key,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  })
+}))
+
 vi.mock('../../src/utils/logger', async importOriginal => {
   const { safeStringify } = await importOriginal()
   const listeners = new Set()
@@ -28,10 +39,10 @@ vi.mock('../../src/utils/logger', async importOriginal => {
         data: { reason: 'timeout' }
       }
     ],
-    subscribe: cb => {
+    subscribe: vi.fn(cb => {
       listeners.add(cb)
       return () => listeners.delete(cb)
-    },
+    }),
     clear: vi.fn(() => {
       logger.logs = []
       listeners.forEach(cb => {
@@ -168,7 +179,7 @@ describe('DebugLogViewer', () => {
     render(<DebugLogViewer />)
     fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
-    const closeButton = screen.getByText('CLOSE')
+    const closeButton = screen.getByRole('button', { name: 'ui:action_close' })
     fireEvent.click(closeButton)
 
     expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
@@ -219,5 +230,55 @@ describe('DebugLogViewer', () => {
 
     // wait for React to process the state update
     expect(await screen.findByText('retry connection')).toBeInTheDocument()
+  })
+
+  test('renders localized toolbar labels that match their accessible names', () => {
+    locale.translations = {
+      'ui:debugViewer.title': 'NEUROTOXIC-DEBUGGER',
+      'ui:debugViewer.levelFilter': 'Protokollstufe filtern',
+      'ui:action_dump_logs': 'PROTOKOLLE IN KONSOLE AUSGEBEN',
+      'ui:action_close': 'SCHLIESSEN'
+    }
+    try {
+      render(<DebugLogViewer />)
+      fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+      expect(screen.getByText('NEUROTOXIC-DEBUGGER')).toBeInTheDocument()
+      expect(
+        screen.getByRole('combobox', { name: 'Protokollstufe filtern' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'PROTOKOLLE IN KONSOLE AUSGEBEN' })
+      ).toHaveTextContent('PROTOKOLLE IN KONSOLE AUSGEBEN')
+      expect(
+        screen.getByRole('button', { name: 'SCHLIESSEN' })
+      ).toHaveTextContent('SCHLIESSEN')
+    } finally {
+      locale.translations = {}
+    }
+  })
+
+  test('keeps one logger subscription across re-renders', () => {
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+    expect(loggerMock.subscribe).toHaveBeenCalledTimes(1)
+
+    act(() => {
+      const newEntry = {
+        id: 'log3',
+        timestamp: '2025-01-01T10:02:00.000Z',
+        level: 'WARN',
+        channel: 'Network',
+        message: 'retry connection'
+      }
+      loggerMock.logs = [newEntry, ...loggerMock.logs]
+      loggerMock._emitAdd(newEntry)
+    })
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: '40' }
+    })
+
+    expect(screen.getByText('critical failure')).toBeInTheDocument()
+    expect(loggerMock.subscribe).toHaveBeenCalledTimes(1)
   })
 })
