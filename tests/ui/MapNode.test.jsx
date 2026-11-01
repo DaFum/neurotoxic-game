@@ -726,10 +726,17 @@ describe('MapNodeView', () => {
       expect(stack.className).toContain('max-sm:hidden')
     })
 
-    test('shows a travel target label from 360px up, tap-only below', () => {
+    // A tap starts the travel confirmation, so the name must not need one,
+    // even at 320px (#3499); colliding labels are decluttered instead.
+    test('shows a travel target label at every width', () => {
       const { stack } = renderLabel({})
-      expect(stack.className).toContain('max-[359px]:hidden')
+      expect(stack.className).not.toContain('max-[359px]:hidden')
       expect(stack.className).not.toContain('max-sm:hidden')
+    })
+
+    test('hides the travel target labels of a dense Expedition branch on phones', () => {
+      const { stack } = renderLabel({ compactLabels: true })
+      expect(stack.className).toContain('max-sm:hidden')
     })
 
     test('reveals any label on hover, including the current node', () => {
