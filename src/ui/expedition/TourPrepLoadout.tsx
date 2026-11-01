@@ -78,6 +78,8 @@ type BuildTabCategory =
   | 'risk_protection'
   | 'commercial_contracts'
 
+const PROTECTED_CASH_STEP = 10
+
 /**
  * Toggles one id in a bounded selection.
  */
@@ -180,7 +182,8 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const [startingFuelTarget, setStartingFuelTarget] = useState<number>(() =>
     Math.ceil(currentFuel)
   )
-  const [protectedCareerCash, setProtectedCareerCash] = useState(0)
+  const [requestedProtectedCareerCash, setRequestedProtectedCareerCash] =
+    useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
   const [starterPerkId, setStarterPerkId] = useState<string | null>(null)
   const [pressureModifierIds, setPressureModifierIds] = useState<string[]>([])
@@ -374,6 +377,23 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [contractTemplateIds, preparedMap]
   )
 
+  const upfrontCost = getExpeditionUpfrontCost(state, {
+    startingFuelTarget,
+    insurancePolicyId
+  })
+  // Validation requires `money - upfrontCost >= protectedCareerCash`, so the
+  // slider tops out there (step-aligned, matching what the range can reach)
+  // and a pick made before the upfront cost rose is clamped down with it.
+  const maxProtectedCareerCash = Math.max(
+    0,
+    Math.floor((money - upfrontCost) / PROTECTED_CASH_STEP) *
+      PROTECTED_CASH_STEP
+  )
+  const protectedCareerCash = Math.min(
+    requestedProtectedCareerCash,
+    maxProtectedCareerCash
+  )
+
   const candidate = useMemo<ExpeditionLoadout>(
     () => ({
       tourTypeId,
@@ -427,10 +447,6 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   // The build may only top the tank up, so a full tank leaves nothing to pick.
   const isTankFull = Math.ceil(currentFuel) >= EXPEDITION_MAX_STARTING_FUEL
   const insurancePremium = getExpeditionInsurancePremium(insurancePolicyId)
-  const upfrontCost = getExpeditionUpfrontCost(state, {
-    startingFuelTarget,
-    insurancePolicyId
-  })
   // START pays the chosen sponsor's advance, so the preview has to count it.
   const selectedSponsorDealId = sponsorOffers.find(
     offer => offer.offerId === sponsorOfferId
@@ -1165,12 +1181,14 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 type='range'
                 aria-labelledby='expedition-prep-protected-cash-label'
                 min={0}
-                max={Math.max(0, Math.floor(money))}
-                step={10}
+                max={maxProtectedCareerCash}
+                step={PROTECTED_CASH_STEP}
                 value={protectedCareerCash}
                 data-testid='expedition-prep-protected-cash'
                 onChange={event =>
-                  setProtectedCareerCash(Number(event.currentTarget.value))
+                  setRequestedProtectedCareerCash(
+                    Number(event.currentTarget.value)
+                  )
                 }
               />
               <p className='text-xs text-ash-gray'>
