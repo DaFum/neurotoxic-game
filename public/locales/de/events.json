@@ -1341,5 +1341,11 @@
   "wrong_turn.opt2.d_d549": "Versteckten Plattenladen gefunden! +Seltene Vinyl",
   "wrong_turn.opt2.label": "Gegend erkunden",
   "wrong_turn.opt2.outcome": "Du hast dich entschieden, dich umzusehen.",
-  "wrong_turn.title": "FALSCH ABGEBOGEN"
+  "wrong_turn.title": "FALSCH ABGEBOGEN",
+  "underground_synth_shop.title": "UNTERGRUND SYNTHESIZER LADEN",
+  "underground_synth_shop.desc": "Ihr stolpert über einen versteckten Laden, der alte und maßgeschneiderte Synthesizer verkauft. Der Besitzer behauptet, einer davon sei legendär.",
+  "underground_synth_shop.opt1.label": "Den legendären Synth kaufen [-250 Geld, +3 Skill, +20 Ruhm]",
+  "underground_synth_shop.opt1.outcome": "Der Synth klingt unglaublich! Eure musikalischen Fähigkeiten steigen und die Leute bemerken den neuen Sound.",
+  "underground_synth_shop.opt2.label": "Liegen lassen [-2 Stimmung]",
+  "underground_synth_shop.opt2.outcome": "Ihr verlasst den Laden. Die verpasste Gelegenheit beschäftigt euch noch eine Weile."
 }

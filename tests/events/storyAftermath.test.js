@@ -41,7 +41,8 @@ const stateWith = flags => ({
   pendingEvents: [],
   player: { day: 5 },
   band: { harmony: 80, members: [] },
-  social: {}
+  social: {},
+  expedition: { status: 'inactive' }
 })
 
 const locales = Object.fromEntries(
