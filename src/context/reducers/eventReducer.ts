@@ -4,9 +4,9 @@ import {
   applyEventDelta,
   clampBandHarmony,
   finiteNumberOr,
-  isFiniteNumber,
   isForbiddenKey,
-  isLooseRecord
+  isLooseRecord,
+  selectScoreDelta
 } from '../../utils/gameState'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
@@ -99,12 +99,9 @@ export const handleApplyEventDelta = (
   logger.info('GameState', 'Applying Event Delta', payload)
   const appliedState = applyEventDelta(state, payload)
   const currentGigEventScore = finiteNumberOr(state.gigEventScoreDelta, 0)
-  // Same precedence as applyEventDelta: a finite player.score wins over score.
-  const eventScoreDelta = isFiniteNumber(payload.player?.score)
-    ? payload.player.score
-    : payload.score
+  const eventScoreDelta = selectScoreDelta(payload)
   const nextState =
-    state.currentScene === GAME_PHASES.GIG && isFiniteNumber(eventScoreDelta)
+    state.currentScene === GAME_PHASES.GIG && eventScoreDelta !== 0
       ? {
           ...appliedState,
           gigEventScoreDelta: finiteNumberOr(

@@ -317,6 +317,29 @@ const isRelationshipChange = (value: unknown): value is RelationshipChange => {
 }
 
 /**
+ * Selects the score change an event delta requests.
+ *
+ * @param delta - Delta-like record carrying an optional `player.score` and/or top-level `score`.
+ * @returns The finite nested `player.score` when `player` is a record, otherwise
+ * the finite top-level `score`, otherwise `0`.
+ *
+ * @remarks
+ * Single source of the score precedence shared by `calculateAppliedDelta`,
+ * `applyEventDelta` and the in-gig `gigEventScoreDelta` accumulator. A finite
+ * nested `0` wins over a top-level score, so it suppresses the change.
+ */
+export const selectScoreDelta = (delta: {
+  score?: unknown
+  player?: unknown
+}): number => {
+  const player = delta.player
+  if (isLooseRecord(player) && isFiniteNumber(player.score)) {
+    return player.score
+  }
+  return isFiniteNumber(delta.score) ? delta.score : 0
+}
+
+/**
  * Previews the effective clamped state deltas from an event delta.
  *
  * @param state - Lightweight state preview used as the current clamp baseline.
@@ -335,6 +358,13 @@ export const calculateAppliedDelta = (
     applied.flags = {}
   }
 
+  const scoreDelta = selectScoreDelta(delta)
+  if (scoreDelta !== 0) {
+    const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
+    const nextScore = addClampedNonNegative(currentScore, scoreDelta)
+    applied.score = nextScore - currentScore
+  }
+
   if (delta.player) {
     if (isFiniteNumber(delta.player.money)) {
       const currentMoney = Math.max(0, finiteNumberOr(state.player?.money, 0))
@@ -350,16 +380,6 @@ export const calculateAppliedDelta = (
       const currentFame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
       const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
-    }
-    const scoreDelta = isFiniteNumber(delta.player?.score)
-      ? delta.player.score
-      : isFiniteNumber(delta.score)
-        ? delta.score
-        : 0
-    if (scoreDelta !== 0) {
-      const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
-      const nextScore = addClampedNonNegative(currentScore, scoreDelta)
-      applied.score = nextScore - currentScore
     }
     if (delta.player.van) {
       applied.player.van = {}
@@ -661,20 +681,6 @@ export const applyEventDelta = (
       )
       nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
-    const scoreDelta = isFiniteNumber(delta.player.score)
-      ? delta.player.score
-      : isFiniteNumber(delta.score)
-        ? delta.score
-        : 0
-
-    if (scoreDelta !== 0) {
-      const boundedScore = clampNonNegative(nextPlayer.score)
-      // Match calculateAppliedDelta: score is non-negative. A large negative
-      // delta (e.g. -1000 from ego-breakup consequences) must not drive
-      // player.score below 0.
-      nextPlayer.score = addClampedNonNegative(boundedScore, scoreDelta)
-    }
-
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
@@ -723,6 +729,20 @@ export const applyEventDelta = (
     }
 
     nextState.player = nextPlayer
+  }
+
+  const scoreDelta = selectScoreDelta(delta)
+  if (scoreDelta !== 0) {
+    // Match calculateAppliedDelta: score is non-negative. A large negative
+    // delta (e.g. -1000 from ego-breakup consequences) must not drive
+    // player.score below 0.
+    nextState.player = {
+      ...nextState.player,
+      score: addClampedNonNegative(
+        clampNonNegative(nextState.player.score),
+        scoreDelta
+      )
+    }
   }
 
   if (delta.band) {
