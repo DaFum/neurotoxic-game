@@ -229,3 +229,8 @@
 
 **Learning:** In catalog and barter grids (like VoidTraderTab), action buttons with generic labels (such as "BARTER" or "PROCESSING...") lack item context when screen reader users navigate controls by landmarks or list shortcuts. Furthermore, item cards relying on plain text placeholders like "?" hide visual cues for rare contraband items.
 **Action:** Always construct dynamic `aria-label`s on grid item action buttons combining the action, item name, cost, and state (e.g. `BARTER Phantom Strings (1000 FAME)`), bind `aria-busy` during processing states, and map item IDs to visual contraband icon glyphs using `getContrabandIconGlyph`.
+
+## 2026-11-15 - Semantic Grouping on Toggle Button Clusters
+
+**Learning:** Custom toggle button groups (such as language selectors or mutually exclusive setting switches built with `ActionButton`) provide individual button states via `aria-pressed`, but without container group semantics (`role="group"` and `aria-labelledby`), screen reader users tabbing through controls lack context of what option set the buttons belong to.
+**Action:** Wrap toggle button clusters in a container with `role="group"` and `aria-labelledby={headingId}` referencing the section heading's `id` (generated via `useId()`) so assistive technology announces the group's purpose upon focus.
