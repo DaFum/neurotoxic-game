@@ -468,7 +468,12 @@ describe('eventReducer', () => {
         }
       })
 
-      it('reports harmony as it was before a quest reward moves it', () => {
+      it('reports the quest reward as its own change next to the event delta', () => {
+        // Changed on purpose (#3499 finding 8): a harmony quest reward now
+        // emits its own `band.harmonyChanged`, so Band Pact-style threshold
+        // quests see the reward. The event delta is still reported as it was
+        // before the reward moved harmony (45). The money gain completes the quest
+        // first, so the reward's own report (+20 -> 65) is emitted before it.
         const spy = mock.method(QuestEvents, 'emit')
         try {
           const state = withHarmony(40, {
@@ -482,8 +487,9 @@ describe('eventReducer', () => {
             band: { harmony: 5 }
           })
           const calls = harmonyEmits(spy)
-          assert.strictEqual(calls.length, 1)
-          assert.strictEqual(calls[0].arguments[1].context.harmony, 45)
+          assert.strictEqual(calls.length, 2)
+          assert.strictEqual(calls[0].arguments[1].context.harmony, 65)
+          assert.strictEqual(calls[1].arguments[1].context.harmony, 45)
           assert.strictEqual(next.band.harmony, 65)
         } finally {
           spy.mock.restore()
