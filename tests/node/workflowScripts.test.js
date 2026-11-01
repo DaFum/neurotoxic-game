@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
 
 const loadWorkflow = name =>
@@ -107,18 +107,37 @@ describe('lint-fix-preview sticky report (#3377)', () => {
 })
 
 describe('workflow hardening (#3466)', () => {
-  test('changed workflows pass expressions to run scripts only via env', () => {
-    for (const name of ['lint-fix-preview.yml', 'deploy.yml']) {
-      for (const [jobId, job] of Object.entries(loadWorkflow(name).jobs)) {
+  test('every workflow and composite action passes expressions to scripts only via env', () => {
+    const files = [
+      ...readdirSync('.github/workflows')
+        .filter(name => /\.ya?ml$/.test(name))
+        .map(name => `.github/workflows/${name}`),
+      ...readdirSync('.github/actions').map(
+        dir => `.github/actions/${dir}/action.yml`
+      )
+    ]
+    assert.ok(files.length >= 9, `scanned too few files: ${files.length}`)
+    let scripts = 0
+    for (const file of files) {
+      const doc = parse(readFileSync(file, 'utf8'))
+      const jobs = Object.entries(doc.jobs ?? { composite: doc.runs })
+      for (const [jobId, job] of jobs) {
         for (const step of job.steps ?? []) {
-          if (typeof step.run !== 'string') continue
-          assert.ok(
-            !step.run.includes('${{'),
-            `${name} job ${jobId} step "${step.name}" interpolates an expression into run:`
-          )
+          for (const [key, body] of [
+            ['run', step.run],
+            ['with.script', step.with?.script]
+          ]) {
+            if (typeof body !== 'string') continue
+            scripts++
+            assert.ok(
+              !body.includes('${{'),
+              `${file} job ${jobId} step "${step.name}" interpolates an expression into ${key}`
+            )
+          }
         }
       }
     }
+    assert.ok(scripts > 0, 'no run/script bodies were scanned')
   })
 
   test('deploy.yml grants Pages/OIDC only to a deploy job that runs no repository code', () => {
@@ -135,7 +154,7 @@ describe('workflow hardening (#3466)', () => {
       ['deploy']
     )
     const deploy = workflow.jobs.deploy
-    assert.equal(deploy.needs, 'build')
+    assert.deepEqual([deploy.needs].flat(), ['build'])
     for (const step of deploy.steps) {
       assert.equal(step.run, undefined)
       assert.match(

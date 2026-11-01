@@ -104,7 +104,11 @@ export const useGigSession = ({
 
   const handleQuitGig = useCallback(async () => {
     // A second Quit, or a Quit after finalizeGig submitted, must not overwrite
-    // the submitted stats or end the gig again.
+    // the submitted stats or end the gig again. This cannot strand the scene:
+    // finalizeGig calls endGig in a `finally`, and endGig does not throw. Its
+    // CHANGE_SCENE dispatch runs inside React's `startTransition`, which
+    // catches and reports errors, and the practice branch only adds a toast
+    // and a boolean flag, whose reducers return the old state on bad input.
     if (gameStateRef.current?.hasSubmittedResults) return
     if (gameStateRef.current) {
       gameStateRef.current.hasSubmittedResults = true

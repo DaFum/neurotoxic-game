@@ -1046,4 +1046,48 @@ describe('usePostGigLogic', () => {
       )
     })
   })
+
+  // handleNextPhase keeps the processing guard held; only the phase change
+  // releases it. Each case checks both the rendered flag and that the next
+  // phase's action is not blocked by a stale guard ref.
+  describe('handleNextPhase guard release on phase change', () => {
+    it('releases the guard after reaching SOCIAL', async () => {
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+
+      act(() => {
+        result.current.handleNextPhase()
+      })
+
+      expect(result.current.phase).toBe('SOCIAL')
+      expect(result.current.isProcessingAction).toBe(false)
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+      expect(mockCommitSocialPost).toHaveBeenCalledTimes(1)
+    })
+
+    it('releases the guard after the error path reaches COMPLETE', async () => {
+      socialEngine.generatePostOptions.mockImplementation(() => {
+        throw new Error('bad state')
+      })
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+
+      act(() => {
+        result.current.handleNextPhase()
+      })
+
+      expect(result.current.phase).toBe('COMPLETE')
+      expect(result.current.isProcessingAction).toBe(false)
+
+      act(() => {
+        result.current.handleContinue()
+      })
+      await waitFor(() => {
+        expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      })
+    })
+  })
 })

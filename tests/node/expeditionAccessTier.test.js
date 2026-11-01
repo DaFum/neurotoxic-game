@@ -31,6 +31,7 @@ import { EXPEDITION_CONTRACTS_BY_ID } from '../../src/data/expedition/contracts.
 import { handleNodeArrival } from '../../src/utils/arrivalUtils.ts'
 import { getExpeditionMobilityFailureSignal } from '../../src/domain/expedition/failure.ts'
 import { fixtureLoadout } from '../expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../expeditionRouteAdvanceFixture.js'
 
 const TOUR = 'standard_tour'
 const REGION = 'home_turf'
@@ -78,19 +79,8 @@ const pathTo = (map, targetId) => {
   return path.slice(1)
 }
 
-/** Walks a started run along `path` through the real route action. */
-const walk = (state, path) => {
-  let current = state
-  for (const nodeId of path) {
-    const next = gameReducer(current, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId, expectedRouteStep: current.expedition.routeStep }
-    })
-    assert.notEqual(next, current, `route advance to ${nodeId} was refused`)
-    current = next
-  }
-  return current
-}
+/** Walks a started run along `path` through the fixture route advance. */
+const walk = (state, path) => path.reduce(advanceRouteForFixture, state)
 
 /** First seed whose fresh route carries a node of `nodeClass`. */
 const seedWith = nodeClass => {

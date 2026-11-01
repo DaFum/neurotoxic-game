@@ -10,7 +10,6 @@ import {
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
-import { ActionTypes } from '../../src/context/actionTypes'
 import {
   createPersistedState,
   createRawLoadPayload
@@ -18,6 +17,7 @@ import {
 import { deriveExpeditionGhostRouteTargetFrom } from '../../src/domain/expedition/legendaries'
 import { createFixedClock } from '../../src/utils/clock'
 import { fixtureMap, startedState } from '../expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../expeditionRouteAdvanceFixture.js'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 
@@ -471,16 +471,6 @@ describe('a Ghost Route conversion that survives a real LOAD_GAME', () => {
     )
   }
 
-  const advanceRoute = (state, nodeId) => {
-    const next = gameReducer(state, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId, expectedRouteStep: state.expedition.routeStep }
-    })
-    // A refused advance returns the same state; the fixture must not go on.
-    expect(next).not.toBe(state)
-    return next
-  }
-
   /**
    * Owns Ghost Route at Headliner rank and corners the run with Authority
    * pressure, mirroring `owning` and `cornered` in
@@ -513,11 +503,11 @@ describe('a Ghost Route conversion that survives a real LOAD_GAME', () => {
 
     let state = base
     for (const nodeId of fixture.path.slice(1)) {
-      state = advanceRoute(state, nodeId)
+      state = advanceRouteForFixture(state, nodeId)
     }
     expect(state.expedition.routeStep).toBe(fixture.predecessorStep)
     state = ownedAndCornered(state)
-    const escaped = advanceRoute(state, fixture.target)
+    const escaped = advanceRouteForFixture(state, fixture.target)
 
     const overlay = {
       nodeId: fixture.target,

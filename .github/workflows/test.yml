@@ -44,9 +44,11 @@ jobs:
       - name: Run node:test suite (shard ${{ matrix.shard }}/2)
         id: run-tests
         shell: bash
+        env:
+          SHARD: ${{ matrix.shard }}
         run: |
           rc=0
-          pnpm run test:node -- --shard=${{ matrix.shard }}/2 2>&1 | tee "test-output-node-${{ matrix.shard }}.txt" || rc=$?
+          pnpm run test:node -- --shard="$SHARD"/2 2>&1 | tee "test-output-node-$SHARD.txt" || rc=$?
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
       - name: Upload test log artifact (node)

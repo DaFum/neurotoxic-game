@@ -79,6 +79,7 @@ describe('MainMenu Component', () => {
   const mockAddToast = vi.fn()
   const mockLoadGame = vi.fn()
   const mockOpenHQ = vi.fn()
+  const mockHasOtherStoredSave = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -90,8 +91,10 @@ describe('MainMenu Component', () => {
       updatePlayer: mockUpdatePlayer,
       resetState: mockResetState,
       addToast: mockAddToast,
-      loadGame: mockLoadGame
+      loadGame: mockLoadGame,
+      hasOtherStoredSave: mockHasOtherStoredSave
     })
+    mockHasOtherStoredSave.mockReturnValue(false)
 
     useBandHQModal.mockReturnValue({
       showHQ: false,
@@ -250,6 +253,83 @@ describe('MainMenu Component', () => {
       expect(
         screen.queryByText('ui:mainMenu.existingSave.title')
       ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Start Expedition existing-save prompt', () => {
+    const clickStartExpedition = () =>
+      fireEvent.click(screen.getByText('ui:expedition.startExpedition'))
+
+    it('asks before starting over a save this session has not seen', () => {
+      mockHasOtherStoredSave.mockReturnValue(true)
+      render(<MainMenu />)
+
+      clickStartExpedition()
+
+      expect(
+        screen.getByText('ui:mainMenu.existingSave.title')
+      ).toBeInTheDocument()
+      expect(mockChangeScene).not.toHaveBeenCalled()
+    })
+
+    it('enters Tour Prep from the prompt without resetting the state', () => {
+      mockHasOtherStoredSave.mockReturnValue(true)
+      render(<MainMenu />)
+
+      clickStartExpedition()
+      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
+
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.TOUR_PREP)
+      expect(mockChangeScene).not.toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      expect(mockResetState).not.toHaveBeenCalled()
+      expect(
+        screen.queryByText('ui:mainMenu.existingSave.title')
+      ).not.toBeInTheDocument()
+    })
+
+    it('loads the save from the prompt', () => {
+      mockHasOtherStoredSave.mockReturnValue(true)
+      mockLoadGame.mockReturnValue({ ok: true })
+      render(<MainMenu />)
+
+      clickStartExpedition()
+      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
+
+      expect(mockLoadGame).toHaveBeenCalled()
+      expect(mockChangeScene).not.toHaveBeenCalled()
+    })
+
+    it("enters Tour Prep directly over the session's own save or no save", () => {
+      // The flag already folds in "no save stored"; the stored save below
+      // proves the menu asks the flag rather than storage.
+      localStorage.setItem('neurotoxic_v3_save', 'own-save-data')
+      mockHasOtherStoredSave.mockReturnValue(false)
+      render(<MainMenu />)
+
+      clickStartExpedition()
+
+      expect(mockHasOtherStoredSave).toHaveBeenCalled()
+      expect(
+        screen.queryByText('ui:mainMenu.existingSave.title')
+      ).not.toBeInTheDocument()
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.TOUR_PREP)
+    })
+
+    it('keeps Start Tour on the classic path after an Expedition prompt', () => {
+      localStorage.setItem('neurotoxic_v3_save', 'some-save-data')
+      localStorage.setItem('neurotoxic_player_id', 'existing-id')
+      localStorage.setItem('neurotoxic_player_name', 'ExistingPlayer')
+      mockHasOtherStoredSave.mockReturnValue(true)
+      render(<MainMenu />)
+
+      clickStartExpedition()
+      fireEvent.click(screen.getByRole('button', { name: 'ui:closeModal' }))
+      fireEvent.click(screen.getByText('ui:start_game'))
+      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
+
+      expect(mockResetState).toHaveBeenCalled()
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      expect(mockChangeScene).not.toHaveBeenCalledWith(GAME_PHASES.TOUR_PREP)
     })
   })
 

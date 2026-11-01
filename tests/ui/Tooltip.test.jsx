@@ -62,6 +62,35 @@ describe('Tooltip Component', () => {
     expect(onKeyDown).toHaveBeenCalledTimes(1)
   })
 
+  test('Escape on the document dismisses a hover-opened tooltip and the listener is removed', () => {
+    const add = vi.spyOn(document, 'addEventListener')
+    const remove = vi.spyOn(document, 'removeEventListener')
+    const keydownCalls = spy =>
+      spy.mock.calls.filter(([type]) => type === 'keydown')
+    const { getByText, queryByText, unmount } = render(
+      <Tooltip content='Tooltip Content'>
+        <button type='button'>Hover Me</button>
+      </Tooltip>
+    )
+    expect(keydownCalls(add)).toHaveLength(0)
+
+    fireEvent.mouseEnter(getByText('Hover Me'))
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
+    expect(keydownCalls(add)).toHaveLength(1)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(queryByText('Tooltip Content')).toBeNull()
+    expect(keydownCalls(remove)).toHaveLength(1)
+
+    // Reopen, then unmount: cleanup removes the listener again.
+    fireEvent.mouseEnter(getByText('Hover Me'))
+    expect(keydownCalls(add)).toHaveLength(2)
+    unmount()
+    expect(keydownCalls(remove)).toHaveLength(2)
+    add.mockRestore()
+    remove.mockRestore()
+  })
+
   test('Escape dismisses the tooltip of a disabled child', () => {
     const { getByText, queryByText } = render(
       <Tooltip content='Tooltip Content'>

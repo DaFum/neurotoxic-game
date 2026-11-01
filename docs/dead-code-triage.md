@@ -295,16 +295,21 @@ observation through `recordExpeditionArchiveObservations`, so a standalone
 dispatch is a redundant no-op for anything the run has met. It stays as the
 typed intent surface for Archive discoveries.
 
-`advanceExpeditionRoute`, `addExpeditionReward` and
-`acquireExpeditionCrewSignature` are composition-only the same way. Arrival
-advances the route through `applyExpeditionRouteAdvance` inside the travel
-reducer (`minigameReducer`); every reward source banks its ledger entry through
-`resolveExpeditionReward` in the reducer commit that proves it; and the
+`addExpeditionReward` and `acquireExpeditionCrewSignature` are
+composition-only the same way. Every reward source banks its ledger entry
+through `resolveExpeditionReward` in the reducer commit that proves it, and the
 Between-Tour `crew_debrief -> develop_signature` answer applies
 `handleAcquireExpeditionCrewSignature` inside the decision resolution. The
-dispatch methods stay as typed intent surfaces (the `advanceExpeditionRoute`
-creator also backs `scripts/game-balance-expedition-legendary.mjs`) and are
-documented as composition-only in `src/context/useGameDispatchActions.ts`.
+dispatch methods stay as typed intent surfaces and are documented as
+composition-only in `src/context/useGameDispatchActions.ts`.
+
+The route advance has no dispatch method or action at all. Arrival advances the
+route through `applyExpeditionRouteAdvance` inside paid Tourbus settlement
+(`minigameReducer`), the only production commit path. The former public route
+action was removed (#3463) because a raw dispatch moved the player without
+fuel, travel cost or a crisis check; fixtures, the e2e save builders and
+`scripts/game-balance-expedition-legendary.mjs` stage route depth through
+`tests/expeditionRouteAdvanceFixture.js`.
 
 ### Standalone defect action constructors
 

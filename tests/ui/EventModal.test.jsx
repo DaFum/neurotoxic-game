@@ -279,6 +279,33 @@ test('EventModal blocks an option that is not affordable, by click and key', asy
   }
 })
 
+test('EventModal fills an option label amount with the unclipped offer price', async () => {
+  const { getOptionPreviewMoney } = await import('../../src/utils/eventEngine')
+  getOptionPreviewMoney.mockImplementation((_option, _state, options) =>
+    options?.clampToBalance === false ? -250 : -100
+  )
+  translationBehavior.calls = []
+  try {
+    render(
+      <EventModal
+        event={{
+          id: 'underground_synth_shop',
+          title: 'Test Event',
+          description: 'This is a test event.',
+          options: [{ label: 'events:underground_synth_shop.opt1.label' }]
+        }}
+        onOptionSelect={vi.fn()}
+      />
+    )
+    const labelCall = translationBehavior.calls.find(
+      call => call.key === 'events:underground_synth_shop.opt1.label'
+    )
+    expect(labelCall?.options?.amount).toMatch(/250/)
+  } finally {
+    getOptionPreviewMoney.mockImplementation(() => null)
+  }
+})
+
 test('EventModal blocks options that have a failing condition', async () => {
   const mockEvent = {
     id: 'test_event_condition',

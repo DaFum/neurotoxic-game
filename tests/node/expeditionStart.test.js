@@ -7,11 +7,13 @@
  * assembled against, and affordability against the protected Career slice.
  */
 
-import { describe, it } from 'node:test'
+import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { startExpedition } from '../../src/context/expeditionActionCreators'
+import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer'
+import { logger } from '../../src/utils/logger'
 import {
   FIXTURE_RUN_SEED,
   fixtureLoadout,
@@ -19,6 +21,7 @@ import {
   preparedState,
   walkTo
 } from '../expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../expeditionRouteAdvanceFixture.js'
 
 const start = (state, payload) =>
   gameReducer(state, { type: ActionTypes.START_EXPEDITION, payload })
@@ -262,10 +265,7 @@ describe('route progression through the real travel path', () => {
   it('refuses a forged jump straight to the Finale', () => {
     const started = start(preparedState(), validPayload())
     const map = fixtureMap()
-    const forged = gameReducer(started, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: { nodeId: map.finaleNodeId, expectedRouteStep: 0 }
-    })
+    const forged = applyExpeditionRouteAdvance(started, map.finaleNodeId)
     assert.equal(forged, started)
   })
 
@@ -275,17 +275,48 @@ describe('route progression through the real travel path', () => {
     const target = map.connections.find(
       edge => edge.from === map.startNodeId
     )?.to
-    const payload = { nodeId: target, expectedRouteStep: 0 }
-    state = gameReducer(state, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload
-    })
-    const replayed = gameReducer(state, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload
-    })
+    state = advanceRouteForFixture(state, target)
+    const replayed = applyExpeditionRouteAdvance(state, target)
     assert.equal(replayed, state)
     assert.equal(replayed.expedition.routeStep, 1)
+  })
+
+  it('has no public action that moves the player for free (#3463)', () => {
+    // The route only advances inside paid Tourbus settlement. A raw dispatch
+    // of the retired free-move action must not reach a handler that commits
+    // the move without fuel, travel cost or a crisis check.
+    const started = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    const target = map.connections.find(
+      edge => edge.from === map.startNodeId
+    )?.to
+    assert.ok(target)
+    const routeBefore = {
+      currentNodeId: started.player.currentNodeId,
+      routeStep: started.expedition.routeStep,
+      visitedNodeIds: [...started.expedition.visitedNodeIds]
+    }
+    const mockWarn = mock.method(logger, 'warn', () => {})
+    let result = started
+    try {
+      assert.throws(() => {
+        result = gameReducer(started, {
+          type: 'ADVANCE_EXPEDITION_ROUTE',
+          payload: { nodeId: target, expectedRouteStep: 0 }
+        })
+      }, /Unhandled action type: ADVANCE_EXPEDITION_ROUTE/)
+    } finally {
+      mockWarn.mock.restore()
+    }
+    assert.equal(result, started)
+    assert.deepEqual(
+      {
+        currentNodeId: started.player.currentNodeId,
+        routeStep: started.expedition.routeStep,
+        visitedNodeIds: started.expedition.visitedNodeIds
+      },
+      routeBefore
+    )
   })
 
   it('records the extraction windows the run passed through', () => {
@@ -297,13 +328,7 @@ describe('route progression through the real travel path', () => {
           state.expedition.visitedNodeIds.length - 1
         ]
       const target = map.connections.find(edge => edge.from === from)?.to
-      state = gameReducer(state, {
-        type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-        payload: {
-          nodeId: target,
-          expectedRouteStep: state.expedition.routeStep
-        }
-      })
+      state = advanceRouteForFixture(state, target)
     }
     assert.ok(state.expedition.extractionWindowsSeen.length > 0)
     for (const step of state.expedition.extractionWindowsSeen) {
@@ -376,13 +401,7 @@ describe('route rares are actually earnable', () => {
       const target = map.connections.find(edge => edge.from === from)?.to
       assert.ok(target)
       const before = state.expedition.rewardLedger.length
-      state = gameReducer(state, {
-        type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-        payload: {
-          nodeId: target,
-          expectedRouteStep: state.expedition.routeStep
-        }
-      })
+      state = advanceRouteForFixture(state, target)
       const expected = map.meta[target]?.hidden.rareRewardId === null ? 0 : 1
       assert.equal(
         state.expedition.rewardLedger.length - before,
@@ -411,10 +430,6 @@ describe('route rares are actually earnable', () => {
     assert.ok(rareNode)
 
     state = walkTo(state, rareNode.routeStep - 1)
-    const payload = {
-      nodeId: rareNode.nodeId,
-      expectedRouteStep: state.expedition.routeStep
-    }
     const isNeighbour = map.connections.some(
       edge =>
         edge.from ===
@@ -424,15 +439,9 @@ describe('route rares are actually earnable', () => {
     )
     if (!isNeighbour) return
 
-    const first = gameReducer(state, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload
-    })
+    const first = advanceRouteForFixture(state, rareNode.nodeId)
     assert.equal(first.expedition.rewardLedger.length, 1)
-    const replayed = gameReducer(first, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload
-    })
+    const replayed = applyExpeditionRouteAdvance(first, rareNode.nodeId)
     assert.equal(replayed, first)
   })
 

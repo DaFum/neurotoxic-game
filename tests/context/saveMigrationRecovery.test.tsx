@@ -35,8 +35,15 @@ const { InMemoryAdapter } = await import('../../src/utils/storageAdapter')
 const { logger } = await import('../../src/utils/logger')
 const { runSaveMigrations } =
   await import('../../src/context/reducers/migrations')
-const { getQuarantineKey, quarantineSave } =
+const { getQuarantineKey, listQuarantineCopies, quarantineSave } =
   await import('../../src/utils/saveQuarantine')
+const { createFixedClock } = await import('../../src/utils/clock')
+
+/** Newest quarantine copy of a version's migration family, or `null`. */
+const readNewestQuarantine = (version: number | null): string | null => {
+  const newest = listQuarantineCopies(getQuarantineKey(version))[0]
+  return newest ? localStorage.getItem(newest.key) : null
+}
 const { resetStorageFallback } = await import('../../src/utils/storage')
 
 describe('migrateLoadedSave', () => {
@@ -66,7 +73,7 @@ describe('migrateLoadedSave', () => {
       ok: true,
       migrated: { version: 2, player: { money: 250 } }
     })
-    expect(localStorage.getItem(getQuarantineKey(1))).toBeNull()
+    expect(readNewestQuarantine(1)).toBeNull()
   })
 
   it('skips the chain for a payload already at the current version', () => {
@@ -89,7 +96,7 @@ describe('migrateLoadedSave', () => {
       quarantined: true
     })
 
-    const quarantined = localStorage.getItem(getQuarantineKey(1))
+    const quarantined = readNewestQuarantine(1)
     expect(quarantined).not.toBeNull()
     expect(JSON.parse(quarantined ?? '{}')).toEqual({
       version: 1,
@@ -105,7 +112,7 @@ describe('migrateLoadedSave', () => {
       ok: false,
       quarantined: true
     })
-    expect(localStorage.getItem(getQuarantineKey(1))).not.toBeNull()
+    expect(readNewestQuarantine(1)).not.toBeNull()
   })
 
   it('treats a missing or unusable version marker as version 0', () => {
@@ -117,7 +124,7 @@ describe('migrateLoadedSave', () => {
       ok: false,
       quarantined: true
     })
-    expect(localStorage.getItem(getQuarantineKey(0))).not.toBeNull()
+    expect(readNewestQuarantine(0)).not.toBeNull()
   })
 })
 
@@ -144,6 +151,58 @@ describe('quarantineSave', () => {
     } finally {
       setItem.mockRestore()
     }
+  })
+
+  const copyKeys = (version: number) =>
+    Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i))
+      .filter((key): key is string => key !== null)
+      .filter(key => key.startsWith(`${getQuarantineKey(version)}:`))
+      .sort()
+
+  it('keeps every copy apart and finds the newest even when the clock steps back', () => {
+    expect(
+      quarantineSave('first', 1, 'a', undefined, {
+        clock: createFixedClock(2000)
+      })
+    ).toBe(true)
+    expect(
+      quarantineSave('second', 1, 'b', undefined, {
+        clock: createFixedClock(1000)
+      })
+    ).toBe(true)
+
+    expect(copyKeys(1)).toHaveLength(2)
+    expect(JSON.parse(readNewestQuarantine(1) ?? '{}').raw).toBe('second')
+  })
+
+  it('prunes the oldest copy past the cap only once the new copy landed', () => {
+    for (const raw of ['c1', 'c2', 'c3']) quarantineSave(raw, 1, 'r')
+    const firstThree = copyKeys(1)
+    expect(firstThree).toHaveLength(3)
+
+    // A refused fourth copy must not cost an older one.
+    const setItem = window.localStorage.setItem.bind(window.localStorage)
+    const spy = vi
+      .spyOn(window.localStorage, 'setItem')
+      .mockImplementation((key: string, value: string) => {
+        if (key.startsWith('neurotoxic:save:quarantine:')) {
+          throw new DOMException('QuotaExceededError')
+        }
+        setItem(key, value)
+      })
+    try {
+      expect(quarantineSave('refused', 1, 'r')).toBe(false)
+    } finally {
+      spy.mockRestore()
+    }
+    expect(copyKeys(1)).toEqual(firstThree)
+
+    resetStorageFallback()
+    expect(quarantineSave('c4', 1, 'r')).toBe(true)
+    const kept = copyKeys(1).map(key =>
+      JSON.parse(localStorage.getItem(key) ?? '{}')
+    )
+    expect(kept.map(copy => copy.raw).sort()).toEqual(['c2', 'c3', 'c4'])
   })
 })
 
@@ -191,7 +250,7 @@ describe('migrateLoadedSave quarantine outcome', () => {
         quarantine: false
       })
     ).toEqual({ ok: false, quarantined: false })
-    expect(localStorage.getItem(getQuarantineKey(1))).toBeNull()
+    expect(readNewestQuarantine(1)).toBeNull()
   })
 })
 
@@ -301,9 +360,7 @@ describe('failed migration whose recovery copy is refused', () => {
       expect(result.current.saveGame(false)).toBe(true)
     })
     expect(localStorage.getItem(SAVE_KEY)).not.toBe(v1Save)
-    expect(localStorage.getItem(getQuarantineKey(1))).toContain(
-      'v1_to_v2 exploded'
-    )
+    expect(readNewestQuarantine(1)).toContain('v1_to_v2 exploded')
   })
 
   it('warns that no copy was kept and refuses to save over the slot', () => {

@@ -308,7 +308,7 @@ Each has 0 consumers outside `src/context/**`. Grep finds only the definitions i
 | `addExpeditionReward` | `useExpeditionDispatchActions.ts` | Manual reward grants |
 | `recordExpeditionRelationshipOutcome` | `useExpeditionDispatchActions.ts` | Relationship outcomes |
 | `advanceExpeditionCrewInjury`, `advanceExpeditionBandInjury` | `useExpeditionDispatchActions.ts` | Injury progression |
-| `advanceExpeditionRoute` | `useExpeditionDispatchActions.ts` | **Superseded:** `applyExpeditionRouteAdvance` runs on every arrival (`expeditionReducer.ts:680-711`) → DELETE or document |
+| Public route-advance method | `useExpeditionDispatchActions.ts` | **Resolved (#3463):** removed with its action; `applyExpeditionRouteAdvance` runs inside paid Tourbus settlement on every arrival |
 | `purchaseExpeditionHqFacility` | `src/context/useCareerDispatchActions.ts:36` | HQ facilities |
 | `recordExpeditionArchiveDiscovery` | `useCareerDispatchActions.ts:42` | Archive discoveries |
 | `acquireExpeditionCrewSignature` | `useCareerDispatchActions.ts:56` | Crew signatures |

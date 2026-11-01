@@ -215,6 +215,7 @@ describe('DetailedStatsTab', () => {
     render(
       <DetailedStatsTab
         player={{ ...player, money: 0 }}
+        spendableCash={0}
         band={band}
         social={social}
         venueBlacklist={['underground_berlin']}

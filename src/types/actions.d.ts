@@ -383,14 +383,6 @@ export interface StartExpeditionPayload {
 }
 
 /**
- * Payload advancing the run one node deeper along the prepared route.
- */
-export interface AdvanceExpeditionRoutePayload {
-  nodeId: string
-  expectedRouteStep: number
-}
-
-/**
  * Payload raising one node's Fog-of-War intel by exactly one level.
  */
 export interface RevealExpeditionNodeIntelPayload {

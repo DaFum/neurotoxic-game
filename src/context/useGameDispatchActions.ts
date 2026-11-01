@@ -200,9 +200,16 @@ type BaseGameDispatchActions = {
   resetState: () => void
   /**
    * Lifts the save block a failed, unrecoverable migration set, for a new run
-   * that starts without `resetState` (the Expedition). Never for a load.
+   * that starts without `resetState` (the Expedition). Never for a load. The
+   * stored save also stops counting as this session's own (`hasOtherStoredSave`)
+   * until the new run's first save lands.
    */
   releaseUnprotectedSlot: () => void
+  /**
+   * Whether a save is stored that this session has neither written nor
+   * loaded, so starting a run without `resetState` would overwrite it unseen.
+   */
+  hasOtherStoredSave: () => boolean
   updateSettings: (
     settings: Parameters<typeof createUpdateSettingsAction>[0]
   ) => void
@@ -271,7 +278,7 @@ type BaseGameDispatchActions = {
     targetTier: import('../types/assets').ChassisTier
   ) => void
   sellChassis: (assetId: string) => void
-  repairChassis: (assetId: string) => void
+  repairChassis: (assetId: string) => boolean
   refinanceLiability: (
     liabilityId: string,
     loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId
@@ -292,16 +299,6 @@ type BaseGameDispatchActions = {
   startExpedition: (
     loadout: import('../types/expedition').ExpeditionLoadout
   ) => void
-  /**
-   * Typed G1 intent for a one-step route advance.
-   *
-   * @remarks
-   * Composition-only in play: arrival advances the route inside the travel
-   * reducer through `applyExpeditionRouteAdvance` (`minigameReducer`), in the
-   * same commit that moves the player, so the two can never disagree. This
-   * stale-guarded wrapper stays for scripts and tests; no UI should call it.
-   */
-  advanceExpeditionRoute: (nodeId: string) => void
   revealExpeditionNodeIntel: (input: {
     nodeId: string
     source: import('../types/expedition').ExpeditionIntelSource
@@ -599,7 +596,8 @@ export function useGameDispatchActions({
     saveGameAfterStateCommit,
     loadGame,
     previewLoadGame,
-    releaseUnprotectedSlot
+    releaseUnprotectedSlot,
+    hasOtherStoredSave
   } = usePersistence({
     currentScene: state.currentScene,
     stateRef,
@@ -982,6 +980,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       releaseUnprotectedSlot,
+      hasOtherStoredSave,
       endGig,
       ...simpleActions,
       ...minigameActions,
@@ -1012,6 +1011,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       releaseUnprotectedSlot,
+      hasOtherStoredSave,
       endGig,
       simpleActions,
       minigameActions,

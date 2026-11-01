@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { SONGS_DB } from '../../../data/songs'
 import { logger } from '../../../utils/logger'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
+import { useLeaderboardSyncExhausted } from '../../../hooks/useLeaderboardSync'
 
 import { LeaderboardView, LeaderboardEntry } from './types'
 import { LeaderboardTabs } from './components/LeaderboardTabs'
@@ -23,11 +24,18 @@ const isAbortError = (error: unknown): boolean => {
   return error instanceof DOMException && error.name === 'AbortError'
 }
 
+interface LeaderboardTabProps {
+  /** Current player, whose stats sync status is shown. */
+  playerId: string | null
+}
+
 /**
  * Renders leaderboard records inside Band HQ.
+ * @param props - The current player's ID.
  */
-export const LeaderboardTab = () => {
+export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
   const { t } = useTranslation()
+  const isSyncExhausted = useLeaderboardSyncExhausted(playerId)
   const [view, setView] = useState<LeaderboardView>('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState<string>(
     () => SONGS_DB[0]?.leaderboardId ?? ''
@@ -170,6 +178,16 @@ export const LeaderboardTab = () => {
           activeSongId={activeSongId}
           setSelectedSongId={setSelectedSongId}
         />
+      )}
+
+      {isSyncExhausted && (
+        <p
+          role='status'
+          className='font-mono text-sm text-warning-yellow'
+          data-testid='leaderboard-sync-disabled-notice'
+        >
+          {t('ui:leaderboard.sync_disabled')}
+        </p>
       )}
 
       <LeaderboardTable

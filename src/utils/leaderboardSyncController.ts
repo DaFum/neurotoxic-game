@@ -71,6 +71,20 @@ export type LeaderboardSyncController = {
   /** Queues the latest snapshot for a player and flushes it when due. */
   submit: (payload: LeaderboardStatsPayload, clock?: IClock) => void
   /**
+   * The player's sync status in this controller. `exhausted` means the server
+   * holds a revision no sendable one can exceed, so nothing more is sent for
+   * the player until the next controller (session) probes again. Returns one of
+   * two shared frozen objects, so it is stable as a `useSyncExternalStore`
+   * snapshot.
+   */
+  getSyncStatus: (playerId: string) => Readonly<{ exhausted: boolean }>
+  /**
+   * Calls `listener` whenever a player's sync status changes.
+   *
+   * @returns A function that removes the listener again.
+   */
+  subscribe: (listener: () => void) => () => void
+  /**
    * Ends the controller for good: aborts requests in flight, cancels timers
    * and forgets all per-player state. Reuse after disposal is unsupported: a
    * late response writes nothing and later submits are ignored, so create a
@@ -141,6 +155,9 @@ export const snapshotKey = (payload: LeaderboardStatsPayload): string =>
     payload.stageDives
   ])
 
+const SYNC_STATUS_ACTIVE = Object.freeze({ exhausted: false })
+const SYNC_STATUS_EXHAUSTED = Object.freeze({ exhausted: true })
+
 const lastSyncedKeyStorageKey = (playerId: string): string =>
   `neurotoxic_last_synced_snapshot:${playerId}`
 const revisionStorageKey = (playerId: string): string =>
@@ -164,6 +181,22 @@ export const createLeaderboardSyncController = (
   // timer or send again.
   let disposed = false
   const requestTimeoutMs = deps.requestTimeoutMs ?? REQUEST_TIMEOUT_MS
+  const statusListeners = new Set<() => void>()
+
+  /**
+   * Tells every status listener about a change. A throwing listener is logged
+   * and skipped: it must neither starve the others nor reach the sync flow,
+   * where it would be taken for a failed request and retried.
+   */
+  const notifyStatusChange = (): void => {
+    for (const listener of [...statusListeners]) {
+      try {
+        listener()
+      } catch (error) {
+        deps.logger.warn('Leaderboard', 'Sync status listener failed', error)
+      }
+    }
+  }
 
   const getSlot = (playerId: string): SyncSlot => {
     const existing = slots.get(playerId)
@@ -218,8 +251,13 @@ export const createLeaderboardSyncController = (
   }
 
   const adoptServerRevision = (playerId: string, revision: number): void => {
+    // A ceiling revision is never persisted (#3475): no sendable revision can
+    // exceed it, and a stored one would outlive an operator reset of the
+    // server's revision. Unpersisted, the next session starts from the clock
+    // again, so its first request probes whether the player is still locked.
     if (
       Number.isSafeInteger(revision) &&
+      revision < MAX_SENDABLE_REVISION &&
       revision > readStoredRevision(playerId)
     ) {
       deps.storage.write(revisionStorageKey(playerId), revision)
@@ -365,13 +403,16 @@ export const createLeaderboardSyncController = (
         adoptServerRevision(payload.playerId, result.revision)
         if (result.revision >= MAX_SENDABLE_REVISION) {
           // No revision the API accepts can exceed the server's, so a resend
-          // would be stale forever. Stop for this player instead (#3475).
+          // would be stale forever. Stop for this player instead (#3475). Only
+          // for this session: the ceiling was not adopted above, so the next
+          // controller probes once with a clock-derived revision.
           slot.exhausted = true
           slot.pending = null
           deps.logger.warn(
             'Leaderboard',
             'Stats revision exhausted on the server. Disabling stat sync for this player.'
           )
+          notifyStatusChange()
         } else {
           // The confirmed key was already forgotten when the request went out
           // and stays forgotten: the server holds a snapshot this client never
@@ -459,8 +500,20 @@ export const createLeaderboardSyncController = (
       slot.pending = payload
       scheduleFlush(slot, clock)
     },
+    // Reads the slot without creating it, so a query touches no storage.
+    getSyncStatus: playerId =>
+      slots.get(playerId)?.exhausted
+        ? SYNC_STATUS_EXHAUSTED
+        : SYNC_STATUS_ACTIVE,
+    subscribe: listener => {
+      statusListeners.add(listener)
+      return () => {
+        statusListeners.delete(listener)
+      }
+    },
     dispose: () => {
       disposed = true
+      statusListeners.clear()
       for (const slot of slots.values()) {
         if (slot.timer !== null) deps.timers.clearTimeout(slot.timer)
         slot.abort?.abort(new Error('Leaderboard sync disposed'))

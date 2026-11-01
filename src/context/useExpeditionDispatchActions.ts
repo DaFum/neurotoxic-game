@@ -14,7 +14,6 @@ import {
   acceptExpeditionFailure as acceptExpeditionFailureAction,
   acceptExpeditionTechnicalFailure as acceptExpeditionTechnicalFailureAction,
   addExpeditionReward as addExpeditionRewardAction,
-  advanceExpeditionRoute as advanceExpeditionRouteAction,
   claimExpeditionInsurance as claimExpeditionInsuranceAction,
   completeExpedition as completeExpeditionAction,
   executeExpeditionInspection as executeExpeditionInspectionAction,
@@ -50,7 +49,6 @@ type ExpeditionDispatchActions = Pick<
   | 'prepareExpeditionRun'
   | 'prepareExpeditionSponsorOffers'
   | 'startExpedition'
-  | 'advanceExpeditionRoute'
   | 'revealExpeditionNodeIntel'
   | 'addExpeditionReward'
   | 'extractExpedition'
@@ -116,8 +114,6 @@ export function useExpeditionDispatchActions({
       },
       startExpedition: (loadout: ExpeditionLoadout) =>
         dispatch(startExpeditionAction(stateRef.current, loadout)),
-      advanceExpeditionRoute: (nodeId: string) =>
-        dispatch(advanceExpeditionRouteAction(stateRef.current, nodeId)),
       revealExpeditionNodeIntel: (input: {
         nodeId: string
         source: ExpeditionIntelSource

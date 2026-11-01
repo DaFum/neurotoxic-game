@@ -240,9 +240,11 @@ const EventOptionsList = ({
         const key = option.id ?? option.nextEventId ?? `${optionLabel}-${index}`
         // Localized currency for the optional `{{amount}}` placeholder
         // in money-bearing option labels. Sourced deterministically
-        // from the option's effect (null money → 0) so the formatted
-        // amount matches the mechanical effect and localizes per locale.
-        const previewMoney = getOptionPreviewMoney(option, gameState)
+        // from the option's effect (null money → 0) and unclamped by the
+        // balance, so a disabled paid option still shows its full price.
+        const previewMoney = getOptionPreviewMoney(option, gameState, {
+          clampToBalance: false
+        })
         const amount = formatCurrency(
           previewMoney ?? 0,
           i18n.language,

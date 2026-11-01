@@ -24,6 +24,7 @@ import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { calculateTravelCostsAndImpact } from '../../src/utils/travelUtils.ts'
 import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors.ts'
 import { getLocationName } from '../../src/hooks/travel/actions/getLocationName.ts'
+import { advanceRouteForFixture } from '../../tests/expeditionRouteAdvanceFixture.js'
 
 const FIXTURE_RUN_SEED = 4242
 const FIXTURE_TOUR_ID = 'standard_tour'
@@ -88,15 +89,6 @@ const routeMap = state =>
   )
 
 const currentNodeId = state => state.expedition.visitedNodeIds.at(-1)
-
-const advanceTo = (state, nodeId) => {
-  const advanced = gameReducer(state, {
-    type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-    payload: { nodeId, expectedRouteStep: state.expedition.routeStep }
-  })
-  if (advanced === state) fail(`route advance to ${nodeId} was refused`)
-  return advanced
-}
 
 /** Nodes the run may travel to next, base edges plus the active overlay. */
 const connectedNodeIds = state => {
@@ -230,7 +222,7 @@ export const ordinaryGigFixture = () => {
     const state = startedState(0, FIXTURE_RUN_SEED + offset)
     const gigNodeId = connectedNodeIds(state).find(id => isBaseGig(state, id))
     if (!gigNodeId) continue
-    const arrived = advanceTo(state, gigNodeId)
+    const arrived = advanceRouteForFixture(state, gigNodeId)
     if (arrived.expedition.arrivedOverlay !== null)
       fail('an ordinary gig node must carry no overlay')
     return {
@@ -277,7 +269,7 @@ export const convertedNodeFixture = () => {
       id => effective.sourceByNodeId[id] === 'nemesis_shortcut'
     )
     if (!shortcutNodeId || !isBaseGig(atTierTwo, shortcutNodeId)) continue
-    const arrived = advanceTo(atTierTwo, shortcutNodeId)
+    const arrived = advanceRouteForFixture(atTierTwo, shortcutNodeId)
     const overlay = arrived.expedition.arrivedOverlay
     if (
       overlay?.nodeId !== shortcutNodeId ||

@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { useEffect } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
@@ -188,4 +188,28 @@ export const useLeaderboardSync = (
     stageDives,
     clock
   ]) // Keep primitive deps for reliable React updates
+}
+
+const getServerSyncExhausted = () => false
+
+/**
+ * Whether stats sync is disabled for this player in the current session.
+ *
+ * @remarks
+ * Sync stops when the server's stored revision for the player reached the
+ * ceiling no sendable revision can exceed. Nothing re-enables it within the
+ * session, so for one player it only turns from `false` to `true`; the next
+ * session probes once again.
+ *
+ * @param playerId - The player's ID; `null` or empty reports `false`.
+ * @returns `true` once the session's sync controller gave up on the player.
+ */
+export const useLeaderboardSyncExhausted = (
+  playerId: string | null | undefined
+): boolean => {
+  return useSyncExternalStore(
+    controller.subscribe,
+    () => !!playerId && controller.getSyncStatus(playerId).exhausted,
+    getServerSyncExhausted
+  )
 }

@@ -708,6 +708,34 @@ describe('PostGig Component - Complete Phase', () => {
     })
   })
 
+  it('disables spin story when protected expedition cash makes it unaffordable', async () => {
+    useGameActions.mockReturnValue(
+      createBaseState({
+        player: {
+          money: 1000,
+          fame: 100,
+          day: 5,
+          hqUpgrades: ['pr_manager_contract']
+        },
+        expedition: {
+          status: 'active',
+          routeStep: 0,
+          loadout: null,
+          protectedCareerCash: 900
+        }
+      })
+    )
+
+    render(<PostGig />)
+
+    await proceedToSocialAndSelectPost()
+
+    expect(screen.getByTestId('mock-complete-phase')).toHaveAttribute(
+      'data-can-afford-spin',
+      'false'
+    )
+  })
+
   it('rejects spin story when player does not have enough money', async () => {
     useGameActions.mockReturnValue(
       createBaseState({
@@ -738,10 +766,10 @@ describe('PostGig Component - Complete Phase', () => {
 
     const initialUpdateSocialCalls = mockUpdateSocial.mock.calls.length
 
-    // #3464: the scene hands the spendable-cash gate to CompletePhase.
+    // #3485: outside a run the button stays enabled; the click shows the toast.
     expect(screen.getByTestId('mock-complete-phase')).toHaveAttribute(
       'data-can-afford-spin',
-      'false'
+      'true'
     )
 
     const spinBtn = await screen.findByRole('button', { name: /spin/i })

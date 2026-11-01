@@ -17,7 +17,8 @@ const { CURRENT_SAVE_VERSION } =
 const { GAME_PHASES } = await import('../../src/context/gameConstants')
 const { createInitialState } = await import('../../src/context/initialState')
 const { resetStorageFallback } = await import('../../src/utils/storage')
-const { getQuarantineKey } = await import('../../src/utils/saveQuarantine')
+const { getQuarantineKey, listQuarantineCopies } =
+  await import('../../src/utils/saveQuarantine')
 
 const TRUNCATED = '{"version":2,"player":{"money":'
 // Parses, carries the current version, but fails shape validation.
@@ -44,11 +45,13 @@ const renderPersistence = () => {
       tRef: tRef as never
     })
   )
-  return { ...hook, dispatch }
+  return { ...hook, dispatch, addToast }
 }
 
+/** Newest copy of a refused save's quarantine family. */
 const readQuarantine = (version: number | null) => {
-  const stored = localStorage.getItem(getQuarantineKey(version))
+  const newest = listQuarantineCopies(getQuarantineKey(version, 'rejected'))[0]
+  const stored = newest ? localStorage.getItem(newest.key) : null
   return stored === null
     ? null
     : (JSON.parse(stored) as {
@@ -104,7 +107,8 @@ describe('rejected save quarantine', () => {
         reason: 'v0 migration failed',
         raw: '{"player":{"money":5000}}'
       })
-      localStorage.setItem(getQuarantineKey(0), v0Copy)
+      const v0Key = `${getQuarantineKey(0)}:1-1`
+      localStorage.setItem(v0Key, v0Copy)
       localStorage.setItem(SAVE_KEY, raw)
       const { result } = renderPersistence()
 
@@ -112,8 +116,10 @@ describe('rejected save quarantine', () => {
         result.current.loadGame()
       })
 
-      expect(localStorage.getItem(getQuarantineKey(0))).toBe(v0Copy)
-      expect(getQuarantineKey(null)).toBe('neurotoxic:save:quarantine:vunknown')
+      expect(localStorage.getItem(v0Key)).toBe(v0Copy)
+      expect(getQuarantineKey(null, 'rejected')).toBe(
+        'neurotoxic:save:quarantine:rejected:vunknown'
+      )
       expect(readQuarantine(null)).toMatchObject({ version: null, raw })
     }
   )
@@ -147,5 +153,60 @@ describe('rejected save quarantine', () => {
 
     expect(localStorage.getItem(SAVE_KEY)).not.toBe(INVALID_FIELD)
     expect(readQuarantine(CURRENT_SAVE_VERSION)?.raw).toBe(INVALID_FIELD)
+  })
+
+  it.each([
+    ['truncated JSON', TRUNCATED],
+    ['failed validation', INVALID_FIELD]
+  ])(
+    'pauses saving over a %s save whose recovery copy storage refused',
+    (_name, raw) => {
+      localStorage.setItem(SAVE_KEY, raw)
+      const setItem = window.localStorage.setItem.bind(window.localStorage)
+      const spy = vi
+        .spyOn(window.localStorage, 'setItem')
+        .mockImplementation((key: string, value: string) => {
+          if (key.startsWith('neurotoxic:save:quarantine:')) {
+            throw new DOMException('QuotaExceededError')
+          }
+          setItem(key, value)
+        })
+      try {
+        const { result, addToast } = renderPersistence()
+
+        act(() => {
+          result.current.loadGame()
+        })
+        act(() => {
+          expect(result.current.saveGame(false)).toBe(false)
+        })
+
+        expect(localStorage.getItem(SAVE_KEY)).toBe(raw)
+        expect(addToast.mock.calls.map(call => String(call[0]))).toContain(
+          'ui:save.savePaused'
+        )
+      } finally {
+        spy.mockRestore()
+      }
+    }
+  )
+
+  it('keeps both copies when two unparseable saves fail in a row', () => {
+    const { result } = renderPersistence()
+    const second = '{"version":2,"band":'
+
+    localStorage.setItem(SAVE_KEY, TRUNCATED)
+    act(() => {
+      result.current.loadGame()
+    })
+    localStorage.setItem(SAVE_KEY, second)
+    act(() => {
+      result.current.loadGame()
+    })
+
+    const copies = listQuarantineCopies(getQuarantineKey(null, 'rejected')).map(
+      copy => JSON.parse(localStorage.getItem(copy.key) ?? '{}').raw
+    )
+    expect(copies).toEqual([second, TRUNCATED])
   })
 })

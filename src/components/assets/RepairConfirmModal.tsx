@@ -58,8 +58,8 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           >
             <ConfirmButton
               onClick={() => {
-                repairChassis(asset.id)
-                onClose()
+                // A refused repair keeps the modal open next to its toast.
+                if (repairChassis(asset.id)) onClose()
               }}
               disabled={cost === 0 || money < cost}
             >

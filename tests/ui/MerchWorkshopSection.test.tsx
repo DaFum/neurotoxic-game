@@ -7,7 +7,10 @@ import type { LongTermAsset, SlotType } from '../../src/types/assets'
 const mockState = vi.hoisted(() => ({
   assets: [] as LongTermAsset[],
   crowdfundCampaigns: [],
-  liabilities: {}
+  liabilities: {},
+  // LiabilitiesPanel gates refinance on the creator's affordability check.
+  player: { money: 100000 },
+  expedition: undefined as unknown
 }))
 
 const mockRefinanceLiability = vi.hoisted(() => vi.fn())

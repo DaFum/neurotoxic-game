@@ -9,7 +9,10 @@ import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
 import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
 import { getEffectiveExpeditionRules } from '../domain/expedition/effectiveRules'
-import { getExpeditionSpendableCash } from '../domain/expedition/spendableCash'
+import {
+  getExpeditionProtectedCash,
+  getExpeditionSpendableCash
+} from '../domain/expedition/spendableCash'
 import { SPIN_STORY_MONEY_COST } from '../utils/postGig'
 
 /**
@@ -70,9 +73,14 @@ export const usePostGigLogic = () => {
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
   const totalDailyObligations = useGameSelector(getTotalDailyObligations)
-  // Protected Expedition cash is not spendable; the spin handler refuses it.
-  const canAffordSpinStory =
-    useGameSelector(getExpeditionSpendableCash) >= SPIN_STORY_MONEY_COST
+  // Protected Expedition cash is not spendable, so inside a run the button is
+  // disabled (with a reason) when spendable cash falls short. Outside a run it
+  // stays enabled and the handler shows the too-expensive toast instead.
+  const canAffordSpinStory = useGameSelector(
+    state =>
+      getExpeditionProtectedCash(state) <= 0 ||
+      getExpeditionSpendableCash(state) >= SPIN_STORY_MONEY_COST
+  )
 
   // Game Actions
   const {

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RepairConfirmModal } from '../../src/components/assets/RepairConfirmModal'
 import { ChassisAcquisitionModal } from '../../src/components/assets/ChassisAcquisitionModal'
@@ -10,6 +10,8 @@ import type { LongTermAsset } from '../../src/types/assets'
 
 // #3464: the action creators gate on spendable cash, so the modals must too.
 // Each test holds exactly the price on hand but protects all of it.
+const repairChassisMock = vi.hoisted(() => vi.fn())
+
 const mockState = vi.hoisted(() => ({
   expedition: undefined as unknown,
   player: { money: 1000, fame: 0 },
@@ -20,7 +22,7 @@ const mockState = vi.hoisted(() => ({
 
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
-    repairChassis: vi.fn(),
+    repairChassis: repairChassisMock,
     purchaseChassis: vi.fn(),
     startCrowdfund: vi.fn()
   }),
@@ -79,6 +81,31 @@ describe('asset modals gate on spendable Expedition cash (#3464)', () => {
 
   beforeEach(() => {
     mockState.expedition = undefined
+    mockState.player.money = 1000
+    repairChassisMock.mockReset()
+  })
+
+  // #3485 item 4: a refusal keeps the modal open next to its toast.
+  it('RepairConfirmModal closes only when the repair was accepted', () => {
+    const onClose = vi.fn()
+    repairChassisMock.mockReturnValue(true)
+    render(<RepairConfirmModal asset={damagedAsset} isOpen onClose={onClose} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'assets:actions.repair' })
+    )
+    expect(repairChassisMock).toHaveBeenCalledWith(damagedAsset.id)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('RepairConfirmModal stays open when the creator refuses the repair', () => {
+    const onClose = vi.fn()
+    repairChassisMock.mockReturnValue(false)
+    render(<RepairConfirmModal asset={damagedAsset} isOpen onClose={onClose} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'assets:actions.repair' })
+    )
+    expect(repairChassisMock).toHaveBeenCalledTimes(1)
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('RepairConfirmModal disables a repair only protected cash could pay', () => {

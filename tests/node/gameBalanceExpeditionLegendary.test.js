@@ -25,7 +25,6 @@ import {
   EXPEDITION_SALVAGE_RIGHTS_FLOOR,
   isExpeditionLegendaryAvailable
 } from '../../src/domain/expedition/legendaries.ts'
-import { advanceExpeditionRoute } from '../../src/context/expeditionActionCreators.ts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../src/data/expedition/contracts.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import {
@@ -33,6 +32,7 @@ import {
   fixtureMap,
   walkTo
 } from '../expeditionLifecycleFixture.js'
+import { advanceRouteForFixture } from '../expeditionRouteAdvanceFixture.js'
 
 describe('Late-Game Legendary Edge Activation (G6 Task 13)', () => {
   const HEADLINER_CAREER = {
@@ -166,7 +166,7 @@ describe('Late-Game Legendary Edge Activation (G6 Task 13)', () => {
       `seed ${SEED} no longer offers a Rival Encounter two steps ahead`
     )
     {
-      const advanced = gameReducer(state, advanceExpeditionRoute(state, target))
+      const advanced = advanceRouteForFixture(state, target)
       assert.equal(advanced.player.currentNodeId, target)
       assert.equal(
         advanced.expedition.routeStep,
@@ -211,10 +211,7 @@ describe('Late-Game Legendary Edge Activation (G6 Task 13)', () => {
     const detourTarget = deriveExpeditionGhostRouteTarget(state, map)
     assert.ok(detourTarget)
 
-    const advanced = gameReducer(
-      state,
-      advanceExpeditionRoute(state, detourTarget)
-    )
+    const advanced = advanceRouteForFixture(state, detourTarget)
     assert.equal(advanced.player.currentNodeId, detourTarget)
     assert.ok(advanced.expedition.consumedLegendaryIds.includes('ghost_route'))
     assert.deepEqual(advanced.expedition.arrivedOverlay, {

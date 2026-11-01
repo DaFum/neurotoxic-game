@@ -117,6 +117,17 @@ export const Tooltip = ({
     [isDisabled]
   )
 
+  // WCAG 1.4.13: a hover-opened tooltip has no focus on its trigger, so Escape
+  // is also heard on the document while (and only while) it is visible.
+  React.useEffect(() => {
+    if (!isVisible) return undefined
+    const onDocumentKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') setIsVisible(false)
+    }
+    document.addEventListener('keydown', onDocumentKeyDown)
+    return () => document.removeEventListener('keydown', onDocumentKeyDown)
+  }, [isVisible])
+
   React.useEffect(() => {
     if (!isValid) {
       logger.warn(

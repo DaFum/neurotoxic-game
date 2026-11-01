@@ -16,6 +16,14 @@ vi.mock('../../../../src/utils/logger', () => ({
   }
 }))
 
+const syncMocks = vi.hoisted(() => ({
+  useLeaderboardSyncExhausted: vi.fn(() => false)
+}))
+
+vi.mock('../../../../src/hooks/useLeaderboardSync', () => ({
+  useLeaderboardSyncExhausted: syncMocks.useLeaderboardSyncExhausted
+}))
+
 vi.mock('../../../../src/data/songs', () => ({
   SONGS_DB: [{ id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }],
   SONGS_BY_ID: new Map([
@@ -28,6 +36,7 @@ describe('LeaderboardTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    syncMocks.useLeaderboardSyncExhausted.mockReturnValue(false)
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 404
@@ -39,7 +48,7 @@ describe('LeaderboardTab', () => {
   })
 
   it('treats missing local leaderboard endpoints as unavailable instead of a crash-level load error', async () => {
-    render(<LeaderboardTab />)
+    render(<LeaderboardTab playerId='id-123' />)
 
     await waitFor(() =>
       expect(screen.getByText('ui:leaderboard.unavailable')).toBeInTheDocument()
@@ -53,16 +62,32 @@ describe('LeaderboardTab', () => {
   })
 
   it('labels the rankings as self-reported', async () => {
-    render(<LeaderboardTab />)
+    render(<LeaderboardTab playerId='id-123' />)
 
     expect(screen.getByTestId('leaderboard-honor-notice')).toHaveTextContent(
       'ui:leaderboard.honor_notice'
     )
   })
 
+  it('shows the sync-disabled notice only when the player sync is exhausted', () => {
+    const { unmount } = render(<LeaderboardTab playerId='id-123' />)
+    expect(
+      screen.queryByTestId('leaderboard-sync-disabled-notice')
+    ).not.toBeInTheDocument()
+    unmount()
+
+    syncMocks.useLeaderboardSyncExhausted.mockReturnValue(true)
+    render(<LeaderboardTab playerId='id-123' />)
+
+    expect(syncMocks.useLeaderboardSyncExhausted).toHaveBeenCalledWith('id-123')
+    const notice = screen.getByTestId('leaderboard-sync-disabled-notice')
+    expect(notice).toHaveAttribute('role', 'status')
+    expect(notice).toHaveTextContent('ui:leaderboard.sync_disabled')
+  })
+
   it('keeps the active tab enabled and supports roving keyboard focus', async () => {
     const user = userEvent.setup()
-    render(<LeaderboardTab />)
+    render(<LeaderboardTab playerId='id-123' />)
 
     const tabs = screen.getAllByRole('tab')
     const firstTab = tabs[0]

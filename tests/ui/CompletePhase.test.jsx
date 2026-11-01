@@ -319,7 +319,28 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /Spin Story/i })).toBeDisabled()
+    const button = screen.getByRole('button', { name: /Spin Story/i })
+    expect(button).toBeDisabled()
+    // The reason is visible, linked via aria-describedby and in the title.
+    const reason = screen.getByText(/protected career cash/i)
+    expect(button).toHaveAttribute('aria-describedby', reason.id)
+    expect(button).toHaveAttribute('title', reason.textContent)
+  })
+
+  test('shows no spin story reason when it is affordable', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        onSpinStory={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+      />
+    )
+
+    const button = screen.getByRole('button', { name: /Spin Story/i })
+    expect(button).not.toHaveAttribute('aria-describedby')
+    expect(screen.queryByText(/protected career cash/i)).toBeNull()
   })
 
   test('handles missing optional props gracefully', async () => {
