@@ -24,6 +24,7 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {},
+  spendableCash,
   onMakeAmends,
   onCraft,
   craftableStash,
@@ -35,6 +36,8 @@ export const DetailedStatsTab = ({
   activeQuests?: QuestState[]
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
+  /** Cash amends may spend: protected Expedition cash is excluded in a run. */
+  spendableCash: number
   onMakeAmends?: (venueId: string) => void
   onCraft?: (recipeId: string) => void
   /** Stock the Workshop may use; defaults to the whole stash. */
@@ -64,7 +67,7 @@ export const DetailedStatsTab = ({
         <RegionalStandingSection
           reputationByRegion={reputationByRegion}
           venueBlacklist={venueBlacklist}
-          playerMoney={player.money ?? 0}
+          playerMoney={spendableCash}
           onMakeAmends={onMakeAmends}
           t={t}
         />

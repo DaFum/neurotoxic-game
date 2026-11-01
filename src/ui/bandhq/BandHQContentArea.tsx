@@ -172,6 +172,7 @@ export const BandHQContentArea = ({ currentTab }: BandHQContentAreaProps) => {
             activeQuests={activeQuests}
             venueBlacklist={venueBlacklist}
             reputationByRegion={reputationByRegion}
+            spendableCash={spendableCash}
             onMakeAmends={unblacklistVenue}
             onCraft={craftItem}
             craftableStash={craftableStash}
