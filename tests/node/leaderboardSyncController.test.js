@@ -544,6 +544,149 @@ for (const serverRevision of [
   })
 }
 
+describe('a server revision at the ceiling (#3475)', () => {
+  const CEILINGS = [Number.MAX_SAFE_INTEGER - 1, Number.MAX_SAFE_INTEGER]
+
+  test('does not stop adopting a server revision just below it', async () => {
+    const belowCeiling = Number.MAX_SAFE_INTEGER - 2
+    const t = setup({ startMs: 5000, script: [staleResponse(belowCeiling)] })
+    await t.submit(snap(500))
+    assert.equal(t.storage.get(REVISION_KEY('p')), belowCeiling)
+    await t.advance(MIN_SYNC_INTERVAL_MS)
+    assert.equal(t.bodies[1].revision, belowCeiling + 1)
+  })
+
+  for (const serverRevision of CEILINGS) {
+    test(`is never persisted from a stale response (${serverRevision})`, async () => {
+      const t = setup({
+        startMs: 5000,
+        script: [staleResponse(serverRevision)]
+      })
+      t.storage.set(REVISION_KEY('p'), 4000)
+      await t.submit(snap(500))
+
+      assert.equal(t.bodies[0].revision, 5000)
+      assert.equal(t.storage.get(REVISION_KEY('p')), 5000)
+    })
+
+    describe(`a recreated controller after exhaustion at ${serverRevision}`, () => {
+      const exhaustThenRecreate = async secondScript => {
+        const first = setup({
+          startMs: 5000,
+          script: [staleResponse(serverRevision)]
+        })
+        await first.submit(snap(500))
+        assert.equal(first.controller.getSyncStatus('p').exhausted, true)
+        first.controller.dispose()
+
+        const second = setup({ startMs: 20_000, script: secondScript })
+        for (const [key, value] of first.storage) second.storage.set(key, value)
+        return second
+      }
+
+      test('does not carry the exhaustion over and probes once with a clock revision', async () => {
+        const t = await exhaustThenRecreate([staleResponse(serverRevision)])
+        assert.equal(t.controller.getSyncStatus('p').exhausted, false)
+
+        await t.submit(snap(500))
+        await t.submit(snap(900))
+        await t.advance(60 * 60 * 1000)
+
+        assert.equal(t.bodies.length, 1)
+        assert.equal(t.bodies[0].revision, 20_000)
+        assert.equal(t.controller.getSyncStatus('p').exhausted, true)
+      })
+
+      test('syncs normally when the server accepts the probe (operator reset)', async () => {
+        const t = await exhaustThenRecreate([okResponse(), okResponse()])
+
+        await t.submit(snap(500))
+        assert.equal(t.bodies[0].revision, 20_000)
+        assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+        assert.equal(t.controller.getSyncStatus('p').exhausted, false)
+
+        await t.advance(MIN_SYNC_INTERVAL_MS)
+        await t.submit(snap(900))
+        assert.equal(t.bodies.length, 2)
+        assert.equal(t.bodies[1].revision, 20_000 + MIN_SYNC_INTERVAL_MS)
+        assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(900)))
+      })
+    })
+  }
+})
+
+describe('sync status', () => {
+  const MAX = Number.MAX_SAFE_INTEGER
+
+  test('reports a player as active until the server revision is exhausted', async () => {
+    const t = setup({ script: [okResponse(), staleResponse(MAX)] })
+    assert.equal(t.controller.getSyncStatus('p').exhausted, false)
+
+    await t.submit(snap(500))
+    assert.equal(t.controller.getSyncStatus('p').exhausted, false)
+
+    await t.advance(MIN_SYNC_INTERVAL_MS)
+    await t.submit(snap(900))
+    assert.equal(t.controller.getSyncStatus('p').exhausted, true)
+    assert.equal(t.controller.getSyncStatus('q').exhausted, false)
+    // Stable snapshots for `useSyncExternalStore`.
+    assert.equal(
+      t.controller.getSyncStatus('p'),
+      t.controller.getSyncStatus('p')
+    )
+    assert.equal(
+      t.controller.getSyncStatus('q'),
+      t.controller.getSyncStatus('r')
+    )
+  })
+
+  test('notifies subscribers on exhaustion until they unsubscribe', async () => {
+    const t = setup({
+      script: [okResponse(), staleResponse(MAX), staleResponse(MAX)]
+    })
+    const seen = []
+    const unsubscribe = t.controller.subscribe(() => {
+      seen.push(t.controller.getSyncStatus('p').exhausted)
+    })
+
+    await t.submit(snap(500))
+    assert.deepEqual(seen, []) // a plain sync changes no status
+
+    await t.advance(MIN_SYNC_INTERVAL_MS)
+    await t.submit(snap(900))
+    assert.deepEqual(seen, [true])
+
+    unsubscribe()
+    await t.submit(snap(500, 'q'))
+    assert.equal(t.controller.getSyncStatus('q').exhausted, true)
+    assert.deepEqual(seen, [true])
+  })
+
+  test('a throwing listener neither starves others nor triggers a resend', async () => {
+    const t = setup({ script: [staleResponse(MAX)] })
+    let calls = 0
+    t.controller.subscribe(() => {
+      throw new Error('listener boom')
+    })
+    t.controller.subscribe(() => {
+      calls += 1
+    })
+
+    await t.submit(snap(500))
+    await t.advance(60 * 60 * 1000)
+
+    assert.equal(calls, 1)
+    assert.equal(t.bodies.length, 1)
+    assert.deepEqual(
+      t.logs.warn.map(entry => entry[1]),
+      [
+        'Stats revision exhausted on the server. Disabling stat sync for this player.',
+        'Sync status listener failed'
+      ]
+    )
+  })
+})
+
 test('allocates no revision for a flush that is skipped', async () => {
   const t = setup({ script: [failResponse(404)] })
   await t.submit(snap(500))
