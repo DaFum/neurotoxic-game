@@ -1,6 +1,5 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
-import { HQ_ITEMS } from '../data/hqItems'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import { systemClock } from './clock'
 import type { IClock } from './clock'
@@ -14,6 +13,7 @@ import {
   resolveOverlaps
 } from './mapGenerator/layout'
 import { pickRandomSubset } from './mapGenerator/mathUtils'
+import { pickSupplyStopInventory } from './mapGenerator/supplyStopInventory'
 import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
 import type {
   GeneratedMapNode,
@@ -112,10 +112,6 @@ export class MapGenerator {
     const usedVenueIds = new Set<string>()
     usedVenueIds.add(homeVenue.id)
 
-    const inventoryAddItems = HQ_ITEMS.gear.filter(
-      i => i.effect?.type === 'inventory_add'
-    ) as import('../types/components').PurchaseItem[]
-
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
@@ -126,7 +122,7 @@ export class MapGenerator {
       usedVenueIds
     }
 
-    this._generateIntermediateLayers(map, validDepth, pools, inventoryAddItems)
+    this._generateIntermediateLayers(map, validDepth, pools)
     this._generateConnections(map, validDepth)
     this._generateFinaleLayer(map, validDepth, hardVenues, pools)
 
@@ -239,8 +235,7 @@ export class MapGenerator {
   _generateIntermediateLayers(
     map: MapGeneratorState,
     depth: number,
-    pools: VenuePools & { usedVenueIds: Set<string> },
-    inventoryAddItems: import('../types/components').PurchaseItem[]
+    pools: VenuePools & { usedVenueIds: Set<string> }
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
@@ -277,9 +272,7 @@ export class MapGenerator {
         }
 
         if (nodeType === 'SUPPLY_STOP') {
-          node.shopInventory = pickRandomSubset(inventoryAddItems, 3, () =>
-            this.random()
-          )
+          node.shopInventory = pickSupplyStopInventory(() => this.random())
         }
 
         layerNodes.push(node)
