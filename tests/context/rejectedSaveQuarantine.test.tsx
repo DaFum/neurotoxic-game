@@ -44,7 +44,7 @@ const renderPersistence = () => {
       tRef: tRef as never
     })
   )
-  return { ...hook, dispatch }
+  return { ...hook, dispatch, addToast }
 }
 
 const readQuarantine = (version: number | null) => {
@@ -148,4 +148,40 @@ describe('rejected save quarantine', () => {
     expect(localStorage.getItem(SAVE_KEY)).not.toBe(INVALID_FIELD)
     expect(readQuarantine(CURRENT_SAVE_VERSION)?.raw).toBe(INVALID_FIELD)
   })
+
+  it.each([
+    ['truncated JSON', TRUNCATED],
+    ['failed validation', INVALID_FIELD]
+  ])(
+    'pauses saving over a %s save whose recovery copy storage refused',
+    (_name, raw) => {
+      localStorage.setItem(SAVE_KEY, raw)
+      const setItem = window.localStorage.setItem.bind(window.localStorage)
+      const spy = vi
+        .spyOn(window.localStorage, 'setItem')
+        .mockImplementation((key: string, value: string) => {
+          if (key.startsWith('neurotoxic:save:quarantine:')) {
+            throw new DOMException('QuotaExceededError')
+          }
+          setItem(key, value)
+        })
+      try {
+        const { result, addToast } = renderPersistence()
+
+        act(() => {
+          result.current.loadGame()
+        })
+        act(() => {
+          expect(result.current.saveGame(false)).toBe(false)
+        })
+
+        expect(localStorage.getItem(SAVE_KEY)).toBe(raw)
+        expect(addToast.mock.calls.map(call => String(call[0]))).toContain(
+          'ui:save.savePaused'
+        )
+      } finally {
+        spy.mockRestore()
+      }
+    }
+  )
 })

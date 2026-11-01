@@ -370,6 +370,14 @@ type LoadReporter = {
    * @param kept - Whether the recovery copy reached persistent storage.
    */
   migrationFailed: (slotKey: string, kept: boolean) => void
+  /**
+   * A refused save (unparseable, not an object, or failing validation) was
+   * copied aside, or storage refused the copy.
+   *
+   * @param slotKey - Slot the save was read from.
+   * @param kept - Whether the recovery copy reached persistent storage.
+   */
+  rejectedCopied: (slotKey: string, kept: boolean) => void
 }
 
 const SILENT_LOAD_REPORTER: LoadReporter = {
@@ -377,7 +385,8 @@ const SILENT_LOAD_REPORTER: LoadReporter = {
   incompatible: () => {},
   parseFailed: () => {},
   corruptFailed: () => {},
-  migrationFailed: () => {}
+  migrationFailed: () => {},
+  rejectedCopied: () => {}
 }
 
 /** The reasons a stored save is refused, before any reducer sees it. */
@@ -419,10 +428,14 @@ const evaluateStoredSave = (
   let slotKey: string | undefined
   // Copies a refused payload aside before the caller falls back to the initial
   // state: the next autosave writes the same key and would destroy the only
-  // copy of the run. A preview writes nothing.
+  // copy of the run. A preview writes nothing. Whether the copy landed is
+  // reported, so a refused copy can keep the slot from being saved over.
   const quarantineRejected = (version: number | null, reason: string): void => {
-    if (preview || !rawSave) return
-    quarantineSave(rawSave, version, reason, storage)
+    if (preview || !rawSave || !slotKey) return
+    report.rejectedCopied(
+      slotKey,
+      quarantineSave(rawSave, version, reason, storage)
+    )
   }
   try {
     // The same guard saveGame applies: anything newer than this build
@@ -605,8 +618,8 @@ export function usePersistence({
   // notice is shown once per session rather than on every autosave.
   const incompatibleNoticeShownRef = useRef(false)
 
-  // Slot holding a save whose migration failed and whose recovery copy could
-  // not be persisted: it is the only copy of that run, so saves into the slot
+  // Slot holding a save that failed to load (unreadable, invalid, or a failed
+  // migration) and whose recovery copy could not be persisted: it is the only copy of that run, so saves into the slot
   // are refused until the player starts a new run (the existing-save prompt
   // is the confirmation; `resetState` releases the block).
   const unprotectedSlotRef = useRef<string | null>(null)
@@ -634,14 +647,14 @@ export function usePersistence({
       if (unprotectedSlotRef.current === getSaveSlotKey(CURRENT_SAVE_VERSION)) {
         logger.warn(
           'Persistence',
-          'Save skipped: the slot holds a save that failed to upgrade and has no recovery copy'
+          'Save skipped: the slot holds a save that failed to load and has no recovery copy'
         )
         if (showToast || !savePausedNoticeShownRef.current) {
           savePausedNoticeShownRef.current = true
           addToast(
             tRef.current('ui:save.savePaused', {
               defaultValue:
-                'Not saved: saving is paused to protect a save that could not be upgraded and has no recovery copy. Starting a new tour will overwrite it.'
+                'Not saved: saving is paused to protect a save that could not be loaded and has no recovery copy. Starting a new tour will overwrite it.'
             }),
             'error'
           )
@@ -803,6 +816,22 @@ export function usePersistence({
   }, [currentScene, saveGame, saveRequestCount])
 
   const loadGame = useCallback((): LoadGameResult => {
+    // A save that could not be loaded and whose recovery copy was refused is
+    // the only copy of that run: saves into its slot pause until a new run.
+    // A save in a lower slot is never written over (saves go to this build's
+    // own slot), so it stays where it is and nothing is paused.
+    const trackRecoveryCopy = (slotKey: string, kept: boolean): boolean => {
+      const blocksSaves =
+        !kept && slotKey === getSaveSlotKey(CURRENT_SAVE_VERSION)
+      if (blocksSaves) {
+        unprotectedSlotRef.current = slotKey
+        savePausedNoticeShownRef.current = false
+      } else if (kept && unprotectedSlotRef.current === slotKey) {
+        // A recovery copy now exists, so the slot is no longer the only copy.
+        unprotectedSlotRef.current = null
+      }
+      return blocksSaves
+    }
     const report: LoadReporter = {
       unreadable: () => {
         logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
@@ -838,18 +867,11 @@ export function usePersistence({
           ),
           { addToast }
         ),
+      rejectedCopied: (slotKey, kept) => {
+        trackRecoveryCopy(slotKey, kept)
+      },
       migrationFailed: (slotKey, kept) => {
-        // A save in a lower slot is never written over (saves go to this
-        // build's own slot), so it stays where it is and nothing is paused.
-        const blocksSaves =
-          !kept && slotKey === getSaveSlotKey(CURRENT_SAVE_VERSION)
-        if (blocksSaves) {
-          unprotectedSlotRef.current = slotKey
-          savePausedNoticeShownRef.current = false
-        } else if (kept && unprotectedSlotRef.current === slotKey) {
-          // A recovery copy now exists, so the slot is no longer the only copy.
-          unprotectedSlotRef.current = null
-        }
+        const blocksSaves = trackRecoveryCopy(slotKey, kept)
         handleError(
           new StateError(
             !blocksSaves
