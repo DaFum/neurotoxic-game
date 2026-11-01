@@ -38,6 +38,7 @@ import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'
 import { getExpeditionCheapestOnwardLegFuel } from './travel'
+import { getExpeditionTravelMap } from './routeOverlay'
 import {
   canExtractExpedition,
   isAtExpeditionExtractionWindow
@@ -196,7 +197,7 @@ export const getExpeditionMobilityFailureSignal = (
     isFiniteNumber(blockedAt) && blockedAt === state.expedition.routeStep
   if (
     !travelBlockedHere &&
-    !checkSoftlock(state.gameMap, strandedView, state.band, {
+    !checkSoftlock(getExpeditionTravelMap(state), strandedView, state.band, {
       dailyObligations: getTotalDailyObligations(state),
       fuelMultiplier:
         getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier,

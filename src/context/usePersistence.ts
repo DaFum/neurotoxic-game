@@ -846,6 +846,9 @@ export function usePersistence({
         if (blocksSaves) {
           unprotectedSlotRef.current = slotKey
           savePausedNoticeShownRef.current = false
+        } else if (kept && unprotectedSlotRef.current === slotKey) {
+          // A recovery copy now exists, so the slot is no longer the only copy.
+          unprotectedSlotRef.current = null
         }
         handleError(
           new StateError(

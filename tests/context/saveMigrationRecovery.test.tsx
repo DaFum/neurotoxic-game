@@ -323,6 +323,27 @@ describe('failed migration whose recovery copy is refused', () => {
     expect(localStorage.getItem(SAVE_KEY)).toBe(v1Save)
   })
 
+  it('lifts the block when a later load stores the recovery copy', () => {
+    const spy = refuseQuarantineWrites()
+    const { result } = renderPersistence()
+
+    act(() => {
+      result.current.loadGame()
+    })
+    act(() => {
+      expect(result.current.saveGame(false)).toBe(false)
+    })
+
+    // Storage frees up: the same save now keeps its recovery copy.
+    spy.mockRestore()
+    act(() => {
+      result.current.loadGame()
+    })
+    act(() => {
+      expect(result.current.saveGame(false)).toBe(true)
+    })
+  })
+
   it('saves over the slot again once the block is released', () => {
     refuseQuarantineWrites()
     const { result } = renderPersistence()
