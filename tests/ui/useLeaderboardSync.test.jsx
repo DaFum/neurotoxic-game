@@ -181,6 +181,35 @@ describe('useLeaderboardSync', () => {
     expect(bodies(mockFetch)[0].followers).toBe(550)
   })
 
+  it.each([NaN, Infinity, true, '5', [5], null])(
+    'publishes a non-finite stat (%s) as 0',
+    async value => {
+      mockFetch.mockResolvedValue(okResponse())
+
+      renderHook(() =>
+        useLeaderboardSync(
+          makeState({
+            playerId: `hostile-${typeof value}-${String(value)}`,
+            fame: value,
+            stats: {
+              totalDistance: value,
+              conflictsResolved: value,
+              stageDives: value
+            }
+          })
+        )
+      )
+
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled())
+      expect(bodies(mockFetch)[0]).toMatchObject({
+        fame: 0,
+        distance: 0,
+        conflicts: 0,
+        stageDives: 0
+      })
+    }
+  )
+
   it('publishes same-day changes, including decreases, after the throttle', async () => {
     vi.useFakeTimers()
     mockFetch.mockResolvedValue(okResponse())

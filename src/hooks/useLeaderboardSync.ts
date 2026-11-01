@@ -127,11 +127,11 @@ const createSyncPayload = (
     // Only the published value is capped, never the wallet itself.
     money: Math.min(money, MAX_PUBLISHED_BALANCE),
     day,
-    fame: fame ?? 0,
+    fame: finiteNumberOr(fame, 0),
     followers: totalFollowers,
-    distance: totalDistance ?? 0,
-    conflicts: conflictsResolved ?? 0,
-    stageDives: stageDives ?? 0
+    distance: finiteNumberOr(totalDistance, 0),
+    conflicts: finiteNumberOr(conflictsResolved, 0),
+    stageDives: finiteNumberOr(stageDives, 0)
   }
 }
 
