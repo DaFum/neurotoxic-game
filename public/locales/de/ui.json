@@ -125,6 +125,7 @@
   "contraband.days_other": "{{count}} TAGE",
   "contraband.description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
   "contraband.dropped": "Schmuggelware gefunden!",
+  "contraband.droppedStayedAtHq": "Schmuggelware gefunden, aber im Van ist kein Platz frei: {{item}} bleibt im HQ.",
   "contraband.noItems": "Noch keine Schmuggelware gesammelt.",
   "contraband.passiveActive": "PASSIVER EFFEKT AKTIV",
   "contraband.requiresTarget": "Erfordert Ziel-Mitglied.",

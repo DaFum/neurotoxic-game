@@ -412,21 +412,32 @@ export const handleCompleteTravelMinigame = (
         postStashLength > preStashLength || postStacks > preStacks
 
       if (wasAdded) {
-        // Append the new toast to the existing toasts array.
-        newState.toasts = [
-          ...newState.toasts,
-          {
-            id: `toast-${instanceId}`,
-            messageKey: 'ui:contraband.dropped',
-            type: 'success'
-          }
-        ]
         // During a Tour the drop rides with the run only when the van has a
         // free contraband slot; otherwise it is owned but stays at HQ.
         const activeCargo = resolveActiveExpeditionCargo(newState)
+        const view = activeCargo ? getExpeditionCargoView(newState) : null
+        const vanHasFreeSlot =
+          view !== null &&
+          view.availableHiddenSlots + view.availableVisibleSlots > 0
+        // Append the new toast to the existing toasts array; a drop the full
+        // van cannot carry says it stayed at HQ.
+        newState.toasts = [
+          ...newState.toasts,
+          activeCargo && !vanHasFreeSlot
+            ? {
+                id: `toast-${instanceId}`,
+                messageKey: 'ui:contraband.droppedStayedAtHq',
+                options: { item: `items:contraband.${contrabandId}.name` },
+                type: 'warning'
+              }
+            : {
+                id: `toast-${instanceId}`,
+                messageKey: 'ui:contraband.dropped',
+                type: 'success'
+              }
+        ]
         if (activeCargo) {
-          const view = getExpeditionCargoView(newState)
-          if (view.availableHiddenSlots + view.availableVisibleSlots > 0) {
+          if (vanHasFreeSlot) {
             const dropped = newState.band.stash?.[contrabandId] as
               Record<string, unknown> | undefined
             newState = {
