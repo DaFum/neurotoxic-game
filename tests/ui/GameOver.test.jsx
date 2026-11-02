@@ -18,6 +18,9 @@ import { createFixedClock } from '../../src/utils/clock'
 // Records every call to `loadGame` while still running the real one, so a test
 // can tell a screen that only looked at the save from one that loaded it.
 const loadGameSpy = vi.hoisted(() => vi.fn())
+// When set, `previewLoadGame` returns this instead of the real preview, for a
+// verdict real storage cannot produce (a refusal reason this build lacks).
+const previewOverride = vi.hoisted(() => ({ current: null }))
 vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   const actual = await importOriginal()
   return {
@@ -29,7 +32,9 @@ vi.mock('../../src/context/GameState.tsx', async importOriginal => {
         loadGame: () => {
           loadGameSpy()
           return actions.loadGame()
-        }
+        },
+        previewLoadGame: () =>
+          previewOverride.current ?? actions.previewLoadGame()
       }
     }
   }
@@ -78,6 +83,86 @@ describe('GameOver Scene', () => {
     // The setup file hands every test an empty localStorage; saves are stored
     // for real so the screen reads what the game itself would write.
     loadGameSpy.mockClear()
+    previewOverride.current = null
+  })
+
+  /** Renders the screen and lets the deferred save evaluation run. */
+  const renderEvaluated = async () => {
+    vi.useFakeTimers()
+    try {
+      const view = render(
+        <GameStateProvider>
+          <GameOverTestHarness>
+            <GameOver />
+          </GameOverTestHarness>
+        </GameStateProvider>
+      )
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      return view
+    } finally {
+      vi.useRealTimers()
+    }
+  }
+
+  // A refused save says why next to the buttons; Load stays hidden.
+  test.each([
+    [
+      'a corrupt save',
+      'ui:gameOver.lastSaveCorrupt',
+      () => {
+        localStorage.setItem(SAVE_KEY, 'not json')
+      }
+    ],
+    [
+      'a save from a newer version',
+      'ui:gameOver.lastSaveIncompatible',
+      () => {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({ version: 999999 }))
+      }
+    ],
+    [
+      'an unreadable save',
+      'ui:gameOver.lastSaveUnreadable',
+      () => {
+        const getItem = localStorage.getItem.bind(localStorage)
+        vi.spyOn(localStorage, 'getItem').mockImplementation(key => {
+          if (key === SAVE_KEY) throw new Error('storage blocked')
+          return getItem(key)
+        })
+      }
+    ],
+    [
+      'a refusal reason this build does not know',
+      'ui:gameOver.lastSaveUnavailable',
+      () => {
+        previewOverride.current = { status: 'unavailable', reason: 'future' }
+      }
+    ]
+  ])('%s shows why Load is hidden', async (_label, messageKey, arrange) => {
+    arrange()
+    try {
+      const { getByText, queryByText, getByRole } = await renderEvaluated()
+
+      expect(getByRole('status').textContent).toBe(messageKey)
+      expect(queryByText('ui:gameOver.loadLastSave')).toBeNull()
+      expect(queryByText('ui:gameOver.lastSaveIsEnding')).toBeNull()
+      expect(getByText('ui:gameOver.returnToMenu')).toBeInTheDocument()
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
+
+  test.each([
+    ['no save', null, false],
+    ['a resumable save', RESUMABLE_SAVE, true]
+  ])('%s shows no save status', async (_label, stored, offersLoad) => {
+    if (stored !== null) localStorage.setItem(SAVE_KEY, stored())
+    const { queryByRole, queryByText } = await renderEvaluated()
+
+    expect(queryByRole('status')).toBeNull()
+    expect(queryByText('ui:gameOver.loadLastSave') !== null).toBe(offersLoad)
   })
 
   test('renders game over stats correctly with context', async () => {

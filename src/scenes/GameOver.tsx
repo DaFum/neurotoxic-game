@@ -12,7 +12,8 @@ import {
 
 /**
  * Maps a save preview to what the screen offers. Only `resumable` is an allow
- * for Load, so a missing, refused or future status keeps it hidden.
+ * for Load, so a missing, refused or future status keeps it hidden; a refusal
+ * keeps its reason so the screen can say why.
  */
 const toLoadAvailability = (
   preview: LoadPreviewResult
@@ -21,7 +22,9 @@ const toLoadAvailability = (
     ? 'available'
     : preview.status === 'terminal'
       ? 'ending'
-      : 'none'
+      : preview.status === 'unavailable'
+        ? { refused: preview.reason }
+        : 'none'
 
 /**
  * Scene displayed when the game ends — defeat (bankruptcy, stranded) or
