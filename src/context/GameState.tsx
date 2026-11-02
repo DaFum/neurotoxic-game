@@ -197,8 +197,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const [state, setState] = useReducer(replaceState, storage, initGameState)
 
   // The state React last rendered. Reads that must agree with the UI (the
-  // store, the DEV `window.gameState`) use this one; it also keeps actions
-  // stable (memoized once) while still seeing the current state.
+  // store, the DEV `window.gameState`) use this one.
   //
   // Written during render on purpose (React Doctor's no-ref-current-in-render
   // flags it): `useGameSelector` reads this ref as its snapshot, so publishing
@@ -303,7 +302,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const dispatchValue = useGameDispatchActions({
     dispatch,
     state,
-    stateRef,
     latestStateRef,
     tRef,
     resetMapGenerationRetries

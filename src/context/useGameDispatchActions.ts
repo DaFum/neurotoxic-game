@@ -552,7 +552,6 @@ type SimpleDispatchActions = Pick<
 interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
-  stateRef: MutableRefObject<GameState>
   latestStateRef: MutableRefObject<GameState>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
@@ -567,7 +566,6 @@ interface UseGameDispatchActionsProps {
 export function useGameDispatchActions({
   dispatch,
   state,
-  stateRef,
   latestStateRef,
   tRef,
   resetMapGenerationRetries
