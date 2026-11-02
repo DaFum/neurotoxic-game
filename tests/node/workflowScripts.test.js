@@ -203,6 +203,16 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     assert.ok(log.failures[0].includes(`${prefix} second`))
   })
 
+  test('dependabot runs take the read-only path like fork runs', () => {
+    const doc = parse(
+      readFileSync('.github/workflows/pr-comment-tracker.yml', 'utf8')
+    )
+    const step = doc.jobs['update-summary-and-check'].steps[0]
+    const expression = String(step.env.SAME_REPO_PR)
+    assert.ok(expression.includes('head.repo.full_name == github.repository'))
+    assert.ok(expression.includes("github.actor != 'dependabot[bot]'"))
+  })
+
   test('fork runs write nothing, log a notice and do not gate on new threads', async () => {
     const { calls, log } = await runTracker({
       comments: [],

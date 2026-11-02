@@ -26,8 +26,9 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-          # Fork-PRs erhalten ein schreibgeschütztes Token (gleiches Muster wie dead-code-report.yml).
-          SAME_REPO_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          # Fork-PRs und Dependabot-Läufe erhalten ein schreibgeschütztes Token
+          # (gleiches Muster wie dead-code-report.yml, dazu der Dependabot-Actor).
+          SAME_REPO_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
