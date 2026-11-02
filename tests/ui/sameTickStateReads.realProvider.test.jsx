@@ -29,7 +29,11 @@ const renderProvider = () =>
       eventCooldowns: useGameSelector(s => s.eventCooldowns),
       currentScene: useGameSelector(s => s.currentScene),
       rivalBand: useGameSelector(s => s.rivalBand),
-      hasMap: useGameSelector(s => s.gameMap !== null)
+      hasMap: useGameSelector(s => s.gameMap !== null),
+      expeditionStatus: useGameSelector(s => s.expedition.status),
+      sponsorProvenance: useGameSelector(
+        s => s.expedition.preparedSponsorProvenance ?? null
+      )
     }),
     { wrapper }
   )
@@ -164,5 +168,18 @@ describe('same-tick state reads through the real provider', () => {
     // A stale read checks the pre-tick cash and refuses as unaffordable.
     expect(accepted).toBe(true)
     expect(result.current.money).toBe(1)
+  })
+
+  test('prepareExpeditionSponsorOffers stages offers for a run prepared earlier in the same tick', () => {
+    const { result } = renderProvider()
+
+    act(() => {
+      result.current.actions.prepareExpeditionRun()
+      result.current.actions.prepareExpeditionSponsorOffers()
+    })
+
+    expect(result.current.expeditionStatus).toBe('prepared')
+    // A stale read sends the pre-prepare run seed, which the reducer refuses.
+    expect(result.current.sponsorProvenance).not.toBeNull()
   })
 })

@@ -290,9 +290,9 @@ type BaseGameDispatchActions = {
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
 
-  // Roguelite Expedition (G1). Creators read the same `stateRef` snapshot the
-  // reducer validates against, so a prepared run's seed and the previewed map
-  // cannot diverge.
+  // Roguelite Expedition (G1). Creators read the same `latestStateRef`
+  // snapshot the reducer validates against, so a prepared run's seed and the
+  // previewed map cannot diverge.
   prepareExpeditionRun: () => void
   prepareExpeditionSponsorOffers: (
     regionId?: string,
@@ -796,7 +796,7 @@ export function useGameDispatchActions({
   })
   const expeditionActions = useExpeditionDispatchActions({
     dispatch,
-    stateRef
+    stateRef: latestStateRef
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
