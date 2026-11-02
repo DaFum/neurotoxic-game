@@ -790,7 +790,7 @@ export function useGameDispatchActions({
   })
   const assetActions = useAssetDispatchActions({
     dispatch,
-    stateRef,
+    stateRef: latestStateRef,
     addToast,
     tRef
   })

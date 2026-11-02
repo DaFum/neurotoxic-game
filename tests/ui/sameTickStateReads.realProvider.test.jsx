@@ -7,6 +7,7 @@ import {
 } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { SAVE_KEY } from '../../src/context/usePersistence'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import { nextSeed } from '../../src/utils/seededRng'
 import { resetStorageFallback } from '../../src/utils/storage'
 
@@ -142,5 +143,26 @@ describe('same-tick state reads through the real provider', () => {
     // A stale read rebuilds the moved rival from the pre-tick one and drops
     // the update.
     expect(result.current.rivalBand.powerLevel).toBe(powerLevel)
+  })
+
+  test('purchaseChassis accepts a purchase funded earlier in the same tick', () => {
+    const { result } = renderProvider()
+    const price = CHASSIS_CONFIG.studio_chassis.legit[1].price
+    expect(result.current.money).toBeLessThan(price)
+
+    let accepted = null
+    act(() => {
+      result.current.actions.updatePlayer({ money: price + 1 })
+      accepted = result.current.actions.purchaseChassis({
+        kind: 'studio_chassis',
+        flavor: 'legit',
+        tier: 1,
+        mode: 'cash'
+      })
+    })
+
+    // A stale read checks the pre-tick cash and refuses as unaffordable.
+    expect(accepted).toBe(true)
+    expect(result.current.money).toBe(1)
   })
 })
