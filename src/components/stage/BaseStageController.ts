@@ -81,8 +81,8 @@ export class BaseStageController<TState = unknown> {
     this.resizeHandler.setup(container)
   }
 
-  _isLifecycleRaceError(e: unknown, app: Application | null) {
-    return isLifecycleRaceError(e, app, this.app, this.isDisposed)
+  _isLifecycleRaceError(app: Application | null) {
+    return isLifecycleRaceError(app, this.app, this.isDisposed)
   }
 
   _executeDisposeWithFallback(app: Application | null) {
@@ -101,7 +101,7 @@ export class BaseStageController<TState = unknown> {
   }
 
   _handleInitError(e: unknown, app: Application | null) {
-    const isLifecycleRace = this._isLifecycleRaceError(e, app)
+    const isLifecycleRace = this._isLifecycleRaceError(app)
     const shouldRethrow = !isLifecycleRace
 
     if (shouldRethrow) {

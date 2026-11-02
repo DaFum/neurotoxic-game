@@ -25,20 +25,21 @@ export const checkLifecycleRace = (
 }
 
 /**
- * Checks whether an error came from a known lifecycle race.
- * @param e - Error value to classify.
+ * Checks whether an init error came from a lifecycle race.
+ *
+ * @remarks
+ * Only the controller's teardown state decides: an error is a race when the
+ * controller was disposed or its app was replaced while init was in flight.
+ * The error text is never consulted, so a live controller's real failure
+ * (even one mentioning `updateLocalTransform`) is reported, not swallowed.
+ *
  * @param app - Pixi application instance being checked or destroyed.
  * @param currentApp - Currently active Pixi application instance.
  * @param isDisposed - Whether the controller has been disposed.
- * @returns `true` if the error is from a known lifecycle race; `false` otherwise.
+ * @returns `true` if the controller is tearing down or disposed; `false` otherwise.
  */
 export const isLifecycleRaceError = (
-  e: unknown,
   app: Application | null,
   currentApp: Application | null,
   isDisposed: boolean
-): boolean => {
-  if (isDisposed || currentApp !== app) return true
-  const message = e ? (e instanceof Error ? e.message : String(e)) : ''
-  return message.includes('updateLocalTransform')
-}
+): boolean => isDisposed || currentApp !== app
