@@ -192,10 +192,15 @@ export interface StageControllerOptions<TState = unknown> {
    */
   audioEngine?: import('../utils/audio/audioEngineInterface').IAudioEngine
   /**
-   * Called once when the stage can draw (setup done, ticker running) or has
-   * failed for good. A disposed controller never calls it.
+   * Called once when the stage can draw (setup done, ticker running). A
+   * disposed controller never calls it.
    */
   onReady?: () => void
+  /**
+   * Called once, instead of `onReady`, when init failed for good (not a
+   * lifecycle race). A disposed controller never calls it.
+   */
+  onInitError?: (error: unknown) => void
 }
 
 /**
@@ -212,6 +217,11 @@ export interface PixiStageProps<TState = unknown> {
    * new identity never re-creates the stage; never called after unmount.
    */
   onReady?: () => void
+  /**
+   * Forwarded to the controller's one-shot `onInitError`, with the same ref
+   * and unmount rules as `onReady`.
+   */
+  onInitError?: (error: unknown) => void
 }
 
 /**

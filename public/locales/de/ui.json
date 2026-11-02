@@ -871,9 +871,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1395,7 +1393,11 @@
   "game-over.booed-off-stage": "AUSGEBUHT",
   "game-over.crowd-spoken": "DAS PUBLIKUM HAT GESPROCHEN",
   "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
+  "gameOver.lastSaveCorrupt": "Dein letzter Speicherstand ist beschädigt oder konnte nicht aktualisiert werden und lässt sich nicht laden. Kehre zum Menü zurück, um eine neue Tour zu starten.",
+  "gameOver.lastSaveIncompatible": "Dein letzter Speicherstand stammt aus einer neueren Version des Spiels. Aktualisiere das Spiel, um ihn fortzusetzen.",
   "gameOver.lastSaveIsEnding": "Dein letzter Speicherstand hält dieses Ende fest. Kehre zum Menü zurück, um eine neue Tour zu starten.",
+  "gameOver.lastSaveUnavailable": "Dein letzter Speicherstand kann nicht geladen werden. Kehre zum Menü zurück, um eine neue Tour zu starten.",
+  "gameOver.lastSaveUnreadable": "Dein letzter Speicherstand konnte nicht aus dem Browserspeicher gelesen werden. Prüfe, ob der Speicher verfügbar ist, und lade die Seite neu.",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "gameOver.soldOut": "AUSVERKAUFT",
