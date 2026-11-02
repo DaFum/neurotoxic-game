@@ -55,7 +55,6 @@ export const Overworld = () => {
   const expeditionFogByNodeId = useGameSelector(getExpeditionNodeFogByNodeId)
   const liabilities = useGameSelector(state => state.liabilities)
   const social = useGameSelector(state => state.social)
-  const activeQuests = useGameSelector(state => state.activeQuests)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const venueBlacklist = useGameSelector(state => state.venueBlacklist)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
@@ -119,7 +118,6 @@ export const Overworld = () => {
     assets,
     liabilities,
     social,
-    activeQuests,
     gameMap: travelMap,
     reputationByRegion,
     venueBlacklist,

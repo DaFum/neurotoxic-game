@@ -145,12 +145,6 @@ interface SoftlockContext {
   restRecovery?: {
     /** Social slice supplying the YouTube followers the day tick pays on. */
     social: Partial<Pick<SocialState, 'youtube'>>
-    /**
-     * Earliest active-quest deadline (day number). A quest past its deadline
-     * applies harmony penalties on the day tick, so the rest-then-donate bound
-     * claims nothing from that day on. Omitted or null means none expires.
-     */
-    questDeadline?: number | null
   }
 }
 
@@ -177,55 +171,30 @@ const MAX_SIMULATED_REST_DAYS = 7
 const REST_STAMINA_GAIN = 50
 
 /**
- * Most stamina the rest day's tick can take from a member: the base decay of
- * 5 plus the party-animal penalty of 5. Every other stamina term is a gain.
- */
-const MAX_REST_DAY_STAMINA_LOSS = 10
-
-/**
- * Most harmony the rest day's tick can take: the drift towards 50 (2), the
- * bad-show streak (10), the ego drain (2) and the controversy drain (1).
- * Expiring contraband effects are not bounded and are handled by the caller.
- */
-const MAX_REST_DAY_HARMONY_LOSS = 15
-
-/**
- * Worst-case band one rest day leaves behind, for judging which donations it
- * can still make.
+ * Band one rest day leaves behind, for judging which donations it can make
+ * again.
  *
  * @remarks
- * A lower bound rather than a replay of the day tick: stamina gets the rest's
- * gain and then loses {@link MAX_REST_DAY_STAMINA_LOSS}, harmony loses
- * {@link MAX_REST_DAY_HARMONY_LOSS}. A donation the bound allows is one the
- * settled band can make. An active contraband effect can revert any amount of
- * harmony or maximum stamina when it expires, so such a band gets no bound.
+ * Deliberately optimistic, never a worst case: a stranded verdict ends the
+ * run, while a missed one only lets the player rest, after which the check
+ * re-runs on the settled band. Every member gets the rest's stamina gain
+ * (capped at the maximum) and harmony is left as it is; the day tick's losses,
+ * expiring contraband effects and quest penalties are not subtracted, because
+ * the next check reads whatever they actually took.
  *
  * @param band - Band before the rest day.
- * @returns The bounded band, or null when no safe bound exists.
+ * @returns The rested band.
  */
-const getRestedBandLowerBound = (
-  band: Partial<BandState>
-): Partial<BandState> | null => {
-  if ((band.activeContrabandEffects ?? []).length > 0) return null
-  return {
-    harmony: clampBandHarmony(
-      finiteNumberOr(band.harmony, 0) - MAX_REST_DAY_HARMONY_LOSS
-    ),
-    members: (band.members ?? []).map(member => {
-      const staminaMax = finiteNumberOr(member.staminaMax, 100)
-      return {
-        ...member,
-        stamina: clampMemberStamina(
-          clampMemberStamina(
-            finiteNumberOr(member.stamina, 0) + REST_STAMINA_GAIN,
-            staminaMax
-          ) - MAX_REST_DAY_STAMINA_LOSS,
-          staminaMax
-        )
-      }
-    })
-  }
-}
+const getRestedBand = (band: Partial<BandState>): Partial<BandState> => ({
+  ...band,
+  members: (band.members ?? []).map(member => ({
+    ...member,
+    stamina: clampMemberStamina(
+      finiteNumberOr(member.stamina, 0) + REST_STAMINA_GAIN,
+      finiteNumberOr(member.staminaMax, 100)
+    )
+  }))
+})
 
 /**
  * Cumulative cash a run of back-to-back blood-bank donations raises, one entry
@@ -552,7 +521,9 @@ export const checkSoftlock = (
   // pays more than it costs is income; donations made before resting stay
   // available on top. A rest also restores stamina, so a donation the drained
   // band could not make may be possible afterwards; that is worth paying for
-  // a rest day while the bounded rested band can raise more each day.
+  // a rest day while the rested band can raise more each day. Every
+  // approximation here errs towards an escape (see `getRestedBand`): only the
+  // bankruptcy the tick itself would declare ends the look-ahead.
   const restRecovery = context.restRecovery
   const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
   const canRecoverByResting = (
@@ -583,16 +554,13 @@ export const checkSoftlock = (
         )
       const isIncomeDay = dayCost < 0
       if (!isIncomeDay && !restedBand) break
-      restedMoney -= dayCost
-      // The tick bankrupts a band it leaves without cash.
-      if (!(restedMoney > 0)) break
+      // The tick clamps cash at 0 and bankrupts an empty band only while
+      // obligations are due (`shouldTriggerBankruptcy`).
+      restedMoney = Math.max(0, restedMoney - dayCost)
+      if (restedMoney === 0 && scenarioDailyObligations > 0) break
       if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
         return true
-      const questExpires =
-        restRecovery.questDeadline != null &&
-        today + restDay > restRecovery.questDeadline
-      restedBand =
-        questExpires || !restedBand ? null : getRestedBandLowerBound(restedBand)
+      restedBand = restedBand && getRestedBand(restedBand)
       const restedSteps = getDonationProceedsSteps(restedBand, player.fameLevel)
       const nextRestedTotal = restedSteps[restedSteps.length - 1] ?? 0
       // Reachability only grows with cash, so the largest total decides.

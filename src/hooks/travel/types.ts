@@ -37,8 +37,6 @@ export type TravelLogicParams = {
   assets: GameState['assets']
   liabilities: GameState['liabilities']
   social: SocialState
-  /** Active quests, so the stranded check knows when a deadline would cost harmony. */
-  activeQuests?: GameState['activeQuests']
   gameMap: GameMap | null
   updatePlayer: (updates: Partial<PlayerState>) => void
   updateBand: (updates: UpdateBandPayload) => void

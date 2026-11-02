@@ -572,44 +572,32 @@ describe('mapUtils', () => {
           )
         })
 
-        test('an expiring quest deadline rules the rest donation out (#3503)', () => {
-          // A quest past its deadline applies harmony penalties on the day
-          // tick (up to 25), which the bound does not model: no claim after it.
-          const context = { dailyObligations: 5, restRecovery }
-          const withDeadline = questDeadline => ({
-            ...context,
-            restRecovery: { ...restRecovery, questDeadline }
-          })
-          // Day 20 + 1 rest day > deadline 20: it expires on the rest day.
+        test('an empty purse survives the tick while no obligations are due', () => {
+          // 0 - 0 = 0 bankrupts only with obligations due
+          // (`shouldTriggerBankruptcy`), so the rest-then-blood escape stands.
           assert.equal(
-            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(20)),
-            true
-          )
-          // A deadline beyond the one-day look-ahead leaves the escape intact.
-          assert.equal(
-            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(40)),
-            false
-          )
-          assert.equal(
-            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(null)),
+            checkSoftlock(gameMap, at(0), tiredBand, {
+              dailyObligations: 0,
+              restRecovery
+            }),
             false
           )
         })
 
-        test('the rested band is judged on worst-case harmony after the tick', () => {
-          // Harmony 30 can lose up to 15 on the rest day's tick, which leaves
-          // it at the blood minimum and rules the donation out.
+        test('harmony the tick might take is not subtracted from the rested band', () => {
+          // Harmony 30 stays above the blood minimum unless the tick's drains
+          // land; the check counts the escape and re-runs on the settled band.
           const band = { ...tiredBand, harmony: 30 }
           assert.equal(
             checkSoftlock(gameMap, at(50), band, {
               dailyObligations: 5,
               restRecovery
             }),
-            true
+            false
           )
         })
 
-        test('an active contraband effect, whose expiry is not bounded, rules the rest donation out', () => {
+        test('an active contraband effect does not rule the rest donation out', () => {
           const band = {
             ...tiredBand,
             activeContrabandEffects: [
@@ -621,7 +609,31 @@ describe('mapUtils', () => {
               dailyObligations: 5,
               restRecovery
             }),
+            false
+          )
+        })
+
+        test('errs towards an escape when the tick might cost harmony (#3503)', () => {
+          // Just above the blood minimum with a contraband effect about to
+          // expire: a false stranded verdict ends the run, a missed one only
+          // costs a rest after which the check re-runs on the settled band.
+          const band = {
+            harmony: 16,
+            members: [{ stamina: 0, staminaMax: 100 }],
+            activeContrabandEffects: [
+              { effectType: 'harmony', value: 10, remainingDuration: 1 }
+            ]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, { dailyObligations: 5 }),
             true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
           )
         })
       })
