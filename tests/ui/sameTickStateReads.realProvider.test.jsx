@@ -5,6 +5,7 @@ import {
   useGameActions,
   useGameSelector
 } from '../../src/context/GameState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { SAVE_KEY } from '../../src/context/usePersistence'
 import { nextSeed } from '../../src/utils/seededRng'
 import { resetStorageFallback } from '../../src/utils/storage'
@@ -24,7 +25,8 @@ const renderProvider = () =>
       money: useGameSelector(s => s.player.money),
       rngSeed: useGameSelector(s => s.rngSeed),
       activeEventId: useGameSelector(s => s.activeEvent?.id ?? null),
-      eventCooldowns: useGameSelector(s => s.eventCooldowns)
+      eventCooldowns: useGameSelector(s => s.eventCooldowns),
+      currentScene: useGameSelector(s => s.currentScene)
     }),
     { wrapper }
   )
@@ -103,5 +105,21 @@ describe('same-tick state reads through the real provider', () => {
 
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
     expect(saved?.player?.money).toBe(money)
+  })
+
+  test('endGig follows a practice gig set earlier in the same tick', () => {
+    const { result } = renderProvider()
+
+    act(() => {
+      result.current.actions.setCurrentGig({
+        id: 'same_tick_practice',
+        isPractice: true,
+        sourceScene: GAME_PHASES.MENU
+      })
+      result.current.actions.endGig()
+    })
+
+    // A stale read sees no gig and routes to POST_GIG instead of back to MENU.
+    expect(result.current.currentScene).toBe(GAME_PHASES.MENU)
   })
 })

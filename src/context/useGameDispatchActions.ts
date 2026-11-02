@@ -761,7 +761,7 @@ export function useGameDispatchActions({
 
   const { setPendingBandHQOpen } = simpleActions
   const endGig = useCallback(() => {
-    const currentState = stateRef.current
+    const currentState = latestStateRef.current
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
       const rawTarget = currentState.currentGig.sourceScene
@@ -779,7 +779,7 @@ export function useGameDispatchActions({
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
-  }, [addToast, changeScene, setPendingBandHQOpen, stateRef, tRef])
+  }, [addToast, changeScene, setPendingBandHQOpen, latestStateRef, tRef])
 
   const minigameActions = useMinigameDispatchActions(dispatch)
   const facilityActions = useFacilityDispatchActions(dispatch)
