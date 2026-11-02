@@ -46,6 +46,8 @@ export type RhythmGameLogicReturn = {
   update: (deltaMS: number) => void
   /** Stable callback for the gig stage's one-shot readiness signal. */
   onStageReady: () => void
+  /** Stable callback for the gig stage's one-shot init-failure signal. */
+  onStageInitError: () => void
 }
 
 /**
@@ -189,20 +191,21 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { activateToxicMode } = scoringActions
 
   // 3. Audio & Initialization
-  const { retryAudioInitialization, onStageReady } = useRhythmGameAudio({
-    gameStateRef,
-    setters,
-    contextState: {
-      band,
-      gameMap,
-      player,
-      setlist,
-      gigModifiers,
-      currentGig,
-      conditionProfile
-    },
-    contextActions: { addToast, setLastGigStats, endGig, t }
-  })
+  const { retryAudioInitialization, onStageReady, onStageInitError } =
+    useRhythmGameAudio({
+      gameStateRef,
+      setters,
+      contextState: {
+        band,
+        gameMap,
+        player,
+        setlist,
+        gigModifiers,
+        currentGig,
+        conditionProfile
+      },
+      contextActions: { addToast, setLastGigStats, endGig, t }
+    })
 
   // 4. Game Loop (Update)
   const { update: rawUpdate } = useRhythmGameLoop({
@@ -263,8 +266,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       stats,
       actions,
       update,
-      onStageReady
+      onStageReady,
+      onStageInitError
     }),
-    [gameStateRef, stats, actions, update, onStageReady]
+    [gameStateRef, stats, actions, update, onStageReady, onStageInitError]
   )
 }

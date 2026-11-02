@@ -213,6 +213,8 @@ type RhythmGameAudioReturn = {
   retryAudioInitialization: () => Promise<void>
   /** Stable callback for the gig stage's one-shot readiness signal. */
   onStageReady: () => void
+  /** Stable callback for the gig stage's one-shot init-failure signal. */
+  onStageInitError: () => void
 }
 
 /**
@@ -247,6 +249,7 @@ export const useRhythmGameAudio = ({
   const hasResolvedLowHarmonyRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const stageReadyRef = useRef(false)
+  const stageFailedRef = useRef(false)
   const stageWaiterRef = useRef<(() => void) | null>(null)
   const latestContextRef = useRef({
     band,
@@ -301,14 +304,21 @@ export const useRhythmGameAudio = ({
     stageWaiterRef.current?.()
   }, [])
 
+  // A failed stage can never draw: release the wait so the init routes to
+  // 'failed' (retry or quit overlay) instead of starting the song.
+  const onStageInitError = useCallback(() => {
+    stageFailedRef.current = true
+    stageWaiterRef.current?.()
+  }, [])
+
   /**
-   * Resolves once the stage has signalled ready, the init was aborted, or
-   * {@link STAGE_READY_FALLBACK_MS} passed without a signal.
+   * Resolves once the stage has signalled ready or failed, the init was
+   * aborted, or {@link STAGE_READY_FALLBACK_MS} passed without a signal.
    */
   const waitForStageReady = useCallback(
     (signal: AbortSignal) =>
       new Promise<void>(resolve => {
-        if (stageReadyRef.current || signal.aborted) {
+        if (stageReadyRef.current || stageFailedRef.current || signal.aborted) {
           resolve()
           return
         }
@@ -442,6 +452,13 @@ export const useRhythmGameAudio = ({
         return
       }
 
+      if (stageFailedRef.current) {
+        logger.error('RhythmGame', 'Gig stage failed to initialize.')
+        currentStatusRef.current = 'failed'
+        setAudioStatus('failed')
+        return
+      }
+
       setAudioStatus('ready')
       currentStatusRef.current = 'ready'
       await audioEngine.playSongSequence(
@@ -500,9 +517,10 @@ export const useRhythmGameAudio = ({
       // Retries come from the blocked/failed overlay, which replaced the
       // stage; wait for the remounted stage's own signal.
       stageReadyRef.current = false
+      stageFailedRef.current = false
     }
     await initializeGigState()
   }, [initializeGigState])
 
-  return { retryAudioInitialization, onStageReady }
+  return { retryAudioInitialization, onStageReady, onStageInitError }
 }

@@ -117,12 +117,13 @@ describe('BaseStageController', () => {
   })
 
   describe('onReady', () => {
-    const makeController = (Controller, onReady) =>
+    const makeController = (Controller, onReady, onInitError) =>
       new Controller({
         containerRef,
         gameStateRef: { current: {} },
         updateRef: { current: vi.fn() },
-        onReady
+        onReady,
+        onInitError
       })
 
     it('fires once, after setup and ticker registration', async () => {
@@ -138,13 +139,41 @@ describe('BaseStageController', () => {
       expect(onReady).toHaveBeenCalledTimes(1)
     })
 
-    it('fires when setup fails for good so nothing waits forever', async () => {
+    it('reports a setup failure through onInitError, never onReady', async () => {
       const onReady = vi.fn()
-      const stage = makeController(DisposeAwareController, onReady)
+      const onInitError = vi.fn()
+      const stage = makeController(DisposeAwareController, onReady, onInitError)
 
       await expect(stage.init()).rejects.toThrow('setup boom')
 
+      expect(onReady).not.toHaveBeenCalled()
+      expect(onInitError).toHaveBeenCalledTimes(1)
+      expect(onInitError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'setup boom' })
+      )
+    })
+
+    it('reports a Pixi app init failure through onInitError', async () => {
+      mocks.init.mockRejectedValueOnce(new Error('webgl boom'))
+      const onReady = vi.fn()
+      const onInitError = vi.fn()
+      const stage = makeController(TestController, onReady, onInitError)
+
+      await expect(stage.init()).rejects.toThrow('webgl boom')
+
+      expect(onReady).not.toHaveBeenCalled()
+      expect(onInitError).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not report a failure after a successful init', async () => {
+      const onReady = vi.fn()
+      const onInitError = vi.fn()
+      const stage = makeController(TestController, onReady, onInitError)
+
+      await stage.init()
+
       expect(onReady).toHaveBeenCalledTimes(1)
+      expect(onInitError).not.toHaveBeenCalled()
     })
 
     it('never fires from a controller disposed while setup was pending', async () => {
@@ -155,7 +184,8 @@ describe('BaseStageController', () => {
         }
       }
       const onReady = vi.fn()
-      const stage = makeController(SlowController, onReady)
+      const onInitError = vi.fn()
+      const stage = makeController(SlowController, onReady, onInitError)
 
       const pending = stage.init()
       await Promise.resolve()
@@ -164,6 +194,7 @@ describe('BaseStageController', () => {
       await pending
 
       expect(onReady).not.toHaveBeenCalled()
+      expect(onInitError).not.toHaveBeenCalled()
     })
   })
 

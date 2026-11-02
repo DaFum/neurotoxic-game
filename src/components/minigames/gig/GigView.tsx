@@ -36,6 +36,8 @@ type GigViewProps = {
   update: (delta: number) => void
   /** Stage readiness, forwarded to the Pixi controller's one-shot `onReady`. */
   onStageReady: () => void
+  /** Stage init failure, forwarded to the Pixi controller's one-shot `onInitError`. */
+  onStageInitError: () => void
   stats: RhythmGameStats
   handleLaneInput: (laneIndex: number, isDown: boolean) => void
   handleTogglePause: () => void
@@ -60,6 +62,7 @@ export const GigView = ({
   gameStateRef,
   update,
   onStageReady,
+  onStageInitError,
   stats,
   handleLaneInput,
   handleTogglePause,
@@ -109,6 +112,7 @@ export const GigView = ({
           update={update}
           controllerFactory={controllerFactory}
           onReady={onStageReady}
+          onInitError={onStageInitError}
         />
       </Suspense>
 

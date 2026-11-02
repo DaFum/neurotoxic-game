@@ -29,7 +29,10 @@ export class BaseStageController<TState = unknown> {
   resizeHandler: StageResizeHandler
   /** One-shot readiness callback; see {@link _notifyReady}. */
   private readonly onReady: (() => void) | null
-  private readyNotified = false
+  /** One-shot init-failure callback; see {@link _notifyInitError}. */
+  private readonly onInitError: ((error: unknown) => void) | null
+  /** Set once either outcome callback fired; a controller reports one outcome. */
+  private initOutcomeNotified = false
   /** When set, automatic Pixi frames are ignored and only `stepFrame` advances. */
   private manualFrames = false
   private manualStepActive = false
@@ -37,12 +40,14 @@ export class BaseStageController<TState = unknown> {
     containerRef,
     gameStateRef,
     updateRef,
-    onReady
+    onReady,
+    onInitError
   }: StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
     this.onReady = onReady ?? null
+    this.onInitError = onInitError ?? null
     this.app = null
     this.isDisposed = false
     this.initPromise = null
@@ -101,8 +106,8 @@ export class BaseStageController<TState = unknown> {
 
     if (shouldRethrow) {
       logger.error(this.constructor.name, 'Init Failed', e)
-      // A broken stage is final: release anything waiting on it.
-      this._notifyReady()
+      // A broken stage is final: tell anything waiting on it that it failed.
+      this._notifyInitError(e)
     }
 
     // Ensure callers can retry init() after a failed attempt.
@@ -159,18 +164,34 @@ export class BaseStageController<TState = unknown> {
   }
 
   /**
-   * Fires the `onReady` option once: after `setup()` finished and the ticker
+   * Fires the `onReady` option once, after `setup()` finished and the ticker
    * runs (degraded or timed-out asset loads included, since `setup()` resolves
-   * with fallbacks), or after a real init failure.
+   * with fallbacks). A real init failure fires {@link _notifyInitError} instead.
    *
    * @remarks
    * Never fires from a disposed controller, so a stage that was unmounted
    * while loading cannot report readiness for its successor.
    */
   _notifyReady() {
-    if (this.readyNotified || this.isDisposed) return
-    this.readyNotified = true
+    if (this.initOutcomeNotified || this.isDisposed) return
+    this.initOutcomeNotified = true
     this.onReady?.()
+  }
+
+  /**
+   * Fires the `onInitError` option once, for a real init failure (not a
+   * lifecycle race), so nothing waits on a stage that can never draw.
+   *
+   * @remarks
+   * Shares the one-shot guard with {@link _notifyReady}: a controller reports
+   * either readiness or failure, never both. Never fires once disposed.
+   *
+   * @param error - The error that ended the init attempt.
+   */
+  _notifyInitError(error: unknown) {
+    if (this.initOutcomeNotified || this.isDisposed) return
+    this.initOutcomeNotified = true
+    this.onInitError?.(error)
   }
 
   /**

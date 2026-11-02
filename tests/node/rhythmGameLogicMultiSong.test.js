@@ -511,6 +511,48 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(finalNotes[0].time, 1100) // 1000 + 100 leadIn
   })
 
+  test('a stage init failure leaves audio failed and never starts playback', async () => {
+    const song1 = {
+      id: 'song1',
+      name: 'Song 1',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      notes: [{ time: 1000, type: 'note', lane: 0 }],
+      sourceOgg: 'song1.ogg'
+    }
+    const mockState = {
+      setlist: [song1],
+      band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
+      expedition: { status: 'idle', loadout: null },
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {},
+      endGig: mockEndGig,
+      triggerEvent: () => false
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
+
+    const { result } = renderHook(() => rhythmGameLogicHook())
+    act(() => result.current.onStageInitError())
+    await act(async () => {
+      await flushPromises()
+    })
+
+    assert.strictEqual(result.current.stats.audioStatus, 'failed')
+    assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 0)
+  })
+
   test('chains from song 1 to song 2 on onEnded', async () => {
     const song1 = {
       id: 'song1',

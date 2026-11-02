@@ -130,6 +130,34 @@ describe('PixiStage', () => {
     expect(container).toBeTruthy()
   })
 
+  test('forwards the controller init failure to onInitError until unmount', async () => {
+    const mockController = createMockController()
+    const mockFactory = vi.fn(() => mockController)
+    const onReady = vi.fn()
+    const onInitError = vi.fn()
+
+    const { unmount } = render(
+      <PixiStage
+        gameStateRef={mockGameStateRef}
+        update={mockUpdate}
+        controllerFactory={mockFactory}
+        onReady={onReady}
+        onInitError={onInitError}
+      />
+    )
+    await flushPromises()
+
+    const options = mockFactory.mock.calls[0][0]
+    const error = new Error('stage boom')
+    options.onInitError(error)
+    expect(onInitError).toHaveBeenCalledWith(error)
+    expect(onReady).not.toHaveBeenCalled()
+
+    unmount()
+    options.onInitError(error)
+    expect(onInitError).toHaveBeenCalledTimes(1)
+  })
+
   test('disposes controller if unmounted before init completes', async () => {
     const mockController = createMockController()
     let resolveInit

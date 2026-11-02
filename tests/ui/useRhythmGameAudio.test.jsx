@@ -644,6 +644,71 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
   })
 
+  it('routes a stage init failure to the failed state without starting playback', async () => {
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(0)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+
+    await act(async () => {
+      result.current.onStageInitError()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+    expect(setAudioStatus).not.toHaveBeenCalledWith('ready')
+    expect(mocks.stopAudio).toHaveBeenCalled()
+
+    // The no-stage fallback must not start the song later either.
+    await advance(STAGE_READY_FALLBACK_MS)
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it('fails without starting when the stage failed before the audio unlock', async () => {
+    const audioUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+
+    act(() => {
+      result.current.onStageInitError()
+    })
+    await act(async () => {
+      audioUnlock.resolve(true)
+      await vi.advanceTimersByTimeAsync(0)
+    })
+
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it('waits for the remounted stage after a retry from a stage failure', async () => {
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(0)
+    await act(async () => {
+      result.current.onStageInitError()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+
+    // 'initializing' lifts the failed overlay so a fresh stage mounts; the
+    // retry waits for that stage instead of the old failure.
+    let retry
+    await act(async () => {
+      retry = result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+
+    await act(async () => {
+      result.current.onStageReady()
+      await retry
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+  })
+
   it('never starts playback when unmounted while waiting for the stage', async () => {
     const { unmount } = renderAudioHook(vi.fn())
     await advance(0)
