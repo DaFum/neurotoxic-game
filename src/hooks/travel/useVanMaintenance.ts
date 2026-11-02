@@ -14,6 +14,7 @@ import {
 } from '../../utils/economy'
 import { calcBaseBreakdownChance } from '../../utils/upgradeUtils'
 import { audioService } from '../../utils/audio/audioEngine'
+import { REST_STAMINA_GAIN } from '../../context/gameConstants'
 import type { VanMaintenanceParams } from './types'
 
 const spendableCash = (money: unknown, protectedCash: number): number =>
@@ -205,7 +206,10 @@ export const useVanMaintenance = ({
 
       return {
         ...m,
-        stamina: clampMemberStamina(currentStamina + 50, maxStamina),
+        stamina: clampMemberStamina(
+          currentStamina + REST_STAMINA_GAIN,
+          maxStamina
+        ),
         mood: clampMemberMood(currentMood - 10)
       }
     })

@@ -9,6 +9,7 @@ import {
   getBloodBankDonation,
   validateBloodBankDonation
 } from './bloodBankUtils'
+import { REST_STAMINA_GAIN } from '../context/gameConstants'
 import { calculateDailyNetCost } from './dailyNetCost'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import {
@@ -167,9 +168,6 @@ const MAX_SIMULATED_DONATIONS = 8
  * settled numbers then confirm.
  */
 const MAX_SIMULATED_REST_DAYS = 7
-
-/** Stamina a rest in the van restores to each member (`handleRestInVan`). */
-const REST_STAMINA_GAIN = 50
 
 /**
  * Upper bound on the cash blood-bank donations can raise by the end of each
