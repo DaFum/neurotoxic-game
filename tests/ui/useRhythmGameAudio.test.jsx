@@ -100,7 +100,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: { ...baseState, band: { harmony: NaN } },
         contextActions: {
           addToast: vi.fn(),
@@ -136,7 +136,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: { ...baseState, band: { harmony: 0 } },
         contextActions: {
           addToast,
@@ -182,7 +182,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -213,7 +213,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -257,7 +257,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -292,7 +292,7 @@ describe('useRhythmGameAudio', () => {
     const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -336,7 +336,11 @@ describe('useRhythmGameAudio', () => {
       renderHook(() =>
         useRhythmGameAudio({
           gameStateRef: { current: { lanes } },
-          setters: { setAudioStatus, setIsGameOver: vi.fn() },
+          setters: {
+            setAudioStatus,
+            setIsGameOver: vi.fn(),
+            setFailureKind: vi.fn()
+          },
           contextState: baseState,
           contextActions: {
             addToast: vi.fn(),
@@ -373,7 +377,11 @@ describe('useRhythmGameAudio', () => {
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: { current: { lanes } },
-        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        setters: {
+          setAudioStatus,
+          setIsGameOver: vi.fn(),
+          setFailureKind: vi.fn()
+        },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -408,7 +416,11 @@ describe('useRhythmGameAudio', () => {
     const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        setters: {
+          setAudioStatus,
+          setIsGameOver: vi.fn(),
+          setFailureKind: vi.fn()
+        },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -438,7 +450,11 @@ describe('useRhythmGameAudio', () => {
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        setters: {
+          setAudioStatus,
+          setIsGameOver: vi.fn(),
+          setFailureKind: vi.fn()
+        },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -477,7 +493,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -529,12 +545,17 @@ describe('useRhythmGameAudio stage readiness gate', () => {
 
   const renderAudioHook = (
     setAudioStatus,
-    gameStateRef = { current: { lanes: [{}, {}, {}] } }
+    gameStateRef = { current: { lanes: [{}, {}, {}] } },
+    setFailureKind = vi.fn()
   ) =>
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setAudioStatus, setIsGameOver: vi.fn() },
+        setters: {
+          setAudioStatus,
+          setIsGameOver: vi.fn(),
+          setFailureKind
+        },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -890,5 +911,85 @@ describe('useRhythmGameAudio stage readiness gate', () => {
 
     expect(mocks.playSongSequence).not.toHaveBeenCalled()
     expect(mocks.stopAudio).toHaveBeenCalled()
+  })
+
+  describe('failure kind', () => {
+    it('reports a stage failure, clears it on retry and reports a following setup failure as audio', async () => {
+      const setAudioStatus = vi.fn()
+      const setFailureKind = vi.fn()
+      const { result } = renderAudioHook(
+        setAudioStatus,
+        undefined,
+        setFailureKind
+      )
+      await advance(0)
+      await act(async () => {
+        result.current.onStageInitError()
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+      expect(setFailureKind).toHaveBeenLastCalledWith('stage')
+      setFailureKind.mockClear()
+
+      mocks.setupGigPhysics.mockReturnValueOnce(null)
+      await act(async () => {
+        await result.current.retryAudioInitialization()
+      })
+
+      expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+      expect(setFailureKind.mock.calls.map(([kind]) => kind)).toEqual([
+        null,
+        'audio'
+      ])
+    })
+
+    it('reports a stage failure that lands before the audio unlock', async () => {
+      const audioUnlock = Promise.withResolvers()
+      mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+      const setFailureKind = vi.fn()
+      const { result } = renderAudioHook(vi.fn(), undefined, setFailureKind)
+
+      act(() => {
+        result.current.onStageInitError()
+      })
+      await act(async () => {
+        audioUnlock.resolve(true)
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(setFailureKind).toHaveBeenLastCalledWith('stage')
+      expect(setFailureKind).not.toHaveBeenCalledWith('audio')
+    })
+
+    it('clears the kind when the song starts and reports a late stage failure', async () => {
+      const setFailureKind = vi.fn()
+      const { result } = renderAudioHook(vi.fn(), undefined, setFailureKind)
+      await advance(STAGE_READY_FALLBACK_MS)
+      expect(setFailureKind).toHaveBeenLastCalledWith(null)
+
+      act(() => {
+        result.current.onStageInitError()
+      })
+
+      expect(setFailureKind).toHaveBeenLastCalledWith('stage')
+    })
+
+    it('reports a playback start failure as audio', async () => {
+      mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
+      const setAudioStatus = vi.fn()
+      const setFailureKind = vi.fn()
+      const { result } = renderAudioHook(
+        setAudioStatus,
+        undefined,
+        setFailureKind
+      )
+      await act(async () => {
+        result.current.onStageReady()
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+      expect(setFailureKind).toHaveBeenLastCalledWith('audio')
+    })
   })
 })

@@ -10,7 +10,7 @@ import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { getSafeRandom } from '../../utils/crypto'
 import { registerTestHook } from '../../utils/devTestHooks'
-import type { GigAudioStatus } from '../../types/gigAudioStatus'
+import type { GigAudioStatus, GigFailureKind } from '../../types/gigAudioStatus'
 import type {
   RhythmGameRefState,
   RhythmLiveStats,
@@ -38,6 +38,8 @@ export type RhythmUiState = {
   isGameOver: boolean
   /** Represents the readiness state of the underlying audio engine, or null if uninitialized. */
   audioStatus: GigAudioStatus
+  /** What the current 'failed' status failed on, or null when nothing failed. */
+  failureKind: GigFailureKind | null
   /** Calculated percentage of successful hits versus total attempts (0 to 100). */
   accuracy: number
   /** Accumulated level of corruption impacting gameplay metrics. */
@@ -58,6 +60,7 @@ type RhythmStateAction =
   | { type: 'SET_IS_TOXIC_MODE'; payload: SetterPayload<boolean> }
   | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
   | { type: 'SET_AUDIO_STATUS'; payload: SetterPayload<GigAudioStatus> }
+  | { type: 'SET_FAILURE_KIND'; payload: SetterPayload<GigFailureKind | null> }
   | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
   | { type: 'SET_CORRUPTION_LEVEL'; payload: SetterPayload<number> }
   | { type: 'SET_IS_CORRUPTION_BURST_ACTIVE'; payload: SetterPayload<boolean> }
@@ -87,6 +90,8 @@ export type RhythmStateSetters = {
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
   /** Updates the availability status of the underlying audio engine. */
   setAudioStatus: (status: SetterPayload<GigAudioStatus>) => void
+  /** Records what a failed initialization failed on, or clears it with null. */
+  setFailureKind: (kind: SetterPayload<GigFailureKind | null>) => void
   /** Updates the calculated accuracy percentage state. */
   setAccuracy: (accuracy: SetterPayload<number>) => void
   /** Updates the accumulated corruption level state. */
@@ -123,6 +128,7 @@ const INITIAL_UI_STATE: RhythmUiState = {
   isToxicMode: false,
   isGameOver: false,
   audioStatus: 'idle',
+  failureKind: null,
   accuracy: 100,
   corruptionLevel: 0,
   isCorruptionBurstActive: false,
@@ -166,6 +172,11 @@ function rhythmGameReducer(
       return {
         ...state,
         audioStatus: resolvePayload(action.payload, state.audioStatus)
+      }
+    case 'SET_FAILURE_KIND':
+      return {
+        ...state,
+        failureKind: resolvePayload(action.payload, state.failureKind)
       }
     case 'SET_ACCURACY':
       return {
@@ -316,6 +327,8 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
         dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
       setAudioStatus: status =>
         dispatch({ type: 'SET_AUDIO_STATUS', payload: status }),
+      setFailureKind: kind =>
+        dispatch({ type: 'SET_FAILURE_KIND', payload: kind }),
       setAccuracy: accuracy =>
         dispatch({ type: 'SET_ACCURACY', payload: accuracy }),
       setCorruptionLevel: corruptionLevel =>

@@ -5,14 +5,21 @@ import { GlitchButton } from '../../../ui/GlitchButton'
 import type { AudioLockedOverlayProps } from '../../../types/components'
 
 /**
- * Displays the browser-audio unlock prompt before gig playback starts.
- * @param props - Callback that retries or starts audio initialization, and an
- * optional quit callback offered when initialization cannot succeed.
+ * Displays the browser-audio unlock prompt before gig playback starts, or the
+ * retry prompt after the gig stage failed to load.
+ * @param props - Callback that retries or starts audio initialization, an
+ * optional quit callback offered when initialization cannot succeed, and what
+ * the gig failed on.
  */
 export const AudioLockedOverlay = memo(
-  ({ onInitializeAudio, onQuit }: AudioLockedOverlayProps) => {
+  ({
+    onInitializeAudio,
+    onQuit,
+    failureKind = 'audio'
+  }: AudioLockedOverlayProps) => {
     const { t } = useTranslation()
     const source = useActiveInputSource()
+    const isStageFailure = failureKind === 'stage'
 
     return (
       <div
@@ -27,17 +34,26 @@ export const AudioLockedOverlay = memo(
           id='audio-locked-title'
           className='text-4xl text-toxic-green font-display mb-8 animate-pulse text-center'
         >
-          {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
+          {isStageFailure
+            ? t('ui:gig.stageFailedTitle', {
+                defaultValue: 'STAGE FAILED TO LOAD'
+              })
+            : t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>
         <p
           id='audio-locked-desc'
           className='text-ash-gray mb-8 font-mono max-w-md text-center'
         >
-          {t('ui:gig.audioOverride', {
-            defaultValue: 'Audio Interface requires manual override.'
-          })}
+          {isStageFailure
+            ? t('ui:gig.stageFailedHint', {
+                defaultValue:
+                  'The stage could not be drawn. Retry or quit the gig.'
+              })
+            : t('ui:gig.audioOverride', {
+                defaultValue: 'Audio Interface requires manual override.'
+              })}
         </p>
-        {source === 'gamepad' && (
+        {!isStageFailure && source === 'gamepad' && (
           <p className='text-ash-gray mb-4'>
             {t('ui:controller.audioUnlock', {
               defaultValue: 'A click or tap may be needed to enable audio.'
@@ -49,7 +65,11 @@ export const AudioLockedOverlay = memo(
           className='scale-150'
           autoFocus
         >
-          {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
+          {isStageFailure
+            ? t('ui:gig.retry', { defaultValue: 'RETRY' })
+            : t('ui:gig.initializeAudio', {
+                defaultValue: 'INITIALIZE AUDIO'
+              })}
         </GlitchButton>
         {onQuit && (
           <GlitchButton onClick={onQuit} variant='danger' className='mt-8'>

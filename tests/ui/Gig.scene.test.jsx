@@ -10,6 +10,7 @@ import {
   resumeAudio,
   stopAudio
 } from '../../src/utils/audio/audioEngine'
+import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
 
 // Mock dependencies
 vi.mock('../../src/context/GameState', () => {
@@ -538,6 +539,82 @@ describe('Gig Scene Component', () => {
 
       expect(mockSetLastGigStats).toHaveBeenCalled()
       expect(mockEndGig).toHaveBeenCalled()
+    })
+
+    describe('stage failure', () => {
+      const mockRetry = vi.fn()
+
+      beforeEach(() => {
+        useRhythmGameLogic.mockReturnValue({
+          stats: { audioStatus: 'failed', failureKind: 'stage' },
+          actions: { retryAudioInitialization: mockRetry },
+          gameStateRef: { current: {} },
+          update: vi.fn()
+        })
+        setActiveInputSource('gamepad')
+      })
+
+      afterEach(() => {
+        setActiveInputSource('keyboard')
+      })
+
+      test('names the stage instead of the audio lock', () => {
+        render(<Gig />)
+
+        expect(screen.getByText('STAGE FAILED TO LOAD')).toBeInTheDocument()
+        expect(
+          screen.getByText(
+            'The stage could not be drawn. Retry or quit the gig.'
+          )
+        ).toBeInTheDocument()
+        expect(screen.queryByText(/SYSTEM LOCKED/i)).toBeNull()
+        expect(screen.queryByText(/INITIALIZE AUDIO/i)).toBeNull()
+        expect(
+          screen.queryByText('A click or tap may be needed to enable audio.')
+        ).toBeNull()
+      })
+
+      test('retry re-runs the initialization', async () => {
+        audioService.ensureAudioContext.mockResolvedValue(true)
+        render(<Gig />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByText('RETRY'))
+        })
+        await flushPromises()
+
+        expect(mockRetry).toHaveBeenCalled()
+      })
+
+      test('quit leaves the gig', async () => {
+        render(<Gig />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByText(/QUIT GIG/i))
+        })
+
+        expect(mockSetLastGigStats).toHaveBeenCalled()
+        expect(mockEndGig).toHaveBeenCalled()
+      })
+    })
+
+    test('keeps the audio copy and gamepad hint for an audio failure', () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'failed', failureKind: 'audio' },
+        actions: { retryAudioInitialization: vi.fn() },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+      setActiveInputSource('gamepad')
+      try {
+        render(<Gig />)
+        expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
+        expect(
+          screen.getByText('A click or tap may be needed to enable audio.')
+        ).toBeInTheDocument()
+      } finally {
+        setActiveInputSource('keyboard')
+      }
     })
 
     test('toasts when the audio unlock resolves false', async () => {
