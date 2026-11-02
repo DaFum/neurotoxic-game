@@ -969,11 +969,33 @@ export const applyEventDelta = (
         const itemId = delta.band.stashRemove[i]
         if (!itemId) continue
         if (typeof itemId === 'string' && !isForbiddenKey(itemId)) {
+          const entry = nextBand.stash[itemId] as
+            Record<string, unknown> | undefined
+          if (packed) {
+            // During a Tour only the carried stacks can be confiscated; the
+            // HQ remainder stays in the stash (#3499). A repeated id finds
+            // nothing packed any more and takes nothing.
+            const stacks = getStashStackCount(nextBand.stash, itemId)
+            const carried = Math.min(
+              stacks,
+              countPackedContraband(packed, itemId, entry?.instanceId)
+            )
+            if (carried <= 0) continue
+            packed = debitPackedContraband(
+              packed,
+              itemId,
+              entry?.instanceId,
+              carried
+            )
+            manifestChanged = true
+            if (carried < stacks && typeof entry?.stacks === 'number') {
+              nextBand.stash[itemId] = { ...entry, stacks: stacks - carried }
+              continue
+            }
+          }
           // Revert any active apply-on-add equipment bonus before the item
           // leaves the stash; confiscation must not orphan the band-stat buff
           // (the effect was never tracked in activeContrabandEffects).
-          const entry = nextBand.stash[itemId] as
-            Record<string, unknown> | undefined
           if (
             entry &&
             typeof entry === 'object' &&
@@ -991,20 +1013,6 @@ export const applyEventDelta = (
               EQUIPMENT_APPLY_ON_ADD_EFFECTS
             )
             clampSharedBandEffectResult(nextBand, entry.effectType)
-          }
-          const stacks = getStashStackCount(nextBand.stash, itemId)
-          if (
-            packed &&
-            stacks > 0 &&
-            countPackedContraband(packed, itemId, entry?.instanceId) > 0
-          ) {
-            packed = debitPackedContraband(
-              packed,
-              itemId,
-              entry?.instanceId,
-              stacks
-            )
-            manifestChanged = true
           }
           delete nextBand.stash[itemId]
         }

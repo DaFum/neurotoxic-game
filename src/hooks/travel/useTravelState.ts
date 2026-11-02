@@ -29,6 +29,7 @@ export const useTravelState = (params: TravelLogicParams) => {
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingToastIdRef = useRef<string | null>(null)
 
   const playerRef = useRef(params.player)
   const bandRef = useRef(params.band)
@@ -76,6 +77,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     isTravelingRef,
     pendingTravelNodeRef,
     pendingTimeoutRef,
+    pendingToastIdRef,
     timeoutRef,
     playerRef,
     bandRef,

@@ -45,6 +45,49 @@ describe('LeaderboardTab', () => {
 
   afterEach(() => {
     global.fetch = originalFetch
+    vi.unstubAllEnvs()
+  })
+
+  it('shows the unavailable state without fetching when leaderboard sync is off', async () => {
+    vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'false')
+    const user = userEvent.setup()
+    render(<LeaderboardTab playerId='id-123' />)
+
+    await waitFor(() =>
+      expect(screen.getByText('ui:leaderboard.unavailable')).toBeInTheDocument()
+    )
+
+    await user.click(screen.getAllByRole('tab')[1])
+    await waitFor(() =>
+      expect(screen.getByText('ui:leaderboard.unavailable')).toBeInTheDocument()
+    )
+
+    expect(global.fetch).not.toHaveBeenCalled()
+    expect(loggerMocks.error).not.toHaveBeenCalled()
+  })
+
+  it('fetches the selected board when leaderboard sync is on', async () => {
+    vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'true')
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi
+        .fn()
+        .mockResolvedValue([
+          { rank: 1, playerRef: 'ref-1', playerName: 'Ada', score: 42 }
+        ])
+    })
+    render(<LeaderboardTab playerId='id-123' />)
+
+    await waitFor(() => expect(screen.getByText('Ada')).toBeInTheDocument())
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/leaderboard/stats?stat=balance&limit=100',
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
+    expect(
+      screen.queryByText('ui:leaderboard.unavailable')
+    ).not.toBeInTheDocument()
   })
 
   it('treats missing local leaderboard endpoints as unavailable instead of a crash-level load error', async () => {

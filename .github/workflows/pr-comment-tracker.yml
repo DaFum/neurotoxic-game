@@ -26,6 +26,9 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+          # Fork-PRs und Dependabot-Läufe erhalten ein schreibgeschütztes Token
+          # (gleiches Muster wie dead-code-report.yml, dazu der Dependabot-Actor).
+          SAME_REPO_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
@@ -38,7 +41,7 @@ jobs:
             // 2. Den bestehenden Kommentar abrufen, um bereits gemeldete Threads zu identifizieren
             const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
             const existingBotComment = issueComments.find(
-              c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
+              c => c.body && c.body.startsWith(marker) && c.user && c.user.login === "github-actions[bot]"
             );
 
             // Bereits gemeldete Thread-IDs aus dem bestehenden Kommentar extrahieren
@@ -129,7 +132,6 @@ jobs:
             }
 
             // 5. Den kopierbaren Block formatieren - NUR offene Review Threads
-            const seenSignatures = new Set();
             const validThreads = [];
             const newThreads = [];
             const newThreadIds = new Set(reportedThreadIds);
@@ -143,14 +145,8 @@ jobs:
 
               const cleanBody = sanitizeComment(firstComment.body);
 
-              // Deduplizierung: Wir prüfen für alle Threads, ob wir exakt diesen Kommentar schon gelistet haben
-              // Wir nutzen den Autoren-Namen + die ersten 80 Zeichen als eindeutige Signatur
-              const signature = `${login}:${cleanBody.substring(0, 80)}`;
-              if (seenSignatures.has(signature)) {
-                return null; // Überspringen, Thread (identischer Kommentar) wurde bereits erfasst
-              }
-              seenSignatures.add(signature);
-
+              // Keine Deduplizierung über den Text: Jeder Thread wird über seine
+              // GraphQL-ID verfolgt, auch wenn zwei Threads gleich beginnen.
               validThreads.push(t);
               newThreadIds.add(t.id); // Alle gültigen aktuellen Thread-IDs merken
 
@@ -182,6 +178,15 @@ jobs:
 
             // Das endgültige Markdown für den Bot-Kommentar
             const body = marker + header + copyableBlock + footer + idsStateMarker;
+
+            // Fork-PRs: Das Token ist schreibgeschützt, Kommentar und gemeldete Thread-IDs
+            // können nicht gespeichert werden. Ohne Speicherung wäre jeder offene Thread bei
+            // jedem Lauf "neu"; der Lauf ist daher nur informativ: kein Schreiben, kein Gate.
+            if (process.env.SAME_REPO_PR !== 'true') {
+              core.notice(`Fork-PR: Zusammenfassung und gemeldete Thread-IDs werden nicht gespeichert, daher keine Prüfung auf neue Threads. ${validThreads.length} offene Review-Thread(s) stehen im Log.`);
+              console.log(copyableBlock);
+              return;
+            }
 
             // 6. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
             try {

@@ -112,6 +112,9 @@ export const useSoftlockEffect = ({
       // The litres the travel gate and settlement burn, not the base figure.
       fuelMultiplier: params.expeditionFuelMultiplier,
       postSaleScenarios,
+      // Resting can earn the trip when the day pays more than it costs. Safe
+      // here because this check never runs during an active run.
+      restRecovery: { social },
       // Reuse the real booking gate rather than re-deriving it here, so a
       // neighbor the player would be refused at cannot count as an escape.
       isNodeAccessible: (node: unknown) =>

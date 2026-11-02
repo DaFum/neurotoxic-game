@@ -1,17 +1,22 @@
 import {
+  calculateGuaranteedDailyCost,
   calculateRefuelCost,
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
 } from './economy'
 import {
-  calculateBloodBankPayout,
+  getBloodBankDonation,
   validateBloodBankDonation
 } from './bloodBankUtils'
-import { GAME_CONSTANTS } from '../context/gameConstants'
+import { calculateDailyNetCost } from './dailyNetCost'
 import { finiteNumberOr } from './finiteNumber'
-import { readVanCondition } from './gameState/clamps'
+import {
+  clampBandHarmony,
+  clampMemberStamina,
+  readVanCondition
+} from './gameState/clamps'
 import { getCityPrefix } from './mapGenerator/cityTraits'
-import type { BandState } from '../types'
+import type { BandState, SocialState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
 type RawMapConnection = { from?: unknown; to?: unknown }
@@ -130,9 +135,86 @@ interface SoftlockContext {
    * keeps legacy callers conservative.
    */
   isNodeAccessible?: (node: unknown) => boolean
+  /**
+   * Enables the rest-in-van escape: days of positive net income (asset revenue
+   * or YouTube ad revenue above the obligations) earned by resting. Pass it
+   * for ordinary play only; an active Expedition settles days from its own
+   * spendable slice. `dailyObligations` must then be the full
+   * `getTotalDailyObligations` figure.
+   */
+  restRecovery?: {
+    /** Social slice supplying the YouTube followers the day tick pays on. */
+    social: Partial<Pick<SocialState, 'youtube'>>
+  }
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
+
+/**
+ * Upper bound on consecutive donations the softlock check simulates. Harmony
+ * is clamped to 100 and the cheapest donation costs 15, so a legal band can
+ * donate at most six times in a row; the bound only guards corrupted state.
+ */
+const MAX_SIMULATED_DONATIONS = 8
+
+/**
+ * Rest days the softlock check looks ahead when resting earns money. One week:
+ * long enough for modest income to close a typical shortfall, short enough
+ * that the inputs held constant (follower decay, loan terms, asset wear) stay
+ * close to what the real ticks settle. Each real rest re-runs the check on the
+ * settled state, so an optimistic look-ahead only postpones a verdict that the
+ * settled numbers then confirm.
+ */
+const MAX_SIMULATED_REST_DAYS = 7
+
+/**
+ * Cumulative cash a run of back-to-back blood-bank donations raises, one entry
+ * per donation the band can still legally make.
+ *
+ * @remarks
+ * Each step applies the reducer's harmony and stamina costs and clamps, so
+ * eligibility for the next donation is judged on the drained band. Marrow is
+ * taken while eligible: it pays more per point of harmony and of stamina than
+ * blood, so this order reaches the largest legal total.
+ *
+ * @param band - Band whose harmony and member stamina fund the donations.
+ * @param fameLevel - Persisted fame level scaling every payout.
+ * @returns Running proceeds after the 1st, 2nd, ... donation.
+ */
+const getDonationProceedsSteps = (
+  band: Partial<BandState> | null,
+  fameLevel: unknown
+): number[] => {
+  const steps: number[] = []
+  const marrow = getBloodBankDonation('marrow', fameLevel)
+  const blood = getBloodBankDonation('blood', fameLevel)
+  if (!band || !marrow || !blood) return steps
+  let simulated = band
+  let proceeds = 0
+  while (steps.length < MAX_SIMULATED_DONATIONS) {
+    const donation = validateBloodBankDonation(simulated, marrow)
+      ? marrow
+      : validateBloodBankDonation(simulated, blood)
+        ? blood
+        : null
+    if (!donation) break
+    proceeds += donation.moneyGain
+    steps.push(proceeds)
+    simulated = {
+      harmony: clampBandHarmony(
+        finiteNumberOr(simulated.harmony, 0) - donation.harmonyCost
+      ),
+      members: (simulated.members ?? []).map(member => ({
+        ...member,
+        stamina: clampMemberStamina(
+          finiteNumberOr(member.stamina, 0) - donation.staminaCost,
+          finiteNumberOr(member.staminaMax, 100)
+        )
+      }))
+    }
+  }
+  return steps
+}
 
 /**
  * Derives the canonical region (city) reputation key from a location value.
@@ -202,9 +284,12 @@ export const nodeToPercentPosition = (
  * covers its fuel draw AND cash covers travel cost plus total daily
  * obligations (arrival advances the day). Escape hatches that defuse a
  * stranded verdict: the current node is a playable gig (GIG/FESTIVAL/FINALE
- * not yet played, i.e. not `lastGigNodeId`), a blood-bank donation is still
- * possible (cash source without traveling), or an affordable refuel would
- * make a neighbor reachable. The FINALE node is never reported as stranded:
+ * not yet played, i.e. not `lastGigNodeId`), a run of legal blood-bank
+ * donations (alone or on top of any asset-sale combination) raises enough
+ * cash without traveling, up to {@link MAX_SIMULATED_REST_DAYS} days of
+ * positive net income earned by resting (only with `context.restRecovery`)
+ * reach the cash, or an affordable refuel would make a neighbor
+ * reachable. The FINALE node is never reported as stranded:
  * it has no outgoing connections by map design, so being there is the end of
  * the route, not a resource failure.
  *
@@ -380,38 +465,61 @@ export const checkSoftlock = (
     return false
   }
 
-  if (evaluateScenario(playerMoney)) return false
-
-  // Escape hatch: a blood-bank donation is a cash source without traveling.
-  if (
-    validateBloodBankDonation(bandForDonation, {
-      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
-      staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST
-    })
-  ) {
-    const marrowMoney = calculateBloodBankPayout(
-      GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY,
-      player.fameLevel
-    )
-    if (evaluateScenario(playerMoney + marrowMoney)) return false
-  } else if (
-    validateBloodBankDonation(bandForDonation, {
-      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
-      staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
-    })
-  ) {
-    const bloodMoney = calculateBloodBankPayout(
-      GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY,
-      player.fameLevel
-    )
-    if (evaluateScenario(playerMoney + bloodMoney)) return false
+  // Escape hatch: blood-bank donations are a cash source without traveling,
+  // and the band can donate repeatedly while harmony and stamina allow, on
+  // top of whatever an asset sale raises.
+  const donationSteps = getDonationProceedsSteps(
+    bandForDonation,
+    player.fameLevel
+  )
+  const evaluateWithDonations = (
+    scenarioMoney: number,
+    customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
+  ): boolean => {
+    if (evaluateScenario(scenarioMoney, customCtx)) return true
+    for (const proceeds of donationSteps) {
+      if (evaluateScenario(scenarioMoney + proceeds, customCtx)) return true
+    }
+    return false
   }
 
-  // Escape hatch: positive net asset proceeds across possible sale combinations.
+  if (evaluateWithDonations(playerMoney)) return false
+
+  // Escape hatch: resting in the van while the day pays more than it costs.
+  // Each day is priced as the tick settles it: the deterministic living cost
+  // from the shared helper plus the asset and loan terms already folded into
+  // `dailyObligations`. Donations stay available on top of the rest income.
+  const restRecovery = context.restRecovery
+  if (restRecovery) {
+    const bandForRest = bandStateForTravel ?? { members: [] }
+    const assetAndLoanCost =
+      dailyObligations -
+      calculateGuaranteedDailyCost(
+        playerStateForTravel,
+        bandForRest,
+        restRecovery.social
+      )
+    const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
+    let restedMoney = playerMoney
+    for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
+      const dayCost =
+        assetAndLoanCost +
+        calculateDailyNetCost(
+          { day: today + restDay, fameLevel: playerStateForTravel.fameLevel },
+          bandForRest,
+          restRecovery.social
+        )
+      if (!(dayCost < 0)) break
+      restedMoney -= dayCost
+      if (evaluateWithDonations(restedMoney)) return false
+    }
+  }
+
+  // Escape hatch: non-negative net asset proceeds across possible sale combinations.
   if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
     for (const scenario of context.postSaleScenarios) {
       const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
-      if (evaluateScenario(totalMoney, scenario)) return false
+      if (evaluateWithDonations(totalMoney, scenario)) return false
     }
   }
 

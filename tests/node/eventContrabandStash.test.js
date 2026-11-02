@@ -8,6 +8,7 @@ import { addContrabandHelper } from '../../src/context/reducers/bandReducer'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
 import { gameReducer } from '../../src/context/gameReducer'
 import { createApplyEventDeltaAction } from '../../src/context/actionCreators'
+import { TRANSPORT_EVENTS } from '../../src/data/events/transport'
 import { startedState } from '../expeditionLifecycleFixture'
 
 const stashAddDelta = entries => ({
@@ -158,4 +159,74 @@ test('a stash_confiscate event during a Tour removes the item from stash and man
   assert.equal(Object.hasOwn(next.band.stash, 'c_gig_program'), false)
   assert.deepEqual(next.expedition.cargo.contraband, [])
   assert.equal(next.expedition.status, 'active')
+})
+
+// #3499: during a Tour the police only search what the van carries. Items left
+// at HQ neither raise the bust risk nor can be confiscated.
+const policeTour = (stash, contraband) => {
+  const started = startedState({ money: 5000 })
+  return {
+    ...started,
+    band: { ...started.band, stash },
+    expedition: {
+      ...started.expedition,
+      cargo: { ...started.expedition.cargo, contraband }
+    }
+  }
+}
+const ownedItem = (id, rarity) => ({
+  id,
+  type: 'consumable',
+  rarity,
+  instanceId: `inst_${id}`,
+  stacks: 1
+})
+const packedRow = id => ({ stashKey: id, instanceId: `inst_${id}`, stacks: 1 })
+const policeContraband = TRANSPORT_EVENTS.find(
+  event => event.id === 'police_contraband'
+)
+
+test('police_contraband ignores an epic left at HQ when only a common item is packed (#3499)', () => {
+  const state = policeTour(
+    {
+      c_forgotten_road_map: ownedItem('c_forgotten_road_map', 'epic'),
+      c_void_energy: ownedItem('c_void_energy', 'common')
+    },
+    [packedRow('c_void_energy')]
+  )
+
+  // Packed common cargo carries no bust risk, and the HQ epic adds none.
+  assert.equal(policeContraband.condition(state), null)
+})
+
+test('police_contraband surrender takes only the packed item and leaves the HQ epic (#3499)', () => {
+  const state = policeTour(
+    {
+      c_forgotten_road_map: ownedItem('c_forgotten_road_map', 'epic'),
+      c_void_energy: ownedItem('c_void_energy', 'common'),
+      c_warped_tape: ownedItem('c_warped_tape', 'uncommon')
+    },
+    [packedRow('c_void_energy'), packedRow('c_warped_tape')]
+  )
+
+  const context = policeContraband.condition(state)
+  assert.deepEqual(context, { riskItemId: 'c_warped_tape', rarity: 'uncommon' })
+
+  const surrender = policeContraband.options[0].effect
+  const delta = eventEngine.applyResult(surrender, context)
+  const next = gameReducer(state, createApplyEventDeltaAction(delta))
+
+  assert.equal(Object.hasOwn(next.band.stash, 'c_warped_tape'), false)
+  assert.deepEqual(
+    next.band.stash.c_forgotten_road_map,
+    state.band.stash.c_forgotten_road_map
+  )
+  assert.deepEqual(
+    next.band.stash.c_void_energy,
+    state.band.stash.c_void_energy
+  )
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    packedRow('c_void_energy')
+  ])
+  assert.equal(next.player.money, state.player.money - 200)
 })

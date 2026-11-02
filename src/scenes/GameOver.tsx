@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
+import type { LoadPreviewResult } from '../types/game'
 import { GameOverBackground } from './gameover/GameOverBackground'
 import { GameOverHeader } from './gameover/GameOverHeader'
 import { GameOverStats } from './gameover/GameOverStats'
@@ -8,6 +9,19 @@ import {
   GameOverButtons,
   type GameOverLoadAvailability
 } from './gameover/GameOverButtons'
+
+/**
+ * Maps a save preview to what the screen offers. Only `resumable` is an allow
+ * for Load, so a missing, refused or future status keeps it hidden.
+ */
+const toLoadAvailability = (
+  preview: LoadPreviewResult
+): GameOverLoadAvailability =>
+  preview.status === 'resumable'
+    ? 'available'
+    : preview.status === 'terminal'
+      ? 'ending'
+      : 'none'
 
 /**
  * Scene displayed when the game ends — defeat (bankruptcy, stranded) or
@@ -40,18 +54,17 @@ export const GameOver = () => {
   // preview right if the screen is ever mounted in the same commit.
   useEffect(() => {
     const evaluation = setTimeout(() => {
-      setLoadAvailability(
-        previewLoadGame().status === 'terminal' ? 'ending' : 'available'
-      )
+      setLoadAvailability(toLoadAvailability(previewLoadGame()))
     }, 0)
     return () => clearTimeout(evaluation)
   }, [previewLoadGame])
 
   const handleRetry = () => {
     // The save can have changed since the screen was evaluated, so ask again:
-    // a save that only records this ending is never loaded from here.
-    if (previewLoadGame().status === 'terminal') {
-      setLoadAvailability('ending')
+    // only a save that resumes play is loaded from here.
+    const availability = toLoadAvailability(previewLoadGame())
+    if (availability !== 'available') {
+      setLoadAvailability(availability)
       return
     }
     if (loadGame().ok) {

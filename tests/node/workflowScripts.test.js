@@ -8,6 +8,7 @@ const loadWorkflow = name =>
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
 const MARKER = '<!-- lint-fix-preview: do-not-edit -->'
+const BOT = { login: 'github-actions[bot]', type: 'Bot' }
 
 const findScript = (workflow, needle) => {
   for (const job of Object.values(workflow.jobs)) {
@@ -69,7 +70,7 @@ describe('lint-fix-preview sticky report (#3377)', () => {
       id: i + 1,
       body: `chatter ${i}`
     }))
-    comments.push({ id: 500, body: `${MARKER}\nold report` })
+    comments.push({ id: 500, user: BOT, body: `${MARKER}\nold report` })
     const { github, calls, listComments } = createFakeGithub(comments)
 
     await runReport(github, `${MARKER}\nfirst`)
@@ -104,6 +105,247 @@ describe('lint-fix-preview sticky report (#3377)', () => {
     assert.equal(calls.updates.length, 0)
     assert.equal(calls.creates.length, 1)
   })
+})
+
+const TRACKER_MARKER = '<!-- PR_COMMENT_TRACKER_MARKER -->'
+
+const createFakeCore = () => {
+  const log = { notices: [], warnings: [], failures: [] }
+  const core = {
+    notice: message => log.notices.push(message),
+    warning: message => log.warnings.push(message),
+    setFailed: message => log.failures.push(message)
+  }
+  return { core, log }
+}
+
+/** Runs a github-script body with the given globals and temporary env vars. */
+const runScript = async (script, globals, env = {}) => {
+  const saved = Object.keys(env).map(key => [key, process.env[key]])
+  Object.assign(process.env, env)
+  try {
+    await new AsyncFunction(...Object.keys(globals), script)(
+      ...Object.values(globals)
+    )
+  } finally {
+    for (const [key, value] of saved) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
+  }
+}
+
+const thread = (id, body, login = 'reviewer') => ({
+  id,
+  isResolved: false,
+  comments: { nodes: [{ author: { login }, body }] }
+})
+
+const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
+  const { github, calls } = createFakeGithub(comments)
+  github.graphql = async () => ({
+    repository: {
+      pullRequest: {
+        reviewThreads: {
+          pageInfo: { hasNextPage: false, endCursor: null },
+          nodes: threads
+        }
+      }
+    }
+  })
+  const { core, log } = createFakeCore()
+  const script = findScript(
+    loadWorkflow('pr-comment-tracker.yml'),
+    'PR_COMMENT_TRACKER_MARKER'
+  )
+  const context = {
+    repo: { owner: 'o', repo: 'r' },
+    payload: { pull_request: { number: 7 } }
+  }
+  await runScript(
+    script,
+    { github, context, core, console: { log: () => {} } },
+    { SAME_REPO_PR: sameRepo }
+  )
+  return { calls, log }
+}
+
+describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('tracks threads with an identical 80-character prefix by thread id', async () => {
+    const prefix = 'p'.repeat(80)
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [
+        thread('T1', `${prefix} first`),
+        thread('T2', `${prefix} second`)
+      ]
+    })
+
+    assert.equal(calls.creates.length, 0)
+    assert.deepEqual(
+      calls.updates.map(u => u.comment_id),
+      [9]
+    )
+    const { body } = calls.updates[0]
+    assert.ok(body.includes(`- [reviewer]: ${prefix} first`))
+    assert.ok(body.includes(`- [reviewer]: ${prefix} second`))
+    assert.ok(body.includes('<!-- REPORTED_THREADS: T1,T2 -->'))
+    assert.equal(log.failures.length, 1)
+    assert.match(log.failures[0], / 1 NEUE /)
+    assert.ok(log.failures[0].includes(`${prefix} second`))
+  })
+
+  test('dependabot runs take the read-only path like fork runs', () => {
+    const doc = parse(
+      readFileSync('.github/workflows/pr-comment-tracker.yml', 'utf8')
+    )
+    const step = doc.jobs['update-summary-and-check'].steps[0]
+    const expression = String(step.env.SAME_REPO_PR)
+    assert.ok(expression.includes('head.repo.full_name == github.repository'))
+    assert.ok(expression.includes("github.actor != 'dependabot[bot]'"))
+  })
+
+  test('fork runs write nothing, log a notice and do not gate on new threads', async () => {
+    const { calls, log } = await runTracker({
+      comments: [],
+      threads: [thread('T1', 'first'), thread('T2', 'second')],
+      sameRepo: 'false'
+    })
+
+    assert.deepEqual(calls.creates, [])
+    assert.deepEqual(calls.updates, [])
+    assert.equal(log.notices.length, 1)
+    assert.match(log.notices[0], /Fork/)
+    assert.deepEqual(log.failures, [])
+    assert.deepEqual(log.warnings, [])
+  })
+
+  test('ignores reported thread ids planted in a foreign marker comment', async () => {
+    const comments = [
+      {
+        id: 1,
+        user: { login: 'evil-app[bot]', type: 'Bot' },
+        body: `${TRACKER_MARKER}\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [thread('T1', 'blocking')]
+    })
+
+    assert.deepEqual(calls.updates, [])
+    assert.equal(calls.creates.length, 1)
+    assert.equal(log.failures.length, 1)
+  })
+})
+
+const DEAD_CODE_MARKER = '<!-- dead-code-report: do-not-edit -->'
+const TEST_FAILURE_MARKER = '<!-- test-failures -->'
+const FOREIGN = { login: 'evil-app[bot]', type: 'Bot' }
+
+const markerSites = [
+  {
+    name: 'lint-fix-preview.yml',
+    marker: MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      await runReport(github, `${MARKER}\nnew`)
+      return calls
+    }
+  },
+  {
+    name: 'dead-code-report.yml',
+    marker: DEAD_CODE_MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      const script = findScript(
+        loadWorkflow('dead-code-report.yml'),
+        DEAD_CODE_MARKER
+      )
+      const fakeFs = { readFileSync: () => `${DEAD_CODE_MARKER}\nnew` }
+      const context = { repo: { owner: 'o', repo: 'r' }, issue: { number: 7 } }
+      await runScript(script, { github, context, require: () => fakeFs })
+      return calls
+    }
+  },
+  {
+    name: 'post-test-failure-comment action',
+    marker: TEST_FAILURE_MARKER,
+    run: async comments => {
+      const { github, calls } = createFakeGithub(comments)
+      const action = parse(
+        readFileSync(
+          '.github/actions/post-test-failure-comment/action.yml',
+          'utf8'
+        )
+      )
+      const { script } = action.runs.steps[0].with
+      const fakeFs = { existsSync: () => false, readFileSync: () => '' }
+      const context = {
+        serverUrl: 'https://github.example',
+        runId: 1,
+        repo: { owner: 'o', repo: 'r' },
+        issue: { number: 7 }
+      }
+      const { core } = createFakeCore()
+      await runScript(
+        script,
+        { github, context, core, require: () => fakeFs },
+        {
+          MARKER: TEST_FAILURE_MARKER,
+          FILE_PATH: 'missing.log',
+          REGEX: 'FAIL',
+          MAX_LINES: '5',
+          HEADER: '## Failures'
+        }
+      )
+      return calls
+    }
+  },
+  {
+    name: 'pr-comment-tracker.yml',
+    marker: TRACKER_MARKER,
+    run: async comments => (await runTracker({ comments, threads: [] })).calls
+  }
+]
+
+describe('sticky report markers require github-actions[bot] (#3499)', () => {
+  for (const site of markerSites) {
+    test(`${site.name} updates its own marker comment, not a foreign one`, async () => {
+      const foreignBody = `${site.marker}\nplanted`
+      const comments = [
+        { id: 1, user: FOREIGN, body: foreignBody },
+        { id: 2, user: BOT, body: `${site.marker}\nold` }
+      ]
+
+      const calls = await site.run(comments)
+
+      assert.equal(calls.creates.length, 0)
+      assert.deepEqual(
+        calls.updates.map(u => u.comment_id),
+        [2]
+      )
+      assert.equal(comments[0].body, foreignBody)
+    })
+
+    test(`${site.name} creates its own comment when only a foreign marker exists`, async () => {
+      const comments = [{ id: 1, user: FOREIGN, body: `${site.marker}\nx` }]
+
+      const calls = await site.run(comments)
+
+      assert.deepEqual(calls.updates, [])
+      assert.equal(calls.creates.length, 1)
+    })
+  }
 })
 
 describe('workflow hardening (#3466)', () => {
@@ -163,5 +405,14 @@ describe('workflow hardening (#3466)', () => {
       )
     }
     assert.deepEqual(workflow.jobs.build.permissions, { contents: 'read' })
+  })
+
+  test('deploy.yml builds the Pages bundle with leaderboard sync off (#3499)', () => {
+    const workflow = loadWorkflow('deploy.yml')
+    const build = workflow.jobs.build.steps.find(
+      step => step.run === 'pnpm run build'
+    )
+    assert.ok(build, 'deploy.yml build job has no `pnpm run build` step')
+    assert.equal(build.env?.VITE_ENABLE_LEADERBOARD_SYNC, 'false')
   })
 })

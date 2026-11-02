@@ -116,6 +116,57 @@ describe('BaseStageController', () => {
     expect(mocks.add).toHaveBeenCalledWith(controller.handleTicker)
   })
 
+  describe('onReady', () => {
+    const makeController = (Controller, onReady) =>
+      new Controller({
+        containerRef,
+        gameStateRef: { current: {} },
+        updateRef: { current: vi.fn() },
+        onReady
+      })
+
+    it('fires once, after setup and ticker registration', async () => {
+      const onReady = vi.fn(() => {
+        expect(mocks.add).toHaveBeenCalledWith(stage.handleTicker)
+      })
+      const stage = makeController(TestController, onReady)
+
+      await stage.init()
+      await stage.init()
+
+      expect(stage.setupRan).toBe(true)
+      expect(onReady).toHaveBeenCalledTimes(1)
+    })
+
+    it('fires when setup fails for good so nothing waits forever', async () => {
+      const onReady = vi.fn()
+      const stage = makeController(DisposeAwareController, onReady)
+
+      await expect(stage.init()).rejects.toThrow('setup boom')
+
+      expect(onReady).toHaveBeenCalledTimes(1)
+    })
+
+    it('never fires from a controller disposed while setup was pending', async () => {
+      const setupGate = Promise.withResolvers()
+      class SlowController extends BaseStageController {
+        async setup() {
+          await setupGate.promise
+        }
+      }
+      const onReady = vi.fn()
+      const stage = makeController(SlowController, onReady)
+
+      const pending = stage.init()
+      await Promise.resolve()
+      stage.dispose()
+      setupGate.resolve()
+      await pending
+
+      expect(onReady).not.toHaveBeenCalled()
+    })
+  })
+
   it('handles init failures and disposes safely', async () => {
     mocks.init.mockRejectedValueOnce(new Error('boom'))
 

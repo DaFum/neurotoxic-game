@@ -793,6 +793,58 @@ describe('PreGig', () => {
     expect(totalDispatches).toBe(1)
   })
 
+  test('puts the required setlist before optional modifiers and keeps every action reachable', () => {
+    mockUseGameState.setlist = []
+    const { getByRole, getByText } = render(React.createElement(PreGig))
+
+    const follows = (a, b) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
+
+    const setlistRegion = getByRole('region', { name: 'ui:pregig.setlist' })
+    const modifiersHeading = getByText('ui:pregig.allocation')
+    const soundcheck = getByRole('button', { name: /soundcheck/i })
+    const bandMeeting = getByText('ui:pregig.bandMeeting.label').closest(
+      'button'
+    )
+    const startButton = getByRole('button', { name: /ui:pregig.startShow/i })
+
+    // Single-column DOM (and so phone reading + focus) order: songs first,
+    // then the optional spend, then Start with its blocking reason.
+    expect(follows(setlistRegion, modifiersHeading)).toBe(true)
+    expect(follows(setlistRegion, soundcheck)).toBe(true)
+    expect(follows(soundcheck, startButton)).toBe(true)
+
+    // Legacy actions stay reachable from the same screen.
+    expect(
+      setlistRegion.querySelectorAll('button[aria-label]').length
+    ).toBeGreaterThan(0)
+    expect(bandMeeting).toBeTruthy()
+    fireEvent.click(soundcheck)
+    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({
+      soundcheck: true
+    })
+    fireEvent.click(getByRole('tab', { name: 'ui:pregig.tabs.merch' }))
+    expect(
+      getByRole('button', { name: 'ui:pregig.merchStrategy.restock' })
+    ).toBeInTheDocument()
+
+    // An empty setlist explains the disabled Start inline, not only on hover.
+    expect(startButton).toBeDisabled()
+    const describedBy = startButton.getAttribute('aria-describedby') ?? ''
+    const reason = describedBy
+      .split(' ')
+      .filter(Boolean)
+      .map(id => document.getElementById(id))
+      .find(Boolean)
+    expect(reason).toBeTruthy()
+    expect(reason.closest('[role="tooltip"]')).toBeNull()
+    expect(reason).not.toHaveAttribute('hidden')
+    expect(reason.textContent).toMatch(
+      /ui:bandhq\.setlist\.selectOne|select at least one song/i
+    )
+    expect(follows(startButton, reason)).toBe(true)
+  })
+
   test('renders tabs and tabpanels with proper WAI-ARIA attributes', async () => {
     const { getByRole, getAllByRole } = render(React.createElement(PreGig))
 

@@ -306,11 +306,13 @@ export const useTourbusLogic = () => {
   // Setup keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+      // `key` follows the printed label (AZERTY), `code` the physical position.
+      const key = e.key.toLowerCase()
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA' || key === 'a') {
         e.preventDefault()
         moveLeft()
       }
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+      if (e.code === 'ArrowRight' || e.code === 'KeyD' || key === 'd') {
         e.preventDefault()
         moveRight()
       }

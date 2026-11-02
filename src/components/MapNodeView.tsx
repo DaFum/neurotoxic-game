@@ -527,18 +527,19 @@ export const MapNodeView = memo(
     // neighbouring start-cluster nodes. A venue-less Expedition stop is the
     // exception: the title still names the previous venue, so its chip is the
     // only identification. Desktop keeps all labels. Applied via
-    // `max-sm:hidden` so only the small breakpoint hides. Below 360px the map
-    // is under 310px wide and even those chips stack, so names appear only on
-    // tap/focus (the tooltip and aria-label carry them).
+    // `max-sm:hidden` so only the small breakpoint hides. Travel targets keep
+    // their names at every width, 320px included: tapping one starts the travel
+    // confirmation, so it cannot be the only way to read a destination. Where
+    // two of those chips collide, `useMapLabelDeclutter` hides the less
+    // important one.
     const currentNameIsSceneTitle = isCurrent && Boolean(node.venue?.name)
     const labelMobileHiddenClass =
       isHoveredLocal ||
       isPendingConfirm ||
-      (isCurrent && !currentNameIsSceneTitle)
+      (isCurrent && !currentNameIsSceneTitle) ||
+      (isReachable && !isCurrent && !compactLabels)
         ? ''
-        : isReachable && !isCurrent && !compactLabels
-          ? 'max-[359px]:hidden'
-          : 'max-sm:hidden'
+        : 'max-sm:hidden'
 
     // From `sm` up the type chip stays always visible and the location name
     // shows only for the current, hovered/focused or confirming node, so dense

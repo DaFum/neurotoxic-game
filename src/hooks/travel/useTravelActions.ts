@@ -32,7 +32,7 @@ export const useTravelActions = ({
   setters,
   params
 }: Pick<TravelActionsParams, 'refs' | 'setters' | 'params'>) => {
-  const clearPendingTravel = useClearPendingTravel({ refs, setters })
+  const clearPendingTravel = useClearPendingTravel({ refs, setters, params })
   const handleNodeArrivalCallback = useHandleNodeArrivalCallback({
     refs,
     params

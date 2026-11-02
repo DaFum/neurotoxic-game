@@ -199,10 +199,20 @@ const applyGigPhysicsSetup = ({
 }
 
 /**
+ * Longest wait for the stage's readiness signal before the song starts anyway.
+ * The stage reports ready even after degraded or timed-out asset loads (10 s
+ * per load, in parallel), so this only fires when no stage is mounted
+ * (headless tests) or Pixi init itself hangs.
+ */
+const STAGE_READY_FALLBACK_MS = 15_000
+
+/**
  * Audio controls exposed by the rhythm game audio hook.
  */
 type RhythmGameAudioReturn = {
   retryAudioInitialization: () => Promise<void>
+  /** Stable callback for the gig stage's one-shot readiness signal. */
+  onStageReady: () => void
 }
 
 /**
@@ -236,6 +246,8 @@ export const useRhythmGameAudio = ({
   const currentStatusRef = useRef<GigAudioStatus>('idle')
   const hasResolvedLowHarmonyRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const stageReadyRef = useRef(false)
+  const stageWaiterRef = useRef<(() => void) | null>(null)
   const latestContextRef = useRef({
     band,
     gameMap,
@@ -283,6 +295,41 @@ export const useRhythmGameAudio = ({
     setAudioStatus,
     setIsGameOver
   ])
+
+  const onStageReady = useCallback(() => {
+    stageReadyRef.current = true
+    stageWaiterRef.current?.()
+  }, [])
+
+  /**
+   * Resolves once the stage has signalled ready, the init was aborted, or
+   * {@link STAGE_READY_FALLBACK_MS} passed without a signal.
+   */
+  const waitForStageReady = useCallback(
+    (signal: AbortSignal) =>
+      new Promise<void>(resolve => {
+        if (stageReadyRef.current || signal.aborted) {
+          resolve()
+          return
+        }
+        const finish = () => {
+          clearTimeout(timer)
+          signal.removeEventListener('abort', finish)
+          if (stageWaiterRef.current === finish) stageWaiterRef.current = null
+          resolve()
+        }
+        const timer = setTimeout(() => {
+          logger.warn(
+            'RhythmGame',
+            'Gig stage not ready in time; starting audio without it.'
+          )
+          finish()
+        }, STAGE_READY_FALLBACK_MS)
+        signal.addEventListener('abort', finish)
+        stageWaiterRef.current = finish
+      }),
+    []
+  )
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -381,6 +428,14 @@ export const useRhythmGameAudio = ({
 
       const activeSetlist = resolveActiveSetlist(currentSetlist)
 
+      // The song clock must not run before the stage can draw it: a late first
+      // frame would auto-miss notes that were never shown. 'initializing' also
+      // lifts the blocked overlay on a retry so the stage can mount.
+      if (!stageReadyRef.current && !isAborted()) {
+        setAudioStatus('initializing')
+        await waitForStageReady(signal)
+      }
+
       if (isAborted()) {
         currentStatusRef.current = 'idle'
         setAudioStatus('idle')
@@ -422,7 +477,7 @@ export const useRhythmGameAudio = ({
         }
       }
     }
-  }, [audioEngine, gameStateRef])
+  }, [audioEngine, gameStateRef, waitForStageReady])
 
   useEffect(() => {
     initializeGigState()
@@ -442,9 +497,12 @@ export const useRhythmGameAudio = ({
   const retryAudioInitialization = useCallback(async () => {
     if (currentStatusRef.current !== 'initializing') {
       currentStatusRef.current = 'idle'
+      // Retries come from the blocked/failed overlay, which replaced the
+      // stage; wait for the remounted stage's own signal.
+      stageReadyRef.current = false
     }
     await initializeGigState()
   }, [initializeGigState])
 
-  return { retryAudioInitialization }
+  return { retryAudioInitialization, onStageReady }
 }

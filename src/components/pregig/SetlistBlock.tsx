@@ -85,7 +85,7 @@ const SongRow = memo(function SongRow({
       </div>
       <div className='flex flex-col items-end gap-1'>
         <div className='flex items-center gap-1.5'>
-          <span className='text-xxs text-ash-gray/50 uppercase tracking-wider'>
+          <span className='text-xxs text-ash-gray uppercase tracking-wider'>
             {t('ui:pregig.nrg')}
           </span>
           <div className='w-14'>

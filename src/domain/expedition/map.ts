@@ -21,6 +21,7 @@ import { mulberry32 } from '../../utils/seededRng'
 import { clampUnit } from '../../utils/numberUtils'
 import { pickBoundedIndex, pickWeighted } from '../../utils/selectionUtils'
 import { fnv1a32 } from '../../utils/stringUtils'
+import { pickSupplyStopInventory } from '../../utils/mapGenerator/supplyStopInventory'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
   MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
@@ -544,6 +545,18 @@ export const buildExpeditionMap = (
         nodes[candidate] = { ...withoutVenue, type: 'SPECIAL' }
       }
     }
+  }
+
+  // Supply stop stock. Each stop draws from its own sub-stream keyed by the
+  // seed and node id, never from `rng`, so every other roll on the route stays
+  // where existing runs and saves put it. Runs after the post-pass so a stop
+  // promoted to a Rival encounter carries no shop.
+  for (const id of nodeOrder) {
+    const node = nodes[id]
+    if (node?.type !== 'SUPPLY_STOP') continue
+    node.shopInventory = pickSupplyStopInventory(
+      mulberry32(fnv1a32(`${seed}|${id}|supply_stock`))
+    )
   }
 
   const canonical = [

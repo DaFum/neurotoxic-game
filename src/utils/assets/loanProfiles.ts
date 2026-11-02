@@ -151,6 +151,34 @@ export const computeAmortization = (
 }
 
 /**
+ * Total paid over a loan's remaining term at its fixed daily installment.
+ *
+ * @remarks
+ * `processLiabilityTick` charges `dailyPayment` each day and only
+ * `min(dailyPayment, payoff)` on the final one, so for an on-schedule
+ * amortization (as priced by {@link computeAmortization}) this is the total
+ * repayment. UI previews use it instead of re-deriving the product inline.
+ *
+ * @param dailyPayment - Fixed daily installment in EUR.
+ * @param termDays - Days of the term still to pay.
+ * @returns Total repayment, or 0 for non-finite or non-positive inputs.
+ */
+export const calculateTotalRepayment = (
+  dailyPayment: number,
+  termDays: number
+): number => {
+  if (
+    !Number.isFinite(dailyPayment) ||
+    !Number.isFinite(termDays) ||
+    dailyPayment <= 0 ||
+    termDays <= 0
+  ) {
+    return 0
+  }
+  return dailyPayment * termDays
+}
+
+/**
  * Pre-computed array of loan profiles for faster iteration.
  */
 export const LOAN_PROFILES_ARRAY: readonly LoanProfile[] = Object.freeze(

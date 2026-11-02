@@ -120,6 +120,19 @@ export const PreGig = () => {
             activeTab !== 'logistics' ? 'hidden' : ''
           }`}
         >
+          {/* The setlist is the one required choice (Start stays disabled
+              without a song), so it comes before the optional modifiers in
+              the single-column phone layout and in focus order. */}
+          <SetlistBlock
+            setlist={setlist}
+            maxSongs={setlistMax}
+            songsDb={SONGS_DB}
+            songsDict={SONGS_BY_ID}
+            selectedSongIds={selectedSongIds}
+            player={player}
+            isSetlistFrozen={isSetlistFrozen}
+            toggleSong={toggleSong}
+          />
           <GigModifiersBlock
             t={t}
             gigModifierOptions={GIG_MODIFIER_OPTIONS}
@@ -130,16 +143,6 @@ export const PreGig = () => {
             bandMeetingCost={bandMeetingCost}
             canAffordBandMeeting={canAffordBandMeeting}
             currentModifiers={currentModifiers}
-          />
-          <SetlistBlock
-            setlist={setlist}
-            maxSongs={setlistMax}
-            songsDb={SONGS_DB}
-            songsDict={SONGS_BY_ID}
-            selectedSongIds={selectedSongIds}
-            player={player}
-            isSetlistFrozen={isSetlistFrozen}
-            toggleSong={toggleSong}
           />
         </div>
 

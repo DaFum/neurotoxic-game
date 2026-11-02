@@ -62,6 +62,8 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
 
   const cfg = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
   const price = cfg?.price ?? 0
+  // A new chassis has no modules, so this is the upkeep the tick charges.
+  const upkeep = cfg?.upkeep ?? 0
   const diyLoanBlocked = flavor === 'diy' && mode === 'loan'
   const insufficient = mode === 'cash' && money < price
 
@@ -71,14 +73,15 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
       setShowCrowdfundSetup(true)
       return
     }
-    purchaseChassis({
+    // Close only on acceptance; a refusal stays open next to its toast.
+    const accepted = purchaseChassis({
       kind,
       flavor,
       tier,
       mode,
       ...(mode === 'loan' ? { loanProfileId: loanProfile } : {})
     })
-    onClose()
+    if (accepted) onClose()
   }
 
   return (
@@ -132,12 +135,14 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
               <LoanProfileChoiceGrid
                 value={loanProfile}
                 onSelect={setLoanProfile}
+                principal={price}
               />
             </div>
           )}
 
           <ChassisAcquisitionFooter
             price={price}
+            upkeep={upkeep}
             acquisitionBlocked={acquisitionBlocked}
             diyLoanBlocked={diyLoanBlocked}
             insufficient={insufficient}
@@ -230,6 +235,7 @@ const ChoiceGroup = <T extends string | number>({
 
 interface ChassisAcquisitionFooterProps {
   price: number
+  upkeep: number
   acquisitionBlocked: boolean
   diyLoanBlocked: boolean
   insufficient: boolean
@@ -239,6 +245,7 @@ interface ChassisAcquisitionFooterProps {
 
 const ChassisAcquisitionFooter = ({
   price,
+  upkeep,
   acquisitionBlocked,
   diyLoanBlocked,
   insufficient,
@@ -253,9 +260,16 @@ const ChassisAcquisitionFooter = ({
         borderColor: 'var(--section-accent, var(--color-toxic-green))'
       }}
     >
-      <span className='assets-modal-price text-base sm:text-sm'>
-        {formatCurrency(price, i18n.language)}
-      </span>
+      <div className='flex flex-col'>
+        <span className='assets-modal-price text-base sm:text-sm'>
+          {formatCurrency(price, i18n.language)}
+        </span>
+        <span className='text-xs opacity-70'>
+          {t('assets:chassisAcquisition.upkeep', {
+            amount: formatCurrency(upkeep, i18n.language)
+          })}
+        </span>
+      </div>
       <div className='flex gap-2'>
         <ActionButton
           onClick={onClose}

@@ -75,12 +75,19 @@ export function useAssetDispatchActions({
     }
 
     return {
-      purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) =>
+      // Returns whether the purchase was accepted (same contract as
+      // repairChassis), so the acquisition modal stays open on a refusal.
+      purchaseChassis: (
+        input: Parameters<typeof purchaseChassisAction>[0]
+      ): boolean => {
+        const action = purchaseChassisAction(input, stateRef.current)
         dispatchWithFailureToast(
-          purchaseChassisAction(input, stateRef.current),
+          action,
           ActionTypes.PURCHASE_CHASSIS_FAILED,
           'assets:purchaseFailed'
-        ),
+        )
+        return action.type !== ActionTypes.PURCHASE_CHASSIS_FAILED
+      },
       upgradeChassisTier: (assetId: string, targetTier: ChassisTier) =>
         dispatchWithFailureToast(
           upgradeChassisTierAction(assetId, targetTier, stateRef.current),
@@ -104,16 +111,23 @@ export function useAssetDispatchActions({
         )
         return action.type !== ActionTypes.REPAIR_CHASSIS_FAILED
       },
-      refinanceLiability: (liabilityId: string, loanProfileId: LoanProfileId) =>
+      // Returns whether the refinance was accepted (repairChassis contract).
+      refinanceLiability: (
+        liabilityId: string,
+        loanProfileId: LoanProfileId
+      ): boolean => {
+        const action = refinanceLiabilityAction(
+          liabilityId,
+          loanProfileId,
+          stateRef.current
+        )
         dispatchWithFailureToast(
-          refinanceLiabilityAction(
-            liabilityId,
-            loanProfileId,
-            stateRef.current
-          ),
+          action,
           ActionTypes.REFINANCE_LIABILITY_FAILED,
           'assets:refinanceFailed'
-        ),
+        )
+        return action.type !== ActionTypes.REFINANCE_LIABILITY_FAILED
+      },
       installModule: (input: Parameters<typeof installModuleAction>[0]) =>
         dispatchWithFailureToast(
           installModuleAction(input, stateRef.current),

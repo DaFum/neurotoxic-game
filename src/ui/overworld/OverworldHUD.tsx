@@ -106,19 +106,19 @@ export const OverworldHUD = memo((props: OverworldHUDProps) => {
               t={t}
               moneyRowAccessory={
                 <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
-                  <span className='text-xxs tracking-widest text-ash-gray/70'>
+                  <span className='text-xxs tracking-widest text-ash-gray'>
                     {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
                   </span>
                   <span className='text-xs font-bold text-star-white tabular-nums'>
                     {player?.fame ?? 0}
                   </span>
-                  <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                  <span className='text-xxs tracking-widest text-ash-gray ml-1.5'>
                     {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
                   </span>
                   <span className='text-xs font-bold text-star-white tabular-nums'>
                     {player?.fameLevel ?? 1}
                   </span>
-                  <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                  <span className='text-xxs tracking-widest text-ash-gray ml-1.5'>
                     {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
                   </span>
                   <span className='text-xs font-bold text-star-white tabular-nums'>

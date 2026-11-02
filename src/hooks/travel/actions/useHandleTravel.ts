@@ -302,7 +302,10 @@ export const useHandleTravel = ({
       clearPendingTravel()
       setters.setPendingTravelNode(node)
       refs.pendingTravelNodeRef.current = node
-      addToast(
+      // Kept so confirm, a destination change, and the timeout (all routed
+      // through `clearPendingTravel`) remove this prompt instead of letting
+      // it outlive the confirmation window.
+      refs.pendingToastIdRef.current = addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
             '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}} | Daily Upkeep: {{dailyCost}} | Total Cash Impact: {{totalCost}} | Fuel: {{fuelLiters}}L — Click again to confirm',

@@ -1,8 +1,17 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { useHandleTravel } from '../../../src/hooks/travel/actions/useHandleTravel'
+import { useTravelLogic } from '../../../src/hooks/travel'
 import { createInitialState } from '../../../src/context/initialState'
 import { activateGamepadElement } from '../../../src/utils/gamepad/navigation'
+
+vi.mock('../../../src/utils/audio/audioEngine', () => {
+  const audioManager = {
+    ensureAudioContext: vi.fn().mockResolvedValue(false),
+    playSFX: vi.fn()
+  }
+  return { audioManager, audioService: audioManager }
+})
 
 // Expedition overlay edges (the Nemesis Key's two-step jump) reach a node the
 // layer rule would still dim. The route authorizes the move, so a connected
@@ -66,7 +75,8 @@ const renderTravel = (
     reputationByRegionRef: { current: {} },
     venueBlacklistRef: { current: [] },
     pendingTravelNodeRef: { current: null },
-    pendingTimeoutRef: { current: null }
+    pendingTimeoutRef: { current: null },
+    pendingToastIdRef: { current: null }
   }
   const { result } = renderHook(() =>
     useHandleTravel({
@@ -281,5 +291,117 @@ describe('useHandleTravel expedition cash and overlay gates', () => {
     handleTravel(GIG_HERE)
     expect(handleNodeArrivalCallback).toHaveBeenCalledTimes(1)
     expect(handleNodeArrivalCallback.mock.calls[0][0].type).toBe('GIG')
+  })
+})
+
+describe('travel confirmation toast lifecycle', () => {
+  // A second destination the run route also reaches, so the pending node can
+  // change without a trip starting.
+  const OTHER = { id: 'node_1', type: 'SPECIAL', layer: 1, x: 35, y: 50 }
+  const lifecycleMap = () => ({
+    nodes: {
+      [START.id]: START,
+      [OTHER.id]: OTHER,
+      [TWO_STEPS_AHEAD.id]: TWO_STEPS_AHEAD
+    },
+    nodeList: [],
+    connections: [
+      { from: START.id, to: OTHER.id },
+      { from: START.id, to: TWO_STEPS_AHEAD.id }
+    ],
+    layers: [[START.id], [OTHER.id], [TWO_STEPS_AHEAD.id]]
+  })
+
+  const renderLogic = () => {
+    const state = createInitialState()
+    let nextToastId = 0
+    const addToast = vi.fn(() => `toast-${++nextToastId}`)
+    const removeToast = vi.fn()
+    const onStartTravelMinigame = vi.fn()
+    const params = {
+      player: {
+        ...state.player,
+        currentNodeId: START.id,
+        money: 5000,
+        van: { ...state.player.van, fuel: 100, condition: 100 }
+      },
+      band: state.band,
+      assets: state.assets,
+      liabilities: state.liabilities,
+      social: state.social,
+      gameMap: lifecycleMap(),
+      reputationByRegion: {},
+      venueBlacklist: [],
+      expeditionStatus: 'active',
+      expeditionDraftPending: false,
+      expeditionProtectedCash: 0,
+      updatePlayer: vi.fn(),
+      updateBand: vi.fn(),
+      saveGame: vi.fn(),
+      advanceDay: vi.fn(),
+      triggerEvent: vi.fn(() => false),
+      startGig: vi.fn(),
+      addToast,
+      removeToast,
+      changeScene: vi.fn(),
+      onStartTravelMinigame
+    }
+    const hook = renderHook(() => useTravelLogic(params))
+    const travel = node => act(() => hook.result.current.handleTravel(node))
+    return { hook, travel, addToast, removeToast, onStartTravelMinigame }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
+  test('confirming the trip removes the confirmation toast', () => {
+    const { travel, addToast, removeToast, onStartTravelMinigame } =
+      renderLogic()
+    travel(TWO_STEPS_AHEAD)
+    expect(addToast).toHaveBeenCalledTimes(1)
+    expect(removeToast).not.toHaveBeenCalled()
+
+    travel(TWO_STEPS_AHEAD)
+    expect(onStartTravelMinigame).toHaveBeenCalledWith(TWO_STEPS_AHEAD.id)
+    expect(removeToast).toHaveBeenCalledTimes(1)
+    expect(removeToast).toHaveBeenCalledWith('toast-1')
+  })
+
+  test('choosing another destination removes only the previous toast', () => {
+    const { travel, addToast, removeToast } = renderLogic()
+    travel(TWO_STEPS_AHEAD)
+    travel(OTHER)
+    expect(addToast).toHaveBeenCalledTimes(2)
+    expect(removeToast.mock.calls).toEqual([['toast-1']])
+  })
+
+  test('the confirmation window expiring removes the toast', () => {
+    const { travel, removeToast } = renderLogic()
+    travel(TWO_STEPS_AHEAD)
+    act(() => {
+      vi.advanceTimersByTime(5000)
+    })
+    expect(removeToast.mock.calls).toEqual([['toast-1']])
+  })
+
+  test('clearing the pending trip removes the toast once', () => {
+    const { hook, travel, removeToast } = renderLogic()
+    travel(TWO_STEPS_AHEAD)
+    act(() => hook.result.current.clearPendingTravel())
+    act(() => hook.result.current.clearPendingTravel())
+    expect(removeToast.mock.calls).toEqual([['toast-1']])
+  })
+
+  test('unmounting with a pending trip removes the toast', () => {
+    const { hook, travel, removeToast } = renderLogic()
+    travel(TWO_STEPS_AHEAD)
+    hook.unmount()
+    expect(removeToast.mock.calls).toEqual([['toast-1']])
   })
 })

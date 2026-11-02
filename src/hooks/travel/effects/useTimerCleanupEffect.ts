@@ -7,15 +7,23 @@ import type { TravelRefsBundle } from '../types'
  * @remarks
  * This cleanup effect ensures that stray pending callbacks do not execute and
  * mutate state after the component tree has collapsed. The tracked timers
- * represent confirmation expiry and the softlock game-over countdown. Note that
+ * represent confirmation expiry and the softlock game-over countdown; a pending
+ * confirmation toast is removed so it cannot outlive the map. Note that
  * because the ref identities are intentionally stable across renders, this
  * cleanup runs exclusively on unmount, not on component re-renders.
  *
  * @param refs - A bundle of mutable React refs containing timeout identifiers
  */
-export const useTimerCleanupEffect = (refs: TravelRefsBundle) => {
+export const useTimerCleanupEffect = (
+  refs: TravelRefsBundle,
+  removeToast: (id: string) => void
+) => {
   useEffect(() => {
     return () => {
+      if (refs.pendingToastIdRef.current) {
+        removeToast(refs.pendingToastIdRef.current)
+        refs.pendingToastIdRef.current = null
+      }
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
@@ -25,5 +33,10 @@ export const useTimerCleanupEffect = (refs: TravelRefsBundle) => {
         refs.pendingTimeoutRef.current = null
       }
     }
-  }, [refs.timeoutRef, refs.pendingTimeoutRef])
+  }, [
+    refs.timeoutRef,
+    refs.pendingTimeoutRef,
+    refs.pendingToastIdRef,
+    removeToast
+  ])
 }

@@ -83,8 +83,10 @@ runs:
             issue_number,
           });
 
-          // Match only comments created by this action (first line must equal the marker exactly)
-          const existing = comments.find(c => c.body && c.body.split('\n')[0] === marker);
+          // Match only comments created by this action: authored by the bot, first line equal to the marker
+          const existing = comments.find(
+            c => c.user?.login === 'github-actions[bot]' && c.body && c.body.split('\n')[0] === marker
+          );
 
           if (existing) {
             await github.rest.issues.updateComment({

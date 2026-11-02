@@ -174,10 +174,11 @@ type BaseGameDispatchActions = {
     description: string
     result: unknown
   }
+  /** Queues a toast; returns its id (for `removeToast`), or null if dropped. */
   addToast: (
     message: Parameters<typeof createAddToastAction>[0],
     type?: ToastType
-  ) => void
+  ) => string | null
   removeToast: (id: Parameters<typeof createRemoveToastAction>[0]) => void
   setGigModifiers: (
     modifiers: Parameters<typeof createSetGigModifiersAction>[0]
@@ -272,7 +273,9 @@ type BaseGameDispatchActions = {
   // delegates to the asset action creators. Failures surface as typed
   // *_FAILED actions which the reducer handles as no-ops; the dispatch
   // boundary tracks them so middleware can translate to toasts in future.
-  purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) => void
+  purchaseChassis: (
+    input: Parameters<typeof purchaseChassisAction>[0]
+  ) => boolean
   upgradeChassisTier: (
     assetId: string,
     targetTier: import('../types/assets').ChassisTier
@@ -282,7 +285,7 @@ type BaseGameDispatchActions = {
   refinanceLiability: (
     liabilityId: string,
     loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId
-  ) => void
+  ) => boolean
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
@@ -585,7 +588,9 @@ export function useGameDispatchActions({
       type: Parameters<typeof createAddToastAction>[1] = 'info'
     ) => {
       const action = createAddToastAction(message, type)
-      if (action) dispatch(action)
+      if (!action) return null
+      dispatch(action)
+      return action.payload.id
     },
     [dispatch]
   )
@@ -609,6 +614,7 @@ export function useGameDispatchActions({
   const { setActiveEvent, setScreenshotMode, triggerEvent, resolveEvent } =
     useEventSystem({
       stateRef,
+      latestStateRef,
       dispatch,
       addToast,
       changeScene,

@@ -14,6 +14,7 @@ import {
   createMoneyEarnedQuestEvent,
   createFameGainedQuestEvent
 } from '../quests/producers/economyQuestEvents'
+import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
 
 /**
  * Resolves an active quest, applies rewards, and triggers followup logic.
@@ -54,6 +55,10 @@ export const completeQuest = (
   const fameGain =
     finiteNumberOr(nextState.player?.fame, 0) -
     finiteNumberOr(state.player?.fame, 0)
+  // `applyQuestRewards` owns the harmony write and its clamp; the event reports
+  // the change it actually applied, read with the same fallback it uses.
+  const nextHarmony = finiteNumberOr(nextState.band?.harmony, 1)
+  const harmonyChange = nextHarmony - finiteNumberOr(state.band?.harmony, 1)
   const generatedToasts: ToastPayload[] = [...rewardResult.toasts]
 
   if (generatedToasts.length === 0) {
@@ -156,6 +161,15 @@ export const completeQuest = (
         amount: fameGain,
         region,
         reason: 'quest_reward'
+      })
+    )
+  }
+  if (harmonyChange !== 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createHarmonyChangedQuestEvent({
+        amount: harmonyChange,
+        newHarmony: nextHarmony
       })
     )
   }

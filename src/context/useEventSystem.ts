@@ -32,6 +32,14 @@ type SaveGame = (showToast?: boolean, stateSnapshot?: GameState) => void
 
 type UseEventSystemParams = {
   stateRef: MutableRefObject<GameState>
+  /**
+   * The provider's state after every dispatch so far, including ones React has
+   * not rendered yet. `triggerEvent` decides from it: callers roll events in
+   * the same tick as a state change (arrival dispatches `advanceDay()` and
+   * then rolls its travel event), where `stateRef` still holds the previous
+   * render's day.
+   */
+  latestStateRef: MutableRefObject<GameState>
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback
   changeScene: ChangeScene
@@ -176,6 +184,7 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
  */
 export function useEventSystem({
   stateRef,
+  latestStateRef,
   dispatch,
   addToast,
   changeScene,
@@ -197,16 +206,28 @@ export function useEventSystem({
   )
 
   // Queue instance that already received a drain pop. Callers chain
-  // triggerEvent fallbacks synchronously against the same stale stateRef
-  // snapshot; without this guard each chained call would pop again and
-  // remove valid pending events behind the unknown head.
+  // triggerEvent fallbacks synchronously; if a pop left the queue instance
+  // unchanged, each chained call would pop again and remove valid pending
+  // events behind the unknown head.
   const drainedQueueRef = useRef<unknown>(null)
 
   const triggerEvent = useCallback(
     (category: string, triggerPoint: string | null = null) => {
       // DEV/QA `?events=off`: no random event rolls (e2e golden path).
       if (isDevEventsDisabled()) return false
-      const currentState = stateRef.current
+      // Not `stateRef`: that is the last rendered state, which lags a dispatch
+      // made earlier in the same tick (arrival's `advanceDay()` resets the
+      // daily counter before the travel roll). The cap, selection and the
+      // counter increment must all see the post-dispatch day.
+      const currentState = latestStateRef.current
+      // A run that already ended (bankruptcy on arrival's advanceDay) must not
+      // open a travel event modal over the ending.
+      if (
+        currentState.currentScene === GAME_PHASES.GAMEOVER ||
+        currentState.terminalOutcome
+      ) {
+        return false
+      }
       // gig_intro / gig_mid events are the one class that fires DURING the gig:
       // the rhythm loop pauses the audio while `activeEvent` is set (see
       // processRhythmGameTick). They are tied to the gig moment rather than the
@@ -271,7 +292,7 @@ export function useEventSystem({
       }
       return true
     },
-    [dispatch, setActiveEvent, stateRef]
+    [dispatch, setActiveEvent, latestStateRef]
   )
 
   const resolveEventCallback = useCallback(

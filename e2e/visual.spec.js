@@ -9,6 +9,29 @@ import {
   skipToMenu
 } from './helpers.js'
 
+/** Waits for the map node layout to stop moving instead of sleeping. */
+async function waitForStableMapLayout(page) {
+  let previous = ''
+  await expect
+    .poll(
+      async () => {
+        const current = await page.locator('.map-node').evaluateAll(nodes =>
+          JSON.stringify(
+            nodes.map(node => {
+              const r = node.getBoundingClientRect()
+              return [r.left, r.top, r.width, r.height]
+            })
+          )
+        )
+        const stable = current === previous
+        previous = current
+        return stable
+      },
+      { intervals: [150], timeout: 10000 }
+    )
+    .toBe(true)
+}
+
 /**
  * Loads the ordinary-gig fixture, enters PreGig through the map and starts
  * Kabelsalat through the DEV hook.
@@ -69,26 +92,7 @@ const loadSeedOneExpedition = async page => {
     .toBe('OVERWORLD')
   await dismissTutorial(page)
   await expect(page.locator('.map-node.clickable').first()).toBeVisible()
-  // Wait for the node layout to stop moving instead of sleeping.
-  let previous = ''
-  await expect
-    .poll(
-      async () => {
-        const current = await page.locator('.map-node').evaluateAll(nodes =>
-          JSON.stringify(
-            nodes.map(node => {
-              const r = node.getBoundingClientRect()
-              return [r.left, r.top, r.width, r.height]
-            })
-          )
-        )
-        const stable = current === previous
-        previous = current
-        return stable
-      },
-      { intervals: [150], timeout: 10000 }
-    )
-    .toBe(true)
+  await waitForStableMapLayout(page)
 }
 
 /**
@@ -133,6 +137,78 @@ const seedOneLabelCollisions = async page => {
     }
   }
   return collisions
+}
+
+// WCAG 2.x AA for normal-size text; every label checked is below large size.
+const AA_NORMAL_TEXT = 4.5
+
+/**
+ * Runs in the page: composites the element's background stack (itself and its
+ * ancestors up to the first opaque background) on a 1px canvas, paints its
+ * computed `color` over that, and returns the WCAG contrast of the two pixels.
+ * The canvas does the alpha compositing and parses any computed colour syntax
+ * (`rgb()`, `oklab()`, `color(srgb ...)`).
+ *
+ * @param {Element} el - The text element.
+ * @returns {{ ratio: number, text: number[], background: number[] }} Measurement.
+ */
+const measureTextContrast = el => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1
+  canvas.height = 1
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  const SENTINEL = '#010203'
+  const paint = css => {
+    ctx.fillStyle = SENTINEL
+    ctx.fillStyle = css
+    if (ctx.fillStyle === SENTINEL) throw new Error(`unparsed colour ${css}`)
+    ctx.fillRect(0, 0, 1, 1)
+  }
+  const read = () => [...ctx.getImageData(0, 0, 1, 1).data]
+
+  const layers = []
+  for (let node = el; node; node = node.parentElement) {
+    const bg = getComputedStyle(node).backgroundColor
+    layers.push(bg)
+    ctx.clearRect(0, 0, 1, 1)
+    paint(bg)
+    if (read()[3] === 255) break
+  }
+  // The canvas starts transparent; the page canvas behind <html> is white.
+  ctx.clearRect(0, 0, 1, 1)
+  paint('#ffffff')
+  for (const bg of layers.reverse()) paint(bg)
+  const background = read().slice(0, 3)
+  paint(getComputedStyle(el).color)
+  const text = read().slice(0, 3)
+
+  const luminance = rgb => {
+    const [r, g, b] = rgb.map(v => {
+      const c = v / 255
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const [hi, lo] = [luminance(text), luminance(background)].sort(
+    (a, b) => b - a
+  )
+  return { ratio: (hi + 0.05) / (lo + 0.05), text, background }
+}
+
+/**
+ * Asserts WCAG AA contrast for the text of a located element.
+ *
+ * @param {import('@playwright/test').Locator} locator - The text element.
+ * @param {string} label - Name used in the failure message.
+ * @returns {Promise<{ ratio: number, text: number[], background: number[] }>} The measurement.
+ */
+const expectReadableText = async (locator, label) => {
+  const m = await locator.evaluate(measureTextContrast)
+  expect(
+    m.ratio,
+    `${label}: rgb(${m.text}) on rgb(${m.background}) is ${m.ratio.toFixed(2)}:1`
+  ).toBeGreaterThanOrEqual(AA_NORMAL_TEXT)
+  return m
 }
 
 test.describe('Visual smoke tests', () => {
@@ -478,7 +554,9 @@ test.describe('Visual smoke tests', () => {
         Math.min(map.bottom, menuBar.top, window.innerHeight) -
           Math.max(map.top, 0)
       )
+      // A label hidden by the map's declutter pass is `invisible`, not removed.
       const labels = [...document.querySelectorAll('.map-node span.uppercase')]
+        .filter(el => getComputedStyle(el).visibility !== 'hidden')
         .map(el => el.getBoundingClientRect())
         .filter(r => r.width > 0 && r.height > 0)
       let overlaps = 0
@@ -521,6 +599,84 @@ test.describe('Visual smoke tests', () => {
     expect(m.stripBottom).toBeLessThanOrEqual(m.mapTop)
     // Visible node labels in the start cluster never stack on each other.
     expect(m.overlaps).toBe(0)
+  })
+
+  test('Career destination names show at 320px without a tap (#3499)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width >= 360, 'Below-360px label rule')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    // Seed 2's start cluster stacks three destination chips at 320px.
+    await skipToMenu(page, { url: '/?seed=2' })
+    await page.getByRole('button', { name: /start tour/i }).click()
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    await page
+      .getByText(/tour plan/i)
+      .first()
+      .waitFor()
+    await expect(page.locator('.map-node.clickable').first()).toBeVisible()
+    await waitForStableMapLayout(page)
+
+    const m = await page.evaluate(() => {
+      const shown = el =>
+        getComputedStyle(el).visibility !== 'hidden' &&
+        el.getBoundingClientRect().width > 0
+      const labels = [
+        ...document.querySelectorAll('[data-testid="map-node-label"]')
+      ].filter(shown)
+      // Travel targets other than the current (van) node.
+      const destinationNames = [
+        ...document.querySelectorAll('.map-node[role="button"]')
+      ]
+        .filter(node => !node.querySelector('img[alt="Van"]'))
+        .map(node => node.querySelector('[data-testid="map-node-label"]'))
+        .filter(label => label && label.lastElementChild)
+        .filter(label => shown(label.lastElementChild))
+        .map(label => label.lastElementChild.textContent)
+      const boxes = labels.map(label =>
+        [...label.children]
+          .filter(child => getComputedStyle(child).display !== 'none')
+          .map(child => child.getBoundingClientRect())
+          .filter(r => r.width > 0 && r.height > 0)
+      )
+      const hud = [
+        ...document.querySelectorAll(
+          '.ow-menu button, [data-testid="overworld-phone-resources"]'
+        ),
+        ...[...document.querySelectorAll('button')].filter(b =>
+          /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
+        )
+      ]
+        .map(el => el.getBoundingClientRect())
+        .filter(r => r.width > 0 && r.height > 0)
+      const hit = (a, b) =>
+        a.left < b.right &&
+        b.left < a.right &&
+        a.top < b.bottom &&
+        b.top < a.bottom
+      let overlaps = 0
+      let hudOverlaps = 0
+      for (let i = 0; i < boxes.length; i++) {
+        for (const a of boxes[i]) {
+          for (let j = i + 1; j < boxes.length; j++) {
+            overlaps += boxes[j].filter(b => hit(a, b)).length
+          }
+          hudOverlaps += hud.filter(b => hit(a, b)).length
+        }
+      }
+      return { destinationNames, overlaps, hudOverlaps }
+    })
+    // Names are readable at rest, so reading one needs no travel-confirm tap.
+    expect(m.destinationNames.length).toBeGreaterThan(0)
+    await expect(page.getByText('CONFIRM?')).toHaveCount(0)
+    // The declutter pass keeps the shown chips apart and off the HUD.
+    expect(m.overlaps).toBe(0)
+    expect(m.hudOverlaps).toBe(0)
   })
 
   // The tooltip cap and the node box are in rem, so enlarged text (a browser or
@@ -1166,5 +1322,95 @@ test.describe('Visual smoke tests', () => {
         { intervals: [250], timeout: 5000 }
       )
       .toBe(true)
+  })
+
+  test('Band HQ Leave meets AA contrast at rest and on hover (#3499)', async ({
+    page
+  }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /band hq/i }).click()
+    const leave = page
+      .getByRole('dialog')
+      .getByRole('button', { name: /leave/i })
+    await expect(leave).toBeVisible()
+    await page.mouse.move(0, 0)
+    const rest = await expectReadableText(leave, 'HQ Leave')
+
+    // Tailwind's hover: variant only applies where the pointer can hover.
+    const canHover = await page.evaluate(
+      () => window.matchMedia('(hover: hover)').matches
+    )
+    if (!canHover) {
+      test.info().annotations.push({
+        type: 'skip-hover',
+        description: 'No hover state on touch-only devices'
+      })
+      return
+    }
+    await leave.hover()
+    await leave.evaluate(el =>
+      Promise.all(el.getAnimations().map(animation => animation.finished))
+    )
+    const hover = await expectReadableText(leave, 'HQ Leave (hover)')
+    // Guard against measuring the rest state twice.
+    expect(hover.background).not.toEqual(rest.background)
+  })
+
+  test('Overworld career labels meet AA contrast (#3499)', async ({ page }) => {
+    await skipToMenu(page)
+    await page.getByRole('button', { name: /start tour/i }).click()
+    // A fresh profile gets a name prompt first.
+    const prompt = page.getByRole('dialog')
+    if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const input = prompt.getByRole('textbox').first()
+      if (await input.count()) await input.fill('Tester')
+      await prompt.getByRole('button', { name: /confirm/i }).click()
+    }
+    for (const label of ['FAME', 'LVL', 'KM']) {
+      const el = page.getByText(label, { exact: true }).first()
+      await expect(el).toBeVisible()
+      await expectReadableText(el, `Overworld ${label} label`)
+    }
+  })
+
+  test('PreGig NRG label meets AA contrast on selected and locked rows (#3499)', async ({
+    page
+  }) => {
+    const url = '/?events=off'
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    const fixture = await buildFixture(page, 'ordinaryGigFixture')
+    await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+    await loadSavedGame(page)
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('OVERWORLD')
+    await dismissTutorial(page)
+    await page
+      .locator('.map-node')
+      .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+      .click()
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('PREGIG')
+
+    // The Expedition commitment freezes the setlist: the committed song shows
+    // the selected style and every other row the locked style. An unselected,
+    // unlocked row cannot be reached from this fixture.
+    const rows = page.locator('button[aria-pressed]').filter({
+      has: page.getByText('NRG', { exact: true })
+    })
+    const states = {
+      selected: rows.and(page.locator('[aria-pressed="true"]')),
+      locked: rows.and(
+        page.locator('[aria-pressed="false"][aria-disabled="true"]')
+      )
+    }
+    for (const [state, row] of Object.entries(states)) {
+      await expect(row.first(), `${state} row`).toBeVisible()
+      await expectReadableText(
+        row.first().getByText('NRG', { exact: true }),
+        `NRG label (${state} row)`
+      )
+    }
   })
 })

@@ -34,6 +34,8 @@ type GigViewProps = {
   t: TFunction<'translation', undefined>
   gameStateRef: MutableRefObject<RhythmGameRefState>
   update: (delta: number) => void
+  /** Stage readiness, forwarded to the Pixi controller's one-shot `onReady`. */
+  onStageReady: () => void
   stats: RhythmGameStats
   handleLaneInput: (laneIndex: number, isDown: boolean) => void
   handleTogglePause: () => void
@@ -57,6 +59,7 @@ export const GigView = ({
   t,
   gameStateRef,
   update,
+  onStageReady,
   stats,
   handleLaneInput,
   handleTogglePause,
@@ -105,6 +108,7 @@ export const GigView = ({
           gameStateRef={gameStateRef}
           update={update}
           controllerFactory={controllerFactory}
+          onReady={onStageReady}
         />
       </Suspense>
 

@@ -33,5 +33,5 @@ export const useTravelEffects = ({
   params: TravelLogicParams
 }) => {
   useSoftlockEffect({ refs, state, params })
-  useTimerCleanupEffect(refs)
+  useTimerCleanupEffect(refs, params.removeToast)
 }

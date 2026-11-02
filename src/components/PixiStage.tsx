@@ -21,10 +21,11 @@ type PixiStageComponentType = <TState = RhythmGameRefState>(
 const PixiStageComponent = <TState = RhythmGameRefState,>(
   props: PixiStageProps<TState>
 ) => {
-  const { gameStateRef, update } = props
+  const { gameStateRef, update, onReady } = props
   const controllerFactory = props.controllerFactory
   const containerRef = useRef<HTMLDivElement | null>(null)
   const updateRef = useRef(update)
+  const onReadyRef = useRef(onReady)
   const controllerRef = useRef<PixiController | null>(null)
 
   useEffect(() => {
@@ -32,11 +33,18 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
   }, [update])
 
   useEffect(() => {
+    onReadyRef.current = onReady
+  }, [onReady])
+
+  useEffect(() => {
     let mounted = true
     const controller = controllerFactory({
       containerRef,
       gameStateRef,
-      updateRef
+      updateRef,
+      onReady: () => {
+        if (mounted) onReadyRef.current?.()
+      }
     })
     controllerRef.current = controller
 

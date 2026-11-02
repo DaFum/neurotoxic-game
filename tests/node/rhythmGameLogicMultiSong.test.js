@@ -426,6 +426,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
 
     const { result, rerender } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
     await act(async () => {
       await flushPromises()
     })
@@ -488,6 +490,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
 
     await act(async () => {
       await flushPromises()
@@ -567,6 +571,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
 
     await act(async () => {
       await flushPromises()
@@ -635,6 +641,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
 
     await act(async () => {
       await flushPromises()
@@ -712,6 +720,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
     await act(async () => {
       await flushPromises()
     })
@@ -763,7 +773,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
-    renderHook(() => rhythmGameLogicHook())
+    const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
     await act(async () => {
       await flushPromises()
     })
@@ -806,6 +818,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
     await act(async () => {
       await flushPromises()
     })
@@ -885,6 +899,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => rhythmGameLogicHook())
+    // Headless: no stage mounts, so deliver its readiness signal directly.
+    act(() => result.current.onStageReady())
     await act(async () => {
       await flushPromises()
     })
