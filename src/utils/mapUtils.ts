@@ -145,6 +145,12 @@ interface SoftlockContext {
   restRecovery?: {
     /** Social slice supplying the YouTube followers the day tick pays on. */
     social: Partial<Pick<SocialState, 'youtube'>>
+    /**
+     * Earliest active-quest deadline (day number). A quest past its deadline
+     * applies harmony penalties on the day tick, so the rest-then-donate bound
+     * claims nothing from that day on. Omitted or null means none expires.
+     */
+    questDeadline?: number | null
   }
 }
 
@@ -582,7 +588,11 @@ export const checkSoftlock = (
       if (!(restedMoney > 0)) break
       if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
         return true
-      restedBand = restedBand && getRestedBandLowerBound(restedBand)
+      const questExpires =
+        restRecovery.questDeadline != null &&
+        today + restDay > restRecovery.questDeadline
+      restedBand =
+        questExpires || !restedBand ? null : getRestedBandLowerBound(restedBand)
       const restedSteps = getDonationProceedsSteps(restedBand, player.fameLevel)
       const nextRestedTotal = restedSteps[restedSteps.length - 1] ?? 0
       // Reachability only grows with cash, so the largest total decides.

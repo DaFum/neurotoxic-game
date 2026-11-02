@@ -118,7 +118,46 @@ describe('useSoftlockEffect fuel pricing', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.objectContaining({ restRecovery: { social } })
+      expect.objectContaining({
+        restRecovery: { social, questDeadline: null }
+      })
+    )
+    unmount()
+  })
+
+  test('hands the earliest quest deadline to the rest-income escape (#3503)', () => {
+    const social = { youtube: 50000 }
+    const { unmount } = renderHook(() =>
+      useSoftlockEffect({
+        refs: { timeoutRef: { current: null } },
+        state: { isTraveling: false },
+        params: {
+          gameMap: { nodes: {}, connections: [] },
+          player: { currentNodeId: 'node_0', day: 1, money: 0 },
+          band: {},
+          social,
+          activeQuests: [
+            { id: 'q_late', deadline: 12, status: 'active' },
+            { id: 'q_soon', deadline: 7, status: 'active' },
+            { id: 'q_open', status: 'active' }
+          ],
+          assets: [],
+          liabilities: [],
+          addToast: vi.fn(),
+          saveGame: vi.fn(),
+          changeScene: vi.fn(),
+          venueBlacklist: [],
+          reputationByRegion: {}
+        }
+      })
+    )
+    expect(checkSoftlock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        restRecovery: { social, questDeadline: 7 }
+      })
     )
     unmount()
   })

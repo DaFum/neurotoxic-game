@@ -18,6 +18,24 @@ import {
 } from '../../../utils/travelSoftlockUtils'
 import { getNodeAccessStatus } from '../../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../../data/venues'
+import { getQuestWithDefinition } from '../../../domain/questHelpers'
+
+/**
+ * Earliest finite deadline among the active quests, or null when none has one.
+ * A quest that expires on the day tick can take harmony the rest simulation
+ * would otherwise count on.
+ */
+const getNextQuestDeadline = (
+  activeQuests: TravelLogicParams['activeQuests']
+): number | null => {
+  let next: number | null = null
+  for (const quest of activeQuests ?? []) {
+    const { deadline } = getQuestWithDefinition(quest)
+    if (typeof deadline === 'number' && Number.isFinite(deadline))
+      next = next === null ? deadline : Math.min(next, deadline)
+  }
+  return next
+}
 
 /**
  * Monitors the travel state to detect and handle softlock scenarios when the player becomes stranded.
@@ -43,6 +61,7 @@ export const useSoftlockEffect = ({
     player,
     band,
     social,
+    activeQuests,
     assets,
     liabilities,
     addToast,
@@ -114,7 +133,10 @@ export const useSoftlockEffect = ({
       postSaleScenarios,
       // Resting can earn the trip when the day pays more than it costs. Safe
       // here because this check never runs during an active run.
-      restRecovery: { social },
+      restRecovery: {
+        social,
+        questDeadline: getNextQuestDeadline(activeQuests)
+      },
       // Reuse the real booking gate rather than re-deriving it here, so a
       // neighbor the player would be refused at cannot count as an escape.
       isNodeAccessible: (node: unknown) =>
@@ -158,6 +180,7 @@ export const useSoftlockEffect = ({
     player,
     band,
     social,
+    activeQuests,
     assets,
     liabilities,
     addToast,

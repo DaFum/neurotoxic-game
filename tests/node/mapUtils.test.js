@@ -550,13 +550,49 @@ describe('mapUtils', () => {
         })
 
         test('a rest day that would leave no cash is not a rescue', () => {
-          // 5 - 5 = 0 with obligations still due: the day tick bankrupts.
+          // 5 - 5 = 0 with obligations still due: the day tick bankrupts, even
+          // though a marrow donation after the rest would raise the trip.
+          const marrowAfterRest = {
+            harmony: 80,
+            members: [{ stamina: 30, staminaMax: 100 }]
+          }
           assert.equal(
-            checkSoftlock(gameMap, at(5), tiredBand, {
+            checkSoftlock(gameMap, at(5), marrowAfterRest, {
               dailyObligations: 5,
               restRecovery
             }),
             true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(500), marrowAfterRest, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('an expiring quest deadline rules the rest donation out (#3503)', () => {
+          // A quest past its deadline applies harmony penalties on the day
+          // tick (up to 25), which the bound does not model: no claim after it.
+          const context = { dailyObligations: 5, restRecovery }
+          const withDeadline = questDeadline => ({
+            ...context,
+            restRecovery: { ...restRecovery, questDeadline }
+          })
+          // Day 20 + 1 rest day > deadline 20: it expires on the rest day.
+          assert.equal(
+            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(20)),
+            true
+          )
+          // A deadline beyond the one-day look-ahead leaves the escape intact.
+          assert.equal(
+            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(40)),
+            false
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(50), tiredBand, withDeadline(null)),
+            false
           )
         })
 
