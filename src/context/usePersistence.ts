@@ -198,6 +198,11 @@ const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<
  */
 type UsePersistenceParams = {
   currentScene: GameState['currentScene']
+  /**
+   * `saveGame`'s default snapshot. The provider passes its `latestStateRef`
+   * (every dispatch so far), so a save requested right after a dispatch in the
+   * same tick includes it (#3516).
+   */
   stateRef: MutableRefObject<GameState>
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback

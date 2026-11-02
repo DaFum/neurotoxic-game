@@ -605,7 +605,7 @@ export function useGameDispatchActions({
     hasOtherStoredSave
   } = usePersistence({
     currentScene: state.currentScene,
-    stateRef,
+    stateRef: latestStateRef,
     dispatch,
     addToast,
     tRef

@@ -91,4 +91,17 @@ describe('same-tick state reads through the real provider', () => {
     expect(saved?.player?.money).toBe(money)
     expect(saved?.terminalOutcome?.reason).toBe('event_game_over')
   })
+
+  test('saveGame without a snapshot saves an earlier same-tick dispatch', () => {
+    const { result } = renderProvider()
+    const money = result.current.money + 321
+
+    act(() => {
+      result.current.actions.updatePlayer({ money })
+      result.current.actions.saveGame(false)
+    })
+
+    const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
+    expect(saved?.player?.money).toBe(money)
+  })
 })
