@@ -14,6 +14,7 @@ import { SLEEPING_BAGS_STAMINA_PER_DAY } from '../data/inventoryItems'
 import { getActiveDealBenefits } from './brandDealBenefits'
 import { calculateDailyNetCost } from './dailyNetCost'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
+import { calculateFameLevel } from './gameState/calculations'
 import {
   clampBandHarmony,
   clampMemberStamina,
@@ -212,35 +213,35 @@ const MAX_FIXED_TICK_STAMINA_GAIN =
  * resting first. Three bloods cost more harmony and stamina than a marrow and
  * pay less, so the best count holds at most two bloods and, with harmony at
  * most 100 + 7 * 9, four marrows: within `MAX_SIMULATED_DONATIONS`.
+ * Payouts grow with the fame level, which passive asset fame can raise on
+ * every rest, so each donation of an `n`-day run is priced at the highest
+ * level `n` rests can reach.
  *
  * @param band - Band whose harmony and member stamina fund the donations.
- * @param fameLevel - Persisted fame level scaling every payout.
+ * @param fameLevelAfterRest - Upper bound on the fame level after `n` rest days.
  * @param todayTotal - Exact proceeds of today's donation run (no rest).
  * @param tickStaminaGain - Upper bound on the stamina one day tick adds.
  * @returns Index `n` holds the bound after `n` rest days; index 0 is `todayTotal`.
  */
 const getRestDonationTotals = (
   band: Partial<BandState> | null,
-  fameLevel: unknown,
+  fameLevelAfterRest: (restDays: number) => number,
   todayTotal: number,
   tickStaminaGain: number
 ): number[] => {
   const totals = [todayTotal]
-  const marrow = getBloodBankDonation('marrow', fameLevel)
-  const blood = getBloodBankDonation('blood', fameLevel)
   const members = band?.members ?? []
   const harmony = band?.harmony
-  const canDonate =
-    marrow !== null &&
-    blood !== null &&
-    members.length > 0 &&
-    isFiniteNumber(harmony)
+  const canDonate = members.length > 0 && isFiniteNumber(harmony)
   const lowestStamina = Math.min(
     ...members.map(member => finiteNumberOr(member.stamina, 0))
   )
   for (let restDays = 1; restDays <= MAX_SIMULATED_REST_DAYS; restDays++) {
     let best = totals[restDays - 1] ?? 0
-    if (canDonate) {
+    const fameLevel = fameLevelAfterRest(restDays)
+    const marrow = getBloodBankDonation('marrow', fameLevel)
+    const blood = getBloodBankDonation('blood', fameLevel)
+    if (canDonate && marrow !== null && blood !== null) {
       const staminaBudget =
         lowestStamina +
         restDays * (REST_STAMINA_GAIN + tickStaminaGain) -
@@ -592,11 +593,22 @@ export const checkSoftlock = (
   // would declare ends the look-ahead.
   const restRecovery = context.restRecovery
   const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
-  // Asset regen from the pre-sale modifiers: a sale only removes boni. The
-  // tick pays a fractional rate in whole units, at most its ceiling a day.
+  // Asset regen and passive fame from the pre-sale modifiers: a sale only
+  // removes boni. The tick pays a fractional rate in whole units, at most its
+  // ceiling a day. Passive fame lands before the day is settled, so a rest can
+  // lift the fame level and every donation payout with it; the living and
+  // travel costs, which also grow with the level, stay at today's level.
+  const passiveFamePerDay = Math.ceil(
+    Math.max(0, finiteNumberOr(assetModifiers?.famePassivePerDay, 0))
+  )
+  const fame = finiteNumberOr(player.fame, 0)
   const restDonationTotals = getRestDonationTotals(
     bandForDonation,
-    player.fameLevel,
+    restDays =>
+      Math.max(
+        playerStateForTravel.fameLevel,
+        calculateFameLevel(fame + restDays * passiveFamePerDay)
+      ),
     donationTotal,
     MAX_FIXED_TICK_STAMINA_GAIN +
       getActiveDealBenefits(restRecovery?.social?.activeDeals)
