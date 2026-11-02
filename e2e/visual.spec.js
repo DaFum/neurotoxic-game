@@ -9,6 +9,29 @@ import {
   skipToMenu
 } from './helpers.js'
 
+/** Waits for the map node layout to stop moving instead of sleeping. */
+async function waitForStableMapLayout(page) {
+  let previous = ''
+  await expect
+    .poll(
+      async () => {
+        const current = await page.locator('.map-node').evaluateAll(nodes =>
+          JSON.stringify(
+            nodes.map(node => {
+              const r = node.getBoundingClientRect()
+              return [r.left, r.top, r.width, r.height]
+            })
+          )
+        )
+        const stable = current === previous
+        previous = current
+        return stable
+      },
+      { intervals: [150], timeout: 10000 }
+    )
+    .toBe(true)
+}
+
 /**
  * Loads the ordinary-gig fixture, enters PreGig through the map and starts
  * Kabelsalat through the DEV hook.
@@ -69,26 +92,7 @@ const loadSeedOneExpedition = async page => {
     .toBe('OVERWORLD')
   await dismissTutorial(page)
   await expect(page.locator('.map-node.clickable').first()).toBeVisible()
-  // Wait for the node layout to stop moving instead of sleeping.
-  let previous = ''
-  await expect
-    .poll(
-      async () => {
-        const current = await page.locator('.map-node').evaluateAll(nodes =>
-          JSON.stringify(
-            nodes.map(node => {
-              const r = node.getBoundingClientRect()
-              return [r.left, r.top, r.width, r.height]
-            })
-          )
-        )
-        const stable = current === previous
-        previous = current
-        return stable
-      },
-      { intervals: [150], timeout: 10000 }
-    )
-    .toBe(true)
+  await waitForStableMapLayout(page)
 }
 
 /**
@@ -615,7 +619,8 @@ test.describe('Visual smoke tests', () => {
       .getByText(/tour plan/i)
       .first()
       .waitFor()
-    await page.waitForTimeout(800)
+    await expect(page.locator('.map-node.clickable').first()).toBeVisible()
+    await waitForStableMapLayout(page)
 
     const m = await page.evaluate(() => {
       const shown = el =>

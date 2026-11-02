@@ -22,7 +22,10 @@ export const TourbusControls = ({
         className='w-1/2 h-full active:bg-star-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset flex items-center justify-center text-4xl'
         onClick={onMoveLeft}
       >
-        <span aria-hidden='true' className='text-star-white/30'>
+        <span
+          aria-hidden='true'
+          className='text-star-white/70 drop-shadow-[0_0_2px_var(--color-void-black)]'
+        >
           {'<'}
         </span>
       </button>
@@ -34,7 +37,10 @@ export const TourbusControls = ({
         className='w-1/2 h-full active:bg-star-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset flex items-center justify-center text-4xl'
         onClick={onMoveRight}
       >
-        <span aria-hidden='true' className='text-star-white/30'>
+        <span
+          aria-hidden='true'
+          className='text-star-white/70 drop-shadow-[0_0_2px_var(--color-void-black)]'
+        >
           {'>'}
         </span>
       </button>

@@ -118,7 +118,7 @@ describe('useEventSystem.triggerEvent daily cap with a corrupt counter', () => {
     }
     params.latestStateRef = params.stateRef
     const { result } = renderHook(() => useEventSystem(params))
-    return { result, dispatch }
+    return { result, dispatch, params }
   }
 
   it('recovers a NaN counter to 0 so the increment stays finite', () => {
@@ -135,6 +135,16 @@ describe('useEventSystem.triggerEvent daily cap with a corrupt counter', () => {
   it('still enforces the cap at 2 for a finite counter', () => {
     const { result } = setup(2)
     expect(result.current.triggerEvent('special', 'post_gig')).toBe(false)
+  })
+
+  it('rolls no event once the run has ended (#3499)', () => {
+    const { result, dispatch, params } = setup(0)
+    params.stateRef.current.currentScene = 'GAMEOVER'
+    expect(result.current.triggerEvent('transport')).toBe(false)
+    params.stateRef.current.currentScene = 'OVERWORLD'
+    params.stateRef.current.terminalOutcome = { type: 'bankruptcy' }
+    expect(result.current.triggerEvent('transport')).toBe(false)
+    expect(dispatch).not.toHaveBeenCalled()
   })
 })
 

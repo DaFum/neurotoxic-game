@@ -220,6 +220,14 @@ export function useEventSystem({
       // daily counter before the travel roll). The cap, selection and the
       // counter increment must all see the post-dispatch day.
       const currentState = latestStateRef.current
+      // A run that already ended (bankruptcy on arrival's advanceDay) must not
+      // open a travel event modal over the ending.
+      if (
+        currentState.currentScene === GAME_PHASES.GAMEOVER ||
+        currentState.terminalOutcome
+      ) {
+        return false
+      }
       // gig_intro / gig_mid events are the one class that fires DURING the gig:
       // the rhythm loop pauses the audio while `activeEvent` is set (see
       // processRhythmGameTick). They are tied to the gig moment rather than the
