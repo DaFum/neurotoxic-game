@@ -305,11 +305,21 @@ export const useRhythmGameAudio = ({
   }, [])
 
   // A failed stage can never draw: release the wait so the init routes to
-  // 'failed' (retry or quit overlay) instead of starting the song.
+  // 'failed' (retry or quit overlay) instead of starting the song. If the
+  // readiness fallback already started the song, stop it and fail the same way.
   const onStageInitError = useCallback(() => {
     stageFailedRef.current = true
     stageWaiterRef.current?.()
-  }, [])
+    if (
+      currentStatusRef.current === 'ready' &&
+      !gameStateRef.current.isGameOver
+    ) {
+      logger.error('RhythmGame', 'Gig stage failed after the song started.')
+      currentStatusRef.current = 'failed'
+      latestContextRef.current.setAudioStatus('failed')
+      audioEngine.stopAudio()
+    }
+  }, [audioEngine, gameStateRef])
 
   /**
    * Resolves once the stage has signalled ready or failed, the init was

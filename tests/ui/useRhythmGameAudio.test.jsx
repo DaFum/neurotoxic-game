@@ -709,6 +709,48 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
   })
 
+  it('stops the song and fails when the stage fails after the fallback started it', async () => {
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(STAGE_READY_FALLBACK_MS)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+    mocks.stopAudio.mockClear()
+
+    // The hung stage init finally rejects while the song is already playing.
+    act(() => {
+      result.current.onStageInitError()
+    })
+
+    expect(mocks.stopAudio).toHaveBeenCalledTimes(1)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+  })
+
+  it('restarts the song once on a retry after a late stage failure', async () => {
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(STAGE_READY_FALLBACK_MS)
+    act(() => {
+      result.current.onStageInitError()
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+
+    let retry
+    await act(async () => {
+      retry = result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      result.current.onStageReady()
+      await retry
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(2)
+  })
+
   it('never starts playback when unmounted while waiting for the stage', async () => {
     const { unmount } = renderAudioHook(vi.fn())
     await advance(0)
