@@ -1413,4 +1413,36 @@ test.describe('Visual smoke tests', () => {
       )
     }
   })
+
+  test('PreGig NRG label meets AA contrast on an unselected Career row (#3505)', async ({
+    page
+  }) => {
+    const url = '/?events=off'
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    const fixture = await buildFixture(page, 'careerGigFixture')
+    await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+    await loadSavedGame(page)
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('OVERWORLD')
+    await dismissTutorial(page)
+    await page
+      .locator('.map-node')
+      .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+      .click()
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('PREGIG')
+
+    // A Career setlist is not frozen: a song outside it is an enabled row.
+    const unselected = page
+      .locator('button[aria-pressed="false"]:not([aria-disabled="true"])')
+      .filter({ has: page.getByText('NRG', { exact: true }) })
+      .first()
+    await expect(unselected).toBeVisible()
+    await expectReadableText(
+      unselected.getByText('NRG', { exact: true }),
+      'NRG label (unselected row)'
+    )
+  })
 })
