@@ -32,3 +32,4 @@
 | 2026-10-26 | src/utils/brandOfferFlavor/hooks.ts | pickContextualHook |
 | 2026-10-31 | src/utils/brandOfferFlavor/brandNames.ts | generateBrandName, generateCampaignCodename |
 | 2026-11-01 | src/context/GamepadInputContext.tsx | GamepadInputProvider |
+| 2026-11-02 | src/components/stage/EffectTextureManager.ts | safeDestroyTexture, createGenericHitTexture, EffectTextureManager |

@@ -10,6 +10,8 @@ import {
 
 /**
  * Safely destroys a texture if it exists and has a destroy method.
+ *
+ * @param texture - The texture object to be destroyed.
  */
 function safeDestroyTexture(texture: Texture | null): void {
   if (
@@ -23,6 +25,9 @@ function safeDestroyTexture(texture: Texture | null): void {
 
 /**
  * Creates a generic hit texture using PixiJS Graphics.
+ *
+ * @param app - The PixiJS Application instance.
+ * @returns A generic hit texture or null if creation fails.
  */
 function createGenericHitTexture(app: Application): Texture | null {
   const graphics = new Graphics()
@@ -84,6 +89,11 @@ export class EffectTextureManager {
   private genericHitTexture: Texture | null
   private isDisposed: boolean
 
+  /**
+   * Initializes the manager with a given PixiJS Application.
+   *
+   * @param app - The PixiJS Application instance used for texture generation.
+   */
   constructor(app: Application) {
     this.app = app
     this.textures = { blood: null, toxic: null }
@@ -91,6 +101,11 @@ export class EffectTextureManager {
     this.isDisposed = false
   }
 
+  /**
+   * Asynchronously loads effect textures such as blood and toxic hits.
+   *
+   * @returns A promise that resolves when the textures finish loading or fail cleanly.
+   */
   async loadAssets(): Promise<void> {
     if (this.isDisposed) return
 
@@ -127,6 +142,12 @@ export class EffectTextureManager {
     this.genericHitTexture = createGenericHitTexture(this.app) || Texture.WHITE
   }
 
+  /**
+   * Determines and returns the appropriate hit texture based on a given color tint.
+   *
+   * @param color - The numeric color value (e.g. 0xff0000).
+   * @returns The corresponding hit texture or a fallback generic hit texture.
+   */
   resolveHitTexture(color: number): Texture | null {
     const r = (color >> 16) & 0xff
     const g = (color >> 8) & 0xff
@@ -144,6 +165,9 @@ export class EffectTextureManager {
     return this.genericHitTexture
   }
 
+  /**
+   * Releases allocated textures and destroys the generic hit texture, preventing memory leaks.
+   */
   dispose(): void {
     this.isDisposed = true
 
