@@ -955,7 +955,7 @@ export function useGameDispatchActions({
 
   const claimExpeditionLegendaryReward = useCallback(
     (runId: string): ExpeditionLegendaryClaim => {
-      const base = stateRef.current
+      const base = latestStateRef.current
       // Derived here only to know *which* marker to write. The reducer derives
       // it again from the same outcome and refuses a mismatch, so this read
       // cannot choose the award - a stale one simply claims nothing.
@@ -976,7 +976,7 @@ export function useGameDispatchActions({
       saveGameAfterStateCommit()
       return 'claimed'
     },
-    [dispatch, saveGameAfterStateCommit, stateRef, storage]
+    [dispatch, latestStateRef, saveGameAfterStateCommit, storage]
   )
 
   return useMemo(

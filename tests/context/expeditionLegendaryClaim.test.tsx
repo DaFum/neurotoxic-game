@@ -174,4 +174,22 @@ describe('the Legendary claim mints nothing without a durable marker', () => {
     expect(claim).toBe('claimed')
     expect(result.current.career.legendaryIds).toContain(AWARD)
   })
+
+  it('claims a run loaded earlier in the same tick', () => {
+    const adapter = new RefusingAdapter()
+    const { runId, save } = completedFinaleSave()
+    adapter.set(SAVE_KEY, JSON.stringify(save))
+    const { result } = renderProvider(adapter)
+
+    // #3516: a stale read derives the candidate from the pre-load state, which
+    // has no completed run, and answers `not_applicable`.
+    let claim: string | null = null
+    act(() => {
+      result.current.actions.loadGame()
+      claim = result.current.actions.claimExpeditionLegendaryReward(runId)
+    })
+
+    expect(claim).toBe('claimed')
+    expect(result.current.career.legendaryIds).toContain(AWARD)
+  })
 })
