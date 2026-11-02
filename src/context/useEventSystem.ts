@@ -31,13 +31,12 @@ type ChangeScene = (scene: GamePhase) => void
 type SaveGame = (showToast?: boolean, stateSnapshot?: GameState) => void
 
 type UseEventSystemParams = {
-  stateRef: MutableRefObject<GameState>
   /**
    * The provider's state after every dispatch so far, including ones React has
-   * not rendered yet. `triggerEvent` decides from it: callers roll events in
-   * the same tick as a state change (arrival dispatches `advanceDay()` and
-   * then rolls its travel event), where `stateRef` still holds the previous
-   * render's day.
+   * not rendered yet. `triggerEvent` and `resolveEvent` decide from it:
+   * callers roll events in the same tick as a state change (arrival
+   * dispatches `advanceDay()` and then rolls its travel event), where the
+   * last render still holds the previous day.
    */
   latestStateRef: MutableRefObject<GameState>
   dispatch: Dispatch<GameAction>
@@ -183,7 +182,6 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
  * @returns Stable callbacks for setting, triggering, and resolving game events.
  */
 export function useEventSystem({
-  stateRef,
   latestStateRef,
   dispatch,
   addToast,
@@ -299,15 +297,19 @@ export function useEventSystem({
     (
       choice: Record<string, unknown> | null
     ): { outcomeText: string; description: string; result: unknown } => {
-      if (!stateRef.current.activeEvent) {
+      // The reduced state, not the last render: an event activated or a
+      // change dispatched earlier in the same tick must be resolved against
+      // and carried into the saved snapshot.
+      const currentState = latestStateRef.current
+      if (!currentState.activeEvent) {
         return { ...choiceTextFallback(choice), result: null }
       }
       try {
-        const resolution = resolveEvent(choice, stateRef.current, clock)
+        const resolution = resolveEvent(choice, currentState, clock)
         // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid callback-invocation overhead on the event resolution hot path.
         // Why: Eliminates callback-invocation overhead during state materialization.
         // Impact: Speeds up event processing slightly by avoiding function calls per element.
-        let resolvedStateSnapshot = stateRef.current
+        let resolvedStateSnapshot = currentState
         for (let i = 0; i < resolution.actions.length; i++) {
           const action = resolution.actions[i]
           if (action) {
@@ -341,8 +343,8 @@ export function useEventSystem({
       clock,
       dispatch,
       saveGame,
+      latestStateRef,
       setActiveEvent,
-      stateRef,
       storage,
       tRef
     ]

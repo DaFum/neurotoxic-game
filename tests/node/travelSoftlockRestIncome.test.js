@@ -4,6 +4,7 @@ import { createInitialState } from '../../src/context/initialState.ts'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import {
   advanceDay,
+  createBloodBankDonateAction,
   createUpdateBandAction
 } from '../../src/context/actionCreators.ts'
 import {
@@ -123,5 +124,99 @@ test('resting one day earns EUR 114 and makes the trip the stranded check refuse
   assert.equal(
     checkSoftlock(gameMap, next.player, next.band, contextFor(next)),
     false
+  )
+})
+
+// Issue #3503: a rest restores the stamina a blood donation needs, so a band
+// too tired to donate now is not stranded when one rest day plus a donation
+// covers the trip.
+test('one rest day restores the stamina for a blood donation that makes the trip affordable', () => {
+  const initial = createInitialState()
+  const gameMap = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  // Harmony allows blood; empty stamina rules every donation out today.
+  const band = {
+    ...initial.band,
+    harmony: 80,
+    members: initial.band.members.map(m => ({ ...m, stamina: 0 }))
+  }
+  const van = { ...initial.player.van, fuel: 100 }
+  const { totalCost } = calculateTravelExpenses(
+    gameMap.nodes.B,
+    gameMap.nodes.A,
+    { money: 0, fameLevel: 0, van },
+    band
+  )
+  const base = {
+    ...initial,
+    completedMilestones: [
+      'survive_1_week',
+      'survive_2_weeks',
+      'survive_1_month'
+    ],
+    player: { ...initial.player, day: 30, fameLevel: 0, currentNodeId: 'A' },
+    band,
+    assets: [],
+    liabilities: {}
+  }
+  const dailyObligations = getTotalDailyObligations(base)
+  assert.ok(dailyObligations > 0 && dailyObligations < 100)
+  // One euro short of the trip plus the arrival day.
+  const state = {
+    ...base,
+    player: {
+      ...base.player,
+      money: totalCost + dailyObligations - 1,
+      van
+    }
+  }
+  const context = { dailyObligations }
+
+  assert.equal(
+    checkSoftlock(gameMap, state.player, state.band, context),
+    true,
+    'no escape without resting'
+  )
+  assert.equal(
+    checkSoftlock(gameMap, state.player, state.band, {
+      ...context,
+      restRecovery: { social: state.social }
+    }),
+    false,
+    'a rest day followed by a blood donation is an escape'
+  )
+
+  // Rest exactly as `handleRestInVan` does, then donate through the reducer.
+  const rested = gameReducer(
+    state,
+    createUpdateBandAction({
+      members: state.band.members.map(m => ({
+        ...m,
+        stamina: Math.min(m.staminaMax ?? 100, m.stamina + 50),
+        mood: Math.max(0, m.mood - 10)
+      }))
+    })
+  )
+  const next = gameReducer(rested, advanceDay(rested))
+  assert.equal(next.player.money, state.player.money - dailyObligations)
+  const donated = gameReducer(
+    next,
+    createBloodBankDonateAction({ kind: 'blood' })
+  )
+  assert.equal(donated.player.money - next.player.money, 100)
+  assert.ok(
+    donated.player.money >=
+      calculateTravelCashRequired(
+        calculateTravelExpenses(
+          gameMap.nodes.B,
+          gameMap.nodes.A,
+          donated.player,
+          donated.band
+        ).totalCost,
+        getTotalDailyObligations(donated)
+      ),
+    'travel is affordable after the rest and the donation'
   )
 })

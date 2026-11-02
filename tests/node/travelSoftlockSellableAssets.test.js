@@ -144,6 +144,103 @@ test('a zero-net sale that sheds a loan and upkeep makes a route affordable', ()
   )
 })
 
+// Issue #3503: the sale sheds the upkeep and loan that made each day cost
+// money; the band then earns the trip by resting on its YouTube revenue.
+test('selling an asset that turns the daily net positive, then resting, makes a route affordable', () => {
+  const day = 30
+  const asset = { ...makeAsset('a_upkeep'), baseUpkeep: 150 }
+  const { gross } = getAssetSaleQuote(asset, {}, day)
+  // The loan equals the sale value, so the sale itself raises nothing.
+  const liabilities = {
+    l1: {
+      id: 'l1',
+      assetId: 'a_upkeep',
+      principalRemaining: gross,
+      dailyPayment: 50
+    }
+  }
+  const sellable = getSellableAssets([asset], liabilities, day)
+  assert.deepStrictEqual(sellable, [{ id: 'a_upkeep', net: 0 }])
+
+  // Drained band: harmony 10 and empty stamina rule out every donation.
+  const band = {
+    harmony: 10,
+    members: [
+      { stamina: 0, staminaMax: 100 },
+      { stamina: 0, staminaMax: 100 },
+      { stamina: 0, staminaMax: 100 }
+    ]
+  }
+  // YouTube ad revenue outweighs the living costs once the upkeep is gone.
+  const social = { youtube: 200_000 }
+  const gameMap = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const van = { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  const { totalCost } = calculateTravelExpenses(
+    gameMap.nodes.B,
+    gameMap.nodes.A,
+    { money: 0, fameLevel: 0, van },
+    band
+  )
+  const basePlayer = { day, fameLevel: 0 }
+  const obligationsBefore = getTotalDailyObligations({
+    player: basePlayer,
+    band,
+    social,
+    assets: [asset],
+    liabilities
+  })
+  const obligationsAfter = getTotalDailyObligations({
+    player: basePlayer,
+    band,
+    social,
+    assets: [],
+    liabilities: {}
+  })
+  assert.ok(obligationsBefore > 0, 'resting before the sale costs money')
+  assert.ok(obligationsAfter < 0, 'resting after the sale earns money')
+
+  // One euro short of the trip: neither the sale nor a rest covers it alone.
+  const player = {
+    ...basePlayer,
+    currentNodeId: 'A',
+    money: totalCost - 1,
+    van
+  }
+  const scenarios = getPostSaleScenarios(
+    sellable,
+    [asset],
+    liabilities,
+    player,
+    band,
+    social
+  )
+  const context = { dailyObligations: obligationsBefore }
+  const restRecovery = { social }
+
+  assert.equal(
+    checkSoftlock(gameMap, player, band, { ...context, restRecovery }),
+    true
+  )
+  assert.equal(
+    checkSoftlock(gameMap, player, band, {
+      ...context,
+      postSaleScenarios: scenarios
+    }),
+    true
+  )
+  assert.equal(
+    checkSoftlock(gameMap, player, band, {
+      ...context,
+      postSaleScenarios: scenarios,
+      restRecovery
+    }),
+    false
+  )
+})
+
 test('getPostSaleScenarios evaluates combinations correctly and accurately calculates retained assets and proceeds', () => {
   const sellableAssets = [
     { id: 'a1', net: 100 },

@@ -486,6 +486,157 @@ describe('mapUtils', () => {
         assert.equal(checkSoftlock(gameMap, player, drainedBand, context), true)
         assert.equal(checkSoftlock(gameMap, player, band, context), false)
       })
+
+      test('selling an asset that turns the daily net positive, then resting, defuses a stranded verdict', () => {
+        const player = {
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money: 50
+        }
+        // The sale raises nothing but sheds the upkeep that made each day cost
+        // 5; two rest days at +30 then lift 50 to 110 for the 100 trip.
+        const postSaleScenarios = [
+          { assetProceeds: 0, dailyObligations: -30, assetModifiers: {} }
+        ]
+        const context = { dailyObligations: 5, restRecovery }
+
+        assert.equal(checkSoftlock(gameMap, player, drainedBand, context), true)
+        assert.equal(
+          checkSoftlock(gameMap, player, drainedBand, {
+            dailyObligations: 5,
+            postSaleScenarios
+          }),
+          true
+        )
+        assert.equal(
+          checkSoftlock(gameMap, player, drainedBand, {
+            ...context,
+            postSaleScenarios
+          }),
+          false
+        )
+      })
+
+      describe('rest restores the stamina a donation needs', () => {
+        // Harmony 80 allows a blood donation; empty stamina rules it out
+        // until a rest restores it.
+        const tiredBand = {
+          harmony: 80,
+          members: [{ stamina: 0, staminaMax: 100 }]
+        }
+        const at = money => ({
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money
+        })
+
+        test('a paid rest day followed by a blood donation defuses a stranded verdict', () => {
+          // One rest day costs 5 (50 -> 45) and leaves stamina >= 40, enough
+          // for blood (+100): 145 covers the 100 trip plus the day's 5.
+          const context = { dailyObligations: 5, restRecovery }
+
+          assert.equal(
+            checkSoftlock(gameMap, at(50), tiredBand, {
+              dailyObligations: 5
+            }),
+            true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(50), tiredBand, context),
+            false
+          )
+        })
+
+        test('a rest day that would leave no cash is not a rescue', () => {
+          // 5 - 5 = 0 with obligations still due: the day tick bankrupts, even
+          // though a marrow donation after the rest would raise the trip.
+          const marrowAfterRest = {
+            harmony: 80,
+            members: [{ stamina: 30, staminaMax: 100 }]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(5), marrowAfterRest, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(500), marrowAfterRest, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('an empty purse survives the tick while no obligations are due', () => {
+          // 0 - 0 = 0 bankrupts only with obligations due
+          // (`shouldTriggerBankruptcy`), so the rest-then-blood escape stands.
+          assert.equal(
+            checkSoftlock(gameMap, at(0), tiredBand, {
+              dailyObligations: 0,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('harmony the tick might take is not subtracted from the rested band', () => {
+          // Harmony 30 stays above the blood minimum unless the tick's drains
+          // land; the check counts the escape and re-runs on the settled band.
+          const band = { ...tiredBand, harmony: 30 }
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('an active contraband effect does not rule the rest donation out', () => {
+          const band = {
+            ...tiredBand,
+            activeContrabandEffects: [
+              { effectType: 'harmony', value: 70, remainingDuration: 1 }
+            ]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('errs towards an escape when the tick might cost harmony (#3503)', () => {
+          // Just above the blood minimum with a contraband effect about to
+          // expire: a false stranded verdict ends the run, a missed one only
+          // costs a rest after which the check re-runs on the settled band.
+          const band = {
+            harmony: 16,
+            members: [{ stamina: 0, staminaMax: 100 }],
+            activeContrabandEffects: [
+              { effectType: 'harmony', value: 10, remainingDuration: 1 }
+            ]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, { dailyObligations: 5 }),
+            true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, {
+              dailyObligations: 5,
+              restRecovery
+            }),
+            false
+          )
+        })
+      })
     })
 
     test('an unplayed FESTIVAL at the current node counts as an escape', () => {

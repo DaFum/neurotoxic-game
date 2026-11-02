@@ -167,6 +167,35 @@ const MAX_SIMULATED_DONATIONS = 8
  */
 const MAX_SIMULATED_REST_DAYS = 7
 
+/** Stamina a rest in the van restores to each member (`handleRestInVan`). */
+const REST_STAMINA_GAIN = 50
+
+/**
+ * Band one rest day leaves behind, for judging which donations it can make
+ * again.
+ *
+ * @remarks
+ * Deliberately optimistic, never a worst case: a stranded verdict ends the
+ * run, while a missed one only lets the player rest, after which the check
+ * re-runs on the settled band. Every member gets the rest's stamina gain
+ * (capped at the maximum) and harmony is left as it is; the day tick's losses,
+ * expiring contraband effects and quest penalties are not subtracted, because
+ * the next check reads whatever they actually took.
+ *
+ * @param band - Band before the rest day.
+ * @returns The rested band.
+ */
+const getRestedBand = (band: Partial<BandState>): Partial<BandState> => ({
+  ...band,
+  members: (band.members ?? []).map(member => ({
+    ...member,
+    stamina: clampMemberStamina(
+      finiteNumberOr(member.stamina, 0) + REST_STAMINA_GAIN,
+      finiteNumberOr(member.staminaMax, 100)
+    )
+  }))
+})
+
 /**
  * Cumulative cash a run of back-to-back blood-bank donations raises, one entry
  * per donation the band can still legally make.
@@ -287,9 +316,10 @@ export const nodeToPercentPosition = (
  * not yet played, i.e. not `lastGigNodeId`), a run of legal blood-bank
  * donations (alone or on top of any asset-sale combination) raises enough
  * cash without traveling, up to {@link MAX_SIMULATED_REST_DAYS} days of
- * positive net income earned by resting (only with `context.restRecovery`)
- * reach the cash, or an affordable refuel would make a neighbor
- * reachable. The FINALE node is never reported as stranded:
+ * resting (only with `context.restRecovery`, alone or after any asset-sale
+ * combination) reach the cash through positive net income or through the
+ * donations the restored stamina allows again, or an affordable refuel would
+ * make a neighbor reachable. The FINALE node is never reported as stranded:
  * it has no outgoing connections by map design, so being there is the end of
  * the route, not a resource failure.
  *
@@ -485,22 +515,35 @@ export const checkSoftlock = (
 
   if (evaluateWithDonations(playerMoney)) return false
 
-  // Escape hatch: resting in the van while the day pays more than it costs.
-  // Each day is priced as the tick settles it: the deterministic living cost
-  // from the shared helper plus the asset and loan terms already folded into
-  // `dailyObligations`. Donations stay available on top of the rest income.
+  // Escape hatch: resting in the van. Each day is priced as the tick settles
+  // it: the deterministic living cost from the shared helper plus the asset
+  // and loan terms already folded into `scenarioDailyObligations`. A day that
+  // pays more than it costs is income; donations made before resting stay
+  // available on top. A rest also restores stamina, so a donation the drained
+  // band could not make may be possible afterwards; that is worth paying for
+  // a rest day while the rested band can raise more each day. Every
+  // approximation here errs towards an escape (see `getRestedBand`): only the
+  // bankruptcy the tick itself would declare ends the look-ahead.
   const restRecovery = context.restRecovery
-  if (restRecovery) {
+  const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
+  const canRecoverByResting = (
+    scenarioDailyObligations: number,
+    startingMoney: number,
+    customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
+  ): boolean => {
+    if (!restRecovery) return false
     const bandForRest = bandStateForTravel ?? { members: [] }
     const assetAndLoanCost =
-      dailyObligations -
+      scenarioDailyObligations -
       calculateGuaranteedDailyCost(
         playerStateForTravel,
         bandForRest,
         restRecovery.social
       )
     const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
-    let restedMoney = playerMoney
+    let restedMoney = startingMoney
+    let restedBand = bandForDonation
+    let restedDonationTotal = 0
     for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
       const dayCost =
         assetAndLoanCost +
@@ -509,17 +552,45 @@ export const checkSoftlock = (
           bandForRest,
           restRecovery.social
         )
-      if (!(dayCost < 0)) break
-      restedMoney -= dayCost
-      if (evaluateWithDonations(restedMoney)) return false
+      const isIncomeDay = dayCost < 0
+      if (!isIncomeDay && !restedBand) break
+      // The tick clamps cash at 0 and bankrupts an empty band only while
+      // obligations are due (`shouldTriggerBankruptcy`).
+      restedMoney = Math.max(0, restedMoney - dayCost)
+      if (restedMoney === 0 && scenarioDailyObligations > 0) break
+      if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
+        return true
+      restedBand = restedBand && getRestedBand(restedBand)
+      const restedSteps = getDonationProceedsSteps(restedBand, player.fameLevel)
+      const nextRestedTotal = restedSteps[restedSteps.length - 1] ?? 0
+      // Reachability only grows with cash, so the largest total decides.
+      if (
+        nextRestedTotal > donationTotal &&
+        evaluateScenario(restedMoney + nextRestedTotal, customCtx)
+      )
+        return true
+      if (!isIncomeDay && nextRestedTotal <= restedDonationTotal) break
+      restedDonationTotal = Math.max(restedDonationTotal, nextRestedTotal)
     }
+    return false
   }
 
-  // Escape hatch: non-negative net asset proceeds across possible sale combinations.
+  if (canRecoverByResting(dailyObligations, playerMoney)) return false
+
+  // Escape hatch: non-negative net asset proceeds across possible sale
+  // combinations, each optionally followed by resting on the post-sale terms.
   if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
     for (const scenario of context.postSaleScenarios) {
       const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
       if (evaluateWithDonations(totalMoney, scenario)) return false
+      if (
+        canRecoverByResting(
+          finiteNumberOr(scenario.dailyObligations, dailyObligations),
+          totalMoney,
+          scenario
+        )
+      )
+        return false
     }
   }
 
