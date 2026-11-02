@@ -49,7 +49,7 @@ export const GigModifiersBlock = ({
   const { i18n } = useTranslation()
   return (
     <m.div
-      initial={{ opacity: 0, x: -20 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
       className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm min-h-0 lg:overflow-y-auto lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-1.5rem),transparent)]'
