@@ -421,6 +421,23 @@ describe('mapUtils', () => {
         )
       })
 
+      test('a missing social slice does not break the rest look-ahead', () => {
+        const player = {
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money: 50
+        }
+        // Partial or legacy callers can omit the slice; the check must still
+        // judge the rest income instead of throwing.
+        assert.doesNotThrow(() =>
+          checkSoftlock(gameMap, player, drainedBand, {
+            dailyObligations: -30,
+            restRecovery: {}
+          })
+        )
+      })
+
       test('rest recovery looks ahead exactly seven rest days', () => {
         const context = { dailyObligations: -7, restRecovery }
         const at = money => ({

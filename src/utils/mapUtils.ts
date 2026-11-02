@@ -599,7 +599,7 @@ export const checkSoftlock = (
     player.fameLevel,
     donationTotal,
     MAX_FIXED_TICK_STAMINA_GAIN +
-      getActiveDealBenefits(restRecovery?.social.activeDeals)
+      getActiveDealBenefits(restRecovery?.social?.activeDeals)
         .staminaRegenPerDay +
       Math.ceil(
         Math.max(0, finiteNumberOr(assetModifiers?.staminaRegenBonusPerDay, 0))
