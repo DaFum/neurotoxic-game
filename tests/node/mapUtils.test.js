@@ -19,6 +19,7 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
 })
 
 // Import module under test
+const { GAME_CONSTANTS } = await import('../../src/context/gameConstants.ts')
 const { isConnected, getNodeVisibility, checkSoftlock, normalizeVenueId } =
   await import('../../src/utils/mapUtils')
 
@@ -635,6 +636,68 @@ describe('mapUtils', () => {
             }),
             false
           )
+        })
+      })
+
+      describe('donate, rest, donate again (#3517)', () => {
+        const { MARROW_BASE_MONEY: marrow, BLOOD_BASE_MONEY: blood } =
+          GAME_CONSTANTS.BLOOD_BANK
+        // Today's run is marrow then blood: harmony 100 -> 45, stamina
+        // 100 -> 10. Resting first restores nothing the run needs.
+        const freshBand = {
+          harmony: 100,
+          members: [{ stamina: 100, staminaMax: 100 }]
+        }
+        const at = money => ({
+          currentNodeId: 'A',
+          day: 20,
+          van: { fuel: 100 },
+          money
+        })
+        const context = { dailyObligations: 5, restRecovery }
+        const tripCosting = totalCost =>
+          mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+            fuelLiters: 10,
+            totalCost
+          }))
+
+        test('a donation the rest allows counts on top of the run made before it', () => {
+          // Trip 700 plus the arrival day's 5. Today: 50 + 600 = 650. Rest
+          // first: 45 + 600. Run, rest (stamina 60), blood: 45 + 700 = 745.
+          tripCosting(700)
+          assert.equal(marrow + blood, 600)
+          assert.equal(
+            checkSoftlock(gameMap, at(50), freshBand, { dailyObligations: 5 }),
+            true
+          )
+          assert.equal(
+            checkSoftlock(gameMap, at(50), freshBand, context),
+            false
+          )
+        })
+
+        test('a lighter run today leaves room for a second marrow after the rest', () => {
+          // Marrow (harmony 60, stamina 40), rest (stamina 90), marrow:
+          // 45 + 1000 covers 905, which draining the band today (745) misses.
+          tripCosting(900)
+          assert.equal(
+            checkSoftlock(gameMap, at(50), freshBand, context),
+            false
+          )
+        })
+
+        test('donations made before the rest keep the tick from bankrupting the band', () => {
+          // 5 - 5 would be 0 with obligations due, but the marrow donated
+          // first leaves 500 after the tick; a second marrow then reaches 1000.
+          tripCosting(700)
+          assert.equal(checkSoftlock(gameMap, at(5), freshBand, context), false)
+        })
+
+        test('the rests never refund harmony', () => {
+          // Two marrows and a blood (harmony cost 95) are the most harmony
+          // 100 allows: 40 + 1100 misses the 1205 a 1200 trip needs.
+          tripCosting(1200)
+          assert.equal(checkSoftlock(gameMap, at(50), freshBand, context), true)
         })
       })
     })

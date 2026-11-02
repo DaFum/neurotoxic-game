@@ -5,11 +5,12 @@ import {
   EXPENSE_CONSTANTS
 } from './economy'
 import {
+  BLOOD_BANK_STAMINA_RESERVE,
   getBloodBankDonation,
   validateBloodBankDonation
 } from './bloodBankUtils'
 import { calculateDailyNetCost } from './dailyNetCost'
-import { finiteNumberOr } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import {
   clampBandHarmony,
   clampMemberStamina,
@@ -171,30 +172,67 @@ const MAX_SIMULATED_REST_DAYS = 7
 const REST_STAMINA_GAIN = 50
 
 /**
- * Band one rest day leaves behind, for judging which donations it can make
- * again.
+ * Upper bound on the cash blood-bank donations can raise by the end of each
+ * rest day, donations made before, between and after the rests combined.
  *
  * @remarks
  * Deliberately optimistic, never a worst case: a stranded verdict ends the
  * run, while a missed one only lets the player rest, after which the check
- * re-runs on the settled band. Every member gets the rest's stamina gain
- * (capped at the maximum) and harmony is left as it is; the day tick's losses,
- * expiring contraband effects and quest penalties are not subtracted, because
- * the next check reads whatever they actually took.
+ * re-runs on the settled band. A run of donations is legal exactly when its
+ * total harmony cost stays below the band's harmony and its total stamina cost
+ * leaves every member the 10 points `validateBloodBankDonation` keeps in
+ * reserve, whatever the order. Rests add the stamina gain without the cap and
+ * leave harmony as it is; the day tick's losses, expiring contraband effects
+ * and quest penalties are not subtracted, because the next check reads
+ * whatever they actually took. Each count of marrow and blood donations that
+ * passes both sums is a candidate, so this covers donating, resting and
+ * donating again as well as resting first.
  *
- * @param band - Band before the rest day.
- * @returns The rested band.
+ * @param band - Band whose harmony and member stamina fund the donations.
+ * @param fameLevel - Persisted fame level scaling every payout.
+ * @param todayTotal - Exact proceeds of today's donation run (no rest).
+ * @returns Index `n` holds the bound after `n` rest days; index 0 is `todayTotal`.
  */
-const getRestedBand = (band: Partial<BandState>): Partial<BandState> => ({
-  ...band,
-  members: (band.members ?? []).map(member => ({
-    ...member,
-    stamina: clampMemberStamina(
-      finiteNumberOr(member.stamina, 0) + REST_STAMINA_GAIN,
-      finiteNumberOr(member.staminaMax, 100)
-    )
-  }))
-})
+const getRestDonationTotals = (
+  band: Partial<BandState> | null,
+  fameLevel: unknown,
+  todayTotal: number
+): number[] => {
+  const totals = [todayTotal]
+  const marrow = getBloodBankDonation('marrow', fameLevel)
+  const blood = getBloodBankDonation('blood', fameLevel)
+  const members = band?.members ?? []
+  const harmony = band?.harmony
+  const canDonate =
+    marrow !== null &&
+    blood !== null &&
+    members.length > 0 &&
+    isFiniteNumber(harmony)
+  const lowestStamina = Math.min(
+    ...members.map(member => finiteNumberOr(member.stamina, 0))
+  )
+  for (let restDays = 1; restDays <= MAX_SIMULATED_REST_DAYS; restDays++) {
+    let best = totals[restDays - 1] ?? 0
+    if (canDonate) {
+      const staminaBudget =
+        lowestStamina +
+        restDays * REST_STAMINA_GAIN -
+        BLOOD_BANK_STAMINA_RESERVE
+      for (let m = 0; m <= MAX_SIMULATED_DONATIONS; m++) {
+        for (let b = 0; m + b <= MAX_SIMULATED_DONATIONS; b++) {
+          if (
+            m * marrow.harmonyCost + b * blood.harmonyCost < harmony &&
+            m * marrow.staminaCost + b * blood.staminaCost <= staminaBudget
+          ) {
+            best = Math.max(best, m * marrow.moneyGain + b * blood.moneyGain)
+          }
+        }
+      }
+    }
+    totals.push(best)
+  }
+  return totals
+}
 
 /**
  * Cumulative cash a run of back-to-back blood-bank donations raises, one entry
@@ -318,7 +356,8 @@ export const nodeToPercentPosition = (
  * cash without traveling, up to {@link MAX_SIMULATED_REST_DAYS} days of
  * resting (only with `context.restRecovery`, alone or after any asset-sale
  * combination) reach the cash through positive net income or through the
- * donations the restored stamina allows again, or an affordable refuel would
+ * donations the restored stamina allows again (before, between and after the
+ * rests), or an affordable refuel would
  * make a neighbor reachable. The FINALE node is never reported as stranded:
  * it has no outgoing connections by map design, so being there is the end of
  * the route, not a resource failure.
@@ -519,13 +558,20 @@ export const checkSoftlock = (
   // it: the deterministic living cost from the shared helper plus the asset
   // and loan terms already folded into `scenarioDailyObligations`. A day that
   // pays more than it costs is income; donations made before resting stay
-  // available on top. A rest also restores stamina, so a donation the drained
-  // band could not make may be possible afterwards; that is worth paying for
-  // a rest day while the rested band can raise more each day. Every
-  // approximation here errs towards an escape (see `getRestedBand`): only the
-  // bankruptcy the tick itself would declare ends the look-ahead.
+  // available on top. A rest also restores stamina, so the band can donate,
+  // rest and donate again; that is worth paying for a rest day while the
+  // donation bound still grows. Every approximation here errs towards an
+  // escape (see `getRestDonationTotals`): only the bankruptcy the tick itself
+  // would declare ends the look-ahead.
   const restRecovery = context.restRecovery
   const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
+  const restDonationTotals = getRestDonationTotals(
+    bandForDonation,
+    player.fameLevel,
+    donationTotal
+  )
+  const finalRestDonationTotal =
+    restDonationTotals[MAX_SIMULATED_REST_DAYS] ?? donationTotal
   const canRecoverByResting = (
     scenarioDailyObligations: number,
     startingMoney: number,
@@ -541,9 +587,11 @@ export const checkSoftlock = (
         restRecovery.social
       )
     const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
+    // Cash without any donation: clamped as the tick clamps it, and unclamped
+    // for the bankruptcy test, which the donations made before the rest
+    // cushion.
     let restedMoney = startingMoney
-    let restedBand = bandForDonation
-    let restedDonationTotal = 0
+    let settledMoney = startingMoney
     for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
       const dayCost =
         assetAndLoanCost +
@@ -553,24 +601,24 @@ export const checkSoftlock = (
           restRecovery.social
         )
       const isIncomeDay = dayCost < 0
-      if (!isIncomeDay && !restedBand) break
+      restedMoney = Math.max(0, restedMoney - dayCost)
+      settledMoney -= dayCost
       // The tick clamps cash at 0 and bankrupts an empty band only while
       // obligations are due (`shouldTriggerBankruptcy`).
-      restedMoney = Math.max(0, restedMoney - dayCost)
-      if (restedMoney === 0 && scenarioDailyObligations > 0) break
+      const donatedBeforeRest = restDonationTotals[restDay - 1] ?? 0
+      if (settledMoney + donatedBeforeRest <= 0 && scenarioDailyObligations > 0)
+        break
       if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
         return true
-      restedBand = restedBand && getRestedBand(restedBand)
-      const restedSteps = getDonationProceedsSteps(restedBand, player.fameLevel)
-      const nextRestedTotal = restedSteps[restedSteps.length - 1] ?? 0
+      const restTotal = restDonationTotals[restDay] ?? 0
       // Reachability only grows with cash, so the largest total decides.
       if (
-        nextRestedTotal > donationTotal &&
-        evaluateScenario(restedMoney + nextRestedTotal, customCtx)
+        restTotal > donationTotal &&
+        evaluateScenario(restedMoney + restTotal, customCtx)
       )
         return true
-      if (!isIncomeDay && nextRestedTotal <= restedDonationTotal) break
-      restedDonationTotal = Math.max(restedDonationTotal, nextRestedTotal)
+      // A day that costs money only pays off while the bound still grows.
+      if (!isIncomeDay && restTotal >= finalRestDonationTotal) break
     }
     return false
   }
