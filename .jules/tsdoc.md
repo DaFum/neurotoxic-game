@@ -22,13 +22,10 @@
 | 2026-10-18 | src/data/craftingRecipes.ts | CraftingRecipe |
 | 2026-10-19 | src/data/expedition/contracts.ts | MAX_NATIVE_EXPEDITION_CONTRACTS, EXPEDITION_CONTRACTS_BY_ID |
 
-## 2026-10-20 - [src/data/expedition/crew.ts]
-
-**Learning:** Documented EXPEDITION_CREW, EXPEDITION_CREW_BY_ID
-**Action:** Kept constants properly typed using const assertions and explicit typing for dictionary lookups while adding semantic TSDoc documentation for their purpose and optimizations.
 | 2026-10-23 | src/data/expedition/crewSignatureTraits.ts | EXPEDITION_CREW_SIGNATURE_BY_ROLE |
 | 2026-10-25 | src/context/GameState.tsx | useRequiredContext, replaceState, isShallowEqual, useGameSelector |
 | 2026-10-25 | src/App.tsx | SCENES_WITHOUT_HUD, parseBooleanEnvFlag, VERCEL_TELEMETRY_ENABLED |
 | 2026-10-26 | src/utils/brandOfferFlavor/hooks.ts | pickContextualHook |
 | 2026-10-31 | src/utils/brandOfferFlavor/brandNames.ts | generateBrandName, generateCampaignCodename |
 | 2026-11-01 | src/context/GamepadInputContext.tsx | GamepadInputProvider |
+| 2026-11-02 | src/components/stage/EffectTextureManager.ts | safeDestroyTexture, createGenericHitTexture, EffectTextureManager |
