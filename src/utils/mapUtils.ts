@@ -443,14 +443,28 @@ export const checkSoftlock = (
   // return trip to HQ is normally not an outgoing neighbor — scanning
   // connections alone would call an affordable HQ return "stranded".
   // Collected once: the reachability check below runs per escape scenario
-  // (blood bank, refuel, each asset-sale combination) and `nodes` is fixed.
-  const startNodes: GameNode[] = []
+  // (blood bank, refuel, each asset-sale combination, each rest day) and the
+  // map is fixed. A neighbor the booking gate refuses (blacklist, regional
+  // ban, prove-yourself capacity cap) is not a real escape route; the gate
+  // reads only the node, so it is asked once per node, not per scenario.
+  const travelTargets: GameNode[] = []
+  for (let i = 0; i < connections.length; i++) {
+    const c = connections[i]
+    if (!isMapConnection(c)) continue
+    if (c.from === player.currentNodeId && typeof c.to === 'string') {
+      const n = nodes[c.to]
+      if (n) travelTargets.push(n)
+    }
+  }
   for (const nodeId in nodes) {
     if (!Object.hasOwn(nodes, nodeId)) continue
     if (nodeId === player.currentNodeId) continue
     const node = nodes[nodeId]
-    if (node?.type === 'START') startNodes.push(node)
+    if (node?.type === 'START') travelTargets.push(node)
   }
+  const accessibleTargets = travelTargets.filter(
+    n => context.isNodeAccessible?.(n) ?? true
+  )
 
   const checkReachabilityWithMoneyAndFuel = (
     fuel: number,
@@ -465,40 +479,25 @@ export const checkSoftlock = (
       dailyObligations
     )
     const activeAssetModifiers = customContext?.assetModifiers ?? assetModifiers
+    const pricingState = {
+      ...playerStateForTravel,
+      money,
+      van: { ...playerStateForTravel.van, fuel }
+    }
 
-    const canReachNode = (n: GameNode): boolean => {
+    for (const n of accessibleTargets) {
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         n,
         currentNode,
-        {
-          ...playerStateForTravel,
-          money,
-          van: { ...playerStateForTravel.van, fuel }
-        },
+        pricingState,
         bandStateForTravel,
         activeAssetModifiers
       )
-      // A neighbor the booking gate refuses (blacklist, regional ban,
-      // prove-yourself capacity cap) is not a real escape route.
-      const accessAllowed = context.isNodeAccessible?.(n) ?? true
-      return (
-        accessAllowed &&
+      if (
         fuel >= finiteNumberOr(fuelLiters, 0) * fuelMultiplier &&
         money >= calculateTravelCashRequired(totalCost, activeDailyObligations)
       )
-    }
-
-    for (let i = 0; i < connections.length; i++) {
-      const c = connections[i]
-      if (!isMapConnection(c)) continue
-      if (c.from === player.currentNodeId && typeof c.to === 'string') {
-        const n = nodes[c.to]
-        if (n && canReachNode(n)) return true
-      }
-    }
-
-    for (const startNode of startNodes) {
-      if (canReachNode(startNode)) return true
+        return true
     }
 
     return false
@@ -515,6 +514,7 @@ export const checkSoftlock = (
 
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
 
+  const refuelCost = calculateRefuelCost(currentFuel)
   const evaluateScenario = (
     scenarioMoney: number,
     customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
@@ -523,7 +523,6 @@ export const checkSoftlock = (
       checkReachabilityWithMoneyAndFuel(currentFuel, scenarioMoney, customCtx)
     )
       return true
-    const refuelCost = calculateRefuelCost(currentFuel)
     if (refuelCost > 0 && scenarioMoney >= refuelCost) {
       return checkReachabilityWithMoneyAndFuel(
         EXPENSE_CONSTANTS.transport.maxFuel,
@@ -572,21 +571,39 @@ export const checkSoftlock = (
   )
   const finalRestDonationTotal =
     restDonationTotals[MAX_SIMULATED_REST_DAYS] ?? donationTotal
+  // Living costs do not depend on the sale scenario, only the asset and loan
+  // terms do, so each rest day's figure is computed once.
+  const restLivingCosts = (() => {
+    if (!restRecovery) return null
+    const bandForRest = bandStateForTravel ?? { members: [] }
+    const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
+    const byRestDay = [0]
+    for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
+      byRestDay.push(
+        calculateDailyNetCost(
+          { day: today + restDay, fameLevel: playerStateForTravel.fameLevel },
+          bandForRest,
+          restRecovery.social
+        )
+      )
+    }
+    return {
+      guaranteed: calculateGuaranteedDailyCost(
+        playerStateForTravel,
+        bandForRest,
+        restRecovery.social
+      ),
+      byRestDay
+    }
+  })()
   const canRecoverByResting = (
     scenarioDailyObligations: number,
     startingMoney: number,
     customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
   ): boolean => {
-    if (!restRecovery) return false
-    const bandForRest = bandStateForTravel ?? { members: [] }
+    if (!restLivingCosts) return false
     const assetAndLoanCost =
-      scenarioDailyObligations -
-      calculateGuaranteedDailyCost(
-        playerStateForTravel,
-        bandForRest,
-        restRecovery.social
-      )
-    const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
+      scenarioDailyObligations - restLivingCosts.guaranteed
     // Cash without any donation: clamped as the tick clamps it, and unclamped
     // for the bankruptcy test, which the donations made before the rest
     // cushion.
@@ -594,12 +611,7 @@ export const checkSoftlock = (
     let settledMoney = startingMoney
     for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
       const dayCost =
-        assetAndLoanCost +
-        calculateDailyNetCost(
-          { day: today + restDay, fameLevel: playerStateForTravel.fameLevel },
-          bandForRest,
-          restRecovery.social
-        )
+        assetAndLoanCost + (restLivingCosts.byRestDay[restDay] ?? 0)
       const isIncomeDay = dayCost < 0
       restedMoney = Math.max(0, restedMoney - dayCost)
       settledMoney -= dayCost
