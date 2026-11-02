@@ -526,7 +526,9 @@ export const useRhythmGameAudio = ({
       })
       currentStatusRef.current = 'failed'
       setAudioStatus('failed')
-      setFailureKind('audio')
+      // A stage failure that stopped the song under this call stays a stage
+      // failure even though the stopped playback rejects.
+      setFailureKind(stageFailedRef.current ? 'stage' : 'audio')
     } finally {
       if (abortControllerRef.current === controller) {
         if (currentStatusRef.current !== 'ready' || isAborted()) {

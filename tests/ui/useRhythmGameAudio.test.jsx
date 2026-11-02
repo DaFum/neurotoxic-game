@@ -974,6 +974,38 @@ describe('useRhythmGameAudio stage readiness gate', () => {
       expect(setFailureKind).toHaveBeenLastCalledWith('stage')
     })
 
+    it('keeps a stage failure when the stopped playback then rejects', async () => {
+      let rejectPlayback = () => {}
+      mocks.playSongSequence.mockImplementationOnce(
+        () =>
+          new Promise((_, reject) => {
+            rejectPlayback = reject
+          })
+      )
+      const setAudioStatus = vi.fn()
+      const setFailureKind = vi.fn()
+      const { result } = renderAudioHook(
+        setAudioStatus,
+        undefined,
+        setFailureKind
+      )
+      await advance(STAGE_READY_FALLBACK_MS)
+      expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+
+      // The stage fails while playback is still starting; stopping it rejects.
+      act(() => {
+        result.current.onStageInitError()
+      })
+      await act(async () => {
+        rejectPlayback(new Error('stopped'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+      expect(setFailureKind).toHaveBeenLastCalledWith('stage')
+      expect(setFailureKind).not.toHaveBeenLastCalledWith('audio')
+    })
+
     it('reports a playback start failure as audio', async () => {
       mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
       const setAudioStatus = vi.fn()
