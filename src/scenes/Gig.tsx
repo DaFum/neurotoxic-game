@@ -139,6 +139,11 @@ export const Gig = () => {
             ? () => void handleQuitGig()
             : undefined
         }
+        failureKind={
+          stats.audioStatus === 'failed' && stats.failureKind === 'stage'
+            ? 'stage'
+            : 'audio'
+        }
       />
     )
   }

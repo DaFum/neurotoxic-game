@@ -220,3 +220,136 @@ test('one rest day restores the stamina for a blood donation that makes the trip
     'travel is affordable after the rest and the donation'
   )
 })
+
+// Passive asset fame lands before the day tick, so a rest can cross a fame
+// level and raise the marrow payout from 500 to 600. Fame 199 plus the pirate
+// radio's +1 a day reaches level 1 (fame 200) on the first rest.
+const buildFameThresholdState = ({ withFameModule }) => {
+  const initial = createInitialState()
+  const gameMap = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const asset = {
+    id: 'a_squat',
+    kind: 'bandhaus_chassis',
+    chassisFlavor: 'diy',
+    chassisTier: 1,
+    condition: 100,
+    baseDailyRevenue: 0,
+    // Brings the daily obligations to 520 with the band's living costs.
+    baseUpkeep: 434,
+    baseRiskEventChance: 0,
+    acquiredOnDay: 1,
+    acquisitionMode: 'cash',
+    slots: [
+      {
+        id: 'a_squat_slot_0',
+        slotType: 'bh_secret',
+        position: { x: 0, y: 0 },
+        installedModuleId: withFameModule ? 'bh_pirate_radio_antenna' : null
+      }
+    ]
+  }
+  // Harmony 45 allows one marrow; stamina 25 rules every donation out today.
+  const band = {
+    ...initial.band,
+    harmony: 45,
+    members: initial.band.members.map(m => ({ ...m, stamina: 25 }))
+  }
+  const state = {
+    ...initial,
+    completedMilestones: [
+      'survive_1_week',
+      'survive_2_weeks',
+      'survive_1_month'
+    ],
+    player: {
+      ...initial.player,
+      day: 30,
+      fame: 199,
+      fameLevel: 0,
+      currentNodeId: 'A',
+      money: 540,
+      van: { ...initial.player.van, fuel: 100 }
+    },
+    band,
+    assets: [asset],
+    liabilities: {}
+  }
+  // The context `useSoftlockEffect` builds for ordinary (Career) play; the
+  // asset is not offered for sale.
+  const context = {
+    dailyObligations: getTotalDailyObligations(state),
+    assetModifiers: getActiveAssetModifiers(state.assets),
+    restRecovery: { social: state.social }
+  }
+  return { gameMap, state, context }
+}
+
+test('a rest that crosses a fame level prices the marrow donation at the new level', () => {
+  const { gameMap, state, context } = buildFameThresholdState({
+    withFameModule: true
+  })
+  assert.equal(context.dailyObligations, 520)
+  assert.equal(context.assetModifiers.famePassivePerDay, 1)
+  const { totalCost } = calculateTravelExpenses(
+    gameMap.nodes.B,
+    gameMap.nodes.A,
+    state.player,
+    state.band
+  )
+  // Today's marrow price (500) after one rest's obligations misses the trip.
+  assert.ok(
+    state.player.money - context.dailyObligations + 500 <
+      calculateTravelCashRequired(totalCost, context.dailyObligations)
+  )
+
+  assert.equal(
+    checkSoftlock(gameMap, state.player, state.band, context),
+    false,
+    'a rest that lifts the fame level and a marrow donation is an escape'
+  )
+
+  // Rest exactly as `handleRestInVan` does, then donate through the reducer.
+  const rested = gameReducer(
+    state,
+    createUpdateBandAction({
+      members: state.band.members.map(m => ({
+        ...m,
+        stamina: Math.min(m.staminaMax ?? 100, m.stamina + 50),
+        mood: Math.max(0, m.mood - 10)
+      }))
+    })
+  )
+  const next = gameReducer(rested, advanceDay(rested))
+  assert.equal(next.player.fame, 200)
+  assert.equal(next.player.fameLevel, 1)
+  const donated = gameReducer(
+    next,
+    createBloodBankDonateAction({ kind: 'marrow' })
+  )
+  assert.equal(donated.player.money - next.player.money, 600)
+  assert.ok(
+    donated.player.money >=
+      calculateTravelCashRequired(
+        calculateTravelExpenses(
+          gameMap.nodes.B,
+          gameMap.nodes.A,
+          donated.player,
+          donated.band
+        ).totalCost,
+        getTotalDailyObligations(donated)
+      ),
+    'travel is affordable after the rest and the marrow donation'
+  )
+})
+
+test('without passive asset fame the same band stays stranded', () => {
+  const { gameMap, state, context } = buildFameThresholdState({
+    withFameModule: false
+  })
+  assert.equal(context.dailyObligations, 520)
+  assert.equal(context.assetModifiers.famePassivePerDay, 0)
+  assert.equal(checkSoftlock(gameMap, state.player, state.band, context), true)
+})

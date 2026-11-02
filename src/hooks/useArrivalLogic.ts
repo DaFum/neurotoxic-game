@@ -213,9 +213,9 @@ export const useArrivalLogic = ({
     pendingRouteRef.current = null
 
     // Normal path: route then save.
-    // The save snapshot may still carry the pre-route currentScene
-    // (TRAVEL_MINIGAME) because changeScene dispatches via startTransition and
-    // has not committed yet. This is intentionally NOT snapshot-corrected:
+    // The save snapshot is the latest reduced state, so it already carries the
+    // routed currentScene even though changeScene dispatches via
+    // startTransition and has not committed yet. The value does not matter:
     // handleLoadGame hard-sets currentScene to OVERWORLD on load
     // (systemReducer handleLoadGame), so the persisted scene value is discarded
     // and never restored. The post-arrival fields that DO matter (day, cash,

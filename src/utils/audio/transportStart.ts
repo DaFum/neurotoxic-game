@@ -39,11 +39,12 @@ export function clearScheduledTransportStart(): void {
 export function deferScheduledTransportStart(): boolean {
   const scheduled = audioState.transportScheduledStart
   if (!scheduled) return false
-  const remainingSec = scheduled.timeSec - getAudioContextTimeSec()
+  const nowSec = getAudioContextTimeSec()
+  const remainingSec = scheduled.timeSec - nowSec
   if (!(remainingSec > 0)) return false
-  // Relies on Tone's Clock.stop() cancelling state events after now
-  // (`_state.cancel(time)`), which removes the pending start (Tone 15.5).
-  Tone.getTransport().stop()
+  // Stop at raw context time, not Tone's lookahead time: a start inside
+  // lookahead is still pending and must be cancelled before it can fire.
+  Tone.getTransport().stop(nowSec)
   audioState.transportScheduledStart = null
   audioState.transportDeferredStart = { remainingSec, offset: scheduled.offset }
   return true

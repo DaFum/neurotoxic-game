@@ -42,7 +42,9 @@ interface UseAssetDispatchActionsProps {
 /**
  * Builds the memoized long-term asset dispatch wrappers. Each helper reads the
  * current state via `stateRef` so the snapshot used for validation matches the
- * one the reducer sees, and surfaces typed `*_FAILED` actions as toasts.
+ * one the reducer sees, and surfaces typed `*_FAILED` actions as toasts. The
+ * provider passes its `latestStateRef` for that reason: the last render lags a
+ * same-tick dispatch the reducer already applied (#3516).
  * @param props - Dispatcher, state ref, toast helper, and translator ref.
  * @returns Stable asset dispatch methods.
  */

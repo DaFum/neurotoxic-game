@@ -99,6 +99,15 @@ export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
 export const DEFAULT_EQUIPMENT_COUNT = 10
 
 /**
+ * Stamina a rest in the van restores to each band member.
+ *
+ * @remarks
+ * Applied by `handleRestInVan` (capped at each member's `staminaMax`) and
+ * assumed by the stranded check's rest look-ahead.
+ */
+export const REST_STAMINA_GAIN = 50
+
+/**
  * Shared balance constants for fixed gameplay systems that do not need runtime tuning.
  *
  * @remarks

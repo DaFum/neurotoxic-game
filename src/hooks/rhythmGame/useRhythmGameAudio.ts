@@ -25,7 +25,10 @@ import type { OptionalToastCallback } from '../../types/callbacks'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
-  setters: Pick<RhythmStateSetters, 'setAudioStatus' | 'setIsGameOver'>
+  setters: Pick<
+    RhythmStateSetters,
+    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind'
+  >
   contextState: {
     band: GameState['band']
     gameMap: GameMap | null
@@ -233,7 +236,7 @@ export const useRhythmGameAudio = ({
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const audioEngine = useAudioEngine()
-  const { setAudioStatus, setIsGameOver } = setters
+  const { setAudioStatus, setIsGameOver, setFailureKind } = setters
   const {
     band,
     gameMap,
@@ -264,7 +267,8 @@ export const useRhythmGameAudio = ({
     endGig,
     t,
     setAudioStatus,
-    setIsGameOver
+    setIsGameOver,
+    setFailureKind
   })
 
   useEffect(() => {
@@ -281,7 +285,8 @@ export const useRhythmGameAudio = ({
       endGig,
       t,
       setAudioStatus,
-      setIsGameOver
+      setIsGameOver,
+      setFailureKind
     }
   }, [
     band,
@@ -296,7 +301,8 @@ export const useRhythmGameAudio = ({
     endGig,
     t,
     setAudioStatus,
-    setIsGameOver
+    setIsGameOver,
+    setFailureKind
   ])
 
   const onStageReady = useCallback(() => {
@@ -323,6 +329,7 @@ export const useRhythmGameAudio = ({
     }
     currentStatusRef.current = 'failed'
     latestContextRef.current.setAudioStatus('failed')
+    latestContextRef.current.setFailureKind('stage')
     if (status === 'ready') {
       logger.error('RhythmGame', 'Gig stage failed after the song started.')
       audioEngine.stopAudio()
@@ -384,7 +391,8 @@ export const useRhythmGameAudio = ({
       endGig: currentEndGig,
       t: currentT,
       setAudioStatus,
-      setIsGameOver: setGameOver
+      setIsGameOver: setGameOver,
+      setFailureKind
     } = ctx
 
     currentStatusRef.current = 'initializing'
@@ -397,6 +405,7 @@ export const useRhythmGameAudio = ({
       logger.error('RhythmGame', 'Gig stage failed to initialize.')
       currentStatusRef.current = 'failed'
       setAudioStatus('failed')
+      setFailureKind('stage')
     }
 
     try {
@@ -462,6 +471,7 @@ export const useRhythmGameAudio = ({
 
       if (!physicsSuccess) {
         setAudioStatus('failed')
+        setFailureKind('audio')
         currentStatusRef.current = 'failed'
         return
       }
@@ -488,6 +498,7 @@ export const useRhythmGameAudio = ({
       }
 
       setAudioStatus('ready')
+      setFailureKind(null)
       currentStatusRef.current = 'ready'
       await audioEngine.playSongSequence(
         0,
@@ -515,6 +526,9 @@ export const useRhythmGameAudio = ({
       })
       currentStatusRef.current = 'failed'
       setAudioStatus('failed')
+      // A stage failure that stopped the song under this call stays a stage
+      // failure even though the stopped playback rejects.
+      setFailureKind(stageFailedRef.current ? 'stage' : 'audio')
     } finally {
       if (abortControllerRef.current === controller) {
         if (currentStatusRef.current !== 'ready' || isAborted()) {
@@ -546,6 +560,7 @@ export const useRhythmGameAudio = ({
       // stage; wait for the remounted stage's own signal.
       stageReadyRef.current = false
       stageFailedRef.current = false
+      latestContextRef.current.setFailureKind(null)
     }
     await initializeGigState()
   }, [initializeGigState])

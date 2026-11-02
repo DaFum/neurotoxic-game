@@ -139,7 +139,9 @@ export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
  * @returns {Promise<ExpeditionFixture>} The fixture: its raw `save` string plus the facts a spec asserts on.
  */
 export async function buildFixture(page, name) {
-  return page.evaluate(
+  // A navigation can destroy the execution context during import. Polling
+  // lets Playwright restart this pure fixture build in the new document.
+  const handle = await page.waitForFunction(
     async ([modulePath, fixtureName]) => {
       const fixtures = await import(/* @vite-ignore */ modulePath)
       const build = fixtures[fixtureName]
@@ -150,6 +152,11 @@ export async function buildFixture(page, name) {
     },
     [FIXTURE_MODULE, name]
   )
+  try {
+    return await handle.jsonValue()
+  } finally {
+    await handle.dispose()
+  }
 }
 
 /**

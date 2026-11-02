@@ -5,7 +5,9 @@ import {
   useGameActions,
   useGameSelector
 } from '../../src/context/GameState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { SAVE_KEY } from '../../src/context/usePersistence'
+import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import { nextSeed } from '../../src/utils/seededRng'
 import { resetStorageFallback } from '../../src/utils/storage'
 
@@ -24,7 +26,14 @@ const renderProvider = () =>
       money: useGameSelector(s => s.player.money),
       rngSeed: useGameSelector(s => s.rngSeed),
       activeEventId: useGameSelector(s => s.activeEvent?.id ?? null),
-      eventCooldowns: useGameSelector(s => s.eventCooldowns)
+      eventCooldowns: useGameSelector(s => s.eventCooldowns),
+      currentScene: useGameSelector(s => s.currentScene),
+      rivalBand: useGameSelector(s => s.rivalBand),
+      hasMap: useGameSelector(s => s.gameMap !== null),
+      expeditionStatus: useGameSelector(s => s.expedition.status),
+      sponsorProvenance: useGameSelector(
+        s => s.expedition.preparedSponsorProvenance ?? null
+      )
     }),
     { wrapper }
   )
@@ -90,5 +99,87 @@ describe('same-tick state reads through the real provider', () => {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
     expect(saved?.player?.money).toBe(money)
     expect(saved?.terminalOutcome?.reason).toBe('event_game_over')
+  })
+
+  test('saveGame without a snapshot saves an earlier same-tick dispatch', () => {
+    const { result } = renderProvider()
+    const money = result.current.money + 321
+
+    act(() => {
+      result.current.actions.updatePlayer({ money })
+      result.current.actions.saveGame(false)
+    })
+
+    const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
+    expect(saved?.player?.money).toBe(money)
+  })
+
+  test('endGig follows a practice gig set earlier in the same tick', () => {
+    const { result } = renderProvider()
+
+    act(() => {
+      result.current.actions.setCurrentGig({
+        id: 'same_tick_practice',
+        isPractice: true,
+        sourceScene: GAME_PHASES.MENU
+      })
+      result.current.actions.endGig()
+    })
+
+    // A stale read sees no gig and routes to POST_GIG instead of back to MENU.
+    expect(result.current.currentScene).toBe(GAME_PHASES.MENU)
+  })
+
+  test('moveRivalBand keeps an earlier same-tick rival update', () => {
+    const { result } = renderProvider()
+    act(() => {
+      result.current.actions.spawnRivalBand()
+    })
+    expect(result.current.rivalBand).not.toBeNull()
+    expect(result.current.hasMap).toBe(true)
+    const powerLevel = result.current.rivalBand.powerLevel + 7
+
+    act(() => {
+      result.current.actions.updateRivalBand({ powerLevel })
+      result.current.actions.moveRivalBand()
+    })
+
+    // A stale read rebuilds the moved rival from the pre-tick one and drops
+    // the update.
+    expect(result.current.rivalBand.powerLevel).toBe(powerLevel)
+  })
+
+  test('purchaseChassis accepts a purchase funded earlier in the same tick', () => {
+    const { result } = renderProvider()
+    const price = CHASSIS_CONFIG.studio_chassis.legit[1].price
+    expect(result.current.money).toBeLessThan(price)
+
+    let accepted = null
+    act(() => {
+      result.current.actions.updatePlayer({ money: price + 1 })
+      accepted = result.current.actions.purchaseChassis({
+        kind: 'studio_chassis',
+        flavor: 'legit',
+        tier: 1,
+        mode: 'cash'
+      })
+    })
+
+    // A stale read checks the pre-tick cash and refuses as unaffordable.
+    expect(accepted).toBe(true)
+    expect(result.current.money).toBe(1)
+  })
+
+  test('prepareExpeditionSponsorOffers stages offers for a run prepared earlier in the same tick', () => {
+    const { result } = renderProvider()
+
+    act(() => {
+      result.current.actions.prepareExpeditionRun()
+      result.current.actions.prepareExpeditionSponsorOffers()
+    })
+
+    expect(result.current.expeditionStatus).toBe('prepared')
+    // A stale read sends the pre-prepare run seed, which the reducer refuses.
+    expect(result.current.sponsorProvenance).not.toBeNull()
   })
 })

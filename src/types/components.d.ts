@@ -8,6 +8,7 @@ import type {
 } from './game'
 import type { BandState } from './band'
 import type { GameMap } from './map'
+import type { GigFailureKind } from './gigAudioStatus'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
@@ -297,6 +298,8 @@ export interface AudioLockedOverlayProps {
   onInitializeAudio: () => void
   /** Leaves the gig; only passed once a retry cannot succeed. */
   onQuit?: () => void
+  /** What the gig failed on; 'stage' swaps the audio copy for stage copy. Defaults to 'audio'. */
+  failureKind?: GigFailureKind
 }
 
 /**

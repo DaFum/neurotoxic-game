@@ -196,6 +196,61 @@ describe('BaseStageController', () => {
       expect(onReady).not.toHaveBeenCalled()
       expect(onInitError).not.toHaveBeenCalled()
     })
+
+    // #3521: the error text alone must never mark a live controller's failure as a race.
+    it.each([
+      'Cannot read properties of null (reading updateLocalTransform)',
+      'texture atlas missing'
+    ])(
+      'reports a live controller setup failure (%s) through onInitError',
+      async message => {
+        class FailingController extends BaseStageController {
+          async setup() {
+            throw new Error(message)
+          }
+        }
+        const onReady = vi.fn()
+        const onInitError = vi.fn()
+        const stage = makeController(FailingController, onReady, onInitError)
+
+        await expect(stage.init()).rejects.toThrow(message)
+
+        expect(onReady).not.toHaveBeenCalled()
+        expect(onInitError).toHaveBeenCalledTimes(1)
+        expect(onInitError).toHaveBeenCalledWith(
+          expect.objectContaining({ message })
+        )
+      }
+    )
+
+    it.each([
+      'Cannot read properties of null (reading updateLocalTransform)',
+      'texture atlas missing'
+    ])(
+      'reports nothing when setup fails (%s) after a dispose mid-setup',
+      async message => {
+        const setupGate = Promise.withResolvers()
+        class RacingController extends BaseStageController {
+          async setup() {
+            await setupGate.promise
+            throw new Error(message)
+          }
+        }
+        const onReady = vi.fn()
+        const onInitError = vi.fn()
+        const stage = makeController(RacingController, onReady, onInitError)
+
+        const pending = stage.init()
+        await Promise.resolve()
+        stage.dispose()
+        setupGate.resolve()
+        await expect(pending).resolves.toBeUndefined()
+
+        expect(onReady).not.toHaveBeenCalled()
+        expect(onInitError).not.toHaveBeenCalled()
+        expect(mocks.error).not.toHaveBeenCalled()
+      }
+    )
   })
 
   it('handles init failures and disposes safely', async () => {

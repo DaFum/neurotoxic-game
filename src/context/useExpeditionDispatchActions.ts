@@ -88,6 +88,8 @@ interface UseExpeditionDispatchActionsProps {
  * @remarks
  * Each helper reads `stateRef.current` so the snapshot a creator derives ids,
  * seeds and stale guards from is the same one the reducer validates against.
+ * The provider passes its `latestStateRef` for that reason: the last render
+ * lags a same-tick dispatch the reducer already applied (#3516).
  * The two creators that can legitimately have nothing to dispatch return
  * `null`, which is skipped here rather than turned into a forged payload.
  */

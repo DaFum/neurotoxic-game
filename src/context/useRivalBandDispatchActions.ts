@@ -22,6 +22,10 @@ export interface RivalBandDispatchActions {
  */
 interface UseRivalBandDispatchActionsProps {
   dispatch: Dispatch<GameAction>
+  /**
+   * The state the creators read. The provider passes its `latestStateRef`, so
+   * a rival built right after a same-tick dispatch includes it (#3516).
+   */
   stateRef: MutableRefObject<GameState>
 }
 

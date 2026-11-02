@@ -290,9 +290,9 @@ type BaseGameDispatchActions = {
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
 
-  // Roguelite Expedition (G1). Creators read the same `stateRef` snapshot the
-  // reducer validates against, so a prepared run's seed and the previewed map
-  // cannot diverge.
+  // Roguelite Expedition (G1). Creators read the same `latestStateRef`
+  // snapshot the reducer validates against, so a prepared run's seed and the
+  // previewed map cannot diverge.
   prepareExpeditionRun: () => void
   prepareExpeditionSponsorOffers: (
     regionId?: string,
@@ -552,7 +552,6 @@ type SimpleDispatchActions = Pick<
 interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
-  stateRef: MutableRefObject<GameState>
   latestStateRef: MutableRefObject<GameState>
   tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
@@ -567,7 +566,6 @@ interface UseGameDispatchActionsProps {
 export function useGameDispatchActions({
   dispatch,
   state,
-  stateRef,
   latestStateRef,
   tRef,
   resetMapGenerationRetries
@@ -605,7 +603,7 @@ export function useGameDispatchActions({
     hasOtherStoredSave
   } = usePersistence({
     currentScene: state.currentScene,
-    stateRef,
+    stateRef: latestStateRef,
     dispatch,
     addToast,
     tRef
@@ -761,7 +759,7 @@ export function useGameDispatchActions({
 
   const { setPendingBandHQOpen } = simpleActions
   const endGig = useCallback(() => {
-    const currentState = stateRef.current
+    const currentState = latestStateRef.current
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
       const rawTarget = currentState.currentGig.sourceScene
@@ -779,21 +777,24 @@ export function useGameDispatchActions({
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
-  }, [addToast, changeScene, setPendingBandHQOpen, stateRef, tRef])
+  }, [addToast, changeScene, setPendingBandHQOpen, latestStateRef, tRef])
 
   const minigameActions = useMinigameDispatchActions(dispatch)
   const facilityActions = useFacilityDispatchActions(dispatch)
   const questActions = useQuestDispatchActions(dispatch)
-  const rivalBandActions = useRivalBandDispatchActions({ dispatch, stateRef })
+  const rivalBandActions = useRivalBandDispatchActions({
+    dispatch,
+    stateRef: latestStateRef
+  })
   const assetActions = useAssetDispatchActions({
     dispatch,
-    stateRef,
+    stateRef: latestStateRef,
     addToast,
     tRef
   })
   const expeditionActions = useExpeditionDispatchActions({
     dispatch,
-    stateRef
+    stateRef: latestStateRef
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
@@ -952,7 +953,7 @@ export function useGameDispatchActions({
 
   const claimExpeditionLegendaryReward = useCallback(
     (runId: string): ExpeditionLegendaryClaim => {
-      const base = stateRef.current
+      const base = latestStateRef.current
       // Derived here only to know *which* marker to write. The reducer derives
       // it again from the same outcome and refuses a mismatch, so this read
       // cannot choose the award - a stale one simply claims nothing.
@@ -973,7 +974,7 @@ export function useGameDispatchActions({
       saveGameAfterStateCommit()
       return 'claimed'
     },
-    [dispatch, saveGameAfterStateCommit, stateRef, storage]
+    [dispatch, latestStateRef, saveGameAfterStateCommit, storage]
   )
 
   return useMemo(
