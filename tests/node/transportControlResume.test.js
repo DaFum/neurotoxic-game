@@ -156,6 +156,39 @@ test('pausing before a scheduled transport start defers it until resume', async 
   assert.deepStrictEqual(transport.start.mock.calls[0].arguments, [17, 3])
 })
 
+test('a quick resume keeps a lead-in running when Tone sees its start inside lookahead', async () => {
+  reset()
+  contextTimeSec = 10
+  const lookAhead = 0.15
+  const events = []
+  const stateAt = time =>
+    events.filter(event => event.time <= time).at(-1)?.state ?? 'stopped'
+  const start = time => {
+    if (stateAt(time) !== 'started') {
+      events.push({ time, state: 'started' })
+      events.sort((a, b) => a.time - b.time)
+    }
+  }
+  transport.start.mock.mockImplementationOnce(start, 0)
+  transport.start.mock.mockImplementationOnce(start, 1)
+  transport.stop.mock.mockImplementationOnce(time => {
+    const stopTime = time ?? contextTimeSec + lookAhead
+    for (let i = events.length - 1; i >= 0; i--) {
+      if (events[i].time >= stopTime) events.splice(i, 1)
+    }
+    events.push({ time: stopTime, state: 'stopped' })
+    events.sort((a, b) => a.time - b.time)
+  })
+
+  startTransportAt(10.1, 0)
+  transport.state = 'started' // Tone reads the timeline at raw time + lookahead.
+  await pauseAudio()
+  contextTimeSec = 10.02
+  audioState.gigIsPaused = false
+  assert.strictEqual(await resumeAudio(), true)
+  assert.strictEqual(stateAt(10.3), 'started')
+})
+
 test('a deferred transport start reports as paused', async () => {
   reset()
   transport.state = 'stopped'
