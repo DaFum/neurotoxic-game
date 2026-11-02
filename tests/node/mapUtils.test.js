@@ -388,12 +388,9 @@ describe('mapUtils', () => {
     })
 
     describe('rest income', () => {
-      // Harmony 10 and drained stamina rule out every donation, so resting is
-      // the only cash source in these fixtures.
-      const drainedBand = {
-        harmony: 10,
-        members: [{ stamina: 0, staminaMax: 100 }]
-      }
+      // No member can donate, so resting is the only cash source in these
+      // fixtures. Low harmony and stamina would not do: rests refund both.
+      const drainedBand = { harmony: 10, members: [] }
       const restRecovery = { social: {} }
 
       beforeEach(() => {
@@ -693,11 +690,107 @@ describe('mapUtils', () => {
           assert.equal(checkSoftlock(gameMap, at(5), freshBand, context), false)
         })
 
-        test('the rests never refund harmony', () => {
-          // Two marrows and a blood (harmony cost 95) are the most harmony
-          // 100 allows: 40 + 1100 misses the 1205 a 1200 trip needs.
+        test('the rests refund the harmony a later donation needs', () => {
+          // Marrow and blood today (harmony 45, 650), two rests (harmony 50,
+          // stamina 95), marrow (harmony 10), two rests (harmony 16), blood:
+          // 30 + 1200 covers the 1205 a 1200 trip needs within seven rests.
           tripCosting(1200)
-          assert.equal(checkSoftlock(gameMap, at(50), freshBand, context), true)
+          assert.equal(
+            checkSoftlock(gameMap, at(50), freshBand, context),
+            false
+          )
+        })
+
+        test('rests lift harmony back above the blood minimum', () => {
+          // Harmony 10 rules out every donation today; two rests regen it to
+          // 16, and blood then pays 100: 40 + 100 covers 100 plus the day's 5.
+          tripCosting(100)
+          const band = {
+            harmony: 10,
+            members: [{ stamina: 100, staminaMax: 100 }]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(50), band, { dailyObligations: 5 }),
+            true
+          )
+          assert.equal(checkSoftlock(gameMap, at(50), band, context), false)
+        })
+
+        test("a rest counts the day tick's stamina gain on top of the van rest", () => {
+          // Stamina 10 rules out today's donations. One rest: 10 + 50 - 10
+          // leaves only blood (101 misses 500); the tick's regen lifts the
+          // budget to marrow (1 + 500 covers 300 plus the day's 200). Without
+          // it the second tick bankrupts (201 - 400 + 100 <= 0), so the first
+          // rest decides.
+          tripCosting(300)
+          const band = {
+            harmony: 50,
+            members: [{ stamina: 10, staminaMax: 100 }]
+          }
+          assert.equal(
+            checkSoftlock(gameMap, at(201), band, {
+              dailyObligations: 200,
+              restRecovery
+            }),
+            false
+          )
+        })
+
+        test('a rest counts asset stamina regen', () => {
+          // Stamina 7: one rest funds marrow and blood (600) only with the
+          // asset's +30; without it marrow alone leaves 1 + 500 short of the
+          // 100 trip plus the day's 501, and the second tick bankrupts
+          // (502 - 1002 + 500 = 0 with obligations due).
+          tripCosting(100)
+          const band = {
+            harmony: 50,
+            members: [{ stamina: 7, staminaMax: 100 }]
+          }
+          const withAssetRegen = assetModifiers => ({
+            dailyObligations: 501,
+            restRecovery,
+            assetModifiers
+          })
+          assert.equal(
+            checkSoftlock(gameMap, at(502), band, withAssetRegen({})),
+            true
+          )
+          assert.equal(
+            checkSoftlock(
+              gameMap,
+              at(502),
+              band,
+              withAssetRegen({ staminaRegenBonusPerDay: 30 })
+            ),
+            false
+          )
+        })
+
+        test("a rest counts a brand deal's stamina regen", () => {
+          // Stamina 35: one rest leaves 88 for marrow and blood's 90 until the
+          // deal's +5 a day closes the gap; the rest is as in the asset case.
+          tripCosting(100)
+          const band = {
+            harmony: 50,
+            members: [{ stamina: 35, staminaMax: 100 }]
+          }
+          const withDeals = activeDeals => ({
+            dailyObligations: 501,
+            restRecovery: { social: { activeDeals } }
+          })
+          assert.equal(
+            checkSoftlock(gameMap, at(502), band, withDeals([])),
+            true
+          )
+          assert.equal(
+            checkSoftlock(
+              gameMap,
+              at(502),
+              band,
+              withDeals([{ id: 'sustainable_farming_coop' }])
+            ),
+            false
+          )
         })
       })
     })

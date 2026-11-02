@@ -10,6 +10,8 @@ import {
   validateBloodBankDonation
 } from './bloodBankUtils'
 import { REST_STAMINA_GAIN } from '../context/gameConstants'
+import { SLEEPING_BAGS_STAMINA_PER_DAY } from '../data/inventoryItems'
+import { getActiveDealBenefits } from './brandDealBenefits'
 import { calculateDailyNetCost } from './dailyNetCost'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import {
@@ -145,8 +147,11 @@ interface SoftlockContext {
    * `getTotalDailyObligations` figure.
    */
   restRecovery?: {
-    /** Social slice supplying the YouTube followers the day tick pays on. */
-    social: Partial<Pick<SocialState, 'youtube'>>
+    /**
+     * Social slice supplying the YouTube followers the day tick pays on and
+     * the brand deals whose stamina regen it adds.
+     */
+    social: Partial<Pick<SocialState, 'youtube' | 'activeDeals'>>
   }
 }
 
@@ -170,31 +175,55 @@ const MAX_SIMULATED_DONATIONS = 8
 const MAX_SIMULATED_REST_DAYS = 7
 
 /**
+ * Upper bound on the harmony one day tick adds (`dailyTickLogic`): the +3
+ * regen below 50, Soundproofing's +1 and the Mobile Studio's +5, counted
+ * whether or not the band owns them and before the tick's decay and drains.
+ */
+const MAX_TICK_HARMONY_GAIN = 3 + 1 + 5
+
+/**
+ * Upper bound on the stamina one day tick adds to a member from its fixed
+ * sources (`dailyTickLogic`): +3 above 60 harmony, +2 from Instagram, +3 from
+ * cyber_lungs, +3 from the sofa, +1 from the old couch and the sleeping bags,
+ * all counted, with no base decay subtracted (it takes nothing from an empty
+ * member). Brand-deal and asset regen are added from the live state.
+ */
+const MAX_FIXED_TICK_STAMINA_GAIN =
+  3 + 2 + 3 + 3 + 1 + SLEEPING_BAGS_STAMINA_PER_DAY
+
+/**
  * Upper bound on the cash blood-bank donations can raise by the end of each
  * rest day, donations made before, between and after the rests combined.
  *
  * @remarks
  * Deliberately optimistic, never a worst case: a stranded verdict ends the
  * run, while a missed one only lets the player rest, after which the check
- * re-runs on the settled band. A run of donations is legal exactly when its
- * total harmony cost stays below the band's harmony and its total stamina cost
- * leaves every member the 10 points `validateBloodBankDonation` keeps in
- * reserve, whatever the order. Rests add the stamina gain without the cap and
- * leave harmony as it is; the day tick's losses, expiring contraband effects
- * and quest penalties are not subtracted, because the next check reads
- * whatever they actually took. Each count of marrow and blood donations that
- * passes both sums is a candidate, so this covers donating, resting and
- * donating again as well as resting first.
+ * re-runs on the settled band. A run of donations is legal only when its total
+ * harmony cost stays below the harmony the band starts with plus what the
+ * rests add, and its total stamina cost leaves every member the 10 points
+ * `validateBloodBankDonation` keeps in reserve. Each rest adds the van rest's
+ * stamina plus `tickStaminaGain`, and `MAX_TICK_HARMONY_GAIN` harmony, all
+ * without the caps: donations between rests spend harmony and stamina, so the
+ * refunds can add up past 100, and crediting all of them never under-credits.
+ * The day tick's losses, expiring contraband effects and quest penalties are
+ * not subtracted, because the next check reads whatever they actually took.
+ * Each count of marrow and blood donations that passes both sums is a
+ * candidate, so this covers donating, resting and donating again as well as
+ * resting first. Three bloods cost more harmony and stamina than a marrow and
+ * pay less, so the best count holds at most two bloods and, with harmony at
+ * most 100 + 7 * 9, four marrows: within `MAX_SIMULATED_DONATIONS`.
  *
  * @param band - Band whose harmony and member stamina fund the donations.
  * @param fameLevel - Persisted fame level scaling every payout.
  * @param todayTotal - Exact proceeds of today's donation run (no rest).
+ * @param tickStaminaGain - Upper bound on the stamina one day tick adds.
  * @returns Index `n` holds the bound after `n` rest days; index 0 is `todayTotal`.
  */
 const getRestDonationTotals = (
   band: Partial<BandState> | null,
   fameLevel: unknown,
-  todayTotal: number
+  todayTotal: number,
+  tickStaminaGain: number
 ): number[] => {
   const totals = [todayTotal]
   const marrow = getBloodBankDonation('marrow', fameLevel)
@@ -214,12 +243,13 @@ const getRestDonationTotals = (
     if (canDonate) {
       const staminaBudget =
         lowestStamina +
-        restDays * REST_STAMINA_GAIN -
+        restDays * (REST_STAMINA_GAIN + tickStaminaGain) -
         BLOOD_BANK_STAMINA_RESERVE
+      const harmonyBudget = harmony + restDays * MAX_TICK_HARMONY_GAIN
       for (let m = 0; m <= MAX_SIMULATED_DONATIONS; m++) {
         for (let b = 0; m + b <= MAX_SIMULATED_DONATIONS; b++) {
           if (
-            m * marrow.harmonyCost + b * blood.harmonyCost < harmony &&
+            m * marrow.harmonyCost + b * blood.harmonyCost < harmonyBudget &&
             m * marrow.staminaCost + b * blood.staminaCost <= staminaBudget
           ) {
             best = Math.max(best, m * marrow.moneyGain + b * blood.moneyGain)
@@ -562,10 +592,18 @@ export const checkSoftlock = (
   // would declare ends the look-ahead.
   const restRecovery = context.restRecovery
   const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
+  // Asset regen from the pre-sale modifiers: a sale only removes boni. The
+  // tick pays a fractional rate in whole units, at most its ceiling a day.
   const restDonationTotals = getRestDonationTotals(
     bandForDonation,
     player.fameLevel,
-    donationTotal
+    donationTotal,
+    MAX_FIXED_TICK_STAMINA_GAIN +
+      getActiveDealBenefits(restRecovery?.social.activeDeals)
+        .staminaRegenPerDay +
+      Math.ceil(
+        Math.max(0, finiteNumberOr(assetModifiers?.staminaRegenBonusPerDay, 0))
+      )
   )
   const finalRestDonationTotal =
     restDonationTotals[MAX_SIMULATED_REST_DAYS] ?? donationTotal
@@ -621,7 +659,11 @@ export const checkSoftlock = (
       if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
         return true
       const restTotal = restDonationTotals[restDay] ?? 0
-      // Reachability only grows with cash, so the largest total decides.
+      // Only the largest total is tried. The travel reserve fee,
+      // floor(cash / 1000) * 5, rises by at most 5 a step, so a smaller cash
+      // level beats a larger one only when they lie under 5 apart; distinct
+      // totals never do (marrow pays five bloods plus 0 to 4, so any two
+      // differ by at least a blood minus 8 * 4, i.e. 68).
       if (
         restTotal > donationTotal &&
         evaluateScenario(restedMoney + restTotal, customCtx)
