@@ -784,7 +784,10 @@ export function useGameDispatchActions({
   const minigameActions = useMinigameDispatchActions(dispatch)
   const facilityActions = useFacilityDispatchActions(dispatch)
   const questActions = useQuestDispatchActions(dispatch)
-  const rivalBandActions = useRivalBandDispatchActions({ dispatch, stateRef })
+  const rivalBandActions = useRivalBandDispatchActions({
+    dispatch,
+    stateRef: latestStateRef
+  })
   const assetActions = useAssetDispatchActions({
     dispatch,
     stateRef,

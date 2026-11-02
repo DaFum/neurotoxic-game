@@ -26,7 +26,9 @@ const renderProvider = () =>
       rngSeed: useGameSelector(s => s.rngSeed),
       activeEventId: useGameSelector(s => s.activeEvent?.id ?? null),
       eventCooldowns: useGameSelector(s => s.eventCooldowns),
-      currentScene: useGameSelector(s => s.currentScene)
+      currentScene: useGameSelector(s => s.currentScene),
+      rivalBand: useGameSelector(s => s.rivalBand),
+      hasMap: useGameSelector(s => s.gameMap !== null)
     }),
     { wrapper }
   )
@@ -121,5 +123,24 @@ describe('same-tick state reads through the real provider', () => {
 
     // A stale read sees no gig and routes to POST_GIG instead of back to MENU.
     expect(result.current.currentScene).toBe(GAME_PHASES.MENU)
+  })
+
+  test('moveRivalBand keeps an earlier same-tick rival update', () => {
+    const { result } = renderProvider()
+    act(() => {
+      result.current.actions.spawnRivalBand()
+    })
+    expect(result.current.rivalBand).not.toBeNull()
+    expect(result.current.hasMap).toBe(true)
+    const powerLevel = result.current.rivalBand.powerLevel + 7
+
+    act(() => {
+      result.current.actions.updateRivalBand({ powerLevel })
+      result.current.actions.moveRivalBand()
+    })
+
+    // A stale read rebuilds the moved rival from the pre-tick one and drops
+    // the update.
+    expect(result.current.rivalBand.powerLevel).toBe(powerLevel)
   })
 })
