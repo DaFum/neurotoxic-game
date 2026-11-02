@@ -175,7 +175,7 @@ describe('useEventSystem unlock persistence honors the injected adapter', () => 
     const adapter = new InMemoryAdapter()
 
     const params = {
-      stateRef: { current: buildUnlockState() },
+      latestStateRef: { current: buildUnlockState() },
       dispatch: vi.fn(),
       addToast: vi.fn(),
       changeScene: vi.fn(),

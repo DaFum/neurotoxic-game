@@ -613,7 +613,6 @@ export function useGameDispatchActions({
 
   const { setActiveEvent, setScreenshotMode, triggerEvent, resolveEvent } =
     useEventSystem({
-      stateRef,
       latestStateRef,
       dispatch,
       addToast,
@@ -736,7 +735,9 @@ export function useGameDispatchActions({
   }, [dispatch, releaseUnprotectedSlot, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {
-    const currentState = stateRef.current
+    // The reduced state, not the last render: a dispatch earlier in the same
+    // tick (another day tick) must feed this action's RNG seed and stream.
+    const currentState = latestStateRef.current
     const nextDay = currentState.player.day + 1
     try {
       dispatch(advanceDayAction(currentState))
@@ -756,7 +757,7 @@ export function useGameDispatchActions({
       return
     }
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
-  }, [dispatch, addToast, stateRef, tRef])
+  }, [dispatch, addToast, latestStateRef, tRef])
 
   const { setPendingBandHQOpen } = simpleActions
   const endGig = useCallback(() => {
