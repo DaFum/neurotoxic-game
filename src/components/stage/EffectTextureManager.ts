@@ -167,6 +167,10 @@ export class EffectTextureManager {
 
   /**
    * Releases allocated textures and destroys the generic hit texture, preventing memory leaks.
+   *
+   * @remarks
+   * When generic texture generation fails, the manager may pass `Texture.WHITE` to `safeDestroyTexture` during disposal.
+   * That shared texture is intentionally skipped by the helper despite having a destroy method.
    */
   dispose(): void {
     this.isDisposed = true
