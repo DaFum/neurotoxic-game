@@ -94,9 +94,9 @@ describe('minigameReducer - Travel Complete Drops', () => {
       })
     }
 
-    /** The toast the drop raised (its id is derived from the drop roll). */
+    /** The toast the drop raised (its id comes from the deterministic builder). */
     const dropToast = state =>
-      state.toasts.find(toast => toast.id === 'toast-drop-0.01')
+      state.toasts.find(toast => toast.id.startsWith('travel-drop-'))
 
     it('credits the drop to the packed manifest so it is usable as carried cargo', () => {
       const arrived = travelWithDrop(startedState({ money: 5000, fuel: 100 }))
@@ -110,7 +110,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
       ])
       // A packed drop keeps today's plain "found" toast.
       assert.deepEqual(dropToast(arrived), {
-        id: 'toast-drop-0.01',
+        id: 'travel-drop-0',
         messageKey: 'ui:contraband.dropped',
         type: 'success'
       })
@@ -142,7 +142,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
       assert.deepEqual(arrived.expedition.cargo.contraband, [])
       // The player is told the item did not make it into the van.
       assert.deepEqual(dropToast(arrived), {
-        id: 'toast-drop-0.01',
+        id: 'travel-drop-0',
         messageKey: 'ui:contraband.droppedStayedAtHq',
         options: { item: `items:contraband.${dropId}.name` },
         type: 'warning'

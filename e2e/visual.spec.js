@@ -1360,19 +1360,30 @@ test.describe('Visual smoke tests', () => {
           )
         ]
         if (!overlay || marked.length !== 2) return null
-        const a = overlay.getBoundingClientRect()
+        // Each rendered message, not the container: a message counts only
+        // once its fade-in has started (opacity above zero).
+        const shown = [...overlay.children].filter(
+          message => Number.parseFloat(getComputedStyle(message).opacity) > 0
+        )
+        const rects = shown.map(message => message.getBoundingClientRect())
         return {
           messages: overlay.children.length,
-          painted: getComputedStyle(overlay).visibility !== 'hidden',
-          box: [a.left, a.top, a.right, a.bottom].map(Math.round),
+          painted:
+            getComputedStyle(overlay).visibility !== 'hidden' &&
+            shown.length > 0,
+          box: rects.map(r =>
+            [r.left, r.top, r.right, r.bottom].map(Math.round)
+          ),
           hits: marked
             .map(el => el.getBoundingClientRect())
-            .filter(
-              b =>
-                a.left < b.right &&
-                a.right > b.left &&
-                a.top < b.bottom &&
-                a.bottom > b.top
+            .filter(b =>
+              rects.some(
+                a =>
+                  a.left < b.right &&
+                  a.right > b.left &&
+                  a.top < b.bottom &&
+                  a.bottom > b.top
+              )
             ).length
         }
       })
@@ -1384,13 +1395,13 @@ test.describe('Visual smoke tests', () => {
         async () => {
           await page.clock.fastForward(30000)
           result = await measure()
-          return result?.messages ?? 0
+          return result?.painted ?? false
         },
         { intervals: [250], timeout: 20000 }
       )
-      .toBeGreaterThan(0)
+      .toBe(true)
     expect(result.painted, 'the message must be placed, not hidden').toBe(true)
-    expect(result.hits, `chatter box ${result.box}`).toBe(0)
+    expect(result.hits, `chatter boxes ${JSON.stringify(result.box)}`).toBe(0)
   })
 
   test('Band HQ Leave meets AA contrast at rest and on hover (#3499)', async ({

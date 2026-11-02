@@ -421,17 +421,21 @@ export const handleCompleteTravelMinigame = (
           view.availableHiddenSlots + view.availableVisibleSlots > 0
         // Append the new toast to the existing toasts array; a drop the full
         // van cannot carry says it stayed at HQ.
+        const dropToastId = buildDeterministicToastId(
+          'travel-drop',
+          newState.toasts
+        )
         newState.toasts = [
           ...newState.toasts,
           activeCargo && !vanHasFreeSlot
             ? {
-                id: `toast-${instanceId}`,
+                id: dropToastId,
                 messageKey: 'ui:contraband.droppedStayedAtHq',
                 options: { item: `items:contraband.${contrabandId}.name` },
                 type: 'warning'
               }
             : {
-                id: `toast-${instanceId}`,
+                id: dropToastId,
                 messageKey: 'ui:contraband.dropped',
                 type: 'success'
               }
@@ -468,7 +472,7 @@ export const handleCompleteTravelMinigame = (
         const fullToast = buildStashFullToast(
           newState.band,
           contrabandId,
-          `toast-${instanceId}`
+          buildDeterministicToastId('travel-drop', newState.toasts)
         )
         if (fullToast) {
           newState.toasts = [...newState.toasts, fullToast]
