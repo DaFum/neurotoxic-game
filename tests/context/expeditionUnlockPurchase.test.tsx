@@ -11,6 +11,7 @@ import { StorageProvider } from '../../src/context/StorageContext'
 import { InMemoryAdapter } from '../../src/utils/storageAdapter'
 import { resetStorageFallback } from '../../src/utils/storage'
 import { EXPEDITION_UNLOCK_SETS } from '../../src/data/expedition/unlockSets'
+import { HQ_FACILITY_LEVEL_COSTS } from '../../src/data/expedition/hqFacilities'
 import { createInitialState } from '../../src/context/initialState'
 
 const SAVE_KEY = 'neurotoxic_v3_save'
@@ -325,5 +326,57 @@ describe('the unlock purchase is reachable through useGameActions', () => {
     expect(bought).toBe(false)
     expect(result.current.career.tourTokens).toBe(READY_CAREER.tourTokens)
     expect(result.current.career.pendingUnlockPurchase).toBeNull()
+  })
+})
+
+describe('a purchase whose marker write is refused', () => {
+  beforeEach(() => {
+    resetStorageFallback()
+    localStorage.clear()
+  })
+
+  it('leaves no debited snapshot for a same-session load to grant (#3508)', () => {
+    const adapter = new InMemoryAdapter()
+    seedSave(adapter, { hqFacilityLevels: {} })
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+
+    // From here every write is refused, as in private mode or with the quota
+    // exhausted: the storage guard keeps this session's saves in its memory
+    // fallback, which a load reads ahead of persistent storage.
+    vi.spyOn(adapter, 'set').mockReturnValue(false)
+
+    // Progress made before the purchase lives only in that fallback, so the
+    // reload below must still see it.
+    act(() => {
+      result.current.actions.purchaseExpeditionHqFacility('workshop', 0)
+    })
+    const tokensBeforePurchase =
+      READY_CAREER.tourTokens - HQ_FACILITY_LEVEL_COSTS[1]
+    expect(result.current.career.tourTokens).toBe(tokensBeforePurchase)
+
+    act(() => {
+      result.current.actions.purchaseExpeditionUnlockSet('mechanic_network')
+    })
+    // The marker write failed, so the purchase was rolled back and refunded.
+    expect(result.current.career.unlockedSetIds).not.toContain(
+      'mechanic_network'
+    )
+    expect(result.current.career.pendingUnlockPurchase).toBeNull()
+    expect(result.current.career.tourTokens).toBe(tokensBeforePurchase)
+
+    // The player was told the purchase failed, so a load in the same session
+    // must not settle the debited marker into a set they paid for.
+    act(() => {
+      result.current.actions.loadGame()
+    })
+    expect(result.current.career.unlockedSetIds).not.toContain(
+      'mechanic_network'
+    )
+    expect(result.current.career.pendingUnlockPurchase).toBeNull()
+    expect(result.current.career.tourTokens).toBe(tokensBeforePurchase)
+    expect(result.current.career.hqFacilityLevels.workshop).toBe(1)
   })
 })
