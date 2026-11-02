@@ -304,19 +304,27 @@ export const useRhythmGameAudio = ({
     stageWaiterRef.current?.()
   }, [])
 
-  // A failed stage can never draw: release the wait so the init routes to
-  // 'failed' (retry or quit overlay) instead of starting the song. If the
-  // readiness fallback already started the song, stop it and fail the same way.
+  // A failed stage can never draw: show 'failed' (retry or quit overlay) at
+  // once, even while the audio unlock is still pending, and release the wait
+  // so the in-flight init keeps 'failed' instead of starting the song. If the
+  // readiness fallback already started the song, stop it. An ended gig (lost,
+  // or results submitted ahead of the completion transition) is left alone.
   const onStageInitError = useCallback(() => {
     stageFailedRef.current = true
     stageWaiterRef.current?.()
+    const status = currentStatusRef.current
+    const { isGameOver, hasSubmittedResults } = gameStateRef.current
     if (
-      currentStatusRef.current === 'ready' &&
-      !gameStateRef.current.isGameOver
+      (status !== 'initializing' && status !== 'ready') ||
+      isGameOver ||
+      hasSubmittedResults
     ) {
+      return
+    }
+    currentStatusRef.current = 'failed'
+    latestContextRef.current.setAudioStatus('failed')
+    if (status === 'ready') {
       logger.error('RhythmGame', 'Gig stage failed after the song started.')
-      currentStatusRef.current = 'failed'
-      latestContextRef.current.setAudioStatus('failed')
       audioEngine.stopAudio()
     }
   }, [audioEngine, gameStateRef])
@@ -385,6 +393,11 @@ export const useRhythmGameAudio = ({
     const { signal } = controller
     const isAborted = () =>
       signal.aborted || abortControllerRef.current !== controller
+    const failForStage = () => {
+      logger.error('RhythmGame', 'Gig stage failed to initialize.')
+      currentStatusRef.current = 'failed'
+      setAudioStatus('failed')
+    }
 
     try {
       // Mute ambient radio to prevent audio overlap
@@ -413,6 +426,13 @@ export const useRhythmGameAudio = ({
       const audioUnlocked = await audioEngine.ensureAudioContext()
 
       if (isAborted()) {
+        return
+      }
+
+      // A stage failure during the unlock already showed 'failed'; keep it
+      // rather than reporting 'blocked' or mounting a stage wait.
+      if (stageFailedRef.current) {
+        failForStage()
         return
       }
 
@@ -463,9 +483,7 @@ export const useRhythmGameAudio = ({
       }
 
       if (stageFailedRef.current) {
-        logger.error('RhythmGame', 'Gig stage failed to initialize.')
-        currentStatusRef.current = 'failed'
-        setAudioStatus('failed')
+        failForStage()
         return
       }
 

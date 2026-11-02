@@ -527,10 +527,13 @@ describe('useRhythmGameAudio stage readiness gate', () => {
   // Mirrors the hook's unexported no-stage fallback (STAGE_READY_FALLBACK_MS).
   const STAGE_READY_FALLBACK_MS = 15_000
 
-  const renderAudioHook = setAudioStatus =>
+  const renderAudioHook = (
+    setAudioStatus,
+    gameStateRef = { current: { lanes: [{}, {}, {}] } }
+  ) =>
     renderHook(() =>
       useRhythmGameAudio({
-        gameStateRef: { current: { lanes: [{}, {}, {}] } },
+        gameStateRef,
         setters: { setAudioStatus, setIsGameOver: vi.fn() },
         contextState: baseState,
         contextActions: {
@@ -749,6 +752,133 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     })
     expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
     expect(mocks.playSongSequence).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not fail a normally finalized gig on a late stage failure', async () => {
+    const setAudioStatus = vi.fn()
+    const gameStateRef = {
+      current: {
+        lanes: [{}, {}, {}],
+        isGameOver: false,
+        hasSubmittedResults: false
+      }
+    }
+    const { result } = renderAudioHook(setAudioStatus, gameStateRef)
+    await advance(STAGE_READY_FALLBACK_MS)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    mocks.stopAudio.mockClear()
+
+    // finalizeGig() submits the results before endGig(); isGameOver stays
+    // false until unmount, so the completion transition is in flight.
+    gameStateRef.current.hasSubmittedResults = true
+    act(() => {
+      result.current.onStageInitError()
+    })
+
+    expect(setAudioStatus).not.toHaveBeenCalledWith('failed')
+    expect(mocks.stopAudio).not.toHaveBeenCalled()
+  })
+
+  it('shows the failure at once when the stage fails while the audio unlock is pending', async () => {
+    const audioUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(0)
+
+    act(() => {
+      result.current.onStageInitError()
+    })
+    // The unlock may never settle; the Retry/Quit overlay must not wait on it.
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+
+    await act(async () => {
+      audioUnlock.resolve(true)
+      await vi.advanceTimersByTimeAsync(STAGE_READY_FALLBACK_MS)
+    })
+    // The in-flight initialization keeps 'failed' and never starts the song.
+    expect(setAudioStatus.mock.calls.flat()).toEqual(
+      setAudioStatus.mock.calls.map(() => 'failed')
+    )
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it('keeps a stage failure when the pending audio unlock then reports blocked', async () => {
+    const audioUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+
+    act(() => {
+      result.current.onStageInitError()
+    })
+    await act(async () => {
+      audioUnlock.resolve(false)
+      await vi.advanceTimersByTimeAsync(0)
+    })
+
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+    expect(setAudioStatus).not.toHaveBeenCalledWith('blocked')
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it.each(['isGameOver', 'hasSubmittedResults'])(
+    'does not fail an initializing gig that has already ended (%s)',
+    async endedFlag => {
+      const audioUnlock = Promise.withResolvers()
+      mocks.ensureAudioContext.mockReturnValueOnce(audioUnlock.promise)
+      const setAudioStatus = vi.fn()
+      const gameStateRef = {
+        current: {
+          lanes: [{}, {}, {}],
+          isGameOver: false,
+          hasSubmittedResults: false
+        }
+      }
+      const { result } = renderAudioHook(setAudioStatus, gameStateRef)
+      await advance(0)
+
+      gameStateRef.current[endedFlag] = true
+      act(() => {
+        result.current.onStageInitError()
+      })
+
+      expect(setAudioStatus).not.toHaveBeenCalledWith('failed')
+    }
+  )
+
+  it('recovers on a retry after an immediate stage failure despite the stale unlock', async () => {
+    const staleUnlock = Promise.withResolvers()
+    mocks.ensureAudioContext.mockReturnValueOnce(staleUnlock.promise)
+    const setAudioStatus = vi.fn()
+    const { result } = renderAudioHook(setAudioStatus)
+    await advance(0)
+    act(() => {
+      result.current.onStageInitError()
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+
+    let retry
+    await act(async () => {
+      retry = result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+
+    // The first attempt's unlock settles late; it must not touch the retry.
+    await act(async () => {
+      staleUnlock.resolve(false)
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('initializing')
+    expect(setAudioStatus).not.toHaveBeenCalledWith('blocked')
+
+    await act(async () => {
+      result.current.onStageReady()
+      await retry
+    })
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
   })
 
   it('never starts playback when unmounted while waiting for the stage', async () => {
