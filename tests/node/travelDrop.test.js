@@ -76,6 +76,37 @@ describe('minigameReducer - Travel Complete Drops', () => {
     assert.equal(newState.toasts[0].messageKey, 'ui:contraband.dropped')
   })
 
+  it('gives two drops from the same roll distinct toast ids', () => {
+    const state = {
+      player: {
+        ...DEFAULT_PLAYER_STATE,
+        currentNodeId: 'node_1',
+        money: 1000,
+        van: { fuel: 100, condition: 100 }
+      },
+      band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 },
+      minigame: { active: true, type: 'TOURBUS', targetDestination: 'node_2' },
+      gameMap: {
+        nodes: {
+          node_1: { id: 'node_1', coordinates: { x: 0, y: 0 } },
+          node_2: { id: 'node_2', coordinates: { x: 10, y: 10 } }
+        }
+      },
+      toasts: []
+    }
+    const payload = { damageTaken: 0, itemsCollected: 0, rngValue: 0.01 }
+    const first = handleCompleteTravelMinigame(state, payload)
+    // The first toast is still on screen when the same roll drops again.
+    const second = handleCompleteTravelMinigame(
+      { ...state, toasts: first.toasts },
+      payload
+    )
+
+    assert.equal(second.toasts.length, 2)
+    const ids = second.toasts.map(toast => toast.id)
+    assert.equal(new Set(ids).size, 2, `duplicate toast ids: ${ids}`)
+  })
+
   describe('during an active Expedition', () => {
     const map = fixtureMap()
     const firstHop = map.connections.find(
