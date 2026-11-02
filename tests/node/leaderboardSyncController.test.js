@@ -270,10 +270,65 @@ test('falls back to the clock for a stored revision the API would reject', async
 
 test('never derives the API-rejected MAX_SAFE_INTEGER revision (#3475)', async () => {
   const t = setup({ startMs: 5000 })
-  t.storage.set(REVISION_KEY('p'), Number.MAX_SAFE_INTEGER - 1)
+  t.storage.set(REVISION_KEY('p'), Number.MAX_SAFE_INTEGER - 2)
   await t.submit(snap(500))
+  // The last valid send: one below the API ceiling.
   assert.equal(t.bodies[0].revision, Number.MAX_SAFE_INTEGER - 1)
   assert.equal(t.storage.get(REVISION_KEY('p')), Number.MAX_SAFE_INTEGER - 1)
+})
+
+describe('a stored ceiling revision after an operator reset (#3494)', () => {
+  // A server that, like the API, drops any revision not above what it holds.
+  const resetServer = (getTest, held) => {
+    const respond = () => {
+      const { revision } = getTest().bodies.at(-1)
+      if (revision <= held.value) return staleResponse(held.value)
+      held.value = revision
+      return okResponse()
+    }
+    return Array.from({ length: 20 }, () => respond)
+  }
+
+  const syncSeveral = async (t, held) => {
+    const revisions = []
+    for (const money of [600, 700, 800]) {
+      await t.submit(snap(money))
+      await t.advance(MIN_SYNC_INTERVAL_MS)
+      revisions.push(t.bodies.at(-1).revision)
+    }
+    assert.equal(held.value, revisions.at(-1))
+    assert.ok(revisions.every((r, i) => i === 0 || r > revisions[i - 1]))
+    assert.ok(revisions.every(r => r < Number.MAX_SAFE_INTEGER - 1))
+    assert.equal(t.controller.getSyncStatus('p').exhausted, false)
+  }
+
+  test('a stored MAX-1 falls back to the clock so the player recovers', async () => {
+    let t
+    const held = { value: 15_000 } // the operator reset to epoch ms
+    t = setup({ startMs: 20_000, script: resetServer(() => t, held) })
+    t.storage.set(REVISION_KEY('p'), Number.MAX_SAFE_INTEGER - 1)
+
+    await syncSeveral(t, held)
+  })
+
+  test('a ceiling this client generated is not resent after the reset', async () => {
+    // Stored MAX-2 makes the next request MAX-1, which is persisted.
+    const first = setup({ startMs: 5000 })
+    first.storage.set(REVISION_KEY('p'), Number.MAX_SAFE_INTEGER - 2)
+    await first.submit(snap(500))
+    assert.equal(
+      first.storage.get(REVISION_KEY('p')),
+      Number.MAX_SAFE_INTEGER - 1
+    )
+    first.controller.dispose()
+
+    let t
+    const held = { value: 15_000 }
+    t = setup({ startMs: 20_000, script: resetServer(() => t, held) })
+    for (const [key, value] of first.storage) t.storage.set(key, value)
+
+    await syncSeveral(t, held)
+  })
 })
 
 test('does not record a failed request as synced', async () => {

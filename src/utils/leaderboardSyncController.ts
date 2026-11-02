@@ -223,12 +223,14 @@ export const createLeaderboardSyncController = (
   /** The stored revision, or 0 when it is not one the API would accept. */
   const readStoredRevision = (playerId: string): number => {
     // A value the API would reject (not a safe integer, or exhausted) was never
-    // accepted server-side, so start from the clock instead.
+    // accepted server-side, so start from the clock instead. The highest
+    // sendable revision counts as exhausted too (#3494): resending it after an
+    // operator reset is accepted once and leaves the player locked again.
     const raw = finiteNumberOr(
       deps.storage.read(revisionStorageKey(playerId)),
       0
     )
-    return Number.isSafeInteger(raw) && raw > 0 && raw < Number.MAX_SAFE_INTEGER
+    return Number.isSafeInteger(raw) && raw > 0 && raw < MAX_SENDABLE_REVISION
       ? raw
       : 0
   }
