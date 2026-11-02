@@ -125,6 +125,7 @@
   "contraband.days_other": "{{count}} DAYS",
   "contraband.description": "Artifacts and strange detritus gathered from the void. Use with caution.",
   "contraband.dropped": "Found contraband!",
+  "contraband.droppedStayedAtHq": "Found contraband, but the van has no free slot: {{item}} stayed at HQ.",
   "contraband.noItems": "No contraband collected yet.",
   "contraband.passiveActive": "PASSIVE EFFECT ACTIVE",
   "contraband.requiresTarget": "Requires target member.",

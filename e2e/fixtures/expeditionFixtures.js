@@ -23,6 +23,7 @@ import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendabl
 import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { calculateTravelCostsAndImpact } from '../../src/utils/travelUtils.ts'
 import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors.ts'
+import { MapGenerator } from '../../src/utils/mapGenerator.ts'
 import { getLocationName } from '../../src/hooks/travel/actions/getLocationName.ts'
 import { advanceRouteForFixture } from '../../tests/expeditionRouteAdvanceFixture.js'
 
@@ -283,6 +284,42 @@ export const convertedNodeFixture = () => {
     }
   }
   return fail('no seed offered a Nemesis shortcut onto a base GIG node')
+}
+
+/**
+ * A Career (no Expedition) standing on an unplayed GIG node next to the start,
+ * reached through the real travel actions. Its setlist is not frozen, so
+ * PreGig shows selectable, unselected song rows.
+ */
+export const careerGigFixture = () => {
+  for (let offset = 0; offset < 50; offset += 1) {
+    const runSeed = FIXTURE_RUN_SEED + offset
+    const fresh = createInitialState({ runSeed })
+    fresh.player.money = FIXTURE_MONEY
+    fresh.player.van.fuel = 100
+    const mapped = gameReducer(fresh, {
+      type: ActionTypes.SET_MAP,
+      payload: new MapGenerator(runSeed).generateMap()
+    })
+    const from = mapped.player.currentNodeId
+    const gigNodeId = mapped.gameMap.connections
+      .filter(edge => edge.from === from)
+      .map(edge => edge.to)
+      .find(id => isBaseGig(mapped, id))
+    if (!gigNodeId) continue
+    const travelling = gameReducer(mapped, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: gigNodeId }
+    })
+    const arrived = gameReducer(travelling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [] }
+    })
+    if (arrived.player.currentNodeId !== gigNodeId)
+      fail('the Career did not travel to the gig node')
+    return { save: serialize(arrived), nodeId: gigNodeId }
+  }
+  return fail('no seed offered a GIG next to the Career start')
 }
 
 /** Service condition examples on a real, resumed Expedition run. */

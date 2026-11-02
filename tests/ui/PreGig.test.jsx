@@ -845,6 +845,17 @@ describe('PreGig', () => {
     expect(follows(startButton, reason)).toBe(true)
   })
 
+  test('slides the left-column setlist in from the left and the right-column modifiers from the right', () => {
+    const { getByRole, getByText } = render(React.createElement(PreGig))
+
+    const setlistRegion = getByRole('region', { name: 'ui:pregig.setlist' })
+    const modifiersBlock = getByText('ui:pregig.allocation').parentElement
+    // Without LazyMotion features the blocks keep their `initial` offset, so
+    // the rendered transform is the direction each one slides in from.
+    expect(setlistRegion.style.transform).toBe('translateX(-20px)')
+    expect(modifiersBlock.style.transform).toBe('translateX(20px)')
+  })
+
   test('renders tabs and tabpanels with proper WAI-ARIA attributes', async () => {
     const { getByRole, getAllByRole } = render(React.createElement(PreGig))
 

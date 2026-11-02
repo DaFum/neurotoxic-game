@@ -916,6 +916,11 @@ export function useGameDispatchActions({
       saveGameAfterStateCommit(saved => {
         if (!saved) {
           dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
+          // A refused write still leaves the debited snapshot, marker and
+          // all, in the session's memory fallback, which a same-session load
+          // reads first and would settle into a granted set. Saving the
+          // rolled-back state replaces it.
+          saveGameAfterStateCommit()
           addToast(
             tRef.current('ui:expedition.meta.purchaseFailed.persistence'),
             'error'

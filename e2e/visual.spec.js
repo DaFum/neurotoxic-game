@@ -1324,6 +1324,86 @@ test.describe('Visual smoke tests', () => {
       .toBe(true)
   })
 
+  test('Assets chatter avoids the status strip title and metrics on a phone (#3505)', async ({
+    page
+  }) => {
+    test.skip(page.viewportSize().width >= 640, 'Phone-only overlay rule')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.clock.install()
+    const url = '/?events=off'
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    const fixture = await buildFixture(page, 'careerGigFixture')
+    await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+    await loadSavedGame(page)
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('OVERWORLD')
+    await dismissTutorial(page)
+    // Enter Assets before any clock jump. fastForward moves the page's
+    // performance.now() but not the document timeline that runs Web
+    // Animations, so a scene fade started after a jump is scheduled that far
+    // in the real future and the new scene stays at opacity 0.
+    await page.evaluate(() => window.gameState.changeScene('ASSETS'))
+    const strip = page.locator('.assets-status-strip')
+    await expect(strip).toBeVisible()
+    await expect(page.locator('.scene--expedition, .map-node')).toHaveCount(0)
+
+    const measure = () =>
+      page.evaluate(() => {
+        const overlay = [...document.querySelectorAll('[role="status"]')].find(
+          el => el.className.includes('z-(--z-chatter)')
+        )
+        // The strip's title and metric grid.
+        const marked = [
+          ...document.querySelectorAll(
+            '.assets-status-strip h1, .assets-status-strip .grid'
+          )
+        ]
+        if (!overlay || marked.length !== 2) return null
+        // Each rendered message, not the container: a message counts only
+        // once its fade-in has started (opacity above zero).
+        const shown = [...overlay.children].filter(
+          message => Number.parseFloat(getComputedStyle(message).opacity) > 0
+        )
+        const rects = shown.map(message => message.getBoundingClientRect())
+        return {
+          messages: overlay.children.length,
+          painted:
+            getComputedStyle(overlay).visibility !== 'hidden' &&
+            shown.length > 0,
+          box: rects.map(r =>
+            [r.left, r.top, r.right, r.bottom].map(Math.round)
+          ),
+          hits: marked
+            .map(el => el.getBoundingClientRect())
+            .filter(b =>
+              rects.some(
+                a =>
+                  a.left < b.right &&
+                  a.right > b.left &&
+                  a.top < b.bottom &&
+                  a.bottom > b.top
+              )
+            ).length
+        }
+      })
+
+    // The chatter timer is due after the jump; poll until its message shows.
+    let result = null
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(30000)
+          result = await measure()
+          return result?.painted ?? false
+        },
+        { intervals: [250], timeout: 20000 }
+      )
+      .toBe(true)
+    expect(result.painted, 'the message must be placed, not hidden').toBe(true)
+    expect(result.hits, `chatter boxes ${JSON.stringify(result.box)}`).toBe(0)
+  })
+
   test('Band HQ Leave meets AA contrast at rest and on hover (#3499)', async ({
     page
   }) => {
@@ -1412,5 +1492,37 @@ test.describe('Visual smoke tests', () => {
         `NRG label (${state} row)`
       )
     }
+  })
+
+  test('PreGig NRG label meets AA contrast on an unselected Career row (#3505)', async ({
+    page
+  }) => {
+    const url = '/?events=off'
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    const fixture = await buildFixture(page, 'careerGigFixture')
+    await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
+    await loadSavedGame(page)
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('OVERWORLD')
+    await dismissTutorial(page)
+    await page
+      .locator('.map-node')
+      .filter({ has: page.getByRole('img', { name: 'Van', exact: true }) })
+      .click()
+    await expect
+      .poll(async () => (await readRootState(page)).currentScene)
+      .toBe('PREGIG')
+
+    // A Career setlist is not frozen: a song outside it is an enabled row.
+    const unselected = page
+      .locator('button[aria-pressed="false"]:not([aria-disabled="true"])')
+      .filter({ has: page.getByText('NRG', { exact: true }) })
+      .first()
+    await expect(unselected).toBeVisible()
+    await expectReadableText(
+      unselected.getByText('NRG', { exact: true }),
+      'NRG label (unselected row)'
+    )
   })
 })
