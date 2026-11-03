@@ -5,6 +5,8 @@ import type { Rect } from '../chatterPlacement'
 const LABEL_SELECTOR = '[data-testid="map-node-label"]'
 const HIDDEN_ATTRIBUTE = 'data-declutter-hidden'
 const ANCHOR_ATTRIBUTE = 'data-label-anchor'
+const HUD_SELECTOR =
+  '.ow-menu button, [data-testid="overworld-phone-resources"], button[aria-label*="keyboard shortcuts" i]'
 
 const clearFlags = (container: HTMLElement): void => {
   for (const label of container.querySelectorAll(LABEL_SELECTOR)) {
@@ -46,7 +48,20 @@ export const useMapLabelDeclutter = (
     const run = () => {
       clearFlags(container)
       const entries: MapLabelEntry[] = []
-      const obstacles: { ownerId: string; rect: Rect }[] = []
+      const bounds = container.getBoundingClientRect()
+      const hudObstacles: { ownerId: string; rect: Rect }[] = [
+        ...document.querySelectorAll<HTMLElement>(HUD_SELECTOR)
+      ].flatMap(element => {
+        const rect = element.getBoundingClientRect()
+        const style = getComputedStyle(element)
+        return rect.width > 0 &&
+          rect.height > 0 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden'
+          ? [{ ownerId: 'hud', rect }]
+          : []
+      })
+      const obstacles = [...hudObstacles]
       container
         .querySelectorAll<HTMLElement>('.map-node')
         .forEach((node, i) => {
@@ -81,10 +96,22 @@ export const useMapLabelDeclutter = (
           if (rects.length === 0) return
           const separatedRow = label.getBoundingClientRect().height + 4
           const gaps = [28, 64, 64 + separatedRow, 64 + 2 * separatedRow]
+          const top = Math.min(...rects.map(rect => rect.top))
+          const bottom = Math.max(...rects.map(rect => rect.bottom))
+          const edgeGaps = [
+            28 + 2 * centerY - bottom - bounds.top,
+            28 + bounds.bottom - bottom
+          ].filter(gap => gap >= 28)
+          const hudGaps = hudObstacles
+            .flatMap(({ rect }) => [
+              28 + rect.bottom + 4 - top,
+              28 + 2 * centerY - top - rect.top + 4
+            ])
+            .filter(gap => gap >= 28)
           entries.push({
             id: String(i),
             priority: Number(node.dataset.labelPriority ?? 3),
-            candidates: gaps.flatMap(gap => [
+            candidates: [...gaps, ...hudGaps, ...edgeGaps].flatMap(gap => [
               {
                 anchor: 'below' as const,
                 gap,
@@ -108,7 +135,7 @@ export const useMapLabelDeclutter = (
           })
         })
       const placements = pickMapLabelPlacements(entries, {
-        bounds: container.getBoundingClientRect(),
+        bounds,
         obstacles
       })
       container
@@ -129,6 +156,14 @@ export const useMapLabelDeclutter = (
     const observer =
       typeof ResizeObserver === 'function' ? new ResizeObserver(run) : null
     observer?.observe(container)
-    return () => observer?.disconnect()
+    document
+      .querySelectorAll(HUD_SELECTOR)
+      .forEach(element => observer?.observe(element))
+    // Fixed HUD boxes stay in viewport coordinates as the scene scrolls.
+    document.addEventListener('scroll', run, true)
+    return () => {
+      observer?.disconnect()
+      document.removeEventListener('scroll', run, true)
+    }
   }, [containerRef, enabled, nodesRevision, focusRevision])
 }

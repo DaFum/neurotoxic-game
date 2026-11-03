@@ -206,10 +206,12 @@ const labelHexCollisions = page =>
 
 const loadCareer = async (page, seed, reducedMotion = 'reduce') => {
   await page.emulateMedia({ reducedMotion })
-  await page.goto(`/?seed=${seed}`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`/?seed=${seed}`, { waitUntil: 'load' })
+  // Wait for an actionable boot scene after its assets load. The intro can
+  // finish while the menu mounts, so consider only currently visible controls.
   await page
-    .getByRole('button', { name: /skip intro/i })
-    .or(page.getByRole('heading', { name: /neurotoxic/i }))
+    .getByRole('button', { name: /skip intro|start tour/i })
+    .filter({ visible: true })
     .first()
     .waitFor({ timeout: 30000 })
   await skipToMenu(page, { navigate: false })
@@ -760,7 +762,12 @@ test.describe('Visual smoke tests', () => {
       return { destinationNames, overlaps, hudOverlaps }
     })
     // Names are readable at rest, so reading one needs no travel-confirm tap.
+    const reachableDestinations = page
+      .locator('.map-node[role="button"]')
+      .filter({ hasNot: page.getByRole('img', { name: 'Van', exact: true }) })
+    expect(m.destinationNames.length).toBe(await reachableDestinations.count())
     expect(m.destinationNames.length).toBeGreaterThan(0)
+    expect(await unreadableDestinationNames(page)).toEqual([])
     await expect(page.getByText('CONFIRM?')).toHaveCount(0)
     // The declutter pass keeps the shown chips apart and off the HUD.
     expect(m.overlaps).toBe(0)

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import { useMapLabelDeclutter } from '../../src/components/overworld/useMapLabelDeclutter'
 
 const box = (left, top, width, height) => ({
@@ -79,6 +79,67 @@ describe('useMapLabelDeclutter', () => {
     expect(label.getAttribute('data-label-anchor')).toBe('below')
     expect(label.style.getPropertyValue('--map-label-gap')).toBe('90px')
     expect(label.hasAttribute('data-declutter-hidden')).toBe(false)
+  })
+
+  test('avoids the fixed menu and updates placement when the scene scrolls', () => {
+    const { container, label } = fixture()
+    const menu = document.createElement('div')
+    menu.className = 'ow-menu'
+    menu.innerHTML = '<button>OPEN MENU</button>'
+    document.body.append(menu)
+    const menuBox = vi
+      .spyOn(menu.firstElementChild, 'getBoundingClientRect')
+      .mockReturnValue(box(0, 20, 200, 36))
+    const { unmount } = render(<Probe container={container} />)
+    // The near-above candidate hits the menu; the other hex blocks near-below.
+    expect(label.getAttribute('data-label-anchor')).toBe('below')
+    expect(label.style.getPropertyValue('--map-label-gap')).toBe('90px')
+    expect(label.hasAttribute('data-declutter-hidden')).toBe(false)
+    menuBox.mockReturnValue(box(0, 160, 200, 36))
+    act(() => container.dispatchEvent(new Event('scroll')))
+    expect(label.getAttribute('data-label-anchor')).toBe('above')
+    expect(label.style.getPropertyValue('--map-label-gap')).toBe('28px')
+    unmount()
+    menu.remove()
+  })
+
+  test('places a name below the HUD edge when all standard rows are blocked', () => {
+    const { container, label } = fixture()
+    vi.spyOn(container, 'getBoundingClientRect').mockReturnValue(
+      box(0, 0, 200, 300)
+    )
+    const menu = document.createElement('div')
+    menu.className = 'ow-menu'
+    menu.innerHTML = '<button>OPEN MENU</button>'
+    document.body.append(menu)
+    vi.spyOn(menu.firstElementChild, 'getBoundingClientRect').mockReturnValue(
+      box(0, 0, 200, 260)
+    )
+    render(<Probe container={container} />)
+    expect(label.hasAttribute('data-declutter-hidden')).toBe(false)
+    expect(label.getAttribute('data-label-anchor')).toBe('below')
+    // Base name top is 108px; shift it to 264px, four pixels below the HUD.
+    expect(label.style.getPropertyValue('--map-label-gap')).toBe('184px')
+    menu.remove()
+  })
+
+  test('uses the map edge when the clear band beside the HUD has less than four pixels spare', () => {
+    const { container, label } = fixture()
+    vi.spyOn(container, 'getBoundingClientRect').mockReturnValue(
+      box(0, 0, 200, 285)
+    )
+    const menu = document.createElement('div')
+    menu.className = 'ow-menu'
+    menu.innerHTML = '<button>OPEN MENU</button>'
+    document.body.append(menu)
+    vi.spyOn(menu.firstElementChild, 'getBoundingClientRect').mockReturnValue(
+      box(0, 0, 200, 260)
+    )
+    render(<Probe container={container} />)
+    expect(label.hasAttribute('data-declutter-hidden')).toBe(false)
+    expect(label.getAttribute('data-label-anchor')).toBe('below')
+    expect(label.style.getPropertyValue('--map-label-gap')).toBe('183px')
+    menu.remove()
   })
 
   test('clears placement flags when disabled', () => {
