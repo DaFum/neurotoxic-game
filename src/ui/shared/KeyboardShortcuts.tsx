@@ -248,6 +248,7 @@ export function ShortcutsToggle({
       <button
         type='button'
         onClick={onToggle}
+        data-shortcuts-toggle
         aria-pressed={showHelp}
         aria-expanded={showHelp}
         aria-controls={showHelp ? 'shortcuts-panel' : undefined}

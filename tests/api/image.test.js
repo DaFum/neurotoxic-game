@@ -92,6 +92,54 @@ describe('protected image proxy', () => {
       expect(fetchMock).not.toHaveBeenCalled()
     }
   )
+  test.each(['connect', 'eval'])(
+    'Redis %s timeout returns 503 and does not start an upstream request',
+    async operation => {
+      vi.useFakeTimers()
+      try {
+        client.isOpen = operation !== 'connect'
+        client[operation].mockReturnValue(new Promise(() => {}))
+        const response = request()
+        await vi.advanceTimersByTimeAsync(60000)
+        const res = await response
+        expect(res.status).toHaveBeenCalledWith(503)
+        expect(res.json).toHaveBeenCalledWith({
+          error: 'Image generation unavailable'
+        })
+        expect(fetchMock).not.toHaveBeenCalled()
+        expect(vi.getTimerCount()).toBe(0)
+      } finally {
+        vi.useRealTimers()
+      }
+    }
+  )
+  test('clears the Redis deadline after a rate-limit decision', async () => {
+    vi.useFakeTimers()
+    try {
+      client.eval.mockResolvedValue(101)
+      expect((await request()).status).toHaveBeenCalledWith(429)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  test('does not start rate limiting after a timed-out connection eventually opens', async () => {
+    vi.useFakeTimers()
+    try {
+      const connection = Promise.withResolvers()
+      client.isOpen = false
+      client.connect.mockReturnValue(connection.promise)
+      const response = request()
+      await vi.advanceTimersByTimeAsync(60000)
+      expect((await response).status).toHaveBeenCalledWith(503)
+      connection.resolve()
+      await Promise.resolve()
+      expect(client.eval).not.toHaveBeenCalled()
+      expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   test.each([401, 402, 429, 500])(
     'upstream %i returns generic 502 and never leaks credentials',
     async status => {

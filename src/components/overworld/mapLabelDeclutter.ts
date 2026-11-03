@@ -1,5 +1,8 @@
 import { rectsIntersect, type Rect } from '../chatterPlacement'
 
+/** Largest scale of an interactive map node's hexagon. */
+export const MAP_NODE_HOVER_SCALE = 1.2
+
 /** One map node's visible label boxes plus how much it matters. */
 export interface MapLabelEntry {
   id: string

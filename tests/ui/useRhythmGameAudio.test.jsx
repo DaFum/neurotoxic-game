@@ -174,6 +174,51 @@ describe('useRhythmGameAudio', () => {
     expect(endGig).toHaveBeenCalledTimes(2)
   })
 
+  it('preserves gig event markers when retry resets gameplay', async () => {
+    const game = {
+      lanes: [{}, {}, {}],
+      hasSubmittedResults: false,
+      isGameOver: false,
+      gigIntroFired: true,
+      gigMidFired: true,
+      lastGigEventSongIndex: 2
+    }
+    const reset = vi.fn(() =>
+      Object.assign(game, {
+        gigIntroFired: false,
+        gigMidFired: false,
+        lastGigEventSongIndex: -1
+      })
+    )
+    const { result } = renderHook(() =>
+      useRhythmGameAudio({
+        resetGameplayState: reset,
+        gameStateRef: { current: game },
+        setters: {
+          setAudioStatus: vi.fn(),
+          setIsGameOver: vi.fn(),
+          setFailureKind: vi.fn()
+        },
+        contextState: { ...baseState, band: { harmony: 0 } },
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+    await act(async () => {
+      await result.current.retryAudioInitialization()
+    })
+    expect(reset).toHaveBeenCalledOnce()
+    expect(game).toMatchObject({
+      gigIntroFired: true,
+      gigMidFired: true,
+      lastGigEventSongIndex: 2
+    })
+  })
+
   it('stops audio on unmount cleanup', () => {
     const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()

@@ -81,9 +81,18 @@ describe('MapNodeView', () => {
             const translateY =
               Number.parseFloat(this.style.translate.split(/\s+/)[1] ?? '0') ||
               0
+            if (globalThis.__labelTop !== undefined)
+              this.parentElement
+                .querySelector('[data-testid=map-node-label]')
+                .setAttribute('data-label-anchor', 'above')
             const top = globalThis.__tooltipTop + translateY
             return rectOf(top, top + 200)
           }
+          if (
+            this.getAttribute('data-testid') === 'map-node-label' &&
+            globalThis.__labelTop !== undefined
+          )
+            return rectOf(globalThis.__labelTop, globalThis.__labelTop + 40)
           return rectOf(0, 0)
         }
       )
@@ -114,6 +123,7 @@ describe('MapNodeView', () => {
     afterEach(() => {
       vi.restoreAllMocks()
       vi.unstubAllGlobals()
+      delete globalThis.__labelTop
     })
 
     test('moves a tooltip that overhangs the bottom edge back inside', () => {
@@ -141,6 +151,20 @@ describe('MapNodeView', () => {
         window.dispatchEvent(new Event('resize'))
       })
       expect(tooltipOf(container).style.translate).toBe('-50% -4px')
+    })
+
+    test('places a flipped tooltip above the above-anchored label', () => {
+      globalThis.__tooltipTop = 300
+      globalThis.__labelTop = 450
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('-50% -54px')
+    })
+
+    test('prioritizes the map top edge when there is not enough room above the label', () => {
+      globalThis.__tooltipTop = 200
+      globalThis.__labelTop = 220
+      const { container } = renderInMap()
+      expect(tooltipOf(container).style.translate).toBe('-50% -96px')
     })
 
     test('leaves a tooltip that fits where it is', () => {

@@ -34,13 +34,27 @@ export default async function handler(req, res) {
   if (!key)
     return res.status(503).json({ error: 'Image generation unavailable' })
 
+  let redisExpired = false
+  let redisTimeout
   try {
-    if (!client.isOpen) await client.connect()
-    if (await isLeaderboardRateLimited(req, 'image', 100, 60)) {
-      return res.status(429).json({ error: 'Too many requests' })
-    }
+    const limited = await Promise.race([
+      (async () => {
+        if (!client.isOpen) await client.connect()
+        if (redisExpired) return false
+        return isLeaderboardRateLimited(req, 'image', 100, 60)
+      })(),
+      new Promise((_, reject) => {
+        redisTimeout = setTimeout(() => {
+          redisExpired = true
+          reject(new Error('Redis timeout'))
+        }, IMAGE_TIMEOUT_MS)
+      })
+    ])
+    if (limited) return res.status(429).json({ error: 'Too many requests' })
   } catch {
     return res.status(503).json({ error: 'Image generation unavailable' })
+  } finally {
+    clearTimeout(redisTimeout)
   }
 
   const { prompt, width, height } = req.query ?? {}

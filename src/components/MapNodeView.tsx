@@ -21,6 +21,7 @@ import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
+import { MAP_NODE_HOVER_SCALE } from './overworld/mapLabelDeclutter'
 import type {
   ExpeditionNodeFog,
   ExpeditionSpecialNodeSubtype
@@ -33,7 +34,7 @@ const TOOLTIP_PHONE_STYLE = (nodeX: number): CSSProperties =>
 const TOOLTIP_EDGE_MARGIN_PX = 4
 const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
-const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
+const MOTION_HOVER = { scale: MAP_NODE_HOVER_SCALE, zIndex: 60 }
 const MOTION_NO_HOVER = {}
 
 /**
@@ -274,12 +275,24 @@ const MapNodeTooltip = memo(
         const box = map.getBoundingClientRect()
         const top = box.top + TOOLTIP_EDGE_MARGIN_PX
         const bottom = box.bottom - TOOLTIP_EDGE_MARGIN_PX
-        const shift =
-          tip.top < top
-            ? top - tip.top
-            : tip.bottom > bottom
-              ? bottom - tip.bottom
-              : 0
+        const label = flipAbove
+          ? host.querySelector<HTMLElement>(
+              '[data-testid="map-node-label"][data-label-anchor="above"]'
+            )
+          : null
+        const labelRect = label?.getBoundingClientRect()
+        const labelShift =
+          label &&
+          labelRect &&
+          labelRect.height > 0 &&
+          getComputedStyle(label).visibility !== 'hidden'
+            ? Math.min(0, labelRect.top - TOOLTIP_EDGE_MARGIN_PX - tip.bottom)
+            : 0
+        // The map boundary takes precedence if there is no room above the label.
+        const shift = Math.max(
+          top - tip.top,
+          Math.min(labelShift, bottom - tip.bottom)
+        )
         // Same horizontal -50% as the `-translate-x-1/2` class this replaces.
         if (shift !== 0) tooltip.style.translate = `-50% ${Math.round(shift)}px`
       }
@@ -314,8 +327,8 @@ const MapNodeTooltip = memo(
         data-chatter-avoid
         /* Below the node, mt-[3.75rem] clears the tallest label stack (type
            label plus a three-line location name), which reaches 60px past the
-           bottom of this box. Above the node there is no label stack, so a
-           small gap is enough. */
+           bottom of this box. Above-anchored labels are measured and cleared
+           when the map boundary allows it. */
         /* On phones the tooltip stays centred on its node but its centre is
            clamped inside the map's edges, so a node near either edge cannot
            push it out of view. Everything is in rem (or map-width `cqw`) so it

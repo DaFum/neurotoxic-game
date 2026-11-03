@@ -142,6 +142,29 @@ describe('useMapLabelDeclutter', () => {
     menu.remove()
   })
 
+  test('reserves the hovered hex footprint beyond its unscaled bounds', () => {
+    const { container, label } = fixture()
+    const other = container.querySelectorAll('.map-node')[1]
+    other.getBoundingClientRect.mockReturnValue(box(80, 117, 64, 80))
+    render(<Probe container={container} />)
+    expect(label.getAttribute('data-label-anchor')).toBe('above')
+  })
+
+  test('avoids the shortcuts control independently of its translated label', () => {
+    const { container, label } = fixture()
+    const button = document.createElement('button')
+    button.setAttribute('data-shortcuts-toggle', '')
+    button.setAttribute('aria-label', 'Tastaturkürzel')
+    document.body.append(button)
+    vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(
+      box(0, 20, 200, 36)
+    )
+    render(<Probe container={container} />)
+    expect(label.getAttribute('data-label-anchor')).toBe('below')
+    expect(label.style.getPropertyValue('--map-label-gap')).toBe('90px')
+    button.remove()
+  })
+
   test('clears placement flags when disabled', () => {
     const { container, label } = fixture()
     const { rerender } = render(<Probe container={container} />)

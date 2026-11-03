@@ -335,6 +335,7 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
       speed: _speed,
       modifiers: _modifiers,
       sequenceAttemptId: _sequenceAttemptId,
+      rivalPenaltyActive: _rivalPenaltyActive,
       ...gameplayDefaults
     } = INITIAL_GAME_STATE_REF
     Object.assign(gameStateRef.current, structuredClone(gameplayDefaults))

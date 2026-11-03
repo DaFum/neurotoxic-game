@@ -559,7 +559,14 @@ export const useRhythmGameAudio = ({
 
   const retryAudioInitialization = useCallback(async () => {
     if (currentStatusRef.current !== 'initializing') {
+      const { gigIntroFired, gigMidFired, lastGigEventSongIndex } =
+        gameStateRef.current
       resetGameplayState()
+      Object.assign(gameStateRef.current, {
+        gigIntroFired,
+        gigMidFired,
+        lastGigEventSongIndex
+      })
       hasResolvedLowHarmonyRef.current = false
       currentStatusRef.current = 'idle'
       // Retries come from the blocked/failed overlay, which replaced the
@@ -569,7 +576,7 @@ export const useRhythmGameAudio = ({
       latestContextRef.current.setFailureKind(null)
     }
     await initializeGigState()
-  }, [initializeGigState, resetGameplayState])
+  }, [gameStateRef, initializeGigState, resetGameplayState])
 
   return { retryAudioInitialization, onStageReady, onStageInitError }
 }

@@ -90,6 +90,7 @@ describe('useRhythmGameState', () => {
     expect(game.rng).toBe(rng)
     expect(game.settleUnhitNotes).toBe(settleUnhitNotes)
     expect(game.sequenceAttemptId).toBe(42)
+    expect(game.rivalPenaltyActive).toBe(true)
     expect(game.speed).toBe(777)
     expect(game.modifiers).toBe(modifiers)
     expect(game.lanes).toBe(lanes)
@@ -97,9 +98,14 @@ describe('useRhythmGameState', () => {
     expect(game.lanes.every(lane => !lane.active)).toBe(true)
     for (const key of Object.keys(defaults)) {
       if (
-        ['rng', 'lanes', 'modifiers', 'speed', 'sequenceAttemptId'].includes(
-          key
-        )
+        [
+          'rng',
+          'lanes',
+          'modifiers',
+          'speed',
+          'sequenceAttemptId',
+          'rivalPenaltyActive'
+        ].includes(key)
       )
         continue
       expect(game[key], key).toEqual(defaults[key])

@@ -1,12 +1,16 @@
 import { useLayoutEffect, type RefObject } from 'react'
-import { pickMapLabelPlacements, type MapLabelEntry } from './mapLabelDeclutter'
+import {
+  MAP_NODE_HOVER_SCALE,
+  pickMapLabelPlacements,
+  type MapLabelEntry
+} from './mapLabelDeclutter'
 import type { Rect } from '../chatterPlacement'
 
 const LABEL_SELECTOR = '[data-testid="map-node-label"]'
 const HIDDEN_ATTRIBUTE = 'data-declutter-hidden'
 const ANCHOR_ATTRIBUTE = 'data-label-anchor'
 const HUD_SELECTOR =
-  '.ow-menu button, [data-testid="overworld-phone-resources"], button[aria-label*="keyboard shortcuts" i]'
+  '.ow-menu button, [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
 
 const clearFlags = (container: HTMLElement): void => {
   for (const label of container.querySelectorAll(LABEL_SELECTOR)) {
@@ -73,12 +77,12 @@ export const useMapLabelDeclutter = (
             obstacles.push({
               ownerId: String(i),
               // Motion initially scales the hexagon to zero. Reserve its final
-              // layout footprint so the reveal cannot grow over a kept label.
+              // largest hover/focus footprint so it cannot grow over a kept label.
               rect: {
-                left: centerX - hex.offsetWidth / 2,
-                right: centerX + hex.offsetWidth / 2,
-                top: centerY - hex.offsetHeight / 2,
-                bottom: centerY + hex.offsetHeight / 2
+                left: centerX - (hex.offsetWidth * MAP_NODE_HOVER_SCALE) / 2,
+                right: centerX + (hex.offsetWidth * MAP_NODE_HOVER_SCALE) / 2,
+                top: centerY - (hex.offsetHeight * MAP_NODE_HOVER_SCALE) / 2,
+                bottom: centerY + (hex.offsetHeight * MAP_NODE_HOVER_SCALE) / 2
               }
             })
           const label = node.querySelector<HTMLElement>(LABEL_SELECTOR)
