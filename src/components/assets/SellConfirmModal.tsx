@@ -61,8 +61,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           >
             <ConfirmButton
               onClick={() => {
-                sellChassis(asset.id)
-                onClose()
+                if (sellChassis(asset.id) === true) onClose()
               }}
               disabled={blocked}
             >

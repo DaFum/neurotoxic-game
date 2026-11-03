@@ -97,7 +97,8 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
 
   // 1. Core State (React + Ref)
-  const { gameStateRef, state, setters } = useRhythmGameState()
+  const { gameStateRef, state, setters, resetGameplayState } =
+    useRhythmGameState()
   const appliedEventScoreDeltaRef = useRef(0)
 
   useEffect(() => {
@@ -195,6 +196,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     useRhythmGameAudio({
       gameStateRef,
       setters,
+      resetGameplayState,
       contextState: {
         band,
         gameMap,

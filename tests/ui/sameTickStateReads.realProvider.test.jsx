@@ -6,6 +6,8 @@ import {
   useGameSelector
 } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { StorageProvider } from '../../src/context/StorageContext'
+import { InMemoryAdapter } from '../../src/utils/storageAdapter'
 import { SAVE_KEY } from '../../src/context/usePersistence'
 import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
 import { nextSeed } from '../../src/utils/seededRng'
@@ -14,14 +16,24 @@ import { resetStorageFallback } from '../../src/utils/storage'
 // #3504: provider actions called in the same tick as an earlier dispatch must
 // read the reduced state (`latestStateRef`), not the last render (`stateRef`).
 
+const translations = vi.hoisted(() => ({ t: vi.fn(key => key) }))
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: translations.t,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  })
+}))
+
 const wrapper = ({ children }) => (
   <GameStateProvider>{children}</GameStateProvider>
 )
 
-const renderProvider = () =>
+const renderProvider = (adapter = null) =>
   renderHook(
     () => ({
       actions: useGameActions(),
+      toasts: useGameSelector(s => s.toasts),
       day: useGameSelector(s => s.player.day),
       money: useGameSelector(s => s.player.money),
       rngSeed: useGameSelector(s => s.rngSeed),
@@ -35,7 +47,15 @@ const renderProvider = () =>
         s => s.expedition.preparedSponsorProvenance ?? null
       )
     }),
-    { wrapper }
+    {
+      wrapper: adapter
+        ? ({ children }) => (
+            <StorageProvider adapter={adapter}>
+              <GameStateProvider>{children}</GameStateProvider>
+            </StorageProvider>
+          )
+        : wrapper
+    }
   )
 
 const PROBE_EVENT = { id: 'same_tick_probe', title: 'probe', options: [] }
@@ -44,6 +64,7 @@ describe('same-tick state reads through the real provider', () => {
   beforeEach(() => {
     resetStorageFallback()
     localStorage.clear()
+    translations.t.mockClear()
   })
 
   afterEach(() => {
@@ -62,10 +83,47 @@ describe('same-tick state reads through the real provider', () => {
       result.current.actions.advanceDay()
     })
 
+    expect(
+      translations.t.mock.calls
+        .filter(([key]) => key === 'ui:day_advance')
+        .map(([, options]) => options.day)
+    ).toEqual([startDay + 1, startDay + 2])
     expect(result.current.day).toBe(startDay + 2)
     // A stale read rebuilds the second action from the pre-tick seed, so both
     // days roll the same stream and the seed advances only once.
     expect(result.current.rngSeed).toBe(nextSeed(nextSeed(startSeed)))
+  })
+
+  test('advanceDay uses a day updated earlier in the same tick for its toast', () => {
+    const { result } = renderProvider()
+    const day = result.current.day + 10
+    act(() => {
+      result.current.actions.updatePlayer({ day })
+      result.current.actions.advanceDay()
+    })
+    expect(result.current.day).toBe(day + 1)
+    expect(translations.t).toHaveBeenCalledWith('ui:day_advance', {
+      day: day + 1
+    })
+  })
+
+  test('resolveEvent consumes an event only once in the same tick', () => {
+    const { result } = renderProvider()
+    act(() => result.current.actions.setActiveEvent(PROBE_EVENT))
+    let repeated
+    act(() => {
+      result.current.actions.resolveEvent({ id: 'ok', outcomeText: 'done' })
+      repeated = result.current.actions.resolveEvent({
+        id: 'again',
+        outcomeText: 'fallback',
+        description: 'no active event'
+      })
+    })
+    expect(repeated).toEqual({
+      outcomeText: 'fallback',
+      description: 'no active event',
+      result: null
+    })
   })
 
   test('resolveEvent resolves an event activated earlier in the same tick', () => {
@@ -80,11 +138,13 @@ describe('same-tick state reads through the real provider', () => {
     expect(result.current.eventCooldowns).toContain(PROBE_EVENT.id)
   })
 
-  test('resolveEvent saves a game-over snapshot that includes an earlier same-tick dispatch', () => {
-    const { result } = renderProvider()
+  test('every resolveEvent game-over save includes the earlier same-tick dispatch', () => {
+    const adapter = new InMemoryAdapter()
+    const { result } = renderProvider(adapter)
     act(() => {
       result.current.actions.setActiveEvent(PROBE_EVENT)
     })
+    const writes = vi.spyOn(adapter, 'set')
     const money = result.current.money + 123
 
     act(() => {
@@ -96,9 +156,14 @@ describe('same-tick state reads through the real provider', () => {
     })
 
     expect(result.current.money).toBe(money)
-    const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null')
-    expect(saved?.player?.money).toBe(money)
-    expect(saved?.terminalOutcome?.reason).toBe('event_game_over')
+    const saves = writes.mock.calls
+      .filter(([key]) => key === SAVE_KEY)
+      .map(([, value]) => JSON.parse(value))
+    expect(saves.length).toBeGreaterThan(0)
+    for (const saved of saves) {
+      expect(saved.player.money).toBe(money)
+      expect(saved.terminalOutcome.reason).toBe('event_game_over')
+    }
   })
 
   test('saveGame without a snapshot saves an earlier same-tick dispatch', () => {

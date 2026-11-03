@@ -684,6 +684,27 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
       venueId: gigVenueId
     }
     assert.equal(getExpeditionCheapestOnwardLegFuel(state), null)
+    for (const [fuel, condition] of [
+      [0, 100],
+      [100, 0]
+    ]) {
+      state.player.van.fuel = fuel
+      state.player.van.condition = condition
+      state.expedition.pendingFailure = deriveExpeditionPendingFailure(state)
+      assert.equal(
+        canClaimExpeditionInsurance(state, 'vehicle', undefined, {
+          crisisReason: 'fuel_stranded'
+        }),
+        false
+      )
+      const next = gameReducer(state, {
+        type: ActionTypes.CLAIM_EXPEDITION_INSURANCE,
+        payload: { claimType: 'vehicle' }
+      })
+      assert.strictEqual(next, state)
+      assert.equal(next.expedition.insuranceClaimConsumed, false)
+      assert.equal(next.expedition.claimConsumed, false)
+    }
   })
 })
 

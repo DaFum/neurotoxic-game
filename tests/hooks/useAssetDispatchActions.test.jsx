@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
+import { createInitialState } from '../../src/context/initialState'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { useAssetDispatchActions } from '../../src/context/assets/useAssetDispatchActions'
 import {
@@ -41,7 +42,7 @@ describe('useAssetDispatchActions sellChassis', () => {
     vi.mocked(sellChassis).mockReturnValueOnce(failed)
     const { result, dispatch, addToast, stateRef } = renderAssetActions()
 
-    result.current.sellChassis('asset_1')
+    expect(result.current.sellChassis('asset_1')).toBe(false)
 
     expect(sellChassis).toHaveBeenCalledWith('asset_1', stateRef.current)
     expect(addToast).toHaveBeenCalledTimes(1)
@@ -60,7 +61,7 @@ describe('useAssetDispatchActions sellChassis', () => {
     vi.mocked(sellChassis).mockReturnValueOnce(sold)
     const { result, dispatch, addToast } = renderAssetActions()
 
-    result.current.sellChassis('asset_1')
+    expect(result.current.sellChassis('asset_1')).toBe(true)
 
     expect(addToast).not.toHaveBeenCalled()
     expect(dispatch).toHaveBeenCalledWith(sold)
@@ -79,7 +80,7 @@ describe('useAssetDispatchActions removeModule', () => {
       }
     }
 
-    result.current.removeModule('asset_1', 'slot_1')
+    expect(result.current.removeModule('asset_1', 'slot_1')).toBe(false)
 
     expect(dispatch).not.toHaveBeenCalled()
     expect(addToast).toHaveBeenCalledWith(
@@ -91,7 +92,7 @@ describe('useAssetDispatchActions removeModule', () => {
   it('dispatches a removal on any other chassis', () => {
     const { result, dispatch, addToast } = renderAssetActions()
 
-    result.current.removeModule('asset_1', 'slot_1')
+    expect(result.current.removeModule('asset_1', 'slot_1')).toBe(true)
 
     expect(addToast).not.toHaveBeenCalled()
     expect(dispatch).toHaveBeenCalledWith(
@@ -158,4 +159,49 @@ describe('useAssetDispatchActions acceptance results', () => {
 
     expect(result.current.refinanceLiability('loan_1', 'coop')).toBe(true)
   })
+})
+
+describe('real upgrade and repair acceptance', () => {
+  for (const accepted of [true, false]) {
+    for (const method of ['upgradeChassisTier', 'repairChassis']) {
+      it(`${method} reports ${accepted} from the real creator`, () => {
+        const { result, dispatch, addToast, stateRef } = renderAssetActions()
+        const state = createInitialState()
+        state.player.money = accepted ? 100000 : 0
+        state.assets = [
+          {
+            id: 'asset_1',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 50,
+            baseUpkeep: 20,
+            baseDailyRevenue: 0,
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 0.005,
+            slots: []
+          }
+        ]
+        stateRef.current = state
+        const actual =
+          method === 'upgradeChassisTier'
+            ? result.current.upgradeChassisTier('asset_1', 2)
+            : result.current.repairChassis('asset_1')
+        expect(actual).toBe(accepted)
+        const successType =
+          method === 'upgradeChassisTier'
+            ? ActionTypes.UPGRADE_CHASSIS_TIER
+            : ActionTypes.REPAIR_CHASSIS
+        const failedType =
+          method === 'upgradeChassisTier'
+            ? ActionTypes.UPGRADE_CHASSIS_TIER_FAILED
+            : ActionTypes.REPAIR_CHASSIS_FAILED
+        expect(dispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: accepted ? successType : failedType })
+        )
+        expect(addToast).toHaveBeenCalledTimes(accepted ? 0 : 1)
+      })
+    }
+  }
 })

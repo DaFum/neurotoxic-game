@@ -81,7 +81,7 @@ describe('UpgradeConfirmModal', () => {
   beforeEach(() => {
     mockState.player.money = 10000
     mockState.expedition = undefined
-    mockUpgradeChassisTier.mockClear()
+    mockUpgradeChassisTier.mockReset().mockReturnValue(true)
   })
 
   afterEach(() => {
@@ -98,6 +98,15 @@ describe('UpgradeConfirmModal', () => {
 
     expect(mockUpgradeChassisTier).toHaveBeenCalledWith('asset-1', 2)
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('keeps the modal open when the creator refuses the upgrade', () => {
+    mockUpgradeChassisTier.mockReturnValue(false)
+    const onClose = vi.fn()
+    render(<UpgradeConfirmModal asset={asset} isOpen onClose={onClose} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Upgrade' }))
+    expect(mockUpgradeChassisTier).toHaveBeenCalledWith('asset-1', 2)
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('keeps confirmation disabled when the player cannot afford the upgrade', () => {

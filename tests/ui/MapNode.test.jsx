@@ -734,9 +734,10 @@ describe('MapNodeView', () => {
       expect(stack.className).not.toContain('max-sm:hidden')
     })
 
-    test('hides the travel target labels of a dense Expedition branch on phones', () => {
-      const { stack } = renderLabel({ compactLabels: true })
-      expect(stack.className).toContain('max-sm:hidden')
+    test('shows compact travel target names of a dense Expedition branch on phones', () => {
+      const { stack, name } = renderLabel({ compactLabels: true })
+      expect(stack.className).not.toContain('max-sm:hidden')
+      expect(name.className).toContain('max-sm:max-w-20')
     })
 
     test('reveals any label on hover, including the current node', () => {

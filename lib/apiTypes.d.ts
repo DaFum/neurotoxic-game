@@ -14,5 +14,5 @@ export interface ApiResponse {
   status(code: number): ApiResponse
   json(body: unknown): ApiResponse
   setHeader(name: string, value: string | readonly string[]): unknown
-  end(body?: string): unknown
+  end(body?: string | Uint8Array): unknown
 }

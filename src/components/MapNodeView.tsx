@@ -537,7 +537,7 @@ export const MapNodeView = memo(
       isHoveredLocal ||
       isPendingConfirm ||
       (isCurrent && !currentNameIsSceneTitle) ||
-      (isReachable && !isCurrent && !compactLabels)
+      (isReachable && !isCurrent)
         ? ''
         : 'max-sm:hidden'
 
@@ -625,6 +625,7 @@ export const MapNodeView = memo(
         )}
 
         <m.div
+          data-map-node-hex
           initial={MOTION_INITIAL}
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
@@ -666,7 +667,8 @@ export const MapNodeView = memo(
         <div
           data-chatter-avoid
           data-testid='map-node-label'
-          className={`data-[declutter-hidden=true]:invisible absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
+          style={{ '--map-label-gap': '28px' } as CSSProperties}
+          className={`data-[declutter-hidden=true]:invisible data-[label-anchor=above]:-mt-(--map-label-gap) data-[label-anchor=above]:-translate-y-full data-[label-anchor=above]:flex-col-reverse absolute top-1/2 left-1/2 -translate-x-1/2 mt-(--map-label-gap) flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           {showTypeChip && (
             <span
@@ -676,7 +678,7 @@ export const MapNodeView = memo(
             </span>
           )}
           <span
-            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 max-sm:line-clamp-2 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
+            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28${compactLabels ? ' max-sm:max-w-20' : ''} max-sm:line-clamp-2 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
           >
             {nodeLocationName}
           </span>

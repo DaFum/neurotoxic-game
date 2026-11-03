@@ -58,6 +58,7 @@ export function useAssetDispatchActions({
     /**
      * Dispatches an asset action, first surfacing its localized failure reason
      * as an error toast when the action is the matching `*_FAILED` variant.
+     * Returns creator acceptance and dispatch, not reducer completion.
      */
     const dispatchWithFailureToast = <
       T extends GameAction & { payload: { reason: string } }
@@ -65,7 +66,7 @@ export function useAssetDispatchActions({
       action: GameAction,
       failedType: T['type'],
       toastKeyPrefix: string
-    ) => {
+    ): boolean => {
       if (action.type === failedType) {
         const reason = (action as T).payload.reason
         addToast(
@@ -74,6 +75,7 @@ export function useAssetDispatchActions({
         )
       }
       dispatch(action)
+      return action.type !== failedType
     }
 
     return {
@@ -144,9 +146,10 @@ export function useAssetDispatchActions({
             tRef.current('assets:removeFailed.expedition_locked'),
             'error'
           )
-          return
+          return false
         }
         dispatch(removeModuleAction(assetId, slotId))
+        return true
       },
       startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) =>
         dispatchWithFailureToast(

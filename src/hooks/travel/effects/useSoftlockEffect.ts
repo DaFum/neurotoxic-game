@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { getPendingRestEffects } from '../../../utils/restRecoveryEffects'
 import { checkSoftlock } from '../../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
@@ -14,7 +15,8 @@ import type {
 } from '../types'
 import {
   getSellableAssets,
-  getPostSaleScenarios
+  getPostSaleScenarios,
+  getConsumableRecovery
 } from '../../../utils/travelSoftlockUtils'
 import { getNodeAccessStatus } from '../../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../../data/venues'
@@ -45,6 +47,7 @@ export const useSoftlockEffect = ({
     social,
     assets,
     liabilities,
+    crowdfundCampaigns,
     addToast,
     saveGame,
     changeScene
@@ -114,7 +117,18 @@ export const useSoftlockEffect = ({
       postSaleScenarios,
       // Resting can earn the trip when the day pays more than it costs. Safe
       // here because this check never runs during an active run.
-      restRecovery: { social },
+      restRecovery: {
+        social,
+        assets,
+        liabilities,
+        pendingFameEffects: getPendingRestEffects(
+          assets,
+          liabilities,
+          crowdfundCampaigns,
+          player.day
+        )
+      },
+      consumableRecovery: getConsumableRecovery(band.stash, band.inventory),
       // Reuse the real booking gate rather than re-deriving it here, so a
       // neighbor the player would be refused at cannot count as an escape.
       isNodeAccessible: (node: unknown) =>
@@ -160,6 +174,7 @@ export const useSoftlockEffect = ({
     social,
     assets,
     liabilities,
+    crowdfundCampaigns,
     addToast,
     state.isTraveling,
     refs.timeoutRef,

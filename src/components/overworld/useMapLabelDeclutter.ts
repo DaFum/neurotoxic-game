@@ -1,17 +1,22 @@
 import { useLayoutEffect, type RefObject } from 'react'
-import { pickHiddenMapLabels, type MapLabelEntry } from './mapLabelDeclutter'
+import { pickMapLabelPlacements, type MapLabelEntry } from './mapLabelDeclutter'
+import type { Rect } from '../chatterPlacement'
 
 const LABEL_SELECTOR = '[data-testid="map-node-label"]'
 const HIDDEN_ATTRIBUTE = 'data-declutter-hidden'
+const ANCHOR_ATTRIBUTE = 'data-label-anchor'
 
 const clearFlags = (container: HTMLElement): void => {
   for (const label of container.querySelectorAll(LABEL_SELECTOR)) {
     label.removeAttribute(HIDDEN_ATTRIBUTE)
+    label.removeAttribute(ANCHOR_ATTRIBUTE)
+    if (label instanceof HTMLElement)
+      label.style.setProperty('--map-label-gap', '28px')
   }
 }
 
 /**
- * Hides lower-priority map-node labels that would overlap a more important one.
+ * Places labels below or above their node before hiding blocked labels.
  *
  * @param containerRef - The map element holding the `.map-node` children.
  * @param enabled - Whether to run; when off, any hidden flag is cleared.
@@ -41,9 +46,26 @@ export const useMapLabelDeclutter = (
     const run = () => {
       clearFlags(container)
       const entries: MapLabelEntry[] = []
+      const obstacles: { ownerId: string; rect: Rect }[] = []
       container
         .querySelectorAll<HTMLElement>('.map-node')
         .forEach((node, i) => {
+          const host = node.getBoundingClientRect()
+          const centerX = (host.left + host.right) / 2
+          const centerY = (host.top + host.bottom) / 2
+          const hex = node.querySelector<HTMLElement>('[data-map-node-hex]')
+          if (hex)
+            obstacles.push({
+              ownerId: String(i),
+              // Motion initially scales the hexagon to zero. Reserve its final
+              // layout footprint so the reveal cannot grow over a kept label.
+              rect: {
+                left: centerX - hex.offsetWidth / 2,
+                right: centerX + hex.offsetWidth / 2,
+                top: centerY - hex.offsetHeight / 2,
+                bottom: centerY + hex.offsetHeight / 2
+              }
+            })
           const label = node.querySelector<HTMLElement>(LABEL_SELECTOR)
           if (!label) return
           const rects = [...label.children]
@@ -57,20 +79,49 @@ export const useMapLabelDeclutter = (
               bottom: r.bottom
             }))
           if (rects.length === 0) return
+          const separatedRow = label.getBoundingClientRect().height + 4
+          const gaps = [28, 64, 64 + separatedRow, 64 + 2 * separatedRow]
           entries.push({
             id: String(i),
             priority: Number(node.dataset.labelPriority ?? 3),
-            rects
+            candidates: gaps.flatMap(gap => [
+              {
+                anchor: 'below' as const,
+                gap,
+                rects: rects.map(rect => ({
+                  ...rect,
+                  top: rect.top + gap - 28,
+                  bottom: rect.bottom + gap - 28
+                }))
+              },
+              {
+                anchor: 'above' as const,
+                gap,
+                rects: rects.map(rect => ({
+                  left: rect.left,
+                  right: rect.right,
+                  top: 2 * centerY - rect.bottom - gap + 28,
+                  bottom: 2 * centerY - rect.top - gap + 28
+                }))
+              }
+            ])
           })
         })
-      const hidden = pickHiddenMapLabels(entries)
+      const placements = pickMapLabelPlacements(entries, {
+        bounds: container.getBoundingClientRect(),
+        obstacles
+      })
       container
         .querySelectorAll<HTMLElement>('.map-node')
         .forEach((node, i) => {
-          if (!hidden.has(String(i))) return
-          node
-            .querySelector(LABEL_SELECTOR)
-            ?.setAttribute(HIDDEN_ATTRIBUTE, 'true')
+          const label = node.querySelector<HTMLElement>(LABEL_SELECTOR)
+          const placement = placements.get(String(i))
+          if (!label || placement === undefined) return
+          if (placement === null) label.setAttribute(HIDDEN_ATTRIBUTE, 'true')
+          else {
+            label.setAttribute(ANCHOR_ATTRIBUTE, placement.anchor)
+            label.style.setProperty('--map-label-gap', `${placement.gap}px`)
+          }
         })
     }
 

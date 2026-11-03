@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useSyncExternalStore } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
@@ -28,21 +28,6 @@ import type {
 } from '../../types/expedition'
 
 const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
-
-// Below 360px the career map shows its destination names too (see
-// `MapNodeView`), and there the chips of a start cluster collide.
-const NARROW_MAP_QUERY = '(width < 360px)'
-
-const subscribeNarrowMap = (onChange: () => void): (() => void) => {
-  if (typeof window.matchMedia !== 'function') return () => {}
-  const query = window.matchMedia(NARROW_MAP_QUERY)
-  query.addEventListener('change', onChange)
-  return () => query.removeEventListener('change', onChange)
-}
-
-const isNarrowMap = (): boolean =>
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia(NARROW_MAP_QUERY).matches
 
 interface OverworldMapProps {
   t: TranslationCallback
@@ -306,16 +291,9 @@ export const OverworldMap = React.memo(
       )
     }, [hoveredNode, isConnected, currentNode])
 
-    // Expedition maps, and any map below 360px: hide the lower-priority one of
-    // two overlapping labels.
+    // Declutter every map: career start clusters can overlap on desktop too.
     const mapRef = useRef<HTMLDivElement>(null)
-    const narrowMap = useSyncExternalStore(subscribeNarrowMap, isNarrowMap)
-    useMapLabelDeclutter(
-      mapRef,
-      Boolean(expeditionFogByNodeId) || narrowMap,
-      renderedNodes,
-      hoveredNode?.id ?? null
-    )
+    useMapLabelDeclutter(mapRef, true, renderedNodes, hoveredNode?.id ?? null)
 
     // During an Expedition the event log leaves the map corner, so the whole
     // map is a chatter obstacle there (#3424): the chatter finds a clear spot

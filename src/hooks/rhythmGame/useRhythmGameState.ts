@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useReducer,
   useRef,
@@ -53,6 +54,7 @@ export type RhythmUiState = {
 }
 
 type RhythmStateAction =
+  | { type: 'RESET_GAMEPLAY' }
   | { type: 'SET_SCORE'; payload: SetterPayload<number> }
   | { type: 'SET_COMBO'; payload: SetterPayload<number> }
   | { type: 'SET_HEALTH'; payload: SetterPayload<number> }
@@ -118,6 +120,8 @@ type RhythmGameStateHookReturn = {
   state: RhythmUiState
   /** Collection of dispatched setter actions modifying the UI state. */
   setters: RhythmStateSetters
+  /** Starts a fresh gameplay attempt while preserving runtime services. */
+  resetGameplayState: () => void
 }
 
 const INITIAL_UI_STATE: RhythmUiState = {
@@ -147,6 +151,12 @@ function rhythmGameReducer(
   action: RhythmStateAction
 ): RhythmUiState {
   switch (action.type) {
+    case 'RESET_GAMEPLAY':
+      return {
+        ...INITIAL_UI_STATE,
+        audioStatus: state.audioStatus,
+        failureKind: state.failureKind
+      }
     case 'SET_SCORE':
       return { ...state, score: resolvePayload(action.payload, state.score) }
     case 'SET_COMBO':
@@ -270,6 +280,9 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   overload: 0,
   totalDuration: 0,
   hasSubmittedResults: false,
+  gigIntroFired: false,
+  gigMidFired: false,
+  lastGigEventSongIndex: -1,
   songTransitioning: false,
   songStats: [],
   lastEndedSongIndex: -1,
@@ -313,6 +326,21 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // High-Frequency Game State (Ref)
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
   const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
+
+  const resetGameplayState = useCallback(() => {
+    // Keep physics, services and the sequencer generation owned by their
+    // existing runtime setup. Only gameplay belongs to this reset.
+    const {
+      lanes: _lanes,
+      speed: _speed,
+      modifiers: _modifiers,
+      sequenceAttemptId: _sequenceAttemptId,
+      ...gameplayDefaults
+    } = INITIAL_GAME_STATE_REF
+    Object.assign(gameStateRef.current, structuredClone(gameplayDefaults))
+    for (const lane of gameStateRef.current.lanes) lane.active = false
+    dispatch({ type: 'RESET_GAMEPLAY' })
+  }, [])
 
   const setters = useMemo<RhythmStateSetters>(
     () => ({
@@ -372,6 +400,7 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   return {
     gameStateRef,
     state,
-    setters
+    setters,
+    resetGameplayState
   }
 }

@@ -232,21 +232,10 @@ export const getExpeditionCheapestOnwardLegFuel = (
   return cheapest
 }
 
-/**
- * Whether the cheapest reachable onward leg burns more than a full tank holds.
- *
- * @param state - Current game state.
- * @returns True only when {@link getExpeditionCheapestOnwardLegFuel} reports a
- * leg above tank capacity.
- *
- * @remarks
- * Every fuel rescue (refuel, paid tow, vehicle insurance claim) is clamped at
- * tank capacity, so none of them can move the van here: such a strand is not
- * rescuable by fuel, and only `accept_failure` (or an extraction) is offered.
+/** Whether a bookable onward leg can be reached with at most a full tank.
+ * A null quote means no bookable leg, not zero fuel needed (#3479, #3495).
  */
-export const isExpeditionCheapestLegBeyondTank = (
-  state: GameState
-): boolean => {
+export const canExpeditionFuelRescueHelp = (state: GameState): boolean => {
   const cheapest = getExpeditionCheapestOnwardLegFuel(state)
-  return cheapest !== null && cheapest > EXPENSE_CONSTANTS.transport.maxFuel
+  return cheapest !== null && cheapest <= EXPENSE_CONSTANTS.transport.maxFuel
 }

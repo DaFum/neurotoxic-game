@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SellConfirmModal } from '../../src/components/assets/SellConfirmModal'
 import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
@@ -79,6 +79,16 @@ const makeAsset = (): LongTermAsset => {
 }
 
 describe('SellConfirmModal', () => {
+  it.each([true, false])('closes only for an accepted sale (%s)', accepted => {
+    mockState.liabilities = {}
+    mockSellChassis.mockReset().mockReturnValue(accepted)
+    const onClose = vi.fn()
+    render(<SellConfirmModal asset={makeAsset()} isOpen onClose={onClose} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Sell' }))
+    expect(mockSellChassis).toHaveBeenCalledWith('asset-1')
+    expect(onClose).toHaveBeenCalledTimes(accepted ? 1 : 0)
+  })
+
   it('blocks the sale when sanitized liability debt exceeds gross sale value', () => {
     const asset = makeAsset()
     const grossSaleValue = CHASSIS_CONFIG.tourbus_chassis.legit[1].price

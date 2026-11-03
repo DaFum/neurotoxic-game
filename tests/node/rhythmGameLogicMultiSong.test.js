@@ -96,6 +96,7 @@ const mockAudioEngine = {
   setupGigPhysics: mockSetupGigPhysics,
   resolveActiveSetlist: mockResolveActiveSetlist,
   resetGigStateTracking: mockResetGigStateTracking,
+  invalidateSongSequence: mock.fn(),
   playSongSequence: mock.fn(
     async function playSongSequence(
       index,

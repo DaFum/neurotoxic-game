@@ -1,3 +1,9 @@
+import type { ConsumableRecovery } from '../types/restRecovery'
+import { CONTRABAND_BY_ID } from '../data/contraband'
+import { INVENTORY_USE_EFFECTS } from '../data/inventoryItems'
+import { getStashStackCount } from './contrabandStashUtils'
+import { finiteNumberOr } from './finiteNumber'
+import { isForbiddenKey } from './objectUtils'
 import {
   getTotalDailyObligations,
   getActiveAssetModifiers
@@ -90,11 +96,15 @@ export const getPostSaleScenarios = (
   assetProceeds: number
   dailyObligations: number
   assetModifiers: import('../types/assets').AssetModifiers
+  assets?: GameState['assets']
+  liabilities?: GameState['liabilities']
 }[] => {
   const postSaleScenarios: {
     assetProceeds: number
     dailyObligations: number
     assetModifiers: import('../types/assets').AssetModifiers
+    assets?: GameState['assets']
+    liabilities?: GameState['liabilities']
   }[] = []
 
   if (sellableAssets.length > 0 && assets) {
@@ -161,10 +171,68 @@ export const getPostSaleScenarios = (
           assets: retainedAssets,
           liabilities: retainedLiabilities
         }),
-        assetModifiers: getActiveAssetModifiers(retainedAssets)
+        assetModifiers: getActiveAssetModifiers(retainedAssets),
+        assets: retainedAssets,
+        liabilities: retainedLiabilities
       })
     }
   }
 
   return postSaleScenarios
+}
+
+/**
+ * One-use positive recovery from carried stock. Catalogue effects override
+ * stored fields. Ignoring stat caps and dividing targeted items optimistically
+ * lets the checker credit the best use without ending a recoverable run.
+ */
+export const getConsumableRecovery = (
+  stash: unknown,
+  inventory: unknown
+): ConsumableRecovery => {
+  const recovery = { harmony: 0, targetedStamina: 0, memberStamina: 0 }
+  if (stash && typeof stash === 'object') {
+    for (const key of Object.keys(stash)) {
+      if (isForbiddenKey(key)) continue
+      const entry: unknown = (stash as Record<string, unknown>)[key]
+      if (
+        !entry ||
+        typeof entry !== 'object' ||
+        (entry as { applied?: unknown }).applied
+      )
+        continue
+      const item = CONTRABAND_BY_ID.get(key)
+      if (item?.type !== 'consumable') continue
+      const gain =
+        Math.max(0, finiteNumberOr(item.value, 0)) *
+        getStashStackCount(stash, key)
+      const field =
+        item.effectType === 'harmony'
+          ? 'harmony'
+          : item.effectType === 'stamina'
+            ? 'targetedStamina'
+            : null
+      if (field)
+        recovery[field] = Math.max(
+          0,
+          finiteNumberOr(recovery[field] + gain, recovery[field])
+        )
+    }
+  }
+  if (inventory && typeof inventory === 'object') {
+    for (const key of Object.keys(INVENTORY_USE_EFFECTS)) {
+      if (!Object.hasOwn(inventory, key)) continue
+      const effect = INVENTORY_USE_EFFECTS[key]
+      if (!effect || effect.expeditionPolicyItemId) continue
+      const owned = (inventory as Record<string, unknown>)[key]
+      const count =
+        owned === true ? 1 : Math.max(0, Math.floor(finiteNumberOr(owned, 0)))
+      const gain = count * Math.max(0, finiteNumberOr(effect.memberStamina, 0))
+      recovery.memberStamina = Math.max(
+        0,
+        finiteNumberOr(recovery.memberStamina + gain, recovery.memberStamina)
+      )
+    }
+  }
+  return recovery
 }

@@ -36,6 +36,7 @@ export type TravelLogicParams = {
   band: BandState
   assets: GameState['assets']
   liabilities: GameState['liabilities']
+  crowdfundCampaigns?: GameState['crowdfundCampaigns']
   social: SocialState
   gameMap: GameMap | null
   updatePlayer: (updates: Partial<PlayerState>) => void

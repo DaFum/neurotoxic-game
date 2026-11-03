@@ -32,6 +32,11 @@ vi.mock('../../src/hooks/useNetworkStatus', () => ({
   useNetworkStatus: () => true
 }))
 
+const capturedDeclutter = vi.hoisted(() => vi.fn())
+vi.mock('../../src/components/overworld/useMapLabelDeclutter', () => ({
+  useMapLabelDeclutter: capturedDeclutter
+}))
+
 const { OverworldMap } =
   await import('../../src/components/overworld/OverworldMap.tsx')
 
@@ -116,6 +121,21 @@ const getDecodedOfflineMapSvg = container => {
 }
 
 describe('OverworldMap cityStates lookup', () => {
+  test.each([320, 390, 1280])('declutters career maps at %ipx', width => {
+    vi.stubGlobal('innerWidth', width)
+    try {
+      render(<OverworldMap {...baseProps} gameMap={makeGameMap()} />)
+      expect(capturedDeclutter).toHaveBeenLastCalledWith(
+        expect.any(Object),
+        true,
+        expect.any(Array),
+        null
+      )
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   beforeEach(() => {
     capturedProps.length = 0
     mockImageGenerationAvailable = false

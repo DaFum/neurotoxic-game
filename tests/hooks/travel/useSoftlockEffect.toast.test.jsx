@@ -4,7 +4,11 @@ import { renderHook } from '@testing-library/react'
 vi.mock('../../../src/utils/mapUtils', () => ({
   checkSoftlock: vi.fn(() => true)
 }))
-vi.mock('../../../src/utils/travelSoftlockUtils', () => ({
+vi.mock('../../../src/utils/restRecoveryEffects', () => ({
+  getPendingRestEffects: () => ({ fameDrops: [], successes: [] })
+}))
+vi.mock('../../../src/utils/travelSoftlockUtils', async importOriginal => ({
+  ...(await importOriginal()),
   getSellableAssets: () => [],
   getPostSaleScenarios: () => []
 }))
@@ -102,7 +106,10 @@ describe('useSoftlockEffect fuel pricing', () => {
         params: {
           gameMap: { nodes: {}, connections: [] },
           player: { currentNodeId: 'node_0', day: 1, money: 0 },
-          band: {},
+          band: {
+            stash: { c_blood_pact: {} },
+            inventory: { energy_drink: true }
+          },
           social,
           assets: [],
           liabilities: [],
@@ -118,7 +125,17 @@ describe('useSoftlockEffect fuel pricing', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.objectContaining({ restRecovery: { social } })
+      expect.objectContaining({
+        restRecovery: expect.objectContaining({
+          social,
+          pendingFameEffects: { fameDrops: [], successes: [] }
+        }),
+        consumableRecovery: {
+          harmony: 15,
+          targetedStamina: 0,
+          memberStamina: 10
+        }
+      })
     )
     unmount()
   })

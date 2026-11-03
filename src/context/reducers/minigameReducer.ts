@@ -80,7 +80,12 @@ import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 import { SPARE_GEAR_ITEM_IDS } from '../../data/inventoryItems'
 import { buildDeterministicToastId } from './toastSanitizers'
-import { settleExpeditionMandatoryDebit } from '../../domain/expedition/spendableCash'
+import { deriveExpeditionPendingFailure } from '../../domain/expedition/failure'
+import { checkTravelResources } from '../../utils/travelUtils'
+import {
+  getExpeditionProtectedCash,
+  settleExpeditionMandatoryDebit
+} from '../../domain/expedition/spendableCash'
 
 /**
  * Resolves gear damage from a botched setup minigame: the first owned spare in
@@ -207,7 +212,8 @@ export const handleCompleteTravelMinigame = (
   const safeRngValue = clampUnitRandom(rngValue)
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
-  // Apply Travel Results
+  // Settlement order: replay guard, target lookup, route pre-check, live
+  // crisis gate, resource gate, then the atomic commit.
   const targetDestination = state.minigame.targetDestination
   const targetId =
     typeof targetDestination === 'string' ? targetDestination : null
@@ -244,6 +250,20 @@ export const handleCompleteTravelMinigame = (
     }
   }
 
+  // Fresh derivation ignores stale stored failures and catches crises that the
+  // root reducer has not synchronized yet. Refuse before any travel effect.
+  if (
+    state.expedition?.status === 'active' &&
+    deriveExpeditionPendingFailure(state)
+  ) {
+    logger.warn(
+      'GameState',
+      'Complete Travel: a live crisis blocks settlement',
+      targetId
+    )
+    return state
+  }
+
   const assetModifiers = getActiveAssetModifiers(state.assets ?? [])
   const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
     targetNode,
@@ -267,6 +287,32 @@ export const handleCompleteTravelMinigame = (
     minigameFuelBonus: fuelBonus,
     minigameConditionLoss: conditionLoss
   })
+
+  // The settled quote already includes the run multiplier and fuel pickups.
+  // Only the requirement is clamped: signed fuelConsumed still credits surplus.
+  if (state.expedition?.status === 'active') {
+    const resources = checkTravelResources(
+      totalCost,
+      Math.max(0, fuelConsumed),
+      state.player,
+      getExpeditionProtectedCash(state)
+    )
+    if (!resources.allowed) {
+      if (
+        resources.errorKey !== 'ui:travel.errors.notEnoughMoneyForTravel' ||
+        state.expedition.blockedTravelAtRouteStep === state.expedition.routeStep
+      ) {
+        return state
+      }
+      return {
+        ...state,
+        expedition: {
+          ...state.expedition,
+          blockedTravelAtRouteStep: state.expedition.routeStep
+        }
+      }
+    }
+  }
 
   const nextMoney = clampPlayerMoney(
     finiteNumberOr(state.player.money, 0) - totalCost

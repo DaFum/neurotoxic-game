@@ -20,26 +20,49 @@ mock.module('vite-plugin-pwa', {
   }
 })
 
-await import('../../vite.config.js')
+const { default: config } = await import('../../vite.config.js')
 
-test('Vite PWA config caches generated Pollinations images at runtime', () => {
-  const pollinationsRoute = capturedPwaOptions.workbox.runtimeCaching.find(
+test('Vite PWA caches only successful same-origin proxy images', () => {
+  const route = capturedPwaOptions.workbox.runtimeCaching.find(
     route =>
-      route.urlPattern.test(
-        'https://gen.pollinations.ai/image/pixel-art?model=flux&seed=666'
-      )
+      typeof route.urlPattern === 'function' &&
+      route.urlPattern({
+        url: new URL('https://game.example/api/image?prompt=test'),
+        sameOrigin: true
+      })
   )
-
-  assert.ok(pollinationsRoute)
-  assert.equal(pollinationsRoute.handler, 'CacheFirst')
-  assert.equal(pollinationsRoute.options.cacheName, 'generated-images-runtime')
-  assert.deepEqual(
-    pollinationsRoute.options.cacheableResponse.statuses,
-    [0, 200]
-  )
-  assert.equal(pollinationsRoute.options.expiration.maxEntries, 200)
+  assert.ok(route)
   assert.equal(
-    pollinationsRoute.options.expiration.maxAgeSeconds,
-    30 * 24 * 60 * 60
+    route.urlPattern({
+      url: new URL('https://other.example/api/image'),
+      sameOrigin: false
+    }),
+    false
   )
+  assert.equal(
+    route.urlPattern({
+      url: new URL('https://game.example/api/images'),
+      sameOrigin: true
+    }),
+    false
+  )
+  assert.equal(route.handler, 'CacheFirst')
+  assert.equal(route.options.cacheName, 'generated-images-runtime')
+  assert.deepEqual(route.options.cacheableResponse.statuses, [200])
+  assert.equal(route.options.expiration.maxEntries, 200)
+  assert.equal(route.options.expiration.maxAgeSeconds, 30 * 24 * 60 * 60)
+  assert.ok(
+    capturedPwaOptions.workbox.navigateFallbackDenylist.some(pattern =>
+      pattern.test('/api/image?prompt=test')
+    )
+  )
+})
+
+test('Vite never maps the server image credential into client definitions', async () => {
+  const resolved =
+    typeof config === 'function'
+      ? await config({ mode: 'test', command: 'build' })
+      : config
+  assert.equal(JSON.stringify(resolved.define ?? {}).includes('FLUX'), false)
+  assert.equal(JSON.stringify(resolved.define ?? {}).includes('Flux'), false)
 })

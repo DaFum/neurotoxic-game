@@ -1,7 +1,8 @@
-import { afterEach, describe, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, test, vi } from 'vitest'
 import { expect } from 'vitest'
 import {
   getGenImageUrl,
+  isImageProxyEnabled,
   appendImageSize,
   isImageGenerationAvailable,
   getGeneratedImageFallbackUrl,
@@ -17,34 +18,34 @@ import {
 } from '../../src/utils/imageGen'
 
 describe('imageGen utilities', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
   describe('getGenImageUrl', () => {
-    afterEach(() => {
-      vi.unstubAllEnvs()
-    })
-
-    test('adds the Vercel-provided key between seed and the trailing "&="', () => {
-      vi.stubEnv('VITE_FLUX_KEY', 'pk_test_key')
-      const url = getGenImageUrl('cyber punk')
-      expect(url).toBe(
-        'https://gen.pollinations.ai/image/cyber%20punk?model=flux&seed=666&key=pk_test_key&='
-      )
-    })
-
-    test('encodes the description and the key', () => {
-      vi.stubEnv('VITE_FLUX_KEY', 'pk/a&b')
+    test('encodes prompts in a same-origin proxy URL without credentials', () => {
       const url = getGenImageUrl('hello world / ? & =')
       expect(url).toBe(
-        'https://gen.pollinations.ai/image/hello%20world%20%2F%20%3F%20%26%20%3D?model=flux&seed=666&key=pk%2Fa%26b&='
+        '/api/image?prompt=hello%20world%20%2F%20%3F%20%26%20%3D'
       )
+      expect(url).not.toContain('key=')
+      expect(appendImageSize(url, 800, 600)).toBe(`${url}&width=800&height=600`)
     })
+  })
 
-    test('omits the key parameter when no key is configured', () => {
-      vi.stubEnv('VITE_FLUX_KEY', '')
-      const url = getGenImageUrl('')
-      expect(url).toBe(
-        'https://gen.pollinations.ai/image/?model=flux&seed=666&='
+  test.each([undefined, 'false', 'FALSE'])(
+    'static flag %j overrides online status',
+    flag => {
+      vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', flag)
+      expect(isImageProxyEnabled()).toBe(false)
+      expect(isImageGenerationAvailable(true)).toBe(false)
+      expect(resolveGenImageUrl('test', true)).toBe(
+        getGeneratedImageFallbackUrl()
       )
-    })
+    }
+  )
+
+  test.each(['true', 'TRUE'])('enables proxy flag %j', flag => {
+    vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', flag)
+    expect(isImageProxyEnabled()).toBe(true)
   })
   describe('appendImageSize', () => {
     test('appends size correctly to url with existing query params', () => {
@@ -63,6 +64,7 @@ describe('imageGen utilities', () => {
   })
 
   describe('isImageGenerationAvailable', () => {
+    beforeEach(() => vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'true'))
     test('returns explicitly provided online status if given', () => {
       expect(isImageGenerationAvailable(true)).toBe(true)
       expect(isImageGenerationAvailable(false)).toBe(false)
@@ -108,9 +110,10 @@ describe('imageGen utilities', () => {
   })
 
   describe('resolveGenImageUrl', () => {
+    beforeEach(() => vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'true'))
     test('returns generated URL when online', () => {
       const url = resolveGenImageUrl('test', true)
-      expect(url.includes('pollinations.ai')).toBe(true)
+      expect(url).toBe('/api/image?prompt=test')
     })
 
     test('returns fallback URL when offline', () => {
