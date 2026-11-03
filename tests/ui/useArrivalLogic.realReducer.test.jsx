@@ -205,6 +205,31 @@ describe('useArrivalLogic through the real reducer', () => {
     )
   })
 
+  test('a settled fuel shortage reports fuel instead of a generic refusal', () => {
+    const initial = startedState({ money: 5000 })
+    initial.player.van.fuel = 0.1
+    const target = initial.gameMap.connections.find(
+      edge => edge.from === initial.player.currentNodeId
+    ).to
+    const traveling = gameReducer(initial, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: target }
+    })
+    const refused = gameReducer(traveling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [], rngValue: 0.99 }
+    })
+    expect(refused.minigame.active).toBe(true)
+    expect(refused.expedition.pendingFailure).toBeNull()
+    const { result } = renderArrival(refused)
+    act(() => result.current.handleArrivalSequence())
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'Not enough fuel in the tank!',
+      'error'
+    )
+  })
+
   test('a live crisis refusal returns to the map without a day tick', () => {
     const initial = startedState({ money: 5000 })
     const target = initial.gameMap.connections.find(

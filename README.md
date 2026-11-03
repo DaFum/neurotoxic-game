@@ -57,7 +57,10 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 - **Proxy mode:** Serve the `api/` handlers with a server runtime, configure
   server-side `Flux` and `neurotoxic1_REDIS_URL`, and build with
   `VITE_ENABLE_IMAGE_PROXY=true`. Images load through same-origin `/api/image`;
-  Redis enforces a per-IP budget and unavailable Redis fails closed.
+  Redis enforces a per-IP budget and unavailable Redis fails closed. Behind a
+  reverse proxy, enable server-side `TRUST_PROXY=true` only after verifying that
+  ingress strips or overwrites client-supplied `x-real-ip` and `x-forwarded-for`
+  headers and blocks direct access to the server origin.
 - **Static mode (GitHub Pages):** Leave the proxy flag unset or set it to `false`.
   No image key is needed. The game uses bundled `generated-offline-fallback.svg`
   artwork and sends no image-provider or `/api/image` requests. The Pages workflow

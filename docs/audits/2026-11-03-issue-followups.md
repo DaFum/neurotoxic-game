@@ -38,7 +38,7 @@ Completed source-freeze checks (all exit 0 unless explicitly qualified below):
 - Final locale cohort: 41/41 passed.
 - Proxy-enabled and static production builds completed. A synthetic Flux sentinel was absent from both browser outputs. A browser smoke test reached the static menu online and offline through its service worker and made zero provider/proxy image requests. Final static build completed after the map changes.
 
-Earlier interrupted commands remain incomplete, not passes. Full balance-report regeneration with 2,000 samples per cohort is running separately; its final result and generated reports will be added before this draft is completed.
+Earlier interrupted commands remain incomplete, not passes. The full 2,000-sample balance-report regeneration did not complete: the initial 2-GB heap exhausted memory, and the 6-GB retry was interrupted by the execution lifecycle during matched skill/management probes. No replacement balance artifacts were produced; the full balance evidence remains outstanding.
 
 Focused completed results before the final gates:
 
@@ -49,6 +49,14 @@ Focused completed results before the final gates:
 - Provider/GameOver baseline: 70 passed; expanded provider assertions: 10 passed.
 - Locale: integrity/parity 5, smoke 21 and full 15 passed. EN/DE ui.json already passed Prettier before new paired translation keys.
 - Independent source review found no critical or important defects in proxy, recovery, asset/travel or Retry changes. The map review identified the animation-footprint issue; its correction is covered by a direct hook regression and the normal-motion browser case.
+
+## PR review follow-up
+
+The remote follow-up commit `ce8cc83cf` was fetched and incorporated before further edits. Its complete CI run [41641224659](https://github.com/DaFum/neurotoxic-game/actions/runs/41641224659) passed all eight test jobs, including both Node shards, UI, logic, tooling, performance, fast validation and Playwright. ESLint, Dead Code and CodeQL also passed for that commit. This supersedes the incomplete local full-suite runs recorded above.
+
+Review findings were checked against current source. The remaining fixes require explicit case-insensitive `true` in both image-proxy environment paths, preserve the settled fuel-refusal reason for arrival feedback, and include complete menu/radio surfaces in label obstacles. A child-list observer discovers HUD elements inserted after the hook mounts and removes stale resize observations. Existing remote fixes cover Redis deadlines, above-tooltip clearance, localized shortcuts selectors, hovered hex footprints, rival penalties and once-per-gig event flags.
+
+Focused follow-up verification: 141 UI/hook tests, 76 image utility/API tests and 45 Node tests passed. Core, server and reducer type checks passed, as did changed-file ESLint and Prettier. Tests additionally verify published day-advance toasts, crowdfund helper wiring, static ShopItem fallback and the Vite environment-prefix boundary. The browser collision helper now checks the label's own hexagon as well as other nodes. An initial above-label browser assertion exposed a fixture precondition (the original seed now places its labels below); the focused Career fixture puts a reachable destination near the map bottom to require an above anchor. Active Expedition saves rebuild coordinates during load, so the geometry fixture uses Career state. The 30-case career/dense-Expedition/animation cohort passed, followed by the original 320-px HUD case, the original seed-1 overlap case and the explicit above-anchor case (33 relevant browser passes in total).
 
 ## Performance evidence
 

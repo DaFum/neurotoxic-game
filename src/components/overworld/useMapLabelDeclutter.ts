@@ -10,7 +10,7 @@ const LABEL_SELECTOR = '[data-testid="map-node-label"]'
 const HIDDEN_ATTRIBUTE = 'data-declutter-hidden'
 const ANCHOR_ATTRIBUTE = 'data-label-anchor'
 const HUD_SELECTOR =
-  '.ow-menu button, [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
+  '.ow-menu, .ow-menu button, [data-testid="overworld-radio"], [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
 
 const clearFlags = (container: HTMLElement): void => {
   for (const label of container.querySelectorAll(LABEL_SELECTOR)) {
@@ -160,12 +160,44 @@ export const useMapLabelDeclutter = (
     const observer =
       typeof ResizeObserver === 'function' ? new ResizeObserver(run) : null
     observer?.observe(container)
-    document
-      .querySelectorAll(HUD_SELECTOR)
-      .forEach(element => observer?.observe(element))
+    const observedHud = new Set<Element>()
+    const observeHud = () => {
+      const elements = new Set(document.querySelectorAll(HUD_SELECTOR))
+      for (const element of observedHud) {
+        if (!elements.has(element)) {
+          observer?.unobserve(element)
+          observedHud.delete(element)
+        }
+      }
+      for (const element of elements) {
+        if (!observedHud.has(element)) {
+          observer?.observe(element)
+          observedHud.add(element)
+        }
+      }
+    }
+    observeHud()
+    // Menus can mount outside the map without resizing any observed element.
+    // Observe child additions/removals only, so our placement attributes do not
+    // trigger another declutter pass.
+    const mutations = new MutationObserver(records => {
+      const hudChanged = records.some(record =>
+        [...record.addedNodes, ...record.removedNodes].some(
+          node =>
+            node instanceof Element &&
+            (node.matches(HUD_SELECTOR) || node.querySelector(HUD_SELECTOR))
+        )
+      )
+      if (hudChanged) {
+        observeHud()
+        run()
+      }
+    })
+    mutations.observe(document.body, { childList: true, subtree: true })
     // Fixed HUD boxes stay in viewport coordinates as the scene scrolls.
     document.addEventListener('scroll', run, true)
     return () => {
+      mutations.disconnect()
       observer?.disconnect()
       document.removeEventListener('scroll', run, true)
     }

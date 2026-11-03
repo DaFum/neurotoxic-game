@@ -269,15 +269,19 @@ export const useArrivalLogic = ({
               defaultValue:
                 'Resolve the expedition crisis before continuing the trip.'
             })
-          : expedition?.status === 'active' &&
-              expedition.blockedTravelAtRouteStep === expedition.routeStep
-            ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
-                defaultValue: 'Not enough money for gas and food!'
+          : settlementUnpaid && minigame.travelFuelRefused === true
+            ? i18n.t('ui:travel.errors.notEnoughFuel', {
+                defaultValue: 'Not enough fuel in the tank!'
               })
-            : i18n.t('ui:travel.errors.legNotCompleted', {
-                defaultValue:
-                  'The trip could not be completed. Back to the map.'
-              }),
+            : expedition?.status === 'active' &&
+                expedition.blockedTravelAtRouteStep === expedition.routeStep
+              ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
+                  defaultValue: 'Not enough money for gas and food!'
+                })
+              : i18n.t('ui:travel.errors.legNotCompleted', {
+                  defaultValue:
+                    'The trip could not be completed. Back to the map.'
+                }),
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)

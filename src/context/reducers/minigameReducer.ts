@@ -298,6 +298,12 @@ export const handleCompleteTravelMinigame = (
       getExpeditionProtectedCash(state)
     )
     if (!resources.allowed) {
+      if (resources.errorKey === 'ui:travel.errors.notEnoughFuel') {
+        return {
+          ...state,
+          minigame: { ...state.minigame, travelFuelRefused: true }
+        }
+      }
       if (
         resources.errorKey !== 'ui:travel.errors.notEnoughMoneyForTravel' ||
         state.expedition.blockedTravelAtRouteStep === state.expedition.routeStep

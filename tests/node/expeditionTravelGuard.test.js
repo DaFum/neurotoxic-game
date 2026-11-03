@@ -166,7 +166,7 @@ describe('expedition settlement resources and crisis (#3493)', () => {
       spy.mock.restore()
     }
   }
-  const assertAtomic = (next, state) => {
+  const assertAtomic = (next, state, fuelRefused = false) => {
     assert.equal(emittedEvents, 0)
     assert.deepEqual(next.player, state.player)
     assert.deepEqual(next.band, state.band)
@@ -174,7 +174,10 @@ describe('expedition settlement resources and crisis (#3493)', () => {
     assert.deepEqual(next.toasts, state.toasts)
     assert.deepEqual(next.terminalOutcome, state.terminalOutcome)
     assert.equal(next.currentScene, state.currentScene)
-    assert.deepEqual(next.minigame, state.minigame)
+    assert.deepEqual(next.minigame, {
+      ...state.minigame,
+      ...(fuelRefused ? { travelFuelRefused: true } : {})
+    })
     for (const field of [
       'routeStep',
       'visitedNodeIds',
@@ -220,7 +223,7 @@ describe('expedition settlement resources and crisis (#3493)', () => {
     state.player.van.fuel = 1
     assert.equal(deriveExpeditionPendingFailure(state), null)
     const next = complete(state)
-    assertAtomic(next, state)
+    assertAtomic(next, state, true)
     assert.equal(
       next.expedition.blockedTravelAtRouteStep,
       state.expedition.blockedTravelAtRouteStep

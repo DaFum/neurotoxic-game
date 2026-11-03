@@ -165,6 +165,43 @@ describe('useMapLabelDeclutter', () => {
     button.remove()
   })
 
+  test.each(['ow-menu', 'radio'])(
+    'avoids an inserted %s surface and observes its size',
+    async kind => {
+      const { container, label } = fixture()
+      const observe = vi.fn()
+      const unobserve = vi.fn()
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          observe = observe
+          unobserve = unobserve
+          disconnect = vi.fn()
+        }
+      )
+      const { unmount } = render(<Probe container={container} />)
+      expect(label.getAttribute('data-label-anchor')).toBe('above')
+      const surface = document.createElement('div')
+      if (kind === 'ow-menu') surface.className = 'ow-menu'
+      else surface.setAttribute('data-testid', 'overworld-radio')
+      vi.spyOn(surface, 'getBoundingClientRect').mockReturnValue(
+        box(0, 20, 200, 36)
+      )
+      await act(async () => {
+        document.body.append(surface)
+      })
+      expect(label.getAttribute('data-label-anchor')).toBe('below')
+      expect(observe).toHaveBeenCalledWith(surface)
+      await act(async () => {
+        surface.remove()
+      })
+      expect(label.getAttribute('data-label-anchor')).toBe('above')
+      expect(unobserve).toHaveBeenCalledWith(surface)
+      unmount()
+      vi.unstubAllGlobals()
+    }
+  )
+
   test('clears placement flags when disabled', () => {
     const { container, label } = fixture()
     const { rerender } = render(<Probe container={container} />)

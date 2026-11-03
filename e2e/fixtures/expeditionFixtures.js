@@ -211,6 +211,25 @@ export const seedOneStartFixture = () => ({
   save: serialize(startedState(0, 1))
 })
 
+/** A reachable destination near the map bottom must put its name above itself. */
+export const lowerMapDestinationFixture = () => {
+  const state = startedState(0, 1)
+  const nodeId = connectedNodeIds(state)[0]
+  if (!nodeId) fail('the start must have a reachable destination')
+  const startId = state.player.currentNodeId
+  // Active Expedition saves rebuild coordinates from the route seed on load.
+  // Use Career state here so the loader preserves this geometry fixture.
+  state.expedition = createInitialState().expedition
+  state.gameMap = {
+    nodes: {
+      [startId]: { ...state.gameMap.nodes[startId], x: 20, y: 20 },
+      [nodeId]: { ...state.gameMap.nodes[nodeId], x: 50, y: 90 }
+    },
+    connections: [{ from: startId, to: nodeId }]
+  }
+  return { save: serialize(state) }
+}
+
 /** Same run with nothing protected: the leg is affordable. */
 export const zeroProtectedCashFixture = () =>
   travelFixture({ protectsCash: false })

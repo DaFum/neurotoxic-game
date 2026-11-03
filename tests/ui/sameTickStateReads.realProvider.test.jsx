@@ -105,6 +105,11 @@ describe('same-tick state reads through the real provider', () => {
     expect(translations.t).toHaveBeenCalledWith('ui:day_advance', {
       day: day + 1
     })
+    expect(result.current.toasts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ message: 'ui:day_advance', type: 'info' })
+      ])
+    )
   })
 
   test('resolveEvent consumes an event only once in the same tick', () => {

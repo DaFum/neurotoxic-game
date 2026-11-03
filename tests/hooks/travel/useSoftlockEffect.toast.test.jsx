@@ -5,7 +5,7 @@ vi.mock('../../../src/utils/mapUtils', () => ({
   checkSoftlock: vi.fn(() => true)
 }))
 vi.mock('../../../src/utils/restRecoveryEffects', () => ({
-  getPendingRestEffects: () => ({ fameDrops: [], successes: [] })
+  getPendingRestEffects: vi.fn(() => ({ fameDrops: [], successes: [] }))
 }))
 vi.mock('../../../src/utils/travelSoftlockUtils', async importOriginal => ({
   ...(await importOriginal()),
@@ -20,6 +20,7 @@ vi.mock('../../../src/utils/travelUtils', () => ({
   getNodeAccessStatus: () => ({ allowed: true })
 }))
 
+import { getPendingRestEffects } from '../../../src/utils/restRecoveryEffects'
 import { checkSoftlock } from '../../../src/utils/mapUtils'
 import { useSoftlockEffect } from '../../../src/hooks/travel/effects/useSoftlockEffect'
 import { GAME_PHASES } from '../../../src/context/gameConstants'
@@ -99,6 +100,7 @@ describe('useSoftlockEffect fuel pricing', () => {
 
   test('hands the social slice to the rest-income escape', () => {
     const social = { youtube: 50000 }
+    const crowdfundCampaigns = [{ id: 'pending-campaign' }]
     const { unmount } = renderHook(() =>
       useSoftlockEffect({
         refs: { timeoutRef: { current: null } },
@@ -111,6 +113,7 @@ describe('useSoftlockEffect fuel pricing', () => {
             inventory: { energy_drink: true }
           },
           social,
+          crowdfundCampaigns,
           assets: [],
           liabilities: [],
           addToast: vi.fn(),
@@ -120,6 +123,12 @@ describe('useSoftlockEffect fuel pricing', () => {
           reputationByRegion: {}
         }
       })
+    )
+    expect(getPendingRestEffects).toHaveBeenCalledWith(
+      [],
+      [],
+      crowdfundCampaigns,
+      1
     )
     expect(checkSoftlock).toHaveBeenCalledWith(
       expect.anything(),

@@ -11,14 +11,12 @@ import {
 /** Whether this deployment enables the same-origin generated-image proxy. */
 export const isImageProxyEnabled = (): boolean => {
   const viteFlag = import.meta.env?.VITE_ENABLE_IMAGE_PROXY
-  if (typeof viteFlag === 'string') return viteFlag.toLowerCase() !== 'false'
+  if (typeof viteFlag === 'string') return viteFlag.toLowerCase() === 'true'
   const processEnvSource = globalThis as {
     process?: { env?: Record<string, string | undefined> }
   }
   const processFlag = processEnvSource.process?.env?.VITE_ENABLE_IMAGE_PROXY
-  return (
-    typeof processFlag === 'string' && processFlag.toLowerCase() !== 'false'
-  )
+  return typeof processFlag === 'string' && processFlag.toLowerCase() === 'true'
 }
 
 const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '') : ''}images/generated-offline-fallback.svg`

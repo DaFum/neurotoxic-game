@@ -63,6 +63,7 @@ test('Vite never maps the server image credential into client definitions', asyn
     typeof config === 'function'
       ? await config({ mode: 'test', command: 'build' })
       : config
+  assert.deepEqual([resolved.envPrefix ?? 'VITE_'].flat(), ['VITE_'])
   assert.equal(JSON.stringify(resolved.define ?? {}).includes('FLUX'), false)
   assert.equal(JSON.stringify(resolved.define ?? {}).includes('Flux'), false)
 })

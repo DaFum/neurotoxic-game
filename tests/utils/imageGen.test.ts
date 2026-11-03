@@ -31,7 +31,7 @@ describe('imageGen utilities', () => {
     })
   })
 
-  test.each([undefined, 'false', 'FALSE'])(
+  test.each([undefined, '', '0', '1', 'false', 'FALSE', 'tru', ' true '])(
     'static flag %j overrides online status',
     flag => {
       vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', flag)
@@ -47,6 +47,14 @@ describe('imageGen utilities', () => {
     vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', flag)
     expect(isImageProxyEnabled()).toBe(true)
   })
+  test.each(['', '0', 'tru', 'false', 'true', 'TRUE'])(
+    'process environment fallback also requires explicit true: %j',
+    flag => {
+      vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', undefined)
+      process.env.VITE_ENABLE_IMAGE_PROXY = flag
+      expect(isImageProxyEnabled()).toBe(flag.toLowerCase() === 'true')
+    }
+  )
   describe('appendImageSize', () => {
     test('appends size correctly to url with existing query params', () => {
       const url = 'https://example.com/image?model=flux'

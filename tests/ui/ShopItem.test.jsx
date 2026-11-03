@@ -1,7 +1,10 @@
 import { render, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ShopItem } from '../../src/ui/bandhq/ShopItem'
-import { IMG_PROMPTS } from '../../src/utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGeneratedImageFallbackUrl
+} from '../../src/utils/imageGen'
 
 vi.mock('../../src/utils/purchaseLogicUtils', () => ({
   LABEL_CONTRACT_ADVANCE: 500
@@ -46,6 +49,14 @@ describe('ShopItem', () => {
   afterEach(() => vi.unstubAllEnvs())
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('uses bundled fallback art in static mode', () => {
+    vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'false')
+    const { container } = render(<ShopItem {...defaultProps} />)
+    const src = container.querySelector('img')?.getAttribute('src') ?? ''
+    expect(src).toBe(getGeneratedImageFallbackUrl())
+    expect(src).not.toContain('/api/image')
   })
 
   it('renders item details correctly', () => {

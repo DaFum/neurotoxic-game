@@ -80,11 +80,15 @@ const enterTourPrep = async page => {
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
  */
-const loadSeedOneExpedition = async (page, reducedMotion = 'reduce') => {
+const loadSeedOneExpedition = async (
+  page,
+  reducedMotion = 'reduce',
+  fixtureName = 'seedOneStartFixture'
+) => {
   await page.emulateMedia({ reducedMotion })
   const url = '/?events=off'
   await page.goto(url, { waitUntil: 'domcontentloaded' })
-  const fixture = await buildFixture(page, 'seedOneStartFixture')
+  const fixture = await buildFixture(page, fixtureName)
   await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
   await loadSavedGame(page)
   await expect
@@ -171,7 +175,7 @@ const unreadableDestinationNames = async page =>
       })
   })
 
-/** Labels must also avoid the final, animated hexagons of other nodes. */
+/** Labels must avoid every final, animated hexagon, including their own. */
 const labelHexCollisions = page =>
   page.locator('.map-node').evaluateAll(nodes => {
     const hit = (a, b) =>
@@ -192,14 +196,12 @@ const labelHexCollisions = page =>
           !box.height
         )
           return []
-        return nodes
-          .filter(other => other !== node)
-          .flatMap(other => {
-            const hex = other.querySelector('[data-map-node-hex]')
-            return hex && hit(box, hex.getBoundingClientRect())
-              ? [label.lastElementChild.textContent]
-              : []
-          })
+        return nodes.flatMap(other => {
+          const hex = other.querySelector('[data-map-node-hex]')
+          return hex && hit(box, hex.getBoundingClientRect())
+            ? [label.lastElementChild.textContent]
+            : []
+        })
       })
     })
   })
@@ -736,10 +738,7 @@ test.describe('Visual smoke tests', () => {
       )
       const hud = [
         ...document.querySelectorAll(
-          '.ow-menu button, [data-testid="overworld-phone-resources"]'
-        ),
-        ...[...document.querySelectorAll('button')].filter(b =>
-          /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
+          '.ow-menu, .ow-menu button, [data-testid="overworld-radio"], [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
         )
       ]
         .map(el => el.getBoundingClientRect())
@@ -1103,6 +1102,18 @@ test.describe('Visual smoke tests', () => {
     // Reachable phone names remain readable while colliding stacks move above.
     await loadSeedOneExpedition(page)
     expect(await labelCollisions(page)).toEqual([])
+  })
+
+  test('an above-anchored destination label clears its own hexagon', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await loadSeedOneExpedition(page, 'reduce', 'lowerMapDestinationFixture')
+    await expect(
+      page.locator('[data-label-anchor="above"]:visible').first()
+    ).toBeVisible()
+    expect(await labelHexCollisions(page)).toEqual([])
+    expect(await unreadableDestinationNames(page)).toEqual([])
   })
 
   test('A focused Expedition destination shows its name before travel confirmation (#3254)', async ({
