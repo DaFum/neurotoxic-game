@@ -15,7 +15,9 @@ type Options = {
    */
   kind?: 'gameplay' | 'scene'
   /**
-   * Specific key codes or inputs that should be intercepted, preventing default spatial navigation.
+   * Specific gamepad button indices that should be intercepted, preventing default spatial navigation.
+   * This only applies when `kind` is set to `'gameplay'`, and has no effect for the default `'scene'` kind.
+   * Defaults to an empty array.
    */
   consumes?: readonly number[]
 }
