@@ -2299,6 +2299,7 @@
   "travel.errors.alreadyPlayedHere": "You just played a gig here! Hit the road and find a new crowd.",
   "travel.errors.bookingRefusedBlacklisted": "Booking refused: {{location}} has permanently blacklisted you!",
   "travel.errors.bookingRefusedRegionalReputation": "Booking refused: The venue in {{location}} blacklisted you due to poor regional reputation!",
+  "travel.errors.crisisPending": "Resolve the expedition crisis before continuing the trip.",
   "travel.errors.draftPending": "Pick a Run Draft trait before hitting the road.",
   "travel.errors.failedToOpenHq": "Failed to open HQ.",
   "travel.errors.gameOverStranded": "GAME OVER: Stranded! Cannot travel and cannot afford fuel.",
