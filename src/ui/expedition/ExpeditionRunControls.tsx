@@ -16,7 +16,7 @@ import {
   isExpeditionDoubleDownAcceptable
 } from '../../domain/expedition/contracts'
 import { isAtExpeditionExtractionWindow } from '../../domain/expedition/extraction'
-import { BRAND_DEALS } from '../../data/brandDeals'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 
 /**
@@ -194,7 +194,10 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
             <span>
               {(() => {
                 if (item.sourceType === 'brandDeal') {
-                  const deal = BRAND_DEALS.find(d => d.id === item.sourceId)
+                  // ⚡ BOLT OPTIMIZATION: Use precomputed Map for O(1) deal lookups instead of O(N) array search.
+                  // Why: Avoids linear scan over 50+ brand deals and callback allocations on render.
+                  // Impact: Replaces O(N) Array.find with O(1) Map.get lookup.
+                  const deal = BRAND_DEALS_BY_ID.get(item.sourceId)
                   const unknownContract = t('ui:expedition.contract.unknown', {
                     defaultValue: 'Unknown Contract'
                   })

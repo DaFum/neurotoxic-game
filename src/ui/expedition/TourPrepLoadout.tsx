@@ -59,7 +59,7 @@ import {
   MAX_NATIVE_EXPEDITION_CONTRACTS
 } from '../../data/expedition/contracts'
 import { getExpeditionContractAccessLock } from '../../domain/expedition/fame'
-import { BRAND_DEALS } from '../../data/brandDeals'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { ProgressBar } from '../shared/ProgressBar'
 import { createRovingTabs } from '../shared/rovingTabs'
@@ -1295,9 +1295,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     availableSponsorOfferIds.includes(offer.offerId)
                   )
                   .map(offer => {
-                    const deal = BRAND_DEALS.find(
-                      entry => entry.id === offer.dealId
-                    )
+                    // ⚡ BOLT OPTIMIZATION: Use precomputed Map for O(1) deal lookups instead of O(N) array search.
+                    // Why: Avoids linear scan over 50+ brand deals and callback allocations on render.
+                    // Impact: Replaces O(N) Array.find with O(1) Map.get lookup.
+                    const deal = BRAND_DEALS_BY_ID.get(offer.dealId)
                     const isSelected = sponsorOfferId === offer.offerId
                     return (
                       <button
