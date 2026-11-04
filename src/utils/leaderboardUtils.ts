@@ -17,6 +17,21 @@ const pendingKey = (playerId: string) =>
   `neurotoxic_pending_song_scores:${playerId}`
 const inFlight = new Map<string, Promise<void>>()
 const retryTimers = new Map<string, ReturnType<typeof setTimeout>>()
+let warnedMissingLocks = false
+const withPendingScoresLock = (
+  playerId: string,
+  update: () => void
+): Promise<void> => {
+  if (typeof navigator !== 'undefined' && navigator.locks) {
+    return navigator.locks.request(pendingKey(playerId), update)
+  }
+  if (!warnedMissingLocks) {
+    warnedMissingLocks = true
+    logger.warn('PostGig', 'Cross-tab score coordination is unavailable')
+  }
+  update()
+  return Promise.resolve()
+}
 const knownSongs = new Set<string>()
 for (const song of SONGS_BY_ID.values()) {
   if (song.leaderboardId) knownSongs.add(song.leaderboardId)
@@ -108,12 +123,19 @@ export const retryPendingLeaderboardScores = (
       clearTimeout(timeoutId)
       if (acknowledged) {
         const sent = new Map(scores.map(score => [score.songId, score.score]))
-        setSafeStorageItem(
-          pendingKey(playerId),
-          readPendingScores(playerId).filter(
-            score => score.score > (sent.get(score.songId) ?? -1)
-          )
-        )
+        try {
+          await withPendingScoresLock(playerId, () => {
+            setSafeStorageItem(
+              pendingKey(playerId),
+              readPendingScores(playerId).filter(
+                score => score.score > (sent.get(score.songId) ?? -1)
+              )
+            )
+          })
+        } catch (err) {
+          retry = true
+          logger.error('PostGig', 'Pending score cleanup failed', err)
+        }
       }
       inFlight.delete(playerId)
       if (retry && readPendingScores(playerId).length > 0) {
@@ -179,6 +201,7 @@ export const submitLeaderboardScores = async ({
 }) => {
   if (!isLeaderboardSyncEnabled()) return
   if (!player.playerId || !player.playerName) return
+  const playerId = player.playerId
 
   const scoresToSubmit: SongStat[] = []
 
@@ -220,13 +243,26 @@ export const submitLeaderboardScores = async ({
   if (scoresToSubmit.length === 0) return
 
   // Persist before sending; GT writes need only the best pending score per song.
-  const pending = new Map(
-    readPendingScores(player.playerId).map(score => [score.songId, score])
-  )
-  for (const score of scoresToSubmit) {
-    if (score.score > (pending.get(score.songId)?.score ?? -1))
-      pending.set(score.songId, score)
+  const persistAndSend = async (): Promise<void> => {
+    try {
+      await withPendingScoresLock(playerId, () => {
+        const pending = new Map(
+          readPendingScores(playerId).map(score => [score.songId, score])
+        )
+        for (const score of scoresToSubmit) {
+          if (score.score > (pending.get(score.songId)?.score ?? -1))
+            pending.set(score.songId, score)
+        }
+        setSafeStorageItem(pendingKey(playerId), [...pending.values()])
+      })
+    } catch (err) {
+      logger.error('PostGig', 'Pending score persistence failed', err)
+      setTimeout(() => {
+        void persistAndSend()
+      }, 15_000)
+      return
+    }
+    await retryPendingLeaderboardScores(player)
   }
-  setSafeStorageItem(pendingKey(player.playerId), [...pending.values()])
-  await retryPendingLeaderboardScores(player)
+  await persistAndSend()
 }

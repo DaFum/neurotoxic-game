@@ -42,7 +42,7 @@ jobs:
         pr: ${{ fromJSON(needs.discover-prs.outputs.prs) }}
     concurrency:
       group: pr-comment-tracker-${{ matrix.pr.number }}
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     # Berechtigungen zum Lesen und Schreiben in PRs
     permissions:
@@ -202,18 +202,59 @@ jobs:
             const idsStateMarker = `\n<!-- REPORTED_THREADS: ${Array.from(newThreadIds).join(',')} -->`;
             const MAX_COMMENT_SIZE = 65536;
             const extraText = "\n... (truncated)";
-            const fixedLength = marker.length + header.length + footer.length + idsStateMarker.length;
-
-            if (fixedLength + copyableBlock.length > MAX_COMMENT_SIZE) {
+            // Keep the verdict in the bot-owned report, so PR-event reports can
+            // refresh a later merge commit even when no head check was published.
+            const priorVerdict = existingBotComment?.body.match(/\n<!-- TRACKER_VERDICT: (success|failure) -->$/)?.[1];
+            const verdict = newThreads.length > 0 ? 'failure' : 'success';
+            function renderReport(storedVerdict) {
+              const verdictMarker = storedVerdict ? `\n<!-- TRACKER_VERDICT: ${storedVerdict} -->` : '';
+              const fixedLength = marker.length + header.length + footer.length + idsStateMarker.length + verdictMarker.length;
               const allowedLength = MAX_COMMENT_SIZE - fixedLength - extraText.length;
-              copyableBlock = copyableBlock.substring(0, allowedLength) + extraText;
+              const text = fixedLength + copyableBlock.length > MAX_COMMENT_SIZE
+                ? copyableBlock.substring(0, allowedLength) + extraText
+                : copyableBlock;
+              return marker + header + text + footer + idsStateMarker + verdictMarker;
             }
 
-            // Das endgültige Markdown für den Bot-Kommentar
-            const body = marker + header + copyableBlock + footer + idsStateMarker;
+            const body = renderReport(verdict);
             const periodic = process.env.PERIODIC_REFRESH === 'true';
             // Keep the previous novelty verdict until the thread state changes.
-            if (periodic && existingBotComment?.body === body) return;
+            // A new test merge commit still needs that verdict, without overwriting
+            // the head check or treating previously reported threads as new.
+            if (periodic && existingBotComment?.body === renderReport(priorVerdict)) {
+              const head = process.env.PR_HEAD_SHA;
+              const merge = process.env.PR_MERGE_SHA;
+              if (process.env.SAME_REPO_PR === 'true' && head && merge && merge !== head) {
+                const checkName = 'Aggregate Comments & Enforce Resolution';
+                const trackerChecks = async ref => (await github.paginate(github.rest.checks.listForRef, {
+                  owner, repo, ref, check_name: checkName, filter: 'all', per_page: 100
+                })).filter(check => check.name === checkName && check.app?.slug === 'github-actions')
+                  .sort((a, b) => b.id - a.id);
+                const mergeChecks = await trackerChecks(merge);
+                if (mergeChecks.length === 0) {
+                  // Legacy reports lack a stored verdict; use an existing head
+                  // check only when it has an unambiguous completed conclusion.
+                  const [headCheck] = priorVerdict ? [] : await trackerChecks(head);
+                  const previousVerdict = priorVerdict ?? (
+                    headCheck?.status === 'completed' && ['success', 'failure'].includes(headCheck.conclusion)
+                      ? headCheck.conclusion : null
+                  );
+                  if (previousVerdict) {
+                    await github.rest.checks.create({
+                      owner, repo, name: checkName, head_sha: merge,
+                      status: 'completed', conclusion: previousVerdict,
+                      output: {
+                        title: 'Review thread tracker refreshed',
+                        summary: 'Previous review thread tracker verdict.'
+                      }
+                    });
+                  } else {
+                    core.warning('No stored or completed head tracker verdict; merge check will be retried.');
+                  }
+                }
+              }
+              return;
+            }
 
             // Fork-PRs: Das Token ist schreibgeschützt, Kommentar und gemeldete Thread-IDs
             // können nicht gespeichert werden. Ohne Speicherung wäre jeder offene Thread bei

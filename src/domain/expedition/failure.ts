@@ -213,18 +213,17 @@ export const getExpeditionMobilityFailureSignal = (
       protectedCash: getExpeditionProtectedCash(state),
       assetModifiers: getActiveAssetModifiers(state.assets ?? []),
       postSaleScenarios: getPostSaleScenarios(
-        getSellableAssets(
-          state.assets,
-          state.liabilities,
-          state.player.day
-        ).filter(
+        getSellableAssets(state.assets, state.liabilities, state.player.day, {
+          includeAllZeroNet: true
+        }).filter(
           asset => !isExpeditionChassisCommitmentLocked(state, asset.id)
         ),
         state.assets,
         state.liabilities,
         state.player,
         state.band,
-        state.social
+        state.social,
+        { includeAdditionalCandidates: true }
       ),
       dailyObligations: getTotalDailyObligations(state),
       consumableRecovery: getConsumableRecovery(

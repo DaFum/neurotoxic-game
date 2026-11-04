@@ -320,6 +320,7 @@
   "detailedStats.vanUpgrades.installed_one": "{{count}} Installiert",
   "detailedStats.vanUpgrades.installed_other": "{{count}} Installiert",
   "enter_alias_desc": "Gib deinen Alias für das globale Untergrund-Netzwerk ein.",
+  "invalid_name_error": "Verwende mindestens einen Buchstaben, eine Zahl, ein Satzzeichen oder ein Symbol",
   "enter_name_error": "Bitte gib einen Namen ein",
   "enter_name_placeholder": "NAME EINGEBEN...",
   "equipment.slots.amp": "Verstärker",

@@ -128,6 +128,7 @@ describe('durable song score retries', () => {
       .mockResolvedValue({ ok: true, status: 200 })
     vi.stubGlobal('fetch', fetchMock)
     const sending = submit('song1', 100)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     const newer = submit('song1', 200)
     first.resolve({ ok: true, status: 200 })
     await Promise.all([sending, newer])
@@ -136,5 +137,147 @@ describe('durable song score retries', () => {
     expect(JSON.parse(fetchMock.mock.calls[1][1].body).scores[0].score).toBe(
       200
     )
+  })
+})
+
+describe('cross-tab score queue', () => {
+  it('serializes concurrent score merges across module instances', async () => {
+    const gate = Promise.withResolvers<void>()
+    let tail: Promise<unknown> = gate.promise
+    const request = vi.fn((_name: string, callback: () => unknown) => {
+      const next = tail.then(callback)
+      tail = next.catch(() => {})
+      return next
+    })
+    vi.stubGlobal('navigator', { locks: { request } })
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+    vi.resetModules()
+    const first = await import('../../src/utils/leaderboardUtils')
+    vi.resetModules()
+    const second = await import('../../src/utils/leaderboardUtils')
+    const send = (module: typeof first, songId: string, score: number) =>
+      module.submitLeaderboardScores({
+        player,
+        lastGigStats: {
+          songStats: [{ songId, score, accuracy: 95 }]
+        } as PostGigSummary,
+        currentGig: null,
+        setlist: []
+      })
+    const operations = [
+      send(first, 'song1', 200),
+      send(second, 'song1', 100),
+      send(second, 'song2', 300)
+    ]
+    expect(
+      localStorage.getItem('neurotoxic_pending_song_scores:retry-player')
+    ).toBeNull()
+    gate.resolve()
+    await Promise.all(operations)
+    const stored = JSON.parse(
+      localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+    )
+    expect(stored).toEqual(
+      expect.arrayContaining([
+        { songId: 'lb_song1', score: 200, accuracy: 95 },
+        { songId: 'lb_song2', score: 300, accuracy: 95 }
+      ])
+    )
+    expect(request).toHaveBeenCalledTimes(3)
+    expect(new Set(request.mock.calls.map(([name]) => name)).size).toBe(1)
+  })
+
+  it('retries acknowledgement after a lock failure and releases the in-flight request', async () => {
+    const request = vi
+      .fn()
+      .mockImplementationOnce((_name: string, callback: () => unknown) =>
+        Promise.resolve(callback())
+      )
+      .mockRejectedValueOnce(new Error('lock unavailable'))
+      .mockImplementation((_name: string, callback: () => unknown) =>
+        Promise.resolve(callback())
+      )
+    vi.stubGlobal('navigator', { locks: { request } })
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 })
+    vi.stubGlobal('fetch', fetchMock)
+    await submit()
+    expect(
+      JSON.parse(
+        localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+      )[0].score
+    ).toBe(100)
+    await vi.advanceTimersByTimeAsync(15_000)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(
+      JSON.parse(
+        localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+      )
+    ).toEqual([])
+  })
+
+  it('retries a score that could not acquire a lock for persistence', async () => {
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('lock unavailable'))
+      .mockImplementation((_name: string, callback: () => unknown) =>
+        Promise.resolve(callback())
+      )
+    vi.stubGlobal('navigator', { locks: { request } })
+    const fetchMock = vi.fn().mockRejectedValue(new Error('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+    await submit()
+    expect(fetchMock).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(15_000)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(
+      JSON.parse(
+        localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+      )[0].score
+    ).toBe(100)
+  })
+
+  it('holds acknowledgement cleanup until the same player lock is available', async () => {
+    const firstResponse = Promise.withResolvers<{
+      ok: boolean
+      status: number
+    }>()
+    const gate = Promise.withResolvers<void>()
+    let tail: Promise<unknown> = Promise.resolve()
+    const request = vi.fn((_name: string, callback: () => unknown) => {
+      const next = tail.then(callback)
+      tail = next.catch(() => {})
+      return next
+    })
+    vi.stubGlobal('navigator', { locks: { request } })
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockReturnValueOnce(firstResponse.promise)
+        .mockRejectedValue(new Error('offline'))
+    )
+    const sending = submit()
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    const holding = request(
+      'neurotoxic_pending_song_scores:retry-player',
+      () => gate.promise
+    )
+    firstResponse.resolve({ ok: true, status: 200 })
+    await Promise.resolve()
+    await Promise.resolve()
+    const newer = submit('song1', 200)
+    await Promise.resolve()
+    expect(
+      JSON.parse(
+        localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+      )[0].score
+    ).toBe(100)
+    gate.resolve()
+    await Promise.all([holding, sending, newer])
+    await vi.advanceTimersByTimeAsync(15_000)
+    const pending = JSON.parse(
+      localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
+    )
+    expect(pending[0].score).toBe(200)
   })
 })

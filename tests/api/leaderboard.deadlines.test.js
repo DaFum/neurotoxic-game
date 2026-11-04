@@ -55,11 +55,30 @@ describe('leaderboard Redis deadlines', () => {
           expect(res.json).toHaveBeenCalledWith({
             error: 'Internal Server Error'
           })
-          if (phase === 'command')
-            expect(redis.destroy).toHaveBeenCalledTimes(1)
+          if (phase === 'command') expect(redis.destroy).not.toHaveBeenCalled()
           if (phase === 'connect') expect(redis.eval).not.toHaveBeenCalled()
         })
       }
     }
   }
+})
+
+it('a timed-out request does not interrupt another Redis operation', async () => {
+  const { withRedisDeadline } = await import('../../lib/redisDeadline.js')
+  let finishOther
+  const other = new Promise(resolve => {
+    finishOther = resolve
+  })
+  const timedOut = withRedisDeadline(redis, () => new Promise(() => {}))
+  await vi.advanceTimersByTimeAsync(500)
+  const concurrent = withRedisDeadline(redis, () => other)
+  const failure = expect(timedOut).rejects.toThrow('Redis deadline exceeded')
+  await vi.advanceTimersByTimeAsync(500)
+  await failure
+  expect(redis.destroy).not.toHaveBeenCalled()
+  finishOther('ok')
+  await expect(concurrent).resolves.toBe('ok')
+  await expect(
+    withRedisDeadline(redis, () => Promise.resolve('next'))
+  ).resolves.toBe('next')
 })

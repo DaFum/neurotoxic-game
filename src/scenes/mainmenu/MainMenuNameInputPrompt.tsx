@@ -45,7 +45,12 @@ export const MainMenuNameInputPrompt = ({
       const validated = validatePlayerName(formData.get('playerName'))
 
       if ('error' in validated) {
-        return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
+        return validated.error === 'Invalid playerName'
+          ? t('ui:invalid_name_error', {
+              defaultValue:
+                'Use at least one letter, number, punctuation mark, or symbol'
+            })
+          : t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
       }
 
       setPlayerNameInput(validated.playerName)

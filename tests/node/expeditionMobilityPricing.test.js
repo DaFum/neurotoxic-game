@@ -12,6 +12,7 @@ import {
   getActiveAssetModifiers,
   getTotalDailyObligations
 } from '../../src/utils/assets/assetSelectors'
+import { getAssetSaleQuote } from '../../src/utils/assets/assetSelectors/assetSaleQuote'
 import { handleSellChassis } from '../../src/context/reducers/assets/assetReducer'
 
 const asset = (id, slots = []) => ({
@@ -105,4 +106,60 @@ test('the committed chassis cannot count as a sale escape', () => {
     getExpeditionMobilityFailureSignal(state)?.reason,
     'fuel_stranded'
   )
+})
+
+test('a zero-proceeds chassis sale outside the ten largest yields can prevent a crisis', () => {
+  const state = mobilityState()
+  const costly = { ...asset('costly'), baseUpkeep: 1_000_000 }
+  const gross = getAssetSaleQuote(costly, {}, state.player.day).gross
+  assert.ok(gross > 0)
+  state.assets = [
+    ...Array.from({ length: 10 }, (_, i) => asset(`spare_${i}`)),
+    costly
+  ]
+  state.liabilities = {
+    loan: {
+      id: 'loan',
+      assetId: costly.id,
+      principalRemaining: gross,
+      dailyPayment: 0
+    }
+  }
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 500
+  const sold = handleSellChassis(state, { assetId: costly.id })
+  assert.equal(sold.player.money, state.player.money)
+  assert.equal(getExpeditionMobilityFailureSignal(sold), null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('two zero-proceeds sales can prevent a crisis when one falls outside the cap', () => {
+  const state = mobilityState()
+  const costly = ['costly_a', 'costly_b'].map(id => ({
+    ...asset(id),
+    baseUpkeep: 1_000_000
+  }))
+  state.assets = [
+    ...Array.from({ length: 9 }, (_, i) => asset(`spare_${i}`)),
+    ...costly
+  ]
+  state.liabilities = Object.fromEntries(
+    costly.map(chassis => [
+      chassis.id,
+      {
+        id: chassis.id,
+        assetId: chassis.id,
+        principalRemaining: getAssetSaleQuote(chassis, {}, state.player.day)
+          .gross,
+        dailyPayment: 0
+      }
+    ])
+  )
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 500
+  const soldOnce = handleSellChassis(state, { assetId: costly[0].id })
+  assert.ok(getTotalDailyObligations(soldOnce) > soldOnce.player.money)
+  const soldBoth = handleSellChassis(soldOnce, { assetId: costly[1].id })
+  assert.equal(getExpeditionMobilityFailureSignal(soldBoth), null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
 })

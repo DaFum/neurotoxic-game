@@ -39,19 +39,20 @@ const saleRemovesObligation = (
  * @remarks
  * Iterates over the player's assets to calculate the gross sale value on the given day,
  * subtracting any outstanding principal remaining on associated liabilities to determine
- * the true net yield if liquidated. Assets with a positive net yield are returned, and so
- * are zero-net assets whose sale sheds a loan or upkeep: the sell reducer accepts any
- * non-blocked quote, and dropping those daily costs can make a route affordable.
+ * the true net yield if liquidated. By default zero-net sales are included when
+ * they remove an obligation; the expanded search includes every legal sale.
  *
  * @param assets - The current list of owned assets from the game state.
  * @param liabilities - The active liabilities dictionary mapping IDs to debt obligations.
  * @param playerDay - The current in-game day to determine depreciation and market value.
+ * @param options - Whether to include all legal zero-net sales.
  * @returns An array containing the IDs and calculated net values of sellable assets.
  */
 export const getSellableAssets = (
   assets: GameState['assets'],
   liabilities: GameState['liabilities'],
-  playerDay: number
+  playerDay: number,
+  options: { includeAllZeroNet?: boolean } = {}
 ): { id: string; net: number }[] => {
   const sellableAssets: { id: string; net: number }[] = []
 
@@ -59,7 +60,11 @@ export const getSellableAssets = (
     for (const asset of assets) {
       const { net, blocked } = getAssetSaleQuote(asset, liabilities, playerDay)
       if (blocked || net < 0) continue
-      if (net > 0 || saleRemovesObligation(asset, liabilities)) {
+      if (
+        net > 0 ||
+        options.includeAllZeroNet ||
+        saleRemovesObligation(asset, liabilities)
+      ) {
         sellableAssets.push({ id: asset.id, net })
       }
     }
@@ -73,16 +78,19 @@ export const getSellableAssets = (
  *
  * @remarks
  * To evaluate softlock avoidance and strategic solvency, this evaluates permutations
- * of selling up to the 10 most profitable assets. It calculates the resulting immediate
+ * of selling up to the 10 most profitable assets. With the optional expanded
+ * search, it also considers each remaining sale alone and paired with each of
+ * those 10. It calculates the resulting immediate
  * cash proceeds alongside the adjusted ongoing daily obligations and active asset modifiers
  * that would persist after shedding the liquidated assets and their associated debts.
  *
- * @param sellableAssets - A list of assets with positive net yields, sorted to optimize permutations.
+ * @param sellableAssets - A list of assets with non-negative net yields, sorted to optimize permutations.
  * @param assets - The baseline list of currently owned assets.
  * @param liabilities - The current obligations mapping.
  * @param player - The core player state.
  * @param band - The band state influencing overall obligations.
  * @param social - The social connections influencing overall obligations.
+ * @param options - Whether to include bounded additional sale scenarios.
  * @returns An array of simulated outcome scenarios, detailing proceeds and resulting daily financial pressure.
  */
 export const getPostSaleScenarios = (
@@ -91,7 +99,8 @@ export const getPostSaleScenarios = (
   liabilities: GameState['liabilities'],
   player: PlayerState,
   band: BandState,
-  social: SocialState
+  social: SocialState,
+  options: { includeAdditionalCandidates?: boolean } = {}
 ): {
   assetProceeds: number
   dailyObligations: number
@@ -126,20 +135,17 @@ export const getPostSaleScenarios = (
       }
     }
 
-    for (let i = 1; i < numCombinations; i++) {
-      let comboProceeds = 0
-      for (let j = 0; j < numAssets; j++) {
-        if ((i & (1 << j)) !== 0) {
-          comboProceeds += assetNetValues[j] ?? 0
-        }
-      }
-
+    const appendScenario = (
+      comboProceeds: number,
+      mask: number,
+      extraId?: string
+    ) => {
       const retainedAssets: typeof assets = []
       for (let k = 0, len = assets.length; k < len; k++) {
         const a = assets[k]
         if (a) {
           const bit = sellableBitMap[a.id]
-          if (bit === undefined || (i & bit) === 0) {
+          if (a.id !== extraId && (bit === undefined || (mask & bit) === 0)) {
             retainedAssets.push(a)
           }
         }
@@ -154,7 +160,10 @@ export const getPostSaleScenarios = (
             const l = liabilities[key]
             if (l) {
               const bit = sellableBitMap[l.assetId]
-              if (bit === undefined || (i & bit) === 0) {
+              if (
+                l.assetId !== extraId &&
+                (bit === undefined || (mask & bit) === 0)
+              ) {
                 retainedLiabilities[key] = l
               }
             }
@@ -175,6 +184,25 @@ export const getPostSaleScenarios = (
         assets: retainedAssets,
         liabilities: retainedLiabilities
       })
+    }
+
+    for (let i = 1; i < numCombinations; i++) {
+      let comboProceeds = 0
+      for (let j = 0; j < numAssets; j++) {
+        if ((i & (1 << j)) !== 0) comboProceeds += assetNetValues[j] ?? 0
+      }
+      appendScenario(comboProceeds, i)
+    }
+
+    // The opt-in search is linear in omitted candidates; it preserves the
+    // bounded exponential search used by ordinary travel.
+    if (options.includeAdditionalCandidates) {
+      for (const extra of sellableAssets.slice(numAssets)) {
+        appendScenario(extra.net, 0, extra.id)
+        for (let j = 0; j < numAssets; j++) {
+          appendScenario(extra.net + (assetNetValues[j] ?? 0), 1 << j, extra.id)
+        }
+      }
     }
   }
 

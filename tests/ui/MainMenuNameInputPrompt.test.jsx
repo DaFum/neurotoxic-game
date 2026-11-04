@@ -8,7 +8,10 @@ vi.mock('react-i18next', () => ({
 }))
 
 describe('identity validation', () => {
-  for (const name of ['\u200b\u3164', '\u0301\u0302']) {
+  for (const [name, expectedError] of [
+    ['\u200b\u3164', 'ui:enter_name_error'],
+    ['\u0301\u0302', 'ui:invalid_name_error']
+  ]) {
     it(`rejects an alias without visible characters: ${JSON.stringify(name)}`, async () => {
       const submit = vi.fn()
       render(
@@ -25,7 +28,7 @@ describe('identity validation', () => {
         )
       })
       expect(submit).not.toHaveBeenCalled()
-      expect(screen.getByRole('alert')).toHaveTextContent('ui:enter_name_error')
+      expect(screen.getByRole('alert')).toHaveTextContent(expectedError)
     })
   }
   it('saves the same sanitized alias the API accepts', async () => {

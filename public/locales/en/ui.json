@@ -320,6 +320,7 @@
   "detailedStats.vanUpgrades.installed_one": "{{count}} Installed",
   "detailedStats.vanUpgrades.installed_other": "{{count}} Installed",
   "enter_alias_desc": "Enter your alias for the global underground network.",
+  "invalid_name_error": "Use at least one letter, number, punctuation mark, or symbol",
   "enter_name_error": "Please enter a name",
   "enter_name_placeholder": "ENTER NAME...",
   "equipment.slots.amp": "Amp",

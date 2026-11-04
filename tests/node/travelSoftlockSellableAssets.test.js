@@ -277,3 +277,101 @@ test('getPostSaleScenarios evaluates combinations correctly and accurately calcu
   // Combination 3 (binary 11: selling a1 and a2)
   assert.strictEqual(scenarios[2].assetProceeds, 300)
 })
+
+test('sale proceeds below a protected cash shortfall cannot fund a trip', () => {
+  const map = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const player = {
+    currentNodeId: 'A',
+    money: 100,
+    fameLevel: 0,
+    van: { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  }
+  assert.equal(
+    checkSoftlock(map, player, null, {
+      protectedCash: 1000,
+      postSaleScenarios: [
+        { assetProceeds: 100, dailyObligations: 0, assetModifiers: {} }
+      ]
+    }),
+    true
+  )
+})
+
+test('sale recovery prices the reserve fee using actual post-sale cash', () => {
+  const map = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const player = {
+    currentNodeId: 'A',
+    money: 100,
+    fameLevel: 0,
+    van: { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  }
+  const afterSale = { ...player, money: 2100 }
+  const { totalCost } = calculateTravelExpenses(
+    map.nodes.B,
+    map.nodes.A,
+    afterSale
+  )
+  assert.ok(totalCost < 100)
+  assert.equal(
+    checkSoftlock(map, player, null, {
+      protectedCash: 2000,
+      postSaleScenarios: [
+        {
+          assetProceeds: 2000,
+          dailyObligations: 100 - totalCost,
+          assetModifiers: {}
+        }
+      ]
+    }),
+    false
+  )
+})
+
+test('a legal zero-proceeds sale remains a recovery candidate without upkeep', () => {
+  // A fully depreciated chassis has no proceeds and no daily obligations.
+  const zeroGross = { ...makeAsset('zero_no_upkeep'), condition: 0 }
+  const quote = getAssetSaleQuote(zeroGross, {}, 100_000)
+  assert.equal(quote.blocked, false)
+  assert.equal(quote.net, 0)
+  assert.deepEqual(getSellableAssets([zeroGross], {}, 100_000), [])
+  assert.deepEqual(
+    getSellableAssets([zeroGross], {}, 100_000, { includeAllZeroNet: true }),
+    [{ id: zeroGross.id, net: 0 }]
+  )
+})
+
+test('ordinary sale search remains capped while the expanded search includes every candidate', () => {
+  const assets = Array.from({ length: 12 }, (_, i) =>
+    makeAsset(`candidate_${i}`)
+  )
+  const candidates = assets.map((asset, i) => ({ id: asset.id, net: 12 - i }))
+  const args = [
+    candidates,
+    assets,
+    {},
+    { money: 100, day: 1 },
+    { members: [] },
+    {}
+  ]
+  const standard = getPostSaleScenarios(...args)
+  const expanded = getPostSaleScenarios(...args, {
+    includeAdditionalCandidates: true
+  })
+  assert.equal(standard.length, 1023)
+  assert.equal(expanded.length, 1023 + 2 * 11)
+  for (const extra of assets.slice(10)) {
+    assert.ok(
+      expanded.some(
+        scenario =>
+          scenario.assets.length === assets.length - 1 &&
+          !scenario.assets.some(asset => asset.id === extra.id)
+      )
+    )
+  }
+})
