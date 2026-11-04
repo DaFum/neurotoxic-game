@@ -64,6 +64,11 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
     if (!isSyncEnabled) return
 
     const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+      setError(t('ui:leaderboard.load_error'))
+      setIsLoading(false)
+    }, 5000)
 
     const fetchLeaderboard = async () => {
       setIsLoading(true)
@@ -84,6 +89,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
         }
 
         const response = await fetch(url, { signal: controller.signal })
+        if (controller.signal.aborted) return
         if (response.status === 404) {
           logger.info('Leaderboard', `Local endpoint unavailable: ${url}`)
           setRankings([])
@@ -132,12 +138,13 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
           }
         }
 
-        setRankings(sanitizedEntries)
+        if (!controller.signal.aborted) setRankings(sanitizedEntries)
       } catch (fetchError: unknown) {
-        if (isAbortError(fetchError)) return
+        if (controller.signal.aborted || isAbortError(fetchError)) return
         logger.error('Leaderboard', 'Fetch failed', fetchError)
         setError(t('ui:leaderboard.load_error'))
       } finally {
+        clearTimeout(timeout)
         if (!controller.signal.aborted) {
           setIsLoading(false)
         }
@@ -147,6 +154,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
     void fetchLeaderboard()
 
     return () => {
+      clearTimeout(timeout)
       controller.abort()
     }
   }, [activeSongId, isSyncEnabled, t, view])

@@ -11,7 +11,9 @@ import {
 } from '../contrabandStashUtils'
 import {
   countPackedContraband,
+  creditPackedContraband,
   debitPackedContraband,
+  getExpeditionCargoView,
   resolveActiveExpeditionCargo
 } from '../../domain/expedition/cargo'
 import { logger } from '../logger'
@@ -1032,6 +1034,10 @@ export const applyEventDelta = (
         if (!isLooseRecord(entry) || typeof entry.contrabandId !== 'string') {
           continue
         }
+        const beforeStacks = getStashStackCount(
+          nextBand.stash,
+          entry.contrabandId
+        )
         Object.assign(
           nextBand,
           addContrabandToBand(nextBand, {
@@ -1042,6 +1048,31 @@ export const applyEventDelta = (
                 : undefined
           })
         )
+        const addedStacks =
+          getStashStackCount(nextBand.stash, entry.contrabandId) - beforeStacks
+        if (addedStacks <= 0) continue
+        const activeCargo = resolveActiveExpeditionCargo(nextState)
+        if (!activeCargo) continue
+        const view = getExpeditionCargoView({ ...nextState, band: nextBand })
+        const packedStacks = Math.min(
+          addedStacks,
+          view.availableHiddenSlots + view.availableVisibleSlots
+        )
+        if (packedStacks <= 0) continue
+        const added = nextBand.stash[entry.contrabandId] as
+          Record<string, unknown> | undefined
+        nextState.expedition = {
+          ...nextState.expedition,
+          cargo: {
+            ...activeCargo,
+            contraband: creditPackedContraband(
+              activeCargo.contraband,
+              entry.contrabandId,
+              typeof added?.instanceId === 'string' ? added.instanceId : null,
+              packedStacks
+            )
+          }
+        }
       }
     }
 

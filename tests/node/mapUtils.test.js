@@ -1180,3 +1180,28 @@ test('asset sale checks combinations without false softlock', () => {
     'Player is not softlocked because Scenario 1 makes travel possible'
   )
 })
+
+test('reserve pricing uses the actual balance when it is below the protected floor', () => {
+  const map = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const observedBalances = []
+  mockCalculateTravelExpenses.mock.mockImplementation((_, __, player) => {
+    observedBalances.push(player.money)
+    return { fuelLiters: 1, totalCost: 10000 }
+  })
+  mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+  checkSoftlock(
+    map,
+    { currentNodeId: 'A', money: 100, van: { fuel: 100 } },
+    null,
+    {
+      protectedCash: 2000,
+      postSaleScenarios: [
+        { assetProceeds: 1000, dailyObligations: 0, assetModifiers: {} }
+      ]
+    }
+  )
+  assert.deepEqual(observedBalances, [100, 1100])
+})

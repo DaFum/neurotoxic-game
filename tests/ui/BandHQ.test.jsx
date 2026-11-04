@@ -52,7 +52,10 @@ vi.mock('../../src/data/hqItems', () => ({
 vi.mock('../../src/data/upgradeCatalog', () => ({
   getUnifiedUpgradeCatalog: () => []
 }))
-vi.mock('../../src/data/songs', () => ({ SONGS_DB: [] }))
+vi.mock('../../src/data/songs', () => ({
+  SONGS_DB: [],
+  SONGS_BY_ID: new Map()
+}))
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
   resolveGenImageUrl: () => 'mock-url',

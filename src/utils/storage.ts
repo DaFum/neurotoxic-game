@@ -214,10 +214,24 @@ export function listStorageKeys(
 }
 
 /**
+ * Discards only a session-buffered value, leaving persistent storage intact.
+ *
+ * @param key - Key whose buffered value is no longer needed.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ */
+export function discardBufferedStorageItem(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): void {
+  fallbackStores.get(adapter)?.remove(key)
+}
+
+/**
  * Removes a key from persistent storage and the in-memory fallback.
  *
  * @param key - Storage key.
  * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns Whether a readable persistent store confirmed the key is absent.
  *
  * @remarks
  * The adapter cannot report a refused removal, so the key is tombstoned up
@@ -230,7 +244,7 @@ export function listStorageKeys(
 export function removeStorageItem(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
-): void {
+): boolean {
   let pendingRemovals = removedKeys.get(adapter)
   if (!pendingRemovals) {
     pendingRemovals = new Set<string>()
@@ -243,7 +257,9 @@ export function removeStorageItem(
 
   lastReadFailed = false
   const survivor = adapter.get(key)
-  if (!lastReadFailed && survivor === null) pendingRemovals.delete(key)
+  const removed = !lastReadFailed && survivor === null
+  if (removed) pendingRemovals.delete(key)
+  return removed
 }
 
 /**

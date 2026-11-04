@@ -33,15 +33,19 @@ vi.mock('../../src/utils/crypto', () => ({
   getSecureRandomUint32: () => 123456
 }))
 
-vi.mock('../../src/data/songs', () => ({
-  SONGS_DB: [
+vi.mock('../../src/data/songs', () => {
+  const songs = [
     {
       id: 'test_song',
       leaderboardId: 'test-song',
       name: 'Test Song'
     }
   ]
-}))
+  return {
+    SONGS_DB: songs,
+    SONGS_BY_ID: new Map(songs.map(song => [song.id, song]))
+  }
+})
 
 // Mock lazy-loaded phase components to prevent Suspense timeout and speed up rendering
 vi.mock('../../src/components/postGig/ReportPhase', () => ({

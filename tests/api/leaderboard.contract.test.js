@@ -5,6 +5,9 @@ import { RATE_LIMIT_SCRIPT } from '../../lib/leaderboard.js'
 import { SET_NAME_IF_UNVERSIONED_SCRIPT } from '../../api/leaderboard/song.js'
 
 const mockClient = vi.hoisted(() => ({
+  duplicate() {
+    return { ...mockClient, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   connect: vi.fn(),
   incr: vi.fn(),

@@ -10,12 +10,92 @@ import { gameReducer } from '../../src/context/gameReducer'
 import { createApplyEventDeltaAction } from '../../src/context/actionCreators'
 import { TRANSPORT_EVENTS } from '../../src/data/events/transport'
 import { startedState } from '../expeditionLifecycleFixture'
+import { getExpeditionCargoView } from '../../src/domain/expedition/cargo'
 
 const stashAddDelta = entries => ({
   player: {},
   band: { stashAdd: entries },
   social: {},
   flags: {}
+})
+
+test('event contraband is packed in the same expedition grant', () => {
+  const state = startedState({ money: 5000 })
+  const next = applyEventDelta(
+    state,
+    stashAddDelta([
+      { contrabandId: 'c_void_energy', instanceId: 'gift' },
+      { contrabandId: 'c_void_energy', instanceId: 'second' }
+    ])
+  )
+  assert.equal(next.band.stash.c_void_energy.stacks, 2)
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_void_energy', instanceId: 'gift', stacks: 2 }
+  ])
+  assert.deepEqual(state.expedition.cargo.contraband, [])
+})
+
+test('event grants stop packing when cargo fills and retain the remainder at HQ', () => {
+  const state = startedState({ money: 5000 })
+  const view = getExpeditionCargoView(state)
+  state.expedition.cargo.supplies += view.availableVisibleSlots - 1
+  const slots = 1
+  const entries = Array.from({ length: slots + 1 }, () => ({
+    contrabandId: 'c_void_energy',
+    instanceId: 'gift'
+  }))
+  const next = applyEventDelta(state, stashAddDelta(entries))
+  assert.equal(next.band.stash.c_void_energy.stacks, slots + 1)
+  assert.equal(next.expedition.cargo.contraband[0].stacks, slots)
+  const after = getExpeditionCargoView(next)
+  assert.equal(after.availableHiddenSlots + after.availableVisibleSlots, 0)
+})
+
+test('an event grant fills the hidden slot when visible cargo is full', () => {
+  const state = startedState({ money: 5000 })
+  state.assets = [
+    {
+      id: 'diy_bus',
+      kind: 'tourbus_chassis',
+      chassisFlavor: 'diy',
+      chassisTier: 1,
+      slots: []
+    }
+  ]
+  state.expedition.loadout.activeTourbusAssetId = 'diy_bus'
+  const before = getExpeditionCargoView(state)
+  assert.equal(before.availableHiddenSlots, 1)
+  state.expedition.cargo.supplies += before.availableVisibleSlots
+  const full = getExpeditionCargoView(state)
+  assert.equal(full.availableVisibleSlots, 0)
+  assert.equal(full.availableHiddenSlots, 1)
+
+  const next = applyEventDelta(
+    state,
+    stashAddDelta([
+      { contrabandId: 'c_void_energy', instanceId: 'hidden_gift' }
+    ])
+  )
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_void_energy', instanceId: 'hidden_gift', stacks: 1 }
+  ])
+  const after = getExpeditionCargoView(next)
+  assert.equal(after.availableVisibleSlots, 0)
+  assert.equal(after.availableHiddenSlots, 0)
+})
+
+test('a rejected duplicate event item does not create phantom packed cargo', () => {
+  const state = startedState({ money: 5000 })
+  const next = applyEventDelta(
+    state,
+    stashAddDelta([
+      { contrabandId: 'c_diy_overdrive', instanceId: 'first' },
+      { contrabandId: 'c_diy_overdrive', instanceId: 'duplicate' }
+    ])
+  )
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_diy_overdrive', instanceId: 'first', stacks: 1 }
+  ])
 })
 
 test('c_diy_overdrive is a validated catalogue entry with an equipment effect', () => {
@@ -185,6 +265,21 @@ const packedRow = id => ({ stashKey: id, instanceId: `inst_${id}`, stacks: 1 })
 const policeContraband = TRANSPORT_EVENTS.find(
   event => event.id === 'police_contraband'
 )
+
+test('confiscation removes only the packed stack and preserves the HQ remainder', () => {
+  const state = policeTour(
+    { c_warped_tape: { ...ownedItem('c_warped_tape', 'uncommon'), stacks: 2 } },
+    [packedRow('c_warped_tape')]
+  )
+  const delta = eventEngine.applyResult(policeContraband.options[0].effect, {
+    riskItemId: 'c_warped_tape',
+    rarity: 'uncommon'
+  })
+  const next = gameReducer(state, createApplyEventDeltaAction(delta))
+  assert.equal(next.band.stash.c_warped_tape.stacks, 1)
+  assert.deepEqual(next.expedition.cargo.contraband, [])
+  assert.equal(state.band.stash.c_warped_tape.stacks, 2)
+})
 
 test('police_contraband ignores an epic left at HQ when only a common item is packed (#3499)', () => {
   const state = policeTour(

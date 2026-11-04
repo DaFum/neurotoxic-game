@@ -504,6 +504,21 @@ export const useRhythmGameAudio = ({
       setAudioStatus('ready')
       setFailureKind(null)
       currentStatusRef.current = 'ready'
+      gameStateRef.current.onPlaybackError = error => {
+        if (currentStatusRef.current !== 'ready') return
+        invalidateSongSequence(gameStateRef)
+        currentStatusRef.current = 'failed'
+        const latest = latestContextRef.current
+        latest.setAudioStatus('failed')
+        latest.setFailureKind('audio')
+        audioEngine.stopAudio()
+        handleError(error, {
+          addToast: latest.addToast,
+          fallbackMessage: latest.t('ui:gig.errors.nextSongFailed', {
+            defaultValue: 'Failed to start next song!'
+          })
+        })
+      }
       await audioEngine.playSongSequence(
         0,
         activeSetlist,

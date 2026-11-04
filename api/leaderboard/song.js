@@ -1,4 +1,8 @@
-import client from '../../lib/redis.js'
+import sharedClient from '../../lib/redis.js'
+import {
+  createRedisRequest,
+  withRedisDeadline
+} from '../../lib/redisDeadline.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import {
   parseLeaderboardLimit,
@@ -44,13 +48,22 @@ return 1`
  */
 export default async function handler(req, res) {
   if (req.method === 'POST') {
+    /** @type {ReturnType<typeof createRedisRequest> | undefined} */
+    let redisRequest
     try {
+      redisRequest = createRedisRequest(sharedClient)
+      const request = redisRequest
+      const client = request.client
       // Ensure connection
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => request.connect())
       }
 
-      if (await isLeaderboardRateLimited(req, 'song')) {
+      if (
+        await withRedisDeadline(client, () =>
+          isLeaderboardRateLimited(req, 'song', 5, 60, client)
+        )
+      ) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -137,10 +150,12 @@ export default async function handler(req, res) {
 
       // A refused name write is not an error: the scores below still apply
       // (GT only ever raises a best) and the response shape stays unchanged.
-      await client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
-        keys: ['lb:revision', 'players'],
-        arguments: [playerId, String(player.playerName)]
-      })
+      await withRedisDeadline(client, () =>
+        client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
+          keys: ['lb:revision', 'players'],
+          arguments: [playerId, String(player.playerName)]
+        })
+      )
 
       const multi = client.multi()
       for (const item of validatedItems) {
@@ -150,14 +165,18 @@ export default async function handler(req, res) {
           { GT: true }
         )
       }
-      await multi.exec()
+      await withRedisDeadline(client, () => multi.exec())
 
       return res.status(200).json({ success: true })
     } catch (error) {
       console.error('Song score update error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+      redisRequest?.close()
     }
   } else if (req.method === 'GET') {
+    /** @type {ReturnType<typeof createRedisRequest> | undefined} */
+    let redisRequest
     try {
       const songId = req.query?.songId
       if (songId === undefined || songId === '') {
@@ -179,19 +198,25 @@ export default async function handler(req, res) {
       const limit = parseLeaderboardLimit(req.query?.limit)
 
       // Ensure connection
+      redisRequest = createRedisRequest(sharedClient)
+      const request = redisRequest
+      const client = request.client
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => request.connect())
       }
 
       const leaderboard = await fetchLeaderboard(
         `lb:song:${leaderboardId}`,
-        limit
+        limit,
+        client
       )
 
       return res.status(200).json(leaderboard)
     } catch (error) {
       console.error('Song leaderboard fetch error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+      redisRequest?.close()
     }
   }
 

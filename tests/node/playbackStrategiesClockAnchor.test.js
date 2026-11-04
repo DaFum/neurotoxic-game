@@ -87,6 +87,43 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
 const { playAudioForSong } =
   await import('../../src/utils/audio/playbackStrategies')
 const { GIG_LEAD_IN_MS } = await import('../../src/utils/audio/rhythmGameTypes')
+const { audioState } = await import('../../src/utils/audio/state')
+
+test('a failed final backend rejects instead of publishing an unplayable chart', async () => {
+  mockPlaySongFromData.mock.mockImplementationOnce(async () => false)
+  mockStartMetalGenerator.mock.mockImplementationOnce(async () => false)
+  await assert.rejects(
+    playAudioForSong(
+      { id: 'broken', name: 'Broken', bpm: 120, duration: 30, difficulty: 2 },
+      [{ time: 1000, laneIndex: 0 }],
+      () => {},
+      () => 0.5
+    ),
+    /Unable to start gig audio/
+  )
+})
+
+test('a cancelled final backend does not report a playback failure', async () => {
+  mockStartMetalGenerator.mock.mockImplementationOnce(async () => {
+    await Promise.resolve()
+    audioState.playRequestId += 1
+    return false
+  })
+  await assert.doesNotReject(
+    playAudioForSong(
+      {
+        id: 'cancelled',
+        name: 'Cancelled',
+        bpm: 120,
+        duration: 30,
+        difficulty: 2
+      },
+      [],
+      () => {},
+      () => 0.5
+    )
+  )
+})
 
 const expectedStartSec = RAW_NOW_SEC + GIG_LEAD_IN_MS / 1000 + LOOK_AHEAD_SEC
 const advancedStartSec =

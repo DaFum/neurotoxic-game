@@ -6,6 +6,7 @@ import { logger } from '../utils/logger'
 import { systemClock, type IClock } from '../utils/clock'
 import { createLeaderboardSyncController } from '../utils/leaderboardSyncController'
 import { isLeaderboardSyncEnabled } from '../utils/leaderboardSyncFlag'
+import { retryPendingLeaderboardScores } from '../utils/leaderboardUtils'
 import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import type { GameState } from '../types'
 import type { LeaderboardStatsPayload } from '../types/leaderboard'
@@ -137,6 +138,10 @@ export const useLeaderboardSync = (
   const social = state.social
 
   const totalFollowers = calculateTotalFollowers(social)
+
+  useEffect(() => {
+    void retryPendingLeaderboardScores({ playerId, playerName })
+  }, [playerId, playerName])
 
   useEffect(() => {
     // Strict validation

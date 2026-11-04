@@ -246,8 +246,13 @@ const playAudioForSong = async (
       const attempt = beginPlaybackAttempt(() =>
         playProceduralMetal(currentSong, onSongEnded, rng)
       )
-      await attempt.pending
+      bgAudioStarted = await attempt.pending
       if (attempt.requestId !== audioState.playRequestId) return finalNotes
+      if (!bgAudioStarted) {
+        throw new AudioError(
+          `Unable to start gig audio for "${currentSong.name}"`
+        )
+      }
     }
   }
 

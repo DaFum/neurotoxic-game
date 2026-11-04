@@ -127,6 +127,8 @@ export const normalizeVenueId = (venue: unknown): string | null => {
  * `getActiveAssetModifiers`; mapUtils stays free of those dependencies.
  */
 interface SoftlockContext {
+  /** Cash included in reserve-fee pricing but unavailable for recovery or travel. */
+  protectedCash?: number
   /** One-use carried recovery, with caps relaxed in favour of escape. */
   consumableRecovery?: Partial<ConsumableRecovery>
   /** Total daily obligations added on top of each neighbor's travel cost. */
@@ -145,7 +147,7 @@ interface SoftlockContext {
     assetModifiers: AssetModifiers
     assets?: LongTermAsset[]
     liabilities?: Record<string, Liability>
-  }[]
+  }[] & { exhaustive?: boolean }
   /**
    * Booking-gate predicate for a candidate neighbor. Callers pass a closure
    * over `getNodeAccessStatus` so the softlock verdict cannot drift from the
@@ -454,7 +456,11 @@ export const checkSoftlock = (
         })
       : undefined
   const currentFuel = finiteNumberOr(van?.fuel, 0)
-  const playerMoney = Math.max(0, finiteNumberOr(player.money, 0))
+  const protectedCash = Math.max(0, finiteNumberOr(context.protectedCash, 0))
+  // Keep a shortfall below the floor: recovery must first restore that cash
+  // before it becomes spendable, and pricing must use the actual balance.
+  const playerMoney =
+    Math.max(0, finiteNumberOr(player.money, 0)) - protectedCash
   const nodes = gameMap.nodes ?? {}
   const currentNode = nodes[player.currentNodeId]
   const bandStateForTravel = (
@@ -546,7 +552,7 @@ export const checkSoftlock = (
         customContext?.fameLevel,
         playerStateForTravel.fameLevel
       ),
-      money,
+      money: Math.max(0, money + protectedCash),
       van: { ...playerStateForTravel.van, fuel }
     }
 
@@ -560,7 +566,8 @@ export const checkSoftlock = (
       )
       if (
         fuel >= finiteNumberOr(fuelLiters, 0) * fuelMultiplier &&
-        money >= calculateTravelCashRequired(totalCost, activeDailyObligations)
+        Math.max(0, money) >=
+          calculateTravelCashRequired(totalCost, activeDailyObligations)
       )
         return true
     }
@@ -834,8 +841,9 @@ export const checkSoftlock = (
       if (projectedAssets && projectedLiabilities) {
         // Settle asset cash before loans, then living costs. Missing payments
         // are skipped, and foreclosure/payoff changes the arrival obligations.
+        const availableMoney = Math.max(0, settledMoney)
         const projection = projectRestLiabilities(
-          settledMoney -
+          availableMoney -
             Math.min(initialAssetCost, getRestAssetDailyCost(projectedAssets)),
           projectedAssets,
           projectedLiabilities
@@ -843,7 +851,7 @@ export const checkSoftlock = (
         projectedAssets = projection.assets
         projectedLiabilities = projection.liabilities
         dayCost =
-          settledMoney -
+          availableMoney -
           projection.money +
           (restLivingCosts.byRestDay[restDay] ?? 0)
         departureContext = {
@@ -873,7 +881,7 @@ export const checkSoftlock = (
       }
       dayCost -= newAssetIncome
       const isIncomeDay = dayCost < 0
-      restedMoney = Math.max(0, restedMoney - dayCost)
+      restedMoney = Math.max(-protectedCash, restedMoney - dayCost)
       settledMoney -= dayCost
       // The tick clamps cash at 0 and bankrupts an empty band only while
       // obligations are due (`shouldTriggerBankruptcy`).
@@ -938,5 +946,7 @@ export const checkSoftlock = (
     }
   }
 
-  return true
+  // Failure to find a sale escape only proves stranding after a complete search.
+  // A bounded search must not turn an untested combination into a terminal crisis.
+  return context.postSaleScenarios?.exhaustive !== false
 }

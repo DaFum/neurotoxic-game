@@ -3,6 +3,7 @@ import { CONTRABAND_BY_ID } from '../data/contraband'
 import { INVENTORY_USE_EFFECTS } from '../data/inventoryItems'
 import { getStashStackCount } from './contrabandStashUtils'
 import { finiteNumberOr } from './finiteNumber'
+import { clampPlayerMoney } from './gameState/clamps'
 import { isForbiddenKey } from './objectUtils'
 import {
   getTotalDailyObligations,
@@ -39,19 +40,20 @@ const saleRemovesObligation = (
  * @remarks
  * Iterates over the player's assets to calculate the gross sale value on the given day,
  * subtracting any outstanding principal remaining on associated liabilities to determine
- * the true net yield if liquidated. Assets with a positive net yield are returned, and so
- * are zero-net assets whose sale sheds a loan or upkeep: the sell reducer accepts any
- * non-blocked quote, and dropping those daily costs can make a route affordable.
+ * the true net yield if liquidated. By default zero-net sales are included when
+ * they remove an obligation; the expanded search includes every legal sale.
  *
  * @param assets - The current list of owned assets from the game state.
  * @param liabilities - The active liabilities dictionary mapping IDs to debt obligations.
  * @param playerDay - The current in-game day to determine depreciation and market value.
+ * @param options - Whether to include all legal zero-net sales.
  * @returns An array containing the IDs and calculated net values of sellable assets.
  */
 export const getSellableAssets = (
   assets: GameState['assets'],
   liabilities: GameState['liabilities'],
-  playerDay: number
+  playerDay: number,
+  options: { includeAllZeroNet?: boolean } = {}
 ): { id: string; net: number }[] => {
   const sellableAssets: { id: string; net: number }[] = []
 
@@ -59,7 +61,11 @@ export const getSellableAssets = (
     for (const asset of assets) {
       const { net, blocked } = getAssetSaleQuote(asset, liabilities, playerDay)
       if (blocked || net < 0) continue
-      if (net > 0 || saleRemovesObligation(asset, liabilities)) {
+      if (
+        net > 0 ||
+        options.includeAllZeroNet ||
+        saleRemovesObligation(asset, liabilities)
+      ) {
         sellableAssets.push({ id: asset.id, net })
       }
     }
@@ -73,17 +79,24 @@ export const getSellableAssets = (
  *
  * @remarks
  * To evaluate softlock avoidance and strategic solvency, this evaluates permutations
- * of selling up to the 10 most profitable assets. It calculates the resulting immediate
+ * of selling up to the 10 most profitable assets. With the optional expanded
+ * search, it considers every combination when at most four candidates remain.
+ * With more than four, it checks each remaining sale alone and paired with
+ * each of the 10, and all remaining sales together with every subset of the 10.
+ * The latter search does not exhaust combinations of the remaining sales.
+ * It calculates the resulting immediate
  * cash proceeds alongside the adjusted ongoing daily obligations and active asset modifiers
  * that would persist after shedding the liquidated assets and their associated debts.
  *
- * @param sellableAssets - A list of assets with positive net yields, sorted to optimize permutations.
+ * @param sellableAssets - A list of assets with non-negative net yields, sorted to optimize permutations.
  * @param assets - The baseline list of currently owned assets.
  * @param liabilities - The current obligations mapping.
  * @param player - The core player state.
  * @param band - The band state influencing overall obligations.
  * @param social - The social connections influencing overall obligations.
- * @returns An array of simulated outcome scenarios, detailing proceeds and resulting daily financial pressure.
+ * @param options - Whether to include bounded additional sale scenarios.
+ * @returns Simulated outcomes and whether every sale subset was evaluated.
+ * An incomplete search can find an escape, but cannot prove the run stranded.
  */
 export const getPostSaleScenarios = (
   sellableAssets: { id: string; net: number }[],
@@ -91,21 +104,25 @@ export const getPostSaleScenarios = (
   liabilities: GameState['liabilities'],
   player: PlayerState,
   band: BandState,
-  social: SocialState
+  social: SocialState,
+  options: { includeAdditionalCandidates?: boolean } = {}
 ): {
   assetProceeds: number
   dailyObligations: number
   assetModifiers: import('../types/assets').AssetModifiers
   assets?: GameState['assets']
   liabilities?: GameState['liabilities']
-}[] => {
+}[] & { exhaustive: boolean } => {
   const postSaleScenarios: {
     assetProceeds: number
     dailyObligations: number
     assetModifiers: import('../types/assets').AssetModifiers
     assets?: GameState['assets']
     liabilities?: GameState['liabilities']
-  }[] = []
+  }[] & { exhaustive: boolean } = Object.assign([], {
+    exhaustive:
+      sellableAssets.length <= (options.includeAdditionalCandidates ? 14 : 10)
+  })
 
   if (sellableAssets.length > 0 && assets) {
     sellableAssets.sort((a, b) => b.net - a.net)
@@ -126,20 +143,37 @@ export const getPostSaleScenarios = (
       }
     }
 
-    for (let i = 1; i < numCombinations; i++) {
-      let comboProceeds = 0
+    // The reducer floors cash after every sale, including primary combinations.
+    // Use the same concrete order for every branch of the scenario search.
+    const initialMoney = Math.max(0, finiteNumberOr(player.money, 0))
+    const saleProceeds = (
+      mask: number,
+      extras: readonly { net: number }[] = []
+    ): number => {
+      let afterSales = initialMoney
+      for (const extra of extras)
+        afterSales = clampPlayerMoney(afterSales + extra.net)
       for (let j = 0; j < numAssets; j++) {
-        if ((i & (1 << j)) !== 0) {
-          comboProceeds += assetNetValues[j] ?? 0
-        }
+        if ((mask & (1 << j)) !== 0)
+          afterSales = clampPlayerMoney(afterSales + (assetNetValues[j] ?? 0))
       }
+      return afterSales - initialMoney
+    }
 
+    const appendScenario = (
+      comboProceeds: number,
+      mask: number,
+      extraIds?: ReadonlySet<string>
+    ) => {
       const retainedAssets: typeof assets = []
       for (let k = 0, len = assets.length; k < len; k++) {
         const a = assets[k]
         if (a) {
           const bit = sellableBitMap[a.id]
-          if (bit === undefined || (i & bit) === 0) {
+          if (
+            !extraIds?.has(a.id) &&
+            (bit === undefined || (mask & bit) === 0)
+          ) {
             retainedAssets.push(a)
           }
         }
@@ -154,7 +188,10 @@ export const getPostSaleScenarios = (
             const l = liabilities[key]
             if (l) {
               const bit = sellableBitMap[l.assetId]
-              if (bit === undefined || (i & bit) === 0) {
+              if (
+                !extraIds?.has(l.assetId) &&
+                (bit === undefined || (mask & bit) === 0)
+              ) {
                 retainedLiabilities[key] = l
               }
             }
@@ -175,6 +212,37 @@ export const getPostSaleScenarios = (
         assets: retainedAssets,
         liabilities: retainedLiabilities
       })
+    }
+
+    for (let i = 1; i < numCombinations; i++) {
+      appendScenario(saleProceeds(i), i)
+    }
+
+    // Bound the complete search at fourteen candidates. Above that, retain
+    // the linear additional-candidate search and the all-extras group.
+    if (options.includeAdditionalCandidates) {
+      const extras = sellableAssets.slice(numAssets)
+      const groups: (typeof extras)[] = []
+      if (extras.length <= 4) {
+        for (let mask = 1; mask < 1 << extras.length; mask++) {
+          groups.push(extras.filter((_, index) => (mask & (1 << index)) !== 0))
+        }
+      } else {
+        for (const extra of extras) {
+          const oneExtra = new Set([extra.id])
+          appendScenario(saleProceeds(0, [extra]), 0, oneExtra)
+          for (let j = 0; j < numAssets; j++) {
+            appendScenario(saleProceeds(1 << j, [extra]), 1 << j, oneExtra)
+          }
+        }
+        groups.push(extras)
+      }
+      for (const group of groups) {
+        const extraIds = new Set(group.map(extra => extra.id))
+        for (let mask = 0; mask < numCombinations; mask++) {
+          appendScenario(saleProceeds(mask, group), mask, extraIds)
+        }
+      }
     }
   }
 

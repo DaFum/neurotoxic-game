@@ -277,3 +277,212 @@ test('getPostSaleScenarios evaluates combinations correctly and accurately calcu
   // Combination 3 (binary 11: selling a1 and a2)
   assert.strictEqual(scenarios[2].assetProceeds, 300)
 })
+
+test('sale proceeds below a protected cash shortfall cannot fund a trip', () => {
+  const map = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const player = {
+    currentNodeId: 'A',
+    money: 100,
+    fameLevel: 0,
+    van: { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  }
+  assert.equal(
+    checkSoftlock(map, player, null, {
+      protectedCash: 1000,
+      postSaleScenarios: [
+        { assetProceeds: 100, dailyObligations: 0, assetModifiers: {} }
+      ]
+    }),
+    true
+  )
+})
+
+test('sale recovery prices the reserve fee using actual post-sale cash', () => {
+  const map = {
+    nodes: { A: { id: 'A', x: 10, y: 10 }, B: { id: 'B', x: 20, y: 10 } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const player = {
+    currentNodeId: 'A',
+    money: 100,
+    fameLevel: 0,
+    van: { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0 }
+  }
+  const afterSale = { ...player, money: 2100 }
+  const { totalCost } = calculateTravelExpenses(
+    map.nodes.B,
+    map.nodes.A,
+    afterSale
+  )
+  assert.ok(totalCost < 100)
+  assert.equal(
+    checkSoftlock(map, player, null, {
+      protectedCash: 2000,
+      postSaleScenarios: [
+        {
+          assetProceeds: 2000,
+          dailyObligations: 100 - totalCost,
+          assetModifiers: {}
+        }
+      ]
+    }),
+    false
+  )
+})
+
+test('a legal zero-proceeds sale remains a recovery candidate without upkeep', () => {
+  // A fully depreciated chassis has no proceeds and no daily obligations.
+  const zeroGross = { ...makeAsset('zero_no_upkeep'), condition: 0 }
+  const quote = getAssetSaleQuote(zeroGross, {}, 100_000)
+  assert.equal(quote.blocked, false)
+  assert.equal(quote.net, 0)
+  assert.deepEqual(getSellableAssets([zeroGross], {}, 100_000), [])
+  assert.deepEqual(
+    getSellableAssets([zeroGross], {}, 100_000, { includeAllZeroNet: true }),
+    [{ id: zeroGross.id, net: 0 }]
+  )
+})
+
+test('ordinary sale search remains capped while the expanded search includes every candidate', () => {
+  const assets = Array.from({ length: 12 }, (_, i) =>
+    makeAsset(`candidate_${i}`)
+  )
+  const candidates = assets.map((asset, i) => ({ id: asset.id, net: 12 - i }))
+  const args = [
+    candidates,
+    assets,
+    {},
+    { money: 100, day: 1 },
+    { members: [] },
+    {}
+  ]
+  const standard = getPostSaleScenarios(...args)
+  const expanded = getPostSaleScenarios(...args, {
+    includeAdditionalCandidates: true
+  })
+  assert.equal(standard.length, 1023)
+  assert.equal(expanded.length, 2 ** 12 - 1)
+  for (const extra of assets.slice(10)) {
+    assert.ok(
+      expanded.some(
+        scenario =>
+          scenario.assets.length === assets.length - 1 &&
+          !scenario.assets.some(asset => asset.id === extra.id)
+      )
+    )
+  }
+})
+
+test('grouped sale proceeds follow the cash rounding of each sale', () => {
+  const assets = Array.from({ length: 12 }, (_, i) => makeAsset(`asset_${i}`))
+  const candidates = assets.map((asset, i) => ({
+    id: asset.id,
+    net: i < 10 ? 10.6 : 0.6
+  }))
+  const scenarios = getPostSaleScenarios(
+    candidates,
+    assets,
+    {},
+    { money: 100.7, day: 1 },
+    { members: [] },
+    {},
+    { includeAdditionalCandidates: true }
+  )
+  const grouped = scenarios.find(
+    scenario =>
+      scenario.assets.length === 10 &&
+      scenario.assets.every(
+        asset => !['asset_10', 'asset_11'].includes(asset.id)
+      )
+  )
+  assert.ok(grouped)
+  // floor(floor(100.7 + 0.6) + 0.6) = 101.
+  assert.equal(grouped.assetProceeds, 101 - 100.7)
+  const primary = scenarios.find(
+    scenario =>
+      scenario.assets.length === 10 &&
+      scenario.assets.every(asset => !['asset_0', 'asset_1'].includes(asset.id))
+  )
+  assert.ok(primary)
+  // floor(floor(100.7 + 10.6) + 10.6) = 121.
+  assert.equal(primary.assetProceeds, 121 - 100.7)
+})
+
+test('single-extra scenarios floor cash after the extra and each primary sale', () => {
+  const assets = Array.from({ length: 15 }, (_, i) => makeAsset(`asset_${i}`))
+  const scenarios = getPostSaleScenarios(
+    assets.map((asset, i) => ({ id: asset.id, net: i < 10 ? 10.6 : 0.6 })),
+    assets,
+    {},
+    { money: 100.7, day: 1 },
+    { members: [] },
+    {},
+    { includeAdditionalCandidates: true }
+  )
+  const extra = scenarios.find(
+    scenario =>
+      scenario.assets.length === 14 &&
+      !scenario.assets.some(asset => asset.id === 'asset_10')
+  )
+  const pair = scenarios.find(
+    scenario =>
+      scenario.assets.length === 13 &&
+      scenario.assets.every(
+        asset => !['asset_10', 'asset_0'].includes(asset.id)
+      )
+  )
+  assert.ok(extra)
+  assert.ok(pair)
+  assert.equal(extra.assetProceeds, 101 - 100.7)
+  assert.equal(pair.assetProceeds, 111 - 100.7)
+})
+
+test('expanded search is exhaustive through four extra candidates and bounded above that', () => {
+  for (const count of [14, 15]) {
+    const assets = Array.from({ length: count }, (_, i) => makeAsset(`a${i}`))
+    const candidates = assets.map((asset, i) => ({
+      id: asset.id,
+      net: count - i
+    }))
+    const scenarios = getPostSaleScenarios(
+      candidates,
+      assets,
+      {},
+      { money: 100, day: 1 },
+      { members: [] },
+      {},
+      { includeAdditionalCandidates: true }
+    )
+    assert.equal(scenarios.exhaustive, count === 14)
+    assert.equal(
+      scenarios.length,
+      count === 14 ? 2 ** 14 - 1 : 1023 + 5 * 11 + 1024
+    )
+    if (count === 14) {
+      const combinations = new Set(
+        scenarios.map(scenario => {
+          const retainedIds = new Set(scenario.assets.map(asset => asset.id))
+          return assets
+            .filter(asset => !retainedIds.has(asset.id))
+            .map(asset => asset.id)
+            .sort()
+            .join(',')
+        })
+      )
+      assert.equal(combinations.size, 2 ** 14 - 1)
+      const wanted = new Set(['a0', 'a1', 'a10', 'a11', 'a12'])
+      assert.ok(
+        scenarios.some(scenario =>
+          assets.every(
+            asset =>
+              scenario.assets.some(retained => retained.id === asset.id) !==
+              wanted.has(asset.id)
+          )
+        )
+      )
+    }
+  }
+})

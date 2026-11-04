@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
-import client from '../lib/redis.js'
+import sharedClient from '../lib/redis.js'
+import { createRedisRequest } from '../lib/redisDeadline.js'
 import { isLeaderboardRateLimited } from '../lib/leaderboard.js'
 
 // Existing catalogue prompts peak below 200 characters; 1024 also accommodates
@@ -36,12 +37,15 @@ export default async function handler(req, res) {
 
   let redisExpired = false
   let redisTimeout
+  let redisRequest
   try {
+    redisRequest = createRedisRequest(sharedClient)
+    const client = redisRequest.client
     const limited = await Promise.race([
       (async () => {
-        if (!client.isOpen) await client.connect()
+        if (!client.isOpen) await redisRequest.connect()
         if (redisExpired) return false
-        return isLeaderboardRateLimited(req, 'image', 100, 60)
+        return isLeaderboardRateLimited(req, 'image', 100, 60, client)
       })(),
       new Promise((_, reject) => {
         redisTimeout = setTimeout(() => {
@@ -55,6 +59,7 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Image generation unavailable' })
   } finally {
     clearTimeout(redisTimeout)
+    redisRequest?.close()
   }
 
   const { prompt, width, height } = req.query ?? {}

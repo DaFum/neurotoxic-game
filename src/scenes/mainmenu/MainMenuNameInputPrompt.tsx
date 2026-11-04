@@ -3,6 +3,7 @@ import type { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
+import { validatePlayerName } from '../../../lib/playerName.js'
 
 /**
  * Properties for the MainMenuNameInputPrompt component.
@@ -41,14 +42,19 @@ export const MainMenuNameInputPrompt = ({
   // React 19 Action State Paradigm
   const [error, submitAction] = useActionState(
     async (_previousState: string | null, formData: FormData) => {
-      const name = String(formData.get('playerName') ?? '').trim()
+      const validated = validatePlayerName(formData.get('playerName'))
 
-      if (!name) {
-        return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
+      if ('error' in validated) {
+        return validated.error === 'Invalid playerName'
+          ? t('ui:invalid_name_error', {
+              defaultValue:
+                'Use at least one letter, number, punctuation mark, or symbol'
+            })
+          : t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
       }
 
-      setPlayerNameInput(name)
-      handleNameSubmit(name)
+      setPlayerNameInput(validated.playerName)
+      handleNameSubmit(validated.playerName)
       return null
     },
     null

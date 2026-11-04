@@ -260,6 +260,39 @@ describe('ambient.ts', () => {
   })
 
   describe('playRandomAmbientOgg', () => {
+    for (const failure of ['buffer', 'source', 'rejection']) {
+      test(`a failed chained ${failure} uses MIDI fallback`, async () => {
+        await playRandomAmbientOgg()
+        if (failure === 'buffer')
+          mockLoadAudioBuffer.mock.mockImplementationOnce(async () => null)
+        if (failure === 'source')
+          mockCreateAndConnect.mock.mockImplementationOnce(() => null)
+        if (failure === 'rejection')
+          mockLoadAudioBuffer.mock.mockImplementationOnce(async () => {
+            throw new Error('network')
+          })
+        createdSources[0].onended()
+        await new Promise(resolve => setTimeout(resolve, 0))
+        assert.equal(mockPlayMidiFileInternal.mock.callCount(), 1)
+      })
+    }
+
+    test('a cancelled chained OGG failure never restarts ambient MIDI', async () => {
+      await playRandomAmbientOgg()
+      let resolveLoad
+      loadAudioDeferred = {
+        promise: new Promise(resolve => {
+          resolveLoad = resolve
+        })
+      }
+      createdSources[0].onended()
+      await new Promise(resolve => setTimeout(resolve, 0))
+      mockStopAudio()
+      resolveLoad(null)
+      await new Promise(resolve => setTimeout(resolve, 0))
+      assert.equal(mockPlayMidiFileInternal.mock.callCount(), 0)
+    })
+
     test('stops current audio before starting unless skipStop is true', async () => {
       await playRandomAmbientOgg()
       assert.equal(mockStopAudio.mock.calls.length, 1)

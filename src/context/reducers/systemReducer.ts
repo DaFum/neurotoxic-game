@@ -291,14 +291,15 @@ export const handleLoadGame = (
     currentGig: sanitizeVenue(loadedState.currentGig),
     lastGigStats: sanitizeLastGigStats(loadedState.lastGigStats),
     settings: {
-      ...state.settings,
       ...(typeof loadedState.settings === 'object' &&
       loadedState.settings !== null &&
       !Array.isArray(loadedState.settings)
         ? sanitizeSettingsPayload(
             loadedState.settings as Record<string, unknown>
           )
-        : {})
+        : {}),
+      // Preferences belong to the current installation, not the saved run.
+      ...state.settings
     },
     minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)

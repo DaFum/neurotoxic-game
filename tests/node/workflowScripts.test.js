@@ -35,7 +35,7 @@ const createFakeGithub = comments => {
         },
         createComment: async ({ body }) => {
           calls.creates.push({ body })
-          comments.push({ id: 1000 + comments.length, body })
+          comments.push({ id: 1000 + comments.length, user: BOT, body })
         }
       }
     },
@@ -141,8 +141,39 @@ const thread = (id, body, login = 'reviewer') => ({
   comments: { nodes: [{ author: { login }, body }] }
 })
 
-const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
+const runTracker = async ({
+  comments,
+  threads,
+  sameRepo = 'true',
+  periodic = false,
+  checkFailure = false,
+  headSha = 'head-sha',
+  mergeSha = 'merge-sha',
+  checkRuns = []
+}) => {
   const { github, calls } = createFakeGithub(comments)
+  calls.checks = []
+  const listForRef = async () => {}
+  const paginateComments = github.paginate
+  github.paginate = async (endpoint, options) => {
+    if (endpoint === listForRef) {
+      return checkRuns.filter(check => check.head_sha === options.ref)
+    }
+    return paginateComments(endpoint, options)
+  }
+  github.rest.checks = {
+    listForRef,
+    create: async check => {
+      if (checkFailure) throw new Error('check publication failed')
+      calls.checks.push(check)
+      checkRuns.push({
+        ...check,
+        id: checkRuns.length + 1,
+        app: { slug: 'github-actions' },
+        pull_requests: [{ number: 7 }]
+      })
+    }
+  }
   github.graphql = async () => ({
     repository: {
       pullRequest: {
@@ -160,17 +191,459 @@ const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
   )
   const context = {
     repo: { owner: 'o', repo: 'r' },
-    payload: { pull_request: { number: 7 } }
+    payload: periodic ? {} : { pull_request: { number: 7 } }
   }
   await runScript(
     script,
     { github, context, core, console: { log: () => {} } },
-    { SAME_REPO_PR: sameRepo }
+    {
+      SAME_REPO_PR: sameRepo,
+      PERIODIC_REFRESH: String(periodic),
+      PR_NUMBER: '7',
+      PR_HEAD_SHA: headSha,
+      PR_MERGE_SHA: mergeSha
+    }
   )
   return { calls, log }
 }
 
 describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('a foreign head check cannot suppress this PR stored verdict', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    const checkRuns = [
+      {
+        id: 1,
+        name: 'Aggregate Comments & Enforce Resolution',
+        head_sha: 'head-sha',
+        app: { slug: 'github-actions' },
+        pull_requests: [{ number: 99 }],
+        status: 'completed',
+        conclusion: 'failure'
+      }
+    ]
+    const refresh = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns,
+      mergeSha: ''
+    })
+    assert.deepEqual(
+      refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+        head_sha,
+        conclusion
+      })),
+      [{ head_sha: 'head-sha', conclusion: 'success' }]
+    )
+    const repeated = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns,
+      mergeSha: ''
+    })
+    assert.equal(repeated.calls.checks.length, 0)
+  })
+
+  test('an unchanged report fills missing head and merge checks independently', async () => {
+    for (const threads of [[], [thread('T1', 'blocking')]]) {
+      for (const mergeSha of ['merge-sha', '', 'new-head-sha']) {
+        const comments = []
+        const checkRuns = []
+        await runTracker({ comments, threads, periodic: true, checkRuns })
+        const refresh = await runTracker({
+          comments,
+          threads,
+          periodic: true,
+          checkRuns,
+          headSha: 'new-head-sha',
+          mergeSha
+        })
+        assert.deepEqual(
+          refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+            head_sha,
+            conclusion
+          })),
+          [
+            {
+              head_sha: 'new-head-sha',
+              conclusion: threads.length ? 'failure' : 'success'
+            }
+          ]
+        )
+        const repeated = await runTracker({
+          comments,
+          threads,
+          periodic: true,
+          checkRuns,
+          headSha: 'new-head-sha',
+          mergeSha
+        })
+        assert.equal(repeated.calls.checks.length, 0)
+        assert.equal(refresh.calls.updates.length, 0)
+      }
+    }
+  })
+
+  test('periodic refresh updates a resolved thread and its PR-head check', async () => {
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [{ ...thread('T1', 'resolved'), isResolved: true }],
+      periodic: true
+    })
+    assert.equal(calls.updates.length, 1)
+    assert.ok(calls.updates[0].body.includes('Keine offenen Review-Threads'))
+    assert.equal(calls.checks[0].head_sha, 'head-sha')
+    assert.equal(calls.checks[1].head_sha, 'merge-sha')
+    assert.equal(calls.checks[0].conclusion, 'success')
+    assert.equal(log.failures.length, 0)
+  })
+
+  test('failed periodic check publication leaves the report unchanged for retry', async () => {
+    const oldBody = `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+    const comments = [{ id: 9, user: BOT, body: oldBody }]
+    await assert.rejects(
+      runTracker({
+        comments,
+        threads: [],
+        periodic: true,
+        checkFailure: true
+      }),
+      /check publication failed/
+    )
+    assert.equal(comments[0].body, oldBody)
+  })
+
+  test('periodic refresh reports reopened threads but leaves unchanged reports alone', async () => {
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS:  -->`
+      }
+    ]
+    const checkRuns = []
+    const reopened = await runTracker({
+      comments,
+      threads: [thread('T1', 'reopened')],
+      periodic: true,
+      checkRuns
+    })
+    assert.equal(reopened.calls.checks[0].conclusion, 'failure')
+    const unchanged = await runTracker({
+      comments,
+      threads: [thread('T1', 'reopened')],
+      periodic: true,
+      checkRuns
+    })
+    assert.equal(unchanged.calls.updates.length, 0)
+    assert.equal(unchanged.calls.checks.length, 0)
+  })
+
+  test('an unchanged report copies its verdict to a new merge commit only', async () => {
+    const comments = []
+    const checkRuns = []
+    await runTracker({
+      comments,
+      threads: [thread('T1', 'blocking')],
+      periodic: true,
+      checkRuns
+    })
+    const originalBody = comments[0].body
+    const refresh = await runTracker({
+      comments,
+      threads: [thread('T1', 'blocking')],
+      periodic: true,
+      mergeSha: 'new-merge-sha',
+      checkRuns
+    })
+
+    assert.equal(comments[0].body, originalBody)
+    assert.equal(refresh.calls.updates.length, 0)
+    assert.deepEqual(
+      refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+        head_sha,
+        conclusion
+      })),
+      [{ head_sha: 'new-merge-sha', conclusion: 'failure' }]
+    )
+  })
+
+  test('an event report supplies missing head and merge verdicts', async () => {
+    for (const [threads, expected] of [
+      [[thread('T1', 'blocking')], 'failure'],
+      [[], 'success']
+    ]) {
+      const comments = []
+      const event = await runTracker({ comments, threads })
+      assert.equal(event.log.failures.length, expected === 'failure' ? 1 : 0)
+      const originalBody = comments[0].body
+      const refresh = await runTracker({
+        comments,
+        threads,
+        periodic: true,
+        mergeSha: 'new-merge-sha'
+      })
+      assert.equal(comments[0].body, originalBody)
+      assert.deepEqual(
+        refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+          head_sha,
+          conclusion
+        })),
+        [
+          { head_sha: 'head-sha', conclusion: expected },
+          { head_sha: 'new-merge-sha', conclusion: expected }
+        ]
+      )
+    }
+  })
+
+  test('a truncated legacy report remains unchanged during migration', async () => {
+    const comments = []
+    const threads = [thread('T1', 'x'.repeat(70000))]
+    await runTracker({ comments, threads })
+    const verdictMarker = '\n<!-- TRACKER_VERDICT: failure -->'
+    const newBody = comments[0].body
+    assert.equal(newBody.length, 65536)
+    comments[0].body = newBody
+      .replace(
+        '\n... (truncated)',
+        `${'x'.repeat(verdictMarker.length)}\n... (truncated)`
+      )
+      .replace(verdictMarker, '')
+    const legacyBody = comments[0].body
+    const checkRuns = [
+      {
+        id: 1,
+        name: 'Aggregate Comments & Enforce Resolution',
+        head_sha: 'head-sha',
+        app: { slug: 'github-actions' },
+        pull_requests: [{ number: 7 }],
+        status: 'completed',
+        conclusion: 'failure'
+      }
+    ]
+    const refresh = await runTracker({
+      comments,
+      threads,
+      periodic: true,
+      mergeSha: 'new-merge-sha',
+      checkRuns
+    })
+    assert.equal(comments[0].body, legacyBody)
+    assert.equal(refresh.calls.updates.length, 0)
+    assert.equal(refresh.calls.checks[0].conclusion, 'failure')
+  })
+
+  test('a legacy report does not invent a verdict without a completed head check', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    comments[0].body = comments[0].body.replace(
+      /\n<!-- TRACKER_VERDICT: (success|failure) -->$/,
+      ''
+    )
+    const refresh = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      mergeSha: 'new-merge-sha'
+    })
+    assert.deepEqual(refresh.calls.checks, [])
+  })
+
+  test('a legacy report uses the latest trusted completed head verdict', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    comments[0].body = comments[0].body.replace(
+      /\n<!-- TRACKER_VERDICT: (success|failure) -->$/,
+      ''
+    )
+    const check = (
+      id,
+      conclusion,
+      slug = 'github-actions',
+      status = 'completed'
+    ) => ({
+      id,
+      name: 'Aggregate Comments & Enforce Resolution',
+      head_sha: 'head-sha',
+      app: { slug },
+      pull_requests: [{ number: 7 }],
+      status,
+      conclusion
+    })
+    const checkRuns = [
+      check(2, 'success'),
+      check(1, 'failure'),
+      check(3, 'failure', 'untrusted-app')
+    ]
+    const refresh = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      mergeSha: 'new-merge-sha',
+      checkRuns
+    })
+    assert.deepEqual(
+      refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+        head_sha,
+        conclusion
+      })),
+      [{ head_sha: 'new-merge-sha', conclusion: 'success' }]
+    )
+
+    const pending = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      mergeSha: 'another-merge-sha',
+      checkRuns: [...checkRuns, check(4, null, 'github-actions', 'in_progress')]
+    })
+    assert.deepEqual(pending.calls.checks, [])
+    assert.equal(pending.log.warnings.length, 1)
+  })
+
+  test('a legacy report only uses checks associated with this PR', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    comments[0].body = comments[0].body.replace(
+      /\n<!-- TRACKER_VERDICT: (success|failure) -->$/,
+      ''
+    )
+    const check = (id, pullRequests, conclusion) => ({
+      id,
+      name: 'Aggregate Comments & Enforce Resolution',
+      head_sha: 'head-sha',
+      app: { slug: 'github-actions' },
+      pull_requests: pullRequests,
+      status: 'completed',
+      conclusion
+    })
+    const foreignAndUnknown = [
+      check(3, [{ number: 8 }], 'failure'),
+      check(2, [], 'failure'),
+      check(1, undefined, 'failure')
+    ]
+    const noMatch = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns: foreignAndUnknown
+    })
+    assert.deepEqual(noMatch.calls.checks, [])
+    assert.equal(noMatch.log.warnings.length, 1)
+
+    const matching = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns: [...foreignAndUnknown, check(0, [{ number: 7 }], 'success')]
+    })
+    assert.equal(matching.calls.checks[0].conclusion, 'success')
+  })
+
+  test('scheduled and event runs serialize per PR without canceling an active update', () => {
+    const workflow = loadWorkflow('pr-comment-tracker.yml')
+    const concurrency = workflow.jobs['update-summary-and-check'].concurrency
+    assert.match(concurrency.group, /matrix\.pr\.number/)
+    assert.equal(concurrency['cancel-in-progress'], false)
+  })
+
+  test('periodic refresh is scheduled and only discovers eligible open PRs', async () => {
+    const workflow = loadWorkflow('pr-comment-tracker.yml')
+    assert.ok(workflow.on.schedule.length > 0)
+    const script = findScript(workflow, 'TRACKER_OPEN_PRS')
+    const list = async () => {}
+    let output
+    const pr = (number, repoName, login = 'author') => ({
+      number,
+      head: { sha: `sha-${number}`, repo: { full_name: repoName } },
+      merge_commit_sha: `merge-${number}`,
+      user: { login }
+    })
+    await runScript(script, {
+      github: {
+        rest: { pulls: { list } },
+        paginate: async () => [
+          pr(1, 'o/r'),
+          pr(2, 'fork/r'),
+          pr(3, 'o/r', 'dependabot[bot]')
+        ]
+      },
+      context: {
+        eventName: 'schedule',
+        repo: { owner: 'o', repo: 'r' },
+        payload: {}
+      },
+      core: {
+        setOutput: (_name, value) => {
+          output = JSON.parse(value)
+        }
+      }
+    })
+    assert.deepEqual(output, [
+      { number: 1, headSha: 'sha-1', mergeSha: 'merge-1' }
+    ])
+  })
+
+  test('scheduled discovery rotates bounded batches and reports deferred PRs', async () => {
+    const script = findScript(
+      loadWorkflow('pr-comment-tracker.yml'),
+      'TRACKER_OPEN_PRS'
+    )
+    for (const count of [257, 512, 513]) {
+      const prs = Array.from({ length: count }, (_, i) => ({
+        number: i + 1,
+        head: { sha: `sha-${i + 1}`, repo: { full_name: 'o/r' } },
+        merge_commit_sha: `merge-${i + 1}`,
+        user: { login: 'author' }
+      })).reverse()
+      const run = async slot => {
+        let output
+        const notices = []
+        await runScript(script, {
+          github: {
+            rest: { pulls: { list: async () => {} } },
+            paginate: async () => prs
+          },
+          context: { repo: { owner: 'o', repo: 'r' }, payload: {} },
+          core: {
+            setOutput: (_name, value) => {
+              output = JSON.parse(value)
+            },
+            notice: message => notices.push(message)
+          },
+          Date: { now: () => slot * 30 * 60 * 1000 }
+        })
+        return { output, notices }
+      }
+      const batches = await Promise.all(
+        Array.from({ length: Math.ceil(count / 256) }, (_, i) => run(3000 + i))
+      )
+      for (const batch of batches) {
+        assert.equal(batch.output.length, 256)
+        assert.equal(new Set(batch.output.map(pr => pr.number)).size, 256)
+        assert.match(
+          batch.notices.join(' '),
+          new RegExp(`\\b${count - 256}\\b`)
+        )
+      }
+      assert.equal(
+        new Set(batches.flatMap(batch => batch.output.map(pr => pr.number)))
+          .size,
+        count
+      )
+    }
+  })
+
   test('tracks threads with an identical 80-character prefix by thread id', async () => {
     const prefix = 'p'.repeat(80)
     const comments = [

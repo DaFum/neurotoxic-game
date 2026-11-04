@@ -172,23 +172,28 @@ export async function playRandomAmbientOgg(
     }
     logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
 
-    // Capture the current reqId to check against after the async call starts
-    const preChainReqId = audioState.playRequestId
-
-    playRandomAmbientOgg(rng, { skipStop: true }).catch(error => {
-      if (audioState.playRequestId !== preChainReqId + 1) {
-        logger.debug(
+    const pending = playRandomAmbientOgg(rng, { skipStop: true })
+    const requestId = audioState.playRequestId
+    void pending
+      .catch(error => {
+        logger.error(
           'AudioEngine',
-          'Chain failed but reqId changed. Benign race condition.'
+          'Failed to chain next ambient OGG track',
+          error
         )
-        return
-      }
-      logger.error(
-        'AudioEngine',
-        'Failed to chain next ambient OGG track',
-        error
-      )
-    })
+        return false
+      })
+      .then(started => {
+        if (started || audioState.playRequestId !== requestId) return
+        return playRandomAmbientMidi(SONGS_DB, rng)
+      })
+      .catch(error => {
+        logger.error(
+          'AudioEngine',
+          'Failed to start ambient MIDI fallback',
+          error
+        )
+      })
   }
 
   source.start()
