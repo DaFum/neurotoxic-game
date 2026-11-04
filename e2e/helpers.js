@@ -287,17 +287,21 @@ export async function getTestHook(page, name, { timeout = 10000 } = {}) {
 }
 
 /**
- * Dismisses the first-visit tutorial a freshly loaded Overworld shows.
+ * Dismisses a tutorial that has not already been skipped in global settings.
  *
  * @remarks
- * A fresh browser context always shows it on the first Overworld visit, so
- * its presence is asserted rather than tolerated. Call it only on that first
- * visit: once skipped, the tutorial does not return after a reload.
+ * The menu can mark the tutorial seen before a save is loaded. Loading keeps
+ * those current preferences, so that path must have no tutorial. An unseen
+ * tutorial must still render and be dismissed; a missing overlay is not ignored.
  *
- * @param {import('@playwright/test').Page} page - The Playwright page, on the Overworld.
+ * @param {import('@playwright/test').Page} page - The Playwright page, on the menu or Overworld.
  */
 export async function dismissTutorial(page) {
   const tutorial = page.getByRole('region', { name: /tutorial/i })
+  if ((await readRootState(page)).settings.tutorialSeen) {
+    await expect(tutorial).toHaveCount(0)
+    return
+  }
   await expect(tutorial).toBeVisible()
   await tutorial.getByRole('button', { name: /skip all/i }).click()
   await expect(tutorial).toHaveCount(0)

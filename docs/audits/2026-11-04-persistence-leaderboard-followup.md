@@ -23,10 +23,14 @@ Redis command timeouts alone cover queued commands, so the explicit deadline als
 - Core, server and reducer type checks, repository lint (including CSS), targeted final lint and production build pass.
 - Dead-code checking returns to the previously observed single `lint-staged` devDependency finding against budget zero. `.husky/pre-commit` uses it through `npx lint-staged`; no new unused exports remain.
 - Skill structural validation completed. Targeted checks of both modified skill copies confirm valid metadata, unique names and valid references. The validator still warns about the unchanged execute bit; explicit Bash invocation is the chosen correction. Descriptions/triggers were not changed.
-- The full `test:all` gate, browser E2E, live Redis outage test and live deployment were not run. Network stalls were simulated deterministically. Score durability still depends on working browser storage; the existing storage helper falls back to session memory when persistent writes are refused.
+- The full `test:all` gate, live Redis outage test and live deployment were not run. Browser E2E follow-up is recorded below. Network stalls were simulated deterministically. Score durability still depends on working browser storage; the existing storage helper falls back to session memory when persistent writes are refused.
 
 An independent review found the version-slot deletion retry issue; it was reproduced in a failing test and corrected. The final source recheck found no further concrete issues.
 
 ## Subsequent E2E run
 
-`pnpm run test:e2e` was subsequently started (244 tests, two Chromium workers). Failures were observed in the audit re-entry, pause/resume, protected-cash travel and tourbus frame-scheduling specs. This is not a completed passing E2E gate; the final result is tracked in the pull request.
+The initial `pnpm run test:e2e` completed with 122 passed, 35 failed and 87 skipped (244 total). The common blocker was `dismissTutorial` requiring a tutorial after `skipToMenu` had already skipped it and persisted `tutorialSeen=true`. Loading now correctly preserves that global preference, so the old helper's expectation was stale.
+
+The helper now asserts absence when the current preference says the tutorial was seen. When it is unseen, the helper still requires the overlay, clicks its skip control and asserts removal. Two real-browser regression tests cover both branches and persisted preferences. The unseen-state setup waits for the requested root-state snapshot before checking the overlay, avoiding a race with the menu tutorial's dismissal. Both regressions pass five consecutive repetitions (10 tests); independent source review found no weakened assertions.
+
+The final `pnpm run test:e2e` completed successfully in 8.2 minutes: **159 passed, 87 skipped, zero failed** (246 total). The existing platform/viewport-specific skips are unchanged. All 35 previously blocked cases now pass.

@@ -30,6 +30,6 @@ The dependency is already pinned to `i18next-http-backend@4.0.4`. A fresh `pnpm 
 - All 62 focused UI tests pass, covering manual saving, gig audio readiness/error handling, PixiStage and disabled leaderboard behavior. All 76 image utility/API tests also pass (426 selected tests total).
 - Core and reducer type checks, repository lint (including CSS), and production build pass.
 - `deadcode:check` and `deadcode:budget` report one finding against budget zero: the unchanged `lint-staged` devDependency. `.husky/pre-commit` uses it via `npx lint-staged`; no unrelated dependency/configuration change was made to silence this finding.
-- The full `test:all` gate, browser E2E, live GitHub workflow execution, deployment inspection and secret rotation were not performed. Focused Node commands use `--test-force-exit` after all selected tests complete; they do not validate process teardown.
+- The full `test:all` gate, live GitHub workflow execution, deployment inspection and secret rotation were not performed. Browser E2E follow-up is recorded in [the persistence/leaderboard follow-up](2026-11-04-persistence-leaderboard-followup.md). Focused Node commands use `--test-force-exit` after all selected tests complete; they do not validate process teardown.
 
 An independent read-only review identified the need to publish scheduled results on the test-merge commit as well as the PR head. That correction and a publication-failure retry test are included.
