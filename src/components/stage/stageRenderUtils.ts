@@ -364,6 +364,7 @@ const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
 /**
  * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
  * Useful for generated URLs without extensions or with query parameters.
+ * Same-URL requests share a load that resolves null after ten seconds if stalled.
  * @param url - The URL to load.
  * @returns The loaded texture or null.
  */
@@ -375,30 +376,37 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
 
   // Share pending loads instead of replacing/destroying textures still borrowed
   // by another controller. Returned textures remain cache-owned.
-  const loading = (async (): Promise<Texture | null> => {
-    const baseUrl =
-      typeof window !== 'undefined' && window.location
-        ? window.location.href
-        : undefined
-    if (_hasFileExtension(url, baseUrl)) {
-      try {
-        return await Assets.load(url)
-      } catch (err) {
-        logger.warn(
-          'loadTexture',
-          'Pixi Assets load failed, falling back to Image element',
-          err
-        )
+  const loading = withTimeout(
+    (async (): Promise<Texture | null> => {
+      const baseUrl =
+        typeof window !== 'undefined' && window.location
+          ? window.location.href
+          : undefined
+      if (_hasFileExtension(url, baseUrl)) {
+        try {
+          return await Assets.load(url)
+        } catch (err) {
+          logger.warn(
+            'loadTexture',
+            'Pixi Assets load failed, falling back to Image element',
+            err
+          )
+        }
       }
-    }
 
-    return _loadWithImageFallback(url)
-  })()
+      return _loadWithImageFallback(url)
+    })(),
+    'Texture',
+    10000,
+    { rethrow: true }
+  )
   _inFlightTextureLoads.set(url, loading)
   try {
     return await loading
   } finally {
-    _inFlightTextureLoads.delete(url)
+    if (_inFlightTextureLoads.get(url) === loading) {
+      _inFlightTextureLoads.delete(url)
+    }
   }
 }
 
