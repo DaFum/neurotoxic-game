@@ -225,6 +225,32 @@ const makeSequencerState = (overrides = {}) => ({
   ...overrides
 })
 
+test('a failed next song reports playback failure without completing the setlist', async () => {
+  const onPlaybackError = mock.fn()
+  const state = makeSequencerState({ onPlaybackError })
+  const ref = { current: state }
+  const failure = new Error('backend unavailable')
+  playAudioForSong.mock.mockImplementationOnce(async () => [])
+  await playSongSequence(
+    0,
+    [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ],
+    ref,
+    () => {},
+    undefined
+  )
+  const ended = playAudioForSong.mock.calls.at(-1).arguments[2]
+  playAudioForSong.mock.mockImplementationOnce(async () => {
+    throw failure
+  })
+  await ended()
+  assert.equal(onPlaybackError.mock.callCount(), 1)
+  assert.equal(onPlaybackError.mock.calls[0].arguments[0], failure)
+  assert.equal(state.setlistCompleted, false)
+})
+
 // A zero-length playback window ends the source while `playAudioForSong` is
 // still running, so the song-end callback fires before the playback resolves.
 const SONG_A_NOTES = [{ time: 1000 }, { time: 9000 }]

@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { withRedisDeadline } from '../../lib/redisDeadline.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import {
   parseLeaderboardLimit,
@@ -47,10 +48,14 @@ export default async function handler(req, res) {
     try {
       // Ensure connection
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => client.connect())
       }
 
-      if (await isLeaderboardRateLimited(req, 'song')) {
+      if (
+        await withRedisDeadline(client, () =>
+          isLeaderboardRateLimited(req, 'song')
+        )
+      ) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -137,10 +142,12 @@ export default async function handler(req, res) {
 
       // A refused name write is not an error: the scores below still apply
       // (GT only ever raises a best) and the response shape stays unchanged.
-      await client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
-        keys: ['lb:revision', 'players'],
-        arguments: [playerId, String(player.playerName)]
-      })
+      await withRedisDeadline(client, () =>
+        client.eval(SET_NAME_IF_UNVERSIONED_SCRIPT, {
+          keys: ['lb:revision', 'players'],
+          arguments: [playerId, String(player.playerName)]
+        })
+      )
 
       const multi = client.multi()
       for (const item of validatedItems) {
@@ -150,7 +157,7 @@ export default async function handler(req, res) {
           { GT: true }
         )
       }
-      await multi.exec()
+      await withRedisDeadline(client, () => multi.exec())
 
       return res.status(200).json({ success: true })
     } catch (error) {
@@ -180,7 +187,7 @@ export default async function handler(req, res) {
 
       // Ensure connection
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => client.connect())
       }
 
       const leaderboard = await fetchLeaderboard(

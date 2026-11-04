@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useLeaderboardSync } from '../../src/hooks/useLeaderboardSync'
 import { logger } from '../../src/utils/logger'
 import { resetStorageFallback } from '../../src/utils/storage'
+import { SONGS_DB } from '../../src/data/songs'
 
 // Mock Logger
 vi.mock('../../src/utils/logger', () => ({
@@ -64,6 +65,32 @@ describe('useLeaderboardSync', () => {
   afterEach(() => {
     vi.useRealTimers()
     delete global.fetch
+  })
+
+  it('resumes persisted song scores when the provider mounts', async () => {
+    const song = SONGS_DB.find(entry => typeof entry.leaderboardId === 'string')
+    expect(song).toBeDefined()
+    const scores = [{ songId: song.leaderboardId, score: 100, accuracy: 95 }]
+    localStorage.setItem(
+      'neurotoxic_pending_song_scores:resume-player',
+      JSON.stringify(scores)
+    )
+    mockFetch.mockResolvedValue(okResponse())
+    renderHook(() =>
+      useLeaderboardSync(makeState({ playerId: 'resume-player' }))
+    )
+    await waitFor(() =>
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          body: JSON.stringify({
+            playerId: 'resume-player',
+            playerName: 'Player1',
+            scores
+          })
+        })
+      )
+    )
   })
 
   it('skips sync if player ID is missing', () => {

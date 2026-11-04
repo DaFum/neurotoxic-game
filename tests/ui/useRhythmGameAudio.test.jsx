@@ -991,6 +991,28 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     expect(mocks.stopAudio).toHaveBeenCalled()
   })
 
+  it('shows the audio retry UI when a later song cannot start', async () => {
+    const setAudioStatus = vi.fn()
+    const setFailureKind = vi.fn()
+    const gameStateRef = { current: { lanes: [{}, {}, {}] } }
+    const { result } = renderAudioHook(
+      setAudioStatus,
+      gameStateRef,
+      setFailureKind
+    )
+    await advance(0)
+    act(() => result.current.onStageReady())
+    await advance(0)
+    expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(gameStateRef.current.onPlaybackError).toBeTypeOf('function')
+    act(() =>
+      gameStateRef.current.onPlaybackError(new Error('backend unavailable'))
+    )
+    expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
+    expect(setFailureKind).toHaveBeenLastCalledWith('audio')
+    expect(mocks.stopAudio).toHaveBeenCalled()
+  })
+
   describe('failure kind', () => {
     it('reports a stage failure, clears it on retry and reports a following setup failure as audio', async () => {
       const setAudioStatus = vi.fn()

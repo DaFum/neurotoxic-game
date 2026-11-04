@@ -141,8 +141,21 @@ const thread = (id, body, login = 'reviewer') => ({
   comments: { nodes: [{ author: { login }, body }] }
 })
 
-const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
+const runTracker = async ({
+  comments,
+  threads,
+  sameRepo = 'true',
+  periodic = false,
+  checkFailure = false
+}) => {
   const { github, calls } = createFakeGithub(comments)
+  calls.checks = []
+  github.rest.checks = {
+    create: async check => {
+      if (checkFailure) throw new Error('check publication failed')
+      calls.checks.push(check)
+    }
+  }
   github.graphql = async () => ({
     repository: {
       pullRequest: {
@@ -160,17 +173,119 @@ const runTracker = async ({ comments, threads, sameRepo = 'true' }) => {
   )
   const context = {
     repo: { owner: 'o', repo: 'r' },
-    payload: { pull_request: { number: 7 } }
+    payload: periodic ? {} : { pull_request: { number: 7 } }
   }
   await runScript(
     script,
     { github, context, core, console: { log: () => {} } },
-    { SAME_REPO_PR: sameRepo }
+    {
+      SAME_REPO_PR: sameRepo,
+      PERIODIC_REFRESH: String(periodic),
+      PR_NUMBER: '7',
+      PR_HEAD_SHA: 'head-sha',
+      PR_MERGE_SHA: 'merge-sha'
+    }
   )
   return { calls, log }
 }
 
 describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('periodic refresh updates a resolved thread and its PR-head check', async () => {
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+      }
+    ]
+    const { calls, log } = await runTracker({
+      comments,
+      threads: [{ ...thread('T1', 'resolved'), isResolved: true }],
+      periodic: true
+    })
+    assert.equal(calls.updates.length, 1)
+    assert.ok(calls.updates[0].body.includes('Keine offenen Review-Threads'))
+    assert.equal(calls.checks[0].head_sha, 'head-sha')
+    assert.equal(calls.checks[1].head_sha, 'merge-sha')
+    assert.equal(calls.checks[0].conclusion, 'success')
+    assert.equal(log.failures.length, 0)
+  })
+
+  test('failed periodic check publication leaves the report unchanged for retry', async () => {
+    const oldBody = `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS: T1 -->`
+    const comments = [{ id: 9, user: BOT, body: oldBody }]
+    await assert.rejects(
+      runTracker({
+        comments,
+        threads: [],
+        periodic: true,
+        checkFailure: true
+      }),
+      /check publication failed/
+    )
+    assert.equal(comments[0].body, oldBody)
+  })
+
+  test('periodic refresh reports reopened threads but leaves unchanged reports alone', async () => {
+    const comments = [
+      {
+        id: 9,
+        user: BOT,
+        body: `${TRACKER_MARKER}\nold\n<!-- REPORTED_THREADS:  -->`
+      }
+    ]
+    const reopened = await runTracker({
+      comments,
+      threads: [thread('T1', 'reopened')],
+      periodic: true
+    })
+    assert.equal(reopened.calls.checks[0].conclusion, 'failure')
+    const unchanged = await runTracker({
+      comments,
+      threads: [thread('T1', 'reopened')],
+      periodic: true
+    })
+    assert.equal(unchanged.calls.updates.length, 0)
+    assert.equal(unchanged.calls.checks.length, 0)
+  })
+
+  test('periodic refresh is scheduled and only discovers eligible open PRs', async () => {
+    const workflow = loadWorkflow('pr-comment-tracker.yml')
+    assert.ok(workflow.on.schedule.length > 0)
+    const script = findScript(workflow, 'TRACKER_OPEN_PRS')
+    const list = async () => {}
+    let output
+    const pr = (number, repoName, login = 'author') => ({
+      number,
+      head: { sha: `sha-${number}`, repo: { full_name: repoName } },
+      merge_commit_sha: `merge-${number}`,
+      user: { login }
+    })
+    await runScript(script, {
+      github: {
+        rest: { pulls: { list } },
+        paginate: async () => [
+          pr(1, 'o/r'),
+          pr(2, 'fork/r'),
+          pr(3, 'o/r', 'dependabot[bot]')
+        ]
+      },
+      context: {
+        eventName: 'schedule',
+        repo: { owner: 'o', repo: 'r' },
+        payload: {}
+      },
+      core: {
+        setOutput: (_name, value) => {
+          output = JSON.parse(value)
+        }
+      }
+    })
+    assert.deepEqual(output, [
+      { number: 1, headSha: 'sha-1', mergeSha: 'merge-1' }
+    ])
+  })
+
   test('tracks threads with an identical 80-character prefix by thread id', async () => {
     const prefix = 'p'.repeat(80)
     const comments = [

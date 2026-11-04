@@ -12,7 +12,7 @@ Enforce code quality standards by running the canonical check suite.
 Run the bundled script:
 
 ```bash
-.claude/skills/one-command-quality-gate/scripts/quality-gate.sh
+bash .claude/skills/one-command-quality-gate/scripts/quality-gate.sh
 ```
 
 ## Workflow
@@ -33,7 +33,7 @@ The script executes these checks in order:
 **Input**: "I finished the feature. Is it ready?"
 
 **Action**:
-Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
+Run `bash .claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 **Output**:
 (Note: "Running..." text denotes additional successful check output.)

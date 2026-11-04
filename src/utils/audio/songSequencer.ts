@@ -197,6 +197,10 @@ export const playSongSequence = async (
       // A rejection that lands after a gig reset or a newer sequence belongs to
       // a stale attempt: it must not flag the current gig's setlist as done.
       if (gameStateRef.current?.sequenceAttemptId !== chainedAttemptId) return
+      if (gameStateRef.current.onPlaybackError) {
+        gameStateRef.current.onPlaybackError(err)
+        return
+      }
       handleError(err, {
         addToast,
         fallbackMessage: t

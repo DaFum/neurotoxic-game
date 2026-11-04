@@ -127,6 +127,8 @@ export const normalizeVenueId = (venue: unknown): string | null => {
  * `getActiveAssetModifiers`; mapUtils stays free of those dependencies.
  */
 interface SoftlockContext {
+  /** Cash included in reserve-fee pricing but unavailable for recovery or travel. */
+  protectedCash?: number
   /** One-use carried recovery, with caps relaxed in favour of escape. */
   consumableRecovery?: Partial<ConsumableRecovery>
   /** Total daily obligations added on top of each neighbor's travel cost. */
@@ -454,7 +456,11 @@ export const checkSoftlock = (
         })
       : undefined
   const currentFuel = finiteNumberOr(van?.fuel, 0)
-  const playerMoney = Math.max(0, finiteNumberOr(player.money, 0))
+  const protectedCash = Math.max(0, finiteNumberOr(context.protectedCash, 0))
+  const playerMoney = Math.max(
+    0,
+    finiteNumberOr(player.money, 0) - protectedCash
+  )
   const nodes = gameMap.nodes ?? {}
   const currentNode = nodes[player.currentNodeId]
   const bandStateForTravel = (
@@ -546,7 +552,7 @@ export const checkSoftlock = (
         customContext?.fameLevel,
         playerStateForTravel.fameLevel
       ),
-      money,
+      money: money + protectedCash,
       van: { ...playerStateForTravel.van, fuel }
     }
 

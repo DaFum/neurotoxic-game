@@ -148,6 +148,8 @@ export type RhythmGameRefState = {
    * song that ends while the ticker was suspended cannot discard them.
    */
   settleUnhitNotes?: () => void
+  /** Routes an active setlist playback failure to the gig retry UI. */
+  onPlaybackError?: (error: unknown) => void
   lanes: RhythmLane[]
   speed: number
   modifiers: RhythmModifiers

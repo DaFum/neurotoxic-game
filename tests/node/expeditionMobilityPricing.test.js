@@ -1,0 +1,108 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
+import {
+  deriveExpeditionPendingFailure,
+  getExpeditionMobilityFailureSignal
+} from '../../src/domain/expedition/failure'
+import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
+import { getExpeditionTravelMap } from '../../src/domain/expedition/routeOverlay'
+import { calculateTravelExpenses } from '../../src/utils/economy'
+import {
+  getActiveAssetModifiers,
+  getTotalDailyObligations
+} from '../../src/utils/assets/assetSelectors'
+import { handleSellChassis } from '../../src/context/reducers/assets/assetReducer'
+
+const asset = (id, slots = []) => ({
+  id,
+  kind: 'tourbus_chassis',
+  chassisFlavor: 'legit',
+  chassisTier: 1,
+  condition: 100,
+  baseDailyRevenue: 0,
+  baseUpkeep: 0,
+  baseRiskEventChance: 0,
+  acquiredOnDay: 1,
+  acquisitionMode: 'cash',
+  slots
+})
+
+const mobilityState = () => {
+  const state = walkTo(startedState({ money: 5000, fuel: 100 }), 1)
+  state.player.lastGigNodeId = state.player.currentNodeId
+  state.band.harmony = 1
+  state.band.members = state.band.members.map(member => ({
+    ...member,
+    stamina: 0
+  }))
+  state.assets = []
+  state.liabilities = {}
+  return state
+}
+
+test('expedition mobility uses the same solar fuel savings as settlement', () => {
+  const state = mobilityState()
+  state.assets = [
+    asset('solar', [
+      { id: 'roof', slotType: 'tb_roof', installedModuleId: 'tb_solar_panel' }
+    ])
+  ]
+  assert.ok(getActiveAssetModifiers(state.assets).fuelMultiplier < 1)
+  state.expedition.loadout.activeTourbusAssetId = 'solar'
+  const required = getExpeditionCheapestOnwardLegFuel(state)
+  assert.ok(required > 0)
+  state.player.van.fuel = required + 0.001
+  state.player.money = 200
+  state.expedition.protectedCareerCash = 0
+  // Enough cash for the leg but not a full refuel, so fuel savings decide.
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('reserve fees use total cash while affordability uses only expedition cash', () => {
+  const state = mobilityState()
+  state.player.money = 100_000
+  const map = getExpeditionTravelMap(state)
+  const costs = map.connections
+    .filter(edge => edge.from === state.player.currentNodeId)
+    .map(
+      edge =>
+        calculateTravelExpenses(
+          map.nodes[edge.to],
+          map.nodes[edge.from],
+          state.player,
+          state.band
+        ).totalCost
+    )
+  assert.ok(costs.length > 0)
+  const spendable =
+    Math.min(...costs) + Math.max(0, getTotalDailyObligations(state)) - 1
+  state.expedition.protectedCareerCash = state.player.money - spendable
+  assert.equal(
+    getExpeditionMobilityFailureSignal(state)?.reason,
+    'fuel_stranded'
+  )
+})
+
+test('a legal chassis sale can prevent an expedition crisis', () => {
+  const state = mobilityState()
+  state.assets = [asset('spare')]
+  state.player.money = 1
+  const sold = handleSellChassis(state, { assetId: 'spare' })
+  assert.ok(sold.player.money > state.player.money)
+  assert.equal(getExpeditionMobilityFailureSignal(sold), null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+  assert.equal(deriveExpeditionPendingFailure(state), null)
+})
+
+test('the committed chassis cannot count as a sale escape', () => {
+  const state = mobilityState()
+  state.assets = [asset('committed')]
+  state.player.money = 0
+  state.expedition.loadout.activeTourbusAssetId = 'committed'
+  assert.equal(handleSellChassis(state, { assetId: 'committed' }), state)
+  assert.equal(
+    getExpeditionMobilityFailureSignal(state)?.reason,
+    'fuel_stranded'
+  )
+})

@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { withRedisDeadline } from '../../lib/redisDeadline.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import {
@@ -74,10 +75,14 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => client.connect())
       }
 
-      if (await isLeaderboardRateLimited(req, 'stats')) {
+      if (
+        await withRedisDeadline(client, () =>
+          isLeaderboardRateLimited(req, 'stats')
+        )
+      ) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -179,19 +184,23 @@ export default async function handler(req, res) {
         'lb:stage_dives'
       ]
       const result = hasRevision
-        ? await client.eval(WRITE_IF_NEWER_SCRIPT, {
-            keys: ['lb:revision', 'players', ...boardKeys],
-            arguments: [
-              playerId,
-              String(revision),
-              String(player.playerName),
-              ...scores
-            ]
-          })
-        : await client.eval(WRITE_IF_UNVERSIONED_SCRIPT, {
-            keys: ['lb:revision', 'players', ...boardKeys],
-            arguments: [playerId, String(player.playerName), ...scores]
-          })
+        ? await withRedisDeadline(client, () =>
+            client.eval(WRITE_IF_NEWER_SCRIPT, {
+              keys: ['lb:revision', 'players', ...boardKeys],
+              arguments: [
+                playerId,
+                String(revision),
+                String(player.playerName),
+                ...scores
+              ]
+            })
+          )
+        : await withRedisDeadline(client, () =>
+            client.eval(WRITE_IF_UNVERSIONED_SCRIPT, {
+              keys: ['lb:revision', 'players', ...boardKeys],
+              arguments: [playerId, String(player.playerName), ...scores]
+            })
+          )
       const reply = Array.isArray(result) ? result : []
       if (Number(reply[0]) !== 1) {
         // Not an error: a newer snapshot already landed (or, for an unversioned
@@ -224,7 +233,7 @@ export default async function handler(req, res) {
       }
 
       if (!client.isOpen) {
-        await client.connect()
+        await withRedisDeadline(client, () => client.connect())
       }
 
       const leaderboard = await fetchLeaderboard(`lb:${stat}`, limit)

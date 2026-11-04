@@ -15,7 +15,11 @@
  */
 
 import { checkSoftlock } from '../../utils/mapUtils'
-import { getConsumableRecovery } from '../../utils/travelSoftlockUtils'
+import {
+  getConsumableRecovery,
+  getSellableAssets,
+  getPostSaleScenarios
+} from '../../utils/travelSoftlockUtils'
 import { getCarriedContrabandStash } from './cargo'
 import { getNodeAccessStatus } from '../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../data/venues'
@@ -24,9 +28,14 @@ import {
   calculateRefuelCost,
   shouldTriggerBankruptcy
 } from '../../utils/economy'
-import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
+import {
+  getTotalDailyObligations,
+  getActiveAssetModifiers
+} from '../../utils/assets/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
+import { getExpeditionProtectedCash } from './spendableCash'
+import { isExpeditionChassisCommitmentLocked } from './buildCommitment'
 import { getExpeditionNodeBookingLock } from './fame'
 import { canClaimExpeditionInsurance } from './insurance'
 import {
@@ -164,9 +173,8 @@ export const getExpeditionEconomyFailureSignal = (
  * `checkSoftlock` is the canonical stranded authority and already accounts for
  * the travel gate, in-place gig escapes and an affordable refuel; it is handed
  * the booking gate (`getNodeAccessStatus`) so a refused neighbour is no
- * escape. It is given a
- * player view whose cash is the Expedition-spendable slice, so the protected
- * Career Cash cannot silently defuse a stranded verdict, and whose current
+ * escape. It receives the real balance for reserve-fee pricing and a separate protected cash floor,
+ * so Career Cash cannot silently defuse a stranded verdict. The current
  * node counts as played when the Fame access gate refuses to book it.
  */
 export const getExpeditionMobilityFailureSignal = (
@@ -186,7 +194,6 @@ export const getExpeditionMobilityFailureSignal = (
       : undefined
   const strandedView = {
     ...state.player,
-    money: spendable,
     ...(getExpeditionNodeBookingLock(state, currentNodeType)
       ? { lastGigNodeId: currentNodeId }
       : {})
@@ -203,6 +210,22 @@ export const getExpeditionMobilityFailureSignal = (
   if (
     !travelBlockedHere &&
     !checkSoftlock(getExpeditionTravelMap(state), strandedView, state.band, {
+      protectedCash: getExpeditionProtectedCash(state),
+      assetModifiers: getActiveAssetModifiers(state.assets ?? []),
+      postSaleScenarios: getPostSaleScenarios(
+        getSellableAssets(
+          state.assets,
+          state.liabilities,
+          state.player.day
+        ).filter(
+          asset => !isExpeditionChassisCommitmentLocked(state, asset.id)
+        ),
+        state.assets,
+        state.liabilities,
+        state.player,
+        state.band,
+        state.social
+      ),
       dailyObligations: getTotalDailyObligations(state),
       consumableRecovery: getConsumableRecovery(
         getCarriedContrabandStash(state.band.stash, state.expedition),

@@ -624,6 +624,75 @@ describe('usePersistence', () => {
   })
 
   describe('deleteSave', () => {
+    it('retries a refused version-slot deletion instead of hiding the survivor', () => {
+      const adapter = new InMemoryAdapter()
+      const slot = `${SAVE_KEY}.v3`
+      adapter.set(slot, '{}')
+      const removal = vi.spyOn(adapter, 'remove').mockImplementation(() => {})
+      const { result } = renderHook(
+        () =>
+          usePersistence({
+            currentScene: 'MOCK_SCENE',
+            stateRef: mockStateRef,
+            dispatch: mockDispatch,
+            addToast: mockAddToast,
+            tRef: mockTRef
+          }),
+        {
+          wrapper: ({ children }: { children: ReactNode }) => (
+            <StorageProvider adapter={adapter}>{children}</StorageProvider>
+          )
+        }
+      )
+      const reload = vi.fn()
+      vi.stubGlobal('window', { location: { reload } })
+      try {
+        expect(result.current.deleteSave()).toBe(false)
+        expect(result.current.deleteSave()).toBe(false)
+        expect(reload).not.toHaveBeenCalled()
+        removal.mockRestore()
+        expect(result.current.deleteSave()).toBe(true)
+        expect(adapter.get(slot)).toBeNull()
+        expect(reload).toHaveBeenCalledTimes(1)
+      } finally {
+        vi.unstubAllGlobals()
+      }
+    })
+    it('reports refused deletion and preserves the active session', () => {
+      const adapter = new InMemoryAdapter()
+      adapter.set(SAVE_KEY, '{}')
+      vi.spyOn(adapter, 'remove').mockImplementation(() => {})
+      const { result } = renderHook(
+        () =>
+          usePersistence({
+            currentScene: 'MOCK_SCENE',
+            stateRef: mockStateRef,
+            dispatch: mockDispatch,
+            addToast: mockAddToast,
+            tRef: mockTRef
+          }),
+        {
+          wrapper: ({ children }: { children: ReactNode }) => (
+            <StorageProvider adapter={adapter}>{children}</StorageProvider>
+          )
+        }
+      )
+      let deleted
+      const reload = vi.fn()
+      vi.stubGlobal('window', { location: { reload } })
+      try {
+        deleted = result.current.deleteSave()
+        expect(reload).not.toHaveBeenCalled()
+      } finally {
+        vi.unstubAllGlobals()
+      }
+      expect(deleted).toBe(false)
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.stringContaining('deleteFailed'),
+        'error'
+      )
+      expect(adapter.get(SAVE_KEY)).toBe('{}')
+    })
     it('removes the shared key and every version slot, and nothing else', () => {
       // An injected adapter: the global localStorage stub in
       // tests/vitest.setup.js cannot enumerate keys, and slot discovery does.

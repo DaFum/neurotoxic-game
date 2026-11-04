@@ -1,7 +1,15 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LeaderboardTab } from '../../../../src/ui/bandhq/leaderboard/LeaderboardTab.tsx'
+
+vi.mock('react-i18next', () => {
+  const t = (key, options) => options?.defaultValue ?? key
+  return {
+    initReactI18next: { type: '3rdParty', init: () => {} },
+    useTranslation: () => ({ t, i18n: { language: 'en' } })
+  }
+})
 
 const loggerMocks = vi.hoisted(() => ({
   error: vi.fn(),
@@ -46,6 +54,27 @@ describe('LeaderboardTab', () => {
   afterEach(() => {
     global.fetch = originalFetch
     vi.unstubAllEnvs()
+  })
+
+  it('shows a timeout error and ignores a late leaderboard response', async () => {
+    vi.useFakeTimers()
+    const pending = Promise.withResolvers()
+    global.fetch = vi.fn(() => pending.promise)
+    const { unmount } = render(<LeaderboardTab playerId='id-123' />)
+    try {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(screen.getByText('ui:leaderboard.load_error')).toBeInTheDocument()
+      expect(global.fetch.mock.calls[0][1].signal.aborted).toBe(true)
+      await act(async () => {
+        pending.resolve({ ok: true, status: 200, json: async () => [] })
+      })
+      expect(screen.getByText('ui:leaderboard.load_error')).toBeInTheDocument()
+    } finally {
+      unmount()
+      vi.useRealTimers()
+    }
   })
 
   it('shows the unavailable state without fetching when leaderboard sync is off', async () => {

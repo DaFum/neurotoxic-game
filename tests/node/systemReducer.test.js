@@ -33,6 +33,23 @@ import {
 // A run of neutral mid-range rolls stands in for the old `rng: () => 0.5`.
 const HALF_ROLLS = new Array(256).fill(0.5)
 
+test('loading progress preserves the current global preferences', () => {
+  const state = createInitialState()
+  state.settings.crtEnabled = false
+  state.settings.gamepadLaneBindings = [3, 2, 1]
+  const loaded = {
+    ...state,
+    settings: {
+      ...state.settings,
+      crtEnabled: true,
+      gamepadLaneBindings: [0, 1, 2]
+    }
+  }
+  const next = handleLoadGame(state, loaded)
+  assert.equal(next.settings.crtEnabled, false)
+  assert.deepEqual(next.settings.gamepadLaneBindings, [3, 2, 1])
+})
+
 // Loaded setlists are validated against the song catalog, so these tests must
 // use real ids rather than placeholders.
 const [CATALOG_SONG_A, CATALOG_SONG_B] = SONGS_DB.map(song => song.id)

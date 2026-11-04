@@ -7,19 +7,48 @@ on:
     types: [opened, reopened, synchronize]
   pull_request_review:
     types: [submitted, edited]
+  # Review-thread resolution has no supported Actions event; refresh periodically.
+  schedule:
+    - cron: '17,47 * * * *'
 
 jobs:
+  discover-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      prs: ${{ steps.discover.outputs.prs }}
+    steps:
+      - id: discover
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // TRACKER_OPEN_PRS: scheduled runs only write to same-repository human PRs.
+            const { owner, repo } = context.repo;
+            const prs = context.payload.pull_request
+              ? [context.payload.pull_request]
+              : (await github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 }))
+                .filter(pr => pr.head.repo?.full_name === `${owner}/${repo}` && pr.user.login !== 'dependabot[bot]');
+            core.setOutput('prs', JSON.stringify(prs.map(pr => ({ number: pr.number, headSha: pr.head.sha, mergeSha: pr.merge_commit_sha }))));
+
   update-summary-and-check:
     name: Aggregate Comments & Enforce Resolution
+    needs: discover-prs
+    if: needs.discover-prs.outputs.prs != '[]'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.discover-prs.outputs.prs) }}
     concurrency:
-      group: pr-comment-tracker-${{ github.event.pull_request.number }}
+      group: pr-comment-tracker-${{ matrix.pr.number }}
       cancel-in-progress: true
 
     # Berechtigungen zum Lesen und Schreiben in PRs
     permissions:
       pull-requests: write
       issues: write
+      checks: write
 
     steps:
       - name: Track, Summarize and Validate Comments
@@ -28,11 +57,15 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           # Fork-PRs und Dependabot-Läufe erhalten ein schreibgeschütztes Token
           # (gleiches Muster wie dead-code-report.yml, dazu der Dependabot-Actor).
-          SAME_REPO_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+          SAME_REPO_PR: ${{ github.event_name == 'schedule' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
+          PR_NUMBER: ${{ matrix.pr.number }}
+          PR_HEAD_SHA: ${{ matrix.pr.headSha }}
+          PR_MERGE_SHA: ${{ matrix.pr.mergeSha }}
+          PERIODIC_REFRESH: ${{ github.event_name == 'schedule' }}
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
-            const prNumber = context.payload.pull_request.number;
+            const prNumber = context.payload.pull_request?.number ?? Number(process.env.PR_NUMBER);
             const { owner, repo } = context.repo;
 
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
@@ -178,6 +211,9 @@ jobs:
 
             // Das endgültige Markdown für den Bot-Kommentar
             const body = marker + header + copyableBlock + footer + idsStateMarker;
+            const periodic = process.env.PERIODIC_REFRESH === 'true';
+            // Keep the previous novelty verdict until the thread state changes.
+            if (periodic && existingBotComment?.body === body) return;
 
             // Fork-PRs: Das Token ist schreibgeschützt, Kommentar und gemeldete Thread-IDs
             // können nicht gespeichert werden. Ohne Speicherung wäre jeder offene Thread bei
@@ -186,6 +222,26 @@ jobs:
               core.notice(`Fork-PR: Zusammenfassung und gemeldete Thread-IDs werden nicht gespeichert, daher keine Prüfung auf neue Threads. ${validThreads.length} offene Review-Thread(s) stehen im Log.`);
               console.log(copyableBlock);
               return;
+            }
+
+            // Scheduled workflows run on the default branch. Refresh both PR refs:
+            // required checks can be evaluated on the test merge commit. Publish
+            // before persisting the report, so a failed publication can be retried.
+            if (periodic) {
+              const shas = new Set([process.env.PR_HEAD_SHA, process.env.PR_MERGE_SHA].filter(Boolean));
+              for (const head_sha of shas) {
+                await github.rest.checks.create({
+                  owner, repo,
+                  name: 'Aggregate Comments & Enforce Resolution',
+                  head_sha,
+                  status: 'completed',
+                  conclusion: newThreads.length > 0 ? 'failure' : 'success',
+                  output: {
+                    title: 'Review thread tracker refreshed',
+                    summary: `${validThreads.length} open review thread(s); ${newThreads.length} newly reported.`
+                  }
+                });
+              }
             }
 
             // 6. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen

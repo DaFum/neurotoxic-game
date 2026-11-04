@@ -13,7 +13,9 @@
 
 ## Persistence
 
-- Autosave is centralized in `usePersistence`'s `shouldAutosaveOnTransition` effect (fires on `GIG → POST_GIG` and `POST_GIG → (GAMEOVER | OVERWORLD)`). Do not add explicit `saveGame()` calls to handlers that perform those same transitions; intentional travel/arrival/Overworld manual saves are separate.
+- `LOAD_GAME` restores run progress while preserving the current installation's settings (including controller bindings and CRT preferences). Saved settings only fill fields missing from current settings; they never overwrite newer preferences.
+
+- Exit autosave is centralized in `usePersistence`'s `shouldAutosaveOnTransition` effect (`POST_GIG → (GAMEOVER | OVERWORLD)` and `OVERWORLD → GAMEOVER`). `GIG → POST_GIG` deliberately does not autosave: the post-gig screen must first record the pending settlement and request its committed save. An earlier snapshot could restore a played gig without a settleable payout. Do not add explicit `saveGame()` calls for the centralized exit transitions; intentional travel/arrival/Overworld manual saves are separate.
 - Use `saveGameAfterStateCommit()` when a scene-changing transition will unmount the calling hook before it can observe committed state. The provider-level persistence effect owns that flush.
 - Save key is `SAVE_KEY = 'neurotoxic_v3_save'`; `PERSISTED_FIELDS` in `usePersistence.ts` is the single source of truth for persisted save fields. Both the load whitelist (`LOADABLE_SAVE_KEYS`) and the `createPersistedState` snapshot are derived from it. New persisted fields require this checklist:
   1. Add one `<key>: <predicate>` entry to `PERSISTED_FIELDS`.

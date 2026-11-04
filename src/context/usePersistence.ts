@@ -579,18 +579,35 @@ export function usePersistence({
 }: UsePersistenceParams) {
   const clock = useClock()
   const storage = useStorage()
+  const pendingDeleteKeysRef = useRef(new Set<string>())
 
   const deleteSave = useCallback(() => {
-    safeStorageOperation('deleteSave', () => {
-      removeStorageItem(SAVE_KEY, storage)
-      // Every version slot goes too: load picks the highest one left, so a
-      // survivor would bring the deleted progress back.
-      for (const { key } of listVersionSlots(storage)) {
-        removeStorageItem(key, storage)
-      }
-    })
+    const deleted = safeStorageOperation(
+      'deleteSave',
+      () => {
+        const pending = pendingDeleteKeysRef.current
+        pending.add(SAVE_KEY)
+        // Every version slot goes too: load picks the highest one left, so a
+        // survivor would bring the deleted progress back.
+        for (const { key } of listVersionSlots(storage)) {
+          pending.add(key)
+        }
+        // Failed removals are tombstoned and disappear from normal discovery.
+        // Retain their keys until raw storage confirms deletion on a retry.
+        for (const key of pending) {
+          if (removeStorageItem(key, storage)) pending.delete(key)
+        }
+        return pending.size === 0
+      },
+      false
+    )
+    if (!deleted) {
+      addToast(tRef.current('ui:save.deleteFailed'), 'error')
+      return false
+    }
     window.location.reload()
-  }, [storage])
+    return true
+  }, [addToast, storage, tRef])
 
   // Storage that refuses writes (private browsing, disabled by policy) degrades
   // to an in-memory store for the session. The player is told once — repeating
