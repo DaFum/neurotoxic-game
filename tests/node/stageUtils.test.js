@@ -174,7 +174,7 @@ test('stage utils', async t => {
     )
 
     await sub.test(
-      'characterizes concurrent same-URL fallback loads creating distinct textures',
+      'shares concurrent same-URL fallback loads and the cached texture',
       async () => {
         const OriginalImage = globalThis.Image
         const images = []
@@ -192,19 +192,194 @@ test('stage utils', async t => {
           const secondLoad = loadTexture(url)
 
           // Keep both requests pending to reproduce the same-URL race.
-          assert.equal(images.length, 2)
+          assert.equal(images.length, 1)
           images[0].onload()
           const first = await firstLoad
-          images[1].onload()
           const second = await secondLoad
 
           assert.ok(first instanceof PIXI.Texture)
           assert.ok(second instanceof PIXI.Texture)
-          assert.notEqual(first, second)
+          assert.equal(first, second)
           assert.equal(await loadTexture(url), second)
-          assert.equal(images.length, 2)
+          assert.equal(images.length, 1)
         } finally {
           globalThis.Image = OriginalImage
+        }
+      }
+    )
+
+    await sub.test(
+      'times out a shared stalled Image load and permits retry',
+      async sub => {
+        sub.mock.timers.enable({ apis: ['setTimeout'] })
+        const OriginalImage = globalThis.Image
+        const images = []
+        const warn = sub.mock.method(logger, 'warn', () => {})
+        globalThis.Image = class {
+          constructor() {
+            images.push(this)
+          }
+        }
+        try {
+          const url = 'https://example.com/api/stalled-image'
+          const first = loadTexture(url)
+          const second = loadTexture(url)
+          let settled = false
+          const results = Promise.all([first, second]).then(values => {
+            settled = true
+            return values
+          })
+          assert.equal(images.length, 1)
+          sub.mock.timers.tick(10000)
+          // Flush the shared timeout and both async callers without real delays.
+          await new Promise(resolve => setImmediate(resolve))
+          assert.equal(settled, true)
+          assert.deepEqual(await results, [null, null])
+          assert.equal(warn.mock.calls.length, 1)
+
+          const retry = loadTexture(url)
+          assert.equal(images.length, 2)
+          images[1].onload()
+          assert.ok((await retry) instanceof PIXI.Texture)
+        } finally {
+          warn.mock.restore()
+          globalThis.Image = OriginalImage
+          sub.mock.timers.reset()
+        }
+      }
+    )
+
+    await sub.test(
+      'a late Assets result cannot evict a newer shared load',
+      async sub => {
+        sub.mock.timers.enable({ apis: ['setTimeout'] })
+        const completions = []
+        const loader = sub.mock.method(
+          PIXI.Assets,
+          'load',
+          () => new Promise(resolve => completions.push(resolve))
+        )
+        sub.mock.method(logger, 'warn', () => {})
+        const oldTexture = new PIXI.Texture()
+        const newTexture = new PIXI.Texture()
+        try {
+          const url = 'https://example.com/stalled-assets.png'
+          let expired = false
+          const first = loadTexture(url).then(value => {
+            expired = true
+            return value
+          })
+          sub.mock.timers.tick(10000)
+          await new Promise(resolve => setImmediate(resolve))
+          assert.equal(expired, true)
+          assert.equal(await first, null)
+
+          const retry = loadTexture(url)
+          assert.equal(loader.mock.calls.length, 2)
+          completions[0](oldTexture)
+          await new Promise(resolve => setImmediate(resolve))
+          const sharedRetry = loadTexture(url)
+          assert.equal(loader.mock.calls.length, 2)
+          completions[1](newTexture)
+          assert.deepEqual(await Promise.all([retry, sharedRetry]), [
+            newTexture,
+            newTexture
+          ])
+        } finally {
+          loader.mock.restore()
+          oldTexture.destroy()
+          newTexture.destroy()
+          sub.mock.timers.reset()
+        }
+      }
+    )
+
+    await sub.test('retries a shared fallback load after failure', async () => {
+      const OriginalImage = globalThis.Image
+      const images = []
+      const warn = t.mock.method(logger, 'warn', () => {})
+      globalThis.Image = class {
+        constructor() {
+          images.push(this)
+        }
+      }
+      try {
+        const url = 'https://example.com/api/concurrent-retry'
+        const first = loadTexture(url)
+        const second = loadTexture(url)
+        assert.equal(images.length, 1)
+        images[0].onerror()
+        assert.deepEqual(await Promise.all([first, second]), [null, null])
+
+        const retry = loadTexture(url)
+        assert.equal(images.length, 2)
+        images[1].onload()
+        const texture = await retry
+        assert.ok(texture instanceof PIXI.Texture)
+        assert.equal(await loadTexture(url), texture)
+      } finally {
+        warn.mock.restore()
+        globalThis.Image = OriginalImage
+      }
+    })
+
+    await sub.test('retries after a shared load rejects', async () => {
+      const OriginalImage = globalThis.Image
+      const failure = new Error('Image construction failed')
+      const images = []
+      let attempts = 0
+      globalThis.Image = class {
+        constructor() {
+          attempts++
+          if (attempts === 1) throw failure
+          images.push(this)
+        }
+      }
+      try {
+        const url = 'https://example.com/api/concurrent-rejection'
+        const outcomes = Promise.allSettled([
+          loadTexture(url),
+          loadTexture(url)
+        ])
+        assert.equal(attempts, 1)
+        assert.deepEqual(await outcomes, [
+          { status: 'rejected', reason: failure },
+          { status: 'rejected', reason: failure }
+        ])
+        const retry = loadTexture(url)
+        assert.equal(attempts, 2)
+        images[0].onload()
+        assert.ok((await retry) instanceof PIXI.Texture)
+      } finally {
+        globalThis.Image = OriginalImage
+      }
+    })
+
+    await sub.test(
+      'shares concurrent Assets loads until they settle',
+      async () => {
+        let finish
+        const texture = new PIXI.Texture()
+        const pending = new Promise(resolve => {
+          finish = resolve
+        })
+        const loader = t.mock.method(PIXI.Assets, 'load', () => pending)
+        try {
+          const url = 'https://example.com/concurrent-assets.png'
+          const first = loadTexture(url)
+          const second = loadTexture(url)
+          assert.equal(loader.mock.calls.length, 1)
+          finish(texture)
+          assert.deepEqual(await Promise.all([first, second]), [
+            texture,
+            texture
+          ])
+          // The mock does not populate Assets.cache: a settled flight must clear.
+          assert.equal(await loadTexture(url), texture)
+          assert.equal(loader.mock.calls.length, 2)
+        } finally {
+          loader.mock.restore()
+          texture.destroy()
         }
       }
     )
@@ -402,12 +577,15 @@ test('stage utils', async t => {
         }
 
         try {
-          const texture = await loadTexture(
-            'https://example.com/image_error_fallback.png'
-          )
+          const url = 'https://example.com/image_error_fallback.png'
+          const [texture, sharedTexture] = await Promise.all([
+            loadTexture(url),
+            loadTexture(url)
+          ])
 
           assert.equal(mockAssetsLoad.mock.calls.length, 1)
           assert.ok(texture)
+          assert.equal(sharedTexture, texture)
           assert.ok(createdImage)
           assert.equal(
             createdImage.src,

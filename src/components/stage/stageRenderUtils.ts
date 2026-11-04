@@ -283,6 +283,7 @@ export const buildRhythmLayout = ({
  * (Image-based textures lack proper source metadata for tiling).
  */
 const _imageTextureCache = new Map<string, Texture>()
+const _inFlightTextureLoads = new Map<string, Promise<Texture | null>>()
 
 /**
  * Checks existing caches for a valid texture.
@@ -363,30 +364,50 @@ const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
 /**
  * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
  * Useful for generated URLs without extensions or with query parameters.
+ * Same-URL requests share a load that resolves null after ten seconds if stalled.
  * @param url - The URL to load.
  * @returns The loaded texture or null.
  */
 export const loadTexture = async (url: string): Promise<Texture | null> => {
   const cached = _getCachedTexture(url)
   if (cached) return cached
+  const inFlight = _inFlightTextureLoads.get(url)
+  if (inFlight) return inFlight
 
-  const baseUrl =
-    typeof window !== 'undefined' && window.location
-      ? window.location.href
-      : undefined
-  if (_hasFileExtension(url, baseUrl)) {
-    try {
-      return await Assets.load(url)
-    } catch (err) {
-      logger.warn(
-        'loadTexture',
-        'Pixi Assets load failed, falling back to Image element',
-        err
-      )
+  // Share pending loads instead of replacing/destroying textures still borrowed
+  // by another controller. Returned textures remain cache-owned.
+  const loading = withTimeout(
+    (async (): Promise<Texture | null> => {
+      const baseUrl =
+        typeof window !== 'undefined' && window.location
+          ? window.location.href
+          : undefined
+      if (_hasFileExtension(url, baseUrl)) {
+        try {
+          return await Assets.load(url)
+        } catch (err) {
+          logger.warn(
+            'loadTexture',
+            'Pixi Assets load failed, falling back to Image element',
+            err
+          )
+        }
+      }
+
+      return _loadWithImageFallback(url)
+    })(),
+    'Texture',
+    10000,
+    { rethrow: true }
+  )
+  _inFlightTextureLoads.set(url, loading)
+  try {
+    return await loading
+  } finally {
+    if (_inFlightTextureLoads.get(url) === loading) {
+      _inFlightTextureLoads.delete(url)
     }
   }
-
-  return _loadWithImageFallback(url)
 }
 
 const _edgeKeyedTextureCache = new WeakMap<Texture, Texture>()
