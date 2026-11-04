@@ -173,6 +173,42 @@ test('stage utils', async t => {
       }
     )
 
+    await sub.test(
+      'characterizes concurrent same-URL fallback loads creating distinct textures',
+      async () => {
+        const OriginalImage = globalThis.Image
+        const images = []
+        globalThis.Image = class {
+          constructor() {
+            this.crossOrigin = ''
+            this.src = ''
+            images.push(this)
+          }
+        }
+
+        try {
+          const url = 'https://example.com/api/concurrent-characterization'
+          const firstLoad = loadTexture(url)
+          const secondLoad = loadTexture(url)
+
+          // Keep both requests pending to reproduce the same-URL race.
+          assert.equal(images.length, 2)
+          images[0].onload()
+          const first = await firstLoad
+          images[1].onload()
+          const second = await secondLoad
+
+          assert.ok(first instanceof PIXI.Texture)
+          assert.ok(second instanceof PIXI.Texture)
+          assert.notEqual(first, second)
+          assert.equal(await loadTexture(url), second)
+          assert.equal(images.length, 2)
+        } finally {
+          globalThis.Image = OriginalImage
+        }
+      }
+    )
+
     await sub.test('does not warn-read Pixi cache misses', async () => {
       const OriginalImage = globalThis.Image
       const mockHas = t.mock.method(PIXI.Assets.cache, 'has', () => false)

@@ -99,8 +99,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
             <ConfirmButton
               onClick={() => {
                 if (nextTier === null) return
-                upgradeChassisTier(asset.id, nextTier)
-                onClose()
+                if (upgradeChassisTier(asset.id, nextTier) === true) onClose()
               }}
               disabled={blocked}
             >

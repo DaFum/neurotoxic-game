@@ -8,26 +8,21 @@ import {
   getRegisteredModule,
   MODULE_PROMPTS
 } from './assets/assetModuleRegistry'
-// Utility to generate dynamic image URLs via Pollinations.ai
-const BASE_URL = 'https://gen.pollinations.ai/image'
-const MODEL = 'flux'
-
-/**
- * Pollinations key, injected at build time from the Vercel variable `Flux`
- * (see `vite.config.js`). Without it the request goes out without a key.
- */
-const getImageKey = (): string => {
-  const key =
-    typeof import.meta !== 'undefined' && import.meta.env
-      ? import.meta.env.VITE_FLUX_KEY
-      : undefined
-  return typeof key === 'string' ? key.trim() : ''
+/** Whether this deployment enables the same-origin generated-image proxy. */
+export const isImageProxyEnabled = (): boolean => {
+  const viteFlag = import.meta.env?.VITE_ENABLE_IMAGE_PROXY
+  if (typeof viteFlag === 'string') return viteFlag.toLowerCase() === 'true'
+  const processEnvSource = globalThis as {
+    process?: { env?: Record<string, string | undefined> }
+  }
+  const processFlag = processEnvSource.process?.env?.VITE_ENABLE_IMAGE_PROXY
+  return typeof processFlag === 'string' && processFlag.toLowerCase() === 'true'
 }
 
 const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '') : ''}images/generated-offline-fallback.svg`
 
 // navigator.onLine is true for any network connection (LAN, captive portals),
-// not necessarily internet access to gen.pollinations.ai. This is a best-effort
+// not necessarily internet access to the image proxy. This is a best-effort
 // check.
 /**
  * Checks whether generated-image URLs should be requested instead of fallback art.
@@ -36,7 +31,8 @@ const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' &
  * @returns True when image generation can be attempted.
  */
 export const isImageGenerationAvailable = (isOnline?: boolean) =>
-  isOnline ?? (typeof navigator === 'undefined' || navigator.onLine)
+  isImageProxyEnabled() &&
+  (isOnline ?? (typeof navigator === 'undefined' || navigator.onLine))
 
 /**
  * Returns the bundled fallback shown when generated images are unavailable.
@@ -47,17 +43,14 @@ export const getGeneratedImageFallbackUrl = () =>
   GENERATED_IMAGE_OFFLINE_FALLBACK
 
 /**
- * Builds a Pollinations generated-image URL for a prompt.
+ * Builds a same-origin generated-image proxy URL for a prompt.
  *
  * Use this for direct URL assignment (img src, CSS backgroundImage, PIXI loaders).
  * @param description - The detailed prompt for the image.
- * @returns Complete generated-image URL with model, seed, and API key parameters.
+ * @returns Generated-image proxy URL containing only the encoded prompt.
  */
 export const getGenImageUrl = (description: string) => {
-  const encodedDesc = encodeURIComponent(description)
-  const key = getImageKey()
-  const keyParam = key ? `&key=${encodeURIComponent(key)}` : ''
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666${keyParam}&=` // "&=" is required to ensure working image generation
+  return `/api/image?prompt=${encodeURIComponent(description)}`
 }
 
 /**

@@ -16,6 +16,8 @@ const mocks = vi.hoisted(() => ({
   resolveActiveSetlist: vi.fn(() => [{ id: 'song_1', name: 'Song 1' }]),
   playSongSequence: vi.fn(async () => {}),
   resetGigStateTracking: vi.fn(),
+  invalidateSongSequence: vi.fn(),
+  resetGameplayState: vi.fn(),
   musicVolume: 0.5,
   sfxVolume: 0.5,
   muted: false,
@@ -51,7 +53,8 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
   setupGigPhysics: mocks.setupGigPhysics,
   resolveActiveSetlist: mocks.resolveActiveSetlist,
   playSongSequence: mocks.playSongSequence,
-  resetGigStateTracking: mocks.resetGigStateTracking
+  resetGigStateTracking: mocks.resetGigStateTracking,
+  invalidateSongSequence: mocks.invalidateSongSequence
 }))
 
 vi.mock('../../src/utils/errorHandler', () => ({
@@ -93,6 +96,7 @@ describe('useRhythmGameAudio', () => {
 
     renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -129,6 +133,7 @@ describe('useRhythmGameAudio', () => {
 
     const { result } = renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -161,12 +166,57 @@ describe('useRhythmGameAudio', () => {
     expect(setLastGigStats).toHaveBeenCalledTimes(1)
     expect(endGig).toHaveBeenCalledTimes(1)
 
-    // retry shouldn't cause side effects to run again
+    // A Retry is a fresh attempt; resolve low harmony once for that attempt.
     await result.current.retryAudioInitialization()
 
-    expect(addToast).toHaveBeenCalledTimes(1)
-    expect(setLastGigStats).toHaveBeenCalledTimes(1)
-    expect(endGig).toHaveBeenCalledTimes(1)
+    expect(addToast).toHaveBeenCalledTimes(2)
+    expect(setLastGigStats).toHaveBeenCalledTimes(2)
+    expect(endGig).toHaveBeenCalledTimes(2)
+  })
+
+  it('preserves gig event markers when retry resets gameplay', async () => {
+    const game = {
+      lanes: [{}, {}, {}],
+      hasSubmittedResults: false,
+      isGameOver: false,
+      gigIntroFired: true,
+      gigMidFired: true,
+      lastGigEventSongIndex: 2
+    }
+    const reset = vi.fn(() =>
+      Object.assign(game, {
+        gigIntroFired: false,
+        gigMidFired: false,
+        lastGigEventSongIndex: -1
+      })
+    )
+    const { result } = renderHook(() =>
+      useRhythmGameAudio({
+        resetGameplayState: reset,
+        gameStateRef: { current: game },
+        setters: {
+          setAudioStatus: vi.fn(),
+          setIsGameOver: vi.fn(),
+          setFailureKind: vi.fn()
+        },
+        contextState: { ...baseState, band: { harmony: 0 } },
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+    await act(async () => {
+      await result.current.retryAudioInitialization()
+    })
+    expect(reset).toHaveBeenCalledOnce()
+    expect(game).toMatchObject({
+      gigIntroFired: true,
+      gigMidFired: true,
+      lastGigEventSongIndex: 2
+    })
   })
 
   it('stops audio on unmount cleanup', () => {
@@ -174,6 +224,7 @@ describe('useRhythmGameAudio', () => {
     const setIsGameOver = vi.fn()
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -205,6 +256,7 @@ describe('useRhythmGameAudio', () => {
 
     const { result } = renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -249,6 +301,7 @@ describe('useRhythmGameAudio', () => {
 
     const { result } = renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -292,6 +345,7 @@ describe('useRhythmGameAudio', () => {
     const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
+        resetGameplayState: mocks.resetGameplayState,
         setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
         contextState: baseState,
         contextActions: {
@@ -335,6 +389,7 @@ describe('useRhythmGameAudio', () => {
 
       renderHook(() =>
         useRhythmGameAudio({
+          resetGameplayState: mocks.resetGameplayState,
           gameStateRef: { current: { lanes } },
           setters: {
             setAudioStatus,
@@ -376,6 +431,7 @@ describe('useRhythmGameAudio', () => {
 
     renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: { current: { lanes } },
         setters: {
           setAudioStatus,
@@ -416,6 +472,7 @@ describe('useRhythmGameAudio', () => {
     const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
+        resetGameplayState: mocks.resetGameplayState,
         setters: {
           setAudioStatus,
           setIsGameOver: vi.fn(),
@@ -450,6 +507,7 @@ describe('useRhythmGameAudio', () => {
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
+        resetGameplayState: mocks.resetGameplayState,
         setters: {
           setAudioStatus,
           setIsGameOver: vi.fn(),
@@ -486,6 +544,7 @@ describe('useRhythmGameAudio', () => {
 
     const { result } = renderHook(() =>
       useRhythmGameAudio({
+        resetGameplayState: mocks.resetGameplayState,
         gameStateRef: {
           current: {
             lanes: [{}, {}, {}],
@@ -551,6 +610,7 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
+        resetGameplayState: mocks.resetGameplayState,
         setters: {
           setAudioStatus,
           setIsGameOver: vi.fn(),
@@ -747,6 +807,10 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     })
 
     expect(mocks.stopAudio).toHaveBeenCalledTimes(1)
+    expect(mocks.invalidateSongSequence).toHaveBeenCalledTimes(1)
+    expect(
+      mocks.invalidateSongSequence.mock.invocationCallOrder[0]
+    ).toBeLessThan(mocks.stopAudio.mock.invocationCallOrder[0])
     expect(setAudioStatus).toHaveBeenLastCalledWith('failed')
   })
 
@@ -773,6 +837,20 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     })
     expect(setAudioStatus).toHaveBeenLastCalledWith('ready')
     expect(mocks.playSongSequence).toHaveBeenCalledTimes(2)
+    expect(mocks.resetGameplayState).toHaveBeenCalledTimes(1)
+    expect(mocks.resetGameplayState.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.resetGigStateTracking.mock.invocationCallOrder[1]
+    )
+    expect(mocks.playSongSequence.mock.calls[1][0]).toBe(0)
+  })
+
+  it('does not invalidate an already lost gig on a late stage failure', async () => {
+    const gameStateRef = { current: { lanes: [{}, {}, {}], isGameOver: false } }
+    const { result } = renderAudioHook(vi.fn(), gameStateRef)
+    await advance(STAGE_READY_FALLBACK_MS)
+    gameStateRef.current.isGameOver = true
+    act(() => result.current.onStageInitError())
+    expect(mocks.invalidateSongSequence).not.toHaveBeenCalled()
   })
 
   it('does not fail a normally finalized gig on a late stage failure', async () => {

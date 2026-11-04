@@ -3,7 +3,8 @@ import type { TFunction } from 'i18next'
 import {
   setupGigPhysics,
   resolveActiveSetlist,
-  resetGigStateTracking
+  resetGigStateTracking,
+  invalidateSongSequence
 } from '../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { handleError } from '../../utils/errorHandler'
@@ -25,6 +26,7 @@ import type { OptionalToastCallback } from '../../types/callbacks'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
+  resetGameplayState: () => void
   setters: Pick<
     RhythmStateSetters,
     'setAudioStatus' | 'setIsGameOver' | 'setFailureKind'
@@ -231,6 +233,7 @@ type RhythmGameAudioReturn = {
  */
 export const useRhythmGameAudio = ({
   gameStateRef,
+  resetGameplayState,
   setters,
   contextState,
   contextActions
@@ -327,6 +330,7 @@ export const useRhythmGameAudio = ({
     ) {
       return
     }
+    invalidateSongSequence(gameStateRef)
     currentStatusRef.current = 'failed'
     latestContextRef.current.setAudioStatus('failed')
     latestContextRef.current.setFailureKind('stage')
@@ -555,6 +559,15 @@ export const useRhythmGameAudio = ({
 
   const retryAudioInitialization = useCallback(async () => {
     if (currentStatusRef.current !== 'initializing') {
+      const { gigIntroFired, gigMidFired, lastGigEventSongIndex } =
+        gameStateRef.current
+      resetGameplayState()
+      Object.assign(gameStateRef.current, {
+        gigIntroFired,
+        gigMidFired,
+        lastGigEventSongIndex
+      })
+      hasResolvedLowHarmonyRef.current = false
       currentStatusRef.current = 'idle'
       // Retries come from the blocked/failed overlay, which replaced the
       // stage; wait for the remounted stage's own signal.
@@ -563,7 +576,7 @@ export const useRhythmGameAudio = ({
       latestContextRef.current.setFailureKind(null)
     }
     await initializeGigState()
-  }, [initializeGigState])
+  }, [gameStateRef, initializeGigState, resetGameplayState])
 
   return { retryAudioInitialization, onStageReady, onStageInitError }
 }

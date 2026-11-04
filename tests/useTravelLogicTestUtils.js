@@ -1,6 +1,7 @@
 import { beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
+import * as assetFinancialExports from '../src/utils/assets/assetSelectors/assetFinancials.ts'
 import { MODULE_REGISTRY } from '../src/utils/assets/assetModuleRegistry.ts'
 
 // Mocks
@@ -117,6 +118,17 @@ const mockLogger = {
 const mockHandleError = mock.fn()
 class MockStateError extends Error {}
 
+// This suite isolates travel commands; pending campaign projection has its own
+// real-tick regressions and is supplied as a precomputed input here.
+mock.module(
+  new URL('../src/utils/restRecoveryEffects.ts', import.meta.url).href,
+  {
+    namedExports: {
+      getPendingRestEffects: mock.fn(() => ({ fameDrops: [], successes: [] }))
+    }
+  }
+)
+
 // Mock modules
 mock.module(new URL('../src/utils/economy/index.ts', import.meta.url).href, {
   namedExports: {
@@ -139,6 +151,7 @@ mock.module(
   new URL('../src/utils/assets/assetSelectors.ts', import.meta.url).href,
   {
     namedExports: {
+      ...assetFinancialExports,
       getActiveAssetModifiers: mockGetActiveAssetModifiers,
       getTotalDailyObligations: mockGetTotalDailyObligations,
       calculateChassisGrossSaleValue: mockCalculateChassisGrossSaleValue

@@ -21,6 +21,7 @@ import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
+import { MAP_NODE_HOVER_SCALE } from './overworld/mapLabelDeclutter'
 import type {
   ExpeditionNodeFog,
   ExpeditionSpecialNodeSubtype
@@ -33,7 +34,7 @@ const TOOLTIP_PHONE_STYLE = (nodeX: number): CSSProperties =>
 const TOOLTIP_EDGE_MARGIN_PX = 4
 const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
-const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
+const MOTION_HOVER = { scale: MAP_NODE_HOVER_SCALE, zIndex: 60 }
 const MOTION_NO_HOVER = {}
 
 /**
@@ -274,12 +275,24 @@ const MapNodeTooltip = memo(
         const box = map.getBoundingClientRect()
         const top = box.top + TOOLTIP_EDGE_MARGIN_PX
         const bottom = box.bottom - TOOLTIP_EDGE_MARGIN_PX
-        const shift =
-          tip.top < top
-            ? top - tip.top
-            : tip.bottom > bottom
-              ? bottom - tip.bottom
-              : 0
+        const label = flipAbove
+          ? host.querySelector<HTMLElement>(
+              '[data-testid="map-node-label"][data-label-anchor="above"]'
+            )
+          : null
+        const labelRect = label?.getBoundingClientRect()
+        const labelShift =
+          label &&
+          labelRect &&
+          labelRect.height > 0 &&
+          getComputedStyle(label).visibility !== 'hidden'
+            ? Math.min(0, labelRect.top - TOOLTIP_EDGE_MARGIN_PX - tip.bottom)
+            : 0
+        // The map boundary takes precedence if there is no room above the label.
+        const shift = Math.max(
+          top - tip.top,
+          Math.min(labelShift, bottom - tip.bottom)
+        )
         // Same horizontal -50% as the `-translate-x-1/2` class this replaces.
         if (shift !== 0) tooltip.style.translate = `-50% ${Math.round(shift)}px`
       }
@@ -314,8 +327,8 @@ const MapNodeTooltip = memo(
         data-chatter-avoid
         /* Below the node, mt-[3.75rem] clears the tallest label stack (type
            label plus a three-line location name), which reaches 60px past the
-           bottom of this box. Above the node there is no label stack, so a
-           small gap is enough. */
+           bottom of this box. Above-anchored labels are measured and cleared
+           when the map boundary allows it. */
         /* On phones the tooltip stays centred on its node but its centre is
            clamped inside the map's edges, so a node near either edge cannot
            push it out of view. Everything is in rem (or map-width `cqw`) so it
@@ -537,7 +550,7 @@ export const MapNodeView = memo(
       isHoveredLocal ||
       isPendingConfirm ||
       (isCurrent && !currentNameIsSceneTitle) ||
-      (isReachable && !isCurrent && !compactLabels)
+      (isReachable && !isCurrent)
         ? ''
         : 'max-sm:hidden'
 
@@ -625,6 +638,7 @@ export const MapNodeView = memo(
         )}
 
         <m.div
+          data-map-node-hex
           initial={MOTION_INITIAL}
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
@@ -666,7 +680,8 @@ export const MapNodeView = memo(
         <div
           data-chatter-avoid
           data-testid='map-node-label'
-          className={`data-[declutter-hidden=true]:invisible absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
+          style={{ '--map-label-gap': '28px' } as CSSProperties}
+          className={`data-[declutter-hidden=true]:invisible data-[label-anchor=above]:-mt-(--map-label-gap) data-[label-anchor=above]:-translate-y-full data-[label-anchor=above]:flex-col-reverse absolute top-1/2 left-1/2 -translate-x-1/2 mt-(--map-label-gap) flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           {showTypeChip && (
             <span
@@ -676,7 +691,7 @@ export const MapNodeView = memo(
             </span>
           )}
           <span
-            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 max-sm:line-clamp-2 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
+            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28${compactLabels ? ' max-sm:max-w-20' : ''} max-sm:line-clamp-2 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}${showTypeChip && !nameVisibleOnDesktop ? ' sm:hidden' : ''}`}
           >
             {nodeLocationName}
           </span>

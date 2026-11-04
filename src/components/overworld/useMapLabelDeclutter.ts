@@ -1,17 +1,28 @@
 import { useLayoutEffect, type RefObject } from 'react'
-import { pickHiddenMapLabels, type MapLabelEntry } from './mapLabelDeclutter'
+import {
+  MAP_NODE_HOVER_SCALE,
+  pickMapLabelPlacements,
+  type MapLabelEntry
+} from './mapLabelDeclutter'
+import type { Rect } from '../chatterPlacement'
 
 const LABEL_SELECTOR = '[data-testid="map-node-label"]'
 const HIDDEN_ATTRIBUTE = 'data-declutter-hidden'
+const ANCHOR_ATTRIBUTE = 'data-label-anchor'
+const HUD_SELECTOR =
+  '.ow-menu, .ow-menu button, [data-testid="overworld-radio"], [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
 
 const clearFlags = (container: HTMLElement): void => {
   for (const label of container.querySelectorAll(LABEL_SELECTOR)) {
     label.removeAttribute(HIDDEN_ATTRIBUTE)
+    label.removeAttribute(ANCHOR_ATTRIBUTE)
+    if (label instanceof HTMLElement)
+      label.style.setProperty('--map-label-gap', '28px')
   }
 }
 
 /**
- * Hides lower-priority map-node labels that would overlap a more important one.
+ * Places labels below or above their node before hiding blocked labels.
  *
  * @param containerRef - The map element holding the `.map-node` children.
  * @param enabled - Whether to run; when off, any hidden flag is cleared.
@@ -41,9 +52,39 @@ export const useMapLabelDeclutter = (
     const run = () => {
       clearFlags(container)
       const entries: MapLabelEntry[] = []
+      const bounds = container.getBoundingClientRect()
+      const hudObstacles: { ownerId: string; rect: Rect }[] = [
+        ...document.querySelectorAll<HTMLElement>(HUD_SELECTOR)
+      ].flatMap(element => {
+        const rect = element.getBoundingClientRect()
+        const style = getComputedStyle(element)
+        return rect.width > 0 &&
+          rect.height > 0 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden'
+          ? [{ ownerId: 'hud', rect }]
+          : []
+      })
+      const obstacles = [...hudObstacles]
       container
         .querySelectorAll<HTMLElement>('.map-node')
         .forEach((node, i) => {
+          const host = node.getBoundingClientRect()
+          const centerX = (host.left + host.right) / 2
+          const centerY = (host.top + host.bottom) / 2
+          const hex = node.querySelector<HTMLElement>('[data-map-node-hex]')
+          if (hex)
+            obstacles.push({
+              ownerId: String(i),
+              // Motion initially scales the hexagon to zero. Reserve its final
+              // largest hover/focus footprint so it cannot grow over a kept label.
+              rect: {
+                left: centerX - (hex.offsetWidth * MAP_NODE_HOVER_SCALE) / 2,
+                right: centerX + (hex.offsetWidth * MAP_NODE_HOVER_SCALE) / 2,
+                top: centerY - (hex.offsetHeight * MAP_NODE_HOVER_SCALE) / 2,
+                bottom: centerY + (hex.offsetHeight * MAP_NODE_HOVER_SCALE) / 2
+              }
+            })
           const label = node.querySelector<HTMLElement>(LABEL_SELECTOR)
           if (!label) return
           const rects = [...label.children]
@@ -57,20 +98,61 @@ export const useMapLabelDeclutter = (
               bottom: r.bottom
             }))
           if (rects.length === 0) return
+          const separatedRow = label.getBoundingClientRect().height + 4
+          const gaps = [28, 64, 64 + separatedRow, 64 + 2 * separatedRow]
+          const top = Math.min(...rects.map(rect => rect.top))
+          const bottom = Math.max(...rects.map(rect => rect.bottom))
+          const edgeGaps = [
+            28 + 2 * centerY - bottom - bounds.top,
+            28 + bounds.bottom - bottom
+          ].filter(gap => gap >= 28)
+          const hudGaps = hudObstacles
+            .flatMap(({ rect }) => [
+              28 + rect.bottom + 4 - top,
+              28 + 2 * centerY - top - rect.top + 4
+            ])
+            .filter(gap => gap >= 28)
           entries.push({
             id: String(i),
             priority: Number(node.dataset.labelPriority ?? 3),
-            rects
+            candidates: [...gaps, ...hudGaps, ...edgeGaps].flatMap(gap => [
+              {
+                anchor: 'below' as const,
+                gap,
+                rects: rects.map(rect => ({
+                  ...rect,
+                  top: rect.top + gap - 28,
+                  bottom: rect.bottom + gap - 28
+                }))
+              },
+              {
+                anchor: 'above' as const,
+                gap,
+                rects: rects.map(rect => ({
+                  left: rect.left,
+                  right: rect.right,
+                  top: 2 * centerY - rect.bottom - gap + 28,
+                  bottom: 2 * centerY - rect.top - gap + 28
+                }))
+              }
+            ])
           })
         })
-      const hidden = pickHiddenMapLabels(entries)
+      const placements = pickMapLabelPlacements(entries, {
+        bounds,
+        obstacles
+      })
       container
         .querySelectorAll<HTMLElement>('.map-node')
         .forEach((node, i) => {
-          if (!hidden.has(String(i))) return
-          node
-            .querySelector(LABEL_SELECTOR)
-            ?.setAttribute(HIDDEN_ATTRIBUTE, 'true')
+          const label = node.querySelector<HTMLElement>(LABEL_SELECTOR)
+          const placement = placements.get(String(i))
+          if (!label || placement === undefined) return
+          if (placement === null) label.setAttribute(HIDDEN_ATTRIBUTE, 'true')
+          else {
+            label.setAttribute(ANCHOR_ATTRIBUTE, placement.anchor)
+            label.style.setProperty('--map-label-gap', `${placement.gap}px`)
+          }
         })
     }
 
@@ -78,6 +160,46 @@ export const useMapLabelDeclutter = (
     const observer =
       typeof ResizeObserver === 'function' ? new ResizeObserver(run) : null
     observer?.observe(container)
-    return () => observer?.disconnect()
+    const observedHud = new Set<Element>()
+    const observeHud = () => {
+      const elements = new Set(document.querySelectorAll(HUD_SELECTOR))
+      for (const element of observedHud) {
+        if (!elements.has(element)) {
+          observer?.unobserve(element)
+          observedHud.delete(element)
+        }
+      }
+      for (const element of elements) {
+        if (!observedHud.has(element)) {
+          observer?.observe(element)
+          observedHud.add(element)
+        }
+      }
+    }
+    observeHud()
+    // Menus can mount outside the map without resizing any observed element.
+    // Observe child additions/removals only, so our placement attributes do not
+    // trigger another declutter pass.
+    const mutations = new MutationObserver(records => {
+      const hudChanged = records.some(record =>
+        [...record.addedNodes, ...record.removedNodes].some(
+          node =>
+            node instanceof Element &&
+            (node.matches(HUD_SELECTOR) || node.querySelector(HUD_SELECTOR))
+        )
+      )
+      if (hudChanged) {
+        observeHud()
+        run()
+      }
+    })
+    mutations.observe(document.body, { childList: true, subtree: true })
+    // Fixed HUD boxes stay in viewport coordinates as the scene scrolls.
+    document.addEventListener('scroll', run, true)
+    return () => {
+      mutations.disconnect()
+      observer?.disconnect()
+      document.removeEventListener('scroll', run, true)
+    }
   }, [containerRef, enabled, nodesRevision, focusRevision])
 }

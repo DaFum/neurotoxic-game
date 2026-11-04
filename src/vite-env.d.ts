@@ -4,8 +4,7 @@
 interface ImportMetaEnv {
   readonly VITE_ENABLE_LEADERBOARD_SYNC?: string
   readonly VITE_ENABLE_VERCEL_TELEMETRY?: string
-  /** Pollinations image key, injected from the Vercel variable `Flux`. */
-  readonly VITE_FLUX_KEY?: string
+  readonly VITE_ENABLE_IMAGE_PROXY?: string
 }
 
 interface ImportMeta {

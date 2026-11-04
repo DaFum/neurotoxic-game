@@ -29,6 +29,8 @@ import {
   isCurrentExpeditionFailureId
 } from '../../src/domain/expedition/failure'
 import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
+import { calculateRefuelCost } from '../../src/utils/economy'
+import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash'
 import { EXPENSE_CONSTANTS } from '../../src/utils/economy/constants'
 import {
   firstExtractionRouteStep,
@@ -846,4 +848,56 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
     assert.equal(towed.player.money, state.player.money - EXPEDITION_TOW_COST)
     assert.equal(towed.player.van.fuel, Math.ceil(cheapest))
   })
+})
+
+describe('all booking-refused fuel rescue (#3495)', () => {
+  for (const fuel of [0, 10]) {
+    it(`offers only failure and refuses raw paid rescue at ${fuel} fuel`, () => {
+      const state = walkTo(
+        startedState({ money: 5000 }, { insurancePolicyId: 'roadside' }),
+        1
+      )
+      const onwardIds = state.gameMap.connections
+        .filter(edge => edge.from === state.player.currentNodeId)
+        .map(edge => edge.to)
+      assert.ok(onwardIds.length > 0)
+      const venueId = onwardIds
+        .map(id => state.gameMap.nodes[id].venueId)
+        .find(id => typeof id === 'string')
+      assert.ok(venueId)
+      for (const id of onwardIds) {
+        state.gameMap.nodes[id] = {
+          ...state.gameMap.nodes[id],
+          type: 'GIG',
+          venueId
+        }
+        delete state.gameMap.nodes[id].venue
+      }
+      state.venueBlacklist = [venueId]
+      state.player.van.fuel = fuel
+      assert.ok(state.player.van.condition > 0)
+      assert.ok(getExpeditionSpendableCash(state) >= EXPEDITION_TOW_COST)
+      assert.ok(getExpeditionSpendableCash(state) >= calculateRefuelCost(fuel))
+      assert.equal(state.expedition.insuranceClaimConsumed, false)
+      assert.equal(getExpeditionCheapestOnwardLegFuel(state), null)
+      const pending = deriveExpeditionPendingFailure(state)
+      assert.equal(pending?.reason, 'fuel_stranded')
+      state.expedition.pendingFailure = pending
+      assert.deepEqual(pending.choices, ['accept_failure'])
+      for (const choice of ['refuel', 'tow', 'insurance_claim']) {
+        const next = gameReducer(state, {
+          type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+          payload: {
+            pendingFailureId: pending.id,
+            expectedRouteStep: state.expedition.routeStep,
+            choice
+          }
+        })
+        assert.strictEqual(next, state)
+        assert.equal(next.player.van.fuel, fuel)
+        assert.equal(next.expedition.insuranceClaimConsumed, false)
+        assert.equal(next.expedition.claimConsumed, false)
+      }
+    })
+  }
 })

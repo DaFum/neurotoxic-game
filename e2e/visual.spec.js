@@ -80,11 +80,15 @@ const enterTourPrep = async page => {
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
  */
-const loadSeedOneExpedition = async page => {
-  await page.emulateMedia({ reducedMotion: 'reduce' })
+const loadSeedOneExpedition = async (
+  page,
+  reducedMotion = 'reduce',
+  fixtureName = 'seedOneStartFixture'
+) => {
+  await page.emulateMedia({ reducedMotion })
   const url = '/?events=off'
   await page.goto(url, { waitUntil: 'domcontentloaded' })
-  const fixture = await buildFixture(page, 'seedOneStartFixture')
+  const fixture = await buildFixture(page, fixtureName)
   await seedSaveOnce(page, { [SAVE_KEY]: fixture.save }, { url })
   await loadSavedGame(page)
   await expect
@@ -92,51 +96,139 @@ const loadSeedOneExpedition = async page => {
     .toBe('OVERWORLD')
   await dismissTutorial(page)
   await expect(page.locator('.map-node.clickable').first()).toBeVisible()
+  await page.mouse.move(0, 0)
   await waitForStableMapLayout(page)
 }
 
-/**
- * Measures the visible map-node labels of the route-seed-1 Expedition start and
- * returns the pairs of different nodes whose label boxes intersect.
- *
- * @param {import('@playwright/test').Page} page - The Playwright page.
- * @returns {Promise<number[][]>} Colliding node index pairs.
- */
-const seedOneLabelCollisions = async page => {
-  await loadSeedOneExpedition(page)
-
-  const labels = await page.evaluate(() =>
-    [...document.querySelectorAll('[data-testid="map-node-label"]')]
-      .filter(label => getComputedStyle(label).visibility !== 'hidden')
-      .map((label, node) => ({
-        node,
-        boxes: [...label.children]
-          .filter(child => getComputedStyle(child).display !== 'none')
-          .map(child => child.getBoundingClientRect())
-          .filter(r => r.width > 0 && r.height > 0)
-          .map(r => ({
+/** Measures visible child boxes on the currently loaded map. */
+const labelCollisions = async page =>
+  page.evaluate(() => {
+    const boxes = [
+      ...document.querySelectorAll('[data-testid="map-node-label"]')
+    ].flatMap(label =>
+      [...label.children].flatMap((child, index) => {
+        const style = getComputedStyle(child)
+        const r = child.getBoundingClientRect()
+        if (
+          style.visibility === 'hidden' ||
+          style.display === 'none' ||
+          !r.width ||
+          !r.height
+        )
+          return []
+        return [
+          {
+            name: label.lastElementChild.textContent,
+            kind: index === label.children.length - 1 ? 'name' : 'chip',
             left: r.left,
-            top: r.top,
             right: r.right,
-            bottom: r.bottom
-          }))
-      }))
-      .filter(entry => entry.boxes.length > 0)
-  )
-  const intersects = (a, b) =>
-    a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
-  const collisions = []
-  for (let i = 0; i < labels.length; i++) {
-    for (let j = i + 1; j < labels.length; j++) {
-      for (const a of labels[i].boxes) {
-        for (const b of labels[j].boxes) {
-          if (intersects(a, b))
-            collisions.push([labels[i].node, labels[j].node])
+            top: r.top,
+            bottom: r.bottom,
+            label
+          }
+        ]
+      })
+    )
+    const collisions = []
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i],
+          b = boxes[j]
+        if (
+          a.label !== b.label &&
+          a.left < b.right &&
+          a.right > b.left &&
+          a.top < b.bottom &&
+          a.bottom > b.top
+        ) {
+          collisions.push([`${a.name} (${a.kind})`, `${b.name} (${b.kind})`])
         }
       }
     }
+    return collisions
+  })
+
+/** Names must be visible at rest, without relying on tooltips or ARIA. */
+const unreadableDestinationNames = async page =>
+  page.evaluate(() => {
+    const bounds = document.querySelector('.map-wrap').getBoundingClientRect()
+    return [...document.querySelectorAll('.map-node[role="button"]')]
+      .filter(node => !node.querySelector('img[alt="Van"]'))
+      .flatMap(node => {
+        const name = node.querySelector(
+          '[data-testid="map-node-label"]'
+        )?.lastElementChild
+        if (!name) return [node.getAttribute('aria-label')]
+        const style = getComputedStyle(name),
+          r = name.getBoundingClientRect()
+        return name.closest('[data-declutter-hidden]') ||
+          style.visibility === 'hidden' ||
+          style.display === 'none' ||
+          !r.width ||
+          !r.height ||
+          r.left < bounds.left ||
+          r.right > bounds.right ||
+          r.top < bounds.top ||
+          r.bottom > bounds.bottom
+          ? [name.textContent]
+          : []
+      })
+  })
+
+/** Labels must avoid every final, animated hexagon, including their own. */
+const labelHexCollisions = page =>
+  page.locator('.map-node').evaluateAll(nodes => {
+    const hit = (a, b) =>
+      a.left < b.right &&
+      a.right > b.left &&
+      a.top < b.bottom &&
+      a.bottom > b.top
+    return nodes.flatMap(node => {
+      const label = node.querySelector('[data-testid="map-node-label"]')
+      if (!label) return []
+      return [...label.children].flatMap(child => {
+        const style = getComputedStyle(child),
+          box = child.getBoundingClientRect()
+        if (
+          style.display === 'none' ||
+          style.visibility === 'hidden' ||
+          !box.width ||
+          !box.height
+        )
+          return []
+        return nodes.flatMap(other => {
+          const hex = other.querySelector('[data-map-node-hex]')
+          return hex && hit(box, hex.getBoundingClientRect())
+            ? [label.lastElementChild.textContent]
+            : []
+        })
+      })
+    })
+  })
+
+const loadCareer = async (page, seed, reducedMotion = 'reduce') => {
+  await page.emulateMedia({ reducedMotion })
+  await page.goto(`/?seed=${seed}`, { waitUntil: 'load' })
+  // Wait for an actionable boot scene after its assets load. The intro can
+  // finish while the menu mounts, so consider only currently visible controls.
+  await page
+    .getByRole('button', { name: /skip intro|start tour/i })
+    .filter({ visible: true })
+    .first()
+    .waitFor({ timeout: 30000 })
+  await skipToMenu(page, { navigate: false })
+  await page.getByRole('button', { name: /start tour/i }).click()
+  const prompt = page.getByRole('dialog')
+  if (await prompt.isVisible({ timeout: 3000 }).catch(() => false)) {
+    const input = prompt.getByRole('textbox').first()
+    if (await input.count()) await input.fill('Tester')
+    await prompt.getByRole('button', { name: /confirm/i }).click()
   }
-  return collisions
+  await expect(page.locator('.map-wrap')).toBeVisible({ timeout: 45000 })
+  if (await page.getByRole('region', { name: /tutorial/i }).isVisible())
+    await dismissTutorial(page)
+  await page.mouse.move(0, 0)
+  await waitForStableMapLayout(page)
 }
 
 // WCAG 2.x AA for normal-size text; every label checked is below large size.
@@ -646,10 +738,7 @@ test.describe('Visual smoke tests', () => {
       )
       const hud = [
         ...document.querySelectorAll(
-          '.ow-menu button, [data-testid="overworld-phone-resources"]'
-        ),
-        ...[...document.querySelectorAll('button')].filter(b =>
-          /keyboard shortcuts/i.test(b.getAttribute('aria-label') ?? '')
+          '.ow-menu, .ow-menu button, [data-testid="overworld-radio"], [data-testid="overworld-phone-resources"], [data-shortcuts-toggle]'
         )
       ]
         .map(el => el.getBoundingClientRect())
@@ -672,7 +761,12 @@ test.describe('Visual smoke tests', () => {
       return { destinationNames, overlaps, hudOverlaps }
     })
     // Names are readable at rest, so reading one needs no travel-confirm tap.
+    const reachableDestinations = page
+      .locator('.map-node[role="button"]')
+      .filter({ hasNot: page.getByRole('img', { name: 'Van', exact: true }) })
+    expect(m.destinationNames.length).toBe(await reachableDestinations.count())
     expect(m.destinationNames.length).toBeGreaterThan(0)
+    expect(await unreadableDestinationNames(page)).toEqual([])
     await expect(page.getByText('CONFIRM?')).toHaveCount(0)
     // The declutter pass keeps the shown chips apart and off the HUD.
     expect(m.overlaps).toBe(0)
@@ -906,12 +1000,120 @@ test.describe('Visual smoke tests', () => {
     }
   })
 
+  for (const [width, height] of [
+    [390, 568],
+    [390, 844],
+    [1280, 720],
+    [1280, 844]
+  ]) {
+    for (let seed = width < 640 ? 2 : 3; seed <= 8; seed++) {
+      test(`career labels at rest seed ${seed} ${width}x${height} (#3506)`, async ({
+        page
+      }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+        test.setTimeout(120000)
+        await page.setViewportSize({ width, height })
+        await loadCareer(page, seed)
+        const collisions = await labelCollisions(page)
+        const unreadable =
+          width < 640 ? await unreadableDestinationNames(page) : []
+        const dimensions = await page.locator('.map-wrap').boundingBox()
+        await testInfo.attach('map measurements', {
+          body: JSON.stringify({ dimensions, collisions, unreadable }),
+          contentType: 'application/json'
+        })
+        console.log(
+          JSON.stringify({
+            seed,
+            width,
+            height,
+            dimensions,
+            collisions,
+            unreadable
+          })
+        )
+        expect(collisions).toEqual([])
+        expect(await labelHexCollisions(page)).toEqual([])
+        expect(unreadable).toEqual([])
+        if (width >= 640)
+          await expect(
+            page
+              .locator('.map-node')
+              .filter({
+                has: page.getByRole('img', { name: 'Van', exact: true })
+              })
+              .getByTestId('map-node-label')
+          ).toBeVisible()
+        await expect(page.getByText('CONFIRM?')).toHaveCount(0)
+      })
+    }
+  }
+
+  for (const [width, height] of [
+    [320, 568],
+    [390, 568],
+    [390, 844]
+  ]) {
+    test(`dense Expedition names at rest ${width}x${height} (#3506)`, async ({
+      page
+    }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+      await page.setViewportSize({ width, height })
+      await loadSeedOneExpedition(page)
+      const destinations = page
+        .locator('.map-node[role="button"]')
+        .filter({ hasNot: page.getByRole('img', { name: 'Van', exact: true }) })
+      expect(await destinations.count()).toBeGreaterThanOrEqual(3)
+      const unreadable = await unreadableDestinationNames(page)
+      expect(unreadable).toEqual([])
+      expect(await labelCollisions(page)).toEqual([])
+      expect(await labelHexCollisions(page)).toEqual([])
+      await expect(page.getByText('CONFIRM?')).toHaveCount(0)
+    })
+  }
+
+  test('animated Expedition hexagons do not grow over destination names (#3506)', async ({
+    page
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
+    await page.setViewportSize({ width: 320, height: 568 })
+    await loadSeedOneExpedition(page, 'no-preference')
+    await expect
+      .poll(() =>
+        page
+          .locator('[data-map-node-hex]')
+          .evaluateAll(hexes =>
+            hexes.every(
+              hex =>
+                Math.abs(hex.getBoundingClientRect().width - hex.offsetWidth) <
+                0.1
+            )
+          )
+      )
+      .toBe(true)
+    expect(await unreadableDestinationNames(page)).toEqual([])
+    expect(await labelHexCollisions(page)).toEqual([])
+    expect(await labelCollisions(page)).toEqual([])
+  })
+
   test('Expedition destination labels do not overlap on route seed 1 (#3254, #3273)', async ({
     page
   }) => {
-    // Phones hide names of a dense branch; wider maps hide the less important
-    // of two overlapping labels. Either way no two visible labels intersect.
-    expect(await seedOneLabelCollisions(page)).toEqual([])
+    // Reachable phone names remain readable while colliding stacks move above.
+    await loadSeedOneExpedition(page)
+    expect(await labelCollisions(page)).toEqual([])
+  })
+
+  test('an above-anchored destination label clears its own hexagon', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await loadSeedOneExpedition(page, 'reduce', 'lowerMapDestinationFixture')
+    await expect(
+      page.locator('[data-label-anchor="above"]:visible').first()
+    ).toBeVisible()
+    expect(await labelHexCollisions(page)).toEqual([])
+    expect(await unreadableDestinationNames(page)).toEqual([])
   })
 
   test('A focused Expedition destination shows its name before travel confirmation (#3254)', async ({
@@ -924,8 +1126,8 @@ test.describe('Visual smoke tests', () => {
       name: /travel to the distillery/i
     })
     const label = destination.getByTestId('map-node-label')
-    // Dense branch: the name is hidden at rest and revealed by focus alone.
-    await expect(label).toBeHidden()
+    // Dense branches expose names before focus or travel activation.
+    await expect(label).toBeVisible()
     await destination.focus()
     await expect(label).toBeVisible()
     await expect(label).toContainText(/the distillery/i)
@@ -942,7 +1144,8 @@ test.describe('Visual smoke tests', () => {
         page
       }, testInfo) => {
         test.skip(testInfo.project.name !== 'chromium', 'Sets its own viewport')
-        expect(await seedOneLabelCollisions(page)).toEqual([])
+        await loadSeedOneExpedition(page)
+        expect(await labelCollisions(page)).toEqual([])
       })
     })
   }

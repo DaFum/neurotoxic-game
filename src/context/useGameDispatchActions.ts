@@ -276,18 +276,22 @@ type BaseGameDispatchActions = {
   purchaseChassis: (
     input: Parameters<typeof purchaseChassisAction>[0]
   ) => boolean
+  /** Returns creator acceptance and dispatch, not reducer completion. */
   upgradeChassisTier: (
     assetId: string,
     targetTier: import('../types/assets').ChassisTier
-  ) => void
-  sellChassis: (assetId: string) => void
+  ) => boolean
+  /** Returns creator acceptance and dispatch, not reducer completion. */
+  sellChassis: (assetId: string) => boolean
   repairChassis: (assetId: string) => boolean
   refinanceLiability: (
     liabilityId: string,
     loanProfileId: import('../utils/assets/loanProfiles').LoanProfileId
   ) => boolean
-  installModule: (input: Parameters<typeof installModuleAction>[0]) => void
-  removeModule: (assetId: string, slotId: string) => void
+  /** Returns creator acceptance and dispatch, not reducer completion. */
+  installModule: (input: Parameters<typeof installModuleAction>[0]) => boolean
+  /** Returns wrapper acceptance and dispatch, not reducer completion. */
+  removeModule: (assetId: string, slotId: string) => boolean
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
 
   // Roguelite Expedition (G1). Creators read the same `latestStateRef`

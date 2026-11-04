@@ -268,6 +268,16 @@ export const playSongSequence = async (
   }
 }
 
+/** Invalidates pending chart publication and captured song-end callbacks. */
+export const invalidateSongSequence = (
+  gameStateRef: MutableRef<RhythmGameRefState>
+): void => {
+  if (gameStateRef.current) {
+    gameStateRef.current.sequenceAttemptId =
+      finiteNumberOr(gameStateRef.current.sequenceAttemptId, 0) + 1
+  }
+}
+
 /**
  * Resets per-gig sequencing flags and score tracking on the rhythm-game state ref.
  *
@@ -279,8 +289,7 @@ export const resetGigStateTracking = (
   if (gameStateRef.current) {
     gameStateRef.current.lastEndedSongIndex = -1
     // Bumped, not reset, so song ends from the previous session stay stale.
-    gameStateRef.current.sequenceAttemptId =
-      finiteNumberOr(gameStateRef.current.sequenceAttemptId, 0) + 1
+    invalidateSongSequence(gameStateRef)
     gameStateRef.current.songStats = []
     gameStateRef.current.currentSongStartScore = 0
     gameStateRef.current.currentSongStartHits = 0

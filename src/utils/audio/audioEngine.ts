@@ -57,7 +57,11 @@ export * from './songUtils'
 export * from './timingUtils'
 export { setupGigPhysics } from './gigPhysics'
 export { resolveActiveSetlist } from './setlistResolution'
-export { playSongSequence, resetGigStateTracking } from './songSequencer'
+export {
+  playSongSequence,
+  resetGigStateTracking,
+  invalidateSongSequence
+} from './songSequencer'
 export { NOTE_TAIL_MS } from './rhythmGameTypes'
 
 // Stateful entry points

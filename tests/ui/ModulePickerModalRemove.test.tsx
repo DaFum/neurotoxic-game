@@ -169,7 +169,7 @@ vi.mock('react-i18next', () => ({
 
 describe('ModulePickerModal install affordability (#3464)', () => {
   beforeEach(() => {
-    mockInstallModule.mockClear()
+    mockInstallModule.mockReset().mockReturnValue(true)
     mockState.expedition = undefined
   })
 
@@ -198,10 +198,48 @@ describe('ModulePickerModal install affordability (#3464)', () => {
 
 describe('ModulePickerModal remove flow', () => {
   beforeEach(() => {
-    mockInstallModule.mockClear()
-    mockRemoveModule.mockClear()
+    mockInstallModule.mockReset().mockReturnValue(true)
+    mockRemoveModule.mockReset().mockReturnValue(true)
     mockGetModulePoolForAsset.mockReturnValue([])
     mockState.expedition = undefined
+  })
+
+  it.each([true, false])(
+    'closes only for an accepted install (%s)',
+    accepted => {
+      mockInstallModule.mockReturnValue(accepted)
+      mockGetModulePoolForAsset.mockReturnValue([
+        { module: ecoInkModule, unlocked: true, lockReasons: [] }
+      ])
+      const onClose = vi.fn()
+      render(
+        <ModulePickerModal
+          asset={workshopAsset}
+          slotId='storage-slot'
+          isOpen
+          onClose={onClose}
+        />
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Install' }))
+      expect(mockInstallModule).toHaveBeenCalledOnce()
+      expect(onClose).toHaveBeenCalledTimes(accepted ? 1 : 0)
+    }
+  )
+
+  it('keeps the modal open for a refused removal', () => {
+    mockRemoveModule.mockReturnValue(false)
+    const onClose = vi.fn()
+    render(
+      <ModulePickerModal
+        asset={asset}
+        slotId='audio-slot'
+        isOpen
+        onClose={onClose}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    expect(mockRemoveModule).toHaveBeenCalledWith('asset-1', 'audio-slot')
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('lets players remove an installed module with refund preview', () => {

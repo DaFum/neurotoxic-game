@@ -97,7 +97,8 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
 
   // 1. Core State (React + Ref)
-  const { gameStateRef, state, setters } = useRhythmGameState()
+  const { gameStateRef, state, setters, resetGameplayState } =
+    useRhythmGameState()
   const appliedEventScoreDeltaRef = useRef(0)
 
   useEffect(() => {
@@ -112,6 +113,15 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     gameStateRef.current.score = nextScore
     setters.setScore(nextScore)
   }, [gameStateRef, gigEventScoreDelta, setters])
+
+  const resetGameplayForRetry = useCallback(() => {
+    resetGameplayState()
+    // Event guards survive Retry, so restore their score contribution without
+    // consuming it again when the cumulative context delta next changes.
+    const score = Math.max(0, appliedEventScoreDeltaRef.current)
+    gameStateRef.current.score = score
+    setters.setScore(score)
+  }, [gameStateRef, resetGameplayState, setters])
 
   // Memoize venue to node mapping to avoid O(N) lookup on every effect run
   const venueIdToNodeIdMap = useMemo(() => {
@@ -195,6 +205,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     useRhythmGameAudio({
       gameStateRef,
       setters,
+      resetGameplayState: resetGameplayForRetry,
       contextState: {
         band,
         gameMap,

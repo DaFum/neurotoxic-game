@@ -1,6 +1,7 @@
 import { useEffect, useReducer } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 import { createInitialState } from '../../src/context/initialState'
 import {
@@ -175,6 +176,12 @@ describe('useArrivalLogic through the real reducer', () => {
 
   test('a settlement the reducer refused charges no day and processes no arrival', () => {
     const initial = restState()
+    initial.expedition = {
+      ...initial.expedition,
+      status: 'active',
+      routeStep: 1,
+      blockedTravelAtRouteStep: 1
+    }
     // What the cash floor leaves behind: the minigame still active, the band
     // still on the node it was leaving.
     initial.player = { ...initial.player, currentNodeId: REST.id }
@@ -194,6 +201,77 @@ describe('useArrivalLogic through the real reducer', () => {
     expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     expect(spies.addToast).toHaveBeenCalledWith(
       'Not enough money for gas and food!',
+      'error'
+    )
+  })
+
+  test('a settled fuel shortage reports fuel instead of a generic refusal', () => {
+    const initial = startedState({ money: 5000 })
+    initial.player.van.fuel = 0.1
+    const target = initial.gameMap.connections.find(
+      edge => edge.from === initial.player.currentNodeId
+    ).to
+    const traveling = gameReducer(initial, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: target }
+    })
+    const refused = gameReducer(traveling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [], rngValue: 0.99 }
+    })
+    expect(refused.minigame.active).toBe(true)
+    expect(refused.expedition.pendingFailure).toBeNull()
+    const { result } = renderArrival(refused)
+    act(() => result.current.handleArrivalSequence())
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'Not enough fuel in the tank!',
+      'error'
+    )
+  })
+
+  test('a live crisis refusal returns to the map without a day tick', () => {
+    const initial = startedState({ money: 5000 })
+    const target = initial.gameMap.connections.find(
+      edge => edge.from === initial.player.currentNodeId
+    ).to
+    const traveling = gameReducer(initial, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: target }
+    })
+    traveling.expedition.bandInjuryByMemberId = {
+      [traveling.band.members[0].id]: 'critical'
+    }
+    const refused = gameReducer(traveling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [], rngValue: 0.99 }
+    })
+    expect(refused.minigame.active).toBe(true)
+    expect(refused.expedition.pendingFailure?.reason).toBe('crew_collapse')
+    const { result } = renderArrival(refused)
+    act(() => result.current.handleArrivalSequence())
+    expect(store.state.player.day).toBe(refused.player.day)
+    expect(store.state.band).toEqual(refused.band)
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'Resolve the expedition crisis before continuing the trip.',
+      'error'
+    )
+  })
+
+  test('an active settlement without a cash marker reports a generic refusal', () => {
+    const initial = restState()
+    initial.minigame = {
+      ...initial.minigame,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: 'node_far'
+    }
+    const { result } = renderArrival(initial)
+    act(() => result.current.handleArrivalSequence())
+    expect(store.state.player.day).toBe(initial.player.day)
+    expect(spies.addToast).toHaveBeenCalledWith(
+      'The trip could not be completed. Back to the map.',
       'error'
     )
   })

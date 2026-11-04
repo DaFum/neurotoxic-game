@@ -32,7 +32,7 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-const { playSongSequence, resetGigStateTracking } =
+const { playSongSequence, resetGigStateTracking, invalidateSongSequence } =
   await import('../../src/utils/audio/songSequencer.ts')
 
 test('starting the next song resets progress left from the previous one', async () => {
@@ -372,4 +372,58 @@ test('a next-song failure of the current attempt still completes the setlist (#3
 
   assert.strictEqual(state.setlistCompleted, true)
   assert.strictEqual(state.songTransitioning, false)
+})
+
+test('invalidating a pending song suppresses chart publication and its toast (#3519)', async () => {
+  const state = makeSequencerState({ notesVersion: 7, totalDuration: 1234 })
+  const ref = { current: state }
+  const backend = Promise.withResolvers()
+  playAudioForSong.mock.mockImplementationOnce(() => backend.promise)
+  const toasts = []
+  const pending = playSongSequence(
+    0,
+    [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ],
+    ref,
+    text => toasts.push(text)
+  )
+
+  invalidateSongSequence(ref)
+  backend.resolve([{ time: 9999 }])
+  await pending
+
+  assert.deepStrictEqual(state.notes, [])
+  assert.equal(state.notesVersion, 7)
+  assert.equal(state.totalDuration, 1234)
+  assert.deepStrictEqual(toasts, [])
+})
+
+test('an invalidated song-end callback neither settles misses nor starts the next song (#3519)', async () => {
+  let settled = 0
+  const state = makeSequencerState({
+    settleUnhitNotes: () => {
+      settled++
+    }
+  })
+  const ref = { current: state }
+  await playSongSequence(
+    0,
+    [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ],
+    ref,
+    () => {}
+  )
+  const staleEnd = playAudioForSong.mock.calls.at(-1).arguments[2]
+  const starts = playAudioForSong.mock.callCount()
+
+  invalidateSongSequence(ref)
+  await staleEnd()
+
+  assert.equal(settled, 0)
+  assert.equal(playAudioForSong.mock.callCount(), starts)
+  assert.deepStrictEqual(state.songStats, [])
 })

@@ -255,8 +255,8 @@ export const useArrivalLogic = ({
     // band on the node it left. Arriving then would charge a day and replay
     // the origin's arrival, so the leg is abandoned back to the map instead.
     const intendedTarget = intendedTargetRef.current
-    // Only the cash floor leaves the minigame active; a route refusal or an
-    // invalid target clears it with the band still on the origin node.
+    // Crisis/resource refusals retain the active minigame; route and target
+    // refusals clear it while leaving the band at its origin.
     const settlementUnpaid =
       minigame?.active === true && minigame.type === MINIGAME_TYPES.TOURBUS
     if (
@@ -264,13 +264,24 @@ export const useArrivalLogic = ({
       (intendedTarget !== null && intendedTarget !== nodeId)
     ) {
       addToast(
-        settlementUnpaid
-          ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
-              defaultValue: 'Not enough money for gas and food!'
+        expedition?.pendingFailure
+          ? i18n.t('ui:travel.errors.crisisPending', {
+              defaultValue:
+                'Resolve the expedition crisis before continuing the trip.'
             })
-          : i18n.t('ui:travel.errors.legNotCompleted', {
-              defaultValue: 'The trip could not be completed. Back to the map.'
-            }),
+          : settlementUnpaid && minigame.travelFuelRefused === true
+            ? i18n.t('ui:travel.errors.notEnoughFuel', {
+                defaultValue: 'Not enough fuel in the tank!'
+              })
+            : expedition?.status === 'active' &&
+                expedition.blockedTravelAtRouteStep === expedition.routeStep
+              ? i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
+                  defaultValue: 'Not enough money for gas and food!'
+                })
+              : i18n.t('ui:travel.errors.legNotCompleted', {
+                  defaultValue:
+                    'The trip could not be completed. Back to the map.'
+                }),
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)

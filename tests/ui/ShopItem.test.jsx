@@ -1,7 +1,10 @@
 import { render, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ShopItem } from '../../src/ui/bandhq/ShopItem'
-import { IMG_PROMPTS } from '../../src/utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGeneratedImageFallbackUrl
+} from '../../src/utils/imageGen'
 
 vi.mock('../../src/utils/purchaseLogicUtils', () => ({
   LABEL_CONTRACT_ADVANCE: 500
@@ -43,8 +46,17 @@ const defaultProps = {
 }
 
 describe('ShopItem', () => {
+  afterEach(() => vi.unstubAllEnvs())
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('uses bundled fallback art in static mode', () => {
+    vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'false')
+    const { container } = render(<ShopItem {...defaultProps} />)
+    const src = container.querySelector('img')?.getAttribute('src') ?? ''
+    expect(src).toBe(getGeneratedImageFallbackUrl())
+    expect(src).not.toContain('/api/image')
   })
 
   it('renders item details correctly', () => {
@@ -55,6 +67,7 @@ describe('ShopItem', () => {
   })
 
   it('falls back to the generic item prompt, never the i18n name key', () => {
+    vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'true')
     const item = { ...mockItem, name: 'items:missing.name', img: 'NOT_A_KEY' }
     const { container } = render(<ShopItem {...defaultProps} item={item} />)
     const src = container.querySelector('img')?.getAttribute('src') ?? ''
@@ -63,6 +76,7 @@ describe('ShopItem', () => {
   })
 
   it('uses the catalogue prompt for a known image key', () => {
+    vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'true')
     const item = { ...mockItem, img: 'ITEM_HQ_VOID_ALTAR' }
     const { container } = render(<ShopItem {...defaultProps} item={item} />)
     const src = container.querySelector('img')?.getAttribute('src') ?? ''

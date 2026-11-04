@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteCompression from 'vite-plugin-compression'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -58,7 +58,8 @@ const baseConfig = {
             }
           },
           {
-            urlPattern: /^https:\/\/gen\.pollinations\.ai\/.*$/i,
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && url.pathname === '/api/image',
             handler: 'CacheFirst',
             options: {
               cacheName: 'generated-images-runtime',
@@ -67,12 +68,13 @@ const baseConfig = {
                 maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
               },
               cacheableResponse: {
-                statuses: [0, 200]
+                statuses: [200]
               }
             }
           }
         ],
-        navigateFallback: 'index.html'
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//]
       }
     }),
     viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
@@ -112,14 +114,4 @@ const baseConfig = {
   }
 }
 
-export default defineConfig(({ mode }) => ({
-  ...baseConfig,
-  define: {
-    // Vercel provides the Pollinations image key as `Flux` (locally it can come
-    // from `.env.local`). Vite only exposes VITE_* variables to the client, so
-    // hand this one over explicitly.
-    'import.meta.env.VITE_FLUX_KEY': JSON.stringify(
-      loadEnv(mode, process.cwd(), '').Flux ?? ''
-    )
-  }
-}))
+export default defineConfig(baseConfig)

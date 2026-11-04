@@ -54,6 +54,7 @@ export const Overworld = () => {
   // `null` outside a run, which keeps the Career map readout unchanged.
   const expeditionFogByNodeId = useGameSelector(getExpeditionNodeFogByNodeId)
   const liabilities = useGameSelector(state => state.liabilities)
+  const crowdfundCampaigns = useGameSelector(state => state.crowdfundCampaigns)
   const social = useGameSelector(state => state.social)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const venueBlacklist = useGameSelector(state => state.venueBlacklist)
@@ -117,6 +118,7 @@ export const Overworld = () => {
     band,
     assets,
     liabilities,
+    crowdfundCampaigns,
     social,
     gameMap: travelMap,
     reputationByRegion,

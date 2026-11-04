@@ -15,6 +15,8 @@
  */
 
 import { checkSoftlock } from '../../utils/mapUtils'
+import { getConsumableRecovery } from '../../utils/travelSoftlockUtils'
+import { getCarriedContrabandStash } from './cargo'
 import { getNodeAccessStatus } from '../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../data/venues'
 import { getEffectiveExpeditionRules } from './effectiveRules'
@@ -39,7 +41,7 @@ import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'
 import {
   getExpeditionCheapestOnwardLegFuel,
-  isExpeditionCheapestLegBeyondTank
+  canExpeditionFuelRescueHelp
 } from './travel'
 import { getExpeditionTravelMap } from './routeOverlay'
 import {
@@ -202,6 +204,10 @@ export const getExpeditionMobilityFailureSignal = (
     !travelBlockedHere &&
     !checkSoftlock(getExpeditionTravelMap(state), strandedView, state.band, {
       dailyObligations: getTotalDailyObligations(state),
+      consumableRecovery: getConsumableRecovery(
+        getCarriedContrabandStash(state.band.stash, state.expedition),
+        state.band.inventory
+      ),
       fuelMultiplier:
         getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier,
       // The booking gate `useHandleTravel` enforces: a neighbour the player
@@ -227,9 +233,9 @@ export const getExpeditionMobilityFailureSignal = (
     ? state.player.van.fuel
     : 0
   const choices: ExpeditionFailureChoiceId[] = []
-  // A leg longer than a full tank defeats every fuel rescue (each clamps at
+  // No bookable leg, or a leg longer than a full tank, defeats fuel rescue (clamped at
   // capacity), so none is offered: the player would pay and stay stranded.
-  const fuelCanRescue = !isExpeditionCheapestLegBeyondTank(state)
+  const fuelCanRescue = canExpeditionFuelRescueHelp(state)
   if (
     fuelCanRescue &&
     calculateRefuelCost(currentFuel) > 0 &&

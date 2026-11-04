@@ -13,7 +13,8 @@ import { REST_STAMINA_GAIN } from '../context/gameConstants'
 import { SLEEPING_BAGS_STAMINA_PER_DAY } from '../data/inventoryItems'
 import { getActiveDealBenefits } from './brandDealBenefits'
 import { calculateDailyNetCost } from './dailyNetCost'
-import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
+import { shouldTriggerBankruptcy } from './economy/logisticsLogic'
+import { finiteNumberOr } from './finiteNumber'
 import { calculateFameLevel } from './gameState/calculations'
 import {
   clampBandHarmony,
@@ -22,7 +23,15 @@ import {
 } from './gameState/clamps'
 import { getCityPrefix } from './mapGenerator/cityTraits'
 import type { BandState, SocialState } from '../types'
-import type { AssetModifiers } from '../types/assets'
+import type { AssetModifiers, LongTermAsset, Liability } from '../types/assets'
+import {
+  projectRestLiabilities,
+  getRestAssetDailyCost
+} from './restLiabilityProjection'
+import type {
+  ConsumableRecovery,
+  PendingRestEffects
+} from '../types/restRecovery'
 
 type RawMapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
@@ -118,6 +127,8 @@ export const normalizeVenueId = (venue: unknown): string | null => {
  * `getActiveAssetModifiers`; mapUtils stays free of those dependencies.
  */
 interface SoftlockContext {
+  /** One-use carried recovery, with caps relaxed in favour of escape. */
+  consumableRecovery?: Partial<ConsumableRecovery>
   /** Total daily obligations added on top of each neighbor's travel cost. */
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */
@@ -132,6 +143,8 @@ interface SoftlockContext {
     assetProceeds: number
     dailyObligations: number
     assetModifiers: AssetModifiers
+    assets?: LongTermAsset[]
+    liabilities?: Record<string, Liability>
   }[]
   /**
    * Booking-gate predicate for a candidate neighbor. Callers pass a closure
@@ -153,15 +166,19 @@ interface SoftlockContext {
      * the brand deals whose stamina regen it adds.
      */
     social: Partial<Pick<SocialState, 'youtube' | 'activeDeals'>>
+    /** Ordinary-play settlement; omitted keeps the legacy static-cost path. */
+    assets?: LongTermAsset[]
+    liabilities?: Record<string, Liability>
+    pendingFameEffects?: PendingRestEffects
   }
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
 /**
- * Upper bound on consecutive donations the softlock check simulates. Harmony
- * is clamped to 100 and the cheapest donation costs 15, so a legal band can
- * donate at most six times in a row; the bound only guards corrupted state.
+ * Upper bound on immediate donations before carried recovery. Harmony is
+ * clamped to 100 and the cheapest donation costs 15, so a legal band can
+ * donate at most six times in a row. Rest/recovery uses an uncapped budget.
  */
 const MAX_SIMULATED_DONATIONS = 8
 
@@ -192,73 +209,85 @@ const MAX_TICK_HARMONY_GAIN = 3 + 1 + 5
 const MAX_FIXED_TICK_STAMINA_GAIN =
   3 + 2 + 3 + 3 + 1 + SLEEPING_BAGS_STAMINA_PER_DAY
 
+/** Maximum minimum stamina after optimistically dividing targeted items. */
+const getRecoveredMinimumStamina = (
+  band: Partial<BandState> | null,
+  recovery: ConsumableRecovery
+): number => {
+  const stamina = (band?.members ?? [])
+    .map(member => finiteNumberOr(member.stamina, 0) + recovery.memberStamina)
+    .sort((a, b) => a - b)
+  let level = stamina[0] ?? 0
+  let pool = recovery.targetedStamina
+  for (let i = 1; i < stamina.length; i++) {
+    const next = stamina[i] ?? level
+    const cost = (next - level) * i
+    if (pool < cost) return level + pool / i
+    pool -= cost
+    level = next
+  }
+  return level + pool / Math.max(1, stamina.length)
+}
+
 /**
- * Upper bound on the cash blood-bank donations can raise by the end of each
- * rest day, donations made before, between and after the rests combined.
- *
- * @remarks
- * Deliberately optimistic, never a worst case: a stranded verdict ends the
- * run, while a missed one only lets the player rest, after which the check
- * re-runs on the settled band. A run of donations is legal only when its total
- * harmony cost stays below the harmony the band starts with plus what the
- * rests add, and its total stamina cost leaves every member the 10 points
- * `validateBloodBankDonation` keeps in reserve. Each rest adds the van rest's
- * stamina plus `tickStaminaGain`, and `MAX_TICK_HARMONY_GAIN` harmony, all
- * without the caps: donations between rests spend harmony and stamina, so the
- * refunds can add up past 100, and crediting all of them never under-credits.
- * The day tick's losses, expiring contraband effects and quest penalties are
- * not subtracted, because the next check reads whatever they actually took.
- * Each count of marrow and blood donations that passes both sums is a
- * candidate, so this covers donating, resting and donating again as well as
- * resting first. Three bloods cost more harmony and stamina than a marrow and
- * pay less, so the best count holds at most two bloods and, with harmony at
- * most 100 + 7 * 9, four marrows: within `MAX_SIMULATED_DONATIONS`.
- * Payouts grow with the fame level, which passive asset fame can raise on
- * every rest, so each donation of an `n`-day run is priced at the highest
- * level `n` rests can reach.
- *
- * @param band - Band whose harmony and member stamina fund the donations.
- * @param fameLevelAfterRest - Upper bound on the fame level after `n` rest days.
- * @param todayTotal - Exact proceeds of today's donation run (no rest).
- * @param tickStaminaGain - Upper bound on the stamina one day tick adds.
- * @returns Index `n` holds the bound after `n` rest days; index 0 is `todayTotal`.
+ * Closed-form optimistic donation budget. Marrow dominates blood in both
+ * resources: giving up one marrow frees at most two bloods, worth at most
+ * its payout. Strict harmony and inclusive stamina match the donation gate.
+ * Caps and indivisible targeted items are relaxed; stock is credited once.
+ */
+const getBestDonationTotal = (
+  harmony: number,
+  stamina: number,
+  fameLevel: number
+): number => {
+  const marrow = getBloodBankDonation('marrow', fameLevel)!
+  const blood = getBloodBankDonation('blood', fameLevel)!
+  const count = (h: number, s: number, hCost: number, sCost: number) =>
+    Math.max(0, Math.min(Math.ceil(h / hCost) - 1, Math.floor(s / sCost)))
+  const m = count(harmony, stamina, marrow.harmonyCost, marrow.staminaCost)
+  const b = count(
+    harmony - m * marrow.harmonyCost,
+    stamina - m * marrow.staminaCost,
+    blood.harmonyCost,
+    blood.staminaCost
+  )
+  return Math.max(
+    0,
+    finiteNumberOr(m * marrow.moneyGain + b * blood.moneyGain, 0)
+  )
+}
+
+/**
+ * Optimistic cumulative donation credit before, between and after up to seven
+ * rests. Resource refunds have no caps and omit drains. Costs use the lowest
+ * reachable fame; payouts use the highest. This bound need not describe one
+ * realizable sequence, since only a false stranded verdict ends the run.
  */
 const getRestDonationTotals = (
   band: Partial<BandState> | null,
   fameLevelAfterRest: (restDays: number) => number,
   todayTotal: number,
-  tickStaminaGain: number
+  tickStaminaGain: number,
+  recovery: ConsumableRecovery
 ): number[] => {
   const totals = [todayTotal]
   const members = band?.members ?? []
-  const harmony = band?.harmony
-  const canDonate = members.length > 0 && isFiniteNumber(harmony)
-  const lowestStamina = Math.min(
-    ...members.map(member => finiteNumberOr(member.stamina, 0))
-  )
+  // Persisted saves are sanitized; fallback 1 mirrors the live tick for callers
+  // supplying non-finite harmony before rest or item use.
+  const harmony = finiteNumberOr(band?.harmony, 1) + recovery.harmony
+  const lowestStamina = getRecoveredMinimumStamina(band, recovery)
   for (let restDays = 1; restDays <= MAX_SIMULATED_REST_DAYS; restDays++) {
-    let best = totals[restDays - 1] ?? 0
-    const fameLevel = fameLevelAfterRest(restDays)
-    const marrow = getBloodBankDonation('marrow', fameLevel)
-    const blood = getBloodBankDonation('blood', fameLevel)
-    if (canDonate && marrow !== null && blood !== null) {
-      const staminaBudget =
-        lowestStamina +
-        restDays * (REST_STAMINA_GAIN + tickStaminaGain) -
-        BLOOD_BANK_STAMINA_RESERVE
-      const harmonyBudget = harmony + restDays * MAX_TICK_HARMONY_GAIN
-      for (let m = 0; m <= MAX_SIMULATED_DONATIONS; m++) {
-        for (let b = 0; m + b <= MAX_SIMULATED_DONATIONS; b++) {
-          if (
-            m * marrow.harmonyCost + b * blood.harmonyCost < harmonyBudget &&
-            m * marrow.staminaCost + b * blood.staminaCost <= staminaBudget
-          ) {
-            best = Math.max(best, m * marrow.moneyGain + b * blood.moneyGain)
-          }
-        }
-      }
-    }
-    totals.push(best)
+    const budget =
+      members.length === 0
+        ? 0
+        : getBestDonationTotal(
+            harmony + restDays * MAX_TICK_HARMONY_GAIN,
+            lowestStamina +
+              restDays * (REST_STAMINA_GAIN + tickStaminaGain) -
+              BLOOD_BANK_STAMINA_RESERVE,
+            fameLevelAfterRest(restDays)
+          )
+    totals.push(Math.max(totals[restDays - 1] ?? 0, budget))
   }
   return totals
 }
@@ -501,6 +530,9 @@ export const checkSoftlock = (
     customContext?: {
       dailyObligations?: number
       assetModifiers?: AssetModifiers
+      fameLevel?: number
+      assets?: LongTermAsset[]
+      liabilities?: Record<string, Liability>
     }
   ): boolean => {
     const activeDailyObligations = finiteNumberOr(
@@ -510,6 +542,10 @@ export const checkSoftlock = (
     const activeAssetModifiers = customContext?.assetModifiers ?? assetModifiers
     const pricingState = {
       ...playerStateForTravel,
+      fameLevel: finiteNumberOr(
+        customContext?.fameLevel,
+        playerStateForTravel.fameLevel
+      ),
       money,
       van: { ...playerStateForTravel.van, fuel }
     }
@@ -565,10 +601,39 @@ export const checkSoftlock = (
   // Escape hatch: blood-bank donations are a cash source without traveling,
   // and the band can donate repeatedly while harmony and stamina allow, on
   // top of whatever an asset sale raises.
+  const recovery: ConsumableRecovery = {
+    harmony: Math.max(
+      0,
+      finiteNumberOr(context.consumableRecovery?.harmony, 0)
+    ),
+    targetedStamina: Math.max(
+      0,
+      finiteNumberOr(context.consumableRecovery?.targetedStamina, 0)
+    ),
+    memberStamina: Math.max(
+      0,
+      finiteNumberOr(context.consumableRecovery?.memberStamina, 0)
+    )
+  }
   const donationSteps = getDonationProceedsSteps(
     bandForDonation,
     player.fameLevel
   )
+  if (
+    bandForDonation?.members?.length &&
+    (recovery.harmony > 0 ||
+      recovery.targetedStamina > 0 ||
+      recovery.memberStamina > 0)
+  ) {
+    donationSteps.push(
+      getBestDonationTotal(
+        finiteNumberOr(bandForDonation.harmony, 1) + recovery.harmony,
+        getRecoveredMinimumStamina(bandForDonation, recovery) -
+          BLOOD_BANK_STAMINA_RESERVE,
+        playerStateForTravel.fameLevel
+      )
+    )
+  }
   const evaluateWithDonations = (
     scenarioMoney: number,
     customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
@@ -592,7 +657,35 @@ export const checkSoftlock = (
   // escape (see `getRestDonationTotals`): only the bankruptcy the tick itself
   // would declare ends the look-ahead.
   const restRecovery = context.restRecovery
-  const donationTotal = donationSteps[donationSteps.length - 1] ?? 0
+  const donationTotal = Math.max(0, ...donationSteps)
+  const rawEffects = restRecovery?.pendingFameEffects
+  const validEffect = (entry: unknown): entry is Record<string, unknown> =>
+    typeof entry === 'object' &&
+    entry !== null &&
+    typeof (entry as { restDay?: unknown }).restDay === 'number' &&
+    Number.isFinite((entry as { restDay: number }).restDay) &&
+    (entry as { restDay: number }).restDay > 0 &&
+    (entry as { restDay: number }).restDay <= MAX_SIMULATED_REST_DAYS
+  const fameDrops = (
+    Array.isArray(rawEffects?.fameDrops) ? rawEffects.fameDrops : []
+  )
+    .filter(validEffect)
+    .map(entry => ({
+      restDay: Math.ceil(finiteNumberOr(entry.restDay, 1)),
+      amount: Math.max(0, finiteNumberOr(entry.amount, 0))
+    }))
+  const successes = (
+    Array.isArray(rawEffects?.successes) ? rawEffects.successes : []
+  )
+    .filter(validEffect)
+    .map(entry => ({
+      restDay: Math.ceil(finiteNumberOr(entry.restDay, 1)),
+      fame: Math.max(0, finiteNumberOr(entry.fame, 0)),
+      dailyIncome: Math.max(0, finiteNumberOr(entry.dailyIncome, 0)),
+      passiveFame: Math.ceil(Math.max(0, finiteNumberOr(entry.passiveFame, 0))),
+      saleProceeds: Math.max(0, finiteNumberOr(entry.saleProceeds, 0))
+    }))
+  const hasPendingEffects = fameDrops.length > 0 || successes.length > 0
   // Asset regen and passive fame from the pre-sale modifiers: a sale only
   // removes boni. The tick pays a fractional rate in whole units, at most its
   // ceiling a day. Passive fame lands before the day is settled, so a rest can
@@ -607,7 +700,22 @@ export const checkSoftlock = (
     restDays =>
       Math.max(
         playerStateForTravel.fameLevel,
-        calculateFameLevel(fame + restDays * passiveFamePerDay)
+        calculateFameLevel(
+          finiteNumberOr(
+            fame +
+              restDays * passiveFamePerDay +
+              successes.reduce(
+                (sum, effect) =>
+                  sum +
+                  (effect.restDay <= restDays
+                    ? effect.fame +
+                      (restDays - effect.restDay) * effect.passiveFame
+                    : 0),
+                0
+              ),
+            Number.MAX_VALUE
+          )
+        )
       ),
     donationTotal,
     MAX_FIXED_TICK_STAMINA_GAIN +
@@ -615,7 +723,8 @@ export const checkSoftlock = (
         .staminaRegenPerDay +
       Math.ceil(
         Math.max(0, finiteNumberOr(assetModifiers?.staminaRegenBonusPerDay, 0))
-      )
+      ),
+    recovery
   )
   const finalRestDonationTotal =
     restDonationTotals[MAX_SIMULATED_REST_DAYS] ?? donationTotal
@@ -626,10 +735,37 @@ export const checkSoftlock = (
     const bandForRest = bandStateForTravel ?? { members: [] }
     const today = Math.max(1, Math.floor(finiteNumberOr(player.day, 1)))
     const byRestDay = [0]
+    const costLevels = [playerStateForTravel.fameLevel]
+    const guaranteedCosts = [
+      calculateGuaranteedDailyCost(
+        playerStateForTravel,
+        bandForRest,
+        restRecovery.social
+      )
+    ]
     for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
+      const drops = fameDrops.reduce(
+        (sum, effect) => sum + (effect.restDay <= restDay ? effect.amount : 0),
+        0
+      )
+      const costLevel =
+        drops > 0
+          ? Math.min(
+              playerStateForTravel.fameLevel,
+              calculateFameLevel(Math.max(0, fame - drops))
+            )
+          : playerStateForTravel.fameLevel
+      costLevels.push(costLevel)
+      guaranteedCosts.push(
+        calculateGuaranteedDailyCost(
+          { fameLevel: costLevel },
+          bandForRest,
+          restRecovery.social
+        )
+      )
       byRestDay.push(
         calculateDailyNetCost(
-          { day: today + restDay, fameLevel: playerStateForTravel.fameLevel },
+          { day: today + restDay, fameLevel: costLevel },
           bandForRest,
           restRecovery.social
         )
@@ -641,7 +777,9 @@ export const checkSoftlock = (
         bandForRest,
         restRecovery.social
       ),
-      byRestDay
+      byRestDay,
+      costLevels,
+      guaranteedCosts
     }
   })()
   const canRecoverByResting = (
@@ -657,18 +795,104 @@ export const checkSoftlock = (
     // cushion.
     let restedMoney = startingMoney
     let settledMoney = startingMoney
+    let projectedAssets = customCtx?.assets ?? restRecovery?.assets
+    let projectedLiabilities =
+      customCtx?.liabilities ?? restRecovery?.liabilities
+    const initialAssetCost = projectedAssets
+      ? getRestAssetDailyCost(projectedAssets)
+      : 0
     for (let restDay = 1; restDay <= MAX_SIMULATED_REST_DAYS; restDay++) {
-      const dayCost =
-        assetAndLoanCost + (restLivingCosts.byRestDay[restDay] ?? 0)
+      const guaranteed =
+        restLivingCosts.guaranteedCosts[restDay] ?? restLivingCosts.guaranteed
+      const costLevel =
+        restLivingCosts.costLevels[restDay] ?? playerStateForTravel.fameLevel
+      const newAssetIncome = successes.reduce(
+        (sum, effect) =>
+          sum + (effect.restDay < restDay ? effect.dailyIncome : 0),
+        0
+      )
+      const nextAssetIncome = successes.reduce(
+        (sum, effect) =>
+          sum + (effect.restDay <= restDay ? effect.dailyIncome : 0),
+        0
+      )
+      const saleCredit = successes.reduce(
+        (sum, effect) =>
+          sum + (effect.restDay <= restDay ? effect.saleProceeds : 0),
+        0
+      )
+      let dayCost = assetAndLoanCost + (restLivingCosts.byRestDay[restDay] ?? 0)
+      let departureContext = {
+        ...customCtx,
+        fameLevel: costLevel,
+        dailyObligations:
+          scenarioDailyObligations +
+          guaranteed -
+          restLivingCosts.guaranteed -
+          nextAssetIncome
+      }
+      if (projectedAssets && projectedLiabilities) {
+        // Settle asset cash before loans, then living costs. Missing payments
+        // are skipped, and foreclosure/payoff changes the arrival obligations.
+        const projection = projectRestLiabilities(
+          settledMoney -
+            Math.min(initialAssetCost, getRestAssetDailyCost(projectedAssets)),
+          projectedAssets,
+          projectedLiabilities
+        )
+        projectedAssets = projection.assets
+        projectedLiabilities = projection.liabilities
+        dayCost =
+          settledMoney -
+          projection.money +
+          (restLivingCosts.byRestDay[restDay] ?? 0)
+        departureContext = {
+          ...departureContext,
+          dailyObligations:
+            Math.min(
+              scenarioDailyObligations +
+                guaranteed -
+                restLivingCosts.guaranteed,
+              guaranteed +
+                Math.min(initialAssetCost, projection.assetDailyCost) +
+                projection.installmentDailyCost
+            ) - nextAssetIncome,
+          // Retain the best fuel consumption: optimistic cash/donation paths
+          // can pay a loan that the no-donation projection forecloses.
+          assetModifiers: {
+            ...projection.assetModifiers,
+            fuelMultiplier: Math.min(
+              finiteNumberOr(
+                (customCtx?.assetModifiers ?? assetModifiers)?.fuelMultiplier,
+                1
+              ),
+              projection.assetModifiers.fuelMultiplier
+            )
+          }
+        }
+      }
+      dayCost -= newAssetIncome
       const isIncomeDay = dayCost < 0
       restedMoney = Math.max(0, restedMoney - dayCost)
       settledMoney -= dayCost
       // The tick clamps cash at 0 and bankrupts an empty band only while
       // obligations are due (`shouldTriggerBankruptcy`).
       const donatedBeforeRest = restDonationTotals[restDay - 1] ?? 0
-      if (settledMoney + donatedBeforeRest <= 0 && scenarioDailyObligations > 0)
+      if (
+        shouldTriggerBankruptcy(
+          Math.max(0, settledMoney + donatedBeforeRest),
+          0,
+          finiteNumberOr(
+            departureContext?.dailyObligations,
+            scenarioDailyObligations
+          )
+        )
+      )
         break
-      if (isIncomeDay && evaluateWithDonations(restedMoney, customCtx))
+      if (
+        isIncomeDay &&
+        evaluateWithDonations(restedMoney + saleCredit, departureContext)
+      )
         return true
       const restTotal = restDonationTotals[restDay] ?? 0
       // Only the largest total is tried. The travel reserve fee,
@@ -677,12 +901,20 @@ export const checkSoftlock = (
       // totals never do (marrow pays five bloods plus 0 to 4, so any two
       // differ by at least a blood minus 8 * 4, i.e. 68).
       if (
-        restTotal > donationTotal &&
-        evaluateScenario(restedMoney + restTotal, customCtx)
+        (restTotal > donationTotal ||
+          hasPendingEffects ||
+          projectedLiabilities !== undefined) &&
+        evaluateScenario(restedMoney + restTotal + saleCredit, departureContext)
       )
         return true
       // A day that costs money only pays off while the bound still grows.
-      if (!isIncomeDay && restTotal >= finalRestDonationTotal) break
+      if (
+        !hasPendingEffects &&
+        projectedLiabilities === undefined &&
+        !isIncomeDay &&
+        restTotal >= finalRestDonationTotal
+      )
+        break
     }
     return false
   }

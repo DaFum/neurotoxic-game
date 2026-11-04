@@ -387,6 +387,43 @@ export const processLiabilityTick = (
   }
 }
 
+/** Frozen campaign outcome shared by settlement and rest recovery bounds. */
+export const isPlannedCrowdfundSuccess = (
+  campaign: CrowdfundCampaign
+): boolean => campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
+
+/** Materializes the deterministic, unmodified chassis promised by a campaign. */
+export const buildCrowdfundAsset = (
+  campaign: CrowdfundCampaign,
+  day: number
+): LongTermAsset => {
+  const { kind, flavor, chassisTier } = campaign.assetSpec
+  const cfgTier = CHASSIS_CONFIG[kind][flavor][chassisTier]
+  return {
+    id: campaign.materializedAssetId,
+    kind,
+    chassisFlavor: flavor,
+    chassisTier,
+    condition: 100,
+    baseUpkeep: cfgTier.upkeep,
+    baseDailyRevenue: cfgTier.revenue,
+    slots: cfgTier.slots.map((slotType, i) => ({
+      // Bounds-safe fallback: if startCrowdfund was called before the
+      // section plan populated CHASSIS_CONFIG (so slot count was 0 then,
+      // non-zero now), synthesize a deterministic id from the asset id.
+      id:
+        campaign.materializedSlotIds[i] ??
+        `${campaign.materializedAssetId}_slot_${i}`,
+      slotType,
+      position: { x: 0, y: 0 },
+      installedModuleId: null
+    })),
+    acquiredOnDay: day,
+    acquisitionMode: 'crowdfund',
+    baseRiskEventChance: cfgTier.baseRiskEventChance
+  }
+}
+
 /**
  * Resolves expiring crowdfund campaigns. On success: the player gains
  * `fameStake` and a fresh asset is materialized from `assetSpec` — the raised
@@ -435,7 +472,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
   const day = finiteNumberOr(state.player.day, 0)
 
   for (const campaign of state.crowdfundCampaigns) {
-    const { kind, flavor, chassisTier } = campaign.assetSpec
+    const { kind } = campaign.assetSpec
     if (unavailableKinds.has(kind) || seenCampaignKinds.has(kind)) continue
     seenCampaignKinds.add(kind)
 
@@ -450,42 +487,11 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     // `plannedSuccessProbability` the UI promised the player. Success when
     // the roll falls inside the promised odds, so the displayed chance IS
     // the realized chance.
-    const success =
-      campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
+    const success = isPlannedCrowdfundSuccess(campaign)
     if (success) {
       fame += campaign.fameStake
       pushOutcomeToast(true, campaign.fameStake)
-      // Materialize the asset deterministically from pre-generated ids
-      // (stamped by startCrowdfund at campaign creation). No UUID generation
-      // here — the reducer must stay pure.
-      // Read the resolved tier directly from CHASSIS_CONFIG so the price /
-      // upkeep / slot list stay in sync with whatever the section plan
-      // configured — recomputing via buildDiyTier here would drift if
-      // CHASSIS_CONFIG.diy were ever tuned independently of legit.
-      const cfgTier = CHASSIS_CONFIG[kind][flavor][chassisTier]
-      newAssets.push({
-        id: campaign.materializedAssetId,
-        kind,
-        chassisFlavor: flavor,
-        chassisTier,
-        condition: 100,
-        baseUpkeep: cfgTier.upkeep,
-        baseDailyRevenue: cfgTier.revenue,
-        slots: cfgTier.slots.map((slotType, i) => ({
-          // Bounds-safe fallback: if startCrowdfund was called before the
-          // section plan populated CHASSIS_CONFIG (so slot count was 0 then,
-          // non-zero now), synthesize a deterministic id from the asset id.
-          id:
-            campaign.materializedSlotIds[i] ??
-            `${campaign.materializedAssetId}_slot_${i}`,
-          slotType,
-          position: { x: 0, y: 0 },
-          installedModuleId: null
-        })),
-        acquiredOnDay: day,
-        acquisitionMode: 'crowdfund',
-        baseRiskEventChance: cfgTier.baseRiskEventChance
-      })
+      newAssets.push(buildCrowdfundAsset(campaign, day))
       unavailableKinds.add(kind)
     } else {
       const fameBefore = fame

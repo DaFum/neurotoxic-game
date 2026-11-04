@@ -199,8 +199,7 @@ export const ModulePickerModal = memo(
                 <button
                   type='button'
                   onClick={() => {
-                    removeModule(asset.id, slot.id)
-                    onClose()
+                    if (removeModule(asset.id, slot.id) === true) onClose()
                   }}
                   disabled={removalBlocked || chassisLocked}
                   className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
@@ -302,12 +301,14 @@ export const ModulePickerModal = memo(
                       <button
                         type='button'
                         onClick={() => {
-                          installModule({
-                            assetId: asset.id,
-                            slotId: slot.id,
-                            moduleId: module.id
-                          })
-                          onClose()
+                          if (
+                            installModule({
+                              assetId: asset.id,
+                              slotId: slot.id,
+                              moduleId: module.id
+                            }) === true
+                          )
+                            onClose()
                         }}
                         disabled={blocked || chassisLocked}
                         className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'

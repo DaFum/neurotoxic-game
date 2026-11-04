@@ -73,6 +73,7 @@ describe('KeyboardShortcutsPanel & HUD shortcuts toggle', () => {
     const toggle = screen.getByRole('button', {
       name: /toggle keyboard shortcuts help/i
     })
+    expect(toggle).toHaveAttribute('data-shortcuts-toggle')
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(toggle).not.toHaveAttribute('aria-controls')
     expect(toggle).toHaveClass('base', 'is-idle')

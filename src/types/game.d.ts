@@ -141,6 +141,8 @@ export interface MinigameState {
   targetNodeId?: string | null
   active?: boolean
   targetDestination?: unknown
+  /** Transient settlement refusal; cleared with the travel minigame. */
+  travelFuelRefused?: boolean
   gigId?: string | null
   equipmentRemaining?: number
   accumulatedDamage?: number

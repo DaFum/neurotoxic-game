@@ -2299,6 +2299,7 @@
   "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
   "travel.errors.bookingRefusedBlacklisted": "Buchung abgelehnt: {{location}} hat dich dauerhaft auf die Blacklist gesetzt!",
   "travel.errors.bookingRefusedRegionalReputation": "Buchung abgelehnt: Der Veranstaltungsort in {{location}} hat dich wegen schlechter regionaler Reputation auf die Blacklist gesetzt!",
+  "travel.errors.crisisPending": "Löse die Expeditionskrise, bevor du die Fahrt fortsetzt.",
   "travel.errors.draftPending": "Wähle zuerst einen Run-Draft-Vorteil, bevor du losfährst.",
   "travel.errors.failedToOpenHq": "HQ konnte nicht geöffnet werden.",
   "travel.errors.gameOverStranded": "GAME OVER: Gestrandet! Du kannst nicht reisen und dir keinen Treibstoff leisten.",

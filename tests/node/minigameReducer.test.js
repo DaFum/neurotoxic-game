@@ -88,6 +88,23 @@ describe('minigameReducer', () => {
   })
 
   describe('handleCompleteTravelMinigame', () => {
+    it('preserves Career cash clamping and pickup surplus without a route advance', () => {
+      baseState.player.money = 0
+      baseState.player.van.fuel = 10
+      baseState.gameMap.nodes.node2.x = 0
+      const state = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      state.minigame.targetDestination = 'node2'
+      const next = handleCompleteTravelMinigame(state, {
+        damageTaken: 0,
+        itemsCollected: Array(5).fill('FUEL'),
+        rngValue: 0.99
+      })
+      assert.equal(next.player.money, 0)
+      assert.equal(next.player.van.fuel, 10.5)
+      assert.equal(next.player.currentNodeId, 'node2')
+      assert.equal(next.expedition, undefined)
+    })
+
     it('recovers malformed travel counters and settles each trip once', () => {
       for (const [stored, expected] of [
         [NaN, 1],

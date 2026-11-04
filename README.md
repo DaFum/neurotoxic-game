@@ -52,6 +52,30 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
   The audio stack depends on external audio assets and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed‑content issues and broken sound.
 
+### Generated-image deployment modes
+
+- **Proxy mode:** Serve the `api/` handlers with a server runtime, configure
+  server-side `Flux` and `neurotoxic1_REDIS_URL`, and build with
+  `VITE_ENABLE_IMAGE_PROXY=true`. Images load through same-origin `/api/image`;
+  Redis enforces a per-IP budget and unavailable Redis fails closed. Behind a
+  reverse proxy, enable server-side `TRUST_PROXY=true` only after verifying that
+  ingress strips or overwrites client-supplied `x-real-ip` and `x-forwarded-for`
+  headers and blocks direct access to the server origin.
+- **Static mode (GitHub Pages):** Leave the proxy flag unset or set it to `false`.
+  No image key is needed. The game uses bundled `generated-offline-fallback.svg`
+  artwork and sends no image-provider or `/api/image` requests. The Pages workflow
+  explicitly selects this mode and serves static `dist/` only.
+
+`Flux` must contain a server-only Pollinations `sk_` secret. Never give it a
+`VITE_` prefix or expose it through Vite `define`. The current
+[Pollinations API documentation](https://github.com/pollinations/pollinations/blob/master/APIDOCS.md)
+states that `pk_` App Keys cannot authenticate generation and anonymous generation
+is unsupported. The proxy sends the secret only in the upstream Bearer header.
+
+**Operator action:** Earlier builds with `Flux` configured embedded the key in
+browser bundles and image URLs. Rotate any previously embedded key, and set a
+budget and expiry on its replacement in Pollinations before enabling proxy mode.
+
 ## Controls: Limb‑Loss Protocol
 
 - **Intro Video**: Starts on boot and transitions into the Main Menu.
