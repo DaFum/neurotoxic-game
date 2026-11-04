@@ -6,6 +6,9 @@ import {
 } from '../../lib/leaderboard.js'
 
 const client = vi.hoisted(() => ({
+  duplicate() {
+    return { ...client, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   connect: vi.fn(),
   eval: vi.fn()
@@ -98,6 +101,8 @@ describe('protected image proxy', () => {
       vi.useFakeTimers()
       try {
         client.isOpen = operation !== 'connect'
+        const isolated = { ...client, on: vi.fn(), destroy: vi.fn() }
+        vi.spyOn(client, 'duplicate').mockReturnValue(isolated)
         client[operation].mockReturnValue(new Promise(() => {}))
         const response = request()
         await vi.advanceTimersByTimeAsync(60000)
@@ -107,6 +112,7 @@ describe('protected image proxy', () => {
           error: 'Image generation unavailable'
         })
         expect(fetchMock).not.toHaveBeenCalled()
+        expect(isolated.destroy).toHaveBeenCalledTimes(1)
         expect(vi.getTimerCount()).toBe(0)
       } finally {
         vi.useRealTimers()

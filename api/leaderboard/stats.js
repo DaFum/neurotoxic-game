@@ -1,5 +1,8 @@
-import client from '../../lib/redis.js'
-import { withRedisDeadline } from '../../lib/redisDeadline.js'
+import sharedClient from '../../lib/redis.js'
+import {
+  createRedisRequest,
+  withRedisDeadline
+} from '../../lib/redisDeadline.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import {
@@ -73,14 +76,19 @@ const clampStat = val => {
  */
 export default async function handler(req, res) {
   if (req.method === 'POST') {
+    /** @type {ReturnType<typeof createRedisRequest> | undefined} */
+    let redisRequest
     try {
+      redisRequest = createRedisRequest(sharedClient)
+      const request = redisRequest
+      const client = request.client
       if (!client.isOpen) {
-        await withRedisDeadline(client, () => client.connect())
+        await withRedisDeadline(client, () => request.connect())
       }
 
       if (
         await withRedisDeadline(client, () =>
-          isLeaderboardRateLimited(req, 'stats')
+          isLeaderboardRateLimited(req, 'stats', 5, 60, client)
         )
       ) {
         return res.status(429).json({ error: 'Too many requests' })
@@ -215,8 +223,12 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Stats update error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+      redisRequest?.close()
     }
   } else if (req.method === 'GET') {
+    /** @type {ReturnType<typeof createRedisRequest> | undefined} */
+    let redisRequest
     try {
       const limit = parseLeaderboardLimit(req.query?.limit)
 
@@ -232,16 +244,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid stat requested' })
       }
 
+      redisRequest = createRedisRequest(sharedClient)
+      const request = redisRequest
+      const client = request.client
       if (!client.isOpen) {
-        await withRedisDeadline(client, () => client.connect())
+        await withRedisDeadline(client, () => request.connect())
       }
 
-      const leaderboard = await fetchLeaderboard(`lb:${stat}`, limit)
+      const leaderboard = await fetchLeaderboard(`lb:${stat}`, limit, client)
 
       return res.status(200).json(leaderboard)
     } catch (error) {
       console.error('Stats fetch error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+      redisRequest?.close()
     }
   }
 

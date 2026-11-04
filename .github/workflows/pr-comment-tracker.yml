@@ -25,10 +25,19 @@ jobs:
           script: |
             // TRACKER_OPEN_PRS: scheduled runs only write to same-repository human PRs.
             const { owner, repo } = context.repo;
-            const prs = context.payload.pull_request
+            let prs = context.payload.pull_request
               ? [context.payload.pull_request]
               : (await github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 }))
                 .filter(pr => pr.head.repo?.full_name === `${owner}/${repo}` && pr.user.login !== 'dependabot[bot]');
+            if (!context.payload.pull_request && prs.length > 256) {
+              // Rotate through a stable ordering every scheduled half-hour so the
+              // matrix limit does not permanently exclude the same PRs.
+              prs.sort((a, b) => a.number - b.number);
+              const start = (Math.floor(Date.now() / (30 * 60 * 1000)) * 256) % prs.length;
+              const deferred = prs.length - 256;
+              prs = Array.from({ length: 256 }, (_, i) => prs[(start + i) % prs.length]);
+              core.notice(`Refreshing 256 PRs; ${deferred} deferred to later scheduled runs.`);
+            }
             core.setOutput('prs', JSON.stringify(prs.map(pr => ({ number: pr.number, headSha: pr.head.sha, mergeSha: pr.merge_commit_sha }))));
 
   update-summary-and-check:
@@ -233,8 +242,9 @@ jobs:
                 const mergeChecks = await trackerChecks(merge);
                 if (mergeChecks.length === 0) {
                   // Legacy reports lack a stored verdict; use an existing head
-                  // check only when it has an unambiguous completed conclusion.
-                  const [headCheck] = priorVerdict ? [] : await trackerChecks(head);
+                  // check only when it belongs to this PR and has a completed conclusion.
+                  const [headCheck] = priorVerdict ? [] : (await trackerChecks(head))
+                    .filter(check => check.pull_requests?.some(pr => pr.number === prNumber));
                   const previousVerdict = priorVerdict ?? (
                     headCheck?.status === 'completed' && ['success', 'failure'].includes(headCheck.conclusion)
                       ? headCheck.conclusion : null

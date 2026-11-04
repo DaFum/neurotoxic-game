@@ -5,13 +5,15 @@ import { logger } from './logger'
 import { finiteNumberOr } from './finiteNumber'
 import { isLeaderboardSyncEnabled } from './leaderboardSyncFlag'
 import {
+  defaultStorageAdapter,
+  discardBufferedStorageItem,
   getSafeStorageItem,
   listStorageKeys,
   removeStorageItem,
   setSafeStorageItem
 } from './storage'
 import { getSafeUUID } from './crypto'
-import { isLooseRecord } from './objectUtils'
+import { isLooseRecord, safeJsonParse } from './objectUtils'
 
 /**
  * Per-song score payload accepted by the song leaderboard endpoint.
@@ -45,6 +47,76 @@ for (const song of SONGS_BY_ID.values()) {
   if (song.leaderboardId) knownSongs.add(song.leaderboardId)
 }
 
+type ValidPendingScore = { songId: string; score: number; accuracy?: unknown }
+const isValidPendingScore = (entry: unknown): entry is ValidPendingScore =>
+  isLooseRecord(entry) &&
+  typeof entry.songId === 'string' &&
+  knownSongs.has(entry.songId) &&
+  typeof entry.score === 'number' &&
+  Number.isFinite(entry.score) &&
+  entry.score >= 0 &&
+  entry.score <= 10_000_000
+
+// Remove only scores dominated by another immutable record. A buffered-only
+// winner cannot justify deleting persistent records that would survive reload.
+const compactPendingJournal = (playerId: string): void => {
+  const prefix = pendingJournalPrefix(playerId)
+  const records: {
+    key: string
+    score: ValidPendingScore
+    durable: boolean
+    persisted: ValidPendingScore | null
+  }[] = []
+  const winners = new Map<string, (typeof records)[number]>()
+  for (const key of listStorageKeys()) {
+    if (!key.startsWith(prefix)) continue
+    const score = getSafeStorageItem<unknown>(key, null)
+    if (!isValidPendingScore(score)) continue
+    let durable = false
+    let persistedScore: ValidPendingScore | null = null
+    const persisted = defaultStorageAdapter.get(key)
+    if (persisted !== null) {
+      try {
+        const stored = safeJsonParse<unknown>(persisted)
+        if (isValidPendingScore(stored)) persistedScore = stored
+        durable =
+          persistedScore !== null &&
+          persistedScore.songId === score.songId &&
+          persistedScore.score === score.score &&
+          finiteNumberOr(persistedScore.accuracy, 0) ===
+            finiteNumberOr(score.accuracy, 0)
+      } catch {
+        // Leave malformed or unreadable persistent data untouched.
+      }
+    }
+    const record = { key, score, durable, persisted: persistedScore }
+    records.push(record)
+    const current = winners.get(score.songId)
+    if (
+      !current ||
+      score.score > current.score.score ||
+      (score.score === current.score.score &&
+        (Number(durable) > Number(current.durable) ||
+          (durable === current.durable && key > current.key)))
+    ) {
+      winners.set(score.songId, record)
+    }
+  }
+  for (const record of records) {
+    const winner = winners.get(record.score.songId)
+    if (!winner || winner.key === record.key) continue
+    if (
+      winner.durable &&
+      record.persisted?.songId === winner.score.songId &&
+      record.persisted.score <= winner.score.score
+    ) {
+      removeStorageItem(record.key)
+    } else {
+      discardBufferedStorageItem(record.key)
+    }
+  }
+}
+
 // Journal records are immutable: their individual keys prevent concurrent
 // read/merge/write operations from losing a submission when Web Locks is absent.
 const readPendingScores = (
@@ -54,16 +126,7 @@ const readPendingScores = (
   const scores = new Map<string, SongStat>()
   const journalKeys: string[] = []
   const add = (entry: unknown): string | undefined => {
-    if (
-      !isLooseRecord(entry) ||
-      typeof entry.songId !== 'string' ||
-      !knownSongs.has(entry.songId) ||
-      typeof entry.score !== 'number' ||
-      !Number.isFinite(entry.score) ||
-      entry.score < 0 ||
-      entry.score > 10_000_000
-    )
-      return undefined
+    if (!isValidPendingScore(entry)) return undefined
     const existing = scores.get(entry.songId)
     if (!existing && scores.size >= 100) return undefined
     if (!existing || entry.score > existing.score) {
@@ -276,13 +339,15 @@ export const submitLeaderboardScores = async ({
   // queue. A concurrent fallback write can overwrite the queue, but not these
   // records, which remain discoverable after reload until acknowledged.
   for (const score of scoresToSubmit) {
-    if (score.score >= 0 && score.score <= 10_000_000) {
+    if (isValidPendingScore(score)) {
+      compactPendingJournal(playerId)
       setSafeStorageItem(
         `${pendingJournalPrefix(playerId)}${getSafeUUID()}`,
         score
       )
     }
   }
+  compactPendingJournal(playerId)
 
   // Persist before sending; GT writes need only the best pending score per song.
   const persistAndSend = async (): Promise<void> => {

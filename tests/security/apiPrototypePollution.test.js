@@ -2,6 +2,9 @@ import { test, describe, beforeEach, vi } from 'vitest'
 import assert from 'node:assert'
 
 const mockRedisClient = {
+  duplicate() {
+    return { ...mockRedisClient, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   incr: vi.fn(() => Promise.resolve(1)),
   expire: vi.fn(() => Promise.resolve()),

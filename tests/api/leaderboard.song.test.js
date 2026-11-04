@@ -17,6 +17,9 @@ const SECOND_CANONICAL_SONG_ID =
   '02_the_lost_scriptures_of_the_elder_gods_akoasma_and_golgatha'
 
 const mockClient = {
+  duplicate() {
+    return { ...mockClient, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   connect: vi.fn(() => Promise.resolve()),
   hSet: vi.fn(() => Promise.resolve()),

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { submitLeaderboardScores } from '../../src/utils/leaderboardUtils'
 import type { GameState, PostGigSummary } from '../../src/types'
+import { listStorageKeys, resetStorageFallback } from '../../src/utils/storage'
 
 vi.mock('../../src/data/songs', () => ({
   SONGS_BY_ID: new Map([
@@ -27,6 +28,7 @@ const submit = (songId = 'song1', score = 100) =>
   })
 
 beforeEach(() => {
+  resetStorageFallback()
   vi.useFakeTimers()
   vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'true')
   const store = new Map<string, string>()
@@ -147,6 +149,105 @@ describe('durable song score retries', () => {
 })
 
 describe('cross-tab score queue', () => {
+  it('bounds offline journal entries while retaining the best scores per song', async () => {
+    vi.stubGlobal('navigator', {})
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+    const otherKey = 'neurotoxic_pending_song_scores:other:item:keep'
+    localStorage.setItem(
+      otherKey,
+      JSON.stringify({ songId: 'lb_song1', score: 999, accuracy: 99 })
+    )
+    localStorage.setItem('unrelated', 'keep')
+    for (let score = 1; score <= 40; score++) await submit('song1', score)
+    for (let score = 40; score >= 1; score--) await submit('song2', score)
+    const prefix = 'neurotoxic_pending_song_scores:retry-player:item:'
+    const journalKeys = [...Array(localStorage.length)]
+      .map((_, i) => localStorage.key(i))
+      .filter(key => key?.startsWith(prefix))
+    expect(journalKeys.length).toBeLessThanOrEqual(2)
+    expect(localStorage.getItem(otherKey)).not.toBeNull()
+    expect(localStorage.getItem('unrelated')).toBe('keep')
+    vi.clearAllTimers()
+    vi.resetModules()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 })
+    vi.stubGlobal('fetch', fetchMock)
+    const fresh = await import('../../src/utils/leaderboardUtils')
+    await fresh.retryPendingLeaderboardScores(player)
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body).scores).toEqual(
+      expect.arrayContaining([
+        { songId: 'lb_song1', score: 40, accuracy: 95 },
+        { songId: 'lb_song2', score: 40, accuracy: 95 }
+      ])
+    )
+  })
+
+  it('keeps a concurrently written higher score while pruning', async () => {
+    vi.stubGlobal('navigator', {})
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+    await submit('song1', 100)
+    const prefix = 'neurotoxic_pending_song_scores:retry-player:item:'
+    const originalRemove = localStorage.removeItem.bind(localStorage)
+    let interleaved = false
+    let concurrent: Promise<void> | undefined
+    const removeItem = vi
+      .spyOn(localStorage, 'removeItem')
+      .mockImplementation(key => {
+        if (key.startsWith(prefix) && !interleaved) {
+          interleaved = true
+          concurrent = submit('song1', 300)
+        }
+        originalRemove(key)
+      })
+    await submit('song1', 200)
+    await concurrent
+    expect(interleaved).toBe(true)
+    removeItem.mockRestore()
+    vi.clearAllTimers()
+    vi.resetModules()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 })
+    vi.stubGlobal('fetch', fetchMock)
+    const fresh = await import('../../src/utils/leaderboardUtils')
+    await fresh.retryPendingLeaderboardScores(player)
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body).scores).toEqual([
+      { songId: 'lb_song1', score: 300, accuracy: 95 }
+    ])
+  })
+
+  it('does not journal invalid scores', async () => {
+    vi.stubGlobal('navigator', {})
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    await submit('song1', -1)
+    await submit('song1', 10_000_001)
+    const prefix = 'neurotoxic_pending_song_scores:retry-player:item:'
+    expect(listStorageKeys().filter(key => key.startsWith(prefix))).toEqual([])
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps persisted journal entries when the higher score is only buffered', async () => {
+    vi.stubGlobal('navigator', {})
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+    await submit('song1', 100)
+    const prefix = 'neurotoxic_pending_song_scores:retry-player:item:'
+    const originalKeys = [...Array(localStorage.length)]
+      .map((_, i) => localStorage.key(i))
+      .filter(key => key?.startsWith(prefix))
+    expect(originalKeys).toHaveLength(1)
+    const originalSet = localStorage.setItem.bind(localStorage)
+    const setItem = vi
+      .spyOn(localStorage, 'setItem')
+      .mockImplementation((key, value) => {
+        if (key.startsWith(prefix)) throw new Error('quota')
+        originalSet(key, value)
+      })
+    for (let score = 200; score <= 240; score++) await submit('song1', score)
+    expect(localStorage.getItem(originalKeys[0]!)).not.toBeNull()
+    expect(
+      listStorageKeys().filter(key => key.startsWith(prefix))
+    ).toHaveLength(2)
+    setItem.mockRestore()
+  })
+
   it.each([
     [
       'different songs',

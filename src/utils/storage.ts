@@ -214,6 +214,19 @@ export function listStorageKeys(
 }
 
 /**
+ * Discards only a session-buffered value, leaving persistent storage intact.
+ *
+ * @param key - Key whose buffered value is no longer needed.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ */
+export function discardBufferedStorageItem(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): void {
+  fallbackStores.get(adapter)?.remove(key)
+}
+
+/**
  * Removes a key from persistent storage and the in-memory fallback.
  *
  * @param key - Storage key.

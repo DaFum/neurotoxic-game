@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
 
 const redis = vi.hoisted(() => ({
+  duplicate() {
+    return { ...redis, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   connect: vi.fn(),
   eval: vi.fn(),
@@ -155,4 +158,93 @@ it('a timed-out request does not interrupt another Redis operation', async () =>
   await expect(
     withRedisDeadline(redis, () => Promise.resolve('next'))
   ).resolves.toBe('next')
+})
+
+it('closes a late connection after its request expires', async () => {
+  const { createRedisRequest } = await import('../../lib/redisDeadline.js')
+  let finishConnect
+  const isolated = {
+    on: vi.fn(),
+    connect: vi.fn(
+      () =>
+        new Promise(resolve => {
+          finishConnect = resolve
+        })
+    ),
+    destroy: vi.fn()
+  }
+  const shared = { duplicate: vi.fn(() => isolated), destroy: vi.fn() }
+  const request = createRedisRequest(shared)
+  const { withRedisDeadline } = await import('../../lib/redisDeadline.js')
+  const connection = withRedisDeadline(isolated, () => request.connect()).catch(
+    () => 'expired'
+  )
+  await vi.advanceTimersByTimeAsync(1000)
+  expect(await connection).toBe('expired')
+  request.close()
+  expect(isolated.destroy).toHaveBeenCalledTimes(1)
+  expect(shared.destroy).not.toHaveBeenCalled()
+  finishConnect()
+  await vi.advanceTimersByTimeAsync(0)
+  expect(isolated.destroy).toHaveBeenCalledTimes(2)
+})
+
+it('keeps capacity occupied until a late connection settles', async () => {
+  const { createRedisRequest } = await import('../../lib/redisDeadline.js')
+  const connection = Promise.withResolvers()
+  const shared = {
+    duplicate: () => ({
+      on: vi.fn(),
+      connect: () => connection.promise,
+      destroy: vi.fn()
+    })
+  }
+  const requests = Array.from({ length: 256 }, () => createRedisRequest(shared))
+  const pending = requests[0].connect()
+  requests[0].close()
+  expect(() => createRedisRequest(shared)).toThrow(
+    'Redis request capacity exceeded'
+  )
+  connection.resolve()
+  await pending
+  const next = createRedisRequest(shared)
+  next.close()
+  for (const request of requests.slice(1)) request.close()
+})
+
+it('releases capacity even when a private client throws during cleanup', async () => {
+  const { createRedisRequest } = await import('../../lib/redisDeadline.js')
+  const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+  const shared = {
+    duplicate: () => ({
+      on: vi.fn(),
+      destroy: () => {
+        throw new Error('closed')
+      }
+    })
+  }
+  const requests = Array.from({ length: 256 }, () => createRedisRequest(shared))
+  expect(() => requests[0].close()).not.toThrow()
+  const next = createRedisRequest(shared)
+  for (const request of [...requests.slice(1), next]) request.close()
+  log.mockRestore()
+})
+
+it('cleans up and releases capacity after connect rejects late', async () => {
+  const { createRedisRequest } = await import('../../lib/redisDeadline.js')
+  const connection = Promise.withResolvers()
+  const isolated = {
+    on: vi.fn(),
+    destroy: vi.fn(),
+    connect: () => connection.promise
+  }
+  const shared = { duplicate: () => isolated }
+  const request = createRedisRequest(shared)
+  const pending = request.connect()
+  request.close()
+  connection.reject(new Error('connection failed'))
+  await expect(pending).rejects.toThrow('connection failed')
+  expect(isolated.destroy).toHaveBeenCalledTimes(2)
+  const next = createRedisRequest(shared)
+  next.close()
 })

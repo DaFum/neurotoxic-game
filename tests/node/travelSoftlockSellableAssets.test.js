@@ -364,7 +364,7 @@ test('ordinary sale search remains capped while the expanded search includes eve
     includeAdditionalCandidates: true
   })
   assert.equal(standard.length, 1023)
-  assert.equal(expanded.length, 1023 + 2 * 11)
+  assert.equal(expanded.length, 2 ** 12 - 1)
   for (const extra of assets.slice(10)) {
     assert.ok(
       expanded.some(
@@ -373,5 +373,67 @@ test('ordinary sale search remains capped while the expanded search includes eve
           !scenario.assets.some(asset => asset.id === extra.id)
       )
     )
+  }
+})
+
+test('grouped sale proceeds follow the cash rounding of each sale', () => {
+  const assets = Array.from({ length: 12 }, (_, i) => makeAsset(`asset_${i}`))
+  const candidates = assets.map((asset, i) => ({
+    id: asset.id,
+    net: i < 10 ? 10 : 0.6
+  }))
+  const scenarios = getPostSaleScenarios(
+    candidates,
+    assets,
+    {},
+    { money: 100.7, day: 1 },
+    { members: [] },
+    {},
+    { includeAdditionalCandidates: true }
+  )
+  const grouped = scenarios.find(
+    scenario =>
+      scenario.assets.length === 10 &&
+      scenario.assets.every(
+        asset => !['asset_10', 'asset_11'].includes(asset.id)
+      )
+  )
+  assert.ok(grouped)
+  // floor(floor(100.7 + 0.6) + 0.6) = 101.
+  assert.equal(grouped.assetProceeds, 101 - 100.7)
+})
+
+test('expanded search is exhaustive through four extra candidates and bounded above that', () => {
+  for (const count of [14, 15]) {
+    const assets = Array.from({ length: count }, (_, i) => makeAsset(`a${i}`))
+    const candidates = assets.map((asset, i) => ({
+      id: asset.id,
+      net: count - i
+    }))
+    const scenarios = getPostSaleScenarios(
+      candidates,
+      assets,
+      {},
+      { money: 100, day: 1 },
+      { members: [] },
+      {},
+      { includeAdditionalCandidates: true }
+    )
+    assert.equal(
+      scenarios.length,
+      count === 14 ? 2 ** 14 - 1 : 1023 + 5 * 11 + 1024
+    )
+    if (count === 14) {
+      const wanted = new Set(['a0', 'a1', 'a10', 'a11', 'a12'])
+      assert.ok(
+        scenarios.some(scenario =>
+          assets.every(
+            asset =>
+              scenario.assets.some(retained => retained.id === asset.id) !==
+              wanted.has(asset.id)
+          )
+        )
+      )
+    }
   }
 })

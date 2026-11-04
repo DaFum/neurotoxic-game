@@ -17,6 +17,9 @@ const mockMulti = {
 }
 
 const mockRedisClient = {
+  duplicate() {
+    return { ...mockRedisClient, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   zAdd: vi.fn(() => Promise.resolve()),
   zRangeWithScores: vi.fn(() => Promise.resolve([])),

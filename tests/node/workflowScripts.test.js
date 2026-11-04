@@ -343,6 +343,7 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
         name: 'Aggregate Comments & Enforce Resolution',
         head_sha: 'head-sha',
         app: { slug: 'github-actions' },
+        pull_requests: [{ number: 7 }],
         status: 'completed',
         conclusion: 'failure'
       }
@@ -392,6 +393,7 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
       name: 'Aggregate Comments & Enforce Resolution',
       head_sha: 'head-sha',
       app: { slug },
+      pull_requests: [{ number: 7 }],
       status,
       conclusion
     })
@@ -424,6 +426,45 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     })
     assert.deepEqual(pending.calls.checks, [])
     assert.equal(pending.log.warnings.length, 1)
+  })
+
+  test('a legacy report only uses checks associated with this PR', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    comments[0].body = comments[0].body.replace(
+      /\n<!-- TRACKER_VERDICT: (success|failure) -->$/,
+      ''
+    )
+    const check = (id, pullRequests, conclusion) => ({
+      id,
+      name: 'Aggregate Comments & Enforce Resolution',
+      head_sha: 'head-sha',
+      app: { slug: 'github-actions' },
+      pull_requests: pullRequests,
+      status: 'completed',
+      conclusion
+    })
+    const foreignAndUnknown = [
+      check(3, [{ number: 8 }], 'failure'),
+      check(2, [], 'failure'),
+      check(1, undefined, 'failure')
+    ]
+    const noMatch = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns: foreignAndUnknown
+    })
+    assert.deepEqual(noMatch.calls.checks, [])
+    assert.equal(noMatch.log.warnings.length, 1)
+
+    const matching = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns: [...foreignAndUnknown, check(0, [{ number: 7 }], 'success')]
+    })
+    assert.equal(matching.calls.checks[0].conclusion, 'success')
   })
 
   test('scheduled and event runs serialize per PR without canceling an active update', () => {
@@ -468,6 +509,56 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     assert.deepEqual(output, [
       { number: 1, headSha: 'sha-1', mergeSha: 'merge-1' }
     ])
+  })
+
+  test('scheduled discovery rotates bounded batches and reports deferred PRs', async () => {
+    const script = findScript(
+      loadWorkflow('pr-comment-tracker.yml'),
+      'TRACKER_OPEN_PRS'
+    )
+    for (const count of [257, 512, 513]) {
+      const prs = Array.from({ length: count }, (_, i) => ({
+        number: i + 1,
+        head: { sha: `sha-${i + 1}`, repo: { full_name: 'o/r' } },
+        merge_commit_sha: `merge-${i + 1}`,
+        user: { login: 'author' }
+      })).reverse()
+      const run = async slot => {
+        let output
+        const notices = []
+        await runScript(script, {
+          github: {
+            rest: { pulls: { list: async () => {} } },
+            paginate: async () => prs
+          },
+          context: { repo: { owner: 'o', repo: 'r' }, payload: {} },
+          core: {
+            setOutput: (_name, value) => {
+              output = JSON.parse(value)
+            },
+            notice: message => notices.push(message)
+          },
+          Date: { now: () => slot * 30 * 60 * 1000 }
+        })
+        return { output, notices }
+      }
+      const batches = await Promise.all(
+        Array.from({ length: Math.ceil(count / 256) }, (_, i) => run(3000 + i))
+      )
+      for (const batch of batches) {
+        assert.equal(batch.output.length, 256)
+        assert.equal(new Set(batch.output.map(pr => pr.number)).size, 256)
+        assert.match(
+          batch.notices.join(' '),
+          new RegExp(`\\b${count - 256}\\b`)
+        )
+      }
+      assert.equal(
+        new Set(batches.flatMap(batch => batch.output.map(pr => pr.number)))
+          .size,
+        count
+      )
+    }
   })
 
   test('tracks threads with an identical 80-character prefix by thread id', async () => {

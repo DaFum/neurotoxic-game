@@ -2,6 +2,9 @@ import { test, describe, beforeEach, vi, afterEach } from 'vitest'
 import assert from 'node:assert'
 
 const mockRedisClient = {
+  duplicate() {
+    return { ...mockRedisClient, on: vi.fn(), destroy: vi.fn() }
+  },
   isOpen: true,
   expire: vi.fn(() => Promise.resolve()),
   // The rate-limit script; the test supplies a per-key counter.

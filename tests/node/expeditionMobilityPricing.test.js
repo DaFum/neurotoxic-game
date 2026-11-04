@@ -14,6 +14,10 @@ import {
 } from '../../src/utils/assets/assetSelectors'
 import { getAssetSaleQuote } from '../../src/utils/assets/assetSelectors/assetSaleQuote'
 import { handleSellChassis } from '../../src/context/reducers/assets/assetReducer'
+import {
+  sanitizeAssets,
+  sanitizeLiabilities
+} from '../../src/context/reducers/assets/assetSanitizers'
 
 const asset = (id, slots = []) => ({
   id,
@@ -162,4 +166,160 @@ test('two zero-proceeds sales can prevent a crisis when one falls outside the ca
   const soldBoth = handleSellChassis(soldOnce, { assetId: costly[1].id })
   assert.equal(getExpeditionMobilityFailureSignal(soldBoth), null)
   assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('two lower-ranked zero-proceeds sales together can prevent a crisis', () => {
+  const state = mobilityState()
+  const costly = ['costly_a', 'costly_b'].map(id => asset(id))
+  state.assets = sanitizeAssets([
+    ...Array.from({ length: 10 }, (_, i) => asset(`spare_${i}`)),
+    ...costly
+  ])
+  assert.equal(state.assets.length, 12)
+  state.liabilities = sanitizeLiabilities(
+    Object.fromEntries(
+      costly.map(chassis => [
+        chassis.id,
+        {
+          id: chassis.id,
+          source: 'loan',
+          assetId: chassis.id,
+          principalRemaining: getAssetSaleQuote(chassis, {}, state.player.day)
+            .gross,
+          dailyPayment: 1_000_000,
+          interestRate: 0,
+          termDaysRemaining: 10,
+          defaultCounter: 0
+        }
+      ])
+    ),
+    state.assets
+  )
+  assert.equal(Object.keys(state.liabilities).length, 2)
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 500
+  const soldOnce = handleSellChassis(state, { assetId: costly[0].id })
+  assert.ok(getTotalDailyObligations(soldOnce) > soldOnce.player.money)
+  const soldBoth = handleSellChassis(soldOnce, { assetId: costly[1].id })
+  assert.equal(getExpeditionMobilityFailureSignal(soldBoth), null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('a lower-ranked sale combined with two top-ten sales can prevent a crisis', () => {
+  const state = mobilityState()
+  const costly = ['costly_a', 'costly_b', 'costly_c'].map(id => asset(id))
+  state.assets = sanitizeAssets([
+    ...Array.from({ length: 8 }, (_, i) => asset(`spare_${i}`)),
+    ...costly
+  ])
+  assert.equal(state.assets.length, 11)
+  state.liabilities = sanitizeLiabilities(
+    Object.fromEntries(
+      costly.map(chassis => [
+        chassis.id,
+        {
+          id: chassis.id,
+          source: 'loan',
+          assetId: chassis.id,
+          principalRemaining: getAssetSaleQuote(chassis, {}, state.player.day)
+            .gross,
+          dailyPayment: 1_000_000,
+          interestRate: 0,
+          termDaysRemaining: 10,
+          defaultCounter: 0
+        }
+      ])
+    ),
+    state.assets
+  )
+  assert.equal(Object.keys(state.liabilities).length, 3)
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 500
+  const sold = costly.reduce(
+    (current, chassis) => handleSellChassis(current, { assetId: chassis.id }),
+    state
+  )
+  assert.equal(getExpeditionMobilityFailureSignal(sold), null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('selling only two of three lower-ranked assets can prevent a crisis', () => {
+  const state = mobilityState()
+  const studio = id => ({
+    ...asset(id),
+    kind: 'studio_chassis',
+    chassisTier: 3
+  })
+  state.expedition.loadout.activeTourbusAssetId = 'committed'
+  state.assets = sanitizeAssets([
+    ...Array.from({ length: 10 }, (_, i) => studio(`top_${i}`)),
+    asset('costly_a'),
+    asset('costly_b'),
+    studio('income'),
+    asset('committed')
+  ])
+  state.liabilities = sanitizeLiabilities(
+    Object.fromEntries(
+      state.assets.map((chassis, index) => {
+        const gross = getAssetSaleQuote(chassis, {}, state.player.day).gross
+        assert.ok(gross > 1)
+        return [
+          chassis.id,
+          {
+            id: chassis.id,
+            source: 'loan',
+            assetId: chassis.id,
+            principalRemaining:
+              chassis.id === 'committed' ? 1 : gross - (index < 10 ? 1 : 0),
+            dailyPayment:
+              chassis.id === 'committed' || chassis.id.startsWith('costly_')
+                ? 1000
+                : 1,
+            interestRate: 0,
+            termDaysRemaining: 10,
+            defaultCounter: 0
+          }
+        ]
+      })
+    ),
+    state.assets
+  )
+  assert.equal(state.assets.length, 14)
+  assert.equal(Object.keys(state.liabilities).length, 14)
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 721
+  const first = handleSellChassis(state, { assetId: 'costly_a' })
+  const partial = handleSellChassis(first, { assetId: 'costly_b' })
+  const allExtra = handleSellChassis(partial, { assetId: 'income' })
+  assert.equal(getExpeditionMobilityFailureSignal(partial), null)
+  assert.equal(
+    getExpeditionMobilityFailureSignal(allExtra)?.reason,
+    'fuel_stranded'
+  )
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+})
+
+test('many zero-value assets still yield a crisis when even all proceeds cannot fund travel', () => {
+  const state = mobilityState()
+  state.assets = Array.from({ length: 12 }, (_, i) => ({
+    ...asset(`worthless_${i}`),
+    condition: 0
+  }))
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 0
+  assert.equal(
+    getExpeditionMobilityFailureSignal(state)?.reason,
+    'fuel_stranded'
+  )
+})
+
+test('realized blocked travel still raises a crisis with many sale candidates', () => {
+  const state = mobilityState()
+  state.assets = Array.from({ length: 12 }, (_, i) => asset(`spare_${i}`))
+  state.player.money = 0
+  state.expedition.blockedTravelAtRouteStep = state.expedition.routeStep
+  assert.equal(
+    getExpeditionMobilityFailureSignal(state)?.reason,
+    'fuel_stranded'
+  )
 })
