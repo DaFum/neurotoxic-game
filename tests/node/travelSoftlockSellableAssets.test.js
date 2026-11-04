@@ -419,6 +419,7 @@ test('expanded search is exhaustive through four extra candidates and bounded ab
       {},
       { includeAdditionalCandidates: true }
     )
+    assert.equal(scenarios.exhaustive, count === 14)
     assert.equal(
       scenarios.length,
       count === 14 ? 2 ** 14 - 1 : 1023 + 5 * 11 + 1024

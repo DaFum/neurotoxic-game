@@ -16,10 +16,12 @@ const freePort = () =>
     })
   })
 
-describe('song score writes against Redis', { skip: !hasRedisServer }, () => {
+describe('leaderboard writes against Redis', { skip: !hasRedisServer }, () => {
   let server
   let client
   let handler
+  let stats
+  let versionedWrite
 
   before(async () => {
     const port = await freePort()
@@ -40,6 +42,8 @@ describe('song score writes against Redis', { skip: !hasRedisServer }, () => {
     process.env.neurotoxic1_REDIS_URL = `redis://127.0.0.1:${port}`
     ;({ default: client } = await import('../../lib/redis.js'))
     ;({ default: handler } = await import('../../api/leaderboard/song.js'))
+    ;({ default: stats, WRITE_IF_NEWER_SCRIPT: versionedWrite } =
+      await import('../../api/leaderboard/stats.js'))
     for (let attempt = 0; ; attempt++) {
       try {
         await client.connect()
@@ -96,6 +100,64 @@ describe('song score writes against Redis', { skip: !hasRedisServer }, () => {
     )
     assert.equal(await client.zScore(`lb:song:${songA}`, 'player1'), 10)
     assert.equal(await client.zScore(`lb:song:${songB}`, 'player1'), 25)
+  })
+
+  it('a write released after its deadline cannot overwrite a newer revision', async t => {
+    const accepted = Promise.withResolvers()
+    const late = Promise.withResolvers()
+    const duplicate = client.duplicate
+    t.mock.method(client, 'duplicate', () => {
+      const isolated = duplicate.call(client)
+      const evaluate = isolated.eval.bind(isolated)
+      isolated.eval = (script, options) => {
+        if (script === versionedWrite && options.arguments[1] === '1') {
+          // Simulate server-side work already accepted before the socket closed.
+          // Execute the real Lua later, independently of that request's client.
+          accepted.resolve({ script, options })
+          return late.promise
+        }
+        return evaluate(script, options)
+      }
+      return isolated
+    })
+    const response = () => ({
+      statusCode: 0,
+      status(code) {
+        this.statusCode = code
+        return this
+      },
+      json(body) {
+        this.body = body
+        return this
+      }
+    })
+    const request = (revision, money, playerName) => ({
+      method: 'POST',
+      socket: { remoteAddress: '127.0.0.2' },
+      body: { playerId: 'late-player', revision, money, playerName }
+    })
+    const older = response()
+    const pending = stats(request(1, 100, 'Old name'), older)
+    const held = await accepted.promise
+    await pending
+    assert.equal(older.statusCode, 500)
+
+    const newer = response()
+    await stats(request(2, 200, 'New name'), newer)
+    assert.equal(newer.statusCode, 200)
+    assert.equal(await client.zScore('lb:balance', 'late-player'), 200)
+
+    const result = await client.eval(held.script, held.options)
+    late.resolve(result)
+    assert.deepEqual(
+      result,
+      [0, 2],
+      'the late revision must be rejected as stale'
+    )
+    assert.equal(await client.hGet('lb:revision', 'late-player'), '2')
+    assert.equal(await client.hGet('players', 'late-player'), 'New name')
+    assert.equal(await client.zScore('lb:balance', 'late-player'), 200)
+    assert.equal(older.statusCode, 500)
   })
 
   it('continues the batch after a wrong-type board and reports failure', async () => {

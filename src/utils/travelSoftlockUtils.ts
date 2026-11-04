@@ -95,7 +95,8 @@ export const getSellableAssets = (
  * @param band - The band state influencing overall obligations.
  * @param social - The social connections influencing overall obligations.
  * @param options - Whether to include bounded additional sale scenarios.
- * @returns An array of simulated outcome scenarios, detailing proceeds and resulting daily financial pressure.
+ * @returns Simulated outcomes and whether every sale subset was evaluated.
+ * An incomplete search can find an escape, but cannot prove the run stranded.
  */
 export const getPostSaleScenarios = (
   sellableAssets: { id: string; net: number }[],
@@ -111,14 +112,17 @@ export const getPostSaleScenarios = (
   assetModifiers: import('../types/assets').AssetModifiers
   assets?: GameState['assets']
   liabilities?: GameState['liabilities']
-}[] => {
+}[] & { exhaustive: boolean } => {
   const postSaleScenarios: {
     assetProceeds: number
     dailyObligations: number
     assetModifiers: import('../types/assets').AssetModifiers
     assets?: GameState['assets']
     liabilities?: GameState['liabilities']
-  }[] = []
+  }[] & { exhaustive: boolean } = Object.assign([], {
+    exhaustive:
+      sellableAssets.length <= (options.includeAdditionalCandidates ? 14 : 10)
+  })
 
   if (sellableAssets.length > 0 && assets) {
     sellableAssets.sort((a, b) => b.net - a.net)

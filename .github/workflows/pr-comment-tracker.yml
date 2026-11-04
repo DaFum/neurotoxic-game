@@ -233,34 +233,35 @@ jobs:
             if (periodic && existingBotComment?.body === renderReport(priorVerdict)) {
               const head = process.env.PR_HEAD_SHA;
               const merge = process.env.PR_MERGE_SHA;
-              if (process.env.SAME_REPO_PR === 'true' && head && merge && merge !== head) {
+              if (process.env.SAME_REPO_PR === 'true' && head) {
                 const checkName = 'Aggregate Comments & Enforce Resolution';
                 const trackerChecks = async ref => (await github.paginate(github.rest.checks.listForRef, {
                   owner, repo, ref, check_name: checkName, filter: 'all', per_page: 100
                 })).filter(check => check.name === checkName && check.app?.slug === 'github-actions')
                   .sort((a, b) => b.id - a.id);
-                const mergeChecks = await trackerChecks(merge);
-                if (mergeChecks.length === 0) {
-                  // Legacy reports lack a stored verdict; use an existing head
-                  // check only when it belongs to this PR and has a completed conclusion.
-                  const [headCheck] = priorVerdict ? [] : (await trackerChecks(head))
-                    .filter(check => check.pull_requests?.some(pr => pr.number === prNumber));
-                  const previousVerdict = priorVerdict ?? (
-                    headCheck?.status === 'completed' && ['success', 'failure'].includes(headCheck.conclusion)
-                      ? headCheck.conclusion : null
-                  );
-                  if (previousVerdict) {
+                const headChecks = await trackerChecks(head);
+                // Legacy reports may only borrow a completed verdict owned by this PR.
+                const [headCheck] = headChecks
+                  .filter(check => check.pull_requests?.some(pr => pr.number === prNumber));
+                const previousVerdict = priorVerdict ?? (
+                  headCheck?.status === 'completed' && ['success', 'failure'].includes(headCheck.conclusion)
+                    ? headCheck.conclusion : null
+                );
+                if (previousVerdict) {
+                  for (const ref of new Set([head, merge].filter(Boolean))) {
+                    const checks = ref === head ? headChecks : await trackerChecks(ref);
+                    if (checks.length > 0) continue;
                     await github.rest.checks.create({
-                      owner, repo, name: checkName, head_sha: merge,
+                      owner, repo, name: checkName, head_sha: ref,
                       status: 'completed', conclusion: previousVerdict,
                       output: {
                         title: 'Review thread tracker refreshed',
                         summary: 'Previous review thread tracker verdict.'
                       }
                     });
-                  } else {
-                    core.warning('No stored or completed head tracker verdict; merge check will be retried.');
                   }
+                } else {
+                  core.warning('No stored or completed head tracker verdict; missing checks will be retried.');
                 }
               }
               return;

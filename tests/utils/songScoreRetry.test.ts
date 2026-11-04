@@ -421,6 +421,7 @@ describe('cross-tab score queue', () => {
         localStorage.getItem('neurotoxic_pending_song_scores:retry-player')!
       )
     ).toEqual([])
+    expect(listStorageKeys().filter(key => key.includes(':item:'))).toEqual([])
   })
 
   it('retries a score that could not acquire a lock for persistence', async () => {

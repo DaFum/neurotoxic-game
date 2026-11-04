@@ -147,7 +147,7 @@ interface SoftlockContext {
     assetModifiers: AssetModifiers
     assets?: LongTermAsset[]
     liabilities?: Record<string, Liability>
-  }[]
+  }[] & { exhaustive?: boolean }
   /**
    * Booking-gate predicate for a candidate neighbor. Callers pass a closure
    * over `getNodeAccessStatus` so the softlock verdict cannot drift from the
@@ -946,5 +946,7 @@ export const checkSoftlock = (
     }
   }
 
-  return true
+  // Failure to find a sale escape only proves stranding after a complete search.
+  // A bounded search must not turn an untested combination into a terminal crisis.
+  return context.postSaleScenarios?.exhaustive !== false
 }

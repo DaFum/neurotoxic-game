@@ -147,6 +147,7 @@ const runTracker = async ({
   sameRepo = 'true',
   periodic = false,
   checkFailure = false,
+  headSha = 'head-sha',
   mergeSha = 'merge-sha',
   checkRuns = []
 }) => {
@@ -198,7 +199,7 @@ const runTracker = async ({
       SAME_REPO_PR: sameRepo,
       PERIODIC_REFRESH: String(periodic),
       PR_NUMBER: '7',
-      PR_HEAD_SHA: 'head-sha',
+      PR_HEAD_SHA: headSha,
       PR_MERGE_SHA: mergeSha
     }
   )
@@ -206,6 +207,46 @@ const runTracker = async ({
 }
 
 describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('an unchanged report fills missing head and merge checks independently', async () => {
+    for (const threads of [[], [thread('T1', 'blocking')]]) {
+      for (const mergeSha of ['merge-sha', '', 'new-head-sha']) {
+        const comments = []
+        const checkRuns = []
+        await runTracker({ comments, threads, periodic: true, checkRuns })
+        const refresh = await runTracker({
+          comments,
+          threads,
+          periodic: true,
+          checkRuns,
+          headSha: 'new-head-sha',
+          mergeSha
+        })
+        assert.deepEqual(
+          refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+            head_sha,
+            conclusion
+          })),
+          [
+            {
+              head_sha: 'new-head-sha',
+              conclusion: threads.length ? 'failure' : 'success'
+            }
+          ]
+        )
+        const repeated = await runTracker({
+          comments,
+          threads,
+          periodic: true,
+          checkRuns,
+          headSha: 'new-head-sha',
+          mergeSha
+        })
+        assert.equal(repeated.calls.checks.length, 0)
+        assert.equal(refresh.calls.updates.length, 0)
+      }
+    }
+  })
+
   test('periodic refresh updates a resolved thread and its PR-head check', async () => {
     const comments = [
       {
@@ -297,7 +338,7 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
     )
   })
 
-  test('an event report supplies the verdict for a new merge without a head check', async () => {
+  test('an event report supplies missing head and merge verdicts', async () => {
     for (const [threads, expected] of [
       [[thread('T1', 'blocking')], 'failure'],
       [[], 'success']
@@ -318,7 +359,10 @@ describe('pr-comment-tracker thread tracking (#3499)', () => {
           head_sha,
           conclusion
         })),
-        [{ head_sha: 'new-merge-sha', conclusion: expected }]
+        [
+          { head_sha: 'head-sha', conclusion: expected },
+          { head_sha: 'new-merge-sha', conclusion: expected }
+        ]
       )
     }
   })

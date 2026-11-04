@@ -315,11 +315,72 @@ test('many zero-value assets still yield a crisis when even all proceeds cannot 
 
 test('realized blocked travel still raises a crisis with many sale candidates', () => {
   const state = mobilityState()
-  state.assets = Array.from({ length: 12 }, (_, i) => asset(`spare_${i}`))
+  state.assets = Array.from({ length: 16 }, (_, i) => asset(`spare_${i}`))
   state.player.money = 0
   state.expedition.blockedTravelAtRouteStep = state.expedition.routeStep
   assert.equal(
     getExpeditionMobilityFailureSignal(state)?.reason,
     'fuel_stranded'
   )
+})
+
+test('an incomplete sale search cannot strand a recoverable fifteen-candidate run', () => {
+  const state = mobilityState()
+  const studio = id => ({
+    ...asset(id),
+    kind: 'studio_chassis',
+    chassisTier: 3
+  })
+  state.expedition.loadout.activeTourbusAssetId = 'committed'
+  state.assets = sanitizeAssets([
+    ...Array.from({ length: 10 }, (_, i) => studio(`top_${i}`)),
+    asset('costly_a'),
+    asset('costly_b'),
+    studio('income'),
+    studio('income2'),
+    studio('income3'),
+    asset('committed')
+  ])
+  state.liabilities = sanitizeLiabilities(
+    Object.fromEntries(
+      state.assets.map((chassis, index) => {
+        const gross = getAssetSaleQuote(chassis, {}, state.player.day).gross
+        assert.ok(gross > 1)
+        return [
+          chassis.id,
+          {
+            id: chassis.id,
+            source: 'loan',
+            assetId: chassis.id,
+            principalRemaining:
+              chassis.id === 'committed' ? 1 : gross - (index < 10 ? 1 : 0),
+            dailyPayment:
+              chassis.id === 'committed' || chassis.id.startsWith('costly_')
+                ? 1000
+                : 1,
+            interestRate: 0,
+            termDaysRemaining: 10,
+            defaultCounter: 0
+          }
+        ]
+      })
+    ),
+    state.assets
+  )
+  assert.equal(state.assets.length, 16)
+  assert.equal(Object.keys(state.liabilities).length, 16)
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 721
+  const first = handleSellChassis(state, { assetId: 'costly_a' })
+  const partial = handleSellChassis(first, { assetId: 'costly_b' })
+  const allExtra = ['income', 'income2', 'income3'].reduce(
+    (s, assetId) => handleSellChassis(s, { assetId }),
+    partial
+  )
+  assert.equal(getExpeditionMobilityFailureSignal(partial), null)
+  assert.equal(
+    getExpeditionMobilityFailureSignal(allExtra)?.reason,
+    'fuel_stranded'
+  )
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
 })
