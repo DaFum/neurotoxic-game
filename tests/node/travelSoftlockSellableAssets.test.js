@@ -380,7 +380,7 @@ test('grouped sale proceeds follow the cash rounding of each sale', () => {
   const assets = Array.from({ length: 12 }, (_, i) => makeAsset(`asset_${i}`))
   const candidates = assets.map((asset, i) => ({
     id: asset.id,
-    net: i < 10 ? 10 : 0.6
+    net: i < 10 ? 10.6 : 0.6
   }))
   const scenarios = getPostSaleScenarios(
     candidates,
@@ -401,6 +401,43 @@ test('grouped sale proceeds follow the cash rounding of each sale', () => {
   assert.ok(grouped)
   // floor(floor(100.7 + 0.6) + 0.6) = 101.
   assert.equal(grouped.assetProceeds, 101 - 100.7)
+  const primary = scenarios.find(
+    scenario =>
+      scenario.assets.length === 10 &&
+      scenario.assets.every(asset => !['asset_0', 'asset_1'].includes(asset.id))
+  )
+  assert.ok(primary)
+  // floor(floor(100.7 + 10.6) + 10.6) = 121.
+  assert.equal(primary.assetProceeds, 121 - 100.7)
+})
+
+test('single-extra scenarios floor cash after the extra and each primary sale', () => {
+  const assets = Array.from({ length: 15 }, (_, i) => makeAsset(`asset_${i}`))
+  const scenarios = getPostSaleScenarios(
+    assets.map((asset, i) => ({ id: asset.id, net: i < 10 ? 10.6 : 0.6 })),
+    assets,
+    {},
+    { money: 100.7, day: 1 },
+    { members: [] },
+    {},
+    { includeAdditionalCandidates: true }
+  )
+  const extra = scenarios.find(
+    scenario =>
+      scenario.assets.length === 14 &&
+      !scenario.assets.some(asset => asset.id === 'asset_10')
+  )
+  const pair = scenarios.find(
+    scenario =>
+      scenario.assets.length === 13 &&
+      scenario.assets.every(
+        asset => !['asset_10', 'asset_0'].includes(asset.id)
+      )
+  )
+  assert.ok(extra)
+  assert.ok(pair)
+  assert.equal(extra.assetProceeds, 101 - 100.7)
+  assert.equal(pair.assetProceeds, 111 - 100.7)
 })
 
 test('expanded search is exhaustive through four extra candidates and bounded above that', () => {
@@ -425,6 +462,17 @@ test('expanded search is exhaustive through four extra candidates and bounded ab
       count === 14 ? 2 ** 14 - 1 : 1023 + 5 * 11 + 1024
     )
     if (count === 14) {
+      const combinations = new Set(
+        scenarios.map(scenario => {
+          const retainedIds = new Set(scenario.assets.map(asset => asset.id))
+          return assets
+            .filter(asset => !retainedIds.has(asset.id))
+            .map(asset => asset.id)
+            .sort()
+            .join(',')
+        })
+      )
+      assert.equal(combinations.size, 2 ** 14 - 1)
       const wanted = new Set(['a0', 'a1', 'a10', 'a11', 'a12'])
       assert.ok(
         scenarios.some(scenario =>

@@ -27,3 +27,17 @@ Reviewed against `232c1aa8bb0554e437dac8a42cea1d0e2a6ce963`. The eight older res
 ## Deliberate search limit
 
 Large inventories still use a bounded sale search rather than an exponential full enumeration. An incomplete search can establish an escape but cannot prove that every escape is impossible. Such a run can continue selling assets until its remaining search is complete. Realized blocked travel remains authoritative, so the bounded search does not suppress the existing failure path after an attempted departure.
+
+## Subsequent review corrections
+
+All eight subsequent findings were verified against `f672164d5`; none were skipped.
+
+- The pending queue merge now validates each submitted score before replacing an existing entry. A regression seeds a valid queue without journal entries, rejects an excessive score, then checks valid higher-score replacement and preservation against lower or invalid scores.
+- The delayed Redis-write test races acceptance against handler completion, failing immediately if the handler finishes before accepting the versioned write. It still awaits completion after acceptance and verifies the late write against real Redis.
+- All sale paths use the same sequential cash-floor calculation. Fractional primary combinations, single extras and extra/primary pairs now agree with the already-correct grouped path; scenario masks and retained asset IDs are unchanged.
+- An unchanged tracker report skips its head check only when a same-named GitHub Actions check belongs to this PR. A foreign failing check cannot suppress this PR's stored success verdict; a repeated refresh preserves the newly created owned check.
+- Image timeout tests use separate isolated-client command mocks, stall the isolated operation and assert that the shared client's `eval` is unused.
+- A dedicated bounded-search regression covers fifteen worthless sellable assets, zero cash, no sale escape and no blocked travel. It deliberately defers the crisis; the same state with no assets demonstrates that the route is otherwise unaffordable.
+- The fourteen-candidate exhaustive-search regression now checks all 16,383 distinct sold-asset combinations, as well as the scenario count and existing targeted combination.
+
+The updated focused runs passed: 135 Node tests, 124 Vitest API/score tests and five real-Redis/socket tests, without skips in those runs. The new queue, tracker-ownership and rounding regressions failed before the corrections.

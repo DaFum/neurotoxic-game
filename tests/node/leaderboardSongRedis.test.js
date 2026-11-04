@@ -138,7 +138,14 @@ describe('leaderboard writes against Redis', { skip: !hasRedisServer }, () => {
     })
     const older = response()
     const pending = stats(request(1, 100, 'Old name'), older)
-    const held = await accepted.promise
+    const held = await Promise.race([
+      accepted.promise,
+      pending.then(() => {
+        throw new Error(
+          'Handler completed before accepting the versioned write'
+        )
+      })
+    ])
     await pending
     assert.equal(older.statusCode, 500)
 

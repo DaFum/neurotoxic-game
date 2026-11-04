@@ -101,9 +101,15 @@ describe('protected image proxy', () => {
       vi.useFakeTimers()
       try {
         client.isOpen = operation !== 'connect'
-        const isolated = { ...client, on: vi.fn(), destroy: vi.fn() }
+        const isolated = {
+          ...client,
+          on: vi.fn(),
+          destroy: vi.fn(),
+          connect: vi.fn().mockResolvedValue(undefined),
+          eval: vi.fn().mockResolvedValue(1)
+        }
         vi.spyOn(client, 'duplicate').mockReturnValue(isolated)
-        client[operation].mockReturnValue(new Promise(() => {}))
+        isolated[operation].mockReturnValue(new Promise(() => {}))
         const response = request()
         await vi.advanceTimersByTimeAsync(60000)
         const res = await response
@@ -113,6 +119,8 @@ describe('protected image proxy', () => {
         })
         expect(fetchMock).not.toHaveBeenCalled()
         expect(isolated.destroy).toHaveBeenCalledTimes(1)
+        expect(client.eval).not.toHaveBeenCalled()
+        expect(isolated[operation]).toHaveBeenCalledTimes(1)
         expect(vi.getTimerCount()).toBe(0)
       } finally {
         vi.useRealTimers()

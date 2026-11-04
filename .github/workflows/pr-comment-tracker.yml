@@ -250,7 +250,9 @@ jobs:
                 if (previousVerdict) {
                   for (const ref of new Set([head, merge].filter(Boolean))) {
                     const checks = ref === head ? headChecks : await trackerChecks(ref);
-                    if (checks.length > 0) continue;
+                    if (ref === head
+                      ? checks.some(check => check.pull_requests?.some(pr => pr.number === prNumber))
+                      : checks.length > 0) continue;
                     await github.rest.checks.create({
                       owner, repo, name: checkName, head_sha: ref,
                       status: 'completed', conclusion: previousVerdict,

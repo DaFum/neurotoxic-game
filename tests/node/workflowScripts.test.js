@@ -169,7 +169,8 @@ const runTracker = async ({
       checkRuns.push({
         ...check,
         id: checkRuns.length + 1,
-        app: { slug: 'github-actions' }
+        app: { slug: 'github-actions' },
+        pull_requests: [{ number: 7 }]
       })
     }
   }
@@ -207,6 +208,44 @@ const runTracker = async ({
 }
 
 describe('pr-comment-tracker thread tracking (#3499)', () => {
+  test('a foreign head check cannot suppress this PR stored verdict', async () => {
+    const comments = []
+    await runTracker({ comments, threads: [], periodic: true })
+    const checkRuns = [
+      {
+        id: 1,
+        name: 'Aggregate Comments & Enforce Resolution',
+        head_sha: 'head-sha',
+        app: { slug: 'github-actions' },
+        pull_requests: [{ number: 99 }],
+        status: 'completed',
+        conclusion: 'failure'
+      }
+    ]
+    const refresh = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns,
+      mergeSha: ''
+    })
+    assert.deepEqual(
+      refresh.calls.checks.map(({ head_sha, conclusion }) => ({
+        head_sha,
+        conclusion
+      })),
+      [{ head_sha: 'head-sha', conclusion: 'success' }]
+    )
+    const repeated = await runTracker({
+      comments,
+      threads: [],
+      periodic: true,
+      checkRuns,
+      mergeSha: ''
+    })
+    assert.equal(repeated.calls.checks.length, 0)
+  })
+
   test('an unchanged report fills missing head and merge checks independently', async () => {
     for (const threads of [[], [thread('T1', 'blocking')]]) {
       for (const mergeSha of ['merge-sha', '', 'new-head-sha']) {

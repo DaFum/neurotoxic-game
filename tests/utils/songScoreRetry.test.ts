@@ -224,6 +224,26 @@ describe('cross-tab score queue', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('invalid submissions cannot displace valid pending scores', async () => {
+    const key = 'neurotoxic_pending_song_scores:retry-player'
+    localStorage.setItem(
+      key,
+      JSON.stringify([{ songId: 'lb_song1', score: 100, accuracy: 95 }])
+    )
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+    for (const [submitted, expected] of [
+      [10_000_001, 100],
+      [200, 200],
+      [150, 200],
+      [10_000_001, 200]
+    ]) {
+      await submit('song1', submitted)
+      expect(JSON.parse(localStorage.getItem(key)!)).toEqual([
+        { songId: 'lb_song1', score: expected, accuracy: 95 }
+      ])
+    }
+  })
+
   it('keeps persisted journal entries when the higher score is only buffered', async () => {
     vi.stubGlobal('navigator', {})
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))

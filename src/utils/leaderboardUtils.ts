@@ -357,6 +357,7 @@ export const submitLeaderboardScores = async ({
           readPendingScores(playerId).scores.map(score => [score.songId, score])
         )
         for (const score of scoresToSubmit) {
+          if (!isValidPendingScore(score)) continue
           if (score.score > (pending.get(score.songId)?.score ?? -1))
             pending.set(score.songId, score)
         }

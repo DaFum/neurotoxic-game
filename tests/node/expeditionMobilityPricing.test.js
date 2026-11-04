@@ -324,6 +324,23 @@ test('realized blocked travel still raises a crisis with many sale candidates', 
   )
 })
 
+test('bounded sale search defers a crisis without a sale escape or blocked travel', () => {
+  const state = mobilityState()
+  state.assets = Array.from({ length: 15 }, (_, i) => ({
+    ...asset(`worthless_${i}`),
+    condition: 0
+  }))
+  state.expedition.protectedCareerCash = 0
+  state.player.money = 0
+  assert.equal(state.expedition.blockedTravelAtRouteStep, null)
+  assert.equal(getExpeditionMobilityFailureSignal(state), null)
+  // Even liquidating everything cannot fund travel; only the search is uncertain.
+  assert.equal(
+    getExpeditionMobilityFailureSignal({ ...state, assets: [] })?.reason,
+    'fuel_stranded'
+  )
+})
+
 test('an incomplete sale search cannot strand a recoverable fifteen-candidate run', () => {
   const state = mobilityState()
   const studio = id => ({

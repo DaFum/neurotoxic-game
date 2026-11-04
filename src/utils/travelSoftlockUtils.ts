@@ -143,6 +143,23 @@ export const getPostSaleScenarios = (
       }
     }
 
+    // The reducer floors cash after every sale, including primary combinations.
+    // Use the same concrete order for every branch of the scenario search.
+    const initialMoney = Math.max(0, finiteNumberOr(player.money, 0))
+    const saleProceeds = (
+      mask: number,
+      extras: readonly { net: number }[] = []
+    ): number => {
+      let afterSales = initialMoney
+      for (const extra of extras)
+        afterSales = clampPlayerMoney(afterSales + extra.net)
+      for (let j = 0; j < numAssets; j++) {
+        if ((mask & (1 << j)) !== 0)
+          afterSales = clampPlayerMoney(afterSales + (assetNetValues[j] ?? 0))
+      }
+      return afterSales - initialMoney
+    }
+
     const appendScenario = (
       comboProceeds: number,
       mask: number,
@@ -198,11 +215,7 @@ export const getPostSaleScenarios = (
     }
 
     for (let i = 1; i < numCombinations; i++) {
-      let comboProceeds = 0
-      for (let j = 0; j < numAssets; j++) {
-        if ((i & (1 << j)) !== 0) comboProceeds += assetNetValues[j] ?? 0
-      }
-      appendScenario(comboProceeds, i)
+      appendScenario(saleProceeds(i), i)
     }
 
     // Bound the complete search at fourteen candidates. Above that, retain
@@ -217,13 +230,9 @@ export const getPostSaleScenarios = (
       } else {
         for (const extra of extras) {
           const oneExtra = new Set([extra.id])
-          appendScenario(extra.net, 0, oneExtra)
+          appendScenario(saleProceeds(0, [extra]), 0, oneExtra)
           for (let j = 0; j < numAssets; j++) {
-            appendScenario(
-              extra.net + (assetNetValues[j] ?? 0),
-              1 << j,
-              oneExtra
-            )
+            appendScenario(saleProceeds(1 << j, [extra]), 1 << j, oneExtra)
           }
         }
         groups.push(extras)
@@ -231,20 +240,7 @@ export const getPostSaleScenarios = (
       for (const group of groups) {
         const extraIds = new Set(group.map(extra => extra.id))
         for (let mask = 0; mask < numCombinations; mask++) {
-          // Each real sale floors cash. Use one concrete sale order rather
-          // than summing fractional quotes that could overstate the proceeds.
-          const initialMoney = Math.max(0, finiteNumberOr(player.money, 0))
-          let afterSales = initialMoney
-          for (const extra of group)
-            afterSales = clampPlayerMoney(afterSales + extra.net)
-          for (let j = 0; j < numAssets; j++) {
-            if ((mask & (1 << j)) !== 0) {
-              afterSales = clampPlayerMoney(
-                afterSales + (assetNetValues[j] ?? 0)
-              )
-            }
-          }
-          appendScenario(afterSales - initialMoney, mask, extraIds)
+          appendScenario(saleProceeds(mask, group), mask, extraIds)
         }
       }
     }
