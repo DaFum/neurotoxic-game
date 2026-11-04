@@ -31,6 +31,10 @@ beforeEach(() => {
   vi.stubEnv('VITE_ENABLE_LEADERBOARD_SYNC', 'true')
   const store = new Map<string, string>()
   vi.stubGlobal('localStorage', {
+    get length() {
+      return store.size
+    },
+    key: (index: number) => [...store.keys()][index] ?? null,
     getItem: (key: string) => store.get(key) ?? null,
     setItem: (key: string, value: string) => {
       store.set(key, value)
@@ -143,6 +147,107 @@ describe('durable song score retries', () => {
 })
 
 describe('cross-tab score queue', () => {
+  it.each([
+    [
+      'different songs',
+      'song2',
+      [
+        { songId: 'lb_song1', score: 100, accuracy: 95 },
+        { songId: 'lb_song2', score: 200, accuracy: 95 }
+      ]
+    ],
+    [
+      'the same song',
+      'song1',
+      [{ songId: 'lb_song1', score: 200, accuracy: 95 }]
+    ]
+  ])(
+    'recovers %s from overlapping tabs without Web Locks after reload',
+    async (_label, secondSong, expected) => {
+      vi.stubGlobal('navigator', {})
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+      const originalSet = localStorage.setItem.bind(localStorage)
+      let second: Promise<void> | undefined
+      let interleaved = false
+      const setItem = vi
+        .spyOn(localStorage, 'setItem')
+        .mockImplementation((key, value) => {
+          if (
+            key === 'neurotoxic_pending_song_scores:retry-player' &&
+            !interleaved
+          ) {
+            interleaved = true
+            second = submit(secondSong, 200)
+          }
+          originalSet(key, value)
+        })
+      const first = submit('song1', 100)
+      await first
+      await second
+      expect(interleaved).toBe(true)
+      setItem.mockRestore()
+      vi.clearAllTimers()
+      vi.resetModules()
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 })
+      vi.stubGlobal('fetch', fetchMock)
+      const fresh = await import('../../src/utils/leaderboardUtils')
+      await fresh.retryPendingLeaderboardScores(player)
+      const scores = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body).scores
+      expect(scores).toHaveLength(expected.length)
+      expect(scores).toEqual(expect.arrayContaining(expected))
+      await fresh.retryPendingLeaderboardScores(player)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(
+        [...Array(localStorage.length)]
+          .map((_, i) => localStorage.key(i))
+          .filter(key => key?.includes(':item:'))
+      ).toEqual([])
+    }
+  )
+
+  it('keeps a newer score when acknowledgement overlaps its write without Web Locks', async () => {
+    vi.stubGlobal('navigator', {})
+    const response = Promise.withResolvers<{ ok: boolean; status: number }>()
+    const fetchMock = vi
+      .fn()
+      .mockReturnValueOnce(response.promise)
+      .mockResolvedValue({ ok: true, status: 200 })
+    vi.stubGlobal('fetch', fetchMock)
+    const first = submit('song1', 100)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    const originalSet = localStorage.setItem.bind(localStorage)
+    let second: Promise<void> | undefined
+    let interleaved = false
+    const setItem = vi
+      .spyOn(localStorage, 'setItem')
+      .mockImplementation((key, value) => {
+        if (
+          key === 'neurotoxic_pending_song_scores:retry-player' &&
+          value === '[]' &&
+          !interleaved
+        ) {
+          interleaved = true
+          second = submit('song1', 200)
+        }
+        originalSet(key, value)
+      })
+    response.resolve({ ok: true, status: 200 })
+    await first
+    await second
+    expect(interleaved).toBe(true)
+    setItem.mockRestore()
+    vi.clearAllTimers()
+    vi.resetModules()
+    const fresh = await import('../../src/utils/leaderboardUtils')
+    await fresh.retryPendingLeaderboardScores(player)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body).scores).toEqual([
+      { songId: 'lb_song1', score: 200, accuracy: 95 }
+    ])
+    await fresh.retryPendingLeaderboardScores(player)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('serializes concurrent score merges across module instances', async () => {
     const gate = Promise.withResolvers<void>()
     let tail: Promise<unknown> = gate.promise

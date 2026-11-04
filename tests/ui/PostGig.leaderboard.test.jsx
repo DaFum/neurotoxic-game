@@ -111,7 +111,8 @@ vi.mock('../../src/utils/imageGen', () => ({
 }))
 
 // Mock crypto
-vi.mock('../../src/utils/crypto', () => ({
+vi.mock('../../src/utils/crypto', async importOriginal => ({
+  ...(await importOriginal()),
   secureRandom: () => 0.5,
   getSecureRandomUint32: () => 123456
 }))

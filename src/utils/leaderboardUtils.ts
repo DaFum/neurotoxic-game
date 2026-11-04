@@ -4,7 +4,13 @@ import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 import { finiteNumberOr } from './finiteNumber'
 import { isLeaderboardSyncEnabled } from './leaderboardSyncFlag'
-import { getSafeStorageItem, setSafeStorageItem } from './storage'
+import {
+  getSafeStorageItem,
+  listStorageKeys,
+  removeStorageItem,
+  setSafeStorageItem
+} from './storage'
+import { getSafeUUID } from './crypto'
 import { isLooseRecord } from './objectUtils'
 
 /**
@@ -15,6 +21,8 @@ type SongStat = Pick<RhythmSongStatsEntry, 'songId' | 'score' | 'accuracy'>
 type ScoreIdentity = Pick<GameState['player'], 'playerId' | 'playerName'>
 const pendingKey = (playerId: string) =>
   `neurotoxic_pending_song_scores:${playerId}`
+const pendingJournalPrefix = (playerId: string) =>
+  `${pendingKey(playerId)}:item:`
 const inFlight = new Map<string, Promise<void>>()
 const retryTimers = new Map<string, ReturnType<typeof setTimeout>>()
 let warnedMissingLocks = false
@@ -27,7 +35,7 @@ const withPendingScoresLock = (
   }
   if (!warnedMissingLocks) {
     warnedMissingLocks = true
-    logger.warn('PostGig', 'Cross-tab score coordination is unavailable')
+    logger.warn('PostGig', 'Web Locks unavailable; retaining score journal')
   }
   update()
   return Promise.resolve()
@@ -37,11 +45,15 @@ for (const song of SONGS_BY_ID.values()) {
   if (song.leaderboardId) knownSongs.add(song.leaderboardId)
 }
 
-const readPendingScores = (playerId: string): SongStat[] => {
+// Journal records are immutable: their individual keys prevent concurrent
+// read/merge/write operations from losing a submission when Web Locks is absent.
+const readPendingScores = (
+  playerId: string
+): { scores: SongStat[]; journalKeys: string[] } => {
   const raw = getSafeStorageItem<unknown>(pendingKey(playerId), [])
-  if (!Array.isArray(raw)) return []
-  const scores: SongStat[] = []
-  for (const entry of raw.slice(0, 100)) {
+  const scores = new Map<string, SongStat>()
+  const journalKeys: string[] = []
+  const add = (entry: unknown): string | undefined => {
     if (
       !isLooseRecord(entry) ||
       typeof entry.songId !== 'string' ||
@@ -51,14 +63,31 @@ const readPendingScores = (playerId: string): SongStat[] => {
       entry.score < 0 ||
       entry.score > 10_000_000
     )
-      continue
-    scores.push({
-      songId: entry.songId,
-      score: entry.score,
-      accuracy: finiteNumberOr(entry.accuracy, 0)
-    })
+      return undefined
+    const existing = scores.get(entry.songId)
+    if (!existing && scores.size >= 100) return undefined
+    if (!existing || entry.score > existing.score) {
+      scores.set(entry.songId, {
+        songId: entry.songId,
+        score: entry.score,
+        accuracy: finiteNumberOr(entry.accuracy, 0)
+      })
+    }
+    return entry.songId
   }
-  return scores
+  if (Array.isArray(raw)) {
+    for (const entry of raw.slice(0, 100)) add(entry)
+  }
+  const prefix = pendingJournalPrefix(playerId)
+  for (const key of listStorageKeys()) {
+    if (!key.startsWith(prefix)) continue
+    const songId = add(getSafeStorageItem<unknown>(key, null))
+    if (songId) journalKeys.push(key)
+  }
+  return {
+    scores: [...scores.values()],
+    journalKeys
+  }
 }
 
 /** Retries persisted scores after startup or a transient network/server failure. */
@@ -72,7 +101,7 @@ export const retryPendingLeaderboardScores = (
   retryTimers.delete(playerId)
   const current = inFlight.get(playerId)
   if (current) return current
-  const scores = readPendingScores(playerId)
+  const { scores, journalKeys } = readPendingScores(playerId)
   if (scores.length === 0) return Promise.resolve()
 
   const request = (async () => {
@@ -127,18 +156,19 @@ export const retryPendingLeaderboardScores = (
           await withPendingScoresLock(playerId, () => {
             setSafeStorageItem(
               pendingKey(playerId),
-              readPendingScores(playerId).filter(
+              readPendingScores(playerId).scores.filter(
                 score => score.score > (sent.get(score.songId) ?? -1)
               )
             )
           })
+          for (const key of journalKeys) removeStorageItem(key)
         } catch (err) {
           retry = true
           logger.error('PostGig', 'Pending score cleanup failed', err)
         }
       }
       inFlight.delete(playerId)
-      if (retry && readPendingScores(playerId).length > 0) {
+      if (retry && readPendingScores(playerId).scores.length > 0) {
         retryTimers.set(
           playerId,
           setTimeout(() => {
@@ -242,12 +272,24 @@ export const submitLeaderboardScores = async ({
 
   if (scoresToSubmit.length === 0) return
 
+  // Keep each new score in an immutable record before touching the shared
+  // queue. A concurrent fallback write can overwrite the queue, but not these
+  // records, which remain discoverable after reload until acknowledged.
+  for (const score of scoresToSubmit) {
+    if (score.score >= 0 && score.score <= 10_000_000) {
+      setSafeStorageItem(
+        `${pendingJournalPrefix(playerId)}${getSafeUUID()}`,
+        score
+      )
+    }
+  }
+
   // Persist before sending; GT writes need only the best pending score per song.
   const persistAndSend = async (): Promise<void> => {
     try {
       await withPendingScoresLock(playerId, () => {
         const pending = new Map(
-          readPendingScores(playerId).map(score => [score.songId, score])
+          readPendingScores(playerId).scores.map(score => [score.songId, score])
         )
         for (const score of scoresToSubmit) {
           if (score.score > (pending.get(score.songId)?.score ?? -1))
