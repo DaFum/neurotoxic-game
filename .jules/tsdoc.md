@@ -30,3 +30,4 @@
 | 2026-11-01 | src/context/GamepadInputContext.tsx | GamepadInputProvider |
 | 2026-11-02 | src/components/stage/EffectTextureManager.ts | safeDestroyTexture, createGenericHitTexture, EffectTextureManager |
 | 2026-11-03 | src/hooks/gamepad/GamepadContext.ts | Options, GamepadContext, useGamepadActions, useGamepadController |
+| 2026-11-04 | src/utils/gamepad/inputSource.ts | InputSource, getActiveInputSource, setActiveInputSource, useActiveInputSource |
