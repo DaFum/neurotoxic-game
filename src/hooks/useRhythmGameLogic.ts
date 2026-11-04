@@ -114,6 +114,15 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     setters.setScore(nextScore)
   }, [gameStateRef, gigEventScoreDelta, setters])
 
+  const resetGameplayForRetry = useCallback(() => {
+    resetGameplayState()
+    // Event guards survive Retry, so restore their score contribution without
+    // consuming it again when the cumulative context delta next changes.
+    const score = Math.max(0, appliedEventScoreDeltaRef.current)
+    gameStateRef.current.score = score
+    setters.setScore(score)
+  }, [gameStateRef, resetGameplayState, setters])
+
   // Memoize venue to node mapping to avoid O(N) lookup on every effect run
   const venueIdToNodeIdMap = useMemo(() => {
     const map = new Map<string, string>()
@@ -196,7 +205,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     useRhythmGameAudio({
       gameStateRef,
       setters,
-      resetGameplayState,
+      resetGameplayState: resetGameplayForRetry,
       contextState: {
         band,
         gameMap,

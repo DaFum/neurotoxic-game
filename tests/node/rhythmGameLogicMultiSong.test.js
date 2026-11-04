@@ -446,6 +446,93 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(result.current.gameStateRef.current.score, 0)
   })
 
+  for (const [introScore, midScore] of [
+    [200, 0],
+    [700, -500],
+    [0, -500]
+  ]) {
+    test(`retry preserves gig-event score (${introScore}, ${midScore}) and guards after a late stage failure`, async () => {
+      const eventScore = introScore + midScore
+      const resetScore = Math.max(0, eventScore)
+      const triggerEvent = mock.fn(() => true)
+      const mockState = {
+        setlist: [],
+        band: { members: [], harmony: 100, performance: {} },
+        activeEvent: null,
+        gigEventScoreDelta: 0,
+        expedition: { status: 'idle' },
+        setLastGigStats: mockSetLastGigStats,
+        addToast: () => {},
+        gameMap: { nodes: { node1: { layer: 0 } } },
+        player: { currentNodeId: 'node1', money: 0 },
+        gigModifiers: {},
+        endGig: mockEndGig,
+        triggerEvent
+      }
+      mockUseGameState.mock.mockImplementation(() => mockState)
+      const { result, rerender } = renderHook(() => rhythmGameLogicHook())
+      await act(async () => {
+        result.current.onStageReady()
+        await flushPromises()
+      })
+      assert.strictEqual(result.current.stats.audioStatus, 'ready')
+      assert.strictEqual(mockAudioEngine.playSongSequence.mock.calls.length, 1)
+
+      // Resolve intro and mid events on separate songs.
+      const ref = result.current.gameStateRef.current
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 1000)
+      act(() => result.current.update(16))
+      assert.deepStrictEqual(triggerEvent.mock.calls[0].arguments, [
+        'gig',
+        'gig_intro'
+      ])
+      mockState.gigEventScoreDelta = introScore
+      act(() => rerender())
+      ref.lastEndedSongIndex = 0
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(
+        () => ref.totalDuration / 2
+      )
+      act(() => result.current.update(16))
+      assert.deepStrictEqual(triggerEvent.mock.calls[1].arguments, [
+        'gig',
+        'gig_mid'
+      ])
+      mockState.gigEventScoreDelta = eventScore
+      act(() => rerender())
+      assert.strictEqual(result.current.stats.score, resetScore)
+      ref.score += 1000 // Hit points from the failed attempt must be discarded.
+
+      act(() => result.current.onStageInitError())
+      assert.strictEqual(result.current.stats.failureKind, 'stage')
+      let retry
+      await act(async () => {
+        retry = result.current.actions.retryAudioInitialization()
+        await flushPromises()
+      })
+      await act(async () => {
+        result.current.onStageReady()
+        await retry
+      })
+      assert.strictEqual(result.current.stats.audioStatus, 'ready')
+      assert.strictEqual(mockAudioEngine.playSongSequence.mock.calls.length, 2)
+      assert.strictEqual(ref.score, resetScore)
+      assert.strictEqual(result.current.stats.score, resetScore)
+      assert.strictEqual(ref.gigIntroFired, true)
+      assert.strictEqual(ref.gigMidFired, true)
+      assert.strictEqual(ref.lastGigEventSongIndex, 1)
+      act(() => result.current.update(16))
+      assert.strictEqual(triggerEvent.mock.calls.length, 2)
+
+      // Unchanged context never reapplies the adjustment; a later delta applies once.
+      act(() => rerender())
+      assert.strictEqual(ref.score, resetScore)
+      mockState.gigEventScoreDelta = eventScore + 50
+      act(() => rerender())
+      assert.strictEqual(ref.score, resetScore + 50)
+      assert.strictEqual(result.current.stats.score, resetScore + 50)
+    })
+  }
+
   test('bootstraps first song and notes correctly', async () => {
     const song1 = {
       id: 'song1',
