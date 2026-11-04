@@ -1,0 +1,4 @@
+interface:
+  display_name: 'comprehensive-review-full-review-v2'
+  short_description: 'comprehensive-review-full-review workflow skill. Use this skill when the user needs working with comprehensive review full review and the operator should preserve the upstream workflow, copied support files, and provenance before merging or handing off.'
+  default_prompt: 'Full Review main and find as much issues as possible in the code, architecture, security, performance, testing, documentation, and best practices.'
