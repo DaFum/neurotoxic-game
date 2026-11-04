@@ -51,6 +51,39 @@ test('event grants stop packing when cargo fills and retain the remainder at HQ'
   assert.equal(after.availableHiddenSlots + after.availableVisibleSlots, 0)
 })
 
+test('an event grant fills the hidden slot when visible cargo is full', () => {
+  const state = startedState({ money: 5000 })
+  state.assets = [
+    {
+      id: 'diy_bus',
+      kind: 'tourbus_chassis',
+      chassisFlavor: 'diy',
+      chassisTier: 1,
+      slots: []
+    }
+  ]
+  state.expedition.loadout.activeTourbusAssetId = 'diy_bus'
+  const before = getExpeditionCargoView(state)
+  assert.equal(before.availableHiddenSlots, 1)
+  state.expedition.cargo.supplies += before.availableVisibleSlots
+  const full = getExpeditionCargoView(state)
+  assert.equal(full.availableVisibleSlots, 0)
+  assert.equal(full.availableHiddenSlots, 1)
+
+  const next = applyEventDelta(
+    state,
+    stashAddDelta([
+      { contrabandId: 'c_void_energy', instanceId: 'hidden_gift' }
+    ])
+  )
+  assert.deepEqual(next.expedition.cargo.contraband, [
+    { stashKey: 'c_void_energy', instanceId: 'hidden_gift', stacks: 1 }
+  ])
+  const after = getExpeditionCargoView(next)
+  assert.equal(after.availableVisibleSlots, 0)
+  assert.equal(after.availableHiddenSlots, 0)
+})
+
 test('a rejected duplicate event item does not create phantom packed cargo', () => {
   const state = startedState({ money: 5000 })
   const next = applyEventDelta(

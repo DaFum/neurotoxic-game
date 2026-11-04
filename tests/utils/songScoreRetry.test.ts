@@ -118,6 +118,8 @@ describe('durable song score retries', () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).scores[0].score).toBe(
       100
     )
+    await fresh.retryPendingLeaderboardScores(player)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('does not drop a higher score queued while a request is pending', async () => {
