@@ -1,7 +1,21 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import {
+  readdirSync,
+  readFileSync,
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  copyFileSync,
+  chmodSync,
+  rmSync
+} from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parse } from 'yaml'
+import { renderLintFixPreview } from '../../scripts/render-lint-fix-preview.js'
 
 const loadWorkflow = name =>
   parse(readFileSync(`.github/workflows/${name}`, 'utf8'))
@@ -104,6 +118,273 @@ describe('lint-fix-preview sticky report (#3377)', () => {
 
     assert.equal(calls.updates.length, 0)
     assert.equal(calls.creates.length, 1)
+  })
+})
+
+describe('bounded lint preview publication', () => {
+  for (const [name, patch, truncated] of [
+    ['long line', '+' + 'x'.repeat(100000) + '\n', true],
+    ['many lines', '+line\n'.repeat(5000), true],
+    ['small', '-old\n+new\n', false]
+  ]) {
+    for (const update of [false, true]) {
+      test(`${name}: ${update ? 'updates' : 'creates'} the bounded body unchanged`, async () => {
+        const body = renderLintFixPreview({
+          header: `${MARKER}\n## Lint Fix Preview\n\n`,
+          patch,
+          duplicates: '### Duplicate code\n\nNone.\n',
+          hasDiff: true
+        })
+        const comments = update
+          ? [{ id: 42, user: BOT, body: `${MARKER}\nold` }]
+          : []
+        const { github, calls } = createFakeGithub(comments)
+        await runReport(github, body)
+        assert.equal(calls.creates.length, update ? 0 : 1)
+        assert.equal(calls.updates.length, update ? 1 : 0)
+        const submitted = (update ? calls.updates : calls.creates)[0]
+        if (update) assert.equal(submitted.comment_id, 42)
+        assert.equal(submitted.body, body)
+        assert.ok(submitted.body.length <= 65536)
+        assert.ok(submitted.body.includes(MARKER))
+        const fence = body.match(/^(`{3,})diff\n/m)?.[1]
+        assert.ok(fence)
+        assert.ok(body.includes(`\n${fence}\n\n`))
+        assert.ok(
+          body.indexOf('### Duplicate code') > body.indexOf(`\n${fence}\n\n`)
+        )
+        assert.equal(body.includes('Patch truncated:'), truncated)
+      })
+    }
+  }
+})
+
+describe('autofix failure reporting and enforcement', () => {
+  /** @param {import('node:test').TestContext} t @param {string} scenario */
+  function runPreview(t, scenario) {
+    const directory = mkdtempSync(path.join(os.tmpdir(), 'autofix-preview-'))
+    t.after(() => rmSync(directory, { recursive: true, force: true }))
+    for (const name of ['scripts', 'bin', 'src/nested', 'jscpd-report']) {
+      mkdirSync(path.join(directory, name), { recursive: true })
+    }
+    for (const name of [
+      'lint-fix-preview.sh',
+      'render-lint-fix-preview.js',
+      'analyze-duplicates.js'
+    ]) {
+      copyFileSync(
+        fileURLToPath(new URL(`../../scripts/${name}`, import.meta.url)),
+        path.join(directory, 'scripts', name)
+      )
+    }
+    writeFileSync(
+      path.join(directory, 'package.json'),
+      JSON.stringify({
+        type: 'module',
+        scripts: { format: 'fixture', 'lint:fix': 'fixture' }
+      })
+    )
+    writeFileSync(
+      path.join(directory, 'src/nested/source.js'),
+      'export const value = 1\n'
+    )
+    const fakePnpm = path.join(directory, 'bin/pnpm')
+    writeFileSync(
+      fakePnpm,
+      `#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" == "exec" ]]; then exit 0; fi
+echo "$2" >> command-order
+if [[ "$2" == "format" ]]; then
+  if [[ "$PREVIEW_SCENARIO" == "fixable-only" || "$PREVIEW_SCENARIO" == "mixed" ]]; then
+    echo 'export const value = 2' >src/nested/source.js
+  fi
+  if [[ "$PREVIEW_SCENARIO" != "mixed" ]]; then exit 0; fi
+  status=2
+else
+  if [[ "$PREVIEW_SCENARIO" != "mixed" && "$PREVIEW_SCENARIO" != "failure-only" ]]; then exit 0; fi
+  status=3
+fi
+for ((i=1; i<=80; i++)); do echo "$2 log line $i"; done
+node -e "process.stdout.write('x'.repeat(70000) + '\\n')"
+echo "$2 unresolved diagnostic </details> &" >&2
+exit "$status"
+`
+    )
+    chmodSync(fakePnpm, 0o755)
+    /** @param {string[]} args */
+    const git = args => {
+      const result = spawnSync('git', args, {
+        cwd: directory,
+        encoding: 'utf8',
+        timeout: 10000
+      })
+      assert.equal(result.status, 0, result.stderr)
+    }
+    git(['init'])
+    git(['add', '.'])
+    git([
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      'commit',
+      '-m',
+      'fixture'
+    ])
+    const duplicates =
+      scenario === 'mixed'
+        ? [
+            {
+              lines: 10,
+              tokens: 80,
+              firstFile: { name: 'src/first.js', start: 1, end: 10 },
+              secondFile: { name: 'src/second.js', start: 1, end: 10 }
+            }
+          ]
+        : []
+    writeFileSync(
+      path.join(directory, 'jscpd-report/report.json'),
+      JSON.stringify({ duplicates })
+    )
+    const output = path.join(directory, 'github-output')
+    const result = spawnSync('bash', ['scripts/lint-fix-preview.sh'], {
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 15000,
+      maxBuffer: 1024 * 1024,
+      env: {
+        ...process.env,
+        PATH: `${path.join(directory, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
+        PREVIEW_SCENARIO: scenario,
+        GITHUB_OUTPUT: output
+      }
+    })
+    assert.equal(result.status, 0, result.stderr)
+    const body = readFileSync(path.join(directory, 'comment.md'), 'utf8')
+    const outputs = readFileSync(output, 'utf8')
+    assert.ok(body.length <= 65536)
+    assert.ok(body.includes(MARKER))
+    assert.ok(result.stdout.endsWith(body))
+    assert.equal(
+      readFileSync(path.join(directory, 'command-order'), 'utf8'),
+      'format\nlint:fix\n'
+    )
+    assert.ok(body.indexOf('Autofix status') > body.indexOf('Target roots:'))
+    const delimiter = outputs.match(/^comment<<(.*)$/m)?.[1]
+    assert.ok(delimiter)
+    assert.equal(
+      outputs.split(`comment<<${delimiter}\n`)[1],
+      `${body}${delimiter}\n`
+    )
+    return { body, outputs }
+  }
+
+  for (const scenario of ['clean', 'fixable-only', 'mixed', 'failure-only']) {
+    test(`${scenario} completes the report before exiting zero`, t => {
+      if (
+        process.platform === 'win32' &&
+        spawnSync('bash', ['--version'], { encoding: 'utf8', timeout: 5000 })
+          .status !== 0
+      ) {
+        t.skip('bash is unavailable')
+        return
+      }
+      const { body, outputs } = runPreview(t, scenario)
+      const failed = scenario === 'mixed' || scenario === 'failure-only'
+      const changed = scenario === 'fixable-only' || scenario === 'mixed'
+      assert.match(outputs, new RegExp(`^has_diff=${changed ? 1 : 0}$`, 'm'))
+      assert.match(outputs, new RegExp(`^fix_failed=${failed ? 1 : 0}$`, 'm'))
+      assert.match(
+        outputs,
+        new RegExp(`^format_status=${scenario === 'mixed' ? 2 : 0}$`, 'm')
+      )
+      assert.match(
+        outputs,
+        new RegExp(`^lint_fix_status=${failed ? 3 : 0}$`, 'm')
+      )
+      assert.match(
+        outputs,
+        new RegExp(`^should_comment=${failed || changed ? 1 : 0}$`, 'm')
+      )
+      if (changed) {
+        assert.match(body, /### Patch preview/)
+        assert.match(body, /\+export const value = 2/)
+      }
+      if (failed) {
+        assert.match(body, /unresolved errors remain/i)
+        assert.match(body, /run did not pass/i)
+        assert.match(body, /fixes applied before the tools stopped/i)
+        assert.match(
+          body,
+          /Stylelint CSS fixes.*(may|possibly|might).*not.*run/i
+        )
+        assert.match(body, /failed \(exit 3\)/)
+        assert.match(body, /<details>/)
+        assert.match(
+          body,
+          /lint:fix unresolved diagnostic &lt;\/details&gt; &amp;/
+        )
+        assert.doesNotMatch(body, /log line 1\b/)
+        assert.doesNotMatch(body, /No changes would be made/)
+        if (scenario === 'mixed') {
+          assert.match(body, /failed \(exit 2\)/)
+          assert.match(body, /format unresolved diagnostic/)
+          assert.match(outputs, /^has_dup=1$/m)
+          assert.match(body, /### Duplicate code/)
+          assert.match(body, /Found \*\*1\*\* duplicate cluster/)
+        }
+        assert.equal(
+          (body.match(/<details>/g) ?? []).length,
+          scenario === 'mixed' ? 2 : 1
+        )
+        assert.equal(
+          (body.match(/<\/details>/g) ?? []).length,
+          scenario === 'mixed' ? 2 : 1
+        )
+      } else {
+        assert.match(body, /passed/)
+        assert.doesNotMatch(
+          body,
+          /unresolved errors remain|run did not pass|<details>/i
+        )
+        if (!changed) assert.match(body, /No changes would be made/)
+      }
+    })
+  }
+
+  test('publishes failures before enforcing failure, including for fork PRs', () => {
+    const steps = loadWorkflow('lint-fix-preview.yml').jobs['lint-preview']
+      .steps
+    const previewIndex = steps.findIndex(step => step.id === 'lint-preview')
+    const publicationIndex = steps.findIndex(step =>
+      step.with?.script?.includes(MARKER)
+    )
+    const enforcementIndex = steps.findIndex(
+      step => step.name === 'Fail when autofix left unresolved errors'
+    )
+    const publication = steps[publicationIndex]
+    assert.ok(
+      publication.if.includes("steps.lint-preview.outputs.fix_failed == '1'")
+    )
+    assert.ok(
+      publication.if.includes('head.repo.full_name == github.repository')
+    )
+    assert.ok(enforcementIndex > publicationIndex)
+    assert.ok(publicationIndex > previewIndex)
+    assert.equal(enforcementIndex, steps.length - 1)
+    const enforcement = steps[enforcementIndex]
+    assert.ok(
+      enforcement.if.includes("steps.lint-preview.outputs.fix_failed == '1'")
+    )
+    assert.ok(enforcement.if.includes('always()'))
+    assert.ok(!enforcement.if.includes('head.repo'))
+    assert.ok(enforcement.env.FORMAT_STATUS.includes('outputs.format_status'))
+    assert.ok(
+      enforcement.env.LINT_FIX_STATUS.includes('outputs.lint_fix_status')
+    )
+    assert.match(enforcement.run, /exit 1/)
+    assert.ok(!enforcement.run.includes('${{'))
   })
 })
 
