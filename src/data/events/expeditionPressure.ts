@@ -20,6 +20,9 @@ import type { GameState } from '../../types'
  * event's own eligibility when it made the pick, so there is nothing left to
  * roll here: a second probability would be a second draw, and the selected
  * event and the surfaced event could disagree.
+ *
+ * @param eventId - The ID of the event to check for.
+ * @returns A condition function evaluating if the event is pending.
  */
 const isPendingDirectorEvent =
   (eventId: string) =>
@@ -27,6 +30,9 @@ const isPendingDirectorEvent =
     state.expedition?.status === 'active' &&
     state.expedition.pressure?.pendingDirectorEventId === eventId
 
+/**
+ * Database of events triggered by the Expedition Pressure Director.
+ */
 export const EXPEDITION_PRESSURE_EVENTS_DB = [
   {
     id: 'expedition_authority_patrol',
