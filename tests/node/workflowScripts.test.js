@@ -160,8 +160,20 @@ describe('bounded lint preview publication', () => {
 })
 
 describe('autofix failure reporting and enforcement', () => {
-  /** @param {import('node:test').TestContext} t @param {string} scenario */
-  function runPreview(t, scenario) {
+  /**
+   * @param {import('node:test').TestContext} t
+   * @param {string} scenario
+   * @param {{ path: string, before: string, after: string }} change
+   */
+  function runPreview(
+    t,
+    scenario,
+    change = {
+      path: 'src/nested/source.js',
+      before: 'export const value = 1\n',
+      after: 'export const value = 2\n'
+    }
+  ) {
     const directory = mkdtempSync(path.join(os.tmpdir(), 'autofix-preview-'))
     t.after(() => rmSync(directory, { recursive: true, force: true }))
     for (const name of ['scripts', 'bin', 'src/nested', 'jscpd-report']) {
@@ -184,10 +196,10 @@ describe('autofix failure reporting and enforcement', () => {
         scripts: { format: 'fixture', 'lint:fix': 'fixture' }
       })
     )
-    writeFileSync(
-      path.join(directory, 'src/nested/source.js'),
-      'export const value = 1\n'
-    )
+    mkdirSync(path.dirname(path.join(directory, change.path)), {
+      recursive: true
+    })
+    writeFileSync(path.join(directory, change.path), change.before)
     const fakePnpm = path.join(directory, 'bin/pnpm')
     writeFileSync(
       fakePnpm,
@@ -197,7 +209,7 @@ if [[ "$1" == "exec" ]]; then exit 0; fi
 echo "$2" >> command-order
 if [[ "$2" == "format" ]]; then
   if [[ "$PREVIEW_SCENARIO" == "fixable-only" || "$PREVIEW_SCENARIO" == "mixed" ]]; then
-    echo 'export const value = 2' >src/nested/source.js
+    printf '%s' "$PREVIEW_CHANGED_TEXT" >"$PREVIEW_CHANGED_PATH"
   fi
   if [[ "$PREVIEW_SCENARIO" != "mixed" ]]; then exit 0; fi
   status=2
@@ -257,6 +269,8 @@ exit "$status"
         ...process.env,
         PATH: `${path.join(directory, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
         PREVIEW_SCENARIO: scenario,
+        PREVIEW_CHANGED_PATH: change.path,
+        PREVIEW_CHANGED_TEXT: change.after,
         GITHUB_OUTPUT: output
       }
     })
@@ -277,7 +291,15 @@ exit "$status"
       outputs.split(`comment<<${delimiter}\n`)[1],
       `${body}${delimiter}\n`
     )
-    return { body, outputs }
+    const patch = readFileSync(path.join(directory, 'diff.patch'), 'utf8')
+    const fullDiff = spawnSync('git', ['diff', '--no-color', 'HEAD'], {
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(fullDiff.status, 0, fullDiff.stderr)
+    assert.equal(patch, fullDiff.stdout)
+    return { body, outputs, patch }
   }
 
   for (const scenario of ['clean', 'fixable-only', 'mixed', 'failure-only']) {
@@ -350,6 +372,48 @@ exit "$status"
         )
         if (!changed) assert.match(body, /No changes would be made/)
       }
+    })
+  }
+
+  for (const change of [
+    {
+      path: 'src/style.css',
+      before: '.sample {color:red}\n',
+      after: '.sample { color: red; }\n'
+    },
+    { path: 'config.json', before: '{"value":1}\n', after: '{ "value": 1 }\n' },
+    {
+      path: 'tests/example.test.js',
+      before: 'const value=1\n',
+      after: 'const value = 1\n'
+    },
+    {
+      path: 'scripts/example.js',
+      before: 'const value=1\n',
+      after: 'const value = 1\n'
+    },
+    {
+      path: '.github/workflows/example.yml',
+      before: 'name:  Example\n',
+      after: 'name: Example\n'
+    }
+  ]) {
+    test(`reports and archives fixes confined to ${change.path}`, t => {
+      if (
+        process.platform === 'win32' &&
+        spawnSync('bash', ['--version'], { encoding: 'utf8', timeout: 5000 })
+          .status !== 0
+      ) {
+        t.skip('bash is unavailable')
+        return
+      }
+      const { body, outputs, patch } = runPreview(t, 'fixable-only', change)
+      assert.match(outputs, /^has_diff=1$/m)
+      assert.match(outputs, /^should_comment=1$/m)
+      assert.match(outputs, /^fix_failed=0$/m)
+      assert.ok(patch.includes(`diff --git a/${change.path} b/${change.path}`))
+      assert.ok(body.includes(patch))
+      assert.doesNotMatch(body, /No changes would be made/)
     })
   }
 

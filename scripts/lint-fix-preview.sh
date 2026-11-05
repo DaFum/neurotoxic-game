@@ -40,16 +40,6 @@ if pnpm exec eslint --version >/dev/null 2>&1; then
 	has_eslint=1
 fi
 
-# Build pathspecs for diff
-diff_args=()
-for r in "${roots[@]}"; do
-	if [[ "$r" == "." ]]; then
-		diff_args+=("**/*.js" "**/*.jsx" "**/*.ts" "**/*.tsx")
-	else
-		diff_args+=("${r}/**/*.js" "${r}/**/*.jsx" "${r}/**/*.ts" "${r}/**/*.tsx")
-	fi
-done
-
 # Run auto-fixers — sie modifizieren den Working Tree
 format_status=skipped
 lint_fix_status=skipped
@@ -78,7 +68,8 @@ fi
 
 # FIX: Diff gegen HEAD (letzter Commit auf dem PR-Branch) statt gegen origin/<base_ref>.
 # Zeigt ausschließlich was die Formatter/Linter geändert haben — nicht den gesamten Branch-Diff.
-git diff --no-color HEAD -- "${diff_args[@]}" >diff.patch || true
+# Capture every tracked file the repository-wide fixers can change.
+git diff --no-color HEAD >diff.patch || true
 
 # Keep only the last 4000 lines to limit comment size
 tail -n 4000 diff.patch >diff.tail || true
@@ -162,10 +153,8 @@ report_failed_log() {
 } >>header.md
 
 has_diff=0
-if [[ -s diff.tail ]]; then
-	if grep -qE '^\+|^-' diff.tail; then
-		has_diff=1
-	fi
+if [[ -s diff.patch ]]; then
+	has_diff=1
 fi
 
 # Duplicate code — examine jscpd JSON(s)

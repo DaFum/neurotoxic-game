@@ -141,6 +141,14 @@ test('clips oversized duplicate findings at a line boundary and omits the patch'
 })
 
 test('shell assembly exports the bounded body without changing eligibility', t => {
+  if (
+    process.platform === 'win32' &&
+    spawnSync('bash', ['--version'], { encoding: 'utf8', timeout: 5000 })
+      .status !== 0
+  ) {
+    t.skip('bash is unavailable')
+    return
+  }
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lint-preview-'))
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
   fs.mkdirSync(path.join(directory, 'scripts'))
