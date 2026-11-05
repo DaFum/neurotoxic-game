@@ -7,7 +7,7 @@ import type { RoadieHUDProps } from '../../../types/components'
  * @param props - Roadie UI state displayed during the minigame.
  */
 export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
-  const { t } = useTranslation(['ui'])
+  const { t } = useTranslation(['ui', 'items'])
 
   return (
     <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/50 p-2 border border-star-white/20'>
@@ -32,11 +32,25 @@ export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
           }
         >
           {t('ui:roadieRun.hud.carrying')}{' '}
-          {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
-            defaultValue: t('ui:roadieRun.itemTypes.unknown', {
-              defaultValue: uiState.carrying.type
-            })
-          })}
+          {uiState.carrying.type === 'CONTRABAND' &&
+          typeof uiState.carrying.id === 'string'
+            ? t(`items:contraband.${uiState.carrying.id}.name`, {
+                defaultValue: uiState.carrying.id
+              })
+            : t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
+                defaultValue: t('ui:roadieRun.itemTypes.unknown', {
+                  defaultValue: uiState.carrying.type
+                })
+              })}
+          {uiState.carrying.type === 'CONTRABAND' && (
+            <p className='max-w-64 text-sm'>
+              {t('ui:roadieRun.contraband.warning', {
+                item: t(`items:contraband.${uiState.carrying.id}.name`, {
+                  defaultValue: uiState.carrying.id
+                })
+              })}
+            </p>
+          )}
         </div>
       )}
     </div>

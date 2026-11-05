@@ -61,9 +61,10 @@ function processTraffic(
   for (let i = 0; i < traffic.length; i++) {
     const car = traffic[i]
     if (!car) continue
+    const wasOverlapping = checkCollision(car, game.playerPos)
     car.x += car.speed * deltaMS
 
-    if (!crashed && checkCollision(car, game.playerPos)) {
+    if (!crashed && (wasOverlapping || checkCollision(car, game.playerPos))) {
       crashed = true
       handleCrash(game, onCrash)
     }
@@ -190,9 +191,10 @@ function useRoadieSceneTransition(
 /**
  * Owns roadie minigame state, traffic updates, movement controls, and completion dispatch.
  *
+ * @param options - Whether escorted contraband requires a pre-play acknowledgement.
  * @returns Mutable stage state, UI state, movement controls, and update callback.
  */
-export const useRoadieLogic = () => {
+export const useRoadieLogic = ({ requireContrabandBriefing = false } = {}) => {
   const currentScene = useGameSelector(state => state.currentScene)
   const band = useGameSelector(state => state.band)
   const expedition = useGameSelector(state => state.expedition)
@@ -219,9 +221,10 @@ export const useRoadieLogic = () => {
   }
 
   // UI State
-  const [uiState, setUiState] = useState(() =>
-    getInitialUiState(gameStateRef.current)
-  )
+  const [uiState, setUiState] = useState(() => ({
+    ...getInitialUiState(gameStateRef.current),
+    awaitingStart: requireContrabandBriefing && stashItemIdRef.current !== null
+  }))
 
   // Stats Ref for Pixi
   const statsRef = useRef({
@@ -250,7 +253,7 @@ export const useRoadieLogic = () => {
   const move = useCallback(
     (dx: number, dy: number) => {
       const game = gameStateRef.current
-      if (game.isGameOver) return
+      if (game.isGameOver || uiState.awaitingStart) return
 
       // Gameplay time, not wall clock: `elapsedMS` only ever advances by the
       // ticker's clamped deltas, so an OS/NTP clock jump can neither bypass the
@@ -273,25 +276,32 @@ export const useRoadieLogic = () => {
       game.playerPos = { x: newX, y: newY }
       game.lastMoveTime = now
 
-      handlePickup(game)
-      handleDelivery(game, finishRoadie)
+      if (game.traffic.some(car => checkCollision(car, game.playerPos))) {
+        handleCrash(game, damage =>
+          finishRoadie(damage, game.contrabandCount ?? 0)
+        )
+      } else {
+        handlePickup(game)
+        handleDelivery(game, finishRoadie)
+      }
 
       // Update UI immediately for responsiveness
       setUiState(prev => ({
         ...prev,
+        currentDamage: Math.floor(game.equipmentDamage),
         itemsRemaining: game.itemsToDeliver.length,
         itemsDelivered: game.itemsDelivered.length,
         carrying: game.carrying,
         isGameOver: game.isGameOver
       }))
     },
-    [finishRoadie]
+    [finishRoadie, uiState.awaitingStart]
   )
 
   const update = useCallback(
     (deltaMS: number) => {
       const game = gameStateRef.current
-      if (game.isGameOver) return
+      if (game.isGameOver || uiState.awaitingStart) return
 
       // A paused-tab resume can report a negative delta. Normalize once and
       // drive the whole simulation from it: an unclamped delta would rewind the
@@ -340,7 +350,7 @@ export const useRoadieLogic = () => {
         })
       }
     },
-    [finishRoadie]
+    [finishRoadie, uiState.awaitingStart]
   )
 
   useGamepadActions(
@@ -352,16 +362,20 @@ export const useRoadieLogic = () => {
         else move(0, 1)
       }
     },
-    { kind: 'gameplay', enabled: !uiState.isGameOver }
+    { kind: 'gameplay', enabled: !uiState.isGameOver && !uiState.awaitingStart }
   )
   useRoadieKeyboardControls(move)
   useRoadieSceneTransition(uiState.isGameOver, currentScene, changeScene)
+
+  const start = useCallback(() => {
+    setUiState(prev => ({ ...prev, awaitingStart: false }))
+  }, [])
 
   return {
     gameStateRef,
     stats: statsRef.current,
     update,
     uiState,
-    actions: { move }
+    actions: { move, start }
   }
 }

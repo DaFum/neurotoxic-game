@@ -1274,3 +1274,54 @@ test('an accepted per-gig social patch marks the settlement, a rejected one leav
   assert.strictEqual(rejected, recorded)
   assert.equal(rejected.pendingGigSettlement?.socialReconciled, false)
 })
+
+test('shared settlement policy matches recovered ledger and Finale gates', async () => {
+  const { derivePostGigSettlementPolicy } =
+    await import('../../src/hooks/postGig/handlers/continueHandlerUtils')
+  assert.equal(typeof derivePostGigSettlementPolicy, 'function')
+  for (const scenario of [
+    { net: 300, failed: false, finale: false },
+    { net: -200, failed: true, finale: false },
+    { net: 300, failed: false, finale: true },
+    { net: 300, failed: true, finale: true },
+    { net: -100000, failed: false, finale: true }
+  ]) {
+    const snapshot = buildPostGigSnapshot({ net: scenario.net })
+    snapshot.lastGigStats.failed = scenario.failed
+    snapshot.gameMap.nodes.node_gig.type = scenario.finale ? 'FINALE' : 'GIG'
+    const base = createInitialState()
+    const state = {
+      ...base,
+      ...snapshot,
+      player: { ...base.player, ...snapshot.player },
+      band: { ...base.band, ...snapshot.band }
+    }
+    const { getTotalDailyObligations } =
+      await import('../../src/utils/assets/assetSelectors')
+    const policy = derivePostGigSettlementPolicy({
+      player: state.player,
+      band: state.band,
+      expedition: state.expedition,
+      activeStoryFlags: state.activeStoryFlags,
+      gigId: state.currentGig.id,
+      lastGigStats: state.lastGigStats,
+      financials: state.pendingGigSettlement,
+      perfScore: state.pendingGigSettlement.perfScore,
+      isFinaleGig: scenario.finale,
+      totalDailyObligations: getTotalDailyObligations(state)
+    })
+    const loaded = handleLoadGame(createInitialState(), snapshot)
+    assert.equal(loaded.player.money, policy.acceptedMoney)
+    assert.equal(loaded.player.fame, policy.stats.newFame)
+    assert.equal(loaded.player.fameLevel, policy.stats.fameLevel)
+    assert.equal(
+      loaded.player.stats.tourCompleted === true,
+      policy.careerFinale
+    )
+    assert.equal(
+      loaded.terminalOutcome?.reason === 'bankruptcy',
+      policy.careerBankrupt
+    )
+    assert.equal(policy.expeditionFinale, false)
+  }
+})

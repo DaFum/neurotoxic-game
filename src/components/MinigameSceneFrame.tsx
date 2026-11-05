@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import { MinigameSkipButton } from './MinigameSkipButton'
 import type { MinigameSceneFrameProps } from '../types/components'
+import { useModalBehavior } from '../ui/shared/useModalBehavior'
 import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
 
 /**
@@ -29,14 +31,23 @@ export const MinigameSceneFrame = <TState,>({
   children,
   embedded = false
 }: MinigameSceneFrameProps<TState>) => {
-  const { t } = useTranslation(['ui'])
+  const { t } = useTranslation(['ui', 'minigame'])
+  const [rendererFailed, setRendererFailed] = useState(false)
+  const [rendererAttempt, setRendererAttempt] = useState(0)
+  const isModalOpen = !!uiState?.isGameOver && !embedded
+  const { overlayRef, dialogRef } = useModalBehavior(isModalOpen, onComplete)
 
   const { continueButtonRef, handleSkip, canSkip } = useMinigameSceneLogic({
     logic,
     uiState,
     onComplete,
-    escapeCompletes: !embedded
+    escapeCompletes: false,
+    manageFocus: embedded
   })
+
+  useEffect(() => {
+    if (isModalOpen) continueButtonRef.current?.focus()
+  }, [isModalOpen, continueButtonRef])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
@@ -49,11 +60,30 @@ export const MinigameSceneFrame = <TState,>({
         className='absolute inset-0 pointer-events-none'
       >
         <PixiStage
+          key={rendererAttempt}
+          onInitError={() => setRendererFailed(true)}
           gameStateRef={logic.gameStateRef}
           update={logic.update}
           controllerFactory={controllerFactory}
         />
       </div>
+
+      {rendererFailed && !uiState?.isGameOver && (
+        <div
+          role='alert'
+          className='relative z-(--z-modal) bg-void-black p-6 text-star-white text-center'
+        >
+          <p>{t('minigame:renderer.failed')}</p>
+          <ActionButton
+            onClick={() => {
+              setRendererFailed(false)
+              setRendererAttempt(attempt => attempt + 1)
+            }}
+          >
+            {t('minigame:renderer.retry')}
+          </ActionButton>
+        </div>
+      )}
 
       {/* Player-initiated exit: forfeits the run and continues. Offered only for
           pre-gig setup minigames, and hidden once the completion overlay is
@@ -72,25 +102,35 @@ export const MinigameSceneFrame = <TState,>({
       {/* Game Over / Success Overlay */}
       {uiState?.isGameOver && (
         <m.div
+          ref={embedded ? undefined : overlayRef}
+          data-modal-overlay={embedded ? undefined : ''}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`${embedded ? 'absolute p-4 text-center' : 'fixed'} inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto`}
-          role={embedded ? 'region' : 'dialog'}
-          aria-modal={embedded ? undefined : true}
-          aria-labelledby='completion-title'
+          role={embedded ? 'region' : 'presentation'}
+          aria-labelledby={embedded ? 'completion-title' : undefined}
         >
-          <h1
-            id='completion-title'
-            className='text-4xl text-toxic-green font-bold mb-4'
+          <div
+            ref={embedded ? undefined : dialogRef}
+            role={embedded ? undefined : 'dialog'}
+            aria-modal={embedded ? undefined : true}
+            aria-labelledby={embedded ? undefined : 'completion-title'}
+            tabIndex={-1}
+            className='flex flex-col items-center'
           >
-            {completionTitle ?? t('ui:minigames.complete')}
-          </h1>
-          <div className='text-star-white mb-8'>
-            {renderCompletionStats ? renderCompletionStats(uiState) : null}
+            <h1
+              id='completion-title'
+              className='text-4xl text-toxic-green font-bold mb-4'
+            >
+              {completionTitle ?? t('ui:minigames.complete')}
+            </h1>
+            <div className='text-star-white mb-8'>
+              {renderCompletionStats ? renderCompletionStats(uiState) : null}
+            </div>
+            <ActionButton ref={continueButtonRef} onClick={onComplete}>
+              {completionButtonText ?? t('ui:continue')}
+            </ActionButton>
           </div>
-          <ActionButton ref={continueButtonRef} onClick={onComplete}>
-            {completionButtonText ?? t('ui:continue')}
-          </ActionButton>
         </m.div>
       )}
     </div>

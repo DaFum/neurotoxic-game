@@ -27,6 +27,43 @@ describe('Tooltip Component', () => {
     expect(queryByText('Tooltip Content')).toBeNull()
   })
 
+  test('stays open while the pointer moves from the trigger onto the tooltip', () => {
+    const onMouseLeave = vi.fn()
+    const { getByText, getByRole, queryByRole } = render(
+      <Tooltip content='Details'>
+        <button onMouseLeave={onMouseLeave}>Trigger</button>
+      </Tooltip>
+    )
+    const trigger = getByText('Trigger')
+    fireEvent.mouseEnter(trigger)
+    const tooltip = getByRole('tooltip')
+    expect(tooltip).not.toHaveClass('pointer-events-none')
+    fireEvent.mouseLeave(trigger, { relatedTarget: tooltip })
+    fireEvent.mouseEnter(tooltip, { relatedTarget: trigger })
+    expect(getByRole('tooltip')).toBeInTheDocument()
+    expect(onMouseLeave).toHaveBeenCalledTimes(1)
+    fireEvent.mouseLeave(tooltip)
+    expect(queryByRole('tooltip')).toBeNull()
+  })
+
+  test('keeps a focused tooltip open after hover leaves and a hovered tooltip open after blur', () => {
+    const { getByText, getByRole, queryByRole } = render(
+      <Tooltip content='Details'>
+        <button>Trigger</button>
+      </Tooltip>
+    )
+    const trigger = getByText('Trigger')
+    fireEvent.focus(trigger)
+    fireEvent.mouseEnter(trigger)
+    fireEvent.mouseLeave(trigger)
+    expect(getByRole('tooltip')).toBeInTheDocument()
+    fireEvent.mouseEnter(trigger)
+    fireEvent.blur(trigger)
+    expect(getByRole('tooltip')).toBeInTheDocument()
+    fireEvent.mouseLeave(trigger)
+    expect(queryByRole('tooltip')).toBeNull()
+  })
+
   test('shows content on focus and hides on blur', () => {
     const { getByText, queryByText } = render(
       <Tooltip content='Tooltip Content'>
@@ -182,4 +219,36 @@ describe('Tooltip Component', () => {
     fireEvent.mouseEnter(trigger)
     expect(getByText('0')).toBeInTheDocument()
   })
+})
+
+test('pointer exit dismisses independently of consumer propagation', () => {
+  const onMouseLeave = vi.fn(e => e.stopPropagation())
+  const { getByText, queryByRole } = render(
+    <Tooltip content='Details'>
+      <button onMouseLeave={onMouseLeave}>Trigger</button>
+    </Tooltip>
+  )
+  const trigger = getByText('Trigger')
+  fireEvent.mouseEnter(trigger)
+  fireEvent.mouseLeave(trigger, { relatedTarget: document.body })
+  expect(onMouseLeave).toHaveBeenCalledTimes(1)
+  expect(queryByRole('tooltip')).toBeNull()
+})
+
+test('replacing a focused trigger with a disabled wrapper clears stale focus', () => {
+  const { getByText, queryByRole, rerender } = render(
+    <Tooltip content='Details'>
+      <button>Trigger</button>
+    </Tooltip>
+  )
+  fireEvent.focus(getByText('Trigger'))
+  rerender(
+    <Tooltip content='Details'>
+      <button disabled>Trigger</button>
+    </Tooltip>
+  )
+  const wrapper = getByText('Trigger').parentElement
+  fireEvent.mouseEnter(wrapper)
+  fireEvent.mouseLeave(wrapper, { relatedTarget: document.body })
+  expect(queryByRole('tooltip')).toBeNull()
 })

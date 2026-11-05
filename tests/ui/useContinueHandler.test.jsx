@@ -38,7 +38,7 @@ vi.mock('../../src/context/gameConstants', async importOriginal => ({
 
 import { useContinueHandler } from '../../src/hooks/postGig/handlers/useContinueHandler'
 import {
-  dispatchEconomyQuests,
+  derivePostGigEconomyQuestEvents,
   getNeurotoxicPenaltyHarmony,
   handleContinueSceneTransition
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
@@ -105,15 +105,14 @@ describe('Pure Functions in useContinueHandler.ts', () => {
     vi.clearAllMocks()
   })
 
-  describe('dispatchEconomyQuests', () => {
-    it('dispatches fame quest when fame increases', () => {
-      const applyQuestEvent = vi.fn()
+  describe('derivePostGigEconomyQuestEvents', () => {
+    it('derives fame quest when fame increases', () => {
       const player = { fame: 10, location: 'paris', money: 100 }
       const stats = { newFame: 20, newMoney: 100 }
 
-      dispatchEconomyQuests(player, stats, applyQuestEvent)
+      const events = derivePostGigEconomyQuestEvents(player, stats)
 
-      expect(applyQuestEvent).toHaveBeenCalledWith(
+      expect(events).toContainEqual(
         expect.objectContaining({
           type: 'fame.gained',
           region: 'test-region', // from mock
@@ -123,14 +122,13 @@ describe('Pure Functions in useContinueHandler.ts', () => {
       )
     })
 
-    it('dispatches money quest when money increases', () => {
-      const applyQuestEvent = vi.fn()
+    it('derives money quest when money increases', () => {
       const player = { fame: 10, money: 100 }
       const stats = { newFame: 10, newMoney: 150 }
 
-      dispatchEconomyQuests(player, stats, applyQuestEvent)
+      const events = derivePostGigEconomyQuestEvents(player, stats)
 
-      expect(applyQuestEvent).toHaveBeenCalledWith(
+      expect(events).toContainEqual(
         expect.objectContaining({
           type: 'money.earned',
           amount: 50
@@ -138,14 +136,13 @@ describe('Pure Functions in useContinueHandler.ts', () => {
       )
     })
 
-    it('does not dispatch events when fame or money do not increase', () => {
-      const applyQuestEvent = vi.fn()
+    it('does not derive events when fame or money do not increase', () => {
       const player = { fame: 10, money: 100 }
       const stats = { newFame: 5, newMoney: 50 } // Decreased
 
-      dispatchEconomyQuests(player, stats, applyQuestEvent)
+      const events = derivePostGigEconomyQuestEvents(player, stats)
 
-      expect(applyQuestEvent).not.toHaveBeenCalled()
+      expect(events).toEqual([])
     })
   })
 

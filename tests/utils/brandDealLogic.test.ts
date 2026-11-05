@@ -4,7 +4,6 @@ import {
   generateRankedBrandOffers,
   negotiateDeal
 } from '../../src/utils/brandDealLogic'
-import { selectTop3ByScore } from '../../src/utils/topSelection'
 import type { SocialEngineGameState, BrandDeal } from '../../src/types/social'
 import { buildBrandOffer } from '../../src/utils/brandOfferFlavor/index'
 import { mulberry32 } from '../../src/utils/seededRng'
@@ -26,38 +25,6 @@ vi.mock('../../src/utils/brandOfferFlavor/index', async importOriginal => {
     buildBrandOffer: vi.fn(actual.buildBrandOffer)
   }
 })
-
-// Wrap the real selector so a test can read the score each pool entry gets.
-vi.mock('../../src/utils/topSelection', async importOriginal => {
-  const actual =
-    await importOriginal<typeof import('../../src/utils/topSelection')>()
-  return { ...actual, selectTop3ByScore: vi.fn(actual.selectTop3ByScore) }
-})
-
-/** Score of the first pool entry, with zero jitter. */
-const firstEntryScore = (gameState: SocialEngineGameState): number => {
-  const selector = vi.mocked(selectTop3ByScore)
-  selector.mockClear()
-  generateBrandOffers(gameState, () => 0)
-  const call = selector.mock.calls[0]
-  if (!call) throw new Error('selectTop3ByScore was not called')
-  const [pool, scoreOf] = call
-  return scoreOf(pool[0])
-}
-
-/** Score penalty a co-located rival of the given power applies to an offer. */
-const rivalPenaltyFor = (powerLevel: number): number => {
-  const base = {
-    social: { instagram: 1000 },
-    band: {},
-    player: { currentNodeId: 'loc1' }
-  } as unknown as SocialEngineGameState
-  const withRival = {
-    ...base,
-    rivalBand: { currentLocationId: 'loc1', powerLevel }
-  } as unknown as SocialEngineGameState
-  return firstEntryScore(base) - firstEntryScore(withRival)
-}
 
 describe('brandDealLogic', () => {
   describe('generateBrandOffers', () => {
@@ -113,15 +80,55 @@ describe('brandDealLogic', () => {
       expect(uniqueIds.size).toBe(3) // All 3 must be unique
     })
 
-    it('scales the rival penalty with power and caps it at 20 from power 10', () => {
-      expect(rivalPenaltyFor(10)).toBe(20)
-      expect(rivalPenaltyFor(15)).toBe(20)
-    })
-
-    it('floors negative and non-finite rival power at a zero penalty', () => {
-      expect(rivalPenaltyFor(-5)).toBe(0)
-      expect(rivalPenaltyFor(NaN)).toBe(0)
-      expect(rivalPenaltyFor(Infinity)).toBe(0)
+    it('reduces only payouts with nearby rival power and caps pressure at 20%', () => {
+      const base = {
+        social: { instagram: 500000 },
+        band: {},
+        player: { currentNodeId: 'loc1' }
+      } as unknown as SocialEngineGameState
+      for (const generate of [generateBrandOffers, generateRankedBrandOffers]) {
+        const baseline = generate(base, mulberry32(123))
+        for (const powerLevel of [0, 5, 10, 15, -5, NaN, Infinity]) {
+          const offers = generate(
+            {
+              ...base,
+              rivalBand: { currentLocationId: 'loc1', powerLevel }
+            } as SocialEngineGameState,
+            mulberry32(123)
+          )
+          const multiplier = Number.isFinite(powerLevel)
+            ? 1 - Math.min(20, Math.max(0, powerLevel) * 2) / 100
+            : 1
+          expect(offers).toHaveLength(baseline.length)
+          offers.forEach((offer, index) => {
+            const original = baseline[index]!
+            expect(offer).toEqual({
+              ...original,
+              offer: {
+                ...original.offer,
+                upfront: Math.floor(original.offer.upfront * multiplier),
+                ...(original.offer.perGig === undefined
+                  ? {}
+                  : {
+                      perGig: Math.floor(original.offer.perGig * multiplier)
+                    })
+              }
+            })
+          })
+          if (Number.isFinite(powerLevel) && powerLevel > 0) {
+            expect(offers).not.toEqual(baseline)
+          }
+        }
+        expect(
+          generate(
+            {
+              ...base,
+              rivalBand: { currentLocationId: 'elsewhere', powerLevel: 10 }
+            } as SocialEngineGameState,
+            mulberry32(123)
+          )
+        ).toEqual(baseline)
+      }
     })
   })
 

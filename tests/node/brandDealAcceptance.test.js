@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic.ts'
+import { mulberry32 } from '../../src/utils/seededRng.ts'
 import { createInitialState } from '../../src/context/initialState.ts'
 import { resolveBrandDealAcceptance } from '../../src/domain/expedition/sponsors.ts'
 
@@ -69,4 +71,38 @@ test('brand-deal resolver refuses another active deal', () => {
   const state = createInitialState()
   state.social.activeDeals = [{ ...deal, remainingGigs: 2 }]
   assert.equal(resolveBrandDealAcceptance(state, deal), null)
+})
+
+test('accepting a rival-pressured generated offer preserves its reduced cash terms', () => {
+  const state = createInitialState()
+  state.social.instagram = 500000
+  state.player.currentNodeId = 'loc1'
+  const baseline = generateBrandOffers(state, mulberry32(123))
+  const pressured = generateBrandOffers(
+    {
+      ...state,
+      rivalBand: {
+        ...state.rivalBand,
+        currentLocationId: 'loc1',
+        powerLevel: 10
+      }
+    },
+    mulberry32(123)
+  )
+  const offer = pressured.find(
+    candidate => candidate.offer.perGig > 0 && candidate.offer.upfront > 0
+  )
+  assert.ok(offer)
+  const original = baseline.find(candidate => candidate.id === offer.id)
+  assert.ok(original)
+  const accepted = resolveBrandDealAcceptance(state, offer)
+  assert.ok(accepted)
+  assert.equal(
+    accepted.appliedMoneyDelta,
+    Math.floor(original.offer.upfront * 0.8)
+  )
+  assert.equal(
+    accepted.nextSocial.activeDeals[0].offer.perGig,
+    Math.floor(original.offer.perGig * 0.8)
+  )
 })

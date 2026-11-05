@@ -113,6 +113,31 @@ describe('useRoadieLogic', () => {
       return id
     }
 
+    test('pauses contraband damage, traffic and input until the briefing is acknowledged', () => {
+      withState({ status: 'idle' }, () => {
+        const { result } = renderHook(() =>
+          useRoadieLogic({ requireContrabandBriefing: true })
+        )
+        const game = result.current.gameStateRef.current
+        expect(result.current.uiState.awaitingStart).toBe(true)
+        act(() => {
+          result.current.update(100)
+          result.current.actions.move(0, 1)
+        })
+        expect(game.equipmentDamage).toBe(0)
+        expect(game.elapsedMS).toBe(0)
+        expect(game.playerPos).toEqual({ x: 6, y: 0 })
+        act(() => result.current.actions.start())
+        expect(result.current.uiState.awaitingStart).toBe(false)
+        act(() => {
+          result.current.update(100)
+          result.current.actions.move(0, 1)
+        })
+        expect(game.equipmentDamage).toBe(0.5)
+        expect(game.playerPos).toEqual({ x: 6, y: 1 })
+      })
+    })
+
     test('escorts the first packed item, not one left at HQ', () => {
       const id = withState(
         {
@@ -138,6 +163,45 @@ describe('useRoadieLogic', () => {
       const id = withState({ status: 'idle' }, escortedId)
       expect(id).toBe('c_left_at_hq')
     })
+  })
+
+  test('crashes immediately when moving into a car before it can move away', () => {
+    const { result } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    game.traffic = [{ id: 1, row: 1, x: 6, speed: 0.015, width: 1.5 }]
+
+    act(() => result.current.actions.move(0, 1))
+
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    expect(game.equipmentDamage).toBe(10)
+    expect(result.current.uiState.currentDamage).toBe(10)
+    act(() => result.current.update(100))
+    expect(game.equipmentDamage).toBe(10)
+  })
+
+  test('checks overlap before moving traffic away from the player', () => {
+    const { result } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    game.playerPos = { x: 6, y: 1 }
+    game.traffic = [{ id: 1, row: 1, x: 6, speed: 0.015, width: 1.5 }]
+
+    act(() => result.current.update(100))
+
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    expect(game.equipmentDamage).toBe(10)
+    expect(result.current.uiState.currentDamage).toBe(10)
+  })
+
+  test('still catches traffic moving into the player during a tick', () => {
+    const { result } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    game.playerPos = { x: 6, y: 1 }
+    game.traffic = [{ id: 1, row: 1, x: 4, speed: 0.015, width: 1.5 }]
+
+    act(() => result.current.update(100))
+
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    expect(game.equipmentDamage).toBe(10)
   })
 
   test('rejects nonfinite deltas and clamps simulation time to 0..100 ms', () => {

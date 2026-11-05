@@ -8,23 +8,12 @@ import type {
   Venue
 } from '../../../types'
 import type { PostGigFinancials } from '../../../types/economy'
-import {
-  clampPlayerMoney,
-  clampPlayerFame,
-  calculateFameLevel,
-  calculateFameGain,
-  finiteNumberOr,
-  BALANCE_CONSTANTS
-} from '../../../utils/gameState'
 import { logger } from '../../../utils/logger'
-import { calculateContinueStats } from '../../../utils/postGig'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import { buildSoldMerchInventory } from '../../../utils/merchUtils'
 import {
-  derivePostGigContinueEffects,
-  dispatchEconomyQuests,
+  derivePostGigSettlementPolicy,
   drainBandStamina,
-  evaluateAcceptedSettlementSolvency,
   handleContinueSceneTransition
 } from './continueHandlerUtils'
 import type { HandlerDispatchers } from './types'
@@ -151,39 +140,25 @@ export function useContinueHandler({
         committed = true
       }
 
-      const stats = calculateContinueStats({
+      const policy = derivePostGigSettlementPolicy({
         player,
-        perfScore,
+        band,
+        expedition,
+        activeStoryFlags,
+        gigId: currentGig?.id,
+        lastGigStats,
         financials,
-        misses: lastGigStats?.misses ?? 0,
-        failed: lastGigStats?.failed === true,
-        bandStyle: finiteNumberOr(band.style, 0),
-        dealFameMultiplier: financials.dealFameMultiplier,
-        calculateFameGain,
-        calculateFameLevel,
-        clampPlayerFame,
-        clampPlayerMoney,
-        BALANCE_CONSTANTS
+        perfScore,
+        isFinaleGig,
+        totalDailyObligations
       })
-
-      const { acceptedMoney, insolvent, careerBankrupt } =
-        evaluateAcceptedSettlementSolvency({
-          expedition,
-          previousMoney: player.money,
-          proposedMoney: stats.newMoney,
-          net: financials.net,
-          totalDailyObligations
-        })
-
-      const successfulFinale =
-        isFinaleGig &&
-        !insolvent &&
-        !!currentGig?.id &&
-        !!lastGigStats &&
-        lastGigStats.failed !== true
-      const expeditionFinale =
-        successfulFinale && expedition?.status === 'active'
-      const careerFinale = successfulFinale && expedition?.status === 'idle'
+      const {
+        stats,
+        acceptedMoney,
+        careerBankrupt,
+        careerFinale,
+        expeditionFinale
+      } = policy
 
       updatePlayer({
         // Under an active run's protected Career Cash floor only the Cash is
@@ -204,20 +179,13 @@ export function useContinueHandler({
         clearPendingGigSettlement(pendingSettlementId)
       }
 
-      dispatchEconomyQuests(player, stats, applyQuestEvent)
+      for (const event of policy.economyQuestEvents) {
+        applyQuestEvent(event)
+      }
 
       // The same ordered effects a load replays when it settles a record
       // saved before Continue (`settlePendingGigOnLoad`).
-      for (const effect of derivePostGigContinueEffects({
-        band,
-        day: player.day,
-        activeStoryFlags,
-        expedition,
-        gigId: currentGig?.id,
-        lastGigStats,
-        isFinaleGig,
-        successfulFinale
-      })) {
+      for (const effect of policy.effects) {
         switch (effect.kind) {
           case 'harmony':
             updateBand(() => ({ harmony: effect.harmony }))
@@ -262,7 +230,7 @@ export function useContinueHandler({
         })
       )
 
-      if (expeditionFinale) {
+      if (expeditionFinale && currentGig) {
         pendingFinaleRef.current = { runId: expedition.runId }
         setCompletionRequest(request => request + 1)
         completeExpedition(`gig:${currentGig.id}`)
