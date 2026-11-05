@@ -30,7 +30,7 @@ This public intake copy packages `plugins/antigravity-awesome-skills/skills/comp
 
 Use it when the operator needs the upstream workflow, support files, and repository context to stay intact while the public validator and private enhancer continue their normal downstream flow.
 
-This intake keeps the copied upstream files intact and uses the `external_source` block in `metadata.json` plus `ORIGIN.md` as the provenance anchor for review.
+This intake keeps the copied upstream files intact and uses `ORIGIN.md` as the provenance anchor for review.
 
 Imported source sections that did not map cleanly to the public headings are still preserved below or in the support files. Notable imported sections: Review Configuration Options, Phase 1: Code Quality & Architecture Review, Phase 2: Security & Performance Review, Phase 3: Testing & Documentation Review, Phase 4: Best Practices & Standards Compliance, Consolidated Report Generation.
 
@@ -40,20 +40,23 @@ Use this section as the trigger filter. It should make the activation boundary e
 
 - Working on comprehensive review full review tasks or workflows
 - Needing guidance, best practices, or checklists for comprehensive review full review
-- The task is unrelated to comprehensive review full review
-- You need a different domain or tool outside this scope
 - Use when provenance needs to stay visible in the answer, PR, or review packet.
 - Use when copied upstream references, examples, or scripts materially improve the answer.
 
+## When Not to Use This Skill
+
+- The task is unrelated to comprehensive review full review.
+- You need a different domain or tool outside this scope.
+
 ## Operating Table
 
-| Situation          | Start here          | Why it matters                                                                                                                 |
-| ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| First-time use     | `metadata.json`     | Confirms repository, branch, commit, and imported path through the `external_source` block before touching the copied workflow |
-| Provenance review  | `ORIGIN.md`         | Gives reviewers a plain-language audit trail for the imported source                                                           |
-| Workflow execution | `SKILL.md`          | Starts with the smallest copied file that materially changes execution                                                         |
-| Supporting context | `SKILL.md`          | Adds the next most relevant copied source file without loading the entire package                                              |
-| Handoff decision   | `## Related Skills` | Helps the operator switch to a stronger native skill when the task drifts                                                      |
+| Situation          | Start here          | Why it matters                                                                                      |
+| ------------------ | ------------------- | --------------------------------------------------------------------------------------------------- |
+| First-time use     | `ORIGIN.md`         | Confirms repository, branch, commit, imported path, and license before touching the copied workflow |
+| Provenance review  | `ORIGIN.md`         | Gives reviewers a plain-language audit trail for the imported source                                |
+| Workflow execution | `SKILL.md`          | Starts with the smallest copied file that materially changes execution                              |
+| Supporting context | `SKILL.md`          | Adds the next most relevant copied source file without loading the entire package                   |
+| Handoff decision   | `## Related Skills` | Helps the operator switch to a stronger native skill when the task drifts                           |
 
 ## Workflow
 
@@ -103,7 +106,7 @@ Use @comprehensive-review-full-review-v2 to handle <task>. Start from the copied
 ### Example 2: Ask for a provenance-grounded review
 
 ```text
-Review @comprehensive-review-full-review-v2 against metadata.json and ORIGIN.md, then explain which copied upstream files you would load first and why.
+Review @comprehensive-review-full-review-v2 against ORIGIN.md, then explain which copied upstream files you would load first and why.
 ```
 
 **Explanation:** Use this before review or troubleshooting when you need a precise, auditable explanation of origin and file selection.
@@ -140,7 +143,7 @@ Treat the generated public skill as a reviewable packaging layer around the upst
 ### Problem: The operator skipped the imported context and answered too generically
 
 **Symptoms:** The result ignores the upstream workflow in `plugins/antigravity-awesome-skills/skills/comprehensive-review-full-review`, fails to mention provenance, or does not use any copied source files at all.
-**Solution:** Re-open `metadata.json`, `ORIGIN.md`, and the most relevant copied upstream files. Check the `external_source` block first, then restate the provenance before continuing.
+**Solution:** Re-open `ORIGIN.md` and the most relevant copied upstream files. Check the source repository, commit, imported path, and license first, then restate the provenance before continuing.
 
 ### Problem: The imported workflow feels incomplete during review
 
