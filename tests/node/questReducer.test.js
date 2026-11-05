@@ -486,6 +486,104 @@ test('questRewards - payload safety', async t => {
     assert.equal(next.assets[0].condition, 70)
   })
 
+  for (const [condition, delta, expected] of [
+    [50.7, 20, 70.7],
+    [50, 2.5, 52.5],
+    [50.7, 0, 50.7],
+    [95.5, 20, 100],
+    [3.2, -10, 0],
+    ['broken', 20.5, 20.5],
+    [NaN, 20.5, 20.5],
+    [Infinity, 20.5, 20.5]
+  ]) {
+    await t.test(
+      `applies continuous condition ${String(condition)} + ${delta}`,
+      () => {
+        const asset = { id: 'asset_1', kind: 'tourbus_chassis', condition }
+        const state = { assets: [asset] }
+        const next = updateFirstMatchingAssetCondition(
+          state,
+          { assetId: asset.id },
+          delta
+        )
+        assert.ok(Math.abs(next.assets[0].condition - expected) < 1e-9)
+        assert.notStrictEqual(next, state)
+        assert.notStrictEqual(next.assets, state.assets)
+        assert.notStrictEqual(next.assets[0], asset)
+        assert.equal(asset.condition, condition)
+      }
+    )
+  }
+
+  await t.test(
+    'changes only the first kind match and preserves unmatched asset references',
+    () => {
+      const first = { id: 'first', kind: 'tourbus_chassis', condition: 50.7 }
+      const second = { id: 'second', kind: 'tourbus_chassis', condition: 30.2 }
+      const other = { id: 'other', kind: 'bandhaus_chassis', condition: 40.5 }
+      const state = { assets: [first, second, other] }
+      const next = updateFirstMatchingAssetCondition(
+        state,
+        { assetKind: 'tourbus_chassis' },
+        20
+      )
+      assert.ok(Math.abs(next.assets[0].condition - 70.7) < 1e-9)
+      assert.strictEqual(next.assets[1], second)
+      assert.strictEqual(next.assets[2], other)
+      assert.equal(first.condition, 50.7)
+      const byId = updateFirstMatchingAssetCondition(
+        state,
+        { assetId: 'second', assetKind: 'bandhaus_chassis' },
+        2.5
+      )
+      assert.ok(Math.abs(byId.assets[1].condition - 32.7) < 1e-9)
+      assert.strictEqual(byId.assets[0], first)
+      assert.strictEqual(byId.assets[2], other)
+      for (const match of [
+        {},
+        { assetKind: 'unknown' },
+        { assetId: 'missing', assetKind: 'tourbus_chassis' }
+      ]) {
+        assert.strictEqual(
+          updateFirstMatchingAssetCondition(state, match, 20),
+          state
+        )
+      }
+    }
+  )
+
+  await t.test('filters non-finite repair and damage amounts', () => {
+    const invalid = [NaN, Infinity, -Infinity]
+    assert.deepEqual(
+      getQuestRewards({
+        id: 'q_repair_finite',
+        rewards: [
+          ...invalid.map(amount => ({
+            type: 'asset.repair',
+            assetId: 'asset_1',
+            amount
+          })),
+          { type: 'asset.repair', assetId: 'asset_1', amount: 12.5 }
+        ]
+      }),
+      [{ type: 'asset.repair', assetId: 'asset_1', amount: 12.5 }]
+    )
+    assert.deepEqual(
+      getQuestPenalties({
+        id: 'q_damage_finite',
+        failurePenalties: [
+          ...invalid.map(amount => ({
+            type: 'asset.damage',
+            assetId: 'asset_1',
+            amount
+          })),
+          { type: 'asset.damage', assetId: 'asset_1', amount: -12.5 }
+        ]
+      }),
+      [{ type: 'asset.damage', assetId: 'asset_1', amount: -12.5 }]
+    )
+  })
+
   await t.test('rejects cooldown penalties that expire immediately', () => {
     const penalties = getQuestPenalties({
       id: 'q_cooldown',

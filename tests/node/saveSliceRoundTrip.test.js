@@ -86,7 +86,27 @@ const buildPopulatedState = () => {
     eventType: 'theft',
     conditionLoss: 12
   }
-  state.activeQuests = [{ id: 'quest_1', progress: 2, target: 5 }]
+  state.activeQuests = [
+    {
+      id: 'inline_delivery',
+      label: 'Inline delivery',
+      kind: 'repeatable',
+      repeatPolicy: 'cooldown',
+      cooldownDays: 4,
+      startedOnDay: 0,
+      status: 'active',
+      progress: 1,
+      required: 2,
+      deadline: 20,
+      progressRules: [
+        { event: 'travel.completed', amount: 'fixed', fixedAmount: 1 }
+      ],
+      rewards: [{ type: 'money', amount: 100 }],
+      failurePenalties: [{ type: 'social.loyalty', amount: -7 }],
+      startFlags: ['inline_active'],
+      completionFlags: ['inline_done']
+    }
+  ]
   state.questCooldowns = [{ questId: 'quest_1', until: 20 }]
   state.completedQuestIds = ['quest_0']
   state.completedQuestScopes = ['scope_a']
@@ -433,6 +453,7 @@ describe('persisted save slice round-trip', () => {
       'pendingEvents',
       'venueBlacklist',
       'completedQuestIds',
+      'activeQuests',
       'reputationByRegion',
       'completedMilestones',
       'assets',

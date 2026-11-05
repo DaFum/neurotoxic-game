@@ -5,6 +5,7 @@ import {
 } from '../../updateSanitizers'
 import {
   hasForbiddenOwnKeys,
+  hasForbiddenKeysDeep,
   sanitizeTraversableValue
 } from '../../../utils/objectUtils'
 import {
@@ -26,6 +27,24 @@ import type { MapNodeType } from '../../../utils/mapNodeTypes'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { rehydrateTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
+import { isQuestReward } from '../../../domain/questRewards'
+import { isQuestPenalty } from '../../../domain/questPenalties'
+import {
+  isProgressRuleLike,
+  QUEST_KINDS,
+  QUEST_REPEAT_POLICIES
+} from '../../../domain/questValidation'
+import { QUEST_PROGRESS_SOURCES } from '../../../data/questProgressSources'
+import { logger } from '../../../utils/logger'
+import type {
+  QuestState,
+  QuestKind,
+  QuestRepeatPolicy,
+  QuestProgressSource,
+  QuestProgressRule,
+  QuestReward,
+  QuestPenalty
+} from '../../../types'
 import {
   readMemberMood,
   readMemberStamina,
@@ -2139,21 +2158,209 @@ export const sanitizeLastGigStats = (
   return !isEmptyObject(sanitized) ? sanitized : null
 }
 
-/**
- * Sanitizes the array of active and ongoing player quests.
- *
- * @remarks
- * Normalizes quest progress against maximum bounds and correctly links active quests
- * to their backing registry definitions, dropping completely invalid items.
- *
- * @param value - The raw untrusted active quests array
- * @returns A sanitized array of valid active quests
- */
+/** Deep-copies definition entries after the unsafe-key scan, including match arrays. */
+const copyInlineQuestDefinitionValue = (
+  value: unknown,
+  visited = new WeakSet<object>()
+): unknown => {
+  if (typeof value !== 'object' || value === null) return value
+  if (visited.has(value)) return undefined
+  visited.add(value)
+  try {
+    if (Array.isArray(value)) {
+      return value.map((entry: unknown) =>
+        copyInlineQuestDefinitionValue(entry, visited)
+      )
+    }
+    const copied: Record<string, unknown> = {}
+    for (const key of Object.getOwnPropertyNames(value)) {
+      if (isForbiddenKey(key)) continue
+      copied[key] = copyInlineQuestDefinitionValue(
+        (value as Record<string, unknown>)[key],
+        visited
+      )
+    }
+    return copied
+  } finally {
+    visited.delete(value)
+  }
+}
+
+/** Keeps validated ad-hoc definitions; registry definitions never use this path. */
+const sanitizeInlineQuestDefinition = (
+  value: unknown
+): (QuestState & { status: 'active' }) | null => {
+  if (
+    !isLooseRecord(value) ||
+    typeof value.id !== 'string' ||
+    isForbiddenKey(value.id)
+  )
+    return null
+  const sanitized: QuestState & { status: 'active' } = {
+    id: value.id,
+    status: 'active',
+    startedOnDay: 0
+  }
+  for (const key of [
+    'label',
+    'description',
+    'rewardType',
+    'rewardFlag'
+  ] as const) {
+    if (Object.hasOwn(value, key) && typeof value[key] === 'string')
+      sanitized[key] = value[key]
+  }
+  for (const key of [
+    'deadline',
+    'progress',
+    'required',
+    'moneyReward',
+    'cooldownDays',
+    'startedOnDay'
+  ] as const) {
+    if (!Object.hasOwn(value, key)) continue
+    if (key === 'deadline' && value[key] === null) {
+      sanitized.deadline = null
+      continue
+    }
+    const parsed = finiteOptionalNumber(value[key])
+    if (parsed !== undefined) sanitized[key] = parsed
+  }
+  if (Object.hasOwn(value, 'rewardData')) {
+    const rewardData = copySafePrimitiveObject(value.rewardData)
+    if (rewardData !== undefined) sanitized.rewardData = rewardData
+  }
+  if (Object.hasOwn(value, 'failurePenalty')) {
+    const failurePenalty = copySafeJsonValue(value.failurePenalty)
+    if (isLooseRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
+  }
+  if (
+    Object.hasOwn(value, 'progressRules') &&
+    Array.isArray(value.progressRules)
+  ) {
+    sanitized.progressRules = value.progressRules
+      .filter(
+        (rule: unknown) =>
+          !hasForbiddenKeysDeep(rule) && isProgressRuleLike(rule)
+      )
+      .map(
+        (rule: unknown) =>
+          copyInlineQuestDefinitionValue(rule) as QuestProgressRule
+      )
+  }
+  if (
+    Object.hasOwn(value, 'progressRule') &&
+    !hasForbiddenKeysDeep(value.progressRule) &&
+    isProgressRuleLike(value.progressRule)
+  ) {
+    sanitized.progressRule = copyInlineQuestDefinitionValue(
+      value.progressRule
+    ) as QuestProgressRule
+  }
+  if (
+    Object.hasOwn(value, 'progressSource') &&
+    typeof value.progressSource === 'string' &&
+    QUEST_PROGRESS_SOURCES.has(value.progressSource)
+  ) {
+    sanitized.progressSource = value.progressSource as QuestProgressSource
+  }
+  if (Object.hasOwn(value, 'rewards') && Array.isArray(value.rewards)) {
+    sanitized.rewards = value.rewards
+      .filter(
+        (entry: unknown) => !hasForbiddenKeysDeep(entry) && isQuestReward(entry)
+      )
+      .map(
+        (entry: unknown) => copyInlineQuestDefinitionValue(entry) as QuestReward
+      )
+  }
+  if (
+    Object.hasOwn(value, 'failurePenalties') &&
+    Array.isArray(value.failurePenalties)
+  ) {
+    sanitized.failurePenalties = value.failurePenalties
+      .filter(
+        (entry: unknown) =>
+          !hasForbiddenKeysDeep(entry) && isQuestPenalty(entry)
+      )
+      .map(
+        (entry: unknown) =>
+          copyInlineQuestDefinitionValue(entry) as QuestPenalty
+      )
+  }
+  if (
+    Object.hasOwn(value, 'kind') &&
+    typeof value.kind === 'string' &&
+    QUEST_KINDS.has(value.kind as QuestKind)
+  ) {
+    sanitized.kind = value.kind as QuestKind
+  }
+  if (
+    Object.hasOwn(value, 'repeatPolicy') &&
+    typeof value.repeatPolicy === 'string' &&
+    QUEST_REPEAT_POLICIES.has(value.repeatPolicy as QuestRepeatPolicy)
+  ) {
+    sanitized.repeatPolicy = value.repeatPolicy as QuestRepeatPolicy
+  }
+  for (const key of ['scopeKey', 'followupQuestId'] as const) {
+    if (
+      Object.hasOwn(value, key) &&
+      typeof value[key] === 'string' &&
+      !isForbiddenKey(value[key])
+    )
+      sanitized[key] = value[key]
+  }
+  for (const key of [
+    'startFlags',
+    'completionFlags',
+    'failureFlags',
+    'clearFlagsOnComplete',
+    'clearFlagsOnFail'
+  ] as const) {
+    if (Object.hasOwn(value, key) && Array.isArray(value[key]))
+      sanitized[key] = value[key].filter(
+        (flag: unknown): flag is string => typeof flag === 'string'
+      )
+  }
+  if (sanitized.required !== undefined && sanitized.required <= 0) {
+    logger.warn(
+      'GameState',
+      'Skipping loaded inline quest without a positive requirement',
+      sanitized.id
+    )
+    return null
+  }
+  if (
+    sanitized.repeatPolicy === 'cooldown' &&
+    !(isFiniteNumber(sanitized.cooldownDays) && sanitized.cooldownDays > 0)
+  ) {
+    logger.warn(
+      'GameState',
+      'Skipping loaded inline quest without a positive cooldown',
+      sanitized.id
+    )
+    return null
+  }
+  if (
+    (sanitized.repeatPolicy === 'perVenue' ||
+      sanitized.repeatPolicy === 'perRegion') &&
+    !sanitized.scopeKey
+  ) {
+    logger.warn(
+      'GameState',
+      'Skipping loaded inline quest without a scope key',
+      sanitized.id
+    )
+    return null
+  }
+  return sanitized
+}
+
+/** Restores runtime-only registry quests and validated inline definitions. */
 export const sanitizeActiveQuests = (
   value: unknown
 ): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
-  return value.flatMap(quest => {
+  return value.flatMap((quest: unknown): GameState['activeQuests'] => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
     if (isForbiddenKey(quest.id)) return []
     const definition = getQuestDefinition(quest.id)
@@ -2217,44 +2424,11 @@ export const sanitizeActiveQuests = (
       }
       return [sanitized]
     }
-    const sanitized: GameState['activeQuests'][number] = { id: quest.id }
-    for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
-      if (Object.hasOwn(quest, key) && typeof quest[key] === 'string')
-        sanitized[key as 'title' | 'description' | 'state'] = quest[
-          key
-        ] as never
-    }
-    for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
-      if (!Object.hasOwn(quest, key)) continue
-      if (
-        (quest as Record<string, unknown>)[key] === null &&
-        key === 'deadline'
-      ) {
-        sanitized.deadline = null
-        continue
-      }
-      const parsed = finiteOptionalNumber(
-        (quest as Record<string, unknown>)[key]
-      )
-      if (parsed !== undefined) sanitized[key] = parsed
-    }
-    if (Object.hasOwn(quest, 'rewardData')) {
-      const rewardData = copySafePrimitiveObject(
-        (quest as Record<string, unknown>).rewardData
-      )
-      if (rewardData !== undefined) sanitized.rewardData = rewardData
-    }
-    if (Object.hasOwn(quest, 'failurePenalty')) {
-      const failurePenalty = copySafeJsonValue(
-        (quest as Record<string, unknown>).failurePenalty
-      )
-      if (isLooseRecord(failurePenalty))
-        sanitized.failurePenalty = failurePenalty
-    }
+    const sanitized = sanitizeInlineQuestDefinition(quest)
     // Saves written before rewards/failurePenalties became tagged arrays still
     // carry the flat fields copied above. Upgrade them here so nothing
     // downstream has to read two schemas.
-    return [migrateLegacyQuestSchema(sanitized)]
+    return sanitized ? [migrateLegacyQuestSchema(sanitized)] : []
   })
 }
 

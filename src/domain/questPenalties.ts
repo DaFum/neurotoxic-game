@@ -28,7 +28,7 @@ interface QuestPenaltyResult {
   cooldownsToAdd: GameState['questCooldowns']
 }
 
-const isQuestPenalty = (value: unknown): value is QuestPenalty => {
+export const isQuestPenalty = (value: unknown): value is QuestPenalty => {
   if (!isLooseRecord(value) || typeof value.type !== 'string') return false
 
   switch (value.type) {

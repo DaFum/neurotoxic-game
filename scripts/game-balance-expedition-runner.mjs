@@ -11,7 +11,10 @@ import { ActionTypes } from '../src/context/actionTypes.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { getExpeditionNodeBookingLock } from '../src/domain/expedition/fame.ts'
 import { getEffectiveExpeditionRoute } from '../src/domain/expedition/routeOverlay.ts'
-import { resolveExpeditionTravelCost } from '../src/domain/expedition/travel.ts'
+import {
+  resolveExpeditionTravelCost,
+  getExpeditionCheapestOnwardLegFuel
+} from '../src/domain/expedition/travel.ts'
 import {
   EXPEDITION_CONDITION_GROUPS,
   canStartExpeditionPreGig,
@@ -82,7 +85,8 @@ import {
 import {
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
-  createSetActiveEventAction
+  createSetActiveEventAction,
+  createUpdatePlayerAction
 } from '../src/context/actionCreators.ts'
 import { areBetweenTourDecisionsResolved } from '../src/domain/expedition/betweenTour.ts'
 import {
@@ -101,7 +105,9 @@ import {
 } from '../src/utils/gameState/index.ts'
 import {
   calculateTravelExpenses,
-  calculateTravelMinigameResult
+  calculateTravelMinigameResult,
+  calculateRefuelCost,
+  EXPENSE_CONSTANTS
 } from '../src/utils/economy/index.ts'
 import {
   buildProductionSimulationLoadout,
@@ -2380,6 +2386,30 @@ export const runExpeditionSimulation = (
     // wear, stamina regen, then calls `applyExpeditionRouteAdvance` and the
     // `post_travel` defect boundary in the same reducer pass. Duplicating any
     // of that here would let the simulator's numbers drift from the game's.
+    // An affordable pump fill is a legal escape, so production correctly
+    // derives no stranded crisis for an empty tank. Take the same UPDATE_PLAYER
+    // transition as Overworld refueling before trying the onward legs.
+    const cheapestLegFuel = getExpeditionCheapestOnwardLegFuel(state)
+    const currentFuel = finiteNumberOr(state.player.van.fuel, 0)
+    if (cheapestLegFuel !== null && currentFuel < cheapestLegFuel) {
+      const refuelCost = calculateRefuelCost(currentFuel)
+      if (refuelCost > 0 && canSpendExpeditionCash(state, refuelCost)) {
+        const beforeRefuel = state
+        state = gameReducer(
+          state,
+          createUpdatePlayerAction({
+            money: clampPlayerMoney(
+              finiteNumberOr(state.player.money, 0) - refuelCost
+            ),
+            van: {
+              ...state.player.van,
+              fuel: EXPENSE_CONSTANTS.transport.maxFuel
+            }
+          })
+        )
+        verifyProtectedCashNotSpent(beforeRefuel, state, 'refuel')
+      }
+    }
     const preTravelState = state
     // `calculateTravelMinigameResult` halves the reported damage, so the
     // skill-derived condition loss is doubled back into the payload.
@@ -2438,21 +2468,11 @@ export const runExpeditionSimulation = (
         telemetry.terminalSource = 'travel_unaffordable'
         break
       }
-      // Reachable softlock, not a simulator bug.
-      //
-      // `enforceExpeditionCashFloor` reverts any action that lowers Cash past
-      // `protectedCareerCash`, travel included, so a run can reach a node
-      // where every outgoing leg is refused. Production does not call that a
-      // strand: `getExpeditionMobilityFailureSignal` asks `checkSoftlock`,
-      // which prices legs through `checkTravelPrerequisites` and knows nothing
-      // about the Expedition cash floor. No signal means no crisis, and
-      // `accept_failure` - documented as unconditional precisely so no run can
-      // softlock - is never offered. The run cannot move and cannot end.
-      //
-      // Reproduces on the forced-continue branch of the Task 9 probe, which is
-      // what a player who declines every extraction window is doing.
+      // Refused legs can still leave a legal recovery outside the crisis
+      // dialog. Keep the refusal visible instead of inventing a terminal or
+      // blaming one resource gate without evidence.
       throw new Error(
-        `[Softlock] Every leg out of ${state.player.currentNodeId} is refused by the protected Career Cash floor at step ${preTravelState.expedition.routeStep}, and production derives no failure signal: spendable ${getExpeditionSpendableCash(state)}, floor ${state.expedition.protectedCareerCash}. checkSoftlock does not model the Expedition cash floor.`
+        `[Softlock] Every attempted leg out of ${state.player.currentNodeId} is refused at step ${preTravelState.expedition.routeStep}, and production derives no failure signal: spendable ${getExpeditionSpendableCash(state)}, floor ${state.expedition.protectedCareerCash}, fuel ${state.player.van.fuel}, fuel refused ${state.minigame.travelFuelRefused === true}.`
       )
     }
 

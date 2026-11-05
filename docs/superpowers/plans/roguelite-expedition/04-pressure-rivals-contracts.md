@@ -109,7 +109,9 @@ Positive Heat/Exposure gains use `getEffectiveExpeditionRules(state)` multiplier
 
 ## Task 2: Stage Sponsor offers deterministically without accepting them before START
 
-The existing `generateBrandOffers(gameState, rng)` is retained as eligibility/catalog logic, but Tour Prep must pass a deterministic seeded RNG derived from root `state.runSeed`. Never call the default `secureRandom` path for Expedition offers.
+> **User-directed amendment (2026-11-05, [#3542](https://github.com/DaFum/neurotoxic-game/issues/3542), [PR #3546](https://github.com/DaFum/neurotoxic-game/pull/3546)):** The explicit Corporate four-offer requirement supersedes this task's original maximum of three prepared offers. Three remains the standard-route baseline and the post-gig offer limit. Expedition staging may reach four under the route rules below; reverting its ceiling to three would undo the requested fix.
+
+The existing `generateBrandOffers(gameState, rng)` keeps its post-gig three-offer policy and RNG consumption order. Tour Prep uses `generateRankedBrandOffers(gameState, seededRng, { minPoolSize: 4 })`, which shares the eligibility/catalog, scoring, Rival penalty and flavor logic but ranks the full admitted pool. The RNG is deterministically derived from root `state.runSeed`; never call the default `secureRandom` path for Expedition offers.
 
 ```ts
 export interface ExpeditionPreparedSponsorOffer {
@@ -136,12 +138,19 @@ Rules:
 
 ```text
 seed = hash(state.runSeed, 'expedition-sponsor-offers')
-call existing generateBrandOffers(state, seededRng)
-normalize max 3 offers
+rank generateRankedBrandOffers(state, seededRng, { minPoolSize: 4 })
+base count = 2 at Nemesis level >= 3, otherwise 3
+route adjustment = +1 when sponsorContractEventWeightMultiplier >= 1.25
+                   -1 when sponsorContractEventWeightMultiplier <= 0.9
+                    0 otherwise
+staged count = clamp(base count + route adjustment, 1, 4)
+promote genuine matches from the full ranked pool before slicing to staged count
 stable offerId = hash(runSeed, dealId, canonical terms)
 no Money/item/Social/Quest mutation
 same prepared state -> identical offers/order
 ```
+
+`MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS = 4` is the shared producer/load-sanitizer ceiling. Corporate routes stage four distinct offers below Nemesis level 3 and the same first three at level 3; ordinary routes retain their three-to-two reduction, and Underground routes may stage fewer than three. Fame, the premium Sponsor pool, starter perks and the Sponsor preference affect genuine-match promotion with the existing 0–3 bias clamp, not the staged count. START still selects a staged offer by its stable `offerId` and resolves its catalog terms by `dealId`; load still re-derives the ordered snapshot from its stored route/perk provenance.
 
 Action:
 

@@ -757,7 +757,7 @@ export const handleMerchPress = (
   )
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
-  const nextState = buildSocialActionNextState(state, {
+  let nextState = buildSocialActionNextState(state, {
     money: nextMoney,
     fame: nextFame,
     harmony: nextHarmony,
@@ -776,11 +776,18 @@ export const handleMerchPress = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
-  return emitSocialFameGained(
-    breakDealsIfControversyCrossed(nextState, currentControversy),
-    nextFame - currentFame,
-    'merch_press'
-  )
+  // Settle the press's immediate controversy crossing before quest rewards
+  // can lower controversy again (for example, completing Damage Control).
+  nextState = breakDealsIfControversyCrossed(nextState, currentControversy)
+  const amount = nextLoyalty - currentLoyalty
+  if (amount > 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createSocialLoyaltyChangedQuestEvent({ amount, reason: 'merch_press' })
+    )
+  }
+
+  return emitSocialFameGained(nextState, nextFame - currentFame, 'merch_press')
 }
 
 type ZealotryDayField =

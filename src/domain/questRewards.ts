@@ -49,7 +49,7 @@ const FOLLOWER_PLATFORMS = new Set([
   'newsletter'
 ])
 
-const isQuestReward = (value: unknown): value is QuestReward => {
+export const isQuestReward = (value: unknown): value is QuestReward => {
   if (!isLooseRecord(value) || typeof value.type !== 'string') return false
 
   switch (value.type) {

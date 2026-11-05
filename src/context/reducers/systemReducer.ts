@@ -240,6 +240,12 @@ export const handleLoadGame = (
     loadedState.liabilities,
     sanitizedAssets
   )
+  const activeQuests = sanitizeActiveQuests(loadedState.activeQuests)
+  const inlineStartFlags = new Set(
+    activeQuests.flatMap(quest =>
+      getQuestDefinition(quest.id) ? [] : sanitizeStringArray(quest.startFlags)
+    )
+  )
 
   const safeState: GameState = {
     ...state,
@@ -258,10 +264,9 @@ export const handleLoadGame = (
         ? null
         : (normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap),
     setlist: sanitizeSetlist(loadedState.setlist),
-    // Every flag any writer or reader uses is registered (`flagRegistry` test),
-    // so a flag outside the registry is stale save data nothing can read.
+    // Active inline definitions can declare start flags outside the registry.
     activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags).filter(
-      isStoryFlag
+      flag => isStoryFlag(flag) || inlineStartFlags.has(flag)
     ),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
     pendingForeclosureNotices: sanitizeAssetKinds(
@@ -282,7 +287,7 @@ export const handleLoadGame = (
     ),
 
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
-    activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
+    activeQuests,
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
     completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
     completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),

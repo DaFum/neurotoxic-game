@@ -10,13 +10,13 @@ import { isFiniteNumber } from '../utils/finiteNumber'
 import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
 import { QUEST_PROGRESS_SOURCES } from '../data/questProgressSources'
 
-const QUEST_KINDS = new Set<QuestKind>([
+export const QUEST_KINDS = new Set<QuestKind>([
   'story',
   'side',
   'repeatable',
   'tutorial'
 ])
-const QUEST_REPEAT_POLICIES = new Set<QuestRepeatPolicy>([
+export const QUEST_REPEAT_POLICIES = new Set<QuestRepeatPolicy>([
   'never',
   'cooldown',
   'perVenue',
@@ -69,7 +69,7 @@ const PROGRESS_AMOUNT_MODES: ReadonlySet<string> = new Set([
  * Legacy `progressSource` names are accepted because `migrateLegacyQuestSchema`
  * folds them into rules verbatim and the progress engine canonicalizes them.
  */
-const isProgressRuleLike = (value: unknown): boolean => {
+export const isProgressRuleLike = (value: unknown): boolean => {
   if (!isLooseRecord(value)) return false
   if (typeof value.event !== 'string' || !KNOWN_RULE_EVENTS.has(value.event)) {
     return false
@@ -82,6 +82,12 @@ const isProgressRuleLike = (value: unknown): boolean => {
     return false
   }
   if (value.match !== undefined && !isLooseRecord(value.match)) return false
+  if (
+    isLooseRecord(value.match) &&
+    value.match.minScore !== undefined &&
+    !isFiniteNumber(value.match.minScore)
+  )
+    return false
   return true
 }
 

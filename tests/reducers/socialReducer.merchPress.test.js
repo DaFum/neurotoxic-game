@@ -14,8 +14,56 @@ const { handleMerchPress, handleDarkWebLeak } =
 const { handleUpdateSocial } =
   await import('../../src/context/reducers/socialReducer')
 const { formatCurrency } = await import('../../src/utils/numberUtils')
+const { QuestEvents } = await import('../../src/utils/questProgress')
 
 describe('socialReducer.merchPress', () => {
+  for (const [loyalty, gain, expectedAmount] of [
+    [20, 5, 5],
+    [98, 5, 2],
+    [100, 5, 0],
+    [20, 0, 0]
+  ]) {
+    test(`emits the actual positive loyalty delta from ${loyalty} with gain ${gain}`, t => {
+      const emit = t.mock.method(QuestEvents, 'emit')
+      const state = {
+        player: { money: 1000, fame: 0, fameLevel: 0 },
+        band: { harmony: 100, inventory: {} },
+        social: { loyalty, controversyLevel: 60, trend: 'TECH' },
+        activeQuests: [
+          { id: 'quest_damage_control', progress: 0, required: 4 }
+        ],
+        toasts: []
+      }
+      const result = handleMerchPress(state, {
+        cost: 150,
+        loyaltyGain: gain,
+        controversyGain: 0,
+        fameGain: gain > 0 ? 100 : 0,
+        harmonyCost: gain > 0 ? 0 : 15,
+        successToast: { messageKey: 'ui:test', type: 'success' }
+      })
+      const events = emit.mock.calls
+        .map(call => call.arguments[1])
+        .filter(event => event.type === 'social.loyaltyChanged')
+
+      assert.strictEqual(events.length, expectedAmount > 0 ? 1 : 0)
+      if (expectedAmount > 0) {
+        assert.deepStrictEqual(events[0], {
+          type: 'social.loyaltyChanged',
+          amount: expectedAmount,
+          success: true,
+          context: { reason: 'merch_press' },
+          tags: ['merch_press']
+        })
+      }
+      assert.strictEqual(
+        result.activeQuests[0].progress,
+        expectedAmount > 0 ? 1 : 0
+      )
+      assert.strictEqual(result.player.fame, gain > 0 ? 100 : 0)
+    })
+  }
+
   test('drops non-finite social update numbers instead of zeroing them', () => {
     const state = {
       social: { zealotry: 7, loyalty: 11, controversyLevel: 13 },

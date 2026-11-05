@@ -4,6 +4,12 @@ import { TourPrepLoadout } from '../../src/ui/expedition/TourPrepLoadout'
 import { createInitialState } from '../../src/context/initialState'
 import type { GameState } from '../../src/types'
 import { EXPEDITION_SUPPLY_REST_STRESS_BONUS } from '../../src/domain/expedition/crewStress'
+import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'
+import {
+  FREE_EXPEDITION_REGION_ID,
+  BASE_EXPEDITION_TOUR_TYPE_ID
+} from '../../src/domain/expedition/defaults'
+import { BRAND_DEALS_BY_ID } from '../../src/data/brandDeals'
 
 const state: { current: GameState } = vi.hoisted(
   () => ({ current: null }) as never
@@ -204,6 +210,17 @@ describe('TourPrepLoadout', () => {
 
   it('counts the sponsor advance in the cash available after start', () => {
     state.current = createInitialState()
+    state.current.runSeed = 10
+    const offers = buildPreparedExpeditionSponsorOffers(
+      state.current,
+      FREE_EXPEDITION_REGION_ID,
+      BASE_EXPEDITION_TOUR_TYPE_ID
+    )
+    const fundedOffer = offers.find(
+      offer => (BRAND_DEALS_BY_ID.get(offer.dealId)?.offer.upfront ?? 0) > 0
+    )
+    expect(fundedOffer).toBeDefined()
+    const advance = BRAND_DEALS_BY_ID.get(fundedOffer!.dealId)!.offer.upfront
     render(<TourPrepLoadout />)
     const amount = () =>
       Number(
@@ -213,12 +230,17 @@ describe('TourPrepLoadout', () => {
       )
 
     const before = amount()
-    const offer = screen.getAllByTestId(
-      /^expedition-prep-sponsor-(?!none|terms)/
-    )[0]
-    fireEvent.click(offer!)
+    // This seed puts a valid per-gig-only offer first; it has no advance.
+    expect(BRAND_DEALS_BY_ID.get(offers[0]!.dealId)!.offer.upfront).toBe(0)
+    fireEvent.click(
+      screen.getByTestId(`expedition-prep-sponsor-${offers[0]!.offerId}`)
+    )
+    expect(amount()).toBe(before)
+    fireEvent.click(
+      screen.getByTestId(`expedition-prep-sponsor-${fundedOffer!.offerId}`)
+    )
 
-    expect(amount()).toBeGreaterThan(before)
+    expect(amount()).toBe(before + advance)
   })
 
   it('explains a full tank instead of offering a stuck fuel slider', () => {
