@@ -12,7 +12,8 @@ vi.mock('../../src/utils/economy', () => ({
 vi.mock('../../src/utils/leaderboardUtils', () => ({
   submitLeaderboardScores: vi.fn(() => Promise.resolve())
 }))
-vi.mock('../../src/utils/logger', () => ({
+vi.mock('../../src/utils/logger', async importOriginal => ({
+  ...(await importOriginal()),
   logger: {
     error: vi.fn(),
     info: vi.fn(),
@@ -30,12 +31,8 @@ vi.mock('../../src/quests/producers/economyQuestEvents', () => ({
 vi.mock('../../src/utils/mapUtils', () => ({
   getRegionKeyForLocation: vi.fn(() => 'test-region')
 }))
-vi.mock('../../src/context/gameConstants', () => ({
-  GAME_PHASES: {
-    OVERWORLD: 'OVERWORLD',
-    GAMEOVER: 'GAMEOVER',
-    RUN_SUMMARY: 'RUN_SUMMARY'
-  },
+vi.mock('../../src/context/gameConstants', async importOriginal => ({
+  ...(await importOriginal()),
   NEUROTOXIC_PEDAL_HARMONY_PENALTY: 10
 }))
 
