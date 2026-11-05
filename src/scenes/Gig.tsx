@@ -31,6 +31,16 @@ export const Gig = () => {
   // An unlock attempt that returned false or rejected: the retry would fail
   // the same way, so the player needs the way out whatever the audio status.
   const [unlockAttemptFailed, setUnlockAttemptFailed] = useState(false)
+  const unlockAttemptRef = useRef(0)
+  const mountedRef = useRef(false)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      unlockAttemptRef.current += 1
+    }
+  }, [])
 
   const tRef = useRef(t)
   useEffect(() => {
@@ -107,9 +117,15 @@ export const Gig = () => {
     return (
       <AudioLockedOverlay
         onInitializeAudio={() => {
+          const attempt = ++unlockAttemptRef.current
+          const isCurrentAttempt = () =>
+            mountedRef.current &&
+            attempt === unlockAttemptRef.current &&
+            !gameStateRef?.current?.hasSubmittedResults
           void audioService
             .ensureAudioContext()
             .then(isUnlocked => {
+              if (!isCurrentAttempt()) return
               if (isUnlocked !== false) {
                 actions.retryAudioInitialization()
               } else {
@@ -124,6 +140,7 @@ export const Gig = () => {
               }
             })
             .catch(err => {
+              if (!isCurrentAttempt()) return
               logger.error('Gig', 'Audio context unlock rejected', err)
               setUnlockAttemptFailed(true)
               addToast(
@@ -136,7 +153,10 @@ export const Gig = () => {
         }}
         onQuit={
           stats.audioStatus === 'failed' || unlockAttemptFailed
-            ? () => void handleQuitGig()
+            ? () => {
+                unlockAttemptRef.current += 1
+                void handleQuitGig()
+              }
             : undefined
         }
         failureKind={

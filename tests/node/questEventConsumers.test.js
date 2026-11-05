@@ -20,6 +20,7 @@ import {
   createCompleteRoadieMinigameAction,
   createCompleteTravelMinigameAction,
   createConsumeItemAction,
+  createMerchPressAction,
   createSetLastGigStatsAction,
   createUpdateSocialAction
 } from '../../src/context/actionCreators.ts'
@@ -162,6 +163,122 @@ describe('quests consuming the social, brand, item and extraction events', () =>
     )
     assert.equal(activeQuest(state, QUEST_DAMAGE_CONTROL).progress, 3)
   })
+
+  for (const [loyalty, expectedLoyalty, expectedProgress] of [
+    [20, 25, 1],
+    [98, 100, 1],
+    [100, 100, 0]
+  ]) {
+    it(`counts only actual Merch Press loyalty gains from ${loyalty}`, () => {
+      const base = createInitialState()
+      const state = withQuest(
+        withSocial(
+          {
+            ...base,
+            player: { ...base.player, money: 1000 },
+            band: { ...base.band, harmony: 100 }
+          },
+          { controversyLevel: 60, loyalty, trend: 'TECH' }
+        ),
+        QUEST_DAMAGE_CONTROL
+      )
+      const cost = 150
+      const next = gameReducer(
+        state,
+        createMerchPressAction({
+          cost,
+          loyaltyGain: 5,
+          controversyGain: 10,
+          fameGain: 100,
+          harmonyCost: 0,
+          successToast: {
+            messageKey: 'ui:merch_press.success_toast',
+            type: 'success'
+          }
+        })
+      )
+
+      assert.equal(
+        activeQuest(next, QUEST_DAMAGE_CONTROL).progress,
+        expectedProgress
+      )
+      assert.equal(next.social.loyalty, expectedLoyalty)
+      assert.equal(next.player.money, state.player.money - cost)
+      assert.equal(next.player.fame, state.player.fame + 100)
+    })
+  }
+
+  it('charges a ruined Merch Press without advancing damage control', () => {
+    const base = createInitialState()
+    const state = withQuest(
+      withSocial(
+        {
+          ...base,
+          player: { ...base.player, money: 1000 },
+          band: { ...base.band, harmony: 100 }
+        },
+        { controversyLevel: 60, loyalty: 20, trend: 'TECH' }
+      ),
+      QUEST_DAMAGE_CONTROL
+    )
+    const next = gameReducer(
+      state,
+      createMerchPressAction({
+        cost: 150,
+        loyaltyGain: 0,
+        controversyGain: 0,
+        fameGain: 0,
+        harmonyCost: 15,
+        successToast: {
+          messageKey: 'ui:merch_press.failure_toast',
+          type: 'warning'
+        }
+      })
+    )
+
+    assert.equal(activeQuest(next, QUEST_DAMAGE_CONTROL).progress, 0)
+    assert.equal(next.player.money, 850)
+    assert.equal(next.band.harmony, 85)
+    assert.equal(next.social.loyalty, 20)
+    assert.equal(next.player.fame, state.player.fame)
+  })
+
+  for (const [money, harmony] of [
+    [149, 100],
+    [1000, 14]
+  ]) {
+    it(`rejects a Merch Press before quest progress with cash ${money} and harmony ${harmony}`, () => {
+      const base = createInitialState()
+      const state = withQuest(
+        withSocial(
+          {
+            ...base,
+            player: { ...base.player, money },
+            band: { ...base.band, harmony }
+          },
+          { controversyLevel: 60, loyalty: 20, trend: 'TECH' }
+        ),
+        QUEST_DAMAGE_CONTROL
+      )
+      const next = gameReducer(
+        state,
+        createMerchPressAction({
+          cost: 150,
+          loyaltyGain: 5,
+          controversyGain: 10,
+          fameGain: 100,
+          harmonyCost: 15,
+          successToast: {
+            messageKey: 'ui:merch_press.success_toast',
+            type: 'success'
+          }
+        })
+      )
+
+      assert.strictEqual(next, state)
+      assert.equal(activeQuest(next, QUEST_DAMAGE_CONTROL).progress, 0)
+    })
+  }
 
   it('does not count a trend rotation from UPDATE_SOCIAL as a trend match', () => {
     const state = gameReducer(

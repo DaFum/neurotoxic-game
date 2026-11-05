@@ -1,6 +1,7 @@
 import type { ActiveQuestState, GameState, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
-import { clamp0to100, finiteNumberOr } from '../utils/gameState'
+import { finiteNumberOr } from '../utils/gameState'
+import { clampPercent } from '../utils/gameState/clamps'
 import { resolveQuestLabelKey } from '../utils/questLabel'
 
 /** Checks an optional string field without coercing supplied values. */
@@ -92,7 +93,7 @@ export const addStoryFlags = (
  *
  * @param state - Current game state.
  * @param match - Asset id (preferred) or asset kind to target.
- * @param delta - Signed condition change; the result is clamped to 0–100.
+ * @param delta - Signed condition change; preserves continuous condition within 0–100.
  * @returns A new state with the matched asset updated, or `state` when nothing matched.
  */
 export const updateFirstMatchingAssetCondition = (
@@ -120,7 +121,7 @@ export const updateFirstMatchingAssetCondition = (
   const nextAssets = [...assets]
   nextAssets[index] = {
     ...asset,
-    condition: clamp0to100(finiteNumberOr(asset.condition, 0) + delta)
+    condition: clampPercent(finiteNumberOr(asset.condition, 0) + delta, 0)
   }
   return { ...state, assets: nextAssets }
 }

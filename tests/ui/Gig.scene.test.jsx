@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { StrictMode } from 'react'
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
@@ -11,6 +12,8 @@ import {
   stopAudio
 } from '../../src/utils/audio/audioEngine'
 import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
+
+const sharedGameStateRef = vi.hoisted(() => ({ current: {} }))
 
 // Mock dependencies
 vi.mock('../../src/context/GameState', () => {
@@ -71,15 +74,7 @@ vi.mock('../../src/hooks/useRhythmGameLogic', () => ({
       handleLaneHit: vi.fn(),
       retryAudioInitialization: vi.fn()
     },
-    gameStateRef: {
-      current: {
-        score: 0,
-        stats: {},
-        hasSubmittedResults: false,
-        toxicTimeTotal: 0,
-        songStats: []
-      }
-    },
+    gameStateRef: sharedGameStateRef,
     update: vi.fn()
   }))
 }))
@@ -127,6 +122,14 @@ describe('Gig Scene Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    sharedGameStateRef.current = {
+      score: 0,
+      stats: {},
+      hasSubmittedResults: false,
+      isGameOver: false,
+      toxicTimeTotal: 0,
+      songStats: []
+    }
 
     useGameActions.mockReturnValue({
       currentGig: { id: 'test-gig', name: 'Test Venue', diff: 3 },
@@ -669,6 +672,130 @@ describe('Gig Scene Component', () => {
       expect(screen.queryByTestId('gig-hud')).toBeNull()
       expect(screen.queryByTestId('pixi-stage')).toBeNull()
     })
+  })
+
+  describe('audio unlock attempt lifetime', () => {
+    let unlock
+    let retry
+
+    beforeEach(() => {
+      unlock = Promise.withResolvers()
+      retry = vi.fn()
+      audioService.ensureAudioContext.mockReturnValue(unlock.promise)
+      useRhythmGameLogic.mockReturnValue({
+        stats: { audioStatus: 'failed', failureKind: 'stage' },
+        actions: { retryAudioInitialization: retry },
+        gameStateRef: sharedGameStateRef,
+        update: vi.fn()
+      })
+    })
+
+    const settle = async (deferred, outcome) => {
+      await act(async () => {
+        if (outcome === 'reject') deferred.reject(new Error('denied'))
+        else deferred.resolve(outcome)
+        await flushPromises()
+      })
+    }
+
+    test('ignores a successful unlock after Quit without clearing submission', async () => {
+      render(<Gig />)
+      fireEvent.click(screen.getByText('RETRY'))
+      await act(async () => {
+        fireEvent.click(screen.getByText(/QUIT GIG/i))
+      })
+      expect(mockSetLastGigStats).toHaveBeenCalledTimes(1)
+      expect(mockEndGig).toHaveBeenCalledTimes(1)
+      expect(sharedGameStateRef.current.hasSubmittedResults).toBe(true)
+      const toastCount = mockAddToast.mock.calls.length
+
+      await settle(unlock, true)
+
+      expect(retry).not.toHaveBeenCalled()
+      expect(mockSetLastGigStats).toHaveBeenCalledTimes(1)
+      expect(mockEndGig).toHaveBeenCalledTimes(1)
+      expect(sharedGameStateRef.current.hasSubmittedResults).toBe(true)
+      expect(mockAddToast).toHaveBeenCalledTimes(toastCount)
+    })
+
+    test.each([true, false, 'reject'])(
+      'ignores %s after unmount',
+      async outcome => {
+        const { unmount } = render(<Gig />)
+        fireEvent.click(screen.getByText('RETRY'))
+        unmount()
+        const toastCount = mockAddToast.mock.calls.length
+
+        await settle(unlock, outcome)
+
+        expect(retry).not.toHaveBeenCalled()
+        expect(mockAddToast).toHaveBeenCalledTimes(toastCount)
+      }
+    )
+
+    test.each([true, false])(
+      'ignores an older overlapping attempt that resolves %s',
+      async firstOutcome => {
+        const latest = Promise.withResolvers()
+        audioService.ensureAudioContext
+          .mockReturnValueOnce(unlock.promise)
+          .mockReturnValueOnce(latest.promise)
+        render(<Gig />)
+        fireEvent.click(screen.getByText('RETRY'))
+        fireEvent.click(screen.getByText('RETRY'))
+
+        await settle(unlock, firstOutcome)
+        expect(retry).not.toHaveBeenCalled()
+        expect(mockAddToast).not.toHaveBeenCalled()
+
+        await settle(latest, true)
+        expect(retry).toHaveBeenCalledTimes(1)
+        expect(mockAddToast).not.toHaveBeenCalled()
+      }
+    )
+
+    test('retries exactly once when the mounted current attempt unlocks', async () => {
+      render(
+        <StrictMode>
+          <Gig />
+        </StrictMode>
+      )
+      fireEvent.click(screen.getByText('RETRY'))
+      await settle(unlock, true)
+      expect(retry).toHaveBeenCalledTimes(1)
+      expect(mockAddToast).not.toHaveBeenCalled()
+    })
+
+    test('ignores unlock after shared results are submitted without Quit', async () => {
+      render(<Gig />)
+      fireEvent.click(screen.getByText('RETRY'))
+      sharedGameStateRef.current.hasSubmittedResults = true
+      await settle(unlock, true)
+      expect(retry).not.toHaveBeenCalled()
+      expect(mockAddToast).not.toHaveBeenCalled()
+      expect(sharedGameStateRef.current.hasSubmittedResults).toBe(true)
+    })
+
+    test.each([false, 'reject'])(
+      'retains failure feedback for a mounted %s result',
+      async outcome => {
+        useRhythmGameLogic.mockReturnValue({
+          stats: { audioStatus: 'blocked' },
+          actions: { retryAudioInitialization: retry },
+          gameStateRef: sharedGameStateRef,
+          update: vi.fn()
+        })
+        render(<Gig />)
+        expect(screen.queryByText(/QUIT GIG/i)).toBeNull()
+        fireEvent.click(screen.getByText(/INITIALIZE AUDIO/i))
+        await settle(unlock, outcome)
+
+        expect(retry).not.toHaveBeenCalled()
+        expect(mockAddToast).toHaveBeenCalledTimes(1)
+        expect(mockAddToast).toHaveBeenCalledWith(expect.any(String), 'error')
+        expect(screen.getByText(/QUIT GIG/i)).toBeInTheDocument()
+      }
+    )
   })
 
   describe('Toxic Mode Visual Effects', () => {

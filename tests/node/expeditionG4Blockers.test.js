@@ -457,36 +457,46 @@ test('persisted sponsor offers must equal the deterministic canonical offer set'
 })
 
 test('sponsor staging follows the selected Region and Tour', () => {
-  const initial = createInitialState()
-  const prepared = gameReducer(initial, {
-    type: ActionTypes.PREPARE_EXPEDITION_RUN,
-    payload: { prepId: 'prep', runSeed: 123 }
-  })
-  // What the plan requires is that `sponsorContractEventWeightMultiplier` has a
-  // real consumer in the staging path, and that is what this pins: staging
-  // reads the *selected* Region and Tour rather than the loadout, which is
-  // what made it resolve the baseline count in production.
-  //
-  // The exact +1/-1 count mapping below is coverage of the current
-  // implementation, not a G5 design invariant. If the offer algorithm changes
-  // while keeping the multiplier's consumer, these counts are free to change.
+  const started = startedState()
   const offersFor = (regionId, tourTypeId) =>
-    buildPreparedExpeditionSponsorOffers(prepared, regionId, tourTypeId).length
+    buildPreparedExpeditionSponsorOffers(started, regionId, tourTypeId)
   const baseline = offersFor(
     BASE_EXPEDITION_REGION_ID,
     BASE_EXPEDITION_TOUR_TYPE_ID
   )
-  // The upward half of that mapping is currently inert: `generateBrandOffers`
-  // yields at most three offers, so a Region/Tour asking for four still stages
-  // three. Assert what actually holds - Corporate never stages *fewer* than
-  // baseline - rather than a claim the pool cannot satisfy.
+  assert.equal(baseline.length, 3)
+  const corporate = offersFor('corporate_circuit', 'corporate_tour')
+  assert.equal(corporate.length, 4)
+  assert.equal(new Set(corporate.map(offer => offer.dealId)).size, 4)
   assert.ok(
-    offersFor('corporate_circuit', 'corporate_tour') >= baseline,
-    'a Region and Tour that lean on Contracts must not stage fewer offers'
-  )
-  assert.ok(
-    offersFor('underground_scene', 'underground_tour') < baseline,
+    offersFor('underground_scene', 'underground_tour').length < baseline.length,
     'a Region and Tour that avoid brands must stage fewer offers'
+  )
+  assert.ok(started.rivalBand)
+  const rivalId = started.rivalBand.id
+  const interfered = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...started.career.rivalsById[rivalId],
+          history: {
+            ...started.career.rivalsById[rivalId]?.history,
+            nemesisLevel: 3
+          }
+        }
+      }
+    }
+  }
+  assert.deepEqual(
+    buildPreparedExpeditionSponsorOffers(
+      interfered,
+      'corporate_circuit',
+      'corporate_tour'
+    ),
+    corporate.slice(0, 3)
   )
 })
 

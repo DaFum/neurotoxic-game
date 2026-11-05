@@ -757,7 +757,7 @@ export const handleMerchPress = (
   )
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
-  const nextState = buildSocialActionNextState(state, {
+  let nextState = buildSocialActionNextState(state, {
     money: nextMoney,
     fame: nextFame,
     harmony: nextHarmony,
@@ -775,6 +775,14 @@ export const handleMerchPress = (
     deltaFame: nextFame - currentFame,
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
+
+  const amount = nextLoyalty - currentLoyalty
+  if (amount > 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createSocialLoyaltyChangedQuestEvent({ amount, reason: 'merch_press' })
+    )
+  }
 
   return emitSocialFameGained(
     breakDealsIfControversyCrossed(nextState, currentControversy),

@@ -23,7 +23,14 @@ import { SONGS_DB } from '../../src/data/songs'
 import { FLAGS } from '../../src/data/flags.registry'
 import { logger } from '../../src/utils/logger'
 import { CURRENT_SAVE_VERSION } from '../../src/context/reducers/migrations'
-import { createPersistedState } from '../../src/context/usePersistence'
+import {
+  createPersistedState,
+  createRawLoadPayload
+} from '../../src/context/usePersistence'
+import { addQuest } from '../../src/domain/questAdd'
+import { checkDeadlines } from '../../src/domain/questDeadlines'
+import { QuestProgress } from '../../src/utils/questProgress'
+import { createFixedClock } from '../../src/utils/clock'
 import {
   FIXTURE_RUN_SEED,
   startedState
@@ -355,7 +362,9 @@ test('systemReducer - LOAD_GAME', async t => {
         { id: '1', message: 'Hello', type: 'info' }
       ])
       assert.deepEqual(nextState.venueBlacklist, [])
-      assert.deepEqual(nextState.activeQuests, [{ id: 'quest1' }])
+      assert.deepEqual(nextState.activeQuests, [
+        { id: 'quest1', status: 'active', startedOnDay: 0 }
+      ])
       assert.equal(nextState.gigModifiers.catering, true)
       assert.equal(nextState.minigame.score, 100)
       assert.deepEqual(nextState.unlocks, ['unlock1'])
@@ -1135,7 +1144,9 @@ test('systemReducer - LOAD_GAME', async t => {
       failed: true
     })
     assert.deepEqual(nextState.venueBlacklist, ['venue-1'])
-    assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
+    assert.deepEqual(nextState.activeQuests, [
+      { id: 'q1', progress: 2, status: 'active', startedOnDay: 0 }
+    ])
     assert.deepEqual(nextState.unlocks, ['u1'])
   })
 
@@ -1223,6 +1234,8 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.deepEqual(nextState.activeQuests, [
         {
           id: 'QUEST_APOLOGY_TOUR',
+          status: 'active',
+          startedOnDay: 0,
           label: 'Apology Tour',
           deadline: 7,
           failurePenalties: [
@@ -1256,6 +1269,7 @@ test('systemReducer - LOAD_GAME', async t => {
             required: 500,
             rewardType: 'fame',
             rewardData: { fame: 500 },
+            rewards: [{ type: 'money', amount: 999999 }],
             failurePenalty: { social: { controversyLevel: 5 } },
             scopeKey: 'berlin',
             startedOnDay: 4,
@@ -1277,6 +1291,337 @@ test('systemReducer - LOAD_GAME', async t => {
           startedOnDay: 4
         }
       ])
+      assert.equal(Object.hasOwn(nextState.activeQuests[0], 'rewards'), false)
+    }
+  )
+
+  const inlineDelivery = {
+    id: 'inline_delivery',
+    label: 'Inline delivery',
+    description: 'Travel twice',
+    kind: 'repeatable',
+    repeatPolicy: 'cooldown',
+    cooldownDays: 4,
+    progress: 0,
+    required: 2,
+    deadline: 10,
+    status: 'active',
+    startedOnDay: 0,
+    progressRules: [
+      {
+        event: 'travel.completed',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { scope: 'none', tags: ['delivery'] }
+      }
+    ],
+    rewards: [{ type: 'money', amount: 100 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -7 }],
+    startFlags: ['inline_delivery_active'],
+    completionFlags: ['inline_delivery_done'],
+    failureFlags: ['inline_delivery_failed'],
+    clearFlagsOnComplete: ['inline_temporary'],
+    clearFlagsOnFail: ['inline_temporary'],
+    scopeKey: 'delivery_scope',
+    followupQuestId: ''
+  }
+  const reloadInline = quest => {
+    const initial = createInitialState()
+    initial.social.loyalty = 50
+    const admitted = addQuest(initial, quest)
+    assert.equal(
+      admitted.activeQuests.length,
+      1,
+      'inline quest must be admitted'
+    )
+    const persisted = createPersistedState(admitted, createFixedClock(1000))
+    const parsed = JSON.parse(JSON.stringify(persisted))
+    return handleLoadGame(
+      createInitialState(),
+      createRawLoadPayload(parsed, parsed.unlocks ?? [])
+    )
+  }
+  const travel = state =>
+    QuestProgress.applyEvent(state, {
+      type: 'travel.completed',
+      amount: 1,
+      tags: ['delivery']
+    })
+
+  await t.test(
+    'preserves an admitted canonical inline definition and its completion cooldown',
+    () => {
+      const loaded = reloadInline(inlineDelivery)
+      assert.deepEqual(loaded.activeQuests, [inlineDelivery])
+      const once = travel(loaded)
+      assert.equal(once.activeQuests[0].progress, 1)
+      const completed = travel(once)
+      assert.deepEqual(completed.activeQuests, [])
+      assert.equal(completed.player.money, loaded.player.money + 100)
+      assert.ok(completed.completedQuestIds.includes(inlineDelivery.id))
+      assert.ok(completed.activeStoryFlags.includes('inline_delivery_done'))
+      assert.ok(!completed.activeStoryFlags.includes('inline_delivery_active'))
+      assert.ok(
+        completed.questCooldowns.some(
+          c =>
+            c.questId === inlineDelivery.id &&
+            c.expiresOnDay === completed.player.day + 4
+        )
+      )
+      assert.strictEqual(addQuest(completed, inlineDelivery), completed)
+    }
+  )
+
+  await t.test(
+    'applies inline failure penalties and flags after reload',
+    () => {
+      const loaded = reloadInline(inlineDelivery)
+      const failed = checkDeadlines({
+        ...loaded,
+        player: { ...loaded.player, day: 11 }
+      })
+      assert.deepEqual(failed.activeQuests, [])
+      assert.equal(failed.social.loyalty, loaded.social.loyalty - 7)
+      assert.ok(failed.activeStoryFlags.includes('inline_delivery_failed'))
+      assert.ok(!failed.activeStoryFlags.includes('inline_delivery_active'))
+    }
+  )
+
+  await t.test(
+    'preserves migrated inline rules, rewards and penalties through reload',
+    () => {
+      const legacy = {
+        id: 'inline_legacy',
+        progress: 0,
+        required: 2,
+        deadline: 10,
+        progressSource: 'travel_completed',
+        moneyReward: 100,
+        rewardType: 'loyalty',
+        rewardData: { loyalty: 5 },
+        failurePenalty: {
+          social: { controversyLevel: 9 },
+          flags: ['legacy_failed']
+        }
+      }
+      const admitted = addQuest(createInitialState(), legacy)
+      const loaded = reloadInline(legacy)
+      for (const key of [
+        'progressRules',
+        'rewards',
+        'failurePenalties',
+        'progressSource'
+      ]) {
+        assert.deepEqual(
+          loaded.activeQuests[0][key],
+          JSON.parse(JSON.stringify(admitted.activeQuests[0][key])),
+          key
+        )
+      }
+      const completed = travel(travel(loaded))
+      assert.deepEqual(completed.activeQuests, [])
+      assert.equal(completed.player.money, loaded.player.money + 100)
+      assert.equal(completed.social.loyalty, loaded.social.loyalty + 5)
+      const failed = checkDeadlines({
+        ...loaded,
+        player: { ...loaded.player, day: 11 }
+      })
+      assert.equal(
+        failed.social.controversyLevel,
+        loaded.social.controversyLevel + 9
+      )
+      assert.ok(failed.activeStoryFlags.includes('legacy_failed'))
+    }
+  )
+
+  await t.test(
+    'keeps populated canonical arrays ahead of legacy fields and falls back from empty arrays',
+    () => {
+      for (const populated of [true, false]) {
+        const loaded = handleLoadGame(createInitialState(), {
+          social: { loyalty: 50 },
+          activeQuests: [
+            {
+              id: 'inline_precedence',
+              progress: 0,
+              required: 1,
+              deadline: 10,
+              progressRules: populated
+                ? [
+                    {
+                      event: 'travel.completed',
+                      amount: 'fixed',
+                      fixedAmount: 1
+                    }
+                  ]
+                : [],
+              progressSource: 'travel_completed',
+              rewards: populated ? [{ type: 'money', amount: 100 }] : [],
+              moneyReward: 999,
+              failurePenalties: populated
+                ? [{ type: 'social.loyalty', amount: -3 }]
+                : [],
+              failurePenalty: { social: { loyalty: -8 } }
+            }
+          ]
+        })
+        assert.equal(loaded.activeQuests[0].progressRules.length, 1)
+        assert.equal(
+          travel(loaded).player.money,
+          loaded.player.money + (populated ? 100 : 999)
+        )
+        const failed = checkDeadlines({
+          ...loaded,
+          player: { ...loaded.player, day: 11 }
+        })
+        assert.equal(
+          failed.social.loyalty,
+          loaded.social.loyalty - (populated ? 3 : 8)
+        )
+      }
+      const canonical = reloadInline({ ...inlineDelivery, moneyReward: 999 })
+      assert.deepEqual(canonical.activeQuests[0].rewards, [
+        { type: 'money', amount: 100 }
+      ])
+      assert.equal(
+        travel(travel(canonical)).player.money,
+        canonical.player.money + 100
+      )
+    }
+  )
+
+  await t.test(
+    'filters hostile and invalid inline definitions on direct LOAD_GAME',
+    () => {
+      const badReward = JSON.parse(
+        '{"type":"money","amount":500,"__proto__":{"polluted":true}}'
+      )
+      const badMatch = JSON.parse(
+        '{"tags":["delivery"],"constructor":{"prototype":{"polluted":true}}}'
+      )
+      const validRule = {
+        event: 'travel.completed',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { tags: ['delivery'], minScore: 'legacy-compatible' }
+      }
+      const raw = {
+        ...inlineDelivery,
+        kind: 'invalid',
+        repeatPolicy: 'invalid',
+        status: 'failed',
+        deadlineOffset: 8,
+        offer: { trigger: 'random' },
+        unlisted: true,
+        rewards: [
+          badReward,
+          null,
+          { type: 'money', amount: '100' },
+          { type: 'unknown' },
+          { type: 'money', amount: 100 }
+        ],
+        failurePenalties: [
+          null,
+          { type: 'money', amount: -9 },
+          { type: 'quest.cooldown', days: 0 },
+          { type: 'social.loyalty', amount: -7 }
+        ],
+        progressRules: [
+          null,
+          { event: 'travel.typo' },
+          { event: 'travel.completed', match: badMatch },
+          validRule
+        ],
+        startFlags: ['active', 1, null],
+        completionFlags: [false, 'done'],
+        failureFlags: ['failed', {}],
+        clearFlagsOnComplete: [2, 'clear_done'],
+        clearFlagsOnFail: ['clear_fail', []]
+      }
+      const loaded = handleLoadGame(createInitialState(), {
+        activeQuests: [raw]
+      })
+      const quest = loaded.activeQuests[0]
+      assert.deepEqual(quest.rewards, [{ type: 'money', amount: 100 }])
+      assert.deepEqual(quest.failurePenalties, [
+        { type: 'social.loyalty', amount: -7 }
+      ])
+      assert.deepEqual(quest.progressRules, [validRule])
+      assert.notStrictEqual(quest.progressRules[0], validRule)
+      assert.notStrictEqual(quest.progressRules[0].match, validRule.match)
+      assert.notStrictEqual(
+        quest.progressRules[0].match.tags,
+        validRule.match.tags
+      )
+      assert.notStrictEqual(quest.rewards[0], raw.rewards.at(-1))
+      assert.notStrictEqual(
+        quest.failurePenalties[0],
+        raw.failurePenalties.at(-1)
+      )
+      for (const key of [
+        'kind',
+        'repeatPolicy',
+        'deadlineOffset',
+        'offer',
+        'unlisted'
+      ])
+        assert.equal(Object.hasOwn(quest, key), false, key)
+      for (const [key, value] of Object.entries({
+        startFlags: ['active'],
+        completionFlags: ['done'],
+        failureFlags: ['failed'],
+        clearFlagsOnComplete: ['clear_done'],
+        clearFlagsOnFail: ['clear_fail']
+      }))
+        assert.deepEqual(quest[key], value)
+      assert.equal(quest.status, 'active')
+      assert.equal({}.polluted, undefined)
+      assert.equal(Object.hasOwn(quest.rewards[0], '__proto__'), false)
+      assert.equal(
+        Object.hasOwn(quest.progressRules[0].match, 'constructor'),
+        false
+      )
+    }
+  )
+
+  await t.test(
+    'drops inline policies that cannot enforce their cooldown or scope',
+    () => {
+      const policies = [
+        { repeatPolicy: 'cooldown' },
+        ...[0, -1, NaN, Infinity, '4'].map(cooldownDays => ({
+          repeatPolicy: 'cooldown',
+          cooldownDays
+        })),
+        { repeatPolicy: 'perVenue' },
+        { repeatPolicy: 'perRegion', scopeKey: '' },
+        { repeatPolicy: 'perVenue', scopeKey: '__proto__' }
+      ]
+      for (const policy of policies) {
+        const loaded = handleLoadGame(createInitialState(), {
+          activeQuests: [{ id: 'inline_bad_policy', ...policy }]
+        })
+        assert.deepEqual(loaded.activeQuests, [], JSON.stringify(policy))
+      }
+      const loaded = handleLoadGame(createInitialState(), {
+        activeQuests: [
+          {
+            id: 'inline_singular',
+            repeatPolicy: 'perVenue',
+            scopeKey: 'berlin_so36',
+            progressRule: {
+              event: 'travel.completed',
+              match: { tags: ['delivery'] }
+            }
+          }
+        ]
+      })
+      assert.equal(loaded.activeQuests[0].startedOnDay, 0)
+      assert.equal(loaded.activeQuests[0].scopeKey, 'berlin_so36')
+      assert.deepEqual(loaded.activeQuests[0].progressRules, [
+        { event: 'travel.completed', match: { tags: ['delivery'] } }
+      ])
+      assert.equal(Object.hasOwn(loaded.activeQuests[0], 'progressRule'), false)
     }
   )
 
@@ -1337,6 +1682,8 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.activeQuests, [
       {
         id: 'legacy_custom_quest',
+        status: 'active',
+        startedOnDay: 0,
         label: 'Legacy custom quest',
         progress: 2,
         required: 7,

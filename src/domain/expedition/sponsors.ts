@@ -1,7 +1,7 @@
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getExpeditionStaticRoutePressureProfile } from './routeProfile'
 import { getExpeditionFameProfile } from './fame'
-import { generateBrandOffers } from '../../utils/brandDealLogic'
+import { generateRankedBrandOffers } from '../../utils/brandDealLogic'
 import {
   getAcceptDealBandUpdateFactory,
   getAcceptDealMoneyUpdate,
@@ -40,10 +40,10 @@ const MAX_EXPEDITION_SPONSOR_QUALITY_BIAS = 3
  * The most offers {@link buildPreparedExpeditionSponsorOffers} can ever stage.
  *
  * @remarks
- * Three by default, plus one on a Region or Tour that runs on Contracts. The
- * load sanitizer bounds the persisted snapshot by this rather than by its own
- * literal: truncating below the producer's ceiling made the reloaded snapshot
- * fail its own reproduction check, which cleared the staging outright.
+ * Three by default, with four achievable on a Region or Tour that runs on
+ * Contracts. The load sanitizer bounds the persisted snapshot by this rather
+ * than by its own literal: truncating below the producer's ceiling made the
+ * reloaded snapshot fail its own reproduction check, clearing the staging.
  */
 export const MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS = 4
 
@@ -124,9 +124,10 @@ export const buildPreparedExpeditionSponsorOffers = (
   // matches rather than stretched ones. The bias value is the guarantee - a
   // `touring` band is owed two real matches if the pool has them - so nothing
   // here invents a threshold the Fame table does not already state.
-  const generated = generateBrandOffers(
+  const generated = generateRankedBrandOffers(
     state,
-    mulberry32(sponsorSeed(state.runSeed))
+    mulberry32(sponsorSeed(state.runSeed)),
+    { minPoolSize: MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS }
   )
   const genuine = generated.filter(offer => !offer.flavor.isStretched)
   // Quality, never count. The Fame band sets the baseline guarantee, and both
@@ -167,7 +168,10 @@ export const buildPreparedExpeditionSponsorOffers = (
   )
   const promotedIds = new Set(promoted.map(offer => offer.id))
   return [...promoted, ...generated.filter(offer => !promotedIds.has(offer.id))]
-    .slice(0, stagedOfferCount)
+    .slice(
+      0,
+      Math.min(stagedOfferCount, MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS)
+    )
     .map(deal => ({
       offerId: hashExpeditionRoute(
         `${state.runSeed}:${deal.id}:${getCanonicalBrandDealTermsHash(deal.id)}`

@@ -429,63 +429,75 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.social.instagram, Number.MAX_VALUE)
     })
 
-    await t.test('applies backbone reward types through appliers', () => {
-      const state = {
-        activeQuests: legacyQuests([
-          {
-            id: 'q_backbone_rewards',
-            label: 'Backbone Rewards',
-            rewards: [
-              { type: 'asset.repair', assetId: 'asset_1', amount: 15 },
-              { type: 'region.reputation', scope: 'berlin', amount: 7 },
-              { type: 'brand.trust', brandId: 'ampcorp', amount: 10 },
+    for (const repairAmount of [15, 12.5]) {
+      await t.test(
+        `applies backbone reward types with repair ${repairAmount}`,
+        () => {
+          const state = {
+            activeQuests: legacyQuests([
               {
-                type: 'trait.unlock',
-                memberId: 'Matze',
-                traitId: 'gear_nerd'
-              },
-              { type: 'event.queue', eventId: 'quest_reward_followup' }
-            ]
+                id: 'q_backbone_rewards',
+                label: 'Backbone Rewards',
+                rewards: [
+                  {
+                    type: 'asset.repair',
+                    assetId: 'asset_1',
+                    amount: repairAmount
+                  },
+                  { type: 'region.reputation', scope: 'berlin', amount: 7 },
+                  { type: 'brand.trust', brandId: 'ampcorp', amount: 10 },
+                  {
+                    type: 'trait.unlock',
+                    memberId: 'Matze',
+                    traitId: 'gear_nerd'
+                  },
+                  { type: 'event.queue', eventId: 'quest_reward_followup' }
+                ]
+              }
+            ]),
+            player: { money: 0, fame: 0, fameLevel: 0 },
+            social: { brandReputation: { ampcorp: 2 } },
+            reputationByRegion: { berlin: 3 },
+            pendingEvents: [],
+            assets: [
+              {
+                id: 'asset_1',
+                kind: 'tourbus_chassis',
+                condition: 80.7,
+                slots: []
+              }
+            ],
+            band: {
+              members: [
+                {
+                  id: 'matze',
+                  name: 'Matze',
+                  mood: 80,
+                  stamina: 100,
+                  traits: {},
+                  relationships: {}
+                }
+              ],
+              inventory: {}
+            },
+            toasts: []
           }
-        ]),
-        player: { money: 0, fame: 0, fameLevel: 0 },
-        social: { brandReputation: { ampcorp: 2 } },
-        reputationByRegion: { berlin: 3 },
-        pendingEvents: [],
-        assets: [
-          {
-            id: 'asset_1',
-            kind: 'tourbus_chassis',
-            condition: 80,
-            slots: []
-          }
-        ],
-        band: {
-          members: [
-            {
-              id: 'matze',
-              name: 'Matze',
-              mood: 80,
-              stamina: 100,
-              traits: {},
-              relationships: {}
-            }
-          ],
-          inventory: {}
-        },
-        toasts: []
-      }
 
-      const nextState = QuestLifecycle.completeQuest(state, {
-        questId: 'q_backbone_rewards'
-      })
+          const nextState = QuestLifecycle.completeQuest(state, {
+            questId: 'q_backbone_rewards'
+          })
 
-      assert.equal(nextState.assets[0].condition, 95)
-      assert.equal(nextState.reputationByRegion.berlin, 10)
-      assert.equal(nextState.social.brandReputation.ampcorp, 12)
-      assert.ok(nextState.band.members[0].traits.gear_nerd)
-      assert.deepEqual(nextState.pendingEvents, ['quest_reward_followup'])
-    })
+          assert.ok(
+            Math.abs(nextState.assets[0].condition - (80.7 + repairAmount)) <
+              1e-9
+          )
+          assert.equal(nextState.reputationByRegion.berlin, 10)
+          assert.equal(nextState.social.brandReputation.ampcorp, 12)
+          assert.ok(nextState.band.members[0].traits.gear_nerd)
+          assert.deepEqual(nextState.pendingEvents, ['quest_reward_followup'])
+        }
+      )
+    }
 
     await t.test('applies harmony reward with missing band', () => {
       const state = {
@@ -1676,44 +1688,54 @@ test('QuestLifecycle', async t => {
       ])
     })
 
-    await t.test(
-      'applies backbone failure penalty types through appliers',
-      () => {
-        const next = QuestLifecycle.checkDeadlines({
-          player: { day: 10 },
-          social: { brandReputation: { ampcorp: 20 } },
-          band: { harmony: 50 },
-          reputationByRegion: { berlin: 10 },
-          pendingEvents: [],
-          activeStoryFlags: [],
-          questCooldowns: [],
-          assets: [
-            {
-              id: 'asset_1',
-              kind: 'tourbus_chassis',
-              condition: 80,
-              slots: []
-            }
-          ],
-          activeQuests: legacyQuests([
-            {
-              id: 'q_backbone_penalties',
-              deadline: 5,
-              failurePenalties: [
-                { type: 'asset.damage', assetId: 'asset_1', amount: 25 },
-                { type: 'region.reputation', scope: 'berlin', amount: -6 },
-                { type: 'brand.trust', brandId: 'ampcorp', amount: -7 },
-                { type: 'event.queue', eventId: 'quest_failure_followup' }
-              ]
-            }
-          ])
-        })
+    for (const damageAmount of [25, 12.5, -12.5]) {
+      await t.test(
+        `applies backbone failure penalty types with damage ${damageAmount}`,
+        () => {
+          const next = QuestLifecycle.checkDeadlines({
+            player: { day: 10 },
+            social: { brandReputation: { ampcorp: 20 } },
+            band: { harmony: 50 },
+            reputationByRegion: { berlin: 10 },
+            pendingEvents: [],
+            activeStoryFlags: [],
+            questCooldowns: [],
+            assets: [
+              {
+                id: 'asset_1',
+                kind: 'tourbus_chassis',
+                condition: 80.7,
+                slots: []
+              }
+            ],
+            activeQuests: legacyQuests([
+              {
+                id: 'q_backbone_penalties',
+                deadline: 5,
+                failurePenalties: [
+                  {
+                    type: 'asset.damage',
+                    assetId: 'asset_1',
+                    amount: damageAmount
+                  },
+                  { type: 'region.reputation', scope: 'berlin', amount: -6 },
+                  { type: 'brand.trust', brandId: 'ampcorp', amount: -7 },
+                  { type: 'event.queue', eventId: 'quest_failure_followup' }
+                ]
+              }
+            ])
+          })
 
-        assert.equal(next.assets[0].condition, 55)
-        assert.equal(next.reputationByRegion.berlin, 4)
-        assert.equal(next.social.brandReputation.ampcorp, 13)
-        assert.deepEqual(next.pendingEvents, ['quest_failure_followup'])
-      }
-    )
+          assert.ok(
+            Math.abs(
+              next.assets[0].condition - (80.7 - Math.abs(damageAmount))
+            ) < 1e-9
+          )
+          assert.equal(next.reputationByRegion.berlin, 4)
+          assert.equal(next.social.brandReputation.ampcorp, 13)
+          assert.deepEqual(next.pendingEvents, ['quest_failure_followup'])
+        }
+      )
+    }
   })
 })

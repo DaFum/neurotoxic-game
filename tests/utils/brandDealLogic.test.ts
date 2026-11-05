@@ -1,27 +1,28 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   generateBrandOffers,
+  generateRankedBrandOffers,
   negotiateDeal
 } from '../../src/utils/brandDealLogic'
 import { selectTop3ByScore } from '../../src/utils/topSelection'
-import {
-  SocialEngineGameState,
-  BrandDeal,
-  BrandOffer
-} from '../../src/types/social'
+import type { SocialEngineGameState, BrandDeal } from '../../src/types/social'
+import { buildBrandOffer } from '../../src/utils/brandOfferFlavor/index'
+import { mulberry32 } from '../../src/utils/seededRng'
 import {
   DEAL_NEGOTIATION_SAFE_CHANCE,
   DEAL_NEGOTIATION_PERSUASIVE_CHANCE,
   DEAL_NEGOTIATION_AGGRESSIVE_CHANCE
 } from '../../src/context/gameConstants'
 
-// We will mock buildBrandOffer to easily test what gets passed to it
-vi.mock('../../src/utils/brandOfferFlavor', async importOriginal => {
+// Observe context while retaining real flavor and terms for parity checks.
+vi.mock('../../src/utils/brandOfferFlavor/index', async importOriginal => {
   const actual =
-    await importOriginal<typeof import('../../src/utils/brandOfferFlavor')>()
+    await importOriginal<
+      typeof import('../../src/utils/brandOfferFlavor/index')
+    >()
   return {
     ...actual,
-    buildBrandOffer: vi.fn((deal, ctx) => ({ ...deal, _testCtx: ctx }))
+    buildBrandOffer: vi.fn(actual.buildBrandOffer)
   }
 })
 
@@ -84,16 +85,17 @@ describe('brandDealLogic', () => {
       } as unknown as SocialEngineGameState
 
       const rng = () => 0.5 // Stable rng
-      const offers = generateBrandOffers(gameState, rng) as (BrandOffer & {
-        _testCtx: { totalFollowers: number }
-      })[]
+      vi.mocked(buildBrandOffer).mockClear()
+      const offers = generateBrandOffers(gameState, rng)
 
       // We expect it to process 1000 followers and output up to 3 offers
       expect(offers.length).toBeGreaterThan(0)
       expect(offers.length).toBeLessThanOrEqual(3)
 
       // Ensure the generated offers contain the expected follower count
-      expect(offers[0]._testCtx.totalFollowers).toBe(1000)
+      expect(vi.mocked(buildBrandOffer).mock.calls[0]?.[1].totalFollowers).toBe(
+        1000
+      )
     })
 
     it('returns up to 3 distinct deals', () => {
@@ -119,6 +121,77 @@ describe('brandDealLogic', () => {
       expect(rivalPenaltyFor(-5)).toBe(0)
       expect(rivalPenaltyFor(NaN)).toBe(0)
       expect(rivalPenaltyFor(Infinity)).toBe(0)
+    })
+  })
+
+  describe('generateRankedBrandOffers', () => {
+    const state = {
+      social: {
+        instagram: 1000,
+        tiktok: 0,
+        youtube: 0,
+        trend: 'TECH',
+        zealotry: 40,
+        controversyLevel: 0,
+        activeDeals: [],
+        brandReputation: { INDIE: 100 }
+      },
+      band: {}
+    } as unknown as SocialEngineGameState
+
+    it('ranks at least four distinct offers deterministically for Expedition', () => {
+      const ranked = generateRankedBrandOffers(state, mulberry32(123), {
+        minPoolSize: 4
+      })
+      expect(ranked.length).toBeGreaterThanOrEqual(4)
+      expect(new Set(ranked.map(offer => offer.id)).size).toBe(ranked.length)
+      expect(ranked).toEqual(
+        generateRankedBrandOffers(state, mulberry32(123), { minPoolSize: 4 })
+      )
+    })
+
+    it('keeps the first three identical to post-gig offers including flavor and terms', () => {
+      for (const gameState of [
+        state,
+        { ...state, social: { ...state.social, instagram: 500000 } }
+      ]) {
+        const postGig = generateBrandOffers(gameState, mulberry32(123))
+        const ranked = generateRankedBrandOffers(gameState, mulberry32(123), {
+          minPoolSize: 3
+        })
+        expect(postGig).toHaveLength(3)
+        expect(new Set(postGig.map(offer => offer.id)).size).toBe(3)
+        expect(ranked.slice(0, 3)).toEqual(postGig)
+        expect(postGig.every(offer => offer.flavor && offer.offer)).toBe(true)
+        expect(generateRankedBrandOffers(gameState, mulberry32(123))).toEqual(
+          ranked
+        )
+      }
+    })
+
+    it('keeps catalog admission order on equal scores', () => {
+      const gameState = {
+        ...state,
+        social: { ...state.social, instagram: 500000, brandReputation: {} }
+      }
+      vi.mocked(buildBrandOffer).mockClear()
+      const postGig = generateBrandOffers(gameState, () => 0)
+      const ranked = generateRankedBrandOffers(gameState, () => 0, {
+        minPoolSize: 3
+      })
+      expect(ranked.slice(0, 3)).toEqual(postGig)
+    })
+
+    it('returns no offers and consumes no RNG while a deal is active', () => {
+      const rng = vi.fn(mulberry32(123))
+      const active = {
+        ...state,
+        social: { ...state.social, activeDeals: [{ id: 'local_pawn_shop' }] }
+      } as unknown as SocialEngineGameState
+      expect(
+        generateRankedBrandOffers(active, rng, { minPoolSize: 4 })
+      ).toEqual([])
+      expect(rng).not.toHaveBeenCalled()
     })
   })
 

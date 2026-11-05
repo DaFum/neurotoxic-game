@@ -94,6 +94,42 @@ describe('G5 — Fame reaches its production consumers', () => {
     assert.equal(offersAt(10000).length, offersAt(0).length)
   })
 
+  it('promotes genuine matches from the full ranked Sponsor pool', () => {
+    const base = atFame(0)
+    const state = {
+      ...base,
+      runSeed: 123,
+      social: {
+        ...base.social,
+        instagram: 1000,
+        tiktok: 0,
+        youtube: 0,
+        trend: 'TECH',
+        controversyLevel: 0,
+        zealotry: 40,
+        brandReputation: { INDIE: 100 },
+        activeDeals: []
+      }
+    }
+    const strictIds = new Set(['local_pawn_shop', 'neon_lung_vapes'])
+    const offersAt = fame =>
+      buildPreparedExpeditionSponsorOffers(
+        { ...state, player: { ...state.player, fame } },
+        'home_turf',
+        'standard_tour'
+      )
+    const unknown = offersAt(0)
+    const touring = offersAt(5000)
+    assert.equal(unknown.length, 3)
+    assert.equal(touring.length, 3)
+    assert.equal(unknown.filter(offer => strictIds.has(offer.dealId)).length, 1)
+    assert.equal(touring.filter(offer => strictIds.has(offer.dealId)).length, 2)
+    assert.deepEqual(
+      new Set(touring.slice(0, 2).map(offer => offer.dealId)),
+      strictIds
+    )
+  })
+
   it('keeps the route itself free of Fame', () => {
     // The map is built from the run-stable half and compared by `mapHash`, so
     // Fame must not reach it or Tour Prep could preview a route the run then

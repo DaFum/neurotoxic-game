@@ -251,6 +251,7 @@ export const useRhythmGameAudio = ({
   } = contextState
   const { addToast, setLastGigStats, endGig, t } = contextActions
 
+  const mountedRef = useRef(false)
   const currentStatusRef = useRef<GigAudioStatus>('idle')
   const hasResolvedLowHarmonyRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -376,6 +377,7 @@ export const useRhythmGameAudio = ({
   const initializeGigState = useCallback(async () => {
     // Prevent concurrent initialization
     if (
+      !mountedRef.current ||
       currentStatusRef.current === 'initializing' ||
       currentStatusRef.current === 'ready'
     ) {
@@ -558,9 +560,11 @@ export const useRhythmGameAudio = ({
   }, [audioEngine, gameStateRef, waitForStageReady])
 
   useEffect(() => {
+    mountedRef.current = true
     initializeGigState()
 
     return () => {
+      mountedRef.current = false
       const controller = abortControllerRef.current
       if (controller) {
         controller.abort()
@@ -573,6 +577,17 @@ export const useRhythmGameAudio = ({
   }, [audioEngine, initializeGigState])
 
   const retryAudioInitialization = useCallback(async () => {
+    if (
+      !mountedRef.current ||
+      gameStateRef.current.hasSubmittedResults ||
+      gameStateRef.current.isGameOver
+    ) {
+      logger.debug(
+        'RhythmGame',
+        'Skipping audio retry after unmount or gig completion.'
+      )
+      return
+    }
     if (currentStatusRef.current !== 'initializing') {
       const { gigIntroFired, gigMidFired, lastGigEventSongIndex } =
         gameStateRef.current

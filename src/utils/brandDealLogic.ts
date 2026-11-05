@@ -115,7 +115,10 @@ interface PoolEntry {
   tier: EligibilityTier
 }
 
-const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
+const buildEligibilityPool = (
+  ctx: DealMatchContext,
+  minPoolSize: number = BRAND_OFFER_POOL_SIZE
+): PoolEntry[] => {
   const pool: PoolEntry[] = []
   const seen = new Set<string>()
 
@@ -125,7 +128,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
       seen.add(deal.id)
     }
   }
-  if (pool.length >= BRAND_OFFER_POOL_SIZE) return pool
+  if (pool.length >= minPoolSize) return pool
 
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     if (seen.has(deal.id)) continue
@@ -134,7 +137,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
       seen.add(deal.id)
     }
   }
-  if (pool.length >= BRAND_OFFER_POOL_SIZE) return pool
+  if (pool.length >= minPoolSize) return pool
 
   // Tier 2: probe sponsoring — lowest-bar deals regardless of trend/trait.
   // Pick the catalog entries with the smallest follower requirement to keep
@@ -147,7 +150,7 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
   }
   remaining.sort((a, b) => a.requirements.followers - b.requirements.followers)
   for (const deal of remaining) {
-    if (pool.length >= BRAND_OFFER_POOL_SIZE) break
+    if (pool.length >= minPoolSize) break
     pool.push({ deal, tier: 2 })
     seen.add(deal.id)
   }
@@ -258,6 +261,66 @@ export const generateBrandOffers = (
     }
   }
   return offers
+}
+
+/**
+ * Ranks the full eligible pool for Expedition staging and quality promotion.
+ * Post-gig generation keeps its existing three-offer policy and RNG order.
+ */
+export const generateRankedBrandOffers = (
+  gameState: SocialEngineGameState,
+  rng: RandomFn = secureRandom,
+  { minPoolSize = BRAND_OFFER_POOL_SIZE }: { minPoolSize?: number } = {}
+): BrandOffer[] => {
+  const social = gameState.social ?? {}
+  if (Array.isArray(social.activeDeals) && social.activeDeals.length > 0) {
+    return []
+  }
+
+  const totalFollowers =
+    finiteNumberOr(social.instagram, 0) +
+    finiteNumberOr(social.tiktok, 0) +
+    finiteNumberOr(social.youtube, 0)
+  const pool = buildEligibilityPool(
+    {
+      totalFollowers,
+      trendVal:
+        typeof social.trend === 'string'
+          ? (social.trend as AllowedTrend)
+          : undefined,
+      zealotry: finiteNumberOr(social.zealotry, 0),
+      controversy: finiteNumberOr(social.controversyLevel, 0),
+      band: gameState.band
+    },
+    minPoolSize
+  )
+  const rivalPower =
+    isRivalInPlayerLocation(gameState) && gameState.rivalBand
+      ? Math.min(
+          MAX_RIVAL_DEAL_CHANCE_PENALTY * 100,
+          Math.max(0, finiteNumberOr(gameState.rivalBand.powerLevel, 0)) *
+            RIVAL_POWER_TO_DEAL_CHANCE_FACTOR *
+            100
+        )
+      : 0
+
+  // Score once in admission order before flavor consumes any RNG draws.
+  // Array.sort is stable, so tied entries retain that admission order.
+  const ranked = pool
+    .map(entry => ({
+      entry,
+      score: scoreEntry(entry, gameState, rivalPower, rng)
+    }))
+    .sort((a, b) => b.score - a.score)
+  return ranked.map(({ entry }) =>
+    buildBrandOffer(entry.deal, {
+      tier: entry.tier,
+      isStretched: entry.tier > 0,
+      gameState,
+      rng,
+      totalFollowers
+    })
+  )
 }
 
 /**

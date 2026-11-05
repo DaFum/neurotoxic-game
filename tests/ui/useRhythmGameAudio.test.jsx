@@ -69,7 +69,12 @@ vi.mock('../../src/utils/errorHandler', () => ({
 }))
 
 vi.mock('../../src/utils/logger', () => ({
-  logger: { warn: mocks.loggerWarn, error: mocks.loggerError, info: vi.fn() },
+  logger: {
+    warn: mocks.loggerWarn,
+    error: mocks.loggerError,
+    info: vi.fn(),
+    debug: vi.fn()
+  },
   isValidLogLevel: vi.fn(() => true),
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
@@ -166,15 +171,19 @@ describe('useRhythmGameAudio', () => {
     expect(setLastGigStats).toHaveBeenCalledTimes(1)
     expect(endGig).toHaveBeenCalledTimes(1)
 
-    // A Retry is a fresh attempt; resolve low harmony once for that attempt.
+    // A collapsed band already submitted the gig; Retry cannot submit it again.
     await result.current.retryAudioInitialization()
 
-    expect(addToast).toHaveBeenCalledTimes(2)
-    expect(setLastGigStats).toHaveBeenCalledTimes(2)
-    expect(endGig).toHaveBeenCalledTimes(2)
+    expect(addToast).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
   })
 
   it('preserves gig event markers when retry resets gameplay', async () => {
+    mocks.ensureAudioContext
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false)
+    const setAudioStatus = vi.fn()
     const game = {
       lanes: [{}, {}, {}],
       hasSubmittedResults: false,
@@ -195,11 +204,11 @@ describe('useRhythmGameAudio', () => {
         resetGameplayState: reset,
         gameStateRef: { current: game },
         setters: {
-          setAudioStatus: vi.fn(),
+          setAudioStatus,
           setIsGameOver: vi.fn(),
           setFailureKind: vi.fn()
         },
-        contextState: { ...baseState, band: { harmony: 0 } },
+        contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
           t: vi.fn(key => key),
@@ -207,6 +216,9 @@ describe('useRhythmGameAudio', () => {
           endGig: vi.fn()
         }
       })
+    )
+    await waitFor(() =>
+      expect(setAudioStatus).toHaveBeenLastCalledWith('blocked')
     )
     await act(async () => {
       await result.current.retryAudioInitialization()
@@ -587,6 +599,148 @@ describe('useRhythmGameAudio', () => {
 
     // It should have called setupGigPhysics again
     expect(mocks.setupGigPhysics).toHaveBeenCalled()
+  })
+})
+
+describe('useRhythmGameAudio retry lifetime', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
+    mocks.ensureAudioContext.mockResolvedValue(true)
+  })
+
+  afterEach(() => vi.useRealTimers())
+
+  const advance = async ms => {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ms)
+    })
+  }
+
+  const renderRetryHook = () => {
+    const gameStateRef = {
+      current: {
+        lanes: [{}, {}, {}],
+        hasSubmittedResults: false,
+        isGameOver: false
+      }
+    }
+    // A real reset clears terminal flags; a no-op would conceal this regression.
+    const resetGameplayState = vi.fn(() =>
+      Object.assign(gameStateRef.current, {
+        hasSubmittedResults: false,
+        isGameOver: false
+      })
+    )
+    const setAudioStatus = vi.fn()
+    const setIsGameOver = vi.fn()
+    const setFailureKind = vi.fn()
+    const addToast = vi.fn()
+    const rendered = renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef,
+        resetGameplayState,
+        setters: { setAudioStatus, setIsGameOver, setFailureKind },
+        contextState: {
+          band: { harmony: 50 },
+          gameMap: { nodes: { n1: { layer: 0 } } },
+          player: { currentNodeId: 'n1' },
+          setlist: [{ id: 'song_1', name: 'Song 1', bpm: 120, duration: 60 }],
+          gigModifiers: {},
+          currentGig: { songId: 'song_1' }
+        },
+        contextActions: {
+          addToast,
+          t: key => key,
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+    return {
+      ...rendered,
+      gameStateRef,
+      resetGameplayState,
+      setAudioStatus,
+      watched: [
+        resetGameplayState,
+        mocks.resetGigStateTracking,
+        mocks.setupGigPhysics,
+        mocks.stopMusic,
+        mocks.playSongSequence,
+        mocks.ensureAudioContext,
+        setAudioStatus,
+        setIsGameOver,
+        setFailureKind,
+        addToast,
+        mocks.handleError
+      ]
+    }
+  }
+
+  it('does no new work when Retry is called after unmount', async () => {
+    mocks.ensureAudioContext.mockResolvedValueOnce(false)
+    const hook = renderRetryHook()
+    await advance(0)
+    expect(hook.setAudioStatus).toHaveBeenLastCalledWith('blocked')
+    const retry = hook.result.current.retryAudioInitialization
+    hook.unmount()
+    await advance(0)
+    const counts = hook.watched.map(fn => fn.mock.calls.length)
+
+    await act(async () => {
+      const pending = retry()
+      await vi.advanceTimersByTimeAsync(16000)
+      await pending
+    })
+
+    expect(hook.watched.map(fn => fn.mock.calls.length)).toEqual(counts)
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { hasSubmittedResults: true, isGameOver: false },
+    { hasSubmittedResults: false, isGameOver: true },
+    { hasSubmittedResults: true, isGameOver: true }
+  ])('preserves terminal flags on mounted Retry: %j', async flags => {
+    mocks.ensureAudioContext.mockResolvedValueOnce(false)
+    const hook = renderRetryHook()
+    await advance(0)
+    Object.assign(hook.gameStateRef.current, flags)
+    const counts = hook.watched.map(fn => fn.mock.calls.length)
+
+    await act(async () => {
+      const pending = hook.result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(16000)
+      await pending
+    })
+
+    expect(hook.gameStateRef.current).toMatchObject(flags)
+    expect(hook.resetGameplayState).not.toHaveBeenCalled()
+    expect(hook.watched.map(fn => fn.mock.calls.length)).toEqual(counts)
+  })
+
+  it('resets a mounted retry once and plays once only after its new stage is ready', async () => {
+    mocks.ensureAudioContext.mockResolvedValueOnce(false)
+    const hook = renderRetryHook()
+    await advance(0)
+    expect(hook.setAudioStatus).toHaveBeenLastCalledWith('blocked')
+    let retry
+    await act(async () => {
+      retry = hook.result.current.retryAudioInitialization()
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(hook.resetGameplayState).toHaveBeenCalledTimes(1)
+    expect(hook.setAudioStatus).toHaveBeenLastCalledWith('initializing')
+    expect(mocks.playSongSequence).not.toHaveBeenCalled()
+    await act(async () => {
+      hook.result.current.onStageReady()
+      await retry
+    })
+    expect(hook.setAudioStatus).toHaveBeenLastCalledWith('ready')
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
+    await advance(16000)
+    expect(mocks.playSongSequence).toHaveBeenCalledTimes(1)
   })
 })
 

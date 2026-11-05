@@ -55,7 +55,7 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
 
     const offers = stagedState.expedition.preparedSponsorOffers
     assert.ok(offers.length > 0)
-    assert.ok(offers.length <= 3)
+    assert.ok(offers.length <= MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS)
 
     for (const offer of offers) {
       assert.equal(typeof offer.offerId, 'string')
@@ -408,14 +408,57 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
     assert.equal(loaded.expedition.preparedSponsorProvenance, undefined)
   })
 
+  it('preserves four Corporate offers on load and starts with the fourth', () => {
+    const prep = withExpeditionCapabilities(
+      preparedState(),
+      Object.keys(EXPEDITION_UNLOCK_SETS)
+    )
+    const staged = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        'corporate_circuit',
+        'corporate_tour'
+      )
+    )
+    const offers = staged.expedition.preparedSponsorOffers
+    assert.equal(offers.length, 4)
+    assert.equal(new Set(offers.map(offer => offer.dealId)).size, 4)
+    const loaded = gameReducer(createInitialState(), {
+      type: ActionTypes.LOAD_GAME,
+      payload: JSON.parse(JSON.stringify(staged))
+    })
+    assert.deepEqual(loaded.expedition.preparedSponsorOffers, offers)
+    assert.deepEqual(
+      loaded.expedition.preparedSponsorProvenance,
+      staged.expedition.preparedSponsorProvenance
+    )
+    const fourth = offers[3]
+    const started = gameReducer(loaded, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: loaded.expedition.prep.prepId,
+        expectedRunSeed: loaded.runSeed,
+        loadout: fixtureLoadout({
+          regionId: 'corporate_circuit',
+          tourTypeId: 'corporate_tour',
+          build: { sponsorOfferId: fourth.offerId }
+        })
+      }
+    })
+    assert.equal(started.expedition.status, 'active')
+    assert.deepEqual(started.expedition.preparedSponsorOffers, [])
+    assert.equal(started.expedition.preparedSponsorProvenance, undefined)
+    assert.ok(
+      started.expedition.activeObligations.some(
+        obligation =>
+          obligation.sourceType === 'brandDeal' &&
+          obligation.sourceId === fourth.dealId
+      )
+    )
+  })
+
   it('sanitizes up to the producer ceiling, not a smaller literal', () => {
-    // The load sanitizer used to truncate at a hardcoded 3 while
-    // `buildPreparedExpeditionSponsorOffers` can compute a count of 4 (base 3
-    // plus one on a Contract-heavy route). Today's deal pool never reaches 4,
-    // so nothing is being truncated - but the coupling was latent: the moment
-    // it did, the reloaded snapshot would fail its own reproduction check and
-    // `validatePreparedExpeditionSponsorOffers` would clear the staging and
-    // provenance outright.
     assert.ok(MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS >= 4)
 
     const prep = withExpeditionCapabilities(
