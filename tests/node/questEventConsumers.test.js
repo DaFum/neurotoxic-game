@@ -208,6 +208,70 @@ describe('quests consuming the social, brand, item and extraction events', () =>
     })
   }
 
+  for (const progress of [2, 3]) {
+    it(`breaks the Sponsor before settling Merch Press quest progress from ${progress}`, () => {
+      const base = createInitialState()
+      const deal = BRAND_DEALS[0]
+      const accepted = withQuest(
+        withSocial(
+          {
+            ...base,
+            player: { ...base.player, money: 1000 },
+            band: { ...base.band, harmony: 100 }
+          },
+          {
+            controversyLevel: 84,
+            loyalty: 20,
+            trend: 'TECH',
+            activeDeals: [{ ...deal, remainingGigs: 3 }],
+            brandReputation: { [deal.alignment]: 50 }
+          }
+        ),
+        QUEST_DAMAGE_CONTROL
+      )
+      const state = {
+        ...accepted,
+        activeQuests: accepted.activeQuests.map(quest => ({
+          ...quest,
+          progress
+        }))
+      }
+      const next = gameReducer(
+        state,
+        createMerchPressAction({
+          cost: 150,
+          loyaltyGain: 5,
+          controversyGain: 10,
+          fameGain: 100,
+          harmonyCost: 0,
+          successToast: {
+            messageKey: 'ui:merch_press.success_toast',
+            type: 'success'
+          }
+        })
+      )
+
+      assert.deepEqual(next.social.activeDeals, [])
+      assert.equal(next.social.brandReputation[deal.alignment], 40)
+      assert.equal(
+        next.toasts.filter(toast => toast.messageKey === 'ui:toast.dealsBroken')
+          .length,
+        1
+      )
+      assert.equal(next.player.money, 850)
+      assert.equal(next.player.fame, state.player.fame + 100)
+      if (progress === 3) {
+        assert.equal(activeQuest(next, QUEST_DAMAGE_CONTROL), null)
+        assert.ok(next.completedQuestIds.includes(QUEST_DAMAGE_CONTROL))
+        assert.equal(next.social.controversyLevel, 84)
+        assert.equal(next.social.loyalty, 30)
+      } else {
+        assert.equal(activeQuest(next, QUEST_DAMAGE_CONTROL).progress, 3)
+        assert.equal(next.social.controversyLevel, 94)
+      }
+    })
+  }
+
   it('charges a ruined Merch Press without advancing damage control', () => {
     const base = createInitialState()
     const state = withQuest(

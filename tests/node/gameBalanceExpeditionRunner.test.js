@@ -184,6 +184,26 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     )
   })
 
+  it('refuels an affordable empty tank before continuing the route', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const base = buildProductionSimulationLoadout(undefined, profile, 4242)
+    const state = {
+      ...base,
+      player: {
+        ...base.player,
+        van: { ...base.player.van, fuel: 0 }
+      }
+    }
+    let fuelAfterFirstLeg = null
+    const result = runExpeditionSimulation(state, profile, 4242, {
+      onRouteStep: (step, current) => {
+        if (step === 1) fuelAfterFirstLeg = current.player.van.fuel
+      }
+    })
+    assert.ok(fuelAfterFirstLeg > 0)
+    assert.ok(result.routeVisited.length > 1)
+  })
+
   it('accepts technical failure when a dead group has no paid recovery', () => {
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const base = buildProductionSimulationLoadout(undefined, profile, 4242)

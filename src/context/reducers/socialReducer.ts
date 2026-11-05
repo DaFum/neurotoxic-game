@@ -776,6 +776,9 @@ export const handleMerchPress = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
+  // Settle the press's immediate controversy crossing before quest rewards
+  // can lower controversy again (for example, completing Damage Control).
+  nextState = breakDealsIfControversyCrossed(nextState, currentControversy)
   const amount = nextLoyalty - currentLoyalty
   if (amount > 0) {
     nextState = QuestEvents.emit(
@@ -784,11 +787,7 @@ export const handleMerchPress = (
     )
   }
 
-  return emitSocialFameGained(
-    breakDealsIfControversyCrossed(nextState, currentControversy),
-    nextFame - currentFame,
-    'merch_press'
-  )
+  return emitSocialFameGained(nextState, nextFame - currentFame, 'merch_press')
 }
 
 type ZealotryDayField =
