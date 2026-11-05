@@ -14,6 +14,8 @@ import type {
 } from '../types/callbacks'
 
 const NOTE_MISS_WINDOW_MS = 300
+// At most 100 ms of 60 Hz spawn rolls may settle together after a render stall.
+const MAX_HECKLER_SPAWN_ATTEMPTS_PER_TICK = 6
 
 interface RhythmTickArgs {
   stateRef: RhythmGameRefState
@@ -386,9 +388,14 @@ export const processRhythmGameTick = ({
 
   // Preserve the original 60 FPS spawn rate, sampling on gameplay-clock
   // boundaries so render frequency and frozen audio cannot add hazard rolls.
-  const spawnAttempts = Math.max(
-    0,
-    Math.floor((now * 60) / 1000) - Math.floor((previousTime * 60) / 1000)
+  // Discard excess catch-up after a stall: replaying seconds of opportunities
+  // now would spawn a burst at one position and block the main thread.
+  const spawnAttempts = Math.min(
+    MAX_HECKLER_SPAWN_ATTEMPTS_PER_TICK,
+    Math.max(
+      0,
+      Math.floor((now * 60) / 1000) - Math.floor((previousTime * 60) / 1000)
+    )
   )
   for (let attempt = 0; attempt < spawnAttempts; attempt++) {
     const newProjectile = trySpawnProjectile(

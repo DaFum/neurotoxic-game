@@ -78,3 +78,20 @@ describe('heckler gameplay timing', () => {
     expect(session.nextId).toBe(count + 6)
   })
 })
+
+it.each([1000, 30_000, 600_000])(
+  'bounds spawn catch-up after a %i ms render stall and discards the backlog',
+  stallMs => {
+    const { tick, stateRef, session } = createRun()
+    stateRef.rng = () => 0
+    tick(100, 100)
+    const beforeStall = session.nextId
+    // Audio can continue even though the renderer supplies only a small delta.
+    tick(100 + stallMs, 16)
+    expect(session.nextId - beforeStall).toBeLessThanOrEqual(6)
+    const afterStall = session.nextId
+    // Old opportunities must not leak into later frames.
+    tick(200 + stallMs, 100)
+    expect(session.nextId - afterStall).toBe(6)
+  }
+)
