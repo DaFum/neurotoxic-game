@@ -233,6 +233,116 @@ test('Audio Assets Loading Logic', async t => {
     }
   )
 
+  await t.test('a fetch completed after disposal is not decoded', async () => {
+    let finishBody, signalBody
+    const reading = new Promise(resolve => {
+      signalBody = resolve
+    })
+    global.fetch.mock.mockImplementationOnce(async () => ({
+      ok: true,
+      arrayBuffer: () => {
+        signalBody()
+        return new Promise(resolve => {
+          finishBody = resolve
+        })
+      }
+    }))
+    const pending = loadAudioBuffer('abandoned-body.ogg')
+    await reading
+    disposeAudio()
+    finishBody(new ArrayBuffer(1024))
+    assert.equal(await pending, null)
+    assert.equal(mockDecodeAudioData.mock.calls.length, 0)
+  })
+
+  await t.test(
+    'a decode completed after disposal does not restore the cache',
+    async () => {
+      const { audioState } = await import('../../src/utils/audio/state')
+      let finishDecode
+      let signalDecode
+      const decoding = new Promise(resolve => {
+        signalDecode = resolve
+      })
+      mockDecodeAudioData.mock.mockImplementationOnce(() => {
+        signalDecode()
+        return new Promise(resolve => {
+          finishDecode = resolve
+        })
+      })
+      const pending = loadAudioBuffer('abandoned.ogg')
+      await decoding
+      disposeAudio()
+      finishDecode({
+        length: 44100,
+        numberOfChannels: 2,
+        duration: 1,
+        sampleRate: 44100
+      })
+      assert.equal(await pending, null)
+      assert.equal(audioState.audioBufferCache.size, 0)
+      assert.equal(audioState.currentCacheByteSize, 0)
+    }
+  )
+
+  await t.test(
+    'post-disposal requests do not join or lose ownership to old pending loads',
+    async () => {
+      let finishOld, finishNew, signalOld, signalNew
+      const oldDecoding = new Promise(resolve => {
+        signalOld = resolve
+      })
+      const newDecoding = new Promise(resolve => {
+        signalNew = resolve
+      })
+      let decodes = 0
+      mockDecodeAudioData.mock.mockImplementation(() => {
+        decodes++
+        if (decodes === 1) {
+          signalOld()
+          return new Promise(resolve => {
+            finishOld = resolve
+          })
+        }
+        signalNew()
+        return new Promise(resolve => {
+          finishNew = resolve
+        })
+      })
+      const oldLoad = loadAudioBuffer('reloaded.ogg')
+      await oldDecoding
+      disposeAudio()
+      const newLoad = loadAudioBuffer('reloaded.ogg')
+      // Detect a stale dedup hit without hanging on a never-started decode.
+      const phase = await Promise.race([
+        newDecoding.then(() => 'new'),
+        new Promise(resolve => setImmediate(() => resolve('stale')))
+      ])
+      finishOld({
+        length: 44100,
+        numberOfChannels: 2,
+        duration: 1,
+        sampleRate: 44100
+      })
+      if (phase !== 'new') {
+        await Promise.all([oldLoad, newLoad])
+        assert.fail('new load joined the disposed request')
+      }
+      assert.equal(await oldLoad, null)
+      const joinedNewLoad = loadAudioBuffer('reloaded.ogg')
+      const buffer = {
+        length: 44100,
+        numberOfChannels: 2,
+        duration: 1,
+        sampleRate: 44100
+      }
+      finishNew(buffer)
+      assert.equal(await newLoad, buffer)
+      assert.equal(await joinedNewLoad, buffer)
+      assert.equal(global.fetch.mock.calls.length, 2)
+    }
+  )
+
   // Timeout tests using fake timers
   await t.test(
     'Fetch Timeout: returns null if fetch takes too long',

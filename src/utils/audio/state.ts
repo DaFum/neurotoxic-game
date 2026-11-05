@@ -103,6 +103,7 @@ export const audioState = {
   ambientSource: null as Nullable<BufferSource>,
 
   // Setup/Rebuild Locks
+  setupGeneration: 0,
   setupLock: null as Nullable<Promise<void>>,
   setupError: null as Nullable<unknown>,
   rebuildLock: null as Nullable<Promise<void>>

@@ -16,7 +16,11 @@ import { completeQuest } from '../domain/questComplete'
 import { getQuestDefinition } from '../data/questRegistry'
 import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
 import { LEGACY_QUEST_EVENT_TYPES } from '../data/questProgressSources'
-import { isForbiddenKey, isLooseRecord } from './objectUtils'
+import {
+  isForbiddenKey,
+  isLooseRecord,
+  sanitizeStringArray
+} from './objectUtils'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 const INVALID_THRESHOLD_PROGRESS = Number.NaN
@@ -118,15 +122,7 @@ const readOwnStringArray = (
   if (!Object.hasOwn(record, key) || !Array.isArray(record[key])) {
     return undefined
   }
-  const arr = record[key] as unknown[]
-  const result: string[] = []
-  for (let i = 0; i < arr.length; i++) {
-    const entry = arr[i]
-    if (typeof entry === 'string') {
-      result.push(entry)
-    }
-  }
-  return result
+  return sanitizeStringArray(record[key])
 }
 
 const canonicalizeEventType = (

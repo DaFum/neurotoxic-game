@@ -484,3 +484,31 @@ test('a cult audience never sells less merch than the same show without one', ()
     )
   }
 })
+
+test('inherited city trait names use neutral merch multipliers', () => {
+  const neutral = callMerch()
+  assert.ok(neutral.revenue > 0)
+  for (const key of ['constructor', '__proto__', 'toString', 'unknown']) {
+    for (const field of ['genreBias', 'barSpendingProfile']) {
+      assert.deepEqual(
+        callMerch({ context: { cityTraits: { [field]: key } } }),
+        neutral,
+        `${field}: ${key}`
+      )
+    }
+  }
+})
+
+test('zero peak hype receives the same penalty as a near-zero peak', () => {
+  const inventory = Object.fromEntries(
+    Object.keys(DEFAULT_MERCH_PRICES).map(key => [key, 10000])
+  )
+  const atHype = peakHype =>
+    callMerch({
+      ticketsSold: 10000,
+      inventory,
+      gigStats: { peakHype, misses: 0 }
+    })
+  assert.deepEqual(atHype(0), atHype(0.00001))
+  assert.ok(atHype(undefined).revenue > atHype(0).revenue)
+})

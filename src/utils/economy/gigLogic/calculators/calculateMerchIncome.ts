@@ -84,7 +84,7 @@ export const calculateMerchIncome = (
   }
 
   // Calculate missed notes penalty from gigStats
-  const maxHypePenalty = gigStats.peakHype
+  const maxHypePenalty = isFiniteNumber(gigStats.peakHype)
     ? Math.max(0, 1 - gigStats.peakHype / 100) * 0.1
     : 0
   const missesPenalty = gigStats.misses
@@ -104,7 +104,12 @@ export const calculateMerchIncome = (
   const genreBias = (cityTraits?.genreBias ?? '') as CityGenre
   const spendingProfile = (cityTraits?.barSpendingProfile ??
     'average') as SpendingProfile
-  const spendingMult = SPENDING_PROFILE_MERCH_MULTIPLIER[spendingProfile] ?? 1.0
+  const spendingMult = Object.hasOwn(
+    SPENDING_PROFILE_MERCH_MULTIPLIER,
+    spendingProfile
+  )
+    ? finiteNumberOr(SPENDING_PROFILE_MERCH_MULTIPLIER[spendingProfile], 1.0)
+    : 1.0
 
   const peakHype =
     typeof gigStats?.peakHype === 'number' ? gigStats.peakHype : 0
@@ -151,7 +156,9 @@ export const calculateMerchIncome = (
   for (let i = 0; i < MERCH_PROFILE_VALUES.length; i++) {
     const profile = MERCH_PROFILE_VALUES[i]
     if (!profile) continue
-    const genreMult = profile.genreAffinity[genreBias] ?? 1.0
+    const genreMult = Object.hasOwn(profile.genreAffinity, genreBias)
+      ? finiteNumberOr(profile.genreAffinity[genreBias], 1.0)
+      : 1.0
     const perfLift =
       1 +
       (hypeNorm - 0.5) * profile.performanceSensitivity -

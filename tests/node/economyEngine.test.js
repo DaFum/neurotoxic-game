@@ -18,6 +18,7 @@ import {
   calculateGuaranteedDailyCost,
   shouldTriggerBankruptcy
 } from '../../src/utils/economy'
+import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assets/assetSelectors'
 import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
@@ -1508,4 +1509,60 @@ test('calculateSponsorshipBonuses handles different gig stats scenarios', async 
     )
     assert.strictEqual(result.incomeItems[1].value, 150)
   })
+})
+
+test('sponsors deny failed and explicitly unattempted gigs through financial settlement', () => {
+  const empty = buildGigStatsSnapshot(
+    0,
+    { misses: 0, perfectHits: 0 },
+    0,
+    [],
+    false
+  )
+  for (const stats of [
+    { ...empty, failed: true },
+    { ...empty, failed: true, perfectHits: 20, peakHype: 100 },
+    empty,
+    { misses: 0, perfectHits: 0, hits: 0, peakHype: 100 }
+  ]) {
+    assert.deepEqual(calculateSponsorshipBonuses(stats), {
+      totalBonus: 0,
+      incomeItems: []
+    })
+    const result = calculateGigFinancials({
+      gigData: buildGigData(),
+      performanceScore: 30,
+      modifiers: buildModifiers(),
+      bandInventory: buildInventory(),
+      playerState: { fame: 0 },
+      gigStats: stats
+    })
+    assert.ok(
+      !result.income.breakdown.some(
+        item =>
+          item.labelKey === 'economy:gigIncome.techSponsor.label' ||
+          item.labelKey === 'economy:gigIncome.beerSponsor.label'
+      )
+    )
+  }
+  assert.equal(
+    calculateSponsorshipBonuses({
+      misses: 0,
+      perfectHits: 10,
+      peakHype: 100,
+      failed: false
+    }).totalBonus,
+    350
+  )
+})
+
+test('sponsors accept snapshots with ordinary hits and no perfect hits', () => {
+  const stats = buildGigStatsSnapshot(
+    100,
+    { misses: 0, hits: 10, perfectHits: 0, maxCombo: 10, peakHype: 100 },
+    0,
+    [],
+    false
+  )
+  assert.equal(calculateSponsorshipBonuses(stats).totalBonus, 350)
 })

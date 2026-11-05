@@ -66,7 +66,10 @@ export const oggCandidates =
   fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
 
 // ⚡ BOLT OPTIMIZATION: Track in-flight requests to deduplicate concurrent loads
-const pendingAudioRequests: Map<string, Promise<AudioBuffer | null>> = new Map()
+const pendingAudioRequests = new Map<
+  string,
+  { generation: number; promise: Promise<AudioBuffer | null> }
+>()
 
 if (oggCandidates.length > 0) {
   logger.info(
@@ -146,6 +149,7 @@ export async function loadAudioBuffer(
 ): Promise<AudioBuffer | null> {
   if (typeof filename !== 'string' || filename.length === 0) return null
   const cacheKey = filename.replace(PATH_PREFIX_REGEX, '')
+  const generation = audioState.setupGeneration
   if (audioState.audioBufferCache.has(cacheKey)) {
     const cached = audioState.audioBufferCache.get(cacheKey)
     if (cached) {
@@ -158,17 +162,19 @@ export async function loadAudioBuffer(
 
   // Return existing promise if already loading
   const pending = pendingAudioRequests.get(cacheKey)
-  if (pending) {
-    return pending
+  if (pending && pending.generation === generation) {
+    return pending.promise
   }
 
-  const promise = loadAudioBufferInternal(filename, cacheKey)
-  pendingAudioRequests.set(cacheKey, promise)
+  const promise = loadAudioBufferInternal(filename, cacheKey, generation)
+  pendingAudioRequests.set(cacheKey, { generation, promise })
 
   try {
     return await promise
   } finally {
-    pendingAudioRequests.delete(cacheKey)
+    if (pendingAudioRequests.get(cacheKey)?.promise === promise) {
+      pendingAudioRequests.delete(cacheKey)
+    }
   }
 }
 
@@ -263,11 +269,13 @@ function cacheAudioBuffer(
  * Internal implementation of loading an audio buffer.
  * @param filename - Audio filename.
  * @param cacheKey - The cache key for storage.
+ * @param generation - Explicit disposal generation that owns this load.
  * @returns Decoded audio buffer or null.
  */
 async function loadAudioBufferInternal(
   filename: string,
-  cacheKey: string
+  cacheKey: string,
+  generation: number
 ): Promise<AudioBuffer | null> {
   const { publicBasePath } = getBaseAssetPath()
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
@@ -291,9 +299,10 @@ async function loadAudioBufferInternal(
 
   try {
     const arrayBuffer = await fetchAudioArrayBuffer(url, filename)
-    if (!arrayBuffer) return null
+    if (!arrayBuffer || generation !== audioState.setupGeneration) return null
 
     const buffer = await decodeAudioDataWithTimeout(arrayBuffer)
+    if (generation !== audioState.setupGeneration) return null
 
     cacheAudioBuffer(cacheKey, buffer, filename)
     return buffer

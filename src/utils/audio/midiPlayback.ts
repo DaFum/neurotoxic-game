@@ -402,7 +402,7 @@ export async function playSongFromData(
   options: unknown = {}
 ): Promise<boolean> {
   const prep = await prepareSongPlayback(song, options)
-  if (!prep) return false
+  if (!prep || prep.reqId !== audioState.playRequestId) return false
 
   const sObj = getSongContext(song)
   const p = parseSongParameters(sObj)

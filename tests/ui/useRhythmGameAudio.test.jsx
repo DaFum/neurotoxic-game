@@ -49,6 +49,8 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
   },
+  pauseAudio: vi.fn(),
+  resumeAudio: vi.fn(async () => true),
   stopAudio: mocks.stopAudio,
   setupGigPhysics: mocks.setupGigPhysics,
   resolveActiveSetlist: mocks.resolveActiveSetlist,
@@ -79,6 +81,11 @@ vi.mock('../../src/utils/logger', () => ({
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
+import { useGigSession } from '../../src/hooks/useGigSession'
+import { useRhythmGameState } from '../../src/hooks/rhythmGame/useRhythmGameState'
+import { processRhythmGameTick } from '../../src/utils/rhythmGameLoopUtils'
+import { createHecklerSession } from '../../src/utils/hecklerLogic'
+import { handleKeyDownLogic } from '../../src/utils/gigInputUtils'
 import { useRhythmGameAudio } from '../../src/hooks/rhythmGame/useRhythmGameAudio'
 
 describe('useRhythmGameAudio', () => {
@@ -93,6 +100,85 @@ describe('useRhythmGameAudio', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('keeps Escape pause coherent across blocked-audio retry and prevents overdue misses', async () => {
+    mocks.ensureAudioContext.mockResolvedValueOnce(false)
+    const actions = {
+      addToast: vi.fn(),
+      setLastGigStats: vi.fn(),
+      endGig: vi.fn(),
+      t: key => key
+    }
+    const tRef = { current: actions.t }
+    const { result } = renderHook(() => {
+      const rhythm = useRhythmGameState()
+      const session = useGigSession({
+        ...actions,
+        tRef,
+        gameStateRef: rhythm.gameStateRef
+      })
+      const audio = useRhythmGameAudio({
+        ...rhythm,
+        contextState: baseState,
+        contextActions: actions
+      })
+      return { rhythm, session, audio }
+    })
+    await waitFor(() =>
+      expect(result.current.rhythm.state.audioStatus).toBe('blocked')
+    )
+    act(() =>
+      handleKeyDownLogic({
+        e: new KeyboardEvent('keydown', { key: 'Escape' }),
+        getLaneIndex: () => undefined,
+        actions: { registerInput: vi.fn() },
+        triggerBandAnimation: vi.fn(),
+        onTogglePause: result.current.session.handleTogglePause,
+        ensureAudioFromGesture: vi.fn()
+      })
+    )
+    expect(result.current.session.isPaused).toBe(true)
+    let retry
+    await act(async () => {
+      retry = result.current.audio.retryAudioInitialization()
+      await Promise.resolve()
+    })
+    await act(async () => {
+      result.current.audio.onStageReady()
+      await retry
+    })
+    const state = result.current.rhythm.gameStateRef.current
+    state.notes = [{ time: 100, laneIndex: 0, visible: true, hit: false }]
+    state.totalDuration = 5000
+    state.rng = () => 1
+    const handleMiss = vi.fn()
+    processRhythmGameTick({
+      stateRef: state,
+      isTransportRunning: true,
+      transportState: 'started',
+      activeEvent: null,
+      dimensionsRef: { current: { width: 800, height: 600 } },
+      hecklerSessionRef: { current: createHecklerSession() },
+      deltaMS: 16,
+      handleCollision: vi.fn(),
+      setIsToxicMode: vi.fn(),
+      setIsCorruptionBurstActive: vi.fn(),
+      handleMiss,
+      finalizeGigCallback: vi.fn(),
+      getGigTimeMs: () => 1000,
+      pauseAudio: vi.fn(),
+      resumeAudio: vi.fn(),
+      setCorruptionState: vi.fn(),
+      disableCorruptionBurstAudio: vi.fn()
+    })
+    expect(handleMiss).not.toHaveBeenCalled()
+    expect(state.notes[0].visible).toBe(true)
+    expect(state.userPaused).toBe(true)
+    expect(result.current.session.isPaused).toBe(true)
+    act(() => result.current.session.handleTogglePause())
+    await waitFor(() => expect(result.current.session.isPaused).toBe(false))
+    expect(state.userPaused).toBe(false)
   })
 
   it('handles non-finite harmony gracefully', () => {

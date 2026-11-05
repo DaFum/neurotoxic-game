@@ -91,6 +91,7 @@ describe('useRhythmGameState', () => {
     expect(game.settleUnhitNotes).toBe(settleUnhitNotes)
     expect(game.sequenceAttemptId).toBe(42)
     expect(game.rivalPenaltyActive).toBe(true)
+    expect(game.userPaused).toBe(true)
     expect(game.speed).toBe(777)
     expect(game.modifiers).toBe(modifiers)
     expect(game.lanes).toBe(lanes)
@@ -104,7 +105,8 @@ describe('useRhythmGameState', () => {
           'modifiers',
           'speed',
           'sequenceAttemptId',
-          'rivalPenaltyActive'
+          'rivalPenaltyActive',
+          'userPaused'
         ].includes(key)
       )
         continue

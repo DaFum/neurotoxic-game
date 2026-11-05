@@ -14,9 +14,13 @@ import {
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  */
 export async function setupAudio() {
+  const generation = audioState.setupGeneration
   if (audioState.isSetup) return
   if (audioState.setupLock) {
     await audioState.setupLock
+    if (generation !== audioState.setupGeneration) {
+      throw new Error('Audio setup cancelled')
+    }
     if (!audioState.isSetup) {
       throw audioState.setupError || new Error('setupAudio failed')
     }
@@ -48,6 +52,11 @@ export async function setupAudio() {
     } catch (e) {
       startPromise = Promise.reject(e)
     }
+    // Observe rejection immediately, including when disposal cancels the
+    // setup while closing the previous context.
+    startPromise = startPromise.catch(e => {
+      logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)
+    })
 
     const previousRawContext =
       previousToneContext?.rawContext ?? previousToneContext
@@ -71,13 +80,25 @@ export async function setupAudio() {
           )
         }
       }
+      // Closing Web Audio alone leaves Tone's ticker worker and context
+      // listeners alive, including when recovery found an already-closed context.
+      try {
+        previousToneContext.dispose?.()
+      } catch (error) {
+        logger.warn(
+          'AudioEngine',
+          'Failed to dispose previous Tone context',
+          error
+        )
+      }
+      if (generation !== audioState.setupGeneration) {
+        throw new Error('Audio setup cancelled')
+      }
     }
 
-    try {
-      await startPromise
-    } catch (e) {
-      // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
-      logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)
+    await startPromise
+    if (generation !== audioState.setupGeneration) {
+      throw new Error('Audio setup cancelled')
     }
 
     setupMasterChain()
@@ -89,7 +110,9 @@ export async function setupAudio() {
 
     audioState.isSetup = true
   } catch (error) {
-    audioState.setupError = error
+    if (generation === audioState.setupGeneration) {
+      audioState.setupError = error
+    }
     throw error
   } finally {
     audioState.setupLock = null
