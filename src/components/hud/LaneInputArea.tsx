@@ -38,6 +38,7 @@ const LaneInputZone = memo(function LaneInputZone({
   onLaneInput
 }: LaneInputZoneProps) {
   const heldKeyRef = useRef<string | null>(null)
+  const mousePressedRef = useRef(false)
   const suppressKeyboardClickRef = useRef(false)
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (e.key !== 'Enter' && e.key !== ' ') return
@@ -45,12 +46,12 @@ const LaneInputZone = memo(function LaneInputZone({
     if (e.repeat || heldKeyRef.current !== null) return
     heldKeyRef.current = e.key
     suppressKeyboardClickRef.current = true
-    onLaneInput?.(laneIndex, true)
+    if (!mousePressedRef.current) onLaneInput?.(laneIndex, true)
   }
   const releaseKeyboard = () => {
     if (heldKeyRef.current === null) return
     heldKeyRef.current = null
-    onLaneInput?.(laneIndex, false)
+    if (!mousePressedRef.current) onLaneInput?.(laneIndex, false)
     // Native button clicks follow key release in the same event turn.
     queueMicrotask(() => {
       suppressKeyboardClickRef.current = false
@@ -62,14 +63,16 @@ const LaneInputZone = memo(function LaneInputZone({
     releaseKeyboard()
   }
 
-  const handleMouseDown = useCallback(
-    () => onLaneInput?.(laneIndex, true),
-    [laneIndex, onLaneInput]
-  )
-  const handleMouseUp = useCallback(
-    () => onLaneInput?.(laneIndex, false),
-    [laneIndex, onLaneInput]
-  )
+  const handleMouseDown = useCallback(() => {
+    if (mousePressedRef.current) return
+    mousePressedRef.current = true
+    if (heldKeyRef.current === null) onLaneInput?.(laneIndex, true)
+  }, [laneIndex, onLaneInput])
+  const handleMouseUp = useCallback(() => {
+    if (!mousePressedRef.current) return
+    mousePressedRef.current = false
+    if (heldKeyRef.current === null) onLaneInput?.(laneIndex, false)
+  }, [laneIndex, onLaneInput])
   const handleTouchStart = useCallback(
     (e: ReactTouchEvent<HTMLButtonElement>) => {
       e.preventDefault()

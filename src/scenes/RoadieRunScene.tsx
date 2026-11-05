@@ -91,6 +91,7 @@ export const RoadieRunScene = () => {
             role='dialog'
             aria-modal='true'
             aria-labelledby='roadie-briefing-title'
+            aria-describedby='roadie-briefing-warning'
             className='flex flex-col items-center justify-center gap-4 text-center text-star-white'
           >
             <h1
@@ -99,7 +100,7 @@ export const RoadieRunScene = () => {
             >
               {t('ui:roadieRun.hud.title')}
             </h1>
-            <p className='max-w-md'>
+            <p id='roadie-briefing-warning' className='max-w-md'>
               {t('ui:roadieRun.contraband.warning', {
                 item: t(`items:contraband.${uiState.carrying.id}.name`, {
                   defaultValue: uiState.carrying.id

@@ -8,12 +8,13 @@ import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
 import { useGameSelector } from '../context/GameState'
 import { finiteNumberOr } from '../utils/finiteNumber'
+import { formatNumber } from '../utils/numberUtils'
 
 /**
  * Hosts the tourbus travel minigame and hands completion to the arrival sequence.
  */
 export const TourbusScene = () => {
-  const { t } = useTranslation('minigame')
+  const { t, i18n } = useTranslation('minigame')
   const vanCondition = useGameSelector(state => state.player.van.condition)
   const startingConditionRef = useRef(finiteNumberOr(vanCondition, 0))
   const conditionLoss = Math.max(
@@ -47,7 +48,7 @@ export const TourbusScene = () => {
       completionButtonText={t('ui:continue', { defaultValue: 'CONTINUE' })}
       renderCompletionStats={() =>
         t('minigame:tourbus.condition_loss', {
-          loss: conditionLoss,
+          loss: formatNumber(conditionLoss, i18n.language, 1),
           defaultValue: 'Condition Loss: {{loss}}%'
         })
       }

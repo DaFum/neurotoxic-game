@@ -83,3 +83,52 @@ test('LaneInputArea releases a keyboard-held lane when focus leaves', () => {
     [0, false]
   ])
 })
+
+test('pointer movement does not release a keyboard-held lane', () => {
+  const handleInput = vi.fn()
+  render(<LaneInputArea onLaneInput={handleInput} />)
+  const lane = screen.getAllByRole('button')[0]
+  fireEvent.keyDown(lane, { key: ' ' })
+  fireEvent.mouseEnter(lane)
+  fireEvent.mouseLeave(lane)
+  expect(handleInput.mock.calls).toEqual([[0, true]])
+  fireEvent.keyUp(lane, { key: ' ' })
+  expect(handleInput.mock.calls).toEqual([
+    [0, true],
+    [0, false]
+  ])
+})
+
+test('mouse release followed by pointer exit releases only once', () => {
+  const handleInput = vi.fn()
+  render(<LaneInputArea onLaneInput={handleInput} />)
+  const lane = screen.getAllByRole('button')[0]
+  fireEvent.mouseDown(lane)
+  fireEvent.mouseUp(lane)
+  fireEvent.mouseLeave(lane)
+  expect(handleInput.mock.calls).toEqual([
+    [0, true],
+    [0, false]
+  ])
+})
+
+for (const firstReleased of ['keyboard', 'mouse']) {
+  test(`mixed input stays pressed until both sources release (${firstReleased} first)`, () => {
+    const handleInput = vi.fn()
+    render(<LaneInputArea onLaneInput={handleInput} />)
+    const lane = screen.getAllByRole('button')[0]
+    fireEvent.keyDown(lane, { key: ' ' })
+    fireEvent.mouseDown(lane)
+    const releaseKeyboard = () => fireEvent.keyUp(lane, { key: ' ' })
+    const releaseMouse = () => fireEvent.mouseLeave(lane)
+    if (firstReleased === 'keyboard') releaseKeyboard()
+    else releaseMouse()
+    expect(handleInput.mock.calls).toEqual([[0, true]])
+    if (firstReleased === 'keyboard') releaseMouse()
+    else releaseKeyboard()
+    expect(handleInput.mock.calls).toEqual([
+      [0, true],
+      [0, false]
+    ])
+  })
+}

@@ -320,3 +320,31 @@ test('DealCard identifies each offer in its accessible actions and preserves cal
   fireEvent.click(screen.getByRole('button', { name: 'Negotiate First Offer' }))
   expect(negotiate).toHaveBeenCalledWith(deals[0])
 })
+
+test('catalog offer action labels use the displayed translation and callbacks retain the original deal', () => {
+  const deal = {
+    id: 'energy_drink_cx',
+    name: 'Original energy drink name',
+    description: 'Original description',
+    offer: { upfront: 500, duration: 3 }
+  }
+  const accept = vi.fn()
+  const negotiate = vi.fn()
+  render(
+    <DealCard
+      deal={deal}
+      brandReputation={{}}
+      handleAcceptDeal={accept}
+      handleNegotiationStart={negotiate}
+    />
+  )
+  expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Accept Toxischer Energy-Drink' })
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Negotiate Toxischer Energy-Drink' })
+  )
+  expect(accept.mock.calls[0][0]).toBe(deal)
+  expect(negotiate.mock.calls[0][0]).toBe(deal)
+})

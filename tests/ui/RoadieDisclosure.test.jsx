@@ -70,6 +70,7 @@ describe('Roadie contraband disclosure', () => {
         itemName
       )
       expect(warning).toBeTruthy()
+      expect(screen.getByRole('dialog')).toHaveAccessibleDescription(warning)
       expect(screen.getAllByText(warning)).toHaveLength(2)
       expect(
         screen.getByRole('button', { name: ui['roadieRun.briefing.start'] })

@@ -41,6 +41,7 @@ export const Tooltip = ({
   const tooltipId = useId()
   const isHoveredRef = useRef(false)
   const isFocusedRef = useRef(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   const isValid = isValidElement(children)
   const isFragment = isValid && children.type === React.Fragment
@@ -61,6 +62,12 @@ export const Tooltip = ({
       styleValue !== null &&
       Object.hasOwn(styleValue as Record<string, unknown>, 'pointerEvents') &&
       (styleValue as Record<string, unknown>).pointerEvents === 'none')
+
+  // Changing to/from the disabled wrapper replaces the trigger without a blur.
+  React.useLayoutEffect(() => {
+    isFocusedRef.current =
+      wrapperRef.current?.contains(document.activeElement) ?? false
+  }, [isDisabled])
 
   const childPropsRef = useRef(childProps)
   // Ensure ref is updated synchronously during render so stale handlers are never called
@@ -195,10 +202,18 @@ export const Tooltip = ({
 
   return (
     <div
+      ref={wrapperRef}
       onMouseEnter={() => {
         isHoveredRef.current = true
       }}
-      onMouseLeave={() => {
+      onMouseOutCapture={e => {
+        // Capture runs before consumer handlers can stop propagation. Ignore
+        // moves within the trigger/tooltip, including across the hover bridge.
+        if (
+          e.relatedTarget instanceof Node &&
+          e.currentTarget.contains(e.relatedTarget)
+        )
+          return
         isHoveredRef.current = false
         if (!isFocusedRef.current) setIsVisible(false)
       }}

@@ -423,6 +423,7 @@ export interface DealInfoProps {
 export interface DealActionsProps {
   deal: BrandDeal
   displayDeal: BrandDeal
+  dealName: string
   isRevoked?: boolean
   hasNegotiated?: boolean
   negotiationState?: DealCardProps['negotiationState']

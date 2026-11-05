@@ -367,6 +367,7 @@ const DealActions = memo(
   ({
     deal,
     displayDeal,
+    dealName,
     isRevoked,
     hasNegotiated,
     negotiationState,
@@ -383,7 +384,7 @@ const DealActions = memo(
           <>
             <ActionButton
               aria-label={t('ui:deals.acceptOffer', {
-                name: displayDeal.name,
+                name: dealName,
                 defaultValue: 'Accept {{name}}'
               })}
               onClick={() => handleAcceptDeal(displayDeal)}
@@ -396,7 +397,7 @@ const DealActions = memo(
               <button
                 type='button'
                 aria-label={t('ui:deals.negotiateOffer', {
-                  name: displayDeal.name,
+                  name: dealName,
                   defaultValue: 'Negotiate {{name}}'
                 })}
                 onClick={() => handleNegotiationStart(deal)}
@@ -477,6 +478,7 @@ export const DealCard = memo(
         <DealActions
           deal={deal}
           displayDeal={displayDeal}
+          dealName={localizedDisplayDeal.name}
           isRevoked={isRevoked}
           hasNegotiated={hasNegotiated}
           negotiationState={negotiationState}

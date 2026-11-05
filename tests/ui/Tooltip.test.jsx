@@ -220,3 +220,35 @@ describe('Tooltip Component', () => {
     expect(getByText('0')).toBeInTheDocument()
   })
 })
+
+test('pointer exit dismisses independently of consumer propagation', () => {
+  const onMouseLeave = vi.fn(e => e.stopPropagation())
+  const { getByText, queryByRole } = render(
+    <Tooltip content='Details'>
+      <button onMouseLeave={onMouseLeave}>Trigger</button>
+    </Tooltip>
+  )
+  const trigger = getByText('Trigger')
+  fireEvent.mouseEnter(trigger)
+  fireEvent.mouseLeave(trigger, { relatedTarget: document.body })
+  expect(onMouseLeave).toHaveBeenCalledTimes(1)
+  expect(queryByRole('tooltip')).toBeNull()
+})
+
+test('replacing a focused trigger with a disabled wrapper clears stale focus', () => {
+  const { getByText, queryByRole, rerender } = render(
+    <Tooltip content='Details'>
+      <button>Trigger</button>
+    </Tooltip>
+  )
+  fireEvent.focus(getByText('Trigger'))
+  rerender(
+    <Tooltip content='Details'>
+      <button disabled>Trigger</button>
+    </Tooltip>
+  )
+  const wrapper = getByText('Trigger').parentElement
+  fireEvent.mouseEnter(wrapper)
+  fireEvent.mouseLeave(wrapper, { relatedTarget: document.body })
+  expect(queryByRole('tooltip')).toBeNull()
+})

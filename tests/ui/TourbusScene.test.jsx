@@ -3,7 +3,10 @@ import { act, render, screen, fireEvent } from '@testing-library/react'
 import { TourbusScene } from '../../src/scenes/TourbusScene'
 import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
 
-const { van } = vi.hoisted(() => ({ van: { condition: 100 } }))
+const { van, locale } = vi.hoisted(() => ({
+  van: { condition: 100 },
+  locale: { language: 'en' }
+}))
 vi.mock('../../src/context/GameState', () => ({
   useGameSelector: selector => selector({ player: { van } })
 }))
@@ -14,6 +17,7 @@ const handleArrivalSequence = vi.fn()
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
+    i18n: locale,
     t: (_k, o) =>
       _k === 'ui:continue'
         ? 'WEITER'
@@ -61,10 +65,11 @@ vi.mock('../../src/components/MinigameSceneFrame', () => ({
 describe('TourbusScene', () => {
   beforeEach(() => {
     van.condition = 100
+    locale.language = 'en'
   })
   it.each([
-    [100, 73, 27],
-    [10, 0, 10]
+    [100, 73, '27.0'],
+    [10, 0, '10.0']
   ])(
     'reports actual settled loss from %s to %s condition as %s%%',
     (starting, settled, loss) => {
@@ -81,7 +86,7 @@ describe('TourbusScene', () => {
     expect(screen.getByText('TOURBUS TERROR')).toBeInTheDocument()
     expect(screen.getByText(/DISTANCE:/)).toBeInTheDocument()
     expect(screen.getByText(/DAMAGE:/)).toBeInTheDocument()
-    expect(screen.getByText('Condition Loss: 0%')).toBeInTheDocument()
+    expect(screen.getByText('Condition Loss: 0.0%')).toBeInTheDocument()
     const completionButton = screen.getByRole('button', { name: 'WEITER' })
     expect(completionButton).toBeInTheDocument()
 
@@ -135,3 +140,19 @@ describe('TourbusScene', () => {
     })
   })
 })
+
+for (const [language, formatted] of [
+  ['en', '27.2'],
+  ['de', '27,2']
+]) {
+  it(`formats fractional settled wear in ${language}`, () => {
+    locale.language = language
+    van.condition = 100
+    const { rerender } = render(<TourbusScene />)
+    van.condition = 72.83999999999999
+    rerender(<TourbusScene />)
+    expect(
+      screen.getByText(`Condition Loss: ${formatted}%`)
+    ).toBeInTheDocument()
+  })
+}
