@@ -66,6 +66,17 @@ jobs:
         run: |
           ./scripts/lint-fix-preview.sh "$BASE_REF"
 
+      - name: Upload lint fix preview artifact
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lint-fix-preview
+          path: |
+            diff.patch
+            comment.md
+          if-no-files-found: ignore
+          retention-days: 1
+
       - name: Debug lint-preview outputs
         env:
           HAS_DIFF: ${{ steps.lint-preview.outputs.has_diff }}
@@ -83,7 +94,7 @@ jobs:
         # Forks cannot be commented on with the read-only token they receive.
         if: |
           github.event.pull_request.head.repo.full_name == github.repository &&
-          ((env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1')) ||
+          ((env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1' || steps.lint-preview.outputs.fix_failed == '1')) ||
           (env.POST_ON_DIFF_ONLY != 'true' && steps.lint-preview.outputs.should_comment == '1'))
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -123,3 +134,13 @@ jobs:
                 body,
               });
             }
+
+      - name: Fail when autofix left unresolved errors
+        if: ${{ always() && steps.lint-preview.outputs.fix_failed == '1' }}
+        env:
+          FORMAT_STATUS: ${{ steps.lint-preview.outputs.format_status }}
+          LINT_FIX_STATUS: ${{ steps.lint-preview.outputs.lint_fix_status }}
+        run: |
+          echo "format_status=$FORMAT_STATUS"
+          echo "lint_fix_status=$LINT_FIX_STATUS"
+          exit 1
