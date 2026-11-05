@@ -1161,6 +1161,12 @@ const finalizeExpedition = (
 
   const finalized: GameState = {
     ...materialized,
+    // Between-Tour choices apply through this Tour's prep and live play only.
+    // Expire them before the next Between-Tour decisions can replace them.
+    career: {
+      ...materialized.career,
+      nextTourPreferences: { rival: null, sponsor: null }
+    },
     expedition: {
       ...materialized.expedition,
       status: kind,
@@ -1393,6 +1399,10 @@ export const handleCompleteExpedition = (
           }
         }
       }
+      completionState = QuestEvents.emit(
+        completionState,
+        createExpeditionRivalOutcomeQuestEvent(rivalId, true)
+      )
     }
   }
   // The Finale's own reward enters the G1 ledger before settlement, so it is

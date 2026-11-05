@@ -174,25 +174,27 @@ function GameContent() {
           any scene, so they are owned here rather than inside AssetsScene. */}
       <AssetNotifications />
 
-      <ErrorBoundary>
-        <Suspense fallback={<SceneLoadingFallback />}>
-          <AnimatePresence mode='wait'>
-            <m.div
-              key={currentScene}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={MOTION_TRANSITIONS.scene}
-              className='w-full h-full'
-            >
-              <SceneRouter
-                currentScene={currentScene}
-                minigameType={minigameType}
-              />
-            </m.div>
-          </AnimatePresence>
-        </Suspense>
-      </ErrorBoundary>
+      <main className='w-full h-full'>
+        <ErrorBoundary>
+          <Suspense fallback={<SceneLoadingFallback />}>
+            <AnimatePresence mode='wait'>
+              <m.div
+                key={currentScene}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={MOTION_TRANSITIONS.scene}
+                className='w-full h-full'
+              >
+                <SceneRouter
+                  currentScene={currentScene}
+                  minigameType={minigameType}
+                />
+              </m.div>
+            </AnimatePresence>
+          </Suspense>
+        </ErrorBoundary>
+      </main>
       {VERCEL_TELEMETRY_ENABLED && (
         <>
           <Analytics />

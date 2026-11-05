@@ -228,7 +228,9 @@ describe('App', () => {
       mockGameState.currentScene = scene
       const { unmount } = render(<App />)
 
-      expect(screen.getByTestId(testId)).toBeTruthy()
+      expect(screen.getByRole('main')).toContainElement(
+        screen.getByTestId(testId)
+      )
       unmount()
     }
 

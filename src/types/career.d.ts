@@ -199,7 +199,8 @@ export interface BetweenTourRunState {
  *
  * @remarks
  * Bounded and single-slot on purpose: the decision is a lean, not a purchase,
- * so it cannot accumulate across Tours into permanent power.
+ * so it cannot accumulate across Tours into permanent power. Retained through
+ * prep and active play, then cleared atomically when that Tour is finalized.
  */
 export interface BetweenTourNextTourPreferences {
   rival: { rivalId: string; stance: 'confront' | 'cool_down' } | null

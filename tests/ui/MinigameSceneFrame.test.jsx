@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
-import { render, cleanup, screen, waitFor } from '@testing-library/react'
+import { act, render, cleanup, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 // Mock GameState context
@@ -14,8 +15,14 @@ vi.mock('../../src/context/GameState.tsx', () => ({
 
 // Mock PixiStage component
 const mockPixiStage = vi.fn()
+const mockStageMount = vi.fn()
+const mockStageUnmount = vi.fn()
 vi.mock('../../src/components/PixiStage.tsx', () => ({
   PixiStage: props => {
+    useEffect(() => {
+      mockStageMount()
+      return () => mockStageUnmount()
+    }, [])
     mockPixiStage(props)
     return <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
   }
@@ -40,6 +47,51 @@ describe('MinigameSceneFrame', () => {
     update: vi.fn()
   }
   const mockOnComplete = vi.fn()
+
+  test('offers retry after renderer failure without settling or advancing travel', async () => {
+    const user = userEvent.setup()
+    const finishMinigame = vi.fn()
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={{ ...mockLogic, finishMinigame }}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+    act(() =>
+      mockPixiStage.mock.lastCall[0].onInitError(new Error('WebGL unavailable'))
+    )
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /retry/i }))
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(mockStageMount).toHaveBeenCalledTimes(2)
+    expect(mockStageUnmount).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('pixi-stage-mock')).toBeInTheDocument()
+    expect(finishMinigame).not.toHaveBeenCalled()
+    expect(mockOnComplete).not.toHaveBeenCalled()
+  })
+
+  test('traps completion focus and makes background controls inert', async () => {
+    const user = userEvent.setup()
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: true }}
+        onComplete={mockOnComplete}
+      >
+        <button data-testid='steer'>Steer</button>
+      </MinigameSceneFrame>
+    )
+    expect(screen.getByTestId('steer').closest('[inert]')).not.toBeNull()
+    const button = screen.getByRole('button', { name: /continue/i })
+    button.focus()
+    await user.tab()
+    expect(button).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(button).toHaveFocus()
+  })
 
   test('renders PixiStage with correct props', async () => {
     render(

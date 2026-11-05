@@ -9,5 +9,7 @@
   "tourbus.title": "TOURBUS TERROR",
   "bandMembers.lars": "Lars",
   "bandMembers.marius": "Marius",
-  "bandMembers.matze": "Matze"
+  "bandMembers.matze": "Matze",
+  "renderer.failed": "Die Spielgrafik konnte nicht starten. Versuche es erneut, um fortzufahren.",
+  "renderer.retry": "ERNEUT VERSUCHEN"
 }

@@ -1,8 +1,12 @@
-import { afterEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 import { TourbusScene } from '../../src/scenes/TourbusScene'
 import { setActiveInputSource } from '../../src/utils/gamepad/inputSource'
 
+const { van } = vi.hoisted(() => ({ van: { condition: 100 } }))
+vi.mock('../../src/context/GameState', () => ({
+  useGameSelector: selector => selector({ player: { van } })
+}))
 const moveLeft = vi.fn()
 const moveRight = vi.fn()
 const handleArrivalSequence = vi.fn()
@@ -49,27 +53,35 @@ vi.mock('../../src/components/MinigameSceneFrame', () => ({
         {completionButtonText}
       </button>
       <div>{renderCompletionStats({ damage: 40 })}</div>
-      <div data-testid='hostile-stats'>
-        {renderCompletionStats({ damage: '40' })}
-        {renderCompletionStats({ damage: Number.NaN })}
-      </div>
       {children}
     </div>
   )
 }))
 
 describe('TourbusScene', () => {
+  beforeEach(() => {
+    van.condition = 100
+  })
+  it.each([
+    [100, 73, 27],
+    [10, 0, 10]
+  ])(
+    'reports actual settled loss from %s to %s condition as %s%%',
+    (starting, settled, loss) => {
+      van.condition = starting
+      const { rerender } = render(<TourbusScene />)
+      van.condition = settled
+      rerender(<TourbusScene />)
+      expect(screen.getByText(`Condition Loss: ${loss}%`)).toBeInTheDocument()
+    }
+  )
   it('renders overlays and routes controls/completion actions', () => {
     render(<TourbusScene />)
 
     expect(screen.getByText('TOURBUS TERROR')).toBeInTheDocument()
     expect(screen.getByText(/DISTANCE:/)).toBeInTheDocument()
     expect(screen.getByText(/DAMAGE:/)).toBeInTheDocument()
-    expect(screen.getByText('Condition Loss: 20%')).toBeInTheDocument()
-    // Numeric strings and NaN are not coerced: both fall back to zero damage.
-    expect(screen.getByTestId('hostile-stats')).toHaveTextContent(
-      'Condition Loss: 0%Condition Loss: 0%'
-    )
+    expect(screen.getByText('Condition Loss: 0%')).toBeInTheDocument()
     const completionButton = screen.getByRole('button', { name: 'WEITER' })
     expect(completionButton).toBeInTheDocument()
 

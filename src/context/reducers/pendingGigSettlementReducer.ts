@@ -3,18 +3,10 @@ import { GAME_PHASES } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { hasForbiddenKeysDeep, isLooseRecord } from '../../utils/objectUtils'
-import {
-  BALANCE_CONSTANTS,
-  calculateFameGain,
-  calculateFameLevel,
-  clampPlayerFame,
-  clampPlayerMoney,
-  finiteNumberOr
-} from '../../utils/gameState'
+import { finiteNumberOr } from '../../utils/gameState'
 import {
   PERF_SCORE_MAX,
-  PERF_SCORE_MIN,
-  calculateContinueStats
+  PERF_SCORE_MIN
 } from '../../utils/postGig/performanceLogic'
 import { MAX_DEAL_FAME_MULTIPLIER } from '../../utils/brandDealBenefits'
 import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
@@ -32,10 +24,8 @@ import {
 import { handleUpdateBand } from './bandReducer'
 import { handleRecordExpeditionCrewStressSource } from './crewReducer'
 import {
-  derivePostGigContinueEffects,
-  derivePostGigEconomyQuestEvents,
+  derivePostGigSettlementPolicy,
   drainBandStamina,
-  evaluateAcceptedSettlementSolvency,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
 import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
@@ -253,7 +243,7 @@ const applyPostGigContinueEffect = (
  *
  * @remarks
  * Mirrors `useContinueHandler`: sold merch, money, fame, the post-gig economy
- * quest events, every {@link derivePostGigContinueEffects} effect (pedal
+ * quest events, every {@link derivePostGigSettlementPolicy} effect (pedal
  * penalty, story quests, Contract signals, Festival Run Draft, crew Stress,
  * Finale stamina drain), Finale completion, and the bankruptcy and
  * Career-victory routing. The scene never reopens GIG or POST_GIG.
@@ -309,32 +299,28 @@ export const settlePendingGigOnLoad = (
   // the lifestyle cost, so re-reading it after settling could flip a Finale
   // that live Continue completed.
   const totalDailyObligations = getTotalDailyObligations(next)
-  const stats = calculateContinueStats({
+  const isFinaleGig =
+    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
+  const policy = derivePostGigSettlementPolicy({
     player,
-    perfScore: record.perfScore,
-    financials: { net: record.net },
-    misses: record.misses,
-    // Read from state like the Finale gate below, so a reload settles a
-    // collapsed gig exactly as live Continue did.
-    failed: state.lastGigStats?.failed === true,
-    bandStyle: finiteNumberOr(next.band.style, 0),
-    dealFameMultiplier: record.dealFameMultiplier,
-    calculateFameGain,
-    calculateFameLevel,
-    clampPlayerFame,
-    clampPlayerMoney,
-    BALANCE_CONSTANTS
-  })
-  // Continue refuses only the Cash an active run's protected Career Cash floor
-  // forbids and still lands the fame; settle under the same rule so a reload
-  // can neither spend that Cash nor lose that fame.
-  const { acceptedMoney } = evaluateAcceptedSettlementSolvency({
+    band: state.band,
     expedition: next.expedition,
-    previousMoney: player.money,
-    proposedMoney: stats.newMoney,
-    net: record.net,
+    activeStoryFlags: state.activeStoryFlags,
+    gigId: record.gigId,
+    // The record owns the shown misses; outcome still comes from gig stats.
+    lastGigStats: { ...state.lastGigStats, misses: record.misses },
+    financials: record,
+    perfScore: record.perfScore,
+    isFinaleGig,
     totalDailyObligations
   })
+  const {
+    stats,
+    acceptedMoney,
+    careerBankrupt,
+    careerFinale,
+    expeditionFinale
+  } = policy
 
   const settled: GameState = {
     ...next,
@@ -349,23 +335,6 @@ export const settlePendingGigOnLoad = (
   // bookkeeping (a rising balance retires a recorded travel refusal).
   next = enforceExpeditionCashFloor(next, settled, ActionTypes.UPDATE_PLAYER)
 
-  // Evaluate solvency from post-floor state money and the pre-settlement obligations.
-  const { insolvent, careerBankrupt } = evaluateAcceptedSettlementSolvency({
-    expedition: next.expedition,
-    previousMoney: next.player.money,
-    proposedMoney: next.player.money,
-    net: record.net,
-    totalDailyObligations
-  })
-
-  const isFinaleGig =
-    next.gameMap?.nodes?.[player.currentNodeId]?.type === 'FINALE'
-  const successfulFinale =
-    isFinaleGig && !insolvent && state.lastGigStats.failed !== true
-  const careerFinale = successfulFinale && next.expedition.status === 'idle'
-  const expeditionFinale =
-    successfulFinale && next.expedition.status === 'active'
-
   if (careerFinale) {
     next = {
       ...next,
@@ -376,7 +345,7 @@ export const settlePendingGigOnLoad = (
     }
   }
 
-  for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
+  for (const event of policy.economyQuestEvents) {
     next = handleApplyQuestEvent(next, event)
   }
 
@@ -384,16 +353,7 @@ export const settlePendingGigOnLoad = (
   // and applied in its dispatch order. The Contract signals among them must
   // land before completion, or a Finale settled here would fail Contracts the
   // gig actually satisfied.
-  for (const effect of derivePostGigContinueEffects({
-    band: state.band,
-    day: state.player.day,
-    activeStoryFlags: state.activeStoryFlags,
-    expedition: state.expedition,
-    gigId: record.gigId,
-    lastGigStats: state.lastGigStats,
-    isFinaleGig,
-    successfulFinale
-  })) {
+  for (const effect of policy.effects) {
     next = applyPostGigContinueEffect(next, effect)
   }
 

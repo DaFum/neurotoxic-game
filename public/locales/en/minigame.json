@@ -9,5 +9,7 @@
   "tourbus.title": "TOURBUS TERROR",
   "bandMembers.lars": "Lars",
   "bandMembers.marius": "Marius",
-  "bandMembers.matze": "Matze"
+  "bandMembers.matze": "Matze",
+  "renderer.failed": "The game renderer could not start. Retry to continue your run.",
+  "renderer.retry": "RETRY"
 }

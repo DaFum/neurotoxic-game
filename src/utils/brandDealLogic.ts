@@ -161,7 +161,6 @@ const buildEligibilityPool = (
 const scoreEntry = (
   entry: PoolEntry,
   gameState: SocialEngineGameState,
-  rivalPenalty: number,
   rng: RandomFn
 ): number => {
   const reputation = gameState.social?.brandReputation ?? {}
@@ -169,7 +168,27 @@ const scoreEntry = (
   const rep = finiteNumberOr(reputation[align], 0)
   const tierPenalty = entry.tier * 30
   const jitter = rng() * 25
-  return rep - rivalPenalty - tierPenalty + jitter
+  return rep - tierPenalty + jitter
+}
+
+// Offers remain available under rival pressure, but their cash payouts fall by
+// up to 20%. A uniform ranking penalty cannot affect which offers are selected.
+const applyRivalOfferPressure = (
+  offer: BrandOffer,
+  rivalPenalty: number
+): BrandOffer => {
+  if (rivalPenalty === 0) return offer
+  const multiplier = 1 - rivalPenalty / 100
+  return {
+    ...offer,
+    offer: {
+      ...offer.offer,
+      upfront: Math.floor(offer.offer.upfront * multiplier),
+      ...(offer.offer.perGig === undefined
+        ? {}
+        : { perGig: Math.floor(offer.offer.perGig * multiplier) })
+    }
+  }
 }
 
 /**
@@ -230,7 +249,7 @@ export const generateBrandOffers = (
       : 0
 
   const [top1, top2, top3] = selectTop3ByScore(pool, entry =>
-    scoreEntry(entry, gameState, rivalPower, rng)
+    scoreEntry(entry, gameState, rng)
   )
 
   // `buildEligibilityPool` is guaranteed to surface ≥ 3 distinct catalog
@@ -250,13 +269,16 @@ export const generateBrandOffers = (
     const entry = picked[i]
     if (entry) {
       offers.push(
-        buildBrandOffer(entry.deal, {
-          tier: entry.tier,
-          isStretched: entry.tier > 0,
-          gameState,
-          rng,
-          totalFollowers
-        })
+        applyRivalOfferPressure(
+          buildBrandOffer(entry.deal, {
+            tier: entry.tier,
+            isStretched: entry.tier > 0,
+            gameState,
+            rng,
+            totalFollowers
+          }),
+          rivalPower
+        )
       )
     }
   }
@@ -309,17 +331,20 @@ export const generateRankedBrandOffers = (
   const ranked = pool
     .map(entry => ({
       entry,
-      score: scoreEntry(entry, gameState, rivalPower, rng)
+      score: scoreEntry(entry, gameState, rng)
     }))
     .sort((a, b) => b.score - a.score)
   return ranked.map(({ entry }) =>
-    buildBrandOffer(entry.deal, {
-      tier: entry.tier,
-      isStretched: entry.tier > 0,
-      gameState,
-      rng,
-      totalFollowers
-    })
+    applyRivalOfferPressure(
+      buildBrandOffer(entry.deal, {
+        tier: entry.tier,
+        isStretched: entry.tier > 0,
+        gameState,
+        rng,
+        totalFollowers
+      }),
+      rivalPower
+    )
   )
 }
 

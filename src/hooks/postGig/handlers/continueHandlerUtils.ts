@@ -14,6 +14,11 @@ import {
 } from '../../../data/questsConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
 import {
+  BALANCE_CONSTANTS,
+  calculateFameGain,
+  calculateFameLevel,
+  clampPlayerFame,
+  clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
   finiteNumberOr,
@@ -33,6 +38,8 @@ import {
 import { getRegionKeyForLocation } from '../../../utils/mapUtils'
 import type { HandlerDispatchers } from './types'
 import { FLAGS } from '../../../data/flags.registry'
+import { calculateContinueStats } from '../../../utils/postGig'
+import type { PostGigFinancials } from '../../../types/economy'
 
 // Pure/orchestration seams for useContinueHandler, kept in a dedicated module
 // so they can be unit-tested directly while the hook module exports only the
@@ -196,19 +203,6 @@ export function derivePostGigEconomyQuestEvents(
 }
 
 /**
- * Evaluates fame and money gains to apply economy quest events.
- */
-export function dispatchEconomyQuests(
-  player: GameState['player'],
-  stats: { newFame: number; newMoney: number },
-  applyQuestEvent: HandlerDispatchers['applyQuestEvent']
-): void {
-  for (const event of derivePostGigEconomyQuestEvents(player, stats)) {
-    applyQuestEvent(event)
-  }
-}
-
-/**
  * Harmony after the Neurotoxic Pedal penalty, or `undefined` without the pedal (pure).
  */
 export function getNeurotoxicPenaltyHarmony(
@@ -272,7 +266,7 @@ export type PostGigContinueEffect =
  * Run Draft offer, accuracy-based crew Stress and the extra Finale stamina
  * drain (pure). Reads the state the post-gig screen shows, before Continue.
  */
-export function derivePostGigContinueEffects(params: {
+function derivePostGigContinueEffects(params: {
   band: GameState['band']
   day: number
   activeStoryFlags: string[] | undefined
@@ -351,6 +345,71 @@ export function derivePostGigContinueEffects(params: {
   }
 
   return effects
+}
+
+/**
+ * Shared payout, Finale and ordered quest/effect policy. Callers retain their
+ * action/reducer application, pending-record clearing, persistence and routing.
+ * Inputs describe the screen before payout (including daily obligations).
+ */
+export function derivePostGigSettlementPolicy(params: {
+  player: GameState['player']
+  band: GameState['band']
+  expedition: GameState['expedition'] | undefined
+  activeStoryFlags: string[] | undefined
+  gigId: string | undefined
+  lastGigStats: PostGigSummary | null
+  financials: Pick<PostGigFinancials, 'net' | 'dealFameMultiplier'>
+  perfScore: number
+  isFinaleGig: boolean
+  totalDailyObligations: number
+}) {
+  const { player, band, expedition, lastGigStats, financials, isFinaleGig } =
+    params
+  const stats = calculateContinueStats({
+    player,
+    perfScore: params.perfScore,
+    financials,
+    misses: lastGigStats?.misses ?? 0,
+    failed: lastGigStats?.failed === true,
+    bandStyle: finiteNumberOr(band.style, 0),
+    dealFameMultiplier: financials.dealFameMultiplier,
+    calculateFameGain,
+    calculateFameLevel,
+    clampPlayerFame,
+    clampPlayerMoney,
+    BALANCE_CONSTANTS
+  })
+  const solvency = evaluateAcceptedSettlementSolvency({
+    expedition,
+    previousMoney: player.money,
+    proposedMoney: stats.newMoney,
+    net: financials.net,
+    totalDailyObligations: params.totalDailyObligations
+  })
+  const successfulFinale =
+    isFinaleGig &&
+    !solvency.insolvent &&
+    !!params.gigId &&
+    !!lastGigStats &&
+    lastGigStats.failed !== true
+  return {
+    stats,
+    ...solvency,
+    careerFinale: successfulFinale && expedition?.status === 'idle',
+    expeditionFinale: successfulFinale && expedition?.status === 'active',
+    economyQuestEvents: derivePostGigEconomyQuestEvents(player, stats),
+    effects: derivePostGigContinueEffects({
+      band,
+      day: player.day,
+      activeStoryFlags: params.activeStoryFlags,
+      expedition,
+      gigId: params.gigId,
+      lastGigStats,
+      isFinaleGig,
+      successfulFinale
+    })
+  }
 }
 
 /**

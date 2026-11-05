@@ -1,5 +1,5 @@
-import { memo, useCallback } from 'react'
-import type { TouchEvent as ReactTouchEvent } from 'react'
+import { memo, useCallback, useRef } from 'react'
+import type { KeyboardEvent, TouchEvent as ReactTouchEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RHYTHM_LANES } from '../../utils/rhythmGameScoringUtils'
 
@@ -37,6 +37,31 @@ const LaneInputZone = memo(function LaneInputZone({
   ariaLabel,
   onLaneInput
 }: LaneInputZoneProps) {
+  const heldKeyRef = useRef<string | null>(null)
+  const suppressKeyboardClickRef = useRef(false)
+  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    e.preventDefault()
+    if (e.repeat || heldKeyRef.current !== null) return
+    heldKeyRef.current = e.key
+    suppressKeyboardClickRef.current = true
+    onLaneInput?.(laneIndex, true)
+  }
+  const releaseKeyboard = () => {
+    if (heldKeyRef.current === null) return
+    heldKeyRef.current = null
+    onLaneInput?.(laneIndex, false)
+    // Native button clicks follow key release in the same event turn.
+    queueMicrotask(() => {
+      suppressKeyboardClickRef.current = false
+    })
+  }
+  const handleKeyUp = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== heldKeyRef.current) return
+    e.preventDefault()
+    releaseKeyboard()
+  }
+
   const handleMouseDown = useCallback(
     () => onLaneInput?.(laneIndex, true),
     [laneIndex, onLaneInput]
@@ -70,6 +95,15 @@ const LaneInputZone = memo(function LaneInputZone({
       onMouseLeave={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+      onBlur={releaseKeyboard}
+      onClick={e => {
+        if (e.detail !== 0 || suppressKeyboardClickRef.current) return
+        onLaneInput?.(laneIndex, true)
+        onLaneInput?.(laneIndex, false)
+      }}
     >
       {/* Separator lines between lanes */}
       {laneIndex < 2 && (

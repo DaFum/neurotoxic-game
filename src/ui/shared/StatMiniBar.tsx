@@ -92,7 +92,7 @@ export const StatMiniBar = memo(function StatMiniBar({
   }
 
   const activeColor = isLow && warnColor ? warnColor : color
-  const textColor = activeColor.replace(/^bg-/, 'text-')
+  const textColor = 'text-star-white'
 
   return (
     <Tooltip content={label} position='bottom'>

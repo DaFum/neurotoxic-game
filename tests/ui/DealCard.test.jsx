@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { DealCard } from '../../src/components/postGig/DealCard.tsx'
 
 vi.mock('react-i18next', () => ({
@@ -13,7 +13,10 @@ vi.mock('react-i18next', () => ({
         'ui:stats.controversy': 'Kontroverse',
         'ui:stats.loyalty': 'Loyalität'
       }
-      return translations[key] ?? options?.defaultValue ?? key
+      const text = translations[key] ?? options?.defaultValue ?? key
+      return key.endsWith('Offer')
+        ? text.replace('{{name}}', options.name)
+        : text
     },
     i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   }),
@@ -189,11 +192,15 @@ test('DealCard stacks content and actions on narrow screens', () => {
   expect(card).toHaveClass('sm:flex-row')
   expect(card).toHaveClass('gap-4')
 
-  const acceptButton = screen.getByRole('button', { name: 'ACCEPT' })
+  const acceptButton = screen.getByRole('button', {
+    name: 'Accept Mobile Deal'
+  })
   expect(acceptButton).toHaveClass('w-full')
   expect(acceptButton).toHaveClass('min-h-11')
 
-  const negotiateButton = screen.getByRole('button', { name: 'NEGOTIATE' })
+  const negotiateButton = screen.getByRole('button', {
+    name: 'Negotiate Mobile Deal'
+  })
   expect(negotiateButton).toHaveClass('w-full')
   expect(negotiateButton).toHaveClass('min-h-11')
 })
@@ -282,4 +289,34 @@ test('DealCard ignores non-finite penalty values (#3485)', () => {
 
   expect(container).not.toHaveTextContent('NaN')
   expect(container).not.toHaveTextContent('Infinity')
+})
+
+test('DealCard identifies each offer in its accessible actions and preserves callbacks', () => {
+  const accept = vi.fn()
+  const negotiate = vi.fn()
+  const deals = ['First Offer', 'Second Offer'].map((name, index) => ({
+    id: `offer_${index}`,
+    name,
+    description: 'Sponsorship',
+    offer: { upfront: 500, duration: 3 }
+  }))
+  render(
+    <>
+      {deals.map(deal => (
+        <DealCard
+          key={deal.id}
+          deal={deal}
+          brandReputation={{}}
+          handleAcceptDeal={accept}
+          handleNegotiationStart={negotiate}
+        />
+      ))}
+    </>
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Accept Second Offer' }))
+  expect(accept).toHaveBeenCalledWith(
+    expect.objectContaining({ id: 'offer_1' })
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Negotiate First Offer' }))
+  expect(negotiate).toHaveBeenCalledWith(deals[0])
 })

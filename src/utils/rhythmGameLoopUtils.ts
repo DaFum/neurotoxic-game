@@ -379,23 +379,28 @@ export const processRhythmGameTick = ({
     )
   }
 
-  // ⚡ BOLT OPTIMIZATION: Pass `stateRef` directly to avoid frame-by-frame object allocation
-  // What: Replaced `{ health: stateRef.health, combo: stateRef.combo }` wrapper allocation with `stateRef`.
-  // Why: Prevents creating ~3,600 temporary object allocations per minute in the 60 FPS rhythm game update loop.
-  // Impact: Eliminates GC allocation pressure and reduces stutter risk during active rhythm minigames.
-  const newProjectile = trySpawnProjectile(
-    hecklerSessionRef.current,
-    stateRef,
-    stateRef.rng,
-    currentInnerWidth
-  )
-  if (newProjectile) {
-    stateRef.projectiles.push(newProjectile)
-  }
-
   const clockReset =
     stateRef.lastTickTimeMs !== undefined && now < stateRef.lastTickTimeMs
+  const previousTime = clockReset ? 0 : (stateRef.lastTickTimeMs ?? 0)
   stateRef.lastTickTimeMs = now
+
+  // Preserve the original 60 FPS spawn rate, sampling on gameplay-clock
+  // boundaries so render frequency and frozen audio cannot add hazard rolls.
+  const spawnAttempts = Math.max(
+    0,
+    Math.floor((now * 60) / 1000) - Math.floor((previousTime * 60) / 1000)
+  )
+  for (let attempt = 0; attempt < spawnAttempts; attempt++) {
+    const newProjectile = trySpawnProjectile(
+      hecklerSessionRef.current,
+      stateRef,
+      stateRef.rng,
+      currentInnerWidth
+    )
+    if (newProjectile) {
+      stateRef.projectiles.push(newProjectile)
+    }
+  }
 
   processToxicMode(stateRef, now, deltaMS, setIsToxicMode, clockReset)
 

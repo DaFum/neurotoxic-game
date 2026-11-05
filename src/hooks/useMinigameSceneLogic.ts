@@ -16,6 +16,7 @@ interface UseMinigameSceneLogicProps {
   /** Callback triggered on escape (exit), skipped, or dev auto-completion. This is not triggered on normal minigame finish. */
   onComplete: () => void
   escapeCompletes?: boolean
+  manageFocus?: boolean
 }
 
 /**
@@ -36,7 +37,8 @@ export const useMinigameSceneLogic = ({
   logic,
   uiState,
   onComplete,
-  escapeCompletes = true
+  escapeCompletes = true,
+  manageFocus = true
 }: UseMinigameSceneLogicProps) => {
   const band = useGameSelector(state => state?.band)
   const expedition = useGameSelector(state => state?.expedition)
@@ -54,7 +56,7 @@ export const useMinigameSceneLogic = ({
   }, [logic, onComplete])
 
   useLayoutEffect(() => {
-    if (uiState?.isGameOver) {
+    if (manageFocus && uiState?.isGameOver) {
       previousFocusRef.current =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
@@ -68,7 +70,7 @@ export const useMinigameSceneLogic = ({
         previousFocusRef.current = null
       }
     }
-  }, [uiState?.isGameOver])
+  }, [uiState?.isGameOver, manageFocus])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

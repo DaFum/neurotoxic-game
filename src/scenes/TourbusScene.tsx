@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'
 import { useArrivalLogic } from '../hooks/useArrivalLogic'
@@ -6,7 +6,7 @@ import { createTourbusStageController } from '../components/stage/TourbusStageCo
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
-import { calculateTravelMinigameResult } from '../utils/economy'
+import { useGameSelector } from '../context/GameState'
 import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
@@ -14,6 +14,12 @@ import { finiteNumberOr } from '../utils/finiteNumber'
  */
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')
+  const vanCondition = useGameSelector(state => state.player.van.condition)
+  const startingConditionRef = useRef(finiteNumberOr(vanCondition, 0))
+  const conditionLoss = Math.max(
+    0,
+    startingConditionRef.current - finiteNumberOr(vanCondition, 0)
+  )
   const { uiState, gameStateRef, stats, update, actions, finishMinigame } =
     useTourbusLogic()
   const { handleArrivalSequence } = useArrivalLogic()
@@ -39,17 +45,12 @@ export const TourbusScene = () => {
         defaultValue: 'DESTINATION REACHED'
       })}
       completionButtonText={t('ui:continue', { defaultValue: 'CONTINUE' })}
-      renderCompletionStats={(state: unknown) => {
-        const damage =
-          state && typeof state === 'object'
-            ? finiteNumberOr((state as { damage?: unknown }).damage, 0)
-            : 0
-        const { conditionLoss } = calculateTravelMinigameResult(damage, [])
-        return t('minigame:tourbus.condition_loss', {
+      renderCompletionStats={() =>
+        t('minigame:tourbus.condition_loss', {
           loss: conditionLoss,
           defaultValue: 'Condition Loss: {{loss}}%'
         })
-      }}
+      }
     >
       {/* UI Overlay */}
       <TourbusHUD distance={uiState.distance} damage={uiState.damage} />

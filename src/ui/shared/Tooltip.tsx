@@ -39,6 +39,8 @@ export const Tooltip = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
+  const isHoveredRef = useRef(false)
+  const isFocusedRef = useRef(false)
 
   const isValid = isValidElement(children)
   const isFragment = isValid && children.type === React.Fragment
@@ -77,7 +79,6 @@ export const Tooltip = ({
 
   const handleMouseLeave = useCallback(
     (e: SyntheticEvent) => {
-      setIsVisible(false)
       const fn = getOwn<unknown>(childPropsRef.current, 'onMouseLeave')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
@@ -87,6 +88,7 @@ export const Tooltip = ({
 
   const handleFocus = useCallback(
     (e: SyntheticEvent) => {
+      isFocusedRef.current = true
       setIsVisible(true)
       const fn = getOwn<unknown>(childPropsRef.current, 'onFocus')
       if (!isDisabled && typeof fn === 'function')
@@ -97,7 +99,8 @@ export const Tooltip = ({
 
   const handleBlur = useCallback(
     (e: SyntheticEvent) => {
-      setIsVisible(false)
+      isFocusedRef.current = false
+      if (!isHoveredRef.current) setIsVisible(false)
       const fn = getOwn<unknown>(childPropsRef.current, 'onBlur')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
@@ -192,6 +195,13 @@ export const Tooltip = ({
 
   return (
     <div
+      onMouseEnter={() => {
+        isHoveredRef.current = true
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false
+        if (!isFocusedRef.current) setIsVisible(false)
+      }}
       className={`${isFullWidth ? 'block w-full' : 'inline-block'} ${className?.split(/\s+/).includes('absolute') ? '' : 'relative'} ${className}`}
     >
       {trigger}
@@ -199,7 +209,7 @@ export const Tooltip = ({
         <div
           id={tooltipId}
           role='tooltip'
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-(--z-toast) text-xs text-star-white ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
+          className={`pointer-events-auto absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-(--z-toast) text-xs text-star-white ${position === 'bottom' ? 'top-full before:absolute before:inset-x-0 before:bottom-full before:h-2 translate-y-2' : 'bottom-full before:absolute before:inset-x-0 before:top-full before:h-2 -translate-y-2'}`}
         >
           {content}
         </div>

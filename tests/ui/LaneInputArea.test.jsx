@@ -34,3 +34,52 @@ test('LaneInputArea registers clicks and touch events on lanes', () => {
   expect(handleInput).toHaveBeenCalledTimes(6)
   expect(handleInput).toHaveBeenNthCalledWith(6, 1, false)
 })
+
+for (const key of ['Enter', ' ']) {
+  test(`LaneInputArea supports ${key} press/release without repeats or synthetic clicks`, () => {
+    const handleInput = vi.fn()
+    render(<LaneInputArea onLaneInput={handleInput} />)
+    const lane = screen.getAllByRole('button')[0]
+    fireEvent.keyDown(lane, { key })
+    fireEvent.keyDown(lane, { key, repeat: true })
+    expect(handleInput.mock.calls).toEqual([[0, true]])
+    fireEvent.keyUp(lane, { key })
+    fireEvent.click(lane, { detail: 0 })
+    expect(handleInput.mock.calls).toEqual([
+      [0, true],
+      [0, false]
+    ])
+  })
+}
+
+test('LaneInputArea supports assistive click activation and ignores pointer click duplicates', () => {
+  const handleInput = vi.fn()
+  render(<LaneInputArea onLaneInput={handleInput} />)
+  const lane = screen.getAllByRole('button')[1]
+  fireEvent.click(lane, { detail: 0 })
+  expect(handleInput.mock.calls).toEqual([
+    [1, true],
+    [1, false]
+  ])
+  fireEvent.mouseDown(lane)
+  fireEvent.mouseUp(lane)
+  fireEvent.click(lane, { detail: 1 })
+  expect(handleInput.mock.calls).toEqual([
+    [1, true],
+    [1, false],
+    [1, true],
+    [1, false]
+  ])
+})
+
+test('LaneInputArea releases a keyboard-held lane when focus leaves', () => {
+  const handleInput = vi.fn()
+  render(<LaneInputArea onLaneInput={handleInput} />)
+  const lane = screen.getAllByRole('button')[0]
+  fireEvent.keyDown(lane, { key: ' ' })
+  fireEvent.blur(lane)
+  expect(handleInput.mock.calls).toEqual([
+    [0, true],
+    [0, false]
+  ])
+})

@@ -153,8 +153,8 @@ export const buildPreparedExpeditionSponsorOffers = (
   // neither buys extra offers or extra payout.
   // The lean a Between-Tour `sponsor_follow_up` left, for that deal only:
   // keeping the relationship is worth one more genuine match, walking away one
-  // fewer. Single-slot on the Career and overwritten by the next Tour's
-  // decision, so it is a lean rather than a purchase.
+  // fewer. Single-slot on the Career and cleared at this Tour's terminal
+  // settlement, so it cannot leak into later Tours.
   const sponsorPreference = state.career?.nextTourPreferences?.sponsor
   const preferenceBias =
     sponsorPreference &&
