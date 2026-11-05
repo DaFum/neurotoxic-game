@@ -19,6 +19,7 @@ import {
   createPrepareExpeditionSponsorOffersAction,
   prepareExpeditionSponsorOffers
 } from '../../src/context/expeditionActionCreators.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import {
   getCanonicalBrandDealTermsHash,
@@ -40,6 +41,279 @@ import {
 } from '../expeditionLifecycleFixture.js'
 
 describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
+  it('stages against the route-selected Career rival and survives load before START', () => {
+    for (const [regionId, tourTypeId, baselineCount] of [
+      ['corporate_circuit', 'corporate_tour', 4],
+      [FIXTURE_REGION_ID, FIXTURE_TOUR_ID, 3]
+    ]) {
+      // Use a real route carrying an encounter, rather than making the live
+      // rival force a route that would not otherwise select one.
+      let seed = 1
+      while (
+        !buildExpeditionMap(seed, tourTypeId, regionId).nodeOrder.some(
+          id =>
+            buildExpeditionMap(seed, tourTypeId, regionId).meta[id]
+              ?.specialSubtype === 'RIVAL_ENCOUNTER'
+        )
+      )
+        seed += 1
+      for (const staleBand of [
+        null,
+        {
+          id: 'other_region',
+          name: 'Other',
+          alignment: 'NEUTRAL',
+          powerLevel: 1,
+          currentLocationId: null
+        }
+      ]) {
+        let fullOffers
+        for (const level of [2, 3, 4]) {
+          const fresh = withExpeditionCapabilities(
+            createInitialState(),
+            Object.keys(EXPEDITION_UNLOCK_SETS)
+          )
+          fresh.player.money = 5000
+          fresh.player.fame = 100
+          fresh.player.van.fuel = 100
+          fresh.rivalBand = staleBand
+          const record = (id, preferredRegionId, nemesisLevel) => ({
+            snapshot: {
+              id,
+              name: id,
+              style: 'NEUTRAL',
+              preferredRegionId,
+              signatureBehavior: 'aggressive',
+              seed: 1
+            },
+            history: {
+              relationship: 'rival',
+              nemesisLevel,
+              encounterCount: 2,
+              lastOutcome: null,
+              lastSeenRunId: null,
+              lastNemesisAdvanceRunId: null
+            }
+          })
+          fresh.career.rivalsById = {
+            selected: record('selected', regionId, level),
+            other_region: record('other_region', 'underground_scene', 4)
+          }
+          const prep = gameReducer(fresh, {
+            type: ActionTypes.PREPARE_EXPEDITION_RUN,
+            payload: { prepId: 'route_rival', runSeed: seed }
+          })
+          const staged = gameReducer(
+            prep,
+            createPrepareExpeditionSponsorOffersAction(
+              seed,
+              regionId,
+              tourTypeId
+            )
+          )
+          const offers = staged.expedition.preparedSponsorOffers
+          assert.equal(
+            offers.length,
+            baselineCount - (level >= 3 ? 1 : 0),
+            `${regionId}, level ${level}, live ${staleBand?.id}`
+          )
+          if (level === 2) fullOffers = offers
+          else assert.deepEqual(offers, fullOffers.slice(0, baselineCount - 1))
+          const loaded = gameReducer(createInitialState(), {
+            type: ActionTypes.LOAD_GAME,
+            payload: JSON.parse(JSON.stringify(staged))
+          })
+          assert.deepEqual(loaded.expedition.preparedSponsorOffers, offers)
+          assert.deepEqual(
+            loaded.expedition.preparedSponsorProvenance,
+            staged.expedition.preparedSponsorProvenance
+          )
+          const started = gameReducer(loaded, {
+            type: ActionTypes.START_EXPEDITION,
+            payload: {
+              prepId: 'route_rival',
+              expectedRunSeed: seed,
+              loadout: fixtureLoadout({
+                regionId,
+                tourTypeId,
+                build: { sponsorOfferId: offers.at(-1).offerId }
+              })
+            }
+          })
+          assert.equal(started.expedition.status, 'active')
+          assert.equal(started.rivalBand?.id, 'selected')
+          assert.equal(
+            started.career.rivalsById.selected.history.nemesisLevel,
+            level
+          )
+        }
+      }
+    }
+  })
+
+  it('does not carry a different route or locked Career feud into staging', () => {
+    const regionId = 'corporate_circuit'
+    const tourTypeId = 'corporate_tour'
+    let seed = 1
+    while (
+      !buildExpeditionMap(seed, tourTypeId, regionId).nodeOrder.some(
+        id =>
+          buildExpeditionMap(seed, tourTypeId, regionId).meta[id]
+            ?.specialSubtype === 'RIVAL_ENCOUNTER'
+      )
+    )
+      seed += 1
+    const fresh = withExpeditionCapabilities(
+      createInitialState(),
+      Object.keys(EXPEDITION_UNLOCK_SETS)
+    )
+    fresh.player.money = 5000
+    fresh.player.fame = 100
+    fresh.player.van.fuel = 100
+    fresh.rivalBand = {
+      id: 'old',
+      name: 'Old',
+      alignment: 'NEUTRAL',
+      powerLevel: 4,
+      currentLocationId: null
+    }
+    fresh.career.rivalsById = {
+      old: {
+        snapshot: {
+          id: 'old',
+          name: 'Old',
+          style: 'NEUTRAL',
+          preferredRegionId: 'underground_scene',
+          signatureBehavior: 'aggressive',
+          seed: 1
+        },
+        history: {
+          relationship: 'rival',
+          nemesisLevel: 3,
+          encounterCount: 3,
+          lastOutcome: null,
+          lastSeenRunId: null,
+          lastNemesisAdvanceRunId: null
+        }
+      }
+    }
+    const prep = gameReducer(fresh, {
+      type: ActionTypes.PREPARE_EXPEDITION_RUN,
+      payload: { prepId: 'new_feud', runSeed: seed }
+    })
+    for (const canContinue of [true, false]) {
+      const candidate = structuredClone(prep)
+      if (!canContinue) {
+        candidate.career.unlockedSetIds =
+          candidate.career.unlockedSetIds.filter(id => id !== 'rival_network')
+        candidate.career.rivalsById.old.snapshot.preferredRegionId = regionId
+      }
+      const staged = gameReducer(
+        candidate,
+        createPrepareExpeditionSponsorOffersAction(seed, regionId, tourTypeId)
+      )
+      assert.equal(staged.expedition.preparedSponsorOffers.length, 4)
+      const started = gameReducer(staged, {
+        type: ActionTypes.START_EXPEDITION,
+        payload: {
+          prepId: 'new_feud',
+          expectedRunSeed: seed,
+          loadout: fixtureLoadout({
+            regionId,
+            tourTypeId,
+            build: {
+              sponsorOfferId: staged.expedition.preparedSponsorOffers[3].offerId
+            }
+          })
+        }
+      })
+      assert.equal(started.expedition.status, 'active')
+      assert.notEqual(started.rivalBand?.id, 'old')
+    }
+  })
+
+  it('uses the chosen Tour force rule while ignoring a stale prior loadout', () => {
+    const regionId = FIXTURE_REGION_ID
+    for (const tourTypeId of ['rival_hunt_tour', FIXTURE_TOUR_ID]) {
+      let seed = 1
+      while (
+        buildExpeditionMap(seed, FIXTURE_TOUR_ID, regionId).nodeOrder.some(
+          id =>
+            buildExpeditionMap(seed, FIXTURE_TOUR_ID, regionId).meta[id]
+              ?.specialSubtype === 'RIVAL_ENCOUNTER'
+        )
+      )
+        seed += 1
+      const fresh = withExpeditionCapabilities(createInitialState(), [
+        'rival_network'
+      ])
+      fresh.player.money = 5000
+      fresh.player.fame = 100
+      fresh.player.van.fuel = 100
+      fresh.rivalBand = {
+        id: 'feud',
+        name: 'Feud',
+        alignment: 'NEUTRAL',
+        powerLevel: 4,
+        currentLocationId: null
+      }
+      fresh.career.rivalsById = {
+        feud: {
+          snapshot: {
+            id: 'feud',
+            name: 'Feud',
+            style: 'NEUTRAL',
+            preferredRegionId: regionId,
+            signatureBehavior: 'aggressive',
+            seed: 1
+          },
+          history: {
+            relationship: 'rival',
+            nemesisLevel: 3,
+            encounterCount: 3,
+            lastOutcome: null,
+            lastSeenRunId: null,
+            lastNemesisAdvanceRunId: null
+          }
+        }
+      }
+      const prep = gameReducer(fresh, {
+        type: ActionTypes.PREPARE_EXPEDITION_RUN,
+        payload: { prepId: 'chosen_tour', runSeed: seed }
+      })
+      // The prior run hunted the Rival. It must not force the new ordinary Tour.
+      prep.expedition.loadout = fixtureLoadout({
+        tourTypeId: 'rival_hunt_tour'
+      })
+      const staged = gameReducer(
+        prep,
+        createPrepareExpeditionSponsorOffersAction(seed, regionId, tourTypeId)
+      )
+      const hunts = tourTypeId === 'rival_hunt_tour'
+      assert.equal(
+        staged.expedition.preparedSponsorOffers.length,
+        hunts ? 2 : 3
+      )
+      const started = gameReducer(staged, {
+        type: ActionTypes.START_EXPEDITION,
+        payload: {
+          prepId: 'chosen_tour',
+          expectedRunSeed: seed,
+          loadout: fixtureLoadout({
+            regionId,
+            tourTypeId,
+            build: {
+              sponsorOfferId:
+                staged.expedition.preparedSponsorOffers.at(-1).offerId
+            }
+          })
+        }
+      })
+      assert.equal(started.expedition.status, 'active')
+      assert.equal(started.rivalBand?.id ?? null, hunts ? 'feud' : null)
+    }
+  })
+
   it('stages deterministic offers via PREPARE_EXPEDITION_SPONSOR_OFFERS', () => {
     const prep = preparedState()
     assert.deepEqual(prep.expedition.preparedSponsorOffers, [])

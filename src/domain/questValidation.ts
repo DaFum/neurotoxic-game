@@ -82,6 +82,12 @@ export const isProgressRuleLike = (value: unknown): boolean => {
     return false
   }
   if (value.match !== undefined && !isLooseRecord(value.match)) return false
+  if (
+    isLooseRecord(value.match) &&
+    value.match.minScore !== undefined &&
+    !isFiniteNumber(value.match.minScore)
+  )
+    return false
   return true
 }
 

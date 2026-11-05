@@ -1352,6 +1352,7 @@ test('systemReducer - LOAD_GAME', async t => {
     'preserves an admitted canonical inline definition and its completion cooldown',
     () => {
       const loaded = reloadInline(inlineDelivery)
+      assert.ok(loaded.activeStoryFlags.includes('inline_delivery_active'))
       assert.deepEqual(loaded.activeQuests, [inlineDelivery])
       const once = travel(loaded)
       assert.equal(once.activeQuests[0].progress, 1)
@@ -1503,7 +1504,7 @@ test('systemReducer - LOAD_GAME', async t => {
         event: 'travel.completed',
         amount: 'fixed',
         fixedAmount: 1,
-        match: { tags: ['delivery'], minScore: 'legacy-compatible' }
+        match: { tags: ['delivery'], minScore: 100 }
       }
       const raw = {
         ...inlineDelivery,
@@ -1547,6 +1548,12 @@ test('systemReducer - LOAD_GAME', async t => {
         { type: 'social.loyalty', amount: -7 }
       ])
       assert.deepEqual(quest.progressRules, [validRule])
+      const progressed = QuestProgress.applyEvent(loaded, {
+        type: 'travel.completed',
+        tags: ['delivery'],
+        context: { score: 100 }
+      })
+      assert.equal(progressed.activeQuests[0].progress, 1)
       assert.notStrictEqual(quest.progressRules[0], validRule)
       assert.notStrictEqual(quest.progressRules[0].match, validRule.match)
       assert.notStrictEqual(
@@ -1583,6 +1590,55 @@ test('systemReducer - LOAD_GAME', async t => {
       )
     }
   )
+
+  await t.test('rejects nonpositive inline requirements', () => {
+    for (const required of [0, -1, -0.5]) {
+      const loaded = handleLoadGame(createInitialState(), {
+        activeQuests: [{ id: 'inline_required', required }]
+      })
+      assert.deepEqual(loaded.activeQuests, [])
+    }
+    for (const fields of [{}, { required: 0.5 }, { required: 2 }]) {
+      const loaded = handleLoadGame(createInitialState(), {
+        activeQuests: [{ id: 'inline_required', ...fields }]
+      })
+      assert.equal(loaded.activeQuests.length, 1)
+      assert.equal(loaded.activeQuests[0].required, fields.required)
+    }
+  })
+
+  await t.test(
+    'retains only saved start flags of surviving inline quests',
+    () => {
+      const loaded = handleLoadGame(createInitialState(), {
+        activeStoryFlags: ['inline_kept', 'stale_unknown', 'inline_dropped'],
+        activeQuests: [
+          {
+            id: 'inline_alive',
+            required: 2,
+            startFlags: ['inline_kept', 'not_present']
+          },
+          { id: 'inline_rejected', required: 0, startFlags: ['inline_dropped'] }
+        ]
+      })
+      assert.deepEqual(loaded.activeStoryFlags, ['inline_kept'])
+      assert.equal(loaded.activeQuests.length, 1)
+    }
+  )
+
+  await t.test('filters invalid inline rule score thresholds', () => {
+    for (const minScore of [NaN, Infinity, -Infinity, '100', null]) {
+      const loaded = handleLoadGame(createInitialState(), {
+        activeQuests: [
+          {
+            id: 'inline_invalid_score',
+            progressRules: [{ event: 'travel.completed', match: { minScore } }]
+          }
+        ]
+      })
+      assert.deepEqual(loaded.activeQuests[0].progressRules, [])
+    }
+  })
 
   await t.test(
     'drops inline policies that cannot enforce their cooldown or scope',

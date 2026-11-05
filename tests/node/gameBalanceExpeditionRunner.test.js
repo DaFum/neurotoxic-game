@@ -31,6 +31,10 @@ import {
   clampPlayerFame,
   clampPlayerMoney
 } from '../../src/utils/gameState/index.ts'
+import {
+  calculateRefuelCost,
+  EXPENSE_CONSTANTS
+} from '../../src/utils/economy/index.ts'
 import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
 
 describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
@@ -194,13 +198,37 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
         van: { ...base.player.van, fuel: 0 }
       }
     }
-    let fuelAfterFirstLeg = null
+    let afterFirstLeg = null
     const result = runExpeditionSimulation(state, profile, 4242, {
       onRouteStep: (step, current) => {
-        if (step === 1) fuelAfterFirstLeg = current.player.van.fuel
+        if (step === 1) afterFirstLeg = current
       }
     })
-    assert.ok(fuelAfterFirstLeg > 0)
+    // Prepay precisely the canonical pump price in a full-tank control. Both
+    // runs then enter travel with the same wallet, fuel and seeded inputs, so
+    // step 1 includes the same actual travel, daily and arrival-event costs.
+    const refuelCost = calculateRefuelCost(0)
+    assert.ok(refuelCost > 0)
+    const prepaid = {
+      ...state,
+      player: {
+        ...state.player,
+        money: state.player.money - refuelCost,
+        van: { ...state.player.van, fuel: EXPENSE_CONSTANTS.transport.maxFuel }
+      }
+    }
+    let prepaidAfterFirstLeg = null
+    const control = runExpeditionSimulation(prepaid, profile, 4242, {
+      onRouteStep: (step, current) => {
+        if (step === 1) prepaidAfterFirstLeg = current
+      }
+    })
+    assert.ok(afterFirstLeg)
+    assert.ok(prepaidAfterFirstLeg)
+    assert.ok(afterFirstLeg.player.van.fuel > 0)
+    assert.equal(afterFirstLeg.player.money, prepaidAfterFirstLeg.player.money)
+    assert.deepEqual(afterFirstLeg, prepaidAfterFirstLeg)
+    assert.deepEqual(result.routeVisited, control.routeVisited)
     assert.ok(result.routeVisited.length > 1)
   })
 

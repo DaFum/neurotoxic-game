@@ -374,190 +374,201 @@ export const useRhythmGameAudio = ({
   /**
    * Initializes gig physics and note data once per gig.
    */
-  const initializeGigState = useCallback(async () => {
-    // Prevent concurrent initialization
-    if (
-      !mountedRef.current ||
-      currentStatusRef.current === 'initializing' ||
-      currentStatusRef.current === 'ready'
-    ) {
-      return
-    }
-    const ctx = latestContextRef.current
-    const {
-      band: currentBand,
-      gameMap: currentGameMap,
-      player: currentPlayer,
-      setlist: currentSetlist,
-      gigModifiers: currentGigModifiers,
-      currentGig: activeGig,
-      conditionProfile: currentConditionProfile,
-      addToast: currentAddToast,
-      setLastGigStats: currentSetLastGigStats,
-      endGig: currentEndGig,
-      t: currentT,
-      setAudioStatus,
-      setIsGameOver: setGameOver,
-      setFailureKind
-    } = ctx
-
-    currentStatusRef.current = 'initializing'
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-    const { signal } = controller
-    const isAborted = () =>
-      signal.aborted || abortControllerRef.current !== controller
-    const failForStage = () => {
-      logger.error('RhythmGame', 'Gig stage failed to initialize.')
-      currentStatusRef.current = 'failed'
-      setAudioStatus('failed')
-      setFailureKind('stage')
-    }
-
-    try {
-      // Mute ambient radio to prevent audio overlap
-      audioEngine.stopMusic()
-
-      const currentHarmony = clampBandHarmony(currentBand?.harmony)
-
-      // Harmony Guard
-      const isBandCollapsed = handleHarmonyGuard({
-        currentHarmony,
-        hasResolvedLowHarmonyRef,
-        currentStatusRef,
-        gameStateRef,
-        setGameOver,
-        setAudioStatus,
-        currentT,
-        currentAddToast,
-        currentSetLastGigStats,
-        currentEndGig
-      })
-
-      if (isBandCollapsed) {
+  const initializeGigState = useCallback(
+    async (isRetry = false) => {
+      // Prevent concurrent initialization
+      if (
+        !mountedRef.current ||
+        currentStatusRef.current === 'initializing' ||
+        currentStatusRef.current === 'ready'
+      ) {
         return
       }
-
-      const audioUnlocked = await audioEngine.ensureAudioContext()
-
-      if (isAborted()) {
-        return
-      }
-
-      // A stage failure during the unlock already showed 'failed'; keep it
-      // rather than reporting 'blocked' or mounting a stage wait.
-      if (stageFailedRef.current) {
-        failForStage()
-        return
-      }
-
-      if (!audioUnlocked) {
-        logger.warn(
-          'RhythmGame',
-          'Audio Context blocked. Waiting for user gesture.'
-        )
-        currentStatusRef.current = 'blocked'
-        setAudioStatus('blocked')
-        return
-      }
-
-      // Reset cross-song tracking state for a new gig
-      resetGigStateTracking(gameStateRef)
-
-      const physicsSuccess = applyGigPhysicsSetup({
-        currentBand,
-        currentGigModifiers,
-        currentConditionProfile,
-        activeGig,
-        currentGameMap,
-        currentPlayer,
-        currentSetlist,
-        gameStateRef
-      })
-
-      if (!physicsSuccess) {
-        setAudioStatus('failed')
-        setFailureKind('audio')
-        currentStatusRef.current = 'failed'
-        return
-      }
-
-      const activeSetlist = resolveActiveSetlist(currentSetlist)
-
-      // The song clock must not run before the stage can draw it: a late first
-      // frame would auto-miss notes that were never shown. 'initializing' also
-      // lifts the blocked overlay on a retry so the stage can mount.
-      if (!stageReadyRef.current && !isAborted()) {
-        setAudioStatus('initializing')
-        await waitForStageReady(signal)
-      }
-
-      if (isAborted()) {
-        currentStatusRef.current = 'idle'
-        setAudioStatus('idle')
-        return
-      }
-
-      if (stageFailedRef.current) {
-        failForStage()
-        return
-      }
-
-      setAudioStatus('ready')
-      setFailureKind(null)
-      currentStatusRef.current = 'ready'
-      gameStateRef.current.onPlaybackError = error => {
-        if (currentStatusRef.current !== 'ready') return
-        invalidateSongSequence(gameStateRef)
-        currentStatusRef.current = 'failed'
-        const latest = latestContextRef.current
-        latest.setAudioStatus('failed')
-        latest.setFailureKind('audio')
-        audioEngine.stopAudio()
-        handleError(error, {
-          addToast: latest.addToast,
-          fallbackMessage: latest.t('ui:gig.errors.nextSongFailed', {
-            defaultValue: 'Failed to start next song!'
-          })
-        })
-      }
-      await audioEngine.playSongSequence(
-        0,
-        activeSetlist,
-        gameStateRef,
-        currentAddToast,
-        currentT
-      )
-    } catch (error) {
-      if (isAborted()) {
-        return
-      }
-
-      const translated = currentT('ui:gig.errors.initFailed', {
-        defaultValue: 'Gig initialization failed!'
-      })
-      const toastMessage =
-        typeof translated === 'string'
-          ? translated
-          : 'Gig initialization failed!'
-      // handleError toasts the translated fallback and only logs error.message.
-      handleError(error, {
+      const ctx = latestContextRef.current
+      const {
+        band: currentBand,
+        gameMap: currentGameMap,
+        player: currentPlayer,
+        setlist: currentSetlist,
+        gigModifiers: currentGigModifiers,
+        currentGig: activeGig,
+        conditionProfile: currentConditionProfile,
         addToast: currentAddToast,
-        fallbackMessage: toastMessage
-      })
-      currentStatusRef.current = 'failed'
-      setAudioStatus('failed')
-      // A stage failure that stopped the song under this call stays a stage
-      // failure even though the stopped playback rejects.
-      setFailureKind(stageFailedRef.current ? 'stage' : 'audio')
-    } finally {
-      if (abortControllerRef.current === controller) {
-        if (currentStatusRef.current !== 'ready' || isAborted()) {
+        setLastGigStats: currentSetLastGigStats,
+        endGig: currentEndGig,
+        t: currentT,
+        setAudioStatus,
+        setIsGameOver: setGameOver,
+        setFailureKind
+      } = ctx
+
+      currentStatusRef.current = 'initializing'
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+      const { signal } = controller
+      const isAborted = () =>
+        signal.aborted || abortControllerRef.current !== controller
+      const hasRetryEnded = () =>
+        isRetry &&
+        (gameStateRef.current.hasSubmittedResults ||
+          gameStateRef.current.isGameOver)
+      const failForStage = () => {
+        logger.error('RhythmGame', 'Gig stage failed to initialize.')
+        currentStatusRef.current = 'failed'
+        setAudioStatus('failed')
+        setFailureKind('stage')
+      }
+
+      try {
+        // Mute ambient radio to prevent audio overlap
+        audioEngine.stopMusic()
+
+        const currentHarmony = clampBandHarmony(currentBand?.harmony)
+
+        // Harmony Guard
+        const isBandCollapsed = handleHarmonyGuard({
+          currentHarmony,
+          hasResolvedLowHarmonyRef,
+          currentStatusRef,
+          gameStateRef,
+          setGameOver,
+          setAudioStatus,
+          currentT,
+          currentAddToast,
+          currentSetLastGigStats,
+          currentEndGig
+        })
+
+        if (isBandCollapsed) {
+          return
+        }
+
+        const audioUnlocked = await audioEngine.ensureAudioContext()
+
+        if (isAborted() || hasRetryEnded()) {
+          return
+        }
+
+        // A stage failure during the unlock already showed 'failed'; keep it
+        // rather than reporting 'blocked' or mounting a stage wait.
+        if (stageFailedRef.current) {
+          failForStage()
+          return
+        }
+
+        if (!audioUnlocked) {
+          logger.warn(
+            'RhythmGame',
+            'Audio Context blocked. Waiting for user gesture.'
+          )
+          currentStatusRef.current = 'blocked'
+          setAudioStatus('blocked')
+          return
+        }
+
+        // Reset cross-song tracking state for a new gig
+        resetGigStateTracking(gameStateRef)
+
+        const physicsSuccess = applyGigPhysicsSetup({
+          currentBand,
+          currentGigModifiers,
+          currentConditionProfile,
+          activeGig,
+          currentGameMap,
+          currentPlayer,
+          currentSetlist,
+          gameStateRef
+        })
+
+        if (!physicsSuccess) {
+          setAudioStatus('failed')
+          setFailureKind('audio')
+          currentStatusRef.current = 'failed'
+          return
+        }
+
+        const activeSetlist = resolveActiveSetlist(currentSetlist)
+
+        // The song clock must not run before the stage can draw it: a late first
+        // frame would auto-miss notes that were never shown. 'initializing' also
+        // lifts the blocked overlay on a retry so the stage can mount.
+        if (!stageReadyRef.current && !isAborted()) {
+          setAudioStatus('initializing')
+          await waitForStageReady(signal)
+        }
+
+        if (hasRetryEnded()) {
+          return
+        }
+
+        if (isAborted()) {
+          currentStatusRef.current = 'idle'
+          setAudioStatus('idle')
+          return
+        }
+
+        if (stageFailedRef.current) {
+          failForStage()
+          return
+        }
+
+        setAudioStatus('ready')
+        setFailureKind(null)
+        currentStatusRef.current = 'ready'
+        gameStateRef.current.onPlaybackError = error => {
+          if (currentStatusRef.current !== 'ready') return
+          invalidateSongSequence(gameStateRef)
+          currentStatusRef.current = 'failed'
+          const latest = latestContextRef.current
+          latest.setAudioStatus('failed')
+          latest.setFailureKind('audio')
           audioEngine.stopAudio()
+          handleError(error, {
+            addToast: latest.addToast,
+            fallbackMessage: latest.t('ui:gig.errors.nextSongFailed', {
+              defaultValue: 'Failed to start next song!'
+            })
+          })
+        }
+        await audioEngine.playSongSequence(
+          0,
+          activeSetlist,
+          gameStateRef,
+          currentAddToast,
+          currentT
+        )
+      } catch (error) {
+        if (isAborted() || hasRetryEnded()) {
+          return
+        }
+
+        const translated = currentT('ui:gig.errors.initFailed', {
+          defaultValue: 'Gig initialization failed!'
+        })
+        const toastMessage =
+          typeof translated === 'string'
+            ? translated
+            : 'Gig initialization failed!'
+        // handleError toasts the translated fallback and only logs error.message.
+        handleError(error, {
+          addToast: currentAddToast,
+          fallbackMessage: toastMessage
+        })
+        currentStatusRef.current = 'failed'
+        setAudioStatus('failed')
+        // A stage failure that stopped the song under this call stays a stage
+        // failure even though the stopped playback rejects.
+        setFailureKind(stageFailedRef.current ? 'stage' : 'audio')
+      } finally {
+        if (abortControllerRef.current === controller) {
+          if (currentStatusRef.current !== 'ready' || isAborted()) {
+            audioEngine.stopAudio()
+          }
         }
       }
-    }
-  }, [audioEngine, gameStateRef, waitForStageReady])
+    },
+    [audioEngine, gameStateRef, waitForStageReady]
+  )
 
   useEffect(() => {
     mountedRef.current = true
@@ -605,7 +616,7 @@ export const useRhythmGameAudio = ({
       stageFailedRef.current = false
       latestContextRef.current.setFailureKind(null)
     }
-    await initializeGigState()
+    await initializeGigState(true)
   }, [gameStateRef, initializeGigState, resetGameplayState])
 
   return { retryAudioInitialization, onStageReady, onStageInitError }

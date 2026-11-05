@@ -1,5 +1,11 @@
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
-import { getExpeditionStaticRoutePressureProfile } from './routeProfile'
+import {
+  deriveExpeditionRouteProfile,
+  getExpeditionStaticRoutePressureProfile
+} from './routeProfile'
+import { selectExpeditionRivalForRun } from './rivals'
+import { getExpeditionRegion } from '../../data/expedition/regions'
+import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionFameProfile } from './fame'
 import { generateRankedBrandOffers } from '../../utils/brandDealLogic'
 import {
@@ -9,7 +15,7 @@ import {
 } from '../../utils/postGig'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { mulberry32 } from '../../utils/seededRng'
-import { hashExpeditionRoute } from './map'
+import { buildExpeditionMap, hashExpeditionRoute } from './map'
 import type { GameState } from '../../types'
 import type { BrandDeal } from '../../types/social'
 import type {
@@ -100,9 +106,19 @@ export const buildPreparedExpeditionSponsorOffers = (
   tourTypeId: unknown,
   starterPerkId: string | null = null
 ): ExpeditionPreparedSponsorOffer[] => {
-  const rivalRecord = state.rivalBand
-    ? state.career?.rivalsById?.[state.rivalBand.id]
-    : undefined
+  const region = getExpeditionRegion(regionId)
+  const tour = getExpeditionTourType(tourTypeId)
+  const rivalSelection =
+    region && tour
+      ? selectExpeditionRivalForRun(
+          // The supplied profile owns the chosen Tour. Clear any old loadout
+          // so the selector's live override contributes only the Career feud.
+          { ...state, expedition: { ...state.expedition, loadout: null } },
+          buildExpeditionMap(state.runSeed, tour.id, region.id),
+          deriveExpeditionRouteProfile(region.id, tour.id)
+        )
+      : null
+  const rivalRecord = rivalSelection?.record
   // The run-stable half of the route profile, never the live one: this set is
   // derived at commit time and again on load, so a Fame or Nemesis change
   // mid-run must not silently produce a different one.
@@ -125,7 +141,7 @@ export const buildPreparedExpeditionSponsorOffers = (
   // `touring` band is owed two real matches if the pool has them - so nothing
   // here invents a threshold the Fame table does not already state.
   const generated = generateRankedBrandOffers(
-    state,
+    { ...state, rivalBand: rivalSelection?.rivalBand ?? null },
     mulberry32(sponsorSeed(state.runSeed)),
     { minPoolSize: MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS }
   )

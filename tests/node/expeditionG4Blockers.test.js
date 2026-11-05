@@ -21,6 +21,8 @@ import {
   preparedState,
   startedState,
   fixtureLoadout,
+  FIXTURE_REGION_ID,
+  FIXTURE_TOUR_ID,
   fixtureMap,
   firstExtractionRouteStep,
   walkTo,
@@ -457,7 +459,7 @@ test('persisted sponsor offers must equal the deterministic canonical offer set'
 })
 
 test('sponsor staging follows the selected Region and Tour', () => {
-  const started = startedState()
+  const started = withExpeditionCapabilities(startedState(), ['rival_network'])
   const offersFor = (regionId, tourTypeId) =>
     buildPreparedExpeditionSponsorOffers(started, regionId, tourTypeId)
   const baseline = offersFor(
@@ -482,6 +484,10 @@ test('sponsor staging follows the selected Region and Tour', () => {
         ...started.career.rivalsById,
         [rivalId]: {
           ...started.career.rivalsById[rivalId],
+          snapshot: {
+            ...started.career.rivalsById[rivalId].snapshot,
+            preferredRegionId: 'corporate_circuit'
+          },
           history: {
             ...started.career.rivalsById[rivalId]?.history,
             nemesisLevel: 3
@@ -1884,7 +1890,9 @@ test('the four Expedition quest producers fire from their canonical owners', () 
 })
 
 test('a Nemesis at level 3 takes one staged Sponsor offer off the table', () => {
-  const prepared = preparedState()
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'rival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -1913,18 +1921,40 @@ test('a Nemesis at level 3 takes one staged Sponsor offer off the table', () => 
     }
   })
 
-  const baseline = buildPreparedExpeditionSponsorOffers(atTier(0))
+  const baseline = buildPreparedExpeditionSponsorOffers(
+    atTier(0),
+    FIXTURE_REGION_ID,
+    FIXTURE_TOUR_ID
+  )
   assert.equal(baseline.length, 3)
   // Tiers below 3 do not interfere; the offers stay identical, not merely
   // equal in count.
-  assert.deepEqual(buildPreparedExpeditionSponsorOffers(atTier(2)), baseline)
+  assert.deepEqual(
+    buildPreparedExpeditionSponsorOffers(
+      atTier(2),
+      FIXTURE_REGION_ID,
+      FIXTURE_TOUR_ID
+    ),
+    baseline
+  )
 
-  const interfered = buildPreparedExpeditionSponsorOffers(atTier(3))
+  const interfered = buildPreparedExpeditionSponsorOffers(
+    atTier(3),
+    FIXTURE_REGION_ID,
+    FIXTURE_TOUR_ID
+  )
   assert.equal(interfered.length, 2)
   // The Rival takes one off the table rather than reshuffling the staging, so
   // the surviving offers are the same deterministic ones.
   assert.deepEqual(interfered, baseline.slice(0, 2))
-  assert.deepEqual(buildPreparedExpeditionSponsorOffers(atTier(4)), interfered)
+  assert.deepEqual(
+    buildPreparedExpeditionSponsorOffers(
+      atTier(4),
+      FIXTURE_REGION_ID,
+      FIXTURE_TOUR_ID
+    ),
+    interfered
+  )
 })
 
 test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {

@@ -8,6 +8,7 @@ import { selectTop3ByScore } from '../../src/utils/topSelection'
 import type { SocialEngineGameState, BrandDeal } from '../../src/types/social'
 import { buildBrandOffer } from '../../src/utils/brandOfferFlavor/index'
 import { mulberry32 } from '../../src/utils/seededRng'
+import { seededPostGigOffers } from './brandOffers.seed123.fixture'
 import {
   DEAL_NEGOTIATION_SAFE_CHANCE,
   DEAL_NEGOTIATION_PERSUASIVE_CHANCE,
@@ -151,14 +152,20 @@ describe('brandDealLogic', () => {
     })
 
     it('keeps the first three identical to post-gig offers including flavor and terms', () => {
-      for (const gameState of [
-        state,
-        { ...state, social: { ...state.social, instagram: 500000 } }
-      ]) {
+      for (const {
+        instagram,
+        offers: expectedPostGig
+      } of seededPostGigOffers) {
+        const gameState = {
+          ...state,
+          social: { ...state.social, instagram }
+        }
         const postGig = generateBrandOffers(gameState, mulberry32(123))
         const ranked = generateRankedBrandOffers(gameState, mulberry32(123), {
           minPoolSize: 3
         })
+        // Independent baseline catches RNG drift shared by both generators.
+        expect(postGig).toEqual(expectedPostGig)
         expect(postGig).toHaveLength(3)
         expect(new Set(postGig.map(offer => offer.id)).size).toBe(3)
         expect(ranked.slice(0, 3)).toEqual(postGig)

@@ -8,6 +8,35 @@ import {
 const CURRENT_DAY = 10
 
 describe('parseQuestPayload', () => {
+  test('validates finite rule score thresholds in both rule shapes', () => {
+    for (const key of ['progressRules', 'progressRule']) {
+      for (const minScore of [NaN, Infinity, -Infinity, '100', null]) {
+        const rule = { event: 'travel.completed', match: { minScore } }
+        const result = parseQuestPayload(
+          {
+            id: 'inline_score',
+            [key]: key === 'progressRules' ? [rule] : rule
+          },
+          CURRENT_DAY
+        )
+        assert.equal(result.ok, false)
+      }
+      for (const match of [{}, { minScore: 100 }, { minScore: 0.5 }]) {
+        const rule = { event: 'travel.completed', match }
+        assert.equal(
+          parseQuestPayload(
+            {
+              id: 'inline_score',
+              [key]: key === 'progressRules' ? [rule] : rule
+            },
+            CURRENT_DAY
+          ).ok,
+          true
+        )
+      }
+    }
+  })
+
   describe('accepts', () => {
     test('a bare quest id as the id variant', () => {
       const result = parseQuestPayload('quest_prove_yourself', CURRENT_DAY)

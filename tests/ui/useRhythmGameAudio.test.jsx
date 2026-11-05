@@ -720,6 +720,48 @@ describe('useRhythmGameAudio retry lifetime', () => {
     expect(hook.watched.map(fn => fn.mock.calls.length)).toEqual(counts)
   })
 
+  it.each(
+    ['hasSubmittedResults', 'isGameOver'].flatMap(endedFlag =>
+      ['unlocked', 'blocked', 'rejected'].map(outcome => [endedFlag, outcome])
+    )
+  )(
+    'preserves %s when a mounted retry unlock is %s after the gig ends',
+    async (endedFlag, outcome) => {
+      mocks.ensureAudioContext.mockResolvedValueOnce(false)
+      const hook = renderRetryHook()
+      await advance(0)
+      expect(hook.setAudioStatus).toHaveBeenLastCalledWith('blocked')
+
+      const retryUnlock = Promise.withResolvers()
+      mocks.ensureAudioContext.mockReturnValueOnce(retryUnlock.promise)
+      let retry
+      act(() => {
+        retry = hook.result.current.retryAudioInitialization()
+      })
+      expect(hook.resetGameplayState).toHaveBeenCalledTimes(1)
+      expect(mocks.stopMusic).toHaveBeenCalledTimes(2)
+      expect(mocks.ensureAudioContext).toHaveBeenCalledTimes(2)
+      // Count only work after the retry's legitimate synchronous reset/unlock.
+      const counts = hook.watched.map(fn => fn.mock.calls.length)
+      hook.gameStateRef.current[endedFlag] = true
+      const terminalState = structuredClone(hook.gameStateRef.current)
+
+      await act(async () => {
+        if (outcome === 'rejected') {
+          retryUnlock.reject(new Error('audio unlock failed'))
+        } else {
+          retryUnlock.resolve(outcome === 'unlocked')
+        }
+        await vi.advanceTimersByTimeAsync(16000)
+        await retry
+      })
+
+      expect(hook.gameStateRef.current).toEqual(terminalState)
+      expect(hook.watched.map(fn => fn.mock.calls.length)).toEqual(counts)
+      expect(mocks.playSongSequence).not.toHaveBeenCalled()
+    }
+  )
+
   it('resets a mounted retry once and plays once only after its new stage is ready', async () => {
     mocks.ensureAudioContext.mockResolvedValueOnce(false)
     const hook = renderRetryHook()

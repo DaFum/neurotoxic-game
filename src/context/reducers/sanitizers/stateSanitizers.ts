@@ -2321,6 +2321,14 @@ const sanitizeInlineQuestDefinition = (
         (flag: unknown): flag is string => typeof flag === 'string'
       )
   }
+  if (sanitized.required !== undefined && sanitized.required <= 0) {
+    logger.warn(
+      'GameState',
+      'Skipping loaded inline quest without a positive requirement',
+      sanitized.id
+    )
+    return null
+  }
   if (
     sanitized.repeatPolicy === 'cooldown' &&
     !(isFiniteNumber(sanitized.cooldownDays) && sanitized.cooldownDays > 0)
