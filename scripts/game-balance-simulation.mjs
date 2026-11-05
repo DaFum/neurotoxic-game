@@ -99,7 +99,7 @@ import {
 import { handleSetLastGigStats } from '../src/context/reducers/gigReducer.js'
 import {
   buildStoryFlagQuests,
-  dispatchEconomyQuests,
+  derivePostGigEconomyQuestEvents,
   getNeurotoxicPenaltyHarmony
 } from '../src/hooks/postGig/handlers/continueHandlerUtils.ts'
 import {
@@ -2687,12 +2687,15 @@ export const applyPostGigState = (
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
 
-  dispatchEconomyQuests(preSettlementPlayer, continueStats, questEvent => {
+  for (const questEvent of derivePostGigEconomyQuestEvents(
+    preSettlementPlayer,
+    continueStats
+  )) {
     const updated = QuestEvents.emit(state, questEvent)
     if (updated !== state) {
       Object.assign(state, updated)
     }
-  })
+  }
 
   const postPenaltyHarmony = getNeurotoxicPenaltyHarmony(state.band)
   if (postPenaltyHarmony !== undefined) {
