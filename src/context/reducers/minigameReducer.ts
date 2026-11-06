@@ -175,9 +175,11 @@ export const handleStartTravelMinigame = (
     currentScene: MINIGAME_REGISTRY.travel.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
+      status: 'active',
       active: true,
       type: MINIGAME_TYPES.TOURBUS,
-      targetDestination: targetNodeId
+      targetDestination: targetNodeId,
+      transitPhase: 'in_transit'
     }
   }
 }
@@ -438,7 +440,7 @@ export const handleCompleteTravelMinigame = (
     player: nextPlayer,
     band: traitResult.band,
     toasts: traitResult.toasts,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    minigame: { ...DEFAULT_MINIGAME_STATE, transitPhase: 'arrived' }
   }
 
   // --- Contraband drop logic ---
@@ -602,6 +604,7 @@ export const handleStartRoadieMinigame = (
     currentScene: MINIGAME_REGISTRY.roadie.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
+      status: 'active',
       active: true,
       type: MINIGAME_TYPES.ROADIE,
       gigId: gigId,
@@ -632,6 +635,7 @@ export const handleStartAmpCalibration = (
     currentScene: MINIGAME_REGISTRY.ampCalibration.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
+      status: 'active',
       active: true,
       type: MINIGAME_TYPES.AMP_CALIBRATION,
       gigId: gigId
@@ -681,7 +685,7 @@ const applyPostMinigameResult = (
     player: { ...state.player, money: nextMoney },
     gigModifiers: nextModifiers,
     toasts: nextToasts,
-    minigame: { ...state.minigame, active: false }
+    minigame: { ...state.minigame, active: false, status: 'idle' }
   }
 }
 
@@ -803,6 +807,7 @@ export const handleStartKabelsalatMinigame = (
     currentScene: MINIGAME_REGISTRY.kabelsalat.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
+      status: 'active',
       active: true,
       type: MINIGAME_TYPES.KABELSALAT,
       gigId: gigId
@@ -1015,7 +1020,7 @@ export const handleCompleteRoadieMinigame = (
     player: nextPlayer,
     gigModifiers: nextModifiers,
     toasts: nextToasts,
-    minigame: { ...state.minigame, active: false }
+    minigame: { ...state.minigame, active: false, status: 'idle' }
   }
   // The delivered unit leaves the packed manifest together with the stash.
   if (effectiveContrabandDelivered > 0 && isActiveRun && activeCargo) {

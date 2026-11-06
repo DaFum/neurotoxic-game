@@ -39,3 +39,36 @@ describe('contrabandEffects.applySharedBandEffect', () => {
     assert.equal(band.stress, 0)
   })
 })
+
+describe('discriminated contraband effects', () => {
+  it('applies and reverts a stat_buff object using its numeric magnitude', () => {
+    const band = { luck: 2 }
+    const effect = {
+      kind: 'stat_buff',
+      effectType: 'luck',
+      value: 3,
+      remainingDuration: 1
+    }
+    assert.equal(applySharedBandEffect(band, effect), true)
+    assert.equal(band.luck, 5)
+    assert.equal(applySharedBandEffect(band, effect, -effect.value), true)
+    assert.equal(band.luck, 2)
+  })
+  it('never treats a special effect as a numeric buff even with a numeric value', () => {
+    const band = { luck: 2 }
+    assert.equal(
+      applySharedBandEffect(
+        band,
+        {
+          kind: 'special',
+          effectType: 'luck',
+          value: 99,
+          remainingDuration: 1
+        },
+        -99
+      ),
+      false
+    )
+    assert.equal(band.luck, 2)
+  })
+})

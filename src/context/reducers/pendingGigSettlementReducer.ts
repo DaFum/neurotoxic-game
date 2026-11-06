@@ -76,7 +76,19 @@ export const sanitizePendingGigSettlement = (
   }
   // Bound to what the post-gig screen can produce, so a tampered save cannot
   // overflow the fame or money arithmetic to Infinity (which clamps to 0).
-  return {
+  const isSocialReconciled =
+    (Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true) ||
+    raw.lifecycleStage === 'social_reconciled' ||
+    raw.lifecycleStage === 'complete'
+
+  const lifecycleStage =
+    raw.lifecycleStage === 'complete'
+      ? 'complete'
+      : isSocialReconciled
+        ? 'social_reconciled'
+        : 'pending_social'
+
+  const result: PendingGigSettlement = {
     id,
     gigId,
     net: clampRange(net, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
@@ -88,9 +100,10 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    socialReconciled:
-      Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true
+    lifecycleStage,
+    socialReconciled: isSocialReconciled
   }
+  return result
 }
 
 /**
@@ -114,15 +127,39 @@ export const handleRecordPendingGigSettlement = (
   ) {
     return state
   }
-  const socialReconciled =
+  const prevSettlement =
     state.pendingGigSettlement?.gigId === record.gigId
-      ? state.pendingGigSettlement.socialReconciled === true
-      : record.socialReconciled
+      ? state.pendingGigSettlement
+      : null
+
+  const socialReconciled =
+    prevSettlement?.socialReconciled === true ||
+    prevSettlement?.lifecycleStage === 'social_reconciled' ||
+    prevSettlement?.lifecycleStage === 'complete' ||
+    record.socialReconciled === true
+
+  // Preserve existing lifecycleStage when re-recording a settlement,
+  // preventing complete or social_reconciled from being demoted.
+  const existingStage = prevSettlement?.lifecycleStage
+  let lifecycleStage = record.lifecycleStage ?? existingStage
+  if (existingStage === 'complete') {
+    lifecycleStage = 'complete'
+  } else if (
+    existingStage === 'social_reconciled' &&
+    lifecycleStage !== 'complete'
+  ) {
+    lifecycleStage = 'social_reconciled'
+  } else if (socialReconciled && lifecycleStage === 'pending_social') {
+    lifecycleStage = 'social_reconciled'
+  }
 
   return {
     ...state,
     pendingGigSettlement: {
       ...record,
+      lifecycleStage:
+        lifecycleStage ??
+        (socialReconciled ? 'social_reconciled' : 'pending_social'),
       socialReconciled
     }
   }
@@ -148,7 +185,12 @@ export const handleApplyGigSocialReconciliation = (
   // Exactly once per settlement: a replay, or an id that no longer names the
   // pending record (already cleared by Continue), must not decrement deals again.
   if (namesSettlement && !targetsPending) return state
-  if (targetsPending && state.pendingGigSettlement?.socialReconciled === true) {
+  if (
+    targetsPending &&
+    (state.pendingGigSettlement?.socialReconciled === true ||
+      state.pendingGigSettlement?.lifecycleStage === 'social_reconciled' ||
+      state.pendingGigSettlement?.lifecycleStage === 'complete')
+  ) {
     return state
   }
   const nextState = handleUpdateSocial(
@@ -166,6 +208,10 @@ export const handleApplyGigSocialReconciliation = (
       ...nextState,
       pendingGigSettlement: {
         ...pending,
+        lifecycleStage:
+          pending.lifecycleStage === 'complete'
+            ? 'complete'
+            : 'social_reconciled',
         socialReconciled: true
       }
     }
@@ -270,7 +316,11 @@ export const settlePendingGigOnLoad = (
   // gig was played, not that its post was applied. Records created by
   // `createRecordPendingGigSettlementAction` always carry the marker.
   const legacyAlreadyReconciled =
-    !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
+    !(
+      isLooseRecord(raw) &&
+      (Object.hasOwn(raw, 'socialReconciled') ||
+        Object.hasOwn(raw, 'lifecycleStage'))
+    ) &&
     finiteNumberOr(state.social.lastGigDay, -1) ===
       finiteNumberOr(state.player.day, 0)
   if (record.socialReconciled !== true && !legacyAlreadyReconciled) {

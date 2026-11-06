@@ -1030,19 +1030,47 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         return [...DEFAULT_BAND_STATE.activeContrabandEffects]
       }
       const rawEffects = bandData.activeContrabandEffects as unknown[]
-      const out = new Array(rawEffects.length)
+      const out: GameState['band']['activeContrabandEffects'] = []
       for (let i = 0; i < rawEffects.length; i++) {
         const effect = rawEffects[i]
         const effectObj = isLooseRecord(effect)
           ? (effect as Record<string, unknown>)
           : {}
-        out[i] = {
-          ...(copySafePrimitiveObject(effectObj) ?? {}),
-          remainingDuration:
-            Number.isFinite(effectObj.remainingDuration as number) &&
-            (effectObj.remainingDuration as number) >= 0
-              ? (effectObj.remainingDuration as number)
-              : 0
+        const effectType =
+          typeof effectObj.effectType === 'string'
+            ? effectObj.effectType
+            : 'unknown'
+        const rawDuration = effectObj.remainingDuration
+        const remainingDuration =
+          isFiniteNumber(rawDuration) && rawDuration >= 0 ? rawDuration : 0
+        const instanceId =
+          typeof effectObj.instanceId === 'string'
+            ? effectObj.instanceId
+            : undefined
+        const memberId =
+          typeof effectObj.memberId === 'string'
+            ? effectObj.memberId
+            : undefined
+
+        if (effectObj.kind === 'special') {
+          out.push({
+            ...(copySafePrimitiveObject(effectObj) ?? {}),
+            kind: 'special',
+            effectType,
+            remainingDuration,
+            ...(instanceId ? { instanceId } : {}),
+            ...(memberId ? { memberId } : {})
+          })
+        } else {
+          out.push({
+            ...(copySafePrimitiveObject(effectObj) ?? {}),
+            kind: 'stat_buff',
+            effectType,
+            value: finiteNumberOr(effectObj.value, 0),
+            remainingDuration,
+            ...(instanceId ? { instanceId } : {}),
+            ...(memberId ? { memberId } : {})
+          })
         }
       }
       return out
@@ -1251,60 +1279,122 @@ export const sanitizeMinigameState = (
   }
 
   const minigameObj = rawMinigame as Record<string, unknown>
-  const nextMinigame = { ...DEFAULT_MINIGAME_STATE }
+  const isActive =
+    (minigameObj.active === true ||
+      minigameObj.isActive === true ||
+      minigameObj.status === 'active') &&
+    minigameObj.active !== false &&
+    minigameObj.isActive !== false
 
-  if (
-    Object.hasOwn(minigameObj, 'active') &&
-    typeof minigameObj.active === 'boolean'
-  ) {
-    nextMinigame.active = minigameObj.active
-  }
-  if (
-    Object.hasOwn(minigameObj, 'type') &&
-    (typeof minigameObj.type === 'string' || minigameObj.type === null)
-  ) {
-    nextMinigame.type = isMinigameType(minigameObj.type)
+  const rawType =
+    typeof minigameObj.type === 'string' && isMinigameType(minigameObj.type)
       ? minigameObj.type
       : null
-  }
-  if (
-    Object.hasOwn(minigameObj, 'targetDestination') &&
-    (typeof minigameObj.targetDestination === 'string' ||
-      minigameObj.targetDestination === null)
-  ) {
-    nextMinigame.targetDestination = minigameObj.targetDestination
-  }
-  if (
-    Object.hasOwn(minigameObj, 'gigId') &&
-    (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null)
-  ) {
-    nextMinigame.gigId = minigameObj.gigId
-  }
-  if (
-    Object.hasOwn(minigameObj, 'equipmentRemaining') &&
+
+  const targetDestination =
+    typeof minigameObj.targetDestination === 'string'
+      ? minigameObj.targetDestination
+      : null
+
+  const gigId = typeof minigameObj.gigId === 'string' ? minigameObj.gigId : null
+
+  const equipmentRemaining =
     typeof minigameObj.equipmentRemaining === 'number' &&
     Number.isFinite(minigameObj.equipmentRemaining)
-  ) {
-    nextMinigame.equipmentRemaining = clampToNonNegativeInt(
-      minigameObj.equipmentRemaining
-    )
-  }
-  if (
-    Object.hasOwn(minigameObj, 'accumulatedDamage') &&
+      ? clampToNonNegativeInt(minigameObj.equipmentRemaining)
+      : 0
+
+  const accumulatedDamage =
     typeof minigameObj.accumulatedDamage === 'number' &&
     Number.isFinite(minigameObj.accumulatedDamage)
-  ) {
-    nextMinigame.accumulatedDamage = clamp0to100(minigameObj.accumulatedDamage)
-  }
-  if (
-    Object.hasOwn(minigameObj, 'score') &&
-    typeof minigameObj.score === 'number' &&
-    Number.isFinite(minigameObj.score)
-  ) {
-    nextMinigame.score = clamp0to100(minigameObj.score)
+      ? clamp0to100(minigameObj.accumulatedDamage)
+      : 0
+
+  const score =
+    typeof minigameObj.score === 'number' && Number.isFinite(minigameObj.score)
+      ? clamp0to100(minigameObj.score)
+      : 0
+
+  const travelFuelRefused = minigameObj.travelFuelRefused === true
+  const targetNodeId =
+    typeof minigameObj.targetNodeId === 'string'
+      ? minigameObj.targetNodeId
+      : null
+
+  if (!isActive || !rawType) {
+    return {
+      status: 'idle',
+      active: false,
+      transitPhase:
+        minigameObj.transitPhase === 'arrived' ||
+        minigameObj.transitPhase === 'confirming'
+          ? minigameObj.transitPhase
+          : 'idle',
+      type: rawType,
+      targetDestination,
+      targetNodeId,
+      gigId,
+      equipmentRemaining,
+      accumulatedDamage,
+      score,
+      travelFuelRefused
+    }
   }
 
-  return nextMinigame
+  switch (rawType) {
+    case 'TOURBUS':
+      return {
+        status: 'active',
+        active: true,
+        type: 'TOURBUS',
+        transitPhase: 'in_transit',
+        targetDestination,
+        targetNodeId,
+        gigId,
+        equipmentRemaining,
+        accumulatedDamage,
+        score,
+        travelFuelRefused
+      }
+    case 'ROADIE':
+      return {
+        status: 'active',
+        active: true,
+        type: 'ROADIE',
+        targetDestination,
+        targetNodeId,
+        gigId,
+        equipmentRemaining,
+        accumulatedDamage,
+        score
+      }
+    case 'AMP_CALIBRATION':
+      return {
+        status: 'active',
+        active: true,
+        type: 'AMP_CALIBRATION',
+        targetDestination,
+        targetNodeId,
+        gigId,
+        equipmentRemaining,
+        accumulatedDamage,
+        score
+      }
+    case 'KABELSALAT':
+      return {
+        status: 'active',
+        active: true,
+        type: 'KABELSALAT',
+        targetDestination,
+        targetNodeId,
+        gigId,
+        equipmentRemaining,
+        accumulatedDamage,
+        score
+      }
+    default:
+      return { ...DEFAULT_MINIGAME_STATE }
+  }
 }
 
 /**

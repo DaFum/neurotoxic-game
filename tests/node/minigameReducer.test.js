@@ -146,7 +146,10 @@ describe('minigameReducer', () => {
         nextState.player.stats.totalDistance >
           baseState.player.stats.totalDistance
       )
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      assert.deepStrictEqual(nextState.minigame, {
+        ...DEFAULT_MINIGAME_STATE,
+        transitPhase: 'arrived'
+      })
     })
 
     it('applies active asset fuel modifiers to travel costs', () => {
@@ -299,7 +302,10 @@ describe('minigameReducer', () => {
         1,
         'Should emit travel completed quest event exactly once'
       )
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      assert.deepStrictEqual(nextState.minigame, {
+        ...DEFAULT_MINIGAME_STATE,
+        transitPhase: 'arrived'
+      })
     })
 
     it('clamps non-finite rngValue before applying void hazard stamina loss', () => {

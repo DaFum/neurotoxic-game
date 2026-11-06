@@ -61,6 +61,7 @@ test('gameConstants - MINIGAME_TYPES exports expected values', () => {
 test('gameConstants - DEFAULT_MINIGAME_STATE exports expected structure', () => {
   assert.ok(DEFAULT_MINIGAME_STATE, 'DEFAULT_MINIGAME_STATE should be exported')
   assert.equal(DEFAULT_MINIGAME_STATE.active, false)
+  assert.equal(DEFAULT_MINIGAME_STATE.transitPhase, 'idle')
   assert.equal(DEFAULT_MINIGAME_STATE.type, null)
   assert.equal(DEFAULT_MINIGAME_STATE.targetDestination, null)
   assert.equal(DEFAULT_MINIGAME_STATE.gigId, null)
@@ -71,6 +72,7 @@ test('gameConstants - DEFAULT_MINIGAME_STATE exports expected structure', () => 
   // Verify it is an object with the expected keys
   const expectedKeys = [
     'active',
+    'transitPhase',
     'type',
     'targetDestination',
     'gigId',

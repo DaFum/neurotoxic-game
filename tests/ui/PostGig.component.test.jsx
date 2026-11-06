@@ -16,6 +16,7 @@ vi.mock('../../src/context/GameState', () => {
   const useGameActions = vi.fn()
   return {
     useGameActions,
+    useQuestActions: useGameActions,
     useGameSelector: selector => selector(useGameActions())
   }
 })

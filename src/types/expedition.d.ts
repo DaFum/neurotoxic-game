@@ -448,6 +448,16 @@ export interface PendingExpeditionFailure {
 }
 
 /**
+ * Expedition interaction modes. The failure synchronizer currently owns only
+ * exploring/crisis transitions; decision/extraction are reserved for their UI lifecycle.
+ */
+export type ExpeditionInteractionMode =
+  | { mode: 'exploring' }
+  | { mode: 'decision'; decisionId?: string }
+  | { mode: 'crisis'; crisis: PendingExpeditionFailure }
+  | { mode: 'extraction' }
+
+/**
  * Signal shape later gates export into the one G1-owned failure composer.
  */
 export interface ExpeditionFailureSignal {
@@ -714,6 +724,7 @@ export interface ExpeditionState {
    */
   arrivedOverlay: ExpeditionArrivedOverlay | null
   pendingFailure: PendingExpeditionFailure | null
+  interactionMode?: ExpeditionInteractionMode
   /**
    * Mandatory daily obligation a previous day could not pay from the run's
    * spendable Cash.

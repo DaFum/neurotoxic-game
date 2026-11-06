@@ -67,7 +67,9 @@ export const validateSocialPostResult = (
     if (
       !pending ||
       pending.id !== payload.settlementId ||
-      pending.socialReconciled === true
+      pending.socialReconciled === true ||
+      pending.lifecycleStage === 'social_reconciled' ||
+      pending.lifecycleStage === 'complete'
     ) {
       return 'STALE_SETTLEMENT'
     }

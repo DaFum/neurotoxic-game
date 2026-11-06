@@ -1,5 +1,4 @@
 import type { AssetModule } from '../../../types/assets'
-import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
@@ -9,7 +8,7 @@ import { FLAGS } from '../../../data/flags.registry'
  * Importing this file has the side effect of adding module definitions and
  * image prompts for the merch-workshop asset section.
  */
-const MODULES: readonly AssetModule[] = [
+export const WORKSHOP_MODULES: readonly AssetModule[] = [
   {
     id: 'mw_4color_carousel',
     ownerKind: 'merch_workshop_chassis',
@@ -208,7 +207,7 @@ const MODULES: readonly AssetModule[] = [
   }
 ]
 
-const PROMPTS: Record<string, string> = {
+export const WORKSHOP_PROMPTS: Record<string, string> = {
   mw_4color_carousel:
     'pixel art 4-color screen printing carousel press merch production workshop',
   mw_manual_press:
@@ -239,6 +238,3 @@ const PROMPTS: Record<string, string> = {
   mw_hype_drop_machine:
     'pixel art limited drop hype machine countdown timer announcement screen'
 }
-
-for (const m of MODULES) MODULE_REGISTRY[m.id] = m
-for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v

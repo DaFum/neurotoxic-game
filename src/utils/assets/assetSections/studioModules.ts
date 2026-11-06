@@ -1,5 +1,4 @@
 import type { AssetModule } from '../../../types/assets'
-import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
@@ -9,7 +8,7 @@ import { FLAGS } from '../../../data/flags.registry'
  * Importing this file has the side effect of adding module definitions and
  * image prompts for the studio asset section.
  */
-const MODULES: readonly AssetModule[] = [
+export const STUDIO_MODULES: readonly AssetModule[] = [
   {
     id: 'st_ssl_console',
     ownerKind: 'studio_chassis',
@@ -183,7 +182,7 @@ const MODULES: readonly AssetModule[] = [
   }
 ]
 
-const PROMPTS: Record<string, string> = {
+export const STUDIO_PROMPTS: Record<string, string> = {
   st_ssl_console:
     'pixel art vintage SSL mixing console glowing meters analog studio dark moody',
   st_diy_mixer:
@@ -211,6 +210,3 @@ const PROMPTS: Record<string, string> = {
   st_lava_lamp_beer_fridge:
     'pixel art lava lamp and mini beer fridge studio chillout corner'
 }
-
-for (const m of MODULES) MODULE_REGISTRY[m.id] = m
-for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v

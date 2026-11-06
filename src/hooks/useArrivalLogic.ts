@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useGameActions, useGameSelector } from '../context/GameState'
+import {
+  useGameActions,
+  useGameSelector,
+  useRivalBandActions
+} from '../context/GameState'
 import {
   handleNodeArrival,
   isGigArrivalNode,
@@ -79,12 +83,11 @@ export const useArrivalLogic = ({
     addToast,
     setPendingBandHQOpen,
     setPendingSupplyStopInventory,
-    moveRivalBand,
-    checkRivalEncounter,
     recordExpeditionCrewStressSource,
     recordExpeditionObligationSignal,
     offerExpeditionDraft
   } = useGameActions()
+  const { moveRivalBand, checkRivalEncounter } = useRivalBandActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
   // plain boolean handles rapid node changes: two different nodeIds are always distinct guards.
