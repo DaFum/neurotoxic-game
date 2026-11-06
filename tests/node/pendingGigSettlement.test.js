@@ -1373,3 +1373,46 @@ test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
   const recovered = settlePendingGigOnLoad(socialState, socialState.pendingGigSettlement)
   assert.equal(recovered.pendingGigSettlement, null)
 })
+
+test('load recovery with lifecycleStage: social_reconciled and no socialReconciled marker skips social reconciliation', () => {
+  const base = createInitialState()
+  const dealFor = {
+    id: 'energy_drink_cx',
+    remainingGigs: 3,
+    type: 'SPONSOR',
+    offer: {}
+  }
+  // Set day: 2 while lastGigDay: 1 so legacyAlreadyReconciled guard cannot trigger
+  const snapshot = {
+    currentScene: GAME_PHASES.POST_GIG,
+    player: { ...base.player, money: 500, day: 2 },
+    band: { ...base.band },
+    social: {
+      ...base.social,
+      lastGigDay: 1,
+      activeDeals: [dealFor],
+      regionalGigHistory: {}
+    },
+    currentGig: { id: 'berlin_so36', name: 'SO36' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+    // Saved record with lifecycleStage: 'social_reconciled' and no socialReconciled marker
+    pendingGigSettlement: {
+      id: 'settlement-stage-test',
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {},
+      lifecycleStage: 'social_reconciled'
+    }
+  }
+
+  const loaded = handleLoadGame(createInitialState(), snapshot)
+  assert.equal(loaded.pendingGigSettlement, null, 'settlement cleared')
+  assert.equal(
+    loaded.social.activeDeals[0]?.remainingGigs,
+    3,
+    'deal was not decremented again because lifecycleStage is social_reconciled'
+  )
+})
