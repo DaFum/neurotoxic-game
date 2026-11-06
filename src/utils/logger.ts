@@ -71,9 +71,9 @@ export class Logger {
   get minLevel(): number {
     if (!this.#levelHydrated) {
       this.#levelHydrated = true
-      const raw = getLevelStorage().get(LOG_LEVEL_KEY)
-      if (raw !== null) {
-        const parsed = parseInt(raw, 10)
+      const res = getLevelStorage().get(LOG_LEVEL_KEY)
+      if (res.ok && res.value !== null) {
+        const parsed = parseInt(res.value, 10)
         if (!isNaN(parsed) && isValidLogLevel(parsed)) {
           this.#minLevel = parsed
         }

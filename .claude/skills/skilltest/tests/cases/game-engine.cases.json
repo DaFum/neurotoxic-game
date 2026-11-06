@@ -2,7 +2,7 @@
   {
     "skill": "game-balancing-assistant",
     "prompt": "Rebalance venue payouts so early-game feels less punishing.",
-    "expectIncludes": ["economyEngine.ts", "venues.ts"]
+    "expectIncludes": ["economy/index.ts", "venues.ts"]
   },
   {
     "skill": "state-safety-action-creator-guard",

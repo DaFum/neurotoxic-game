@@ -2,7 +2,6 @@ import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
 
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { act, cleanup, renderHook } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   setupArrivalLogicTest,
   setupArrivalScenario,
@@ -13,13 +12,11 @@ const { useArrivalLogic, mockGameState } = await setupArrivalLogicTest()
 
 describe('useArrivalLogic', () => {
   beforeEach(() => {
-    setupJSDOM()
     resetMockGameState()
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
   test('executes standard arrival sequence', () => {

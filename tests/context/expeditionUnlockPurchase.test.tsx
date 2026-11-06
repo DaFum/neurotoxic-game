@@ -105,7 +105,7 @@ describe('the unlock purchase is reachable through useGameActions', () => {
     // state once the commit-driven save flushes - must reload to the same
     // place. That is the actual crash-safety contract; asserting one specific
     // intermediate would pin the timing rather than the guarantee.
-    const saved = adapter.get(SAVE_KEY)
+    const saved = adapter.get(SAVE_KEY).value
     expect(saved).toBeTruthy()
     const persisted = JSON.parse(String(saved))
     expect(persisted.career.tourTokens).toBe(

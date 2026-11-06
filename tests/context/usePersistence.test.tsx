@@ -652,7 +652,7 @@ describe('usePersistence', () => {
         expect(reload).not.toHaveBeenCalled()
         removal.mockRestore()
         expect(result.current.deleteSave()).toBe(true)
-        expect(adapter.get(slot)).toBeNull()
+        expect(adapter.get(slot)).toEqual({ ok: true, value: null })
         expect(reload).toHaveBeenCalledTimes(1)
       } finally {
         vi.unstubAllGlobals()
@@ -691,7 +691,7 @@ describe('usePersistence', () => {
         expect.stringContaining('deleteFailed'),
         'error'
       )
-      expect(adapter.get(SAVE_KEY)).toBe('{}')
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: '{}' })
     })
     it('removes the shared key and every version slot, and nothing else', () => {
       // An injected adapter: the global localStorage stub in
@@ -730,7 +730,7 @@ describe('usePersistence', () => {
         result.current.deleteSave()
       })
 
-      expect(adapter.keys().sort()).toEqual([...unrelatedKeys].sort())
+      expect(adapter.keys()).toEqual({ ok: true, keys: expect.arrayContaining([...unrelatedKeys]) })
     })
   })
 

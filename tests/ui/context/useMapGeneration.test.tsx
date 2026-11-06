@@ -6,7 +6,6 @@ import { GAME_PHASES } from '../../../src/context/gameConstants'
 import type { GameMap } from '../../../src/types'
 import type { TFunction } from 'i18next'
 import type { MutableRefObject } from 'react'
-import { setupJSDOM } from '../../testUtils'
 import { handleError } from '../../../src/utils/errorHandler'
 
 /**
@@ -95,7 +94,6 @@ describe('useMapGeneration', () => {
   } as MutableRefObject<TFunction>
 
   beforeEach(() => {
-    setupJSDOM()
     vi.clearAllMocks()
     vi.useFakeTimers()
   })

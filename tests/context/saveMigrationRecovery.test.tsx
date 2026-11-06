@@ -441,7 +441,7 @@ describe('failed migration whose recovery copy is refused', () => {
     act(() => {
       result.current.saveGame(false)
     })
-    expect(adapter.get(SAVE_KEY)).toBe(v1Save)
+    expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: v1Save })
 
     act(() => {
       result.current.resetState()
@@ -449,7 +449,7 @@ describe('failed migration whose recovery copy is refused', () => {
     act(() => {
       result.current.saveGame(false)
     })
-    expect(adapter.get(SAVE_KEY)).not.toBe(v1Save)
+    expect(adapter.get(SAVE_KEY).value).not.toBe(v1Save)
   })
 
   it('tells the player a save was refused, once per block and on every manual save', () => {
@@ -511,7 +511,7 @@ describe('failed migration whose recovery copy is refused', () => {
       act(() => {
         result.current.saveGame(false)
       })
-      expect(adapter.get(SAVE_KEY)).not.toBe(v1Save)
+      expect(adapter.get(SAVE_KEY).value).not.toBe(v1Save)
     })
 
     it('keeps the block through another Continue/Load', () => {
@@ -523,7 +523,7 @@ describe('failed migration whose recovery copy is refused', () => {
       act(() => {
         expect(result.current.saveGame(false)).toBe(false)
       })
-      expect(adapter.get(SAVE_KEY)).toBe(v1Save)
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: v1Save })
     })
   })
 })
@@ -599,7 +599,7 @@ describe('failed migration of a save in a lower slot than this build writes', ()
     act(() => {
       expect(result.current.saveGame(false)).toBe(true)
     })
-    expect(adapter.get(SAVE_KEY)).toBe(v1Save)
-    expect(adapter.get(`${SAVE_KEY}.v4`)).not.toBeNull()
+    expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: v1Save })
+    expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({ ok: true, value: expect.any(String) })
   })
 })

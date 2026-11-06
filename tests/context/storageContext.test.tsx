@@ -23,7 +23,7 @@ describe('StorageContext', () => {
 
     expect(result.current).toBe(adapter)
     result.current.set('k', 'v')
-    expect(adapter.get('k')).toBe('v')
+    expect(adapter.get('k')).toEqual({ ok: true, value: 'v' })
   })
 
   it('supports a no-op adapter for tests that must not persist', () => {
@@ -35,6 +35,6 @@ describe('StorageContext', () => {
     const { result } = renderHook(() => useStorage(), { wrapper })
 
     expect(result.current.set('k', 'v')).toBe(false)
-    expect(result.current.get('k')).toBeNull()
+    expect(result.current.get('k')).toEqual({ ok: true, value: null })
   })
 })

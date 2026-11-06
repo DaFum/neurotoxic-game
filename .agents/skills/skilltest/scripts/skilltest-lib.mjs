@@ -107,11 +107,16 @@ export const findRepoRoot = async startDir => {
  * @param {string} repoDir - Repository root.
  * @returns {Promise<string[]>} Skill root directories.
  */
-export const collectSkillRoots = async (cwd, repoDir) => {
+export const getTreeName = () => {
+  const filePath = fileURLToPath(import.meta.url)
+  return filePath.includes(`${path.sep}.agents${path.sep}`) ? '.agents' : '.claude'
+}
+
+export const collectSkillRoots = async (cwd, repoDir, treeName = getTreeName()) => {
   const roots = []
   let currentDir = cwd
   while (true) {
-    const skillsDir = path.join(currentDir, '.claude', 'skills')
+    const skillsDir = path.join(currentDir, treeName, 'skills')
     try {
       const stat = await fs.stat(skillsDir)
       if (stat.isDirectory()) {
@@ -463,9 +468,22 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   const repoDir = await findRepoRoot(cwd)
   const roots = await collectSkillRoots(cwd, repoDir)
   if (includeUserSkills) {
-    const homeDir = process.env.HOME || process.env.USERPROFILE || ''
-    if (homeDir) {
-      roots.push(path.join(homeDir, '.claude', 'skills'))
+    const tree = getTreeName()
+    if (tree === '.agents') {
+      const codexHome = process.env.CODEX_HOME
+      if (codexHome) {
+        roots.push(path.join(codexHome, 'skills'))
+      } else {
+        const homeDir = process.env.HOME || process.env.USERPROFILE || ''
+        if (homeDir) {
+          roots.push(path.join(homeDir, '.codex', 'skills'))
+        }
+      }
+    } else {
+      const homeDir = process.env.HOME || process.env.USERPROFILE || ''
+      if (homeDir) {
+        roots.push(path.join(homeDir, '.claude', 'skills'))
+      }
     }
   }
 
@@ -672,7 +690,7 @@ export const buildReport = (records, promptFailures, disabled) => {
       if (recordFile === entry) return true
       return recordFile.startsWith(`${entry}${path.sep}`)
     })
-    const status = record.findings.some(f => f.level === '_error')
+    const status = record.findings.some(f => f.level === 'error')
       ? 'fail'
       : record.findings.some(f => f.level === 'warning')
         ? 'warn'

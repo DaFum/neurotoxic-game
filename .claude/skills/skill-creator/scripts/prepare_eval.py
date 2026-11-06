@@ -79,25 +79,33 @@ def normalize_eval(eval_data: dict) -> dict:
     # Get files (default to empty list)
     files = eval_data.get("files", [])
 
-    # Get assertions - can be "assertions" (list of strings)
-    # or "expected_behavior" (list of strings or objects)
-    assertions = eval_data.get("assertions")
-    if assertions is None:
-        expected_behavior = eval_data.get("expected_behavior", [])
-        # Convert expected_behavior to string assertions if needed
-        assertions = []
-        for item in expected_behavior:
+    # Normalize grading assertions with precedence:
+    # 1. Non-None assertions (including explicit [])
+    # 2. Otherwise an explicitly present expected_behavior
+    # 3. Otherwise expectations
+    # 4. Otherwise []
+    def _convert_to_assertions(raw_items):
+        result = []
+        for item in raw_items:
             if isinstance(item, str):
-                assertions.append(item)
+                result.append(item)
             elif isinstance(item, dict):
-                # Convert structured assertion to string description
                 assertion_type = item.get("assertion", "unknown")
-                # Build a human-readable assertion string
                 parts = [f"Assertion type: {assertion_type}"]
                 for key, value in item.items():
                     if key != "assertion":
                         parts.append(f"{key}={value}")
-                assertions.append(" - ".join(parts))
+                result.append(" - ".join(parts))
+        return result
+
+    if eval_data.get("assertions") is not None:
+        assertions = _convert_to_assertions(eval_data.get("assertions") or [])
+    elif "expected_behavior" in eval_data:
+        assertions = _convert_to_assertions(eval_data.get("expected_behavior") or [])
+    elif "expectations" in eval_data:
+        assertions = _convert_to_assertions(eval_data.get("expectations") or [])
+    else:
+        assertions = []
 
     return {
         "prompt": prompt,

@@ -9,7 +9,6 @@ import {
 
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock dependencies
 const mockCompleteRoadieMinigame = mock.fn()
@@ -45,7 +44,6 @@ const { ROADIE_GRID_WIDTH, ROADIE_GRID_HEIGHT, ROADIE_MOVE_COOLDOWN_BASE } =
 
 describe('useRoadieLogic', () => {
   beforeEach(() => {
-    setupJSDOM()
     mockCompleteRoadieMinigame.mockClear()
     mockChangeScene.mockClear()
     mockPlaySFX.mockClear()
@@ -54,7 +52,6 @@ describe('useRoadieLogic', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
     mock.useRealTimers()
     mock.clearAllMocks()
   })

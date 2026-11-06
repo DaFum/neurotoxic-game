@@ -7,9 +7,23 @@
  * append-only store later — without touching callers. Implementations must
  * never throw: a refused write is a degraded mode, not a crash class.
  */
+/** Tagged result for storage get operations. */
+export type StorageGetResult =
+  | { ok: true; value: string | null }
+  | { ok: false; error?: unknown }
+
+/** Tagged result for storage enumeration operations. */
+export type StorageKeysResult =
+  | { ok: true; keys: string[] }
+  | { ok: false; error?: unknown }
+
 export interface IStorageAdapter {
-  /** Reads a raw string, or `null` when the key is unknown or unreadable. */
-  get(key: string): string | null
+  /**
+   * Reads a raw string.
+   * @returns Tagged result with `ok: true` and the value (or `null` if missing),
+   * or `ok: false` when unreadable.
+   */
+  get(key: string): StorageGetResult
   /** Writes a raw string. Returns `false` when the write was refused. */
   set(key: string, value: string): boolean
   /** Removes a key. */
@@ -21,10 +35,9 @@ export interface IStorageAdapter {
    *
    * @remarks
    * Needed by callers that discover keys by prefix rather than by name — the
-   * unlock markers are stored one key per unlock. Returns `[]` when the backing
-   * store cannot enumerate.
+   * unlock markers are stored one key per unlock.
    */
-  keys(): string[]
+  keys(): StorageKeysResult
 }
 
 /**
@@ -74,12 +87,17 @@ export class LocalStorageAdapter implements IStorageAdapter {
   }
 
   /** {@inheritDoc IStorageAdapter} */
-  get(key: string): string | null {
+  get(key: string): StorageGetResult {
     try {
-      return resolveLocalStorage()?.getItem(key) ?? null
+      const storage = resolveLocalStorage()
+      if (!storage) {
+        this.#report('read', key, new Error('No storage available'))
+        return { ok: false, error: new Error('No storage available') }
+      }
+      return { ok: true, value: storage.getItem(key) ?? null }
     } catch (error) {
       this.#report('read', key, error)
-      return null
+      return { ok: false, error }
     }
   }
 
@@ -115,25 +133,28 @@ export class LocalStorageAdapter implements IStorageAdapter {
   }
 
   /** {@inheritDoc IStorageAdapter} */
-  keys(): string[] {
+  keys(): StorageKeysResult {
     try {
       const storage = resolveLocalStorage()
+      if (!storage) {
+        this.#report('read', '*', new Error('No storage available'))
+        return { ok: false, error: new Error('No storage available') }
+      }
       if (
-        !storage ||
         typeof storage.key !== 'function' ||
         !Number.isFinite(storage.length)
       ) {
-        return []
+        return { ok: true, keys: [] }
       }
       const found: string[] = []
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i)
         if (typeof key === 'string') found.push(key)
       }
-      return found
+      return { ok: true, keys: found }
     } catch (error) {
       this.#report('read', '*', error)
-      return []
+      return { ok: false, error }
     }
   }
 }
@@ -149,8 +170,8 @@ export class InMemoryAdapter implements IStorageAdapter {
   readonly #store = new Map<string, string>()
 
   /** {@inheritDoc IStorageAdapter} */
-  get(key: string): string | null {
-    return this.#store.get(key) ?? null
+  get(key: string): StorageGetResult {
+    return { ok: true, value: this.#store.get(key) ?? null }
   }
 
   /** {@inheritDoc IStorageAdapter} */
@@ -170,8 +191,8 @@ export class InMemoryAdapter implements IStorageAdapter {
   }
 
   /** {@inheritDoc IStorageAdapter} */
-  keys(): string[] {
-    return [...this.#store.keys()]
+  keys(): StorageKeysResult {
+    return { ok: true, keys: [...this.#store.keys()] }
   }
 
   /**
@@ -194,8 +215,8 @@ export class InMemoryAdapter implements IStorageAdapter {
  */
 export class NoopAdapter implements IStorageAdapter {
   /** {@inheritDoc IStorageAdapter} */
-  get(): string | null {
-    return null
+  get(): StorageGetResult {
+    return { ok: true, value: null }
   }
 
   /** {@inheritDoc IStorageAdapter} */
@@ -210,7 +231,7 @@ export class NoopAdapter implements IStorageAdapter {
   clear(): void {}
 
   /** {@inheritDoc IStorageAdapter} */
-  keys(): string[] {
-    return []
+  keys(): StorageKeysResult {
+    return { ok: true, keys: [] }
   }
 }

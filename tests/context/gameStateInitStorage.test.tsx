@@ -109,7 +109,7 @@ describe('GameStateProvider initialization honors the injected adapter', () => {
       result.current.updateSettings({ crtEnabled: false })
     })
 
-    expect(JSON.parse(adapter.get(SETTINGS_KEY) ?? '{}')).toMatchObject({
+    expect(JSON.parse(adapter.get(SETTINGS_KEY).value ?? '{}')).toMatchObject({
       crtEnabled: false
     })
     expect(localStorage.getItem(SETTINGS_KEY)).toBeNull()

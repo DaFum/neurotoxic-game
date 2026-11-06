@@ -1,6 +1,5 @@
 import { describe, it as test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock Dependencies
 const { mockAudioEngine, mockTimingUtils, mockGigStats, mockRhythmUtils } =
@@ -234,7 +233,6 @@ describe('useRhythmGameScoring', () => {
   let originalLocalStorageSetItem
 
   beforeEach(async () => {
-    setupJSDOM()
 
     originalLocalStorageSetItem = window.localStorage.setItem
     window.localStorage.setItem = vi.fn()
@@ -264,8 +262,7 @@ describe('useRhythmGameScoring', () => {
   afterEach(() => {
     try {
       cleanup()
-      teardownJSDOM()
-    } finally {
+      } finally {
       if (originalLocalStorageSetItem) {
         window.localStorage.setItem = originalLocalStorageSetItem
       }

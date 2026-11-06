@@ -8,7 +8,6 @@ import {
 } from 'vitest'
 
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock dependencies
 const mockCompleteTravelMinigame = mock.fn()
@@ -73,7 +72,6 @@ describe('getHitDamage', () => {
 
 describe('useTourbusLogic', () => {
   beforeEach(() => {
-    setupJSDOM()
     mockUseGameState.mockImplementation(() => ({
       player: { van: { upgrades: [] } }
     }))
@@ -87,7 +85,6 @@ describe('useTourbusLogic', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
     mock.clearAllMocks()
   })
 

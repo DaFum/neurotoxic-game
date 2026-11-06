@@ -12,15 +12,61 @@ import {
   fetchLeaderboard
 } from '../../lib/leaderboard.js'
 
-const VALID_STATS = [
-  'balance',
-  'fame',
-  'followers',
-  'distance',
-  'conflicts',
-  'stage_dives'
-]
 const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
+
+/**
+ * @typedef {{
+ *   statKey: string,
+ *   boardKey: string,
+ *   getValue: (body: Record<string, unknown>) => number
+ * }} BoardDefinition
+ */
+
+/**
+ * Ordered definition of boards, mapping stat key to Redis sorted set key and
+ * value extractor.
+ * @type {BoardDefinition[]}
+ */
+export const BOARD_DEFINITIONS = [
+  {
+    statKey: 'balance',
+    boardKey: 'lb:balance',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      Math.min(Number(body.money), MAX_PUBLISHED_BALANCE)
+  },
+  {
+    statKey: 'fame',
+    boardKey: 'lb:fame',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      clampStat(body.fame)
+  },
+  {
+    statKey: 'followers',
+    boardKey: 'lb:followers',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      clampStat(body.followers)
+  },
+  {
+    statKey: 'distance',
+    boardKey: 'lb:distance',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      clampStat(body.distance)
+  },
+  {
+    statKey: 'conflicts',
+    boardKey: 'lb:conflicts',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      clampStat(body.conflicts)
+  },
+  {
+    statKey: 'stage_dives',
+    boardKey: 'lb:stage_dives',
+    getValue: (/** @type {Record<string, unknown>} */ body) =>
+      clampStat(body.stageDives)
+  }
+]
+
+const VALID_STATS = BOARD_DEFINITIONS.map(d => d.statKey)
 
 // Applies a snapshot only when its revision is newer than the stored one, and
 // writes the display name and every board in the same atomic step. KEYS[1] is
@@ -112,11 +158,6 @@ export default async function handler(req, res) {
         playerId,
         playerName,
         money,
-        fame,
-        followers,
-        distance,
-        conflicts,
-        stageDives,
         revision
       } = body
 
@@ -133,21 +174,11 @@ export default async function handler(req, res) {
       if (!Number.isFinite(money) || money < 0) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
-      // A richer wallet is published at the cap instead of rejected: a 400
-      // here would drop every other stat of the snapshot and is not retried.
-      const publishedBalance = Math.min(money, MAX_PUBLISHED_BALANCE)
 
       const player = validateLeaderboardPlayer(playerId, playerName)
       if ('error' in player) {
         return res.status(400).json(player)
       }
-
-      // Safe numbers for stats (clamped 0 to MAX)
-      const safeFame = clampStat(fame)
-      const safeFollowers = clampStat(followers)
-      const safeDistance = clampStat(distance)
-      const safeConflicts = clampStat(conflicts)
-      const safeStageDives = clampStat(stageDives)
 
       // An optional monotonic snapshot revision lets the server drop a request
       // that was overtaken in flight. Clients without one keep last-write-wins
@@ -167,14 +198,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid revision' })
       }
 
-      const scores = [
-        String(publishedBalance),
-        String(safeFame),
-        String(safeFollowers),
-        String(safeDistance),
-        String(safeConflicts),
-        String(safeStageDives)
-      ]
+      // Derive scores and boardKeys from the single ordered board-to-payload definition
+      const scores = BOARD_DEFINITIONS.map(d => String(d.getValue(body)))
       // NOTE: intentionally no GT flag in either script, unlike song.js. These
       // boards track the player's CURRENT stats, and money legitimately
       // decreases, so GT would silently redefine lb:balance as "peak balance
@@ -183,14 +208,7 @@ export default async function handler(req, res) {
       // localStorage UUID and the only credential) is mitigated by no longer
       // publishing it in GET responses; closing it properly needs real auth and
       // is out of scope.
-      const boardKeys = [
-        'lb:balance',
-        'lb:fame',
-        'lb:followers',
-        'lb:distance',
-        'lb:conflicts',
-        'lb:stage_dives'
-      ]
+      const boardKeys = BOARD_DEFINITIONS.map(d => d.boardKey)
       const result = hasRevision
         ? await withRedisDeadline(client, () =>
             client.eval(WRITE_IF_NEWER_SCRIPT, {
