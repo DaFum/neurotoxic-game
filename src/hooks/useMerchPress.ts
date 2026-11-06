@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useGameActions, useGameSelector } from '../context/GameState'
+import { useFacilityActions, useGameSelector } from '../context/GameState'
 import { useDisclosure } from './useDisclosure'
 import { secureRandom } from '../utils/crypto'
 import { finiteNumberOr } from '../utils/finiteNumber'
@@ -14,7 +14,7 @@ export const useMerchPress = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const spendableCash = useGameSelector(getExpeditionSpendableCash)
-  const { merchPress } = useGameActions()
+  const { merchPress } = useFacilityActions()
 
   const {
     isOpen: showMerchPress,

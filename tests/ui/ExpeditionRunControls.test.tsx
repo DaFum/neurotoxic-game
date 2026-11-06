@@ -20,7 +20,8 @@ const actions = vi.hoisted(() => ({
 vi.mock('../../src/context/GameState', () => ({
   useGameSelector: (selector: (s: GameState) => unknown) =>
     selector(state.current),
-  useGameActions: () => actions
+  useGameActions: () => actions,
+  useExpeditionActions: () => actions
 }))
 
 // Structural ExtractionDialog mock: this suite is about reachability and

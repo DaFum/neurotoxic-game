@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameActions, useGameSelector } from '../context/GameState'
+import {
+  useGameActions,
+  useGameSelector,
+  useQuestActions
+} from '../context/GameState'
 import { NEUROTOXIC_PEDAL_HARMONY_PENALTY } from '../context/gameConstants'
 import { getTotalDailyObligations } from '../utils/assets/assetSelectors'
 import { finiteNumberOr } from '../utils/finiteNumber'
@@ -92,8 +96,6 @@ export const usePostGigLogic = () => {
     addToast,
     changeScene,
     unlockTrait,
-    addQuest,
-    applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
     saveGameAfterStateCommit,
@@ -105,6 +107,7 @@ export const usePostGigLogic = () => {
     offerExpeditionDraft,
     commitSocialPost
   } = useGameActions()
+  const { addQuest, applyQuestEvent } = useQuestActions()
 
   // 1. Core State
   const {

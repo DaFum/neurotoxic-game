@@ -53,6 +53,42 @@ export type ContrabandStashItem = {
   [key: string]: unknown
 }
 
+export interface ContrabandStatBuffEffect {
+  kind: 'stat_buff'
+  effectType:
+    | 'luck'
+    | 'crit'
+    | 'crowd_control'
+    | 'affinity'
+    | 'style'
+    | 'tour_success'
+    | 'gig_modifier'
+    | 'tempo'
+    | 'practice_gain'
+    | 'harmony'
+    | 'stress'
+    | 'stamina_max'
+    | 'guitar_difficulty'
+    | string
+  value: number
+  remainingDuration: number
+  instanceId?: string
+  memberId?: string
+}
+
+export interface ContrabandSpecialEffect {
+  kind: 'special'
+  effectType: string
+  value?: unknown
+  remainingDuration: number
+  instanceId?: string
+  memberId?: string
+  [key: string]: unknown
+}
+
+export type ActiveContrabandEffect =
+  ContrabandStatBuffEffect | ContrabandSpecialEffect
+
 /**
  * Persisted band roster, harmony, inventory, and performance state.
  */
@@ -84,7 +120,7 @@ export interface BandState {
   /** Fractional bonus to the harmony gained from completing practice mode. */
   practiceGain?: number
   stash: Record<string, StashItem>
-  activeContrabandEffects: unknown[]
+  activeContrabandEffects: ActiveContrabandEffect[]
   performance: {
     guitarDifficulty: number
     drumMultiplier: number

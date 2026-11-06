@@ -49,6 +49,10 @@ vi.mock('../../src/context/GameState', () => ({
     }, [])
     return selector(store.state)
   },
+  useRivalBandActions: () => ({
+    moveRivalBand: () => {},
+    checkRivalEncounter: () => {}
+  }),
   useGameActions: () => ({
     advanceDay: () => dispatch(advanceDay(store.state)),
     updateBand: updates => dispatch(createUpdateBandAction(updates)),
@@ -61,8 +65,6 @@ vi.mock('../../src/context/GameState', () => ({
     triggerEvent: spies.triggerEvent,
     setPendingBandHQOpen: () => {},
     setPendingSupplyStopInventory: () => {},
-    moveRivalBand: () => {},
-    checkRivalEncounter: () => {},
     recordExpeditionCrewStressSource: () => {},
     recordExpeditionObligationSignal: () => {},
     offerExpeditionDraft: () => {}

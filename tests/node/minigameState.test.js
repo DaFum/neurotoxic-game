@@ -1,6 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
+import { handleLoadGame } from '../../src/context/reducers/systemReducer'
+import { createPersistedState } from '../../src/context/usePersistence'
+import { createFixedClock } from '../../src/utils/clock'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
 import {
@@ -68,7 +71,10 @@ test('Minigame State Transitions', async t => {
       }
       const newState = gameReducer(activeState, action)
 
-      assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
+      assert.deepStrictEqual(newState.minigame, {
+        ...DEFAULT_MINIGAME_STATE,
+        transitPhase: 'arrived'
+      })
       assert.strictEqual(newState.player.currentNodeId, 'node_1')
       assert.strictEqual(
         newState.player.location,
@@ -319,4 +325,34 @@ test('Minigame State Transitions', async t => {
       assert.ok(hit.size > 1, `only members ${[...hit]} were ever hit`)
     }
   )
+})
+
+test('travel phase survives the persisted snapshot and load boundaries', () => {
+  const initial = createInitialState()
+  const traveling = gameReducer(initial, {
+    type: ActionTypes.START_TRAVEL_MINIGAME,
+    payload: { targetNodeId: 'missing_node' }
+  })
+  const saved = JSON.parse(
+    JSON.stringify(createPersistedState(traveling, createFixedClock(1)))
+  )
+  const loaded = handleLoadGame(initial, saved)
+  assert.equal(loaded.minigame.transitPhase, 'in_transit')
+  assert.equal(loaded.minigame.targetDestination, 'missing_node')
+  const aborted = gameReducer(loaded, {
+    type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+    payload: { damageTaken: 0, itemsCollected: [] }
+  })
+  assert.equal(aborted.minigame.transitPhase, 'idle')
+  assert.equal(aborted.minigame.active, false)
+  assert.equal(aborted.player.money, loaded.player.money)
+  assert.equal(aborted.player.currentNodeId, loaded.player.currentNodeId)
+  assert.equal(aborted.currentScene, loaded.currentScene)
+  const afterAbort = handleLoadGame(
+    initial,
+    JSON.parse(
+      JSON.stringify(createPersistedState(aborted, createFixedClock(2)))
+    )
+  )
+  assert.equal(afterAbort.minigame.transitPhase, 'idle')
 })

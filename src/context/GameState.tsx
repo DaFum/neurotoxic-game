@@ -8,6 +8,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useMemo,
   useSyncExternalStore
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -48,6 +49,10 @@ import {
   useGameDispatchActions,
   type GameDispatchActions
 } from './useGameDispatchActions'
+import type { FacilityDispatchActions } from './useFacilityDispatchActions'
+import type { QuestDispatchActions } from './useQuestDispatchActions'
+import type { RivalBandDispatchActions } from './useRivalBandDispatchActions'
+import type { ExpeditionDispatchActions } from './useExpeditionDispatchActions'
 
 type GameStore = {
   getState: () => GameState
@@ -341,6 +346,103 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
  */
 export const useGameActions = () => {
   return useRequiredContext(GameDispatchContext, 'useGameActions')
+}
+
+/**
+ * Hook to access facility dispatch actions specifically.
+ */
+export const useFacilityActions = (): FacilityDispatchActions => {
+  const actions = useGameActions()
+  return useMemo<FacilityDispatchActions>(
+    () => ({
+      unblacklistVenue: actions.unblacklistVenue,
+      craftItem: actions.craftItem,
+      useContraband: actions.useContraband,
+      clinicHeal: actions.clinicHeal,
+      graftNeuroOverclock: actions.graftNeuroOverclock,
+      clinicEnhance: actions.clinicEnhance,
+      darkWebLeak: actions.darkWebLeak,
+      voidSermon: actions.voidSermon,
+      cultIndoctrination: actions.cultIndoctrination,
+      pirateBroadcast: actions.pirateBroadcast,
+      merchPress: actions.merchPress,
+      tradeVoidItem: actions.tradeVoidItem,
+      bloodBankDonate: actions.bloodBankDonate
+    }),
+    [actions]
+  )
+}
+
+/**
+ * Hook to access quest dispatch actions specifically.
+ */
+export const useQuestActions = (): QuestDispatchActions => {
+  const actions = useGameActions()
+  return useMemo<QuestDispatchActions>(
+    () => ({
+      addQuest: actions.addQuest,
+      applyQuestEvent: actions.applyQuestEvent
+    }),
+    [actions]
+  )
+}
+
+/**
+ * Hook to access expedition dispatch actions specifically.
+ */
+export const useExpeditionActions = (): ExpeditionDispatchActions => {
+  const actions = useGameActions()
+  return useMemo<ExpeditionDispatchActions>(
+    () => ({
+      prepareExpeditionRun: actions.prepareExpeditionRun,
+      prepareExpeditionSponsorOffers: actions.prepareExpeditionSponsorOffers,
+      startExpedition: actions.startExpedition,
+      revealExpeditionNodeIntel: actions.revealExpeditionNodeIntel,
+      addExpeditionReward: actions.addExpeditionReward,
+      extractExpedition: actions.extractExpedition,
+      completeExpedition: actions.completeExpedition,
+      acceptExpeditionFailure: actions.acceptExpeditionFailure,
+      prepareNextExpedition: actions.prepareNextExpedition,
+      resolveExpeditionCrisis: actions.resolveExpeditionCrisis,
+      resolveExpeditionAuthorityExit: actions.resolveExpeditionAuthorityExit,
+      executeExpeditionRepair: actions.executeExpeditionRepair,
+      executeExpeditionInspection: actions.executeExpeditionInspection,
+      claimExpeditionInsurance: actions.claimExpeditionInsurance,
+      acceptExpeditionTechnicalFailure:
+        actions.acceptExpeditionTechnicalFailure,
+      recordExpeditionCrewStressSource:
+        actions.recordExpeditionCrewStressSource,
+      recordExpeditionRelationshipOutcome:
+        actions.recordExpeditionRelationshipOutcome,
+      advanceExpeditionCrewInjury: actions.advanceExpeditionCrewInjury,
+      advanceExpeditionBandInjury: actions.advanceExpeditionBandInjury,
+      createContactIntelGrant: actions.createContactIntelGrant,
+      recordExpeditionObligationSignal:
+        actions.recordExpeditionObligationSignal,
+      doubleDownExpeditionObligation: actions.doubleDownExpeditionObligation,
+      offerExpeditionDraft: actions.offerExpeditionDraft,
+      selectExpeditionDraft: actions.selectExpeditionDraft,
+      resolveExpeditionSocialResult: actions.resolveExpeditionSocialResult,
+      createSocialIntelGrant: actions.createSocialIntelGrant
+    }),
+    [actions]
+  )
+}
+
+/**
+ * Hook to access rival band dispatch actions specifically.
+ */
+export const useRivalBandActions = (): RivalBandDispatchActions => {
+  const actions = useGameActions()
+  return useMemo<RivalBandDispatchActions>(
+    () => ({
+      spawnRivalBand: actions.spawnRivalBand,
+      moveRivalBand: actions.moveRivalBand,
+      checkRivalEncounter: actions.checkRivalEncounter,
+      updateRivalBand: actions.updateRivalBand
+    }),
+    [actions]
+  )
 }
 
 /**

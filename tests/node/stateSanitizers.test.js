@@ -843,3 +843,78 @@ describe('stateSanitizers', () => {
     })
   })
 })
+
+describe('travel phase hydration', () => {
+  it('infers in_transit for a legacy active tourbus and preserves it through reload', () => {
+    const loaded = sanitizeMinigameState({
+      active: true,
+      type: 'TOURBUS',
+      targetDestination: 'node_1'
+    })
+    assert.equal(loaded.transitPhase, 'in_transit')
+    assert.deepEqual(
+      sanitizeMinigameState(JSON.parse(JSON.stringify(loaded))),
+      loaded
+    )
+  })
+  it('preserves arrived across reload and rejects inconsistent phases', () => {
+    const arrived = sanitizeMinigameState({
+      active: false,
+      transitPhase: 'arrived'
+    })
+    assert.equal(arrived.transitPhase, 'arrived')
+    assert.deepEqual(
+      sanitizeMinigameState(JSON.parse(JSON.stringify(arrived))),
+      arrived
+    )
+    assert.equal(
+      sanitizeMinigameState({ active: false, transitPhase: 'in_transit' })
+        .transitPhase,
+      'idle'
+    )
+    assert.notEqual(
+      sanitizeMinigameState({
+        active: true,
+        type: 'ROADIE',
+        transitPhase: 'in_transit'
+      }).transitPhase,
+      'in_transit'
+    )
+  })
+})
+
+describe('legacy contraband hydration', () => {
+  it('normalizes missing discriminants and rejects coercible or non-finite stat values', () => {
+    for (const value of ['4', true, [], Infinity, NaN]) {
+      const band = sanitizeBand({
+        activeContrabandEffects: [
+          { effectType: 'luck', value, remainingDuration: '2' }
+        ]
+      })
+      assert.equal(band.activeContrabandEffects[0].kind, 'stat_buff')
+      assert.equal(band.activeContrabandEffects[0].value, 0)
+      assert.equal(band.activeContrabandEffects[0].remainingDuration, 0)
+    }
+    const band = sanitizeBand({
+      activeContrabandEffects: [
+        { effectType: 'luck', value: 4, remainingDuration: 2 }
+      ]
+    })
+    assert.equal(band.activeContrabandEffects[0].value, 4)
+    assert.equal(band.activeContrabandEffects[0].remainingDuration, 2)
+  })
+})
+
+it('preserves a pending travel confirmation through hydration', () => {
+  const loaded = sanitizeMinigameState({
+    active: false,
+    type: 'TOURBUS',
+    transitPhase: 'confirming',
+    targetDestination: 'node_1'
+  })
+  assert.equal(loaded.transitPhase, 'confirming')
+  assert.deepEqual(
+    sanitizeMinigameState(JSON.parse(JSON.stringify(loaded))),
+    loaded
+  )
+})

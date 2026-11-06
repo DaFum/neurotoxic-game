@@ -3048,3 +3048,58 @@ test('save/load preserves canonical Expedition reputation and familiar node inte
   assert.equal(loaded.reputationByRegion.berlin, -60)
   assert.deepEqual(getExpeditionIntelCapability(loaded).familiarNodeIds, before)
 })
+
+test('special contraband expiry does not subtract numeric stats and releases the relic', () => {
+  const state = createInitialState()
+  state.band.luck = 8
+  state.band.stash = {
+    relic: { stacks: 1, instanceId: 'special-relic', applied: true }
+  }
+  state.band.activeContrabandEffects = [
+    {
+      kind: 'special',
+      effectType: 'luck',
+      value: 100,
+      remainingDuration: 1,
+      instanceId: 'special-relic'
+    }
+  ]
+  const next = handleAdvanceDay(state, {
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: state.rngSeed
+  })
+  assert.equal(next.band.luck, 8)
+  assert.deepEqual(next.band.activeContrabandEffects, [])
+  assert.equal(next.band.stash.relic.applied, false)
+  assert.equal(state.band.stash.relic.applied, true)
+})
+
+test('load and expiry revert a legacy buff without subtracting a special numeric value', () => {
+  const state = createInitialState()
+  state.player.money = 10000
+  state.band.luck = 13
+  state.band.activeContrabandEffects = [
+    { effectType: 'luck', value: 5, remainingDuration: 1 },
+    { kind: 'special', effectType: 'luck', value: 100, remainingDuration: 1 }
+  ]
+  const snapshot = JSON.parse(
+    JSON.stringify(createPersistedState(state, createFixedClock(1000)))
+  )
+  const loaded = handleLoadGame(createInitialState(), snapshot)
+  assert.equal(loaded.band.luck, 13)
+  assert.equal(loaded.band.activeContrabandEffects[0].kind, 'stat_buff')
+  assert.equal(loaded.band.activeContrabandEffects[0].value, 5)
+  assert.equal(loaded.band.activeContrabandEffects[1].kind, 'special')
+  assert.equal(loaded.band.activeContrabandEffects[1].value, 100)
+
+  const next = handleAdvanceDay(loaded, {
+    dayRngStream: HALF_ROLLS,
+    nextRngSeed: loaded.rngSeed
+  })
+  assert.equal(next.band.luck, 8)
+  assert.deepEqual(next.band.activeContrabandEffects, [])
+  assert.equal(loaded.band.luck, 13)
+  assert.equal(loaded.band.activeContrabandEffects.length, 2)
+  assert.equal(loaded.band.activeContrabandEffects[0].remainingDuration, 1)
+  assert.equal(loaded.band.activeContrabandEffects[1].remainingDuration, 1)
+})

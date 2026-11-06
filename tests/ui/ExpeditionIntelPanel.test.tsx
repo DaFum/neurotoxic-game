@@ -33,7 +33,7 @@ vi.mock('../../src/context/GameState', async () => {
       }, [])
       return selector(state.current)
     },
-    useGameActions: () => actions
+    useExpeditionActions: () => actions
   }
 })
 

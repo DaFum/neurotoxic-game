@@ -1,5 +1,5 @@
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
-import type { BandMember, BandState } from '../types'
+import type { ActiveContrabandEffect, BandMember, BandState } from '../types'
 
 /**
  * Effect types that simply add `value` to a numeric band property
@@ -55,12 +55,36 @@ export const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
  * are skipped (used to preserve the equipment apply-on-add allowlist).
  * @returns True when a recognized effect was applied.
  */
-export const applySharedBandEffect = (
+export function applySharedBandEffect(
+  newBand: BandState,
+  effect: ActiveContrabandEffect,
+  value?: number,
+  allowedEffectTypes?: ReadonlySet<string>
+): boolean
+export function applySharedBandEffect(
   newBand: BandState,
   effectType: unknown,
   value: number,
   allowedEffectTypes?: ReadonlySet<string>
-): boolean => {
+): boolean
+export function applySharedBandEffect(
+  newBand: BandState,
+  effectOrType: unknown,
+  value?: number,
+  allowedEffectTypes?: ReadonlySet<string>
+): boolean {
+  let effectType = effectOrType
+  if (typeof effectOrType === 'object' && effectOrType !== null) {
+    if (!('kind' in effectOrType) || effectOrType.kind !== 'stat_buff')
+      return false
+    effectType =
+      'effectType' in effectOrType ? effectOrType.effectType : undefined
+    value =
+      value ??
+      ('value' in effectOrType && isFiniteNumber(effectOrType.value)
+        ? effectOrType.value
+        : 0)
+  }
   if (typeof effectType !== 'string') return false
   if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
 

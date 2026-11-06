@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
+import { settlePendingGigOnLoad } from '../../src/context/reducers/pendingGigSettlementReducer'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
@@ -654,6 +655,88 @@ test('pending gig settlement reconciliation on load', async t => {
     }
   )
 
+  await t.test(
+    'load recovery skips social reconciliation when record lifecycleStage is complete',
+    () => {
+      const base = createInitialState()
+      const snapshot = {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: { ...base.player, money: 500, day: 1 },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          lastGigDay: 0,
+          activeDeals: [
+            {
+              id: 'energy_drink_cx',
+              remainingGigs: 3,
+              type: 'SPONSOR',
+              offer: {}
+            }
+          ],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-complete',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          lifecycleStage: 'complete'
+        }
+      }
+
+      const loaded = handleLoadGame(createInitialState(), snapshot)
+      // Remaining gigs is not decremented because lifecycleStage is complete
+      assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 3)
+    }
+  )
+
+  await t.test(
+    'load recovery reconciles pending_social record even when lastGigDay equals current day without socialReconciled',
+    () => {
+      const base = createInitialState()
+      const snapshot = {
+        currentScene: GAME_PHASES.POST_GIG,
+        player: { ...base.player, money: 500, day: 1 },
+        band: { ...base.band },
+        social: {
+          ...base.social,
+          lastGigDay: 1,
+          activeDeals: [
+            {
+              id: 'energy_drink_cx',
+              remainingGigs: 3,
+              type: 'SPONSOR',
+              offer: {}
+            }
+          ],
+          regionalGigHistory: {}
+        },
+        currentGig: { id: 'berlin_so36', name: 'SO36' },
+        lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+        pendingGigSettlement: {
+          id: 'settlement-pending-social',
+          gigId: 'berlin_so36',
+          net: 300,
+          perfScore: 80,
+          misses: 0,
+          dealFameMultiplier: 1,
+          soldMerch: {},
+          lifecycleStage: 'pending_social'
+        }
+      }
+
+      const loaded = handleLoadGame(createInitialState(), snapshot)
+      // Explicit pending_social takes precedence over legacy lastGigDay heuristic
+      assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 2)
+    }
+  )
+
   await t.test('mismatched composite action settlement ID is a no-op', () => {
     const base = createInitialState()
     const state = {
@@ -713,6 +796,7 @@ test('pending gig settlement actions', async t => {
     })
     assert.deepEqual(next.pendingGigSettlement, {
       ...record,
+      lifecycleStage: 'pending_social',
       socialReconciled: false
     })
   })
@@ -972,6 +1056,7 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     perfScore: 30,
     misses: 0,
     dealFameMultiplier: 1,
+    lifecycleStage: 'pending_social',
     socialReconciled: false
   })
 })
@@ -1325,3 +1410,156 @@ test('shared settlement policy matches recovered ledger and Finale gates', async
     assert.equal(policy.expeditionFinale, false)
   }
 })
+
+test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
+  const postGig = {
+    ...createInitialState(),
+    currentScene: GAME_PHASES.POST_GIG,
+    currentGig: { id: 'gig_venue', name: 'Gig Venue' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+  }
+  const record = {
+    id: 'settlement-flow-test',
+    gigId: 'gig_venue',
+    net: 100,
+    perfScore: 90,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: { shirts: 2 }
+  }
+
+  // 1. New record without lifecycleStage acquires 'pending_social'
+  const recordedState = gameReducer(postGig, {
+    type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
+    payload: record
+  })
+  assert.equal(
+    recordedState.pendingGigSettlement?.lifecycleStage,
+    'pending_social'
+  )
+  assert.equal(recordedState.pendingGigSettlement?.socialReconciled, false)
+
+  // 2. Applying social post result advances lifecycleStage to 'social_reconciled'
+  const socialState = gameReducer(recordedState, {
+    type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+    payload: {
+      postIndex: 0,
+      settlementId: 'settlement-flow-test',
+      social: {
+        pendingSocialOptionId: 'opt-1',
+        viral: 10
+      }
+    }
+  })
+  assert.equal(
+    socialState.pendingGigSettlement?.lifecycleStage,
+    'social_reconciled'
+  )
+  assert.equal(socialState.pendingGigSettlement?.socialReconciled, true)
+
+  // 3. Load recovery respects social_reconciled and does not re-reconcile
+  const recovered = settlePendingGigOnLoad(
+    socialState,
+    socialState.pendingGigSettlement
+  )
+  assert.equal(recovered.pendingGigSettlement, null)
+})
+
+test('load recovery with lifecycleStage: social_reconciled and no socialReconciled marker skips social reconciliation', () => {
+  const base = createInitialState()
+  const dealFor = {
+    id: 'energy_drink_cx',
+    remainingGigs: 3,
+    type: 'SPONSOR',
+    offer: {}
+  }
+  // Set day: 2 while lastGigDay: 1 so legacyAlreadyReconciled guard cannot trigger
+  const snapshot = {
+    currentScene: GAME_PHASES.POST_GIG,
+    player: { ...base.player, money: 500, day: 2 },
+    band: { ...base.band },
+    social: {
+      ...base.social,
+      lastGigDay: 1,
+      activeDeals: [dealFor],
+      regionalGigHistory: {}
+    },
+    currentGig: { id: 'berlin_so36', name: 'SO36' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+    // Saved record with lifecycleStage: 'social_reconciled' and no socialReconciled marker
+    pendingGigSettlement: {
+      id: 'settlement-stage-test',
+      gigId: 'berlin_so36',
+      net: 300,
+      perfScore: 80,
+      misses: 0,
+      dealFameMultiplier: 1,
+      soldMerch: {},
+      lifecycleStage: 'social_reconciled'
+    }
+  }
+
+  const loaded = handleLoadGame(createInitialState(), snapshot)
+  assert.equal(loaded.pendingGigSettlement, null, 'settlement cleared')
+  assert.equal(
+    loaded.social.activeDeals[0]?.remainingGigs,
+    3,
+    'deal was not decremented again because lifecycleStage is social_reconciled'
+  )
+})
+
+for (const lifecycleStage of ['social_reconciled', 'complete']) {
+  test(`stage-only ${lifecycleStage} settlement rejects repeated reconciliation`, () => {
+    const base = createInitialState()
+    const state = {
+      ...base,
+      ...buildPostGigSnapshot({ lifecycleStage, socialReconciled: false })
+    }
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        settlementId: state.pendingGigSettlement.id,
+        socialUpdate: { instagram: 12345 }
+      }
+    })
+    assert.strictEqual(next, state)
+  })
+}
+
+for (const lifecycleStage of ['social_reconciled', 'complete']) {
+  test(`stage-only ${lifecycleStage} settlement rejects a repeated social post`, () => {
+    const state = {
+      ...createInitialState(),
+      ...buildPostGigSnapshot({ lifecycleStage, socialReconciled: false })
+    }
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+      payload: {
+        settlementId: state.pendingGigSettlement.id,
+        social: { pendingSocialOptionId: 'replay' },
+        moneyDelta: 100
+      }
+    })
+    assert.strictEqual(next, state)
+  })
+}
+
+for (const lifecycleStage of ['social_reconciled', 'complete']) {
+  test(`re-recording a stage-only ${lifecycleStage} settlement preserves stage and marker`, () => {
+    const snapshot = buildPostGigSnapshot({
+      lifecycleStage,
+      socialReconciled: false
+    })
+    const state = { ...createInitialState(), ...snapshot }
+    const {
+      id,
+      socialReconciled: _socialReconciled,
+      lifecycleStage: previousStage,
+      ...input
+    } = snapshot.pendingGigSettlement
+    const action = createRecordPendingGigSettlementAction(input, id)
+    const next = gameReducer(state, action)
+    assert.equal(next.pendingGigSettlement.lifecycleStage, previousStage)
+    assert.equal(next.pendingGigSettlement.socialReconciled, true)
+  })
+}

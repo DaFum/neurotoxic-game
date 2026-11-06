@@ -20,6 +20,7 @@ import type {
 import { handleUpdateBand } from './bandReducer'
 import { handleUpdatePlayer } from './playerReducer'
 import { validateSocialPostResult } from '../../utils/postGig/socialPostResultValidation'
+import { markGigSocialReconciled } from '../../utils/postGig/settlementLifecycle'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
@@ -239,7 +240,7 @@ export const handleApplySocialPostResult = (
   ) {
     nextState = {
       ...nextState,
-      pendingGigSettlement: { ...pending, socialReconciled: true }
+      pendingGigSettlement: markGigSocialReconciled(pending)
     }
   }
 

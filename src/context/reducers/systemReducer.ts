@@ -668,17 +668,19 @@ export const handleRemoveToast = (
  */
 const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
-  const stillActive: unknown[] = []
-  const expired: Record<string, unknown>[] = []
+  const stillActive: GameState['band']['activeContrabandEffects'] = []
+  const expired: GameState['band']['activeContrabandEffects'] = []
 
   for (let i = 0; i < activeEffects.length; i++) {
     const effect = activeEffects[i]
     if (typeof effect !== 'object' || effect === null) continue
     const effectObj = effect as Record<string, unknown>
+    const remainingDuration = finiteNumberOr(effectObj.remainingDuration, 0) - 1
     const updatedEffect = {
-      ...effectObj,
-      remainingDuration: finiteNumberOr(effectObj.remainingDuration, 0) - 1
-    }
+      ...effect,
+      remainingDuration
+    } as (typeof activeEffects)[number]
+
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)
     } else {
@@ -698,8 +700,10 @@ const processContrabandExpiry = (band: BandState): BandState => {
     // The rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time.
     const applied = applySharedBandEffect(
       nextBand,
-      effectType,
-      -finiteNumberOr(e.value, 0)
+      e.kind === 'special'
+        ? e
+        : { ...e, kind: 'stat_buff', value: finiteNumberOr(e.value, 0) },
+      e.kind === 'special' ? undefined : -finiteNumberOr(e.value, 0)
     )
 
     if (applied) {

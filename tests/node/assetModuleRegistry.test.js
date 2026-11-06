@@ -2,10 +2,28 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   MODULE_REGISTRY,
-  MODULE_PROMPTS
+  MODULE_PROMPTS,
+  ASSET_MODULES_MAP
 } from '../../src/utils/assets/assetModuleRegistry.ts'
 
 describe('MODULE_REGISTRY invariants', () => {
+  it('mutating MODULE_REGISTRY in place does not mutate ASSET_MODULES_MAP', () => {
+    const testId = 'tb_roof_rack'
+    const originalStatic = ASSET_MODULES_MAP.get(testId)
+    assert.ok(originalStatic)
+    const prevExclusive = originalStatic.exclusiveWithGroup
+
+    const originalRegistry = structuredClone(MODULE_REGISTRY[testId])
+    try {
+      MODULE_REGISTRY[testId].exclusiveWithGroup = 'mutated_test_group'
+      assert.equal(
+        ASSET_MODULES_MAP.get(testId)?.exclusiveWithGroup,
+        prevExclusive
+      )
+    } finally {
+      MODULE_REGISTRY[testId] = originalRegistry
+    }
+  })
   it('no module has self-referential addsSlots (anti-stacking)', () => {
     for (const [id, m] of Object.entries(MODULE_REGISTRY)) {
       for (const a of m.addsSlots ?? []) {

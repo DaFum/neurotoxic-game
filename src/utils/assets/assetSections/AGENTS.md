@@ -3,7 +3,7 @@
 ## Tourbus
 
 - `tourbusConfig.ts` exports `TOURBUS_T1_SLOTS`, `TOURBUS_T2_SLOTS`, `TOURBUS_T3_SLOTS` (`as const` tuples) and `TOURBUS_SLOT_POSITIONS: Partial<Record<SlotType, {x,y}>>`; callers must handle `undefined`.
-- `tourbusModules.ts` registers 20 modules by mutating `MODULE_REGISTRY` / `MODULE_PROMPTS` from `assetRegistryStore.ts`. Keep tourbus module registration in this file.
+- `tourbusModules.ts` exports 20 modules and their prompts declaratively, aggregated statically into `assetRegistryStore.ts`. Keep tourbus module definitions in this file.
 - `tb_trailer_hitch` has `slotType: 'tb_trailer_mount'` and adds two `tb_trailer_addon` slots, filled by `tb_trailer_merch_box`, `tb_trailer_bunk_pod` and `tb_trailer_generator`. New modules must never declare both `slotType: X` and `addsSlots: [{ slotType: X, ... }]`; registry invariant tests reject self-stacking.
 
 ## Studio

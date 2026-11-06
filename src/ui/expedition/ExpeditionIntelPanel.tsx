@@ -12,7 +12,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameActions, useGameSelector } from '../../context/GameState'
+import { useExpeditionActions, useGameSelector } from '../../context/GameState'
 import { ActionButton } from '../shared/ActionButton'
 import { getActiveExpeditionMap } from '../../domain/expedition/map'
 import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
@@ -213,7 +213,8 @@ export const ExpeditionIntelPanel = memo(function ExpeditionIntelPanel() {
   const { t } = useTranslation('ui')
   const [selectView] = useState(createIntelViewSelector)
   const view = useGameSelector(selectView)
-  const { revealExpeditionNodeIntel, createSocialIntelGrant } = useGameActions()
+  const { revealExpeditionNodeIntel, createSocialIntelGrant } =
+    useExpeditionActions()
 
   // A Scout reads the road continuously, so the passive level-1 reveal is not
   // a button: it is spent as soon as the run stands next to a node it has not
