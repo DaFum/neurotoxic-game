@@ -89,7 +89,7 @@
     "@iarna/toml": "2.2.5",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@playwright/test": "1.64.1",
-    "@tailwindcss/postcss": "4.3.3",
+    "@tailwindcss/postcss": "4.3.4",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
