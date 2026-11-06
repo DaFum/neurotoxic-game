@@ -196,7 +196,7 @@ describe('useEventSystem unlock persistence honors the injected adapter', () => 
     })
 
     // The unlock must land in the injected backend...
-    expect(adapter.keys()).toContain(MARKER_KEY)
+    expect(adapter.keys()).toEqual({ ok: true, keys: expect.arrayContaining([MARKER_KEY]) })
     // ...and must not leak into the module-default backend, or a save written
     // through adapter B would reference unlocks stored in adapter A.
     expect(localStorage.getItem(MARKER_KEY)).toBeNull()

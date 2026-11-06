@@ -5,8 +5,8 @@ import { MERCH_MAX_PRICES } from '../../data/merch'
 import { formatCurrency } from '../../utils/numberUtils'
 import {
   getMerchCapacity,
+  resolveMerchRestock,
   resolveMerchRestockCost,
-  getMerchBundleAmount,
   getTotalMerchStock
 } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
@@ -187,17 +187,22 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             : 0
 
         const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
-        const bundleAmount = itemDef ? getMerchBundleAmount(itemDef) : 10
-        const restockAmount = Math.max(
-          0,
-          Math.min(bundleAmount, remainingCapacity)
-        )
-        const restockCost = resolveMerchRestockCost({
-          itemCost: itemDef?.cost ?? 50,
-          merchCostMultiplier: restockCostMultiplier,
-          restockAmount,
-          bundleAmount
+        const restockQuote = resolveMerchRestock(key, bandInventory, {
+          merchCapacityBonus,
+          merchCostMultiplier: restockCostMultiplier
         })
+
+        const restockAmount = restockQuote
+          ? restockQuote.restockAmount
+          : Math.max(0, Math.min(10, remainingCapacity))
+        const restockCost = restockQuote
+          ? restockQuote.cost
+          : resolveMerchRestockCost({
+              itemCost: 50,
+              merchCostMultiplier: restockCostMultiplier,
+              restockAmount,
+              bundleAmount: 10
+            })
 
         const imgPrompt = itemDef?.img
           ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]

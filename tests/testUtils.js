@@ -8,6 +8,10 @@ let originalGlobalDescriptors
  * Preserves original descriptors to restore them later.
  */
 export function setupJSDOM() {
+  // If Vitest already owns the jsdom environment, do not create a replacement window.
+  if (globalThis.window && globalThis.document && !originalGlobalDescriptors) {
+    return
+  }
   originalGlobalDescriptors = new Map(
     [
       'window',
@@ -45,6 +49,9 @@ export function setupJSDOM() {
  * Tears down the JSDOM environment and restores global descriptors.
  */
 export function teardownJSDOM() {
+  if (!originalGlobalDescriptors) {
+    return
+  }
   if (dom) {
     dom.window.close()
   }

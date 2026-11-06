@@ -20,64 +20,27 @@ import { deriveExpeditionDraftCandidates } from '../../src/domain/expedition/run
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash.ts'
-import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { calculateTravelCostsAndImpact } from '../../src/utils/travelUtils.ts'
 import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors.ts'
 import { MapGenerator } from '../../src/utils/mapGenerator.ts'
 import { getLocationName } from '../../src/hooks/travel/actions/getLocationName.ts'
 import { advanceRouteForFixture } from '../../tests/expeditionRouteAdvanceFixture.js'
-
-const FIXTURE_RUN_SEED = 4242
-const FIXTURE_TOUR_ID = 'standard_tour'
-const FIXTURE_REGION_ID = 'home_turf'
-const FIXTURE_PREP_ID = 'run_fixture'
-const FIXTURE_MONEY = 5000
-const FIXTURE_SONG_ID = [...SONGS_BY_ID.keys()][0]
+import {
+  FIXTURE_RUN_SEED,
+  FIXTURE_MONEY,
+  startedExpeditionState
+} from '../../tests/expeditionBaseFixture.js'
 
 const fail = message => {
   throw new Error(`e2e fixture: ${message}`)
 }
 
-const loadout = protectedCareerCash => ({
-  tourTypeId: FIXTURE_TOUR_ID,
-  regionId: FIXTURE_REGION_ID,
-  activeTourbusAssetId: null,
-  crewIds: [],
-  cargo: { spareParts: 0, supplies: 0 },
-  starterPerkId: null,
-  nativeContracts: [],
-  insurancePolicyId: null,
-  pressureModifierIds: [],
-  build: {
-    setlistSongIds: [FIXTURE_SONG_ID],
-    equipment: { selectedGearItemIds: [] },
-    selectedTourbusModuleIds: [],
-    merch: [],
-    contraband: [],
-    sponsorOfferId: null,
-    startingFuelTarget: 100,
-    protectedCareerCash
-  }
-})
-
 /** Fresh Career, prepared and started through the real START transaction. */
 const startedState = (protectedCareerCash, runSeed = FIXTURE_RUN_SEED) => {
-  const fresh = createInitialState()
-  fresh.player.money = FIXTURE_MONEY
-  fresh.player.fame = 100
-  fresh.player.van.fuel = 100
-  const prepared = gameReducer(fresh, {
-    type: ActionTypes.PREPARE_EXPEDITION_RUN,
-    payload: { prepId: FIXTURE_PREP_ID, runSeed }
-  })
-  const started = gameReducer(prepared, {
-    type: ActionTypes.START_EXPEDITION,
-    payload: {
-      prepId: FIXTURE_PREP_ID,
-      expectedRunSeed: runSeed,
-      loadout: loadout(protectedCareerCash)
-    }
-  })
+  const started = startedExpeditionState(
+    { runSeed },
+    { build: { protectedCareerCash } }
+  )
   if (started.expedition.status !== 'active') fail('the run did not start')
   return started
 }

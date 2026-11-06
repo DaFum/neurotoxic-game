@@ -1,17 +1,14 @@
 import { test, describe, beforeEach, afterEach, vi, expect } from 'vitest'
 import { renderHook, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import { useGigEffects } from '../../src/hooks/useGigEffects'
 
 describe('useGigEffects Security', () => {
   beforeEach(() => {
-    setupJSDOM()
     global.cancelAnimationFrame = vi.fn()
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
     vi.restoreAllMocks()
     if (global.requestAnimationFrame?.mockRestore) {
       global.requestAnimationFrame.mockRestore()

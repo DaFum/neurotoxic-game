@@ -310,8 +310,8 @@ describe('future-version save protection', () => {
         toastMessages(addToast).filter(m => m.includes(INCOMPATIBLE_KEY))
       ).toHaveLength(1)
       expect(setSpy).not.toHaveBeenCalled()
-      expect(adapter.get(SAVE_KEY)).toBe(currentSave)
-      expect(adapter.get(NEWER_SLOT)).toBe(FUTURE_SAVE)
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: currentSave })
+      expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: FUTURE_SAVE })
     })
 
     it('refuses to load the shared slot while a newer slot exists, so no session is left unsavable', () => {
@@ -335,9 +335,9 @@ describe('future-version save protection', () => {
       expect(
         toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
       ).toBe(true)
-      expect(adapter.get(SAVE_KEY)).toBe(currentSave)
-      expect(adapter.get(NEWER_SLOT)).toBe(FUTURE_SAVE)
-      expect(adapter.get(`${SAVE_KEY}.v7`)).toBe(furtherSave)
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: currentSave })
+      expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: FUTURE_SAVE })
+      expect(adapter.get(`${SAVE_KEY}.v7`)).toEqual({ ok: true, value: furtherSave })
     })
 
     it('reports a newer save rather than none when only a newer slot exists', () => {
@@ -354,7 +354,7 @@ describe('future-version save protection', () => {
       expect(
         toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
       ).toBe(true)
-      expect(adapter.get(NEWER_SLOT)).toBe(FUTURE_SAVE)
+      expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: FUTURE_SAVE })
     })
 
     it('keeps a newer save written between the version check and the write', () => {
@@ -383,8 +383,8 @@ describe('future-version save protection', () => {
 
       expect(racing.raced).toBe(true)
       expect(saved).toBe(true)
-      expect(racing.get(newerSlot)).toBe(FUTURE_SAVE)
-      expect(JSON.parse(racing.get(ownSlot) ?? '{}').version).toBe(
+      expect(racing.get(newerSlot)).toEqual({ ok: true, value: FUTURE_SAVE })
+      expect(JSON.parse(racing.get(ownSlot).value ?? '{}').version).toBe(
         CURRENT_SAVE_VERSION
       )
 
@@ -394,7 +394,7 @@ describe('future-version save protection', () => {
         savedAgain = result.current.saveGame(false)
       })
       expect(savedAgain).toBe(false)
-      expect(racing.get(newerSlot)).toBe(FUTURE_SAVE)
+      expect(racing.get(newerSlot)).toEqual({ ok: true, value: FUTURE_SAVE })
     })
   })
 
@@ -467,8 +467,8 @@ describe('future-version save protection', () => {
 
       expect(loaded).toEqual({ ok: true })
       expect(loadedMoney(dispatch)).toBe(333)
-      expect(adapter.get(SAVE_KEY)).toBe(legacySave)
-      expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: legacySave })
+      expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: v3Save })
     })
 
     it('refuses to load when the shared key holds a newer payload, even beside a slot it supports', () => {
@@ -491,8 +491,8 @@ describe('future-version save protection', () => {
       expect(
         toastMessages(addToast).some(m => m.includes(INCOMPATIBLE_KEY))
       ).toBe(true)
-      expect(adapter.get(SAVE_KEY)).toBe(newerShared)
-      expect(adapter.get(NEWER_SLOT)).toBe(v3Save)
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: newerShared })
+      expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: v3Save })
     })
 
     it('writes only its own slot', () => {
@@ -506,9 +506,10 @@ describe('future-version save protection', () => {
       })
 
       expect(saved).toBe(true)
-      expect(adapter.get(SAVE_KEY)).toBe(legacySave)
-      expect(adapter.get(`${SAVE_KEY}.v4`)).not.toBeNull()
-      expect(adapter.keys().sort()).toEqual([SAVE_KEY, `${SAVE_KEY}.v4`])
+      expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: legacySave })
+      expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({ ok: true, value: expect.any(String) })
+      const kRes = adapter.keys()
+      expect(kRes.ok ? kRes.keys.sort() : []).toEqual([SAVE_KEY, `${SAVE_KEY}.v4`])
     })
   })
 })

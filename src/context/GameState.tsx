@@ -149,7 +149,10 @@ const initGameState = (storage: IStorageAdapter): GameState => {
   // saves are loaded explicitly via the MENU → "Load Game" button.
   const shouldHydrate = safeStorageOperation(
     'checkInjectMarker',
-    () => storage.get(INJECT_MARKER_KEY) === 'true',
+    () => {
+      const res = storage.get(INJECT_MARKER_KEY)
+      return res.ok && res.value === 'true'
+    },
     false
   )
 

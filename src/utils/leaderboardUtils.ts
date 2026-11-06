@@ -75,9 +75,9 @@ const compactPendingJournal = (playerId: string): void => {
     let durable = false
     let persistedScore: ValidPendingScore | null = null
     const persisted = defaultStorageAdapter.get(key)
-    if (persisted !== null) {
+    if (persisted.ok && persisted.value !== null) {
       try {
-        const stored = safeJsonParse<unknown>(persisted)
+        const stored = safeJsonParse<unknown>(persisted.value)
         if (isValidPendingScore(stored)) persistedScore = stored
         durable =
           persistedScore !== null &&

@@ -8,28 +8,27 @@
  */
 
 import assert from 'node:assert/strict'
-import { createInitialState } from '../src/context/initialState.ts'
 import { gameReducer } from '../src/context/gameReducer.ts'
 import { ActionTypes } from '../src/context/actionTypes.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
-import { SONGS_BY_ID } from '../src/data/songs.ts'
 import { advanceRouteForFixture } from './expeditionRouteAdvanceFixture.js'
+import {
+  FIXTURE_RUN_SEED,
+  FIXTURE_TOUR_ID,
+  FIXTURE_REGION_ID,
+  FIXTURE_SONG_ID,
+  fixtureLoadout,
+  preparedExpeditionState,
+  startedExpeditionState
+} from './expeditionBaseFixture.js'
 
-/** Seed used by every lifecycle fixture, so route assertions stay stable. */
-export const FIXTURE_RUN_SEED = 4242
-
-export const FIXTURE_TOUR_ID = 'standard_tour'
-
-/**
- * The Region a fresh Career actually books.
- *
- * @remarks
- * `home_turf` plus `standard_tour` is the canonical fresh-career entry: no
- * unlock set owned, nothing gated. Availability, START, unlock and Tour Prep
- * suites must use this fixture, because a fixture Career stronger than a fresh
- * one would mask exactly the gates those suites exist to prove.
- */
-export const FIXTURE_REGION_ID = 'home_turf'
+export {
+  FIXTURE_RUN_SEED,
+  FIXTURE_TOUR_ID,
+  FIXTURE_REGION_ID,
+  FIXTURE_SONG_ID,
+  fixtureLoadout
+}
 
 /**
  * The Region the pre-G5 seeds were pinned to.
@@ -39,8 +38,6 @@ export const FIXTURE_REGION_ID = 'home_turf'
  * for suites whose subject is a run that is already under way.
  */
 export const FIXTURE_COMMITTED_REGION_ID = 'industrial_belt'
-
-export const FIXTURE_SONG_ID = [...SONGS_BY_ID.keys()][0]
 
 /**
  * The route a fixture run walks.
@@ -88,68 +85,16 @@ export const withExpeditionCapabilities = (state, setIds) => ({
 })
 
 /**
- * Builds the minimal legal G1A loadout.
- */
-export const fixtureLoadout = (overrides = {}) => ({
-  tourTypeId: FIXTURE_TOUR_ID,
-  regionId: FIXTURE_REGION_ID,
-  activeTourbusAssetId: null,
-  crewIds: [],
-  cargo: { spareParts: 0, supplies: 0 },
-  starterPerkId: null,
-  nativeContracts: [],
-  insurancePolicyId: null,
-  pressureModifierIds: [],
-  ...overrides,
-  build: {
-    setlistSongIds: [FIXTURE_SONG_ID],
-    equipment: { selectedGearItemIds: [] },
-    selectedTourbusModuleIds: [],
-    merch: [],
-    contraband: [],
-    sponsorOfferId: null,
-    startingFuelTarget: 100,
-    protectedCareerCash: 0,
-    ...(overrides.build ?? {})
-  }
-})
-
-/**
  * A career sitting at the prepared stage with the fixture seed claimed.
  */
-export const preparedState = ({
-  money = 5000,
-  fame = 100,
-  fuel = 100,
-  unlockedSetIds = []
-} = {}) => {
-  const fresh = createInitialState()
-  fresh.player.money = money
-  fresh.player.fame = fame
-  fresh.player.van.fuel = fuel
-  // Opt-in only. The default stays a genuinely fresh Career so the gates a
-  // suite is not testing keep biting; a suite whose *subject* is gated content
-  // names the set it needs.
-  fresh.career = { ...fresh.career, unlockedSetIds: [...unlockedSetIds] }
-  return gameReducer(fresh, {
-    type: ActionTypes.PREPARE_EXPEDITION_RUN,
-    payload: { prepId: 'run_fixture', runSeed: FIXTURE_RUN_SEED }
-  })
-}
+export const preparedState = (options = {}) =>
+  preparedExpeditionState(options)
 
 /**
  * Starts the fixture run through the real START transaction.
  */
 export const startedState = (options = {}, loadoutOverrides = {}) => {
-  const prepared = preparedState(options)
-  const started = gameReducer(prepared, {
-    type: ActionTypes.START_EXPEDITION,
-    payload: {
-      prepId: 'run_fixture',
-      expectedRunSeed: FIXTURE_RUN_SEED,
-      loadout: fixtureLoadout(loadoutOverrides)
-    }
-  })
+  const started = startedExpeditionState(options, loadoutOverrides)
   assert.equal(
     started.expedition.status,
     'active',

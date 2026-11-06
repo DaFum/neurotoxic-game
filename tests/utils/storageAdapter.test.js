@@ -22,18 +22,18 @@ describe('InMemoryAdapter', () => {
   it('round-trips values without touching the host', () => {
     const adapter = new InMemoryAdapter()
 
-    expect(adapter.get('missing')).toBeNull()
+    expect(adapter.get('missing')).toEqual({ ok: true, value: null })
     expect(adapter.set('a', '1')).toBe(true)
-    expect(adapter.get('a')).toBe('1')
+    expect(adapter.get('a')).toEqual({ ok: true, value: '1' })
     expect(adapter.has('a')).toBe(true)
 
     adapter.remove('a')
-    expect(adapter.get('a')).toBeNull()
+    expect(adapter.get('a')).toEqual({ ok: true, value: null })
     expect(adapter.has('a')).toBe(false)
 
     adapter.set('b', '2')
     adapter.clear()
-    expect(adapter.get('b')).toBeNull()
+    expect(adapter.get('b')).toEqual({ ok: true, value: null })
   })
 })
 
@@ -42,7 +42,7 @@ describe('NoopAdapter', () => {
     const adapter = new NoopAdapter()
 
     expect(adapter.set('a', '1')).toBe(false)
-    expect(adapter.get('a')).toBeNull()
+    expect(adapter.get('a')).toEqual({ ok: true, value: null })
     expect(() => {
       adapter.remove('a')
       adapter.clear()
@@ -81,10 +81,10 @@ describe('LocalStorageAdapter', () => {
     const adapter = new LocalStorageAdapter()
 
     expect(adapter.set('k', 'v')).toBe(true)
-    expect(adapter.get('k')).toBe('v')
+    expect(adapter.get('k')).toEqual({ ok: true, value: 'v' })
 
     adapter.remove('k')
-    expect(adapter.get('k')).toBeNull()
+    expect(adapter.get('k')).toEqual({ ok: true, value: null })
   })
 
   it('degrades instead of throwing when private browsing refuses writes', () => {
@@ -105,7 +105,10 @@ describe('LocalStorageAdapter', () => {
     const adapter = new LocalStorageAdapter()
 
     expect(adapter.set('k', 'v')).toBe(false)
-    expect(adapter.get('k')).toBeNull()
+    expect(adapter.get('k')).toEqual({
+      ok: false,
+      error: expect.any(DOMException)
+    })
     expect(() => {
       adapter.remove('k')
       adapter.clear()
@@ -117,19 +120,25 @@ describe('LocalStorageAdapter', () => {
     const adapter = new LocalStorageAdapter()
 
     expect(adapter.set('k', 'v')).toBe(false)
-    expect(adapter.get('k')).toBeNull()
+    expect(adapter.get('k')).toEqual({
+      ok: false,
+      error: expect.any(Error)
+    })
   })
 
   it('resolves the host store lazily, per call', () => {
     delete globalThis.localStorage
     const adapter = new LocalStorageAdapter()
-    expect(adapter.get('k')).toBeNull()
+    expect(adapter.get('k')).toEqual({
+      ok: false,
+      error: expect.any(Error)
+    })
 
     // A store that appears after construction must still be used: an adapter
     // that captured `localStorage` at module scope could not be swapped.
     stubStorage(buildStubStorage())
     expect(adapter.set('k', 'v')).toBe(true)
-    expect(adapter.get('k')).toBe('v')
+    expect(adapter.get('k')).toEqual({ ok: true, value: 'v' })
   })
 })
 

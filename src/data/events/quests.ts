@@ -41,682 +41,234 @@ import {
   QUEST_STAGE_TIME
 } from '../questsConstants'
 
-const defineQuestOfferEvent = <
-  T extends {
-    id: string
-    title: string
-    description: string
-    options: readonly unknown[]
-  }
->(
-  questId: QuestRegistryId,
-  event: T
-) => {
+interface QuestOfferRow {
+  questId: QuestRegistryId
+  id: string
+  declineEffect: unknown
+}
+
+const defineQuestOfferEvent = ({
+  questId,
+  id,
+  declineEffect
+}: QuestOfferRow) => {
   const offer = getQuestDefinition(questId)?.offer
   if (!offer) {
     throw new Error(`Quest offer metadata missing for ${questId}`)
   }
 
   return {
-    ...event,
+    id,
+    title: `events:${id}.title`,
+    description: `events:${id}.desc`,
     category: offer.category,
     trigger: offer.trigger,
     chance: offer.chance,
     condition: (state: GameState): boolean =>
-      QuestOfferEngine.canOfferQuest(state, questId)
+      QuestOfferEngine.canOfferQuest(state, questId),
+    options: [
+      {
+        label: `events:${id}.opt1.label`,
+        effect: {
+          type: 'quest',
+          quest: questId
+        },
+        outcomeText: `events:${id}.opt1.outcome`
+      },
+      {
+        label: `events:${id}.opt2.label`,
+        effect: declineEffect,
+        outcomeText: `events:${id}.opt2.outcome`
+      }
+    ]
   }
 }
 
 /** Raw quest-offer event definitions consumed by the event registry. */
 export const QUEST_EVENTS = [
-  defineQuestOfferEvent(QUEST_PICK_OF_DESTINY, {
+  defineQuestOfferEvent({
+    questId: QUEST_PICK_OF_DESTINY,
     id: 'quest_trigger_pick_of_destiny',
-    title: 'events:quest_trigger_pick_of_destiny.title',
-    description: 'events:quest_trigger_pick_of_destiny.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_pick_of_destiny.opt1.label',
-        effect: {
-          type: 'quest',
-          // Config lives in QUEST_REGISTRY; addQuest merges defaults by id.
-          quest: QUEST_PICK_OF_DESTINY
-        },
-        outcomeText: 'events:quest_trigger_pick_of_destiny.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_pick_of_destiny.opt2.label',
-        effect: { type: 'stat', stat: 'luck', value: -1 },
-        outcomeText: 'events:quest_trigger_pick_of_destiny.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'luck', value: -1 }
   }),
-  defineQuestOfferEvent(QUEST_VIRAL_DANCE, {
+  defineQuestOfferEvent({
+    questId: QUEST_VIRAL_DANCE,
     id: 'quest_trigger_viral_dance',
-    title: 'events:quest_trigger_viral_dance.title',
-    description: 'events:quest_trigger_viral_dance.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_viral_dance.opt1.label',
-        effect: {
-          type: 'quest',
-          quest: QUEST_VIRAL_DANCE
-        },
-        outcomeText: 'events:quest_trigger_viral_dance.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_viral_dance.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -5 },
-        outcomeText: 'events:quest_trigger_viral_dance.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -5 }
   }),
-  defineQuestOfferEvent(QUEST_SPONSOR_DEMAND, {
+  defineQuestOfferEvent({
+    questId: QUEST_SPONSOR_DEMAND,
     id: 'quest_trigger_sponsor_demand',
-    title: 'events:quest_trigger_sponsor_demand.title',
-    description: 'events:quest_trigger_sponsor_demand.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_sponsor_demand.opt1.label',
-        effect: {
-          type: 'quest',
-          quest: QUEST_SPONSOR_DEMAND
-        },
-        outcomeText: 'events:quest_trigger_sponsor_demand.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_sponsor_demand.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: -10 },
-        outcomeText: 'events:quest_trigger_sponsor_demand.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'fame', value: -10 }
   }),
-  defineQuestOfferEvent(QUEST_HARMONY_PROJECT, {
+  defineQuestOfferEvent({
+    questId: QUEST_HARMONY_PROJECT,
     id: 'quest_trigger_harmony_project',
-    title: 'events:quest_trigger_harmony_project.title',
-    description: 'events:quest_trigger_harmony_project.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_harmony_project.opt1.label',
-        effect: {
-          type: 'quest',
-          quest: QUEST_HARMONY_PROJECT
-        },
-        outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_harmony_project.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -5 },
-        outcomeText: 'events:quest_trigger_harmony_project.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -5 }
   }),
-  defineQuestOfferEvent(QUEST_LOCAL_LEGEND, {
+  defineQuestOfferEvent({
+    questId: QUEST_LOCAL_LEGEND,
     id: 'quest_trigger_local_legend',
-    title: 'events:quest_trigger_local_legend.title',
-    description: 'events:quest_trigger_local_legend.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_local_legend.opt1.label',
-        effect: {
-          type: 'quest',
-          quest: QUEST_LOCAL_LEGEND
-        },
-        outcomeText: 'events:quest_trigger_local_legend.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_local_legend.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: -15 },
-        outcomeText: 'events:quest_trigger_local_legend.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'fame', value: -15 }
   }),
-  defineQuestOfferEvent(QUEST_TOURBUS_INSPECTION, {
+  defineQuestOfferEvent({
+    questId: QUEST_TOURBUS_INSPECTION,
     id: 'quest_trigger_tourbus_inspection',
-    title: 'events:quest_trigger_tourbus_inspection.title',
-    description: 'events:quest_trigger_tourbus_inspection.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_tourbus_inspection.opt1.label',
-        effect: { type: 'quest', quest: QUEST_TOURBUS_INSPECTION },
-        outcomeText: 'events:quest_trigger_tourbus_inspection.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_tourbus_inspection.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_tourbus_inspection.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_STUDIO_DEMO, {
+  defineQuestOfferEvent({
+    questId: QUEST_STUDIO_DEMO,
     id: 'quest_trigger_studio_demo',
-    title: 'events:quest_trigger_studio_demo.title',
-    description: 'events:quest_trigger_studio_demo.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_studio_demo.opt1.label',
-        effect: { type: 'quest', quest: QUEST_STUDIO_DEMO },
-        outcomeText: 'events:quest_trigger_studio_demo.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_studio_demo.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: 3 },
-        outcomeText: 'events:quest_trigger_studio_demo.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'fame', value: 3 }
   }),
-  defineQuestOfferEvent(QUEST_MERCH_RUSH, {
+  defineQuestOfferEvent({
+    questId: QUEST_MERCH_RUSH,
     id: 'quest_trigger_merch_rush',
-    title: 'events:quest_trigger_merch_rush.title',
-    description: 'events:quest_trigger_merch_rush.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_merch_rush.opt1.label',
-        effect: { type: 'quest', quest: QUEST_MERCH_RUSH },
-        outcomeText: 'events:quest_trigger_merch_rush.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_merch_rush.opt2.label',
-        effect: { type: 'resource', resource: 'money', value: 50 },
-        outcomeText: 'events:quest_trigger_merch_rush.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'resource', resource: 'money', value: 50 }
   }),
-  defineQuestOfferEvent(QUEST_VENUE_RESIDENCY, {
+  defineQuestOfferEvent({
+    questId: QUEST_VENUE_RESIDENCY,
     id: 'quest_trigger_venue_residency',
-    title: 'events:quest_trigger_venue_residency.title',
-    description: 'events:quest_trigger_venue_residency.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_venue_residency.opt1.label',
-        effect: { type: 'quest', quest: QUEST_VENUE_RESIDENCY },
-        outcomeText: 'events:quest_trigger_venue_residency.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_venue_residency.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: 5 },
-        outcomeText: 'events:quest_trigger_venue_residency.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'fame', value: 5 }
   }),
-  defineQuestOfferEvent(QUEST_REGION_TAKEOVER, {
+  defineQuestOfferEvent({
+    questId: QUEST_REGION_TAKEOVER,
     id: 'quest_trigger_region_takeover',
-    title: 'events:quest_trigger_region_takeover.title',
-    description: 'events:quest_trigger_region_takeover.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_region_takeover.opt1.label',
-        effect: { type: 'quest', quest: QUEST_REGION_TAKEOVER },
-        outcomeText: 'events:quest_trigger_region_takeover.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_region_takeover.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -3 },
-        outcomeText: 'events:quest_trigger_region_takeover.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -3 }
   }),
-  defineQuestOfferEvent(QUEST_DRAMA_POST, {
+  defineQuestOfferEvent({
+    questId: QUEST_DRAMA_POST,
     id: 'quest_trigger_drama_post',
-    title: 'events:quest_trigger_drama_post.title',
-    description: 'events:quest_trigger_drama_post.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_drama_post.opt1.label',
-        effect: { type: 'quest', quest: QUEST_DRAMA_POST },
-        outcomeText: 'events:quest_trigger_drama_post.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_drama_post.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: -5 },
-        outcomeText: 'events:quest_trigger_drama_post.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'fame', value: -5 }
   }),
-  defineQuestOfferEvent(QUEST_PREMIUM_ENDORSEMENT, {
+  defineQuestOfferEvent({
+    questId: QUEST_PREMIUM_ENDORSEMENT,
     id: 'quest_trigger_premium_endorsement',
-    title: 'events:quest_trigger_premium_endorsement.title',
-    description: 'events:quest_trigger_premium_endorsement.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_premium_endorsement.opt1.label',
-        effect: { type: 'quest', quest: QUEST_PREMIUM_ENDORSEMENT },
-        outcomeText: 'events:quest_trigger_premium_endorsement.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_premium_endorsement.opt2.label',
-        effect: { type: 'resource', resource: 'money', value: 100 },
-        outcomeText: 'events:quest_trigger_premium_endorsement.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'resource', resource: 'money', value: 100 }
   }),
-  defineQuestOfferEvent(QUEST_COMMUNITY_OUTREACH, {
+  defineQuestOfferEvent({
+    questId: QUEST_COMMUNITY_OUTREACH,
     id: 'quest_trigger_community_outreach',
-    title: 'events:quest_trigger_community_outreach.title',
-    description: 'events:quest_trigger_community_outreach.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_community_outreach.opt1.label',
-        effect: { type: 'quest', quest: QUEST_COMMUNITY_OUTREACH },
-        outcomeText: 'events:quest_trigger_community_outreach.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_community_outreach.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -3 },
-        outcomeText: 'events:quest_trigger_community_outreach.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -3 }
   }),
-  defineQuestOfferEvent(QUEST_FLAWLESS_RUN, {
+  defineQuestOfferEvent({
+    questId: QUEST_FLAWLESS_RUN,
     id: 'quest_trigger_flawless_run',
-    title: 'events:quest_trigger_flawless_run.title',
-    description: 'events:quest_trigger_flawless_run.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_flawless_run.opt1.label',
-        effect: { type: 'quest', quest: QUEST_FLAWLESS_RUN },
-        outcomeText: 'events:quest_trigger_flawless_run.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_flawless_run.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_flawless_run.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_STICKY_FINGERS, {
+  defineQuestOfferEvent({
+    questId: QUEST_STICKY_FINGERS,
     id: 'quest_trigger_sticky_fingers',
-    title: 'events:quest_trigger_sticky_fingers.title',
-    description: 'events:quest_trigger_sticky_fingers.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_sticky_fingers.opt1.label',
-        effect: { type: 'quest', quest: QUEST_STICKY_FINGERS },
-        outcomeText: 'events:quest_trigger_sticky_fingers.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_sticky_fingers.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_sticky_fingers.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_SPECIAL_DELIVERY, {
+  defineQuestOfferEvent({
+    questId: QUEST_SPECIAL_DELIVERY,
     id: 'quest_trigger_special_delivery',
-    title: 'events:quest_trigger_special_delivery.title',
-    description: 'events:quest_trigger_special_delivery.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_special_delivery.opt1.label',
-        effect: { type: 'quest', quest: QUEST_SPECIAL_DELIVERY },
-        outcomeText: 'events:quest_trigger_special_delivery.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_special_delivery.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_special_delivery.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_PERSONA_NON_GRATA, {
+  defineQuestOfferEvent({
+    questId: QUEST_PERSONA_NON_GRATA,
     id: 'quest_trigger_persona_non_grata',
-    title: 'events:quest_trigger_persona_non_grata.title',
-    description: 'events:quest_trigger_persona_non_grata.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_persona_non_grata.opt1.label',
-        effect: { type: 'quest', quest: QUEST_PERSONA_NON_GRATA },
-        outcomeText: 'events:quest_trigger_persona_non_grata.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_persona_non_grata.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_persona_non_grata.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_MURPHYS_LAW, {
+  defineQuestOfferEvent({
+    questId: QUEST_MURPHYS_LAW,
     id: 'quest_trigger_murphys_law',
-    title: 'events:quest_trigger_murphys_law.title',
-    description: 'events:quest_trigger_murphys_law.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_murphys_law.opt1.label',
-        effect: { type: 'quest', quest: QUEST_MURPHYS_LAW },
-        outcomeText: 'events:quest_trigger_murphys_law.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_murphys_law.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_murphys_law.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_CRISIS_MANAGER, {
+  defineQuestOfferEvent({
+    questId: QUEST_CRISIS_MANAGER,
     id: 'quest_trigger_crisis_manager',
-    title: 'events:quest_trigger_crisis_manager.title',
-    description: 'events:quest_trigger_crisis_manager.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_crisis_manager.opt1.label',
-        effect: { type: 'quest', quest: QUEST_CRISIS_MANAGER },
-        outcomeText: 'events:quest_trigger_crisis_manager.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_crisis_manager.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_crisis_manager.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_CHAPTER_MARKER, {
+  defineQuestOfferEvent({
+    questId: QUEST_CHAPTER_MARKER,
     id: 'quest_trigger_chapter_marker',
-    title: 'events:quest_trigger_chapter_marker.title',
-    description: 'events:quest_trigger_chapter_marker.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_chapter_marker.opt1.label',
-        effect: { type: 'quest', quest: QUEST_CHAPTER_MARKER },
-        outcomeText: 'events:quest_trigger_chapter_marker.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_chapter_marker.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_chapter_marker.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_PAYDAY, {
+  defineQuestOfferEvent({
+    questId: QUEST_PAYDAY,
     id: 'quest_trigger_payday',
-    title: 'events:quest_trigger_payday.title',
-    description: 'events:quest_trigger_payday.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_payday.opt1.label',
-        effect: { type: 'quest', quest: QUEST_PAYDAY },
-        outcomeText: 'events:quest_trigger_payday.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_payday.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_payday.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_MAKE_AMENDS, {
+  defineQuestOfferEvent({
+    questId: QUEST_MAKE_AMENDS,
     id: 'quest_trigger_make_amends',
-    title: 'events:quest_trigger_make_amends.title',
-    description: 'events:quest_trigger_make_amends.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_make_amends.opt1.label',
-        effect: { type: 'quest', quest: QUEST_MAKE_AMENDS },
-        outcomeText: 'events:quest_trigger_make_amends.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_make_amends.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_make_amends.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_BURNED_BRIDGES, {
+  defineQuestOfferEvent({
+    questId: QUEST_BURNED_BRIDGES,
     id: 'quest_trigger_burned_bridges',
-    title: 'events:quest_trigger_burned_bridges.title',
-    description: 'events:quest_trigger_burned_bridges.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_burned_bridges.opt1.label',
-        effect: { type: 'quest', quest: QUEST_BURNED_BRIDGES },
-        outcomeText: 'events:quest_trigger_burned_bridges.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_burned_bridges.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_burned_bridges.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_VENUE_REGULAR, {
+  defineQuestOfferEvent({
+    questId: QUEST_VENUE_REGULAR,
     id: 'quest_trigger_venue_regular',
-    title: 'events:quest_trigger_venue_regular.title',
-    description: 'events:quest_trigger_venue_regular.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_venue_regular.opt1.label',
-        effect: { type: 'quest', quest: QUEST_VENUE_REGULAR },
-        outcomeText: 'events:quest_trigger_venue_regular.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_venue_regular.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_venue_regular.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_BRAND_AMBASSADOR, {
+  defineQuestOfferEvent({
+    questId: QUEST_BRAND_AMBASSADOR,
     id: 'quest_trigger_brand_ambassador',
-    title: 'events:quest_trigger_brand_ambassador.title',
-    description: 'events:quest_trigger_brand_ambassador.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_brand_ambassador.opt1.label',
-        effect: { type: 'quest', quest: QUEST_BRAND_AMBASSADOR },
-        outcomeText: 'events:quest_trigger_brand_ambassador.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_brand_ambassador.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_brand_ambassador.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_ALCHEMIST, {
+  defineQuestOfferEvent({
+    questId: QUEST_ALCHEMIST,
     id: 'quest_trigger_alchemist',
-    title: 'events:quest_trigger_alchemist.title',
-    description: 'events:quest_trigger_alchemist.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_alchemist.opt1.label',
-        effect: { type: 'quest', quest: QUEST_ALCHEMIST },
-        outcomeText: 'events:quest_trigger_alchemist.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_alchemist.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_alchemist.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  // Expedition quests (G4 Task 11). Their registry offers carry
-  // `requireActiveExpedition`, so these only surface on a live run - the only
-  // place the Expedition producers that progress them fire.
-  defineQuestOfferEvent(QUEST_EXPEDITION_RUN_GOAL, {
+  defineQuestOfferEvent({
+    questId: QUEST_EXPEDITION_RUN_GOAL,
     id: 'quest_trigger_expedition_run_goal',
-    title: 'events:quest_trigger_expedition_run_goal.title',
-    description: 'events:quest_trigger_expedition_run_goal.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_expedition_run_goal.opt1.label',
-        effect: { type: 'quest', quest: QUEST_EXPEDITION_RUN_GOAL },
-        outcomeText: 'events:quest_trigger_expedition_run_goal.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_expedition_run_goal.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_expedition_run_goal.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_EXPEDITION_NEMESIS, {
+  defineQuestOfferEvent({
+    questId: QUEST_EXPEDITION_NEMESIS,
     id: 'quest_trigger_expedition_nemesis',
-    title: 'events:quest_trigger_expedition_nemesis.title',
-    description: 'events:quest_trigger_expedition_nemesis.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_expedition_nemesis.opt1.label',
-        effect: { type: 'quest', quest: QUEST_EXPEDITION_NEMESIS },
-        outcomeText: 'events:quest_trigger_expedition_nemesis.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_expedition_nemesis.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_expedition_nemesis.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_EXPEDITION_META_UNLOCK, {
+  defineQuestOfferEvent({
+    questId: QUEST_EXPEDITION_META_UNLOCK,
     id: 'quest_trigger_expedition_meta_unlock',
-    title: 'events:quest_trigger_expedition_meta_unlock.title',
-    description: 'events:quest_trigger_expedition_meta_unlock.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_expedition_meta_unlock.opt1.label',
-        effect: { type: 'quest', quest: QUEST_EXPEDITION_META_UNLOCK },
-        outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_expedition_meta_unlock.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_expedition_meta_unlock.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_EXPEDITION_EXIT_STRATEGY, {
+  defineQuestOfferEvent({
+    questId: QUEST_EXPEDITION_EXIT_STRATEGY,
     id: 'quest_trigger_expedition_exit_strategy',
-    title: 'events:quest_trigger_expedition_exit_strategy.title',
-    description: 'events:quest_trigger_expedition_exit_strategy.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_expedition_exit_strategy.opt1.label',
-        effect: { type: 'quest', quest: QUEST_EXPEDITION_EXIT_STRATEGY },
-        outcomeText:
-          'events:quest_trigger_expedition_exit_strategy.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_expedition_exit_strategy.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText:
-          'events:quest_trigger_expedition_exit_strategy.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_DAMAGE_CONTROL, {
+  defineQuestOfferEvent({
+    questId: QUEST_DAMAGE_CONTROL,
     id: 'quest_trigger_damage_control',
-    title: 'events:quest_trigger_damage_control.title',
-    description: 'events:quest_trigger_damage_control.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_damage_control.opt1.label',
-        effect: { type: 'quest', quest: QUEST_DAMAGE_CONTROL },
-        outcomeText: 'events:quest_trigger_damage_control.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_damage_control.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_damage_control.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_SIGN_HERE, {
+  defineQuestOfferEvent({
+    questId: QUEST_SIGN_HERE,
     id: 'quest_trigger_sign_here',
-    title: 'events:quest_trigger_sign_here.title',
-    description: 'events:quest_trigger_sign_here.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_sign_here.opt1.label',
-        effect: { type: 'quest', quest: QUEST_SIGN_HERE },
-        outcomeText: 'events:quest_trigger_sign_here.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_sign_here.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_sign_here.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_BEST_BEFORE, {
+  defineQuestOfferEvent({
+    questId: QUEST_BEST_BEFORE,
     id: 'quest_trigger_best_before',
-    title: 'events:quest_trigger_best_before.title',
-    description: 'events:quest_trigger_best_before.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_best_before.opt1.label',
-        effect: { type: 'quest', quest: QUEST_BEST_BEFORE },
-        outcomeText: 'events:quest_trigger_best_before.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_best_before.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_best_before.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_GARAGE_DAYS, {
+  defineQuestOfferEvent({
+    questId: QUEST_GARAGE_DAYS,
     id: 'quest_trigger_garage_days',
-    title: 'events:quest_trigger_garage_days.title',
-    description: 'events:quest_trigger_garage_days.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_garage_days.opt1.label',
-        effect: { type: 'quest', quest: QUEST_GARAGE_DAYS },
-        outcomeText: 'events:quest_trigger_garage_days.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_garage_days.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_garage_days.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_PREVENTIVE_MAINTENANCE, {
+  defineQuestOfferEvent({
+    questId: QUEST_PREVENTIVE_MAINTENANCE,
     id: 'quest_trigger_preventive_maintenance',
-    title: 'events:quest_trigger_preventive_maintenance.title',
-    description: 'events:quest_trigger_preventive_maintenance.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_preventive_maintenance.opt1.label',
-        effect: { type: 'quest', quest: QUEST_PREVENTIVE_MAINTENANCE },
-        outcomeText: 'events:quest_trigger_preventive_maintenance.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_preventive_maintenance.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_preventive_maintenance.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_HARD_KNOCKS, {
+  defineQuestOfferEvent({
+    questId: QUEST_HARD_KNOCKS,
     id: 'quest_trigger_hard_knocks',
-    title: 'events:quest_trigger_hard_knocks.title',
-    description: 'events:quest_trigger_hard_knocks.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_hard_knocks.opt1.label',
-        effect: { type: 'quest', quest: QUEST_HARD_KNOCKS },
-        outcomeText: 'events:quest_trigger_hard_knocks.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_hard_knocks.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_hard_knocks.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent(QUEST_STAGE_TIME, {
+  defineQuestOfferEvent({
+    questId: QUEST_STAGE_TIME,
     id: 'quest_trigger_stage_time',
-    title: 'events:quest_trigger_stage_time.title',
-    description: 'events:quest_trigger_stage_time.desc',
-    options: [
-      {
-        label: 'events:quest_trigger_stage_time.opt1.label',
-        effect: { type: 'quest', quest: QUEST_STAGE_TIME },
-        outcomeText: 'events:quest_trigger_stage_time.opt1.outcome'
-      },
-      {
-        label: 'events:quest_trigger_stage_time.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'events:quest_trigger_stage_time.opt2.outcome'
-      }
-    ]
+    declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   })
 ]

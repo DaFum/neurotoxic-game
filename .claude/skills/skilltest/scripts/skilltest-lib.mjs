@@ -1,5 +1,5 @@
-#!/usr/bin/env node
 import fs from 'node:fs/promises'
+/* global process */
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
@@ -90,7 +90,7 @@ export const findRepoRoot = async startDir => {
       if (stat.isDirectory() || stat.isFile()) {
         return currentDir
       }
-    } catch (error) {
+    } catch (_error) {
       // continue walking up
     }
     const parentDir = path.dirname(currentDir)
@@ -107,17 +107,22 @@ export const findRepoRoot = async startDir => {
  * @param {string} repoDir - Repository root.
  * @returns {Promise<string[]>} Skill root directories.
  */
-export const collectSkillRoots = async (cwd, repoDir) => {
+export const getTreeName = () => {
+  const filePath = fileURLToPath(import.meta.url)
+  return filePath.includes(`${path.sep}.agents${path.sep}`) ? '.agents' : '.claude'
+}
+
+export const collectSkillRoots = async (cwd, repoDir, treeName = getTreeName()) => {
   const roots = []
   let currentDir = cwd
   while (true) {
-    const skillsDir = path.join(currentDir, '.claude', 'skills')
+    const skillsDir = path.join(currentDir, treeName, 'skills')
     try {
       const stat = await fs.stat(skillsDir)
       if (stat.isDirectory()) {
         roots.push(skillsDir)
       }
-    } catch (error) {
+    } catch (_error) {
       // skip missing skill root
     }
     if (currentDir === repoDir) {
@@ -145,13 +150,13 @@ export const findSkillDirs = async (rootDir, visited) => {
   try {
     const realRoot = await fs.realpath(rootDir)
     visited.add(realRoot)
-  } catch (error) {
+  } catch (_error) {
     // ignore errors resolving rootDir
   }
-  let entries = []
+  let entries
   try {
     entries = await fs.readdir(rootDir, { withFileTypes: true })
-  } catch (error) {
+  } catch (_error) {
     return []
   }
   const skillDirs = []
@@ -166,7 +171,7 @@ export const findSkillDirs = async (rootDir, visited) => {
         continue
       }
       visited.add(realPath)
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Could not resolve path, skipping: ${entryPath}`)
       continue
     }
@@ -178,7 +183,7 @@ export const findSkillDirs = async (rootDir, visited) => {
         skillDirs.push(entryPath)
         continue
       }
-    } catch (error) {
+    } catch (_error) {
       // continue recursive search
     }
     const nested = await findSkillDirs(entryPath, visited)
@@ -250,7 +255,7 @@ export const validateScripts = async scriptsDir => {
         })
       }
     }
-  } catch (error) {
+  } catch (_error) {
     return findings
   }
   return findings
@@ -272,7 +277,7 @@ export const validateLinks = async (skillDir, contents) => {
     const resolved = path.resolve(skillDir, target)
     try {
       await fs.stat(resolved)
-    } catch (error) {
+    } catch (_error) {
       findings.push({
         level: 'warning',
         message: `Broken link target: ${target}`
@@ -290,27 +295,27 @@ export const validateLinks = async (skillDir, contents) => {
 export const validateOpenAIYaml = async skillDir => {
   const findings = []
   const yamlPath = path.join(skillDir, 'agents', 'openai.yaml')
-  let contents = ''
+  let contents
   try {
     contents = await fs.readFile(yamlPath, 'utf8')
-  } catch (error) {
-    if (error.code === 'ENOENT') {
+  } catch (_error) {
+    if (_error.code === 'ENOENT') {
       return findings
     }
     findings.push({
       level: 'warning',
-      message: `Could not read agents/openai.yaml: ${error.message}`
+      message: `Could not read agents/openai.yaml: ${_error.message}`
     })
     return findings
   }
 
-  let data = {}
+  let data
   try {
     data = parseYaml(contents)
-  } catch (error) {
+  } catch (_error) {
     findings.push({
       level: 'warning',
-      message: `Could not parse agents/openai.yaml: ${error.message}`
+      message: `Could not parse agents/openai.yaml: ${_error.message}`
     })
     return findings
   }
@@ -324,7 +329,7 @@ export const validateOpenAIYaml = async skillDir => {
       const iconPath = path.resolve(skillDir, iconSmall)
       try {
         await fs.stat(iconPath)
-      } catch (error) {
+      } catch (_error) {
         findings.push({
           level: 'warning',
           message: `Icon path not found: ${iconSmall}`
@@ -335,7 +340,7 @@ export const validateOpenAIYaml = async skillDir => {
       const iconPath = path.resolve(skillDir, iconLarge)
       try {
         await fs.stat(iconPath)
-      } catch (error) {
+      } catch (_error) {
         findings.push({
           level: 'warning',
           message: `Icon path not found: ${iconLarge}`
@@ -358,10 +363,10 @@ export const validateOpenAIYaml = async skillDir => {
         })
       }
     })
-  } catch (error) {
+  } catch (_error) {
     findings.push({
       level: 'warning',
-      message: `Could not validate agents/openai.yaml: ${error.message}`
+      message: `Could not validate agents/openai.yaml: ${_error.message}`
     })
   }
   return findings
@@ -380,14 +385,14 @@ export const loadSkillRecord = async skillDir => {
   if (isSymlink) {
     try {
       realPath = await fs.realpath(skillDir)
-    } catch (error) {
+    } catch (_error) {
       findings.push({ level: 'error', message: 'Broken symlink target.' })
     }
   }
 
   const skillFile = path.join(skillDir, 'SKILL.md')
   const altSkillFile = path.join(skillDir, 'SKILL.MD')
-  let contents = ''
+  let contents
   let meta = null
 
   try {
@@ -399,14 +404,14 @@ export const loadSkillRecord = async skillDir => {
         message: 'Missing or invalid frontmatter (name/description).'
       })
     }
-  } catch (error) {
+  } catch (_error) {
     try {
       await fs.stat(altSkillFile)
       findings.push({
         level: 'error',
         message: 'SKILL.md is mis-capitalized (found SKILL.MD).'
       })
-    } catch (altError) {
+    } catch (_altError) {
       findings.push({ level: 'error', message: 'Missing SKILL.md.' })
     }
   }
@@ -465,7 +470,7 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   if (includeUserSkills) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || ''
     if (homeDir) {
-      roots.push(path.join(homeDir, '.claude', 'skills'))
+      roots.push(path.join(homeDir, getTreeName(), 'skills'))
     }
   }
 
@@ -476,7 +481,7 @@ export const discoverSkills = async ({ includeUserSkills }) => {
       discovered.forEach(dir => {
         skillDirs.add(dir)
       })
-    } catch (error) {
+    } catch (_error) {
       // skip missing roots
     }
   }
@@ -523,8 +528,10 @@ export const loadSkillCases = async () => {
     const contents = await fs.readFile(path.join(casesDir, file), 'utf8')
     try {
       cases.push(...JSON.parse(contents))
-    } catch (error) {
-      throw new Error(`Failed to parse ${file}: ${error.message}`)
+    } catch (_error) {
+      throw new Error(`Failed to parse ${file}: ${_error.message}`, {
+        cause: _error
+      })
     }
   }
   return cases
@@ -581,11 +588,11 @@ export const readDisabledSkills = async () => {
         disabled.add(config.path)
       }
     })
-  } catch (error) {
-    if (error.code && error.code === 'ENOENT') {
+  } catch (_error) {
+    if (_error.code && _error.code === 'ENOENT') {
       return disabled
     }
-    console.warn(`Could not parse ~/.codex/config.toml: ${error.message}`)
+    console.warn(`Could not parse ~/.codex/config.toml: ${_error.message}`)
     return disabled
   }
   return disabled
@@ -635,14 +642,16 @@ export const runQualityGate = async () => {
   const runCommand = ({ command, args, label }) =>
     new Promise((resolve, reject) => {
       const child = spawn(command, args, { stdio: 'inherit' })
-      child.on('error', error => {
-        reject(new Error(`${label} failed to start: ${error.message}`))
+      child.on('error', _error => {
+        reject(new Error(`${label} failed to start: ${_error.message}`))
       })
-      child.on('exit', code => {
+      child.on('exit', (code, signal) => {
         if (code === 0) {
           resolve()
         } else {
-          reject(new Error(`${label} failed with ${code}`))
+          reject(
+            new Error(`${label} failed with code ${code}, signal ${signal}`)
+          )
         }
       })
     })
@@ -744,8 +753,8 @@ export const runReporting = async (records, cases, disabled) => {
     if (report.summary.fail > 0 || promptFailures.length > 0) {
       process.exitCode = 1
     }
-  } catch (error) {
-    console.error('Reporting failed:', error)
+  } catch (_error) {
+    console.error('Reporting failed:', _error)
     process.exitCode = 1
   }
 }

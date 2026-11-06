@@ -24,17 +24,11 @@ const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
  */
 export { runSafeStorageOperation as safeStorageOperation }
 
-// Latched by the production reporter so `readStorageItemChecked` can tell an
-// absent key apart from an unreadable store. The adapter contract is
-// never-throw, which otherwise collapses both cases into `null`.
-let lastReadFailed = false
-
 const reportStorageFailure: StorageFailureReporter = (
   operation,
   key,
   error
 ) => {
-  if (operation === 'read') lastReadFailed = true
   handleError(
     new StorageError(`Storage ${operation} failed for "${key}"`, {
       originalError: error instanceof Error ? error.message : String(error)
@@ -177,10 +171,14 @@ export function readStorageItem(
   adapter: IStorageAdapter = defaultStorageAdapter
 ): string | null {
   const fallback = fallbackStores.get(adapter)
-  if (fallback?.has(key)) return fallback.get(key)
+  if (fallback?.has(key)) {
+    const res = fallback.get(key)
+    return res.ok ? res.value : null
+  }
   if (removedKeys.get(adapter)?.has(key)) return null
 
-  return adapter.get(key)
+  const result = adapter.get(key)
+  return result.ok ? result.value : null
 }
 
 /**
@@ -200,7 +198,8 @@ export function listStorageKeys(
   adapter: IStorageAdapter = defaultStorageAdapter
 ): string[] {
   const pendingRemovals = removedKeys.get(adapter)
-  const allKeys = adapter.keys()
+  const keysResult = adapter.keys()
+  const allKeys = keysResult.ok ? keysResult.keys : []
   const persisted: string[] = []
   for (let i = 0; i < allKeys.length; i++) {
     const key = allKeys[i]
@@ -208,7 +207,9 @@ export function listStorageKeys(
       persisted.push(key)
     }
   }
-  const buffered = fallbackStores.get(adapter)?.keys() ?? []
+  const fallbackKeysResult = fallbackStores.get(adapter)?.keys()
+  const buffered =
+    fallbackKeysResult && fallbackKeysResult.ok ? fallbackKeysResult.keys : []
   if (buffered.length === 0) return persisted
   return Array.from(new Set([...persisted, ...buffered]))
 }
@@ -255,9 +256,8 @@ export function removeStorageItem(
   fallbackStores.get(adapter)?.remove(key)
   adapter.remove(key)
 
-  lastReadFailed = false
   const survivor = adapter.get(key)
-  const removed = !lastReadFailed && survivor === null
+  const removed = survivor.ok && survivor.value === null
   if (removed) pendingRemovals.delete(key)
   return removed
 }
@@ -280,9 +280,20 @@ export function readStorageItemChecked(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): { ok: boolean; value: string | null } {
-  lastReadFailed = false
-  const value = readStorageItem(key, adapter)
-  return { ok: !lastReadFailed, value }
+  const fallback = fallbackStores.get(adapter)
+  if (fallback?.has(key)) {
+    const res = fallback.get(key)
+    return { ok: true, value: res.ok ? res.value : null }
+  }
+  if (removedKeys.get(adapter)?.has(key)) {
+    return { ok: true, value: null }
+  }
+
+  const result = adapter.get(key)
+  if (!result.ok) {
+    return { ok: false, value: null }
+  }
+  return { ok: true, value: result.value }
 }
 
 /**

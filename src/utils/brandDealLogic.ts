@@ -199,16 +199,26 @@ const applyRivalOfferPressure = (
  * @param rng - Random number generator used for offer scoring jitter.
  * @returns Up to three generated brand offers, or an empty list when a deal is already active.
  */
-export const generateBrandOffers = (
+interface BrandOfferPreparation {
+  pool: PoolEntry[]
+  rivalPower: number
+  totalFollowers: number
+}
+
+/**
+ * Shared preparation for brand offer generators: computes follower totals,
+ * validates active-deal invariant, builds eligibility pool, and calculates
+ * rival pressure.
+ */
+const prepareBrandOfferContext = (
   gameState: SocialEngineGameState,
-  rng: RandomFn = secureRandom
-): BrandOffer[] => {
+  minPoolSize: number = BRAND_OFFER_POOL_SIZE
+): BrandOfferPreparation | null => {
   const social = gameState.social ?? {}
-  const band = gameState.band
 
   // Single-deal invariant: never offer anything while a deal is active.
   if (Array.isArray(social.activeDeals) && social.activeDeals.length > 0) {
-    return []
+    return null
   }
 
   // Coerce numeric social fields via `finiteNumberOr` so a corrupted /
@@ -230,14 +240,13 @@ export const generateBrandOffers = (
     trendVal,
     zealotry: finiteNumberOr(social.zealotry, 0),
     controversy: finiteNumberOr(social.controversyLevel, 0),
-    band
+    band: gameState.band
   }
 
-  const pool = buildEligibilityPool(matchCtx)
-  if (pool.length === 0) return []
+  const pool = buildEligibilityPool(matchCtx, minPoolSize)
+  if (pool.length === 0) return null
 
   const rivalInLocation = isRivalInPlayerLocation(gameState)
-
   const rivalPower =
     rivalInLocation && gameState.rivalBand
       ? Math.min(
@@ -247,6 +256,18 @@ export const generateBrandOffers = (
             100
         )
       : 0
+
+  return { pool, rivalPower, totalFollowers }
+}
+
+export const generateBrandOffers = (
+  gameState: SocialEngineGameState,
+  rng: RandomFn = secureRandom
+): BrandOffer[] => {
+  const prep = prepareBrandOfferContext(gameState)
+  if (!prep) return []
+
+  const { pool, rivalPower, totalFollowers } = prep
 
   const [top1, top2, top3] = selectTop3ByScore(pool, entry =>
     scoreEntry(entry, gameState, rng)
@@ -294,37 +315,10 @@ export const generateRankedBrandOffers = (
   rng: RandomFn = secureRandom,
   { minPoolSize = BRAND_OFFER_POOL_SIZE }: { minPoolSize?: number } = {}
 ): BrandOffer[] => {
-  const social = gameState.social ?? {}
-  if (Array.isArray(social.activeDeals) && social.activeDeals.length > 0) {
-    return []
-  }
+  const prep = prepareBrandOfferContext(gameState, minPoolSize)
+  if (!prep) return []
 
-  const totalFollowers =
-    finiteNumberOr(social.instagram, 0) +
-    finiteNumberOr(social.tiktok, 0) +
-    finiteNumberOr(social.youtube, 0)
-  const pool = buildEligibilityPool(
-    {
-      totalFollowers,
-      trendVal:
-        typeof social.trend === 'string'
-          ? (social.trend as AllowedTrend)
-          : undefined,
-      zealotry: finiteNumberOr(social.zealotry, 0),
-      controversy: finiteNumberOr(social.controversyLevel, 0),
-      band: gameState.band
-    },
-    minPoolSize
-  )
-  const rivalPower =
-    isRivalInPlayerLocation(gameState) && gameState.rivalBand
-      ? Math.min(
-          MAX_RIVAL_DEAL_CHANCE_PENALTY * 100,
-          Math.max(0, finiteNumberOr(gameState.rivalBand.powerLevel, 0)) *
-            RIVAL_POWER_TO_DEAL_CHANCE_FACTOR *
-            100
-        )
-      : 0
+  const { pool, rivalPower, totalFollowers } = prep
 
   // Score once in admission order before flavor consumes any RNG draws.
   // Array.sort is stable, so tied entries retain that admission order.
