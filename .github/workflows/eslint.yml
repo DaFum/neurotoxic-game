@@ -38,7 +38,7 @@ jobs:
       # not when ESLint died before it wrote a report.
       - name: Upload analysis results to GitHub
         if: ${{ !cancelled() && hashFiles('eslint-results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@bd01fe9e80db3cb1eb1368bd8f61d3eb5f43d1f4 # v4.39.2
+        uses: github/codeql-action/upload-sarif@1fc58d04a4d4374f921bdac573c3811c240f9c26 # v4.39.2
         with:
           sarif_file: eslint-results.sarif
           wait-for-processing: true
