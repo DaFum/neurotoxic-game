@@ -88,7 +88,7 @@ export const sanitizePendingGigSettlement = (
         ? 'social_reconciled'
         : 'pending_social'
 
-  return {
+  const result: PendingGigSettlement = {
     id,
     gigId,
     net: clampRange(net, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
@@ -100,9 +100,12 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    lifecycleStage,
     socialReconciled: isSocialReconciled
   }
+  if (raw.lifecycleStage !== undefined) {
+    result.lifecycleStage = lifecycleStage
+  }
+  return result
 }
 
 /**
@@ -135,7 +138,9 @@ export const handleRecordPendingGigSettlement = (
     ...state,
     pendingGigSettlement: {
       ...record,
-      lifecycleStage: socialReconciled ? 'social_reconciled' : 'pending_social',
+      ...(record.lifecycleStage !== undefined
+        ? { lifecycleStage: socialReconciled ? 'social_reconciled' : 'pending_social' }
+        : {}),
       socialReconciled
     }
   }
@@ -179,7 +184,7 @@ export const handleApplyGigSocialReconciliation = (
       ...nextState,
       pendingGigSettlement: {
         ...pending,
-        lifecycleStage: 'social_reconciled',
+        ...(pending.lifecycleStage !== undefined ? { lifecycleStage: 'social_reconciled' } : {}),
         socialReconciled: true
       }
     }
