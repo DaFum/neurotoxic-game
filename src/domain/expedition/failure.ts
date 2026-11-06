@@ -620,7 +620,11 @@ export const syncExpeditionPendingFailure = (state: GameState): GameState => {
     if (current === null) return state
     return {
       ...state,
-      expedition: { ...state.expedition, pendingFailure: null }
+      expedition: {
+        ...state.expedition,
+        pendingFailure: null,
+        interactionMode: { mode: 'exploring' }
+      }
     }
   }
   if (
@@ -633,7 +637,11 @@ export const syncExpeditionPendingFailure = (state: GameState): GameState => {
   }
   return {
     ...state,
-    expedition: { ...state.expedition, pendingFailure: derived }
+    expedition: {
+      ...state.expedition,
+      pendingFailure: derived,
+      interactionMode: { mode: 'crisis', crisis: derived }
+    }
   }
 }
 

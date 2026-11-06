@@ -63,7 +63,8 @@ export const AMP_CALIBRATION_TOLERANCE = 50
  */
 type DefaultMinigameState = Required<
   Pick<
-    MinigameState,
+    Extract<MinigameState, { status: 'idle' }>,
+    | 'status'
     | 'active'
     | 'type'
     | 'targetDestination'
@@ -81,6 +82,7 @@ type DefaultMinigameState = Required<
  * Applied when clearing minigame state to guarantee a predictable, inactive baseline. Prevents leftover data from leaking between minigames.
  */
 export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
+  status: 'idle',
   active: false,
   type: null,
   targetDestination: null,

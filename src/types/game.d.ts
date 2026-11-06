@@ -135,23 +135,93 @@ export type MinigameType =
 /**
  * Persisted state for the currently active minigame overlay.
  */
-export interface MinigameState {
-  type?: MinigameType | null
+export type TransitPhase = 'idle' | 'confirming' | 'in_transit' | 'arrived'
+
+export interface MinigameIdleState {
+  status: 'idle'
+  active: false
   isActive?: boolean
+  type?: MinigameType | null
+  targetDestination?: string | null
   targetNodeId?: string | null
-  active?: boolean
-  targetDestination?: unknown
-  /** Transient settlement refusal; cleared with the travel minigame. */
-  travelFuelRefused?: boolean
   gigId?: string | null
   equipmentRemaining?: number
   accumulatedDamage?: number
   score?: number
+  travelFuelRefused?: boolean
   roadie?: UnknownRecord
   amp?: UnknownRecord
   travel?: UnknownRecord
-  [key: string]: unknown
+  transitPhase?: TransitPhase
 }
+
+export interface TourbusMinigamePayload {
+  status: 'active'
+  active: true
+  isActive?: boolean
+  type: 'TOURBUS'
+  targetDestination: string | null
+  targetNodeId?: string | null
+  gigId: null | string
+  equipmentRemaining: number
+  accumulatedDamage: number
+  score: number
+  travelFuelRefused?: boolean
+  travel?: UnknownRecord
+  transitPhase?: TransitPhase
+}
+
+export interface RoadieMinigamePayload {
+  status: 'active'
+  active: true
+  isActive?: boolean
+  type: 'ROADIE'
+  targetDestination: null | string
+  targetNodeId?: string | null
+  gigId: string | null
+  equipmentRemaining: number
+  accumulatedDamage: number
+  score: number
+  roadie?: UnknownRecord
+}
+
+export interface AmpCalibrationMinigamePayload {
+  status: 'active'
+  active: true
+  isActive?: boolean
+  type: 'AMP_CALIBRATION'
+  targetDestination: null | string
+  targetNodeId?: string | null
+  gigId: string | null
+  equipmentRemaining: number
+  accumulatedDamage: number
+  score: number
+  amp?: UnknownRecord
+}
+
+export interface KabelsalatMinigamePayload {
+  status: 'active'
+  active: true
+  isActive?: boolean
+  type: 'KABELSALAT'
+  targetDestination: null | string
+  targetNodeId?: string | null
+  gigId: string | null
+  equipmentRemaining: number
+  accumulatedDamage: number
+  score: number
+}
+
+export type MinigameActiveState =
+  | TourbusMinigamePayload
+  | RoadieMinigamePayload
+  | AmpCalibrationMinigamePayload
+  | KabelsalatMinigamePayload
+
+/**
+ * Persisted state for the currently active minigame overlay.
+ */
+export type MinigameState = MinigameIdleState | MinigameActiveState
 
 /**
  * Toast notification payload stored in game state.
@@ -177,6 +247,15 @@ export interface ToastPayload {
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
  */
+export type GigSettlementLifecycleStage =
+  | 'pending_social'
+  | 'social_reconciled'
+  | 'complete'
+
+/**
+ * Post-gig settlement the report presented, persisted until Continue settles
+ * it so a save taken on the result screen is settled once on load.
+ */
 export interface PendingGigSettlement {
   /** Stable id stamped by the action creator. */
   id: string
@@ -187,6 +266,10 @@ export interface PendingGigSettlement {
   misses: number
   dealFameMultiplier: number
   soldMerch: Record<string, number>
+  /**
+   * Durable linear lifecycle stage: pending_social -\> social_reconciled -\> complete.
+   */
+  lifecycleStage?: GigSettlementLifecycleStage
   /**
    * Durable reconciliation status for this settlement record (`id`).
    *

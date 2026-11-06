@@ -76,6 +76,18 @@ export const sanitizePendingGigSettlement = (
   }
   // Bound to what the post-gig screen can produce, so a tampered save cannot
   // overflow the fame or money arithmetic to Infinity (which clamps to 0).
+  const isSocialReconciled =
+    (Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true) ||
+    raw.lifecycleStage === 'social_reconciled' ||
+    raw.lifecycleStage === 'complete'
+
+  const lifecycleStage =
+    raw.lifecycleStage === 'complete'
+      ? 'complete'
+      : isSocialReconciled
+        ? 'social_reconciled'
+        : 'pending_social'
+
   return {
     id,
     gigId,
@@ -88,8 +100,8 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    socialReconciled:
-      Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true
+    lifecycleStage,
+    socialReconciled: isSocialReconciled
   }
 }
 
@@ -123,6 +135,7 @@ export const handleRecordPendingGigSettlement = (
     ...state,
     pendingGigSettlement: {
       ...record,
+      lifecycleStage: socialReconciled ? 'social_reconciled' : 'pending_social',
       socialReconciled
     }
   }
@@ -166,6 +179,7 @@ export const handleApplyGigSocialReconciliation = (
       ...nextState,
       pendingGigSettlement: {
         ...pending,
+        lifecycleStage: 'social_reconciled',
         socialReconciled: true
       }
     }

@@ -10,23 +10,16 @@ import type {
   GameState,
   GameAction,
   SocialState,
-  UpdateBandPayload,
-  UpdatePlayerPayload,
   GamePhase,
   LoadGameResult,
   LoadPreviewResult
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
-import { logger } from '../utils/logger'
 import {
-  readGlobalSettings,
-  safeStorageOperation,
-  writeGlobalSettings
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { addUnlockWithPersistence, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
-import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
@@ -62,15 +55,12 @@ import {
   useRivalBandDispatchActions,
   type RivalBandDispatchActions
 } from './useRivalBandDispatchActions'
+import { useSimpleDispatchActions } from './useSimpleDispatchActions'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
   createUpdateBandAction,
-  createSettleSoldMerchAction,
   createRecordPendingGigSettlementAction,
-  createClearPendingGigSettlementAction,
-  createApplyGigSocialReconciliationAction,
-  createUpdateSocialAction,
   createApplySocialPostResultAction,
   createUpdateSettingsAction,
   createSetMapAction,
@@ -94,14 +84,10 @@ import {
   createStartAmpCalibrationAction,
   createCompleteAmpCalibrationAction,
   createUnlockTraitAction,
-  createSetPendingBandHQOpenAction,
-  createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
   createSetPendingRiskEventAction,
   createAddUnlockAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction,
-  createHoldBandMeetingAction,
-  createRestockMerchAction
 } from './actionCreators'
 import type { ApplySocialPostResultPayload } from '../types/actions'
 import { validateSocialPostResult } from '../utils/postGig/socialPostResultValidation'
@@ -525,33 +511,6 @@ export type GameDispatchActions = BaseGameDispatchActions &
  * The plain `dispatch(creator(payload))` wrappers, which depend on `dispatch`
  * alone and are therefore built in a single memo.
  */
-type SimpleDispatchActions = Pick<
-  BaseGameDispatchActions,
-  | 'updatePlayer'
-  | 'updateBand'
-  | 'settleSoldMerch'
-  | 'recordPendingGigSettlement'
-  | 'clearPendingGigSettlement'
-  | 'toggleNeuroDecimator'
-  | 'holdBandMeeting'
-  | 'restockMerch'
-  | 'updateSocial'
-  | 'applyGigSocialReconciliation'
-  | 'setGameMap'
-  | 'setCurrentGig'
-  | 'startGig'
-  | 'setSetlist'
-  | 'setLastGigStats'
-  | 'removeToast'
-  | 'setGigModifiers'
-  | 'consumeItem'
-  | 'unlockTrait'
-  | 'setPendingBandHQOpen'
-  | 'setPendingSupplyStopInventory'
-  | 'dismissForeclosureNotice'
-  | 'setPendingRiskEvent'
-  | 'updateSettings'
->
 
 interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
@@ -623,104 +582,7 @@ export function useGameDispatchActions({
       tRef
     })
 
-  const simpleActions: SimpleDispatchActions = useMemo(
-    () => ({
-      updatePlayer: (updates: UpdatePlayerPayload) =>
-        dispatch(createUpdatePlayerAction(updates)),
-      updateBand: (updates: UpdateBandPayload) =>
-        dispatch(createUpdateBandAction(updates)),
-      settleSoldMerch: (soldMerch: Record<string, number>) =>
-        dispatch(createSettleSoldMerchAction(soldMerch)),
-      recordPendingGigSettlement: settlement => {
-        const action = createRecordPendingGigSettlementAction(settlement)
-        if (action) dispatch(action)
-      },
-      clearPendingGigSettlement: (id: string) =>
-        dispatch(createClearPendingGigSettlementAction(id)),
-      toggleNeuroDecimator: isActive =>
-        dispatch(createToggleNeuroDecimatorAction(isActive)),
-      holdBandMeeting: () => dispatch(createHoldBandMeetingAction()),
-      restockMerch: (merchKey: string) =>
-        dispatch(createRestockMerchAction(merchKey)),
-      updateSocial: (
-        updates:
-          Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
-      ) => dispatch(createUpdateSocialAction(updates)),
-      applyGigSocialReconciliation: (
-        socialUpdate:
-          Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>),
-        settlementId?: string | null
-      ) =>
-        dispatch(
-          createApplyGigSocialReconciliationAction(socialUpdate, settlementId)
-        ),
-      // setGameMap is an intentional test seam on the public dispatch surface.
-      // Production map creation lives in useMapGeneration, which dispatches
-      // createSetMapAction directly: that hook is instantiated before this one
-      // (its resetMapGenerationRetries is a prop of this hook), so routing it
-      // through this method would create a circular hook dependency.
-      setGameMap: mapData => dispatch(createSetMapAction(mapData)),
-      setCurrentGig: gig => dispatch(createSetGigAction(gig)),
-      startGig: gig =>
-        startTransition(() => dispatch(createStartGigAction(gig))),
-      setSetlist: list => dispatch(createSetSetlistAction(list)),
-      setLastGigStats: stats => dispatch(createSetLastGigStatsAction(stats)),
-      removeToast: id => dispatch(createRemoveToastAction(id)),
-      setGigModifiers: modifiers =>
-        dispatch(createSetGigModifiersAction(modifiers)),
-      consumeItem: itemId => dispatch(createConsumeItemAction(itemId)),
-      unlockTrait: (memberId, traitId) =>
-        dispatch(createUnlockTraitAction(memberId, traitId)),
-      setPendingBandHQOpen: isOpen =>
-        dispatch(createSetPendingBandHQOpenAction(isOpen)),
-      setPendingSupplyStopInventory: inventory =>
-        dispatch(createSetPendingSupplyStopInventoryAction(inventory)),
-      dismissForeclosureNotice: kind =>
-        dispatch(dismissForeclosureNoticeAction(kind)),
-      setPendingRiskEvent: event => {
-        const action = createSetPendingRiskEventAction(event)
-        if (action) dispatch(action)
-      },
-      updateSettings: (updates: Record<string, unknown>) => {
-        dispatch(createUpdateSettingsAction(updates))
-
-        // Resolve the effective settings once through the canonical sanitizer
-        // and feed the same result to both the logger side effect and the
-        // storage write. A separate `Number(...)` reading here would let the
-        // runtime logger accept values (numeric strings, booleans) that the
-        // reducer and persisted settings drop, leaving the three out of sync.
-        const sanitizedUpdates = sanitizeSettingsPayload(updates)
-
-        if (updates.logLevel !== undefined) {
-          const { logLevel } = sanitizedUpdates
-          if (logLevel !== undefined) {
-            logger.setLevel(logLevel)
-          } else {
-            logger.warn(
-              'GameState',
-              'Rejected persisted invalid logLevel update',
-              updates.logLevel
-            )
-          }
-        }
-
-        // Sanitize before writing to global storage so malformed or unknown
-        // keys (e.g. a non-numeric logLevel) never leak past the reducer's
-        // validation into persisted global settings. The shared sanitizer keeps
-        // storage, reducer, and load in sync.
-        safeStorageOperation('saveGlobalSettings', () => {
-          writeGlobalSettings(
-            {
-              ...readGlobalSettings(storage),
-              ...sanitizedUpdates
-            },
-            storage
-          )
-        })
-      }
-    }),
-    [dispatch, storage]
-  )
+  const simpleActions = useSimpleDispatchActions(dispatch)
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()

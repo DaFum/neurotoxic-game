@@ -668,17 +668,19 @@ export const handleRemoveToast = (
  */
 const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
-  const stillActive: unknown[] = []
-  const expired: Record<string, unknown>[] = []
+  const stillActive: GameState['band']['activeContrabandEffects'] = []
+  const expired: GameState['band']['activeContrabandEffects'] = []
 
   for (let i = 0; i < activeEffects.length; i++) {
     const effect = activeEffects[i]
     if (typeof effect !== 'object' || effect === null) continue
     const effectObj = effect as Record<string, unknown>
+    const remainingDuration = finiteNumberOr(effectObj.remainingDuration, 0) - 1
     const updatedEffect = {
-      ...effectObj,
-      remainingDuration: finiteNumberOr(effectObj.remainingDuration, 0) - 1
-    }
+      ...effect,
+      remainingDuration
+    } as (typeof activeEffects)[number]
+
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)
     } else {

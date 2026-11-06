@@ -717,13 +717,22 @@ const applyContrabandEffect = (
     // per call, so tracking must mirror it 1:1 — deduping by instanceId would
     // let a second use of a stacked consumable apply the buff again while only
     // registering a single revertible effect, leaking the bonus permanently.
+    const durationNum =
+      typeof item.duration === 'number' && Number.isFinite(item.duration)
+        ? item.duration
+        : 0
+    const valueNum =
+      typeof item.value === 'number' && Number.isFinite(item.value)
+        ? item.value
+        : 0
     newBand.activeContrabandEffects = [
       ...(newBand.activeContrabandEffects ?? []),
       {
-        instanceId: item.instanceId,
-        effectType: item.effectType,
-        value: item.value,
-        remainingDuration: item.duration,
+        kind: 'stat_buff',
+        instanceId: typeof item.instanceId === 'string' ? item.instanceId : undefined,
+        effectType: String(item.effectType ?? 'unknown'),
+        value: valueNum,
+        remainingDuration: durationNum,
         ...(memberId ? { memberId } : {})
       }
     ]

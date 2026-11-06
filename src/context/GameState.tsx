@@ -341,6 +341,39 @@ export const useGameActions = () => {
 }
 
 /**
+ * Hook to access facility dispatch actions specifically.
+ */
+export const useFacilityActions = () => {
+  const actions = useGameActions()
+  return actions
+}
+
+/**
+ * Hook to access quest dispatch actions specifically.
+ */
+export const useQuestActions = () => {
+  const actions = useGameActions()
+  return actions
+}
+
+/**
+ * Hook to access expedition dispatch actions specifically.
+ */
+export const useExpeditionActions = () => {
+  const actions = useGameActions()
+  return actions
+}
+
+/**
+ * Hook to access rival band dispatch actions specifically.
+ */
+export const useRivalBandActions = () => {
+  const actions = useGameActions()
+  return actions
+}
+
+
+/**
  * Evaluates whether two unknown values are equal via strict shallow comparison.
  *
  * @param a - The first value to compare.

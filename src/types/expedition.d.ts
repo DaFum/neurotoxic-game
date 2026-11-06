@@ -448,6 +448,16 @@ export interface PendingExpeditionFailure {
 }
 
 /**
+ * Strict finite interaction modes for expedition runs:
+ * exploring (default), decision (modal decision dialog), crisis (active failure crisis), extraction.
+ */
+export type ExpeditionInteractionMode =
+  | { mode: 'exploring' }
+  | { mode: 'decision'; decisionId?: string }
+  | { mode: 'crisis'; crisis: PendingExpeditionFailure }
+  | { mode: 'extraction' }
+
+/**
  * Signal shape later gates export into the one G1-owned failure composer.
  */
 export interface ExpeditionFailureSignal {
@@ -714,6 +724,7 @@ export interface ExpeditionState {
    */
   arrivedOverlay: ExpeditionArrivedOverlay | null
   pendingFailure: PendingExpeditionFailure | null
+  interactionMode?: ExpeditionInteractionMode
   /**
    * Mandatory daily obligation a previous day could not pay from the run's
    * spendable Cash.
