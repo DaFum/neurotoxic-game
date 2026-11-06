@@ -13,14 +13,16 @@ import {
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  */
-export async function setupAudio() {
+export async function setupAudio(): Promise<void> {
   const generation = audioState.setupGeneration
   if (audioState.isSetup) return
   if (audioState.setupLock) {
+    const lockGeneration = audioState.setupLockGeneration
     await audioState.setupLock
     if (generation !== audioState.setupGeneration) {
       throw new Error('Audio setup cancelled')
     }
+    if (lockGeneration !== generation) return setupAudio()
     if (!audioState.isSetup) {
       throw audioState.setupError || new Error('setupAudio failed')
     }
@@ -28,6 +30,7 @@ export async function setupAudio() {
   }
 
   let resolveLock: (() => void) | undefined
+  audioState.setupLockGeneration = generation
   audioState.setupLock = new Promise<void>(r => {
     resolveLock = r
   })
@@ -116,6 +119,7 @@ export async function setupAudio() {
     throw error
   } finally {
     audioState.setupLock = null
+    audioState.setupLockGeneration = null
     if (resolveLock) resolveLock()
   }
 }
