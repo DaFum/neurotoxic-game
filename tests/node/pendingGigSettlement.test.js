@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
+import { settlePendingGigOnLoad } from '../../src/context/reducers/pendingGigSettlementReducer'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
@@ -713,6 +714,7 @@ test('pending gig settlement actions', async t => {
     })
     assert.deepEqual(next.pendingGigSettlement, {
       ...record,
+      lifecycleStage: 'pending_social',
       socialReconciled: false
     })
   })
@@ -972,6 +974,7 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     perfScore: 30,
     misses: 0,
     dealFameMultiplier: 1,
+    lifecycleStage: 'pending_social',
     socialReconciled: false
   })
 })
@@ -1324,4 +1327,49 @@ test('shared settlement policy matches recovered ledger and Finale gates', async
     )
     assert.equal(policy.expeditionFinale, false)
   }
+})
+
+test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
+  const postGig = {
+    ...createInitialState(),
+    currentScene: GAME_PHASES.POST_GIG,
+    currentGig: { id: 'gig_venue', name: 'Gig Venue' },
+    lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false }
+  }
+  const record = {
+    id: 'settlement-flow-test',
+    gigId: 'gig_venue',
+    net: 100,
+    perfScore: 90,
+    misses: 0,
+    dealFameMultiplier: 1,
+    soldMerch: { shirts: 2 }
+  }
+
+  // 1. New record without lifecycleStage acquires 'pending_social'
+  const recordedState = gameReducer(postGig, {
+    type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
+    payload: record
+  })
+  assert.equal(recordedState.pendingGigSettlement?.lifecycleStage, 'pending_social')
+  assert.equal(recordedState.pendingGigSettlement?.socialReconciled, false)
+
+  // 2. Applying social post result advances lifecycleStage to 'social_reconciled'
+  const socialState = gameReducer(recordedState, {
+    type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+    payload: {
+      postIndex: 0,
+      settlementId: 'settlement-flow-test',
+      social: {
+        pendingSocialOptionId: 'opt-1',
+        viral: 10
+      }
+    }
+  })
+  assert.equal(socialState.pendingGigSettlement?.lifecycleStage, 'social_reconciled')
+  assert.equal(socialState.pendingGigSettlement?.socialReconciled, true)
+
+  // 3. Load recovery respects social_reconciled and does not re-reconcile
+  const recovered = settlePendingGigOnLoad(socialState, socialState.pendingGigSettlement)
+  assert.equal(recovered.pendingGigSettlement, null)
 })

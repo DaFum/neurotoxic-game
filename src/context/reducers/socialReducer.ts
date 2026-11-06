@@ -239,7 +239,11 @@ export const handleApplySocialPostResult = (
   ) {
     nextState = {
       ...nextState,
-      pendingGigSettlement: { ...pending, socialReconciled: true }
+      pendingGigSettlement: {
+        ...pending,
+        lifecycleStage: pending.lifecycleStage === 'complete' ? 'complete' : 'social_reconciled',
+        socialReconciled: true
+      }
     }
   }
 
