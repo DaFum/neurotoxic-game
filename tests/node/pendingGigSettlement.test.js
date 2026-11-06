@@ -654,6 +654,141 @@ test('pending gig settlement reconciliation on load', async t => {
     }
   )
 
+  await t.test('reconciled settlement via APPLY_GIG_SOCIAL_RECONCILIATION transitions lifecycleStage to social_reconciled', () => {
+    const base = createInitialState()
+    const state = {
+      ...base,
+      currentScene: GAME_PHASES.POST_GIG,
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      pendingGigSettlement: {
+        id: 'settlement-actual',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        lifecycleStage: 'pending_social',
+        socialReconciled: false
+      }
+    }
+
+    const action = {
+      type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
+      payload: {
+        socialUpdate: { instagram: 500 },
+        settlementId: 'settlement-actual'
+      }
+    }
+    const next = gameReducer(state, action)
+    assert.equal(next.pendingGigSettlement?.lifecycleStage, 'social_reconciled')
+    assert.equal(next.pendingGigSettlement?.socialReconciled, true)
+  })
+
+  await t.test('settlement via APPLY_SOCIAL_POST_RESULT transitions lifecycleStage to social_reconciled', () => {
+    const base = createInitialState()
+    const state = {
+      ...base,
+      pendingGigSettlement: {
+        id: 'settlement-post',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        lifecycleStage: 'pending_social',
+        socialReconciled: false
+      }
+    }
+
+    const next = gameReducer(state, {
+      type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
+      payload: {
+        settlementId: 'settlement-post',
+        social: { pendingSocialOptionId: 'opt_1' }
+      }
+    })
+    assert.equal(next.pendingGigSettlement?.lifecycleStage, 'social_reconciled')
+    assert.equal(next.pendingGigSettlement?.socialReconciled, true)
+  })
+
+  await t.test('load recovery skips social reconciliation when record lifecycleStage is complete', () => {
+    const base = createInitialState()
+    const snapshot = {
+      currentScene: GAME_PHASES.POST_GIG,
+      player: { ...base.player, money: 500, day: 1 },
+      band: { ...base.band },
+      social: {
+        ...base.social,
+        lastGigDay: 0,
+        activeDeals: [
+          {
+            id: 'energy_drink_cx',
+            remainingGigs: 3,
+            type: 'SPONSOR',
+            offer: {}
+          }
+        ],
+        regionalGigHistory: {}
+      },
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+      pendingGigSettlement: {
+        id: 'settlement-complete',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        lifecycleStage: 'complete'
+      }
+    }
+
+    const loaded = handleLoadGame(createInitialState(), snapshot)
+    // Remaining gigs is not decremented because lifecycleStage is complete
+    assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 3)
+  })
+
+  await t.test('load recovery reconciles pending_social record even when lastGigDay equals current day without socialReconciled', () => {
+    const base = createInitialState()
+    const snapshot = {
+      currentScene: GAME_PHASES.POST_GIG,
+      player: { ...base.player, money: 500, day: 1 },
+      band: { ...base.band },
+      social: {
+        ...base.social,
+        lastGigDay: 1,
+        activeDeals: [
+          {
+            id: 'energy_drink_cx',
+            remainingGigs: 3,
+            type: 'SPONSOR',
+            offer: {}
+          }
+        ],
+        regionalGigHistory: {}
+      },
+      currentGig: { id: 'berlin_so36', name: 'SO36' },
+      lastGigStats: { score: 9000, misses: 0, accuracy: 90, failed: false },
+      pendingGigSettlement: {
+        id: 'settlement-pending-social',
+        gigId: 'berlin_so36',
+        net: 300,
+        perfScore: 80,
+        misses: 0,
+        dealFameMultiplier: 1,
+        soldMerch: {},
+        lifecycleStage: 'pending_social'
+      }
+    }
+
+    const loaded = handleLoadGame(createInitialState(), snapshot)
+    // Explicit pending_social takes precedence over legacy lastGigDay heuristic
+    assert.equal(loaded.social.activeDeals[0]?.remainingGigs, 2)
+  })
+
   await t.test('mismatched composite action settlement ID is a no-op', () => {
     const base = createInitialState()
     const state = {
