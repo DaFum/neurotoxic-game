@@ -1,6 +1,7 @@
 import type { GameState } from '../../types'
 import type { ApplySocialPostResultPayload } from '../../types/actions'
 import { isFiniteNumber } from '../finiteNumber'
+import { isGigSocialReconciled } from './settlementLifecycle'
 import { getExpeditionSpendableCash } from '../../domain/expedition/spendableCash'
 
 /**
@@ -67,9 +68,7 @@ export const validateSocialPostResult = (
     if (
       !pending ||
       pending.id !== payload.settlementId ||
-      pending.socialReconciled === true ||
-      pending.lifecycleStage === 'social_reconciled' ||
-      pending.lifecycleStage === 'complete'
+      isGigSocialReconciled(pending)
     ) {
       return 'STALE_SETTLEMENT'
     }
