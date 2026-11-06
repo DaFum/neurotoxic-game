@@ -134,7 +134,7 @@ describe('the Legendary claim mints nothing without a durable marker', () => {
     expect(claim).toBe('claimed')
     expect(result.current.career.legendaryIds).toContain(AWARD)
     expect(result.current.career.legendaryClaimedRunIds).toContain(runId)
-    expect(String(adapter.get(UNLOCKS_KEY))).toContain(
+    expect(String(adapter.get(UNLOCKS_KEY).value)).toContain(
       `expedition.legendary.${AWARD}`
     )
   })

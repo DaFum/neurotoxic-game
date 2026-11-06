@@ -87,7 +87,7 @@ const seedSave = (adapter: InMemoryAdapter) => {
 }
 
 const persisted = (adapter: InMemoryAdapter) =>
-  JSON.parse(String(adapter.get(SAVE_KEY)))
+  JSON.parse(String(adapter.get(SAVE_KEY).value))
 
 describe('a Between-Tour answer persists itself', () => {
   beforeEach(() => {

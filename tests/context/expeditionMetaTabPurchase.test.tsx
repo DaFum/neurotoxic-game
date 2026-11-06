@@ -175,21 +175,21 @@ describe('ExpeditionMetaTab through the real reducer', () => {
     act(() => {
       fireEvent.click(screen.getByTestId('expedition-meta-build-workshop'))
     })
-    const saved = JSON.parse(String(adapter.get(SAVE_KEY)))
+    const saved = JSON.parse(String(adapter.get(SAVE_KEY).value))
     expect(saved.career.hqFacilityLevels.workshop).toBe(1)
     expect(saved.career.tourTokens).toBe(0)
   })
 
   it('toasts a refused build and saves nothing', () => {
     const adapter = mountWithCareer({ tourTokens: 0 })
-    const before = adapter.get(SAVE_KEY)
+    const before = adapter.get(SAVE_KEY).value
     let built = true
     act(() => {
       built = probe.actions?.purchaseExpeditionHqFacility('workshop', 0) ?? true
     })
     expect(built).toBe(false)
     expect(probe.career?.hqFacilityLevels.workshop ?? 0).toBe(0)
-    expect(adapter.get(SAVE_KEY)).toBe(before)
+    expect(adapter.get(SAVE_KEY).value).toBe(before)
     expect(probe.toasts).toContainEqual(
       expect.objectContaining({
         message: 'ui:expedition.meta.purchaseFailed.tokens',
@@ -214,7 +214,7 @@ describe('ExpeditionMetaTab through the real reducer', () => {
     expect(probe.career?.tourTokens).toBe(5 - HQ_FACILITY_LEVEL_COSTS[1])
     expect(probe.toasts.some(toast => toast.type === 'error')).toBe(false)
     expect(
-      JSON.parse(String(adapter.get(SAVE_KEY))).career.hqFacilityLevels.workshop
+      JSON.parse(String(adapter.get(SAVE_KEY).value)).career.hqFacilityLevels.workshop
     ).toBe(1)
   })
 
