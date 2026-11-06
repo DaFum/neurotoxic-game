@@ -30,6 +30,7 @@ function runTeardownStep(step: () => void, name: string): void {
  */
 export function disposeAudio(): void {
   audioState.playRequestId++
+  audioState.setupGeneration++
   disposeAudioInternal()
 }
 

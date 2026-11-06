@@ -329,13 +329,15 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
 
   const resetGameplayState = useCallback(() => {
     // Keep physics, services and the sequencer generation owned by their
-    // existing runtime setup. Only gameplay belongs to this reset.
+    // existing runtime setup; the session hook owns the user pause flag.
+    // Only gameplay belongs to this reset.
     const {
       lanes: _lanes,
       speed: _speed,
       modifiers: _modifiers,
       sequenceAttemptId: _sequenceAttemptId,
       rivalPenaltyActive: _rivalPenaltyActive,
+      userPaused: _userPaused,
       ...gameplayDefaults
     } = INITIAL_GAME_STATE_REF
     Object.assign(gameStateRef.current, structuredClone(gameplayDefaults))

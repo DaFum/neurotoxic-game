@@ -30,6 +30,8 @@ import {
 import { addQuest } from '../../src/domain/questAdd'
 import { checkDeadlines } from '../../src/domain/questDeadlines'
 import { QuestProgress } from '../../src/utils/questProgress'
+import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions'
+import { getExpeditionIntelCapability } from '../../src/domain/expedition/nodeIntel'
 import { createFixedClock } from '../../src/utils/clock'
 import {
   FIXTURE_RUN_SEED,
@@ -3025,4 +3027,24 @@ test('an expiring stamina_max bonus leaves no member stamina above the lowered c
       `${member.id} ${member.stamina}`
     )
   }
+})
+
+test('save/load preserves canonical Expedition reputation and familiar node intel', () => {
+  const state = startedState()
+  state.reputationByRegion = Object.fromEntries(
+    Object.keys(EXPEDITION_REGIONS).map(id => [id, 50])
+  )
+  state.reputationByRegion['venues:berlin_so36.name'] = -60
+  state.reputationByRegion.berlin = 20
+  const before = getExpeditionIntelCapability(state).familiarNodeIds
+  assert.ok(before.length > 0)
+  const payload = JSON.parse(
+    JSON.stringify(createPersistedState(state, createFixedClock(1000)))
+  )
+  const loaded = handleLoadGame(createInitialState(), payload)
+  for (const id of Object.keys(EXPEDITION_REGIONS)) {
+    assert.equal(loaded.reputationByRegion[id], 50, id)
+  }
+  assert.equal(loaded.reputationByRegion.berlin, -60)
+  assert.deepEqual(getExpeditionIntelCapability(loaded).familiarNodeIds, before)
 })

@@ -6,7 +6,7 @@ import {
   writeStorageItem
 } from './storage'
 import type { IStorageAdapter } from './storageAdapter'
-import { safeJsonParse } from './objectUtils'
+import { safeJsonParse, sanitizeStringArray } from './objectUtils'
 
 /**
  * Persistence layer for earned unlock IDs.
@@ -113,11 +113,7 @@ const loadUnlocks = (
       if (currentRaw) {
         try {
           const parsed: unknown = safeJsonParse(currentRaw)
-          if (Array.isArray(parsed)) {
-            legacyUnlocks = parsed.filter(
-              (item): item is string => typeof item === 'string'
-            )
-          }
+          legacyUnlocks = sanitizeStringArray(parsed)
         } catch (_e) {
           legacyUnlocks = []
         }

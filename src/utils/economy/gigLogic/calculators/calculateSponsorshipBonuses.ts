@@ -1,4 +1,5 @@
 import type { GigStatsLike } from '../../types'
+import { finiteNumberOr } from '../../../finiteNumber'
 import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
  * Calculates performance-triggered sponsorship bonuses for clean and high-hype gigs.
@@ -11,7 +12,14 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
   const bonuses = []
   let totalBonus = 0
 
-  if (gigStats) {
+  // Legacy callers omit hit counters. When present, zero counters describe
+  // an unattempted gig; maxCombo also captures hits in persisted snapshots.
+  const unattempted =
+    gigStats.perfectHits === 0 &&
+    finiteNumberOr(gigStats.hits, 0) === 0 &&
+    finiteNumberOr(gigStats.maxCombo, 0) === 0 &&
+    gigStats.misses === 0
+  if (gigStats.failed !== true && !unattempted) {
     if (gigStats.misses === 0) {
       const bonus = 200
       bonuses.push({

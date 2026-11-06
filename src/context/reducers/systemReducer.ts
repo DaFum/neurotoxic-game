@@ -67,6 +67,7 @@ import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
+import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { createInitialState } from '../initialState'
 import { sanitizeCareerState } from './careerSanitizers'
@@ -381,7 +382,7 @@ export const handleLoadGame = (
           : DEFAULT_PLAYER_STATE.location
     },
     venueBlacklist: migrateVenueBlacklist(safeState.venueBlacklist),
-    // Region reputation is keyed per canonical city key. Older saves keyed
+    // Reputation uses canonical city keys and Expedition Region ids. Older saves keyed
     // entries by `venues:<id>.name` (the player.location display key), which
     // the regional booking ban in checkVenueAccess never read. Remap; on
     // collision keep the entry with the larger magnitude so blacklist-grade
@@ -391,7 +392,9 @@ export const handleLoadGame = (
       for (const key in safeState.reputationByRegion) {
         if (!Object.hasOwn(safeState.reputationByRegion, key)) continue
         const value = safeState.reputationByRegion[key] as number
-        const regionKey = getRegionKeyForLocation(key) ?? key
+        const regionKey = getExpeditionRegion(key)
+          ? key
+          : (getRegionKeyForLocation(key) ?? key)
         if (isForbiddenKey(regionKey)) continue
         const existing = migrated[regionKey]
         if (existing === undefined || Math.abs(value) > Math.abs(existing)) {

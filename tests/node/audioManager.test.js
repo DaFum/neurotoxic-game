@@ -112,6 +112,28 @@ test('AudioManager Tests', async t => {
     assert.strictEqual(result, true)
   })
 
+  await t.test(
+    'a stale ambient rejection leaves newer music playing',
+    async () => {
+      audioManager.stopMusic()
+      let rejectOld
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        () =>
+          new Promise((_, reject) => {
+            rejectOld = reject
+          })
+      )
+      const oldStart = audioManager.startAmbient()
+      audioManager.stopMusic()
+      assert.equal(await audioManager.startAmbient(), true)
+      const stops = mockAudioEngine.stopAudio.mock.calls.length
+      rejectOld(new Error('old request failed'))
+      assert.equal(await oldStart, false)
+      assert.equal(mockAudioEngine.stopAudio.mock.calls.length, stops)
+      assert.equal(audioManager.currentSongId, 'ambient')
+    }
+  )
+
   await t.test('setMusicVolume rejects non-finite values', () => {
     const callsBefore = mockAudioEngine.setMusicVolume.mock.calls.length
     const result = audioManager.setMusicVolume(Number.NaN)

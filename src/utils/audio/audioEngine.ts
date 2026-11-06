@@ -66,4 +66,5 @@ export { NOTE_TAIL_MS } from './rhythmGameTypes'
 
 // Stateful entry points
 export { audioManager } from './AudioManager'
+export type { AudioSfxType } from './AudioManager'
 export { audioService } from './audioService'

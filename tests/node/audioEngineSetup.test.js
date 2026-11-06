@@ -164,6 +164,26 @@ test('setupAudio and disposeAudio', async t => {
     assert.ok(audioState.drumKit)
   })
 
+  await t.test(
+    'releases the replaced Tone context ticker even when its raw context is closed',
+    async () => {
+      const previous = mockTone.getContext()
+      const originalDispose = previous.dispose
+      const originalState = previous.rawContext.state
+      const release = mock.fn()
+      previous.dispose = release
+      previous.rawContext.state = 'closed'
+      try {
+        await setupAudio()
+        assert.equal(release.mock.calls.length, 1)
+      } finally {
+        previous.rawContext.state = originalState
+        if (originalDispose) previous.dispose = originalDispose
+        else delete previous.dispose
+      }
+    }
+  )
+
   await t.test('handles concurrent calls', async () => {
     let resolveStart
     const startPromise = new Promise(r => {
@@ -229,6 +249,130 @@ test('setupAudio and disposeAudio', async t => {
       priorStopCalls + 1
     )
   })
+
+  await t.test(
+    'explicit disposal cancels setup awaiting Tone.start',
+    async () => {
+      let finishStart
+      mockTone.start.mock.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            finishStart = resolve
+          })
+      )
+      const pending = setupAudio()
+      // Let the previous context close so this setup is waiting on Tone.start.
+      await Promise.resolve()
+      const waiter = setupAudio()
+      const settled = Promise.allSettled([pending, waiter])
+      disposeAudio()
+      finishStart()
+      const results = await settled
+      assert.equal(audioState.isSetup, false)
+      assert.equal(audioState.guitar, null)
+      assert.equal(audioState.masterLimiter, null)
+      assert.equal(audioState.setupLock, null)
+      assert.equal(audioState.setupError, null)
+      assert.ok(results.every(result => result.status === 'rejected'))
+      await setupAudio()
+      assert.equal(audioState.isSetup, true)
+    }
+  )
+
+  await t.test(
+    'post-disposal callers retry a stale lock with one fresh setup',
+    async () => {
+      let finishStart
+      mockTone.start.mock.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            finishStart = resolve
+          })
+      )
+      const oldOwner = setupAudio()
+      await Promise.resolve()
+      const oldWaiter = setupAudio()
+      disposeAudio()
+      const freshWaiter = setupAudio()
+      const joinedFreshWaiter = setupAudio()
+      const settled = Promise.allSettled([
+        oldOwner,
+        oldWaiter,
+        freshWaiter,
+        joinedFreshWaiter
+      ])
+      finishStart()
+      const results = await settled
+      assert.deepEqual(
+        results.map(result => result.status),
+        ['rejected', 'rejected', 'fulfilled', 'fulfilled']
+      )
+      for (const result of results.slice(0, 2)) {
+        assert.equal(result.reason.message, 'Audio setup cancelled')
+      }
+      assert.equal(mockTone.setContext.mock.calls.length, 2)
+      assert.equal(mockTone.start.mock.calls.length, 2)
+      assert.equal(audioState.isSetup, true)
+      assert.ok(audioState.guitar)
+      assert.equal(audioState.setupLock, null)
+    }
+  )
+
+  await t.test(
+    'a second disposal cancels callers waiting on an older lock',
+    async () => {
+      let finishStart
+      mockTone.start.mock.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            finishStart = resolve
+          })
+      )
+      const oldOwner = setupAudio()
+      await Promise.resolve()
+      disposeAudio()
+      const waiter = setupAudio()
+      disposeAudio()
+      const settled = Promise.allSettled([oldOwner, waiter])
+      finishStart()
+      const results = await settled
+      assert.ok(
+        results.every(
+          result =>
+            result.status === 'rejected' &&
+            result.reason.message === 'Audio setup cancelled'
+        )
+      )
+      assert.equal(mockTone.setContext.mock.calls.length, 1)
+      assert.equal(audioState.isSetup, false)
+      assert.equal(audioState.setupLock, null)
+    }
+  )
+
+  await t.test(
+    'explicit disposal cancels setup awaiting previous context close',
+    async () => {
+      const raw = mockTone.getContext().rawContext
+      const oldClose = raw.close
+      let finishClose
+      raw.close = () =>
+        new Promise(resolve => {
+          finishClose = resolve
+        })
+      try {
+        const pending = setupAudio()
+        const settled = Promise.allSettled([pending])
+        disposeAudio()
+        finishClose()
+        await settled
+        assert.equal(audioState.isSetup, false)
+        assert.equal(audioState.guitar, null)
+        assert.equal(audioState.masterLimiter, null)
+      } finally {
+        raw.close = oldClose
+      }
+    }
+  )
 
   await t.test('records setup error when setup fails', async () => {
     MockGain.shouldFail = true

@@ -239,6 +239,7 @@ class AudioSystem {
         )
         return true
       } catch (e) {
+        if (ambientStartToken !== this.ambientStartToken) return false
         handleError(e, { fallbackMessage: 'Failed to start ambient music' })
         this.stopMusic({ invalidateAmbientStart: false })
         return false

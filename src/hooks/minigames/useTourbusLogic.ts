@@ -15,7 +15,7 @@ import { registerTestHook } from '../../utils/devTestHooks'
 import { finiteNumberOr } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
-import type { AudioSfxType } from '../../utils/audio/AudioManager'
+import type { AudioSfxType } from '../../utils/audio/audioEngine'
 
 type TourbusLogicState = {
   busLane: number
