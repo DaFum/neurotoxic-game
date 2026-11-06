@@ -31,7 +31,7 @@ export const ALL_ASSET_PROMPTS: Readonly<Record<string, string>> = {
 }
 
 export const STATIC_MODULE_CATALOG: ReadonlyMap<string, AssetModule> = new Map(
-  ALL_ASSET_MODULES.map(m => [m.id, m])
+  ALL_ASSET_MODULES.map(m => [m.id, Object.freeze({ ...m })])
 )
 
 export const STATIC_PROMPT_CATALOG: ReadonlyMap<string, string> = new Map(
@@ -39,7 +39,7 @@ export const STATIC_PROMPT_CATALOG: ReadonlyMap<string, string> = new Map(
 )
 
 export const MODULE_REGISTRY: Record<string, AssetModule> = Object.fromEntries(
-  STATIC_MODULE_CATALOG
+  ALL_ASSET_MODULES.map(m => [m.id, structuredClone(m)])
 )
 
 export const MODULE_PROMPTS: Record<string, string> = {

@@ -174,7 +174,10 @@ export const createSettleSoldMerchAction = (
  * are malformed.
  */
 export const createRecordPendingGigSettlementAction = (
-  settlement: Omit<PendingGigSettlement, 'id' | 'socialReconciled'>,
+  settlement: Omit<PendingGigSettlement, 'id' | 'socialReconciled' | 'lifecycleStage'> & {
+    lifecycleStage?: PendingGigSettlement['lifecycleStage']
+    socialReconciled?: boolean
+  },
   id: string = getSafeUUID()
 ): Extract<
   GameAction,
@@ -183,6 +186,7 @@ export const createRecordPendingGigSettlementAction = (
   const payload = sanitizePendingGigSettlement({
     ...settlement,
     id,
+    lifecycleStage: settlement.lifecycleStage ?? 'pending_social',
     socialReconciled: false
   })
   return payload

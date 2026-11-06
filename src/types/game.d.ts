@@ -186,7 +186,7 @@ export type PendingGigSettlementLifecycleStage =
   | 'complete'
 
 export interface PendingGigSettlement {
-  lifecycleStage?: PendingGigSettlementLifecycleStage
+  lifecycleStage: PendingGigSettlementLifecycleStage
   /** Stable id stamped by the action creator. */
   id: string
   /** `currentGig.id` the settlement belongs to. */

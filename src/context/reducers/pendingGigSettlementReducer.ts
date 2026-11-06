@@ -100,9 +100,7 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    ...(lifecycleStage !== undefined || Object.hasOwn(raw, 'lifecycleStage')
-      ? { lifecycleStage: resolvedStage }
-      : {}),
+    lifecycleStage: resolvedStage,
     socialReconciled: isReconciled
   }
 }
@@ -141,7 +139,7 @@ export const handleRecordPendingGigSettlement = (
     ...state,
     pendingGigSettlement: {
       ...record,
-      ...(lifecycleStage !== undefined ? { lifecycleStage } : {}),
+      lifecycleStage: lifecycleStage ?? 'pending_social',
       socialReconciled
     }
   }

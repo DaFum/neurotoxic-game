@@ -713,6 +713,7 @@ test('pending gig settlement actions', async t => {
     })
     assert.deepEqual(next.pendingGigSettlement, {
       ...record,
+      lifecycleStage: 'pending_social',
       socialReconciled: false
     })
   })
@@ -972,6 +973,7 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     perfScore: 30,
     misses: 0,
     dealFameMultiplier: 1,
+    lifecycleStage: 'pending_social',
     socialReconciled: false
   })
 })
