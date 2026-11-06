@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { resume, buildFixture, seedSaveOnce, SAVE_KEY, readRootState } from './helpers.js'
+import {
+  resume,
+  buildFixture,
+  seedSaveOnce,
+  SAVE_KEY,
+  readRootState
+} from './helpers.js'
 
 const tabTo = async (page, locator) => {
   await page.evaluate(() => document.activeElement.blur())
@@ -163,7 +169,9 @@ for (const [width, height] of [
       { [SAVE_KEY]: fixture.save, i18nextLng: 'de' },
       { url: '/?events=off' }
     )
-    const skip = page.getByRole('button', { name: /skip all|alle überspringen/i })
+    const skip = page.getByRole('button', {
+      name: /skip all|alle überspringen/i
+    })
     if (await skip.first().isVisible()) await skip.first().click()
     await page.getByRole('button', { name: /load game|spiel laden/i }).click()
 
@@ -203,8 +211,10 @@ for (const [width, height] of [
         async () => {
           const first = await measureBoxes()
           const second = await measureBoxes()
-          if (!first.rBox || !first.tBox || !first.sBox || !first.mBox) return false
-          if (!second.rBox || !second.tBox || !second.sBox || !second.mBox) return false
+          if (!first.rBox || !first.tBox || !first.sBox || !first.mBox)
+            return false
+          if (!second.rBox || !second.tBox || !second.sBox || !second.mBox)
+            return false
           const isIdentical =
             first.rBox.x === second.rBox.x &&
             first.rBox.y === second.rBox.y &&

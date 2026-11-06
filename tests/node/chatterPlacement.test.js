@@ -135,7 +135,10 @@ describe('shouldSuppressChatterWhenBlocked', () => {
   })
 
   it('does not suppress on desktop for non-expedition scenes', () => {
-    assert.equal(shouldSuppressChatterWhenBlocked(GAME_PHASES.GIG, false), false)
+    assert.equal(
+      shouldSuppressChatterWhenBlocked(GAME_PHASES.GIG, false),
+      false
+    )
     assert.equal(
       shouldSuppressChatterWhenBlocked(GAME_PHASES.PRE_GIG, false),
       false

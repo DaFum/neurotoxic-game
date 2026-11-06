@@ -10,7 +10,14 @@ import {
 } from './eventEngine/effectTargets'
 
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES)
-const VALID_TRIGGERS = ['post_gig', 'travel', 'random', 'special_location', 'gig_intro', 'gig_mid']
+const VALID_TRIGGERS = [
+  'post_gig',
+  'travel',
+  'random',
+  'special_location',
+  'gig_intro',
+  'gig_mid'
+]
 const VALID_TRIGGERS_SET = new Set(VALID_TRIGGERS)
 
 /**

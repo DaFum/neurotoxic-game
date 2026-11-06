@@ -31,7 +31,9 @@ function runOptimized() {
   }
 }
 
-console.log(`Benchmarking Tourbus obstacle stepping (${iterations} iterations)...`)
+console.log(
+  `Benchmarking Tourbus obstacle stepping (${iterations} iterations)...`
+)
 
 // Warmup
 runBaseline()

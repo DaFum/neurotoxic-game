@@ -87,7 +87,10 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
         </p>
       ) : (
         controller.status.devices.map(device => (
-          <p key={device.index} className='text-ash-gray font-mono text-sm mb-4'>
+          <p
+            key={device.index}
+            className='text-ash-gray font-mono text-sm mb-4'
+          >
             {device.id} ({device.family}){' '}
             {!device.standard &&
               t('ui:controller.nonStandard', {
@@ -110,7 +113,10 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
               }`}
             >
               <span className='font-mono text-sm text-star-white'>
-                <span className='text-toxic-green font-bold uppercase'>{laneLabel}</span>:{' '}
+                <span className='text-toxic-green font-bold uppercase'>
+                  {laneLabel}
+                </span>
+                :{' '}
                 <span className='bg-ash-gray/20 px-2 py-0.5 text-xs text-toxic-green font-mono border border-toxic-green/30'>
                   {gamepadButtonLabel(bindings[index]!, family)}
                 </span>
@@ -130,7 +136,9 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
                 }`}
               >
                 {isListening
-                  ? t('ui:controller.listening', { defaultValue: '[ PRESS BUTTON ]' })
+                  ? t('ui:controller.listening', {
+                      defaultValue: '[ PRESS BUTTON ]'
+                    })
                   : t('ui:controller.rebind', { defaultValue: 'Rebind' })}
               </button>
             </div>
@@ -140,7 +148,10 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
 
       {lane !== null && (
         <div className='p-3 border border-toxic-green/50 bg-toxic-green/5 mb-4 flex items-center justify-between gap-4'>
-          <p className='font-mono text-xs text-toxic-green animate-pulse' aria-live='polite'>
+          <p
+            className='font-mono text-xs text-toxic-green animate-pulse'
+            aria-live='polite'
+          >
             {t('ui:controller.capture', {
               defaultValue: 'Press a button. Start cancels.'
             })}
@@ -155,7 +166,10 @@ export function ControllerSettings({ bindings, onChange, onReset }: Props) {
         </div>
       )}
 
-      <p className='font-mono text-xs text-warning-yellow min-h-5 mb-4' aria-live='polite'>
+      <p
+        className='font-mono text-xs text-warning-yellow min-h-5 mb-4'
+        aria-live='polite'
+      >
         {message}
       </p>
 
