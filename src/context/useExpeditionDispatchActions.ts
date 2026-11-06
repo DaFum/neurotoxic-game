@@ -44,7 +44,7 @@ import type { GameDispatchActions } from './useGameDispatchActions'
 /**
  * Expedition dispatch wrappers, sliced from {@link GameDispatchActions}.
  */
-type ExpeditionDispatchActions = Pick<
+export type ExpeditionDispatchActions = Pick<
   GameDispatchActions,
   | 'prepareExpeditionRun'
   | 'prepareExpeditionSponsorOffers'

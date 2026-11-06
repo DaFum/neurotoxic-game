@@ -582,7 +582,7 @@ export function useGameDispatchActions({
       tRef
     })
 
-  const simpleActions = useSimpleDispatchActions(dispatch)
+  const simpleActions = useSimpleDispatchActions(dispatch, storage)
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()

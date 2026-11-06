@@ -29,6 +29,7 @@ import {
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { logger } from '../utils/logger'
 import { readGlobalSettings, safeStorageOperation, writeGlobalSettings } from '../utils/storage'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import { useStorage } from './StorageContext'
 
 export interface SimpleDispatchActions {
@@ -61,8 +62,12 @@ export interface SimpleDispatchActions {
   updateSettings: (updates: Record<string, unknown>) => void
 }
 
-export function useSimpleDispatchActions(dispatch: Dispatch<GameAction>): SimpleDispatchActions {
-  const storage = useStorage()
+export function useSimpleDispatchActions(
+  dispatch: Dispatch<GameAction>,
+  injectedStorage?: IStorageAdapter
+): SimpleDispatchActions {
+  const contextStorage = useStorage()
+  const storage = injectedStorage ?? contextStorage
 
   return useMemo<SimpleDispatchActions>(
     () => ({

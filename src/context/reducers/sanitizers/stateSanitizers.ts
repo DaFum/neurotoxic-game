@@ -1281,18 +1281,16 @@ export const sanitizeMinigameState = (
 
   const minigameObj = rawMinigame as Record<string, unknown>
   const isActive =
-    minigameObj.active === true ||
-    minigameObj.isActive === true ||
-    minigameObj.status === 'active'
+    (minigameObj.active === true ||
+      minigameObj.isActive === true ||
+      minigameObj.status === 'active') &&
+    minigameObj.active !== false &&
+    minigameObj.isActive !== false
 
   const rawType =
     typeof minigameObj.type === 'string' && isMinigameType(minigameObj.type)
       ? minigameObj.type
       : null
-
-  if (!isActive || !rawType) {
-    return { ...DEFAULT_MINIGAME_STATE }
-  }
 
   const targetDestination =
     typeof minigameObj.targetDestination === 'string'
@@ -1321,6 +1319,25 @@ export const sanitizeMinigameState = (
       : 0
 
   const travelFuelRefused = minigameObj.travelFuelRefused === true
+  const targetNodeId =
+    typeof minigameObj.targetNodeId === 'string'
+      ? minigameObj.targetNodeId
+      : null
+
+  if (!isActive || !rawType) {
+    return {
+      status: 'idle',
+      active: false,
+      type: rawType,
+      targetDestination,
+      targetNodeId,
+      gigId,
+      equipmentRemaining,
+      accumulatedDamage,
+      score,
+      travelFuelRefused
+    }
+  }
 
   switch (rawType) {
     case 'TOURBUS':
@@ -1329,10 +1346,7 @@ export const sanitizeMinigameState = (
         active: true,
         type: 'TOURBUS',
         targetDestination,
-        targetNodeId:
-          typeof minigameObj.targetNodeId === 'string'
-            ? minigameObj.targetNodeId
-            : null,
+        targetNodeId,
         gigId,
         equipmentRemaining,
         accumulatedDamage,
@@ -1345,10 +1359,7 @@ export const sanitizeMinigameState = (
         active: true,
         type: 'ROADIE',
         targetDestination,
-        targetNodeId:
-          typeof minigameObj.targetNodeId === 'string'
-            ? minigameObj.targetNodeId
-            : null,
+        targetNodeId,
         gigId,
         equipmentRemaining,
         accumulatedDamage,
@@ -1360,10 +1371,7 @@ export const sanitizeMinigameState = (
         active: true,
         type: 'AMP_CALIBRATION',
         targetDestination,
-        targetNodeId:
-          typeof minigameObj.targetNodeId === 'string'
-            ? minigameObj.targetNodeId
-            : null,
+        targetNodeId,
         gigId,
         equipmentRemaining,
         accumulatedDamage,
@@ -1375,10 +1383,7 @@ export const sanitizeMinigameState = (
         active: true,
         type: 'KABELSALAT',
         targetDestination,
-        targetNodeId:
-          typeof minigameObj.targetNodeId === 'string'
-            ? minigameObj.targetNodeId
-            : null,
+        targetNodeId,
         gigId,
         equipmentRemaining,
         accumulatedDamage,
