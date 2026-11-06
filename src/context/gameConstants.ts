@@ -1,4 +1,4 @@
-import type { MinigameState, GamePhase } from '../types'
+import type { MinigameIdleState, GamePhase } from '../types'
 
 /**
  * Canonical scene identifiers used by game state, routing, and persistence.
@@ -63,8 +63,7 @@ export const AMP_CALIBRATION_TOLERANCE = 50
  */
 type DefaultMinigameState = Required<
   Pick<
-    Extract<MinigameState, { status: 'idle' }>,
-    | 'status'
+    MinigameIdleState,
     | 'active'
     | 'type'
     | 'targetDestination'
@@ -82,7 +81,6 @@ type DefaultMinigameState = Required<
  * Applied when clearing minigame state to guarantee a predictable, inactive baseline. Prevents leftover data from leaking between minigames.
  */
 export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
-  status: 'idle',
   active: false,
   type: null,
   targetDestination: null,

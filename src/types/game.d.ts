@@ -138,7 +138,7 @@ export type MinigameType =
 export type TransitPhase = 'idle' | 'confirming' | 'in_transit' | 'arrived'
 
 export interface MinigameIdleState {
-  status: 'idle'
+  status?: 'idle'
   active: false
   isActive?: boolean
   type?: MinigameType | null

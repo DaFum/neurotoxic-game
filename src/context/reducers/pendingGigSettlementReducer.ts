@@ -129,18 +129,33 @@ export const handleRecordPendingGigSettlement = (
   ) {
     return state
   }
-  const socialReconciled =
+  const prevSettlement =
     state.pendingGigSettlement?.gigId === record.gigId
-      ? state.pendingGigSettlement.socialReconciled === true
-      : record.socialReconciled
+      ? state.pendingGigSettlement
+      : null
+
+  const socialReconciled =
+    prevSettlement?.socialReconciled === true
+      ? true
+      : record.socialReconciled === true
+
+  // Preserve existing lifecycleStage when re-recording a settlement,
+  // preventing complete or social_reconciled from being demoted.
+  const existingStage = prevSettlement?.lifecycleStage
+  let lifecycleStage = record.lifecycleStage ?? existingStage
+  if (existingStage === 'complete') {
+    lifecycleStage = 'complete'
+  } else if (existingStage === 'social_reconciled' && lifecycleStage !== 'complete') {
+    lifecycleStage = 'social_reconciled'
+  } else if (socialReconciled && lifecycleStage === 'pending_social') {
+    lifecycleStage = 'social_reconciled'
+  }
 
   return {
     ...state,
     pendingGigSettlement: {
       ...record,
-      ...(record.lifecycleStage !== undefined
-        ? { lifecycleStage: socialReconciled ? 'social_reconciled' : 'pending_social' }
-        : {}),
+      ...(lifecycleStage !== undefined ? { lifecycleStage } : {}),
       socialReconciled
     }
   }
