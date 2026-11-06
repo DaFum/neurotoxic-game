@@ -42,16 +42,14 @@ import {
 } from '../questsConstants'
 
 interface QuestOfferRow {
-  questId: QuestRegistryId
   id: string
   declineEffect: unknown
 }
 
-const defineQuestOfferEvent = ({
-  questId,
-  id,
-  declineEffect
-}: QuestOfferRow) => {
+const defineQuestOfferEvent = (
+  questId: QuestRegistryId,
+  { id, declineEffect }: QuestOfferRow
+) => {
   const offer = getQuestDefinition(questId)?.offer
   if (!offer) {
     throw new Error(`Quest offer metadata missing for ${questId}`)
@@ -86,188 +84,151 @@ const defineQuestOfferEvent = ({
 
 /** Raw quest-offer event definitions consumed by the event registry. */
 export const QUEST_EVENTS = [
-  defineQuestOfferEvent({
-    questId: QUEST_PICK_OF_DESTINY,
+  defineQuestOfferEvent(QUEST_PICK_OF_DESTINY, {
     id: 'quest_trigger_pick_of_destiny',
     declineEffect: { type: 'stat', stat: 'luck', value: -1 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_VIRAL_DANCE,
+  defineQuestOfferEvent(QUEST_VIRAL_DANCE, {
     id: 'quest_trigger_viral_dance',
     declineEffect: { type: 'stat', stat: 'mood', value: -5 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_SPONSOR_DEMAND,
+  defineQuestOfferEvent(QUEST_SPONSOR_DEMAND, {
     id: 'quest_trigger_sponsor_demand',
     declineEffect: { type: 'stat', stat: 'fame', value: -10 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_HARMONY_PROJECT,
+  defineQuestOfferEvent(QUEST_HARMONY_PROJECT, {
     id: 'quest_trigger_harmony_project',
     declineEffect: { type: 'stat', stat: 'mood', value: -5 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_LOCAL_LEGEND,
+  defineQuestOfferEvent(QUEST_LOCAL_LEGEND, {
     id: 'quest_trigger_local_legend',
     declineEffect: { type: 'stat', stat: 'fame', value: -15 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_TOURBUS_INSPECTION,
+  defineQuestOfferEvent(QUEST_TOURBUS_INSPECTION, {
     id: 'quest_trigger_tourbus_inspection',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_STUDIO_DEMO,
+  defineQuestOfferEvent(QUEST_STUDIO_DEMO, {
     id: 'quest_trigger_studio_demo',
     declineEffect: { type: 'stat', stat: 'fame', value: 3 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_MERCH_RUSH,
+  defineQuestOfferEvent(QUEST_MERCH_RUSH, {
     id: 'quest_trigger_merch_rush',
     declineEffect: { type: 'resource', resource: 'money', value: 50 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_VENUE_RESIDENCY,
+  defineQuestOfferEvent(QUEST_VENUE_RESIDENCY, {
     id: 'quest_trigger_venue_residency',
     declineEffect: { type: 'stat', stat: 'fame', value: 5 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_REGION_TAKEOVER,
+  defineQuestOfferEvent(QUEST_REGION_TAKEOVER, {
     id: 'quest_trigger_region_takeover',
     declineEffect: { type: 'stat', stat: 'mood', value: -3 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_DRAMA_POST,
+  defineQuestOfferEvent(QUEST_DRAMA_POST, {
     id: 'quest_trigger_drama_post',
     declineEffect: { type: 'stat', stat: 'fame', value: -5 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_PREMIUM_ENDORSEMENT,
+  defineQuestOfferEvent(QUEST_PREMIUM_ENDORSEMENT, {
     id: 'quest_trigger_premium_endorsement',
     declineEffect: { type: 'resource', resource: 'money', value: 100 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_COMMUNITY_OUTREACH,
+  defineQuestOfferEvent(QUEST_COMMUNITY_OUTREACH, {
     id: 'quest_trigger_community_outreach',
     declineEffect: { type: 'stat', stat: 'mood', value: -3 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_FLAWLESS_RUN,
+  defineQuestOfferEvent(QUEST_FLAWLESS_RUN, {
     id: 'quest_trigger_flawless_run',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_STICKY_FINGERS,
+  defineQuestOfferEvent(QUEST_STICKY_FINGERS, {
     id: 'quest_trigger_sticky_fingers',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_SPECIAL_DELIVERY,
+  defineQuestOfferEvent(QUEST_SPECIAL_DELIVERY, {
     id: 'quest_trigger_special_delivery',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_PERSONA_NON_GRATA,
+  defineQuestOfferEvent(QUEST_PERSONA_NON_GRATA, {
     id: 'quest_trigger_persona_non_grata',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_MURPHYS_LAW,
+  defineQuestOfferEvent(QUEST_MURPHYS_LAW, {
     id: 'quest_trigger_murphys_law',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_CRISIS_MANAGER,
+  defineQuestOfferEvent(QUEST_CRISIS_MANAGER, {
     id: 'quest_trigger_crisis_manager',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_CHAPTER_MARKER,
+  defineQuestOfferEvent(QUEST_CHAPTER_MARKER, {
     id: 'quest_trigger_chapter_marker',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_PAYDAY,
+  defineQuestOfferEvent(QUEST_PAYDAY, {
     id: 'quest_trigger_payday',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_MAKE_AMENDS,
+  defineQuestOfferEvent(QUEST_MAKE_AMENDS, {
     id: 'quest_trigger_make_amends',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_BURNED_BRIDGES,
+  defineQuestOfferEvent(QUEST_BURNED_BRIDGES, {
     id: 'quest_trigger_burned_bridges',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_VENUE_REGULAR,
+  defineQuestOfferEvent(QUEST_VENUE_REGULAR, {
     id: 'quest_trigger_venue_regular',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_BRAND_AMBASSADOR,
+  defineQuestOfferEvent(QUEST_BRAND_AMBASSADOR, {
     id: 'quest_trigger_brand_ambassador',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_ALCHEMIST,
+  defineQuestOfferEvent(QUEST_ALCHEMIST, {
     id: 'quest_trigger_alchemist',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_EXPEDITION_RUN_GOAL,
+  defineQuestOfferEvent(QUEST_EXPEDITION_RUN_GOAL, {
     id: 'quest_trigger_expedition_run_goal',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_EXPEDITION_NEMESIS,
+  defineQuestOfferEvent(QUEST_EXPEDITION_NEMESIS, {
     id: 'quest_trigger_expedition_nemesis',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_EXPEDITION_META_UNLOCK,
+  defineQuestOfferEvent(QUEST_EXPEDITION_META_UNLOCK, {
     id: 'quest_trigger_expedition_meta_unlock',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_EXPEDITION_EXIT_STRATEGY,
+  defineQuestOfferEvent(QUEST_EXPEDITION_EXIT_STRATEGY, {
     id: 'quest_trigger_expedition_exit_strategy',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_DAMAGE_CONTROL,
+  defineQuestOfferEvent(QUEST_DAMAGE_CONTROL, {
     id: 'quest_trigger_damage_control',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_SIGN_HERE,
+  defineQuestOfferEvent(QUEST_SIGN_HERE, {
     id: 'quest_trigger_sign_here',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_BEST_BEFORE,
+  defineQuestOfferEvent(QUEST_BEST_BEFORE, {
     id: 'quest_trigger_best_before',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_GARAGE_DAYS,
+  defineQuestOfferEvent(QUEST_GARAGE_DAYS, {
     id: 'quest_trigger_garage_days',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_PREVENTIVE_MAINTENANCE,
+  defineQuestOfferEvent(QUEST_PREVENTIVE_MAINTENANCE, {
     id: 'quest_trigger_preventive_maintenance',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_HARD_KNOCKS,
+  defineQuestOfferEvent(QUEST_HARD_KNOCKS, {
     id: 'quest_trigger_hard_knocks',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   }),
-  defineQuestOfferEvent({
-    questId: QUEST_STAGE_TIME,
+  defineQuestOfferEvent(QUEST_STAGE_TIME, {
     id: 'quest_trigger_stage_time',
     declineEffect: { type: 'stat', stat: 'mood', value: -2 }
   })
