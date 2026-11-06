@@ -550,10 +550,7 @@ const useNonOverlappingPosition = (
             const hasExternalMutation = records.some(
               record =>
                 !record.target ||
-                !(
-                  el.contains(record.target as Node) ||
-                  record.target === el
-                )
+                !(el.contains(record.target as Node) || record.target === el)
             )
             if (!hasExternalMutation) return
 

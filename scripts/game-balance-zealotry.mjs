@@ -170,10 +170,34 @@ const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
 
   // Action count aggregations
   const actionTotals = {
-    sermon: { attempted: 0, eligible: 0, successful: 0, rejected: 0, rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 } },
-    leak: { attempted: 0, eligible: 0, successful: 0, rejected: 0, rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 } },
-    cult: { attempted: 0, eligible: 0, successful: 0, rejected: 0, rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 } },
-    pirate: { attempted: 0, eligible: 0, successful: 0, rejected: 0, rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 } }
+    sermon: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    leak: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    cult: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    },
+    pirate: {
+      attempted: 0,
+      eligible: 0,
+      successful: 0,
+      rejected: 0,
+      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+    }
   }
 
   let totalDealBreakEvents = 0
@@ -292,7 +316,7 @@ const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
   }
 }
 
-export const generateMarkdownReport = (experimentResult) => {
+export const generateMarkdownReport = experimentResult => {
   const { metadata, stream, runsPerScenario, resultsByCell } = experimentResult
 
   let md = '# Zealotry Policy Balance Analysis\n\n'
@@ -301,11 +325,14 @@ export const generateMarkdownReport = (experimentResult) => {
   md += `**Generator Fingerprint:** \`${metadata.generatorFingerprint}\`\n\n`
 
   md += '## Cell Summary & Paired Policy Performance\n\n'
-  md += '| Cell (Probe / Fixture) | Policy | Attempted | Successful | Rejected | Gate Rejections | Never-Eligible % | Mean Fame Delta | Mean Money Delta | Deal Breaks | Trust Lost |\n'
+  md +=
+    '| Cell (Probe / Fixture) | Policy | Attempted | Successful | Rejected | Gate Rejections | Never-Eligible % | Mean Fame Delta | Mean Money Delta | Deal Breaks | Trust Lost |\n'
   md += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n'
 
   for (const [cellKey, cellData] of Object.entries(resultsByCell)) {
-    for (const [policyKey, candidateData] of Object.entries(cellData.candidates)) {
+    for (const [policyKey, candidateData] of Object.entries(
+      cellData.candidates
+    )) {
       const m = candidateData.metrics
       let primaryAct = {
         attempted: 0,
@@ -345,21 +372,34 @@ export const generateMarkdownReport = (experimentResult) => {
   }
 
   md += '\n## Coverage Limits & Methodological Context\n\n'
-  md += '- **Matched Stage & Seed:** Every policy candidate is evaluated against the exact same seed stream and stage probe as its paired control.\n'
-  md += '- **Control Policy:** Ordinary posting/brand policies (`none`) are used as control. `no_social_probe` is NOT used as control.\n'
-  md += '- **Never-unlocked cohorts:** Cells starting at zealotry 0/controversy 0 may record high never-eligible shares for gated policies (e.g. Void Sermon required zealotry 35, Dark Web Leak required controversy 40/55, Cult Indoctrination required zealotry 50).\n'
-  md += '- **Descriptive Comparisons:** Cross-cell or cross-fingerprint comparisons are descriptive.\n'
+  md +=
+    '- **Matched Stage & Seed:** Every policy candidate is evaluated against the exact same seed stream and stage probe as its paired control.\n'
+  md +=
+    '- **Control Policy:** Ordinary posting/brand policies (`none`) are used as control. `no_social_probe` is NOT used as control.\n'
+  md +=
+    '- **Never-unlocked cohorts:** Cells starting at zealotry 0/controversy 0 may record high never-eligible shares for gated policies (e.g. Void Sermon required zealotry 35, Dark Web Leak required controversy 40/55, Cult Indoctrination required zealotry 50).\n'
+  md +=
+    '- **Descriptive Comparisons:** Cross-cell or cross-fingerprint comparisons are descriptive.\n'
 
   return md
 }
 
 const main = async () => {
   const { runsPerScenario, stream } = parseArgs()
-  console.log(`Running Zealotry Experiment: runs=${runsPerScenario}, stream=${stream}...`)
+  console.log(
+    `Running Zealotry Experiment: runs=${runsPerScenario}, stream=${stream}...`
+  )
 
-  const experimentResult = await runZealotryExperiment({ runsPerScenario, stream })
+  const experimentResult = await runZealotryExperiment({
+    runsPerScenario,
+    stream
+  })
 
-  await fs.writeFile(OUTPUT_JSON, JSON.stringify(experimentResult, null, 2), 'utf8')
+  await fs.writeFile(
+    OUTPUT_JSON,
+    JSON.stringify(experimentResult, null, 2),
+    'utf8'
+  )
   const markdown = generateMarkdownReport(experimentResult)
   await fs.writeFile(OUTPUT_MARKDOWN, markdown, 'utf8')
 

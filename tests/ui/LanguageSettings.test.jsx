@@ -8,7 +8,7 @@ let currentLanguage = 'en'
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (key) => key,
+    t: key => key,
     i18n: {
       get language() {
         return currentLanguage
@@ -23,7 +23,10 @@ describe('LanguageSettings', () => {
     currentLanguage = 'en'
     render(<LanguageSettings />)
 
-    const heading = screen.getByRole('heading', { level: 2, name: 'ui:language' })
+    const heading = screen.getByRole('heading', {
+      level: 2,
+      name: 'ui:language'
+    })
     expect(heading).toBeInTheDocument()
     expect(heading.id).toBeTruthy()
 

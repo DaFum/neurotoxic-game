@@ -20,7 +20,9 @@ test('RoadiePlayerManager updates carrying visuals on initial call and short-cir
 
   let setScaleCallCount = 0
   if (manager.itemSprite) {
-    const originalSet = manager.itemSprite.scale.set.bind(manager.itemSprite.scale)
+    const originalSet = manager.itemSprite.scale.set.bind(
+      manager.itemSprite.scale
+    )
     manager.itemSprite.scale.set = (...args) => {
       setScaleCallCount++
       return originalSet(...args)

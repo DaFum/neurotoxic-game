@@ -153,8 +153,18 @@ describe('paid event options under protected expedition cash', () => {
     stateInsufficient.player.money = 449
     stateInsufficient.expedition.protectedCareerCash = 200
 
-    const purchaseOption = event.options.find(o => o.effect?.effects?.some(e => e.resource === 'money'))
-    assert.equal(choosableIgnoringRule(purchaseOption, stateSufficient), true, 'should be choosable with 500 total / 200 protected')
-    assert.equal(choosableIgnoringRule(purchaseOption, stateInsufficient), false, 'should not be choosable with 249 total / 200 protected')
+    const purchaseOption = event.options.find(o =>
+      o.effect?.effects?.some(e => e.resource === 'money')
+    )
+    assert.equal(
+      choosableIgnoringRule(purchaseOption, stateSufficient),
+      true,
+      'should be choosable with 500 total / 200 protected'
+    )
+    assert.equal(
+      choosableIgnoringRule(purchaseOption, stateInsufficient),
+      false,
+      'should not be choosable with 249 total / 200 protected'
+    )
   })
 })

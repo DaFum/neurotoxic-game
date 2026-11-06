@@ -86,26 +86,29 @@ test('EffectTextureManager', async t => {
     assert.equal(warnCall[2].message, 'Test load error')
   })
 
-  await t.test('late cached textures are not retained after disposal', async () => {
-    let resolveTextures
-    loadTexturesImpl = () =>
-      new Promise(resolve => {
-        resolveTextures = resolve
-      })
+  await t.test(
+    'late cached textures are not retained after disposal',
+    async () => {
+      let resolveTextures
+      loadTexturesImpl = () =>
+        new Promise(resolve => {
+          resolveTextures = resolve
+        })
 
-    const manager = new EffectTextureManager({ renderer: {} })
-    const loading = manager.loadAssets()
-    manager.dispose()
+      const manager = new EffectTextureManager({ renderer: {} })
+      const loading = manager.loadAssets()
+      manager.dispose()
 
-    const blood = { destroy: mock.fn() }
-    const toxic = { destroy: mock.fn() }
-    resolveTextures({ blood, toxic })
-    await loading
+      const blood = { destroy: mock.fn() }
+      const toxic = { destroy: mock.fn() }
+      resolveTextures({ blood, toxic })
+      await loading
 
-    assert.deepEqual(manager.textures, { blood: null, toxic: null })
-    assert.equal(blood.destroy.mock.calls.length, 0)
-    assert.equal(toxic.destroy.mock.calls.length, 0)
-  })
+      assert.deepEqual(manager.textures, { blood: null, toxic: null })
+      assert.equal(blood.destroy.mock.calls.length, 0)
+      assert.equal(toxic.destroy.mock.calls.length, 0)
+    }
+  )
 
   await t.test('dispose leaves shared cached textures alive', async () => {
     const blood = { destroy: mock.fn() }

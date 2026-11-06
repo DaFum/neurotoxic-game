@@ -63,9 +63,7 @@ describe('ExpeditionCrewPicker', () => {
   it('marks unavailable/locked crew members as aria-disabled', () => {
     state.current = createInitialState()
     // Simulate empty available crew
-    render(
-      <ExpeditionCrewPicker selectedCrewIds={[]} onChange={vi.fn()} />
-    )
+    render(<ExpeditionCrewPicker selectedCrewIds={[]} onChange={vi.fn()} />)
     const mikaButton = screen.getByRole('button', { name: /mika/i })
     expect(mikaButton).toHaveAttribute('aria-disabled', 'false')
   })

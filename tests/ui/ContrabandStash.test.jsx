@@ -79,7 +79,10 @@ describe('ContrabandStash', () => {
     })
     expect(button).toBeInTheDocument()
     expect(button).toHaveAttribute('aria-disabled', 'true')
-    expect(button).toHaveAttribute('aria-describedby', 'target-required-coffee-1')
+    expect(button).toHaveAttribute(
+      'aria-describedby',
+      'target-required-coffee-1'
+    )
     expect(button).not.toBeDisabled()
 
     button.click()

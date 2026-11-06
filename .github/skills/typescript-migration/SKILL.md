@@ -3,6 +3,7 @@ name: typescript-migration
 description: typescript-migration
 disable-model-invocation: true
 ---
+
 # TypeScript Type-Safety Prompt Template
 
 Purpose
