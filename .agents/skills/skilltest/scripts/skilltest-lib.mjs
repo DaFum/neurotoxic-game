@@ -468,13 +468,21 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   const repoDir = await findRepoRoot(cwd)
   const roots = await collectSkillRoots(cwd, repoDir)
   if (includeUserSkills) {
-    const codexHome = process.env.CODEX_HOME
-    if (codexHome) {
-      roots.push(path.join(codexHome, 'skills'))
+    const tree = getTreeName()
+    if (tree === '.agents') {
+      const codexHome = process.env.CODEX_HOME
+      if (codexHome) {
+        roots.push(path.join(codexHome, 'skills'))
+      } else {
+        const homeDir = process.env.HOME || process.env.USERPROFILE || ''
+        if (homeDir) {
+          roots.push(path.join(homeDir, '.codex', 'skills'))
+        }
+      }
     } else {
       const homeDir = process.env.HOME || process.env.USERPROFILE || ''
       if (homeDir) {
-        roots.push(path.join(homeDir, '.codex', 'skills'))
+        roots.push(path.join(homeDir, '.claude', 'skills'))
       }
     }
   }
