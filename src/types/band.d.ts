@@ -44,6 +44,40 @@ export interface StashItem {
 /**
  * Loose contraband item selected from the stash UI.
  */
+
+/**
+ * Numeric stat buff applied to a band property or member vital.
+ */
+export interface ContrabandStatBuffEffect {
+  kind: 'stat_buff'
+  effectType: string
+  value: number
+  remainingDuration: number
+  instanceId?: string
+  memberId?: string
+  [key: string]: unknown
+}
+
+/**
+ * Non-additive or special modifier applied by contraband.
+ */
+export interface ContrabandSpecialEffect {
+  kind: 'special'
+  effectType: string
+  remainingDuration: number
+  instanceId?: string
+  memberId?: string
+  description?: string
+  [key: string]: unknown
+}
+
+/**
+ * Discriminated union of active contraband effects.
+ */
+export type ContrabandEffect =
+  | ContrabandStatBuffEffect
+  | ContrabandSpecialEffect
+
 export type ContrabandStashItem = {
   id?: string
   name?: string
@@ -84,7 +118,7 @@ export interface BandState {
   /** Fractional bonus to the harmony gained from completing practice mode. */
   practiceGain?: number
   stash: Record<string, StashItem>
-  activeContrabandEffects: unknown[]
+  activeContrabandEffects: ContrabandEffect[]
   performance: {
     guitarDifficulty: number
     drumMultiplier: number

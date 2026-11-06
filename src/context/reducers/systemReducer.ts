@@ -42,6 +42,7 @@ import type {
   TerminalOutcome,
   BandState,
   BandMember,
+  ContrabandEffect,
   ToastPayload,
   GameMap,
   GameSettings,
@@ -668,17 +669,16 @@ export const handleRemoveToast = (
  */
 const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
-  const stillActive: unknown[] = []
-  const expired: Record<string, unknown>[] = []
+  const stillActive: ContrabandEffect[] = []
+  const expired: ContrabandEffect[] = []
 
   for (let i = 0; i < activeEffects.length; i++) {
     const effect = activeEffects[i]
     if (typeof effect !== 'object' || effect === null) continue
-    const effectObj = effect as Record<string, unknown>
     const updatedEffect = {
-      ...effectObj,
-      remainingDuration: finiteNumberOr(effectObj.remainingDuration, 0) - 1
-    }
+      ...effect,
+      remainingDuration: finiteNumberOr(effect.remainingDuration, 0) - 1
+    } as ContrabandEffect
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)
     } else {
@@ -692,14 +692,20 @@ const processContrabandExpiry = (band: BandState): BandState => {
   for (let i = 0; i < expired.length; i++) {
     const e = expired[i]
     if (!e) continue
-    const effectType = e.effectType as string
+    const effectType = e.effectType
 
     // Apply exact additive inverse (no floor) to revert the effect.
     // The rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time.
+    const effectValue =
+      e.kind === 'stat_buff'
+        ? e.value
+        : 'value' in e && typeof e.value === 'number'
+          ? (e.value as number)
+          : 0
     const applied = applySharedBandEffect(
       nextBand,
       effectType,
-      -finiteNumberOr(e.value, 0)
+      -finiteNumberOr(effectValue, 0)
     )
 
     if (applied) {

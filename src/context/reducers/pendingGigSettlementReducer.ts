@@ -52,6 +52,7 @@ export const sanitizePendingGigSettlement = (
     misses,
     dealFameMultiplier,
     soldMerch,
+    lifecycleStage,
     socialReconciled
   } = raw
   if (typeof id !== 'string' || id.length === 0) return null
@@ -76,6 +77,17 @@ export const sanitizePendingGigSettlement = (
   }
   // Bound to what the post-gig screen can produce, so a tampered save cannot
   // overflow the fame or money arithmetic to Infinity (which clamps to 0).
+  const isReconciled =
+    lifecycleStage === 'social_reconciled' ||
+    (Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true)
+
+  const resolvedStage =
+    lifecycleStage === 'complete'
+      ? 'complete'
+      : isReconciled
+        ? 'social_reconciled'
+        : 'pending_social'
+
   return {
     id,
     gigId,
@@ -88,8 +100,10 @@ export const sanitizePendingGigSettlement = (
       MAX_DEAL_FAME_MULTIPLIER
     ),
     soldMerch: sold,
-    socialReconciled:
-      Object.hasOwn(raw, 'socialReconciled') && socialReconciled === true
+    ...(lifecycleStage !== undefined || Object.hasOwn(raw, 'lifecycleStage')
+      ? { lifecycleStage: resolvedStage }
+      : {}),
+    socialReconciled: isReconciled
   }
 }
 
@@ -114,15 +128,20 @@ export const handleRecordPendingGigSettlement = (
   ) {
     return state
   }
-  const socialReconciled =
-    state.pendingGigSettlement?.gigId === record.gigId
-      ? state.pendingGigSettlement.socialReconciled === true
-      : record.socialReconciled
+  const prior = state.pendingGigSettlement
+  const isPriorMatch = Boolean(prior && prior.gigId === record.gigId)
+  const socialReconciled = isPriorMatch
+    ? prior?.socialReconciled === true
+    : record.socialReconciled === true
+  const lifecycleStage = isPriorMatch
+    ? prior?.lifecycleStage ?? (socialReconciled ? 'social_reconciled' : 'pending_social')
+    : record.lifecycleStage
 
   return {
     ...state,
     pendingGigSettlement: {
       ...record,
+      ...(lifecycleStage !== undefined ? { lifecycleStage } : {}),
       socialReconciled
     }
   }
@@ -148,7 +167,12 @@ export const handleApplyGigSocialReconciliation = (
   // Exactly once per settlement: a replay, or an id that no longer names the
   // pending record (already cleared by Continue), must not decrement deals again.
   if (namesSettlement && !targetsPending) return state
-  if (targetsPending && state.pendingGigSettlement?.socialReconciled === true) {
+  if (
+    targetsPending &&
+    (state.pendingGigSettlement?.socialReconciled === true ||
+      state.pendingGigSettlement?.lifecycleStage === 'social_reconciled' ||
+      state.pendingGigSettlement?.lifecycleStage === 'complete')
+  ) {
     return state
   }
   const nextState = handleUpdateSocial(
@@ -166,6 +190,7 @@ export const handleApplyGigSocialReconciliation = (
       ...nextState,
       pendingGigSettlement: {
         ...pending,
+        lifecycleStage: 'social_reconciled',
         socialReconciled: true
       }
     }
@@ -270,10 +295,15 @@ export const settlePendingGigOnLoad = (
   // gig was played, not that its post was applied. Records created by
   // `createRecordPendingGigSettlementAction` always carry the marker.
   const legacyAlreadyReconciled =
-    !(isLooseRecord(raw) && Object.hasOwn(raw, 'socialReconciled')) &&
+    !(isLooseRecord(raw) && (Object.hasOwn(raw, 'socialReconciled') || Object.hasOwn(raw, 'lifecycleStage'))) &&
     finiteNumberOr(state.social.lastGigDay, -1) ===
       finiteNumberOr(state.player.day, 0)
-  if (record.socialReconciled !== true && !legacyAlreadyReconciled) {
+  if (
+    record.lifecycleStage !== 'social_reconciled' &&
+    record.lifecycleStage !== 'complete' &&
+    record.socialReconciled !== true &&
+    !legacyAlreadyReconciled
+  ) {
     try {
       const socialPatch = buildPerGigSocialReconciliation({
         player: state.player,

@@ -177,7 +177,16 @@ export interface ToastPayload {
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
  */
+/**
+ * Deterministic lifecycle stages for a pending gig settlement.
+ */
+export type PendingGigSettlementLifecycleStage =
+  | 'pending_social'
+  | 'social_reconciled'
+  | 'complete'
+
 export interface PendingGigSettlement {
+  lifecycleStage?: PendingGigSettlementLifecycleStage
   /** Stable id stamped by the action creator. */
   id: string
   /** `currentGig.id` the settlement belongs to. */

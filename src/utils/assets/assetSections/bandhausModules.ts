@@ -1,5 +1,4 @@
 import type { AssetModule } from '../../../types/assets'
-import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
@@ -9,7 +8,7 @@ import { FLAGS } from '../../../data/flags.registry'
  * Importing this file has the side effect of adding module definitions and
  * image prompts for the bandhaus asset section.
  */
-const MODULES: readonly AssetModule[] = [
+export const BANDHAUS_MODULES: readonly AssetModule[] = [
   {
     id: 'bh_pro_pa_system',
     ownerKind: 'bandhaus_chassis',
@@ -206,7 +205,7 @@ const MODULES: readonly AssetModule[] = [
   }
 ]
 
-const PROMPTS: Record<string, string> = {
+export const BANDHAUS_PROMPTS: Record<string, string> = {
   bh_pro_pa_system:
     'pixel art professional PA system stack stage rehearsal room',
   bh_salvaged_pa:
@@ -234,5 +233,3 @@ const PROMPTS: Record<string, string> = {
   bh_squat_dog: 'pixel art scrappy squatter dog mutt guarding band house diy'
 }
 
-for (const m of MODULES) MODULE_REGISTRY[m.id] = m
-for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v

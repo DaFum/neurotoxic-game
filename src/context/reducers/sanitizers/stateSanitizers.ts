@@ -1036,13 +1036,33 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         const effectObj = isLooseRecord(effect)
           ? (effect as Record<string, unknown>)
           : {}
-        out[i] = {
-          ...(copySafePrimitiveObject(effectObj) ?? {}),
-          remainingDuration:
-            Number.isFinite(effectObj.remainingDuration as number) &&
-            (effectObj.remainingDuration as number) >= 0
-              ? (effectObj.remainingDuration as number)
-              : 0
+        const safeProps = copySafePrimitiveObject(effectObj) ?? {}
+        const remainingDuration =
+          Number.isFinite(effectObj.remainingDuration as number) &&
+          (effectObj.remainingDuration as number) >= 0
+            ? (effectObj.remainingDuration as number)
+            : 0
+        const effectType =
+          typeof effectObj.effectType === 'string' ? effectObj.effectType : ''
+        const rawKind = effectObj.kind
+        const kind: 'stat_buff' | 'special' =
+          rawKind === 'special' ? 'special' : 'stat_buff'
+
+        if (kind === 'special') {
+          out[i] = {
+            ...safeProps,
+            kind: 'special' as const,
+            effectType,
+            remainingDuration
+          }
+        } else {
+          out[i] = {
+            ...safeProps,
+            kind: 'stat_buff' as const,
+            effectType,
+            value: Number.isFinite(effectObj.value) ? (effectObj.value as number) : 0,
+            remainingDuration
+          }
         }
       }
       return out

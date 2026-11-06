@@ -1,5 +1,5 @@
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
-import type { BandMember, BandState } from '../types'
+import type { BandMember, BandState, ContrabandEffect } from '../types'
 
 /**
  * Effect types that simply add `value` to a numeric band property
@@ -55,27 +55,56 @@ export const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
  * are skipped (used to preserve the equipment apply-on-add allowlist).
  * @returns True when a recognized effect was applied.
  */
-export const applySharedBandEffect = (
+export function applySharedBandEffect(
+  newBand: BandState,
+  effect: ContrabandEffect,
+  value?: number,
+  allowedEffectTypes?: ReadonlySet<string>
+): boolean
+export function applySharedBandEffect(
   newBand: BandState,
   effectType: unknown,
   value: number,
   allowedEffectTypes?: ReadonlySet<string>
-): boolean => {
-  if (typeof effectType !== 'string') return false
-  if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
+): boolean
+export function applySharedBandEffect(
+  newBand: BandState,
+  effectOrType: ContrabandEffect | unknown,
+  value?: number,
+  allowedEffectTypes?: ReadonlySet<string>
+): boolean {
+  let resolvedType: unknown = effectOrType
+  let resolvedValue: number = value ?? 0
 
-  const safeValue = finiteNumberOr(value, 0)
+  if (
+    typeof effectOrType === 'object' &&
+    effectOrType !== null &&
+    'kind' in effectOrType
+  ) {
+    const effect = effectOrType as ContrabandEffect
+    resolvedType = effect.effectType
+    if (effect.kind === 'stat_buff') {
+      resolvedValue = value !== undefined ? value : effect.value
+    } else {
+      return false
+    }
+  }
 
-  if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
+  if (typeof resolvedType !== 'string') return false
+  if (allowedEffectTypes && !allowedEffectTypes.has(resolvedType)) return false
+
+  const safeValue = finiteNumberOr(resolvedValue, 0)
+
+  if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, resolvedType)) {
     const field =
       ADDITIVE_BAND_EFFECT_FIELDS[
-        effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
+        resolvedType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
       ]
     const band = newBand as unknown as Record<string, number | undefined>
     band[field] = finiteNumberOr(band[field], 0) + safeValue
     return true
   }
-  if (effectType === 'stamina_max') {
+  if (resolvedType === 'stamina_max') {
     if (!newBand.members || newBand.members.length === 0) return false
     const updatedMembers = [...newBand.members]
     for (let i = 0; i < updatedMembers.length; i++) {
@@ -90,10 +119,7 @@ export const applySharedBandEffect = (
     newBand.members = updatedMembers
     return true
   }
-  if (effectType === 'guitar_difficulty') {
-    // No floor here: apply/revert must be exact additive inverses so a
-    // confiscated/expired effect reverts to the original value. The rhythm
-    // game clamps the divisor to GUITAR_MIN_DIFFICULTY at read time.
+  if (resolvedType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,
       guitarDifficulty:

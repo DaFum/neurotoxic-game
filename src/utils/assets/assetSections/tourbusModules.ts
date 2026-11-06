@@ -1,5 +1,4 @@
 import type { AssetModule } from '../../../types/assets'
-import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
@@ -9,7 +8,7 @@ import { FLAGS } from '../../../data/flags.registry'
  * Importing this file has the side effect of adding module definitions and
  * image prompts for the tourbus asset section.
  */
-const MODULES: readonly AssetModule[] = [
+export const TOURBUS_MODULES: readonly AssetModule[] = [
   {
     id: 'tb_solar_panel',
     ownerKind: 'tourbus_chassis',
@@ -260,7 +259,7 @@ const MODULES: readonly AssetModule[] = [
   }
 ]
 
-const PROMPTS: Record<string, string> = {
+export const TOURBUS_PROMPTS: Record<string, string> = {
   tb_solar_panel:
     'pixel art solar panel array mounted on tour van roof toxic green accents close-up',
   tb_roof_rack: 'pixel art roof rack with cargo box on tour van side view',
@@ -298,5 +297,3 @@ const PROMPTS: Record<string, string> = {
     'pixel art sputtering diy diesel generator strapped to a trailer smoke sparks'
 }
 
-for (const m of MODULES) MODULE_REGISTRY[m.id] = m
-for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v

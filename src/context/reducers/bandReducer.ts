@@ -720,10 +720,11 @@ const applyContrabandEffect = (
     newBand.activeContrabandEffects = [
       ...(newBand.activeContrabandEffects ?? []),
       {
-        instanceId: item.instanceId,
-        effectType: item.effectType,
-        value: item.value,
-        remainingDuration: item.duration,
+        kind: 'stat_buff',
+        instanceId: typeof item.instanceId === 'string' ? item.instanceId : undefined,
+        effectType: typeof item.effectType === 'string' ? item.effectType : '',
+        value: finiteNumberOr(item.value, 0),
+        remainingDuration: finiteNumberOr(item.duration, 0),
         ...(memberId ? { memberId } : {})
       }
     ]
