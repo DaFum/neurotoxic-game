@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import { test, mock, describe } from 'node:test'
 import {
   handleNodeArrival,
-  processTravelEvents
+  processTravelEvents,
+  requestArrivalGigStart
 } from '../../src/utils/arrivalUtils'
-import { GAME_PHASES } from '../../src/context/gameConstants'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 
 describe('handleNodeArrival', () => {
@@ -12,7 +12,6 @@ describe('handleNodeArrival', () => {
     updateBand: mock.fn(),
     updatePlayer: mock.fn(),
     triggerEvent: mock.fn(),
-    startGig: mock.fn(),
     addToast: mock.fn(),
     onShowHQ: mock.fn()
   })
@@ -32,10 +31,7 @@ describe('handleNodeArrival', () => {
       band,
       ...mocks
     })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.deepStrictEqual(result, { kind: 'overworld' })
 
     assert.strictEqual(mocks.updateBand.mock.calls.length, 1)
     // A functional update: rest applies to the reducer's current members.
@@ -60,10 +56,7 @@ describe('handleNodeArrival', () => {
       node,
       ...mocks
     })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.deepStrictEqual(result, { kind: 'overworld' })
 
     assert.strictEqual(mocks.onShowHQ.mock.calls.length, 1)
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
@@ -80,10 +73,7 @@ describe('handleNodeArrival', () => {
       eventAlreadyActive: false,
       ...mocks
     })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.deepStrictEqual(result, { kind: 'overworld' })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 1)
     assert.strictEqual(mocks.triggerEvent.mock.calls[0].arguments[0], 'special')
@@ -105,10 +95,7 @@ describe('handleNodeArrival', () => {
       eventAlreadyActive: true,
       ...mocks
     })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.deepStrictEqual(result, { kind: 'overworld' })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 0)
   })
@@ -123,10 +110,7 @@ describe('handleNodeArrival', () => {
       eventAlreadyActive: false,
       ...mocks
     })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.deepStrictEqual(result, { kind: 'overworld' })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 1)
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
@@ -145,9 +129,8 @@ describe('handleNodeArrival', () => {
       ...mocks
     })
 
-    assert.equal(result.gigStarted, true)
-    assert.equal(mocks.startGig.mock.calls.length, 1)
-    assert.equal(mocks.startGig.mock.calls[0].arguments[0], venue)
+    assert.equal(result.kind, 'gig')
+    assert.equal(result.venue, venue)
   })
 
   gigTypes.forEach(type => {
@@ -162,13 +145,8 @@ describe('handleNodeArrival', () => {
         band,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: true
-      })
-
-      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
-      assert.strictEqual(mocks.startGig.mock.calls[0].arguments[0], venue)
+      assert.strictEqual(result.kind, 'gig')
+      assert.strictEqual(result.venue, venue)
     })
 
     test(`${type} - fails to start gig if harmony <= 1`, () => {
@@ -183,12 +161,7 @@ describe('handleNodeArrival', () => {
         player,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: false
-      })
-
-      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+      assert.deepStrictEqual(result, { kind: 'overworld' })
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
       assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
 
@@ -215,12 +188,7 @@ describe('handleNodeArrival', () => {
         rng,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: false
-      })
-
-      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+      assert.deepStrictEqual(result, { kind: 'overworld' })
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
       assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
 
@@ -248,12 +216,7 @@ describe('handleNodeArrival', () => {
         rng,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: true
-      })
-
-      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+      assert.strictEqual(result.kind, 'gig')
       assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
     })
 
@@ -273,11 +236,7 @@ describe('handleNodeArrival', () => {
         rng,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: true
-      })
-      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+      assert.strictEqual(result.kind, 'gig')
     })
 
     test(`${type} - harmony <= 1 still cancels despite tourSuccess`, () => {
@@ -294,11 +253,7 @@ describe('handleNodeArrival', () => {
         rng,
         ...mocks
       })
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: false
-      })
-      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+      assert.deepStrictEqual(result, { kind: 'overworld' })
     })
   })
 
@@ -313,15 +268,8 @@ describe('handleNodeArrival', () => {
       ...mocks
     })
 
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: true
-    })
-    assert.strictEqual(mocks.startGig.mock.calls.length, 1)
-    assert.strictEqual(
-      mocks.startGig.mock.calls[0].arguments[0].id,
-      'stendal_proberaum'
-    )
+    assert.strictEqual(result.kind, 'gig')
+    assert.strictEqual(result.venue.id, 'stendal_proberaum')
   })
 
   test('GIG - rejects unresolved legacy venue string', () => {
@@ -335,35 +283,39 @@ describe('handleNodeArrival', () => {
       ...mocks
     })
 
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
-    assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+    assert.deepStrictEqual(result, { kind: 'overworld' })
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
     assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
   })
 
-  test('GIG - handles startGig error', () => {
+  test('requestArrivalGigStart requests the start and reports success', () => {
     const mocks = getMocks()
-    const node = { type: 'GIG', venue: { name: 'The Club' } }
-    const band = { harmony: 100 }
+    const venue = { id: 'club', name: 'The Club' }
+    const startGig = mock.fn()
+
+    assert.strictEqual(
+      requestArrivalGigStart(venue, startGig, mocks.addToast),
+      true
+    )
+    assert.strictEqual(startGig.mock.calls.length, 1)
+    assert.strictEqual(startGig.mock.calls[0].arguments[0], venue)
+    assert.strictEqual(mocks.addToast.mock.calls.length, 0)
+  })
+
+  test('requestArrivalGigStart reports a start that throws', () => {
+    const mocks = getMocks()
+    const venue = { id: 'club', name: 'The Club' }
     const error = new Error('Failed to load song')
-    mocks.startGig.mock.mockImplementation(() => {
+    const startGig = mock.fn(() => {
       throw error
     })
 
-    const result = handleNodeArrival({
-      node,
-      band,
-      ...mocks
-    })
-    assert.deepStrictEqual(result, {
-      scene: GAME_PHASES.OVERWORLD,
-      gigStarted: false
-    })
+    assert.strictEqual(
+      requestArrivalGigStart(venue, startGig, mocks.addToast),
+      false
+    )
 
-    assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+    assert.strictEqual(startGig.mock.calls.length, 1)
     // handleError toasts the localized fallback; the raw Error message is
     // developer text and stays in the log.
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
@@ -451,7 +403,6 @@ describe('handleNodeArrival NaN recovery', () => {
       updateBand,
       updatePlayer: mock.fn(),
       triggerEvent: mock.fn(),
-      startGig: mock.fn(),
       addToast: mock.fn(),
       onShowHQ: mock.fn()
     })

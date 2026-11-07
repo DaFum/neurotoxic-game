@@ -9,13 +9,14 @@ import {
   isGigArrivalNode,
   processHarmonyRegen,
   processTravelEvents,
+  requestArrivalGigStart,
   resolveArrivalNode
 } from '../utils/arrivalUtils'
 import { handleError } from '../utils/errorHandler'
 import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
 import i18n from '../i18n'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
-import type { GamePhase, MapNode, Venue } from '../types'
+import type { ArrivalOutcome, MapNode } from '../types'
 
 /**
  * Optional overrides for `useArrivalLogic`.
@@ -36,6 +37,17 @@ type UseArrivalLogicOptions = {
   /** Test seam: deterministic random source forwarded to `handleNodeArrival`. */
   rng?: () => number
 }
+
+/**
+ * Arrival work waiting for the post-commit effect; `null` means idle.
+ *
+ * @remarks
+ * `route`: a non-gig arrival already ran its node effects and only routes to
+ * the overworld. `evaluate-gig`: a gig-branch node whose cancellation roll and
+ * booking must read the committed post-tick band and player.
+ */
+type PendingArrival =
+  { phase: 'route' } | { phase: 'evaluate-gig'; node: MapNode }
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
@@ -94,18 +106,11 @@ export const useArrivalLogic = ({
   // undefined (not null) is the idle sentinel — null is a valid currentNodeId value.
   const isHandlingRef = useRef<string | null | undefined>(undefined)
 
-  // Pending route set by handleArrivalSequence; consumed by the post-commit effect.
-  // The ref holds the payload; the nonce is bumped to trigger the effect after the
+  // Pending arrival set by handleArrivalSequence; claimed once by the
+  // post-commit effect. The nonce is bumped to trigger the effect after the
   // arrival dispatches commit. The effect guards on the ref (not a boolean state)
   // so it never has to call a setState synchronously inside the effect.
-  // `gigNode` is a gig-branch arrival still to be evaluated: the cancellation
-  // roll and its fame penalty must read the committed post-tick band and player.
-  const pendingRouteRef = useRef<{
-    scene: GamePhase
-    gigVenue: Venue | null
-    gigStartQueued: boolean
-    gigNode: MapNode | null
-  } | null>(null)
+  const pendingArrivalRef = useRef<PendingArrival | null>(null)
   const [routeNonce, setRouteNonce] = useState(0)
 
   // The leg this scene is driving. The completion reducer clears the minigame
@@ -131,107 +136,77 @@ export const useArrivalLogic = ({
   }, [player.currentNodeId])
 
   // Post-commit effect: routing + single save after all dispatches have committed.
-  // Triggered by routeNonce (bumped in handleArrivalSequence). It consumes the
-  // pending route from the ref exactly once — guarding on the ref means no setState
-  // is called inside the effect. When changeScene fires it re-runs via currentScene,
-  // but the ref is already null so it is a no-op.
+  // Triggered by routeNonce (bumped in handleArrivalSequence). It claims the
+  // pending arrival before acting on it, so a re-run (via currentScene or any
+  // other dependency) finds the ref empty and is a no-op.
   // GAMEOVER short-circuit: if advanceDay() triggered bankruptcy, the reducer sets
-  // currentScene=GAMEOVER. We detect this here and skip routing to preserve GAMEOVER,
-  // while still saving once.
+  // currentScene=GAMEOVER. We detect this here and skip evaluation and routing
+  // to preserve GAMEOVER, while still saving once.
   useEffect(() => {
-    const route = pendingRouteRef.current
-    if (!route) return
+    const pending = pendingArrivalRef.current
+    if (!pending) return
+    pendingArrivalRef.current = null
+
     if (currentScene === GAME_PHASES.GAMEOVER) {
-      pendingRouteRef.current = null
       // GAMEOVER: save the post-bankruptcy state and do NOT overwrite the scene
       saveGame(false)
       return
     }
 
-    // The gig evaluation dispatches (fame penalty, booking lock) from inside
-    // this effect, so a save taken here would miss them.
-    let evaluatedGig = false
-    if (route.gigNode) {
-      evaluatedGig = true
-      const gigNode = route.gigNode
-      route.gigNode = null
-      let queuedGigVenue: Venue | null = null
-      try {
-        const arrivalResult = handleNodeArrival({
-          node: gigNode,
-          band,
-          player,
-          updateBand,
-          updatePlayer,
-          triggerEvent,
-          startGig: venue => {
-            queuedGigVenue = venue
-          },
-          addToast,
-          rng,
-          bookingLock: getExpeditionNodeBookingLock(
-            { player, expedition },
-            gigNode.type
-          )
-        })
-        route.scene = arrivalResult.scene
-        route.gigVenue = arrivalResult.gigStarted ? queuedGigVenue : null
-      } catch (error) {
-        // The sequence has already spent its day, so a throw here must not leave
-        // the route half-consumed (no gig, no message, a later effect pass
-        // silently routing to the map): report it and fall back to the map.
-        handleError(error, {
-          addToast,
-          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
-            defaultValue: 'Failed to start Gig.'
-          })
-        })
-        route.gigVenue = null
-        route.scene = GAME_PHASES.OVERWORLD
-      }
+    if (pending.phase === 'route') {
+      // The save snapshot is the latest reduced state, so it already carries the
+      // routed currentScene even though changeScene dispatches via
+      // startTransition and has not committed yet. The value does not matter:
+      // handleLoadGame hard-sets currentScene to OVERWORLD on load
+      // (systemReducer handleLoadGame), so the persisted scene value is discarded
+      // and never restored. The post-arrival fields that DO matter (day, cash,
+      // harmony, events, rivalBand) are captured correctly because this effect
+      // runs after advanceDay() and the side-effect dispatches have committed.
+      changeScene(GAME_PHASES.OVERWORLD)
+      saveGame(false)
+      return
     }
 
-    if (route.gigVenue && !route.gigStartQueued) {
-      try {
-        startGig(route.gigVenue)
-        route.gigStartQueued = true
-        saveGameAfterStateCommit()
-      } catch (error) {
-        handleError(error, {
-          addToast,
-          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
-            defaultValue: 'Failed to start Gig.'
-          })
+    // The gig evaluation dispatches (fame penalty, START_GIG) from inside this
+    // effect, so every save below is the post-commit request: a saveGame taken
+    // here would miss them.
+    const { node } = pending
+    let outcome: ArrivalOutcome = { kind: 'overworld' }
+    try {
+      outcome = handleNodeArrival({
+        node,
+        band,
+        player,
+        updateBand,
+        updatePlayer,
+        triggerEvent,
+        addToast,
+        rng,
+        bookingLock: getExpeditionNodeBookingLock(
+          { player, expedition },
+          node.type
+        )
+      })
+    } catch (error) {
+      // The sequence has already spent its day, so a throw here must not leave
+      // the arrival unrouted: report it and fall back to the map.
+      handleError(error, {
+        addToast,
+        fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+          defaultValue: 'Failed to start Gig.'
         })
-        route.gigVenue = null
-        // `route.scene` is the gig-side scene handleNodeArrival picked. Routing
-        // there after START_GIG failed would mount PreGig/Gig with no
-        // `currentGig`, so fall back to the overworld instead of a scene that
-        // cannot render.
-        route.scene = GAME_PHASES.OVERWORLD
-      }
+      })
     }
 
-    // Consume the pending route exactly once.
-    pendingRouteRef.current = null
-
-    // Normal path: route then save.
-    // The save snapshot is the latest reduced state, so it already carries the
-    // routed currentScene even though changeScene dispatches via
-    // startTransition and has not committed yet. The value does not matter:
-    // handleLoadGame hard-sets currentScene to OVERWORLD on load
-    // (systemReducer handleLoadGame), so the persisted scene value is discarded
-    // and never restored. The post-arrival fields that DO matter (day, cash,
-    // harmony, events, rivalBand) are captured correctly because this effect
-    // runs after advanceDay() and the side-effect dispatches have committed.
-    if (!route.gigStartQueued) {
-      changeScene(route.scene)
-      if (evaluatedGig) {
-        saveGameAfterStateCommit()
-      } else {
-        saveGame(false)
-      }
+    // START_GIG owns the move to PRE_GIG. A failed request falls back to the
+    // overworld: PreGig/Gig with no `currentGig` cannot render.
+    if (
+      outcome.kind !== 'gig' ||
+      !requestArrivalGigStart(outcome.venue, startGig, addToast)
+    ) {
+      changeScene(GAME_PHASES.OVERWORLD)
     }
+    saveGameAfterStateCommit()
   }, [
     routeNonce,
     currentScene,
@@ -348,24 +323,23 @@ export const useArrivalLogic = ({
       checkRivalEncounter()
 
       // 4. Handle Node Arrival & Routing
-      // Delegates routing (HQ, Gig, Rest Stop) to shared utility. A gig-branch
-      // node is evaluated in the post-commit effect instead, so its
-      // cancellation roll and fame penalty read the post-tick band and player.
-      const gigNode =
-        currentNode && isGigArrivalNode(currentNode) ? currentNode : null
-      const syncNode = gigNode ? null : currentNode
-      let queuedGigVenue: Venue | null = null
-      const arrivalResult = syncNode
-        ? handleNodeArrival({
-            node: syncNode,
+      // Delegates node effects (HQ, Rest Stop, Supply Stop, Special) to the
+      // shared utility. A gig-branch node is evaluated in the post-commit
+      // effect instead, so its cancellation roll and fame penalty read the
+      // post-tick band and player.
+      if (currentNode && isGigArrivalNode(currentNode)) {
+        pendingArrivalRef.current = { phase: 'evaluate-gig', node: currentNode }
+      } else {
+        // A non-gig node always decides `overworld`
+        // (arrivalNodeTypeExhaustiveness pins this), so only its effects matter.
+        if (currentNode) {
+          handleNodeArrival({
+            node: currentNode,
             band,
             player,
             updateBand,
             updatePlayer,
             triggerEvent,
-            startGig: venue => {
-              queuedGigVenue = venue
-            },
             addToast,
             onShowHQ:
               onShowHQ ??
@@ -381,20 +355,16 @@ export const useArrivalLogic = ({
             rng,
             bookingLock: getExpeditionNodeBookingLock(
               { player, expedition },
-              syncNode.type
+              currentNode.type
             )
           })
-        : { scene: GAME_PHASES.OVERWORLD as GamePhase, gigStarted: false }
+        }
+        pendingArrivalRef.current = { phase: 'route' }
+      }
 
       // 5. Defer routing + save to a post-commit effect so:
       //    a) saveGame reads final committed state (Task 8)
       //    b) GAMEOVER from advanceDay bankruptcy is detected before routing (Task 9)
-      pendingRouteRef.current = {
-        scene: arrivalResult.scene,
-        gigVenue: arrivalResult.gigStarted ? queuedGigVenue : null,
-        gigStartQueued: false,
-        gigNode
-      }
       setRouteNonce(n => n + 1)
     } catch (e) {
       // Reset guard so the user can retry the same node after an error

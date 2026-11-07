@@ -94,6 +94,17 @@ export type LoadPreviewResult =
   | { status: 'resumable' }
   | { status: 'terminal' }
 
+/**
+ * What arrival at a map node decided (`handleNodeArrival`).
+ *
+ * @remarks
+ * `gig` only means the node may book `venue`: the caller requests the start
+ * (`requestArrivalGigStart`) and `START_GIG` owns the scene change. Every
+ * other arrival, including a refused or cancelled booking, is `overworld`.
+ */
+export type ArrivalOutcome =
+  { kind: 'overworld' } | { kind: 'gig'; venue: Venue }
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean

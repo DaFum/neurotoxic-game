@@ -5,7 +5,6 @@ import {
   isGigArrivalNode
 } from '../../src/utils/arrivalUtils'
 import { MAP_NODE_TYPES } from '../../src/utils/mapNodeTypes'
-import { GAME_PHASES } from '../../src/context/gameConstants'
 import { logger } from '../../src/utils/logger'
 
 /**
@@ -25,7 +24,6 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
     updateBand: mock.fn(),
     updatePlayer: mock.fn(),
     triggerEvent: mock.fn(() => false),
-    startGig: mock.fn(),
     addToast: mock.fn(),
     onShowHQ: mock.fn(),
     onShowSupplyStop: mock.fn(),
@@ -38,8 +36,10 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
       try {
         const result = handleNodeArrival(buildParams(type))
 
-        assert.equal(typeof result.scene, 'string')
-        assert.equal(typeof result.gigStarted, 'boolean')
+        assert.ok(
+          result.kind === 'overworld' || result.kind === 'gig',
+          `unexpected outcome for "${type}"`
+        )
 
         const unhandled = warn.mock.calls.some(call =>
           String(call.arguments[1] ?? '').includes('Unhandled node type')
@@ -53,7 +53,7 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
         // effect; the predicate must name the types that branch books.
         assert.equal(
           isGigArrivalNode({ type }),
-          result.gigStarted,
+          result.kind === 'gig',
           `isGigArrivalNode disagrees with handleNodeArrival for "${type}"`
         )
       } finally {
@@ -67,10 +67,7 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
     try {
       const result = handleNodeArrival(buildParams('NOT_A_REAL_NODE_TYPE'))
 
-      assert.deepStrictEqual(result, {
-        scene: GAME_PHASES.OVERWORLD,
-        gigStarted: false
-      })
+      assert.deepStrictEqual(result, { kind: 'overworld' })
       assert.equal(
         warn.mock.calls.some(call =>
           String(call.arguments[1] ?? '').includes('Unhandled node type')
@@ -82,14 +79,13 @@ describe('handleNodeArrival node-type exhaustiveness', () => {
     }
   })
 
-  test('venue-bearing node types start a gig', () => {
+  test('venue-bearing node types decide a gig', () => {
     for (const type of ['GIG', 'FESTIVAL', 'FINALE', 'CITY']) {
       const params = buildParams(type)
       const result = handleNodeArrival(params)
 
-      assert.equal(result.gigStarted, true, `${type} should start a gig`)
+      assert.equal(result.kind, 'gig', `${type} should decide a gig`)
       assert.equal(isGigArrivalNode({ type }), true)
-      assert.equal(params.startGig.mock.calls.length, 1)
     }
   })
 
