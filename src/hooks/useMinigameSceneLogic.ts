@@ -122,7 +122,7 @@ export const useMinigameSceneLogic = ({
   // run (never a perfect/best-case clear), so it can't be used to farm rewards:
   //  - Amp score 0 / Kabelsalat not-powered → stress > 0 → failed run, no bonus.
   //  - Kabelsalat dispatches nothing here: its onComplete is the scene's
-  //    idempotent forceAdvance(isPoweredOn), and SKIP is only offered while
+  //    idempotent forceAdvance(isPoweredOn || isWinning), and SKIP is only offered while
   //    not powered, so onComplete forfeits with isPoweredOn:false and reports
   //    voidSurgesPurged. A dispatch here would clear minigame.active first and
   //    make the reducer drop the purge stress.
