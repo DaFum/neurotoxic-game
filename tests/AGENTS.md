@@ -26,6 +26,10 @@
 - Do not mock `setItem` while seeding: the seeded value never lands, so a negative assertion such as `expect(...).not.toContain('default_unlock')` can no longer fail.
 - Suites that write through the storage helpers must call `resetStorageFallback()` alongside `localStorage.clear()`; the module-level degraded-storage flag and its memory entry survive `clear()` and poison later suites.
 
+## Shared setup globals
+
+- `tests/vitest.setup.js` installs `localStorage`, `AudioContext` and `webkitAudioContext` with `Object.defineProperty`, outside `vi.stubGlobal` and the Vitest stub registry, so a suite's `vi.unstubAllGlobals()` restores only what that suite stubbed. Keep new shared setup globals out of `vi.stubGlobal` too; suites call `vi.unstubAllGlobals()` in `afterEach`, not at the end of a test body.
+
 ## Mock gotchas: i18n
 
 - Local `react-i18next` mocks must export `initReactI18next: { type: '3rdParty', init: () => {} }`; omitting it breaks any subject whose import chain reaches `src/i18n.ts`.
