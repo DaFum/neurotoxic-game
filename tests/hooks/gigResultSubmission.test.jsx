@@ -204,6 +204,59 @@ describe('gig result submission across completion paths (#3574)', () => {
     expect(endGig).toHaveBeenCalledTimes(1)
   })
 
+  it('collapse -> later completion ticks -> timer: one failed result via the collapse timer (#3592)', () => {
+    const { result } = renderSession()
+    const stopAudio = vi.fn()
+    Object.assign(gameStateRef.current, {
+      setlistCompleted: true,
+      totalDuration: 1000,
+      notes: [],
+      nextMissCheckIndex: 0,
+      lastTickTimeMs: 999,
+      rng: () => 1,
+      projectiles: []
+    })
+    const tick = ({ isTransportRunning, transportState }) =>
+      processRhythmGameTick({
+        stateRef: gameStateRef.current,
+        isTransportRunning,
+        transportState,
+        activeEvent: null,
+        dimensionsRef: { current: { width: 1920, height: 1080 } },
+        hecklerSessionRef: { current: createHecklerSession() },
+        deltaMS: 16,
+        handleCollision: vi.fn(),
+        setIsToxicMode: vi.fn(),
+        setIsCorruptionBurstActive: vi.fn(),
+        handleMiss: result.current.handleMiss,
+        finalizeGigCallback: stateRef =>
+          finalizeGig(stateRef, setLastGigStats, endGig, stopAudio),
+        getGigTimeMs: () => 1000,
+        pauseAudio: vi.fn(),
+        resumeAudio: vi.fn(() => true),
+        setCorruptionState: vi.fn(),
+        disableCorruptionBurstAudio: vi.fn()
+      })
+
+    collapse(result)
+    // The collapse stopped audio; later frames see a stopped transport at the
+    // track end, and a still-running one at the near-end window.
+    act(() => {
+      tick({ isTransportRunning: false, transportState: 'stopped' })
+      tick({ isTransportRunning: true, transportState: 'started' })
+    })
+
+    expect(setLastGigStats).not.toHaveBeenCalled()
+    expect(stopAudio).not.toHaveBeenCalled()
+    expect(endGig).not.toHaveBeenCalled()
+
+    fireCollapseTimer()
+
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats.mock.calls[0][0]).toMatchObject({ failed: true })
+    expect(endGig).toHaveBeenCalledTimes(1)
+  })
+
   it('completion -> Quit: Quit neither resubmits nor ends the gig again', async () => {
     const { result } = renderSession()
 

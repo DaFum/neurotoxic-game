@@ -3,6 +3,8 @@
 ## End Of Gig
 
 - Detecting final song/setlist completion uses `setlistCompleted` plus `isNearTrackEnd` in `processRhythmGameTick`; do not use or fall back to `audioPlaybackEnded`. The one exception is a stopped transport (`transportState === 'stopped'`) with `setlistCompleted`: a zero-length final song never starts the transport, so the clock is reset and `totalDuration` is stale, and the tick finalizes on `setlistCompleted` alone. A `paused` transport (overlay pause, deferred start) never takes that path.
+- Gig results are published once through `claimGigResultSubmission` (`src/utils/rhythmGameLoopUtils.ts`): `finalizeGig`, Quit (`useGigSession`), the collapse timer (`useHandleMiss`) and the low-harmony guard (`handleHarmonyGuard` in `useRhythmGameAudio`) all claim first; only the winner publishes and calls `endGig`.
+- Collapse wins over completion: a projectile collision that collapses the band in the final tick makes `processRhythmGameTick` return before the track-end check, and later ticks stop at the `isGameOver` early-out, so the collapse timer publishes the one `failed: true` result (#3592).
 
 ## Playback Windows
 

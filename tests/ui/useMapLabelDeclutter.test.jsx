@@ -51,6 +51,7 @@ const fixture = () => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   document
     .querySelectorAll('.map-node')
     .forEach(node => node.parentElement?.remove())
@@ -198,7 +199,6 @@ describe('useMapLabelDeclutter', () => {
       expect(label.getAttribute('data-label-anchor')).toBe('above')
       expect(unobserve).toHaveBeenCalledWith(surface)
       unmount()
-      vi.unstubAllGlobals()
     }
   )
 
