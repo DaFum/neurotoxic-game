@@ -525,7 +525,7 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 0)
   })
 
-  test('two same-tick re-entry clicks request the gig start once', async () => {
+  test('re-entry clicks after a requested gig start do not start it again', async () => {
     const props = createTravelLogicProps({
       player: {
         money: 1000,
@@ -546,13 +546,14 @@ describe('useTravelLogic', () => {
     assert.equal(props.startGig.mock.calls.length, 1)
     assert.equal(props.changeScene.mock.calls.length, 0)
 
-    // The guard only spans the tick: a later click (e.g. after the reducer
-    // refused START_GIG) is evaluated again.
+    // The guard outlives the tick: START_GIG may still be pending in a
+    // transition (lazy PreGig), so a later click must not start the gig again.
     await Promise.resolve()
     act(() => {
       result.current.handleTravel(currentNode)
     })
-    assert.equal(props.startGig.mock.calls.length, 2)
+    assert.equal(props.startGig.mock.calls.length, 1)
+    assert.equal(props.changeScene.mock.calls.length, 0)
   })
 
   test('handleRefuel fills tank and deducts money', () => {

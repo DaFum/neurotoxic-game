@@ -37,9 +37,13 @@ export const useHandleNodeArrivalCallback = ({
     changeScene,
     expeditionStatus
   } = params
-  // Set once a gig start was requested and released on the next microtask, so
-  // a second call in the same tick (before START_GIG commits and unmounts the
-  // map) cannot dispatch START_GIG again or re-run its side effects.
+  // Set once a gig start was requested and held for the lifetime of this hook.
+  // `startGig` dispatches inside `startTransition` and PreGig is lazy, so the
+  // map can stay mounted and clickable well past a microtask; a second call
+  // must not dispatch START_GIG again or re-run its side effects (e.g. a
+  // finale's starting hype). START_GIG leaves OVERWORLD, which unmounts the map
+  // and discards this ref. A start refused by the reducer is prevented upstream
+  // (venue id/name and the booking lock are checked before the request).
   const gigStartInFlightRef = useRef(false)
 
   return useCallback(
@@ -87,9 +91,6 @@ export const useHandleNodeArrivalCallback = ({
         requestArrivalGigStart(outcome.venue, startGig, addToast)
       ) {
         gigStartInFlightRef.current = true
-        queueMicrotask(() => {
-          gigStartInFlightRef.current = false
-        })
         return
       }
       changeScene(GAME_PHASES.OVERWORLD)
