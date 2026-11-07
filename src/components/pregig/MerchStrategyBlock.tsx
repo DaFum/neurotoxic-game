@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economy'
 import { MERCH_MAX_PRICES } from '../../data/merch'
 import { formatCurrency } from '../../utils/numberUtils'
-import {
-  getMerchCapacity,
-  resolveMerchRestock,
-  resolveMerchRestockCost,
-  getTotalMerchStock
-} from '../../utils/merchUtils'
+import { resolveMerchRestock } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import { IMG_PROMPTS } from '../../utils/imageGen'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
@@ -32,8 +27,11 @@ interface MerchItem {
   currentPrice: number
   defaultPrice: number
   maxPrice: number
-  restockCost: number
-  restockAmount: number
+  /**
+   * Canonical restock quote shared with the handler and the reducer; `null`
+   * when the key has no restockable HQ bundle, so restocking is unavailable.
+   */
+  restock: ReturnType<typeof resolveMerchRestock>
   imgPrompt?: string
 }
 
@@ -56,23 +54,27 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   playerMoney,
   restockingEnabled
 }) => {
+  const { restock } = item
   const restockDisabled =
     !restockingEnabled ||
-    item.restockAmount <= 0 ||
-    playerMoney < item.restockCost
+    !restock ||
+    restock.restockAmount <= 0 ||
+    playerMoney < restock.cost
 
   const restockTooltip = !restockingEnabled
     ? t('ui:pregig.merchStrategy.expeditionRestockLocked')
-    : item.restockAmount <= 0
-      ? t('ui:pregig.merchStrategy.maxCapacity')
-      : playerMoney < item.restockCost
-        ? t('ui:pregig.merchStrategy.unaffordable', {
-            cost: formatCurrency(item.restockCost, language)
-          })
-        : t('ui:pregig.merchStrategy.restockCost', {
-            amount: item.restockAmount,
-            cost: formatCurrency(item.restockCost, language)
-          })
+    : !restock
+      ? t('ui:pregig.merchStrategy.restockUnavailable')
+      : restock.restockAmount <= 0
+        ? t('ui:pregig.merchStrategy.maxCapacity')
+        : playerMoney < restock.cost
+          ? t('ui:pregig.merchStrategy.unaffordable', {
+              cost: formatCurrency(restock.cost, language)
+            })
+          : t('ui:pregig.merchStrategy.restockCost', {
+              amount: restock.restockAmount,
+              cost: formatCurrency(restock.cost, language)
+            })
 
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
@@ -171,11 +173,6 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
   const merchItems = useMemo(() => {
     const items: MerchItem[] = []
-    const merchCapacity = getMerchCapacity(merchCapacityBonus)
-    const remainingCapacity = Math.max(
-      0,
-      merchCapacity - getTotalMerchStock(bandInventory)
-    )
     for (const key in DEFAULT_MERCH_PRICES) {
       if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
         const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
@@ -187,22 +184,10 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             : 0
 
         const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
-        const restockQuote = resolveMerchRestock(key, bandInventory, {
+        const restock = resolveMerchRestock(key, bandInventory, {
           merchCapacityBonus,
           merchCostMultiplier: restockCostMultiplier
         })
-
-        const restockAmount = restockQuote
-          ? restockQuote.restockAmount
-          : Math.max(0, Math.min(10, remainingCapacity))
-        const restockCost = restockQuote
-          ? restockQuote.cost
-          : resolveMerchRestockCost({
-              itemCost: 50,
-              merchCostMultiplier: restockCostMultiplier,
-              restockAmount,
-              bundleAmount: 10
-            })
 
         const imgPrompt = itemDef?.img
           ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]
@@ -217,8 +202,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           currentPrice,
           defaultPrice,
           maxPrice,
-          restockCost,
-          restockAmount,
+          restock,
           imgPrompt
         })
       }
