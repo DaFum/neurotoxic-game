@@ -1,194 +1,258 @@
 import { getSafeRandom } from '../../utils/crypto'
 import { clampAmpDial } from '../../utils/gameState'
 import { clampUnit } from '../../utils/numberUtils'
+import type { AmpStageOptions } from '../../types/components'
+
+const MINIGAME_DURATION = 15
+const INITIAL_DISPLAY_SCORE = 100
 
 /**
- * Mutable refs consumed by the high-frequency amp calibration update loop.
+ * Single mutable owner of amp calibration gameplay state. Inputs and frame
+ * ticks mutate this model; React and the Pixi stage only receive snapshots.
  */
-interface AmpGameRefs {
-  isCompleteRef: { current: boolean }
-  timeLeftRef: { current: number }
-  heatRef: { current: number }
-  isOverheatRef: { current: boolean }
-  isOverdriveActiveRef: { current: boolean }
-  isAnomalyActiveRef: { current: boolean }
-  isHijackActiveRef: { current: boolean }
-  isFeedbackLoopActiveRef: { current: boolean }
-  interferenceRef: { current: number }
-  dialValueRef: { current: number }
-  targetValueRef: { current: number }
-  accumulatedScoreRef: { current: number }
-  accumulatedMsRef: { current: number }
-  voidResonanceRef: { current: number }
+export interface AmpSimulation {
+  dialValue: number
+  targetValue: number
+  timeLeft: number
+  accumulatedScore: number
+  accumulatedMs: number
+  isComplete: boolean
+  isOverdriveActive: boolean
+  heat: number
+  isOverheat: boolean
+  voidResonance: number
+  isAnomalyActive: boolean
+  isHijackActive: boolean
+  hijacksOverridden: number
+  isFeedbackLoopActive: boolean
+  feedbackLoopsDampened: number
+  /** Fractional interference; React receives the floored value. */
+  interference: number
+  purgesUsed: number
 }
 
 /**
- * React state setters used by the amp calibration update loop.
+ * React-facing amp state published from {@link AmpSimulation}.
  */
-interface AmpGameSetters {
-  setTimeLeft: (value: number | ((prev: number) => number)) => void
-  handleComplete: () => void
-  setIsOverdriveActive: (value: boolean | ((prev: boolean) => boolean)) => void
-  setIsOverheat: (value: boolean | ((prev: boolean) => boolean)) => void
-  setHeat: (value: number | ((prev: number) => number)) => void
-  setIsAnomalyActive: (value: boolean | ((prev: boolean) => boolean)) => void
-  setTargetValue: (value: number | ((prev: number) => number)) => void
-  setIsHijackActive: (value: boolean | ((prev: boolean) => boolean)) => void
-  setIsFeedbackLoopActive: (
-    value: boolean | ((prev: boolean) => boolean)
-  ) => void
-  setScore: (value: number | ((prev: number) => number)) => void
-  setVoidResonance: (value: number | ((prev: number) => number)) => void
+export interface AmpUiSnapshot {
+  dialValue: number
+  targetValue: number
+  timeLeft: number
+  score: number
+  isGameOver: boolean
+  isOverdriveActive: boolean
+  heat: number
+  isOverheat: boolean
+  voidResonance: number
+  isAnomalyActive: boolean
+  isHijackActive: boolean
+  hijacksOverridden: number
+  isFeedbackLoopActive: boolean
+  feedbackLoopsDampened: number
+  interference: number
 }
 
 /**
- * Decrements the round timer; on expiry triggers completion.
- * @returns True when the round just completed (caller should stop the frame).
+ * Values reported when an amp calibration round completes.
  */
-function advanceAmpTime(
-  deltaSec: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
+export interface AmpResult {
+  score: number
+  voidResonance: number
+  purgesUsed: number
+  hijacksOverridden: number
+  feedbackLoopsDampened: number
+}
+
+/**
+ * Outcome of one {@link stepAmpSimulation} frame.
+ */
+export type AmpStepOutcome = 'skipped' | 'advanced' | 'expired'
+
+/**
+ * Creates a fresh amp simulation. Draws exactly one RNG value for the target.
+ */
+export function createAmpSimulation(): AmpSimulation {
+  return {
+    dialValue: 500,
+    targetValue: Math.floor(getSafeRandom() * 800) + 100,
+    timeLeft: MINIGAME_DURATION,
+    accumulatedScore: 0,
+    accumulatedMs: 0,
+    isComplete: false,
+    isOverdriveActive: false,
+    heat: 0,
+    isOverheat: false,
+    voidResonance: 0,
+    isAnomalyActive: false,
+    isHijackActive: false,
+    hijacksOverridden: 0,
+    isFeedbackLoopActive: false,
+    feedbackLoopsDampened: 0,
+    interference: 0,
+    purgesUsed: 0
+  }
+}
+
+/**
+ * Time-weighted mean score, or `null` before the first scoring frame.
+ */
+function averageAmpScore(sim: AmpSimulation): number | null {
+  if (sim.accumulatedMs <= 0) return null
+  return sim.accumulatedScore / Math.max(1, sim.accumulatedMs)
+}
+
+/**
+ * Builds the React snapshot. The score shows 100 until the first scoring frame.
+ */
+export function buildAmpUiSnapshot(sim: AmpSimulation): AmpUiSnapshot {
+  return {
+    dialValue: sim.dialValue,
+    targetValue: sim.targetValue,
+    timeLeft: sim.timeLeft,
+    score: averageAmpScore(sim) ?? INITIAL_DISPLAY_SCORE,
+    isGameOver: sim.isComplete,
+    isOverdriveActive: sim.isOverdriveActive,
+    heat: sim.heat,
+    isOverheat: sim.isOverheat,
+    voidResonance: sim.voidResonance,
+    isAnomalyActive: sim.isAnomalyActive,
+    isHijackActive: sim.isHijackActive,
+    hijacksOverridden: sim.hijacksOverridden,
+    isFeedbackLoopActive: sim.isFeedbackLoopActive,
+    feedbackLoopsDampened: sim.feedbackLoopsDampened,
+    interference: Math.floor(sim.interference)
+  }
+}
+
+/**
+ * Shallow equality for UI snapshots, used to skip no-op React publications.
+ */
+export function isSameAmpUiSnapshot(
+  a: AmpUiSnapshot,
+  b: AmpUiSnapshot
 ): boolean {
-  const nextTimeLeft = refs.timeLeftRef.current - deltaSec
+  return (Object.keys(a) as Array<keyof AmpUiSnapshot>).every(
+    key => a[key] === b[key]
+  )
+}
+
+/**
+ * Builds the Pixi stage snapshot. Interference stays fractional.
+ */
+export function buildAmpStageSnapshot(sim: AmpSimulation): AmpStageOptions {
+  return {
+    dialValue: sim.dialValue,
+    targetValue: sim.targetValue,
+    isOverdriveActive: sim.isOverdriveActive,
+    isOverheat: sim.isOverheat,
+    heat: sim.heat,
+    isAnomalyActive: sim.isAnomalyActive,
+    voidResonance: sim.voidResonance,
+    interference: sim.interference,
+    isHijackActive: sim.isHijackActive,
+    hijacksOverridden: sim.hijacksOverridden
+  }
+}
+
+/**
+ * Builds the completion result; the score is 0 when no frame was scored.
+ */
+export function buildAmpResult(sim: AmpSimulation): AmpResult {
+  return {
+    score: averageAmpScore(sim) ?? 0,
+    voidResonance: sim.voidResonance,
+    purgesUsed: sim.purgesUsed,
+    hijacksOverridden: sim.hijacksOverridden,
+    feedbackLoopsDampened: sim.feedbackLoopsDampened
+  }
+}
+
+/**
+ * Decrements the round timer.
+ * @returns True when the round just expired (caller should stop the frame).
+ */
+function advanceAmpTime(deltaSec: number, sim: AmpSimulation): boolean {
+  const nextTimeLeft = sim.timeLeft - deltaSec
   if (nextTimeLeft <= 0) {
-    refs.timeLeftRef.current = 0
-    setters.setTimeLeft(0)
-    setters.handleComplete()
+    sim.timeLeft = 0
     return true
   }
-  refs.timeLeftRef.current = nextTimeLeft
-  setters.setTimeLeft(nextTimeLeft)
+  sim.timeLeft = nextTimeLeft
   return false
 }
 
 /**
  * Applies overdrive heat buildup and overheat cooldown.
- * @returns The resulting overdrive/overheat snapshot for downstream phases.
  */
-function applyAmpHeat(
-  deltaSec: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): { isOverheat: boolean; overdriveActive: boolean } {
-  let currentHeat = refs.heatRef.current
-  let currentIsOverheat = refs.isOverheatRef.current
-  let currentOverdriveActive = refs.isOverdriveActiveRef.current
-
-  if (currentIsOverheat) {
+function applyAmpHeat(deltaSec: number, sim: AmpSimulation): void {
+  if (sim.isOverheat) {
     // Cooldown mode: disable overdrive automatically
-    if (currentOverdriveActive) {
-      currentOverdriveActive = false
-      refs.isOverdriveActiveRef.current = false
-      setters.setIsOverdriveActive(false)
+    sim.isOverdriveActive = false
+    sim.heat -= 25 * deltaSec // Cool down quickly when overheated
+    if (sim.heat <= 0) {
+      sim.heat = 0
+      sim.isOverheat = false
     }
-    currentHeat -= 25 * deltaSec // Cool down quickly when overheated
-    if (currentHeat <= 0) {
-      currentHeat = 0
-      currentIsOverheat = false
-      refs.isOverheatRef.current = false
-      setters.setIsOverheat(false)
+  } else if (sim.isOverdriveActive) {
+    sim.heat += 35 * deltaSec // Heats up in ~3 seconds
+    if (sim.heat >= 100) {
+      sim.heat = 100
+      sim.isOverheat = true
+      sim.isOverdriveActive = false // Force off
     }
-    refs.heatRef.current = currentHeat
-    setters.setHeat(currentHeat)
   } else {
-    if (currentOverdriveActive) {
-      currentHeat += 35 * deltaSec // Heats up in ~3 seconds
-      if (currentHeat >= 100) {
-        currentHeat = 100
-        currentIsOverheat = true
-        refs.isOverheatRef.current = true
-        setters.setIsOverheat(true)
-        currentOverdriveActive = false
-        refs.isOverdriveActiveRef.current = false
-        setters.setIsOverdriveActive(false) // Force off
-      }
-    } else {
-      currentHeat = Math.max(0, currentHeat - 15 * deltaSec) // Normal cooldown
-    }
-    refs.heatRef.current = currentHeat
-    setters.setHeat(currentHeat)
-  }
-
-  return {
-    isOverheat: currentIsOverheat,
-    overdriveActive: currentOverdriveActive
+    sim.heat = Math.max(0, sim.heat - 15 * deltaSec) // Normal cooldown
   }
 }
 
 /**
  * Spawns or clears a void anomaly (forces an extreme target during overdrive).
  */
-function applyAmpVoidAnomaly(
-  deltaMS: number,
-  overdriveActive: boolean,
-  isOverheat: boolean,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): void {
-  if (overdriveActive && !isOverheat && !refs.isAnomalyActiveRef.current) {
+function applyAmpVoidAnomaly(deltaMS: number, sim: AmpSimulation): void {
+  if (sim.isOverdriveActive && !sim.isOverheat && !sim.isAnomalyActive) {
     // 2% chance per 100ms to spawn an anomaly during overdrive
     if (getSafeRandom() < clampUnit(0.02 * (deltaMS / 100))) {
-      refs.isAnomalyActiveRef.current = true
-      setters.setIsAnomalyActive(true)
+      sim.isAnomalyActive = true
       // Force an extreme target frequency
-      const nextTarget = getSafeRandom() > 0.5 ? 950 : 50
-      refs.targetValueRef.current = nextTarget
-      setters.setTargetValue(nextTarget)
+      sim.targetValue = getSafeRandom() > 0.5 ? 950 : 50
     }
   } else if (
-    refs.isAnomalyActiveRef.current &&
-    (!overdriveActive || isOverheat)
+    sim.isAnomalyActive &&
+    (!sim.isOverdriveActive || sim.isOverheat)
   ) {
     // Anomaly ends if overdrive is disabled or overheat happens
-    refs.isAnomalyActiveRef.current = false
-    setters.setIsAnomalyActive(false)
+    sim.isAnomalyActive = false
   }
 }
 
 /**
  * Randomly drifts the target frequency (faster/larger while overheated).
  */
-function applyAmpTargetDrift(
-  deltaMS: number,
-  isOverheat: boolean,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): void {
+function applyAmpTargetDrift(deltaMS: number, sim: AmpSimulation): void {
   // Approximately 5% chance per 100ms
   let chance = 0.05
   let shiftSize = 200
-  if (isOverheat) {
+  if (sim.isOverheat) {
     chance = 0.2 // Higher chance when overheated
     shiftSize = 400
   }
 
   if (
-    !refs.isAnomalyActiveRef.current &&
+    !sim.isAnomalyActive &&
     getSafeRandom() < clampUnit(chance * (deltaMS / 100))
   ) {
     const shift = (getSafeRandom() - 0.5) * shiftSize
-    const nextTarget = clampAmpDial(refs.targetValueRef.current + shift)
-    refs.targetValueRef.current = nextTarget
-    setters.setTargetValue(nextTarget)
+    sim.targetValue = clampAmpDial(sim.targetValue + shift)
   }
 }
 
 /**
  * Triggers a Kranker Schrank hijack with a small per-frame probability.
  */
-function applyAmpHijack(
-  deltaMS: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): void {
+function applyAmpHijack(deltaMS: number, sim: AmpSimulation): void {
   const clampedHijackProbability = clampUnit(0.02 * (deltaMS / 100))
-  if (
-    !refs.isHijackActiveRef.current &&
-    getSafeRandom() < clampedHijackProbability
-  ) {
-    refs.isHijackActiveRef.current = true
-    setters.setIsHijackActive(true)
+  if (!sim.isHijackActive && getSafeRandom() < clampedHijackProbability) {
+    sim.isHijackActive = true
   }
 }
 
@@ -196,45 +260,27 @@ function applyAmpHijack(
  * Triggers a severe Feedback Loop hazard (Kranker Schrank lore).
  * Generates massive heat and disables overdrive until dampened.
  */
-function applyAmpFeedbackLoop(
-  deltaMS: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): void {
+function applyAmpFeedbackLoop(deltaMS: number, sim: AmpSimulation): void {
   // ~1.5% chance per 100ms to trigger a feedback loop if not already active
   if (
-    !refs.isFeedbackLoopActiveRef.current &&
+    !sim.isFeedbackLoopActive &&
     getSafeRandom() < clampUnit(0.015 * (deltaMS / 100))
   ) {
-    refs.isFeedbackLoopActiveRef.current = true
-    setters.setIsFeedbackLoopActive(true)
+    sim.isFeedbackLoopActive = true
 
     // Feedback loop instantly maxes out interference
-    refs.interferenceRef.current = 100
-
-    // Disable overdrive when feedback loop starts
-    refs.isOverdriveActiveRef.current = false
-    setters.setIsOverdriveActive(false)
+    sim.interference = 100
   }
 
-  if (refs.isFeedbackLoopActiveRef.current) {
+  if (sim.isFeedbackLoopActive) {
     // Disables overdrive constantly while feedback loop is active
-    if (refs.isOverdriveActiveRef.current) {
-      refs.isOverdriveActiveRef.current = false
-      setters.setIsOverdriveActive(false)
-    }
+    sim.isOverdriveActive = false
 
     // Generates massive heat constantly
-    const currentHeat = refs.heatRef.current
-    if (currentHeat < 100) {
-      const nextHeat = Math.min(100, currentHeat + 40 * (deltaMS / 1000))
-      refs.heatRef.current = nextHeat
-      setters.setHeat(nextHeat)
-      if (nextHeat >= 100 && !refs.isOverheatRef.current) {
-        refs.isOverheatRef.current = true
-        setters.setIsOverheat(true)
-        refs.isOverdriveActiveRef.current = false
-        setters.setIsOverdriveActive(false)
+    if (sim.heat < 100) {
+      sim.heat = Math.min(100, sim.heat + 40 * (deltaMS / 1000))
+      if (sim.heat >= 100) {
+        sim.isOverheat = true
       }
     }
   }
@@ -245,37 +291,26 @@ function applyAmpFeedbackLoop(
  * modifiers.
  * @returns The dial-to-target difference, reused by the resonance phase.
  */
-function accumulateAmpScore(
-  deltaMS: number,
-  overdriveActive: boolean,
-  isOverheat: boolean,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-): number {
-  const diff = Math.abs(refs.dialValueRef.current - refs.targetValueRef.current)
+function accumulateAmpScore(deltaMS: number, sim: AmpSimulation): number {
+  const diff = Math.abs(sim.dialValue - sim.targetValue)
   let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
 
-  if (overdriveActive && !isOverheat) {
+  if (sim.isOverdriveActive && !sim.isOverheat) {
     currentScore *= 1.5 // 50% bonus score for overdrive
-  } else if (isOverheat) {
+  } else if (sim.isOverheat) {
     currentScore *= 0.5 // Penalty while overheated
   }
 
-  if (refs.isHijackActiveRef.current) {
+  if (sim.isHijackActive) {
     currentScore *= 0.2 // Huge penalty during active hijack
   }
 
-  if (refs.isFeedbackLoopActiveRef.current) {
+  if (sim.isFeedbackLoopActive) {
     currentScore *= 0.1 // Catastrophic penalty during feedback loop
   }
 
-  refs.accumulatedScoreRef.current += currentScore * deltaMS
-  refs.accumulatedMsRef.current += deltaMS
-
-  setters.setScore(
-    refs.accumulatedScoreRef.current /
-      Math.max(1, refs.accumulatedMsRef.current)
-  )
+  sim.accumulatedScore += currentScore * deltaMS
+  sim.accumulatedMs += deltaMS
 
   return diff
 }
@@ -287,63 +322,50 @@ function accumulateAmpScore(
 function applyAmpResonance(
   deltaSec: number,
   diff: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
+  sim: AmpSimulation
 ): void {
   // If dialed in perfectly during anomaly, rapidly gain resonance
-  if (refs.isAnomalyActiveRef.current && diff < 30) {
-    const nextResonance = Math.min(
-      100,
-      refs.voidResonanceRef.current + 20 * deltaSec
-    )
-    refs.voidResonanceRef.current = nextResonance
-    setters.setVoidResonance(nextResonance)
+  if (sim.isAnomalyActive && diff < 30) {
+    sim.voidResonance = Math.min(100, sim.voidResonance + 20 * deltaSec)
 
-    if (nextResonance >= 100) {
-      refs.isAnomalyActiveRef.current = false
-      setters.setIsAnomalyActive(false)
+    if (sim.voidResonance >= 100) {
+      sim.isAnomalyActive = false
     }
   }
 }
 
 /**
- * Advances amp calibration simulation state for one frame.
+ * Advances the amp simulation by one frame. Completion callbacks stay with
+ * the caller: on `'expired'` the timer is clamped to 0 and the frame is not
+ * scored.
  *
+ * @param sim - Simulation model, mutated in place.
  * @param deltaMS - Milliseconds elapsed since the previous update.
- * @param refs - Mutable gameplay refs read and updated by the loop.
- * @param setters - React setters used to synchronize visible state.
+ * @returns `'skipped'` for a completed model or a non-finite/non-positive
+ * delta, `'expired'` when the timer ran out this frame, otherwise `'advanced'`.
  */
-export function updateAmpGameState(
-  deltaMS: number,
-  refs: AmpGameRefs,
-  setters: AmpGameSetters
-) {
-  if (refs.isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0) {
-    return
+export function stepAmpSimulation(
+  sim: AmpSimulation,
+  deltaMS: number
+): AmpStepOutcome {
+  if (sim.isComplete || !Number.isFinite(deltaMS) || deltaMS <= 0) {
+    return 'skipped'
   }
 
   const deltaSec = deltaMS / 1000
 
-  if (advanceAmpTime(deltaSec, refs, setters)) return
+  if (advanceAmpTime(deltaSec, sim)) return 'expired'
 
-  applyAmpFeedbackLoop(deltaMS, refs, setters)
-  const { isOverheat, overdriveActive } = applyAmpHeat(deltaSec, refs, setters)
-  applyAmpVoidAnomaly(deltaMS, overdriveActive, isOverheat, refs, setters)
-  applyAmpTargetDrift(deltaMS, isOverheat, refs, setters)
-  applyAmpHijack(deltaMS, refs, setters)
+  applyAmpFeedbackLoop(deltaMS, sim)
+  applyAmpHeat(deltaSec, sim)
+  applyAmpVoidAnomaly(deltaMS, sim)
+  applyAmpTargetDrift(deltaMS, sim)
+  applyAmpHijack(deltaMS, sim)
 
-  // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
-  refs.interferenceRef.current = Math.min(
-    100,
-    refs.interferenceRef.current + (deltaMS / 1000) * 5
-  )
+  // Neurotoxic interference buildup (fractional; React sees the floor)
+  sim.interference = Math.min(100, sim.interference + (deltaMS / 1000) * 5)
 
-  const diff = accumulateAmpScore(
-    deltaMS,
-    refs.isOverdriveActiveRef.current,
-    refs.isOverheatRef.current,
-    refs,
-    setters
-  )
-  applyAmpResonance(deltaSec, diff, refs, setters)
+  const diff = accumulateAmpScore(deltaMS, sim)
+  applyAmpResonance(deltaSec, diff, sim)
+  return 'advanced'
 }

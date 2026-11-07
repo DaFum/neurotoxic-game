@@ -8,113 +8,94 @@ vi.mock('../../src/utils/crypto', () => ({
 }))
 import { getSafeRandom } from '../../src/utils/crypto'
 
-import { updateAmpGameState } from '../../src/hooks/minigames/ampLogicUtils'
+import {
+  buildAmpUiSnapshot,
+  stepAmpSimulation
+} from '../../src/hooks/minigames/ampLogicUtils'
 
-function makeRefs(overrides = {}) {
+function makeSim(overrides = {}) {
   return {
-    isCompleteRef: { current: false },
-    timeLeftRef: { current: 10 },
-    heatRef: { current: 0 },
-    isOverheatRef: { current: false },
-    isOverdriveActiveRef: { current: false },
-    isAnomalyActiveRef: { current: false },
-    isHijackActiveRef: { current: false },
-    isFeedbackLoopActiveRef: { current: false },
-    interferenceRef: { current: 0 },
-    dialValueRef: { current: 500 },
-    targetValueRef: { current: 500 },
-    accumulatedScoreRef: { current: 0 },
-    accumulatedMsRef: { current: 0 },
-    voidResonanceRef: { current: 0 },
+    dialValue: 500,
+    targetValue: 500,
+    timeLeft: 10,
+    accumulatedScore: 0,
+    accumulatedMs: 0,
+    isComplete: false,
+    isOverdriveActive: false,
+    heat: 0,
+    isOverheat: false,
+    voidResonance: 0,
+    isAnomalyActive: false,
+    isHijackActive: false,
+    hijacksOverridden: 0,
+    isFeedbackLoopActive: false,
+    feedbackLoopsDampened: 0,
+    interference: 0,
+    purgesUsed: 0,
     ...overrides
   }
 }
 
-function makeSetters() {
-  return {
-    setTimeLeft: vi.fn(),
-    handleComplete: vi.fn(),
-    setIsOverdriveActive: vi.fn(),
-    setIsOverheat: vi.fn(),
-    setHeat: vi.fn(),
-    setIsAnomalyActive: vi.fn(),
-    setTargetValue: vi.fn(),
-    setIsHijackActive: vi.fn(),
-    setIsFeedbackLoopActive: vi.fn(),
-    setScore: vi.fn(),
-    setVoidResonance: vi.fn()
-  }
-}
-
-describe('updateAmpGameState', () => {
+describe('stepAmpSimulation', () => {
   beforeEach(() => {
     rngValue = 0.99
+    vi.mocked(getSafeRandom).mockClear()
+    vi.mocked(getSafeRandom).mockImplementation(() => rngValue)
   })
 
   it('no-ops when the game is already complete', () => {
-    const refs = makeRefs({ isCompleteRef: { current: true } })
-    const setters = makeSetters()
-    updateAmpGameState(1000, refs, setters)
-    expect(setters.setTimeLeft).not.toHaveBeenCalled()
-    expect(setters.handleComplete).not.toHaveBeenCalled()
+    const sim = makeSim({ isComplete: true })
+    const before = { ...sim }
+    expect(stepAmpSimulation(sim, 1000)).toBe('skipped')
+    expect(sim).toEqual(before)
   })
 
   it('no-ops on non-positive or non-finite delta', () => {
-    const setters = makeSetters()
-    updateAmpGameState(0, makeRefs(), setters)
-    updateAmpGameState(Number.NaN, makeRefs(), setters)
-    expect(setters.setTimeLeft).not.toHaveBeenCalled()
+    for (const delta of [0, -50, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const sim = makeSim()
+      expect(stepAmpSimulation(sim, delta)).toBe('skipped')
+      expect(sim).toEqual(makeSim())
+    }
+    expect(getSafeRandom).not.toHaveBeenCalled()
   })
 
   it('decrements time, builds interference, and accumulates a perfect score', () => {
-    const refs = makeRefs()
-    const setters = makeSetters()
-    updateAmpGameState(1000, refs, setters)
-    expect(refs.timeLeftRef.current).toBeCloseTo(9)
-    expect(setters.setTimeLeft).toHaveBeenCalledWith(9)
+    const sim = makeSim()
+    expect(stepAmpSimulation(sim, 1000)).toBe('advanced')
+    expect(sim.timeLeft).toBeCloseTo(9)
     // dial === target => diff 0 => perfect 100 score, no multipliers/penalties.
-    expect(refs.accumulatedScoreRef.current).toBeCloseTo(100 * 1000)
-    expect(refs.accumulatedMsRef.current).toBe(1000)
-    expect(setters.setScore).toHaveBeenCalledWith(100)
-    expect(refs.interferenceRef.current).toBeCloseTo(5)
+    expect(sim.accumulatedScore).toBeCloseTo(100 * 1000)
+    expect(sim.accumulatedMs).toBe(1000)
+    expect(buildAmpUiSnapshot(sim).score).toBe(100)
+    expect(sim.interference).toBeCloseTo(5)
   })
 
   it('completes and early-returns when time runs out', () => {
-    const refs = makeRefs({ timeLeftRef: { current: 0.5 } })
-    const setters = makeSetters()
-    updateAmpGameState(1000, refs, setters)
-    expect(refs.timeLeftRef.current).toBe(0)
-    expect(setters.setTimeLeft).toHaveBeenCalledWith(0)
-    expect(setters.handleComplete).toHaveBeenCalledTimes(1)
-    expect(setters.setScore).not.toHaveBeenCalled()
+    const sim = makeSim({ timeLeft: 0.5 })
+    expect(stepAmpSimulation(sim, 1000)).toBe('expired')
+    expect(sim.timeLeft).toBe(0)
+    // The expiry frame is not scored and draws no RNG.
+    expect(sim.accumulatedMs).toBe(0)
+    expect(sim.accumulatedScore).toBe(0)
+    expect(getSafeRandom).not.toHaveBeenCalled()
   })
 
   it('heats up while overdrive is active', () => {
-    const refs = makeRefs({ isOverdriveActiveRef: { current: true } })
-    const setters = makeSetters()
-    updateAmpGameState(1000, refs, setters)
-    expect(refs.heatRef.current).toBeCloseTo(35)
-    expect(setters.setHeat).toHaveBeenCalledWith(35)
-    expect(setters.setIsOverheat).not.toHaveBeenCalled()
+    const sim = makeSim({ isOverdriveActive: true })
+    stepAmpSimulation(sim, 1000)
+    expect(sim.heat).toBeCloseTo(35)
+    expect(sim.isOverheat).toBe(false)
   })
 
   it('cools down and clears the overheat flag', () => {
-    const refs = makeRefs({
-      isOverheatRef: { current: true },
-      heatRef: { current: 10 }
-    })
-    const setters = makeSetters()
-    updateAmpGameState(1000, refs, setters)
-    expect(refs.heatRef.current).toBe(0)
-    expect(refs.isOverheatRef.current).toBe(false)
-    expect(setters.setIsOverheat).toHaveBeenCalledWith(false)
+    const sim = makeSim({ isOverheat: true, heat: 10 })
+    stepAmpSimulation(sim, 1000)
+    expect(sim.heat).toBe(0)
+    expect(sim.isOverheat).toBe(false)
   })
 
   it('disables overdrive when a feedback loop triggers', () => {
-    const refs = makeRefs({
-      isOverdriveActiveRef: { current: true }
-    })
-    const setters = makeSetters()
+    const sim = makeSim({ isOverdriveActive: true })
 
     // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
     let calls = 0
@@ -124,46 +105,38 @@ describe('updateAmpGameState', () => {
       return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
     })
 
-    updateAmpGameState(100, refs, setters)
+    stepAmpSimulation(sim, 100)
 
-    expect(refs.isFeedbackLoopActiveRef.current).toBe(true)
-    expect(setters.setIsFeedbackLoopActive).toHaveBeenCalledWith(true)
+    expect(sim.isFeedbackLoopActive).toBe(true)
 
     // Should immediately disable overdrive
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
+    expect(sim.isOverdriveActive).toBe(false)
 
     // Should max out interference
-    expect(refs.interferenceRef.current).toBe(100)
+    expect(sim.interference).toBe(100)
 
     // Score: no overdrive bonus (disabled), no overheat, no hijack.
     // Base score = 100. Feedback loop penalty = 0.1. So 10 * 100ms = 1000.
-    expect(refs.accumulatedScoreRef.current).toBe(1000)
+    expect(sim.accumulatedScore).toBe(1000)
   })
 
   it('forces overdrive off repeatedly if a player attempts to re-enable it during an active feedback loop', () => {
-    const refs = makeRefs({
-      isFeedbackLoopActiveRef: { current: true },
-      isOverdriveActiveRef: { current: true } // Simulating a player turning it on
+    const sim = makeSim({
+      isFeedbackLoopActive: true,
+      isOverdriveActive: true // Simulating a player turning it on
     })
-    const setters = makeSetters()
 
-    updateAmpGameState(100, refs, setters)
+    stepAmpSimulation(sim, 100)
 
     // Should immediately disable overdrive
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
+    expect(sim.isOverdriveActive).toBe(false)
 
     // Overdrive multiplier should not be applied to score
-    expect(refs.accumulatedScoreRef.current).toBe(1000)
+    expect(sim.accumulatedScore).toBe(1000)
   })
 
   it('proves feedback-loop overheating disables overdrive and applies penalties', () => {
-    const refs = makeRefs({
-      isOverdriveActiveRef: { current: true },
-      heatRef: { current: 95 }
-    })
-    const setters = makeSetters()
+    const sim = makeSim({ isOverdriveActive: true, heat: 95 })
 
     // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
     let calls = 0
@@ -173,25 +146,21 @@ describe('updateAmpGameState', () => {
       return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
     })
 
-    updateAmpGameState(500, refs, setters)
+    stepAmpSimulation(sim, 500)
 
-    expect(refs.isFeedbackLoopActiveRef.current).toBe(true)
-    expect(refs.isOverheatRef.current).toBe(true)
-    expect(setters.setIsOverheat).toHaveBeenCalledWith(true)
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
+    expect(sim.isFeedbackLoopActive).toBe(true)
+    expect(sim.isOverheat).toBe(true)
+    expect(sim.isOverdriveActive).toBe(false)
 
     // Base score = 100. Overheat penalty (0.5), Feedback penalty (0.1).
     // 100 * 0.5 * 0.1 = 5 per ms. Over 500ms = 2500.
-    expect(refs.accumulatedScoreRef.current).toBe(2500)
+    expect(sim.accumulatedScore).toBe(2500)
   })
 
   it('activates a hijack when RNG is below the threshold', () => {
     rngValue = 0.0001
-    const refs = makeRefs()
-    const setters = makeSetters()
-    updateAmpGameState(5000, refs, setters)
-    expect(refs.isHijackActiveRef.current).toBe(true)
-    expect(setters.setIsHijackActive).toHaveBeenCalledWith(true)
+    const sim = makeSim()
+    stepAmpSimulation(sim, 5000)
+    expect(sim.isHijackActive).toBe(true)
   })
 })
