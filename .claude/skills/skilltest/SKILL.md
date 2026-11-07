@@ -6,6 +6,13 @@ description: validate skill structure and metadata. Trigger when developing skil
 # Skilltest Harness
 
 Discover, validate, and test skills against the Open Agent Skills standard.
+Canonical implementation is located in `scripts/skilltest/harness.mjs` and `scripts/skilltest/cli.mjs`.
+
+## Architecture & Contract
+
+- **Root Contract**: Standardized discovery across configured tree (`.claude`), with user-root lookup (`~/.claude/skills`), shared disabled config (`~/.codex/config.toml`), and standard quality gates (`lint`, `test`, `build`).
+- **Bundled Case Behavior**: Test suites load bundled case fixtures from tree-specific `tests/cases/*.cases.json`.
+- **Repository-Bound Packaging**: The canonical harness is housed in `scripts/skilltest/`, with tree-specific bindings exporting thin wrappers to keep execution repository-bound.
 
 ## Workflow
 

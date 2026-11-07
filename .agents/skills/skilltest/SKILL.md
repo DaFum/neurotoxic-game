@@ -14,6 +14,13 @@ license: 'Proprietary. See LICENSE.txt for terms'
 # Skilltest Harness
 
 Discover, validate, and test skills against the Open Agent Skills standard.
+Canonical implementation is located in `scripts/skilltest/harness.mjs` and `scripts/skilltest/cli.mjs`.
+
+## Architecture & Contract
+
+- **Root Contract**: Standardized discovery across configured tree (`.agents`), with user-root lookup (`CODEX_HOME` or `~/.codex/skills`), shared disabled config (`~/.codex/config.toml`), and standard quality gates (`lint`, `test`, `build`).
+- **Bundled Case Behavior**: Test suites load bundled case fixtures from tree-specific `tests/cases/*.cases.json`.
+- **Repository-Bound Packaging**: The canonical harness is housed in `scripts/skilltest/`, with tree-specific bindings exporting thin wrappers to keep execution repository-bound.
 
 ## Workflow
 
@@ -44,6 +51,10 @@ Use the test runner:
 ```bash
 node .agents/skills/skilltest/scripts/skilltest.mjs
 ```
+
+Generated report path:
+
+`reports/skills/skilltest-report.json`
 
 ## Example
 
