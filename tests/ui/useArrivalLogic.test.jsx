@@ -27,6 +27,7 @@ const { useArrivalLogic, mockGameState } = await setupArrivalLogicTest()
 
 describe('useArrivalLogic', () => {
   beforeEach(() => {
+    refProbe.refs.clear()
     resetMockGameState()
   })
 

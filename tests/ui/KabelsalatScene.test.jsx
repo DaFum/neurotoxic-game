@@ -248,7 +248,9 @@ describe('KabelsalatScene - timer and game over', () => {
     })
     const warningTimer = screen.getByText('11s').parentElement
     expect(warningTimer).toHaveClass('border-warning-yellow')
-    CRITICAL.forEach(cls => expect(warningTimer).not.toHaveClass(cls))
+    for (const cls of CRITICAL) {
+      expect(warningTimer).not.toHaveClass(cls)
+    }
 
     await act(async () => {
       vi.advanceTimersByTime(1000) // 10 seconds left: critical threshold
