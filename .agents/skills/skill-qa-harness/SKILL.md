@@ -44,6 +44,7 @@ Skill regressions are often subtle: invalid YAML, stale script references, and o
    ```
 
    - This checks every skill plus the `.agents/skills/skilltest/tests/cases/*.cases.json` prompt cases and writes `reports/skills/skilltest-report.json`. Drop `--skip-gate` to run `pnpm run lint`, `pnpm run test`, and `pnpm run build` first; add `--include-user` to also scan user-level skills.
+   - Prompt cases only check that each case's `expectIncludes` strings occur in the skill's `SKILL.md`; the `prompt` field is not used and skill selection is not tested. A passing run does not prove trigger routing, so validate trigger changes with a separate routing check.
    - The harness's own tests run under `pnpm run test:tooling`, not the fast `pnpm run test`.
 
 4. **Run discriminative logical checks**

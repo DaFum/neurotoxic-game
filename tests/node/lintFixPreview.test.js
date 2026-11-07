@@ -467,7 +467,7 @@ test('shell trusts the report when the workflow scan exited 0', t => {
 // A scanner crash can leave a partial report that the analyzer accepts.
 for (const [name, code] of [
   ['a nonzero scan exit', '1'],
-  ['a missing scan exit output', '']
+  ['an empty scan exit output', '']
 ]) {
   test(`shell fails closed on ${name} despite a valid report`, t => {
     if (shellUnavailable()) return t.skip('bash is unavailable')
