@@ -168,8 +168,11 @@ export const useArrivalLogic = ({
     }
 
     // The gig evaluation dispatches (fame penalty, START_GIG) from inside this
-    // effect, so every save below is the post-commit request: a saveGame taken
-    // here would miss them.
+    // effect, and START_GIG unmounts this hook, so the save is requested here.
+    // `saveGame(false)` would capture those dispatches as well: it reads the
+    // provider's `latestStateRef`, which `dispatch` updates synchronously, also
+    // inside `startTransition`. The post-commit request lands the write in
+    // START_GIG's own commit.
     const { node } = pending
     let outcome: ArrivalOutcome = { kind: 'overworld' }
     try {
