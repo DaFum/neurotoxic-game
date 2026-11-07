@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import type { MapNode } from '../../../types'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import {
@@ -37,9 +37,14 @@ export const useHandleNodeArrivalCallback = ({
     changeScene,
     expeditionStatus
   } = params
+  // Set once a gig start was requested and released on the next microtask, so
+  // a second call in the same tick (before START_GIG commits and unmounts the
+  // map) cannot dispatch START_GIG again or re-run its side effects.
+  const gigStartInFlightRef = useRef(false)
 
   return useCallback(
     (node: MapNode, travelEventActive = false) => {
+      if (gigStartInFlightRef.current) return
       const outcome = handleNodeArrival({
         // Same lock `handleStartGig` re-checks: without it a refused re-entry
         // would decide `gig` and the click would silently do nothing.
@@ -78,11 +83,16 @@ export const useHandleNodeArrivalCallback = ({
       // the node with the click still available — but keep it in mind if this
       // path ever gains state worth losing.
       if (
-        outcome.kind !== 'gig' ||
-        !requestArrivalGigStart(outcome.venue, startGig, addToast)
+        outcome.kind === 'gig' &&
+        requestArrivalGigStart(outcome.venue, startGig, addToast)
       ) {
-        changeScene(GAME_PHASES.OVERWORLD)
+        gigStartInFlightRef.current = true
+        queueMicrotask(() => {
+          gigStartInFlightRef.current = false
+        })
+        return
       }
+      changeScene(GAME_PHASES.OVERWORLD)
     },
     [
       refs,
