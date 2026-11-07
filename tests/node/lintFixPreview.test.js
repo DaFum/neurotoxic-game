@@ -233,3 +233,218 @@ test('shell assembly exports the bounded body without changing eligibility', t =
     fs.readFileSync(path.join(directory, 'diff.patch'), 'utf8')
   )
 })
+
+const cluster = (id, lines, tokens) => ({
+  lines,
+  tokens,
+  firstFile: { name: `src/first-${id}.js`, start: 1, end: Math.max(lines, 1) },
+  secondFile: { name: `src/second-${id}.js`, start: 1, end: Math.max(lines, 1) }
+})
+
+/**
+ * Runs the shell in a clean, committed fixture whose autofix tools are no-op
+ * stubs, so only the duplicate analysis can make the run comment-worthy.
+ * @param {import('node:test').TestContext} t
+ * @param {Record<string, string> | null} reports jscpd-report files, or none
+ * @param {string} [analyzerStub] replacement analyzer source
+ */
+function runDuplicatePreview(t, reports, analyzerStub) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lint-preview-dup-'))
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
+  for (const name of ['scripts', 'bin', 'src']) {
+    fs.mkdirSync(path.join(directory, name))
+  }
+  for (const name of [
+    'lint-fix-preview.sh',
+    'render-lint-fix-preview.js',
+    'analyze-duplicates.js'
+  ]) {
+    fs.copyFileSync(
+      fileURLToPath(new URL(`../../scripts/${name}`, import.meta.url)),
+      path.join(directory, 'scripts', name)
+    )
+  }
+  if (analyzerStub !== undefined) {
+    fs.writeFileSync(
+      path.join(directory, 'scripts', 'analyze-duplicates.js'),
+      analyzerStub
+    )
+  }
+  fs.writeFileSync(
+    path.join(directory, 'package.json'),
+    '{"type":"module","scripts":{"format":"stub","lint:fix":"stub"}}'
+  )
+  fs.writeFileSync(path.join(directory, 'src', 'source.js'), 'export {}\n')
+  fs.writeFileSync(path.join(directory, 'bin', 'pnpm'), '#!/bin/sh\nexit 0\n')
+  fs.chmodSync(path.join(directory, 'bin', 'pnpm'), 0o755)
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_'))
+  )
+  const git = args => {
+    const result = spawnSync('git', args, {
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 10000,
+      env
+    })
+    assert.equal(result.status, 0, result.stderr)
+  }
+  git(['init'])
+  assert.equal(
+    spawnSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: directory,
+      encoding: 'utf8',
+      env
+    }).stdout.trim(),
+    fs.realpathSync(directory)
+  )
+  git(['add', '.'])
+  git([
+    '-c',
+    'user.name=Test',
+    '-c',
+    'user.email=test@example.com',
+    'commit',
+    '-m',
+    'fixture'
+  ])
+  if (reports) {
+    fs.mkdirSync(path.join(directory, 'jscpd-report'))
+    for (const [name, contents] of Object.entries(reports)) {
+      fs.writeFileSync(path.join(directory, 'jscpd-report', name), contents)
+    }
+  }
+  const output = path.join(directory, 'github-output')
+  const result = spawnSync('bash', ['scripts/lint-fix-preview.sh'], {
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 30000,
+    env: {
+      ...env,
+      PATH: `${path.join(directory, 'bin')}${path.delimiter}${env.PATH ?? ''}`,
+      GITHUB_OUTPUT: output
+    }
+  })
+  assert.equal(result.status, 0, result.stderr)
+  const outputs = fs.readFileSync(output, 'utf8')
+  const read = key => outputs.match(new RegExp(`^${key}=(.*)$`, 'm'))?.[1]
+  return {
+    body: fs.readFileSync(path.join(directory, 'comment.md'), 'utf8'),
+    outputs: Object.fromEntries(
+      [
+        'has_diff',
+        'has_dup',
+        'dup_total',
+        'dup_status',
+        'dup_failed',
+        'should_comment'
+      ].map(key => [key, read(key)])
+    )
+  }
+}
+
+const shellUnavailable = () =>
+  process.platform === 'win32' &&
+  spawnSync('bash', ['--version'], { encoding: 'utf8', timeout: 5000 })
+    .status !== 0
+
+test('shell counts validated clusters across report files, skipping empty ones', t => {
+  if (shellUnavailable()) return t.skip('bash is unavailable')
+  const { body, outputs } = runDuplicatePreview(t, {
+    'first.json': JSON.stringify({
+      duplicates: [cluster('a', 12, 90), cluster('empty', 0, 0)]
+    }),
+    'second.json': JSON.stringify({ duplicates: [cluster('b', 9, 70)] })
+  })
+  assert.deepEqual(outputs, {
+    has_diff: '0',
+    has_dup: '1',
+    dup_total: '2',
+    dup_status: 'ok',
+    dup_failed: '0',
+    should_comment: '1'
+  })
+  assert.match(body, /Found \*\*2\*\* duplicate clusters\./)
+  assert.doesNotMatch(body, /first-empty\.js|Duplicate analysis failed/)
+})
+
+test('shell reports zero duplicates only for a valid report of empty clusters', t => {
+  if (shellUnavailable()) return t.skip('bash is unavailable')
+  const { body, outputs } = runDuplicatePreview(t, {
+    'report.json': JSON.stringify({ duplicates: [cluster('empty', 0, 0)] })
+  })
+  assert.deepEqual(outputs, {
+    has_diff: '0',
+    has_dup: '0',
+    dup_total: '0',
+    dup_status: 'ok',
+    dup_failed: '0',
+    should_comment: '0'
+  })
+  assert.match(body, /No significant duplicates found/)
+})
+
+for (const [name, reports, status, analyzerStub] of [
+  ['a malformed report', { 'report.json': '{' }, 'invalid'],
+  [
+    'a legacy clones report',
+    { 'report.json': JSON.stringify({ clones: [cluster('legacy', 10, 80)] }) },
+    'invalid'
+  ],
+  [
+    'a legacy result.clones report',
+    {
+      'report.json': JSON.stringify({
+        result: { clones: [cluster('legacy', 10, 80)] }
+      })
+    },
+    'invalid'
+  ],
+  [
+    'a malformed file beside a valid one',
+    {
+      'valid.json': JSON.stringify({ duplicates: [cluster('a', 9, 70)] }),
+      'broken.json': '{"duplicates": [{}]}'
+    },
+    'invalid'
+  ],
+  ['a missing report directory', null, 'missing'],
+  [
+    'missing analyzer output',
+    { 'report.json': '{"duplicates":[]}' },
+    'error',
+    ''
+  ],
+  [
+    'a malformed analyzer result line',
+    { 'report.json': '{"duplicates":[]}' },
+    'error',
+    "console.log('status=ok total=-1')\n"
+  ],
+  [
+    'an ok result line with a failing exit',
+    { 'report.json': '{"duplicates":[]}' },
+    'error',
+    "console.log('status=ok total=0'); process.exit(1)\n"
+  ]
+]) {
+  test(`shell fails closed on ${name}`, t => {
+    if (shellUnavailable()) return t.skip('bash is unavailable')
+    const { body, outputs } = runDuplicatePreview(t, reports, analyzerStub)
+    assert.deepEqual(outputs, {
+      has_diff: '0',
+      has_dup: '0',
+      dup_total: '',
+      dup_status: status,
+      dup_failed: '1',
+      should_comment: '1'
+    })
+    assert.match(
+      body,
+      new RegExp(
+        `### Duplicate code\\n\\n> Duplicate analysis failed \\(status: \`${status}\`\\)\\. The duplicate count is unknown, not zero`
+      )
+    )
+    assert.doesNotMatch(body, /No significant duplicates|Found \*\*/)
+  })
+}

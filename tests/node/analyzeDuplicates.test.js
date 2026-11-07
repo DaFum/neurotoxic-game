@@ -182,3 +182,114 @@ test('fails clearly when a report file is unreadable', t => {
   assert.match(result.stderr, /unreadable\.json/)
   assert.doesNotMatch(result.stdout, /No significant duplicates/)
 })
+
+const runResultMode = directory =>
+  spawnSync(process.execPath, [analyzer, '--markdown-file', 'dup.md'], {
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+// jscpd can report a cluster with zero lines and tokens; it is not a finding.
+const emptyCluster = { ...duplicate('empty', 1, 1), lines: 0, tokens: 0 }
+
+const writeReports = (directory, reports) => {
+  const reportDirectory = path.join(directory, 'jscpd-report')
+  fs.mkdirSync(reportDirectory)
+  for (const [name, contents] of Object.entries(reports)) {
+    fs.writeFileSync(path.join(reportDirectory, name), contents)
+  }
+}
+
+test('result mode counts validated clusters across report files and keeps the standalone Markdown', t => {
+  const directory = createWorkspace(t)
+  writeReports(directory, {
+    'first.json': JSON.stringify({
+      duplicates: [duplicate('a', 12, 90), emptyCluster]
+    }),
+    'second.json': JSON.stringify({ duplicates: [duplicate('b', 9, 70)] })
+  })
+
+  const result = runResultMode(directory)
+  assert.equal(result.status, 0, result.stderr)
+  assert.equal(result.stdout, 'status=ok total=2\n')
+  const markdown = fs.readFileSync(path.join(directory, 'dup.md'), 'utf8')
+  assert.match(markdown, /Found \*\*2\*\* duplicate clusters\./)
+  assert.doesNotMatch(markdown, /first-empty\.js/)
+  assert.equal(markdown, runAnalyzer(directory).stdout)
+})
+
+test('result mode reports zero only for a valid report whose clusters are all empty', t => {
+  const directory = createWorkspace(t)
+  writeReports(directory, {
+    'report.json': JSON.stringify({ duplicates: [emptyCluster] })
+  })
+
+  const result = runResultMode(directory)
+  assert.equal(result.status, 0, result.stderr)
+  assert.equal(result.stdout, 'status=ok total=0\n')
+  assert.match(
+    fs.readFileSync(path.join(directory, 'dup.md'), 'utf8'),
+    /No significant duplicates found/
+  )
+})
+
+test('result mode fails closed on a missing report', async t => {
+  for (const [name, reports, reason] of [
+    ['no directory', null, /No jscpd-report directory found/],
+    ['no JSON files', {}, /No jscpd-report JSON files found/]
+  ]) {
+    await t.test(name, subtest => {
+      const directory = createWorkspace(subtest)
+      if (reports) writeReports(directory, reports)
+
+      const result = runResultMode(directory)
+      assert.equal(result.status, 1)
+      assert.equal(result.stdout, 'status=missing\n')
+      assert.match(result.stderr, reason)
+      assert.equal(fs.existsSync(path.join(directory, 'dup.md')), false)
+    })
+  }
+})
+
+test('result mode fails closed on malformed and legacy report shapes', async t => {
+  const legacyClone = duplicate('legacy', 10, 80)
+  for (const [name, contents] of [
+    ['malformed.json', '{'],
+    ['missing.json', '{}'],
+    ['invalid-cluster.json', '{"duplicates": [{}]}'],
+    ['legacy-clones.json', JSON.stringify({ clones: [legacyClone] })],
+    [
+      'legacy-result-clones.json',
+      JSON.stringify({ result: { clones: [legacyClone] } })
+    ]
+  ]) {
+    await t.test(name, subtest => {
+      const directory = createWorkspace(subtest)
+      writeReports(directory, {
+        'valid.json': JSON.stringify({ duplicates: [duplicate('a', 9, 70)] }),
+        [name]: contents
+      })
+
+      const result = runResultMode(directory)
+      assert.equal(result.status, 1)
+      assert.equal(result.stdout, 'status=invalid\n')
+      assert.ok(result.stderr.includes(name), result.stderr)
+      assert.equal(fs.existsSync(path.join(directory, 'dup.md')), false)
+    })
+  }
+})
+
+test('rejects unknown arguments instead of guessing a mode', t => {
+  const directory = createWorkspace(t)
+  for (const args of [['--markdown-file'], ['--json'], ['dup.md']]) {
+    const result = spawnSync(process.execPath, [analyzer, ...args], {
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(result.status, 2)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Usage:/)
+  }
+})

@@ -157,38 +157,41 @@ if [[ -s diff.patch ]]; then
 	has_diff=1
 fi
 
-# Duplicate code — examine jscpd JSON(s)
+# Duplicate code — the analyzer is the only reader of jscpd-report.
+# Fail closed: only exit 0 with the line `status=ok total=<n>` is a result.
+# A missing report (jscpd writes one even when it finds nothing), an invalid
+# report, or any other analyzer output sets dup_failed=1 and leaves dup_total
+# empty, so a failed analysis never reads as zero duplicates.
 has_dup=0
-dup_total=0
+dup_total=""
+dup_failed=0
 : >dup.md
 
-if find ./jscpd-report -maxdepth 1 -name '*.json' -print -quit 2>/dev/null | grep -q .; then
-	dup_total=$(node -e "
-    const fs = require('fs');
-    const p = './jscpd-report';
-    try {
-      const files = fs.readdirSync(p).filter(f => f.endsWith('.json'));
-      let total = 0;
-      for (const f of files) {
-        const data = JSON.parse(fs.readFileSync(\`\${p}/\${f}\`, 'utf8'));
-        if (Array.isArray(data.duplicates)) total += data.duplicates.length;
-        else if (Array.isArray(data.clones)) total += data.clones.length;
-        else if (Array.isArray(data.result?.clones)) total += data.result.clones.length;
-      }
-      console.log(total);
-    } catch (e) {
-      console.log(0);
-    }
-  " | tr -d '[:space:]')
-	dup_total="${dup_total:-0}"
-
-	if [[ "$dup_total" -gt 0 ]]; then
+dup_rc=0
+dup_result=$(node ./scripts/analyze-duplicates.js --markdown-file dup.md) || dup_rc=$?
+ok_re='^status=ok total=(0|[1-9][0-9]*)$'
+failed_re='^status=(missing|invalid)$'
+if [[ "$dup_rc" == "0" && "$dup_result" =~ $ok_re ]]; then
+	dup_status=ok
+	dup_total="${BASH_REMATCH[1]}"
+	if [[ "$dup_total" != "0" ]]; then
 		has_dup=1
 	fi
-
-	node ./scripts/analyze-duplicates.js >>dup.md || true
-	echo >>dup.md
+elif [[ "$dup_rc" != "0" && "$dup_result" =~ $failed_re ]]; then
+	dup_status="${BASH_REMATCH[1]}"
+	dup_failed=1
+else
+	dup_status=error
+	dup_failed=1
 fi
+if [[ "$dup_failed" == "1" ]]; then
+	{
+		echo "### Duplicate code"
+		echo
+		echo "> Duplicate analysis failed (status: \`${dup_status}\`). The duplicate count is unknown, not zero; see the workflow log."
+	} >dup.md
+fi
+echo >>dup.md
 
 run_link=""
 if [[ -n "${GITHUB_SERVER_URL:-}" && -n "${GITHUB_REPOSITORY:-}" && -n "${GITHUB_RUN_ID:-}" ]]; then
@@ -197,7 +200,7 @@ fi
 node ./scripts/render-lint-fix-preview.js header.md diff.patch dup.md "$has_diff" "$run_link" "$fix_failed" >comment.md
 
 should_comment=0
-if [[ "$has_diff" == "1" || "$has_dup" == "1" || "$fix_failed" == "1" || "${#missing[@]}" -gt 0 ]]; then
+if [[ "$has_diff" == "1" || "$has_dup" == "1" || "$dup_failed" == "1" || "$fix_failed" == "1" || "${#missing[@]}" -gt 0 ]]; then
 	should_comment=1
 fi
 
@@ -208,7 +211,9 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
 		echo "lint_fix_status=${lint_fix_status}"
 		echo "has_diff=${has_diff}"
 		echo "has_dup=${has_dup}"
-		echo "dup_total=${dup_total:-0}"
+		echo "dup_total=${dup_total}"
+		echo "dup_status=${dup_status}"
+		echo "dup_failed=${dup_failed}"
 		echo "should_comment=${should_comment}"
 
 		delimiter="COMMENT_$(head -c 8 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 8)"

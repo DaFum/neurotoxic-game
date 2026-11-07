@@ -450,6 +450,34 @@ exit "$status"
     assert.match(enforcement.run, /exit 1/)
     assert.ok(!enforcement.run.includes('${{'))
   })
+
+  test('publishes a failed duplicate analysis before failing the job', () => {
+    const steps = loadWorkflow('lint-fix-preview.yml').jobs['lint-preview']
+      .steps
+    const previewIndex = steps.findIndex(step => step.id === 'lint-preview')
+    const publicationIndex = steps.findIndex(step =>
+      step.with?.script?.includes(MARKER)
+    )
+    const enforcementIndex = steps.findIndex(
+      step => step.name === 'Fail when duplicate analysis failed'
+    )
+    assert.ok(
+      steps[publicationIndex].if.includes(
+        "steps.lint-preview.outputs.dup_failed == '1'"
+      )
+    )
+    assert.ok(publicationIndex > previewIndex)
+    assert.ok(enforcementIndex > publicationIndex)
+    const enforcement = steps[enforcementIndex]
+    assert.ok(enforcement.if.includes('always()'))
+    assert.ok(
+      enforcement.if.includes("steps.lint-preview.outputs.dup_failed == '1'")
+    )
+    assert.ok(!enforcement.if.includes('head.repo'))
+    assert.ok(enforcement.env.DUP_STATUS.includes('outputs.dup_status'))
+    assert.match(enforcement.run, /exit 1/)
+    assert.ok(!enforcement.run.includes('${{'))
+  })
 })
 
 const TRACKER_MARKER = '<!-- PR_COMMENT_TRACKER_MARKER -->'
