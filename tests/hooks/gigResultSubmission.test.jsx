@@ -43,7 +43,9 @@ vi.mock('react-i18next', () => ({
 const { useGigSession } = await import('../../src/hooks/useGigSession')
 const { useHandleMiss } =
   await import('../../src/hooks/rhythmGame/scoring/useHandleMiss')
-const { finalizeGig } = await import('../../src/utils/rhythmGameLoopUtils')
+const { finalizeGig, processRhythmGameTick } =
+  await import('../../src/utils/rhythmGameLoopUtils')
+const { createHecklerSession } = await import('../../src/utils/hecklerLogic')
 
 const COLLAPSE_DELAY_MS = 4000
 
@@ -138,6 +140,68 @@ describe('gig result submission across completion paths (#3574)', () => {
   afterEach(() => {
     cleanup()
     vi.useRealTimers()
+  })
+
+  it('final-tick collision collapse wins: one failed result via the collapse timer (#3592)', () => {
+    const { result } = renderSession()
+    const stopAudio = vi.fn()
+    // Last song done and near its end; a projectile is about to cross the hit line.
+    Object.assign(gameStateRef.current, {
+      setlistCompleted: true,
+      totalDuration: 1000,
+      notes: [],
+      nextMissCheckIndex: 0,
+      lastTickTimeMs: 999,
+      rng: () => 1,
+      projectiles: [
+        {
+          id: 1,
+          x: 0,
+          y: 925,
+          vx: 0,
+          vy: 1,
+          rotation: 0,
+          vr: 0,
+          type: 'bottle'
+        }
+      ]
+    })
+    const finalTick = () =>
+      processRhythmGameTick({
+        stateRef: gameStateRef.current,
+        isTransportRunning: true,
+        transportState: 'started',
+        activeEvent: null,
+        dimensionsRef: { current: { width: 1920, height: 1080 } },
+        hecklerSessionRef: { current: createHecklerSession() },
+        deltaMS: 16,
+        handleCollision: () => result.current.handleMiss(1, false),
+        setIsToxicMode: vi.fn(),
+        setIsCorruptionBurstActive: vi.fn(),
+        handleMiss: result.current.handleMiss,
+        finalizeGigCallback: stateRef =>
+          finalizeGig(stateRef, setLastGigStats, endGig, stopAudio),
+        getGigTimeMs: () => 999,
+        pauseAudio: vi.fn(),
+        resumeAudio: vi.fn(() => true),
+        setCorruptionState: vi.fn(),
+        disableCorruptionBurstAudio: vi.fn()
+      })
+
+    act(() => {
+      finalTick()
+    })
+
+    expect(gameStateRef.current.isGameOver).toBe(true)
+    expect(addToast).toHaveBeenCalledWith('BAND COLLAPSED', 'error')
+    expect(setLastGigStats).not.toHaveBeenCalled()
+    expect(stopAudio).not.toHaveBeenCalled()
+
+    fireCollapseTimer()
+
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats.mock.calls[0][0]).toMatchObject({ failed: true })
+    expect(endGig).toHaveBeenCalledTimes(1)
   })
 
   it('completion -> Quit: Quit neither resubmits nor ends the gig again', async () => {
