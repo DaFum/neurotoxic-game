@@ -3,6 +3,7 @@ import { TFunction } from 'i18next'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
+import { claimGigResultSubmission } from '../utils/rhythmGameLoopUtils'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { PostGigSummary } from '../types'
 import type { ToastCallback } from '../types/callbacks'
@@ -41,6 +42,8 @@ export const useGigSession = ({
   // Set when a failed resume re-pauses, so that re-pause doesn't stack a
   // PAUSED toast on top of the resume-failed error.
   const silentRepauseRef = useRef(false)
+  // Claim latch for a Quit that runs before the rhythm state exists.
+  const fallbackClaimRef = useRef({ hasSubmittedResults: false })
 
   useEffect(() => {
     // The game loop reads this so an event overlay does not resume audio
@@ -103,16 +106,20 @@ export const useGigSession = ({
   }, [])
 
   const handleQuitGig = useCallback(async () => {
-    // A second Quit, or a Quit after finalizeGig submitted, must not overwrite
-    // the submitted stats or end the gig again. This cannot strand the scene:
-    // finalizeGig calls endGig in a `finally`, and endGig does not throw. Its
-    // CHANGE_SCENE dispatch runs inside React's `startTransition`, which
-    // catches and reports errors, and the practice branch only adds a toast
-    // and a boolean flag, whose reducers return the old state on bad input.
-    if (gameStateRef.current?.hasSubmittedResults) return
-    if (gameStateRef.current) {
-      gameStateRef.current.hasSubmittedResults = true
-    }
+    // A second Quit, or a Quit after finalizeGig or the collapse timer
+    // submitted, must not overwrite the submitted stats or end the gig again.
+    // This cannot strand the scene: the winning path calls endGig itself (the
+    // collapse timer does so in a finally), and
+    // endGig does not throw. Its CHANGE_SCENE dispatch runs inside React's
+    // `startTransition`, which catches and reports errors, and the practice
+    // branch only adds a toast and a boolean flag, whose reducers return the
+    // old state on bad input. Without rhythm state the hook-local stand-in
+    // holds the claim, so repeated Quits still submit once.
+    const submit = claimGigResultSubmission(
+      gameStateRef.current ?? fallbackClaimRef.current,
+      setLastGigStats
+    )
+    if (!submit) return
     try {
       stopAudio()
     } catch (e) {
@@ -128,15 +135,21 @@ export const useGigSession = ({
       const score = gameStateRef.current?.score ?? 0
       const toxicTime = gameStateRef.current?.toxicTimeTotal ?? 0
 
-      const snapshot = buildGigStatsSnapshot(
-        score,
-        gameStateRef.current?.stats,
-        toxicTime,
-        gameStateRef.current?.songStats,
-        true
-      )
-      setLastGigStats(snapshot)
-      endGig()
+      try {
+        submit(() =>
+          buildGigStatsSnapshot(
+            score,
+            gameStateRef.current?.stats,
+            toxicTime,
+            gameStateRef.current?.songStats,
+            true
+          )
+        )
+      } finally {
+        // The claim is held even if publishing throws, so no other path can
+        // end the gig any more.
+        endGig()
+      }
     }
   }, [endGig, setLastGigStats, addToast, gameStateRef, tRef])
 

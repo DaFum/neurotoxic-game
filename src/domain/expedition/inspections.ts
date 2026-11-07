@@ -13,7 +13,7 @@ import type {
   ExpeditionInspectionResolution,
   ExpeditionInspectionResult
 } from '../../types/expedition'
-import { canSpendExpeditionCash } from './loadout'
+import { canSpendExpeditionCash } from './spendableCash'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { aggregateExpeditionModuleProfiles } from './modules'
 import { isExpeditionServiceLocation, resolveExpeditionRepair } from './repairs'

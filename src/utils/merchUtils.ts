@@ -19,7 +19,7 @@ const BASE_MERCH_CAPACITY = 100
 /**
  * Calculates merch carrying capacity from a capacity bonus.
  */
-export const getMerchCapacity = (bonus: unknown): number =>
+const getMerchCapacity = (bonus: unknown): number =>
   BASE_MERCH_CAPACITY + Math.max(0, finiteNumberOr(bonus, 0))
 
 /**

@@ -20,7 +20,7 @@ import { clampPercent } from '../../utils/gameState/clamps'
 import {
   getExpeditionProtectedCash,
   getExpeditionSpendableCash
-} from './loadout'
+} from './spendableCash'
 import {
   EXPEDITION_CONDITION_TIER_LABELS,
   getExpeditionConditionSummary,

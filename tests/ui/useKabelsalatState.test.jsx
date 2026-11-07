@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
 import { useKabelsalatState } from '../../src/scenes/kabelsalat/useKabelsalatState'
+import {
+  FakeImage,
+  installFakeImage,
+  restoreImage
+} from '../helpers/fakeImage.js'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -35,16 +40,6 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    loadTexture: vi.fn(async () => ({
-      source: { resource: { src: 'mock://texture' } }
-    }))
-  }
-})
-
 vi.mock('../../src/utils/logger', () => ({
   logger: {
     warn: vi.fn(),
@@ -58,6 +53,11 @@ describe('useKabelsalatState', () => {
     vi.clearAllMocks()
     vi.clearAllTimers()
     vi.useFakeTimers()
+    installFakeImage()
+  })
+
+  afterEach(() => {
+    restoreImage()
   })
 
   it('initializes with default state', async () => {
@@ -235,23 +235,16 @@ describe('useKabelsalatState', () => {
     expect(result.current.isPoweredOn).toBe(false)
   })
 
-  it('loads background texture on mount', async () => {
-    vi.useRealTimers() // Required because background texture loading is promise-based and could block fake timers
-
+  it('exposes the background URL once it preloads', async () => {
     let resultRef
     await act(async () => {
       const { result } = renderHook(() => useKabelsalatState())
       resultRef = result
     })
 
-    await waitFor(
-      () => {
-        expect(resultRef.current.bgTextureUrl).toBeTruthy()
-      },
-      { timeout: 1000 }
-    )
-
-    vi.useFakeTimers()
+    expect(resultRef.current.bgTextureUrl).toBeNull()
+    act(() => FakeImage.instances[0].load())
+    expect(resultRef.current.bgTextureUrl).toBe('mock-url')
   })
 
   it('ignores cable clicks when shocked', async () => {

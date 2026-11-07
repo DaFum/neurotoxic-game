@@ -191,14 +191,6 @@ const applyRivalOfferPressure = (
   }
 }
 
-/**
- * Generates available brand deal offers based on follower reach, trend fit,
- * brand reputation, and nearby rival pressure.
- *
- * @param gameState - Current state containing social metrics, band traits, player location, and rival data.
- * @param rng - Random number generator used for offer scoring jitter.
- * @returns Up to three generated brand offers, or an empty list when a deal is already active.
- */
 interface BrandOfferPreparation {
   pool: PoolEntry[]
   rivalPower: number
@@ -260,6 +252,38 @@ const prepareBrandOfferContext = (
   return { pool, rivalPower, totalFollowers }
 }
 
+/**
+ * Shared materialization for brand offer generators: builds flavored offers
+ * for already-selected entries in order, then applies rival payout pressure.
+ * Callers must finish scoring first so flavor RNG draws follow score draws.
+ */
+const materializeBrandOffers = (
+  entries: readonly PoolEntry[],
+  { rivalPower, totalFollowers }: BrandOfferPreparation,
+  gameState: SocialEngineGameState,
+  rng: RandomFn
+): BrandOffer[] =>
+  entries.map(entry =>
+    applyRivalOfferPressure(
+      buildBrandOffer(entry.deal, {
+        tier: entry.tier,
+        isStretched: entry.tier > 0,
+        gameState,
+        rng,
+        totalFollowers
+      }),
+      rivalPower
+    )
+  )
+
+/**
+ * Generates available brand deal offers based on follower reach, trend fit,
+ * brand reputation, and nearby rival pressure.
+ *
+ * @param gameState - Current state containing social metrics, band traits, player location, and rival data.
+ * @param rng - Random number generator used for offer scoring jitter.
+ * @returns Up to three generated brand offers, or an empty list when a deal is already active.
+ */
 export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
@@ -267,7 +291,7 @@ export const generateBrandOffers = (
   const prep = prepareBrandOfferContext(gameState)
   if (!prep) return []
 
-  const { pool, rivalPower, totalFollowers } = prep
+  const { pool } = prep
 
   const [top1, top2, top3] = selectTop3ByScore(pool, entry =>
     scoreEntry(entry, gameState, rng)
@@ -284,26 +308,7 @@ export const generateBrandOffers = (
   if (top2) picked.push(top2)
   if (top3) picked.push(top3)
 
-  const pickedLen = picked.length
-  const offers: BrandOffer[] = []
-  for (let i = 0; i < pickedLen; i++) {
-    const entry = picked[i]
-    if (entry) {
-      offers.push(
-        applyRivalOfferPressure(
-          buildBrandOffer(entry.deal, {
-            tier: entry.tier,
-            isStretched: entry.tier > 0,
-            gameState,
-            rng,
-            totalFollowers
-          }),
-          rivalPower
-        )
-      )
-    }
-  }
-  return offers
+  return materializeBrandOffers(picked, prep, gameState, rng)
 }
 
 /**
@@ -318,27 +323,19 @@ export const generateRankedBrandOffers = (
   const prep = prepareBrandOfferContext(gameState, minPoolSize)
   if (!prep) return []
 
-  const { pool, rivalPower, totalFollowers } = prep
-
   // Score once in admission order before flavor consumes any RNG draws.
   // Array.sort is stable, so tied entries retain that admission order.
-  const ranked = pool
+  const ranked = prep.pool
     .map(entry => ({
       entry,
       score: scoreEntry(entry, gameState, rng)
     }))
     .sort((a, b) => b.score - a.score)
-  return ranked.map(({ entry }) =>
-    applyRivalOfferPressure(
-      buildBrandOffer(entry.deal, {
-        tier: entry.tier,
-        isStretched: entry.tier > 0,
-        gameState,
-        rng,
-        totalFollowers
-      }),
-      rivalPower
-    )
+  return materializeBrandOffers(
+    ranked.map(({ entry }) => entry),
+    prep,
+    gameState,
+    rng
   )
 }
 

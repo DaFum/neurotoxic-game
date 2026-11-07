@@ -1,7 +1,5 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-// Side-effect: registers all modules including workshop modules
-import '../../src/utils/assets/assetModuleRegistry.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { installModule } from '../../src/context/assets/assetActionCreators.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'

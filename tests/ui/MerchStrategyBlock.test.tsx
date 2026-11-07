@@ -2,6 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MerchStrategyBlock } from '../../src/components/pregig/MerchStrategyBlock'
 import { DEFAULT_MERCH_PRICES, MERCH_MAX_PRICES } from '../../src/data/merch'
+import { gameReducer } from '../../src/context/gameReducer'
+import { createRestockMerchAction } from '../../src/context/actionCreators'
+import { createInitialState } from '../../src/context/initialState'
+import { getActiveAssetModifiers } from '../../src/utils/assets/assetSelectors/stateAggregation'
+import { finiteNumberOr } from '../../src/utils/gameState'
+import type { GameState } from '../../src/types'
 
 vi.mock('../../src/utils/numberUtils', () => ({
   formatCurrency: (value: number) => `${value} EUR`
@@ -214,6 +220,116 @@ describe('MerchStrategyBlock', () => {
       expect(button).toBeDisabled()
       fireEvent.click(button!)
       expect(onUpdatePrice).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('display/settlement parity', () => {
+    const shirtsIndex = Object.keys(DEFAULT_MERCH_PRICES).indexOf('shirts')
+
+    const installed = (kind: string, slotType: string, moduleId: string) => ({
+      id: `asset_${moduleId}`,
+      kind,
+      chassisFlavor: 'legit',
+      chassisTier: 3,
+      condition: 100,
+      baseUpkeep: 0,
+      baseDailyRevenue: 0,
+      baseRiskEventChance: 0,
+      acquiredOnDay: 1,
+      acquisitionMode: 'cash',
+      slots: [
+        {
+          id: `slot_${moduleId}`,
+          slotType,
+          position: { x: 0, y: 0 },
+          installedModuleId: moduleId
+        }
+      ]
+    })
+
+    const careerWith = (
+      inventory: Record<string, unknown>,
+      assets: unknown[] = []
+    ): GameState => {
+      const base = createInitialState()
+      return {
+        ...base,
+        player: { ...base.player, money: 500 },
+        band: { ...base.band, inventory },
+        assets
+      } as GameState
+    }
+
+    /** Hovers the shirts restock button, with props wired as PreGig wires them. */
+    const displayedShirtQuote = (state: GameState): string => {
+      const modifiers = getActiveAssetModifiers(state.assets ?? [])
+      render(
+        <MerchStrategyBlock
+          bandInventory={state.band.inventory}
+          customPrices={{}}
+          onUpdatePrice={vi.fn()}
+          onRestock={vi.fn()}
+          restockCostMultiplier={modifiers.merchCostMultiplier}
+          merchCapacityBonus={modifiers.merchCapacityBonus}
+          playerMoney={state.player.money}
+        />
+      )
+      const button = screen.getAllByRole('button', { name: 'Restock' })[
+        shirtsIndex
+      ]
+      expect(button).toBeEnabled()
+      fireEvent.mouseEnter(button!)
+      return screen.getByText(/^Cost: /).textContent ?? ''
+    }
+
+    /** The cost and units the RESTOCK_MERCH reducer actually settles. */
+    const settledShirtQuote = (state: GameState): string => {
+      const next = gameReducer(state, createRestockMerchAction('shirts'))
+      const cost = state.player.money - next.player.money
+      const amount =
+        finiteNumberOr(next.band.inventory.shirts, 0) -
+        finiteNumberOr(state.band.inventory.shirts, 0)
+      return `Cost: ${cost} EUR (+${amount})`
+    }
+
+    it.each([
+      {
+        name: 'discounted partial stock',
+        state: () =>
+          careerWith({ patches: 95 }, [
+            installed(
+              'merch_workshop_chassis',
+              'mw_print',
+              'mw_4color_carousel'
+            )
+          ]),
+        // ceil(ceil(150 * 0.75) * 5/25) = 23
+        expected: 'Cost: 23 EUR (+5)'
+      },
+      {
+        name: 'combined capacity with a capacity bonus',
+        state: () =>
+          careerWith({ shirts: 60, patches: 35 }, [
+            installed('tourbus_chassis', 'tb_roof', 'tb_roof_rack')
+          ]),
+        expected: 'Cost: 150 EUR (+25)'
+      },
+      {
+        name: 'malformed stock',
+        state: () =>
+          careerWith({
+            shirts: 'lots',
+            patches: Number.NaN,
+            hoodies: Number.POSITIVE_INFINITY,
+            vinyl: 90
+          }),
+        expected: 'Cost: 60 EUR (+10)'
+      }
+    ])('shows the quote the reducer settles: $name', ({ state, expected }) => {
+      const s = state()
+      const displayed = displayedShirtQuote(s)
+      expect(displayed).toBe(expected)
+      expect(settledShirtQuote(s)).toBe(displayed)
     })
   })
 })

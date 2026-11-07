@@ -94,7 +94,7 @@ jobs:
         # Forks cannot be commented on with the read-only token they receive.
         if: |
           github.event.pull_request.head.repo.full_name == github.repository &&
-          ((env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1' || steps.lint-preview.outputs.fix_failed == '1')) ||
+          ((env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1' || steps.lint-preview.outputs.dup_failed == '1' || steps.lint-preview.outputs.fix_failed == '1')) ||
           (env.POST_ON_DIFF_ONLY != 'true' && steps.lint-preview.outputs.should_comment == '1'))
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -134,6 +134,14 @@ jobs:
                 body,
               });
             }
+
+      - name: Fail when duplicate analysis failed
+        if: ${{ always() && steps.lint-preview.outputs.dup_failed == '1' }}
+        env:
+          DUP_STATUS: ${{ steps.lint-preview.outputs.dup_status }}
+        run: |
+          echo "dup_status=$DUP_STATUS"
+          exit 1
 
       - name: Fail when autofix left unresolved errors
         if: ${{ always() && steps.lint-preview.outputs.fix_failed == '1' }}

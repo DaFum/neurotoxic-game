@@ -33,8 +33,10 @@ import {
   getActiveAssetModifiers
 } from '../../utils/assets/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
-import { getExpeditionSpendableCash } from './loadout'
-import { getExpeditionProtectedCash } from './spendableCash'
+import {
+  getExpeditionProtectedCash,
+  getExpeditionSpendableCash
+} from './spendableCash'
 import { isExpeditionChassisCommitmentLocked } from './buildCommitment'
 import { getExpeditionNodeBookingLock } from './fame'
 import { canClaimExpeditionInsurance } from './insurance'

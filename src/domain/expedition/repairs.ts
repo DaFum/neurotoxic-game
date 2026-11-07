@@ -15,7 +15,7 @@ import type { GameState } from '../../types'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionTechnicalCondition } from './condition'
-import { canSpendExpeditionCash } from './loadout'
+import { canSpendExpeditionCash } from './spendableCash'
 import { DEFECT_SEVERITY_DAMAGE } from './defects'
 
 /**

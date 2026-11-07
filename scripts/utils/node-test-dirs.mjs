@@ -45,15 +45,18 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/gameBalanceZealotry.test.js',
   'tests/node/i18nextParserConfig.test.js',
   'tests/node/lintFixPreview.test.js',
+  'tests/node/nodeTestArgs.test.js',
   'tests/node/nodeTestDiscovery.test.js',
   'tests/node/parallelism.test.js',
   'tests/node/playwright-screenshot-fixture-validation.test.js',
   'tests/node/projectDeclarationsLibCheck.test.js',
+  'tests/node/runNodeTestsCli.test.js',
   'tests/node/skilltestHarness.test.js',
   'tests/node/testRunners.test.js',
   'tests/node/updateSymbols.test.js',
   'tests/node/vitePwaConfig.test.js',
-  'tests/node/workflowScripts.test.js'
+  'tests/node/workflowScripts.test.js',
+  'tests/node/zealotryCounterSchema.test.js'
 ])
 
 const toolingNodeTestSet = new Set(TOOLING_NODE_TESTS)

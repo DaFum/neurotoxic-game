@@ -1940,6 +1940,7 @@
   "pregig.merchStrategy.maxCapacity": "Maximale Merch-Kapazität erreicht",
   "pregig.merchStrategy.restock": "Vorrat auffüllen",
   "pregig.merchStrategy.restockCost": "Kosten: {{cost}} (+{{amount}})",
+  "pregig.merchStrategy.restockUnavailable": "Für diesen Artikel nicht nachfüllbar",
   "pregig.merchStrategy.stock": "Bestand: {{count}}",
   "pregig.merchStrategy.title": "Merch-Strategie",
   "pregig.merchStrategy.unaffordable": "Unzureichende Mittel ({{cost}})",

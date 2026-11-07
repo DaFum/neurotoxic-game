@@ -109,30 +109,11 @@ const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 export const EXPEDITION_MAX_SETLIST_SONGS = 4
 
 export {
+  canSpendExpeditionCash,
   getExpeditionProtectedCash,
   getExpeditionSpendableCash,
   settleExpeditionMandatoryDebit
 } from './spendableCash'
-
-/**
- * Checks whether an active-Expedition spend is affordable.
- *
- * @param state - Current game state.
- * @param amount - Non-negative cost to test.
- * @returns True when the spend stays inside the spendable slice.
- *
- * @remarks
- * A non-finite or negative amount is rejected rather than clamped: silently
- * treating `NaN` as free would let a malformed caller spend nothing and receive
- * the goods.
- */
-export const canSpendExpeditionCash = (
-  state: GameState,
-  amount: number
-): boolean =>
-  isFiniteNumber(amount) &&
-  amount >= 0 &&
-  getExpeditionSpendableCash(state) >= amount
 
 /**
  * What START will charge for the cheapest legal next Expedition.

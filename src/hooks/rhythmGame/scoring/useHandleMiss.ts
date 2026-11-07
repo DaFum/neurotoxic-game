@@ -13,6 +13,7 @@ import {
 } from '../../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../../context/gameConstants'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
+import { claimGigResultSubmission } from '../../../utils/rhythmGameLoopUtils'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -165,25 +166,37 @@ export const useHandleMiss = ({
         gameOverTimerRef.current = null
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
         if (audioEngine.getPlayRequestId() !== failReqId) return
-        if (!Array.isArray(gameStateRef.current.songStats)) {
-          gameStateRef.current.songStats = []
-        }
-        addToast(
-          t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
-          'info'
+        // Quit (or completion) may have submitted during the delay; the
+        // claim is taken before any callback so a re-entrant Quit sees it.
+        const submit = claimGigResultSubmission(
+          gameStateRef.current,
+          setLastGigStats
         )
-        setLastGigStats(
-          buildGigStatsSnapshot(
-            gameStateRef.current.score,
-            gameStateRef.current.stats,
-            gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats,
-            // Health hit zero: a failed gig must never gate into the
-            // good-gig reputation/quest branch, whatever the accuracy was.
-            true
+        if (!submit) return
+        try {
+          if (!Array.isArray(gameStateRef.current.songStats)) {
+            gameStateRef.current.songStats = []
+          }
+          addToast(
+            t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
+            'info'
           )
-        )
-        endGig()
+          submit(() =>
+            buildGigStatsSnapshot(
+              gameStateRef.current.score,
+              gameStateRef.current.stats,
+              gameStateRef.current.toxicTimeTotal,
+              gameStateRef.current.songStats,
+              // Health hit zero: a failed gig must never gate into the
+              // good-gig reputation/quest branch, whatever the accuracy was.
+              true
+            )
+          )
+        } finally {
+          // The claim is held even if publishing throws, so Quit can no
+          // longer end the gig; the timer must always leave the scene.
+          endGig()
+        }
       }, 4000)
     },
     [

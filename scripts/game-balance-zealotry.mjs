@@ -10,7 +10,8 @@ import {
 import {
   SCENARIOS,
   SIMULATION_CONSTANTS,
-  runSingleSimulation
+  runSingleSimulation,
+  createZealotryCounters
 } from './game-balance-simulation.mjs'
 import { streamSeed, pairedFamePerGig } from './game-balance-experiments.mjs'
 
@@ -165,40 +166,15 @@ export const runZealotryExperiment = async ({
   }
 }
 
-const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
+export const aggregatePolicyMetrics = (
+  controlRuns,
+  candidateRuns,
+  bootstrapSeed
+) => {
   const n = controlRuns.length
 
   // Action count aggregations
-  const actionTotals = {
-    sermon: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    leak: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    cult: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    pirate: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    }
-  }
+  const actionTotals = createZealotryCounters().actions
 
   let totalDealBreakEvents = 0
   let totalTrustLost = 0
@@ -217,7 +193,11 @@ const aggregatePolicyMetrics = (controlRuns, candidateRuns, bootstrapSeed) => {
 
     let runTotalEligible = 0
     for (const [actionKey, act] of Object.entries(zp.actions || {})) {
-      if (!actionTotals[actionKey]) continue
+      if (!Object.hasOwn(actionTotals, actionKey)) {
+        throw new RangeError(
+          `Unknown zealotry action in counters: ${actionKey}`
+        )
+      }
       actionTotals[actionKey].attempted += act.attempted ?? 0
       actionTotals[actionKey].eligible += act.eligible ?? 0
       actionTotals[actionKey].successful += act.successful ?? 0

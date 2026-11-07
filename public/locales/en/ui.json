@@ -1940,6 +1940,7 @@
   "pregig.merchStrategy.maxCapacity": "Max merch capacity reached",
   "pregig.merchStrategy.restock": "Restock",
   "pregig.merchStrategy.restockCost": "Cost: {{cost}} (+{{amount}})",
+  "pregig.merchStrategy.restockUnavailable": "Restock unavailable for this item",
   "pregig.merchStrategy.stock": "Stock: {{count}}",
   "pregig.merchStrategy.title": "Merch Strategy",
   "pregig.merchStrategy.unaffordable": "Insufficient funds ({{cost}})",

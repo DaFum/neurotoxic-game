@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import { KabelsalatScene } from '../../src/scenes/KabelsalatScene'
 import { useGameActions } from '../../src/context/GameState'
+import {
+  FakeImage,
+  installFakeImage,
+  restoreImage
+} from '../helpers/fakeImage.js'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => {
@@ -62,18 +67,18 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
-  const original = await importOriginal()
-  return {
-    ...original,
-    loadTexture: vi.fn(async () => null)
-  }
-})
-
 vi.mock('../../src/utils/logger', () => ({
   logger: { warn: vi.fn() },
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
+
+beforeEach(() => {
+  installFakeImage()
+})
+
+afterEach(() => {
+  restoreImage()
+})
 
 describe('KabelsalatScene', () => {
   let mockCompleteMinigame
@@ -170,16 +175,30 @@ describe('KabelsalatScene', () => {
     expect(screen.getAllByText('PWR').length).toBeGreaterThan(0)
   })
 
-  it('renders background with correct styling', async () => {
+  it('stays hidden until the background preloads, then shows it as CSS background', async () => {
     let container
     await act(async () => {
       const result = render(<KabelsalatScene />)
       container = result.container
     })
 
-    // Check that the main container has background styling
     const mainDiv = container.firstChild
-    expect(mainDiv).toHaveClass(/flex/)
+    expect(mainDiv).toHaveClass('opacity-0')
+    expect(mainDiv).not.toHaveClass('opacity-100')
+    expect(mainDiv.style.backgroundImage).toBe('')
+
+    expect(FakeImage.instances).toHaveLength(1)
+    expect(FakeImage.instances[0].src).toBe('mock-url')
+    act(() => FakeImage.instances[0].load())
+
+    expect(mainDiv).not.toHaveClass('opacity-0')
+    expect(mainDiv).toHaveClass(
+      'opacity-100',
+      'transition-opacity',
+      'duration-300'
+    )
+    expect(mainDiv.style.backgroundImage).toBe('url("mock-url")')
+    expect(mainDiv.style.backgroundSize).toBe('cover')
   })
 })
 

@@ -2,11 +2,11 @@ import type { AssetModule } from '../../../types/assets'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
- * Bandhaus module catalogue registered into `MODULE_REGISTRY` on import.
+ * Bandhaus module catalogue: an ordered module array and its image prompts.
  *
  * @remarks
- * Importing this file has the side effect of adding module definitions and
- * image prompts for the bandhaus asset section.
+ * Pure data with no import side effects. `assetModuleRegistry.ts` composes it
+ * into `MODULE_REGISTRY`, `ASSET_MODULES_MAP` and `MODULE_PROMPTS`.
  */
 export const BANDHAUS_MODULES: readonly AssetModule[] = [
   {

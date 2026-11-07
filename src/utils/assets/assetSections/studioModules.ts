@@ -2,11 +2,11 @@ import type { AssetModule } from '../../../types/assets'
 import { FLAGS } from '../../../data/flags.registry'
 
 /**
- * Studio module catalogue registered into `MODULE_REGISTRY` on import.
+ * Studio module catalogue: an ordered module array and its image prompts.
  *
  * @remarks
- * Importing this file has the side effect of adding module definitions and
- * image prompts for the studio asset section.
+ * Pure data with no import side effects. `assetModuleRegistry.ts` composes it
+ * into `MODULE_REGISTRY`, `ASSET_MODULES_MAP` and `MODULE_PROMPTS`.
  */
 export const STUDIO_MODULES: readonly AssetModule[] = [
   {

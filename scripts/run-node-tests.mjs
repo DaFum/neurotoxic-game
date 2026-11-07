@@ -4,58 +4,38 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 import { NODE_TEST_DIRS, isToolingNodeTest } from './utils/node-test-dirs.mjs'
+import { parseNodeTestArgs } from './utils/node-test-args.mjs'
 
-const rawArgs = process.argv.slice(2)
-const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
+// Every argument is interpreted once, here. Sharding (--shard=<index>/<total>,
+// 1-based) splits the discovered file list into deterministic shards so CI can
+// run the node tier in parallel jobs; it is ignored when specific test files
+// are passed.
+const {
+  skipHeavy: flagSkipHeavy,
+  onlyHeavy: flagOnlyHeavy,
+  onlyTooling: flagOnlyTooling,
+  shard,
+  concurrency,
+  reporterArgs,
+  forwardedArgs,
+  explicitFiles
+} = parseNodeTestArgs(process.argv.slice(2))
 
-const hasFlag = flag => normalizedArgs.includes(flag)
-
-const flagSkipHeavy = hasFlag('--skip-heavy')
-const flagOnlyHeavy = hasFlag('--only-heavy')
-const flagOnlyTooling = hasFlag('--only-tooling')
-
-// Optional sharding: --shard=<index>/<total> (1-based index). Splits the
-// discovered test-file list into <total> deterministic shards so CI can run
-// the node tier in parallel jobs. Ignored when specific test files are passed.
-const shardArg = normalizedArgs.find(arg => arg.startsWith('--shard='))
-let shardIndex = 0
-let shardTotal = 0
-if (shardArg) {
-  const [rawIndex, rawTotal] = shardArg.slice('--shard='.length).split('/')
-  shardIndex = Number(rawIndex)
-  shardTotal = Number(rawTotal)
-  if (
-    !Number.isInteger(shardIndex) ||
-    !Number.isInteger(shardTotal) ||
-    shardTotal < 1 ||
-    shardIndex < 1 ||
-    shardIndex > shardTotal
-  ) {
-    console.error(
-      `Invalid --shard value "${shardArg}"; expected --shard=<index>/<total> with 1 <= index <= total.`
-    )
-    process.exit(1)
-  }
+const fail = message => {
+  console.error(message)
+  process.exit(1)
 }
 
-const nodeTestArgs = normalizedArgs.filter(
-  arg =>
-    arg !== '--skip-heavy' &&
-    arg !== '--only-heavy' &&
-    arg !== '--only-tooling' &&
-    !arg.startsWith('--shard=') &&
-    !arg.startsWith('--test-concurrency')
-)
+if (shard && !shard.valid) {
+  fail(
+    `Invalid --shard value "${shard.token}"; expected --shard=<index>/<total> with 1 <= index <= total.`
+  )
+}
+const shardIndex = shard?.index ?? 0
+const shardTotal = shard?.total ?? 0
 
-const hasExplicitConcurrency = normalizedArgs.some(arg =>
-  arg.startsWith('--test-concurrency')
-)
-
-const testConcurrency = hasExplicitConcurrency
-  ? normalizedArgs
-      .find(arg => arg.startsWith('--test-concurrency'))
-      .split('=')[1]
-  : computeWorkerCount('NODE_TEST_CONCURRENCY')
+const testConcurrency =
+  concurrency ?? computeWorkerCount('NODE_TEST_CONCURRENCY')
 
 const commandArgs = [
   '--test',
@@ -139,10 +119,9 @@ if (
   (shouldOnlyHeavy && shouldSkipHeavy) ||
   (flagOnlyTooling && (shouldOnlyHeavy || shouldSkipHeavy))
 ) {
-  console.error(
+  fail(
     'Invalid node-test selection: --only-tooling, --only-heavy, and --skip-heavy cannot be combined.'
   )
-  process.exit(1)
 }
 
 const filterByToolingMode = testFiles =>
@@ -167,47 +146,12 @@ const filterByHeavyMode = testFiles => {
   return testFiles
 }
 
-const filteredArgs = []
-for (let i = 0; i < nodeTestArgs.length; i++) {
-  const arg = nodeTestArgs[i]
-  if (arg === '--import' || arg === '-r' || arg === '--require') {
-    i++
-  } else if (!arg.startsWith('-')) {
-    filteredArgs.push(arg)
-  }
-}
-
-const specificTestFileArgs = filteredArgs.filter(
-  arg => arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs')
-)
-
-const hasNonNodeSpecificFile = specificTestFileArgs.some(
-  arg => !isPathInNodeDirs(arg)
-)
-if (hasNonNodeSpecificFile) {
-  console.error(
+// Explicit paths resolve against cwd here, but against REPO_ROOT for the
+// tooling check below; both bases are pinned by the characterization test.
+if (explicitFiles.some(arg => !isPathInNodeDirs(arg))) {
+  fail(
     'Node runner only supports node:test directories under tests/. Use the Vitest runner for UI/integration and vitest-owned suites.'
   )
-  process.exit(1)
-}
-
-const isSpecificFile = specificTestFileArgs.length > 0
-
-const reporterArgs = nodeTestArgs.filter(arg =>
-  arg.startsWith('--test-reporter')
-)
-const remainingNodeTestArgs = nodeTestArgs.filter(
-  arg => !arg.startsWith('--test-reporter')
-)
-
-if (!isSpecificFile && shouldOnlyHeavy) {
-  const heavyOnlyFiles = filterByHeavyMode(getRemainingTestFiles())
-  if (heavyOnlyFiles.length === 0) {
-    console.error(
-      'Invalid node-test heavy mode: --only-heavy selected but no heavy tests matched.'
-    )
-    process.exit(1)
-  }
 }
 
 // Distribute a sorted file list across shards by round-robin on the sorted
@@ -221,35 +165,47 @@ const applyShard = testFiles => {
   return sorted.filter((_, idx) => idx % shardTotal === shardIndex - 1)
 }
 
-// An explicit path is filtered by the same rule as a discovered one. Without
-// this, `--only-tooling tests/node/actionCreators.test.js` ran a test the flag
-// exists to exclude - the mode silently did not apply to the one invocation
-// that names its files.
-if (isSpecificFile && flagOnlyTooling) {
-  const mismatched = specificTestFileArgs.filter(testFile => {
-    const relativePath = path
-      .relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile))
-      .replaceAll('\\', '/')
-    return isToolingNodeTest(relativePath) !== flagOnlyTooling
-  })
-  if (mismatched.length > 0) {
-    console.error(
-      `Invalid node-test selection: ${mismatched.join(', ')} is not a tooling test.`
-    )
-    process.exit(1)
+// The one selection pipeline. Explicit files are already in `forwardedArgs` at
+// their original positions, so that branch only validates and adds nothing;
+// heavy filtering and sharding apply to discovery alone.
+const selectDiscoveredFiles = () => {
+  if (explicitFiles.length > 0) {
+    // An explicit path is filtered by the same rule as a discovered one.
+    // Without this, `--only-tooling tests/node/actionCreators.test.js` ran a
+    // test the flag exists to exclude - the mode silently did not apply to the
+    // one invocation that names its files.
+    if (flagOnlyTooling) {
+      const mismatched = explicitFiles.filter(testFile => {
+        const relativePath = path
+          .relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile))
+          .replaceAll('\\', '/')
+        return !isToolingNodeTest(relativePath)
+      })
+      if (mismatched.length > 0) {
+        fail(
+          `Invalid node-test selection: ${mismatched.join(', ')} is not a tooling test.`
+        )
+      }
+    }
+    return []
   }
+
+  const discovered = getRemainingTestFiles()
+  // Checked on the unfiltered crawl, before the tooling filter applies.
+  if (shouldOnlyHeavy && filterByHeavyMode(discovered).length === 0) {
+    fail(
+      'Invalid node-test heavy mode: --only-heavy selected but no heavy tests matched.'
+    )
+  }
+  return applyShard(filterByHeavyMode(filterByToolingMode(discovered)))
 }
 
-const finalArgs = isSpecificFile
-  ? [...commandArgs, ...reporterArgs, ...remainingNodeTestArgs]
-  : [
-      ...commandArgs,
-      ...reporterArgs,
-      ...applyShard(
-        filterByHeavyMode(filterByToolingMode(getRemainingTestFiles()))
-      ),
-      ...remainingNodeTestArgs
-    ]
+const finalArgs = [
+  ...commandArgs,
+  ...reporterArgs,
+  ...selectDiscoveredFiles(),
+  ...forwardedArgs
+]
 
 const result = spawnSync('node', finalArgs, {
   stdio: 'inherit',

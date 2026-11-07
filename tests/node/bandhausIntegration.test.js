@@ -1,7 +1,5 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-// Side-effect: registers all modules including bandhaus modules
-import '../../src/utils/assets/assetModuleRegistry.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assets/assetModuleRegistry.ts'
 import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig.ts'
 import {
