@@ -293,6 +293,21 @@ describe('gig result submission across completion paths (#3574)', () => {
     expect(gameStateRef.current.hasSubmittedResults).toBe(true)
   })
 
+  it('collapse timer still ends the gig when its toast throws after the claim', () => {
+    const { result } = renderSession()
+    collapse(result)
+    addToast.mockImplementation(() => {
+      throw new Error('toast failed')
+    })
+
+    expect(() => vi.advanceTimersByTime(COLLAPSE_DELAY_MS)).toThrow(
+      'toast failed'
+    )
+
+    expect(endGig).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats).not.toHaveBeenCalled()
+  })
+
   it('Quit with a failing publish still ends the gig once', async () => {
     const { result } = renderSession()
     setLastGigStats.mockImplementationOnce(() => {

@@ -173,14 +173,14 @@ export const useHandleMiss = ({
           setLastGigStats
         )
         if (!submit) return
-        if (!Array.isArray(gameStateRef.current.songStats)) {
-          gameStateRef.current.songStats = []
-        }
-        addToast(
-          t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
-          'info'
-        )
         try {
+          if (!Array.isArray(gameStateRef.current.songStats)) {
+            gameStateRef.current.songStats = []
+          }
+          addToast(
+            t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
+            'info'
+          )
           submit(() =>
             buildGigStatsSnapshot(
               gameStateRef.current.score,
