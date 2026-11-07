@@ -343,13 +343,26 @@ const OBSTACLE_SELECTOR =
 // time-critical state. Larger screens keep their anchors.
 const COMPACT_OBSTACLE_SELECTOR = `${OBSTACLE_SELECTOR},[data-chatter-avoid-compact]`
 
-// Mirrors Tailwind's `max-sm` (`width < 40rem`) so the JS rule and the CSS
-// `max-sm:` rules flip at the same width, rem-scaled included.
+/**
+ * Determines whether the current viewport is considered compact.
+ *
+ * @remarks
+ * Mirrors Tailwind's `max-sm` (`width < 40rem`) so the JS rule and the CSS
+ * `max-sm:` rules flip at the same width, rem-scaled included.
+ *
+ * @returns True if the viewport is considered compact, otherwise false
+ */
 const isCompactViewport = (): boolean =>
   typeof window.matchMedia === 'function'
     ? window.matchMedia('(width < 40rem)').matches
     : window.innerWidth < SM_BREAKPOINT_PX
 
+/**
+ * Checks if a given HTML element is currently visible in the DOM.
+ *
+ * @param el - The HTML element to check
+ * @returns True if the element is visible, false if it has a hidden style or attribute
+ */
 const isElementVisible = (el: HTMLElement): boolean => {
   if (
     el.getAttribute('data-declutter-hidden') === 'true' ||
@@ -366,6 +379,12 @@ const isElementVisible = (el: HTMLElement): boolean => {
   return true
 }
 
+/**
+ * Gathers bounding rectangles of all potential UI obstacles that the chatter overlay should avoid.
+ *
+ * @param self - The chatter overlay element to exclude from obstacles
+ * @returns An array of rectangles representing blocked areas on the screen
+ */
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []
   const selector = isCompactViewport()
@@ -382,8 +401,20 @@ const collectObstacleRects = (self: HTMLElement): Rect[] => {
   return rects
 }
 
-// Candidate top-left anchors, preferred first: the scene default leads, then
-// fallbacks fan out to the opposite edge and corners.
+/**
+ * Generates a prioritized list of candidate anchor positions for the chatter overlay.
+ *
+ * @remarks
+ * Candidate top-left anchors are ordered with the most preferred first:
+ * the scene default leads, then fallbacks fan out to the opposite edge and corners.
+ *
+ * @param isOverworld - Whether the current scene is the overworld
+ * @param vw - The viewport width
+ * @param vh - The viewport height
+ * @param w - The width of the chatter overlay
+ * @param h - The height of the chatter overlay
+ * @returns An array of potential anchor coordinates
+ */
 const candidateAnchors = (
   isOverworld: boolean,
   vw: number,
@@ -415,6 +446,11 @@ const candidateAnchors = (
       ]
 }
 
+/**
+ * Clears any imperative inline positioning styles applied to the element.
+ *
+ * @param el - The HTML element to reset styles for
+ */
 const clearPositionOverride = (el: HTMLElement): void => {
   el.style.left = ''
   el.style.top = ''

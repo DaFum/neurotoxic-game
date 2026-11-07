@@ -33,3 +33,4 @@
 | 2026-11-03 | src/hooks/gamepad/GamepadContext.ts | Options, GamepadContext, useGamepadActions, useGamepadController |
 | 2026-11-04 | src/utils/gamepad/inputSource.ts | InputSource, getActiveInputSource, setActiveInputSource, useActiveInputSource |
 | 2026-11-05 | src/data/events/expeditionPressure.ts | isPendingDirectorEvent, EXPEDITION_PRESSURE_EVENTS_DB |
+| 2026-11-07 | src/components/ChatterOverlay.tsx | isCompactViewport, isElementVisible, collectObstacleRects, candidateAnchors, clearPositionOverride |
