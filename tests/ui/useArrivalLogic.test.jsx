@@ -587,6 +587,83 @@ describe('useArrivalLogic', () => {
     )
   })
 
+  test('a gig arrival is consumed once: later renders start and save nothing more', () => {
+    const venue = { id: 'club', name: 'Club' }
+    const { result, rerender } = renderHook(props => useArrivalLogic(props), {
+      initialProps: {}
+    })
+    mockGameState.gameMap = { nodes: { node_start: { type: 'GIG', venue } } }
+    rerender({})
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    // New band/player identities re-run the post-commit effect.
+    mockGameState.band = { ...mockGameState.band }
+    mockGameState.player = { ...mockGameState.player }
+    rerender({})
+    rerender({})
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(0)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+  })
+
+  test('GAMEOVER from the day tick skips the gig evaluation entirely', () => {
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      currentScene: GAME_PHASES.OVERWORLD,
+      gameMap: {
+        nodes: { node_start: { type: 'GIG', venue: { id: 'v', name: 'V' } } }
+      },
+      band: { harmony: 1 }
+    })
+    mockGameState.advanceDay.mockImplementation(() => {
+      mockGameState.currentScene = GAME_PHASES.GAMEOVER
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // harmony 1 would cancel with a fame penalty if the gig were evaluated.
+    expect(mockGameState.updatePlayer.mock.calls.length).toBe(0)
+    expect(
+      mockGameState.addToast.mock.calls.some(c => c[0].includes('cancelled'))
+    ).toBe(false)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(0)
+  })
+
+  test('a failed gig start saves after commit and keeps the arrival guard', () => {
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      currentScene: GAME_PHASES.OVERWORLD,
+      gameMap: {
+        nodes: { node_start: { type: 'GIG', venue: { id: 'v', name: 'V' } } }
+      },
+      band: { harmony: 50 }
+    })
+    mockGameState.startGig.mockImplementation(() => {
+      throw new Error('Gig Failed To Start')
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    // The day is spent: a repeated call must not tick again or retry the start.
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls).toEqual([
+      [GAME_PHASES.OVERWORLD]
+    ])
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(0)
+  })
+
   test('GIG arrival queues a provider-level save after START_GIG commits', () => {
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {

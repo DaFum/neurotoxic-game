@@ -483,6 +483,48 @@ describe('useTravelLogic', () => {
     assert.equal(props.changeScene.mock.calls[0].arguments[0], 'OVERWORLD')
   })
 
+  test('a same-node gig start that throws is reported, routes to the map and can be retried', () => {
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      }
+    })
+    props.startGig.mock.mockImplementationOnce(() => {
+      throw new Error('start failed')
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 1)
+    assert.equal(mockHandleError.mock.calls.length, 1)
+    assert.match(
+      String(mockHandleError.mock.calls[0].arguments[1]?.fallbackMessage),
+      /Failed to start Gig/
+    )
+    assert.deepEqual(
+      props.changeScene.mock.calls.map(call => call.arguments[0]),
+      ['OVERWORLD']
+    )
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    // Re-entry spends no day and saves nothing; the retry starts the gig.
+    assert.equal(props.startGig.mock.calls.length, 2)
+    assert.equal(props.changeScene.mock.calls.length, 1)
+    assert.equal(props.advanceDay.mock.calls.length, 0)
+    assert.equal(props.saveGame.mock.calls.length, 0)
+  })
+
   test('handleRefuel fills tank and deducts money', () => {
     // Defaults: money 1000, van.fuel 50. Price is 2 per unit.
     const { result, props } = setupTravelScenario(useTravelLogic)
