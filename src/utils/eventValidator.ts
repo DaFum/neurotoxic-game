@@ -4,6 +4,7 @@
  */
 import { EVENT_CATEGORIES } from '../data/events/categories'
 import { isFiniteNumber } from './finiteNumber'
+import { isLooseRecord } from './objectUtils'
 import {
   isValidItemTarget,
   isValidSocialSetTarget
@@ -142,6 +143,43 @@ const validateEffect = (
   ancestors.delete(effect)
 }
 
+/** Whether a value is a localization key in the `events:` namespace. */
+const isEventsKey = (value: unknown): value is string =>
+  typeof value === 'string' && value.startsWith('events:')
+
+type SkillCheckField = 'stat' | 'threshold' | 'success' | 'failure'
+
+/**
+ * Builds the caller's diagnostic for a malformed option-level skillCheck field.
+ * `requirement` is the shared wording ("a string", "an object", ...).
+ */
+type SkillCheckError = (field: SkillCheckField, requirement: string) => Error
+
+/**
+ * Validates an option-level skillCheck shared by both public validators.
+ *
+ * Fields are read in the order they are checked (stat, threshold, then both
+ * branches). Branch effect errors propagate unwrapped from `validateEffect`.
+ * Presence and diagnostics stay with the caller.
+ */
+const validateOptionSkillCheck = (
+  sc: Record<string, unknown>,
+  eventId: string,
+  idx: number,
+  toError: SkillCheckError
+): void => {
+  if (typeof sc.stat !== 'string') throw toError('stat', 'a string')
+  if (!isFiniteNumber(sc.threshold)) {
+    throw toError('threshold', 'a finite number')
+  }
+  const success = sc.success
+  const failure = sc.failure
+  if (!isLooseRecord(success)) throw toError('success', 'an object')
+  if (!isLooseRecord(failure)) throw toError('failure', 'an object')
+  validateEffect(success, eventId, idx)
+  validateEffect(failure, eventId, idx)
+}
+
 /**
  * Validates crisis event data and throws a descriptive error on failure.
  */
@@ -212,22 +250,22 @@ export const validateCrisisEvent = (event: unknown): boolean => {
 
   const options = e.options as unknown[]
   for (let idx = 0, len = options.length; idx < len; idx++) {
+    // Crisis options have no object guard: null/undefined options surface the
+    // native TypeError and primitives fail the label check.
     const opt = options[idx] as Record<string, unknown>
-    if (typeof opt.label !== 'string' || !opt.label.startsWith('events:')) {
+    if (!isEventsKey(opt.label)) {
       throw new Error(
         'Invalid option label at index ' + idx + ' for event ' + String(e.id)
       )
     }
 
-    if (
-      typeof opt.outcomeText !== 'string' ||
-      !opt.outcomeText.startsWith('events:')
-    ) {
+    if (!isEventsKey(opt.outcomeText)) {
       throw new Error(
         'Invalid outcomeText at index ' + idx + ' for event ' + String(e.id)
       )
     }
 
+    // Crisis presence policy: truthiness, inherited values count.
     if (!opt.effect && !opt.skillCheck) {
       throw new Error(
         'Option at index ' +
@@ -244,29 +282,27 @@ export const validateCrisisEvent = (event: unknown): boolean => {
 
     if (opt.skillCheck) {
       const sc = opt.skillCheck as Record<string, unknown>
-      const stat = sc.stat
-      const threshold = sc.threshold
-      const success = sc.success
-      const failure = sc.failure
-      if (typeof stat !== 'string')
-        throw new Error(
-          'SkillCheck stat must be a string in event ' + String(e.id)
-        )
-      if (!isFiniteNumber(threshold))
-        throw new Error(
-          'SkillCheck threshold must be a finite number in event ' +
-            String(e.id)
-        )
-      if (!success || typeof success !== 'object' || Array.isArray(success))
-        throw new Error(
-          'SkillCheck success must be an object in event ' + String(e.id)
-        )
-      if (!failure || typeof failure !== 'object' || Array.isArray(failure))
-        throw new Error(
-          'SkillCheck failure must be an object in event ' + String(e.id)
-        )
-      validateEffect(success, String(e.id), idx)
-      validateEffect(failure, String(e.id), idx)
+      // Crisis reads every skillCheck field before checking any of them.
+      const fields = {
+        stat: sc.stat,
+        threshold: sc.threshold,
+        success: sc.success,
+        failure: sc.failure
+      }
+      validateOptionSkillCheck(
+        fields,
+        String(e.id),
+        idx,
+        (field, requirement) =>
+          new Error(
+            'SkillCheck ' +
+              field +
+              ' must be ' +
+              requirement +
+              ' in event ' +
+              String(e.id)
+          )
+      )
     }
   }
 
@@ -310,23 +346,22 @@ export const validateGameEvent = (event: unknown): boolean => {
 
   for (let i = 0; i < e.options.length; i++) {
     const opt = e.options[i]
-    if (!opt || typeof opt !== 'object' || Array.isArray(opt)) {
+    if (!isLooseRecord(opt)) {
       throw new Error(`Event "${e.id}" option[${i}]: must be a non-null object`)
     }
-    const o = opt as Record<string, unknown>
-    if (typeof o.label !== 'string' || !o.label.startsWith('events:')) {
+    const o = opt
+    if (!isEventsKey(o.label)) {
       throw new Error(
         `Event "${e.id}" option[${i}]: label must start with 'events:' (got: ${JSON.stringify(o.label)})`
       )
     }
-    if (
-      typeof o.outcomeText !== 'string' ||
-      !o.outcomeText.startsWith('events:')
-    ) {
+    if (!isEventsKey(o.outcomeText)) {
       throw new Error(
         `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(o.outcomeText)})`
       )
     }
+    // General presence policy: own and not undefined; falsey values are
+    // selected and rejected by the shape checks.
     const hasEffect = Object.hasOwn(o, 'effect') && o.effect !== undefined
     const hasSkillCheck =
       Object.hasOwn(o, 'skillCheck') && o.skillCheck !== undefined
@@ -340,31 +375,15 @@ export const validateGameEvent = (event: unknown): boolean => {
       validateEffect(o.effect, String(e.id), i)
     }
     if (hasSkillCheck) {
-      const sc = o.skillCheck as Record<string, unknown>
-      if (typeof sc.stat !== 'string') {
-        throw new Error(
-          `Event "${e.id}" option[${i}]: skillCheck.stat must be a string`
-        )
-      }
-      if (!isFiniteNumber(sc.threshold)) {
-        throw new Error(
-          `Event "${e.id}" option[${i}]: skillCheck.threshold must be a finite number`
-        )
-      }
-      const success = sc.success
-      const failure = sc.failure
-      if (!success || typeof success !== 'object' || Array.isArray(success)) {
-        throw new Error(
-          `Event "${e.id}" option[${i}]: skillCheck.success must be an object`
-        )
-      }
-      if (!failure || typeof failure !== 'object' || Array.isArray(failure)) {
-        throw new Error(
-          `Event "${e.id}" option[${i}]: skillCheck.failure must be an object`
-        )
-      }
-      validateEffect(success, String(e.id), i)
-      validateEffect(failure, String(e.id), i)
+      validateOptionSkillCheck(
+        o.skillCheck as Record<string, unknown>,
+        String(e.id),
+        i,
+        (field, requirement) =>
+          new Error(
+            `Event "${e.id}" option[${i}]: skillCheck.${field} must be ${requirement}`
+          )
+      )
     }
   }
 
