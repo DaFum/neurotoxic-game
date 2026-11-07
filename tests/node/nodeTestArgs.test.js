@@ -8,6 +8,7 @@ const EMPTY = {
   onlyTooling: false,
   shard: null,
   concurrency: null,
+  repeatedOptions: [],
   reporterArgs: [],
   forwardedArgs: [],
   explicitFiles: []
@@ -37,7 +38,8 @@ describe('parseNodeTestArgs', () => {
         ...EMPTY,
         onlyTooling: true,
         shard: { token: '--shard=2/3', index: 2, total: 3, valid: true },
-        concurrency: '4',
+        concurrency: { token: '--test-concurrency=4', value: 4, valid: true },
+        repeatedOptions: ['--shard'],
         reporterArgs: ['--test-reporter=spec'],
         forwardedArgs: ['--import', 'a.js', 'tests/node/x.test.js', '--'],
         explicitFiles: ['tests/node/x.test.js']
@@ -54,14 +56,38 @@ describe('parseNodeTestArgs', () => {
     })
   })
 
-  it('keeps the value-slot and separate-value quirks', () => {
+  it('keeps the value-slot quirk', () => {
     const swallowed = parseNodeTestArgs(['-r', '--skip-heavy', 'x.test.js'])
     assert.equal(swallowed.skipHeavy, true)
     assert.deepEqual(swallowed.explicitFiles, [])
     assert.deepEqual(swallowed.forwardedArgs, ['-r', 'x.test.js'])
+  })
 
-    const separate = parseNodeTestArgs(['--test-concurrency', '4'])
-    assert.equal(separate.concurrency, 'undefined')
-    assert.deepEqual(separate.forwardedArgs, ['4'])
+  it('reads runner option values in separate form', () => {
+    const separate = parseNodeTestArgs([
+      '--test-concurrency',
+      '4',
+      '--shard',
+      '1/2'
+    ])
+    assert.deepEqual(separate.concurrency, {
+      token: '--test-concurrency 4',
+      value: 4,
+      valid: true
+    })
+    assert.deepEqual(separate.shard, {
+      token: '--shard 1/2',
+      index: 1,
+      total: 2,
+      valid: true
+    })
+    assert.deepEqual(separate.forwardedArgs, [])
+  })
+
+  it('reports a missing separate value without consuming the next option', () => {
+    const missing = parseNodeTestArgs(['--test-concurrency', '--only-heavy'])
+    assert.equal(missing.onlyHeavy, true)
+    assert.equal(missing.concurrency?.valid, false)
+    assert.equal(missing.concurrency?.token, '--test-concurrency')
   })
 })
