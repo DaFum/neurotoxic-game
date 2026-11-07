@@ -108,7 +108,8 @@ export const useGigSession = ({
   const handleQuitGig = useCallback(async () => {
     // A second Quit, or a Quit after finalizeGig or the collapse timer
     // submitted, must not overwrite the submitted stats or end the gig again.
-    // This cannot strand the scene: the winning path calls endGig itself, and
+    // This cannot strand the scene: the winning path calls endGig itself (the
+    // collapse timer does so in a finally), and
     // endGig does not throw. Its CHANGE_SCENE dispatch runs inside React's
     // `startTransition`, which catches and reports errors, and the practice
     // branch only adds a toast and a boolean flag, whose reducers return the

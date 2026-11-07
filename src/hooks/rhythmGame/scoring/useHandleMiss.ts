@@ -180,18 +180,23 @@ export const useHandleMiss = ({
           t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
           'info'
         )
-        submit(() =>
-          buildGigStatsSnapshot(
-            gameStateRef.current.score,
-            gameStateRef.current.stats,
-            gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats,
-            // Health hit zero: a failed gig must never gate into the
-            // good-gig reputation/quest branch, whatever the accuracy was.
-            true
+        try {
+          submit(() =>
+            buildGigStatsSnapshot(
+              gameStateRef.current.score,
+              gameStateRef.current.stats,
+              gameStateRef.current.toxicTimeTotal,
+              gameStateRef.current.songStats,
+              // Health hit zero: a failed gig must never gate into the
+              // good-gig reputation/quest branch, whatever the accuracy was.
+              true
+            )
           )
-        )
-        endGig()
+        } finally {
+          // The claim is held even if publishing throws, so Quit can no
+          // longer end the gig; the timer must always leave the scene.
+          endGig()
+        }
       }, 4000)
     },
     [

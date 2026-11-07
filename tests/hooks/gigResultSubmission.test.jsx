@@ -276,6 +276,8 @@ describe('gig result submission across completion paths (#3574)', () => {
 
     expect(setLastGigStats).toHaveBeenCalledTimes(1)
     expect(gameStateRef.current.hasSubmittedResults).toBe(true)
+    // The timer still leaves the scene, so the claim cannot strand the gig.
+    expect(endGig).toHaveBeenCalledTimes(1)
   })
 
   it('null ref: repeated Quits submit and end the gig once', async () => {
