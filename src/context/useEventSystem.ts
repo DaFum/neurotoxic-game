@@ -12,7 +12,6 @@ import { logger } from '../utils/logger'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { isDevEventsDisabled } from '../utils/devSeedOverride'
 import { GAME_PHASES } from './gameConstants'
-import { gameReducer } from './gameReducer'
 import {
   createPopPendingEventAction,
   createSetActiveEventAction,
@@ -39,6 +38,12 @@ type UseEventSystemParams = {
    * last render still holds the previous day.
    */
   latestStateRef: MutableRefObject<GameState>
+  /**
+   * Must publish the reduced state to `latestStateRef` synchronously, before
+   * it returns (the provider's dispatch does). Event resolution reads its
+   * save snapshot from that ref right after dispatching, so any other
+   * dispatch would save the pre-event state and lose a terminal outcome.
+   */
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback
   changeScene: ChangeScene
@@ -59,11 +64,10 @@ type SideEffectContext = {
    */
   storage: IStorageAdapter
   /**
-   * Materializes the post-resolution state snapshot for `saveGame` effects by
-   * replaying the resolution's actions through the reducer (the dispatch above
-   * has not re-rendered yet, so `stateRef` still holds the pre-event state).
-   * The replayed handlers must stay deterministic — a nondeterministic handler
-   * would make the saved snapshot silently diverge from live state.
+   * Supplies the post-resolution state snapshot for `saveGame` effects, captured
+   * from the provider-published `latestStateRef.current` after resolution dispatches.
+   * The hook fixes the snapshot before side effects so save intent carries no state
+   * and excludes toast and scene side-effect dispatches.
    */
   getResolvedState: () => GameState
 }
@@ -306,24 +310,22 @@ export function useEventSystem({
       }
       try {
         const resolution = resolveEvent(choice, currentState, clock)
-        // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid callback-invocation overhead on the event resolution hot path.
-        // Why: Eliminates callback-invocation overhead during state materialization.
-        // Impact: Speeds up event processing slightly by avoiding function calls per element.
         let resolvedStateSnapshot = currentState
         for (let i = 0; i < resolution.actions.length; i++) {
           const action = resolution.actions[i]
           if (action) {
-            resolvedStateSnapshot = gameReducer(resolvedStateSnapshot, action)
             dispatch(action)
+            resolvedStateSnapshot = latestStateRef.current
           }
         }
+        const finalSnapshot = resolvedStateSnapshot
         runSideEffects(resolution.sideEffects, {
           addToast,
           changeScene,
           saveGame,
           tRef,
           storage,
-          getResolvedState: () => resolvedStateSnapshot
+          getResolvedState: () => finalSnapshot
         })
         return {
           outcomeText: resolution.outcomeText,

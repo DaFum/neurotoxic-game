@@ -132,12 +132,12 @@ existing `bench:eventEngine`.
 
 ### Config false positives (7)
 
-These are real usages that Knip's project globs cannot see. Fixed in `knip.json`:
+These were real usages that Knip's project globs could not see at the time. Fixed in `knip.json`:
 
 | Finding                                                         | Why it is used                                                                                                                                                                       |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `rg` (unlisted binary)                                          | `scripts/check-ts-nocheck-budget.mjs` shells out to ripgrep behind a `findWithRg()` fallback that returns `null` when it is absent — an optional binary by design. `ignoreBinaries`. |
-| `@iarna/toml`                                                   | Imported by `.claude/skills/skilltest/scripts/skilltest-lib.mjs` and its `.agents/` twin, outside `project`.                                                                         |
+| `@iarna/toml`                                                   | Imported by `scripts/skilltest/harness.mjs`, which the skilltest wrappers import. Now in `entry` and `project`, so Knip sees it; the `ignoreDependencies` entry was removed.         |
 | `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` | Reached through the `typescript-eslint` meta-package in `eslint.config.js` (`tseslint.parser`, `tseslint.plugin`), never imported by name. Kept as pins.                             |
 | `@microsoft/eslint-formatter-sarif`                             | Installed ad hoc by `.github/workflows/eslint.yml` (`pnpm add -D ...@3.1.0`) for the SARIF upload, never listed in `package.json` on purpose. `ignoreDependencies`.                  |
 | `markdownlint-cli2`                                             | Run as a binary by the `mega-lint-snapshot` skill's `MARKDOWN` target.                                                                                                               |

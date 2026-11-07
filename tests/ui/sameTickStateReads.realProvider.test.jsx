@@ -146,27 +146,52 @@ describe('same-tick state reads through the real provider', () => {
   test('every resolveEvent game-over save includes the earlier same-tick dispatch', () => {
     const adapter = new InMemoryAdapter()
     const { result } = renderProvider(adapter)
-    act(() => {
-      result.current.actions.setActiveEvent(PROBE_EVENT)
-    })
     const writes = vi.spyOn(adapter, 'set')
     const money = result.current.money + 123
+    let repeated = null
 
+    // In one act: update money, activate event, resolve terminal choice with delta,
+    // and call a state-dependent action before React renders.
     act(() => {
       result.current.actions.updatePlayer({ money })
+      result.current.actions.setActiveEvent(PROBE_EVENT)
       result.current.actions.resolveEvent({
         id: 'doom',
-        _precomputedResult: { delta: { flags: { gameOver: true } } }
+        _precomputedResult: {
+          delta: {
+            player: { money: -23 },
+            flags: { gameOver: true }
+          }
+        }
       })
+      // Second resolution returns fallback:
+      repeated = result.current.actions.resolveEvent({
+        id: 'again',
+        outcomeText: 'fallback',
+        description: 'no active event'
+      })
+      // Call state-dependent action before React renders:
+      result.current.actions.updatePlayer(prev => ({
+        money: prev.money + 10
+      }))
     })
 
-    expect(result.current.money).toBe(money)
+    expect(repeated).toEqual({
+      outcomeText: 'fallback',
+      description: 'no active event',
+      result: null
+    })
+
+    // Post-render money reflects the same-tick functional update against latest state
+    expect(result.current.money).toBe(money - 23 + 10)
+
     const saves = writes.mock.calls
       .filter(([key]) => key === SAVE_KEY)
       .map(([, value]) => JSON.parse(value))
     expect(saves.length).toBeGreaterThan(0)
     for (const saved of saves) {
-      expect(saved.player.money).toBe(money)
+      // Must contain earlier money update (money), event delta (-23), and terminal outcome
+      expect(saved.player.money).toBe(money - 23)
       expect(saved.terminalOutcome.reason).toBe('event_game_over')
     }
   })
