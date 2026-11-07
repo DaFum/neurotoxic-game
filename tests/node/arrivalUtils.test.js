@@ -136,7 +136,7 @@ describe('handleNodeArrival', () => {
   gigTypes.forEach(type => {
     test(`${type} - starts gig if harmony > 0`, () => {
       const mocks = getMocks()
-      const venue = { name: 'The Club' }
+      const venue = { id: 'the_club', name: 'The Club' }
       const node = { type, venue }
       const band = { harmony: 50 }
 
@@ -151,7 +151,7 @@ describe('handleNodeArrival', () => {
 
     test(`${type} - fails to start gig if harmony <= 1`, () => {
       const mocks = getMocks()
-      const node = { type, venue: { name: 'The Club' } }
+      const node = { type, venue: { id: 'the_club', name: 'The Club' } }
       const band = { harmony: 1 }
       const player = { fame: 100 }
 
@@ -176,7 +176,7 @@ describe('handleNodeArrival', () => {
 
     test(`${type} - luck-based cancellation (harmony < threshold, rng < chance)`, () => {
       const mocks = getMocks()
-      const node = { type, venue: { name: 'The Club' } }
+      const node = { type, venue: { id: 'the_club', name: 'The Club' } }
       const band = { harmony: 10 }
       const player = { fame: 100 }
       const rng = () => 0.1 // Triggers cancellation
@@ -204,7 +204,7 @@ describe('handleNodeArrival', () => {
 
     test(`${type} - no cancellation (harmony < threshold, rng >= chance)`, () => {
       const mocks = getMocks()
-      const node = { type, venue: { name: 'The Club' } }
+      const node = { type, venue: { id: 'the_club', name: 'The Club' } }
       const band = { harmony: 10 }
       const player = { fame: 100 }
       const rng = () => 0.3 // Does NOT trigger cancellation
@@ -222,7 +222,7 @@ describe('handleNodeArrival', () => {
 
     test(`${type} - band tourSuccess scales down the cancellation chance`, () => {
       const mocks = getMocks()
-      const node = { type, venue: { name: 'The Club' } }
+      const node = { type, venue: { id: 'the_club', name: 'The Club' } }
       // tourSuccess 0.5 halves the 0.2 base chance to 0.1, so a 0.15 roll
       // that would otherwise cancel now lets the show go on.
       const band = { harmony: 10, tourSuccess: 0.5 }
@@ -241,7 +241,7 @@ describe('handleNodeArrival', () => {
 
     test(`${type} - harmony <= 1 still cancels despite tourSuccess`, () => {
       const mocks = getMocks()
-      const node = { type, venue: { name: 'The Club' } }
+      const node = { type, venue: { id: 'the_club', name: 'The Club' } }
       const band = { harmony: 1, tourSuccess: 1 }
       const player = { fame: 100 }
       const rng = () => 0.99
@@ -286,6 +286,29 @@ describe('handleNodeArrival', () => {
     assert.deepStrictEqual(result, { kind: 'overworld' })
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
     assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
+  })
+
+  // START_GIG refuses a venue without a non-empty id and name, so arrival must
+  // not decide `gig` on one: that left the deferred arrival path stalled.
+  const unbookableInlineVenues = [
+    { name: 'The Club' },
+    { id: '', name: 'The Club' },
+    { id: 'the_club', name: '' },
+    { id: 7, name: 'The Club' }
+  ]
+  unbookableInlineVenues.forEach(venue => {
+    test(`GIG - inline venue ${JSON.stringify(venue)} routes to overworld with an error`, () => {
+      const mocks = getMocks()
+      const result = handleNodeArrival({
+        node: { type: 'GIG', venue },
+        band: { harmony: 50 },
+        ...mocks
+      })
+
+      assert.deepStrictEqual(result, { kind: 'overworld' })
+      assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
+    })
   })
 
   test('requestArrivalGigStart requests the start and reports success', () => {

@@ -6,16 +6,38 @@ import { computeWorkerCount } from './utils/parallelism.mjs'
 import { NODE_TEST_DIRS, isToolingNodeTest } from './utils/node-test-dirs.mjs'
 import { parseNodeTestArgs } from './utils/node-test-args.mjs'
 
-// Every argument is interpreted once, here. Sharding (--shard=<index>/<total>,
-// 1-based) splits the discovered file list into deterministic shards so CI can
-// run the node tier in parallel jobs; it is ignored when specific test files
-// are passed.
+// Usage: node scripts/run-node-tests.mjs [--] [runner options] [node options]
+//          [test files]
+//
+// Runner options (consumed here, never passed to Node):
+//   --skip-heavy | --only-heavy | --only-tooling   Mutually exclusive modes.
+//   --shard=<i>/<n> | --shard <i>/<n>   1-based; splits discovery round-robin
+//       over the sorted file list. Ignored when test files are passed.
+//   --test-concurrency=<n> | --test-concurrency <n>   n >= 1; default is
+//       computeWorkerCount('NODE_TEST_CONCURRENCY').
+//   A value option given twice, a missing value, or a malformed one exits 1.
+//
+// Intentional grammar (pinned by tests/node/runNodeTestsCli.test.js):
+// - One leading `--` (the pnpm separator) is stripped. Runner options are
+//   recognised anywhere, including after a later `--`, which is forwarded.
+// - NODE_TEST_ONLY_HEAVY / NODE_TEST_SKIP_HEAVY act only when exactly "1".
+// - Explicit files are operands ending in .js/.mjs/.cjs. Only the values of
+//   --import/-r/--require are skipped; pass any other Node option value that
+//   ends in a JS extension in `=` form (`--test-reporter=./r.mjs`).
+// - `--test-reporter*` tokens move to the front; a separate value does not
+//   move with them, so pass reporter options in `=` form.
+// - Runner options are removed before Node value slots are read, so a runner
+//   option must not sit between a Node option and its value.
+// - Run from the repository root: node-root ownership resolves paths against
+//   cwd, the --only-tooling check against the repository root, and the
+//   spawned `--import ./tests/setup.mjs` against cwd.
 const {
   skipHeavy: flagSkipHeavy,
   onlyHeavy: flagOnlyHeavy,
   onlyTooling: flagOnlyTooling,
   shard,
   concurrency,
+  repeatedOptions,
   reporterArgs,
   forwardedArgs,
   explicitFiles
@@ -26,16 +48,24 @@ const fail = message => {
   process.exit(1)
 }
 
+if (repeatedOptions.length > 0) {
+  fail(`Invalid node-test arguments: ${repeatedOptions[0]} was given twice.`)
+}
 if (shard && !shard.valid) {
   fail(
     `Invalid --shard value "${shard.token}"; expected --shard=<index>/<total> with 1 <= index <= total.`
+  )
+}
+if (concurrency && !concurrency.valid) {
+  fail(
+    `Invalid --test-concurrency value "${concurrency.token}"; expected --test-concurrency=<n> with n >= 1.`
   )
 }
 const shardIndex = shard?.index ?? 0
 const shardTotal = shard?.total ?? 0
 
 const testConcurrency =
-  concurrency ?? computeWorkerCount('NODE_TEST_CONCURRENCY')
+  concurrency?.value ?? computeWorkerCount('NODE_TEST_CONCURRENCY')
 
 const commandArgs = [
   '--test',

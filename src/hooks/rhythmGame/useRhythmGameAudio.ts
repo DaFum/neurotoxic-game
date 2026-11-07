@@ -11,6 +11,7 @@ import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameState'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
+import { claimGigResultSubmission } from '../../utils/rhythmGameLoopUtils'
 import type { GameMap, GameState, GigModifiers, PlayerState } from '../../types'
 import type {
   RhythmGameRefState,
@@ -91,22 +92,33 @@ const handleHarmonyGuard = ({
         'error'
       )
 
-      currentSetLastGigStats(
-        buildGigStatsSnapshot(
-          0,
-          {
-            perfectHits: 0,
-            misses: 0,
-            maxCombo: 0,
-            peakHype: 0,
-            corruptionLevel: 0
-          },
-          0,
-          [],
-          true
-        )
+      // Take the shared claim so a Quit before the scene change cannot
+      // submit a second result (#3591). A path that already claimed owns endGig.
+      const submit = claimGigResultSubmission(
+        currentRhythmState,
+        currentSetLastGigStats
       )
-      currentEndGig()
+      if (submit) {
+        try {
+          submit(() =>
+            buildGigStatsSnapshot(
+              0,
+              {
+                perfectHits: 0,
+                misses: 0,
+                maxCombo: 0,
+                peakHype: 0,
+                corruptionLevel: 0
+              },
+              0,
+              [],
+              true
+            )
+          )
+        } finally {
+          currentEndGig()
+        }
+      }
     }
     return true
   }

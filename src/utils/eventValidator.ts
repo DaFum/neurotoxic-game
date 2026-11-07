@@ -33,7 +33,7 @@ const validateEffect = (
   idx: number,
   ancestors = new WeakSet<object>()
 ): void => {
-  if (!effect || typeof effect !== 'object' || Array.isArray(effect)) {
+  if (!isLooseRecord(effect)) {
     const message = Array.isArray(effect)
       ? 'Effect must be a plain object, not an array at index ' +
         idx +
@@ -214,16 +214,13 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 
-  if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
+  if (!isEventsKey(e.title)) {
     throw new Error(
       'Invalid title key: ' + String(e.title) + ' for event ' + String(e.id)
     )
   }
 
-  if (
-    typeof e.description !== 'string' ||
-    !e.description.startsWith('events:')
-  ) {
+  if (!isEventsKey(e.description)) {
     throw new Error(
       'Invalid description key: ' +
         String(e.description) +
@@ -325,16 +322,13 @@ export const validateGameEvent = (event: unknown): boolean => {
     )
   }
 
-  if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
+  if (!isEventsKey(e.title)) {
     throw new Error(
       `Event "${e.id}": title must start with 'events:' (got: ${JSON.stringify(e.title)})`
     )
   }
 
-  if (
-    typeof e.description !== 'string' ||
-    !e.description.startsWith('events:')
-  ) {
+  if (!isEventsKey(e.description)) {
     throw new Error(
       `Event "${e.id}": description must start with 'events:' (got: ${JSON.stringify(e.description)})`
     )

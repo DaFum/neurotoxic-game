@@ -480,6 +480,85 @@ exit "$status"
   })
 })
 
+describe('jscpd scan exit status', () => {
+  const steps = () =>
+    loadWorkflow('lint-fix-preview.yml').jobs['lint-preview'].steps
+
+  /**
+   * Runs the scan step under the runner's default shell with a stub pnpm.
+   * @param {import('node:test').TestContext} t
+   * @param {number} stubStatus exit status of the stub scanner
+   */
+  function runScanStep(t, stubStatus) {
+    const step = steps().find(s => s.id === 'run-jscpd')
+    const directory = mkdtempSync(path.join(os.tmpdir(), 'jscpd-scan-step-'))
+    t.after(() => rmSync(directory, { recursive: true, force: true }))
+    mkdirSync(path.join(directory, 'bin'))
+    // A stale report from an earlier scan must not survive into this one.
+    mkdirSync(path.join(directory, 'jscpd-report'))
+    writeFileSync(path.join(directory, 'jscpd-report/stale.json'), '{}')
+    writeFileSync(path.join(directory, 'step.sh'), step.run)
+    const fakePnpm = path.join(directory, 'bin/pnpm')
+    writeFileSync(
+      fakePnpm,
+      `#!/usr/bin/env bash
+printf '%s\\n' "$@" >pnpm-args
+mkdir -p jscpd-report
+echo '{"duplicates":[]}' >jscpd-report/partial.json
+exit ${stubStatus}
+`
+    )
+    chmodSync(fakePnpm, 0o755)
+    const output = path.join(directory, 'github-output')
+    writeFileSync(output, '')
+    const result = spawnSync(
+      'bash',
+      ['--noprofile', '--norc', '-eo', 'pipefail', 'step.sh'],
+      {
+        cwd: directory,
+        encoding: 'utf8',
+        timeout: 10000,
+        env: {
+          PATH: `${path.join(directory, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
+          GITHUB_OUTPUT: output,
+          JSCPD_MIN_LINES: '8',
+          JSCPD_MIN_TOKENS: '60',
+          JSCPD_IGNORE: '**/node_modules/**'
+        }
+      }
+    )
+    return {
+      result,
+      outputs: readFileSync(output, 'utf8'),
+      args: readFileSync(path.join(directory, 'pnpm-args'), 'utf8').split('\n'),
+      reports: readdirSync(path.join(directory, 'jscpd-report')).sort()
+    }
+  }
+
+  for (const status of [0, 1, 3]) {
+    test(`records scanner exit ${status} without failing the step`, t => {
+      if (process.platform === 'win32') return t.skip('bash step')
+      const { result, outputs, args, reports } = runScanStep(t, status)
+      assert.equal(result.status, 0, result.stderr)
+      assert.match(outputs, new RegExp(`^exit_code=${status}$`, 'm'))
+      assert.deepEqual(reports, ['partial.json'])
+      // Duplicates are reported, not enforced: the threshold cannot trip.
+      const threshold = args.indexOf('--threshold')
+      assert.ok(threshold >= 0)
+      assert.equal(args[threshold + 1], '100')
+    })
+  }
+
+  test('passes the scan exit status to the preview through env', () => {
+    const preview = steps().find(s => s.id === 'lint-preview')
+    assert.equal(
+      preview.env.JSCPD_EXIT_CODE,
+      '${{ steps.run-jscpd.outputs.exit_code }}'
+    )
+    assert.ok(!preview.run.includes('${{'))
+  })
+})
+
 const TRACKER_MARKER = '<!-- PR_COMMENT_TRACKER_MARKER -->'
 
 const createFakeCore = () => {

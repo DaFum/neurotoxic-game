@@ -1,4 +1,19 @@
-import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
+import { describe, it as test, beforeEach, afterEach, expect, vi } from 'vitest'
+
+// Forwarding `useRef` probe: records every ref the hook creates so a test can
+// read, by value, whether a pending arrival is still unclaimed at action time.
+const refProbe = vi.hoisted(() => ({ refs: new Set() }))
+vi.mock('react', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useRef: initial => {
+      const ref = actual.useRef(initial)
+      refProbe.refs.add(ref)
+      return ref
+    }
+  }
+})
 
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { act, cleanup, renderHook } from '@testing-library/react'
@@ -12,6 +27,7 @@ const { useArrivalLogic, mockGameState } = await setupArrivalLogicTest()
 
 describe('useArrivalLogic', () => {
   beforeEach(() => {
+    refProbe.refs.clear()
     resetMockGameState()
   })
 
@@ -85,7 +101,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles GIG node with sufficient harmony', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 }
@@ -104,7 +120,7 @@ describe('useArrivalLogic', () => {
     // The Legendary converts an ordinary node into the Underground way out of
     // an Authority crisis. Arrival used to route on the node's own class, so
     // the escape played the very show it was an escape from.
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 },
@@ -130,7 +146,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('leaves the node alone when the record names another node', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 },
@@ -390,7 +406,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles FESTIVAL node with sufficient harmony', () => {
-    const venue = { name: 'Festival Stage' }
+    const venue = { id: 'test_venue', name: 'Festival Stage' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -409,7 +425,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles FINALE node with sufficient harmony', () => {
-    const venue = { name: 'Main Arena' }
+    const venue = { id: 'test_venue', name: 'Main Arena' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -491,7 +507,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('does not start a queued gig when advanceDay commits GAMEOVER', () => {
-    const venue = { name: 'Bankruptcy Club' }
+    const venue = { id: 'test_venue', name: 'Bankruptcy Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       currentScene: GAME_PHASES.OVERWORLD,
       gameMap: {
@@ -550,7 +566,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles startGig error during GIG node gracefully', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -610,6 +626,46 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.changeScene.mock.calls.length).toBe(0)
   })
 
+  test('a gig arrival is claimed before it acts: a re-render on save starts nothing more', () => {
+    const venue = { id: 'club', name: 'Club' }
+    refProbe.refs.clear()
+    const { result, rerender } = renderHook(props => useArrivalLogic(props), {
+      initialProps: {}
+    })
+    mockGameState.gameMap = { nodes: { node_start: { type: 'GIG', venue } } }
+    rerender({})
+
+    const isArrivalPending = () =>
+      [...refProbe.refs].some(
+        ref =>
+          ref.current !== null &&
+          typeof ref.current === 'object' &&
+          Object.hasOwn(ref.current, 'phase')
+      )
+    const pendingAtAction = []
+    mockGameState.startGig.mockImplementation(() => {
+      pendingAtAction.push(isArrivalPending())
+    })
+    // The save re-renders with new state identities, re-running the effect.
+    mockGameState.saveGameAfterStateCommit.mockImplementation(() => {
+      pendingAtAction.push(isArrivalPending())
+      mockGameState.band = { ...mockGameState.band }
+      mockGameState.player = { ...mockGameState.player }
+      rerender({})
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    rerender({})
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+    // Claim-before-act: no action runs while the arrival is still pending.
+    expect(pendingAtAction).toEqual([false, false])
+  })
+
   test('GAMEOVER from the day tick skips the gig evaluation entirely', () => {
     const { result } = setupArrivalScenario(useArrivalLogic, {
       currentScene: GAME_PHASES.OVERWORLD,
@@ -665,7 +721,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('GIG arrival queues a provider-level save after START_GIG commits', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {

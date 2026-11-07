@@ -52,15 +52,9 @@ const TREES = [
     ),
     deprecationText:
       'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.',
-    expectedSkipGateCode: 1, // Pre-existing failures in .agents, pinned below
-    // The .agents react-performance-optimization frontmatter is not valid YAML
-    expectedFailingSkillDirs: ['react-performance-optimization'],
-    expectedPromptFailures: [
-      'webaudio-reliability-fixer missing expected snippets: AudioManager.ts, useRhythmGameAudio.ts',
-      'ci-hardener missing expected snippets: lint',
-      'skill-qa-harness missing expected snippets: Validate skills, Run tests',
-      'tailwind-v4-css-variables-enforcer missing expected snippets: CSS Variables'
-    ]
+    expectedSkipGateCode: 0, // .agents matches its cases cleanly
+    expectedFailingSkillDirs: [],
+    expectedPromptFailures: []
   },
   {
     name: '.claude',

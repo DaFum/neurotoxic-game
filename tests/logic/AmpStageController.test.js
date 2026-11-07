@@ -125,6 +125,34 @@ describe('AmpStageController', () => {
     expect(controller.targetFreq).toBe(600)
   })
 
+  it('redraws the background only when interference crosses a whole number', async () => {
+    await controller.init()
+    const clearSpy = vi.mocked(controller.bg.clear)
+    controller.handleTicker({ deltaMS: 16 })
+    clearSpy.mockClear()
+
+    // The hook publishes fractional interference every frame.
+    gameStateRef.current.interference = 1.2
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.interference).toBe(1)
+    expect(clearSpy).toHaveBeenCalledTimes(1)
+
+    gameStateRef.current.interference = 1.7
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.interference).toBe(1)
+    expect(clearSpy).toHaveBeenCalledTimes(1)
+
+    gameStateRef.current.interference = 2.1
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.interference).toBe(2)
+    expect(clearSpy).toHaveBeenCalledTimes(2)
+
+    gameStateRef.current.interference = 2.9
+    controller.handleTicker({ deltaMS: 16 })
+    expect(controller.interference).toBe(2)
+    expect(clearSpy).toHaveBeenCalledTimes(2)
+  })
+
   it('dispose destroys bg and waveGraphics and calls super', async () => {
     await controller.init()
 

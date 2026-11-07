@@ -5,22 +5,37 @@
  * Pure: reads nothing from `process`, the environment or the filesystem, so
  * the runner's grammar can be unit-tested without spawning. The grammar is
  * pinned, quirks included, by `tests/node/runNodeTestsCli.test.js`; changing
- * any stage below is a CLI change, not a refactor.
+ * any stage below is a CLI change, not a refactor. The user-facing grammar is
+ * summarised in the usage comment of `scripts/run-node-tests.mjs`.
  */
 
 const RUNNER_FLAGS = new Set(['--skip-heavy', '--only-heavy', '--only-tooling'])
+
+/** Runner options that take a value, as `--name=value` or `--name value`. */
+const RUNNER_VALUE_OPTIONS = ['--shard', '--test-concurrency']
 
 /** Node options whose next token is a module, never a test file. */
 const VALUE_OPTIONS = new Set(['--import', '-r', '--require'])
 
 const EXPLICIT_FILE_PATTERN = /\.(?:js|mjs|cjs)$/
+const SHARD_VALUE_PATTERN = /^\d+\/\d+$/
+const CONCURRENCY_VALUE_PATTERN = /^[1-9]\d*$/
 
 /**
  * @typedef {object} NodeTestShard
- * @property {string} token The `--shard=` token as given.
+ * @property {string} token The option as given (`--shard=1/2`, or
+ *   `--shard 1/2` for the separate form).
  * @property {number} index 1-based shard index.
  * @property {number} total Shard count.
- * @property {boolean} valid Whether `1 <= index <= total` with integers.
+ * @property {boolean} valid Whether the value is exactly `<index>/<total>`
+ *   with integers `1 <= index <= total`.
+ */
+
+/**
+ * @typedef {object} NodeTestConcurrency
+ * @property {string} token The option as given.
+ * @property {number} value The parsed worker count.
+ * @property {boolean} valid Whether the value is a positive decimal integer.
  */
 
 /**
@@ -28,9 +43,11 @@ const EXPLICIT_FILE_PATTERN = /\.(?:js|mjs|cjs)$/
  * @property {boolean} skipHeavy `--skip-heavy` was given.
  * @property {boolean} onlyHeavy `--only-heavy` was given.
  * @property {boolean} onlyTooling `--only-tooling` was given.
- * @property {NodeTestShard | null} shard The first `--shard=` token, if any.
- * @property {string | null} concurrency Value of the first
- *   `--test-concurrency*` token, or `null` when none was given.
+ * @property {NodeTestShard | null} shard The `--shard` option, if any.
+ * @property {NodeTestConcurrency | null} concurrency The
+ *   `--test-concurrency` option, if any.
+ * @property {string[]} repeatedOptions Runner value options given more than
+ *   once.
  * @property {string[]} reporterArgs `--test-reporter*` tokens, in order.
  * @property {string[]} forwardedArgs Every other Node token, in order;
  *   explicit files stay at their positions.
@@ -49,17 +66,39 @@ export const parseNodeTestArgs = rawArgs => {
   const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
 
   // Stage 2: consume runner-owned tokens wherever they appear, including in
-  // a value slot or after a later `--`. The first `--shard=` and the first
-  // `--test-concurrency*` token win; duplicates are dropped unvalidated.
+  // a value slot or after a later `--`. A runner value option is
+  // `--name=value` or `--name value`; the separate form takes the next token
+  // only when it does not start with `-`, otherwise the value is missing.
+  // A repeated value option is reported, never silently dropped.
   const flags = new Set()
-  let shardToken = null
-  let concurrencyToken = null
+  /** @type {Map<string, { token: string, value: string }>} */
+  const valueOptions = new Map()
+  /** @type {string[]} */
+  const repeatedOptions = []
   const nodeArgs = []
-  for (const arg of args) {
-    if (RUNNER_FLAGS.has(arg)) flags.add(arg)
-    else if (arg.startsWith('--shard=')) shardToken ??= arg
-    else if (arg.startsWith('--test-concurrency')) concurrencyToken ??= arg
-    else nodeArgs.push(arg)
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    const name = RUNNER_VALUE_OPTIONS.find(
+      option => arg === option || arg.startsWith(`${option}=`)
+    )
+    if (RUNNER_FLAGS.has(arg)) {
+      flags.add(arg)
+    } else if (name) {
+      let token = arg
+      let value = arg.slice(name.length + 1)
+      const next = args[i + 1]
+      // Dash-leading operands are never consumed: valid only because both
+      // options (--shard, --test-concurrency) take unsigned values.
+      if (arg === name && next !== undefined && !next.startsWith('-')) {
+        token = `${arg} ${next}`
+        value = next
+        i++
+      }
+      if (!valueOptions.has(name)) valueOptions.set(name, { token, value })
+      else if (!repeatedOptions.includes(name)) repeatedOptions.push(name)
+    } else {
+      nodeArgs.push(arg)
+    }
   }
 
   // Stage 3: explicit files are non-option operands with a JS extension,
@@ -81,21 +120,30 @@ export const parseNodeTestArgs = rawArgs => {
   const isReporter = arg => arg.startsWith('--test-reporter')
 
   let shard = null
-  if (shardToken !== null) {
-    // Only the first two `/` segments are read.
-    const [rawIndex, rawTotal] = shardToken.slice('--shard='.length).split('/')
+  const shardOption = valueOptions.get('--shard')
+  if (shardOption) {
+    const [rawIndex, rawTotal] = shardOption.value.split('/')
     const index = Number(rawIndex)
     const total = Number(rawTotal)
     shard = {
-      token: shardToken,
+      token: shardOption.token,
       index,
       total,
       valid:
-        Number.isInteger(index) &&
-        Number.isInteger(total) &&
+        SHARD_VALUE_PATTERN.test(shardOption.value) &&
         total >= 1 &&
         index >= 1 &&
         index <= total
+    }
+  }
+
+  let concurrency = null
+  const concurrencyOption = valueOptions.get('--test-concurrency')
+  if (concurrencyOption) {
+    concurrency = {
+      token: concurrencyOption.token,
+      value: Number(concurrencyOption.value),
+      valid: CONCURRENCY_VALUE_PATTERN.test(concurrencyOption.value)
     }
   }
 
@@ -104,10 +152,8 @@ export const parseNodeTestArgs = rawArgs => {
     onlyHeavy: flags.has('--only-heavy'),
     onlyTooling: flags.has('--only-tooling'),
     shard,
-    // The text between the first and second `=`; a token without `=`
-    // (`--test-concurrency 4`) yields the string "undefined".
-    concurrency:
-      concurrencyToken === null ? null : String(concurrencyToken.split('=')[1]),
+    concurrency,
+    repeatedOptions,
     reporterArgs: nodeArgs.filter(isReporter),
     forwardedArgs: nodeArgs.filter(arg => !isReporter(arg)),
     explicitFiles

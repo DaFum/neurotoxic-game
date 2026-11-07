@@ -467,6 +467,11 @@ export const processRhythmGameTick = ({
     clockReset
   )
 
+  // A projectile hit above can collapse the band in this very tick. Collapse
+  // wins over completion: stop here so the collapse timer publishes the
+  // `failed: true` result and ends the gig (#3592).
+  if (stateRef.isGameOver) return
+
   const isNearTrackEnd = duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS
 
   if (stateRef.setlistCompleted && isNearTrackEnd) {

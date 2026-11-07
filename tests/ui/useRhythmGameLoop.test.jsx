@@ -134,6 +134,32 @@ describe('useRhythmGameLoop', () => {
     expect(endGig).toHaveBeenCalled()
   })
 
+  it('does not finalize when a collision collapses the band in the final tick (#3592)', () => {
+    mocks.getTransportState.mockReturnValue('started')
+    mocks.getGigTimeMs.mockReturnValue(999)
+    gameStateRef.current.setlistCompleted = true
+    gameStateRef.current.projectiles = [{ id: 1 }]
+    mocks.processProjectiles.mockImplementationOnce(
+      (_session, projectiles, _delta, _height, onHit) => {
+        onHit(projectiles[0])
+        return []
+      }
+    )
+    handleMiss.mockImplementation(() => {
+      gameStateRef.current.isGameOver = true
+    })
+    const { result } = setup(null)
+
+    result.current.update(16)
+
+    expect(handleMiss).toHaveBeenCalledWith(1, false)
+    // The collapse timer owns the failed result and the exit.
+    expect(setLastGigStats).not.toHaveBeenCalled()
+    expect(mocks.stopAudio).not.toHaveBeenCalled()
+    expect(endGig).not.toHaveBeenCalled()
+    expect(gameStateRef.current.hasSubmittedResults).toBe(false)
+  })
+
   it('still ends the gig when stopping the audio throws during finalization', () => {
     mocks.getTransportState.mockReturnValue('started')
     mocks.getGigTimeMs.mockReturnValue(999)
