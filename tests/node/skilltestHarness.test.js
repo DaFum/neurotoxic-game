@@ -142,9 +142,20 @@ const createTempGitRepo = async t => {
     await fs.rm(tempDir, { recursive: true, force: true })
   })
 
+  // Never act on an outer repository: the directory must be inside the OS
+  // temp dir and no inherited GIT_* variable (GIT_DIR in a hook) may leak in.
+  assert.ok(
+    path.resolve(tempDir).startsWith(path.resolve(os.tmpdir())),
+    `temp repo ${tempDir} is outside ${os.tmpdir()}`
+  )
+  const gitEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_'))
+  )
+
   const git = args => {
     const res = spawnSync('git', args, {
       cwd: tempDir,
+      env: gitEnv,
       encoding: 'utf8',
       timeout: 10000
     })
@@ -948,6 +959,26 @@ exit 0
           message: 'Harness config.resolveUserRoots must be a function.'
         }
       )
+    })
+  })
+})
+
+describe('skilltest harness parsing helpers', () => {
+  test('parseFrontmatter requires the block at the very top of the file', async () => {
+    const { parseFrontmatter } =
+      await import('../../scripts/skilltest/harness.mjs')
+    const block = '---\nname: example\ndescription: Use when testing.\n---\n'
+    assert.deepEqual(parseFrontmatter(block), {
+      name: 'example',
+      description: 'Use when testing.'
+    })
+    assert.equal(parseFrontmatter(`intro line\n${block}`), null)
+  })
+
+  test('parseYaml reads nested mappings', async () => {
+    const { parseYaml } = await import('../../scripts/skilltest/harness.mjs')
+    assert.deepEqual(parseYaml('a:\n  b:\n    c: 1\n  d: two\n'), {
+      a: { b: { c: 1 }, d: 'two' }
     })
   })
 })

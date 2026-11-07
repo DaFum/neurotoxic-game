@@ -38,6 +38,12 @@ type UseEventSystemParams = {
    * last render still holds the previous day.
    */
   latestStateRef: MutableRefObject<GameState>
+  /**
+   * Must publish the reduced state to `latestStateRef` synchronously, before
+   * it returns (the provider's dispatch does). Event resolution reads its
+   * save snapshot from that ref right after dispatching, so any other
+   * dispatch would save the pre-event state and lose a terminal outcome.
+   */
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback
   changeScene: ChangeScene
