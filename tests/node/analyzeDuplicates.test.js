@@ -280,16 +280,30 @@ test('result mode fails closed on malformed and legacy report shapes', async t =
   }
 })
 
-test('rejects unknown arguments instead of guessing a mode', t => {
+test('rejects a --markdown-file flag without a path', t => {
   const directory = createWorkspace(t)
-  for (const args of [['--markdown-file'], ['--json'], ['dup.md']]) {
-    const result = spawnSync(process.execPath, [analyzer, ...args], {
+  const result = spawnSync(process.execPath, [analyzer, '--markdown-file'], {
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 10000
+  })
+  assert.equal(result.status, 2)
+  assert.equal(result.stdout, '')
+  assert.match(result.stderr, /Usage:/)
+})
+
+test('standalone CLI keeps ignoring unrecognised arguments', t => {
+  const directory = createWorkspace(t)
+  const run = args =>
+    spawnSync(process.execPath, [analyzer, ...args], {
       cwd: directory,
       encoding: 'utf8',
       timeout: 10000
     })
-    assert.equal(result.status, 2)
-    assert.equal(result.stdout, '')
-    assert.match(result.stderr, /Usage:/)
+  const baseline = run([])
+  for (const args of [['--json'], ['dup.md']]) {
+    const result = run(args)
+    assert.equal(result.status, baseline.status)
+    assert.equal(result.stdout, baseline.stdout)
   }
 })

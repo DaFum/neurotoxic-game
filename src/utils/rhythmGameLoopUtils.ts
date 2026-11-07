@@ -327,18 +327,18 @@ export const finalizeGig = (
 ): void => {
   const submit = claimGigResultSubmission(stateRef, setLastGigStats)
   if (!submit) return
-  submit(() =>
-    buildGigStatsSnapshot(
-      stateRef.score,
-      stateRef.stats,
-      stateRef.toxicTimeTotal,
-      stateRef.songStats,
-      false
-    )
-  )
   // `hasSubmittedResults` is already set, so a Quit can no longer end the gig:
-  // a failing audio stop must not skip `endGig` and leave the scene stuck.
+  // a failing snapshot, publish or audio stop must not skip `endGig`.
   try {
+    submit(() =>
+      buildGigStatsSnapshot(
+        stateRef.score,
+        stateRef.stats,
+        stateRef.toxicTimeTotal,
+        stateRef.songStats,
+        false
+      )
+    )
     stopAudio()
   } finally {
     endGig()

@@ -16,11 +16,12 @@ import fs from 'fs'
 import path from 'path'
 
 const args = process.argv.slice(2)
+// Arguments other than --markdown-file were always ignored by the standalone
+// CLI and still are; only a malformed --markdown-file is a usage error.
+const markdownFlagIndex = args.indexOf('--markdown-file')
 const markdownFile =
-  args.length === 2 && args[0] === '--markdown-file' && args[1] !== ''
-    ? args[1]
-    : null
-if (args.length > 0 && markdownFile === null) {
+  markdownFlagIndex === -1 ? null : (args[markdownFlagIndex + 1] ?? '')
+if (markdownFile === '') {
   console.error('Usage: analyze-duplicates.js [--markdown-file <path>]')
   process.exit(2)
 }

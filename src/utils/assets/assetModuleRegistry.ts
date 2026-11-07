@@ -56,7 +56,8 @@ const ASSET_CATALOGUE_SECTIONS: readonly AssetCatalogueSection[] = [
  *
  * @param sections - Section catalogues in composition order.
  * @returns The composed catalogue views.
- * @throws Error when two modules share an id; keyed composition would
+ * @throws Error when two modules share an id or two sections share a prompt
+ *   key; keyed composition would
  *   otherwise drop the earlier definition silently.
  */
 export const composeAssetCatalogue = (
@@ -69,6 +70,15 @@ export const composeAssetCatalogue = (
       throw new Error(`Duplicate asset module id "${m.id}"`)
     }
     seenIds.add(m.id)
+  }
+  const seenPromptKeys = new Set<string>()
+  for (const section of sections) {
+    for (const key of Object.keys(section.prompts)) {
+      if (seenPromptKeys.has(key)) {
+        throw new Error(`Duplicate asset prompt key "${key}"`)
+      }
+      seenPromptKeys.add(key)
+    }
   }
   return {
     modulesMap: new Map(

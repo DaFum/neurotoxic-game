@@ -156,6 +156,17 @@ describe('composeAssetCatalogue', () => {
     )
   })
 
+  it('rejects a prompt key declared by two sections', () => {
+    assert.throws(
+      () =>
+        composeAssetCatalogue([
+          { modules: [fixtureModule('a')], prompts: { shared: 'one' } },
+          { modules: [fixtureModule('b')], prompts: { shared: 'two' } }
+        ]),
+      /Duplicate asset prompt key "shared"/
+    )
+  })
+
   it('rejects a module id declared twice within one section', () => {
     assert.throws(
       () =>
