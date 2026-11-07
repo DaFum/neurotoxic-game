@@ -65,7 +65,6 @@ import {
   EXPENSE_CONSTANTS,
   MAX_GIG_NET,
   MODIFIER_COSTS,
-  TICKET_SALES_CONSTANTS,
   shouldTriggerBankruptcy
 } from '../src/utils/economy/index.js'
 import {
@@ -2101,86 +2100,6 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   if (!inReach.length) return
   const fallback = inReach[Math.floor(rng() * inReach.length)]
   applyCatalogPurchase(state, fallback, counters)
-}
-
-// eslint-disable-next-line no-unused-vars
-const estimateMerchBuyers = (
-  venue,
-  performanceScore,
-  modifiers,
-  state,
-  previousFame = state.player.fame
-) => {
-  const fame = previousFame || 0
-  const safeCapacity = Math.max(1, venue.capacity || 0)
-  const fameRatio = Math.min(
-    1.0,
-    Math.log(Math.max(0, fame) + 1) /
-      Math.log(safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER + 1)
-  )
-  let fillRate =
-    TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO +
-    fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
-  if (modifiers.promo) fillRate += 0.15
-  if (modifiers.soundcheck) fillRate += 0.15
-  fillRate = Math.min(1, Math.max(0.1, fillRate))
-  const ticketsSold = Math.floor(venue.capacity * fillRate)
-  const buyRate = Math.max(
-    0,
-    0.15 + (performanceScore / 100) * 0.2 + (modifiers.merch ? 0.1 : 0)
-  )
-  const inv = state.band.inventory || {}
-  const totalInventory =
-    (inv.shirts || 0) +
-    (inv.hoodies || 0) +
-    (inv.cds || 0) +
-    (inv.patches || 0) +
-    (inv.vinyl || 0)
-  return Math.min(Math.floor(ticketsSold * buyRate), totalInventory)
-}
-
-// eslint-disable-next-line no-unused-vars
-const depleteInventory = (inventory, buyers) => {
-  if (!inventory || buyers <= 0) return inventory
-  const skus = ['shirts', 'hoodies', 'cds', 'patches', 'vinyl']
-  const total = skus.reduce((sum, sku) => sum + (inventory[sku] || 0), 0)
-
-  if (total <= 0) return inventory
-
-  let buyersLeft = Math.min(buyers, total)
-  const removals = {}
-  const fractions = []
-
-  skus.forEach(sku => {
-    const count = inventory[sku] || 0
-    const idealRemoval = (count / total) * buyersLeft
-    const floorRemoval = Math.min(count, Math.floor(idealRemoval))
-    removals[sku] = floorRemoval
-
-    if (count > floorRemoval) {
-      fractions.push({
-        sku,
-        fraction: idealRemoval - floorRemoval
-      })
-    }
-  })
-
-  buyersLeft -= skus.reduce((sum, sku) => sum + removals[sku], 0)
-
-  fractions.sort((a, b) => b.fraction - a.fraction)
-  for (let i = 0; i < buyersLeft && i < fractions.length; i++) {
-    removals[fractions[i].sku] += 1
-  }
-
-  const newInventory = { ...inventory }
-  skus.forEach(sku => {
-    newInventory[sku] = Math.max(
-      0,
-      (inventory[sku] || 0) - (removals[sku] || 0)
-    )
-  })
-
-  return newInventory
 }
 
 const mergeGigModifierPipeline = (gigModifiers, physics) => {
