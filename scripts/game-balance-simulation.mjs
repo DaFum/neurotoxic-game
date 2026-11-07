@@ -898,7 +898,7 @@ const targetDifficultyForState = state => {
  *
  * Must mirror `isGigNode` in `src/utils/arrivalUtils.ts`, which production uses
  * to decide whether an arrival starts a gig: GIG, FESTIVAL and FINALE only. A
- * SPECIAL node triggers an event and returns `gigStarted: false`. Generated maps
+ * SPECIAL node triggers an event and yields an `overworld` outcome. Generated maps
  * roll roughly 10% specials, so treating them as stages would invent several
  * paid gigs per tour and distort every economy and progression figure.
  */
