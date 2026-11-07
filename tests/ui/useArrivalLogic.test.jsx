@@ -1,4 +1,19 @@
-import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
+import { describe, it as test, beforeEach, afterEach, expect, vi } from 'vitest'
+
+// Forwarding `useRef` probe: records every ref the hook creates so a test can
+// read, by value, whether a pending arrival is still unclaimed at action time.
+const refProbe = vi.hoisted(() => ({ refs: new Set() }))
+vi.mock('react', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useRef: initial => {
+      const ref = actual.useRef(initial)
+      refProbe.refs.add(ref)
+      return ref
+    }
+  }
+})
 
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { act, cleanup, renderHook } from '@testing-library/react'
@@ -608,6 +623,46 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
     expect(mockGameState.saveGame.mock.calls.length).toBe(0)
     expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+  })
+
+  test('a gig arrival is claimed before it acts: a re-render on save starts nothing more', () => {
+    const venue = { id: 'club', name: 'Club' }
+    refProbe.refs.clear()
+    const { result, rerender } = renderHook(props => useArrivalLogic(props), {
+      initialProps: {}
+    })
+    mockGameState.gameMap = { nodes: { node_start: { type: 'GIG', venue } } }
+    rerender({})
+
+    const isArrivalPending = () =>
+      [...refProbe.refs].some(
+        ref =>
+          ref.current !== null &&
+          typeof ref.current === 'object' &&
+          Object.hasOwn(ref.current, 'phase')
+      )
+    const pendingAtAction = []
+    mockGameState.startGig.mockImplementation(() => {
+      pendingAtAction.push(isArrivalPending())
+    })
+    // The save re-renders with new state identities, re-running the effect.
+    mockGameState.saveGameAfterStateCommit.mockImplementation(() => {
+      pendingAtAction.push(isArrivalPending())
+      mockGameState.band = { ...mockGameState.band }
+      mockGameState.player = { ...mockGameState.player }
+      rerender({})
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    rerender({})
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+    // Claim-before-act: no action runs while the arrival is still pending.
+    expect(pendingAtAction).toEqual([false, false])
   })
 
   test('GAMEOVER from the day tick skips the gig evaluation entirely', () => {
