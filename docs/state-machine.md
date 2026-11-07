@@ -236,6 +236,13 @@ contract.
   `COMPLETE_AMP_CALIBRATION`, `COMPLETE_KABELSALAT_MINIGAME`, and
   `COMPLETE_ROADIE_MINIGAME` update gameplay state but leave scene changes to
   arrival/overlay callbacks.
+- **Gig results are published once.** Normal completion (`finalizeGig`), Quit
+  (`useGigSession`), the delayed collapse timer (`useHandleMiss`) and the
+  low-harmony guard (`handleHarmonyGuard` in `useRhythmGameAudio`) all take
+  `claimGigResultSubmission` before publishing; only the first claimant
+  publishes and calls `endGig`. A projectile collision that collapses the band
+  in the final tick makes `processRhythmGameTick` return before the track-end
+  check, so the collapse timer publishes the one `failed: true` result (#3592).
 - **Bankruptcy uses total obligations.** Daily bankruptcy decisions consult
   `getTotalDailyObligations(state)` (`src/utils/assets/assetSelectors.ts`), including
   asset upkeep/revenue and liability payments, rather than relying on
