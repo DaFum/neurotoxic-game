@@ -265,6 +265,44 @@ describe('useRhythmGameAudio', () => {
     expect(endGig).toHaveBeenCalledTimes(1)
   })
 
+  it('claims the gig result on low harmony so a Quit before the scene change cannot submit again (#3591)', async () => {
+    const actions = {
+      addToast: vi.fn(),
+      setLastGigStats: vi.fn(),
+      endGig: vi.fn(),
+      t: key => key
+    }
+    const { result } = renderHook(() => {
+      const rhythm = useRhythmGameState()
+      const session = useGigSession({
+        ...actions,
+        tRef: { current: actions.t },
+        gameStateRef: rhythm.gameStateRef
+      })
+      useRhythmGameAudio({
+        ...rhythm,
+        contextState: { ...baseState, band: { harmony: 0 } },
+        contextActions: actions
+      })
+      return { rhythm, session }
+    })
+
+    expect(actions.setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(actions.endGig).toHaveBeenCalledTimes(1)
+
+    // endGig only schedules the scene change; Quit stays reachable until it commits.
+    await act(async () => {
+      await result.current.session.handleQuitGig()
+    })
+
+    expect(actions.setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(actions.setLastGigStats.mock.calls[0][0]).toMatchObject({
+      score: 0
+    })
+    expect(actions.endGig).toHaveBeenCalledTimes(1)
+    expect(mocks.stopAudio).not.toHaveBeenCalled()
+  })
+
   it('preserves gig event markers when retry resets gameplay', async () => {
     mocks.ensureAudioContext
       .mockResolvedValueOnce(false)
