@@ -289,6 +289,7 @@ export const createTravelLogicProps = (overrides = {}) => ({
   advanceDay: mock.fn(),
   triggerEvent: mock.fn(),
   startGig: mock.fn(),
+  checkStartGig: mock.fn(() => null),
   hasUpgrade: mock.fn(() => false),
   addToast: mock.fn(),
   changeScene: mock.fn(),

@@ -82,6 +82,7 @@ export const Overworld = () => {
   )
   const {
     startGig,
+    checkStartGig,
     updatePlayer,
     triggerEvent,
     saveGame,
@@ -135,6 +136,7 @@ export const Overworld = () => {
     advanceDay,
     triggerEvent,
     startGig,
+    checkStartGig,
     addToast,
     removeToast,
     changeScene,
