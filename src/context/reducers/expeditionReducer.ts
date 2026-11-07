@@ -30,8 +30,8 @@ import {
   buildExpeditionMap,
   getActiveExpeditionMap
 } from '../../domain/expedition/map'
+import { canSpendExpeditionCash } from '../../domain/expedition/spendableCash'
 import {
-  canSpendExpeditionCash,
   getAvailableExpeditionRegionIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableStarterPerkIds,
