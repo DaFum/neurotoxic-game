@@ -13,6 +13,7 @@ import {
 } from '../../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../../context/gameConstants'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
+import { claimGigResultSubmission } from '../../../utils/rhythmGameLoopUtils'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -165,6 +166,13 @@ export const useHandleMiss = ({
         gameOverTimerRef.current = null
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
         if (audioEngine.getPlayRequestId() !== failReqId) return
+        // Quit (or completion) may have submitted during the delay; the
+        // claim is taken before any callback so a re-entrant Quit sees it.
+        const submit = claimGigResultSubmission(
+          gameStateRef.current,
+          setLastGigStats
+        )
+        if (!submit) return
         if (!Array.isArray(gameStateRef.current.songStats)) {
           gameStateRef.current.songStats = []
         }
@@ -172,7 +180,7 @@ export const useHandleMiss = ({
           t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
           'info'
         )
-        setLastGigStats(
+        submit(() =>
           buildGigStatsSnapshot(
             gameStateRef.current.score,
             gameStateRef.current.stats,

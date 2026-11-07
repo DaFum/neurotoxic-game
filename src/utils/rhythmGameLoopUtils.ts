@@ -2,7 +2,11 @@ import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
 import { finiteNumberOr } from './finiteNumber'
-import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
+import type {
+  GigStats,
+  RhythmGameRefState,
+  SetLastGigStats
+} from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
 import type {
   AsyncBooleanCallback,
@@ -268,6 +272,46 @@ export const maybeFireGigProgressEvent = (
 }
 
 /**
+ * One-shot publisher held by the winner of {@link claimGigResultSubmission}.
+ * Builds the result snapshot once and publishes that same snapshot once;
+ * any later call returns `null` without building or publishing.
+ */
+export type SubmitGigResult = (buildSnapshot: () => GigStats) => GigStats | null
+
+/**
+ * Arbitrates gig-result submission between normal completion, Quit and the
+ * delayed collapse timer: the first caller claims the gig and receives the
+ * only publisher, every later caller receives `null` and must not end the gig.
+ *
+ * @remarks
+ * `hasSubmittedResults` means "claimed": it covers a submitted result and a
+ * failed submission alike. A failed submission (the builder or the publisher
+ * throws) keeps the claim, so no other path or retry can resubmit; the error
+ * propagates to the owner, whose cleanup and error policy stay local. The
+ * claim is taken synchronously before any callback runs, so a re-entrant
+ * completion path started from the publisher already sees it.
+ *
+ * @param claimTarget - Rhythm state (or an owner-local stand-in) holding the latch.
+ * @param publish - Persists the snapshot, e.g. `setLastGigStats`.
+ * @returns The one-shot publisher, or `null` when results were already claimed.
+ */
+export const claimGigResultSubmission = (
+  claimTarget: Pick<RhythmGameRefState, 'hasSubmittedResults'>,
+  publish: SetLastGigStats
+): SubmitGigResult | null => {
+  if (claimTarget.hasSubmittedResults) return null
+  claimTarget.hasSubmittedResults = true
+  let used = false
+  return buildSnapshot => {
+    if (used) return null
+    used = true
+    const snapshot = buildSnapshot()
+    publish(snapshot)
+    return snapshot
+  }
+}
+
+/**
  * Finalizes the active gig session, submits performance results, and stops audio playback.
  *
  * @param stateRef - High-frequency rhythm game state carrying current score and statistics.
@@ -281,9 +325,9 @@ export const finalizeGig = (
   endGig: VoidCallback,
   stopAudio: VoidCallback
 ): void => {
-  if (stateRef.hasSubmittedResults) return
-  stateRef.hasSubmittedResults = true
-  setLastGigStats(
+  const submit = claimGigResultSubmission(stateRef, setLastGigStats)
+  if (!submit) return
+  submit(() =>
     buildGigStatsSnapshot(
       stateRef.score,
       stateRef.stats,
