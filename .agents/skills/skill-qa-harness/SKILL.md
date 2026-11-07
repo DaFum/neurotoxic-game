@@ -25,26 +25,37 @@ Skill regressions are often subtle: invalid YAML, stale script references, and o
    - Enumerate `SKILL.md` files under `.agents/skills/`.
    - Note whether the request is for a full-library sweep or targeted changed-skill subset.
 
-2. **Run structural validator first (authoritative baseline)**
+2. **Validate skills (structural validator first, authoritative baseline)**
    - Execute:
 
    ```bash
-   node .agents/skills/skilltest/scripts/validate-skills.mjs
+   node .agents/skills/skilltest/scripts/validate-skills-cli.mjs
    ```
 
    - Capture raw output and quote the relevant lines in the report.
+   - `validate-skills.mjs` is deprecated; it still runs but prints a deprecation notice.
 
-3. **Run discriminative logical checks**
+3. **Run tests (prompt cases)**
+   - Execute:
+
+   ```bash
+   node .agents/skills/skilltest/scripts/skilltest.mjs --skip-gate
+   ```
+
+   - This checks every skill plus the `.agents/skills/skilltest/tests/cases/*.cases.json` prompt cases and writes `reports/skills/skilltest-report.json`. Drop `--skip-gate` to run `pnpm run lint`, `pnpm run test`, and `pnpm run build` first; add `--include-user` to also scan user-level skills.
+   - The harness's own tests run under `pnpm run test:tooling`, not the fast `pnpm run test`.
+
+4. **Run discriminative logical checks**
    - **Duplicate names**: verify each `name` frontmatter value is unique.
    - **Reference integrity**: for each mentioned local script/path in instructions, verify existence.
    - **Trigger overlap risk**: compare descriptions for broad overlapping phrases (e.g., multiple skills claiming the same catch-all situations without differentiators).
 
-4. **Edge-case handling**
+5. **Edge-case handling**
    - If validator output is deprecated/noisy, still use results but annotate the warning.
    - If a check cannot be completed, emit `WARN` with why and a fallback/manual step.
    - Never claim “all clear” unless the corresponding check output is shown.
 
-5. **Report for CI/PR use**
+6. **Report for CI/PR use**
    - Emit a concise gate summary using `PASS`, `FAIL`, `WARN`.
    - Include blockers and a concrete next action for every `FAIL`/`WARN` item.
 
@@ -52,7 +63,7 @@ Skill regressions are often subtle: invalid YAML, stale script references, and o
 
 ```text
 Skill QA Gate
-- PASS: Structural validation (`validate-skills.mjs`) completed.
+- PASS: Structural validation (`validate-skills-cli.mjs`) completed.
 - WARN: Trigger overlap risk between skill A and skill B (keyword collision on "benchmark").
 - FAIL: Missing referenced script `.agents/skills/foo/scripts/run.sh`.
 
