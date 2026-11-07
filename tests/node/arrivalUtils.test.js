@@ -352,7 +352,8 @@ describe('handleNodeArrival', () => {
     assert.ok(!toastMessage.includes('Failed to load song'))
   })
 
-  test('requestArrivalGigStart refuses a start the check refuses', () => {
+  test('requestArrivalGigStart refuses a start the check refuses', t => {
+    const warn = t.mock.method(logger, 'warn', () => {})
     const mocks = getMocks()
     const venue = { id: 'club', name: 'The Club' }
     const startGig = mock.fn()
@@ -366,6 +367,12 @@ describe('handleNodeArrival', () => {
     assert.strictEqual(checkStartGig.mock.calls[0].arguments[0], venue)
     assert.strictEqual(startGig.mock.calls.length, 0)
     assert.strictEqual(mocks.addToast.mock.calls.length, 0)
+    assert.strictEqual(warn.mock.calls.length, 1)
+    assert.deepStrictEqual(warn.mock.calls[0].arguments, [
+      'ArrivalLogic',
+      'START_GIG would be refused',
+      { refusal: 'node_converted' }
+    ])
   })
 
   test('requestArrivalGigStart starts unchanged when the check passes', () => {
