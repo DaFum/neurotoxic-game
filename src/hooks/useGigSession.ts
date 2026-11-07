@@ -135,16 +135,21 @@ export const useGigSession = ({
       const score = gameStateRef.current?.score ?? 0
       const toxicTime = gameStateRef.current?.toxicTimeTotal ?? 0
 
-      submit(() =>
-        buildGigStatsSnapshot(
-          score,
-          gameStateRef.current?.stats,
-          toxicTime,
-          gameStateRef.current?.songStats,
-          true
+      try {
+        submit(() =>
+          buildGigStatsSnapshot(
+            score,
+            gameStateRef.current?.stats,
+            toxicTime,
+            gameStateRef.current?.songStats,
+            true
+          )
         )
-      )
-      endGig()
+      } finally {
+        // The claim is held even if publishing throws, so no other path can
+        // end the gig any more.
+        endGig()
+      }
     }
   }, [endGig, setLastGigStats, addToast, gameStateRef, tRef])
 

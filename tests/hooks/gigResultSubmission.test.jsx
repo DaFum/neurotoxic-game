@@ -291,6 +291,19 @@ describe('gig result submission across completion paths (#3574)', () => {
     expect(gameStateRef.current.hasSubmittedResults).toBe(true)
   })
 
+  it('Quit with a failing publish still ends the gig once', async () => {
+    const { result } = renderSession()
+    setLastGigStats.mockImplementationOnce(() => {
+      throw new Error('publish failed')
+    })
+
+    await expect(quit(result)).rejects.toThrow('publish failed')
+    await quit(result)
+
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
+  })
+
   it('null ref: repeated Quits submit and end the gig once', async () => {
     gameStateRef.current = null
     const { result } = renderSession()
