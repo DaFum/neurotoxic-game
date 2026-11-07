@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 import type { MapNode } from '../../../types'
-import { handleNodeArrival } from '../../../utils/arrivalUtils'
+import { GAME_PHASES } from '../../../context/gameConstants'
+import {
+  handleNodeArrival,
+  requestArrivalGigStart
+} from '../../../utils/arrivalUtils'
 import { getExpeditionNodeBookingLock } from '../../../domain/expedition/fame'
 import type { TravelActionsParams } from '../types'
 
@@ -12,8 +16,8 @@ import type { TravelActionsParams } from '../types'
  * and is a gig node, serving specifically as the synchronous same-node gig re-entry handler. Normal travel
  * arrivals are owned by `useArrivalLogic`. Re-entering the node the band currently occupies dispatches
  * neither a travel commit nor a day tick, so this hook manages synchronous scene changes for those cases.
- * If a gig is successfully started by the underlying handler, the scene transitions automatically to PRE_GIG,
- * and this function explicitly prevents bouncing the player back out to the OVERWORLD.
+ * When the arrival outcome is a gig and its start request succeeds, `START_GIG` moves the scene to PRE_GIG,
+ * so this function does not bounce the player back out to the OVERWORLD.
  *
  * @param options - Destructured parameters for travel actions.
  * @returns A stable callback function that accepts a `MapNode` and an optional boolean flag to execute arrival operations.
@@ -36,9 +40,9 @@ export const useHandleNodeArrivalCallback = ({
 
   return useCallback(
     (node: MapNode, travelEventActive = false) => {
-      const result = handleNodeArrival({
+      const outcome = handleNodeArrival({
         // Same lock `handleStartGig` re-checks: without it a refused re-entry
-        // would report `gigStarted` and the click would silently do nothing.
+        // would decide `gig` and the click would silently do nothing.
         bookingLock: getExpeditionNodeBookingLock(
           {
             player: refs.playerRef.current,
@@ -52,7 +56,6 @@ export const useHandleNodeArrivalCallback = ({
         updateBand,
         updatePlayer,
         triggerEvent,
-        startGig,
         addToast,
         onShowHQ,
         onShowSupplyStop,
@@ -66,16 +69,19 @@ export const useHandleNodeArrivalCallback = ({
       // travel commit nor a day tick, so there is nothing to wait for — and
       // `handleStartGig` reads only `reputationByRegion`.
       //
-      // When the gig started, START_GIG already moved the scene to PRE_GIG;
-      // routing to `result.scene` (OVERWORLD) would bounce straight back out.
+      // When the start was requested, START_GIG already moved the scene to
+      // PRE_GIG; routing to OVERWORLD would bounce straight back out.
       //
       // Unlike `useArrivalLogic`, this path queues no save: OVERWORLD → PRE_GIG
       // is not an autosave transition, so a re-entry gig start persists only at
       // the post-gig settlement-record save. Harmless — a reload puts the band back on
       // the node with the click still available — but keep it in mind if this
       // path ever gains state worth losing.
-      if (!result.gigStarted) {
-        changeScene(result.scene)
+      if (
+        outcome.kind !== 'gig' ||
+        !requestArrivalGigStart(outcome.venue, startGig, addToast)
+      ) {
+        changeScene(GAME_PHASES.OVERWORLD)
       }
     },
     [

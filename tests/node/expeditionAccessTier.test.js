@@ -188,7 +188,6 @@ describe('Fame access tiers - Festival bookings', () => {
 
   it('turns the band away on arrival instead of starting the gig', () => {
     const toasts = []
-    let started = false
     const result = handleNodeArrival({
       node: {
         id: 'n',
@@ -202,16 +201,11 @@ describe('Fame access tiers - Festival bookings', () => {
         throw new Error('a refused booking costs no Fame')
       },
       triggerEvent: () => false,
-      startGig: () => {
-        started = true
-      },
       addToast: (message, level) => toasts.push({ message, level }),
       bookingLock: { requiredTier: 1, minimumFame: 250 },
       rng: () => 0.99
     })
-    assert.equal(started, false)
-    assert.equal(result.gigStarted, false)
-    assert.equal(result.scene, GAME_PHASES.OVERWORLD)
+    assert.deepEqual(result, { kind: 'overworld' })
     assert.equal(toasts.length, 1)
   })
 })

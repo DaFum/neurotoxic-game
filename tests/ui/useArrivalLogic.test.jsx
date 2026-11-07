@@ -543,7 +543,7 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    // changeScene called once (non-GIG node, !gigStarted)
+    // changeScene called once (non-GIG node routes to the map)
     expect(mockGameState.changeScene.mock.calls.length).toBe(1)
     // saveGame called exactly once
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)

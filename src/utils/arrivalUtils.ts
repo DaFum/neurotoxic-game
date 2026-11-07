@@ -1,6 +1,5 @@
 import { logger } from './logger'
 import { handleError, StateError } from './errorHandler'
-import { GAME_PHASES } from '../context/gameConstants'
 import {
   clampMemberStamina,
   readMemberMood,
@@ -19,7 +18,13 @@ import { normalizeVenueId } from './mapUtils'
 import { clampUnit, formatNumber } from './numberUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
-import type { BandState, MapNode, PlayerState, Venue } from '../types'
+import type {
+  ArrivalOutcome,
+  BandState,
+  MapNode,
+  PlayerState,
+  Venue
+} from '../types'
 import type { UpdateBandPayload } from '../types/actions'
 import type { ExpeditionAccessLock } from '../domain/expedition/fame'
 import type { OptionalToastCallback } from '../types/callbacks'
@@ -56,13 +61,34 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
 }
 
 /**
- * Result returned by arrival processing for the caller to route scene changes.
+ * Requests the gig start an arrival outcome decided on.
+ *
+ * @param venue - Venue from a `gig` outcome.
+ * @param startGig - The `START_GIG` dispatcher.
+ * @param addToast - Toast callback for the failure report.
+ * @returns True when the request did not throw. That means a start was
+ * requested, not that `PRE_GIG` committed: the reducer stays authoritative.
  */
-type ArrivalResult = {
-  /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
-  scene: import('../types/game').GamePhase
-  /** True when startGig was called successfully. Hook must not call changeScene when true. */
-  gigStarted: boolean
+export const requestArrivalGigStart = (
+  venue: Venue,
+  startGig: (venue: Venue) => void,
+  addToast: OptionalToastCallback
+): boolean => {
+  logger.info('ArrivalLogic', 'Starting Gig at destination', {
+    venue: venue.name
+  })
+  try {
+    startGig(venue)
+    return true
+  } catch (error) {
+    handleError(error, {
+      addToast,
+      fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+        defaultValue: 'Failed to start Gig.'
+      })
+    })
+    return false
+  }
 }
 
 /**
@@ -189,7 +215,6 @@ type HandleNodeArrivalParams = {
   updateBand: (p: UpdateBandPayload) => void
   updatePlayer: (p: Partial<PlayerState>) => void
   triggerEvent: (category: string, triggerPoint?: string) => boolean
-  startGig: (venue: Venue) => void
   addToast: OptionalToastCallback
   onShowHQ?: () => void
   onShowSupplyStop?: (
@@ -211,13 +236,14 @@ type HandleNodeArrivalParams = {
  * This can be used by both the legacy travel system and the arrival logic hook.
  *
  * @param params - Arrival processing context:
- * `node`, `band`, `player`, update callbacks, event/gig callbacks, optional
+ * `node`, `band`, `player`, update callbacks, the event callback, optional
  * HQ or supply-stop callbacks, active-event state, and RNG.
- * @returns Arrival scene routing and gig-start status.
+ * @returns `gig` with the venue to book, or `overworld`. The caller requests
+ * the start through `requestArrivalGigStart`.
  */
 export const handleNodeArrival = (
   params: HandleNodeArrivalParams
-): ArrivalResult => {
+): ArrivalOutcome => {
   const {
     node,
     band,
@@ -225,7 +251,6 @@ export const handleNodeArrival = (
     updateBand,
     updatePlayer,
     triggerEvent,
-    startGig,
     addToast,
     onShowHQ,
     onShowSupplyStop,
@@ -247,7 +272,7 @@ export const handleNodeArrival = (
           : []
         onShowSupplyStop(inventory)
       }
-      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      return { kind: 'overworld' }
     }
     // 'REST' is the legacy spelling kept alive by save sanitisation; it means
     // the same stop, so it must not fall through to the unhandled branch.
@@ -282,7 +307,7 @@ export const handleNodeArrival = (
         }),
         'success'
       )
-      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      return { kind: 'overworld' }
     }
     case 'SPECIAL': {
       if (!eventAlreadyActive) {
@@ -296,7 +321,7 @@ export const handleNodeArrival = (
           )
         }
       }
-      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      return { kind: 'overworld' }
     }
     case 'START': {
       if (onShowHQ) onShowHQ()
@@ -306,7 +331,7 @@ export const handleNodeArrival = (
         }),
         'success'
       )
-      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      return { kind: 'overworld' }
     }
     // 'CITY' is the legacy venue-bearing node type still accepted by save
     // sanitisation; it resolves a venue exactly like a GIG node does.
@@ -323,7 +348,7 @@ export const handleNodeArrival = (
           }),
           'warning'
         )
-        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+        return { kind: 'overworld' }
       }
       const harmony = clampBandHarmony(band?.harmony)
 
@@ -361,7 +386,7 @@ export const handleNodeArrival = (
           })
         }
 
-        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+        return { kind: 'overworld' }
       }
 
       const venue = resolveArrivalVenue(node)
@@ -372,24 +397,10 @@ export const handleNodeArrival = (
           }),
           'error'
         )
-        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+        return { kind: 'overworld' }
       }
 
-      logger.info('ArrivalLogic', 'Starting Gig at destination', {
-        venue: venue.name
-      })
-      try {
-        startGig(venue)
-        return { scene: GAME_PHASES.OVERWORLD, gigStarted: true }
-      } catch (error) {
-        handleError(error, {
-          addToast,
-          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
-            defaultValue: 'Failed to start Gig.'
-          })
-        })
-        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
-      }
+      return { kind: 'gig', venue }
     }
     default: {
       const unhandledType = (node as ArrivalNode).type
@@ -406,7 +417,7 @@ export const handleNodeArrival = (
         }),
         { silent: true, source: 'arrivalUtils.handleNodeArrival' }
       )
-      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      return { kind: 'overworld' }
     }
   }
 }
