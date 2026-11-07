@@ -15,6 +15,10 @@ license: 'Proprietary. See LICENSE.txt for terms'
 
 Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 
+## Tailwind v4 CSS Variables
+
+Design tokens are CSS Variables declared in the `@theme` block of `src/index.css`. Color tokens carry the `--color-` prefix, which is what lets Tailwind generate native utilities for them; the rules below follow from that.
+
 ## Rules
 
 1.  **Syntax**: Colors are registered in `src/index.css` inside `@theme` with the `--color-` prefix and consumed as native Tailwind utilities (`bg-void-black`, `text-toxic-green`, `border-blood-red/60`). Do NOT use `bg-[var(--variable)]`. Non-color tokens in `@theme` that don't match a Tailwind namespace (z-index `--z-*`, etc.) still require the arbitrary value syntax: `z-(--z-crt)`.

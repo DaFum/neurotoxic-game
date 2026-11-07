@@ -15,6 +15,12 @@ license: 'Proprietary. See LICENSE.txt for terms'
 
 Ensure stable audio playback across all browsers and devices.
 
+## Where to Investigate
+
+- `src/utils/audio/AudioManager.ts`: high-level facade (`audioManager`) for persisted volume and mute preferences, context unlock, and the ambient lifecycle.
+- `src/hooks/rhythmGame/useRhythmGameAudio.ts`: gig audio initialization. It stops ambient music, unlocks the context via `audioEngine.ensureAudioContext()`, waits for the stage-ready signal (15 s fallback), and owns retry, abort, and unmount cleanup. It must not re-initialize on ordinary state re-renders (see `src/hooks/rhythmGame/AGENTS.md`).
+- `src/utils/audio/audioEngine.ts`: public barrel for the low-level audio modules. Imports from outside `src/utils/audio/` go through it; the exceptions are listed in `src/utils/audio/AGENTS.md`.
+
 ## Workflow
 
 1.  **Check Autoplay Policy**

@@ -1,7 +1,8 @@
 // Characterization of `scripts/run-node-tests.mjs` (issue #3580). Each case
-// pins CURRENT behaviour, including grammar quirks that look unintended (they
-// are labelled "quirk"). Changing an expectation here is a CLI grammar change
-// and needs its own approval, not a refactor.
+// pins CURRENT behaviour. Cases labelled "quirk" are grammar that issue #3593
+// reviewed and kept on purpose; it is documented in the runner's usage
+// comment. Changing an expectation here is a CLI grammar change and needs its
+// own approval, not a refactor.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -29,6 +30,10 @@ mock.module('node:os', {
 mock.module('node:child_process', {
   namedExports: { spawnSync: (...args) => spawnImpl(...args) }
 })
+// Delegates to the real fs unless a case swaps `existsSyncImpl`.
+let existsSyncImpl = fs.existsSync
+const mockedFs = { ...fs, existsSync: (...args) => existsSyncImpl(...args) }
+mock.module('node:fs', { defaultExport: mockedFs, namedExports: mockedFs })
 
 const B = concurrency => [
   '--test',
@@ -75,6 +80,10 @@ const sorted = list => [...list].sort()
 
 const SHARD_ERROR = token =>
   `Invalid --shard value "${token}"; expected --shard=<index>/<total> with 1 <= index <= total.`
+const CONCURRENCY_ERROR = token =>
+  `Invalid --test-concurrency value "${token}"; expected --test-concurrency=<n> with n >= 1.`
+const REPEATED_ERROR = name =>
+  `Invalid node-test arguments: ${name} was given twice.`
 const CONFLICT_ERROR =
   'Invalid node-test selection: --only-tooling, --only-heavy, and --skip-heavy cannot be combined.'
 const NOT_NODE_ERROR =
@@ -82,8 +91,15 @@ const NOT_NODE_ERROR =
 
 const runRunner = async (
   t,
-  { args = [], env = {}, cwd = REPO_ROOT, result = { status: 0 } } = {}
+  {
+    args = [],
+    env = {},
+    cwd = REPO_ROOT,
+    result = { status: 0 },
+    existsSync = fs.existsSync
+  } = {}
 ) => {
+  existsSyncImpl = existsSync
   const originalArgv = process.argv
   const originalEnv = process.env
   const originalCwd = process.cwd()
@@ -102,6 +118,7 @@ const runRunner = async (
     process.argv = originalArgv
     process.env = originalEnv
     process.chdir(originalCwd)
+    existsSyncImpl = fs.existsSync
   })
 
   const calls = []
@@ -208,7 +225,21 @@ test('--only-heavy keeps heavy suites after the tooling filter', async t => {
   })
 })
 
-test('heavy env overrides only accept exactly "1"', async t => {
+test('--only-heavy exits 1 when discovery finds no heavy suite', async t => {
+  const message =
+    'Invalid node-test heavy mode: --only-heavy selected but no heavy tests matched.'
+  const existsSync = () => false
+  assertRejected(
+    await runRunner(t, { args: ['--only-heavy'], existsSync }),
+    message
+  )
+  assertRejected(
+    await runRunner(t, { env: { NODE_TEST_ONLY_HEAVY: '1' }, existsSync }),
+    message
+  )
+})
+
+test('quirk: heavy env overrides only accept exactly "1"', async t => {
   assertDiscovery(
     await runRunner(t, {
       env: { NODE_TEST_ONLY_HEAVY: 'true', NODE_TEST_SKIP_HEAVY: 'yes' }
@@ -234,48 +265,46 @@ test('--shard splits sorted discovery round-robin into disjoint shards', async t
   assert.deepEqual(sorted([...first, ...second]), sorted(NON_TOOLING))
 })
 
-test('--shard=1/1 keeps crawl order; trailing segments are ignored', async t => {
+test('--shard=1/1 keeps crawl order', async t => {
   const unsharded = spawnedRest(await runRunner(t))
   assert.deepEqual(
     spawnedRest(await runRunner(t, { args: ['--shard=1/1'] })),
     unsharded
   )
-  // quirk: only the first two "/" segments are read
-  const order = [...NON_TOOLING].sort((a, b) =>
-    a.replaceAll('\\', '/').localeCompare(b.replaceAll('\\', '/'))
-  )
-  assertDiscovery(await runRunner(t, { args: ['--shard=1/2/ignored'] }), {
-    files: order.filter((_, i) => i % 2 === 0),
-    ordered: true
-  })
 })
 
-test('first --shard= wins and later ones are dropped unvalidated', async t => {
-  const one = spawnedRest(await runRunner(t, { args: ['--shard=1/2'] }))
-  assert.deepEqual(
-    spawnedRest(
-      await runRunner(t, { args: ['--shard=1/2', '--shard=not-a-shard'] })
-    ),
-    one
-  )
-})
-
-test('invalid --shard values exit 1 without spawning', async t => {
-  for (const token of [
-    '--shard=0/2',
-    '--shard=3/2',
-    '--shard=a/b',
-    '--shard='
+test('a repeated --shard or --test-concurrency exits 1 without spawning', async t => {
+  for (const args of [
+    ['--shard=1/2', '--shard=not-a-shard'],
+    ['--shard=1/2', '--', '--shard', '2/2'],
+    ['--test-concurrency=2', '--test-concurrency=9']
   ]) {
-    assertRejected(await runRunner(t, { args: [token] }), SHARD_ERROR(token))
+    const name = args[0].split('=')[0]
+    assertRejected(await runRunner(t, { args }), REPEATED_ERROR(name))
   }
 })
 
-test('quirk: "--shard 1/2" is not a shard; both tokens are forwarded', async t => {
-  assertDiscovery(await runRunner(t, { args: ['--shard', '1/2'] }), {
-    files: NON_TOOLING,
-    forwarded: ['--shard', '1/2']
-  })
+test('invalid --shard values exit 1 without spawning', async t => {
+  for (const [args, token = args[0]] of [
+    [['--shard=0/2']],
+    [['--shard=3/2']],
+    [['--shard=a/b']],
+    [['--shard=']],
+    [['--shard=1/2/x']],
+    [['--shard=+1/2']],
+    [['--shard']],
+    [['--shard', '3/2'], '--shard 3/2'],
+    [['--shard', '--skip-heavy']]
+  ]) {
+    assertRejected(await runRunner(t, { args }), SHARD_ERROR(token))
+  }
+})
+
+test('"--shard <i>/<n>" shards like "--shard=<i>/<n>"', async t => {
+  assert.deepEqual(
+    spawnedRest(await runRunner(t, { args: ['--shard', '2/2'] })),
+    spawnedRest(await runRunner(t, { args: ['--shard=2/2'] }))
+  )
 })
 
 // ------------------------------------------------------------- concurrency
@@ -291,32 +320,39 @@ test('concurrency defaults to computeWorkerCount(NODE_TEST_CONCURRENCY)', async 
   spawnedRest(await runRunner(t, { env: { NODE_TEST_CONCURRENCY: '64' } }), 64)
 })
 
-test('--test-concurrency=N overrides the env; the first token wins', async t => {
+test('--test-concurrency=N overrides the env', async t => {
   assertDiscovery(
     await runRunner(t, {
-      args: ['--test-concurrency=2', '--test-concurrency=9'],
+      args: ['--test-concurrency=2'],
       env: { NODE_TEST_CONCURRENCY: '5' }
     }),
     { files: NON_TOOLING, concurrency: 2 }
   )
-  // quirk: the raw text after the first "=" up to the next "=" is used
-  assertDiscovery(
-    await runRunner(t, { args: ['--test-concurrency=4=extra'] }),
-    { files: NON_TOOLING, concurrency: 4 }
-  )
-  // quirk: any token with the prefix matches, and is consumed
+  // Only the exact option name is the runner's; a longer name is Node's.
   assertDiscovery(
     await runRunner(t, { args: ['--test-concurrency-extra=7'] }),
-    { files: NON_TOOLING, concurrency: 7 }
+    { files: NON_TOOLING, forwarded: ['--test-concurrency-extra=7'] }
   )
 })
 
-test('quirk: "--test-concurrency 4" spawns =undefined and forwards 4', async t => {
+test('"--test-concurrency 4" spawns =4 and forwards nothing', async t => {
   assertDiscovery(await runRunner(t, { args: ['--test-concurrency', '4'] }), {
     files: NON_TOOLING,
-    concurrency: 'undefined',
-    forwarded: ['4']
+    concurrency: 4
   })
+})
+
+test('invalid --test-concurrency values exit 1 without spawning', async t => {
+  for (const args of [
+    ['--test-concurrency'],
+    ['--test-concurrency='],
+    ['--test-concurrency=0'],
+    ['--test-concurrency=abc'],
+    ['--test-concurrency=4=extra'],
+    ['--test-concurrency', '--only-tooling']
+  ]) {
+    assertRejected(await runRunner(t, { args }), CONCURRENCY_ERROR(args[0]))
+  }
 })
 
 // --------------------------------------------------- grammar and forwarding
@@ -330,7 +366,7 @@ test('one leading "--" is stripped; a later "--" is forwarded', async t => {
   )
 })
 
-test('runner flags are recognised anywhere, even after a later "--"', async t => {
+test('quirk: runner flags are recognised anywhere, even after a later "--"', async t => {
   assertDiscovery(
     await runRunner(t, { args: ['--test-only', '--', '--only-tooling'] }),
     { files: TOOLING, forwarded: ['--test-only', '--'] }
@@ -552,7 +588,25 @@ test('mode conflicts exit 1, including env-derived ones', async t => {
   }
 })
 
-test('validation order: shard, then mode conflict, then roots, then tooling', async t => {
+test('validation order: repeat, shard, concurrency, mode, roots, tooling', async t => {
+  assertRejected(
+    await runRunner(t, {
+      args: ['--shard=3/2', '--shard=1/2', '--test-concurrency=0']
+    }),
+    REPEATED_ERROR('--shard')
+  )
+  assertRejected(
+    await runRunner(t, {
+      args: ['--test-concurrency=0', '--shard=3/2']
+    }),
+    SHARD_ERROR('--shard=3/2')
+  )
+  assertRejected(
+    await runRunner(t, {
+      args: ['--test-concurrency=0', '--only-heavy', '--skip-heavy']
+    }),
+    CONCURRENCY_ERROR('--test-concurrency=0')
+  )
   assertRejected(
     await runRunner(t, {
       args: ['--shard=3/2', '--only-heavy', '--skip-heavy', 'src/x.js']

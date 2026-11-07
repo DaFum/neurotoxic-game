@@ -332,4 +332,27 @@ describe('MerchStrategyBlock', () => {
       expect(settledShirtQuote(s)).toBe(displayed)
     })
   })
+
+  it.each([
+    ['missing', undefined, 'Stock: 0'],
+    ['NaN', Number.NaN, 'Stock: 0'],
+    ['Infinity', Number.POSITIVE_INFINITY, 'Stock: 0'],
+    ['-Infinity', Number.NEGATIVE_INFINITY, 'Stock: 0'],
+    ['a string', 'lots', 'Stock: 0'],
+    ['finite', 7, 'Stock: 7']
+  ])('shows only finite stock (%s)', (_label, shirts, expected) => {
+    render(
+      <MerchStrategyBlock
+        bandInventory={{ shirts }}
+        customPrices={{}}
+        onUpdatePrice={vi.fn()}
+        onRestock={vi.fn()}
+        playerMoney={1000}
+      />
+    )
+    const rows = screen.getAllByText(/^Stock: /)
+    const shirtsIndex = Object.keys(DEFAULT_MERCH_PRICES).indexOf('shirts')
+    expect(rows).toHaveLength(Object.keys(DEFAULT_MERCH_PRICES).length)
+    expect(rows[shirtsIndex]).toHaveTextContent(expected)
+  })
 })

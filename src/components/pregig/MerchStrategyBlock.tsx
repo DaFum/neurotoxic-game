@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economy'
 import { MERCH_MAX_PRICES } from '../../data/merch'
 import { formatCurrency } from '../../utils/numberUtils'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import { resolveMerchRestock } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import { IMG_PROMPTS } from '../../utils/imageGen'
@@ -173,39 +174,34 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
   const merchItems = useMemo(() => {
     const items: MerchItem[] = []
-    for (const key in DEFAULT_MERCH_PRICES) {
-      if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
-        const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
-        const currentPrice = customPrices[key] ?? defaultPrice
-        const maxPrice = MERCH_MAX_PRICES[key] ?? defaultPrice
-        const stock =
-          typeof bandInventory[key] === 'number'
-            ? (bandInventory[key] as number)
-            : 0
+    for (const [key, defaultPrice] of Object.entries(DEFAULT_MERCH_PRICES)) {
+      const currentPrice = customPrices[key] ?? defaultPrice
+      const maxPrice = MERCH_MAX_PRICES[key] ?? defaultPrice
+      const rawStock = bandInventory[key]
+      const stock = isFiniteNumber(rawStock) ? rawStock : 0
 
-        const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
-        const restock = resolveMerchRestock(key, bandInventory, {
-          merchCapacityBonus,
-          merchCostMultiplier: restockCostMultiplier
-        })
+      const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
+      const restock = resolveMerchRestock(key, bandInventory, {
+        merchCapacityBonus,
+        merchCostMultiplier: restockCostMultiplier
+      })
 
-        const imgPrompt = itemDef?.img
-          ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]
-          : undefined
+      const imgPrompt = itemDef?.img
+        ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]
+        : undefined
 
-        items.push({
-          key,
-          name: t(`economy:gigIncome.merchSales.${key}.label`, {
-            defaultValue: key
-          }),
-          stock,
-          currentPrice,
-          defaultPrice,
-          maxPrice,
-          restock,
-          imgPrompt
-        })
-      }
+      items.push({
+        key,
+        name: t(`economy:gigIncome.merchSales.${key}.label`, {
+          defaultValue: key
+        }),
+        stock,
+        currentPrice,
+        defaultPrice,
+        maxPrice,
+        restock,
+        imgPrompt
+      })
     }
     return items
   }, [

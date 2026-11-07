@@ -525,6 +525,37 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 0)
   })
 
+  test('re-entry clicks after a requested gig start do not start it again', async () => {
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      }
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 1)
+    assert.equal(props.changeScene.mock.calls.length, 0)
+
+    // The guard outlives the tick: START_GIG may still be pending in a
+    // transition (lazy PreGig), so a later click must not start the gig again.
+    await Promise.resolve()
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+    assert.equal(props.startGig.mock.calls.length, 1)
+    assert.equal(props.changeScene.mock.calls.length, 0)
+  })
+
   test('handleRefuel fills tank and deducts money', () => {
     // Defaults: money 1000, van.fuel 50. Price is 2 per unit.
     const { result, props } = setupTravelScenario(useTravelLogic)

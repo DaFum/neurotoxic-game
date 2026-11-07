@@ -57,4 +57,44 @@ test('zealotry counter schema', async t => {
       /Unknown zealotry action in counters: newAction/
     )
   })
+
+  await t.test('known rejection reasons sum across runs', () => {
+    const a = createZealotryCounters('legal-stack')
+    const b = createZealotryCounters('legal-stack')
+    a.actions.leak.rejections.cash = 2
+    b.actions.leak.rejections.cash = 3
+    b.actions.leak.rejections.daily_marker = 1
+    const runs = [{ zealotryPolicy: a }, { counters: { zealotryPolicy: b } }]
+    const { actionTotals } = aggregatePolicyMetrics(runs, runs, 'seed')
+    assert.deepStrictEqual(actionTotals.leak.rejections, {
+      daily_marker: 1,
+      gate: 0,
+      cash: 5,
+      harmony: 0
+    })
+  })
+
+  await t.test('unknown rejection reason throws, never dropped', () => {
+    for (const reason of [
+      'newReason',
+      'constructor',
+      'toString',
+      '__proto__'
+    ]) {
+      const zp = createZealotryCounters('legal-stack')
+      Object.defineProperty(zp.actions.sermon.rejections, reason, {
+        value: 1,
+        enumerable: true
+      })
+      const runs = [{ zealotryPolicy: zp }]
+      assert.throws(
+        () => aggregatePolicyMetrics(runs, runs, 'seed'),
+        err =>
+          err instanceof RangeError &&
+          err.message ===
+            `Unknown zealotry rejection reason in counters: sermon.${reason}`,
+        reason
+      )
+    }
+  })
 })

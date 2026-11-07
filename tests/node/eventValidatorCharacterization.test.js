@@ -542,3 +542,59 @@ describe('validateGameEvent option and skill-check characterization', () => {
 
   describeRecursion(validateGameEvent, gameEvent, ID)
 })
+
+describe('event-level title and description keys', () => {
+  const REJECTED = [
+    undefined,
+    42,
+    ' events:t',
+    'Events:t',
+    'title',
+    new String('events:t')
+  ]
+  const crisis = overrides => ({
+    id: 'crisis_x',
+    category: 'band',
+    tags: ['crisis'],
+    trigger: 'random',
+    chance: 0.5,
+    title: 'events:t',
+    description: 'events:d',
+    options: [option({ effect: validEffect() })],
+    ...overrides
+  })
+  const game = overrides => ({
+    id: 'x',
+    title: 'events:t',
+    description: 'events:d',
+    options: [option({ effect: validEffect() })],
+    ...overrides
+  })
+
+  it('accepts the bare events: prefix in both validators', () => {
+    const keys = { title: 'events:', description: 'events:' }
+    assert.equal(validateCrisisEvent(crisis(keys)), true)
+    assert.equal(validateGameEvent(game(keys)), true)
+  })
+
+  it('keeps each validator diagnostic for rejected keys', () => {
+    for (const value of REJECTED) {
+      throwsExactly(
+        () => validateCrisisEvent(crisis({ title: value })),
+        'Invalid title key: ' + String(value) + ' for event crisis_x'
+      )
+      throwsExactly(
+        () => validateCrisisEvent(crisis({ description: value })),
+        'Invalid description key: ' + String(value) + ' for event crisis_x'
+      )
+      throwsExactly(
+        () => validateGameEvent(game({ title: value })),
+        `Event "x": title must start with 'events:' (got: ${JSON.stringify(value)})`
+      )
+      throwsExactly(
+        () => validateGameEvent(game({ description: value })),
+        `Event "x": description must start with 'events:' (got: ${JSON.stringify(value)})`
+      )
+    }
+  })
+})

@@ -48,9 +48,11 @@ export const KabelsalatScene = () => {
     () => ({ isGameOver: isGameOver || isPoweredOn || isWinning }),
     [isGameOver, isPoweredOn, isWinning]
   )
+  // A committed pending win (isWinning before isPoweredOn) is a success: Escape
+  // in that 600 ms window must not record a loss.
   const handleComplete = useCallback(
-    () => forceAdvance(isPoweredOn),
-    [forceAdvance, isPoweredOn]
+    () => forceAdvance(isPoweredOn || isWinning),
+    [forceAdvance, isPoweredOn, isWinning]
   )
   // The shared handleSkip forfeits through onComplete (forceAdvance(false)
   // while not powered), so the purge count reaches the single completion.

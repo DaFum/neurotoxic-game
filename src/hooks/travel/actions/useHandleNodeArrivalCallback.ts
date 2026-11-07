@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import type { MapNode } from '../../../types'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import {
@@ -37,9 +37,18 @@ export const useHandleNodeArrivalCallback = ({
     changeScene,
     expeditionStatus
   } = params
+  // Set once a gig start was requested and held for the lifetime of this hook.
+  // `startGig` dispatches inside `startTransition` and PreGig is lazy, so the
+  // map can stay mounted and clickable well past a microtask; a second call
+  // must not dispatch START_GIG again or re-run its side effects (e.g. a
+  // finale's starting hype). START_GIG leaves OVERWORLD, which unmounts the map
+  // and discards this ref. A start refused by the reducer is prevented upstream
+  // (venue id/name and the booking lock are checked before the request).
+  const gigStartInFlightRef = useRef(false)
 
   return useCallback(
     (node: MapNode, travelEventActive = false) => {
+      if (gigStartInFlightRef.current) return
       const outcome = handleNodeArrival({
         // Same lock `handleStartGig` re-checks: without it a refused re-entry
         // would decide `gig` and the click would silently do nothing.
@@ -78,11 +87,13 @@ export const useHandleNodeArrivalCallback = ({
       // the node with the click still available — but keep it in mind if this
       // path ever gains state worth losing.
       if (
-        outcome.kind !== 'gig' ||
-        !requestArrivalGigStart(outcome.venue, startGig, addToast)
+        outcome.kind === 'gig' &&
+        requestArrivalGigStart(outcome.venue, startGig, addToast)
       ) {
-        changeScene(GAME_PHASES.OVERWORLD)
+        gigStartInFlightRef.current = true
+        return
       }
+      changeScene(GAME_PHASES.OVERWORLD)
     },
     [
       refs,

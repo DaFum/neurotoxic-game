@@ -32,6 +32,7 @@ Optimize and harden Continuous Integration (CI) workflows.
 3.  **Optimize Speed**
     - Run independent jobs (Lint, Test) in parallel.
     - Make `Build` depend on `Test` and `Lint`.
+    - A job that must cover the full lint scope runs `pnpm run lint` (ESLint plus Stylelint on `src/**/*.css`). `.github/workflows/eslint.yml` runs only `pnpm exec eslint .` with SARIF output, so it does not cover Stylelint.
     - Use `pnpm install --frozen-lockfile` instead of `pnpm install` for deterministic installs.
 
 4.  **Verify**

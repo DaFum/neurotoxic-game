@@ -241,12 +241,28 @@ describe('KabelsalatScene - timer and game over', () => {
       render(<KabelsalatScene />)
     })
 
-    // Advance to low time
-    await act(async () => {
-      vi.advanceTimersByTime(16000) // 25 - 16 = 9 seconds left
-    })
+    const CRITICAL = ['border-error-red', 'text-error-red', 'animate-pulse']
 
-    expect(screen.getByText('9s')).toBeInTheDocument()
+    await act(async () => {
+      vi.advanceTimersByTime(14000) // 11 seconds left: still a warning
+    })
+    const warningTimer = screen.getByText('11s').parentElement
+    expect(warningTimer).toHaveClass('border-warning-yellow')
+    for (const cls of CRITICAL) {
+      expect(warningTimer).not.toHaveClass(cls)
+    }
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000) // 10 seconds left: critical threshold
+    })
+    expect(screen.getByText('10s').parentElement).toHaveClass(...CRITICAL)
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    const criticalTimer = screen.getByText('9s').parentElement
+    expect(criticalTimer).toHaveClass(...CRITICAL)
+    expect(criticalTimer).not.toHaveClass('border-warning-yellow')
   })
 
   it('routes to GIG on timeout loss path', async () => {
@@ -382,6 +398,33 @@ describe('KabelsalatScene - fully wired win', () => {
     expect(mockCompleteMinigame).toHaveBeenCalledWith(
       expect.objectContaining({ isPoweredOn: true })
     )
+  })
+
+  it('Escape during the pending win reports a powered win, not a loss', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    wireEverything()
+
+    // Inside the 600 ms win window `isPoweredOn` is still false.
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'Escape' })
+    })
+
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockCompleteMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true, timeLeft: 25 })
+    )
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+
+    // The pending power-on and auto-advance must not complete a second time.
+    await act(async () => {
+      vi.advanceTimersByTime(3100)
+    })
+    expect(mockCompleteMinigame).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
   })
 
   it('routes to GIG immediately from the powered-on continue button', async () => {

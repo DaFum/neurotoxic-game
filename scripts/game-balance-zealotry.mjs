@@ -205,9 +205,14 @@ export const aggregatePolicyMetrics = (
 
       runTotalEligible += act.eligible ?? 0
 
+      const rejectionTotals = actionTotals[actionKey].rejections
       for (const [rKey, rVal] of Object.entries(act.rejections || {})) {
-        actionTotals[actionKey].rejections[rKey] =
-          (actionTotals[actionKey].rejections[rKey] ?? 0) + (rVal ?? 0)
+        if (!Object.hasOwn(rejectionTotals, rKey)) {
+          throw new RangeError(
+            `Unknown zealotry rejection reason in counters: ${actionKey}.${rKey}`
+          )
+        }
+        rejectionTotals[rKey] += rVal ?? 0
       }
     }
 

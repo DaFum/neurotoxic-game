@@ -107,7 +107,18 @@ const localStorageMock = (function () {
   }
 })()
 
-vi.stubGlobal('localStorage', localStorageMock)
+// Shared mocks are installed outside vi.stubGlobal so a suite's own
+// vi.unstubAllGlobals() restores only the globals that suite stubbed.
+const defineSharedGlobal = (name, value) => {
+  Object.defineProperty(globalThis, name, {
+    value,
+    configurable: true,
+    writable: true,
+    enumerable: true
+  })
+}
+
+defineSharedGlobal('localStorage', localStorageMock)
 
 // Mock AudioContext to satisfy standardized-audio-context
 const AudioContextMock = vi.fn(() => ({
@@ -156,8 +167,8 @@ const AudioContextMock = vi.fn(() => ({
   close: vi.fn().mockResolvedValue()
 }))
 
-vi.stubGlobal('AudioContext', AudioContextMock)
-vi.stubGlobal('webkitAudioContext', AudioContextMock)
+defineSharedGlobal('AudioContext', AudioContextMock)
+defineSharedGlobal('webkitAudioContext', AudioContextMock)
 
 if (typeof window !== 'undefined') {
   window.AudioContext = AudioContextMock

@@ -575,10 +575,6 @@ test('action-types.json enforcementRules has the three invariant rules', async (
 // SKILL.md frontmatter — changed skills
 // ---------------------------------------------------------------------------
 
-// react-performance-optimization is excluded from YAML-parse loops because its description
-// field contains embedded colons that make strict YAML parsing fail — this is a pre-existing
-// issue unrelated to the PR changes (which only added a blank line after the closing ---).
-// A dedicated test for that skill's structural change is added separately below.
 const CHANGED_SKILLS = [
   'agents-md-writer',
   'asset-pipeline-verifier',
@@ -598,6 +594,7 @@ const CHANGED_SKILLS = [
   'perf-budget-enforcer',
   'pixi-lifecycle-memory-leak-sentinel',
   'project-brain-codex-instructions',
+  'react-performance-optimization',
   'refactor-with-safety'
 ]
 

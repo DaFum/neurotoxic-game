@@ -380,7 +380,7 @@ describe('useKabelsalatState', () => {
     })
   })
 
-  it('timer stops when powered on', async () => {
+  it('counts down while the run is active', async () => {
     let result
     await act(async () => {
       const hook = renderHook(() => useKabelsalatState())
@@ -395,6 +395,77 @@ describe('useKabelsalatState', () => {
     })
 
     expect(result.current.timeLeft).toBeLessThan(initialTime)
+  })
+
+  it('freezes the countdown from the winning connection on', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
+
+    // Wire mid-second so the 600 ms win window spans the next 1 s tick.
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+    // Valid order: power first, then amp, then the rest.
+    const wiring = [
+      ['iec', 'power'],
+      ['jack', 'amp'],
+      ['xlr', 'mic'],
+      ['dc', 'pedal'],
+      ['midi', 'synth']
+    ]
+    for (const [cable, socket] of wiring) {
+      await act(async () => {
+        result.current.handleCableClick(cable)
+      })
+      await act(async () => {
+        result.current.handleSocketClick(socket)
+      })
+    }
+    expect(result.current.isWinning).toBe(true)
+    expect(result.current.isPoweredOn).toBe(false)
+    expect(result.current.timeLeft).toBe(25)
+
+    await act(async () => {
+      vi.advanceTimersByTime(600)
+    })
+    expect(result.current.isPoweredOn).toBe(true)
+    expect(result.current.timeLeft).toBe(25)
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current.timeLeft).toBe(25)
+    expect(result.current.isGameOver).toBe(false)
+  })
+
+  it('freezes the countdown at zero after a loss', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(25000)
+    })
+    expect(result.current.isGameOver).toBe(true)
+    expect(result.current.timeLeft).toBe(0)
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current.timeLeft).toBe(0)
+    expect(result.current.isGameOver).toBe(true)
+    expect(result.current.isPoweredOn).toBe(false)
   })
 
   it('initializes connections as empty object', async () => {
