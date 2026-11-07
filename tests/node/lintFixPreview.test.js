@@ -247,8 +247,9 @@ const cluster = (id, lines, tokens) => ({
  * @param {import('node:test').TestContext} t
  * @param {Record<string, string> | null} reports jscpd-report files, or none
  * @param {string} [analyzerStub] replacement analyzer source
+ * @param {Record<string, string>} [extraEnv] additional environment
  */
-function runDuplicatePreview(t, reports, analyzerStub) {
+function runDuplicatePreview(t, reports, analyzerStub, extraEnv = {}) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lint-preview-dup-'))
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }))
   for (const name of ['scripts', 'bin', 'src']) {
@@ -322,7 +323,8 @@ function runDuplicatePreview(t, reports, analyzerStub) {
     env: {
       ...env,
       PATH: `${path.join(directory, 'bin')}${path.delimiter}${env.PATH ?? ''}`,
-      GITHUB_OUTPUT: output
+      GITHUB_OUTPUT: output,
+      ...extraEnv
     }
   })
   assert.equal(result.status, 0, result.stderr)
@@ -446,5 +448,44 @@ for (const [name, reports, status, analyzerStub] of [
       )
     )
     assert.doesNotMatch(body, /No significant duplicates|Found \*\*/)
+  })
+}
+
+test('shell trusts the report when the workflow scan exited 0', t => {
+  if (shellUnavailable()) return t.skip('bash is unavailable')
+  const { outputs } = runDuplicatePreview(
+    t,
+    { 'report.json': JSON.stringify({ duplicates: [cluster('a', 9, 70)] }) },
+    undefined,
+    { JSCPD_EXIT_CODE: '0' }
+  )
+  assert.equal(outputs.dup_status, 'ok')
+  assert.equal(outputs.dup_total, '1')
+  assert.equal(outputs.dup_failed, '0')
+})
+
+// A scanner crash can leave a partial report that the analyzer accepts.
+for (const [name, code] of [
+  ['a nonzero scan exit', '1'],
+  ['a missing scan exit output', '']
+]) {
+  test(`shell fails closed on ${name} despite a valid report`, t => {
+    if (shellUnavailable()) return t.skip('bash is unavailable')
+    const { body, outputs } = runDuplicatePreview(
+      t,
+      { 'report.json': JSON.stringify({ duplicates: [cluster('a', 9, 70)] }) },
+      undefined,
+      { JSCPD_EXIT_CODE: code }
+    )
+    assert.deepEqual(outputs, {
+      has_diff: '0',
+      has_dup: '0',
+      dup_total: '',
+      dup_status: 'scan_failed',
+      dup_failed: '1',
+      should_comment: '1'
+    })
+    assert.match(body, /Duplicate analysis failed \(status: `scan_failed`\)/)
+    assert.doesNotMatch(body, /Found \*\*/)
   })
 }

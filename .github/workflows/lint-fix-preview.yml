@@ -43,13 +43,24 @@ jobs:
           # pnpm exec, not dlx: jscpd is pinned in devDependencies (5.0.12), so
           # this uses the locked version instead of resolving a fresh one from
           # the registry on every run.
+          # A stale report must not stand in for this scan.
+          rm -rf ./jscpd-report
+          # jscpd auto-loads .jscpd.json, whose threshold exits 1 when breached.
+          # The preview reports duplicates instead of failing on them, and the
+          # threshold check is strict (>), so 100% never trips: any nonzero exit
+          # is a scanner failure. The step records it and stays green so the
+          # preview can publish the failure before the job fails on it.
+          jscpd_exit=0
           pnpm exec jscpd \
+            --threshold 100 \
             --reporters json \
             --output ./jscpd-report \
             --min-lines "$JSCPD_MIN_LINES" \
             --min-tokens "$JSCPD_MIN_TOKENS" \
             --ignore "$JSCPD_IGNORE" \
-            "$TARGET" || true
+            "$TARGET" || jscpd_exit=$?
+          echo "jscpd exit status: $jscpd_exit"
+          echo "exit_code=$jscpd_exit" >>"$GITHUB_OUTPUT"
           if [[ -d jscpd-report ]]; then ls -la jscpd-report || true; head -n 200 jscpd-report/*.json || true; else echo "no jscpd-report directory created"; fi
 
       - name: Ensure scripts are executable
@@ -63,6 +74,7 @@ jobs:
         # name is attacker-chosen data, not shell source.
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          JSCPD_EXIT_CODE: ${{ steps.run-jscpd.outputs.exit_code }}
         run: |
           ./scripts/lint-fix-preview.sh "$BASE_REF"
 

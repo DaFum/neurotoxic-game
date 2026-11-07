@@ -184,6 +184,15 @@ else
 	dup_status=error
 	dup_failed=1
 fi
+# The workflow passes the scanner's exit status. A crash can leave a partial
+# report the analyzer accepts, so anything but exactly 0 fails the analysis.
+# Unset means a run outside the workflow, where no scan status exists.
+if [[ -n "${JSCPD_EXIT_CODE+set}" && "$JSCPD_EXIT_CODE" != "0" ]]; then
+	dup_status=scan_failed
+	dup_failed=1
+	has_dup=0
+	dup_total=""
+fi
 if [[ "$dup_failed" == "1" ]]; then
 	{
 		echo "### Duplicate code"
