@@ -1,7 +1,5 @@
-import {
-  canSpendExpeditionCash,
-  getAvailableNativeContractTemplateIds
-} from './loadout'
+import { canSpendExpeditionCash } from './spendableCash'
+import { getAvailableNativeContractTemplateIds } from './loadout'
 import type { GameState } from '../../types'
 import type {
   ActiveObligationState,

@@ -49,6 +49,26 @@ export const getExpeditionSpendableCash = (
   )
 
 /**
+ * Checks whether an active-Expedition spend is affordable.
+ *
+ * @param state - Current game state.
+ * @param amount - Non-negative cost to test.
+ * @returns True when the spend stays inside the spendable slice.
+ *
+ * @remarks
+ * A non-finite or negative amount is rejected rather than clamped: silently
+ * treating `NaN` as free would let a malformed caller spend nothing and receive
+ * the goods.
+ */
+export const canSpendExpeditionCash = (
+  state: GameState,
+  amount: number
+): boolean =>
+  isFiniteNumber(amount) &&
+  amount >= 0 &&
+  getExpeditionSpendableCash(state) >= amount
+
+/**
  * A state view whose balance is only the cash an active run may spend.
  *
  * @param state - Game state, or an engine slice of it.
