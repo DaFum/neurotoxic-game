@@ -4,7 +4,10 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 import { NODE_TEST_DIRS, isToolingNodeTest } from './utils/node-test-dirs.mjs'
-import { parseNodeTestArgs } from './utils/node-test-args.mjs'
+import {
+  MAX_TEST_CONCURRENCY,
+  parseNodeTestArgs
+} from './utils/node-test-args.mjs'
 
 // Usage: node scripts/run-node-tests.mjs [--] [runner options] [node options]
 //          [test files]
@@ -13,9 +16,10 @@ import { parseNodeTestArgs } from './utils/node-test-args.mjs'
 //   --skip-heavy | --only-heavy | --only-tooling   Mutually exclusive modes.
 //   --shard=<i>/<n> | --shard <i>/<n>   1-based; splits discovery round-robin
 //       over the sorted file list. Ignored when test files are passed.
-//   --test-concurrency=<n> | --test-concurrency <n>   n >= 1; default is
+//   --test-concurrency=<n> | --test-concurrency <n>   1 <= n <= 1024; default is
 //       computeWorkerCount('NODE_TEST_CONCURRENCY').
-//   A value option given twice, a missing value, or a malformed one exits 1.
+//   A value option given twice, a missing value, or a malformed one exits 1,
+//   as does a longer name sharing its prefix (`--test-concurrency-foo`).
 //
 // Intentional grammar (pinned by tests/node/runNodeTestsCli.test.js):
 // - One leading `--` (the pnpm separator) is stripped. Runner options are
@@ -38,6 +42,7 @@ const {
   shard,
   concurrency,
   repeatedOptions,
+  unknownOptions,
   reporterArgs,
   forwardedArgs,
   explicitFiles
@@ -51,6 +56,9 @@ const fail = message => {
 if (repeatedOptions.length > 0) {
   fail(`Invalid node-test arguments: ${repeatedOptions[0]} was given twice.`)
 }
+if (unknownOptions.length > 0) {
+  fail(`Invalid node-test arguments: unknown option "${unknownOptions[0]}".`)
+}
 if (shard && !shard.valid) {
   fail(
     `Invalid --shard value "${shard.token}"; expected --shard=<index>/<total> with 1 <= index <= total.`
@@ -58,7 +66,7 @@ if (shard && !shard.valid) {
 }
 if (concurrency && !concurrency.valid) {
   fail(
-    `Invalid --test-concurrency value "${concurrency.token}"; expected --test-concurrency=<n> with n >= 1.`
+    `Invalid --test-concurrency value "${concurrency.token}"; expected --test-concurrency=<n> with 1 <= n <= ${MAX_TEST_CONCURRENCY}.`
   )
 }
 const shardIndex = shard?.index ?? 0

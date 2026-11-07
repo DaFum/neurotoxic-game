@@ -9,6 +9,7 @@ const EMPTY = {
   shard: null,
   concurrency: null,
   repeatedOptions: [],
+  unknownOptions: [],
   reporterArgs: [],
   forwardedArgs: [],
   explicitFiles: []
@@ -89,5 +90,32 @@ describe('parseNodeTestArgs', () => {
     assert.equal(missing.onlyHeavy, true)
     assert.equal(missing.concurrency?.valid, false)
     assert.equal(missing.concurrency?.token, '--test-concurrency')
+  })
+
+  it('bounds --test-concurrency to a safe worker count', () => {
+    const concurrencyOf = value =>
+      parseNodeTestArgs([`--test-concurrency=${value}`]).concurrency
+    assert.deepEqual(concurrencyOf('1024'), {
+      token: '--test-concurrency=1024',
+      value: 1024,
+      valid: true
+    })
+    assert.equal(concurrencyOf('1025')?.valid, false)
+    // Matches the digit pattern but serialises as 1e+22.
+    assert.equal(concurrencyOf(`1${'0'.repeat(22)}`)?.valid, false)
+  })
+
+  it('reports a longer name sharing a runner option prefix as unknown', () => {
+    const parsed = parseNodeTestArgs([
+      '--test-concurrency-foo',
+      '--shard-x=1/2',
+      '--test-concurrency=2'
+    ])
+    assert.deepEqual(parsed.unknownOptions, [
+      '--test-concurrency-foo',
+      '--shard-x=1/2'
+    ])
+    assert.deepEqual(parsed.forwardedArgs, [])
+    assert.equal(parsed.concurrency?.value, 2)
   })
 })

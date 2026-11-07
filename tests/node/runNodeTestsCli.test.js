@@ -81,7 +81,9 @@ const sorted = list => [...list].sort()
 const SHARD_ERROR = token =>
   `Invalid --shard value "${token}"; expected --shard=<index>/<total> with 1 <= index <= total.`
 const CONCURRENCY_ERROR = token =>
-  `Invalid --test-concurrency value "${token}"; expected --test-concurrency=<n> with n >= 1.`
+  `Invalid --test-concurrency value "${token}"; expected --test-concurrency=<n> with 1 <= n <= 1024.`
+const UNKNOWN_ERROR = token =>
+  `Invalid node-test arguments: unknown option "${token}".`
 const REPEATED_ERROR = name =>
   `Invalid node-test arguments: ${name} was given twice.`
 const CONFLICT_ERROR =
@@ -328,11 +330,20 @@ test('--test-concurrency=N overrides the env', async t => {
     }),
     { files: NON_TOOLING, concurrency: 2 }
   )
-  // Only the exact option name is the runner's; a longer name is Node's.
-  assertDiscovery(
-    await runRunner(t, { args: ['--test-concurrency-extra=7'] }),
-    { files: NON_TOOLING, forwarded: ['--test-concurrency-extra=7'] }
-  )
+  assertDiscovery(await runRunner(t, { args: ['--test-concurrency=1024'] }), {
+    files: NON_TOOLING,
+    concurrency: 1024
+  })
+})
+
+test('a longer name sharing a runner option prefix exits 1 without spawning', async t => {
+  for (const arg of [
+    '--test-concurrency-extra=7',
+    '--test-concurrency-foo',
+    '--shard-x=1/2'
+  ]) {
+    assertRejected(await runRunner(t, { args: [arg] }), UNKNOWN_ERROR(arg))
+  }
 })
 
 test('"--test-concurrency 4" spawns =4 and forwards nothing', async t => {
@@ -349,6 +360,8 @@ test('invalid --test-concurrency values exit 1 without spawning', async t => {
     ['--test-concurrency=0'],
     ['--test-concurrency=abc'],
     ['--test-concurrency=4=extra'],
+    ['--test-concurrency=1025'],
+    [`--test-concurrency=1${'0'.repeat(22)}`],
     ['--test-concurrency', '--only-tooling']
   ]) {
     assertRejected(await runRunner(t, { args }), CONCURRENCY_ERROR(args[0]))

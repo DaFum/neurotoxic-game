@@ -22,6 +22,12 @@ const SHARD_VALUE_PATTERN = /^\d+\/\d+$/
 const CONCURRENCY_VALUE_PATTERN = /^[1-9]\d*$/
 
 /**
+ * Upper bound for `--test-concurrency`. Keeps the value a small safe integer,
+ * so it serialises back as plain digits (`1e+22` would not).
+ */
+export const MAX_TEST_CONCURRENCY = 1024
+
+/**
  * @typedef {object} NodeTestShard
  * @property {string} token The option as given (`--shard=1/2`, or
  *   `--shard 1/2` for the separate form).
@@ -35,7 +41,8 @@ const CONCURRENCY_VALUE_PATTERN = /^[1-9]\d*$/
  * @typedef {object} NodeTestConcurrency
  * @property {string} token The option as given.
  * @property {number} value The parsed worker count.
- * @property {boolean} valid Whether the value is a positive decimal integer.
+ * @property {boolean} valid Whether the value is a decimal integer with
+ *   `1 <= value <= MAX_TEST_CONCURRENCY`.
  */
 
 /**
@@ -48,6 +55,8 @@ const CONCURRENCY_VALUE_PATTERN = /^[1-9]\d*$/
  *   `--test-concurrency` option, if any.
  * @property {string[]} repeatedOptions Runner value options given more than
  *   once.
+ * @property {string[]} unknownOptions Tokens that extend a runner value
+ *   option's name (`--test-concurrency-foo`, `--shard-x=1/2`), in order.
  * @property {string[]} reporterArgs `--test-reporter*` tokens, in order.
  * @property {string[]} forwardedArgs Every other Node token, in order;
  *   explicit files stay at their positions.
@@ -75,6 +84,8 @@ export const parseNodeTestArgs = rawArgs => {
   const valueOptions = new Map()
   /** @type {string[]} */
   const repeatedOptions = []
+  /** @type {string[]} */
+  const unknownOptions = []
   const nodeArgs = []
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
@@ -96,6 +107,10 @@ export const parseNodeTestArgs = rawArgs => {
       }
       if (!valueOptions.has(name)) valueOptions.set(name, { token, value })
       else if (!repeatedOptions.includes(name)) repeatedOptions.push(name)
+    } else if (RUNNER_VALUE_OPTIONS.some(option => arg.startsWith(option))) {
+      // A longer name sharing a runner option's prefix is a typo, not a Node
+      // option: report it instead of forwarding it to Node's vaguer error.
+      unknownOptions.push(arg)
     } else {
       nodeArgs.push(arg)
     }
@@ -143,7 +158,9 @@ export const parseNodeTestArgs = rawArgs => {
     concurrency = {
       token: concurrencyOption.token,
       value: Number(concurrencyOption.value),
-      valid: CONCURRENCY_VALUE_PATTERN.test(concurrencyOption.value)
+      valid:
+        CONCURRENCY_VALUE_PATTERN.test(concurrencyOption.value) &&
+        Number(concurrencyOption.value) <= MAX_TEST_CONCURRENCY
     }
   }
 
@@ -154,6 +171,7 @@ export const parseNodeTestArgs = rawArgs => {
     shard,
     concurrency,
     repeatedOptions,
+    unknownOptions,
     reporterArgs: nodeArgs.filter(isReporter),
     forwardedArgs: nodeArgs.filter(arg => !isReporter(arg)),
     explicitFiles
