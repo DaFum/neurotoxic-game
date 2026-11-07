@@ -44,9 +44,18 @@ type GigArrivalNode<T = ArrivalNode> = T & {
   type: 'GIG' | 'FESTIVAL' | 'FINALE'
 }
 
+// An inline venue is bookable only with the identity `START_GIG` requires
+// (non-empty `id` and `name`); anything less falls back to a catalog lookup, so
+// arrival never decides `gig` on a venue the reducer would silently refuse.
 const isArrivalVenueObject = (value: unknown): value is Venue => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  return typeof (value as { name?: unknown }).name === 'string'
+  const { id, name } = value as { id?: unknown; name?: unknown }
+  return (
+    typeof id === 'string' &&
+    id !== '' &&
+    typeof name === 'string' &&
+    name !== ''
+  )
 }
 
 const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {

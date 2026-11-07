@@ -100,7 +100,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles GIG node with sufficient harmony', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 }
@@ -119,7 +119,7 @@ describe('useArrivalLogic', () => {
     // The Legendary converts an ordinary node into the Underground way out of
     // an Authority crisis. Arrival used to route on the node's own class, so
     // the escape played the very show it was an escape from.
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 },
@@ -145,7 +145,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('leaves the node alone when the record names another node', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 },
@@ -405,7 +405,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles FESTIVAL node with sufficient harmony', () => {
-    const venue = { name: 'Festival Stage' }
+    const venue = { id: 'test_venue', name: 'Festival Stage' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -424,7 +424,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles FINALE node with sufficient harmony', () => {
-    const venue = { name: 'Main Arena' }
+    const venue = { id: 'test_venue', name: 'Main Arena' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -506,7 +506,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('does not start a queued gig when advanceDay commits GAMEOVER', () => {
-    const venue = { name: 'Bankruptcy Club' }
+    const venue = { id: 'test_venue', name: 'Bankruptcy Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       currentScene: GAME_PHASES.OVERWORLD,
       gameMap: {
@@ -565,7 +565,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles startGig error during GIG node gracefully', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -720,7 +720,7 @@ describe('useArrivalLogic', () => {
   })
 
   test('GIG arrival queues a provider-level save after START_GIG commits', () => {
-    const venue = { name: 'Club' }
+    const venue = { id: 'test_venue', name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
