@@ -40,7 +40,7 @@ jobs:
         run: |
           if [[ -d "src/app" ]]; then TARGET="src/app"; elif [[ -d "src" ]]; then TARGET="src"; else TARGET="."; fi
           echo "Running jscpd on: $TARGET"
-          # pnpm exec, not dlx: jscpd is pinned in devDependencies (5.0.12), so
+          # pnpm exec, not dlx: jscpd is pinned in devDependencies (5.4.2), so
           # this uses the locked version instead of resolving a fresh one from
           # the registry on every run.
           # A stale report must not stand in for this scan.
