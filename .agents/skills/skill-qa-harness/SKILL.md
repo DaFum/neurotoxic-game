@@ -33,6 +33,7 @@ Skill regressions are often subtle: invalid YAML, stale script references, and o
    ```
 
    - Capture raw output and quote the relevant lines in the report.
+   - Do not rely on the exit status alone: skills disabled in the local `~/.codex/config.toml` are reported as `disabled` even with structural errors, so inspect the report's `findings` (including disabled entries) before declaring the gate clear.
    - `validate-skills.mjs` is deprecated; it still runs but prints a deprecation notice.
 
 3. **Run tests (prompt cases)**

@@ -87,6 +87,8 @@ export const parseNodeTestArgs = rawArgs => {
       let token = arg
       let value = arg.slice(name.length + 1)
       const next = args[i + 1]
+      // Dash-leading operands are never consumed: valid only because both
+      // options (--shard, --test-concurrency) take unsigned values.
       if (arg === name && next !== undefined && !next.startsWith('-')) {
         token = `${arg} ${next}`
         value = next
