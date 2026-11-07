@@ -282,14 +282,17 @@ test('result mode fails closed on malformed and legacy report shapes', async t =
 
 test('rejects a --markdown-file flag without a path', t => {
   const directory = createWorkspace(t)
-  const result = spawnSync(process.execPath, [analyzer, '--markdown-file'], {
-    cwd: directory,
-    encoding: 'utf8',
-    timeout: 10000
-  })
-  assert.equal(result.status, 2)
-  assert.equal(result.stdout, '')
-  assert.match(result.stderr, /Usage:/)
+  for (const args of [['--markdown-file'], ['--markdown-file', '--json']]) {
+    const result = spawnSync(process.execPath, [analyzer, ...args], {
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(result.status, 2)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Usage:/)
+    assert.equal(fs.existsSync(path.join(directory, '--json')), false)
+  }
 })
 
 test('standalone CLI keeps ignoring unrecognised arguments', t => {

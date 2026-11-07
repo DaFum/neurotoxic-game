@@ -21,7 +21,7 @@ const args = process.argv.slice(2)
 const markdownFlagIndex = args.indexOf('--markdown-file')
 const markdownFile =
   markdownFlagIndex === -1 ? null : (args[markdownFlagIndex + 1] ?? '')
-if (markdownFile === '') {
+if (markdownFile === '' || markdownFile?.startsWith('-')) {
   console.error('Usage: analyze-duplicates.js [--markdown-file <path>]')
   process.exit(2)
 }

@@ -330,16 +330,19 @@ export const finalizeGig = (
   // `hasSubmittedResults` is already set, so a Quit can no longer end the gig:
   // a failing snapshot, publish or audio stop must not skip `endGig`.
   try {
-    submit(() =>
-      buildGigStatsSnapshot(
-        stateRef.score,
-        stateRef.stats,
-        stateRef.toxicTimeTotal,
-        stateRef.songStats,
-        false
+    try {
+      submit(() =>
+        buildGigStatsSnapshot(
+          stateRef.score,
+          stateRef.stats,
+          stateRef.toxicTimeTotal,
+          stateRef.songStats,
+          false
+        )
       )
-    )
-    stopAudio()
+    } finally {
+      stopAudio()
+    }
   } finally {
     endGig()
   }

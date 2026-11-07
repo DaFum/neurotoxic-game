@@ -280,13 +280,15 @@ describe('gig result submission across completion paths (#3574)', () => {
     expect(endGig).toHaveBeenCalledTimes(1)
   })
 
-  it('completion with a failing publish still ends the gig once', () => {
+  it('completion with a failing publish still stops audio and ends the gig once', () => {
     setLastGigStats.mockImplementationOnce(() => {
       throw new Error('publish failed')
     })
+    const stopAudio = vi.fn()
 
-    expect(() => complete()).toThrow('publish failed')
+    expect(() => complete(stopAudio)).toThrow('publish failed')
 
+    expect(stopAudio).toHaveBeenCalledTimes(1)
     expect(endGig).toHaveBeenCalledTimes(1)
     expect(gameStateRef.current.hasSubmittedResults).toBe(true)
   })
