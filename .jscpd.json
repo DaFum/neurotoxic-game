@@ -9,5 +9,5 @@
     "**/reports/**",
     "**/report/**"
   ],
-  "absolute": true
+  "absolute": false
 }
