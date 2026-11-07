@@ -3,13 +3,13 @@
 ## Tourbus
 
 - `tourbusConfig.ts` exports `TOURBUS_T1_SLOTS`, `TOURBUS_T2_SLOTS`, `TOURBUS_T3_SLOTS` (`as const` tuples) and `TOURBUS_SLOT_POSITIONS: Partial<Record<SlotType, {x,y}>>`; callers must handle `undefined`.
-- `tourbusModules.ts` exports 20 modules and their prompts declaratively, aggregated statically into `assetRegistryStore.ts`. Keep tourbus module definitions in this file.
+- `tourbusModules.ts` exports 20 modules and their prompts as pure data; `assetModuleRegistry.ts` composes them. Keep tourbus module definitions in this file.
 - `tb_trailer_hitch` has `slotType: 'tb_trailer_mount'` and adds two `tb_trailer_addon` slots, filled by `tb_trailer_merch_box`, `tb_trailer_bunk_pod` and `tb_trailer_generator`. New modules must never declare both `slotType: X` and `addsSlots: [{ slotType: X, ... }]`; registry invariant tests reject self-stacking.
 
 ## Studio
 
 - `studioConfig.ts` exports `STUDIO_SLOT_ZONES: Partial<Record<SlotType, {x, y, w, h}>>`. Zones are rectangles over a 4:3 background; callers compute top-left as `(x - w/2, y - h/2)`.
-- `studioModules.ts` registers 14 modules. DIY studio `riskEventTypes` feed `rollAssetRiskEvents`; do not duplicate risk-event selection outside the tick helper.
+- `studioModules.ts` exports 14 modules. DIY studio `riskEventTypes` feed `rollAssetRiskEvents`; do not duplicate risk-event selection outside the tick helper.
 - `st_pro_tools_hd.boni.enablesReRecording` is surfaced by `getActiveAssetModifiers`; re-recording behavior does not belong in section config.
 
 ## Bandhaus
