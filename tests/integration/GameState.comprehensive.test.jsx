@@ -268,6 +268,71 @@ describe('GameState Context - Event System', () => {
     expect(screen.getByTestId('active-event')).toHaveTextContent('none')
   })
 
+  test('resolveEvent logs Applying Event Delta exactly once and updates balance once', () => {
+    TestComponent = () => {
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button
+            type='button'
+            onClick={() => gameState.setActiveEvent({ id: 'delta-event' })}
+          >
+            Set Event
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.resolveEvent({
+                _precomputedResult: {
+                  delta: {
+                    player: { money: 250 }
+                  }
+                }
+              })
+            }
+          >
+            Resolve Delta
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <StrictMode>
+        <GameStateProvider>
+          <TestComponent />
+        </GameStateProvider>
+      </StrictMode>
+    )
+
+    // Clear logger observations after mount and setup because StrictMode can run initialization twice
+    logger.info.mockClear()
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
+
+    act(() => {
+      screen.getByText('Set Event').click()
+    })
+    logger.info.mockClear()
+
+    act(() => {
+      screen.getByText('Resolve Delta').click()
+    })
+
+    const deltaLogs = logger.info.mock.calls.filter(call =>
+      call.some(arg => typeof arg === 'string' && arg.includes('Applying Event Delta'))
+    )
+
+    expect(deltaLogs.length).toBe(1)
+    expect(parseInt(screen.getByTestId('player-money').textContent)).toBe(
+      initialMoney + 250
+    )
+  })
+
   test('triggerEvent does not trigger during GIG phase', async () => {
     const { eventEngine } = await import('../../src/utils/eventEngine')
 
