@@ -136,30 +136,51 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
     'no cooldown on game over'
   )
 
-  const changeScene = sideEffects.find(e => e.type === 'changeScene')
-  assert.ok(changeScene)
-  assert.equal(changeScene.scene, 'GAMEOVER')
+  // Ordered actions and sideEffects verification
+  const expectedActions = [
+    {
+      type: 'APPLY_EVENT_DELTA',
+      payload: {
+        flags: { gameOver: true }
+      }
+    },
+    {
+      type: 'SET_TERMINAL_OUTCOME',
+      payload: {
+        reason: 'event_game_over',
+        eventId: 'evt_test'
+      }
+    },
+    {
+      type: 'SET_ACTIVE_EVENT',
+      payload: null
+    }
+  ]
+  assert.equal(actions.length, 3)
+  assert.equal(actions[0].type, expectedActions[0].type)
+  assert.deepEqual(actions[0].payload.flags, expectedActions[0].payload.flags)
+  assert.deepEqual(actions[1], expectedActions[1])
+  assert.deepEqual(actions[2], expectedActions[2])
 
-  const saveGame = sideEffects.find(e => e.type === 'saveGame')
-  assert.ok(saveGame, 'must emit saveGame side effect')
-  // saveGame carries no state: the context caller materializes the snapshot
-  // by replaying the returned actions through the reducer
-  assert.ok(!Object.hasOwn(saveGame, 'state'))
-  // the returned actions end by clearing the active event
-  const lastAction = actions[actions.length - 1]
-  assert.equal(lastAction.type, 'SET_ACTIVE_EVENT')
-  assert.equal(lastAction.payload, null)
-
-  const gameOverToast = sideEffects.find(e => e.type === 'gameOverToast')
-  assert.ok(gameOverToast)
-  assert.equal(gameOverToast.descriptionKey, 'event:death_desc')
-
-  // the ending is recorded in state so the save snapshot carries it
-  const terminal = actions.find(a => a.type === 'SET_TERMINAL_OUTCOME')
-  assert.deepEqual(terminal?.payload, {
-    reason: 'event_game_over',
-    eventId: 'evt_test'
-  })
+  const expectedSideEffects = [
+    {
+      type: 'gameOverToast',
+      descriptionKey: 'event:death_desc',
+      context: {}
+    },
+    {
+      type: 'saveGame'
+    },
+    {
+      type: 'changeScene',
+      scene: 'GAMEOVER'
+    }
+  ]
+  assert.deepEqual(sideEffects, expectedSideEffects)
+  // saveGame carries no state: the context caller captures the post-resolution
+  // snapshot from the provider-published ref after dispatching the returned
+  // actions and fixes the snapshot before running side effects.
+  assert.ok(!Object.hasOwn(sideEffects[1], 'state'))
 })
 
 // --- pendingEvent pop ---

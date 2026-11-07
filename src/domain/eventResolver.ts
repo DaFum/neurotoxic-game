@@ -45,8 +45,9 @@ export type SideEffect =
       context: Record<string, unknown>
     }
   | { type: 'changeScene'; scene: GamePhase }
-  // Carries no state: the context caller materializes the post-resolution
-  // snapshot by replaying the returned actions through the reducer.
+  // Carries no state: the context caller captures the post-resolution
+  // snapshot from the provider-published ref after dispatching the returned
+  // actions and fixes the snapshot before running side effects.
   | { type: 'saveGame' }
 
 type EventResolution = {
