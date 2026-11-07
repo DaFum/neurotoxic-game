@@ -182,6 +182,9 @@ describe('same-tick state reads through the real provider', () => {
       result: null
     })
 
+    // Post-render money reflects the same-tick functional update against latest state
+    expect(result.current.money).toBe(money - 23 + 10)
+
     const saves = writes.mock.calls
       .filter(([key]) => key === SAVE_KEY)
       .map(([, value]) => JSON.parse(value))

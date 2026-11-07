@@ -549,6 +549,14 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
     })
     expect(addToast).toHaveBeenCalledWith('ui:event_error', 'error')
     expect(latestStateRef.current.activeEvent).toBeNull()
+
+    // Assert relative catch order in timeline: failed dispatch, error toast, event-clear dispatch
+    expect(timeline).toEqual([
+      'dispatch:APPLY_EVENT_DELTA',
+      'dispatch:ADD_UNLOCK',
+      'toast:error:ui:event_error',
+      'dispatch:SET_ACTIVE_EVENT'
+    ])
   })
 
   it('throw once from game-over toast: all actions published, saveGame and changeScene do not run, catch order occurs', async () => {
@@ -590,6 +598,16 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
       description: '',
       result: null
     })
+
+    // Assert relative catch order in timeline: all resolution dispatches, failed toast, error toast, event-clear dispatch
+    expect(timeline).toEqual([
+      'dispatch:APPLY_EVENT_DELTA',
+      'dispatch:SET_TERMINAL_OUTCOME',
+      'dispatch:SET_ACTIVE_EVENT',
+      'toast:error:GAME_OVER_doom',
+      'toast:error:ui:event_error',
+      'dispatch:SET_ACTIVE_EVENT'
+    ])
   })
 
   it('throw once from changeScene: saveGame already ran with the fixed snapshot', async () => {
