@@ -21,7 +21,7 @@ const isMainModule =
 if (isMainModule) {
   runLegacyValidateSkillsCli(
     harness,
-    'Deprecated: use ".claude/skills/skilltest/scripts/skilltest.mjs" instead.',
+    'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.',
     process.argv
   )
 }

@@ -34,21 +34,57 @@ const EXPECTED_EXPORTS = [
 const TREES = [
   {
     name: '.agents',
-    libPath: path.join(repoRoot, '.agents/skills/skilltest/scripts/skilltest-lib.mjs'),
-    runnerPath: path.join(repoRoot, '.agents/skills/skilltest/scripts/skilltest.mjs'),
-    validatorPath: path.join(repoRoot, '.agents/skills/skilltest/scripts/validate-skills.mjs'),
-    cliValidatorPath: path.join(repoRoot, '.agents/skills/skilltest/scripts/validate-skills-cli.mjs'),
-    deprecationText: 'Deprecated: use ".claude/skills/skilltest/scripts/skilltest.mjs" instead.',
-    expectedSkipGateCode: 1 // Pre-existing snippet mismatches in .agents
+    libPath: path.join(
+      repoRoot,
+      '.agents/skills/skilltest/scripts/skilltest-lib.mjs'
+    ),
+    runnerPath: path.join(
+      repoRoot,
+      '.agents/skills/skilltest/scripts/skilltest.mjs'
+    ),
+    validatorPath: path.join(
+      repoRoot,
+      '.agents/skills/skilltest/scripts/validate-skills.mjs'
+    ),
+    cliValidatorPath: path.join(
+      repoRoot,
+      '.agents/skills/skilltest/scripts/validate-skills-cli.mjs'
+    ),
+    deprecationText:
+      'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.',
+    expectedSkipGateCode: 1, // Pre-existing failures in .agents, pinned below
+    // The .agents react-performance-optimization frontmatter is not valid YAML
+    expectedFailingSkillDirs: ['react-performance-optimization'],
+    expectedPromptFailures: [
+      'webaudio-reliability-fixer missing expected snippets: AudioManager.ts, useRhythmGameAudio.ts',
+      'ci-hardener missing expected snippets: lint',
+      'skill-qa-harness missing expected snippets: Validate skills, Run tests',
+      'tailwind-v4-css-variables-enforcer missing expected snippets: CSS Variables'
+    ]
   },
   {
     name: '.claude',
-    libPath: path.join(repoRoot, '.claude/skills/skilltest/scripts/skilltest-lib.mjs'),
-    runnerPath: path.join(repoRoot, '.claude/skills/skilltest/scripts/skilltest.mjs'),
-    validatorPath: path.join(repoRoot, '.claude/skills/skilltest/scripts/validate-skills.mjs'),
-    cliValidatorPath: path.join(repoRoot, '.claude/skills/skilltest/scripts/validate-skills-cli.mjs'),
-    deprecationText: 'Deprecated: use ".claude/skills/skilltest/scripts/skilltest.mjs" instead.',
-    expectedSkipGateCode: 0 // .claude matches its cases cleanly
+    libPath: path.join(
+      repoRoot,
+      '.claude/skills/skilltest/scripts/skilltest-lib.mjs'
+    ),
+    runnerPath: path.join(
+      repoRoot,
+      '.claude/skills/skilltest/scripts/skilltest.mjs'
+    ),
+    validatorPath: path.join(
+      repoRoot,
+      '.claude/skills/skilltest/scripts/validate-skills.mjs'
+    ),
+    cliValidatorPath: path.join(
+      repoRoot,
+      '.claude/skills/skilltest/scripts/validate-skills-cli.mjs'
+    ),
+    deprecationText:
+      'Deprecated: use ".claude/skills/skilltest/scripts/skilltest.mjs" instead.',
+    expectedSkipGateCode: 0, // .claude matches its cases cleanly
+    expectedFailingSkillDirs: [],
+    expectedPromptFailures: []
   }
 ]
 
@@ -72,8 +108,12 @@ const runSubprocess = (command, args, options = {}) => {
 
     let stdout = ''
     let stderr = ''
-    child.stdout.on('data', data => { stdout += data.toString() })
-    child.stderr.on('data', data => { stderr += data.toString() })
+    child.stdout.on('data', data => {
+      stdout += data.toString()
+    })
+    child.stderr.on('data', data => {
+      stderr += data.toString()
+    })
 
     child.on('error', reject)
     child.on('close', (code, signal) => {
@@ -81,6 +121,17 @@ const runSubprocess = (command, args, options = {}) => {
     })
   })
 }
+
+/**
+ * Read the skilltest report written under a repository root.
+ */
+const readReportAt = async root =>
+  JSON.parse(
+    await fs.readFile(
+      path.join(root, 'reports', 'skills', 'skilltest-report.json'),
+      'utf8'
+    )
+  )
 
 /**
  * Initialize a temporary git repository fixture.
@@ -128,34 +179,47 @@ describe('skilltest parity suite across trees', () => {
         await fs.mkdir(claudeSkills, { recursive: true })
 
         const mod = await import(tree.libPath)
-        const rootsAgent = await mod.collectSkillRoots(tempGit, tempGit, '.agents')
-        const rootsClaude = await mod.collectSkillRoots(tempGit, tempGit, '.claude')
+        const rootsAgent = await mod.collectSkillRoots(
+          tempGit,
+          tempGit,
+          '.agents'
+        )
+        const rootsClaude = await mod.collectSkillRoots(
+          tempGit,
+          tempGit,
+          '.claude'
+        )
 
         assert.deepEqual(rootsAgent, [agentSkills])
         assert.deepEqual(rootsClaude, [claudeSkills])
       })
 
       test('repo root cache and resetRepoRootCache', async t => {
-        const tempGit1 = await createTempGitRepo(t)
-        const tempGit2 = await createTempGitRepo(t)
+        const outerRepo = await createTempGitRepo(t)
+        const innerDir = path.join(outerRepo, 'inner')
+        await fs.mkdir(innerDir, { recursive: true })
 
         const script = `
-          import { findRepoRoot, resetRepoRootCache } from ${JSON.stringify(tree.libPath)};
-          const root1 = await findRepoRoot(process.cwd());
-          process.chdir(${JSON.stringify(tempGit2)});
-          const cachedRoot = await findRepoRoot(process.cwd());
+          import { writeFile } from 'node:fs/promises';
+          import { writeReport, resetRepoRootCache } from ${JSON.stringify(tree.libPath)};
+          await writeReport({ step: 1 });
+          await writeFile('.git', 'gitdir: elsewhere\\n');
+          await writeReport({ step: 2 });
           resetRepoRootCache();
-          const refreshedRoot = await findRepoRoot(process.cwd());
-          console.log(JSON.stringify({ root1, cachedRoot, refreshedRoot }));
+          await writeReport({ step: 3 });
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit1
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: innerDir
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
-        const out = JSON.parse(res.stdout.trim())
-        assert.equal(out.root1, tempGit1)
-        assert.equal(out.cachedRoot, tempGit2)
-        assert.equal(out.refreshedRoot, tempGit2)
+        // Before the reset the cached outer root is reused despite the new marker
+        assert.deepEqual(await readReportAt(outerRepo), { step: 2 })
+        // After the reset the new marker in the unchanged cwd is picked up
+        assert.deepEqual(await readReportAt(innerDir), { step: 3 })
       })
 
       test('side-effect-free legacy import of validate-skills.mjs', async () => {
@@ -189,7 +253,12 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         }
 
         const otherTreeName = tree.name === '.agents' ? '.claude' : '.agents'
-        const otherSkillDir = path.join(tempGit, otherTreeName, 'skills', 'other-tree-skill')
+        const otherSkillDir = path.join(
+          tempGit,
+          otherTreeName,
+          'skills',
+          'other-tree-skill'
+        )
         await fs.mkdir(otherSkillDir, { recursive: true })
         await fs.writeFile(
           path.join(otherSkillDir, 'SKILL.md'),
@@ -200,7 +269,12 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         await makeSkill(subDir, 'sub-skill')
 
         await makeSkill(tempGit, 'dup-skill')
-        const nestedDupDir = path.join(subDir, tree.name, 'skills', 'nested-dup')
+        const nestedDupDir = path.join(
+          subDir,
+          tree.name,
+          'skills',
+          'nested-dup'
+        )
         await fs.mkdir(nestedDupDir, { recursive: true })
         await fs.writeFile(
           path.join(nestedDupDir, 'SKILL.md'),
@@ -214,9 +288,13 @@ description: Testing skill for ${skillName} with enough characters to pass descr
           const records = await discoverSkills({ includeUserSkills: false });
           console.log(JSON.stringify({ roots, records }));
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: subDir
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: subDir
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
         const out = JSON.parse(res.stdout.trim())
 
@@ -231,7 +309,13 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         const dupRecords = out.records.filter(r => r.name === 'dup-skill')
         assert.equal(dupRecords.length, 2)
         for (const dup of dupRecords) {
-          assert.ok(dup.findings.some(f => f.level === 'error' && f.message === 'Duplicate skill name detected.'))
+          assert.ok(
+            dup.findings.some(
+              f =>
+                f.level === 'error' &&
+                f.message === 'Duplicate skill name detected.'
+            )
+          )
         }
       })
 
@@ -259,9 +343,13 @@ description: Testing skill for ${skillName} with enough characters to pass descr
           const brokenRecord = await loadSkillRecord(${JSON.stringify(brokenLink)});
           console.log(JSON.stringify({ records, brokenRecord }));
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: tempGit
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
         const out = JSON.parse(res.stdout.trim())
 
@@ -272,13 +360,21 @@ description: Testing skill for ${skillName} with enough characters to pass descr
 
         assert.ok(out.brokenRecord)
         assert.equal(out.brokenRecord.isSymlink, true)
-        assert.ok(out.brokenRecord.findings.some(f => f.level === 'error' && f.message === 'Broken symlink target.'))
+        assert.ok(
+          out.brokenRecord.findings.some(
+            f => f.level === 'error' && f.message === 'Broken symlink target.'
+          )
+        )
       })
 
       test('user-root resolution for CODEX_HOME and HOME/USERPROFILE', async t => {
         const tempGit = await createTempGitRepo(t)
-        const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'skilltest-home-'))
-        const customCodexHome = await fs.mkdtemp(path.join(os.tmpdir(), 'custom-codex-'))
+        const tempHome = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'skilltest-home-')
+        )
+        const customCodexHome = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'custom-codex-')
+        )
         t.after(async () => {
           await fs.rm(tempHome, { recursive: true, force: true })
           await fs.rm(customCodexHome, { recursive: true, force: true })
@@ -286,9 +382,18 @@ description: Testing skill for ${skillName} with enough characters to pass descr
 
         let expectedUserSkillDir
         if (tree.name === '.agents') {
-          expectedUserSkillDir = path.join(customCodexHome, 'skills', 'user-skill')
+          expectedUserSkillDir = path.join(
+            customCodexHome,
+            'skills',
+            'user-skill'
+          )
         } else {
-          expectedUserSkillDir = path.join(tempHome, '.claude', 'skills', 'user-skill')
+          expectedUserSkillDir = path.join(
+            tempHome,
+            '.claude',
+            'skills',
+            'user-skill'
+          )
         }
         await fs.mkdir(expectedUserSkillDir, { recursive: true })
         await fs.writeFile(
@@ -301,12 +406,16 @@ description: Testing skill for ${skillName} with enough characters to pass descr
           const records = await discoverSkills({ includeUserSkills: true });
           console.log(JSON.stringify(records));
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit,
-          HOME: tempHome,
-          USERPROFILE: tempHome,
-          CODEX_HOME: customCodexHome
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: tempGit,
+            HOME: tempHome,
+            USERPROFILE: tempHome,
+            CODEX_HOME: customCodexHome
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
         const records = JSON.parse(res.stdout.trim())
         const userRec = records.find(r => r.name === 'user-skill')
@@ -315,7 +424,9 @@ description: Testing skill for ${skillName} with enough characters to pass descr
 
       test('disabled-config resolution and disabled-path boundaries', async t => {
         const tempGit = await createTempGitRepo(t)
-        const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'skilltest-home-'))
+        const tempHome = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'skilltest-home-')
+        )
         t.after(async () => {
           await fs.rm(tempHome, { recursive: true, force: true })
         })
@@ -324,17 +435,25 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         await fs.mkdir(configDir, { recursive: true })
 
         const disabledSkillPath = path.join(tempGit, tree.name, 'skills', 'foo')
-        const siblingSkillPath = path.join(tempGit, tree.name, 'skills', 'foobar')
-        const nestedDisabledSkillPath = path.join(disabledSkillPath, 'nested-child')
+        const siblingSkillPath = path.join(
+          tempGit,
+          tree.name,
+          'skills',
+          'foobar'
+        )
+        const nestedDisabledSkillPath = path.join(
+          disabledSkillPath,
+          'nested-child'
+        )
 
         await fs.writeFile(
           path.join(configDir, 'config.toml'),
           `[[skills.config]]
-path = "${disabledSkillPath}"
+path = ${JSON.stringify(disabledSkillPath)}
 enabled = false
 
 [[skills.config]]
-path = "${siblingSkillPath}"
+path = ${JSON.stringify(siblingSkillPath)}
 enabled = true
 `
         )
@@ -365,11 +484,15 @@ enabled = true
           const report = buildReport(records, [], disabled);
           console.log(JSON.stringify({ disabled: Array.from(disabled), report }));
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit,
-          HOME: tempHome,
-          USERPROFILE: tempHome
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: tempGit,
+            HOME: tempHome,
+            USERPROFILE: tempHome
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
         const out = JSON.parse(res.stdout.trim())
 
@@ -378,7 +501,9 @@ enabled = true
 
         const foo = out.report.skills.find(s => s.name === 'foo')
         const foobar = out.report.skills.find(s => s.name === 'foobar')
-        const nestedChild = out.report.skills.find(s => s.name === 'nested-child')
+        const nestedChild = out.report.skills.find(
+          s => s.name === 'nested-child'
+        )
 
         assert.equal(foo.status, 'disabled')
         assert.equal(foobar.status, 'pass')
@@ -413,9 +538,13 @@ enabled = true
           await writeReport(report);
           console.log(JSON.stringify(report));
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit
-        })
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: tempGit
+          }
+        )
         assert.equal(res.code, 0, res.stderr)
         const report = JSON.parse(res.stdout.trim())
 
@@ -427,32 +556,47 @@ enabled = true
         assert.deepEqual(report.promptFailures, [])
         assert.equal(report.skills.length, 3)
 
-        const reportFilePath = path.join(tempGit, 'reports', 'skills', 'skilltest-report.json')
-        assert.ok(existsSync(reportFilePath), `Report must exist at ${reportFilePath}`)
-        const writtenContents = JSON.parse(await fs.readFile(reportFilePath, 'utf8'))
+        const reportFilePath = path.join(
+          tempGit,
+          'reports',
+          'skills',
+          'skilltest-report.json'
+        )
+        assert.ok(
+          existsSync(reportFilePath),
+          `Report must exist at ${reportFilePath}`
+        )
+        const writtenContents = JSON.parse(
+          await fs.readFile(reportFilePath, 'utf8')
+        )
         assert.deepEqual(writtenContents, report)
       })
 
-      test('gate failure order: lint -> test -> build with fake pnpm', async t => {
-        const tempGit = await createTempGitRepo(t)
-        const binDir = path.join(tempGit, 'bin')
-        await fs.mkdir(binDir, { recursive: true })
+      test(
+        'gate failure order: lint -> test -> build with fake pnpm',
+        {
+          skip: process.platform === 'win32' && 'fake pnpm is a bash script'
+        },
+        async t => {
+          const tempGit = await createTempGitRepo(t)
+          const binDir = path.join(tempGit, 'bin')
+          await fs.mkdir(binDir, { recursive: true })
 
-        const logFile = path.join(tempGit, 'commands.log')
-        const fakePnpm = path.join(binDir, 'pnpm')
-        writeFileSync(
-          fakePnpm,
-          `#!/usr/bin/env bash
+          const logFile = path.join(tempGit, 'commands.log')
+          const fakePnpm = path.join(binDir, 'pnpm')
+          writeFileSync(
+            fakePnpm,
+            `#!/usr/bin/env bash
 echo "$@" >> "${logFile}"
 if [ "$2" == "lint" ]; then
   exit 1
 fi
 exit 0
 `
-        )
-        chmodSync(fakePnpm, 0o755)
+          )
+          chmodSync(fakePnpm, 0o755)
 
-        const script = `
+          const script = `
           import { runQualityGate } from ${JSON.stringify(tree.libPath)};
           try {
             await runQualityGate();
@@ -461,17 +605,24 @@ exit 0
             console.log('GATE_FAILED', err.message);
           }
         `
-        const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-          cwd: tempGit,
-          env: { PATH: `${binDir}:${process.env.PATH}` }
-        })
-        assert.equal(res.code, 0, res.stderr)
-        assert.ok(res.stdout.includes('GATE_FAILED'))
-        assert.ok(res.stdout.includes('pnpm run lint failed'))
+          const res = await runSubprocess(
+            'node',
+            ['--input-type=module', '-e', script],
+            {
+              cwd: tempGit,
+              env: { PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+            }
+          )
+          assert.equal(res.code, 0, res.stderr)
+          assert.ok(res.stdout.includes('GATE_FAILED'))
+          assert.ok(res.stdout.includes('pnpm run lint failed'))
 
-        const executedCmds = (await fs.readFile(logFile, 'utf8')).trim().split('\n')
-        assert.deepEqual(executedCmds, ['run lint'])
-      })
+          const executedCmds = (await fs.readFile(logFile, 'utf8'))
+            .trim()
+            .split('\n')
+          assert.deepEqual(executedCmds, ['run lint'])
+        }
+      )
 
       test('CLI exit codes and deprecation warning for legacy validate-skills.mjs', async t => {
         const tempGit = await createTempGitRepo(t)
@@ -482,16 +633,28 @@ exit 0
           `---\nname: good-skill\ndescription: A valid skill for testing cli output behavior and exit codes.\n---\n`
         )
 
-        const res = await runSubprocess('node', [tree.validatorPath], { cwd: tempGit })
+        const res = await runSubprocess('node', [tree.validatorPath], {
+          cwd: tempGit
+        })
         assert.equal(res.code, 0)
         assert.ok(res.stderr.includes(tree.deprecationText))
         assert.ok(res.stdout.includes('✅ good-skill'))
 
-        const badSkillsDir = path.join(tempGit, tree.name, 'skills', 'bad-skill')
+        const badSkillsDir = path.join(
+          tempGit,
+          tree.name,
+          'skills',
+          'bad-skill'
+        )
         await fs.mkdir(badSkillsDir, { recursive: true })
-        await fs.writeFile(path.join(badSkillsDir, 'SKILL.md'), 'INVALID FRONTMATTER')
+        await fs.writeFile(
+          path.join(badSkillsDir, 'SKILL.md'),
+          'INVALID FRONTMATTER'
+        )
 
-        const resFail = await runSubprocess('node', [tree.validatorPath], { cwd: tempGit })
+        const resFail = await runSubprocess('node', [tree.validatorPath], {
+          cwd: tempGit
+        })
         assert.equal(resFail.code, 1)
         assert.ok(resFail.stdout.includes('❌'))
       })
@@ -505,26 +668,47 @@ exit 0
           `---\nname: good-skill\ndescription: A valid skill for testing cli output behavior and exit codes.\n---\n`
         )
 
-        const res = await runSubprocess('node', [tree.cliValidatorPath], { cwd: tempGit })
+        const res = await runSubprocess('node', [tree.cliValidatorPath], {
+          cwd: tempGit
+        })
         assert.equal(res.code, 0, res.stderr)
         assert.ok(res.stdout.includes('✅ good-skill'))
       })
 
-      test('tree-specific runner execution with --skip-gate in real repo', async () => {
-        const res = await runSubprocess('node', [tree.runnerPath, '--skip-gate'], {
-          cwd: repoRoot
-        })
+      test('tree-specific runner execution with --skip-gate on the real skill tree', async t => {
+        // Run against a copy of the tree so the report never lands in the working tree
+        const tempGit = await createTempGitRepo(t)
+        await fs.cp(
+          path.join(repoRoot, tree.name, 'skills'),
+          path.join(tempGit, tree.name, 'skills'),
+          { recursive: true, verbatimSymlinks: true }
+        )
+        const res = await runSubprocess(
+          'node',
+          [tree.runnerPath, '--skip-gate'],
+          {
+            cwd: tempGit,
+            HOME: tempGit
+          }
+        )
         assert.equal(res.code, tree.expectedSkipGateCode, res.stderr)
         assert.ok(res.stdout.includes('skilltest'))
+
+        const report = await readReportAt(tempGit)
+        assert.deepEqual(report.promptFailures, tree.expectedPromptFailures)
+        const failingSkillDirs = report.skills
+          .filter(skill => skill.status === 'fail')
+          .map(skill => path.basename(skill.skillDir))
+        assert.deepEqual(failingSkillDirs, tree.expectedFailingSkillDirs)
       })
     })
   }
 
   describe('canonical harness core factory and isolation assertions', () => {
     test('independent instances and isolated caches', async t => {
-      const { createHarness } = await import('../../scripts/skilltest/harness.mjs')
+      const { createHarness } =
+        await import('../../scripts/skilltest/harness.mjs')
       const tempGit1 = await createTempGitRepo(t)
-      const tempGit2 = await createTempGitRepo(t)
 
       const harness1 = createHarness({
         treeName: '.agents',
@@ -541,9 +725,15 @@ exit 0
       assert.equal(harness1.getTreeName(), '.agents')
       assert.equal(harness2.getTreeName(), '.claude')
 
-      // Caches are isolated per-instance: testing via node script
-      const harnessModulePath = path.join(repoRoot, 'scripts/skilltest/harness.mjs')
+      // Caches are isolated per-instance: observed through writeReport with a fixed cwd
+      const innerDir = path.join(tempGit1, 'inner')
+      await fs.mkdir(innerDir, { recursive: true })
+      const harnessModulePath = path.join(
+        repoRoot,
+        'scripts/skilltest/harness.mjs'
+      )
       const script = `
+        import { readFile, writeFile } from 'node:fs/promises';
         import { createHarness } from ${JSON.stringify(harnessModulePath)};
         const h1 = createHarness({
           treeName: '.agents',
@@ -555,25 +745,77 @@ exit 0
           casesDir: '/tmp',
           resolveUserRoots: () => []
         });
-        const r1 = await h1.findRepoRoot(process.cwd());
-        process.chdir(${JSON.stringify(tempGit2)});
-        const r2 = await h2.findRepoRoot(process.cwd());
+        await h1.writeReport({ writer: 'h1-first' });
+        await writeFile('.git', 'gitdir: elsewhere\\n');
+        await h2.writeReport({ writer: 'h2' });
+        const innerAfterH2 = await readFile('reports/skills/skilltest-report.json', 'utf8');
+        await h1.writeReport({ writer: 'h1-cached' });
         h1.resetRepoRootCache();
-        const r1_refreshed = await h1.findRepoRoot(process.cwd());
-        console.log(JSON.stringify({ r1, r2, r1_refreshed }));
+        await h1.writeReport({ writer: 'h1-refreshed' });
+        console.log(JSON.stringify({ innerAfterH2: JSON.parse(innerAfterH2) }));
       `
-      const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-        cwd: tempGit1
-      })
+      const res = await runSubprocess(
+        'node',
+        ['--input-type=module', '-e', script],
+        {
+          cwd: innerDir
+        }
+      )
       assert.equal(res.code, 0, res.stderr)
       const out = JSON.parse(res.stdout.trim())
-      assert.equal(out.r1, tempGit1)
-      assert.equal(out.r2, tempGit2)
-      assert.equal(out.r1_refreshed, tempGit2)
+      // h2 had no cached root, so it resolved the new inner marker
+      assert.deepEqual(out.innerAfterH2, { writer: 'h2' })
+      // h1 kept its own cached outer root after h2 resolved
+      assert.deepEqual(await readReportAt(tempGit1), { writer: 'h1-cached' })
+      // Resetting h1 picks up the inner marker
+      assert.deepEqual(await readReportAt(innerDir), { writer: 'h1-refreshed' })
+    })
+
+    test('malformed frontmatter becomes a finding instead of throwing', async t => {
+      const { parseFrontmatter, loadSkillRecord } =
+        await import('../../scripts/skilltest/harness.mjs')
+      const tempDir = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'skilltest-frontmatter-')
+      )
+      t.after(async () => {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      })
+
+      const malformedYaml =
+        '---\nname: bad-yaml\ndescription: Use when testing: broken: yaml\n---\n'
+      const arrayName =
+        '---\nname: [array-name]\ndescription: Use when testing a non-string name value.\n---\n'
+      assert.equal(parseFrontmatter(malformedYaml), null)
+      assert.equal(parseFrontmatter(arrayName), null)
+      assert.equal(
+        parseFrontmatter(
+          '---\nname: 123\ndescription: Use when testing.\n---\n'
+        ),
+        null
+      )
+      assert.equal(parseFrontmatter('---\n- a list\n---\n'), null)
+
+      for (const [dirName, contents] of [
+        ['bad-yaml', malformedYaml],
+        ['array-name', arrayName]
+      ]) {
+        const skillDir = path.join(tempDir, dirName)
+        await fs.mkdir(skillDir)
+        await fs.writeFile(path.join(skillDir, 'SKILL.md'), contents)
+        const record = await loadSkillRecord(skillDir)
+        assert.equal(record.name, '')
+        assert.deepEqual(record.findings, [
+          {
+            level: 'error',
+            message: 'Missing or invalid frontmatter (name/description).'
+          }
+        ])
+      }
     })
 
     test('path.win32 disabled-path cases using pure isPathDisabled helper', async () => {
-      const { isPathDisabled } = await import('../../scripts/skilltest/harness.mjs')
+      const { isPathDisabled } =
+        await import('../../scripts/skilltest/harness.mjs')
 
       const disabledSet = new Set([
         'C:\\repo\\skills\\disabled-skill',
@@ -582,73 +824,107 @@ exit 0
 
       // Exact match
       assert.equal(
-        isPathDisabled('C:\\repo\\skills\\disabled-skill', disabledSet, path.win32),
+        isPathDisabled(
+          'C:\\repo\\skills\\disabled-skill',
+          disabledSet,
+          path.win32
+        ),
         true
       )
 
       // Nested child path match
       assert.equal(
-        isPathDisabled('C:\\repo\\skills\\disabled-skill\\SKILL.md', disabledSet, path.win32),
+        isPathDisabled(
+          'C:\\repo\\skills\\disabled-skill\\SKILL.md',
+          disabledSet,
+          path.win32
+        ),
         true
       )
 
       assert.equal(
-        isPathDisabled('C:\\repo\\skills\\tooling\\nested\\sub\\SKILL.md', disabledSet, path.win32),
+        isPathDisabled(
+          'C:\\repo\\skills\\tooling\\nested\\sub\\SKILL.md',
+          disabledSet,
+          path.win32
+        ),
         true
       )
 
       // Sibling prefix substring should NOT match
       assert.equal(
-        isPathDisabled('C:\\repo\\skills\\tooling-extra\\SKILL.md', disabledSet, path.win32),
+        isPathDisabled(
+          'C:\\repo\\skills\\tooling-extra\\SKILL.md',
+          disabledSet,
+          path.win32
+        ),
         false
       )
 
       assert.equal(
-        isPathDisabled('C:\\repo\\skills\\disabled-skill-other', disabledSet, path.win32),
+        isPathDisabled(
+          'C:\\repo\\skills\\disabled-skill-other',
+          disabledSet,
+          path.win32
+        ),
         false
       )
     })
 
-    test('Windows cmd.exe quality gate invocation platform branching', async t => {
-      const tempGit = await createTempGitRepo(t)
-      const binDir = path.join(tempGit, 'bin')
-      await fs.mkdir(binDir, { recursive: true })
+    test(
+      'Windows cmd.exe quality gate invocation platform branching',
+      {
+        skip: process.platform === 'win32' && 'fake cmd.exe is a bash script'
+      },
+      async t => {
+        const tempGit = await createTempGitRepo(t)
+        const binDir = path.join(tempGit, 'bin')
+        await fs.mkdir(binDir, { recursive: true })
 
-      const logFile = path.join(tempGit, 'cmd_calls.log')
-      const fakeCmd = path.join(binDir, 'cmd.exe')
-      writeFileSync(
-        fakeCmd,
-        `#!/usr/bin/env bash
+        const logFile = path.join(tempGit, 'cmd_calls.log')
+        const fakeCmd = path.join(binDir, 'cmd.exe')
+        writeFileSync(
+          fakeCmd,
+          `#!/usr/bin/env bash
 echo "$@" >> "${logFile}"
 exit 0
 `
-      )
-      chmodSync(fakeCmd, 0o755)
+        )
+        chmodSync(fakeCmd, 0o755)
 
-      // Test process.platform === 'win32' simulation by running script that overrides process.platform
-      const harnessModulePath = path.join(repoRoot, 'scripts/skilltest/harness.mjs')
-      const script = `
+        // Test process.platform === 'win32' simulation by running script that overrides process.platform
+        const harnessModulePath = path.join(
+          repoRoot,
+          'scripts/skilltest/harness.mjs'
+        )
+        const script = `
         Object.defineProperty(process, 'platform', { value: 'win32' });
         const { runQualityGate } = await import(${JSON.stringify(harnessModulePath)});
         await runQualityGate();
       `
-      const res = await runSubprocess('node', ['--input-type=module', '-e', script], {
-        cwd: tempGit,
-        env: { PATH: `${binDir}:${process.env.PATH}` }
-      })
-      assert.equal(res.code, 0, res.stderr)
+        const res = await runSubprocess(
+          'node',
+          ['--input-type=module', '-e', script],
+          {
+            cwd: tempGit,
+            env: { PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+          }
+        )
+        assert.equal(res.code, 0, res.stderr)
 
-      const calls = (await fs.readFile(logFile, 'utf8')).trim().split('\n')
-      assert.equal(calls.length, 3)
-      assert.deepEqual(calls, [
-        '/d /s /c pnpm run lint',
-        '/d /s /c pnpm run test',
-        '/d /s /c pnpm run build'
-      ])
-    })
+        const calls = (await fs.readFile(logFile, 'utf8')).trim().split('\n')
+        assert.equal(calls.length, 3)
+        assert.deepEqual(calls, [
+          '/d /s /c pnpm run lint',
+          '/d /s /c pnpm run test',
+          '/d /s /c pnpm run build'
+        ])
+      }
+    )
 
     test('invalid configuration errors thrown by createHarness', async () => {
-      const { createHarness } = await import('../../scripts/skilltest/harness.mjs')
+      const { createHarness } =
+        await import('../../scripts/skilltest/harness.mjs')
 
       assert.throws(() => createHarness(null), {
         name: 'TypeError',
@@ -665,10 +941,13 @@ exit 0
         message: 'Harness config.casesDir must be a non-empty string.'
       })
 
-      assert.throws(() => createHarness({ treeName: '.agents', casesDir: '/tmp' }), {
-        name: 'TypeError',
-        message: 'Harness config.resolveUserRoots must be a function.'
-      })
+      assert.throws(
+        () => createHarness({ treeName: '.agents', casesDir: '/tmp' }),
+        {
+          name: 'TypeError',
+          message: 'Harness config.resolveUserRoots must be a function.'
+        }
+      )
     })
   })
 })

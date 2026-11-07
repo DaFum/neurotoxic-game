@@ -198,15 +198,25 @@ export const findSkillDirs = async (rootDir, visited) => {
 /**
  * Parse YAML frontmatter from a SKILL.md file.
  * @param {string} contents - File contents.
- * @returns {{name: string, description: string} | null} Parsed frontmatter.
+ * @returns {{name: string, description: string} | null} Parsed frontmatter,
+ *   or `null` when the frontmatter is missing, is not valid YAML, is not a
+ *   mapping, or lacks a non-empty string `name` and `description`.
  */
 export const parseFrontmatter = contents => {
   const normalized = contents.replace(/\r\n/g, '\n')
   const match = normalized.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)
   if (!match) return null
-  const data = parseYamlDoc(match[1]) || {}
-  if (!data.name || !data.description) return null
-  return { name: data.name, description: data.description }
+  let data
+  try {
+    data = parseYamlDoc(match[1])
+  } catch (_error) {
+    return null
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const { name, description } = data
+  if (typeof name !== 'string' || !name) return null
+  if (typeof description !== 'string' || !description) return null
+  return { name, description }
 }
 
 /**
