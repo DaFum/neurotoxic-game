@@ -209,6 +209,173 @@ describe('brandDealLogic', () => {
     })
   })
 
+  // Characterization pins for the shared preparation/materialization path
+  // (#3577). Values were captured from the pre-refactor generators.
+  describe('offer generation characterization', () => {
+    const state = {
+      social: {
+        instagram: 1000,
+        tiktok: 0,
+        youtube: 0,
+        trend: 'TECH',
+        zealotry: 40,
+        controversyLevel: 0,
+        activeDeals: [],
+        brandReputation: { INDIE: 100 }
+      },
+      band: {}
+    } as unknown as SocialEngineGameState
+    const withInstagram = (instagram: number): SocialEngineGameState => ({
+      ...state,
+      social: { ...state.social, instagram }
+    })
+    const countedRng = (seed: number) => vi.fn(mulberry32(seed))
+    const payouts = (offers: ReturnType<typeof generateBrandOffers>) =>
+      offers.map(o => [o.id, o.offer.upfront, o.offer.perGig ?? null])
+
+    it('consumes no RNG for post-gig offers while a deal is active', () => {
+      const rng = countedRng(123)
+      const active = {
+        ...state,
+        social: { ...state.social, activeDeals: [{ id: 'local_pawn_shop' }] }
+      } as unknown as SocialEngineGameState
+      expect(generateBrandOffers(active, rng)).toEqual([])
+      expect(rng).not.toHaveBeenCalled()
+    })
+
+    it('pins seed-123 RNG draw counts for both flows', () => {
+      const cases = [
+        { instagram: 1000, postGig: 26, ranked: 34, rankedMin4: 34 },
+        { instagram: 500000, postGig: 51, ranked: 261, rankedMin4: 261 }
+      ]
+      for (const { instagram, postGig, ranked, rankedMin4 } of cases) {
+        const gameState = withInstagram(instagram)
+        const a = countedRng(123)
+        generateBrandOffers(gameState, a)
+        expect(a).toHaveBeenCalledTimes(postGig)
+        const b = countedRng(123)
+        generateRankedBrandOffers(gameState, b)
+        expect(b).toHaveBeenCalledTimes(ranked)
+        const c = countedRng(123)
+        generateRankedBrandOffers(gameState, c, { minPoolSize: 4 })
+        expect(c).toHaveBeenCalledTimes(rankedMin4)
+      }
+    })
+
+    it('pins the full seed-123 ranked order and payouts', () => {
+      expect(
+        payouts(
+          generateRankedBrandOffers(withInstagram(1000), mulberry32(123), {
+            minPoolSize: 4
+          })
+        )
+      ).toEqual([
+        ['indie_label_void', 1550, null],
+        ['indie_clothing', 100, 25],
+        ['local_pawn_shop', 100, 25],
+        ['neon_lung_vapes', 150, 40]
+      ])
+      const wide = generateRankedBrandOffers(
+        withInstagram(500000),
+        mulberry32(123)
+      )
+      expect(wide).toHaveLength(27)
+      expect(payouts(wide.slice(0, 6))).toEqual([
+        ['indie_vinyl_press', 850, null],
+        ['indie_cult_label', 2000, null],
+        ['youth_music_program', 100, 55],
+        ['corp_tech', 1500, 100],
+        ['corp_beverage', 1500, 90],
+        ['cult_pamphlets', 200, 140]
+      ])
+    })
+
+    it('pins rival-pressure payouts without changing RNG draws', () => {
+      const base = {
+        social: { instagram: 500000 },
+        band: {},
+        player: { currentNodeId: 'loc1' }
+      } as unknown as SocialEngineGameState
+      const expected: Record<number, (string | number | null)[][]> = {
+        0: [
+          ['youth_music_program', 100, 50],
+          ['corp_beverage', 1400, 85],
+          ['neutral_logistics', 3350, 460]
+        ],
+        5: [
+          ['youth_music_program', 90, 45],
+          ['corp_beverage', 1260, 76],
+          ['neutral_logistics', 3015, 414]
+        ],
+        10: [
+          ['youth_music_program', 80, 40],
+          ['corp_beverage', 1120, 68],
+          ['neutral_logistics', 2680, 368]
+        ]
+      }
+      for (const powerLevel of [0, 5, 10]) {
+        const gameState = {
+          ...base,
+          rivalBand: { currentLocationId: 'loc1', powerLevel }
+        } as SocialEngineGameState
+        const a = countedRng(123)
+        expect(payouts(generateBrandOffers(gameState, a))).toEqual(
+          expected[powerLevel]
+        )
+        expect(a).toHaveBeenCalledTimes(56)
+        const b = countedRng(123)
+        const ranked = generateRankedBrandOffers(gameState, b)
+        expect(ranked).toHaveLength(29)
+        expect(payouts(ranked.slice(0, 3))).toEqual(expected[powerLevel])
+        expect(b).toHaveBeenCalledTimes(286)
+      }
+    })
+
+    it('pins catalog admission order for zero-RNG ties', () => {
+      const gameState = {
+        ...state,
+        social: { ...state.social, instagram: 500000, brandReputation: {} }
+      }
+      expect(generateBrandOffers(gameState, () => 0).map(o => o.id)).toEqual([
+        'corp_fast_food',
+        'corp_app',
+        'local_pawn_shop'
+      ])
+      expect(
+        generateRankedBrandOffers(gameState, () => 0, { minPoolSize: 3 })
+          .slice(0, 6)
+          .map(o => o.id)
+      ).toEqual([
+        'corp_fast_food',
+        'corp_app',
+        'local_pawn_shop',
+        'neon_lung_vapes',
+        'synapse_nootropics',
+        'cult_pamphlets'
+      ])
+    })
+
+    it('pins the zero-follower exits and tier-2 fallback', () => {
+      const zero = {
+        social: { activeDeals: [] },
+        band: {}
+      } as unknown as SocialEngineGameState
+      const none = countedRng(1)
+      expect(generateRankedBrandOffers(zero, none, { minPoolSize: 0 })).toEqual(
+        []
+      )
+      expect(none).not.toHaveBeenCalled()
+      const fallback = countedRng(1)
+      const offers = generateBrandOffers(zero, fallback)
+      expect(offers.map(o => [o.id, o.flavor.isStretched])).toEqual([
+        ['local_pawn_shop', true],
+        ['indie_label_void', true],
+        ['neon_lung_vapes', true]
+      ])
+      expect(fallback).toHaveBeenCalledTimes(23)
+    })
+  })
+
   describe('negotiateDeal', () => {
     const mockDeal = {
       id: 'test_deal',
