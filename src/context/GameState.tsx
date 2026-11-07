@@ -225,6 +225,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // result. A reducer that throws now throws from `dispatch` instead of from
   // the render, and leaves the state untouched. Also logs each action type in
   // DEV (`debug` is suppressed at INFO and above, so silent in production).
+  // Note: Event resolution depends on synchronous `latestStateRef` publication
+  // after each dispatch to capture post-resolution state snapshots.
   const dispatch = useCallback((action: GameAction) => {
     if (
       IS_DEV &&
