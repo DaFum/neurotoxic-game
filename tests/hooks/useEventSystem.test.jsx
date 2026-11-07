@@ -211,7 +211,10 @@ describe('useEventSystem unlock persistence honors the injected adapter', () => 
     })
 
     // The unlock must land in the injected backend...
-    expect(adapter.keys()).toEqual({ ok: true, keys: expect.arrayContaining([MARKER_KEY]) })
+    expect(adapter.keys()).toEqual({
+      ok: true,
+      keys: expect.arrayContaining([MARKER_KEY])
+    })
     // ...and must not leak into the module-default backend, or a save written
     // through adapter B would reference unlocks stored in adapter A.
     expect(localStorage.getItem(MARKER_KEY)).toBeNull()
@@ -333,15 +336,11 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
 
     // Dispatcher following GameStateProvider publication contract:
     // calls real gameReducer against latestStateRef.current and publishes only changed reference
-    const { gameReducer: actualReducer } = await import(
-      '../../src/context/gameReducer'
-    )
+    const { gameReducer: actualReducer } =
+      await import('../../src/context/gameReducer')
     dispatch = vi.fn(action => {
       timeline.push(`dispatch:${action?.type}`)
-      if (
-        oneShotThrowActionType &&
-        action?.type === oneShotThrowActionType
-      ) {
+      if (oneShotThrowActionType && action?.type === oneShotThrowActionType) {
         oneShotThrowActionType = null
         throw new Error(`One-shot dispatch throw on ${action.type}`)
       }
@@ -353,7 +352,11 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
 
     addToast = vi.fn((message, type) => {
       timeline.push(`toast:${type}:${message}`)
-      if (toastThrow && type === 'error' && String(message).includes('GAME_OVER_')) {
+      if (
+        toastThrow &&
+        type === 'error' &&
+        String(message).includes('GAME_OVER_')
+      ) {
         toastThrow = false
         throw new Error('One-shot toast throw on gameOverToast')
       }
@@ -647,7 +650,6 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
     const { StorageProvider } = await import('../../src/context/StorageContext')
     // Pre-populate storage with the unlock
     await storage.set(`neurotoxic_unlock:${UNLOCK_ID}`, 'true')
-    timeline = []
 
     const { result } = renderHook(() => useEventSystem(params), {
       wrapper: ({ children }) => (
@@ -656,6 +658,8 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
     })
 
     hoisted.reducerMock.mockClear()
+    // Observe only events emitted by the resolution itself
+    timeline = []
 
     result.current.resolveEvent({
       _precomputedResult: {
@@ -666,6 +670,10 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
         }
       }
     })
+
+    // Resolution completed without the error path and still dispatched the unlock
+    expect(timeline).not.toContain('toast:error:ui:event_error')
+    expect(timeline).toContain('dispatch:ADD_UNLOCK')
 
     // No unlock toast appeared because addUnlock returned false (already exists)
     const unlockToastCall = addToast.mock.calls.find(
