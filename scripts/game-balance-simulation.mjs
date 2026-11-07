@@ -1472,38 +1472,22 @@ export const ZEALOTRY_ACTIONS = Object.freeze({
   }
 })
 
+const createActionCounters = () => ({
+  attempted: 0,
+  eligible: 0,
+  successful: 0,
+  rejected: 0,
+  rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
+})
+
+// Single schema for the per-action counter record: keys come from
+// ZEALOTRY_ACTIONS (in declaration order), and every call returns fresh,
+// independent nested objects. Aggregators reuse `.actions` as their totals.
 export const createZealotryCounters = (policyName = 'none') => ({
   policyName,
-  actions: {
-    sermon: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    leak: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    cult: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    },
-    pirate: {
-      attempted: 0,
-      eligible: 0,
-      successful: 0,
-      rejected: 0,
-      rejections: { daily_marker: 0, gate: 0, cash: 0, harmony: 0 }
-    }
-  },
+  actions: Object.fromEntries(
+    Object.keys(ZEALOTRY_ACTIONS).map(key => [key, createActionCounters()])
+  ),
   dealBreakEvents: 0,
   trustLost: 0,
   daysAtControversy85OrHigher: 0,
