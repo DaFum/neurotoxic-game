@@ -3,7 +3,11 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
-import { NODE_TEST_DIRS, isToolingNodeTest } from './utils/node-test-dirs.mjs'
+import {
+  HEAVY_NODE_TESTS,
+  NODE_TEST_DIRS,
+  isToolingNodeTest
+} from './utils/node-test-dirs.mjs'
 import {
   MAX_TEST_CONCURRENCY,
   parseNodeTestArgs
@@ -88,18 +92,6 @@ const commandArgs = [
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
-
-const HEAVY_NODE_TESTS = [
-  'tests/node/game-balance-cadence-probe.test.js',
-  'tests/node/game-balance-tension-report.test.js',
-  'tests/node/updateSymbols.test.js',
-  'tests/node/CrowdManager.test.js',
-  'tests/node/LaneManager.test.js',
-  'tests/node/NoteManager.test.js',
-  'tests/node/useGigEffects.test.js',
-  'tests/node/useGigInput.test.js',
-  'tests/node/usePurchaseLogic.test.js'
-]
 
 const heavyTestSet = new Set(
   HEAVY_NODE_TESTS.map(testFile =>
