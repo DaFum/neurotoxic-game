@@ -23,6 +23,7 @@ import type {
   BandState,
   MapNode,
   PlayerState,
+  StartGigRefusalReason,
   Venue
 } from '../types'
 import type { UpdateBandPayload } from '../types/actions'
@@ -94,7 +95,7 @@ export const requestArrivalGigStart = (
   venue: Venue,
   startGig: (venue: Venue) => void,
   addToast: OptionalToastCallback,
-  checkStartGig?: (venue: Venue) => string | null
+  checkStartGig?: (venue: Venue) => StartGigRefusalReason | null
 ): boolean => {
   logger.info('ArrivalLogic', 'Starting Gig at destination', {
     venue: venue.name

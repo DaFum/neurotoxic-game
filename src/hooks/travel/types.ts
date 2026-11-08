@@ -6,11 +6,11 @@ import type {
   MapNode,
   PlayerState,
   SocialState,
+  StartGigRefusalReason,
   Venue
 } from '../../types'
 import type { OptionalToastCallback, ToastType } from '../../types/callbacks'
 import type { UpdateBandPayload } from '../../types/actions'
-import type { StartGigRefusalReason } from '../../context/reducers/gigReducer'
 
 /**
  * Inputs to {@link useTravelLogic}: the live game-state slices it reads and the

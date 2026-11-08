@@ -25,10 +25,8 @@ import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './assets/useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
-import {
-  getStartGigRefusal,
-  type StartGigRefusalReason
-} from './reducers/gigReducer'
+import { getStartGigRefusal } from './reducers/gigReducer'
+import type { StartGigRefusalReason } from '../types'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,

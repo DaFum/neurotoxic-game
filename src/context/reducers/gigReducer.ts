@@ -1,4 +1,9 @@
-import type { GameState, PostGigSummary, Venue } from '../../types'
+import type {
+  GameState,
+  PostGigSummary,
+  StartGigRefusalReason,
+  Venue
+} from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
@@ -94,13 +99,6 @@ export const handleSetGig = (
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }
-
-/**
- * Why `START_GIG` refuses a venue: a malformed payload, a Festival booking the
- * run's Fame tier does not open, or a current node a route overlay converted.
- */
-export type StartGigRefusalReason =
-  'invalid_payload' | 'festival_booking_locked' | 'node_converted'
 
 /**
  * Decides whether `START_GIG` would refuse a venue, without logging.
