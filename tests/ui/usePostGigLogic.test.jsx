@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
+import { usePostGigLogic } from '../../src/hooks/postGig/usePostGigLogic'
 import * as GameState from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'

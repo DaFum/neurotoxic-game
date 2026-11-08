@@ -8,7 +8,7 @@ import {
 import { SAVE_KEY } from '../../src/context/usePersistence'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { ALL_VENUES } from '../../src/data/venues'
-import { useArrivalLogic } from '../../src/hooks/useArrivalLogic'
+import { useArrivalLogic } from '../../src/hooks/travel/useArrivalLogic'
 import { resetStorageFallback } from '../../src/utils/storage'
 
 const wrapper = ({ children }) => (

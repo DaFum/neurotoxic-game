@@ -3,7 +3,7 @@ import {
   useGameActions,
   useGameSelector,
   useRivalBandActions
-} from '../context/GameState'
+} from '../../context/GameState'
 import {
   handleNodeArrival,
   isGigArrivalNode,
@@ -11,12 +11,12 @@ import {
   processTravelEvents,
   requestArrivalGigStart,
   resolveArrivalNode
-} from '../utils/arrivalUtils'
-import { handleError } from '../utils/errorHandler'
-import { getExpeditionNodeBookingLock } from '../domain/expedition/fame'
-import i18n from '../i18n'
-import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
-import type { ArrivalOutcome, MapNode } from '../types'
+} from '../../utils/arrivalUtils'
+import { handleError } from '../../utils/errorHandler'
+import { getExpeditionNodeBookingLock } from '../../domain/expedition/fame'
+import i18n from '../../i18n'
+import { GAME_PHASES, MINIGAME_TYPES } from '../../context/gameConstants'
+import type { ArrivalOutcome, MapNode } from '../../types'
 
 /**
  * Optional overrides for `useArrivalLogic`.
@@ -32,7 +32,7 @@ type UseArrivalLogicOptions = {
   onShowHQ?: () => void
   /** Test seam: replaces the default `setPendingSupplyStopInventory` on a supply stop. */
   onShowSupplyStop?: (
-    inventory: import('../types/components').PurchaseItem[]
+    inventory: import('../../types/components').PurchaseItem[]
   ) => void
   /** Test seam: deterministic random source forwarded to `handleNodeArrival`. */
   rng?: () => number

@@ -150,7 +150,8 @@ vi.mock('../src/utils/gameState', () => ({
 }))
 
 export const setupArrivalLogicTest = async () => {
-  const { useArrivalLogic } = await import('../src/hooks/useArrivalLogic')
+  const { useArrivalLogic } =
+    await import('../src/hooks/travel/useArrivalLogic')
   return { useArrivalLogic, mockGameState }
 }
 
