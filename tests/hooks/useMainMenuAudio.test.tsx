@@ -8,8 +8,7 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioService: {
     ensureAudioContext: vi.fn(),
     startAmbient: vi.fn()
-  },
-  audioManager: {}
+  }
 }))
 
 vi.mock('../../src/utils/errorHandler', () => ({

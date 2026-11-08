@@ -20,7 +20,7 @@ Deliberate exception: pure, stateless helpers consumed by modules that are thems
 
 Roles:
 
-- `audioManager` (stateful class instance) — for non-React contexts: Pixi stage controllers, hook lifecycle, imperative timing.
+- `audioManager` (stateful class instance) — internal to `src/utils/audio` (it is re-exported from the `audioEngine.ts` barrel and wrapped by `audioService`); nothing outside this directory imports it.
 - `audioService` (React-safe adapter) — for React components and hooks that need `useSyncExternalStore`-style reactivity.
 
 ## Gig playback sequencing
