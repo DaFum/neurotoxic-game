@@ -9,28 +9,36 @@ test('AudioManager Tests', async t => {
     removeItem: mock.fn()
   }
 
-  const mockAudioEngine = {
-    setSFXVolume: mock.fn(),
-    setMusicVolume: mock.fn(),
-    playSFX: mock.fn(),
-    stopAudio: mock.fn(),
-    resumeAudio: mock.fn(async () => true),
-    getTransportState: mock.fn(() => 'stopped'),
-    setDestinationMute: mock.fn(() => false),
-    setupAudio: mock.fn(),
-    ensureAudioContext: mock.fn(async () => true),
-    isAmbientOggPlaying: mock.fn(() => false),
-    playRandomAmbientOgg: mock.fn(async () => true),
-    playRandomAmbientMidi: mock.fn(async () => true),
-    disposeAudio: mock.fn()
-  }
-
-  mock.module(
-    new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
-    {
-      namedExports: mockAudioEngine
+  // AudioManager imports the low-level modules directly (not the
+  // audioEngine.ts hub), so each one is mocked with the exports it uses.
+  const mockAudioModules = {
+    'setup.ts': { setupAudio: mock.fn() },
+    'context.ts': { ensureAudioContext: mock.fn(async () => true) },
+    'dispose.ts': { disposeAudio: mock.fn() },
+    'sfx.ts': {
+      playSFX: mock.fn(),
+      setSFXVolume: mock.fn(),
+      setMusicVolume: mock.fn()
+    },
+    'transportControl.ts': {
+      isAmbientOggPlaying: mock.fn(() => false),
+      stopAudio: mock.fn(),
+      resumeAudio: mock.fn(async () => true),
+      getTransportState: mock.fn(() => 'stopped'),
+      setDestinationMute: mock.fn(() => false)
+    },
+    'ambient.ts': {
+      playRandomAmbientOgg: mock.fn(async () => true),
+      playRandomAmbientMidi: mock.fn(async () => true)
     }
-  )
+  }
+  for (const [file, namedExports] of Object.entries(mockAudioModules)) {
+    mock.module(
+      new URL(`../../src/utils/audio/${file}`, import.meta.url).href,
+      { namedExports }
+    )
+  }
+  const mockAudioEngine = Object.assign({}, ...Object.values(mockAudioModules))
 
   // Import the module under test
   const { audioManager } = await import('../../src/utils/audio/AudioManager')
