@@ -8,7 +8,7 @@ vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
 }))
 
 import { GigHUD } from '../../src/components/GigHUD.tsx'
-import { GigControlsCluster } from '../../src/components/hud/GigControlsCluster.tsx'
+import { GigControlsCluster } from '../../src/ui/hud/GigControlsCluster.tsx'
 
 afterEach(cleanup)
 

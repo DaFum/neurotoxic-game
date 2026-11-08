@@ -1,4 +1,4 @@
-# src/components/hud - Agent Instructions
+# src/ui/hud - Agent Instructions
 
 ## Audio & Timing
 
