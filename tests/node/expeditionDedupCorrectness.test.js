@@ -15,10 +15,10 @@ import {
 } from '../../src/context/expeditionActionCreators.ts'
 import { EXPEDITION_INSURANCE_RESTORED_CONDITION } from '../../src/domain/expedition/insurance.ts'
 import {
-  EXPEDITION_TOW_FUEL_RESTORED,
   getAvailableTechnicalRecoveryControls,
   composeExpeditionFailureSignal
 } from '../../src/domain/expedition/failure.ts'
+import { EXPEDITION_TOW_FUEL_RESTORED } from '../../src/domain/expedition/rescueFuel.ts'
 import {
   canStartExpeditionPreGig,
   getExpeditionConditionTier

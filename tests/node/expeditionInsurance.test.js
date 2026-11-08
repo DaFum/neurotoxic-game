@@ -25,10 +25,10 @@ import {
 } from '../../src/context/expeditionActionCreators.ts'
 import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/loadout.ts'
 import {
-  EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
   getExpeditionMobilityFailureSignal
 } from '../../src/domain/expedition/failure.ts'
+import { EXPEDITION_TOW_FUEL_RESTORED } from '../../src/domain/expedition/rescueFuel.ts'
 import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel.ts'
 import {
   FIXTURE_RUN_SEED,

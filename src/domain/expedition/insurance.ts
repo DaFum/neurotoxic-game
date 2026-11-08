@@ -15,7 +15,7 @@
  * Run state stores only policy id and whether the claim has been consumed.
  */
 
-import { getExpeditionRescueFuelFloor } from './failure'
+import { getExpeditionRescueFuelFloor } from './rescueFuel'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { readVanCondition } from '../../utils/gameState/clamps'
