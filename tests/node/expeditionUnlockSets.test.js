@@ -34,7 +34,7 @@ import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers
 import { createInitialState } from '../../src/context/initialState'
 import { getEligibleCrewSignatureTrait } from '../../src/domain/expedition/career'
 import { getAvailableStarterPerkIds } from '../../src/domain/expedition/loadout'
-import { getAvailableNativeContractTemplateIds } from '../../src/domain/expedition/loadout'
+import { getAvailableNativeContractTemplateIds } from '../../src/domain/expedition/contracts'
 import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/loadout'
 import { isCrewAvailable } from '../../src/domain/expedition/crew'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'

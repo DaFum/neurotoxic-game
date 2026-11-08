@@ -34,12 +34,10 @@ import {
 } from '../src/data/expedition/contracts.ts'
 import {
   areExpeditionContractsCompatible,
+  getAvailableNativeContractTemplateIds,
   materializeContractConstraints
 } from '../src/domain/expedition/contracts.ts'
-import {
-  getAvailableNativeContractTemplateIds,
-  validateExpeditionBuildCommitment
-} from '../src/domain/expedition/loadout.ts'
+import { validateExpeditionBuildCommitment } from '../src/domain/expedition/loadout.ts'
 import { calculateExpeditionCargoCapacity } from '../src/domain/expedition/cargo.ts'
 import { isExpeditionAscensionEligible } from '../src/domain/expedition/meta.ts'
 import { QUEST_EXPEDITION_META_UNLOCK } from '../src/data/questsConstants.ts'

@@ -33,9 +33,9 @@ import { MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS } from '../src/domain/expedition/
 import { EXPEDITION_CREW } from '../src/data/expedition/crew.ts'
 import {
   areExpeditionContractsCompatible,
+  getAvailableNativeContractTemplateIds,
   getExpeditionContractTargetNodeId
 } from '../src/domain/expedition/contracts.ts'
-import { getAvailableNativeContractTemplateIds } from '../src/domain/expedition/loadout.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../src/data/expedition/unlockSets.ts'
 import { getExpeditionHqFacilityLevelCost } from '../src/data/expedition/hqFacilities.ts'

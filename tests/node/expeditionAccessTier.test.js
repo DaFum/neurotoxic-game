@@ -22,11 +22,11 @@ import {
   getExpeditionFameProfile,
   getExpeditionNodeBookingLock
 } from '../../src/domain/expedition/fame.ts'
+import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/loadout.ts'
 import {
   getAvailableNativeContractTemplateIds,
-  getExpeditionFameLockedContractTemplateIds,
-  validateExpeditionBuildCommitment
-} from '../../src/domain/expedition/loadout.ts'
+  getExpeditionFameLockedContractTemplateIds
+} from '../../src/domain/expedition/contracts.ts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../src/data/expedition/contracts.ts'
 import { handleNodeArrival } from '../../src/utils/arrivalUtils.ts'
 import { getExpeditionMobilityFailureSignal } from '../../src/domain/expedition/failure.ts'
