@@ -16,7 +16,7 @@ const MOCK_CABLE_MAP = MOCK_CABLES.reduce((acc, cable) => {
 const MOCK_SLOT_XS = [100, 200, 300, 400, 500]
 
 mock.module(
-  new URL('../../src/scenes/kabelsalat/kabelsalatConstants.ts', import.meta.url)
+  new URL('../../src/utils/minigames/kabelsalatConstants.ts', import.meta.url)
     .href,
   {
     namedExports: {
@@ -33,7 +33,7 @@ describe('kabelsalat utils', () => {
   let getMessyPath
 
   before(async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
+    const mod = await import('../../src/utils/minigames/kabelsalatUtils')
     generateLightningSeeds = mod.generateLightningSeeds
     getMessyPath = mod.getMessyPath
   })

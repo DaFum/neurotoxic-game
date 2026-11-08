@@ -2,7 +2,10 @@ import React, { useCallback } from 'react'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { PlugGraphics } from './PlugGraphics.tsx'
-import type { Cable, CableId } from '../kabelsalatConstants'
+import type {
+  Cable,
+  CableId
+} from '../../../utils/minigames/kabelsalatConstants'
 
 interface CableItemProps {
   t: TFunction

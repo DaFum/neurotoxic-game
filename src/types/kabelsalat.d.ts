@@ -1,7 +1,7 @@
 import type {
   SOCKET_DEFS,
   CABLES
-} from '../scenes/kabelsalat/kabelsalatConstants'
+} from '../utils/minigames/kabelsalatConstants'
 
 /**
  * Socket identifier derived from the Kabelsalat socket definitions.

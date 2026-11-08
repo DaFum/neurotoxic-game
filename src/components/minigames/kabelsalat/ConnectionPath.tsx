@@ -1,7 +1,7 @@
-import { CABLE_MAP } from '../kabelsalatConstants'
-import { getMessyPath } from '../kabelsalatUtils'
+import { CABLE_MAP } from '../../../utils/minigames/kabelsalatConstants'
+import { getMessyPath } from '../../../utils/minigames/kabelsalatUtils'
 import type { FC } from 'react'
-import type { CableId } from '../kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 
 import type { SocketId } from '../../../types/kabelsalat'
 

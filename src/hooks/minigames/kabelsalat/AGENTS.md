@@ -1,4 +1,4 @@
-# src/scenes/kabelsalat - Agent Instructions
+# src/hooks/minigames/kabelsalat - Agent Instructions
 
 ## State / Types
 
@@ -15,3 +15,15 @@
 
 - Socket/cable shuffles must use an in-place Fisher-Yates over `getSafeRandom()` from `src/utils/crypto` (which falls back to `Math.random()` once if the Crypto API is unavailable). Never use `sort(() => Math.random() - 0.5)` — biased and previously flagged insecure. Use `secureRandom()` directly only for non-shuffle visuals where a throw on missing Crypto is acceptable.
 - `KabelsalatScene` keeps its own SVG layout but mounts the shared exit controls: `useMinigameSceneLogic` (SKIP visibility via `canSkip`, DEV `Shift+P` backdoor via `finishMinigame`) and `MinigameSkipButton`, whose click calls `forceAdvance(false)` instead of the hook's `handleSkip`: that dispatch omits `voidSurgesPurged`, and the reducer ignores the second completion. The hook is fed `isGameOver || isPoweredOn` so SKIP hides and the backdoor idles once an auto-advance is pending; `forceAdvance` is the single, idempotent completion path for skip, backdoor, Escape and the timers. `tests/ui/KabelsalatScene.test.jsx` pins the reachability.
+
+## Hook Contracts
+
+### Types / Transitions
+
+- Keep `forceAdvance(isPowered: boolean)` typed through hook APIs and consumers.
+- Guard one-shot end transitions against React StrictMode effect replay; effects may mount, clean up, and run again, so transitions need ref-based idempotency.
+- Clean up fallback timers on unmount and completion.
+
+### Tests
+
+- End-flow tests must assert `changeScene('GIG')` for powered win and manual fallback continuation.

@@ -7,8 +7,11 @@ import {
   type SetStateAction
 } from 'react'
 import type { TFunction } from 'i18next'
-import { SOCKET_DEFS, CABLE_MAP } from '../kabelsalatConstants'
-import type { CableId } from '../kabelsalatConstants'
+import {
+  SOCKET_DEFS,
+  CABLE_MAP
+} from '../../../utils/minigames/kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 import { logger } from '../../../utils/logger'
 

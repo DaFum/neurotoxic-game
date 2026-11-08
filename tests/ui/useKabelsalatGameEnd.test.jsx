@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
-import { useKabelsalatGameEnd } from '../../src/scenes/kabelsalat/hooks/useKabelsalatGameEnd'
+import { useKabelsalatGameEnd } from '../../src/hooks/minigames/kabelsalat/useKabelsalatGameEnd'
 import { logger } from '../../src/utils/logger'
 import * as errorHandler from '../../src/utils/errorHandler'
 

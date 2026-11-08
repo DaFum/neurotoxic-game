@@ -13,7 +13,7 @@ import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
 import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
-import type { CableId } from '../kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 
 interface KabelsalatBoardProps {
   t: TFunction

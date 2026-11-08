@@ -1,4 +1,4 @@
-# src/scenes/kabelsalat/components/overlays - Agent Instructions
+# src/components/minigames/kabelsalat/overlays - Agent Instructions
 
 ## Continuation
 

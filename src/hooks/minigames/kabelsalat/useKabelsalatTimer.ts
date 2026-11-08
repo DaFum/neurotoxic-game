@@ -5,8 +5,8 @@ import {
   type Dispatch,
   type SetStateAction
 } from 'react'
-import { SOCKET_DEFS } from '../kabelsalatConstants'
-import type { CableId } from '../kabelsalatConstants'
+import { SOCKET_DEFS } from '../../../utils/minigames/kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length

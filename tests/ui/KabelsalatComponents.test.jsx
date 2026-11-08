@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Header } from '../../src/scenes/kabelsalat/components/Header'
-import { Rules } from '../../src/scenes/kabelsalat/components/Rules'
-import { Overlays } from '../../src/scenes/kabelsalat/components/Overlays'
-import { PlugGraphics } from '../../src/scenes/kabelsalat/components/PlugGraphics'
-import { SocketGraphics } from '../../src/scenes/kabelsalat/components/SocketGraphics'
-import { SocketItem } from '../../src/scenes/kabelsalat/components/SocketItem'
-import { CableItem } from '../../src/scenes/kabelsalat/components/CableItem'
-import { CABLES } from '../../src/scenes/kabelsalat/kabelsalatConstants'
+import { Header } from '../../src/components/minigames/kabelsalat/Header'
+import { Rules } from '../../src/components/minigames/kabelsalat/Rules'
+import { Overlays } from '../../src/components/minigames/kabelsalat/Overlays'
+import { PlugGraphics } from '../../src/components/minigames/kabelsalat/PlugGraphics'
+import { SocketGraphics } from '../../src/components/minigames/kabelsalat/SocketGraphics'
+import { SocketItem } from '../../src/components/minigames/kabelsalat/SocketItem'
+import { CableItem } from '../../src/components/minigames/kabelsalat/CableItem'
+import { CABLES } from '../../src/utils/minigames/kabelsalatConstants'
 
 const mockT = (key, options) => {
   if (options?.count !== undefined) {

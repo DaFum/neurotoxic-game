@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { useKabelsalatVoidSurge } from '../../../src/scenes/kabelsalat/hooks/useKabelsalatVoidSurge'
+import { useKabelsalatVoidSurge } from '../../../src/hooks/minigames/kabelsalat/useKabelsalatVoidSurge'
 
 describe('useKabelsalatVoidSurge', () => {
   let triggerShockMock

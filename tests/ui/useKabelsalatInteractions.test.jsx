@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useRef, useState } from 'react'
-import { useKabelsalatInteractions } from '../../src/scenes/kabelsalat/hooks/useKabelsalatInteractions'
+import { useKabelsalatInteractions } from '../../src/hooks/minigames/kabelsalat/useKabelsalatInteractions'
 
 const t = vi.fn(key => key)
 
