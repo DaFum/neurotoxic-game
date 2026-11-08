@@ -317,7 +317,7 @@ export interface GameState {
   isScreenshotMode: boolean
   toasts: ToastPayload[]
   activeStoryFlags: string[]
-  /** Event id (or scoped `${eventId}_${contextId}` key) -> day it unlocks again. */
+  /** Maps an event id (or scoped `${eventId}_${contextId}` key) to the day it unlocks again. */
   eventCooldowns: Record<string, number>
   venueBlacklist: string[]
   activeQuests: ActiveQuestState[]
