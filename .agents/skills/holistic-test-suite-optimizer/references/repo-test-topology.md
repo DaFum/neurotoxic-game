@@ -4,30 +4,30 @@ Use this reference when choosing test scope, explaining what a package script co
 
 ## Command Map
 
-| Command                                 | Current expansion                                  | Coverage boundary                                       | Notes                                                                                         |
-| --------------------------------------- | -------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm run test`                         | `scripts/run-fast-tests.mjs`                       | `test:node:quick` + `test:vitest:logic`                 | Fast local gate. Runs both suites in parallel with split worker defaults.                     |
-| `pnpm run test:fast`                    | `scripts/run-fast-tests.mjs`                       | Same as `pnpm run test`                                 | Alias target for the default local test command.                                              |
-| `pnpm run test:node`                    | `scripts/run-node-tests.mjs`                       | `node:test` suites under node-owned directories         | Uses `tsx`, `tests/setup.mjs`, and `--experimental-test-module-mocks`.                        |
-| `pnpm run test:node:quick`              | `run-node-tests.mjs --skip-heavy`                  | Node suite minus known heavy files                      | Good first check after node fixture or reducer changes that do not touch heavy coverage.      |
-| `pnpm run test:node:heavy`              | `run-node-tests.mjs --only-heavy`                  | Known heavy node files                                  | Use when changing heavy managers/hooks or the heavy list itself.                              |
-| `pnpm run test:vitest:logic`            | `run-vitest-ui.mjs --config vitest.config.node.js` | Vitest node-environment logic/API/data/utils suites     | Not jsdom. Kept separate from `node:test` despite sharing a Node environment.                 |
-| `pnpm run test:ui`                      | `pnpm run test:vitest:ui`                          | Vitest jsdom UI/integration/hooks/security/utils suites | Uses `vitest.config.js` and `tests/vitest.setup.js`.                                          |
-| `pnpm run test:all`                     | `scripts/run-all-tests.mjs`                        | `test:node` + `test:vitest:logic` + `test:ui`           | Default phase A overlaps node with tiny logic suite; phase B runs UI after node.              |
-| `NODE_ALL_PARALLEL=1 pnpm run test:all` | `run-all-tests.mjs` fully parallel path            | Same as `test:all`                                      | High-core experiment path. Report core count and before/after timings before recommending it. |
-| `pnpm run test:additional`              | `test:perf` + locale smoke + locale full           | Perf and locale validation                              | Not part of `test:all` unless scripts change.                                                 |
-| `pnpm run test:e2e`                     | `playwright test`                                  | Playwright E2E under `e2e/**`                           | Not part of `test:all`. Uses `playwright.config.js` and starts Vite dev server.               |
+| Command                                 | Current expansion                        | Coverage boundary                                       | Notes                                                                                         |
+| --------------------------------------- | ---------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm run test`                         | `scripts/run-fast-tests.mjs`             | `test:node:quick` + `test:vitest:logic`                 | Fast local gate. Runs both suites in parallel with split worker defaults.                     |
+| `pnpm run test:fast`                    | `scripts/run-fast-tests.mjs`             | Same as `pnpm run test`                                 | Alias target for the default local test command.                                              |
+| `pnpm run test:node`                    | `scripts/run-node-tests.mjs`             | `node:test` suites under node-owned directories         | Uses `tsx`, `tests/setup.mjs`, and `--experimental-test-module-mocks`.                        |
+| `pnpm run test:node:quick`              | `run-node-tests.mjs --skip-heavy`        | Node suite minus known heavy files                      | Good first check after node fixture or reducer changes that do not touch heavy coverage.      |
+| `pnpm run test:node:heavy`              | `run-node-tests.mjs --only-heavy`        | Known heavy node files                                  | Use when changing heavy managers/hooks or the heavy list itself.                              |
+| `pnpm run test:vitest:logic`            | `run-vitest-ui.mjs --project node`       | Vitest node-environment logic/API/data/utils suites     | Not jsdom. Kept separate from `node:test` despite sharing a Node environment.                 |
+| `pnpm run test:ui`                      | `pnpm run test:vitest:ui`                | Vitest jsdom UI/integration/hooks/security/utils suites | Uses the `ui` project and `tests/vitest.setup.js`.                                            |
+| `pnpm run test:all`                     | `scripts/run-all-tests.mjs`              | `test:node` + `test:vitest:logic` + `test:ui`           | Default phase A overlaps node with tiny logic suite; phase B runs UI after node.              |
+| `NODE_ALL_PARALLEL=1 pnpm run test:all` | `run-all-tests.mjs` fully parallel path  | Same as `test:all`                                      | High-core experiment path. Report core count and before/after timings before recommending it. |
+| `pnpm run test:additional`              | `test:perf` + locale smoke + locale full | Perf and locale validation                              | Not part of `test:all` unless scripts change.                                                 |
+| `pnpm run test:e2e`                     | `playwright test`                        | Playwright E2E under `e2e/**`                           | Not part of `test:all`. Uses `playwright.config.js` and starts Vite dev server.               |
 
 ## Targeted File Commands
 
 Use the runner that already owns the file. A targeted command is valid evidence only for that runner family.
 
-| File family                                      | Command                                                                                                     |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `node:test` files under node-owned directories   | `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` |
-| Vitest logic files under `vitest.config.node.js` | `pnpm run test:ui:file -- --config vitest.config.node.js tests/<file>.test.js`                              |
-| Vitest UI/jsdom files                            | `pnpm run test:ui:file -- tests/<file>.test.js(x)`                                                          |
-| Playwright specs                                 | `pnpm run test:e2e -- e2e/<file>.spec.js`                                                                   |
+| File family                                    | Command                                                                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `node:test` files under node-owned directories | `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` |
+| Vitest logic files in the `node` project       | `pnpm exec vitest run --project node tests/<file>.test.js`                                                  |
+| Vitest UI/jsdom files                          | `pnpm run test:ui:file -- tests/<file>.test.js(x)`                                                          |
+| Playwright specs                               | `pnpm run test:e2e -- e2e/<file>.spec.js`                                                                   |
 
 If `run-node-tests.mjs` rejects a path, the file is outside the node runner boundary. Do not force it through `node:test`; use the Vitest command that matches the config include list.
 
@@ -45,7 +45,7 @@ If `run-node-tests.mjs` rejects a path, the file is outside the node runner boun
 - `pnpm run test` is intentionally smaller than `test:all`; do not report it as full PR coverage.
 - CI runs node, Vitest logic, Vitest UI, locale, perf, and typecheck jobs separately. Local `test:all` is not a complete CI mirror.
 - The current Tests workflow does not run Playwright E2E; use `test:e2e` or an E2E workflow when the requested surface is browser automation.
-- `vitest.config.node.js` excludes `tests/logic/AmpStageController.test.js` because it needs jsdom through the UI config.
+- The `node` project excludes `tests/logic/AmpStageController.test.js` because it needs jsdom through the `ui` project.
 - The node runner rejects specific files outside node-owned test directories; use the Vitest file command for Vitest-owned files.
 
 ## CI Job Map

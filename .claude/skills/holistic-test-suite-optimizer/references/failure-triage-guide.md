@@ -33,15 +33,15 @@ Use this reference when the user reports failing, flaky, hanging, OOMing, or CI-
 
 ## Symptom Routing
 
-| Symptom                        | First reproducer                                                 | Inspect first                                                      | Avoid                                               |
-| ------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------- |
-| One `node:test` file fails     | Root single-file `node --test --import tsx ...` command          | `tests/setup.mjs`, `mock.module`, node-owned AGENTS                | Running Vitest for a node-owned file                |
-| One Vitest logic file fails    | `pnpm run test:ui:file -- --config vitest.config.node.js <file>` | `vitest.config.node.js`, `vi.mock`, node environment assumptions   | Moving it into `node:test` for convenience          |
-| One Vitest UI file fails       | `pnpm run test:ui:file -- <file>`                                | `tests/vitest.setup.js`, jsdom cleanup, localStorage, timers       | Hoisting UI setup into node-owned helpers           |
-| Suite hangs after tests finish | Owning suite command                                             | Open handles, fake timers, AudioContext, Pixi, Playwright contexts | Adding retries or grep filters                      |
-| OOM or heap growth             | Owning suite command with current worker env                     | DOM cleanup, fixture allocation loops, global caches               | Raising `--max-old-space-size` first                |
-| CI-only failure                | Same local package command as CI job                             | Node 22.13 behavior, Linux paths, env vars, install flags          | Treating local `pnpm run test` as proof CI is fixed |
-| E2E startup failure            | `pnpm run test:e2e -- <spec>` when possible                      | `playwright.config.js`, Vite webServer, storageState, route mocks  | Assuming E2E is covered by `test:all`               |
+| Symptom                        | First reproducer                                        | Inspect first                                                                 | Avoid                                               |
+| ------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------- |
+| One `node:test` file fails     | Root single-file `node --test --import tsx ...` command | `tests/setup.mjs`, `mock.module`, node-owned AGENTS                           | Running Vitest for a node-owned file                |
+| One Vitest logic file fails    | `pnpm exec vitest run --project node <file>`            | `node` project in `vitest.config.js`, `vi.mock`, node environment assumptions | Moving it into `node:test` for convenience          |
+| One Vitest UI file fails       | `pnpm run test:ui:file -- <file>`                       | `tests/vitest.setup.js`, jsdom cleanup, localStorage, timers                  | Hoisting UI setup into node-owned helpers           |
+| Suite hangs after tests finish | Owning suite command                                    | Open handles, fake timers, AudioContext, Pixi, Playwright contexts            | Adding retries or grep filters                      |
+| OOM or heap growth             | Owning suite command with current worker env            | DOM cleanup, fixture allocation loops, global caches                          | Raising `--max-old-space-size` first                |
+| CI-only failure                | Same local package command as CI job                    | Node 22.13 behavior, Linux paths, env vars, install flags                     | Treating local `pnpm run test` as proof CI is fixed |
+| E2E startup failure            | `pnpm run test:e2e -- <spec>` when possible             | `playwright.config.js`, Vite webServer, storageState, route mocks             | Assuming E2E is covered by `test:all`               |
 
 ## Evidence To Capture
 
