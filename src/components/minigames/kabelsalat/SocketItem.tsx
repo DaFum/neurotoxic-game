@@ -8,8 +8,8 @@ import {
   SLOT_XS,
   SOCKET_Y,
   CABLE_MAP
-} from '../kabelsalatConstants'
-import type { CableId } from '../kabelsalatConstants'
+} from '../../../utils/minigames/kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketItemProps {

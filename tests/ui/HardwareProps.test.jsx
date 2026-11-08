@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { RackPanel } from '../../src/scenes/kabelsalat/components/HardwareProps'
+import { RackPanel } from '../../src/components/minigames/kabelsalat/HardwareProps'
 
 // RackScrew is module-private decoration; its rendering contract is covered
 // through RackPanel, the only production consumer.

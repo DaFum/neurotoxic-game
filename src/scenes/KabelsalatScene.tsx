@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
-import { useKabelsalatState } from './kabelsalat/useKabelsalatState'
-import { Header } from './kabelsalat/components/Header.tsx'
-import { Rules } from './kabelsalat/components/Rules.tsx'
-import { KabelsalatBoard } from './kabelsalat/components/KabelsalatBoard.tsx'
+import { useKabelsalatState } from '../hooks/minigames/kabelsalat/useKabelsalatState'
+import { Header } from '../components/minigames/kabelsalat/Header.tsx'
+import { Rules } from '../components/minigames/kabelsalat/Rules.tsx'
+import { KabelsalatBoard } from '../components/minigames/kabelsalat/KabelsalatBoard.tsx'
 import { MinigameSkipButton } from '../components/MinigameSkipButton'
 import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
 

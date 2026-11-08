@@ -1,15 +1,18 @@
 import { useState, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { generateLightningSeeds } from './kabelsalatUtils'
-import { INITIAL_SOCKET_ORDER, TIME_LIMIT } from './kabelsalatConstants'
-import type { CableId } from './kabelsalatConstants'
-import type { SocketId } from '../../types/kabelsalat'
-import { useKabelsalatBackground } from './hooks/useKabelsalatBackground'
-import { useKabelsalatTimer } from './hooks/useKabelsalatTimer'
-import { useKabelsalatShuffle } from './hooks/useKabelsalatShuffle'
-import { useKabelsalatInteractions } from './hooks/useKabelsalatInteractions'
-import { useKabelsalatGameEnd } from './hooks/useKabelsalatGameEnd'
-import { useKabelsalatVoidSurge } from './hooks/useKabelsalatVoidSurge'
+import { generateLightningSeeds } from '../../../utils/minigames/kabelsalatUtils'
+import {
+  INITIAL_SOCKET_ORDER,
+  TIME_LIMIT
+} from '../../../utils/minigames/kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
+import type { SocketId } from '../../../types/kabelsalat'
+import { useKabelsalatBackground } from './useKabelsalatBackground'
+import { useKabelsalatTimer } from './useKabelsalatTimer'
+import { useKabelsalatShuffle } from './useKabelsalatShuffle'
+import { useKabelsalatInteractions } from './useKabelsalatInteractions'
+import { useKabelsalatGameEnd } from './useKabelsalatGameEnd'
+import { useKabelsalatVoidSurge } from './useKabelsalatVoidSurge'
 
 import type { TFunction } from 'i18next'
 
