@@ -553,9 +553,6 @@ export const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
 export const isVoidTraderUnlocked = (controversyLevel: unknown): boolean =>
   finiteNumberOr(controversyLevel, 0) >= VOID_TRADER_CONTROVERSY_THRESHOLD
 
-/** Lookup map of contraband definition by item id. */
-export const CONTRABAND_BY_ID = new Map<string, SanitizedContrabandItem>()
-
 const contrabandValidationFailures: string[] = []
 
 /** Returns an immutable snapshot of catalog validation failures. */
@@ -571,6 +568,9 @@ export const CONTRABAND_BY_RARITY: Record<Rarity, SanitizedContrabandItem[]> = {
   epic: []
 }
 
+const validContrabandItems: SanitizedContrabandItem[] = []
+const seenContrabandIds = new Set<string>()
+
 for (const item of CONTRABAND_DB) {
   const validation = validateContrabandItem(item)
   if (!validation.ok || !validation.value) {
@@ -582,13 +582,14 @@ for (const item of CONTRABAND_DB) {
   }
 
   const sanitizedItem = validation.value
-  if (CONTRABAND_BY_ID.has(sanitizedItem.id)) {
+  if (seenContrabandIds.has(sanitizedItem.id)) {
     logger.warn(
       'ContrabandData',
       `Duplicate item ID found: ${sanitizedItem.id}`
     )
   }
-  CONTRABAND_BY_ID.set(sanitizedItem.id, sanitizedItem)
+  seenContrabandIds.add(sanitizedItem.id)
+  validContrabandItems.push(sanitizedItem)
   const rarityGroup = CONTRABAND_BY_RARITY[sanitizedItem.rarity]
   if (rarityGroup) {
     rarityGroup.push(sanitizedItem)
@@ -599,6 +600,10 @@ for (const item of CONTRABAND_DB) {
     )
   }
 }
+
+/** Lookup map of contraband definition by item id (later duplicates win). */
+export const CONTRABAND_BY_ID: ReadonlyMap<string, SanitizedContrabandItem> =
+  new Map(validContrabandItems.map(item => [item.id, item]))
 
 /**
  * Canonical Void Trader Fame price of a catalogue item.
