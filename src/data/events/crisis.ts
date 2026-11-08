@@ -4,7 +4,7 @@ import type { UnknownRecord } from '../../types'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
-import { hasStateItem } from '../../utils/gameState'
+import { hasStateItem, isOnCooldown } from '../../utils/gameState'
 import { getOutcomeAccuracy } from '../../utils/gigStats'
 import {
   isHighControversy,
@@ -51,7 +51,7 @@ export const CRISIS_EVENTS = [
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 20 &&
       (gs.band?.harmony ?? 100) < 75 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_bad_review'),
+      !isOnCooldown(gs, 'crisis_bad_review'),
     options: [
       {
         label: 'events:crisis_bad_review.opt1.label',
@@ -105,7 +105,7 @@ export const CRISIS_EVENTS = [
     chance: 0.6,
     condition: (gs: GameState) =>
       isScandalControversy(gs.social?.controversyLevel) &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_online_backlash'),
+      !isOnCooldown(gs, 'crisis_online_backlash'),
     options: [
       {
         label: 'events:crisis_online_backlash.opt1.label',
@@ -160,7 +160,7 @@ export const CRISIS_EVENTS = [
     chance: 0.7,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_shadowban_scare'),
+      !isOnCooldown(gs, 'crisis_shadowban_scare'),
     options: [
       {
         label: 'events:crisis_shadowban_scare.opt1.label',
@@ -216,7 +216,7 @@ export const CRISIS_EVENTS = [
     chance: 0.5,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 65 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_venue_cancels'),
+      !isOnCooldown(gs, 'crisis_venue_cancels'),
     options: [
       {
         label: 'events:crisis_venue_cancels.opt1.label',
@@ -273,7 +273,7 @@ export const CRISIS_EVENTS = [
     chance: 0.3,
     condition: (gs: GameState) =>
       isHighControversy(gs.social?.controversyLevel) &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_redemption_charity'),
+      !isOnCooldown(gs, 'crisis_redemption_charity'),
     options: [
       {
         label: 'events:crisis_redemption_charity.opt1.label',
@@ -313,7 +313,7 @@ export const CRISIS_EVENTS = [
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
       (gs.social?.activeDeals?.length ?? 0) > 0 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_sponsor_ultimatum'),
+      !isOnCooldown(gs, 'crisis_sponsor_ultimatum'),
     options: [
       {
         label: 'events:crisis_sponsor_ultimatum.opt1.label',
@@ -372,7 +372,7 @@ export const CRISIS_EVENTS = [
       // Missing/non-finite accuracy reads as 0 (a bad show), as in the reducer.
       gs.lastGigStats != null &&
       getOutcomeAccuracy(gs.lastGigStats) < 30 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_poor_performance'),
+      !isOnCooldown(gs, 'crisis_poor_performance'),
     options: [
       {
         label: 'events:crisis_poor_performance.opt1.label',
@@ -418,7 +418,7 @@ export const CRISIS_EVENTS = [
     chance: 0.4,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 60 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_leaked_story'),
+      !isOnCooldown(gs, 'crisis_leaked_story'),
     options: [
       {
         label: 'events:crisis_leaked_story.opt1.label',
@@ -448,7 +448,7 @@ export const CRISIS_EVENTS = [
     chance: 0.5,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 75 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_mass_unfollow'),
+      !isOnCooldown(gs, 'crisis_mass_unfollow'),
     options: [
       {
         label: 'events:crisis_mass_unfollow.opt1.label',
@@ -471,7 +471,7 @@ export const CRISIS_EVENTS = [
     condition: (gs: GameState) =>
       gs.social?.egoFocus != null &&
       (gs.band?.harmony ?? 100) < 40 &&
-      !hasStateItem(gs.eventCooldowns, 'crisis_ego_clash'),
+      !isOnCooldown(gs, 'crisis_ego_clash'),
     options: [
       {
         label: 'events:crisis_ego_clash.opt1.label',
@@ -596,8 +596,7 @@ export const CRISIS_EVENTS = [
       calculateZealotryEffects(gs.social?.zealotry ?? 0).raidProbability,
     condition: (gs: GameState) => {
       if ((gs.social?.zealotry ?? 0) === 0) return false
-      if (hasStateItem(gs.eventCooldowns, 'crisis_police_raid_zealotry'))
-        return false
+      if (isOnCooldown(gs, 'crisis_police_raid_zealotry')) return false
       return true
     },
     options: [

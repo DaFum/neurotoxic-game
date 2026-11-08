@@ -60,7 +60,7 @@ export type EffectShape = {
  * Game-state slice consumed by the event engine.
  */
 export type EngineGameState = {
-  eventCooldowns?: string[] | Set<string>
+  eventCooldowns?: Readonly<Record<string, number>> | ReadonlySet<string>
   activeStoryFlags?: string[] | Set<string>
   pendingEvents?: string[] | Set<string>
   player?: {

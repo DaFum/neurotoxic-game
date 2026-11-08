@@ -111,7 +111,7 @@ describe('CRISIS_EVENTS', () => {
     assert.strictEqual(
       evt.condition({
         lastGigStats: { score: 3200, accuracy: 29 },
-        eventCooldowns: ['crisis_poor_performance']
+        eventCooldowns: { crisis_poor_performance: 2 }
       }),
       false
     )
@@ -144,7 +144,7 @@ describe('CRISIS_EVENTS', () => {
     assert.strictEqual(
       evt.condition({
         social: { controversyLevel: 75 },
-        eventCooldowns: ['crisis_mass_unfollow']
+        eventCooldowns: { crisis_mass_unfollow: 2 }
       }),
       false
     )

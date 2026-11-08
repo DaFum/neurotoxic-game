@@ -359,7 +359,8 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
       assert.deepEqual(nextState.activeStoryFlags, [FLAGS.COMEBACK_TRIGGERED])
       assert.deepEqual(nextState.pendingEvents, ['event1'])
-      assert.deepEqual(nextState.eventCooldowns, ['cooldown1'])
+      // Legacy bare id migrates to unlock on the day after the loaded day 5.
+      assert.deepEqual(nextState.eventCooldowns, { cooldown1: 6 })
       assert.deepEqual(nextState.toasts, [
         { id: '1', message: 'Hello', type: 'info' }
       ])
@@ -679,7 +680,7 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, [])
     assert.deepEqual(nextState.activeStoryFlags, [])
     assert.deepEqual(nextState.pendingEvents, [])
-    assert.deepEqual(nextState.eventCooldowns, [])
+    assert.deepEqual(nextState.eventCooldowns, {})
     assert.deepEqual(nextState.activeQuests, [])
     assert.deepEqual(nextState.unlocks, initialState.unlocks || [])
     assert.equal(nextState.gigModifiers.catering, true)
@@ -1128,7 +1129,8 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.activeStoryFlags, [FLAGS.SAW_CRISIS_50])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
-    assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
+    assert.ok(Object.hasOwn(nextState.eventCooldowns, 'cooldown-a'))
+    assert.deepEqual(Object.keys(nextState.eventCooldowns), ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
     assert.equal(nextState.gigModifiers.promo, true)
     assert.equal(nextState.gigModifiers.merch, false)
@@ -2542,7 +2544,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       assert.equal(nextState.player.eventsTriggeredToday, 0)
       // calculateDailyUpdates increments day
       assert.equal(nextState.player.day, 2)
-      assert.deepEqual(nextState.eventCooldowns, [])
+      assert.deepEqual(nextState.eventCooldowns, {})
     }
   )
 
@@ -2550,16 +2552,16 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
     const state = {
       ...createInitialState(),
       player: { ...createInitialState().player, day: 5, money: 100 },
-      // Legacy untimed entry resets every advanceDay; timed entries persist
-      // until expiry. expiry 10 (future) stays; expiry 5 (=current) drops.
-      eventCooldowns: [
-        'legacy_daily',
-        'ego_management_retry:10',
-        'expired_event:5'
-      ]
+      // A same-day cooldown (unlock day 6) resets on the advance to day 6;
+      // unlock day 10 (future) stays; unlock day 5 (already past) drops.
+      eventCooldowns: {
+        legacy_daily: 6,
+        ego_management_retry: 10,
+        expired_event: 5
+      }
     }
     const next = handleAdvanceDay(state, { dayRngStream: HALF_ROLLS })
-    assert.deepEqual(next.eventCooldowns, ['ego_management_retry:10'])
+    assert.deepEqual(next.eventCooldowns, { ego_management_retry: 10 })
   })
 
   await t.test(

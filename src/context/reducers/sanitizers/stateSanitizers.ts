@@ -49,7 +49,10 @@ import {
   readMemberMood,
   readMemberStamina,
   normalizeRegionalGigHistory,
-  normalizeSetlistForSave
+  normalizeSetlistForSave,
+  addEventCooldown,
+  parseCooldownEntry,
+  pruneEventCooldowns
 } from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
@@ -1395,6 +1398,39 @@ export const sanitizeMinigameState = (
     default:
       return { ...DEFAULT_MINIGAME_STATE }
   }
+}
+
+/**
+ * Sanitizes loaded event cooldowns into an `eventId -> unlock day` record.
+ *
+ * @param value - Untrusted `eventCooldowns` from a save.
+ * @param currentDay - The loaded save's current day.
+ * @returns A record of the cooldowns still running on `currentDay`.
+ *
+ * @remarks
+ * Saves from before the record model hold a `string[]` of `id` or
+ * `id:expiryDay` entries (grammar in `parseCooldownEntry`). A timed entry
+ * keeps its expiry as the unlock day. A bare id blocked its event until the
+ * next day advance, so it unlocks on `currentDay + 1`. Duplicates keep the
+ * latest unlock day. Forbidden prototype keys, non-finite or non-number
+ * unlock days and expired entries are dropped.
+ */
+export const sanitizeEventCooldowns = (
+  value: unknown,
+  currentDay: number
+): Record<string, number> => {
+  if (!Array.isArray(value)) return pruneEventCooldowns(value, currentDay)
+  let migrated: Record<string, number> = {}
+  for (const entry of value) {
+    const parsed = parseCooldownEntry(entry)
+    if (!parsed) continue
+    migrated = addEventCooldown(
+      migrated,
+      parsed.key,
+      parsed.expiryDay ?? Math.floor(currentDay) + 1
+    )
+  }
+  return pruneEventCooldowns(migrated, currentDay)
 }
 
 /**

@@ -159,7 +159,9 @@ const PERSISTED_FIELDS = {
   pendingSupplyStopInventory: (value: unknown): boolean =>
     value === null || Array.isArray(value),
   activeStoryFlags: Array.isArray,
-  eventCooldowns: Array.isArray,
+  // Legacy saves hold a string[]; current saves an `eventId -> unlock day` record.
+  eventCooldowns: (value: unknown): boolean =>
+    Array.isArray(value) || isLooseRecord(value),
   pendingEvents: Array.isArray,
   venueBlacklist: Array.isArray,
   pendingForeclosureNotices: Array.isArray,

@@ -409,7 +409,7 @@ test('eventEngine.selectEvent dampens conflict events when infightingDamper is a
 })
 
 test('eventEngine.selectEvent respects cooldowns', () => {
-  const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
+  const state = buildGameState({ eventCooldowns: { event_cooldown: 99 } })
   const selected = eventEngine.selectEvent(
     MOCK_EVENTS.transport,
     state,
@@ -461,7 +461,7 @@ test('eventEngine.selectEvent still gates pending events on their rules', () => 
       pool,
       buildGameState({
         pendingEvents: ['event_guarded'],
-        eventCooldowns: ['event_guarded:9']
+        eventCooldowns: { event_guarded: 9 }
       }),
       'pre_gig'
     ),

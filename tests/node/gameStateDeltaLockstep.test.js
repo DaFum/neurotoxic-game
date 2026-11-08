@@ -310,7 +310,9 @@ const FIELD_CASES = [
   },
   {
     name: 'flags.addCooldown',
-    delta: withDelta({ flags: { addCooldown: 'cool_lockstep' } }),
+    delta: withDelta({
+      flags: { addCooldown: { eventId: 'cool_lockstep', unlockDay: 99 } }
+    }),
     expect: 'both'
   },
   {

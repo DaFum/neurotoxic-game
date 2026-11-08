@@ -234,7 +234,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         state.lastGigStats != null &&
         getOutcomeAccuracy(state.lastGigStats) < 30 &&
-        !hasStateItem(state.eventCooldowns, 'consequences_venue_complaint')
+        !isOnCooldown(state, 'consequences_venue_complaint')
       )
     },
     options: [
@@ -306,10 +306,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         consecutiveBadShows >= 2 &&
         isHighControversy(state.social?.controversyLevel) &&
-        !hasStateItem(
-          state.eventCooldowns,
-          'consequences_ticket_sales_collapse'
-        )
+        !isOnCooldown(state, 'consequences_ticket_sales_collapse')
       )
     },
     options: [
@@ -350,7 +347,7 @@ export const CONSEQUENCE_EVENTS = [
       if (
         state.social?.egoFocus != null &&
         finiteNumberOr(state.social?.controversyLevel, 0) >= 30 &&
-        !hasStateItem(state.eventCooldowns, 'consequences_bandmate_scandal')
+        !isOnCooldown(state, 'consequences_bandmate_scandal')
       ) {
         return { egoFocus: state.social.egoFocus }
       }
