@@ -341,6 +341,7 @@ describe('travel confirmation toast lifecycle', () => {
       advanceDay: vi.fn(),
       triggerEvent: vi.fn(() => false),
       startGig: vi.fn(),
+      checkStartGig: vi.fn(() => null),
       addToast,
       removeToast,
       changeScene: vi.fn(),

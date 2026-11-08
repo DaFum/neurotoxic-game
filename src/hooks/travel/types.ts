@@ -6,6 +6,7 @@ import type {
   MapNode,
   PlayerState,
   SocialState,
+  StartGigRefusalReason,
   Venue
 } from '../../types'
 import type { OptionalToastCallback, ToastType } from '../../types/callbacks'
@@ -45,6 +46,8 @@ export type TravelLogicParams = {
   advanceDay: () => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   startGig: (venue: Venue) => void
+  /** `START_GIG` refusal preflight on the latest state (`checkStartGig`). */
+  checkStartGig: (venue: Venue) => StartGigRefusalReason | null
   /** Queues a toast and returns its id, so the confirmation prompt can be removed. */
   addToast: (message: string, type?: ToastType) => string | null
   removeToast: (id: string) => void

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
+import { getStartGigRefusal } from '../../src/context/reducers/gigReducer'
 import { createInitialState } from '../../src/context/initialState'
 import {
   advanceDay,
@@ -58,6 +59,7 @@ vi.mock('../../src/context/GameState', () => ({
     updateBand: updates => dispatch(createUpdateBandAction(updates)),
     updatePlayer: updates => dispatch(createUpdatePlayerAction(updates)),
     startGig: spies.startGig,
+    checkStartGig: venue => getStartGigRefusal(store.state, venue),
     changeScene: spies.changeScene,
     addToast: spies.addToast,
     saveGame: spies.saveGame,
@@ -433,10 +435,27 @@ describe('gig arrival through the real reducer', () => {
       result.current.handleArrivalSequence()
     })
 
-    // The penalty is dispatched inside the routing effect, so an immediate
-    // saveGame would still see the pre-penalty fame.
+    // The penalty is dispatched inside the routing effect; the save is the
+    // provider-owned post-commit request, not an immediate saveGame.
     expect(cancelledToast()).toBe(true)
     expect(spies.saveGame).not.toHaveBeenCalled()
+    expect(spies.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
+  })
+  test('an inline venue START_GIG would refuse routes to the map and still saves', () => {
+    const initial = gigArrivalState({ harmony: 80 })
+    const hostileVenue = JSON.parse(
+      '{"id":"berlin_so36","name":"SO36","nested":{"constructor":{}}}'
+    )
+    initial.gameMap.nodes[GIG.id] = { ...GIG, venue: hostileVenue }
+
+    const { result } = renderArrival(initial, () => 0.99)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(spies.startGig).not.toHaveBeenCalled()
+    expect(store.state.currentScene).not.toBe(GAME_PHASES.PRE_GIG)
+    expect(spies.changeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     expect(spies.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
   })
 })

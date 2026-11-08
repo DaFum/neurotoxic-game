@@ -105,6 +105,15 @@ export type LoadPreviewResult =
 export type ArrivalOutcome =
   { kind: 'overworld' } | { kind: 'gig'; venue: Venue }
 
+/**
+ * Why `START_GIG` refuses a venue: a malformed payload, a Festival booking the
+ * run's Fame tier does not open, or a current node a route overlay converted.
+ * Shared by the reducer (`getStartGigRefusal`), the `checkStartGig` action and
+ * the arrival paths.
+ */
+export type StartGigRefusalReason =
+  'invalid_payload' | 'festival_booking_locked' | 'node_converted'
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean

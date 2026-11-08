@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   handleSetGig,
   handleStartGig,
+  getStartGigRefusal,
   handleSetGigModifiers,
   handleSetLastGigStats,
   handleSettleSoldMerch
@@ -148,6 +149,100 @@ describe('gigReducer', () => {
       const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
 
       assert.deepStrictEqual(nextState.lastGigStats, { score: 80 })
+    })
+  })
+
+  describe('getStartGigRefusal', () => {
+    const VENUE = { id: 'gig2', name: 'Gig' }
+    /** Puts the band on a Festival node of an active run with no Fame. */
+    const onLockedFestival = () => {
+      baseState.player.currentNodeId = 'node_festival'
+      baseState.player.fame = 0
+      baseState.gameMap = {
+        nodes: { node_festival: { id: 'node_festival', type: 'FESTIVAL' } }
+      }
+      baseState.expedition = { status: 'active', arrivedOverlay: null }
+    }
+    /** Marks the current node as converted by a route overlay. */
+    const onConvertedNode = () => {
+      baseState.player.currentNodeId ??= 'node_gig'
+      baseState.expedition = {
+        ...(baseState.expedition ?? {}),
+        arrivedOverlay: { nodeId: baseState.player.currentNodeId }
+      }
+    }
+
+    it('returns null for a start the reducer accepts', () => {
+      assert.strictEqual(getStartGigRefusal(baseState, VENUE), null)
+    })
+
+    it('returns invalid_payload for malformed and hostile venues', () => {
+      for (const hostile of [
+        undefined,
+        null,
+        'gig',
+        [],
+        {},
+        { id: '', name: 'Empty id' },
+        { id: 'g', name: '' },
+        JSON.parse('{"id":"g","name":"G","nested":{"constructor":{"x":1}}}')
+      ]) {
+        assert.strictEqual(
+          getStartGigRefusal(baseState, hostile),
+          'invalid_payload'
+        )
+      }
+    })
+
+    it('returns festival_booking_locked on a Festival the Fame tier does not open', () => {
+      onLockedFestival()
+      assert.strictEqual(
+        getStartGigRefusal(baseState, VENUE),
+        'festival_booking_locked'
+      )
+    })
+
+    it('returns node_converted on a node a route overlay converted', () => {
+      onConvertedNode()
+      assert.strictEqual(getStartGigRefusal(baseState, VENUE), 'node_converted')
+    })
+
+    it('short-circuits in reducer order', () => {
+      onLockedFestival()
+      onConvertedNode()
+      assert.strictEqual(
+        getStartGigRefusal(baseState, { id: 'g' }),
+        'invalid_payload'
+      )
+      assert.strictEqual(
+        getStartGigRefusal(baseState, VENUE),
+        'festival_booking_locked'
+      )
+    })
+
+    it('rejects accessor-bearing venues without invoking their getters', () => {
+      let getterCalls = 0
+      const venue = { name: 'G' }
+      Object.defineProperty(venue, 'id', {
+        enumerable: true,
+        get: () => {
+          getterCalls++
+          return 'g'
+        }
+      })
+      assert.strictEqual(
+        getStartGigRefusal(baseState, venue),
+        'invalid_payload'
+      )
+      assert.strictEqual(getterCalls, 0)
+    })
+
+    it('agrees with handleStartGig on every reason', () => {
+      assert.notStrictEqual(handleStartGig(baseState, VENUE), baseState)
+      onConvertedNode()
+      assert.strictEqual(handleStartGig(baseState, VENUE), baseState)
+      onLockedFestival()
+      assert.strictEqual(handleStartGig(baseState, VENUE), baseState)
     })
   })
 

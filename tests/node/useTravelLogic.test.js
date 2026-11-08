@@ -525,6 +525,41 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 0)
   })
 
+  test('a same-node start the refusal check refuses routes to the map and stays retryable', t => {
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      checkStartGig: t.mock.fn(() => 'festival_booking_locked')
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.checkStartGig.mock.calls.length, 1)
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(mockHandleError.mock.calls.length, 0)
+    assert.deepEqual(
+      props.changeScene.mock.calls.map(call => call.arguments[0]),
+      ['OVERWORLD']
+    )
+
+    // The in-flight guard was not latched: a second click checks again.
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+    assert.equal(props.checkStartGig.mock.calls.length, 2)
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(props.advanceDay.mock.calls.length, 0)
+  })
+
   test('re-entry clicks after a requested gig start do not start it again', async () => {
     const props = createTravelLogicProps({
       player: {

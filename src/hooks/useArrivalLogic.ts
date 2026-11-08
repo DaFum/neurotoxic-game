@@ -60,12 +60,14 @@ type PendingArrival =
  * `isHandlingRef` stores the node id currently being processed, and cleanup
  * keyed on `player.currentNodeId` clears stale guards for subsequent arrivals.
  *
- * Routing and the single arrival save run in a post-commit `useEffect` keyed on
- * `[pendingRoute, currentScene]`. This ensures `saveGame` captures final
- * post-arrival state (not stale pre-commit state). If `advanceDay()` triggers
- * bankruptcy the reducer sets `currentScene = GAMEOVER`; the effect detects this
- * and short-circuits routing while still saving once — so GAMEOVER is never
- * overwritten by an arrival scene.
+ * Routing and the single arrival save run in a post-commit `useEffect`:
+ * `handleArrivalSequence` stores the work in `pendingArrivalRef` and bumps
+ * `routeNonce`, and the effect claims the ref once after the arrival dispatches
+ * commit. If `advanceDay()` triggers bankruptcy the reducer sets
+ * `currentScene = GAMEOVER`; the effect detects this and short-circuits
+ * routing while still saving once — so GAMEOVER is never overwritten by an
+ * arrival scene. A gig evaluation requests its save through the provider-owned
+ * `saveGameAfterStateCommit`, because `START_GIG` unmounts this hook.
  *
  * Gig-branch arrival (`isGigArrivalNode`) is evaluated in that effect too, so
  * the cancellation roll and its fame penalty read the committed post-tick
@@ -91,6 +93,7 @@ export const useArrivalLogic = ({
     updatePlayer,
     triggerEvent,
     startGig,
+    checkStartGig,
     changeScene,
     addToast,
     setPendingBandHQOpen,
@@ -201,11 +204,13 @@ export const useArrivalLogic = ({
       })
     }
 
-    // START_GIG owns the move to PRE_GIG. A failed request falls back to the
-    // overworld: PreGig/Gig with no `currentGig` cannot render.
+    // START_GIG owns the move to PRE_GIG. A failed or refused request falls
+    // back to the overworld: PreGig/Gig with no `currentGig` cannot render.
+    // `checkStartGig` runs the reducer's own refusal rule on the latest state;
+    // the reducer still re-checks at dispatch and stays authoritative.
     if (
       outcome.kind !== 'gig' ||
-      !requestArrivalGigStart(outcome.venue, startGig, addToast)
+      !requestArrivalGigStart(outcome.venue, startGig, addToast, checkStartGig)
     ) {
       changeScene(GAME_PHASES.OVERWORLD)
     }
@@ -217,6 +222,7 @@ export const useArrivalLogic = ({
     saveGameAfterStateCommit,
     changeScene,
     startGig,
+    checkStartGig,
     addToast,
     band,
     player,
@@ -366,7 +372,10 @@ export const useArrivalLogic = ({
       }
 
       // 5. Defer routing + save to a post-commit effect so:
-      //    a) saveGame reads final committed state (Task 8)
+      //    a) the save stays at the provider lifecycle boundary
+      //       (`saveGameAfterStateCommit` for a gig), surviving an unmount of
+      //       this hook; `dispatch` already writes `latestStateRef`
+      //       synchronously, so this is not about a stale snapshot
       //    b) GAMEOVER from advanceDay bankruptcy is detected before routing (Task 9)
       setRouteNonce(n => n + 1)
     } catch (e) {

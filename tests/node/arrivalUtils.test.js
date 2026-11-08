@@ -6,6 +6,7 @@ import {
   requestArrivalGigStart
 } from '../../src/utils/arrivalUtils'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
+import { logger } from '../../src/utils/logger'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({
@@ -349,6 +350,78 @@ describe('handleNodeArrival', () => {
       toastMessage
     )
     assert.ok(!toastMessage.includes('Failed to load song'))
+  })
+
+  test('requestArrivalGigStart refuses a start the check refuses', t => {
+    const warn = t.mock.method(logger, 'warn', () => {})
+    const mocks = getMocks()
+    const venue = { id: 'club', name: 'The Club' }
+    const startGig = mock.fn()
+    const checkStartGig = mock.fn(() => 'node_converted')
+
+    assert.strictEqual(
+      requestArrivalGigStart(venue, startGig, mocks.addToast, checkStartGig),
+      false
+    )
+    assert.strictEqual(checkStartGig.mock.calls.length, 1)
+    assert.strictEqual(checkStartGig.mock.calls[0].arguments[0], venue)
+    assert.strictEqual(startGig.mock.calls.length, 0)
+    assert.strictEqual(mocks.addToast.mock.calls.length, 0)
+    assert.strictEqual(warn.mock.calls.length, 1)
+    assert.deepStrictEqual(warn.mock.calls[0].arguments, [
+      'ArrivalLogic',
+      'START_GIG would be refused',
+      { refusal: 'node_converted' }
+    ])
+  })
+
+  test('requestArrivalGigStart starts unchanged when the check passes', () => {
+    const mocks = getMocks()
+    const venue = { id: 'club', name: 'The Club' }
+    const startGig = mock.fn()
+
+    assert.strictEqual(
+      requestArrivalGigStart(venue, startGig, mocks.addToast, () => null),
+      true
+    )
+    assert.strictEqual(startGig.mock.calls.length, 1)
+    assert.strictEqual(startGig.mock.calls[0].arguments[0], venue)
+    assert.strictEqual(mocks.addToast.mock.calls.length, 0)
+  })
+
+  test('requestArrivalGigStart runs the check after the start log and right before startGig', t => {
+    const order = []
+    t.mock.method(logger, 'info', () => order.push('log'))
+    t.mock.method(logger, 'warn', () => order.push('warn'))
+    const venue = { id: 'club', name: 'The Club' }
+
+    requestArrivalGigStart(
+      venue,
+      () => order.push('start'),
+      () => order.push('toast'),
+      () => {
+        order.push('check')
+        return null
+      }
+    )
+
+    assert.deepStrictEqual(order, ['log', 'check', 'start'])
+  })
+
+  test('requestArrivalGigStart reports a check that throws', () => {
+    const mocks = getMocks()
+    const venue = { id: 'club', name: 'The Club' }
+    const startGig = mock.fn()
+
+    assert.strictEqual(
+      requestArrivalGigStart(venue, startGig, mocks.addToast, () => {
+        throw new Error('check failed')
+      }),
+      false
+    )
+    assert.strictEqual(startGig.mock.calls.length, 0)
+    // The existing `catch` reports it through `handleError`'s toast.
+    assert.strictEqual(mocks.addToast.mock.calls.length, 1)
   })
 })
 

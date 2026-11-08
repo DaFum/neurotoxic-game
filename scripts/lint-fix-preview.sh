@@ -157,6 +157,26 @@ if [[ -s diff.patch ]]; then
 	has_diff=1
 fi
 
+# Known local limitation (#3604): .jscpd.json keeps `absolute: true` because
+# with `absolute: false` jscpd 5.4.2 reports paths relative to the scan root
+# (no `src/` prefix), so that attempt was reverted in #3605.
+# With absolute paths the ignore glob `**/.claude/**` also matches the checkout
+# itself when it lives under `.claude/worktrees/`, so nothing is scanned.
+# Verified 2026-11-07 with node_modules/.bin/jscpd 5.4.2 and the workflow's
+# jscpd call: effective ignore list `**/dist/**`, `**/.claude/**`,
+# `**/.agents/**`, `**/report/**`, `**/*.test.js`, `**/*.spec.js`,
+# `**/__tests__/**`, `**/tests/**`, `**/node_modules/**` (`--debug` prints it
+# and exits without scanning); statistics.total.sources was 0 in a
+# `.claude/worktrees` checkout and 876 in a checkout outside `.claude`. The
+# CI checkout path contains no `.claude` segment, so the limitation is local.
+# Candidate fixes: have the analyzer prepend the scan root to reported paths
+# so `absolute: false` becomes usable, or anchor the ignore list to the repo
+# root.
+# Local runs: delete jscpd-report/ first, check the scanned-file count
+# (statistics.total.sources in jscpd-report/jscpd-report.json), and use a
+# checkout outside `.claude` as a workaround. A duplicate count of zero does
+# not prove any file was scanned.
+#
 # Duplicate code — the analyzer is the only reader of jscpd-report.
 # Fail closed: only exit 0 with the line `status=ok total=<n>` is a result.
 # A missing report (jscpd writes one even when it finds nothing), an invalid

@@ -40,16 +40,16 @@ describe('Kabelsalat Header', () => {
     expect(timer?.classList).not.toContain('border-warning-yellow')
   })
 
-  test('critical styling takes precedence over the powered state at 10 seconds or less', () => {
+  test('powered state takes precedence over critical styling at every time', () => {
     const { container, rerender } = render(
       <HeaderTimer t={t} isPoweredOn timeLeft={11} />
     )
     const timer = container.firstElementChild
-    expect(timer?.classList).toContain('border-success-green')
-    for (const cls of CRITICAL) expect(timer?.classList).not.toContain(cls)
-
-    rerender(<HeaderTimer t={t} isPoweredOn timeLeft={10} />)
-    for (const cls of CRITICAL) expect(timer?.classList).toContain(cls)
-    expect(timer?.classList).not.toContain('border-success-green')
+    for (const timeLeft of [11, 10, 9, 0]) {
+      rerender(<HeaderTimer t={t} isPoweredOn timeLeft={timeLeft} />)
+      expect(timer?.classList).toContain('border-success-green')
+      expect(timer?.classList).toContain('text-success-green')
+      for (const cls of CRITICAL) expect(timer?.classList).not.toContain(cls)
+    }
   })
 })

@@ -372,6 +372,92 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         )
       })
 
+      test(
+        'script checks skip only the named support files of a skill',
+        {
+          skip:
+            process.platform === 'win32' &&
+            'executable bits are not supported on Windows'
+        },
+        async t => {
+          const tempDir = await fs.mkdtemp(
+            path.join(os.tmpdir(), 'skilltest-support-')
+          )
+          t.after(async () => {
+            await fs.rm(tempDir, { recursive: true, force: true })
+          })
+          const makeSkill = async (skillName, files) => {
+            const skillDir = path.join(tempDir, tree.name, 'skills', skillName)
+            await fs.mkdir(path.join(skillDir, 'scripts'), { recursive: true })
+            await fs.writeFile(
+              path.join(skillDir, 'SKILL.md'),
+              `---\nname: ${skillName}\ndescription: Use when testing script checks for ${skillName} support files.\n---\n`
+            )
+            for (const [file, contents, mode] of files) {
+              const filePath = path.join(skillDir, 'scripts', file)
+              await fs.writeFile(filePath, contents)
+              chmodSync(filePath, mode)
+            }
+            return skillDir
+          }
+          const scriptFindings = findings =>
+            findings
+              .filter(f =>
+                /^(Script is not executable|Executable script missing shebang): /.test(
+                  f.message
+                )
+              )
+              .map(f => `${f.level}: ${f.message}`)
+              .sort()
+
+          const brainstormingDir = await makeSkill('brainstorming', [
+            ['frame-template.html', '<!doctype html>\n', 0o644],
+            ['helper.js', ';(function () {})()\n', 0o644],
+            ['server.cjs', "require('http')\n", 0o644],
+            ['start-server.sh', '#!/usr/bin/env bash\n', 0o644],
+            ['format-report.mjs', 'console.log(1)\n', 0o755]
+          ])
+          const skilltestDir = await makeSkill('skilltest', [
+            ['skilltest-lib.mjs', 'export {}\n', 0o755]
+          ])
+          const otherDir = await makeSkill('other-skill', [
+            ['helper.js', ';(function () {})()\n', 0o644]
+          ])
+
+          const mod = await import(tree.libPath)
+          const unclassifiedWarnings = [
+            'warning: Executable script missing shebang: format-report.mjs',
+            'warning: Script is not executable: start-server.sh'
+          ]
+
+          const brainstorming = await mod.loadSkillRecord(brainstormingDir)
+          assert.deepEqual(
+            scriptFindings(brainstorming.findings),
+            unclassifiedWarnings
+          )
+          const skilltest = await mod.loadSkillRecord(skilltestDir)
+          assert.deepEqual(scriptFindings(skilltest.findings), [])
+          const other = await mod.loadSkillRecord(otherDir)
+          assert.deepEqual(scriptFindings(other.findings), [
+            'warning: Script is not executable: helper.js'
+          ])
+
+          // Without options every file is checked, support files included.
+          const direct = await mod.validateScripts(
+            path.join(brainstormingDir, 'scripts')
+          )
+          assert.deepEqual(
+            scriptFindings(direct),
+            [
+              ...unclassifiedWarnings,
+              'warning: Script is not executable: frame-template.html',
+              'warning: Script is not executable: helper.js',
+              'warning: Script is not executable: server.cjs'
+            ].sort()
+          )
+        }
+      )
+
       test('user-root resolution for CODEX_HOME and HOME/USERPROFILE', async t => {
         const tempGit = await createTempGitRepo(t)
         const tempHome = await fs.mkdtemp(

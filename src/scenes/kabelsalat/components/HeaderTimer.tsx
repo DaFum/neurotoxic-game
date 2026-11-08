@@ -17,10 +17,10 @@ export const HeaderTimer: FC<HeaderTimerProps> = React.memo(
     <div
       className={`flex items-center gap-4 px-4 py-2 border-2 transition-colors bg-void-black/50
     ${
-      timeLeft <= 10
-        ? 'border-error-red text-error-red animate-pulse'
-        : isPoweredOn
-          ? 'border-success-green text-success-green'
+      isPoweredOn
+        ? 'border-success-green text-success-green'
+        : timeLeft <= 10
+          ? 'border-error-red text-error-red animate-pulse'
           : 'border-warning-yellow text-warning-yellow'
     }`}
     >
