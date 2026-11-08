@@ -107,6 +107,26 @@ test('CrowdTextureManager', async t => {
   )
 
   await t.test(
+    'loadAssets - a disposed manager does not start loading',
+    async () => {
+      mockHandleError.mock.resetCalls()
+      mockLoadTextures.mock.resetCalls()
+      _loadTexturesImpl = async () => ({
+        idle: { destroy: mock.fn() },
+        mosh: { destroy: mock.fn() }
+      })
+
+      const manager = new CrowdTextureManager()
+      manager.dispose()
+      await manager.loadAssets()
+
+      assert.equal(mockLoadTextures.mock.calls.length, 0)
+      assert.equal(manager.textures.idle, null)
+      assert.equal(manager.textures.mosh, null)
+    }
+  )
+
+  await t.test(
     'overlapping loads - disposed manager leaves shared textures intact for the live one',
     async () => {
       mockHandleError.mock.resetCalls()
