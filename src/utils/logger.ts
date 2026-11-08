@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { getSafeUUID } from './crypto'
+import { getSafeUUID } from './safeUUID'
 import { systemClock } from './clock'
 import type { IClock } from './clock'
 import { LocalStorageAdapter } from './storageAdapter'
@@ -10,9 +10,8 @@ const LOG_LEVEL_KEY = 'neurotoxic_log_level'
 // The log level is a best-effort preference: reporting an unavailable store
 // through `handleError` would route logger noise back through the logger.
 //
-// Built lazily rather than at module scope. `storageAdapter` reaches the
-// logger through the error handler, so constructing here at import time would
-// hit the class before its own module finished evaluating.
+// Built on first use. No import cycle requires this: `storageAdapter`,
+// `clock` and `safeUUID` import nothing that reaches back into the logger.
 let levelStorage: LocalStorageAdapter | null = null
 const getLevelStorage = (): LocalStorageAdapter => {
   levelStorage ??= new LocalStorageAdapter()
@@ -65,8 +64,7 @@ export class Logger {
    *
    * @remarks
    * The persisted preference is read on first access rather than in the
-   * constructor: the storage adapter reaches this module through the error
-   * handler, so an eager read would run before that cycle settled.
+   * constructor, so importing the logger does not read storage.
    */
   get minLevel(): number {
     if (!this.#levelHydrated) {
