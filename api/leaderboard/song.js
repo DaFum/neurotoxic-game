@@ -5,8 +5,11 @@ import {
 } from '../../lib/redisDeadline.js'
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import {
+  connectRedisRequest,
+  isLeaderboardWriteRateLimited
+} from '../../lib/apiMiddleware.js'
+import {
   parseLeaderboardLimit,
-  isLeaderboardRateLimited,
   validateLeaderboardPlayer,
   fetchLeaderboard
 } from '../../lib/leaderboard.js'
@@ -52,18 +55,11 @@ export default async function handler(req, res) {
     let redisRequest
     try {
       redisRequest = createRedisRequest(sharedClient)
-      const request = redisRequest
-      const client = request.client
+      const client = redisRequest.client
       // Ensure connection
-      if (!client.isOpen) {
-        await withRedisDeadline(client, () => request.connect())
-      }
+      await connectRedisRequest(redisRequest)
 
-      if (
-        await withRedisDeadline(client, () =>
-          isLeaderboardRateLimited(req, 'song', 5, 60, client)
-        )
-      ) {
+      if (await isLeaderboardWriteRateLimited(req, 'song', client)) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -199,11 +195,8 @@ export default async function handler(req, res) {
 
       // Ensure connection
       redisRequest = createRedisRequest(sharedClient)
-      const request = redisRequest
-      const client = request.client
-      if (!client.isOpen) {
-        await withRedisDeadline(client, () => request.connect())
-      }
+      const client = redisRequest.client
+      await connectRedisRequest(redisRequest)
 
       const leaderboard = await fetchLeaderboard(
         `lb:song:${leaderboardId}`,
