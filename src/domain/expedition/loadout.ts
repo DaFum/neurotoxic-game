@@ -84,6 +84,7 @@ import {
 import type { ExpeditionCapabilityId } from '../../types/career'
 import {
   areExpeditionContractsCompatible,
+  getAvailableNativeContractTemplateIds,
   materializeContractConstraints
 } from './contracts'
 import { getExpeditionContractAccessLock } from './fame'
@@ -382,67 +383,6 @@ export const getAvailableSponsorOfferIds = (
     preparedMap.tourTypeId,
     starterPerkId
   ).map(offer => offer.offerId)
-
-/**
- * Classifies every native Contract template against the prepared route once.
- *
- * @param state - Current game state.
- * @param preparedMap - The prepared route.
- * @returns Template ids that pass every gate, and those refused only by the
- * Fame access tier.
- */
-const classifyNativeContractTemplates = (
-  state: GameState,
-  preparedMap: ExpeditionMap
-): { available: string[]; fameLocked: string[] } => {
-  // `performance_contract_pool` is what `festival_network` charges for: the
-  // performance-kind templates are the ones a Career books on its reputation
-  // rather than on the route it happens to have drawn.
-  const hasPerformancePool = isExpeditionCapabilityUnlocked(
-    state.career?.unlockedSetIds,
-    'performance_contract_pool'
-  )
-  const available: string[] = []
-  const fameLocked: string[] = []
-  for (const template of EXPEDITION_CONTRACTS_BY_ID.values()) {
-    if (template.kind === 'performance' && !hasPerformancePool) continue
-    if (materializeContractConstraints(template, preparedMap) === null) continue
-    if (getExpeditionContractAccessLock(state, template) === null) {
-      available.push(template.id)
-    } else {
-      fameLocked.push(template.id)
-    }
-  }
-  return { available, fameLocked }
-}
-
-/**
- * Native Contract template ids commitable against the prepared route.
- *
- * @remarks G4 owns native Contracts and extends this in place.
- */
-export const getAvailableNativeContractTemplateIds = (
-  state: GameState,
-  preparedMap: ExpeditionMap
-): readonly string[] =>
-  classifyNativeContractTemplates(state, preparedMap).available
-
-/**
- * Native Contract templates this Career could book but its Fame cannot.
- *
- * @param state - Current game state.
- * @param preparedMap - The prepared route.
- * @returns Template ids that pass every gate except the Fame access tier.
- *
- * @remarks
- * Tour Prep renders these as locked with the Fame they need, so a showcase is
- * visibly out of reach rather than silently missing from the list.
- */
-export const getExpeditionFameLockedContractTemplateIds = (
-  state: GameState,
-  preparedMap: ExpeditionMap
-): readonly string[] =>
-  classifyNativeContractTemplates(state, preparedMap).fameLocked
 
 /* -------------------------------------------------------------------------- */
 
