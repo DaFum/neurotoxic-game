@@ -618,12 +618,12 @@ test('Golden Path: Event cooldowns reset on ADVANCE_DAY', async t => {
       type: ActionTypes.ADD_COOLDOWN,
       payload: 'event_123'
     })
-    assert.ok(state.eventCooldowns.includes('event_123'))
+    assert.ok(Object.hasOwn(state.eventCooldowns, 'event_123'))
 
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
     assert.deepEqual(
       state.eventCooldowns,
-      [],
+      {},
       'Cooldowns cleared on day advance'
     )
   })

@@ -67,12 +67,18 @@ test('resolveEventChoice rejects non-finite cooldown durations', () => {
       buildState()
     ).delta.flags.addCooldown
 
-  assert.equal(cooldownFor(3), 'some_event:4')
-  // `typeof value === 'number'` accepts these, and the resulting
-  // `some_event:Infinity` / `:NaN` entry is rejected by every cooldown reader —
-  // a cooldown that neither applies nor expires. Fall back to permanent.
-  assert.equal(cooldownFor(Number.POSITIVE_INFINITY), 'some_event')
-  assert.equal(cooldownFor(Number.NaN), 'some_event')
+  assert.deepEqual(cooldownFor(3), { eventId: 'some_event', unlockDay: 4 })
+  // `typeof value === 'number'` accepts these, and a non-finite unlock day is
+  // rejected by every cooldown reader — a cooldown that neither applies nor
+  // expires. Fall back to the rest-of-today cooldown.
+  assert.deepEqual(cooldownFor(Number.POSITIVE_INFINITY), {
+    eventId: 'some_event',
+    unlockDay: 2
+  })
+  assert.deepEqual(cooldownFor(Number.NaN), {
+    eventId: 'some_event',
+    unlockDay: 2
+  })
 })
 
 const protectedRun = (money, protectedCareerCash) => ({

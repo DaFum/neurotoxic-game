@@ -81,7 +81,7 @@ export interface EventFlagsDelta {
   unlock?: unknown
   gameOver?: boolean
   addStoryFlag?: string
-  addCooldown?: string
+  addCooldown?: { eventId: string; unlockDay: number }
   addQuest?: unknown[]
   [key: string]: unknown
 }

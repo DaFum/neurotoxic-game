@@ -1,6 +1,6 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { finiteNumberOr, parseCooldownEntry } from '../gameState'
+import { finiteNumberOr, pruneEventCooldowns } from '../gameState'
 import { getAssetAggregateBoni } from '../assets/assetSelectors/assetFinancials'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
@@ -106,23 +106,14 @@ const selectEvent = (
   rng: () => number = secureRandom
 ) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
-  const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
   const currentDay = finiteNumberOr(gameState.player?.day, 0)
-  const activeCooldowns: string[] = []
-  for (const cd of eventCooldowns) {
-    const parsed = parseCooldownEntry(cd)
-    if (!parsed) continue
-    if (parsed.expiryDay === null || currentDay < parsed.expiryDay) {
-      activeCooldowns.push(parsed.key)
-    }
-  }
-
+  const cooldowns = gameState.eventCooldowns
   const cooldownsSet =
-    activeCooldowns.length > 0
-      ? new Set<string>(activeCooldowns)
-      : new Set<string>()
+    cooldowns instanceof Set
+      ? new Set<string>(cooldowns)
+      : new Set<string>(Object.keys(pruneEventCooldowns(cooldowns, currentDay)))
   const flagsSet =
     activeStoryFlags.length > 0
       ? new Set<string>(activeStoryFlags)
