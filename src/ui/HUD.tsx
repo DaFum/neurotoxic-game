@@ -8,7 +8,7 @@ import {
   BandStatusPanel,
   PlayerStatusCard
 } from './hud/shared/SharedHUDComponents'
-import { GigControlsCluster } from '../components/hud/GigControlsCluster'
+import { GigControlsCluster } from './hud/GigControlsCluster'
 import { translateLocation } from '../utils/locationI18n'
 import { GAME_PHASES } from '../context/gameConstants'
 import { readVanCondition } from '../utils/gameState'

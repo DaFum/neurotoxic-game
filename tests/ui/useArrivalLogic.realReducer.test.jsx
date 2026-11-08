@@ -73,7 +73,8 @@ vi.mock('../../src/context/GameState', () => ({
   })
 }))
 
-const { useArrivalLogic } = await import('../../src/hooks/useArrivalLogic')
+const { useArrivalLogic } =
+  await import('../../src/hooks/travel/useArrivalLogic')
 
 const REST = { id: 'node_rest', type: 'REST_STOP', layer: 1, x: 10, y: 10 }
 

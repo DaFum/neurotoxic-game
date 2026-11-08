@@ -1,7 +1,7 @@
-import type { RhythmSetlistEntry } from '../types/rhythmGame'
-import type { GameState, PostGigSummary, Venue } from '../types'
-import type { BrandDeal, SocialPostOption } from '../types/social'
-import type { PostGigFinancials } from '../types/economy'
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
+import type { GameState, PostGigSummary, Venue } from '../../types'
+import type { BrandDeal, SocialPostOption } from '../../types/social'
+import type { PostGigFinancials } from '../../types/economy'
 import {
   useCallback,
   useEffect,
@@ -10,19 +10,19 @@ import {
   useRef,
   useState
 } from 'react'
-import i18n from '../i18n'
-import { generateBrandOffers } from '../utils/brandDealLogic'
-import { secureRandom } from '../utils/crypto'
-import { logger } from '../utils/logger'
+import i18n from '../../i18n'
+import { generateBrandOffers } from '../../utils/brandDealLogic'
+import { secureRandom } from '../../utils/crypto'
+import { logger } from '../../utils/logger'
 import {
   useContinueHandler,
   useSocialPostHandler,
   useDealHandlers,
   useMinorHandlers,
   useProcessingGuard
-} from './postGig/handlers'
-import type { HandlerDispatchers } from './postGig/handlers/types'
-import type { PostGigPhase } from './postGig/usePostGigState'
+} from './handlers'
+import type { HandlerDispatchers } from './handlers/types'
+import type { PostGigPhase } from './usePostGigState'
 /** The post-gig handler surface returned by {@link usePostGigHandlers}. */
 interface UsePostGigHandlersReturn {
   isProcessingAction: boolean

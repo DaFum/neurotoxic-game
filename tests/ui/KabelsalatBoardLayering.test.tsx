@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { KabelsalatBoard } from '../../src/scenes/kabelsalat/components/KabelsalatBoard'
+import { KabelsalatBoard } from '../../src/components/minigames/kabelsalat/KabelsalatBoard'
 import type { TFunction } from 'i18next'
 
 const mockT = ((key: string) => key) as unknown as TFunction

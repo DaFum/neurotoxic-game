@@ -49,6 +49,7 @@ import {
   clamp0to100
 } from './clamps'
 import { calculateFameLevel } from './calculations'
+import { addEventCooldown } from './checks'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 
 /**
@@ -76,8 +77,6 @@ import type {
   RelationshipChange,
   EventDelta
 } from '../../types'
-
-const cooldownsSetCache = new WeakMap<string[], Set<string>>()
 
 /**
  * Applies an inventory delta to a single inventory slot. Used by the
@@ -215,7 +214,7 @@ type MutableGameState = GameState & {
   social: GameState['social'] & Record<string, unknown>
   activeStoryFlags: string[]
   pendingEvents: unknown[]
-  eventCooldowns: string[]
+  eventCooldowns: Record<string, number>
 }
 
 type DeltaPreviewState = {
@@ -1187,22 +1186,13 @@ export const applyEventDelta = (
         delta.flags.queueEvent
       ]
     }
-    if (typeof delta.flags.addCooldown === 'string') {
-      if (!Array.isArray(nextState.eventCooldowns)) {
-        nextState.eventCooldowns = []
-      }
-      let cachedSet = cooldownsSetCache.get(nextState.eventCooldowns)
-      if (!cachedSet) {
-        cachedSet = new Set(nextState.eventCooldowns)
-        cooldownsSetCache.set(nextState.eventCooldowns, cachedSet)
-      }
-
-      if (!cachedSet.has(delta.flags.addCooldown)) {
-        nextState.eventCooldowns = [
-          ...nextState.eventCooldowns,
-          delta.flags.addCooldown
-        ]
-      }
+    const addCooldown: unknown = delta.flags.addCooldown
+    if (isLooseRecord(addCooldown)) {
+      nextState.eventCooldowns = addEventCooldown(
+        isLooseRecord(nextState.eventCooldowns) ? nextState.eventCooldowns : {},
+        addCooldown.eventId,
+        addCooldown.unlockDay
+      )
     }
   }
 

@@ -187,7 +187,9 @@ describe('same-tick state reads through the real provider', () => {
     })
 
     expect(result.current.activeEventId).toBeNull()
-    expect(result.current.eventCooldowns).toContain(PROBE_EVENT.id)
+    expect(Object.hasOwn(result.current.eventCooldowns, PROBE_EVENT.id)).toBe(
+      true
+    )
   })
 
   test('every resolveEvent game-over save includes the earlier same-tick dispatch', () => {

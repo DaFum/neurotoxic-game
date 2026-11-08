@@ -50,10 +50,7 @@ import { getCriticallyInjuredBandMemberId } from './injuryGate'
 import { getAuthorityCrisisSignal } from './authority'
 import { getCriticalContractFailureSignal } from './contracts'
 import { getActiveExpeditionMap } from './map'
-import {
-  getExpeditionCheapestOnwardLegFuel,
-  canExpeditionFuelRescueHelp
-} from './travel'
+import { canExpeditionFuelRescueHelp } from './travel'
 import { getExpeditionTravelMap } from './routeOverlay'
 import {
   canExtractExpedition,
@@ -77,35 +74,6 @@ import type {
  * anti-frustration rule asks for, not the cheap default.
  */
 export const EXPEDITION_TOW_COST = 180 as const
-
-/**
- * Fuel a tow puts back in the tank.
- *
- * @remarks
- * Deliberately a partial refill rather than a full tank: a tow is the pricier,
- * less efficient escape, so it gets the run moving again without also solving
- * the next leg. Refuelling remains the cheaper, better option whenever it is
- * affordable.
- */
-export const EXPEDITION_TOW_FUEL_RESTORED = 35 as const
-
-/**
- * Litres a fuel rescue (paid tow or vehicle insurance claim) must leave in
- * the tank.
- *
- * @param state - Current game state.
- * @returns `max(EXPEDITION_TOW_FUEL_RESTORED, ceil(cheapest reachable leg))`.
- *
- * @remarks
- * A rescue sized below the cheapest reachable leg would charge for it and
- * leave the van stranded, so it covers that leg in whole litres. The caller
- * clamps to tank capacity.
- */
-export const getExpeditionRescueFuelFloor = (state: GameState): number =>
-  Math.max(
-    EXPEDITION_TOW_FUEL_RESTORED,
-    Math.ceil(finiteNumberOr(getExpeditionCheapestOnwardLegFuel(state), 0))
-  )
 
 /**
  * Order in which competing failure signals are resolved.

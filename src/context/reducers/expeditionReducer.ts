@@ -110,12 +110,14 @@ import {
 } from '../../domain/expedition/authority'
 import {
   EXPEDITION_TOW_COST,
-  EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
-  getExpeditionRescueFuelFloor,
   isCurrentExpeditionFailureId,
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
+import {
+  EXPEDITION_TOW_FUEL_RESTORED,
+  getExpeditionRescueFuelFloor
+} from '../../domain/expedition/rescueFuel'
 import { calculateRefuelCost } from '../../utils/economy'
 import { calculateFameLevel } from '../../utils/gameState/calculations'
 import {

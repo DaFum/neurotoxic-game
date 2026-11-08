@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'
-import { useArrivalLogic } from '../hooks/useArrivalLogic'
+import { useArrivalLogic } from '../hooks/travel/useArrivalLogic'
 import { createTourbusStageController } from '../components/stage/TourbusStageController'
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'

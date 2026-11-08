@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { GigControlsCluster } from '../../src/components/hud/GigControlsCluster'
+import { GigControlsCluster } from '../../src/ui/hud/GigControlsCluster'
 
 // Mock useAudioControl hook
 vi.mock('../../src/hooks/useAudioControl', () => ({

@@ -184,15 +184,17 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       // an entry (`id:Infinity`) that every cooldown reader then rejects as
       // malformed — a cooldown that never applies and never expires.
       const cooldownDays = finiteNumberOr(eff.value, 0)
-      if (cooldownDays > 0) {
-        const currentDay = finiteNumberOr(gameState?.player?.day, 0)
-        // `isOnCooldown` only honors a whole-day expiry suffix, so a fractional
-        // persisted day must not leak into the entry it would then reject.
-        const expiryDay = Math.floor(currentDay + cooldownDays)
-        delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
-      } else {
-        delta.flags.addCooldown = eff.eventId
-      }
+      // Without a known current day no unlock day can be computed; a guessed
+      // day 0 would yield an entry that has already expired, i.e. no cooldown.
+      const currentDay = gameState?.player?.day
+      if (!isFiniteNumber(currentDay)) return
+      // Whole days only. Without a positive duration the event is blocked for
+      // the rest of today: it unlocks on the next day, as ADD_COOLDOWN does.
+      const unlockDay =
+        cooldownDays > 0
+          ? Math.floor(currentDay + cooldownDays)
+          : Math.floor(currentDay) + 1
+      delta.flags.addCooldown = { eventId: eff.eventId, unlockDay }
     }
   },
   /**

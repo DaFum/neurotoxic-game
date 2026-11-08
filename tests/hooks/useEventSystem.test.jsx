@@ -471,7 +471,8 @@ describe('useEventSystem.resolveEvent provider-contract regression tests', () =>
   it('no-op continuation when eventCooldowns is seeded: ADD_COOLDOWN returns same root ref, SET_ACTIVE_EVENT(null) runs with that ref, outcome toast runs', async () => {
     const { StorageProvider } = await import('../../src/context/StorageContext')
     // Seed eventCooldowns with the event ID in normal state
-    latestStateRef.current.eventCooldowns = ['evt_regression']
+    // Unlock day far ahead, so ADD_COOLDOWN has nothing to extend.
+    latestStateRef.current.eventCooldowns = { evt_regression: 999 }
 
     const { result } = renderHook(() => useEventSystem(params), {
       wrapper: ({ children }) => (

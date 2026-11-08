@@ -4,7 +4,7 @@ import {
   SOCKET_Y,
   type CableId
 } from './kabelsalatConstants'
-import { getSafeUUID, secureRandom } from '../../utils/crypto'
+import { getSafeUUID, secureRandom } from '../crypto'
 import type { LightningSeed, SocketId } from '../../types/kabelsalat'
 
 const PATH_OFFSET_MULTIPLIER = 1.5

@@ -1,4 +1,4 @@
-# src/scenes/kabelsalat/components/plugs - Agent Instructions
+# src/components/minigames/kabelsalat/plugs - Agent Instructions
 
 ## IDs / Handlers
 

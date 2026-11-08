@@ -1,4 +1,4 @@
-# src/scenes/kabelsalat/components/sockets - Agent Instructions
+# src/components/minigames/kabelsalat/sockets - Agent Instructions
 
 ## IDs
 

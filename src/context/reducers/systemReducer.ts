@@ -17,7 +17,8 @@ import {
   sanitizeRivalBand,
   normalizeLoadedGameMap,
   migratePlayerLocation,
-  migrateLegacyVenueId
+  migrateLegacyVenueId,
+  sanitizeEventCooldowns
 } from './sanitizers/stateSanitizers'
 import {
   processAssetTick,
@@ -57,7 +58,7 @@ import {
   readMemberStamina,
   isForbiddenKey,
   finiteNumberOr,
-  parseCooldownEntry,
+  pruneEventCooldowns,
   sanitizeStringArray,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
@@ -274,7 +275,10 @@ export const handleLoadGame = (
       loadedState.pendingForeclosureNotices
     ),
     pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
-    eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
+    eventCooldowns: sanitizeEventCooldowns(
+      loadedState.eventCooldowns,
+      finiteNumberOr(mergedPlayer.day, 0)
+    ),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     terminalOutcome: sanitizeTerminalOutcome(loadedState.terminalOutcome),
     // Transient, so it is always set from the save (null when absent): a load
@@ -1005,19 +1009,13 @@ export const handleAdvanceDay = (
     cd => cd && cd.expiresOnDay > currentDay
   )
 
-  // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
-  // day, while legacy untimed daily cooldowns (no `:`) reset every day as
-  // before. Without this filter the new ego_management_retry / failure cooldown
-  // entries would silently evaporate on the next advanceDay.
-  // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
-  // Legacy format without ':' will be intentionally dropped every day.
-  // The entry grammar lives in `parseCooldownEntry`, shared with every
-  // cooldown reader, so expiry here cannot drift from what `isOnCooldown`
-  // enforces. A null expiryDay is a legacy untimed entry and still resets.
-  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
-    const parsed = parseCooldownEntry(cd)
-    return parsed?.expiryDay != null && parsed.expiryDay > currentDay
-  })
+  // Keep event cooldowns until their unlock day. Same-day cooldowns
+  // (ADD_COOLDOWN, untimed `cooldown` effects) unlock on the next day and
+  // drop here. `pruneEventCooldowns` shares its rule with `isOnCooldown`.
+  const activeEventCooldowns = pruneEventCooldowns(
+    state.eventCooldowns,
+    currentDay
+  )
 
   let nextState: GameState = {
     ...state,

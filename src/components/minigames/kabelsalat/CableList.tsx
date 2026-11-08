@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { CABLES } from '../kabelsalatConstants'
+import { CABLES } from '../../../utils/minigames/kabelsalatConstants'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
 
-import type { CableId } from '../kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 type CableListProps = {

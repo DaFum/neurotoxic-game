@@ -1,10 +1,10 @@
 import { logger } from '../../utils/logger'
 import { hasForbiddenKeysDeep } from '../../utils/objectUtils'
 import {
+  addEventCooldown,
   applyEventDelta,
   clampBandHarmony,
   finiteNumberOr,
-  isForbiddenKey,
   isLooseRecord,
   selectScoreDelta
 } from '../../utils/gameState'
@@ -226,26 +226,25 @@ export const handlePopPendingEvent = (
 }
 
 /**
- * Adds an event cooldown key when it is valid and not already present.
+ * Puts an event on cooldown for the rest of the current day: it unlocks on
+ * the next day, which `handleAdvanceDay` prunes it on.
  *
  * @param state - Current game state.
  * @param payload - Cooldown key to add.
- * @returns State with updated cooldowns, or the original state when rejected.
+ * @returns State with updated cooldowns, or the original state when the key
+ * is rejected or an existing cooldown already runs at least as long.
  */
 export const handleAddCooldown = (
   state: GameState,
   payload: string
 ): GameState => {
-  if (
-    typeof payload === 'string' &&
-    payload.length > 0 &&
-    !isForbiddenKey(payload) &&
-    !state.eventCooldowns.includes(payload)
-  ) {
-    return {
-      ...state,
-      eventCooldowns: [...state.eventCooldowns, payload]
-    }
-  }
-  return state
+  const unlockDay = Math.floor(finiteNumberOr(state.player?.day, 0)) + 1
+  const eventCooldowns = addEventCooldown(
+    state.eventCooldowns,
+    payload,
+    unlockDay
+  )
+  return eventCooldowns === state.eventCooldowns
+    ? state
+    : { ...state, eventCooldowns }
 }

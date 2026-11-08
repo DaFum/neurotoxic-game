@@ -84,39 +84,39 @@ function makeReactMemoMock(exportName, spy) {
 // Use async factories so we can import React for React.memo wrapping,
 // which is needed to simulate the real components' memoization behaviour.
 vi.mock(
-  '../../src/components/hud/ScoreDisplay.tsx',
+  '../../src/ui/hud/ScoreDisplay.tsx',
   makeReactMemoMock('ScoreDisplay', ScoreDisplaySpy)
 )
 vi.mock(
-  '../../src/components/hud/HealthBar.tsx',
+  '../../src/ui/hud/HealthBar.tsx',
   makeReactMemoMock('HealthBar', HealthBarSpy)
 )
 vi.mock(
-  '../../src/components/hud/ComboDisplay.tsx',
+  '../../src/ui/hud/ComboDisplay.tsx',
   makeReactMemoMock('ComboDisplay', ComboDisplaySpy)
 )
 vi.mock(
-  '../../src/components/hud/OverloadMeter.tsx',
+  '../../src/ui/hud/OverloadMeter.tsx',
   makeReactMemoMock('OverloadMeter', OverloadMeterSpy)
 )
 vi.mock(
-  '../../src/components/hud/LaneInputArea.tsx',
+  '../../src/ui/hud/LaneInputArea.tsx',
   makeReactMemoMock('LaneInputArea', LaneInputAreaSpy)
 )
 vi.mock(
-  '../../src/components/hud/ControlsHint.tsx',
+  '../../src/ui/hud/ControlsHint.tsx',
   makeReactMemoMock('ControlsHint', ControlsHintSpy)
 )
 vi.mock(
-  '../../src/components/hud/GigControlsCluster.tsx',
+  '../../src/ui/hud/GigControlsCluster.tsx',
   makeReactMemoMock('GigControlsCluster', GigControlsClusterSpy)
 )
 vi.mock(
-  '../../src/components/hud/ToxicModeFlash.tsx',
+  '../../src/ui/hud/ToxicModeFlash.tsx',
   makeReactMemoMock('ToxicModeFlash', ToxicModeFlashSpy)
 )
 vi.mock(
-  '../../src/components/hud/GameOverOverlay.tsx',
+  '../../src/ui/hud/GameOverOverlay.tsx',
   makeReactMemoMock('GameOverOverlay', GameOverOverlaySpy)
 )
 

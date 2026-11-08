@@ -28,6 +28,7 @@ import {
   clampVanBreakdownChance,
   wrapClockHour
 } from '../../src/utils/gameState/clamps'
+import { sanitizeEventCooldowns } from '../../src/context/reducers/sanitizers/stateSanitizers'
 
 test('wrapClockHour wraps fractional values correctly', () => {
   assert.strictEqual(wrapClockHour(11.5), 11.5)
@@ -74,9 +75,15 @@ test('isStashEntry accepts only null or positive integer stack counts', () => {
   assert.equal(isStashEntry({ stacks: 1.5 }), false)
 })
 
+// Legacy `id` / `id:expiryDay` saves are migrated on load, so the entry
+// grammar is pinned through that migration.
+const fromLegacy = cooldown => ({
+  eventCooldowns: sanitizeEventCooldowns([cooldown], 5),
+  player: { day: 5 }
+})
+
 test('isOnCooldown requires a whole-day expiry suffix', () => {
-  const onCooldown = cooldown =>
-    isOnCooldown({ eventCooldowns: [cooldown], player: { day: 5 } }, 'event_id')
+  const onCooldown = cooldown => isOnCooldown(fromLegacy(cooldown), 'event_id')
 
   assert.equal(onCooldown('event_id:40'), true)
   assert.equal(onCooldown('event_id:5'), false)
@@ -90,19 +97,19 @@ test('isOnCooldown requires a whole-day expiry suffix', () => {
   // Digits alone are not enough: a 400-digit suffix converts to Infinity,
   // which `currentDay < expiry` would read as a permanent cooldown.
   assert.equal(onCooldown(`event_id:${'9'.repeat(400)}`), false)
-  // No suffix at all still means a permanent (legacy) cooldown.
+  // No suffix at all is a cooldown for the rest of the loaded day.
   assert.equal(onCooldown('event_id'), true)
 })
 
 test('isOnCooldown honours event ids containing colons', () => {
   const onCooldown = (cooldown, eventId) =>
-    isOnCooldown({ eventCooldowns: [cooldown], player: { day: 5 } }, eventId)
+    isOnCooldown(fromLegacy(cooldown), eventId)
 
   // The writer serializes `${eventId}:${expiryDay}`, so only the last segment
   // is the expiry — a namespaced id keeps its colons.
   assert.equal(onCooldown('namespace:event:40', 'namespace:event'), true)
   assert.equal(onCooldown('namespace:event:5', 'namespace:event'), false)
-  // An untimed namespaced id stays a permanent (legacy) cooldown.
+  // An untimed namespaced id is a cooldown for the rest of the loaded day.
   assert.equal(onCooldown('namespace:event', 'namespace:event'), true)
   // The prefix alone is not the key.
   assert.equal(onCooldown('namespace:event:40', 'namespace'), false)

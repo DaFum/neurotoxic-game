@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { TFunction } from 'i18next'
 import { AutoplayOverlay } from '../../src/scenes/intro/components/AutoplayOverlay'
-import { SocketItem } from '../../src/scenes/kabelsalat/components/SocketItem'
+import { SocketItem } from '../../src/components/minigames/kabelsalat/SocketItem'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },

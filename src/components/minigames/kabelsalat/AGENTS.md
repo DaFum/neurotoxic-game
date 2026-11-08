@@ -1,4 +1,4 @@
-# src/scenes/kabelsalat/components - Agent Instructions
+# src/components/minigames/kabelsalat - Agent Instructions
 
 ## Contracts
 

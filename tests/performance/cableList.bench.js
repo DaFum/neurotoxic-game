@@ -1,6 +1,6 @@
 import React from 'react'
 import { renderToString } from 'react-dom/server'
-import { CableList } from '../../src/scenes/kabelsalat/components/CableList.tsx'
+import { CableList } from '../../src/components/minigames/kabelsalat/CableList.tsx'
 import { performance } from 'perf_hooks'
 
 const connections = {

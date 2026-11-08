@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useKabelsalatBackground } from '../../src/scenes/kabelsalat/hooks/useKabelsalatBackground'
+import { useKabelsalatBackground } from '../../src/hooks/minigames/kabelsalat/useKabelsalatBackground'
 import { logger } from '../../src/utils/logger'
 import { resolveGenImageUrl } from '../../src/utils/imageGen'
 import {

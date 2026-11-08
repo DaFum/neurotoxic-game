@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useKabelsalatState } from '../../src/scenes/kabelsalat/useKabelsalatState'
+import { useKabelsalatState } from '../../src/hooks/minigames/kabelsalat/useKabelsalatState'
 import {
   FakeImage,
   installFakeImage,

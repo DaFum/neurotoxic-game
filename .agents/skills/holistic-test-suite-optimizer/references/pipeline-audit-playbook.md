@@ -8,16 +8,16 @@ If the current symptom is a failing, flaky, hanging, OOMing, or CI-only suite, r
 
 Start by reading the files that define the current test topology:
 
-| Area              | Files                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| Package scripts   | `package.json`                                                                                    |
-| Fast local runner | `scripts/run-fast-tests.mjs`                                                                      |
-| Local full runner | `scripts/run-all-tests.mjs`                                                                       |
-| Node runner       | `scripts/run-node-tests.mjs`, `scripts/utils/parallelism.mjs`                                     |
-| Vitest runner     | `scripts/run-vitest-ui.mjs`, `vitest.config.js`, `vitest.config.node.js`, `vitest.config.perf.js` |
-| Playwright runner | `playwright.config.js`, `e2e/**`                                                                  |
-| CI topology       | `.github/workflows/test.yml`                                                                      |
-| Suite scope rules | relevant `tests/**/AGENTS.md` files                                                               |
+| Area              | Files                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Package scripts   | `package.json`                                                                             |
+| Fast local runner | `scripts/run-fast-tests.mjs`                                                               |
+| Local full runner | `scripts/run-all-tests.mjs`                                                                |
+| Node runner       | `scripts/run-node-tests.mjs`, `scripts/utils/parallelism.mjs`                              |
+| Vitest runner     | `scripts/run-vitest-ui.mjs`, `vitest.config.js` (projects `ui`, `node`, `perf`, `tooling`) |
+| Playwright runner | `playwright.config.js`, `e2e/**`                                                           |
+| CI topology       | `.github/workflows/test.yml`                                                               |
+| Suite scope rules | relevant `tests/**/AGENTS.md` files                                                        |
 
 For the current repo command map, read `references/repo-test-topology.md`. Do not assume Playwright, locale, or perf tests are part of `pnpm run test:all`; confirm the package scripts first.
 

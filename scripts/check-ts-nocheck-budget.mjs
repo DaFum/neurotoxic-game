@@ -45,7 +45,6 @@ function toDomain(filePath) {
   if (head === 'utils' && second === 'audio') return 'utils/audio'
   if (head === 'hooks' && second === 'minigames') return 'hooks/minigames'
   if (head === 'hooks' && second === 'rhythmGame') return 'hooks/rhythmGame'
-  if (head === 'scenes' && second === 'kabelsalat') return 'scenes/kabelsalat'
   return head
 }
 

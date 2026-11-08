@@ -19,7 +19,6 @@ import {
 import {
   EXPEDITION_FAILURE_PRIORITY,
   EXPEDITION_TOW_COST,
-  EXPEDITION_TOW_FUEL_RESTORED,
   buildExpeditionFailureId,
   composeExpeditionFailureSignal,
   deriveExpeditionPendingFailure,
@@ -28,6 +27,7 @@ import {
   getExpeditionMobilityFailureSignal,
   isCurrentExpeditionFailureId
 } from '../../src/domain/expedition/failure'
+import { EXPEDITION_TOW_FUEL_RESTORED } from '../../src/domain/expedition/rescueFuel'
 import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
 import { calculateRefuelCost } from '../../src/utils/economy'
 import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash'

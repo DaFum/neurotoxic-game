@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { SocketItem } from './SocketItem.tsx'
-import type { CableId } from '../kabelsalatConstants'
+import type { CableId } from '../../../utils/minigames/kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketListProps {

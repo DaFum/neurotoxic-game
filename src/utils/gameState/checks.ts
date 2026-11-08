@@ -1,6 +1,6 @@
-import { finiteNumberOr } from '../finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 
-import { isLooseRecord } from '../objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../objectUtils'
 
 import type { StashEntry } from '../../types'
 
@@ -83,9 +83,11 @@ export const hasActiveSponsorship = (
 const EXPIRY_DAY_PATTERN = /^\d+$/
 
 /**
- * Parses a persisted `key` or `key:expiryDay` cooldown entry.
+ * Parses a legacy `key` or `key:expiryDay` cooldown entry. Saves from before
+ * `eventCooldowns` became an `eventId -> unlock day` record stored these
+ * strings; `sanitizeEventCooldowns` uses this to migrate them on load.
  *
- * @param entry - Untrusted cooldown entry from persisted state.
+ * @param entry - Untrusted legacy cooldown entry from a persisted save.
  * @returns The cooldown key with its expiry day (`null` for a permanent legacy
  * entry), or `null` when the entry does not match the grammar.
  *
@@ -103,8 +105,7 @@ const EXPIRY_DAY_PATTERN = /^\d+$/
  * reader would treat as a permanent cooldown. An entry whose last segment is
  * not a day number is therefore a key in its own right with no expiry, which
  * keeps untimed colon ids readable while still refusing to honour a corrupted
- * suffix as an expiry. Shared by every cooldown reader so the grammar cannot
- * drift between them.
+ * suffix as an expiry.
  */
 export const parseCooldownEntry = (
   entry: unknown
@@ -127,40 +128,99 @@ export const parseCooldownEntry = (
 }
 
 /**
+ * Reads one cooldown's unlock day from an untrusted cooldown record.
+ *
+ * @param cooldowns - Cooldown record (`eventId -> unlock day`).
+ * @param key - Cooldown key to read.
+ * @returns The unlock day, or `null` when the key is not an own, finite entry.
+ */
+const readUnlockDay = (
+  cooldowns: Readonly<Record<string, unknown>>,
+  key: string
+): number | null => {
+  if (isForbiddenKey(key) || !Object.hasOwn(cooldowns, key)) return null
+  const unlockDay = cooldowns[key]
+  return isFiniteNumber(unlockDay) ? unlockDay : null
+}
+
+/**
  * Checks whether an event id or scoped event key is still on cooldown.
  *
- * @param gameState - State slice containing cooldown entries and the current day.
+ * @param gameState - State slice with the cooldown record (or the active-id
+ * Set event selection builds) and the current day.
  * @param eventId - Event id to check.
  * @param contextId - Optional context suffix used for scoped cooldown keys.
- * @returns True when a matching cooldown exists and has not expired.
+ * @returns True while the current day is before the key's unlock day.
  */
 export const isOnCooldown = (
   gameState: {
-    eventCooldowns?: string[] | Set<string>
+    eventCooldowns?: Readonly<Record<string, number>> | ReadonlySet<string>
     player?: { day?: number }
   },
   eventId: string,
   contextId: string = ''
 ): boolean => {
-  if (!gameState.eventCooldowns) return false
+  const cooldowns = gameState.eventCooldowns
+  const keys = contextId ? [`${eventId}_${contextId}`, eventId] : [eventId]
+
+  // Event selection hands conditions a Set that already holds only the ids
+  // whose cooldown is still running.
+  if (cooldowns instanceof Set) return keys.some(key => cooldowns.has(key))
+  if (!isLooseRecord(cooldowns)) return false
 
   const currentDay = finiteNumberOr(gameState.player?.day, 0)
+  return keys.some(key => {
+    const unlockDay = readUnlockDay(cooldowns, key)
+    return unlockDay !== null && currentDay < unlockDay
+  })
+}
 
-  // Arrays and Sets share the iterable interface, so no conversion is needed.
-  for (const cd of gameState.eventCooldowns) {
-    const parsed = parseCooldownEntry(cd)
-    if (!parsed) continue
-    const { key, expiryDay } = parsed
-
-    // Exact match
-    const isMatch =
-      (contextId && key === `${eventId}_${contextId}`) || key === eventId
-    if (isMatch) {
-      if (expiryDay === null) return true
-      if (currentDay < expiryDay) return true
-    }
+/**
+ * Records a cooldown, keeping the later unlock day when one already exists.
+ *
+ * @param cooldowns - Current cooldown record.
+ * @param eventId - Cooldown key to add.
+ * @param unlockDay - Day the key unlocks again.
+ * @returns A new record, or the same reference when the key is invalid or the
+ * existing cooldown already runs at least as long.
+ */
+export const addEventCooldown = (
+  cooldowns: Readonly<Record<string, number>>,
+  eventId: unknown,
+  unlockDay: unknown
+): Record<string, number> => {
+  if (
+    typeof eventId !== 'string' ||
+    eventId === '' ||
+    isForbiddenKey(eventId) ||
+    !isFiniteNumber(unlockDay)
+  ) {
+    return cooldowns
   }
-  return false
+  const current = readUnlockDay(cooldowns, eventId)
+  if (current !== null && current >= unlockDay) return cooldowns
+  return { ...cooldowns, [eventId]: unlockDay }
+}
+
+/**
+ * Copies the cooldowns that are still running on `currentDay`.
+ *
+ * @param cooldowns - Untrusted cooldown record.
+ * @param currentDay - Day to evaluate against.
+ * @returns A new record of own, finite entries whose unlock day is after
+ * `currentDay`; forbidden prototype keys are skipped.
+ */
+export const pruneEventCooldowns = (
+  cooldowns: unknown,
+  currentDay: number
+): Record<string, number> => {
+  const active: Record<string, number> = {}
+  if (!isLooseRecord(cooldowns)) return active
+  for (const key of Object.keys(cooldowns)) {
+    const unlockDay = readUnlockDay(cooldowns, key)
+    if (unlockDay !== null && currentDay < unlockDay) active[key] = unlockDay
+  }
+  return active
 }
 
 /**

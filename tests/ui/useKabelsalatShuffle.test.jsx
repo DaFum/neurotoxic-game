@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useKabelsalatShuffle } from '../../src/scenes/kabelsalat/hooks/useKabelsalatShuffle'
+import { useKabelsalatShuffle } from '../../src/hooks/minigames/kabelsalat/useKabelsalatShuffle'
 
 const CONNECTIONS = {}
 const WINNING_REF = { current: false }

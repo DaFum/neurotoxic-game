@@ -8,8 +8,6 @@
     "e2e/**/*.{js,ts}",
     "tests/**/*.{js,jsx,ts,tsx,mjs,cjs}",
     "*.config.{js,ts}",
-    "vitest.config.node.js",
-    "vitest.config.perf.js",
     "dot-reporter.mjs",
     "vitest-dot-reporter.mjs"
   ],
@@ -32,11 +30,7 @@
     "config": ["vite.config.js"]
   },
   "vitest": {
-    "config": [
-      "vitest.config.js",
-      "vitest.config.node.js",
-      "vitest.config.perf.js"
-    ]
+    "config": ["vitest.config.js"]
   },
   "playwright": {
     "config": ["playwright.config.js"]

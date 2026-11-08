@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import { Header } from '../../src/scenes/kabelsalat/components/Header.tsx'
-import { HeaderTimer } from '../../src/scenes/kabelsalat/components/HeaderTimer.tsx'
+import { Header } from '../../src/components/minigames/kabelsalat/Header.tsx'
+import { HeaderTimer } from '../../src/components/minigames/kabelsalat/HeaderTimer.tsx'
 
 const t = (key, options) => (options ? `${key}:${options.count}` : key)
 const CRITICAL = ['border-error-red', 'text-error-red', 'animate-pulse']

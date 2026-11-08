@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { ToxicHazardTicker } from '../../src/components/hud/ToxicHazardTicker.tsx'
+import { ToxicHazardTicker } from '../../src/ui/hud/ToxicHazardTicker.tsx'
 
 vi.mock('../../src/ui/shared', () => ({
   HazardTicker: ({ message }) => (

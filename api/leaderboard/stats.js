@@ -6,8 +6,11 @@ import {
 import { hasPrototypePollution } from '../../lib/apiUtils.js'
 import { MAX_PUBLISHED_BALANCE } from '../../lib/leaderboardLimits.js'
 import {
+  connectRedisRequest,
+  isLeaderboardWriteRateLimited
+} from '../../lib/apiMiddleware.js'
+import {
   parseLeaderboardLimit,
-  isLeaderboardRateLimited,
   validateLeaderboardPlayer,
   fetchLeaderboard
 } from '../../lib/leaderboard.js'
@@ -126,17 +129,10 @@ export default async function handler(req, res) {
     let redisRequest
     try {
       redisRequest = createRedisRequest(sharedClient)
-      const request = redisRequest
-      const client = request.client
-      if (!client.isOpen) {
-        await withRedisDeadline(client, () => request.connect())
-      }
+      const client = redisRequest.client
+      await connectRedisRequest(redisRequest)
 
-      if (
-        await withRedisDeadline(client, () =>
-          isLeaderboardRateLimited(req, 'stats', 5, 60, client)
-        )
-      ) {
+      if (await isLeaderboardWriteRateLimited(req, 'stats', client)) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -154,12 +150,7 @@ export default async function handler(req, res) {
       }
 
       const body = /** @type {Record<string, unknown>} */ (req.body)
-      const {
-        playerId,
-        playerName,
-        money,
-        revision
-      } = body
+      const { playerId, playerName, money, revision } = body
 
       // Basic Type Checks
       if (
@@ -263,11 +254,8 @@ export default async function handler(req, res) {
       }
 
       redisRequest = createRedisRequest(sharedClient)
-      const request = redisRequest
-      const client = request.client
-      if (!client.isOpen) {
-        await withRedisDeadline(client, () => request.connect())
-      }
+      const client = redisRequest.client
+      await connectRedisRequest(redisRequest)
 
       const leaderboard = await fetchLeaderboard(`lb:${stat}`, limit, client)
 
