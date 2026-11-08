@@ -14,7 +14,7 @@ import {
 } from '../../src/utils/gameState'
 import { eventEngine } from '../../src/utils/eventEngine'
 
-const HALF_ROLLS = { next: () => 0.5 }
+const HALF_ROLLS = Array.from({ length: 64 }, () => 0.5)
 
 const stateOnDay = (day, eventCooldowns) => {
   const base = createInitialState()
@@ -181,6 +181,16 @@ test('cooldown effect writes a structured unlock day into the delta', () => {
 
   const applied = applyEventDelta(gameState, timed)
   assert.deepEqual(applied.eventCooldowns, { evt: 8 })
+})
+
+test('cooldown effect without a known current day writes no cooldown', () => {
+  // A guessed day 0 would produce an entry that has already expired, which is
+  // a cooldown that silently never applies.
+  const effect = { type: 'cooldown', eventId: 'evt', value: 3 }
+  for (const gameState of [null, { player: {} }, { player: { day: NaN } }]) {
+    const delta = eventEngine.applyResult(effect, {}, gameState)
+    assert.equal(delta.flags.addCooldown, undefined)
+  }
 })
 
 test('applyEventDelta ignores malformed or hostile cooldown flags', () => {
