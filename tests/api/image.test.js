@@ -77,7 +77,9 @@ describe('protected image proxy', () => {
   test('budget allows the hundredth image and blocks the next', async () => {
     client.eval.mockResolvedValueOnce(100).mockResolvedValueOnce(101)
     expect((await request()).status).toHaveBeenCalledWith(200)
-    expect((await request()).status).toHaveBeenCalledWith(429)
+    const limited = await request()
+    expect(limited.status).toHaveBeenCalledWith(429)
+    expect(limited.json).toHaveBeenCalledWith({ error: 'Too many requests' })
     expect(client.eval).toHaveBeenCalledWith(RATE_LIMIT_SCRIPT, {
       keys: ['rate_limit:image:127.0.0.1'],
       arguments: ['60']
@@ -91,6 +93,9 @@ describe('protected image proxy', () => {
       client[operation].mockRejectedValue(new Error(secret))
       const res = await request()
       expect(res.status).toHaveBeenCalledWith(503)
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Image generation unavailable'
+      })
       expect(JSON.stringify(res.json.mock.calls)).not.toContain(secret)
       expect(fetchMock).not.toHaveBeenCalled()
     }
