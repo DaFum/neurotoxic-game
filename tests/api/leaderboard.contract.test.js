@@ -316,6 +316,57 @@ describe.each(endpoints)('$name leaderboard contracts', endpoint => {
     expect(res.json.mock.lastCall).toEqual([{ error: 'Too many requests' }])
   })
 
+  test('POST answers 429 before validating the body', async () => {
+    mockClient.eval.mockResolvedValueOnce(6)
+    const { res } = createApiRouteMocks()
+    await handler({ method: 'POST', body: null }, res)
+
+    expect(res.status.mock.calls).toEqual([[429]])
+    expect(res.json.mock.calls).toEqual([[{ error: 'Too many requests' }]])
+    expect(mockClient.eval).toHaveBeenCalledTimes(1)
+  })
+
+  test('POST fails closed with 500 when the rate limiter errors', async () => {
+    const failure = new Error('limiter down')
+    mockClient.eval.mockRejectedValueOnce(failure)
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { res } = createApiRouteMocks()
+    let logged
+    try {
+      await handler(
+        {
+          method: 'POST',
+          body: { ...endpoint.payload, playerId: 'player1', playerName: 'P' }
+        },
+        res
+      )
+      logged = [...log.mock.calls]
+    } finally {
+      log.mockRestore()
+    }
+
+    expect(res.status.mock.calls).toEqual([[500]])
+    expect(res.json.mock.calls).toEqual([[{ error: 'Internal Server Error' }]])
+    expect(logged).toEqual([
+      [
+        endpoint.name === 'song'
+          ? 'Song score update error:'
+          : 'Stats update error:',
+        failure
+      ]
+    ])
+    expect(mockClient.eval).toHaveBeenCalledTimes(1)
+    expect(mockClient.multi).not.toHaveBeenCalled()
+  })
+
+  test('GET never consults the rate limiter', async () => {
+    const { res } = createApiRouteMocks()
+    await handler({ method: 'GET', query: endpoint.query }, res)
+
+    expect(res.json).toHaveBeenCalledWith([])
+    expect(mockClient.eval).not.toHaveBeenCalled()
+  })
+
   test('the rate-limit script repairs a counter that has no expiry', () => {
     expect(RATE_LIMIT_SCRIPT).toMatch(/INCR/)
     expect(RATE_LIMIT_SCRIPT).toMatch(/TTL.*< 0/)
