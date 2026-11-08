@@ -196,7 +196,7 @@ export const BASE_STATE = {
   toasts: [],
   setlist: [],
   activeStoryFlags: [],
-  eventCooldowns: [],
+  eventCooldowns: {},
   venueBlacklist: [],
   activeQuests: [],
   questCooldowns: [],

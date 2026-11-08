@@ -18,11 +18,7 @@ const RESTRICTED_IMPORTS = {
         '**/components/stage/utils',
         '**/components/stage/utils.ts',
         '**/hooks/minigames/constants',
-        '**/hooks/minigames/constants.ts',
-        '**/scenes/kabelsalat/constants',
-        '**/scenes/kabelsalat/constants.ts',
-        '**/scenes/kabelsalat/utils',
-        '**/scenes/kabelsalat/utils.ts'
+        '**/hooks/minigames/constants.ts'
       ],
       message:
         'Import from domain-qualified modules instead (stageRenderUtils, minigameConstants, kabelsalatConstants, kabelsalatUtils).'
