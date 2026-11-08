@@ -164,16 +164,6 @@
     ["src/utils/traitUtils.ts", "src/context/reducers/toastSanitizers.ts"],
     ["src/utils/traitUtils.ts", "src/utils/gameState/clamps.ts"]
   ],
-  "logging-error-handling": [
-    ["src/utils/crypto.ts", "src/utils/errorHandler.ts"],
-    ["src/utils/errorHandler.ts", "src/utils/errors/handler.ts"],
-    ["src/utils/errorHandler.ts", "src/utils/errors/index.ts"],
-    ["src/utils/errors/handler.ts", "src/utils/logger.ts"],
-    ["src/utils/errors/index.ts", "src/utils/errors/handler.ts"],
-    ["src/utils/errors/index.ts", "src/utils/errors/safeStorage.ts"],
-    ["src/utils/errors/safeStorage.ts", "src/utils/errors/handler.ts"],
-    ["src/utils/logger.ts", "src/utils/crypto.ts"]
-  ],
   "quest-lifecycle": [
     ["src/domain/questAdd.ts", "src/domain/questComplete.ts"],
     ["src/domain/questAdvance.ts", "src/domain/questComplete.ts"],
@@ -181,11 +171,5 @@
     ["src/domain/questComplete.ts", "src/utils/questProgress.ts"],
     ["src/utils/questProgress.ts", "src/domain/questAdvance.ts"],
     ["src/utils/questProgress.ts", "src/domain/questComplete.ts"]
-  ],
-  "audio-facade": [
-    ["src/utils/audio/AudioManager.ts", "src/utils/audio/audioEngine.ts"],
-    ["src/utils/audio/audioEngine.ts", "src/utils/audio/AudioManager.ts"],
-    ["src/utils/audio/audioEngine.ts", "src/utils/audio/audioService.ts"],
-    ["src/utils/audio/audioService.ts", "src/utils/audio/AudioManager.ts"]
   ]
 }
