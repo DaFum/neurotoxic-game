@@ -6,6 +6,11 @@
 - Tests whose primary subject is repository tooling belong in `TOOLING_NODE_TESTS` (or the `tooling` Vitest project) and run through `pnpm run test:tooling`, not the production-oriented test commands.
 - Never place `node:test` suites directly under `tests/`: `run-node-tests.mjs` only discovers `.test.js` / `.spec.js` files in `tests/{node,components,context,events,golden-path,reducers}/**`; the two locale suites live under `tests/locale/` and use the locale scripts. `tests/node/nodeTestDiscovery.test.js` enforces these ownership boundaries.
 
+## Runtime import graph
+
+- `tests/node/runtimeImportCycleGate.test.js` is the production gate on real `src` in the ordinary `test:node` tier. It owns the checks against `.ci/runtime-import-cycle-baseline.json`, the graph completeness floor and the declaration-only allowlist.
+- `tests/node/runtimeImportGraph.test.js` owns the builder `scripts/utils/runtime-import-graph.mjs` and runs in `TOOLING_NODE_TESTS`. Pin builder behaviour there with temporary-workspace fixtures, never with real `src` files.
+
 ## Mock gotchas: Pixi / stage
 
 - Pixi mocks must include `Assets.cache.get()` in tests that import the real `stageRenderUtils` `loadTexture` / `loadTextures` path or assert cached-texture behavior; `stageRenderUtils` calls `Assets.cache?.get(url)`, so omitting it silently skips that path.
