@@ -4,6 +4,7 @@ import {
   isLeaderboardRateLimited,
   RATE_LIMIT_SCRIPT
 } from '../../lib/leaderboard.js'
+import { REDIS_DEADLINE_MS } from '../../lib/redisDeadline.js'
 
 const client = vi.hoisted(() => ({
   duplicate() {
@@ -132,6 +133,50 @@ describe('protected image proxy', () => {
       }
     }
   )
+  test.each(['connect', 'eval'])(
+    'Redis %s hang fails closed within REDIS_DEADLINE_MS',
+    async operation => {
+      vi.useFakeTimers()
+      try {
+        client.isOpen = operation !== 'connect'
+        client[operation].mockReturnValue(new Promise(() => {}))
+        let settled = false
+        const response = request().then(res => {
+          settled = true
+          return res
+        })
+        await vi.advanceTimersByTimeAsync(REDIS_DEADLINE_MS)
+        expect(settled).toBe(true)
+        const res = await response
+        expect(res.status).toHaveBeenCalledWith(503)
+        expect(res.json).toHaveBeenCalledWith({
+          error: 'Image generation unavailable'
+        })
+        expect(fetchMock).not.toHaveBeenCalled()
+      } finally {
+        vi.useRealTimers()
+      }
+    }
+  )
+  test('connect and rate-limit check each get their own Redis deadline', async () => {
+    vi.useFakeTimers()
+    try {
+      const step = REDIS_DEADLINE_MS - 100
+      client.isOpen = false
+      client.connect.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, step))
+      )
+      client.eval.mockImplementation(
+        () => new Promise(resolve => setTimeout(() => resolve(1), step))
+      )
+      const response = request()
+      await vi.advanceTimersByTimeAsync(2 * step)
+      expect((await response).status).toHaveBeenCalledWith(200)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   test('clears the Redis deadline after a rate-limit decision', async () => {
     vi.useFakeTimers()
     try {
