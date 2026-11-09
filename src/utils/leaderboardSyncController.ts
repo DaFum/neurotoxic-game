@@ -14,10 +14,7 @@
  */
 import { finiteNumberOr } from './finiteNumber'
 import type { IClock } from './clock'
-import type {
-  LeaderboardStatsPayload,
-  LeaderboardStatsSyncResult
-} from '../types/leaderboard'
+import type { LeaderboardStatsPayload } from '../types/leaderboard'
 
 /**
  * The stats endpoint allows 5 requests a minute per IP, so one player never
@@ -308,9 +305,9 @@ export const createLeaderboardSyncController = (
         body: JSON.stringify({ ...payload, revision: allocateRevision() }),
         signal
       })
-      const body = (
-        response.ok ? await response.json().catch(() => null) : null
-      ) as LeaderboardStatsSyncResult | null
+      const body: unknown = response.ok
+        ? await response.json().catch(() => null)
+        : null
       return { response, body }
     }
     // Settles the race even when `fetch` or the body ignores the signal. The
@@ -353,8 +350,14 @@ export const createLeaderboardSyncController = (
       throw new SyncHttpError(response.status, response.statusText ?? '')
     }
 
-    if (body && 'stale' in body && body.stale === true) {
-      return { status: 'stale', revision: finiteNumberOr(body.revision, 0) }
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      'stale' in body &&
+      body.stale === true
+    ) {
+      const revision = 'revision' in body ? body.revision : undefined
+      return { status: 'stale', revision: finiteNumberOr(revision, 0) }
     }
     return { status: 'synced' }
   }

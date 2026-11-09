@@ -440,6 +440,24 @@ test('adopts the revision from a stale response and resends', async () => {
   assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
 })
 
+test('treats valid JSON primitive success response as synced without throwing', async () => {
+  const primitiveResponse = value => ({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    json: async () => value
+  })
+  const t = setup({
+    script: [primitiveResponse(true), primitiveResponse('ok')]
+  })
+  await t.submit(snap(500))
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(500)))
+
+  await t.advance(MIN_SYNC_INTERVAL_MS)
+  await t.submit(snap(600))
+  assert.equal(t.storage.get(LAST_KEY('p')), snapshotKey(snap(600)))
+})
+
 test('resends a snapshot equal to the last confirmed one after a stale response', async () => {
   const y = deferred()
   const t = setup({ script: [okResponse(), () => y.promise] })
