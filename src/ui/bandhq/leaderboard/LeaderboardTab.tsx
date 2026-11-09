@@ -105,35 +105,24 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
           throw new Error('Invalid leaderboard payload')
         }
 
-        const sanitizedEntries = []
+        const sanitizedEntries: LeaderboardEntry[] = []
         for (let i = 0; i < data.length; i++) {
           const entry = data[i]
           if (typeof entry === 'object' && entry !== null) {
+            const raw = entry as Record<string, unknown>
             sanitizedEntries.push({
-              rank:
-                Object.hasOwn(entry, 'rank') &&
-                typeof (entry as Record<string, unknown>).rank === 'number'
-                  ? ((entry as Record<string, unknown>).rank as number)
-                  : 0,
+              rank: typeof raw.rank === 'number' ? raw.rank : 0,
               playerRef:
-                Object.hasOwn(entry, 'playerRef') &&
-                typeof (entry as Record<string, unknown>).playerRef === 'string'
-                  ? ((entry as Record<string, unknown>).playerRef as string)
+                typeof raw.playerRef === 'string'
+                  ? raw.playerRef
                   : `unknown-player-${i}`,
               playerName:
-                Object.hasOwn(entry, 'playerName') &&
-                typeof (entry as Record<string, unknown>).playerName ===
-                  'string'
-                  ? ((entry as Record<string, unknown>).playerName as string)
+                typeof raw.playerName === 'string'
+                  ? raw.playerName
                   : t('ui:leaderboard.unknownPlayer', {
                       defaultValue: 'Unknown'
                     }),
-              score: finiteNumberOr(
-                Object.hasOwn(entry, 'score')
-                  ? (entry as Record<string, unknown>).score
-                  : 0,
-                0
-              )
+              score: finiteNumberOr(raw.score, 0)
             })
           }
         }
