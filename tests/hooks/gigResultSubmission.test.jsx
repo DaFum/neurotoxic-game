@@ -27,6 +27,7 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
   stopAudio: hubStopAudio,
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(() => Promise.resolve(true)),
+  audioManager: {},
   audioService: {}
 }))
 

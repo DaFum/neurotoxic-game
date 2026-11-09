@@ -11,6 +11,7 @@ vi.mock('../../src/ui/shared/GeneratedImagePanel.tsx', () => ({
 }))
 
 vi.mock('../../src/utils/audio/audioEngine', () => ({
+  audioManager: {},
   audioService: { ensureAudioContext: vi.fn(() => Promise.resolve(true)) },
   getSongId: vi.fn()
 }))

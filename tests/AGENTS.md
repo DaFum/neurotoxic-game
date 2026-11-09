@@ -23,7 +23,7 @@
 
 ## Mock gotchas: audio
 
-- Audio mocks must target the central export module: `vi.mock('.../utils/audio/audioEngine', …)` (or equivalent `mock.module` for `node:test`) and must include **both** `audioManager` and `audioService` in `namedExports`. Mocking `AudioManager.ts` or `audioService.ts` directly no longer intercepts callers, which all import from `audioEngine`. Hoisted fixtures should share one listener set so `audioService` and `audioManager` stay observably linked.
+- Audio mocks must target the central export module: `vi.mock('.../utils/audio/audioEngine', …)` (or equivalent `mock.module` for `node:test`) and must include **both** `audioManager` and `audioService` in `namedExports`. Mocking `AudioManager.ts` or `audioService.ts` directly no longer intercepts callers, which all import from `audioEngine`. Hoisted fixtures should share one listener set so `audioService` and `audioManager` stay observably linked. The one exception is a test of `AudioManager.ts` itself, which mocks its low-level audio modules instead (see `src/utils/audio/AGENTS.md`).
 
 ## Storage in Vitest suites
 
