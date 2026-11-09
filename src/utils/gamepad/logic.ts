@@ -116,7 +116,7 @@ export function createDirectionRepeater() {
  * Merges the button states of multiple gamepads into a single virtual gamepad state.
  *
  * @remarks
- * This is useful for supporting local multiplayer or allowing users to seamlessly switch between controllers. A button is considered pressed if it is pressed on any of the provided gamepads.
+ * This allows users to seamlessly switch between controllers or use multiple controllers acting as one logical input. A button is considered pressed if it is pressed on any of the provided gamepads.
  *
  * @param pads - An array of gamepad snapshots to merge.
  * @returns An array representing the merged button states, where true indicates the button is pressed.
@@ -136,7 +136,7 @@ export function mergeGamepads(
  * Creates a stateful object that tracks button state transitions (edges) over time.
  *
  * @remarks
- * This object detects when a button is newly pressed or released, avoiding repeated events for a held button. It maintains the previous button state internally.
+ * When `update()` is first called, or after `rearm()` is called, a button that is already held produces neither a press event nor its following release event; it becomes armed only after being observed in the unpressed state. This prevents firing stale events when components mount or focus shifts while a button is already held.
  *
  * @returns An object with methods to rearm the edge detection and update the state to retrieve a list of button transition events.
  */
