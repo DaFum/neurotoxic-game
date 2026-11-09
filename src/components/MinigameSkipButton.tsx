@@ -16,7 +16,6 @@ export const MinigameSkipButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <button
       type='button'
-      aria-label={t('ui:minigames.skipAria', { defaultValue: 'Skip minigame' })}
       onClick={onClick}
       className='absolute top-4 right-4 z-(--z-modal) pointer-events-auto border-2 border-toxic-green/60 bg-void-black/70 px-3 py-1 text-sm text-toxic-green hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
     >
