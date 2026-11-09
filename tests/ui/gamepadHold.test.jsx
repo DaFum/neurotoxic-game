@@ -63,3 +63,26 @@ it.each([false, true])(
     expect(confirm).toHaveBeenCalledTimes(1)
   }
 )
+
+it('cancels hold when focus leaves the active hold element during poll', () => {
+  const pad = fixture.makePad()
+  fixture.pads.push(pad)
+  const confirm = vi.fn()
+  render(
+    <GamepadInputProvider>
+      <DeadmanButton label='Execute' onConfirm={confirm} />
+      <button type='button'>Other Button</button>
+    </GamepadInputProvider>
+  )
+  const executeBtn = screen.getByRole('button', { name: /execute/i })
+  const otherBtn = screen.getByRole('button', { name: /other button/i })
+  executeBtn.focus()
+  act(() => fixture.step(0))
+  pad.buttons[0].pressed = true
+  act(() => fixture.step(20))
+  act(() => vi.advanceTimersByTime(200))
+  otherBtn.focus()
+  act(() => fixture.step(40))
+  act(() => vi.advanceTimersByTime(1100))
+  expect(confirm).not.toHaveBeenCalled()
+})
