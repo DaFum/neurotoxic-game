@@ -326,6 +326,7 @@ export class AudioSystem {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
+    if (!this.prefsLoaded) return
     playSFX(key)
   }
 

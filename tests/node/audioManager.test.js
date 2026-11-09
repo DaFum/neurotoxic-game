@@ -189,6 +189,11 @@ test('AudioManager Tests', async t => {
         const manager = new AudioManager()
         mockAudioEngine.playSFX.mock.resetCalls()
 
+        // Effects are held back until stored preferences are applied.
+        manager.playSFX('hit')
+        assert.strictEqual(mockAudioEngine.playSFX.mock.calls.length, 0)
+        manager.prefsLoaded = true
+
         const validTypes = Object.keys(SFX_RECIPES)
         for (const type of validTypes) {
           manager.playSFX(type)

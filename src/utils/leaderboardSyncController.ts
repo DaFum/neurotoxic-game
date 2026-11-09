@@ -353,10 +353,12 @@ export const createLeaderboardSyncController = (
     if (
       typeof body === 'object' &&
       body !== null &&
-      'stale' in body &&
-      body.stale === true
+      Object.hasOwn(body, 'stale') &&
+      (body as { stale?: unknown }).stale === true
     ) {
-      const revision = 'revision' in body ? body.revision : undefined
+      const revision = Object.hasOwn(body, 'revision')
+        ? (body as { revision?: unknown }).revision
+        : undefined
       return { status: 'stale', revision: finiteNumberOr(revision, 0) }
     }
     return { status: 'synced' }

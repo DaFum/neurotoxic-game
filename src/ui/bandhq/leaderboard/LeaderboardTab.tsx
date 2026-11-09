@@ -110,19 +110,24 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
           const entry = data[i]
           if (typeof entry === 'object' && entry !== null) {
             const raw = entry as Record<string, unknown>
+            const own = (key: string): unknown =>
+              Object.hasOwn(raw, key) ? raw[key] : undefined
+            const rank = own('rank')
+            const playerRef = own('playerRef')
+            const playerName = own('playerName')
             sanitizedEntries.push({
-              rank: typeof raw.rank === 'number' ? raw.rank : 0,
+              rank: typeof rank === 'number' ? rank : 0,
               playerRef:
-                typeof raw.playerRef === 'string'
-                  ? raw.playerRef
+                typeof playerRef === 'string'
+                  ? playerRef
                   : `unknown-player-${i}`,
               playerName:
-                typeof raw.playerName === 'string'
-                  ? raw.playerName
+                typeof playerName === 'string'
+                  ? playerName
                   : t('ui:leaderboard.unknownPlayer', {
                       defaultValue: 'Unknown'
                     }),
-              score: finiteNumberOr(raw.score, 0)
+              score: finiteNumberOr(own('score'), 0)
             })
           }
         }
