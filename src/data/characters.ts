@@ -1,9 +1,39 @@
+import type { CharacterTrait } from '../types/npc'
+
 /**
- * Canonical band member and NPC character definitions.
- *
- * @remarks
- * `CLINIC` is an NPC pseudo-character with zero stats and no relationships by
- * design; it must not be mirrored into self-relationship maps.
+ * Cyber-graft clinic trait definitions.
+ */
+export const CLINIC_TRAITS: readonly CharacterTrait[] = [
+  {
+    id: 'cyber_lungs',
+    name: 'traits:cyberLungs.name',
+    desc: 'traits:cyberLungs.desc',
+    effect: 'stamina_regen_bonus',
+    unlockHint: 'traits:cyberLungs.unlockHint'
+  },
+  {
+    id: 'iron_liver',
+    name: 'traits:ironLiver.name',
+    desc: 'traits:ironLiver.desc',
+    effect: 'stamina_decay_reduction',
+    unlockHint: 'traits:ironLiver.unlockHint'
+  },
+  {
+    id: 'neuro_overclock',
+    name: 'traits:neuroOverclock.name',
+    desc: 'traits:neuroOverclock.desc',
+    effect: 'rhythm_overclock',
+    unlockHint: 'traits:neuroOverclock.unlockHint',
+    effects: {
+      rhythmMultiplier: 1.5,
+      stressPerGig: 5,
+      staminaPerGig: -10
+    }
+  }
+]
+
+/**
+ * Canonical band member character definitions.
  */
 export const CHARACTERS = {
   MATZE: {
@@ -144,45 +174,5 @@ export const CHARACTERS = {
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }
-  },
-  CLINIC: {
-    id: 'clinic',
-    name: 'Clinic',
-    role: 'NPC',
-    baseStats: { skill: 0, stamina: 0, charisma: 0, technical: 0, improv: 0 },
-    relationships: {},
-    traits: [
-      {
-        id: 'cyber_lungs',
-        name: 'traits:cyberLungs.name',
-        desc: 'traits:cyberLungs.desc',
-        effect: 'stamina_regen_bonus',
-        unlockHint: 'traits:cyberLungs.unlockHint'
-      },
-      {
-        id: 'iron_liver',
-        name: 'traits:ironLiver.name',
-        desc: 'traits:ironLiver.desc',
-        effect: 'stamina_decay_reduction',
-        unlockHint: 'traits:ironLiver.unlockHint'
-      },
-      {
-        id: 'neuro_overclock',
-        name: 'traits:neuroOverclock.name',
-        desc: 'traits:neuroOverclock.desc',
-        effect: 'rhythm_overclock',
-        unlockHint: 'traits:neuroOverclock.unlockHint',
-        // Tuning read through `getNeuroOverclockEffects` (traitUtils):
-        // `rhythmMultiplier` scales the hit window (tempo bonus is the
-        // multiplier minus 1); the per-gig costs land on band stress and the
-        // carrier's stamina after every real gig.
-        effects: {
-          rhythmMultiplier: 1.5,
-          stressPerGig: 5,
-          staminaPerGig: -10
-        }
-      }
-    ],
-    equipment: {}
   }
 }

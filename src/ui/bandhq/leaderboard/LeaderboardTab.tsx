@@ -105,35 +105,29 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
           throw new Error('Invalid leaderboard payload')
         }
 
-        const sanitizedEntries = []
+        const sanitizedEntries: LeaderboardEntry[] = []
         for (let i = 0; i < data.length; i++) {
           const entry = data[i]
           if (typeof entry === 'object' && entry !== null) {
+            const raw = entry as Record<string, unknown>
+            const own = (key: string): unknown =>
+              Object.hasOwn(raw, key) ? raw[key] : undefined
+            const rank = own('rank')
+            const playerRef = own('playerRef')
+            const playerName = own('playerName')
             sanitizedEntries.push({
-              rank:
-                Object.hasOwn(entry, 'rank') &&
-                typeof (entry as Record<string, unknown>).rank === 'number'
-                  ? ((entry as Record<string, unknown>).rank as number)
-                  : 0,
+              rank: typeof rank === 'number' ? rank : 0,
               playerRef:
-                Object.hasOwn(entry, 'playerRef') &&
-                typeof (entry as Record<string, unknown>).playerRef === 'string'
-                  ? ((entry as Record<string, unknown>).playerRef as string)
+                typeof playerRef === 'string'
+                  ? playerRef
                   : `unknown-player-${i}`,
               playerName:
-                Object.hasOwn(entry, 'playerName') &&
-                typeof (entry as Record<string, unknown>).playerName ===
-                  'string'
-                  ? ((entry as Record<string, unknown>).playerName as string)
+                typeof playerName === 'string'
+                  ? playerName
                   : t('ui:leaderboard.unknownPlayer', {
                       defaultValue: 'Unknown'
                     }),
-              score: finiteNumberOr(
-                Object.hasOwn(entry, 'score')
-                  ? (entry as Record<string, unknown>).score
-                  : 0,
-                0
-              )
+              score: finiteNumberOr(own('score'), 0)
             })
           }
         }

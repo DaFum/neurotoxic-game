@@ -11,17 +11,10 @@ type GameOverRefusalReason = Extract<
 >['reason']
 
 /**
- * What the last save allows: `pending` until it has been evaluated, `available`
- * when loading it plays on, `ending` when the save only records this ending,
- * `none` when there is no save, `{ refused }` when a save exists but the
- * preview refuses it for that reason.
+ * What the last save allows: a `LoadPreviewResult` once evaluated, or
+ * `{ status: 'pending' }` until the preview runs.
  */
-export type GameOverLoadAvailability =
-  | 'pending'
-  | 'available'
-  | 'ending'
-  | 'none'
-  | { refused: GameOverRefusalReason }
+export type GameOverSavePreview = LoadPreviewResult | { status: 'pending' }
 
 /**
  * The status shown for a refused save. Keys stay literal for the i18n parser;
@@ -44,7 +37,7 @@ const refusalMessage = (
 }
 
 type GameOverButtonsProps = {
-  loadAvailability: GameOverLoadAvailability
+  savePreview: GameOverSavePreview
   onRetry: () => void
   onReturnToMenu: () => void
 }
@@ -56,7 +49,7 @@ type GameOverButtonsProps = {
  * evaluated; an ending-only or refused save gets a notice in its place.
  */
 export const GameOverButtons = ({
-  loadAvailability,
+  savePreview,
   onRetry,
   onReturnToMenu
 }: GameOverButtonsProps) => {
@@ -69,12 +62,12 @@ export const GameOverButtons = ({
       transition={{ delay: 2 }}
       className='flex gap-4 relative z-10'
     >
-      {loadAvailability === 'available' && (
+      {savePreview.status === 'resumable' && (
         <GlitchButton onClick={onRetry} variant='primary'>
           {t('ui:gameOver.loadLastSave')}
         </GlitchButton>
       )}
-      {loadAvailability === 'ending' && (
+      {savePreview.status === 'terminal' && (
         <p
           role='status'
           className='max-w-xs self-center text-sm text-ash-gray font-mono'
@@ -82,12 +75,12 @@ export const GameOverButtons = ({
           {t('ui:gameOver.lastSaveIsEnding')}
         </p>
       )}
-      {typeof loadAvailability === 'object' && (
+      {savePreview.status === 'unavailable' && (
         <p
           role='status'
           className='max-w-xs self-center text-sm text-ash-gray font-mono'
         >
-          {refusalMessage(loadAvailability.refused, t)}
+          {refusalMessage(savePreview.reason, t)}
         </p>
       )}
       <GlitchButton onClick={onReturnToMenu} variant='danger'>

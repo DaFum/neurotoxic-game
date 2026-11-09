@@ -2,10 +2,7 @@ import { memo, useCallback, useRef, type PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface RoadieTouchSurfaceProps {
-  handleMoveUp: () => void
-  handleMoveLeft: () => void
-  handleMoveDown: () => void
-  handleMoveRight: () => void
+  onMove: (dx: number, dy: number) => void
 }
 
 type TouchPoint = {
@@ -18,31 +15,13 @@ const TAP_DEAD_ZONE_PX = 18
 
 /**
  * Provides swipe and tap movement zones for Roadie touch controls.
- * @param props - Directional movement callbacks for touch input.
+ * @param props - Directional movement callback for touch input.
  */
 export const RoadieTouchSurface = memo(function RoadieTouchSurface({
-  handleMoveUp,
-  handleMoveLeft,
-  handleMoveDown,
-  handleMoveRight
+  onMove
 }: RoadieTouchSurfaceProps) {
   const { t } = useTranslation(['ui'])
   const touchStartRef = useRef<TouchPoint | null>(null)
-
-  const triggerMove = useCallback(
-    (dx: number, dy: number) => {
-      if (dx < 0) {
-        handleMoveLeft()
-      } else if (dx > 0) {
-        handleMoveRight()
-      } else if (dy < 0) {
-        handleMoveUp()
-      } else if (dy > 0) {
-        handleMoveDown()
-      }
-    },
-    [handleMoveDown, handleMoveLeft, handleMoveRight, handleMoveUp]
-  )
 
   const handleTouchPointerDown = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
@@ -74,9 +53,9 @@ export const RoadieTouchSurface = memo(function RoadieTouchSurface({
 
       if (absX >= SWIPE_THRESHOLD_PX || absY >= SWIPE_THRESHOLD_PX) {
         if (absX > absY) {
-          triggerMove(deltaX > 0 ? 1 : -1, 0)
+          onMove(deltaX > 0 ? 1 : -1, 0)
         } else {
-          triggerMove(0, deltaY > 0 ? 1 : -1)
+          onMove(0, deltaY > 0 ? 1 : -1)
         }
         return
       }
@@ -90,12 +69,12 @@ export const RoadieTouchSurface = memo(function RoadieTouchSurface({
       if (tapAbsX < TAP_DEAD_ZONE_PX && tapAbsY < TAP_DEAD_ZONE_PX) return
 
       if (tapAbsX > tapAbsY) {
-        triggerMove(relativeX > 0 ? 1 : -1, 0)
+        onMove(relativeX > 0 ? 1 : -1, 0)
       } else {
-        triggerMove(0, relativeY > 0 ? 1 : -1)
+        onMove(0, relativeY > 0 ? 1 : -1)
       }
     },
-    [triggerMove]
+    [onMove]
   )
 
   const clearTouchStart = useCallback(() => {

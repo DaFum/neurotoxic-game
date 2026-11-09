@@ -22,8 +22,6 @@ export const CHAR_MAP: Record<
 for (const key in CHARACTERS) {
   if (Object.hasOwn(CHARACTERS, key)) {
     const c = CHARACTERS[key as keyof typeof CHARACTERS]
-    if (c.name && c.role !== 'NPC') {
-      CHAR_MAP[c.name] = c
-    }
+    CHAR_MAP[c.name] = c
   }
 }

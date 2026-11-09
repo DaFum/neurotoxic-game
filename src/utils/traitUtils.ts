@@ -1,4 +1,4 @@
-import { CHARACTERS } from '../data/characters'
+import { CHARACTERS, CLINIC_TRAITS } from '../data/characters'
 import { logger } from '../utils/logger'
 import { finiteNumberOr } from './finiteNumber'
 import { clampBandStress, clampMemberStamina } from './gameState/clamps'
@@ -115,6 +115,16 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
     }
     TRAIT_DEFS_BY_ID.set(t.id, t)
   }
+}
+
+for (const t of CLINIC_TRAITS ?? []) {
+  if (TRAIT_DEFS_BY_ID.has(t.id)) {
+    logger.warn(
+      'traitUtils',
+      `Duplicate trait ID found during initialization: ${t.id}`
+    )
+  }
+  TRAIT_DEFS_BY_ID.set(t.id, t as TraitDef)
 }
 
 /**

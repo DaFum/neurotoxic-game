@@ -10,10 +10,34 @@ export type LeaderboardStatsPayload = {
   playerId: string
   playerName: string
   money: number
-  day: number
   fame: number
   followers: number
   distance: number
   conflicts: number
   stageDives: number
+  day?: number
+  revision?: number
+}
+
+export type LeaderboardStatsSyncResult =
+  | { success: true; stale?: false }
+  | { success: true; stale: true; revision: number }
+
+export interface LeaderboardEntry {
+  rank: number
+  /** Opaque server-derived reference; never the internal player id. */
+  playerRef: string
+  playerName: string
+  score: number
+}
+
+export interface LeaderboardSongScoreItem {
+  songId: string
+  score: number
+}
+
+export interface LeaderboardSongBatchPayload {
+  playerId: string
+  playerName: string
+  scores: LeaderboardSongScoreItem[]
 }

@@ -3,22 +3,16 @@ import { useTranslation } from 'react-i18next'
 
 interface RoadieDPadProps {
   showControls: boolean
-  handleMoveUp: () => void
-  handleMoveLeft: () => void
-  handleMoveDown: () => void
-  handleMoveRight: () => void
+  onMove: (dx: number, dy: number) => void
 }
 
 /**
  * Displays the optional desktop D-pad for Roadie movement.
- * @param props - Roadie control visibility flag and directional movement callbacks.
+ * @param props - Roadie control visibility flag and directional movement callback.
  */
 export const RoadieDPad = memo(function RoadieDPad({
   showControls,
-  handleMoveUp,
-  handleMoveLeft,
-  handleMoveDown,
-  handleMoveRight
+  onMove
 }: RoadieDPadProps) {
   const { t } = useTranslation(['ui'])
 
@@ -30,7 +24,7 @@ export const RoadieDPad = memo(function RoadieDPad({
       <button
         type='button'
         className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border-2 border-star-white/30 flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-        onClick={handleMoveUp}
+        onClick={() => onMove(0, -1)}
         aria-label={t('ui:moveUp')}
       >
         ▲
@@ -39,7 +33,7 @@ export const RoadieDPad = memo(function RoadieDPad({
       <button
         type='button'
         className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border-2 border-star-white/30 flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-        onClick={handleMoveLeft}
+        onClick={() => onMove(-1, 0)}
         aria-label={t('ui:moveLeft')}
       >
         ◄
@@ -47,7 +41,7 @@ export const RoadieDPad = memo(function RoadieDPad({
       <button
         type='button'
         className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border-2 border-star-white/30 flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-        onClick={handleMoveDown}
+        onClick={() => onMove(0, 1)}
         aria-label={t('ui:moveDown')}
       >
         ▼
@@ -55,7 +49,7 @@ export const RoadieDPad = memo(function RoadieDPad({
       <button
         type='button'
         className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border-2 border-star-white/30 flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-        onClick={handleMoveRight}
+        onClick={() => onMove(1, 0)}
         aria-label={t('ui:moveRight')}
       >
         ►
