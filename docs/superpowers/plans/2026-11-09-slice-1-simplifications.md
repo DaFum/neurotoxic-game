@@ -32,6 +32,7 @@ test('playSFX executes valid recipes and warns on unknown type', () => {
   manager.playSFX('nonexistent_sfx')
 })
 ```
+(Sketch only: the committed test in `tests/node/audioManager.test.js` additionally asserts the warning count/text and the delegated `playSFX` calls.)
 
 - [x] **Step 3: Define `SFX_RECIPES` and derive `AudioSfxType` in `src/utils/audio/sfx.ts`**
 In `src/utils/audio/sfx.ts`:

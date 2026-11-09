@@ -3,6 +3,7 @@ import { act, cleanup, render, screen } from '@testing-library/react'
 import { installGamepadFixture } from '../gamepadFixture'
 import { GamepadInputProvider } from '../../src/context/GamepadInputContext'
 import { DeadmanButton } from '../../src/ui/shared/BrutalistUI'
+import { registerHoldTarget } from '../../src/utils/gamepad/holdTargets'
 import { Modal } from '../../src/ui/shared/Modal'
 
 vi.mock('../../src/context/GameState', () => ({
@@ -67,22 +68,25 @@ it.each([false, true])(
 it('cancels hold when focus leaves the active hold element during poll', () => {
   const pad = fixture.makePad()
   fixture.pads.push(pad)
-  const confirm = vi.fn()
+  const start = vi.fn()
+  const stop = vi.fn()
   render(
     <GamepadInputProvider>
-      <DeadmanButton label='Execute' onConfirm={confirm} />
+      <button type='button'>Hold Target</button>
       <button type='button'>Other Button</button>
     </GamepadInputProvider>
   )
-  const executeBtn = screen.getByRole('button', { name: /execute/i })
+  const holdBtn = screen.getByRole('button', { name: /hold target/i })
   const otherBtn = screen.getByRole('button', { name: /other button/i })
-  executeBtn.focus()
+  const unregister = registerHoldTarget(holdBtn, { start, stop })
+  holdBtn.focus()
   act(() => fixture.step(0))
   pad.buttons[0].pressed = true
   act(() => fixture.step(20))
-  act(() => vi.advanceTimersByTime(200))
+  expect(start).toHaveBeenCalledTimes(1)
+  expect(stop).not.toHaveBeenCalled()
   otherBtn.focus()
   act(() => fixture.step(40))
-  act(() => vi.advanceTimersByTime(1100))
-  expect(confirm).not.toHaveBeenCalled()
+  expect(stop).toHaveBeenCalledTimes(1)
+  unregister?.()
 })

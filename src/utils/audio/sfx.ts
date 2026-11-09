@@ -55,12 +55,12 @@ export type AudioSfxType = keyof typeof SFX_RECIPES
  * @param type - Effect id, e.g. `'hit'`, `'miss'`, `'menu'`, `'travel'`, `'cash'`, `'crash'`, `'honk'`, `'pickup'`, `'deliver'`, or `'void_hit'`.
  */
 export function playSFX(type: AudioSfxType | string): void {
-  if (!audioState.isSetup || !audioState.sfxSynth) return
-
   if (!Object.hasOwn(SFX_RECIPES, type)) {
     logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
     return
   }
+
+  if (!audioState.isSetup || !audioState.sfxSynth) return
 
   const recipe: readonly SfxTrigger[] = SFX_RECIPES[type as AudioSfxType]
   const now = Tone.now()
@@ -68,32 +68,20 @@ export function playSFX(type: AudioSfxType | string): void {
   for (const trigger of recipe) {
     const time = trigger.offsetSec != null ? now + trigger.offsetSec : now
     if (trigger.voice === 'kick' && audioState.drumKit?.kick) {
-      if (trigger.vel !== undefined) {
-        audioState.drumKit.kick.triggerAttackRelease(
-          trigger.note,
-          trigger.dur,
-          time,
-          trigger.vel
-        )
-      } else {
-        audioState.drumKit.kick.triggerAttackRelease(
-          trigger.note,
-          trigger.dur,
-          time
-        )
-      }
+      audioState.drumKit.kick.triggerAttackRelease(
+        trigger.note,
+        trigger.dur,
+        time,
+        trigger.vel
+      )
     } else {
       const note = trigger.voice === 'kick' ? 'G1' : trigger.note
-      if (trigger.vel !== undefined) {
-        audioState.sfxSynth.triggerAttackRelease(
-          note,
-          trigger.dur,
-          time,
-          trigger.vel
-        )
-      } else {
-        audioState.sfxSynth.triggerAttackRelease(note, trigger.dur, time)
-      }
+      audioState.sfxSynth.triggerAttackRelease(
+        note,
+        trigger.dur,
+        time,
+        trigger.vel
+      )
     }
   }
 }
