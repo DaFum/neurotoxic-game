@@ -1,0 +1,175 @@
+{
+  "comment": "Reviewed runtime import cycle edges in src, checked by tests/node/runtimeImportCycleGate.test.js against the cyclic edges of scripts/utils/runtime-import-graph.mjs. Each entry is a repository-relative POSIX [source, target] pair; the gate compares the flattened set of all groups. A group holds the edges of one cyclic component, named after the directories of its files; pairs are sorted. Entries can only be removed: a new entry needs explicit review, and a new cycle should be broken instead. The expedition group (8 edges in the 4f9f6c9 inventory) was dropped because followup/expedition-cycle-gate removed those cycles.",
+  "game-state-economy-assets": [
+    ["src/context/reducers/toastSanitizers.ts", "src/utils/gameState/index.ts"],
+    ["src/data/postOptions.ts", "src/utils/gameState/index.ts"],
+    ["src/data/postOptions.ts", "src/utils/gigStats.ts"],
+    ["src/utils/assets/assetConfig.ts", "src/utils/gameState/index.ts"],
+    [
+      "src/utils/assets/assetSelectors.ts",
+      "src/utils/assets/assetSelectors/index.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/assetFinancials.ts",
+      "src/utils/assets/assetConfig.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/assetSaleQuote.ts",
+      "src/utils/assets/assetSelectors/assetFinancials.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/index.ts",
+      "src/utils/assets/assetSelectors/assetFinancials.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/index.ts",
+      "src/utils/assets/assetSelectors/assetSaleQuote.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/index.ts",
+      "src/utils/assets/assetSelectors/stateAggregation.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/stateAggregation.ts",
+      "src/utils/assets/assetSelectors/assetFinancials.ts"
+    ],
+    [
+      "src/utils/assets/assetSelectors/stateAggregation.ts",
+      "src/utils/economy/index.ts"
+    ],
+    ["src/utils/contrabandStashUtils.ts", "src/utils/gameState/clamps.ts"],
+    ["src/utils/economy/constants.ts", "src/utils/assets/assetSelectors.ts"],
+    ["src/utils/economy/constants.ts", "src/utils/gameState/index.ts"],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateBarCut.ts",
+      "src/utils/economy/constants.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateBarCut.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateEffectiveTicketPrice.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateGigExpenses.ts",
+      "src/utils/assets/assetSelectors.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateGigExpenses.ts",
+      "src/utils/economy/constants.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateGuarantee.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateMerchIncome.ts",
+      "src/utils/assets/assetSelectors.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateMerchIncome.ts",
+      "src/utils/economy/constants.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateMerchIncome.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateTicketIncome.ts",
+      "src/utils/economy/constants.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateTicketIncome.ts",
+      "src/utils/economy/gigLogic/calculators/calculateEffectiveTicketPrice.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateTicketIncome.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateVenueSplit.ts",
+      "src/utils/economy/constants.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/calculateVenueSplit.ts",
+      "src/utils/gameState/index.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateBarCut.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateEffectiveTicketPrice.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateGigExpenses.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateGuarantee.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateMerchIncome.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateTicketIncome.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/calculators/index.ts",
+      "src/utils/economy/gigLogic/calculators/calculateVenueSplit.ts"
+    ],
+    [
+      "src/utils/economy/gigLogic/index.ts",
+      "src/utils/assets/assetSelectors.ts"
+    ],
+    ["src/utils/economy/gigLogic/index.ts", "src/utils/economy/constants.ts"],
+    [
+      "src/utils/economy/gigLogic/index.ts",
+      "src/utils/economy/gigLogic/calculators/index.ts"
+    ],
+    ["src/utils/economy/gigLogic/index.ts", "src/utils/gameState/index.ts"],
+    ["src/utils/economy/gigLogic/index.ts", "src/utils/socialEngine.ts"],
+    ["src/utils/economy/index.ts", "src/utils/economy/constants.ts"],
+    ["src/utils/economy/index.ts", "src/utils/economy/gigLogic/index.ts"],
+    ["src/utils/economy/index.ts", "src/utils/economy/logisticsLogic.ts"],
+    ["src/utils/economy/index.ts", "src/utils/economy/minigameLogic.ts"],
+    [
+      "src/utils/economy/logisticsLogic.ts",
+      "src/utils/assets/assetSelectors.ts"
+    ],
+    ["src/utils/economy/logisticsLogic.ts", "src/utils/economy/constants.ts"],
+    ["src/utils/economy/logisticsLogic.ts", "src/utils/gameState/index.ts"],
+    ["src/utils/economy/logisticsLogic.ts", "src/utils/traitUtils.ts"],
+    ["src/utils/economy/minigameLogic.ts", "src/utils/gameState/index.ts"],
+    ["src/utils/economy/minigameLogic.ts", "src/utils/traitUtils.ts"],
+    ["src/utils/gameState/calculations.ts", "src/utils/gameState/clamps.ts"],
+    ["src/utils/gameState/clamps.ts", "src/utils/economy/index.ts"],
+    ["src/utils/gameState/delta.ts", "src/utils/contrabandStashUtils.ts"],
+    ["src/utils/gameState/delta.ts", "src/utils/gameState/calculations.ts"],
+    ["src/utils/gameState/delta.ts", "src/utils/gameState/clamps.ts"],
+    ["src/utils/gameState/delta.ts", "src/utils/traitUtils.ts"],
+    ["src/utils/gameState/index.ts", "src/utils/gameState/calculations.ts"],
+    ["src/utils/gameState/index.ts", "src/utils/gameState/clamps.ts"],
+    ["src/utils/gameState/index.ts", "src/utils/gameState/delta.ts"],
+    ["src/utils/gigStats.ts", "src/utils/gameState/index.ts"],
+    ["src/utils/socialEngine.ts", "src/data/postOptions.ts"],
+    ["src/utils/socialEngine.ts", "src/utils/gameState/index.ts"],
+    ["src/utils/socialEngine.ts", "src/utils/traitUtils.ts"],
+    ["src/utils/traitUtils.ts", "src/context/reducers/toastSanitizers.ts"],
+    ["src/utils/traitUtils.ts", "src/utils/gameState/clamps.ts"]
+  ],
+  "quest-lifecycle": [
+    ["src/domain/questAdd.ts", "src/domain/questComplete.ts"],
+    ["src/domain/questAdvance.ts", "src/domain/questComplete.ts"],
+    ["src/domain/questComplete.ts", "src/domain/questAdd.ts"],
+    ["src/domain/questComplete.ts", "src/utils/questProgress.ts"],
+    ["src/utils/questProgress.ts", "src/domain/questAdvance.ts"],
+    ["src/utils/questProgress.ts", "src/domain/questComplete.ts"]
+  ]
+}

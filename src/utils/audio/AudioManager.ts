@@ -1,4 +1,17 @@
-import * as audioEngine from './audioEngine'
+// Direct low-level imports, not the audioEngine.ts hub: the hub re-exports
+// audioManager, so importing it here would form an import cycle.
+import { setupAudio } from './setup'
+import { ensureAudioContext } from './context'
+import { disposeAudio } from './dispose'
+import { playSFX, setSFXVolume, setMusicVolume } from './sfx'
+import {
+  isAmbientOggPlaying,
+  stopAudio,
+  resumeAudio,
+  getTransportState,
+  setDestinationMute
+} from './transportControl'
+import { playRandomAmbientOgg, playRandomAmbientMidi } from './ambient'
 import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
@@ -28,14 +41,14 @@ export type AudioSfxType =
 type AudioStateSnapshot = Required<AudioSnapshot>
 
 /**
- * High-level audio facade that wraps audioEngine with user preference persistence.
+ * High-level audio facade that wraps the low-level audio modules with user preference persistence.
  *
  * Architecture (three layers):
  *   AudioManager — localStorage prefs, mute toggle, ambient lifecycle
  *   audioEngine  — barrel re-export aggregating low-level audio modules
  *   audio/*      — Tone.js / WebAudio implementation
  *
- * Volume methods here intentionally duplicate the audioEngine calls because they
+ * Volume methods here intentionally duplicate the low-level calls because they
  * add localStorage persistence and deferred-apply logic (audio graph may not
  * exist yet when preferences are loaded at startup).
  */
@@ -90,8 +103,7 @@ class AudioSystem {
   get isPlaying(): boolean {
     return (
       this.currentSongId != null &&
-      (audioEngine.isAmbientOggPlaying() ||
-        audioEngine.getTransportState() === 'started')
+      (isAmbientOggPlaying() || getTransportState() === 'started')
     )
   }
 
@@ -162,11 +174,11 @@ class AudioSystem {
 
     try {
       // Initialize Audio Engine settings (but don't start Context yet)
-      audioEngine.setSFXVolume(this.sfxVolume)
-      audioEngine.setMusicVolume(this.musicVolume)
+      setSFXVolume(this.sfxVolume)
+      setMusicVolume(this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
-      audioEngine.setDestinationMute(this.muted)
+      setDestinationMute(this.muted)
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'AudioSystem engine initialization failed'
@@ -192,8 +204,8 @@ class AudioSystem {
 
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
-      if (audioEngine.isAmbientOggPlaying()) return true
-      if (audioEngine.getTransportState() === 'started') return true
+      if (isAmbientOggPlaying()) return true
+      if (getTransportState() === 'started') return true
     }
 
     this.isStartingAmbient = true
@@ -203,12 +215,9 @@ class AudioSystem {
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(
-          secureRandom,
-          {
-            skipStop: true
-          }
-        )
+        const oggSuccess = await playRandomAmbientOgg(secureRandom, {
+          skipStop: true
+        })
         if (ambientStartToken !== this.ambientStartToken) return false
         if (oggSuccess) {
           this.emitChange()
@@ -221,7 +230,7 @@ class AudioSystem {
           'OGG ambient unavailable, falling back to MIDI synthesis.'
         )
 
-        const midiSuccess = await audioEngine.playRandomAmbientMidi()
+        const midiSuccess = await playRandomAmbientMidi()
         if (ambientStartToken !== this.ambientStartToken) return false
         if (!midiSuccess) {
           this.currentSongId = null
@@ -270,7 +279,7 @@ class AudioSystem {
       'AudioSystem',
       `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
     )
-    audioEngine.stopAudio()
+    stopAudio()
     this.currentSongId = null
 
     if (options.emit !== false) {
@@ -285,20 +294,17 @@ class AudioSystem {
    */
   async resumeMusic(): Promise<boolean> {
     try {
-      if (
-        this.currentSongId === 'ambient' &&
-        audioEngine.isAmbientOggPlaying()
-      ) {
+      if (this.currentSongId === 'ambient' && isAmbientOggPlaying()) {
         return true
       }
 
-      if (audioEngine.getTransportState() === 'paused') {
-        const resumed = await audioEngine.resumeAudio()
+      if (getTransportState() === 'paused') {
+        const resumed = await resumeAudio()
         this.emitChange()
         return resumed
       }
 
-      if (audioEngine.getTransportState() !== 'started') {
+      if (getTransportState() !== 'started') {
         return await this.startAmbient()
       }
 
@@ -316,15 +322,15 @@ class AudioSystem {
    */
   async ensureAudioContext(): Promise<boolean> {
     try {
-      await audioEngine.setupAudio()
+      await setupAudio()
 
       // Always re-apply volumes when unlocking to ensure engine state matches prefs
       // (engine nodes might have been created after init() calls)
-      audioEngine.setMusicVolume(this.musicVolume)
-      audioEngine.setSFXVolume(this.sfxVolume)
-      audioEngine.setDestinationMute(this.muted)
+      setMusicVolume(this.musicVolume)
+      setSFXVolume(this.sfxVolume)
+      setDestinationMute(this.muted)
 
-      return await audioEngine.ensureAudioContext()
+      return await ensureAudioContext()
     } catch (e) {
       logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
       return false
@@ -341,7 +347,7 @@ class AudioSystem {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
-    audioEngine.playSFX(key)
+    playSFX(key)
   }
 
   private setVolumeHelper(
@@ -389,7 +395,7 @@ class AudioSystem {
     return this.setVolumeHelper(
       vol,
       'music',
-      audioEngine.setMusicVolume,
+      setMusicVolume,
       'neurotoxic_vol_music'
     )
   }
@@ -399,12 +405,7 @@ class AudioSystem {
    * @param vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol: number): boolean {
-    return this.setVolumeHelper(
-      vol,
-      'sfx',
-      audioEngine.setSFXVolume,
-      'neurotoxic_vol_sfx'
-    )
+    return this.setVolumeHelper(vol, 'sfx', setSFXVolume, 'neurotoxic_vol_sfx')
   }
 
   /**
@@ -415,7 +416,7 @@ class AudioSystem {
     this.muted = !this.muted
 
     try {
-      audioEngine.setDestinationMute(this.muted)
+      setDestinationMute(this.muted)
     } catch (e) {
       logger.warn('AudioSystem', 'audioEngine mute failed:', e)
     }
@@ -446,8 +447,8 @@ class AudioSystem {
 
     // Explicitly call the engine's dispose function to clear contexts
     try {
-      if (typeof audioEngine.disposeAudio === 'function') {
-        audioEngine.disposeAudio()
+      if (typeof disposeAudio === 'function') {
+        disposeAudio()
       }
     } catch (e) {
       logger.warn('AudioSystem', 'Error during engine dispose:', e)

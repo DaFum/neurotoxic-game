@@ -1,7 +1,8 @@
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import sharedClient from '../lib/redis.js'
-import { createRedisRequest } from '../lib/redisDeadline.js'
+import { createRedisRequest, withRedisDeadline } from '../lib/redisDeadline.js'
+import { connectRedisRequest } from '../lib/apiMiddleware.js'
 import { isLeaderboardRateLimited } from '../lib/leaderboard.js'
 
 // Existing catalogue prompts peak below 200 characters; 1024 also accommodates
@@ -35,30 +36,18 @@ export default async function handler(req, res) {
   if (!key)
     return res.status(503).json({ error: 'Image generation unavailable' })
 
-  let redisExpired = false
-  let redisTimeout
   let redisRequest
   try {
     redisRequest = createRedisRequest(sharedClient)
     const client = redisRequest.client
-    const limited = await Promise.race([
-      (async () => {
-        if (!client.isOpen) await redisRequest.connect()
-        if (redisExpired) return false
-        return isLeaderboardRateLimited(req, 'image', 100, 60, client)
-      })(),
-      new Promise((_, reject) => {
-        redisTimeout = setTimeout(() => {
-          redisExpired = true
-          reject(new Error('Redis timeout'))
-        }, IMAGE_TIMEOUT_MS)
-      })
-    ])
+    await connectRedisRequest(redisRequest)
+    const limited = await withRedisDeadline(client, () =>
+      isLeaderboardRateLimited(req, 'image', 100, 60, client)
+    )
     if (limited) return res.status(429).json({ error: 'Too many requests' })
   } catch {
     return res.status(503).json({ error: 'Image generation unavailable' })
   } finally {
-    clearTimeout(redisTimeout)
     redisRequest?.close()
   }
 

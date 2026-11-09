@@ -5,7 +5,7 @@
  *
  *   Phase A (parallel):
  *     test:node           — process-isolated node:test files, latency workers
- *     test:vitest:logic   — 26 node-env vitest files, minimal workers (5 s)
+ *     test:vitest:logic   — the node-env vitest project (no jsdom), minimal workers (5 s)
  *
  *   Phase B (sequential, after Phase A):
  *     test:ui             — 131 jsdom vitest files, capped worker allotment

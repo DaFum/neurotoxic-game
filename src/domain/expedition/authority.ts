@@ -1,5 +1,4 @@
 import { canSpendExpeditionCash } from './spendableCash'
-import { getAvailableNativeContractTemplateIds } from './loadout'
 import type { GameState } from '../../types'
 import type {
   ActiveObligationState,
@@ -15,6 +14,7 @@ import { getExpeditionCargoView } from './cargo'
 import { isCrewAvailable } from './crew'
 import {
   areExpeditionContractsCompatible,
+  getAvailableNativeContractTemplateIds,
   getExpeditionConstraintRunVerdict,
   materializeContractConstraints
 } from './contracts'

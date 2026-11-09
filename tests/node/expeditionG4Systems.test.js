@@ -28,11 +28,11 @@ import {
 } from '../../src/quests/producers/expeditionQuestEvents.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from '../../src/domain/expedition/defaults.ts'
+import { getAvailableSponsorOfferIds } from '../../src/domain/expedition/loadout.ts'
 import {
   getAvailableNativeContractTemplateIds,
-  getAvailableSponsorOfferIds
-} from '../../src/domain/expedition/loadout.ts'
-import { materializeCommittedContracts } from '../../src/domain/expedition/contracts.ts'
+  materializeCommittedContracts
+} from '../../src/domain/expedition/contracts.ts'
 import {
   doubleDownExpeditionObligation,
   offerExpeditionDraft,
