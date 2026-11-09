@@ -337,7 +337,10 @@ describe('future-version save protection', () => {
       ).toBe(true)
       expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: currentSave })
       expect(adapter.get(NEWER_SLOT)).toEqual({ ok: true, value: FUTURE_SAVE })
-      expect(adapter.get(`${SAVE_KEY}.v7`)).toEqual({ ok: true, value: furtherSave })
+      expect(adapter.get(`${SAVE_KEY}.v7`)).toEqual({
+        ok: true,
+        value: furtherSave
+      })
     })
 
     it('reports a newer save rather than none when only a newer slot exists', () => {
@@ -507,9 +510,15 @@ describe('future-version save protection', () => {
 
       expect(saved).toBe(true)
       expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: legacySave })
-      expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({ ok: true, value: expect.any(String) })
+      expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({
+        ok: true,
+        value: expect.any(String)
+      })
       const kRes = adapter.keys()
-      expect(kRes.ok ? kRes.keys.sort() : []).toEqual([SAVE_KEY, `${SAVE_KEY}.v4`])
+      expect(kRes.ok ? kRes.keys.sort() : []).toEqual([
+        SAVE_KEY,
+        `${SAVE_KEY}.v4`
+      ])
     })
   })
 })

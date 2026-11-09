@@ -578,6 +578,31 @@ describe('G5 — Ghost Route is the Underground way out', () => {
     assert.ok(getAuthorityCrisisSignal(corneredAgain))
   })
 
+  it('does not consume ghost_route if the node was claimed by a route opportunity', () => {
+    const owned = cornered(['ghost_route'])
+    const target = deriveExpeditionGhostRouteTarget(owned, map)
+    const withOpportunity = {
+      ...owned,
+      expedition: {
+        ...owned.expedition,
+        pressure: {
+          ...owned.expedition.pressure,
+          temporaryRouteOpportunity: {
+            targetNodeId: target,
+            subtype: 'UNDERGROUND_MARKET',
+            expiresAtStep: owned.expedition.routeStep + 1
+          }
+        }
+      }
+    }
+    const escaped = advanceRouteForFixture(withOpportunity, target)
+    assert.deepEqual(escaped.expedition.consumedLegendaryIds, [])
+    assert.equal(
+      escaped.expedition.arrivedOverlay?.source,
+      'underground_invite'
+    )
+  })
+
   it('records the conversion so arrival resolves it as Underground', () => {
     const owned = cornered(['ghost_route'])
     const target = deriveExpeditionGhostRouteTarget(owned, map)

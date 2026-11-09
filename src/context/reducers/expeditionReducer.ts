@@ -98,8 +98,6 @@ import { areBetweenTourDecisionsResolved } from '../../domain/expedition/between
 import {
   applyExpeditionSalvageRights,
   consumeExpeditionLegendary,
-  deriveExpeditionGhostRouteTarget,
-  deriveExpeditionNemesisKeyTarget,
   isExpeditionLegendaryAvailable
 } from '../../domain/expedition/legendaries'
 import {
@@ -829,20 +827,6 @@ export const applyExpeditionRouteAdvance = (
     }
   }
 
-  // A Legendary overlay is spent by being travelled, and only then: offering
-  // the opportunity costs nothing, and a run that declined it still holds the
-  // Legendary. Ghost Route is checked against the *pre-move* state because its
-  // trigger is the Authority pressure the run was standing in.
-  if (
-    stepsAhead === 2 &&
-    isExpeditionLegendaryAvailable(state, 'nemesis_key') &&
-    deriveExpeditionNemesisKeyTarget(state, map) === nodeId
-  ) {
-    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
-  } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
-    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
-  }
-
   // The overlay has to outlive the move. Every one of them is derived from the
   // node the run is leaving, so the conversion is gone by the time arrival
   // resolves - and arrival routes on the node's own class, which is the flow
@@ -864,6 +848,15 @@ export const applyExpeditionRouteAdvance = (
         }
       }
     }
+  }
+
+  // A Legendary overlay is spent by being travelled, and only then: offering
+  // the opportunity costs nothing, and a run that declined it still holds the
+  // Legendary.
+  if (travelledSource === 'nemesis_key') {
+    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
+  } else if (travelledSource === 'ghost_route') {
+    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
   }
 
   // One Director step per route step, composed here rather than dispatched:
