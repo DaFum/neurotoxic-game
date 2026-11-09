@@ -87,8 +87,7 @@ export const withExpeditionCapabilities = (state, setIds) => ({
 /**
  * A career sitting at the prepared stage with the fixture seed claimed.
  */
-export const preparedState = (options = {}) =>
-  preparedExpeditionState(options)
+export const preparedState = (options = {}) => preparedExpeditionState(options)
 
 /**
  * Starts the fixture run through the real START transaction.

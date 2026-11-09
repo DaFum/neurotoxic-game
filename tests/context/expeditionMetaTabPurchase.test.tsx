@@ -214,7 +214,8 @@ describe('ExpeditionMetaTab through the real reducer', () => {
     expect(probe.career?.tourTokens).toBe(5 - HQ_FACILITY_LEVEL_COSTS[1])
     expect(probe.toasts.some(toast => toast.type === 'error')).toBe(false)
     expect(
-      JSON.parse(String(adapter.get(SAVE_KEY).value)).career.hqFacilityLevels.workshop
+      JSON.parse(String(adapter.get(SAVE_KEY).value)).career.hqFacilityLevels
+        .workshop
     ).toBe(1)
   })
 

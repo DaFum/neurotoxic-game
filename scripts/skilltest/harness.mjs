@@ -36,7 +36,11 @@ import { parse as parseYamlDoc } from 'yaml'
  * @param {import('node:path')} [pathImpl=nodePath] - Path implementation to use.
  * @returns {boolean} Whether the path is disabled.
  */
-export const isPathDisabled = (targetPath, disabledSet, pathImpl = nodePath) => {
+export const isPathDisabled = (
+  targetPath,
+  disabledSet,
+  pathImpl = nodePath
+) => {
   const normalizePath = value => pathImpl.normalize(pathImpl.resolve(value))
   const normalizedTarget = normalizePath(targetPath)
   for (const entry of disabledSet) {

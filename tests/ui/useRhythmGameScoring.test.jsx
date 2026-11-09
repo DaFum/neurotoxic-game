@@ -233,7 +233,6 @@ describe('useRhythmGameScoring', () => {
   let originalLocalStorageSetItem
 
   beforeEach(async () => {
-
     originalLocalStorageSetItem = window.localStorage.setItem
     window.localStorage.setItem = vi.fn()
 
@@ -262,7 +261,7 @@ describe('useRhythmGameScoring', () => {
   afterEach(() => {
     try {
       cleanup()
-      } finally {
+    } finally {
       if (originalLocalStorageSetItem) {
         window.localStorage.setItem = originalLocalStorageSetItem
       }
