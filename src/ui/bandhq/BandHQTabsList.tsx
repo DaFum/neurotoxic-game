@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../shared/Tooltip.tsx'
 import { createRovingTabs } from '../shared/rovingTabs.ts'
@@ -11,6 +11,26 @@ interface BandHQTabsListProps {
   isVoidTraderUnlocked: boolean
 }
 
+// ⚡ BOLT OPTIMIZATION: Hoisted static base tabs and precomputed tab ids array
+// to module scope to avoid re-allocating 11 object descriptors and tab id arrays on every render.
+const STATIC_BASE_TABS: readonly HQTabDef[] = [
+  { id: 'STATS', key: 'tabs.stats' },
+  { id: 'DETAILS', key: 'tabs.details' },
+  { id: 'SHOP', key: 'tabs.shop' },
+  { id: 'UPGRADES', key: 'tabs.upgrades' },
+  { id: 'EXPEDITION', key: 'tabs.expedition' },
+  { id: 'SETLIST', key: 'tabs.setlist' },
+  { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
+  { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },
+  { id: 'SETTINGS', key: 'tabs.settings' },
+  { id: 'GLOSSARY', key: 'tabs.glossary' }
+]
+
+const HQ_TAB_IDS: readonly string[] = [
+  ...STATIC_BASE_TABS.map(tab => tab.id),
+  'VOID'
+]
+
 /**
  * Displays Band HQ tab buttons with active-tab state and labels.
  * @param props - Active tab state, tab switch callback, and whether the void trader is unlocked.
@@ -22,29 +42,26 @@ export const BandHQTabsList = ({
 }: BandHQTabsListProps) => {
   const { t } = useTranslation()
 
-  const tabs: HQTabDef[] = [
-    { id: 'STATS', key: 'tabs.stats' },
-    { id: 'DETAILS', key: 'tabs.details' },
-    { id: 'SHOP', key: 'tabs.shop' },
-    { id: 'UPGRADES', key: 'tabs.upgrades' },
-    { id: 'EXPEDITION', key: 'tabs.expedition' },
-    { id: 'SETLIST', key: 'tabs.setlist' },
-    { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
-    { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },
-    { id: 'SETTINGS', key: 'tabs.settings' },
-    { id: 'GLOSSARY', key: 'tabs.glossary' },
-    {
-      id: 'VOID',
-      key: isVoidTraderUnlocked ? 'tabs.voidTrader' : 'tabs.voidTraderLocked',
-      isLocked: !isVoidTraderUnlocked
-    }
-  ]
+  // ⚡ BOLT OPTIMIZATION: Memoize tab list and only rebuild when void trader lock state changes.
+  const tabs = useMemo<HQTabDef[]>(
+    () => [
+      ...STATIC_BASE_TABS,
+      {
+        id: 'VOID',
+        key: isVoidTraderUnlocked ? 'tabs.voidTrader' : 'tabs.voidTraderLocked',
+        isLocked: !isVoidTraderUnlocked
+      }
+    ],
+    [isVoidTraderUnlocked]
+  )
 
+  // ⚡ BOLT OPTIMIZATION: Pass precomputed HQ_TAB_IDS and replace O(N) tabs.find()
+  // with an O(1) lock check during keyboard navigation.
   const { getTabProps } = createRovingTabs({
-    ids: tabs.map(tab => tab.id),
+    ids: HQ_TAB_IDS,
     activeId: currentTab,
     onSelect: setActiveTab,
-    isLocked: id => tabs.find(tab => tab.id === id)?.isLocked === true
+    isLocked: id => id === 'VOID' && !isVoidTraderUnlocked
   })
 
   const stripRef = useRef<HTMLDivElement>(null)
