@@ -3,6 +3,48 @@ import { logger } from '../logger'
 import { clampUnit } from '../numberUtils'
 import { audioState } from './state'
 
+export interface SfxTrigger {
+  readonly note: string
+  readonly dur: string
+  readonly offsetSec?: number
+  readonly vel?: number
+  readonly voice?: 'synth' | 'kick'
+}
+
+export const SFX_RECIPES = {
+  hit: [{ note: 'A5', dur: '16n' }],
+  miss: [{ note: 'D2', dur: '8n' }],
+  menu: [{ note: 'C5', dur: '32n', vel: 0.3 }],
+  travel: [{ note: 'C1', dur: '8n', vel: 0.5, voice: 'kick' }],
+  cash: [
+    { note: 'B5', dur: '16n', vel: 0.4 },
+    { note: 'E6', dur: '16n', offsetSec: 0.05, vel: 0.4 }
+  ],
+  crash: [
+    { note: 'C1', dur: '8n', vel: 1.0 },
+    { note: 'F1', dur: '8n', offsetSec: 0.02, vel: 0.8 }
+  ],
+  honk: [
+    { note: 'F#4', dur: '8n', vel: 0.6 },
+    { note: 'A4', dur: '8n', vel: 0.6 }
+  ],
+  pickup: [
+    { note: 'C5', dur: '32n', vel: 0.5 },
+    { note: 'E5', dur: '32n', offsetSec: 0.05, vel: 0.5 }
+  ],
+  deliver: [
+    { note: 'C2', dur: '4n', vel: 0.8 },
+    { note: 'G2', dur: '4n', vel: 0.6 }
+  ],
+  void_hit: [
+    { note: 'B1', dur: '8n', vel: 0.9 },
+    { note: 'F2', dur: '8n', offsetSec: 0.03, vel: 0.7 },
+    { note: 'C#2', dur: '16n', offsetSec: 0.06, vel: 0.5 }
+  ]
+} as const satisfies Record<string, readonly SfxTrigger[]>
+
+export type AudioSfxType = keyof typeof SFX_RECIPES
+
 /**
  * Plays a one-shot UI/gameplay sound effect on the shared SFX synth.
  *
@@ -12,65 +54,47 @@ import { audioState } from './state'
  *
  * @param type - Effect id, e.g. `'hit'`, `'miss'`, `'menu'`, `'travel'`, `'cash'`, `'crash'`, `'honk'`, `'pickup'`, `'deliver'`, or `'void_hit'`.
  */
-export function playSFX(type: string): void {
+export function playSFX(type: AudioSfxType | string): void {
   if (!audioState.isSetup || !audioState.sfxSynth) return
 
+  if (!Object.hasOwn(SFX_RECIPES, type)) {
+    logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
+    return
+  }
+
+  const recipe: readonly SfxTrigger[] = SFX_RECIPES[type as AudioSfxType]
   const now = Tone.now()
-  switch (type) {
-    case 'hit':
-      // High pitch success ping
-      audioState.sfxSynth.triggerAttackRelease('A5', '16n', now)
-      break
-    case 'miss':
-      // Low discordant buzz
-      audioState.sfxSynth.triggerAttackRelease('D2', '8n', now)
-      break
-    case 'menu':
-      // Gentle blip
-      audioState.sfxSynth.triggerAttackRelease('C5', '32n', now, 0.3)
-      break
-    case 'travel':
-      // Engine-like rumble using drum kick if available, or low synth
-      if (audioState.drumKit && audioState.drumKit.kick) {
-        audioState.drumKit.kick.triggerAttackRelease('C1', '8n', now, 0.5)
+
+  for (const trigger of recipe) {
+    const time = trigger.offsetSec != null ? now + trigger.offsetSec : now
+    if (trigger.voice === 'kick' && audioState.drumKit?.kick) {
+      if (trigger.vel !== undefined) {
+        audioState.drumKit.kick.triggerAttackRelease(
+          trigger.note,
+          trigger.dur,
+          time,
+          trigger.vel
+        )
       } else {
-        audioState.sfxSynth.triggerAttackRelease('G1', '8n', now, 0.5)
+        audioState.drumKit.kick.triggerAttackRelease(
+          trigger.note,
+          trigger.dur,
+          time
+        )
       }
-      break
-    case 'cash':
-      // Bright chime/coin sound
-      audioState.sfxSynth.triggerAttackRelease('B5', '16n', now, 0.4)
-      audioState.sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
-      break
-    case 'crash':
-      // Low noise burst
-      audioState.sfxSynth.triggerAttackRelease('C1', '8n', now, 1.0)
-      audioState.sfxSynth.triggerAttackRelease('F1', '8n', now + 0.02, 0.8)
-      break
-    case 'honk':
-      // Car horn
-      audioState.sfxSynth.triggerAttackRelease('F#4', '8n', now, 0.6)
-      audioState.sfxSynth.triggerAttackRelease('A4', '8n', now, 0.6)
-      break
-    case 'pickup':
-      // Quick upward blip
-      audioState.sfxSynth.triggerAttackRelease('C5', '32n', now, 0.5)
-      audioState.sfxSynth.triggerAttackRelease('E5', '32n', now + 0.05, 0.5)
-      break
-    case 'deliver':
-      // Heavy success thud
-      audioState.sfxSynth.triggerAttackRelease('C2', '4n', now, 0.8)
-      audioState.sfxSynth.triggerAttackRelease('G2', '4n', now, 0.6)
-      break
-    case 'void_hit':
-      // Dissonant void impact — tritone cluster at low register
-      audioState.sfxSynth.triggerAttackRelease('B1', '8n', now, 0.9)
-      audioState.sfxSynth.triggerAttackRelease('F2', '8n', now + 0.03, 0.7)
-      audioState.sfxSynth.triggerAttackRelease('C#2', '16n', now + 0.06, 0.5)
-      break
-    default:
-      logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
-      break
+    } else {
+      const note = trigger.voice === 'kick' ? 'G1' : trigger.note
+      if (trigger.vel !== undefined) {
+        audioState.sfxSynth.triggerAttackRelease(
+          note,
+          trigger.dur,
+          time,
+          trigger.vel
+        )
+      } else {
+        audioState.sfxSynth.triggerAttackRelease(note, trigger.dur, time)
+      }
+    }
   }
 }
 

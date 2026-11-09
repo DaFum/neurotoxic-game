@@ -39,7 +39,7 @@ Roles:
 ## Drum kits and SFX
 
 - `audioState.midiDrumKit` is `Nullable<DrumKitSynth>` but `playDrumNote` expects `DrumKitSynth | undefined`; pass `audioState.midiDrumKit ?? undefined` so the default drum-kit fallback can run. If no kit exists, `playDrumNote` no-ops.
-- New SFX types must be added both to the `AudioSfxType` union and to `VALID_SFX_TYPES` in `AudioManager`. Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
+- New SFX types must be added to `SFX_RECIPES` in `src/utils/audio/sfx.ts` (the `AudioSfxType` union is derived automatically). Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
 - `audioService.setSfxVolume` (lowercase acronym, React-facing) bridges to `audioManager.setSFXVolume` (uppercase acronym, class-internal). Calling the wrong casing on a facade throws `TypeError` at runtime.
 
 ## Disposal

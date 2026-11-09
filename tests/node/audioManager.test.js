@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
+import { SFX_RECIPES } from '../../src/utils/audio/sfx'
+import { logger } from '../../src/utils/logger'
 
 test('AudioManager Tests', async t => {
   // Setup global mocks
@@ -18,7 +20,8 @@ test('AudioManager Tests', async t => {
     'sfx.ts': {
       playSFX: mock.fn(),
       setSFXVolume: mock.fn(),
-      setMusicVolume: mock.fn()
+      setMusicVolume: mock.fn(),
+      SFX_RECIPES
     },
     'transportControl.ts': {
       isAmbientOggPlaying: mock.fn(() => false),
@@ -41,7 +44,8 @@ test('AudioManager Tests', async t => {
   const mockAudioEngine = Object.assign({}, ...Object.values(mockAudioModules))
 
   // Import the module under test
-  const { audioManager } = await import('../../src/utils/audio/AudioManager')
+  const { audioManager, AudioManager } =
+    await import('../../src/utils/audio/AudioManager')
 
   await t.test('initializes with default values', () => {
     // Init runs on import
@@ -169,6 +173,51 @@ test('AudioManager Tests', async t => {
 
       assert.equal(audioManager.prefsLoaded, true)
       globalThis.localStorage.getItem = originalGetItem
+    }
+  )
+
+  await t.test(
+    'playSFX executes valid recipes and warns on unknown type',
+    () => {
+      const warnCalls = []
+      const origWarn = logger.warn
+      logger.warn = (...args) => {
+        warnCalls.push(args)
+      }
+
+      try {
+        const manager = new AudioManager()
+        mockAudioEngine.playSFX.mock.resetCalls()
+
+        const validTypes = Object.keys(SFX_RECIPES)
+        for (const type of validTypes) {
+          manager.playSFX(type)
+        }
+
+        assert.strictEqual(warnCalls.length, 0)
+        assert.strictEqual(
+          mockAudioEngine.playSFX.mock.calls.length,
+          validTypes.length
+        )
+        validTypes.forEach((type, idx) => {
+          assert.strictEqual(
+            mockAudioEngine.playSFX.mock.calls[idx].arguments[0],
+            type
+          )
+        })
+
+        // Unknown sound effect should log warning and return without throw
+        manager.playSFX('nonexistent_sfx')
+        assert.strictEqual(warnCalls.length, 1)
+        assert.strictEqual(warnCalls[0][0], 'AudioSystem')
+        assert.match(warnCalls[0][1], /Unknown SFX type: nonexistent_sfx/)
+        assert.strictEqual(
+          mockAudioEngine.playSFX.mock.calls.length,
+          validTypes.length
+        )
+      } finally {
+        logger.warn = origWarn
+      }
     }
   )
 })

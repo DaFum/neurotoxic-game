@@ -3,7 +3,13 @@
 import { setupAudio } from './setup'
 import { ensureAudioContext } from './context'
 import { disposeAudio } from './dispose'
-import { playSFX, setSFXVolume, setMusicVolume } from './sfx'
+import {
+  playSFX,
+  setSFXVolume,
+  setMusicVolume,
+  SFX_RECIPES,
+  type AudioSfxType
+} from './sfx'
 import {
   isAmbientOggPlaying,
   stopAudio,
@@ -23,20 +29,7 @@ import type { AudioSnapshot } from '../../types/audio'
 
 type AudioListener = () => void
 
-/**
- * Supported short sound-effect identifiers routed through the audio manager.
- */
-export type AudioSfxType =
-  | 'hit'
-  | 'miss'
-  | 'menu'
-  | 'travel'
-  | 'cash'
-  | 'crash'
-  | 'honk'
-  | 'pickup'
-  | 'deliver'
-  | 'void_hit'
+export type { AudioSfxType }
 
 type AudioStateSnapshot = Required<AudioSnapshot>
 
@@ -52,7 +45,7 @@ type AudioStateSnapshot = Required<AudioSnapshot>
  * add localStorage persistence and deferred-apply logic (audio graph may not
  * exist yet when preferences are loaded at startup).
  */
-class AudioSystem {
+export class AudioSystem {
   currentSongId: string | null
   musicVolume: number
   sfxVolume: number
@@ -82,19 +75,6 @@ class AudioSystem {
       currentSongId: this.currentSongId
     }
   }
-
-  private static readonly VALID_SFX_TYPES = new Set<AudioSfxType>([
-    'hit',
-    'miss',
-    'menu',
-    'travel',
-    'cash',
-    'crash',
-    'honk',
-    'pickup',
-    'deliver',
-    'void_hit'
-  ])
 
   /**
    * Returns true when audio is actively playing through ambient OGG or Tone transport.
@@ -341,9 +321,8 @@ class AudioSystem {
    * Plays a sound effect by key.
    * @param key - The SFX identifier, such as `'hit'` or `'miss'`.
    */
-  playSFX(key: AudioSfxType): void {
-    if (!this.prefsLoaded) return
-    if (!AudioSystem.VALID_SFX_TYPES.has(key)) {
+  playSFX(key: AudioSfxType | string): void {
+    if (!Object.hasOwn(SFX_RECIPES, key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
@@ -464,3 +443,5 @@ class AudioSystem {
  */
 export const audioManager = new AudioSystem()
 audioManager.init()
+
+export { AudioSystem as AudioManager }
