@@ -229,3 +229,8 @@
 
 **Learning:** In catalog and barter grids (like VoidTraderTab), action buttons with generic labels (such as "BARTER" or "PROCESSING...") lack item context when screen reader users navigate controls by landmarks or list shortcuts. Furthermore, item cards relying on plain text placeholders like "?" hide visual cues for rare contraband items.
 **Action:** Always construct dynamic `aria-label`s on grid item action buttons combining the action, item name, cost, and state (e.g. `BARTER Phantom Strings (1000 FAME)`), bind `aria-busy` during processing states, and map item IDs to visual contraband icon glyphs using `getContrabandIconGlyph`.
+
+## 2026-11-09 - Accessible Tooltips and Processing State on Post-Gig Recovery Actions
+
+**Learning:** In post-gig outcome screens (`CompletePhase`), recovery actions (such as "Spin Story" gated by spendable cash) used native `title={spinStoryReason}`. Native HTML `title` attributes are unstyleable, slow to appear, and inconsistently announced on disabled controls across mobile and assistive tech. Furthermore, async continuation buttons lacked `aria-busy` when processing state transitions.
+**Action:** Wrap gated post-gig action controls directly in the shared `Tooltip` component (`<Tooltip content={spinStoryReason}>`) instead of passing native `title`, and always pass `aria-busy={isProcessingAction}` to the primary continuation button so screen readers immediately recognize active processing states.

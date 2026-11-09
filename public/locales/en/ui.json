@@ -1732,6 +1732,7 @@
   "minigames.kabelsalat.title": "HARDWARE_RIGGING",
   "minigames.kabelsalat.voidSurge": "VOID SURGE",
   "minigames.skip": "SKIP",
+  "minigames.skipAria": "Skip minigame",
   "module": "module",
   "moveDown": "Move Down",
   "moveLeft": "Move Left",

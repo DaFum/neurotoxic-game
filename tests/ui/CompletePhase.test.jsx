@@ -321,10 +321,25 @@ describe('CompletePhase', () => {
 
     const button = screen.getByRole('button', { name: /Spin Story/i })
     expect(button).toBeDisabled()
-    // The reason is visible, linked via aria-describedby and in the title.
+    // The reason is visible, linked via aria-describedby and rendered inside accessible Tooltip.
     const reason = screen.getByText(/protected career cash/i)
     expect(button).toHaveAttribute('aria-describedby', reason.id)
-    expect(button).toHaveAttribute('title', reason.textContent)
+  })
+
+  test('sets aria-busy on continue button when processing action', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+        isProcessingAction={true}
+      />
+    )
+
+    const button = screen.getByRole('button', { name: /Processing/i })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
   })
 
   test('shows no spin story reason when it is affordable', () => {
