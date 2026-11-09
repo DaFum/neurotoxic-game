@@ -8,7 +8,7 @@
  *     test:vitest:logic   — the node-env vitest project (no jsdom), minimal workers (5 s)
  *
  *   Phase B (sequential, after Phase A):
- *     test:ui             — 131 jsdom vitest files, capped worker allotment
+ *     test:ui             — the jsdom vitest project, capped worker allotment
  *
  * test:vitest:logic is node-env only (no jsdom), draws ~1 extra worker from
  * the pool while test:node runs, and completes in ~5 s. By overlapping it

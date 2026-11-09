@@ -9,6 +9,7 @@
   "aria.toggleMuteSystem": "Toggle mute system",
   "arrival.bookingFameLocked": "The promoters will not book a band nobody knows. Festival slots need {{fame}} Fame.",
   "arrival.failedToStartGig": "Failed to start Gig.",
+  "arrival.gigStartRefused": "This gig cannot be started right now.",
   "arrival.homeSweetHome": "Home Sweet Home.",
   "arrival.restedAtStop": "Rested at stop. Band feels better.",
   "arrival.showCancelled": "Show cancelled! The band refused to go on stage due to low harmony.",

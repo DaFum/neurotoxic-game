@@ -83,7 +83,7 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
  * @returns True when the refusal check passed and `startGig` returned
  * normally. That means a start was requested, not that `PRE_GIG` committed:
  * the reducer stays authoritative. False when the check refused (a warning, no
- * toast) or when the check or `startGig` threw.
+ * localized warning toast) or when the check or `startGig` threw.
  *
  * @remarks
  * The `catch` receives synchronous throws from the check and from the
@@ -106,6 +106,14 @@ export const requestArrivalGigStart = (
     const refusal = checkStartGig ? checkStartGig(venue) : null
     if (refusal !== null) {
       logger.warn('ArrivalLogic', 'START_GIG would be refused', { refusal })
+      // The caller routes to OVERWORLD and leaves the click retryable, so say
+      // why nothing happened instead of failing silently.
+      addToast?.(
+        i18n.t('ui:arrival.gigStartRefused', {
+          defaultValue: 'This gig cannot be started right now.'
+        }),
+        'warning'
+      )
       return false
     }
     startGig(venue)

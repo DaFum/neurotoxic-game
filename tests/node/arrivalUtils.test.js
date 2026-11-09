@@ -366,7 +366,15 @@ describe('handleNodeArrival', () => {
     assert.strictEqual(checkStartGig.mock.calls.length, 1)
     assert.strictEqual(checkStartGig.mock.calls[0].arguments[0], venue)
     assert.strictEqual(startGig.mock.calls.length, 0)
-    assert.strictEqual(mocks.addToast.mock.calls.length, 0)
+    // #3607: a refusal is reported to the player, as a warning.
+    assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+    const [toastMessage, toastType] = mocks.addToast.mock.calls[0].arguments
+    assert.ok(
+      toastMessage === 'This gig cannot be started right now.' ||
+        toastMessage === 'ui:arrival.gigStartRefused',
+      toastMessage
+    )
+    assert.strictEqual(toastType, 'warning')
     assert.strictEqual(warn.mock.calls.length, 1)
     assert.deepStrictEqual(warn.mock.calls[0].arguments, [
       'ArrivalLogic',
