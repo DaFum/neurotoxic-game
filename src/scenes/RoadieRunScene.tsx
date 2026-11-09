@@ -47,11 +47,6 @@ export const RoadieRunScene = () => {
     [changeScene]
   )
 
-  const handleMoveUp = useCallback(() => actions.move(0, -1), [actions])
-  const handleMoveLeft = useCallback(() => actions.move(-1, 0), [actions])
-  const handleMoveDown = useCallback(() => actions.move(0, 1), [actions])
-  const handleMoveRight = useCallback(() => actions.move(1, 0), [actions])
-
   const renderCompletionStats = useCallback(
     (state: unknown) => {
       const currentDamage =
@@ -116,10 +111,7 @@ export const RoadieRunScene = () => {
       <RoadieControls
         showControls={showControls}
         setShowControls={setShowControls}
-        handleMoveUp={handleMoveUp}
-        handleMoveLeft={handleMoveLeft}
-        handleMoveDown={handleMoveDown}
-        handleMoveRight={handleMoveRight}
+        onMove={actions.move}
       />
     </MinigameSceneFrame>
   )

@@ -12,10 +12,7 @@ vi.mock('react-i18next', () => ({
 const setup = (props = {}) => {
   const handlers = {
     setShowControls: vi.fn(),
-    handleMoveUp: vi.fn(),
-    handleMoveLeft: vi.fn(),
-    handleMoveDown: vi.fn(),
-    handleMoveRight: vi.fn()
+    onMove: vi.fn()
   }
 
   render(<RoadieControls showControls={false} {...handlers} {...props} />)
@@ -47,6 +44,7 @@ describe('RoadieControls touch input', () => {
   test('moves by swipe direction on the touch surface', () => {
     const { handlers, surface } = setup()
 
+    // Swipe right
     fireEvent.pointerDown(surface, {
       clientX: 80,
       clientY: 120,
@@ -59,11 +57,52 @@ describe('RoadieControls touch input', () => {
       pointerId: 1,
       pointerType: 'touch'
     })
+    expect(handlers.onMove).toHaveBeenCalledWith(1, 0)
 
-    expect(handlers.handleMoveRight).toHaveBeenCalledTimes(1)
-    expect(handlers.handleMoveLeft).not.toHaveBeenCalled()
-    expect(handlers.handleMoveUp).not.toHaveBeenCalled()
-    expect(handlers.handleMoveDown).not.toHaveBeenCalled()
+    // Swipe left
+    fireEvent.pointerDown(surface, {
+      clientX: 150,
+      clientY: 120,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    fireEvent.pointerUp(surface, {
+      clientX: 80,
+      clientY: 126,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    expect(handlers.onMove).toHaveBeenCalledWith(-1, 0)
+
+    // Swipe up
+    fireEvent.pointerDown(surface, {
+      clientX: 120,
+      clientY: 150,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    fireEvent.pointerUp(surface, {
+      clientX: 126,
+      clientY: 80,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    expect(handlers.onMove).toHaveBeenCalledWith(0, -1)
+
+    // Swipe down
+    fireEvent.pointerDown(surface, {
+      clientX: 120,
+      clientY: 80,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    fireEvent.pointerUp(surface, {
+      clientX: 126,
+      clientY: 150,
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    expect(handlers.onMove).toHaveBeenCalledWith(0, 1)
   })
 
   test('keeps movement working when pointer capture is unavailable', () => {
@@ -88,7 +127,7 @@ describe('RoadieControls touch input', () => {
       pointerType: 'touch'
     })
 
-    expect(handlers.handleMoveDown).toHaveBeenCalledTimes(1)
+    expect(handlers.onMove).toHaveBeenCalledWith(0, 1)
   })
 
   test('moves by tap quadrant when there is no swipe', () => {
@@ -107,8 +146,23 @@ describe('RoadieControls touch input', () => {
       pointerType: 'touch'
     })
 
-    expect(handlers.handleMoveUp).toHaveBeenCalledTimes(1)
-    expect(handlers.handleMoveDown).not.toHaveBeenCalled()
+    expect(handlers.onMove).toHaveBeenCalledWith(0, -1)
+  })
+
+  test('triggers movement when D-pad buttons are clicked', () => {
+    const { handlers } = setup({ showControls: true })
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui:moveUp' }))
+    expect(handlers.onMove).toHaveBeenCalledWith(0, -1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui:moveLeft' }))
+    expect(handlers.onMove).toHaveBeenCalledWith(-1, 0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui:moveDown' }))
+    expect(handlers.onMove).toHaveBeenCalledWith(0, 1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui:moveRight' }))
+    expect(handlers.onMove).toHaveBeenCalledWith(1, 0)
   })
 
   test('keeps the controller pad hidden on mobile and optional on desktop', () => {
@@ -116,10 +170,7 @@ describe('RoadieControls touch input', () => {
       <RoadieControls
         showControls={false}
         setShowControls={() => {}}
-        handleMoveUp={() => {}}
-        handleMoveLeft={() => {}}
-        handleMoveDown={() => {}}
-        handleMoveRight={() => {}}
+        onMove={() => {}}
       />
     )
 
@@ -131,10 +182,7 @@ describe('RoadieControls touch input', () => {
       <RoadieControls
         showControls={true}
         setShowControls={() => {}}
-        handleMoveUp={() => {}}
-        handleMoveLeft={() => {}}
-        handleMoveDown={() => {}}
-        handleMoveRight={() => {}}
+        onMove={() => {}}
       />
     )
 
