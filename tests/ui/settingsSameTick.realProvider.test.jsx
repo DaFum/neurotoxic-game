@@ -55,6 +55,9 @@ describe('updateSettings through the real provider', () => {
 
     act(() => {
       result.current.actions.updateSettings({ crtEnabled })
+      // The write must already be in storage before resetState reads it; a
+      // write deferred to an effect would otherwise pass the checks below.
+      expect(readGlobalSettings().crtEnabled).toBe(crtEnabled)
       result.current.actions.resetState()
     })
 
