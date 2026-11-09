@@ -31,10 +31,16 @@ for (const name of ${JSON.stringify(order)}) loaded[name] = await import(urls[na
 const { audioManager } = loaded.manager
 const { audioService } = loaded.service
 
+// Let zero-delay init timers fire; only a long-lived timer should remain.
+await new Promise(resolve => setTimeout(resolve, 100))
 const report = {
   hubManagerIsManager: loaded.hub.audioManager === audioManager,
   hubServiceIsService: loaded.hub.audioService === audioService,
-  prefsLoadedAtImport: audioManager.prefsLoaded
+  prefsLoadedAtImport: audioManager.prefsLoaded,
+  // #3654: an import-time timer keeps the process alive for seconds.
+  pendingTimersAfterImport: process
+    .getActiveResourcesInfo()
+    .filter(resource => resource === 'Timeout').length
 }
 audioService.setMusicVolume(0.25)
 audioService.setSfxVolume(0.75)
@@ -46,11 +52,7 @@ audioManager.setMusicVolume(0.5)
 unsubscribe()
 report.serviceNotified = notified
 report.serviceMusicVol = audioService.getState().musicVol
-// The audio stack leaves a timer pending for seconds; do not wait it out.
-process.stdout.write(
-  ${JSON.stringify(REPORT_MARKER)} + JSON.stringify(report) + '\\n',
-  () => process.exit(0)
-)
+process.stdout.write(${JSON.stringify(REPORT_MARKER)} + JSON.stringify(report) + '\\n')
 `
 
 const runImportOrder = order => {
@@ -96,6 +98,7 @@ for (const [label, order] of Object.entries(IMPORT_ORDERS)) {
       hubManagerIsManager: true,
       hubServiceIsService: true,
       prefsLoadedAtImport: true,
+      pendingTimersAfterImport: 0,
       managerVolumes: [0.25, 0.75],
       toggleMute: [true, true],
       serviceNotified: 1,

@@ -3,8 +3,13 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import httpBackend from 'i18next-http-backend'
 
+// The HTTP backend polls and retries a relative URL, which keeps a plain Node
+// process (no `window`) alive for ~11s after a module graph that reaches this
+// file is imported. Locales only load over HTTP in a browser.
+const isBrowser = typeof window !== 'undefined'
+if (isBrowser) i18n.use(httpBackend)
+
 i18n
-  .use(httpBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
