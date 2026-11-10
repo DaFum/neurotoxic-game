@@ -204,6 +204,7 @@ export const BASE_STATE = {
   completedQuestScopes: [],
   reputationByRegion: {},
   unlocks: [],
+  pendingOverlay: null,
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
   terminalOutcome: null,

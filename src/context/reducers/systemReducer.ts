@@ -1102,12 +1102,17 @@ export const handleSetPendingBandHQOpen = (
   isOpen: boolean
 ): GameState => {
   if (typeof isOpen !== 'boolean') return state
-  if (state.pendingBandHQOpen === isOpen) return state
+  const isCurrentlyOverlayBandHQ = state.pendingOverlay?.kind === 'band_hq'
+  if (isOpen) {
+    if (state.pendingBandHQOpen) return state
+  } else {
+    if (!state.pendingBandHQOpen && !isCurrentlyOverlayBandHQ) return state
+  }
   return {
     ...state,
     pendingOverlay: isOpen
       ? { kind: 'band_hq' }
-      : state.pendingOverlay?.kind === 'band_hq'
+      : isCurrentlyOverlayBandHQ
         ? null
         : (state.pendingOverlay ?? null),
     pendingBandHQOpen: isOpen
