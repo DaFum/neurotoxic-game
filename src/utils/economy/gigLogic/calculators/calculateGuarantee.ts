@@ -8,7 +8,6 @@ import type { GigEconomyData } from '../../types'
  * @returns Guarantee amount and optional income breakdown item.
  */
 export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
-  gigData = gigData || {}
   const pay = Math.max(0, finiteNumberOr(gigData.pay, 0))
   if (pay > 0) {
     return {

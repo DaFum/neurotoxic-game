@@ -8,7 +8,6 @@ import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
  * @returns Total sponsor bonus and income breakdown items.
  */
 export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
-  gigStats = gigStats || {}
   const bonuses = []
   let totalBonus = 0
 

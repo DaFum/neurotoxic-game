@@ -57,7 +57,6 @@ export const calculateGigExpenses = (
   modifiers: Partial<GigModifiers> = {},
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  modifiers = modifiers || {}
   const expenses: { total: number; breakdown: FinancialBreakdownItem[] } = {
     total: 0,
     breakdown: []

@@ -42,10 +42,6 @@ export const calculateMerchIncome = (
   context: EconomyContext = {},
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  gigStats = gigStats || {}
-  modifiers = modifiers || {}
-  bandInventory = bandInventory || {}
-  context = context || {}
   // Better baseline merch conversion.
   // Smoothly scales from 10% to 40% based on performance
   let buyRate = 0.1 + (performanceScore / 100) * 0.3
@@ -67,7 +63,7 @@ export const calculateMerchIncome = (
     })
   }
 
-  if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
+  if (modifiers?.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Loyalty converts to merch sales during controversy
   if (isCultAudience(context?.controversyLevel, context?.loyalty)) {
@@ -97,9 +93,9 @@ export const calculateMerchIncome = (
     Math.max(0, ticketsSold) * Math.max(0, buyRate)
   )
 
-  const customPrices = context.merchPrices ?? {}
+  const customPrices = context?.merchPrices ?? {}
   const safeInventory = bandInventory || {}
-  const cityTraits = context.cityTraits
+  const cityTraits = context?.cityTraits
 
   const genreBias = (cityTraits?.genreBias ?? '') as CityGenre
   const spendingProfile = (cityTraits?.barSpendingProfile ??

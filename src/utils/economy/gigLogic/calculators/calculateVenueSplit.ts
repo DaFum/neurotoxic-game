@@ -13,7 +13,6 @@ export const calculateVenueSplit = (
   ticketsRevenue = 0,
   gigData: GigEconomyData = {}
 ) => {
-  gigData = gigData || {}
   const diff = finiteNumberOr(gigData.diff ?? gigData.difficulty, 0)
   const splitRate =
     diff >= 5
