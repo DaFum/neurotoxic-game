@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { usePostGigLogic } from '../../src/hooks/postGig/usePostGigLogic'
+import { usePostGigState } from '../../src/hooks/postGig/usePostGigState'
 import * as GameState from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
@@ -1088,6 +1089,117 @@ describe('usePostGigLogic', () => {
       })
       await waitFor(() => {
         expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      })
+    })
+  })
+
+  describe('usePostGigState - Discriminated Union Flow State', () => {
+    it('initializes to REPORT phase with null postResult and empty brandOffers', () => {
+      const { result } = renderHook(() => usePostGigState())
+      expect(result.current.flowState).toEqual({ phase: 'REPORT' })
+      expect(result.current.phase).toBe('REPORT')
+      expect(result.current.postResult).toBeNull()
+      expect(result.current.brandOffers).toEqual([])
+    })
+
+    it('guards against empty screen: rejects transition to DEALS or COMPLETE without postResult', () => {
+      const { result } = renderHook(() => usePostGigState())
+
+      act(() => {
+        result.current.setPhase('SOCIAL')
+      })
+      expect(result.current.flowState).toEqual({ phase: 'SOCIAL' })
+
+      // Attempting to transition to COMPLETE without a PostResult must be blocked
+      act(() => {
+        result.current.setPhase('COMPLETE')
+      })
+      expect(result.current.flowState).toEqual({ phase: 'SOCIAL' })
+      expect(result.current.phase).toBe('SOCIAL')
+
+      // Attempting to transition to DEALS without a PostResult must be blocked
+      act(() => {
+        result.current.setPhase('DEALS')
+      })
+      expect(result.current.flowState).toEqual({ phase: 'SOCIAL' })
+      expect(result.current.phase).toBe('SOCIAL')
+    })
+
+    it('transitions to COMPLETE once postResult is provided', () => {
+      const { result } = renderHook(() => usePostGigState())
+      const mockResult = {
+        type: 'SUCCESS',
+        success: true,
+        followers: 100,
+        totalFollowers: 100,
+        moneyChange: 50,
+        message: 'Great gig!'
+      }
+
+      act(() => {
+        result.current.setPostResult(mockResult)
+        result.current.setPhase('COMPLETE')
+      })
+
+      expect(result.current.flowState).toEqual({
+        phase: 'COMPLETE',
+        result: mockResult
+      })
+      expect(result.current.phase).toBe('COMPLETE')
+      expect(result.current.postResult).toEqual(mockResult)
+      expect(result.current.brandOffers).toEqual([])
+    })
+
+    it('transitions to DEALS with postResult and brandOffers', () => {
+      const { result } = renderHook(() => usePostGigState())
+      const mockResult = {
+        type: 'SUCCESS',
+        success: true,
+        followers: 200,
+        totalFollowers: 200,
+        moneyChange: 0,
+        message: 'Viral post!'
+      }
+      const mockOffers = [
+        {
+          id: 'deal_1',
+          name: 'Amp Corp',
+          offer: { upfront: 500, duration: 2 }
+        }
+      ]
+
+      act(() => {
+        result.current.setPostResult(mockResult)
+        result.current.setBrandOffers(mockOffers)
+        result.current.setPhase('DEALS')
+      })
+
+      expect(result.current.flowState).toEqual({
+        phase: 'DEALS',
+        result: mockResult,
+        offers: mockOffers
+      })
+      expect(result.current.phase).toBe('DEALS')
+      expect(result.current.postResult).toEqual(mockResult)
+      expect(result.current.brandOffers).toEqual(mockOffers)
+
+      // Clearing brand offers in DEALS updates flowState
+      act(() => {
+        result.current.setBrandOffers([])
+      })
+      expect(result.current.flowState).toEqual({
+        phase: 'DEALS',
+        result: mockResult,
+        offers: []
+      })
+
+      // Advancing to COMPLETE preserves postResult
+      act(() => {
+        result.current.setPhase('COMPLETE')
+      })
+      expect(result.current.flowState).toEqual({
+        phase: 'COMPLETE',
+        result: mockResult
       })
     })
   })

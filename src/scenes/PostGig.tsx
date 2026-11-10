@@ -32,10 +32,10 @@ const CompletePhase = lazy(() =>
 export const PostGig = () => {
   const {
     t,
+    flowState,
     phase,
     financials,
     postOptions,
-    postResult,
     brandOffers,
     phaseTitleKey,
     phaseTitleDefault,
@@ -125,9 +125,9 @@ export const PostGig = () => {
             />
           )}
 
-          {phase === 'COMPLETE' && postResult && (
+          {flowState.phase === 'COMPLETE' && (
             <CompletePhase
-              result={postResult}
+              result={flowState.result}
               onContinue={handleContinue}
               onSpinStory={handleSpinStory}
               player={player}

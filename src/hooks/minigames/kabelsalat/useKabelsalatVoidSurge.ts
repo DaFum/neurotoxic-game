@@ -1,31 +1,81 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
+import type { KabelsalatPhase } from '../../../types/kabelsalat'
 
 /**
  * Tracks Kabelsalat void surge buildup and purge state for the board.
- * @param isPoweredOn - Suspends surge timers after successful wiring.
- * @param isGameOver - Suspends surge timers after terminal overlay state.
- * @param isShocked - Suspends surge timers during shock recovery.
- * @param isWinningRef - Suppresses surge shocks while the win transition is pending.
- * @param triggerShock - Callback that activates the Kabelsalat shock state.
- * @param t - Translation callback used for localized labels and messages.
+ * Supports both explicit `KabelsalatPhase` state and legacy boolean flags.
+ *
+ * @param phaseOrIsPoweredOn - Explicit minigame phase or legacy powered on flag.
+ * @param isGameOverOrTriggerShock - Legacy game over flag or triggerShock callback.
+ * @param isShockedOrT - Legacy isShocked flag or translation callback.
+ * @param isWinningRef - Legacy win ref guard.
+ * @param triggerShockArg - Shock trigger callback for legacy mode.
+ * @param tArg - Translation callback for legacy mode.
  * @returns Current surge meter, purge count, and purge command.
  */
-export const useKabelsalatVoidSurge = (
+/** Phase-based signature: the surge runs only while the phase is `'playing'`. */
+export function useKabelsalatVoidSurge(
+  phase: KabelsalatPhase,
+  triggerShock: (reason: string) => void,
+  t: TFunction<['ui'], undefined>
+): {
+  voidSurge: number
+  voidSurgesPurged: number
+  purgeVoidSurge: () => void
+}
+/** Legacy signature that derives "playing" from the boolean flags and `isWinningRef`. */
+export function useKabelsalatVoidSurge(
   isPoweredOn: boolean,
   isGameOver: boolean,
   isShocked: boolean,
   isWinningRef: MutableRefObject<boolean>,
   triggerShock: (reason: string) => void,
   t: TFunction<['ui'], undefined>
-) => {
+): {
+  voidSurge: number
+  voidSurgesPurged: number
+  purgeVoidSurge: () => void
+}
+/** Implementation signature shared by the phase-based and legacy overloads. */
+export function useKabelsalatVoidSurge(
+  phaseOrIsPoweredOn: KabelsalatPhase | boolean,
+  isGameOverOrTriggerShock: boolean | ((reason: string) => void),
+  isShockedOrT?: boolean | TFunction<['ui'], undefined>,
+  isWinningRef?: MutableRefObject<boolean>,
+  triggerShockArg?: (reason: string) => void,
+  tArg?: TFunction<['ui'], undefined>
+): {
+  voidSurge: number
+  voidSurgesPurged: number
+  purgeVoidSurge: () => void
+} {
   const [voidSurge, setVoidSurge] = useState(0)
   const [voidSurgesPurged, setVoidSurgesPurged] = useState(0)
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const triggeredRef = useRef(false)
-  const isActive = !isPoweredOn && !isGameOver && !isShocked
+
+  const isPhaseObject = typeof phaseOrIsPoweredOn === 'object'
+  const isPlaying = isPhaseObject
+    ? phaseOrIsPoweredOn.name === 'playing'
+    : !phaseOrIsPoweredOn &&
+      !isGameOverOrTriggerShock &&
+      !isShockedOrT &&
+      !isWinningRef?.current
+
+  const triggerShock = (
+    isPhaseObject && typeof isGameOverOrTriggerShock === 'function'
+      ? isGameOverOrTriggerShock
+      : triggerShockArg!
+  ) as (reason: string) => void
+
+  const t = (
+    isPhaseObject && typeof isShockedOrT === 'function' ? isShockedOrT : tArg!
+  ) as TFunction<['ui'], undefined>
+
+  const isActive = isPlaying
 
   useEffect(() => {
     if (isActive) {
@@ -37,24 +87,20 @@ export const useKabelsalatVoidSurge = (
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current)
+        timerRef.current = null
       }
     }
   }, [isActive])
 
   useEffect(() => {
-    if (
-      voidSurge >= 100 &&
-      !triggeredRef.current &&
-      isActive &&
-      !isWinningRef.current
-    ) {
+    if (voidSurge >= 100 && !triggeredRef.current && isActive) {
       triggeredRef.current = true
       triggerShock(t('ui:minigames.kabelsalat.systemShock'))
       setVoidSurge(0)
     } else if (voidSurge === 0) {
       triggeredRef.current = false
     }
-  }, [voidSurge, triggerShock, t, isActive, isWinningRef])
+  }, [voidSurge, triggerShock, t, isActive])
 
   const purgeVoidSurge = useCallback(() => {
     if (isActive && voidSurge > 0) {

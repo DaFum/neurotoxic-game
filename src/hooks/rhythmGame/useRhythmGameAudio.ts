@@ -19,7 +19,7 @@ import type {
   RhythmSetlistEntry,
   SetLastGigStats
 } from '../../types/rhythmGame'
-import type { GigAudioStatus } from '../../types/gigAudioStatus'
+import type { GigAudioStatus, GigInitStatus } from '../../types/gigAudioStatus'
 import type { ExpeditionConditionPerformanceProfile } from '../../types/expedition'
 
 import type { RhythmStateSetters } from './useRhythmGameState'
@@ -30,7 +30,7 @@ type RhythmGameAudioParams = {
   resetGameplayState: () => void
   setters: Pick<
     RhythmStateSetters,
-    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind'
+    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind' | 'setInitStatus'
   >
   contextState: {
     band: GameState['band']
@@ -55,7 +55,7 @@ type HarmonyGuardParams = {
   currentStatusRef: React.MutableRefObject<GigAudioStatus>
   gameStateRef: { current: RhythmGameRefState }
   setGameOver: (isGameOver: boolean) => void
-  setAudioStatus: (status: GigAudioStatus) => void
+  setInitStatus: (status: GigInitStatus) => void
   currentT: TFunction
   currentAddToast: OptionalToastCallback
   currentSetLastGigStats: SetLastGigStats
@@ -68,7 +68,7 @@ const handleHarmonyGuard = ({
   currentStatusRef,
   gameStateRef,
   setGameOver,
-  setAudioStatus,
+  setInitStatus,
   currentT,
   currentAddToast,
   currentSetLastGigStats,
@@ -82,7 +82,7 @@ const handleHarmonyGuard = ({
       currentRhythmState.isGameOver = true
       setGameOver(true)
       currentStatusRef.current = 'ready'
-      setAudioStatus('ready')
+      setInitStatus({ status: 'ready' })
 
       const message = currentT('ui:gig.toasts.bandCollapsed', {
         defaultValue: 'BAND COLLAPSED'
@@ -251,7 +251,8 @@ export const useRhythmGameAudio = ({
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const audioEngine = useAudioEngine()
-  const { setAudioStatus, setIsGameOver, setFailureKind } = setters
+  const { setAudioStatus, setIsGameOver, setFailureKind, setInitStatus } =
+    setters
   const {
     band,
     gameMap,
@@ -282,6 +283,7 @@ export const useRhythmGameAudio = ({
     setLastGigStats,
     endGig,
     t,
+    setInitStatus,
     setAudioStatus,
     setIsGameOver,
     setFailureKind
@@ -300,6 +302,7 @@ export const useRhythmGameAudio = ({
       setLastGigStats,
       endGig,
       t,
+      setInitStatus,
       setAudioStatus,
       setIsGameOver,
       setFailureKind
@@ -316,10 +319,16 @@ export const useRhythmGameAudio = ({
     setLastGigStats,
     endGig,
     t,
+    setInitStatus,
     setAudioStatus,
     setIsGameOver,
     setFailureKind
   ])
+
+  /** Writes the gig init status; the reducer derives `audioStatus` and `failureKind` from it. */
+  const updateInitStatus = useCallback((status: GigInitStatus) => {
+    latestContextRef.current.setInitStatus(status)
+  }, [])
 
   const onStageReady = useCallback(() => {
     stageReadyRef.current = true
@@ -345,13 +354,12 @@ export const useRhythmGameAudio = ({
     }
     invalidateSongSequence(gameStateRef)
     currentStatusRef.current = 'failed'
-    latestContextRef.current.setAudioStatus('failed')
-    latestContextRef.current.setFailureKind('stage')
+    updateInitStatus({ status: 'failed', failureKind: 'stage' })
     if (status === 'ready') {
       logger.error('RhythmGame', 'Gig stage failed after the song started.')
       audioEngine.stopAudio()
     }
-  }, [audioEngine, gameStateRef])
+  }, [audioEngine, gameStateRef, updateInitStatus])
 
   /**
    * Resolves once the stage has signalled ready or failed, the init was
@@ -409,9 +417,8 @@ export const useRhythmGameAudio = ({
         setLastGigStats: currentSetLastGigStats,
         endGig: currentEndGig,
         t: currentT,
-        setAudioStatus,
-        setIsGameOver: setGameOver,
-        setFailureKind
+        setInitStatus: currentSetInitStatus,
+        setIsGameOver: setGameOver
       } = ctx
 
       currentStatusRef.current = 'initializing'
@@ -427,8 +434,7 @@ export const useRhythmGameAudio = ({
       const failForStage = () => {
         logger.error('RhythmGame', 'Gig stage failed to initialize.')
         currentStatusRef.current = 'failed'
-        setAudioStatus('failed')
-        setFailureKind('stage')
+        updateInitStatus({ status: 'failed', failureKind: 'stage' })
       }
 
       try {
@@ -444,7 +450,7 @@ export const useRhythmGameAudio = ({
           currentStatusRef,
           gameStateRef,
           setGameOver,
-          setAudioStatus,
+          setInitStatus: currentSetInitStatus,
           currentT,
           currentAddToast,
           currentSetLastGigStats,
@@ -474,7 +480,7 @@ export const useRhythmGameAudio = ({
             'Audio Context blocked. Waiting for user gesture.'
           )
           currentStatusRef.current = 'blocked'
-          setAudioStatus('blocked')
+          updateInitStatus({ status: 'blocked' })
           return
         }
 
@@ -493,9 +499,8 @@ export const useRhythmGameAudio = ({
         })
 
         if (!physicsSuccess) {
-          setAudioStatus('failed')
-          setFailureKind('audio')
           currentStatusRef.current = 'failed'
+          updateInitStatus({ status: 'failed', failureKind: 'audio' })
           return
         }
 
@@ -505,7 +510,7 @@ export const useRhythmGameAudio = ({
         // frame would auto-miss notes that were never shown. 'initializing' also
         // lifts the blocked overlay on a retry so the stage can mount.
         if (!stageReadyRef.current && !isAborted()) {
-          setAudioStatus('initializing')
+          updateInitStatus({ status: 'initializing' })
           await waitForStageReady(signal)
         }
 
@@ -515,7 +520,7 @@ export const useRhythmGameAudio = ({
 
         if (isAborted()) {
           currentStatusRef.current = 'idle'
-          setAudioStatus('idle')
+          updateInitStatus({ status: 'idle' })
           return
         }
 
@@ -524,22 +529,22 @@ export const useRhythmGameAudio = ({
           return
         }
 
-        setAudioStatus('ready')
-        setFailureKind(null)
+        updateInitStatus({ status: 'ready' })
         currentStatusRef.current = 'ready'
         gameStateRef.current.onPlaybackError = error => {
           if (currentStatusRef.current !== 'ready') return
           invalidateSongSequence(gameStateRef)
           currentStatusRef.current = 'failed'
-          const latest = latestContextRef.current
-          latest.setAudioStatus('failed')
-          latest.setFailureKind('audio')
+          updateInitStatus({ status: 'failed', failureKind: 'audio' })
           audioEngine.stopAudio()
           handleError(error, {
-            addToast: latest.addToast,
-            fallbackMessage: latest.t('ui:gig.errors.nextSongFailed', {
-              defaultValue: 'Failed to start next song!'
-            })
+            addToast: latestContextRef.current.addToast,
+            fallbackMessage: latestContextRef.current.t(
+              'ui:gig.errors.nextSongFailed',
+              {
+                defaultValue: 'Failed to start next song!'
+              }
+            )
           })
         }
         await audioEngine.playSongSequence(
@@ -567,10 +572,8 @@ export const useRhythmGameAudio = ({
           fallbackMessage: toastMessage
         })
         currentStatusRef.current = 'failed'
-        setAudioStatus('failed')
-        // A stage failure that stopped the song under this call stays a stage
-        // failure even though the stopped playback rejects.
-        setFailureKind(stageFailedRef.current ? 'stage' : 'audio')
+        const failureKind = stageFailedRef.current ? 'stage' : 'audio'
+        updateInitStatus({ status: 'failed', failureKind })
       } finally {
         if (abortControllerRef.current === controller) {
           if (currentStatusRef.current !== 'ready' || isAborted()) {
@@ -579,7 +582,7 @@ export const useRhythmGameAudio = ({
         }
       }
     },
-    [audioEngine, gameStateRef, waitForStageReady]
+    [audioEngine, gameStateRef, updateInitStatus, waitForStageReady]
   )
 
   useEffect(() => {
@@ -626,10 +629,10 @@ export const useRhythmGameAudio = ({
       // stage; wait for the remounted stage's own signal.
       stageReadyRef.current = false
       stageFailedRef.current = false
-      latestContextRef.current.setFailureKind(null)
+      updateInitStatus({ status: 'idle' })
     }
     await initializeGigState(true)
-  }, [gameStateRef, initializeGigState, resetGameplayState])
+  }, [gameStateRef, initializeGigState, resetGameplayState, updateInitStatus])
 
   return { retryAudioInitialization, onStageReady, onStageInitError }
 }

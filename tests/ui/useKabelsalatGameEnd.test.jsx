@@ -180,4 +180,47 @@ describe('useKabelsalatGameEnd', () => {
     )
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
+
+  it('supports explicit KabelsalatPhase for powered win', () => {
+    const onTransition = vi.fn()
+    renderHook(() =>
+      useKabelsalatGameEnd({ name: 'powered' }, 15, 2, onTransition)
+    )
+
+    vi.advanceTimersByTime(2500)
+
+    expect(onTransition).toHaveBeenCalledTimes(1)
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
+      isPoweredOn: true,
+      timeLeft: 15,
+      voidSurgesPurged: 2
+    })
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('supports explicit KabelsalatPhase for gameover loss', () => {
+    const onTransition = vi.fn()
+    renderHook(() =>
+      useKabelsalatGameEnd({ name: 'gameover' }, 0, 1, onTransition)
+    )
+
+    vi.advanceTimersByTime(3500)
+
+    expect(onTransition).toHaveBeenCalledTimes(1)
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
+      isPoweredOn: false,
+      timeLeft: 0,
+      voidSurgesPurged: 1
+    })
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('does not trigger auto-advance when phase is playing', () => {
+    renderHook(() => useKabelsalatGameEnd({ name: 'playing' }, 20, 0))
+
+    vi.advanceTimersByTime(4000)
+
+    expect(mockCompleteKabelsalatMinigame).not.toHaveBeenCalled()
+    expect(mockChangeScene).not.toHaveBeenCalled()
+  })
 })

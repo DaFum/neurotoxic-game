@@ -28,15 +28,12 @@ export const MainMenu = () => {
   const {
     isStarting,
     isLoadingGame,
-    showNameInput,
+    activeModal,
+    setActiveModal,
     playerNameInput,
     setPlayerNameInput,
-    showSocials,
     setShowSocials,
-    showFeatures,
     setShowFeatures,
-    showExistingSavePrompt,
-    setShowExistingSavePrompt,
     inputRef,
     handleStartTour,
     handleStartExpedition,
@@ -50,15 +47,15 @@ export const MainMenu = () => {
 
   return (
     <div className='flex flex-col items-center h-full w-full bg-void-black relative overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 max-sm:pb-(--tutorial-inset)'>
-      {showExistingSavePrompt && (
+      {activeModal?.type === 'existingSave' && (
         <MainMenuExistingSavePrompt
           onLoad={handleLoadExistingFromPrompt}
           onStartNew={handleStartNewAnyway}
-          onClose={() => setShowExistingSavePrompt(false)}
+          onClose={() => setActiveModal(null)}
         />
       )}
 
-      {showNameInput && (
+      {activeModal?.type === 'nameInput' && (
         <MainMenuNameInputPrompt
           playerNameInput={playerNameInput}
           setPlayerNameInput={setPlayerNameInput}
@@ -104,11 +101,13 @@ export const MainMenu = () => {
         />
       </div>
 
-      {showFeatures && (
-        <MainMenuFeatures onClose={() => setShowFeatures(false)} />
+      {activeModal?.type === 'features' && (
+        <MainMenuFeatures onClose={() => setActiveModal(null)} />
       )}
 
-      {showSocials && <MainMenuSocials onClose={() => setShowSocials(false)} />}
+      {activeModal?.type === 'socials' && (
+        <MainMenuSocials onClose={() => setActiveModal(null)} />
+      )}
 
       <MainMenuFooter />
     </div>

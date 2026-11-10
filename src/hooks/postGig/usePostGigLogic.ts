@@ -111,6 +111,7 @@ export const usePostGigLogic = () => {
 
   // 1. Core State
   const {
+    flowState,
     phase,
     setPhase,
     postResult,
@@ -237,6 +238,7 @@ export const usePostGigLogic = () => {
     : 0
 
   return {
+    flowState,
     t,
     phase,
     financials,

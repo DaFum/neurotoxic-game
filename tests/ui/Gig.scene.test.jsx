@@ -68,7 +68,8 @@ vi.mock('../../src/hooks/useRhythmGameLogic', () => ({
       isToxicMode: false,
       isGameOver: false,
       isAudioReady: true,
-      accuracy: 0
+      accuracy: 0,
+      initStatus: { status: 'ready' }
     },
     actions: {
       handleLaneHit: vi.fn(),
@@ -379,7 +380,11 @@ describe('Gig Scene Component', () => {
 
     test('quit handles undefined gameStateRef gracefully', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: true, isToxicMode: false },
+        stats: {
+          isAudioReady: true,
+          isToxicMode: false,
+          initStatus: { status: 'ready' }
+        },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: null },
         update: vi.fn()
@@ -434,7 +439,11 @@ describe('Gig Scene Component', () => {
       }
 
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: true, isToxicMode: false },
+        stats: {
+          isAudioReady: true,
+          isToxicMode: false,
+          initStatus: { status: 'ready' }
+        },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef,
         update: vi.fn()
@@ -461,6 +470,7 @@ describe('Gig Scene Component', () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
           audioStatus: 'blocked',
+          initStatus: { status: 'blocked' },
           isToxicMode: false
         },
         actions: {
@@ -478,6 +488,7 @@ describe('Gig Scene Component', () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
           audioStatus: 'failed',
+          initStatus: { status: 'failed', failureKind: 'audio' },
           isToxicMode: false
         },
         actions: {
@@ -494,7 +505,7 @@ describe('Gig Scene Component', () => {
     test('initialize audio button calls ensureAudioContext', async () => {
       const mockRetry = vi.fn()
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'blocked' },
+        stats: { audioStatus: 'blocked', initStatus: { status: 'blocked' } },
         actions: { retryAudioInitialization: mockRetry },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -517,7 +528,7 @@ describe('Gig Scene Component', () => {
 
     test('offers no quit button while audio is merely blocked', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'blocked' },
+        stats: { audioStatus: 'blocked', initStatus: { status: 'blocked' } },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -529,7 +540,10 @@ describe('Gig Scene Component', () => {
 
     test('failed audio offers a way out of the gig', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'failed' },
+        stats: {
+          audioStatus: 'failed',
+          initStatus: { status: 'failed', failureKind: 'audio' }
+        },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -549,7 +563,11 @@ describe('Gig Scene Component', () => {
 
       beforeEach(() => {
         useRhythmGameLogic.mockReturnValue({
-          stats: { audioStatus: 'failed', failureKind: 'stage' },
+          stats: {
+            audioStatus: 'failed',
+            failureKind: 'stage',
+            initStatus: { status: 'failed', failureKind: 'stage' }
+          },
           actions: { retryAudioInitialization: mockRetry },
           gameStateRef: { current: {} },
           update: vi.fn()
@@ -603,7 +621,11 @@ describe('Gig Scene Component', () => {
 
     test('keeps the audio copy and gamepad hint for an audio failure', () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'failed', failureKind: 'audio' },
+        stats: {
+          audioStatus: 'failed',
+          failureKind: 'audio',
+          initStatus: { status: 'failed', failureKind: 'audio' }
+        },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -623,7 +645,7 @@ describe('Gig Scene Component', () => {
     test('toasts when the audio unlock resolves false', async () => {
       const mockRetry = vi.fn()
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'blocked' },
+        stats: { audioStatus: 'blocked', initStatus: { status: 'blocked' } },
         actions: { retryAudioInitialization: mockRetry },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -642,7 +664,7 @@ describe('Gig Scene Component', () => {
 
     test('offers quit after a blocked unlock attempt rejects', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'blocked' },
+        stats: { audioStatus: 'blocked', initStatus: { status: 'blocked' } },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -662,7 +684,7 @@ describe('Gig Scene Component', () => {
 
     test('does not render main gig UI when audio locked', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'blocked' },
+        stats: { audioStatus: 'blocked', initStatus: { status: 'blocked' } },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -683,7 +705,11 @@ describe('Gig Scene Component', () => {
       retry = vi.fn()
       audioService.ensureAudioContext.mockReturnValue(unlock.promise)
       useRhythmGameLogic.mockReturnValue({
-        stats: { audioStatus: 'failed', failureKind: 'stage' },
+        stats: {
+          audioStatus: 'failed',
+          failureKind: 'stage',
+          initStatus: { status: 'failed', failureKind: 'stage' }
+        },
         actions: { retryAudioInitialization: retry },
         gameStateRef: sharedGameStateRef,
         update: vi.fn()
@@ -780,7 +806,10 @@ describe('Gig Scene Component', () => {
       'retains failure feedback for a mounted %s result',
       async outcome => {
         useRhythmGameLogic.mockReturnValue({
-          stats: { audioStatus: 'blocked' },
+          stats: {
+            audioStatus: 'blocked',
+            initStatus: { status: 'blocked' }
+          },
           actions: { retryAudioInitialization: retry },
           gameStateRef: sharedGameStateRef,
           update: vi.fn()
@@ -803,7 +832,8 @@ describe('Gig Scene Component', () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
           isAudioReady: true,
-          isToxicMode: true
+          isToxicMode: true,
+          initStatus: { status: 'ready' }
         },
         actions: {},
         gameStateRef: { current: {} },
@@ -820,7 +850,8 @@ describe('Gig Scene Component', () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
           isAudioReady: true,
-          isToxicMode: false
+          isToxicMode: false,
+          initStatus: { status: 'ready' }
         },
         actions: {},
         gameStateRef: { current: {} },

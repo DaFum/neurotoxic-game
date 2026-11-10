@@ -118,8 +118,97 @@ describe('useRhythmGameState', () => {
     expect(result.current.state).toEqual({
       ...uiDefaults,
       audioStatus: 'failed',
+      failureKind: 'stage',
+      initStatus: { status: 'failed', failureKind: 'stage' }
+    })
+  })
+
+  it('synchronizes initStatus, audioStatus, and failureKind via setInitStatus', () => {
+    const { result } = renderHook(() => useRhythmGameState())
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'initializing' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'initializing' })
+    expect(result.current.state.audioStatus).toBe('initializing')
+    expect(result.current.state.failureKind).toBeNull()
+
+    act(() => {
+      result.current.setters.setInitStatus({
+        status: 'failed',
+        failureKind: 'audio'
+      })
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
+      failureKind: 'audio'
+    })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('audio')
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'ready' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'ready' })
+    expect(result.current.state.audioStatus).toBe('ready')
+    expect(result.current.state.failureKind).toBeNull()
+  })
+
+  it('synchronizes initStatus, audioStatus, and failureKind via setAudioStatus and setFailureKind', () => {
+    const { result } = renderHook(() => useRhythmGameState())
+
+    // 1. setFailureKind while audioStatus is not failed -> failureKind cleared, initStatus unchanged
+    act(() => {
+      result.current.setters.setFailureKind('stage')
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'idle' })
+    expect(result.current.state.audioStatus).toBe('idle')
+    expect(result.current.state.failureKind).toBeNull()
+
+    // 2. setAudioStatus('failed') without prior failureKind -> defaults to 'audio'
+    act(() => {
+      result.current.setters.setAudioStatus('failed')
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
+      failureKind: 'audio'
+    })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('audio')
+
+    // 3. setFailureKind('stage') while audioStatus is failed -> updates to 'stage'
+    act(() => {
+      result.current.setters.setFailureKind('stage')
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
       failureKind: 'stage'
     })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('stage')
+
+    // 4. setAudioStatus('ready') after failure -> clears failureKind, sets ready
+    act(() => {
+      result.current.setters.setAudioStatus('ready')
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'ready' })
+    expect(result.current.state.audioStatus).toBe('ready')
+    expect(result.current.state.failureKind).toBeNull()
+
+    // 5. setAudioStatus('failed') with prior failureKind -> preserves it
+    act(() => {
+      result.current.setters.setInitStatus({
+        status: 'failed',
+        failureKind: 'stage'
+      })
+      result.current.setters.setAudioStatus('failed')
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
+      failureKind: 'stage'
+    })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('stage')
   })
   describe('DEV test hook', () => {
     const engine = {

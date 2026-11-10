@@ -32,6 +32,7 @@ const mockItem = {
 
 const mockDecision = {
   cost: 100,
+  status: 'available',
   canAfford: true,
   isOwned: false,
   isConsumable: false,
@@ -154,5 +155,24 @@ describe('ShopItem', () => {
     )
     const svg = container.querySelector('svg.animate-spin')
     expect(svg).toBeInTheDocument()
+  })
+
+  it('renders reputation blocked reason in tooltip when status is reputation_blocked', () => {
+    const blockedDecision = {
+      ...mockDecision,
+      status: 'reputation_blocked',
+      canPurchase: false
+    }
+    const { getByText } = render(
+      <ShopItem
+        {...defaultProps}
+        decision={blockedDecision}
+        isDisabled={true}
+      />
+    )
+    const button = getByText('BUY').closest('button')
+    expect(button).toBeInTheDocument()
+    fireEvent.mouseEnter(button)
+    expect(getByText('Reputation too controversial.')).toBeInTheDocument()
   })
 })

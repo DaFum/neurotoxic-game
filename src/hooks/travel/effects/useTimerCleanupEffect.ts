@@ -20,23 +20,34 @@ export const useTimerCleanupEffect = (
 ) => {
   useEffect(() => {
     return () => {
-      if (refs.pendingToastIdRef.current) {
-        removeToast(refs.pendingToastIdRef.current)
-        refs.pendingToastIdRef.current = null
+      if (refs.phaseRef?.current.status === 'confirming') {
+        const { timeoutId, toastId } = refs.phaseRef.current
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        if (toastId) {
+          removeToast(toastId)
+        }
+      } else {
+        if (refs.pendingToastIdRef.current) {
+          removeToast(refs.pendingToastIdRef.current)
+          refs.pendingToastIdRef.current = null
+        }
+        if (refs.pendingTimeoutRef.current) {
+          clearTimeout(refs.pendingTimeoutRef.current)
+          refs.pendingTimeoutRef.current = null
+        }
       }
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
-      }
-      if (refs.pendingTimeoutRef.current) {
-        clearTimeout(refs.pendingTimeoutRef.current)
-        refs.pendingTimeoutRef.current = null
       }
     }
   }, [
     refs.timeoutRef,
     refs.pendingTimeoutRef,
     refs.pendingToastIdRef,
+    refs.phaseRef,
     removeToast
   ])
 }

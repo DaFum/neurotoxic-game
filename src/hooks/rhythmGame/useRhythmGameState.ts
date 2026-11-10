@@ -11,7 +11,11 @@ import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { getSafeRandom } from '../../utils/crypto'
 import { registerTestHook } from '../../utils/devTestHooks'
-import type { GigAudioStatus, GigFailureKind } from '../../types/gigAudioStatus'
+import type {
+  GigAudioStatus,
+  GigFailureKind,
+  GigInitStatus
+} from '../../types/gigAudioStatus'
 import type {
   RhythmGameRefState,
   RhythmLiveStats,
@@ -25,6 +29,8 @@ type SetterPayload<T> = T | ((current: T) => T)
  * React-rendered rhythm game state mirrored from the high-frequency game ref.
  */
 export type RhythmUiState = {
+  /** Discriminated union tracking the initialization and readiness state of the gig. */
+  initStatus: GigInitStatus
   /** Current performance score accumulated during the song. */
   score: number
   /** Consecutive notes hit without missing. */
@@ -61,6 +67,7 @@ type RhythmStateAction =
   | { type: 'SET_OVERLOAD'; payload: SetterPayload<number> }
   | { type: 'SET_IS_TOXIC_MODE'; payload: SetterPayload<boolean> }
   | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
+  | { type: 'SET_INIT_STATUS'; payload: SetterPayload<GigInitStatus> }
   | { type: 'SET_AUDIO_STATUS'; payload: SetterPayload<GigAudioStatus> }
   | { type: 'SET_FAILURE_KIND'; payload: SetterPayload<GigFailureKind | null> }
   | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
@@ -90,6 +97,8 @@ export type RhythmStateSetters = {
   setIsToxicMode: (isToxicMode: SetterPayload<boolean>) => void
   /** Updates the completion or failure status of the current game session. */
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
+  /** Updates the initialization readiness and failure state of the gig. */
+  setInitStatus: (initStatus: SetterPayload<GigInitStatus>) => void
   /** Updates the availability status of the underlying audio engine. */
   setAudioStatus: (status: SetterPayload<GigAudioStatus>) => void
   /** Records what a failed initialization failed on, or clears it with null. */
@@ -125,6 +134,7 @@ type RhythmGameStateHookReturn = {
 }
 
 const INITIAL_UI_STATE: RhythmUiState = {
+  initStatus: { status: 'idle' },
   score: 0,
   combo: 0,
   health: 100,
@@ -155,7 +165,8 @@ function rhythmGameReducer(
       return {
         ...INITIAL_UI_STATE,
         audioStatus: state.audioStatus,
-        failureKind: state.failureKind
+        failureKind: state.failureKind,
+        initStatus: state.initStatus
       }
     case 'SET_SCORE':
       return { ...state, score: resolvePayload(action.payload, state.score) }
@@ -178,16 +189,51 @@ function rhythmGameReducer(
         ...state,
         isGameOver: resolvePayload(action.payload, state.isGameOver)
       }
-    case 'SET_AUDIO_STATUS':
+    case 'SET_INIT_STATUS': {
+      const nextInitStatus = resolvePayload(action.payload, state.initStatus)
       return {
         ...state,
-        audioStatus: resolvePayload(action.payload, state.audioStatus)
+        initStatus: nextInitStatus,
+        audioStatus: nextInitStatus.status,
+        failureKind:
+          nextInitStatus.status === 'failed' ? nextInitStatus.failureKind : null
       }
-    case 'SET_FAILURE_KIND':
+    }
+    case 'SET_AUDIO_STATUS': {
+      const nextAudioStatus = resolvePayload(action.payload, state.audioStatus)
+      if (nextAudioStatus === 'failed') {
+        const failureKind = state.failureKind ?? 'audio'
+        return {
+          ...state,
+          audioStatus: 'failed',
+          failureKind,
+          initStatus: { status: 'failed', failureKind }
+        }
+      }
       return {
         ...state,
-        failureKind: resolvePayload(action.payload, state.failureKind)
+        audioStatus: nextAudioStatus,
+        failureKind: null,
+        initStatus: { status: nextAudioStatus }
       }
+    }
+    case 'SET_FAILURE_KIND': {
+      const nextFailureKind = resolvePayload(action.payload, state.failureKind)
+      const isFailed =
+        state.audioStatus === 'failed' || state.initStatus.status === 'failed'
+      if (isFailed) {
+        const failureKind = nextFailureKind ?? 'audio'
+        return {
+          ...state,
+          failureKind,
+          initStatus: { status: 'failed', failureKind }
+        }
+      }
+      return {
+        ...state,
+        failureKind: null
+      }
+    }
     case 'SET_ACCURACY':
       return {
         ...state,
@@ -356,6 +402,8 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
         dispatch({ type: 'SET_IS_TOXIC_MODE', payload: isToxicMode }),
       setIsGameOver: isGameOver =>
         dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
+      setInitStatus: initStatus =>
+        dispatch({ type: 'SET_INIT_STATUS', payload: initStatus }),
       setAudioStatus: status =>
         dispatch({ type: 'SET_AUDIO_STATUS', payload: status }),
       setFailureKind: kind =>

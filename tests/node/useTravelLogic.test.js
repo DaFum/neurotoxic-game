@@ -99,6 +99,7 @@ describe('useTravelLogic', () => {
     const props = createTravelLogicProps()
     const { result } = renderHook(() => useTravelLogic(props))
 
+    assert.deepEqual(result.current.phase, { status: 'idle' })
     assert.equal(result.current.isTraveling, false)
     assert.equal(result.current.pendingTravelNode, null)
   })
@@ -110,6 +111,8 @@ describe('useTravelLogic', () => {
     act(() => {
       result.current.handleTravel(targetNode)
     })
+    assert.equal(result.current.phase?.status, 'confirming')
+    assert.equal(result.current.phase?.node.id, targetNode.id)
 
     // Second click: confirms travel
     await act(async () => {
@@ -118,6 +121,8 @@ describe('useTravelLogic', () => {
       await new Promise(resolve => setTimeout(resolve, 0))
     })
 
+    assert.equal(result.current.phase?.status, 'traveling')
+    assert.equal(result.current.phase?.targetNodeId, targetNode.id)
     assert.equal(result.current.isTraveling, true)
     // Confirming a trip hands off to the tourbus minigame; arrival settlement
     // belongs to its completion reducer, not to this hook.
