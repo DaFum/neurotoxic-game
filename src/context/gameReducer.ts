@@ -408,6 +408,7 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
 
   nextState = {
     ...nextState,
+    pendingOverlay: { kind: 'foreclosure', notices: pendingForeclosureNotices },
     pendingForeclosureNotices
   }
   return nextState

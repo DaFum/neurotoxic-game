@@ -156,6 +156,7 @@ const PERSISTED_FIELDS = {
   lastGigStats: isNullableObject,
   activeEvent: isNullableObject,
   terminalOutcome: isNullableObject,
+  pendingOverlay: isNullableObject,
   pendingSupplyStopInventory: (value: unknown): boolean =>
     value === null || Array.isArray(value),
   activeStoryFlags: Array.isArray,

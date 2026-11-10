@@ -114,6 +114,13 @@ export type ArrivalOutcome =
 export type StartGigRefusalReason =
   'invalid_payload' | 'festival_booking_locked' | 'node_converted'
 
+export type PendingOverlayState =
+  | { kind: 'band_hq' }
+  | { kind: 'supply_stop'; inventory: PurchaseItem[] }
+  | { kind: 'risk_event'; event: RiskEventDescriptor }
+  | { kind: 'foreclosure'; notices: AssetKind[] }
+
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -336,6 +343,8 @@ export interface GameState {
   pendingGigSettlement?: PendingGigSettlement | null
   minigame: MinigameState
   unlocks: string[]
+  /** Consolidated active asynchronous modal overlay. */
+  pendingOverlay?: PendingOverlayState | null
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */

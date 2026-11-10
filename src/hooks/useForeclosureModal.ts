@@ -12,8 +12,10 @@ export const useForeclosureModal = (): {
   currentKind: AssetKind | null
   dismiss: () => void
 } => {
-  const pendingForeclosureNotices = useGameSelector(
-    state => state.pendingForeclosureNotices
+  const pendingForeclosureNotices = useGameSelector(state =>
+    state.pendingOverlay?.kind === 'foreclosure'
+      ? state.pendingOverlay.notices
+      : state.pendingForeclosureNotices
   )
   const { dismissForeclosureNotice } = useGameActions()
   // Defensive access: legacy/hand-edited saves (and partial test states) may

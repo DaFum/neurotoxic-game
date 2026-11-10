@@ -18,7 +18,8 @@ import {
   normalizeLoadedGameMap,
   migratePlayerLocation,
   migrateLegacyVenueId,
-  sanitizeEventCooldowns
+  sanitizeEventCooldowns,
+  sanitizePendingOverlay
 } from './sanitizers/stateSanitizers'
 import {
   processAssetTick,
@@ -275,6 +276,12 @@ export const handleLoadGame = (
       loadedState.pendingForeclosureNotices
     ),
     pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
+    pendingOverlay: sanitizePendingOverlay(loadedState.pendingOverlay, {
+      pendingRiskEvent: loadedState.pendingRiskEvent,
+      pendingSupplyStopInventory: loadedState.pendingSupplyStopInventory,
+      pendingForeclosureNotices: loadedState.pendingForeclosureNotices,
+      pendingBandHQOpen: loadedState.pendingBandHQOpen
+    }),
     eventCooldowns: sanitizeEventCooldowns(
       loadedState.eventCooldowns,
       finiteNumberOr(mergedPlayer.day, 0)
@@ -838,14 +845,16 @@ export const handleAdvanceDay = (
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
   if (liabilityTick.foreclosedKinds.length > 0) {
+    const updatedNotices = Array.from(
+      new Set([
+        ...(nextStatePre.pendingForeclosureNotices ?? []),
+        ...liabilityTick.foreclosedKinds
+      ])
+    )
     nextStatePre = {
       ...nextStatePre,
-      pendingForeclosureNotices: Array.from(
-        new Set([
-          ...(nextStatePre.pendingForeclosureNotices ?? []),
-          ...liabilityTick.foreclosedKinds
-        ])
-      )
+      pendingOverlay: { kind: 'foreclosure', notices: updatedNotices },
+      pendingForeclosureNotices: updatedNotices
     }
   }
   nextStatePre = processCrowdfundTick(nextStatePre)
@@ -900,6 +909,7 @@ export const handleAdvanceDay = (
       if (firstEvent && nextStatePre.pendingRiskEvent === null) {
         nextStatePre = {
           ...nextStatePre,
+          pendingOverlay: { kind: 'risk_event', event: firstEvent },
           pendingRiskEvent: firstEvent
         }
       }
@@ -1093,7 +1103,15 @@ export const handleSetPendingBandHQOpen = (
 ): GameState => {
   if (typeof isOpen !== 'boolean') return state
   if (state.pendingBandHQOpen === isOpen) return state
-  return { ...state, pendingBandHQOpen: isOpen }
+  return {
+    ...state,
+    pendingOverlay: isOpen
+      ? { kind: 'band_hq' }
+      : state.pendingOverlay?.kind === 'band_hq'
+        ? null
+        : (state.pendingOverlay ?? null),
+    pendingBandHQOpen: isOpen
+  }
 }
 
 /**
@@ -1114,6 +1132,11 @@ export const handleSetPendingSupplyStopInventory = (
 
   return {
     ...state,
+    pendingOverlay: nextInventory
+      ? { kind: 'supply_stop', inventory: nextInventory }
+      : state.pendingOverlay?.kind === 'supply_stop'
+        ? null
+        : (state.pendingOverlay ?? null),
     pendingSupplyStopInventory: nextInventory
   }
 }
@@ -1200,6 +1223,10 @@ export const handleSetPendingRiskEvent = (
     return QuestEvents.emit(
       {
         ...state,
+        pendingOverlay:
+          state.pendingOverlay?.kind === 'risk_event'
+            ? null
+            : (state.pendingOverlay ?? null),
         pendingRiskEvent: null
       },
       createAssetRiskResolvedQuestEvent({
@@ -1223,6 +1250,7 @@ export const handleSetPendingRiskEvent = (
 
   return {
     ...state,
+    pendingOverlay: { kind: 'risk_event', event: nextEvent },
     pendingRiskEvent: nextEvent
   }
 }
