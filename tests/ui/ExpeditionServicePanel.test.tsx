@@ -8,6 +8,7 @@ import { ExpeditionServicePanel } from '../../src/ui/expedition/ExpeditionServic
 import { createInitialState } from '../../src/context/initialState'
 import { createDefaultExpeditionState } from '../../src/domain/expedition/defaults'
 import type { GameState } from '../../src/types'
+import type { ExpeditionLoadout } from '../../src/types/expedition'
 import {
   claimExpeditionInsurance,
   executeExpeditionRepair
@@ -71,6 +72,28 @@ vi.mock('react-i18next', () => ({
 }))
 
 const ROUTE_STEP = 2
+
+const DEFAULT_LOADOUT: ExpeditionLoadout = {
+  tourTypeId: 'standard_tour',
+  regionId: 'industrial_belt',
+  activeTourbusAssetId: null,
+  crewIds: [],
+  cargo: { spareParts: 0, supplies: 0 },
+  starterPerkId: null,
+  nativeContracts: [],
+  insurancePolicyId: null,
+  pressureModifierIds: [],
+  build: {
+    setlistSongIds: [],
+    equipment: { selectedGearItemIds: [] },
+    selectedTourbusModuleIds: [],
+    merch: [],
+    contraband: [],
+    sponsorOfferId: null,
+    startingFuelTarget: 100,
+    protectedCareerCash: 0
+  }
+}
 
 const buildState = ({
   status = 'active' as GameState['expedition']['status'],
@@ -615,7 +638,10 @@ describe('repair controls', () => {
 describe('inspections and termination', () => {
   it('lets the player choose an insured disabled group and actually restores it', () => {
     state.current = buildState({ pa: 0, instruments: 0 })
-    state.current.expedition.insurancePolicyId = 'equipment'
+    state.current.expedition.loadout = {
+      ...DEFAULT_LOADOUT,
+      insurancePolicyId: 'equipment'
+    }
     actions.claimExpeditionInsurance.mockImplementationOnce(intent => {
       state.current = gameReducer(
         state.current,
@@ -632,7 +658,7 @@ describe('inspections and termination', () => {
     })
     expect(state.current.expedition.technicalCondition.instruments).toBe(25)
     expect(state.current.expedition.technicalCondition.pa).toBe(0)
-    expect(state.current.expedition.insuranceClaimConsumed).toBe(true)
+    expect(state.current.expedition.insurance.claimConsumed).toBe(true)
   })
 
   it('does not offer inspections that would reveal nothing', () => {

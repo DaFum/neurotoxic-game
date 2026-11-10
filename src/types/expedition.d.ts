@@ -752,7 +752,6 @@ export interface ExpeditionState {
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
   insurance: ExpeditionInsuranceRunState
-  insuranceClaimConsumed?: boolean
   technicalFailureAccepted?: boolean
   /**
    * Whether this run already used the hidden compartment as an Authority exit.

@@ -123,7 +123,6 @@ describe('START_EXPEDITION premium deduction and run state initialization', () =
     assert.equal(started.expedition.status, 'active')
     assert.equal(started.expedition.loadout.insurancePolicyId, 'roadside')
     assert.equal(started.expedition.insurance.claimConsumed, false)
-    assert.equal(started.expedition.insuranceClaimConsumed, false)
     // 2000 - 300 = 1700
     assert.equal(started.player.money, 1700)
     assert.equal(started.expedition.startingMoney, 1700)
@@ -182,8 +181,7 @@ describe('insurance eligibility and exclusions', () => {
       ...state,
       expedition: {
         ...state.expedition,
-        insurance: { claimConsumed: true },
-        insuranceClaimConsumed: true
+        insurance: { claimConsumed: true }
       }
     }
     assert.equal(canClaimExpeditionInsurance(state, 'vehicle'), false)
@@ -318,7 +316,6 @@ describe('CLAIM_EXPEDITION_INSURANCE execution', () => {
 
     const next = gameReducer(state, action)
     assert.equal(next.expedition.technicalCondition.pa, 25)
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.insurance.claimConsumed, true)
     assert.equal(next.player.money, initialMoney) // no money spent on claim
 
@@ -349,7 +346,6 @@ describe('CLAIM_EXPEDITION_INSURANCE execution', () => {
 
     const next = gameReducer(state, action)
     assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.insurance.claimConsumed, true)
     assert.equal(next.player.money, initialMoney)
   })
@@ -424,7 +420,7 @@ describe('integration with crisis resolution shell', () => {
 
     const resolved = gameReducer(state, crisisAction)
     assert.equal(resolved.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
-    assert.equal(resolved.expedition.insuranceClaimConsumed, true)
+    assert.equal(resolved.expedition.insurance.claimConsumed, true)
     assert.equal(resolved.expedition.pendingFailure, null)
     assert.equal(resolved.player.money, 50)
   })
@@ -503,7 +499,6 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
       claimExpeditionInsurance(state, { claimType: 'vehicle' })
     )
     assert.equal(direct, state)
-    assert.equal(direct.expedition.insuranceClaimConsumed, false)
     assert.equal(direct.expedition.insurance.claimConsumed, false)
     assert.equal(direct.player.van.fuel, 80)
     assert.equal(
@@ -520,7 +515,6 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
     const next = rawCrisisClaim(state)
     assert.notEqual(next, state)
     assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.insurance.claimConsumed, true)
   })
 
@@ -533,7 +527,7 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
     assert.notEqual(next, state)
     assert.equal(next.player.van.condition, 25)
     assert.equal(next.player.van.fuel, 80)
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.insurance.claimConsumed, true)
   })
 
   it('offers the claim when fuel is below the cheapest onward leg, not at it', () => {
@@ -551,7 +545,6 @@ describe('vehicle claim needs mobility evidence, not a cash-blocked leg (#3457)'
       next.player.van.fuel,
       Math.max(EXPEDITION_TOW_FUEL_RESTORED, Math.ceil(cheapest))
     )
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.insurance.claimConsumed, true)
 
     const exact = cashBlockedState({ fuel: cheapest })
@@ -624,8 +617,7 @@ const withUnspentClaim = state => ({
     insurance: {
       ...state.expedition.insurance,
       claimConsumed: false
-    },
-    insuranceClaimConsumed: false
+    }
   }
 })
 
@@ -645,7 +637,6 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
       state,
       claimExpeditionInsurance(state, { claimType: 'vehicle' })
     )
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
     assert.equal(next.expedition.insurance.claimConsumed, true)
     assert.equal(next.player.van.fuel, Math.ceil(cheapest))
     assert.ok(next.player.van.fuel >= 50)
@@ -678,7 +669,7 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
       blockedState,
       claimExpeditionInsurance(blockedState, { claimType: 'vehicle' })
     )
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.insurance.claimConsumed, true)
     assert.equal(next.player.van.fuel, Math.ceil(reachable))
   })
 
@@ -709,7 +700,6 @@ describe('vehicle claim is sized and gated by the cheapest reachable leg (#3476)
         payload: { claimType: 'vehicle' }
       })
       assert.strictEqual(next, state)
-      assert.equal(next.expedition.insuranceClaimConsumed, false)
       assert.equal(next.expedition.insurance.claimConsumed, false)
     }
   })
@@ -730,7 +720,7 @@ describe('touring policy flexibility', () => {
     })
     const afterTech = gameReducer(state, action)
     assert.equal(afterTech.expedition.technicalCondition.instruments, 25)
-    assert.equal(afterTech.expedition.insuranceClaimConsumed, true)
+    assert.equal(afterTech.expedition.insurance.claimConsumed, true)
 
     // Now empty fuel - cannot use touring insurance again
     afterTech.player.van.fuel = 0

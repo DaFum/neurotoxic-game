@@ -294,7 +294,6 @@ const buildPopulatedState = () => {
     insurance: {
       claimConsumed: false
     },
-    insuranceClaimConsumed: false,
     technicalFailureAccepted: false,
     authorityHiddenCompartmentUsed: false,
     crew: {

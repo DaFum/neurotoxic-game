@@ -117,7 +117,6 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   insurance: {
     claimConsumed: false
   },
-  insuranceClaimConsumed: false,
   technicalFailureAccepted: false,
   authorityHiddenCompartmentUsed: false,
   startingMoney: 0,

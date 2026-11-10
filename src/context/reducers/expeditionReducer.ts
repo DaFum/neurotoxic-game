@@ -247,8 +247,7 @@ const applyExpeditionInsuranceClaim = (
     ...state.expedition,
     insurance: {
       claimConsumed: true
-    },
-    insuranceClaimConsumed: true
+    }
   }
 
   if (resolution.claimType === 'vehicle') {
@@ -635,7 +634,6 @@ export const handleStartExpedition = (
       insurance: {
         claimConsumed: false
       },
-      insuranceClaimConsumed: false,
       startingMoney: committedMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
