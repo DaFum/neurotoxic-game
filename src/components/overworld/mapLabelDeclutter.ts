@@ -15,7 +15,13 @@ export interface MapLabelEntry {
   }[]
 }
 
-/** Keeps labels below their node, tries above, then hides blocked labels. */
+/**
+ * Keeps labels below their node, tries above, then hides blocked labels.
+ *
+ * @param entries - List of label configuration entries and their proposed placements.
+ * @param options - Additional layout constraints containing bounds and obstacles.
+ * @returns A mapping of label IDs to their resolved placement, or null if all candidates were blocked.
+ */
 export const pickMapLabelPlacements = (
   entries: readonly MapLabelEntry[],
   {
