@@ -28,7 +28,7 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
       })
       totalBonus += bonus
     }
-    if ((gigStats.peakHype ?? 0) >= 100) {
+    if ((gigStats?.peakHype ?? 0) >= 100) {
       const bonus = 150
       bonuses.push({
         labelKey: BREAKDOWN_LABEL_KEYS.BEER_SPONSOR,
