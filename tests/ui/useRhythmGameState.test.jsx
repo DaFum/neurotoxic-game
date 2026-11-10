@@ -118,8 +118,40 @@ describe('useRhythmGameState', () => {
     expect(result.current.state).toEqual({
       ...uiDefaults,
       audioStatus: 'failed',
-      failureKind: 'stage'
+      failureKind: 'stage',
+      initStatus: { status: 'failed', failureKind: 'stage' }
     })
+  })
+
+  it('synchronizes initStatus, audioStatus, and failureKind via setInitStatus', () => {
+    const { result } = renderHook(() => useRhythmGameState())
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'initializing' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'initializing' })
+    expect(result.current.state.audioStatus).toBe('initializing')
+    expect(result.current.state.failureKind).toBeNull()
+
+    act(() => {
+      result.current.setters.setInitStatus({
+        status: 'failed',
+        failureKind: 'audio'
+      })
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
+      failureKind: 'audio'
+    })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('audio')
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'ready' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'ready' })
+    expect(result.current.state.audioStatus).toBe('ready')
+    expect(result.current.state.failureKind).toBeNull()
   })
   describe('DEV test hook', () => {
     const engine = {

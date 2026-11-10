@@ -206,11 +206,11 @@ Expected: PASS
 - Test: `tests/ui/useRhythmGameAudio.test.jsx`
 - Test: `tests/ui/Gig.scene.test.jsx`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `pnpm exec vitest run tests/ui/useRhythmGameState.test.jsx tests/ui/useRhythmGameAudio.test.jsx tests/ui/Gig.scene.test.jsx`
 Expected: PASS
 
-- [ ] **Step 2: Define `GigInitStatus` in `src/types/gigAudioStatus.ts`**
+- [x] **Step 2: Define `GigInitStatus` in `src/types/gigAudioStatus.ts`**
 In `src/types/gigAudioStatus.ts`:
 ```ts
 export type GigInitStatus =
@@ -221,17 +221,17 @@ export type GigInitStatus =
   | { status: 'failed'; failureKind: GigFailureKind }
 ```
 
-- [ ] **Step 3: Consolidate state in `useRhythmGameState.ts`**
+- [x] **Step 3: Consolidate state in `useRhythmGameState.ts`**
 In `src/hooks/rhythmGame/useRhythmGameState.ts`:
 - Add `initStatus: GigInitStatus` to `RhythmUiState` (default `{ status: 'idle' }`).
 - Derive `audioStatus = state.initStatus.status` and `failureKind = state.initStatus.status === 'failed' ? state.initStatus.failureKind : null` (or keep them updated synchronously in reducer).
 - Add action `SET_INIT_STATUS` (setting `{ status, failureKind? }` in one dispatch).
 
-- [ ] **Step 4: Update `useRhythmGameAudio.ts` and `Gig.tsx`**
+- [x] **Step 4: Update `useRhythmGameAudio.ts` and `Gig.tsx`**
 In `useRhythmGameAudio.ts`:
 - Dispatch `SET_INIT_STATUS` instead of separate `SET_AUDIO_STATUS` and `SET_FAILURE_KIND`.
 
-- [ ] **Step 5: Run tests and typecheck**
+- [x] **Step 5: Run tests and typecheck**
 Run: `pnpm exec vitest run tests/ui/useRhythmGameState.test.jsx tests/ui/useRhythmGameAudio.test.jsx tests/ui/Gig.scene.test.jsx`
 Run: `pnpm run typecheck:core`
 Expected: PASS

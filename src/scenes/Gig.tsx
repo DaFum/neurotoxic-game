@@ -87,6 +87,11 @@ export const Gig = () => {
     setBandMemberRef
   } = useGigEffects(stats)
 
+  const isInitFailed =
+    stats.initStatus?.status === 'failed' || stats.audioStatus === 'failed'
+  const isInitBlocked =
+    stats.initStatus?.status === 'blocked' || stats.audioStatus === 'blocked'
+
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
     actions,
@@ -95,8 +100,7 @@ export const Gig = () => {
     onTogglePause: handleTogglePause,
     gamepadLaneBindings,
     isPaused,
-    gamepadEnabled:
-      stats.audioStatus !== 'blocked' && stats.audioStatus !== 'failed',
+    gamepadEnabled: !isInitBlocked && !isInitFailed,
     onGamepadDisconnect: () =>
       addToast(
         t('ui:controller.disconnectPause', {
@@ -113,7 +117,14 @@ export const Gig = () => {
   })
 
   // Render blocking overlay if audio is locked
-  if (stats.audioStatus === 'blocked' || stats.audioStatus === 'failed') {
+  if (isInitBlocked || isInitFailed) {
+    const failureKind =
+      stats.initStatus?.status === 'failed'
+        ? stats.initStatus.failureKind
+        : stats.failureKind === 'stage'
+          ? 'stage'
+          : 'audio'
+
     return (
       <AudioLockedOverlay
         onInitializeAudio={() => {
@@ -152,18 +163,14 @@ export const Gig = () => {
             })
         }}
         onQuit={
-          stats.audioStatus === 'failed' || unlockAttemptFailed
+          isInitFailed || unlockAttemptFailed
             ? () => {
                 unlockAttemptRef.current += 1
                 void handleQuitGig()
               }
             : undefined
         }
-        failureKind={
-          stats.audioStatus === 'failed' && stats.failureKind === 'stage'
-            ? 'stage'
-            : 'audio'
-        }
+        failureKind={failureKind}
       />
     )
   }
