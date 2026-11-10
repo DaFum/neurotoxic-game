@@ -2259,6 +2259,19 @@ test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () =>
   assert.equal(invalidState.pendingRiskEvent, null)
 })
 
+test('systemReducer - LOAD_GAME migrates legacy pendingBandHQOpen to pendingOverlay', () => {
+  const initialState = createInitialState()
+
+  const loadedState = handleLoadGame(initialState, {
+    pendingBandHQOpen: true
+  })
+  assert.deepEqual(loadedState.pendingOverlay, { kind: 'band_hq' })
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(loadedState, 'pendingBandHQOpen'),
+    false
+  )
+})
+
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 
@@ -2293,20 +2306,38 @@ test('systemReducer - ADD_UNLOCK', async t => {
 
 test('systemReducer - pending modal state', async t => {
   await t.test(
-    'returns same state when pending Band HQ flag is unchanged',
+    'returns same state when pending Band HQ overlay is unchanged',
     () => {
-      const state = { ...createInitialState(), pendingBandHQOpen: true }
+      const state = {
+        ...createInitialState(),
+        pendingOverlay: { kind: 'band_hq' }
+      }
 
       assert.equal(handleSetPendingBandHQOpen(state, true), state)
+
+      const closedState = {
+        ...createInitialState(),
+        pendingOverlay: null
+      }
+
+      assert.equal(handleSetPendingBandHQOpen(closedState, false), closedState)
     }
   )
 
   await t.test('rejects a non-boolean pending Band HQ flag', () => {
-    const state = { ...createInitialState(), pendingBandHQOpen: false }
+    const state = createInitialState()
 
     for (const isOpen of ['yes', {}, undefined, 1, null]) {
       assert.equal(handleSetPendingBandHQOpen(state, isOpen), state)
     }
+  })
+
+  await t.test('sets and clears pending Band HQ overlay', () => {
+    const state = createInitialState()
+    const openState = handleSetPendingBandHQOpen(state, true)
+    assert.deepEqual(openState.pendingOverlay, { kind: 'band_hq' })
+    const closedState = handleSetPendingBandHQOpen(openState, false)
+    assert.equal(closedState.pendingOverlay, null)
   })
 
   await t.test(

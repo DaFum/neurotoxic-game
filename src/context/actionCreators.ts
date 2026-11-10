@@ -1304,9 +1304,9 @@ export const createPirateBroadcastAction = (
 })
 
 /**
- * Creates an action to set pendingBandHQOpen
+ * Creates an action to queue opening or closing the Band HQ overlay in pendingOverlay.
  * @param isOpen - Whether the Band HQ overlay should be queued to open.
- * @returns Action object to set pendingBandHQOpen.
+ * @returns Action object to set or clear the Band HQ pending overlay.
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean

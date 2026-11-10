@@ -346,7 +346,6 @@ export interface GameState {
   unlocks: string[]
   /** Consolidated active asynchronous modal overlay. */
   pendingOverlay?: PendingOverlayState | null
-  pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null
