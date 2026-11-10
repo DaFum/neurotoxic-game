@@ -92,7 +92,11 @@ export const applyChaosJitter = (
       const JITTER_PIXELS = 2
       const x = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
       const y = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
-      containerEl.style.transform = `translate(${x}px, ${y}px)`
+      // ⚡ BOLT OPTIMIZATION: Use translate3d for GPU-accelerated compositing in RAF loop
+      // Why: Toxic mode triggers applyChaosJitter on every requestAnimationFrame (~60 FPS).
+      // translate3d promotes the element to its own compositor layer and bypasses CPU layout/paint thrashing.
+      // Impact: Eliminates main-thread repaint overhead during high-frequency chaos jitter animations.
+      containerEl.style.transform = `translate3d(${x}px, ${y}px, 0)`
     } else {
       containerEl.style.transform = 'none'
     }
