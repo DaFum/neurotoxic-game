@@ -109,11 +109,11 @@ Expected: PASS
 - Modify: `src/scenes/MainMenu.tsx:50-70, 105-115`
 - Test: `tests/ui/MainMenu.test.jsx`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `pnpm exec vitest run tests/ui/MainMenu.test.jsx`
 Expected: PASS
 
-- [ ] **Step 2: Define `MainMenuModal` and consolidate state in `useMainMenuState.ts`**
+- [x] **Step 2: Define `MainMenuModal` and consolidate state in `useMainMenuState.ts`**
 In `src/scenes/mainmenu/hooks/useMainMenuState.ts`:
 ```ts
 export type MainMenuModal =
@@ -130,14 +130,14 @@ export type MainMenuModal =
   - `showFeatures = activeModal?.type === 'features'`
   - `showExistingSavePrompt = activeModal?.type === 'existingSave'`
 
-- [ ] **Step 3: Remove `promptStartsExpeditionRef` from `useMainMenu.ts`**
+- [x] **Step 3: Remove `promptStartsExpeditionRef` from `useMainMenu.ts`**
 In `src/scenes/mainmenu/useMainMenu.ts`:
 - Delete `promptStartsExpeditionRef`.
 - When starting tour with existing save: `setActiveModal({ type: 'existingSave', target: 'tour' })`.
 - When starting expedition with existing save: `setActiveModal({ type: 'existingSave', target: 'expedition' })`.
 - In `handleStartNewAnyway`: check `activeModal?.type === 'existingSave' && activeModal.target === 'expedition'` to determine next destination.
 
-- [ ] **Step 4: Run tests and typecheck**
+- [x] **Step 4: Run tests and typecheck**
 Run: `pnpm exec vitest run tests/ui/MainMenu.test.jsx`
 Run: `pnpm run typecheck:core`
 Expected: PASS

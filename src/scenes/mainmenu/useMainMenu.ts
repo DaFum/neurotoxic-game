@@ -34,6 +34,8 @@ export const useMainMenu = () => {
     setIsStarting,
     isLoadingGame,
     setIsLoadingGame,
+    activeModal,
+    setActiveModal,
     showNameInput,
     setShowNameInput,
     playerNameInput,
@@ -81,12 +83,7 @@ export const useMainMenu = () => {
     [changeScene]
   )
 
-  // Which start button opened the existing-save prompt, so its "Start new"
-  // continues that start rather than always the classic tour.
-  const promptStartsExpeditionRef = useRef(false)
-
   const handleStartTour = useCallback(() => {
-    promptStartsExpeditionRef.current = false
     startTour()
   }, [startTour])
 
@@ -108,26 +105,30 @@ export const useMainMenu = () => {
       hasOtherStoredSave()
     )
     if (otherSaveExists) {
-      promptStartsExpeditionRef.current = true
-      setShowExistingSavePrompt(true)
+      setActiveModal({ type: 'existingSave', target: 'expedition' })
       return
     }
     enterTourPrep()
-  }, [enterTourPrep, hasOtherStoredSave, setShowExistingSavePrompt])
+  }, [enterTourPrep, hasOtherStoredSave, setActiveModal])
 
   const handleStartNewAnyway = useCallback(() => {
-    if (!promptStartsExpeditionRef.current) {
-      startNewTourAnyway()
+    if (
+      activeModal?.type === 'existingSave' &&
+      activeModal.target === 'expedition'
+    ) {
+      setActiveModal(null)
+      enterTourPrep()
       return
     }
-    setShowExistingSavePrompt(false)
-    enterTourPrep()
-  }, [enterTourPrep, setShowExistingSavePrompt, startNewTourAnyway])
+    startNewTourAnyway()
+  }, [activeModal, enterTourPrep, setActiveModal, startNewTourAnyway])
 
   return {
     t,
     isStarting,
     isLoadingGame,
+    activeModal,
+    setActiveModal,
     showNameInput,
     setShowNameInput,
     playerNameInput,

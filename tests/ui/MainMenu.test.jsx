@@ -602,6 +602,9 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:features.button').closest('button'))
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
+      expect(
+        screen.queryByText('ui:social_links.game.title')
+      ).not.toBeInTheDocument()
     })
 
     it('handles rapid button clicks gracefully', async () => {
