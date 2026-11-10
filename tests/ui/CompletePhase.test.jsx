@@ -325,9 +325,18 @@ describe('CompletePhase', () => {
     const reason = screen.getByText(/protected career cash/i)
     expect(button).toHaveAttribute('aria-describedby', reason.id)
 
-    // Hover over the disabled action's wrapper to verify the Tooltip popup is triggered
+    // Hover and keyboard focus over the disabled action's wrapper to verify the Tooltip popup is triggered
     expect(button.parentElement).toBeTruthy()
+    expect(button.parentElement).toHaveAttribute('tabindex', '0')
+
     fireEvent.mouseEnter(button.parentElement)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/protected career cash/i)
+
+    fireEvent.mouseLeave(button.parentElement)
+
+    // Keyboard focus on the disabled action's wrapper opens the tooltip
+    fireEvent.focus(button.parentElement)
     expect(screen.getByRole('tooltip')).toBeInTheDocument()
     expect(screen.getByRole('tooltip')).toHaveTextContent(/protected career cash/i)
   })
