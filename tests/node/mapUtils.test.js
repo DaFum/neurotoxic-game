@@ -20,8 +20,13 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
 
 // Import module under test
 const { GAME_CONSTANTS } = await import('../../src/context/gameConstants.ts')
-const { isConnected, getNodeVisibility, checkSoftlock, normalizeVenueId } =
-  await import('../../src/utils/mapUtils')
+const {
+  isConnected,
+  getConnectedTargetIds,
+  getNodeVisibility,
+  checkSoftlock,
+  normalizeVenueId
+} = await import('../../src/utils/mapUtils')
 
 describe('mapUtils', () => {
   describe('isConnected', () => {
@@ -75,6 +80,72 @@ describe('mapUtils', () => {
         ),
         true
       )
+    })
+  })
+
+  describe('getConnectedTargetIds', () => {
+    const gameMap = {
+      connections: [
+        { from: 'A', to: 'B' },
+        { from: 'A', to: 'C' },
+        { from: 'B', to: 'D' }
+      ]
+    }
+
+    test('returns reachable target node IDs for current node', () => {
+      const targets = getConnectedTargetIds(gameMap, 'A')
+      assert.equal(targets.size, 2)
+      assert.equal(targets.has('B'), true)
+      assert.equal(targets.has('C'), true)
+      assert.equal(targets.has('D'), false)
+    })
+
+    test('returns empty set if node has no outgoing connections', () => {
+      const targets = getConnectedTargetIds(gameMap, 'D')
+      assert.equal(targets.size, 0)
+    })
+
+    test('is directed (does not include incoming connections)', () => {
+      const targets = getConnectedTargetIds(gameMap, 'B')
+      assert.equal(targets.size, 1)
+      assert.equal(targets.has('D'), true)
+      assert.equal(targets.has('A'), false)
+    })
+
+    test('returns empty set if map is missing or invalid', () => {
+      assert.equal(getConnectedTargetIds(null, 'A').size, 0)
+      assert.equal(getConnectedTargetIds(undefined, 'A').size, 0)
+      assert.equal(getConnectedTargetIds({}, 'A').size, 0)
+    })
+
+    test('returns empty set if currentNodeId is missing or empty', () => {
+      assert.equal(getConnectedTargetIds(gameMap, null).size, 0)
+      assert.equal(getConnectedTargetIds(gameMap, undefined).size, 0)
+      assert.equal(getConnectedTargetIds(gameMap, '').size, 0)
+    })
+
+    test('skips malformed connections', () => {
+      const malformedMap = {
+        connections: [
+          null,
+          123,
+          { from: 'A' },
+          { from: 'A', to: 'B' },
+          { from: 'A', to: 456 }
+        ]
+      }
+      const targets = getConnectedTargetIds(malformedMap, 'A')
+      assert.equal(targets.size, 1)
+      assert.equal(targets.has('B'), true)
+    })
+
+    test('supports map with edges array fallback', () => {
+      const edgesMap = {
+        edges: [{ from: 'X', to: 'Y' }]
+      }
+      const targets = getConnectedTargetIds(edgesMap, 'X')
+      assert.equal(targets.size, 1)
+      assert.equal(targets.has('Y'), true)
     })
   })
 

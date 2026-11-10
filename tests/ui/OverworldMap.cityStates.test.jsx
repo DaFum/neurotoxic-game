@@ -203,4 +203,17 @@ describe('OverworldMap cityStates lookup', () => {
     )
     expect(decodedSvg).toContain('fill="var(--color-star-white)"')
   })
+
+  test('uses precomputed connectedTargetIds when isConnected is omitted', () => {
+    const propsWithoutIsConnected = { ...baseProps }
+    delete propsWithoutIsConnected.isConnected
+
+    render(
+      <OverworldMap {...propsWithoutIsConnected} gameMap={makeGameMap(true)} />
+    )
+
+    const gigNodeProps = capturedProps.find(p => p.node?.id === 'node_1_0')
+    expect(gigNodeProps).toBeDefined()
+    expect(gigNodeProps.isReachable).toBe(true)
+  })
 })

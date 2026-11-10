@@ -36,12 +36,48 @@ import type {
 type RawMapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
 type GameMapLike =
-  | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
+  | {
+      connections?: unknown
+      edges?: unknown
+      nodes?: Record<string, GameNode | undefined>
+    }
   | null
   | undefined
 
 const isMapConnection = (value: unknown): value is RawMapConnection =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/**
+ * Precomputes and returns a set of reachable outgoing target node IDs from a given node.
+ * Provides O(1) membership lookups for map node connectivity checks.
+ *
+ * @param gameMap - Map whose `connections` or `edges` list is scanned for outgoing edges.
+ * @param currentNodeId - Node ID to find outgoing connections from.
+ * @returns ReadonlySet of connected target node IDs.
+ */
+export const getConnectedTargetIds = (
+  gameMap: GameMapLike,
+  currentNodeId: string | null | undefined
+): ReadonlySet<string> => {
+  if (!gameMap || !currentNodeId) return new Set()
+  const rawList =
+    Array.isArray(gameMap.connections) && gameMap.connections.length > 0
+      ? gameMap.connections
+      : Array.isArray(gameMap.edges)
+        ? gameMap.edges
+        : Array.isArray(gameMap.connections)
+          ? gameMap.connections
+          : []
+  const outgoing = new Set<string>()
+  for (let i = 0; i < rawList.length; i++) {
+    const c = rawList[i]
+    if (!isMapConnection(c)) continue
+    if (c.from === currentNodeId && typeof c.to === 'string') {
+      outgoing.add(c.to)
+    }
+  }
+  return outgoing
+}
 
 /**
  * Checks if a target node is connected to the source node.
@@ -55,18 +91,8 @@ export const isConnected = (
   fromNodeId: string,
   targetNodeId: string
 ): boolean => {
-  if (!gameMap) return false
-  const connections = Array.isArray(gameMap.connections)
-    ? gameMap.connections
-    : []
-  for (let i = 0; i < connections.length; i++) {
-    const c = connections[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === fromNodeId && c.to === targetNodeId) {
-      return true
-    }
-  }
-  return false
+  if (!gameMap || !fromNodeId || !targetNodeId) return false
+  return getConnectedTargetIds(gameMap, fromNodeId).has(targetNodeId)
 }
 
 /**
