@@ -1117,10 +1117,13 @@ export const handleSetPendingBandHQOpen = (
   } else {
     if (!state.pendingBandHQOpen && !isCurrentlyOverlayBandHQ) return state
   }
+  const canSetBandHQOverlay =
+    !state.pendingOverlay || state.pendingOverlay.kind === 'band_hq'
+
   return {
     ...state,
     pendingOverlay: isOpen
-      ? { kind: 'band_hq' }
+      ? (canSetBandHQOverlay ? { kind: 'band_hq' } : state.pendingOverlay)
       : isCurrentlyOverlayBandHQ
         ? null
         : (state.pendingOverlay ?? null),
@@ -1151,10 +1154,15 @@ export const handleSetPendingSupplyStopInventory = (
     return state
   }
 
+  const canSetSupplyOverlay =
+    !state.pendingOverlay || state.pendingOverlay.kind === 'supply_stop'
+
   return {
     ...state,
     pendingOverlay: nextInventory
-      ? { kind: 'supply_stop', inventory: nextInventory }
+      ? (canSetSupplyOverlay
+          ? { kind: 'supply_stop', inventory: nextInventory }
+          : state.pendingOverlay)
       : isCurrentlyOverlaySupplyStop
         ? null
         : (state.pendingOverlay ?? null),
