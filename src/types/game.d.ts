@@ -300,8 +300,8 @@ export interface PendingGigSettlement {
    * Durable reconciliation status for this settlement record (`id`).
    *
    * @remarks
-   * Derived from `lifecycleStage !== 'recorded'`. Kept as a getter or computed
-   * property for backward compatibility.
+   * Stored value that writers keep equal to `lifecycleStage !== 'recorded'`.
+   * Retained for backward compatibility with saves and consumers that read it.
    */
   socialReconciled?: boolean
 }

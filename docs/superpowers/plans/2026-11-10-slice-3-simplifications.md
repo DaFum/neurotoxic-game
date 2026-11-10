@@ -552,7 +552,7 @@ Enforce strict type-dependent validation in `validateContrabandItem`.
       Expected: PASS
 
 - [ ] **Step 2: Remove read-during-render of `financialSnapshotRef`**
-      Memoize financial calculation purely with `useMemo(() => calculateGigFinancials(...), [gigKey])` using the stable gig ID and completion timestamp. Remove mutable ref reads during render.
+      Memoize the existing `deriveFinancials(...)` call (which applies the performance penalty, repeat-demand adjustment, reward multiplier and smoothing) with `useMemo(..., [gigKey])` using the stable gig ID and completion timestamp. Do not replace it with a direct `calculateGigFinancials` call. Remove mutable ref reads during render.
 
 - [ ] **Step 3: Run tests and typecheck**
       Run: `pnpm exec vitest run tests/utils/postGig/derivations.test.ts tests/ui/usePostGigLogic.test.jsx`
