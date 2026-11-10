@@ -73,11 +73,11 @@ Expected: PASS
 - Test: `tests/ui/PostGig.component.test.jsx`
 - Test: `tests/ui/usePostGigLogic.test.jsx`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `pnpm exec vitest run tests/ui/PostGig.component.test.jsx tests/ui/usePostGigLogic.test.jsx`
 Expected: PASS
 
-- [ ] **Step 2: Define `PostGigFlowState` in `usePostGigState.ts`**
+- [x] **Step 2: Define `PostGigFlowState` in `usePostGigState.ts`**
 In `src/hooks/postGig/usePostGigState.ts`:
 ```ts
 export type PostGigFlowState =
@@ -89,12 +89,12 @@ export type PostGigFlowState =
 - Replace separate `[phase]`, `[postResult]`, `[brandOffers]` states with single `flowState: PostGigFlowState` (initial `{ phase: 'REPORT' }`).
 - Derive `phase = flowState.phase`, `postResult = 'result' in flowState ? flowState.result : null`, `brandOffers = 'offers' in flowState ? flowState.offers : []`.
 
-- [ ] **Step 3: Update `PostGig.tsx` and transitions**
+- [x] **Step 3: Update `PostGig.tsx` and transitions**
 In `src/scenes/PostGig.tsx`:
 - Render `CompletePhase` when `phase === 'COMPLETE' && postResult` (now guaranteed by type in `PostGigFlowState`).
 - Verify transitions into `DEALS` and `COMPLETE` always carry the validated `PostResult`.
 
-- [ ] **Step 4: Run tests and typecheck**
+- [x] **Step 4: Run tests and typecheck**
 Run: `pnpm exec vitest run tests/ui/PostGig.component.test.jsx tests/ui/usePostGigLogic.test.jsx`
 Run: `pnpm run typecheck:core`
 Expected: PASS
