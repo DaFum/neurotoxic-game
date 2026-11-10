@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { render, cleanup, screen } from '@testing-library/react'
+import { render, cleanup, screen, fireEvent } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { CompletePhase } from '../../src/components/postGig/CompletePhase.tsx'
 
@@ -324,6 +324,12 @@ describe('CompletePhase', () => {
     // The reason is visible, linked via aria-describedby and rendered inside accessible Tooltip.
     const reason = screen.getByText(/protected career cash/i)
     expect(button).toHaveAttribute('aria-describedby', reason.id)
+
+    // Hover over the disabled action's wrapper to verify the Tooltip popup is triggered
+    expect(button.parentElement).toBeTruthy()
+    fireEvent.mouseEnter(button.parentElement)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/protected career cash/i)
   })
 
   test('sets aria-busy on continue button when processing action', () => {
