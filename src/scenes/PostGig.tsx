@@ -36,7 +36,6 @@ export const PostGig = () => {
     phase,
     financials,
     postOptions,
-    postResult,
     brandOffers,
     phaseTitleKey,
     phaseTitleDefault,
@@ -126,9 +125,9 @@ export const PostGig = () => {
             />
           )}
 
-          {(flowState?.phase ?? phase) === 'COMPLETE' && postResult && (
+          {flowState.phase === 'COMPLETE' && (
             <CompletePhase
-              result={postResult}
+              result={flowState.result}
               onContinue={handleContinue}
               onSpinStory={handleSpinStory}
               player={player}

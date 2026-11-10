@@ -194,10 +194,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
         </p>
       )}
 
-      <LeaderboardTable
-        view={view}
-        state={!isSyncEnabled ? { status: 'unavailable' } : state}
-      />
+      <LeaderboardTable view={view} state={state} />
 
       <p
         className='text-xs text-ash-gray'

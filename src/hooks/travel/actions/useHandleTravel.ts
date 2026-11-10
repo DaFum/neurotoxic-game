@@ -333,12 +333,15 @@ export const useHandleTravel = ({
         toastId,
         timeoutId: timer
       }
-      if (refs.phaseRef) refs.phaseRef.current = nextPhase
-      if (setters.setPhase) setters.setPhase(nextPhase)
-      if (refs.pendingTravelNodeRef) refs.pendingTravelNodeRef.current = node
-      if (refs.pendingToastIdRef) refs.pendingToastIdRef.current = toastId
-      if (refs.pendingTimeoutRef) refs.pendingTimeoutRef.current = timer
-      setters.setPendingTravelNode?.(node)
+      if (setters.setPhase) {
+        setters.setPhase(nextPhase)
+      } else {
+        if (refs.phaseRef) refs.phaseRef.current = nextPhase
+        if (refs.pendingTravelNodeRef) refs.pendingTravelNodeRef.current = node
+        if (refs.pendingToastIdRef) refs.pendingToastIdRef.current = toastId
+        if (refs.pendingTimeoutRef) refs.pendingTimeoutRef.current = timer
+        setters.setPendingTravelNode?.(node)
+      }
     },
     [
       refs,

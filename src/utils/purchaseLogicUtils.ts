@@ -412,6 +412,12 @@ import type { PurchaseDecision, PurchaseStatus } from '../types/purchase'
 /**
  * Shared decision derivation for `getPurchaseDecision` and `validatePurchase`,
  * taking the already-resolved primary effect so neither caller resolves it twice.
+ *
+ * @remarks
+ * In `derivePurchaseDecision`, an item that is already owned is intentionally
+ * reported as `owned` before checking `reputation_blocked`, so catalog UI
+ * displays the item as owned even if controversy subsequently spikes.
+ *
  * @returns The public decision plus the reputation gate result.
  */
 const derivePurchaseDecision = (

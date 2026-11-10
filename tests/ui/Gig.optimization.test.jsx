@@ -76,7 +76,8 @@ const mockUseRhythmGameLogic = {
     isToxicMode: false,
     isGameOver: false,
     isAudioReady: true,
-    accuracy: 100
+    accuracy: 100,
+    initStatus: { status: 'ready' }
   },
   actions: {
     retryAudioInitialization: vi.fn(),
