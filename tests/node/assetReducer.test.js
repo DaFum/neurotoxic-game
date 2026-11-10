@@ -1059,3 +1059,41 @@ test('handleDismissForeclosureNotice - a non-record payload leaves state untouch
     []
   )
 })
+
+test('handleDismissForeclosureNotice - dismisses notice with overlay-only notices and with distinct overlay and legacy notices', () => {
+  // Case 1: Overlay-only notices
+  const overlayOnlyState = {
+    ...mockState,
+    pendingOverlay: {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis', 'studio_chassis']
+    },
+    pendingForeclosureNotices: []
+  }
+  const dismissedOverlay = handleDismissForeclosureNotice(overlayOnlyState, {
+    kind: 'tourbus_chassis'
+  })
+  assert.deepStrictEqual(dismissedOverlay.pendingForeclosureNotices, ['studio_chassis'])
+  assert.deepStrictEqual(dismissedOverlay.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['studio_chassis']
+  })
+
+  // Case 2: Distinct overlay and legacy notices
+  const mixedState = {
+    ...mockState,
+    pendingOverlay: {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis']
+    },
+    pendingForeclosureNotices: ['merch_workshop_chassis']
+  }
+  const dismissedMixed = handleDismissForeclosureNotice(mixedState, {
+    kind: 'tourbus_chassis'
+  })
+  assert.deepStrictEqual(dismissedMixed.pendingForeclosureNotices, ['merch_workshop_chassis'])
+  assert.deepStrictEqual(dismissedMixed.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['merch_workshop_chassis']
+  })
+})

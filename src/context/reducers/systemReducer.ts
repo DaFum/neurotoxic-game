@@ -845,8 +845,13 @@ export const handleAdvanceDay = (
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
   if (liabilityTick.foreclosedKinds.length > 0) {
+    const existingOverlayNotices =
+      nextStatePre.pendingOverlay?.kind === 'foreclosure'
+        ? nextStatePre.pendingOverlay.notices
+        : []
     const updatedNotices = Array.from(
       new Set([
+        ...existingOverlayNotices,
         ...(nextStatePre.pendingForeclosureNotices ?? []),
         ...liabilityTick.foreclosedKinds
       ])
