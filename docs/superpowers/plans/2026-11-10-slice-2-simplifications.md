@@ -289,12 +289,12 @@ Expected: PASS
 - Test: `tests/ui/ShopTab.test.jsx`
 - Test: `tests/node/usePurchaseLogic.test.js`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `pnpm exec vitest run tests/ui/ShopTab.test.jsx`
 Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/usePurchaseLogic.test.js`
 Expected: PASS
 
-- [ ] **Step 2: Add `PurchaseStatus` to `src/types/purchase.d.ts`**
+- [x] **Step 2: Add `PurchaseStatus` to `src/types/purchase.d.ts`**
 In `src/types/purchase.d.ts`:
 ```ts
 export type PurchaseStatus =
@@ -314,7 +314,7 @@ export interface PurchaseDecision {
 }
 ```
 
-- [ ] **Step 3: Update `derivePurchaseDecision` in `src/utils/purchaseLogicUtils.ts`**
+- [x] **Step 3: Update `derivePurchaseDecision` in `src/utils/purchaseLogicUtils.ts`**
 In `src/utils/purchaseLogicUtils.ts`:
 - Determine exact `status: PurchaseStatus`:
   - If `!hasValidEffect` -> `'missing_effect'`
@@ -324,12 +324,12 @@ In `src/utils/purchaseLogicUtils.ts`:
   - Else -> `'available'`
 - Set `canPurchase = status === 'available'`.
 
-- [ ] **Step 4: Update `ShopItem.tsx` disabled reason**
+- [x] **Step 4: Update `ShopItem.tsx` disabled reason**
 In `src/ui/bandhq/ShopItem.tsx`:
 - Use `decision?.status === 'reputation_blocked'` to show `ui:shop.messages.reputationBlocked` (with sensible fallback "Reputation too controversial.").
 - When `decision?.status === 'insufficient_funds'` or (`!decision?.canPurchase && isDisabled`), show `ui:shop.messages.notEnough`.
 
-- [ ] **Step 5: Run tests and typecheck**
+- [x] **Step 5: Run tests and typecheck**
 Run: `pnpm exec vitest run tests/ui/ShopTab.test.jsx`
 Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/usePurchaseLogic.test.js`
 Run: `pnpm run typecheck:core`

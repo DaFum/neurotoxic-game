@@ -407,7 +407,7 @@ export type PurchaseValidationResult =
       effect: Effect
     }
 
-import type { PurchaseDecision } from '../types/purchase'
+import type { PurchaseDecision, PurchaseStatus } from '../types/purchase'
 
 /**
  * Shared decision derivation for `getPurchaseDecision` and `validatePurchase`,
@@ -431,15 +431,23 @@ const derivePurchaseDecision = (
   const meetsReputation =
     !item.requiresReputation ||
     finiteNumberOr(social?.controversyLevel, 0) < SCANDAL_CONTROVERSY_THRESHOLD
-  const canPurchase =
-    playerCanAfford &&
-    (isConsumable || !isOwned) &&
-    hasValidEffect &&
-    meetsReputation
+
+  const status: PurchaseStatus = !hasValidEffect
+    ? 'missing_effect'
+    : isOwned && !isConsumable
+      ? 'owned'
+      : !meetsReputation
+        ? 'reputation_blocked'
+        : !playerCanAfford
+          ? 'insufficient_funds'
+          : 'available'
+
+  const canPurchase = status === 'available'
 
   return {
     decision: {
       cost,
+      status,
       canAfford: playerCanAfford,
       isOwned,
       isConsumable,
