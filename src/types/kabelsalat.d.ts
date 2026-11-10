@@ -24,3 +24,14 @@ export interface LightningSeed {
   o3: number
   w: number
 }
+
+/**
+ * Explicit phase state machine for Kabelsalat minigame lifecycle.
+ */
+export type KabelsalatPhase =
+  | { name: 'playing' }
+  | { name: 'shocked'; reason: string }
+  | { name: 'winning' }
+  | { name: 'powered' }
+  | { name: 'gameover' }
+  | { name: 'transitioned' }

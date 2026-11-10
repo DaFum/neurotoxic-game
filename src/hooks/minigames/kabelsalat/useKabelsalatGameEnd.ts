@@ -2,26 +2,76 @@ import { useEffect, useCallback, useRef } from 'react'
 import { useGameActions } from '../../../context/GameState'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { logger } from '../../../utils/logger'
+import type { KabelsalatPhase } from '../../../types/kabelsalat'
 
 /**
  * Guards Kabelsalat end-of-game continuation so StrictMode replays do not double-transition.
- * @param isPoweredOn - Successful completion flag.
- * @param isGameOver - Whether the overlay is already in a terminal state.
- * @param timeLeft - Remaining seconds reported on successful completion.
- * @param voidSurgesPurged - Purge count included in completion stats.
+ * Supports both explicit `KabelsalatPhase` state and legacy boolean flags.
+ *
+ * @param phaseOrIsPoweredOn - Explicit minigame phase or legacy successful completion flag.
+ * @param isGameOverOrTimeLeft - Legacy game over flag or remaining seconds when phase is passed.
+ * @param timeLeftOrVoidSurges - Remaining seconds for legacy mode, or void purge count for phase mode.
+ * @param voidSurgesPurgedOrOnTransition - Void purge count for legacy mode, or transition callback.
+ * @param onTransition - Optional callback invoked when completion transition begins.
  * @returns `forceAdvance` callback used by auto-advance and manual fallback paths.
  */
-export const useKabelsalatGameEnd = (
+export function useKabelsalatGameEnd(
+  phase: KabelsalatPhase,
+  timeLeft: number,
+  voidSurgesPurged?: number,
+  onTransition?: () => void
+): { forceAdvance: (isPowered: boolean) => void }
+export function useKabelsalatGameEnd(
   isPoweredOn: boolean,
   isGameOver: boolean,
   timeLeft: number,
-  voidSurgesPurged: number = 0
-) => {
+  voidSurgesPurged?: number
+): { forceAdvance: (isPowered: boolean) => void }
+export function useKabelsalatGameEnd(
+  phaseOrIsPoweredOn: KabelsalatPhase | boolean,
+  isGameOverOrTimeLeft?: boolean | number,
+  timeLeftOrVoidSurges?: number,
+  voidSurgesPurgedOrOnTransition?: number | (() => void),
+  onTransition?: () => void
+): { forceAdvance: (isPowered: boolean) => void } {
   const { completeKabelsalatMinigame, changeScene } = useGameActions()
 
   const transitionedRef = useRef(false)
-  const timeLeftRef = useRef(timeLeft)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const isPhaseMode = typeof phaseOrIsPoweredOn === 'object'
+
+  const isPoweredOn = isPhaseMode
+    ? phaseOrIsPoweredOn.name === 'powered'
+    : Boolean(phaseOrIsPoweredOn)
+
+  const isGameOver = isPhaseMode
+    ? phaseOrIsPoweredOn.name === 'gameover'
+    : Boolean(isGameOverOrTimeLeft)
+
+  const timeLeft = isPhaseMode
+    ? typeof isGameOverOrTimeLeft === 'number'
+      ? isGameOverOrTimeLeft
+      : 0
+    : typeof timeLeftOrVoidSurges === 'number'
+      ? timeLeftOrVoidSurges
+      : 0
+
+  const voidSurgesPurged = isPhaseMode
+    ? typeof timeLeftOrVoidSurges === 'number'
+      ? timeLeftOrVoidSurges
+      : 0
+    : typeof voidSurgesPurgedOrOnTransition === 'number'
+      ? voidSurgesPurgedOrOnTransition
+      : 0
+
+  const onTransitionCallback = isPhaseMode
+    ? typeof voidSurgesPurgedOrOnTransition === 'function'
+      ? voidSurgesPurgedOrOnTransition
+      : onTransition
+    : onTransition
+
+  const timeLeftRef = useRef(timeLeft)
 
   useEffect(() => {
     timeLeftRef.current = timeLeft
@@ -36,6 +86,8 @@ export const useKabelsalatGameEnd = (
         clearTimeout(timerRef.current)
         timerRef.current = null
       }
+
+      onTransitionCallback?.()
 
       try {
         completeKabelsalatMinigame({
@@ -66,7 +118,12 @@ export const useKabelsalatGameEnd = (
         changeScene(GAME_PHASES.GIG)
       }
     },
-    [completeKabelsalatMinigame, changeScene, voidSurgesPurged]
+    [
+      completeKabelsalatMinigame,
+      changeScene,
+      voidSurgesPurged,
+      onTransitionCallback
+    ]
   )
 
   const scheduleGameEnd = useCallback(
