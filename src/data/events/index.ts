@@ -5,7 +5,7 @@
  * Add new domain events to the raw arrays and let this registry flatten,
  * validate, and merge them instead of manually combining event arrays elsewhere.
  */
-import type { UnknownRecord } from '../../types'
+import type { GameEvent, UnknownRecord } from '../../types'
 import { TRANSPORT_EVENTS } from './transport'
 import { BAND_EVENTS } from './band'
 import { GIG_EVENTS } from './gig'
@@ -45,6 +45,7 @@ export const EVENTS_DB = Object.fromEntries(
 
 const seenIds = new Set<string>()
 const knownEventIds = new Set<string>()
+const eventsById = new Map<string, GameEvent>()
 
 // Single validation and routing pass
 for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
@@ -98,7 +99,25 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
 
   EVENTS_DB[category].push(eObj as UnknownRecord)
   knownEventIds.add(eObj.id)
+  eventsById.set(eObj.id, eObj as unknown as GameEvent)
 }
+
+/**
+ * Validated playable events indexed by event ID.
+ *
+ * @remarks
+ * Canonical map of all validated game events across every category.
+ */
+export const EVENTS_BY_ID: ReadonlyMap<string, GameEvent> = eventsById
+
+/**
+ * Looks up a validated event by its ID.
+ *
+ * @param id - The event identifier to lookup.
+ * @returns The GameEvent if found in the canonical registry, or undefined.
+ */
+export const getEventById = (id: string): GameEvent | undefined =>
+  EVENTS_BY_ID.get(id)
 
 /**
  * Ids of every event that passed validation and is playable via `EVENTS_DB`.
