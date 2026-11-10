@@ -133,7 +133,9 @@ export const CompletePhase = ({
               <Tooltip content={spinStoryReason}>
                 <ActionButton
                   onClick={onSpinStory}
-                  disabled={isProcessingAction || hasSpun || !canAffordSpinStory}
+                  disabled={
+                    isProcessingAction || hasSpun || !canAffordSpinStory
+                  }
                   aria-describedby={
                     spinStoryReason ? 'spin-story-reason' : undefined
                   }

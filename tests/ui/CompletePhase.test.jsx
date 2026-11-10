@@ -331,14 +331,18 @@ describe('CompletePhase', () => {
 
     fireEvent.mouseEnter(button.parentElement)
     expect(screen.getByRole('tooltip')).toBeInTheDocument()
-    expect(screen.getByRole('tooltip')).toHaveTextContent(/protected career cash/i)
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /protected career cash/i
+    )
 
     fireEvent.mouseLeave(button.parentElement)
 
     // Keyboard focus on the disabled action's wrapper opens the tooltip
     fireEvent.focus(button.parentElement)
     expect(screen.getByRole('tooltip')).toBeInTheDocument()
-    expect(screen.getByRole('tooltip')).toHaveTextContent(/protected career cash/i)
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /protected career cash/i
+    )
   })
 
   test('sets aria-busy on continue button when processing action', () => {
