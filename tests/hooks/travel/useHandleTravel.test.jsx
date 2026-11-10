@@ -405,4 +405,23 @@ describe('travel confirmation toast lifecycle', () => {
     hook.unmount()
     expect(removeToast.mock.calls).toEqual([['toast-1']])
   })
+
+  test('travelPhase transitions through idle -> confirming -> traveling and back on clear', () => {
+    const { hook, travel } = renderLogic()
+    expect(hook.result.current.phase).toEqual({ status: 'idle' })
+
+    travel(TWO_STEPS_AHEAD)
+    expect(hook.result.current.phase.status).toBe('confirming')
+    expect(hook.result.current.phase.node).toBe(TWO_STEPS_AHEAD)
+
+    act(() => hook.result.current.clearPendingTravel())
+    expect(hook.result.current.phase).toEqual({ status: 'idle' })
+
+    travel(TWO_STEPS_AHEAD)
+    expect(hook.result.current.phase.status).toBe('confirming')
+
+    travel(TWO_STEPS_AHEAD)
+    expect(hook.result.current.phase.status).toBe('traveling')
+    expect(hook.result.current.phase.targetNodeId).toBe(TWO_STEPS_AHEAD.id)
+  })
 })

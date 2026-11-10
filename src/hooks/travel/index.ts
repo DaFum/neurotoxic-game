@@ -92,6 +92,7 @@ export const useTravelLogic = (params: TravelLogicParams) => {
   )
 
   return {
+    phase: state.phase,
     isTraveling: state.isTraveling,
     pendingTravelNode: state.pendingTravelNode,
     isConnected,

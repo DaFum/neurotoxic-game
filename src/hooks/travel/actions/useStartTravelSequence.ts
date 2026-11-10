@@ -4,7 +4,7 @@ import type { MapNode } from '../../../types'
 import { logger } from '../../../utils/logger'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
-import type { TravelActionsParams } from '../types'
+import type { TravelActionsParams, TravelPhase } from '../types'
 
 /**
  * Configuration for the start travel sequence action hook.
@@ -44,8 +44,19 @@ export const useStartTravelSequence = ({
       if (!refs.gameMapRef.current) return
 
       try {
-        setters.setIsTraveling(true)
-        refs.isTravelingRef.current = true
+        if (refs.phaseRef) {
+          const next: TravelPhase = {
+            status: 'traveling',
+            targetNodeId: node.id,
+            timeoutId: null
+          }
+          refs.phaseRef.current = next
+          setters.setPhase?.(next)
+        }
+        if (refs.isTravelingRef) {
+          refs.isTravelingRef.current = true
+        }
+        setters.setIsTraveling?.(true)
 
         audioService
           .ensureAudioContext()
@@ -73,8 +84,15 @@ export const useStartTravelSequence = ({
           }),
           context: { node }
         })
-        setters.setIsTraveling(false)
-        refs.isTravelingRef.current = false
+        if (refs.phaseRef) {
+          const next: TravelPhase = { status: 'idle' }
+          refs.phaseRef.current = next
+          setters.setPhase?.(next)
+        }
+        if (refs.isTravelingRef) {
+          refs.isTravelingRef.current = false
+        }
+        setters.setIsTraveling?.(false)
       }
     },
     [clearPendingTravel, setters, refs, onStartTravelMinigame, addToast]

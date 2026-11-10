@@ -155,12 +155,12 @@ Expected: PASS
 - Test: `tests/node/useTravelLogic.test.js`
 - Test: `tests/hooks/travel/useHandleTravel.test.jsx`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/useTravelLogic.test.js`
 Run: `pnpm exec vitest run tests/hooks/travel/useHandleTravel.test.jsx`
 Expected: PASS
 
-- [ ] **Step 2: Define `TravelPhase` in `src/hooks/travel/types.ts`**
+- [x] **Step 2: Define `TravelPhase` in `src/hooks/travel/types.ts`**
 ```ts
 export type TravelPhase =
   | { status: 'idle' }
@@ -177,17 +177,17 @@ export type TravelPhase =
     }
 ```
 
-- [ ] **Step 3: Consolidate state and refs in `useTravelState.ts`**
+- [x] **Step 3: Consolidate state and refs in `useTravelState.ts`**
 In `src/hooks/travel/useTravelState.ts`:
 - Consolidate `isTraveling`, `pendingTravelNode`, `timeoutRef`, `pendingTimeoutRef`, `pendingToastIdRef` into `const [phase, setPhase] = useState<TravelPhase>({ status: 'idle' })` and a synchronized `const phaseRef = useRef<TravelPhase>(phase)`.
 - Derive `isTraveling = phase.status === 'traveling'` and `pendingTravelNode = phase.status === 'confirming' ? phase.node : null`.
 - Remove redundant `useLayoutEffect` re-sync bandaid.
 
-- [ ] **Step 4: Update travel actions to use `phaseRef`**
+- [x] **Step 4: Update travel actions to use `phaseRef`**
 In `useClearPendingTravel.ts`, `useHandleTravel.ts`, and `useStartTravelSequence.ts`:
 - Clear or transition `phaseRef.current` and update state atomically.
 
-- [ ] **Step 5: Run tests and typecheck**
+- [x] **Step 5: Run tests and typecheck**
 Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/useTravelLogic.test.js`
 Run: `pnpm exec vitest run tests/hooks/travel/useHandleTravel.test.jsx`
 Run: `pnpm run typecheck:core`

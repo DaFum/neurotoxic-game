@@ -20,7 +20,7 @@ import {
   getNodeVisibility as getNodeVisibilityUtil,
   normalizeVenueId
 } from '../../../utils/mapUtils'
-import type { TravelActionsParams } from '../types'
+import type { TravelActionsParams, TravelPhase } from '../types'
 
 /**
  * Parameters for the useHandleTravel hook.
@@ -76,7 +76,16 @@ export const useHandleTravel = ({
 
   return useCallback(
     (node: MapNode) => {
-      if (refs.isTravelingRef.current) return
+      const isTraveling = refs.phaseRef
+        ? refs.phaseRef.current.status === 'traveling'
+        : Boolean(refs.isTravelingRef?.current)
+      if (isTraveling) return
+
+      const pendingNode = refs.phaseRef
+        ? refs.phaseRef.current.status === 'confirming'
+          ? refs.phaseRef.current.node
+          : null
+        : (refs.pendingTravelNodeRef?.current ?? null)
 
       const player = refs.playerRef.current
       const band = refs.bandRef.current
@@ -110,7 +119,7 @@ export const useHandleTravel = ({
           })
 
       if (node.id === player.currentNodeId) {
-        if (refs.pendingTravelNodeRef.current?.id === node.id) {
+        if (pendingNode?.id === node.id) {
           clearPendingTravel()
         }
 
@@ -213,8 +222,7 @@ export const useHandleTravel = ({
           }),
           'error'
         )
-        if (refs.pendingTravelNodeRef.current?.id === node.id)
-          clearPendingTravel()
+        if (pendingNode?.id === node.id) clearPendingTravel()
         return
       }
 
@@ -289,23 +297,23 @@ export const useHandleTravel = ({
           ),
           'error'
         )
-        if (refs.pendingTravelNodeRef.current?.id === node.id)
-          clearPendingTravel()
+        if (pendingNode?.id === node.id) clearPendingTravel()
         return
       }
 
-      if (refs.pendingTravelNodeRef.current?.id === node.id) {
+      if (pendingNode?.id === node.id) {
         startTravelSequence(node)
         return
       }
 
       clearPendingTravel()
-      setters.setPendingTravelNode(node)
-      refs.pendingTravelNodeRef.current = node
+
+      const timer = setTimeout(clearPendingTravel, 5000)
+
       // Kept so confirm, a destination change, and the timeout (all routed
       // through `clearPendingTravel`) remove this prompt instead of letting
       // it outlive the confirmation window.
-      refs.pendingToastIdRef.current = addToast(
+      const toastId = addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
             '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}} | Daily Upkeep: {{dailyCost}} | Total Cash Impact: {{totalCost}} | Fuel: {{fuelLiters}}L — Click again to confirm',
@@ -319,7 +327,18 @@ export const useHandleTravel = ({
         'warning'
       )
 
-      refs.pendingTimeoutRef.current = setTimeout(clearPendingTravel, 5000)
+      const nextPhase: TravelPhase = {
+        status: 'confirming',
+        node,
+        toastId,
+        timeoutId: timer
+      }
+      if (refs.phaseRef) refs.phaseRef.current = nextPhase
+      if (setters.setPhase) setters.setPhase(nextPhase)
+      if (refs.pendingTravelNodeRef) refs.pendingTravelNodeRef.current = node
+      if (refs.pendingToastIdRef) refs.pendingToastIdRef.current = toastId
+      if (refs.pendingTimeoutRef) refs.pendingTimeoutRef.current = timer
+      setters.setPendingTravelNode?.(node)
     },
     [
       refs,
