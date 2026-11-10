@@ -102,7 +102,7 @@ export {
       Expected: PASS
 
 - [ ] **Step 2: Add `getConnectedTargetIds` in `src/utils/mapUtils.ts`**
-      Export a helper returning the outgoing target IDs of `currentNodeId` as a `ReadonlySet<string>`. Keep the existing semantics: scan `gameMap.connections` first (and `edges` when present, as a union), and collect only destinations of entries whose `from === currentNodeId`. Edges are directed (A → B does not allow B → A); do not treat them as bidirectional and do not rely on `edges` alone.
+      Export a helper returning the outgoing target IDs of `currentNodeId` as a `ReadonlySet<string>`. Scan both `gameMap.connections` and `gameMap.edges` and union their outgoing destinations, collecting only entries whose `from === currentNodeId`. This intentionally widens the previous behavior, where an array in `connections` (even empty) took precedence and `edges` was only a fallback; a map carrying `{ connections: [], edges: [{ from: 'A', to: 'B' }] }` now permits A → B. Edges are directed (A → B does not allow B → A); do not treat them as bidirectional and do not rely on `edges` alone.
 
 - [ ] **Step 3: Update `OverworldMap.tsx` and `useTravelLogic`**
       Replace linear `isConnected` scans inside node rendering with `connectedTargetIds.has(node.id)`.
