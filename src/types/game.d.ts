@@ -795,11 +795,22 @@ export interface DeclarativeMilestoneReward {
   social?: Partial<GameState['social']>
 }
 
+/** Reward actions `checkMilestones` can apply; any other action type would be dropped. */
+export type MilestoneRewardAction = Extract<
+  GameAction,
+  {
+    type:
+      | (typeof ActionTypes)['UPDATE_PLAYER']
+      | (typeof ActionTypes)['UPDATE_BAND']
+      | (typeof ActionTypes)['UPDATE_SOCIAL']
+  }
+>
+
 /** Milestone definition evaluated by `checkMilestones`. */
 export interface MilestoneDefinition {
   id: string
   condition: (state: GameState) => boolean
-  createRewardAction?: () => GameAction
+  createRewardAction?: () => MilestoneRewardAction
   reward?: DeclarativeMilestoneReward
   rewards?: DeclarativeMilestoneReward
   labelKey: string
