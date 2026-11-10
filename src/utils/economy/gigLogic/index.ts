@@ -63,10 +63,10 @@ export const calculateGigFinancials = (
   {
     gigData,
     performanceScore,
-    modifiers,
-    bandInventory,
+    modifiers = {},
+    bandInventory = {},
     playerState,
-    gigStats,
+    gigStats = {},
     context = {}
   }: GigFinancialParams,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
@@ -93,16 +93,16 @@ export const calculateGigFinancials = (
 
   // Normalize context: some callers flatten social fields to top-level while
   // also passing the full social sub-object. Support both shapes defensively.
-  const ctxSocial = (context || {})?.social ?? {}
+  const ctxSocial = context?.social ?? {}
 
   // 1. Ticket Sales
   // Apply automated promo from zealotry to tickets
   // `??` keeps NaN, and `NaN >= threshold` is silently false; recover it.
   const zealotry = finiteNumberOr(
-    (context || {}).zealotry,
+    context?.zealotry,
     finiteNumberOr(ctxSocial.zealotry, 0)
   )
-  const effectiveModifiers = { ...(modifiers || {}) }
+  const effectiveModifiers = { ...modifiers }
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     effectiveModifiers.promo = true
   }
@@ -181,7 +181,7 @@ export const calculateGigFinancials = (
   report.income.total += barCut.revenue
 
   // 6. Expenses (Modifiers)
-  const costModifiers = { ...(modifiers || {}) }
+  const costModifiers = { ...modifiers }
   // If zealotry is high, player does not pay for promo even if they explicitly checked it
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     costModifiers.promo = false
@@ -239,7 +239,7 @@ export const calculateGigFinancials = (
   // applied to income.total as its own line so net stays reconciled.
   const bandGigModifier = Math.max(
     0,
-    finiteNumberOr((context || {}).bandGigModifier, 0)
+    finiteNumberOr(context?.bandGigModifier, 0)
   )
   if (bandGigModifier > 0) {
     const bandBonus = Math.floor(report.income.total * bandGigModifier)
