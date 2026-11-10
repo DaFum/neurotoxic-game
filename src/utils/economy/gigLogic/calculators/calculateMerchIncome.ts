@@ -80,11 +80,11 @@ export const calculateMerchIncome = (
   }
 
   // Calculate missed notes penalty from gigStats
-  const maxHypePenalty = isFiniteNumber(gigStats.peakHype)
-    ? Math.max(0, 1 - gigStats.peakHype / 100) * 0.1
+  const maxHypePenalty = isFiniteNumber(gigStats?.peakHype)
+    ? Math.max(0, 1 - (gigStats?.peakHype ?? 0) / 100) * 0.1
     : 0
-  const missesPenalty = gigStats.misses
-    ? Math.min(0.2, (gigStats.misses / 100) * 0.15)
+  const missesPenalty = gigStats?.misses
+    ? Math.min(0.2, (gigStats?.misses / 100) * 0.15)
     : 0
   buyRate -= maxHypePenalty + missesPenalty
 

@@ -26,7 +26,7 @@ export const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
-  const baseCapacity = Math.max(0, finiteNumberOr(gigData.capacity, 0))
+  const baseCapacity = Math.max(0, finiteNumberOr(gigData?.capacity, 0))
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
@@ -48,7 +48,7 @@ export const calculateTicketIncome = (
   // Soundcheck Boost (word-of-mouth from quality prep)
   if (modifiers?.soundcheck) fillRate += 0.2
 
-  const gigDifficulty = gigData.diff ?? gigData.difficulty
+  const gigDifficulty = gigData?.diff ?? gigData?.difficulty
   const daysSinceLastGig = context?.daysSinceLastGig
   const hasValidDaysSinceLastGig =
     typeof daysSinceLastGig === 'number' &&

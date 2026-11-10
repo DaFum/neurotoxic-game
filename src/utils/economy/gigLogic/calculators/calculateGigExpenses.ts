@@ -71,7 +71,7 @@ export const calculateGigExpenses = (
     label: labelKey,
     detail: detailKey
   } of MODIFIER_EXPENSES) {
-    if (!modifiers[modifier]) continue
+    if (!modifiers?.[modifier]) continue
     const cost = calculateGigModifierCost(modifier, assetModifiers)
     expenses.breakdown.push({ labelKey, value: cost, detailKey })
     expenses.total += cost
