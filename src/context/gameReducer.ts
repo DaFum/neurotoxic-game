@@ -406,9 +406,15 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
     }
   }
 
+  const canSetForeclosureOverlay =
+    !nextState.pendingOverlay ||
+    nextState.pendingOverlay.kind === 'foreclosure'
+
   nextState = {
     ...nextState,
-    pendingOverlay: { kind: 'foreclosure', notices: pendingForeclosureNotices },
+    pendingOverlay: canSetForeclosureOverlay
+      ? { kind: 'foreclosure', notices: pendingForeclosureNotices }
+      : nextState.pendingOverlay,
     pendingForeclosureNotices
   }
   return nextState

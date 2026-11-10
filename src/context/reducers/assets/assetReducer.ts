@@ -770,14 +770,16 @@ export const handleDismissForeclosureNotice = (
   const remaining = sourceNotices.filter(
     (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
   )
+  let nextOverlay = state.pendingOverlay ?? null
+  if (state.pendingOverlay?.kind === 'foreclosure') {
+    nextOverlay = remaining.length > 0 ? { kind: 'foreclosure', notices: remaining } : null
+  } else if (state.pendingOverlay === null && remaining.length > 0) {
+    nextOverlay = { kind: 'foreclosure', notices: remaining }
+  }
+
   return {
     ...state,
-    pendingOverlay:
-      remaining.length > 0
-        ? { kind: 'foreclosure', notices: remaining }
-        : state.pendingOverlay?.kind === 'foreclosure'
-          ? null
-          : (state.pendingOverlay ?? null),
+    pendingOverlay: nextOverlay,
     pendingForeclosureNotices: remaining
   }
 }

@@ -851,9 +851,14 @@ export const handleAdvanceDay = (
         ...liabilityTick.foreclosedKinds
       ])
     )
+    const canSetForeclosureOverlay =
+      !nextStatePre.pendingOverlay ||
+      nextStatePre.pendingOverlay.kind === 'foreclosure'
     nextStatePre = {
       ...nextStatePre,
-      pendingOverlay: { kind: 'foreclosure', notices: updatedNotices },
+      pendingOverlay: canSetForeclosureOverlay
+        ? { kind: 'foreclosure', notices: updatedNotices }
+        : nextStatePre.pendingOverlay,
       pendingForeclosureNotices: updatedNotices
     }
   }
@@ -1221,11 +1226,11 @@ export const handleSetPendingRiskEvent = (
   event: RiskEventDescriptor | null
 ): GameState => {
   if (event === null) {
-    const resolved =
-      state.pendingRiskEvent ??
-      (state.pendingOverlay?.kind === 'risk_event'
+    const overlayEvent =
+      state.pendingOverlay?.kind === 'risk_event'
         ? state.pendingOverlay.event
-        : null)
+        : null
+    const resolved = overlayEvent ?? state.pendingRiskEvent
     if (resolved === null) return state
 
     let asset: NonNullable<typeof state.assets>[number] | undefined
@@ -1240,6 +1245,12 @@ export const handleSetPendingRiskEvent = (
     }
 
     const assetKind = asset?.kind ?? 'unknown'
+    const isDistinctLegacyEvent =
+      Boolean(overlayEvent) &&
+      Boolean(state.pendingRiskEvent) &&
+      (state.pendingRiskEvent?.assetId !== overlayEvent?.assetId ||
+        state.pendingRiskEvent?.eventType !== overlayEvent?.eventType)
+
     return QuestEvents.emit(
       {
         ...state,
@@ -1247,7 +1258,7 @@ export const handleSetPendingRiskEvent = (
           state.pendingOverlay?.kind === 'risk_event'
             ? null
             : (state.pendingOverlay ?? null),
-        pendingRiskEvent: null
+        pendingRiskEvent: isDistinctLegacyEvent ? state.pendingRiskEvent : null
       },
       createAssetRiskResolvedQuestEvent({
         assetId: resolved.assetId,
