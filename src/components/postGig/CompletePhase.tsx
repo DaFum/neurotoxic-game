@@ -1,7 +1,7 @@
 import { formatCurrency } from '../../utils/numberUtils'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
-import { ActionButton } from '../../ui/shared'
+import { ActionButton, Tooltip } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
@@ -129,39 +129,43 @@ export const CompletePhase = ({
           className='flex w-full flex-col gap-3 sm:gap-4 items-stretch sm:items-center'
         >
           {hasPR && isScandal && onSpinStory && (
-            <ActionButton
-              onClick={onSpinStory}
-              disabled={isProcessingAction || hasSpun || !canAffordSpinStory}
-              title={spinStoryReason}
-              aria-describedby={
-                spinStoryReason ? 'spin-story-reason' : undefined
-              }
-              className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
-            >
-              {t('ui:postGig.spinStory', {
-                cost: formatCurrency(
-                  -SPIN_STORY_MONEY_COST,
-                  i18n.language,
-                  'always'
-                ),
-                controversy: SPIN_STORY_CONTROVERSY_REDUCTION,
-                defaultValue:
-                  'Spin Story ({{cost}}, -{{controversy}} Controversy)'
-              })}
-            </ActionButton>
-          )}
-          {hasPR && isScandal && onSpinStory && spinStoryReason && (
-            <p
-              id='spin-story-reason'
-              className='text-xs text-center font-mono text-star-white/70'
-            >
-              {spinStoryReason}
-            </p>
+            <>
+              <Tooltip content={spinStoryReason}>
+                <ActionButton
+                  onClick={onSpinStory}
+                  disabled={isProcessingAction || hasSpun || !canAffordSpinStory}
+                  aria-describedby={
+                    spinStoryReason ? 'spin-story-reason' : undefined
+                  }
+                  className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
+                >
+                  {t('ui:postGig.spinStory', {
+                    cost: formatCurrency(
+                      -SPIN_STORY_MONEY_COST,
+                      i18n.language,
+                      'always'
+                    ),
+                    controversy: SPIN_STORY_CONTROVERSY_REDUCTION,
+                    defaultValue:
+                      'Spin Story ({{cost}}, -{{controversy}} Controversy)'
+                  })}
+                </ActionButton>
+              </Tooltip>
+              {spinStoryReason && (
+                <p
+                  id='spin-story-reason'
+                  className='text-xs text-center font-mono text-star-white/70'
+                >
+                  {spinStoryReason}
+                </p>
+              )}
+            </>
           )}
 
           <ActionButton
             onClick={onContinue}
             disabled={isProcessingAction}
+            aria-busy={isProcessingAction}
             className='w-full sm:w-auto min-h-11 px-6 sm:px-8 py-3 text-void-black disabled:opacity-50'
           >
             {isProcessingAction
