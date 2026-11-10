@@ -129,6 +129,7 @@ export const useKabelsalatState = (): KabelsalatState => {
   )
 
   // Transition: shock handling (delegates to shared shock path)
+  /** Starts a shock with `reason` unless the game is no longer in the `'playing'` phase. */
   const triggerShock = useCallback(
     (reason: string) => {
       enterShock(reason)
@@ -137,6 +138,7 @@ export const useKabelsalatState = (): KabelsalatState => {
   )
 
   // Transition: win handling (winning -> 600ms -> powered)
+  /** Moves `playing` to `winning`, then `powered`, once the wiring is complete. */
   const handleWin = useCallback(() => {
     if (phaseRef.current.name !== 'playing') return
     transitionPhase({ name: 'winning' })
@@ -154,12 +156,14 @@ export const useKabelsalatState = (): KabelsalatState => {
   }, [transitionPhase])
 
   // Transition: game over handling
+  /** Ends the run on timeout by moving `playing` to `gameover`. */
   const handleGameOver = useCallback(() => {
     if (phaseRef.current.name !== 'playing') return
     transitionPhase({ name: 'gameover' })
   }, [transitionPhase])
 
   // Transition: completion transition finished
+  /** Marks the terminal `transitioned` phase once the scene continuation has started. */
   const handleTransitioned = useCallback(() => {
     transitionPhase({ name: 'transitioned' })
   }, [transitionPhase])

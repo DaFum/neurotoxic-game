@@ -15,18 +15,21 @@ import type { KabelsalatPhase } from '../../../types/kabelsalat'
  * @param onTransition - Optional callback invoked when completion transition begins.
  * @returns `forceAdvance` callback used by auto-advance and manual fallback paths.
  */
+/** Phase-based signature: derives the outcome from a `KabelsalatPhase`. */
 export function useKabelsalatGameEnd(
   phase: KabelsalatPhase,
   timeLeft: number,
   voidSurgesPurged?: number,
   onTransition?: () => void
 ): { forceAdvance: (isPowered: boolean) => void }
+/** Legacy signature driven by `isPoweredOn` and `isGameOver` booleans. */
 export function useKabelsalatGameEnd(
   isPoweredOn: boolean,
   isGameOver: boolean,
   timeLeft: number,
   voidSurgesPurged?: number
 ): { forceAdvance: (isPowered: boolean) => void }
+/** Implementation signature shared by the phase-based and legacy overloads. */
 export function useKabelsalatGameEnd(
   phaseOrIsPoweredOn: KabelsalatPhase | boolean,
   isGameOverOrTimeLeft?: boolean | number,

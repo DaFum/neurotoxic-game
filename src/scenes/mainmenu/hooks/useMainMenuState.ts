@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
+/**
+ * The single main-menu modal currently open, or `null` when none is.
+ *
+ * @remarks
+ * `existingSave` carries the flow (`tour` or `expedition`) that the confirmation resumes.
+ */
 export type MainMenuModal =
   | null
   | { type: 'nameInput' }
@@ -9,6 +15,15 @@ export type MainMenuModal =
 
 type ModalType = Exclude<NonNullable<MainMenuModal>, null>['type']
 
+/**
+ * Resolves a boolean-style show/hide request against the active modal.
+ *
+ * @param current - The modal currently open, if any.
+ * @param type - The modal type the request targets.
+ * @param show - Target visibility, or an updater receiving whether `type` is currently open.
+ * @param createModal - Factory for the modal to open when it is not already showing.
+ * @returns `current` when `type` is already open and stays open, the new modal when opened, `null` when `type` is closed, otherwise `current`.
+ */
 const toggleModalState = (
   current: MainMenuModal,
   type: ModalType,

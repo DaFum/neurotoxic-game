@@ -15,6 +15,7 @@ import type { KabelsalatPhase } from '../../../types/kabelsalat'
  * @param tArg - Translation callback for legacy mode.
  * @returns Current surge meter, purge count, and purge command.
  */
+/** Phase-based signature: the surge runs only while the phase is `'playing'`. */
 export function useKabelsalatVoidSurge(
   phase: KabelsalatPhase,
   triggerShock: (reason: string) => void,
@@ -24,6 +25,7 @@ export function useKabelsalatVoidSurge(
   voidSurgesPurged: number
   purgeVoidSurge: () => void
 }
+/** Legacy signature that derives "playing" from the boolean flags and `isWinningRef`. */
 export function useKabelsalatVoidSurge(
   isPoweredOn: boolean,
   isGameOver: boolean,
@@ -36,6 +38,7 @@ export function useKabelsalatVoidSurge(
   voidSurgesPurged: number
   purgeVoidSurge: () => void
 }
+/** Implementation signature shared by the phase-based and legacy overloads. */
 export function useKabelsalatVoidSurge(
   phaseOrIsPoweredOn: KabelsalatPhase | boolean,
   isGameOverOrTriggerShock: boolean | ((reason: string) => void),

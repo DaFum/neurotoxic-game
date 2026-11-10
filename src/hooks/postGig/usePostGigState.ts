@@ -5,6 +5,12 @@ import type { BrandDeal } from '../../types/social'
 /** Ordered phases used by the post-gig flow. */
 export type PostGigPhase = 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
 
+/**
+ * Post-gig flow state keyed by phase.
+ *
+ * @remarks
+ * `DEALS` and `COMPLETE` require a `PostResult`, so those phases cannot be entered without one.
+ */
 export type PostGigFlowState =
   | { phase: 'REPORT'; result?: PostResult | null; offers?: BrandDeal[] }
   | { phase: 'SOCIAL'; result?: PostResult | null; offers?: BrandDeal[] }
@@ -41,6 +47,7 @@ export const usePostGigState = () => {
     phase: 'REPORT'
   })
 
+  /** Stores the gig result on the current flow state without changing the phase. */
   const setPostResult = useCallback((result: PostResult) => {
     setFlowState(prev => ({
       ...prev,
@@ -48,6 +55,7 @@ export const usePostGigState = () => {
     }))
   }, [])
 
+  /** Stores the brand offers on the current flow state without changing the phase. */
   const setBrandOffers = useCallback((offers: BrandDeal[]) => {
     setFlowState(prev => ({
       ...prev,
@@ -55,6 +63,7 @@ export const usePostGigState = () => {
     }))
   }, [])
 
+  /** Moves to the target phase; `DEALS` and `COMPLETE` are ignored while no result exists. */
   const setPhase = useCallback(
     (target: PostGigPhase | ((prev: PostGigPhase) => PostGigPhase)) => {
       setFlowState(prev => {

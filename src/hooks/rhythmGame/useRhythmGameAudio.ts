@@ -325,6 +325,7 @@ export const useRhythmGameAudio = ({
     setFailureKind
   ])
 
+  /** Writes the gig init status; the reducer derives `audioStatus` and `failureKind` from it. */
   const updateInitStatus = useCallback((status: GigInitStatus) => {
     latestContextRef.current.setInitStatus(status)
   }, [])

@@ -18,6 +18,7 @@ const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length
  * Supports both explicit `KabelsalatPhase` state and legacy boolean flags.
  * Timers only operate when phase is `'playing'`.
  */
+/** Phase-based signature: ticks only while the phase is `'playing'` and reports outcomes through `onTimeout` and `onWin`. */
 export function useKabelsalatTimer(
   connections: Partial<Record<SocketId, CableId>>,
   phase: KabelsalatPhase,
@@ -25,6 +26,7 @@ export function useKabelsalatTimer(
   onTimeout: () => void,
   onWin: () => void
 ): { finishedRef: MutableRefObject<boolean> }
+/** Legacy signature that reports outcomes by calling the boolean state setters directly. */
 export function useKabelsalatTimer(
   connections: Partial<Record<SocketId, CableId>>,
   isPoweredOn: boolean,
@@ -35,6 +37,7 @@ export function useKabelsalatTimer(
   setIsGameOver: Dispatch<SetStateAction<boolean>>,
   setIsWinning?: Dispatch<SetStateAction<boolean>>
 ): { finishedRef: MutableRefObject<boolean> }
+/** Implementation signature shared by the phase-based and legacy overloads. */
 export function useKabelsalatTimer(
   connections: Partial<Record<SocketId, CableId>>,
   phaseOrIsPoweredOn: KabelsalatPhase | boolean,

@@ -7,6 +7,7 @@ interface LeaderboardTableProps {
   state: LeaderboardState
 }
 
+/** Renders the leaderboard panel for the given fetch `state`: connecting, error, unavailable, empty, or the ranked table. */
 export const LeaderboardTable = ({ view, state }: LeaderboardTableProps) => {
   const { t, i18n } = useTranslation()
 

@@ -77,6 +77,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     params.venueBlacklist
   ])
 
+  /** Applies a phase update, mirroring it to the legacy refs before updating React state. */
   const setPhaseWrapper = useCallback<
     React.Dispatch<React.SetStateAction<TravelPhase>>
   >(action => {
@@ -89,6 +90,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     setPhase(next)
   }, [])
 
+  /** Legacy boolean adapter: `true` enters `traveling`, `false` returns to `idle`. */
   const setIsTraveling = useCallback<
     React.Dispatch<React.SetStateAction<boolean>>
   >(
@@ -117,6 +119,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     [setPhaseWrapper]
   )
 
+  /** Legacy node adapter: a node enters `confirming`, `null` returns to `idle`. */
   const setPendingTravelNode = useCallback<
     React.Dispatch<React.SetStateAction<MapNode | null>>
   >(
