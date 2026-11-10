@@ -270,6 +270,7 @@ test('handleAdvanceDay reverts effects on non-finite band stats without persisti
 test('handleAdvanceDay floors every reverted zero-floor additive field at zero', () => {
   const state = createInitialState()
   state.player.money = 10000
+  state.completedMilestones = ['wealth_starter']
   state.rngSeed = 123
   const fields = {
     luck: 'luck',
@@ -3110,6 +3111,7 @@ test('special contraband expiry does not subtract numeric stats and releases the
 test('load and expiry revert a legacy buff without subtracting a special numeric value', () => {
   const state = createInitialState()
   state.player.money = 10000
+  state.completedMilestones = ['wealth_starter']
   state.band.luck = 13
   state.band.activeContrabandEffects = [
     { effectType: 'luck', value: 5, remainingDuration: 1 },

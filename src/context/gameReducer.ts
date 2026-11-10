@@ -106,9 +106,6 @@ import {
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/spendableCash'
-import { MILESTONES } from '../data/milestones/milestones'
-import { createAddToastActionWithId } from './actionCreators'
-import { buildDeterministicToastId } from './reducers/toastSanitizers'
 import { assetForeclosed } from './assets/assetActionCreators'
 import {
   handleLoadGame,
@@ -468,51 +465,8 @@ export const gameReducer = (
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
     nextState = applyZeroConditionForeclosures(nextState)
-    const snapshotBeforeMilestones = nextState
-    const completedSet = new Set(snapshotBeforeMilestones.completedMilestones)
-    const triggeredMilestones: (typeof MILESTONES)[number][] = []
-
-    for (let i = 0; i < MILESTONES.length; i++) {
-      const m = MILESTONES[i]
-      if (
-        m &&
-        !completedSet.has(m.id) &&
-        m.condition(snapshotBeforeMilestones)
-      ) {
-        triggeredMilestones.push(m)
-        completedSet.add(m.id) // Ensure idempotency if conditions overlap
-      }
-    }
-
-    if (triggeredMilestones.length > 0) {
-      // Batch the array allocation once
-      nextState = {
-        ...nextState,
-        completedMilestones: Array.from(completedSet)
-      }
-
-      for (let i = 0; i < triggeredMilestones.length; i++) {
-        const milestone = triggeredMilestones[i]
-        if (!milestone) continue
-
-        const rewardAction = milestone.createRewardAction?.()
-        if (rewardAction) {
-          nextState = gameReducer(nextState, rewardAction)
-        }
-
-        // Reducers must stay pure, so the toast id is derived from state
-        // instead of minted by createAddToastAction.
-        const toastAction = createAddToastActionWithId(
-          {
-            type: 'info',
-            messageKey: milestone.labelKey,
-            options: milestone.createLabelOptions?.()
-          },
-          buildDeterministicToastId('milestone-toast', nextState.toasts)
-        )
-        if (toastAction) nextState = gameReducer(nextState, toastAction)
-      }
-    }
+    // Milestone progression and deterministic toasts (via createAddToastActionWithId)
+    // are evaluated purely by checkMilestones during handleAdvanceDay without re-entrant dispatches.
   }
 
   // The protected Career Cash slice is enforced once, here, rather than at

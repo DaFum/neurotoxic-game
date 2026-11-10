@@ -87,6 +87,7 @@ import { settlePendingGigOnLoad } from './pendingGigSettlementReducer'
 import { settleExpeditionOnTerminalOutcome } from './expeditionReducer'
 import { deriveGameOverOutcome } from './sceneReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
+import { checkMilestones } from '../../domain/progression/checkMilestones'
 import { getQuestDefinition } from '../../data/questRegistry'
 import {
   ADDITIVE_BAND_EFFECT_FIELDS,
@@ -1080,6 +1081,8 @@ export const handleAdvanceDay = (
   }
 
   nextState = applyDailyBankruptcyCheck(nextState)
+
+  nextState = checkMilestones(nextState)
 
   logger.info('GameState', `Day Advanced to ${player.day}`)
   return nextState
