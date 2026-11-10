@@ -763,11 +763,29 @@ export const handleDismissForeclosureNotice = (
   payload: { kind: AssetKind }
 ): GameState => {
   if (!isLooseRecord(payload)) return state
+  const overlayNotices =
+    state.pendingOverlay?.kind === 'foreclosure'
+      ? state.pendingOverlay.notices
+      : []
+  const legacyNotices = state.pendingForeclosureNotices ?? []
+  const mergedNotices = Array.from(new Set([...overlayNotices, ...legacyNotices]))
+  const remaining = mergedNotices.filter(
+    (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
+  )
+  let nextOverlay = state.pendingOverlay ?? null
+  if (state.pendingOverlay?.kind === 'foreclosure') {
+    nextOverlay =
+      remaining.length > 0
+        ? { kind: 'foreclosure', notices: remaining }
+        : null
+  } else if (state.pendingOverlay === null && remaining.length > 0) {
+    nextOverlay = { kind: 'foreclosure', notices: remaining }
+  }
+
   return {
     ...state,
-    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
-      (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
-    )
+    pendingOverlay: nextOverlay,
+    pendingForeclosureNotices: remaining
   }
 }
 

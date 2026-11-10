@@ -7,7 +7,11 @@ import { useDisclosure } from './useDisclosure'
  * Used in MainMenu and Overworld scenes.
  */
 export const useBandHQModal = () => {
-  const pendingBandHQOpen = useGameSelector(state => state.pendingBandHQOpen)
+  const pendingBandHQOpen = useGameSelector(
+    state =>
+      state.pendingOverlay?.kind === 'band_hq' ||
+      Boolean(state.pendingBandHQOpen)
+  )
   const { setPendingBandHQOpen } = useGameActions()
 
   const {

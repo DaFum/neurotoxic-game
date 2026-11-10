@@ -105,8 +105,13 @@ import type {
   ActiveBrandDeal,
   ToastPayload,
   GameMap,
-  GamePhase
+  GamePhase,
+  PendingOverlayState
 } from '../../../types'
+import {
+  sanitizeAssetKinds,
+  sanitizeRiskEventDescriptor
+} from '../assets/assetSanitizers'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -2609,4 +2614,64 @@ export const sanitizeQuestScopes = (
       return []
     return [{ questId: entry.questId, scopeKey: entry.scopeKey }]
   })
+}
+
+/**
+ * Sanitizes or reconstructs the consolidated pending overlay state from save data.
+ *
+ * @param value - Explicit pendingOverlay field if present.
+ * @param legacy - Fallback object containing legacy overlay fields.
+ * @returns Sanitized PendingOverlayState or null.
+ */
+export const sanitizePendingOverlay = (
+  value: unknown,
+  legacy?: {
+    pendingRiskEvent?: unknown
+    pendingSupplyStopInventory?: unknown
+    pendingForeclosureNotices?: unknown
+    pendingBandHQOpen?: unknown
+  }
+): PendingOverlayState | null => {
+  if (isLooseRecord(value) && typeof value.kind === 'string') {
+    switch (value.kind) {
+      case 'band_hq':
+        return { kind: 'band_hq' }
+      case 'supply_stop': {
+        const inventory = sanitizeSupplyStopInventory(value.inventory)
+        return inventory ? { kind: 'supply_stop', inventory } : null
+      }
+      case 'risk_event': {
+        const event = sanitizeRiskEventDescriptor(value.event)
+        return event ? { kind: 'risk_event', event } : null
+      }
+      case 'foreclosure': {
+        const notices = sanitizeAssetKinds(value.notices)
+        return notices.length > 0 ? { kind: 'foreclosure', notices } : null
+      }
+      default:
+        break
+    }
+  }
+
+  // Fallback / migration from legacy fields:
+  if (legacy) {
+    const riskEvent = sanitizeRiskEventDescriptor(legacy.pendingRiskEvent)
+    if (riskEvent) return { kind: 'risk_event', event: riskEvent }
+
+    const supplyInventory = sanitizeSupplyStopInventory(
+      legacy.pendingSupplyStopInventory
+    )
+    if (supplyInventory)
+      return { kind: 'supply_stop', inventory: supplyInventory }
+
+    const foreclosureNotices = sanitizeAssetKinds(
+      legacy.pendingForeclosureNotices
+    )
+    if (foreclosureNotices.length > 0)
+      return { kind: 'foreclosure', notices: foreclosureNotices }
+
+    if (legacy.pendingBandHQOpen === true) return { kind: 'band_hq' }
+  }
+
+  return null
 }

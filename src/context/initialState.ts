@@ -233,6 +233,7 @@ const initialState: GameState = {
   gigEventScoreDelta: 0,
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
+  pendingOverlay: null,
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
   terminalOutcome: null,
