@@ -28,7 +28,7 @@ import {
   drainBandStamina,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
-import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
+import { enforceExpeditionCashFloor } from '../../domain/expedition/spendableCash'
 import { ActionTypes } from '../actionTypes'
 import {
   isGigSocialReconciled,

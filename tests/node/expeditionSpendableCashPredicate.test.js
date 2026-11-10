@@ -6,8 +6,20 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createInitialState } from '../../src/context/initialState'
-import { canSpendExpeditionCash } from '../../src/domain/expedition/spendableCash'
-import { canSpendExpeditionCash as reExported } from '../../src/domain/expedition/loadout'
+import {
+  canSpendExpeditionCash,
+  capExpeditionSpendAtCashFloor,
+  enforceExpeditionCashFloor,
+  getExpeditionDayPolicy,
+  settleExpeditionDailyObligation
+} from '../../src/domain/expedition/spendableCash'
+import {
+  canSpendExpeditionCash as reExportedCanSpend,
+  capExpeditionSpendAtCashFloor as reExportedCapSpend,
+  enforceExpeditionCashFloor as reExportedEnforceFloor,
+  getExpeditionDayPolicy as reExportedGetPolicy,
+  settleExpeditionDailyObligation as reExportedSettleObligation
+} from '../../src/domain/expedition/loadout'
 
 const activeRun = (money, protectedCareerCash) => {
   const state = createInitialState()
@@ -18,7 +30,11 @@ const activeRun = (money, protectedCareerCash) => {
 
 describe('canSpendExpeditionCash (spendableCash)', () => {
   it('is the same function loadout re-exports', () => {
-    assert.equal(reExported, canSpendExpeditionCash)
+    assert.equal(reExportedCanSpend, canSpendExpeditionCash)
+    assert.equal(reExportedCapSpend, capExpeditionSpendAtCashFloor)
+    assert.equal(reExportedEnforceFloor, enforceExpeditionCashFloor)
+    assert.equal(reExportedGetPolicy, getExpeditionDayPolicy)
+    assert.equal(reExportedSettleObligation, settleExpeditionDailyObligation)
   })
 
   it('rejects non-finite and negative amounts', () => {

@@ -105,7 +105,7 @@ import {
   settleExpeditionOnTerminalOutcome
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
-import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
+import { enforceExpeditionCashFloor } from '../domain/expedition/spendableCash'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastActionWithId } from './actionCreators'
 import { buildDeterministicToastId } from './reducers/toastSanitizers'
@@ -414,8 +414,7 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   }
 
   const canSetForeclosureOverlay =
-    !nextState.pendingOverlay ||
-    nextState.pendingOverlay.kind === 'foreclosure'
+    !nextState.pendingOverlay || nextState.pendingOverlay.kind === 'foreclosure'
 
   nextState = {
     ...nextState,
