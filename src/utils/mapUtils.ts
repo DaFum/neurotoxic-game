@@ -60,14 +60,11 @@ export const getConnectedTargetIds = (
   currentNodeId: string | null | undefined
 ): ReadonlySet<string> => {
   if (!gameMap || !currentNodeId) return new Set()
-  const rawList =
-    Array.isArray(gameMap.connections) && gameMap.connections.length > 0
-      ? gameMap.connections
-      : Array.isArray(gameMap.edges)
-        ? gameMap.edges
-        : Array.isArray(gameMap.connections)
-          ? gameMap.connections
-          : []
+  const rawList = Array.isArray(gameMap.connections)
+    ? gameMap.connections
+    : Array.isArray(gameMap.edges)
+      ? gameMap.edges
+      : []
   const outgoing = new Set<string>()
   for (let i = 0; i < rawList.length; i++) {
     const c = rawList[i]

@@ -128,8 +128,10 @@ export const OverworldMap = React.memo(
       [propConnectedTargetIds, gameMap, player.currentNodeId]
     )
 
-    const isNodeConnected =
-      isConnected ?? (nodeId => resolvedConnectedTargetIds.has(nodeId))
+    const isNodeConnected = useMemo(
+      () => isConnected ?? (nodeId => resolvedConnectedTargetIds.has(nodeId)),
+      [isConnected, resolvedConnectedTargetIds]
+    )
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {
@@ -268,8 +270,7 @@ export const OverworldMap = React.memo(
       isTraveling,
       pendingTravelNode,
       getNodeVisibility,
-      isConnected,
-      resolvedConnectedTargetIds,
+      isNodeConnected,
       handleTravel,
       urls,
       vanUrl,

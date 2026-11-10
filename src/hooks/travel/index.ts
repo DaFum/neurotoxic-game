@@ -6,7 +6,6 @@ import { useVanMaintenance } from './useVanMaintenance'
 import { useTravelEffects } from './useTravelEffects'
 import {
   getConnectedTargetIds,
-  isConnected as isConnectedUtil,
   getNodeVisibility as getNodeVisibilityUtil
 } from '../../utils/mapUtils'
 import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
