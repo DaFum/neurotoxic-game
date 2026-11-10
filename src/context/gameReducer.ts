@@ -106,6 +106,7 @@ import {
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/spendableCash'
+import { checkMilestones } from '../domain/progression/checkMilestones'
 import { assetForeclosed } from './assets/assetActionCreators'
 import {
   handleLoadGame,
@@ -465,8 +466,7 @@ export const gameReducer = (
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
     nextState = applyZeroConditionForeclosures(nextState)
-    // Milestone progression and deterministic toasts (via createAddToastActionWithId)
-    // are evaluated purely by checkMilestones during handleAdvanceDay without re-entrant dispatches.
+    nextState = checkMilestones(nextState)
   }
 
   // The protected Career Cash slice is enforced once, here, rather than at

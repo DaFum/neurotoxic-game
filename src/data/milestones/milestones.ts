@@ -22,8 +22,11 @@ interface Milestone {
   createLabelOptions?: () => Record<string, unknown>
 }
 
-const totalFollowers = (social: GameState['social']): number =>
-  social.tiktok + social.instagram + social.youtube + social.newsletter
+const totalFollowers = (social: GameState['social'] | undefined): number =>
+  (social?.tiktok ?? 0) +
+  (social?.instagram ?? 0) +
+  (social?.youtube ?? 0) +
+  (social?.newsletter ?? 0)
 
 /** Canonical milestone definitions evaluated against game state. */
 export const MILESTONES = [
@@ -203,12 +206,12 @@ export const MILESTONES = [
   // === Band ===
   {
     id: 'high_harmony',
-    condition: (state: GameState) => state.band.harmony >= 90,
+    condition: (state: GameState) => (state.band?.harmony ?? 0) >= 90,
     labelKey: 'ui:milestones.high_harmony'
   },
   {
     id: 'perfect_harmony',
-    condition: (state: GameState) => state.band.harmony >= 99,
+    condition: (state: GameState) => (state.band?.harmony ?? 0) >= 99,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 75
@@ -217,7 +220,8 @@ export const MILESTONES = [
   },
   {
     id: 'peacekeeper',
-    condition: (state: GameState) => state.player.stats.conflictsResolved >= 5,
+    condition: (state: GameState) =>
+      (state.player?.stats?.conflictsResolved ?? 0) >= 5,
     createRewardAction: () =>
       createUpdateBandAction((prev: GameState['band']) => ({
         harmony: prev.harmony + 15
@@ -228,7 +232,7 @@ export const MILESTONES = [
   // === Road / Travel ===
   {
     id: 'road_warrior',
-    condition: (state: GameState) => state.player.totalTravels >= 10,
+    condition: (state: GameState) => (state.player?.totalTravels ?? 0) >= 10,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 200
@@ -237,7 +241,7 @@ export const MILESTONES = [
   },
   {
     id: 'road_legend',
-    condition: (state: GameState) => state.player.totalTravels >= 50,
+    condition: (state: GameState) => (state.player?.totalTravels ?? 0) >= 50,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 750,
@@ -249,7 +253,8 @@ export const MILESTONES = [
   // === Stage Presence & HQ ===
   {
     id: 'stage_diver',
-    condition: (state: GameState) => state.player.stats.stageDives >= 10,
+    condition: (state: GameState) =>
+      (state.player?.stats?.stageDives ?? 0) >= 10,
     createRewardAction: () =>
       createUpdateSocialAction((prev: GameState['social']) => ({
         tiktok: prev.tiktok + 200,
@@ -259,7 +264,8 @@ export const MILESTONES = [
   },
   {
     id: 'hq_builder',
-    condition: (state: GameState) => state.player.hqUpgrades.length >= 3,
+    condition: (state: GameState) =>
+      (state.player?.hqUpgrades?.length ?? 0) >= 3,
     createRewardAction: () =>
       createUpdateBandAction((prev: GameState['band']) => ({
         luck: prev.luck + 5
@@ -268,7 +274,8 @@ export const MILESTONES = [
   },
   {
     id: 'van_tuned',
-    condition: (state: GameState) => state.player.van.upgrades.length >= 2,
+    condition: (state: GameState) =>
+      (state.player?.van?.upgrades?.length ?? 0) >= 2,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 250
@@ -279,7 +286,7 @@ export const MILESTONES = [
   // === Resilience ===
   {
     id: 'clinic_survivor',
-    condition: (state: GameState) => state.player.clinicVisits >= 3,
+    condition: (state: GameState) => (state.player?.clinicVisits ?? 0) >= 3,
     createRewardAction: () =>
       createUpdateBandAction((prev: GameState['band']) => ({
         harmony: prev.harmony + 5
@@ -290,7 +297,7 @@ export const MILESTONES = [
   // === Meta ===
   {
     id: 'collector',
-    condition: (state: GameState) => state.unlocks.length >= 1,
+    condition: (state: GameState) => (state.unlocks?.length ?? 0) >= 1,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 50,
@@ -300,7 +307,8 @@ export const MILESTONES = [
   },
   {
     id: 'milestone_chaser',
-    condition: (state: GameState) => state.completedMilestones.length >= 10,
+    condition: (state: GameState) =>
+      (state.completedMilestones?.length ?? 0) >= 10,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 1000,

@@ -273,7 +273,7 @@ export interface ToastPayload {
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
  *
- * Monotonic progression: recorded -> social_reconciled -> settled.
+ * Monotonic progression: recorded -\> social_reconciled -\> settled.
  */
 export type GigSettlementLifecycleStage =
   'recorded' | 'social_reconciled' | 'settled'
@@ -293,7 +293,7 @@ export interface PendingGigSettlement {
   dealFameMultiplier: number
   soldMerch: Record<string, number>
   /**
-   * Durable linear lifecycle stage: recorded -> social_reconciled -> settled.
+   * Durable linear lifecycle stage: recorded -\> social_reconciled -\> settled.
    */
   lifecycleStage: GigSettlementLifecycleStage
   /**

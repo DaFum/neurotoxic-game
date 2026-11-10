@@ -26,7 +26,7 @@ export const canonicalizeGigSettlementLifecycleStage = (
   return null
 }
 
-/** Advances lifecycleStage monotonically: recorded (0) -> social_reconciled (1) -> settled (2). */
+/** Advances lifecycleStage monotonically: recorded (0) -\> social_reconciled (1) -\> settled (2). */
 export const advanceSettlementLifecycleStage = (
   current: GigSettlementLifecycleStage,
   target: GigSettlementLifecycleStage

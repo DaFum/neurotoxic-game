@@ -204,9 +204,10 @@ describe('OverworldMap cityStates lookup', () => {
     expect(decodedSvg).toContain('fill="var(--color-star-white)"')
   })
 
-  test('uses precomputed connectedTargetIds when isConnected is omitted', () => {
+  test('derives reachable targets from gameMap when isConnected and connectedTargetIds are omitted', () => {
     const propsWithoutIsConnected = { ...baseProps }
     delete propsWithoutIsConnected.isConnected
+    capturedProps.length = 0
 
     render(
       <OverworldMap {...propsWithoutIsConnected} gameMap={makeGameMap(true)} />
@@ -215,5 +216,37 @@ describe('OverworldMap cityStates lookup', () => {
     const gigNodeProps = capturedProps.find(p => p.node?.id === 'node_1_0')
     expect(gigNodeProps).toBeDefined()
     expect(gigNodeProps.isReachable).toBe(true)
+  })
+
+  test('uses connectedTargetIds prop when isConnected is omitted', () => {
+    const propsWithoutIsConnected = { ...baseProps }
+    delete propsWithoutIsConnected.isConnected
+
+    capturedProps.length = 0
+    const { unmount } = render(
+      <OverworldMap
+        {...propsWithoutIsConnected}
+        gameMap={makeGameMap(true)}
+        connectedTargetIds={new Set(['node_1_0'])}
+      />
+    )
+
+    const reachableNode = capturedProps.find(p => p.node?.id === 'node_1_0')
+    expect(reachableNode).toBeDefined()
+    expect(reachableNode.isReachable).toBe(true)
+
+    unmount()
+    capturedProps.length = 0
+    render(
+      <OverworldMap
+        {...propsWithoutIsConnected}
+        gameMap={makeGameMap(true)}
+        connectedTargetIds={new Set()}
+      />
+    )
+
+    const unreachableNode = capturedProps.find(p => p.node?.id === 'node_1_0')
+    expect(unreachableNode).toBeDefined()
+    expect(unreachableNode.isReachable).toBe(false)
   })
 })

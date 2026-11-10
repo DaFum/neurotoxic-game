@@ -197,7 +197,7 @@ describe('checkMilestones domain module', () => {
     assert.deepStrictEqual(first.toasts, second.toasts)
   })
 
-  it('integrates seamlessly with handleAdvanceDay', () => {
+  it('integrates seamlessly with checkMilestones after handleAdvanceDay', () => {
     const state = {
       ...createBaseState(),
       player: {
@@ -208,8 +208,9 @@ describe('checkMilestones domain module', () => {
       toasts: []
     }
 
-    const nextState = handleAdvanceDay(state)
-    assert.strictEqual(nextState.player.day, 8)
+    const advancedState = handleAdvanceDay(state)
+    assert.strictEqual(advancedState.player.day, 8)
+    const nextState = checkMilestones(advancedState)
     assert.ok(nextState.completedMilestones.includes('survive_1_week'))
     const milestoneToast = nextState.toasts.find(
       t => t.messageKey === 'ui:milestones.survive_1_week'

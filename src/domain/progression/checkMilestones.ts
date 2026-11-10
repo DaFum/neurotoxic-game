@@ -20,7 +20,7 @@ import {
 } from '../../context/reducers/toastSanitizers'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
-export interface DeclarativeMilestoneReward {
+interface DeclarativeMilestoneReward {
   cash?: number
   money?: number
   fans?: number
@@ -162,12 +162,22 @@ export const checkMilestones = (
   for (let i = 0; i < milestoneList.length; i++) {
     const m = milestoneList[i]
     if (
-      m &&
-      typeof m.id === 'string' &&
-      !completedSet.has(m.id) &&
-      typeof m.condition === 'function' &&
-      m.condition(state)
+      !m ||
+      typeof m.id !== 'string' ||
+      completedSet.has(m.id) ||
+      typeof m.condition !== 'function'
     ) {
+      continue
+    }
+
+    let conditionPassed: boolean
+    try {
+      conditionPassed = Boolean(m.condition(state))
+    } catch {
+      conditionPassed = false
+    }
+
+    if (conditionPassed) {
       triggeredMilestones.push(m)
       completedSet.add(m.id) // Ensure idempotency if conditions overlap
     }

@@ -41,7 +41,7 @@ export {
 ```
 
 - [ ] **Step 3: Update `gameReducer.ts` and `pendingGigSettlementReducer.ts` imports**
-Import `enforceExpeditionCashFloor` directly from `../domain/expedition/spendableCash` instead of `loadout.ts`.
+In `gameReducer.ts`, import `enforceExpeditionCashFloor` from `../domain/expedition/spendableCash` instead of `loadout.ts`. In `pendingGigSettlementReducer.ts`, import it from `../../domain/expedition/spendableCash`.
 
 - [ ] **Step 4: Run tests and typecheck**
 Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionSpendableCashPredicate.test.js tests/node/expeditionDayPolicy.test.js`
