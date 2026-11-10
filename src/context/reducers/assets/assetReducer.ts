@@ -772,7 +772,10 @@ export const handleDismissForeclosureNotice = (
   )
   let nextOverlay = state.pendingOverlay ?? null
   if (state.pendingOverlay?.kind === 'foreclosure') {
-    nextOverlay = remaining.length > 0 ? { kind: 'foreclosure', notices: remaining } : null
+    nextOverlay =
+      remaining.length > 0
+        ? { kind: 'foreclosure', notices: remaining }
+        : null
   } else if (state.pendingOverlay === null && remaining.length > 0) {
     nextOverlay = { kind: 'foreclosure', notices: remaining }
   }

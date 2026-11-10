@@ -1279,9 +1279,14 @@ export const handleSetPendingRiskEvent = (
     return state
   }
 
+  const canSetRiskOverlay =
+    !state.pendingOverlay || state.pendingOverlay.kind === 'risk_event'
+
   return {
     ...state,
-    pendingOverlay: { kind: 'risk_event', event: nextEvent },
+    pendingOverlay: canSetRiskOverlay
+      ? { kind: 'risk_event', event: nextEvent }
+      : state.pendingOverlay,
     pendingRiskEvent: nextEvent
   }
 }
