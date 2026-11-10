@@ -25,7 +25,7 @@ import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 import { capExpeditionSpendAtCashFloor } from '../../src/domain/expedition/loadout'
 import {
   advanceSettlementLifecycleStage,
-  isSocialReconciled,
+  isGigSocialReconciled,
   normalizeGigSettlementLifecycle
 } from '../../src/utils/postGig/settlementLifecycle'
 
@@ -1586,17 +1586,20 @@ test('re-recording a legacy complete settlement canonicalizes to settled and pre
 
 test('SUB-01-REC-01: monotonic lifecycleStage progression and single source of truth', () => {
   // Helpers
-  assert.equal(isSocialReconciled({ lifecycleStage: 'recorded' }), false)
+  assert.equal(isGigSocialReconciled({ lifecycleStage: 'recorded' }), false)
   assert.equal(
-    isSocialReconciled({ lifecycleStage: 'social_reconciled' }),
+    isGigSocialReconciled({ lifecycleStage: 'social_reconciled' }),
     true
   )
-  assert.equal(isSocialReconciled({ lifecycleStage: 'settled' }), true)
-  assert.equal(isSocialReconciled({ lifecycleStage: 'pending_social' }), false)
-  assert.equal(isSocialReconciled({ lifecycleStage: 'complete' }), true)
+  assert.equal(isGigSocialReconciled({ lifecycleStage: 'settled' }), true)
+  assert.equal(
+    isGigSocialReconciled({ lifecycleStage: 'pending_social' }),
+    false
+  )
+  assert.equal(isGigSocialReconciled({ lifecycleStage: 'complete' }), true)
   // Legacy save fallback when lifecycleStage is omitted
-  assert.equal(isSocialReconciled({ socialReconciled: true }), true)
-  assert.equal(isSocialReconciled({ socialReconciled: false }), false)
+  assert.equal(isGigSocialReconciled({ socialReconciled: true }), true)
+  assert.equal(isGigSocialReconciled({ socialReconciled: false }), false)
 
   // Normalization maps legacy socialReconciled: true to social_reconciled
   const normalizedFromLegacy = normalizeGigSettlementLifecycle({

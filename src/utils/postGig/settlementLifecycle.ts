@@ -50,9 +50,6 @@ export const isGigSocialReconciled = (
   return settlement.socialReconciled === true
 }
 
-/** Alias for isGigSocialReconciled. */
-export const isSocialReconciled = isGigSocialReconciled
-
 /** Normalizes legacy markers and stages into authoritative lifecycleStage without demoting progress. */
 export const normalizeGigSettlementLifecycle = (
   settlement: SettlementLifecycleInput
@@ -100,12 +97,3 @@ export const markGigSocialReconciled = (
     socialReconciled: true
   }
 }
-
-/** Advances lifecycleStage to 'settled'. */
-export const markGigSettled = (
-  settlement: PendingGigSettlement
-): PendingGigSettlement => ({
-  ...settlement,
-  lifecycleStage: 'settled',
-  socialReconciled: true
-})
