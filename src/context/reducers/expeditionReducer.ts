@@ -245,8 +245,10 @@ const applyExpeditionInsuranceClaim = (
   if (!resolution.ok) return state
   const consumedClaim = {
     ...state.expedition,
-    insuranceClaimConsumed: true,
-    claimConsumed: true
+    insurance: {
+      claimConsumed: true
+    },
+    insuranceClaimConsumed: true
   }
 
   if (resolution.claimType === 'vehicle') {
@@ -630,9 +632,10 @@ export const handleStartExpedition = (
       routeStep: 0,
       visitedNodeIds: [preparedMap.startNodeId],
       loadout: normalized,
-      insurancePolicyId: normalized.insurancePolicyId ?? null,
+      insurance: {
+        claimConsumed: false
+      },
       insuranceClaimConsumed: false,
-      claimConsumed: false,
       startingMoney: committedMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,

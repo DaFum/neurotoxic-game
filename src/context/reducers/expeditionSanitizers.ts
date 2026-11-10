@@ -967,20 +967,24 @@ export const sanitizeExpeditionState = (
       readString(value, 'metaUnlockQuestCompletedRunId') === runId
         ? runId
         : null,
-    // Like protectedCareerCash, a committed build is authoritative: a save
-    // cannot add a policy whose premium the run never paid.
-    insurancePolicyId:
-      getExpeditionInsurancePolicy(
-        loadout
-          ? loadout.insurancePolicyId
-          : readString(value, 'insurancePolicyId')
-      )?.id ?? null,
+    insurance: {
+      claimConsumed:
+        (isLooseRecord(value.insurance) &&
+        Object.hasOwn(value.insurance, 'claimConsumed') &&
+        value.insurance.claimConsumed !== undefined
+          ? readBoolean(value.insurance, 'claimConsumed')
+          : undefined) ??
+        (readBoolean(value, 'insuranceClaimConsumed') ||
+          readBoolean(value, 'claimConsumed'))
+    },
     insuranceClaimConsumed:
-      readBoolean(value, 'insuranceClaimConsumed') ||
-      readBoolean(value, 'claimConsumed'),
-    claimConsumed:
-      readBoolean(value, 'claimConsumed') ||
-      readBoolean(value, 'insuranceClaimConsumed'),
+      (isLooseRecord(value.insurance) &&
+      Object.hasOwn(value.insurance, 'claimConsumed') &&
+      value.insurance.claimConsumed !== undefined
+        ? readBoolean(value.insurance, 'claimConsumed')
+        : undefined) ??
+      (readBoolean(value, 'insuranceClaimConsumed') ||
+        readBoolean(value, 'claimConsumed')),
     technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
     authorityHiddenCompartmentUsed: readBoolean(
       value,

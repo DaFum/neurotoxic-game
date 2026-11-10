@@ -44,9 +44,9 @@ const createZeroConditionState = (overrides = {}) => {
   }
   active.player.money = 100
   active.expedition.loadout.build.protectedCareerCash = 100 // spendable cash = 0
-  active.expedition.insurancePolicyId = null
+  active.expedition.loadout.insurancePolicyId = null
+  active.expedition.insurance = { claimConsumed: false }
   active.expedition.insuranceClaimConsumed = false
-  active.expedition.claimConsumed = false
 
   if (overrides.spareParts !== undefined) {
     active.expedition.cargo.spareParts = overrides.spareParts
@@ -61,7 +61,7 @@ const createZeroConditionState = (overrides = {}) => {
     active.player.money = overrides.money
   }
   if (overrides.insurancePolicyId !== undefined) {
-    active.expedition.insurancePolicyId = overrides.insurancePolicyId
+    active.expedition.loadout.insurancePolicyId = overrides.insurancePolicyId
   }
   if (overrides.serviceLocation) {
     active.gameMap = {

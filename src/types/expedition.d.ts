@@ -751,9 +751,8 @@ export interface ExpeditionState {
   metaUnlockQuestCompletedRunId: string | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
-  insurancePolicyId?: ExpeditionInsurancePolicyId | null
+  insurance: ExpeditionInsuranceRunState
   insuranceClaimConsumed?: boolean
-  claimConsumed?: boolean
   technicalFailureAccepted?: boolean
   /**
    * Whether this run already used the hidden compartment as an Authority exit.
@@ -986,6 +985,13 @@ export interface ExpeditionInsurancePolicy {
   id: ExpeditionInsurancePolicyId
   premium: number
   coverage: ExpeditionInsuranceCoverage
+}
+
+/**
+ * Run-scoped insurance state tracking claim consumption.
+ */
+export interface ExpeditionInsuranceRunState {
+  claimConsumed: boolean
 }
 
 /**

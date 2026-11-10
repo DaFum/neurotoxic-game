@@ -796,7 +796,7 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
     })
     assert.equal(direct, state)
     assert.equal(direct.expedition.insuranceClaimConsumed, false)
-    assert.equal(direct.expedition.claimConsumed, false)
+    assert.equal(direct.expedition.insurance.claimConsumed, false)
     assert.equal(direct.player.van.fuel, 0)
   })
 
@@ -896,7 +896,7 @@ describe('all booking-refused fuel rescue (#3495)', () => {
         assert.strictEqual(next, state)
         assert.equal(next.player.van.fuel, fuel)
         assert.equal(next.expedition.insuranceClaimConsumed, false)
-        assert.equal(next.expedition.claimConsumed, false)
+        assert.equal(next.expedition.insurance.claimConsumed, false)
       }
     })
   }

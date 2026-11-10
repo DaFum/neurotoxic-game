@@ -211,18 +211,26 @@ describe('sanitizeExpeditionState', () => {
 
   it('takes the insurance policy from the committed loadout, not a free-standing field', () => {
     const uninsured = { ...activeSave(), insurancePolicyId: 'touring' }
-    assert.equal(
-      sanitizeExpeditionState(uninsured, 654321).insurancePolicyId,
-      null
-    )
+    const sanitizedUninsured = sanitizeExpeditionState(uninsured, 654321)
+    assert.equal(sanitizedUninsured.loadout.insurancePolicyId, null)
+    assert.equal(sanitizedUninsured.insurancePolicyId, undefined)
 
     const insured = activeSave()
     insured.loadout.insurancePolicyId = 'roadside'
     insured.insurancePolicyId = 'touring'
-    assert.equal(
-      sanitizeExpeditionState(insured, 654321).insurancePolicyId,
-      'roadside'
-    )
+    const sanitizedInsured = sanitizeExpeditionState(insured, 654321)
+    assert.equal(sanitizedInsured.loadout.insurancePolicyId, 'roadside')
+    assert.equal(sanitizedInsured.insurancePolicyId, undefined)
+  })
+
+  it('folds legacy top-level claimConsumed into insurance object', () => {
+    const legacy = activeSave()
+    legacy.claimConsumed = true
+    delete legacy.insurance
+    delete legacy.insuranceClaimConsumed
+    const sanitized = sanitizeExpeditionState(legacy, 654321)
+    assert.equal(sanitized.insurance.claimConsumed, true)
+    assert.equal(sanitized.claimConsumed, undefined)
   })
 
   it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {
