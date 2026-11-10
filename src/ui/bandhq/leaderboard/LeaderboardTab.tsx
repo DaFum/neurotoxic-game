@@ -7,7 +7,7 @@ import { finiteNumberOr } from '../../../utils/finiteNumber'
 import { useLeaderboardSyncExhausted } from '../../../hooks/useLeaderboardSync'
 import { isLeaderboardSyncEnabled } from '../../../utils/leaderboardSyncFlag'
 
-import { LeaderboardView, LeaderboardEntry } from './types'
+import { LeaderboardView, LeaderboardEntry, LeaderboardState } from './types'
 import { LeaderboardTabs } from './components/LeaderboardTabs'
 import { SongSelector } from './components/SongSelector'
 import { LeaderboardTable } from './components/LeaderboardTable'
@@ -37,14 +37,15 @@ interface LeaderboardTabProps {
 export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
   const { t } = useTranslation()
   const isSyncExhausted = useLeaderboardSyncExhausted(playerId)
+  const isSyncEnabled = isLeaderboardSyncEnabled()
+
   const [view, setView] = useState<LeaderboardView>('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState<string>(
     () => SONGS_DB[0]?.leaderboardId ?? ''
   )
-  const [rankings, setRankings] = useState<LeaderboardEntry[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isUnavailable, setIsUnavailable] = useState(false)
+  const [state, setState] = useState<LeaderboardState>(() =>
+    isSyncEnabled ? { status: 'loading' } : { status: 'unavailable' }
+  )
 
   const activeSongId = useMemo(() => {
     if (view !== 'SONG') return ''
@@ -56,24 +57,17 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
     return SONGS_DB[0]?.leaderboardId ?? ''
   }, [selectedSongId, view])
 
-  // A build without the API (GitHub Pages) shows the same state as a missing
-  // endpoint instead of requesting one.
-  const isSyncEnabled = isLeaderboardSyncEnabled()
-
   useEffect(() => {
     if (!isSyncEnabled) return
 
     const controller = new AbortController()
     const timeout = setTimeout(() => {
       controller.abort()
-      setError(t('ui:leaderboard.load_error'))
-      setIsLoading(false)
+      setState({ status: 'error', message: t('ui:leaderboard.load_error') })
     }, 5000)
 
     const fetchLeaderboard = async () => {
-      setIsLoading(true)
-      setError(null)
-      setIsUnavailable(false)
+      setState({ status: 'loading' })
 
       try {
         const stat = view === 'SONG' ? 'balance' : VIEW_TO_STAT[view]
@@ -81,7 +75,9 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
 
         if (view === 'SONG') {
           if (!activeSongId) {
-            setRankings([])
+            if (!controller.signal.aborted) {
+              setState({ status: 'ready', entries: [] })
+            }
             return
           }
 
@@ -92,8 +88,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
         if (controller.signal.aborted) return
         if (response.status === 404) {
           logger.info('Leaderboard', `Local endpoint unavailable: ${url}`)
-          setRankings([])
-          setIsUnavailable(true)
+          setState({ status: 'unavailable' })
           return
         }
         if (!response.ok) {
@@ -101,6 +96,7 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
         }
 
         const data: unknown = await response.json()
+        if (controller.signal.aborted) return
         if (!Array.isArray(data)) {
           throw new Error('Invalid leaderboard payload')
         }
@@ -132,16 +128,15 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
           }
         }
 
-        if (!controller.signal.aborted) setRankings(sanitizedEntries)
+        if (!controller.signal.aborted) {
+          setState({ status: 'ready', entries: sanitizedEntries })
+        }
       } catch (fetchError: unknown) {
         if (controller.signal.aborted || isAbortError(fetchError)) return
         logger.error('Leaderboard', 'Fetch failed', fetchError)
-        setError(t('ui:leaderboard.load_error'))
+        setState({ status: 'error', message: t('ui:leaderboard.load_error') })
       } finally {
         clearTimeout(timeout)
-        if (!controller.signal.aborted) {
-          setIsLoading(false)
-        }
       }
     }
 
@@ -201,10 +196,11 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
 
       <LeaderboardTable
         view={view}
-        isLoading={isLoading}
-        error={error}
-        isUnavailable={!isSyncEnabled || isUnavailable}
-        rankings={rankings}
+        state={!isSyncEnabled ? { status: 'unavailable' } : state}
+        isLoading={state.status === 'loading'}
+        error={state.status === 'error' ? state.message : null}
+        isUnavailable={!isSyncEnabled || state.status === 'unavailable'}
+        rankings={state.status === 'ready' ? state.entries : []}
       />
 
       <p

@@ -246,11 +246,11 @@ Expected: PASS
 - Modify: `src/ui/bandhq/leaderboard/components/LeaderboardTable.tsx:5-55`
 - Test: `tests/ui/bandhq/leaderboard/LeaderboardTab.test.jsx`
 
-- [ ] **Step 1: Check existing test status**
+- [x] **Step 1: Check existing test status**
 Run: `pnpm exec vitest run tests/ui/bandhq/leaderboard/LeaderboardTab.test.jsx`
 Expected: PASS
 
-- [ ] **Step 2: Define `LeaderboardState` in `src/ui/bandhq/leaderboard/types.ts`**
+- [x] **Step 2: Define `LeaderboardState` in `src/ui/bandhq/leaderboard/types.ts`**
 In `src/ui/bandhq/leaderboard/types.ts`:
 ```ts
 export type LeaderboardState =
@@ -260,7 +260,7 @@ export type LeaderboardState =
   | { status: 'ready'; entries: LeaderboardEntry[] }
 ```
 
-- [ ] **Step 3: Consolidate state in `LeaderboardTab.tsx`**
+- [x] **Step 3: Consolidate state in `LeaderboardTab.tsx`**
 In `src/ui/bandhq/leaderboard/LeaderboardTab.tsx`:
 - Replace `[rankings]`, `[isLoading]`, `[error]`, `[isUnavailable]` with `const [state, setState] = useState<LeaderboardState>({ status: 'loading' })`.
 - On fetch start: `setState({ status: 'loading' })`.
@@ -268,12 +268,12 @@ In `src/ui/bandhq/leaderboard/LeaderboardTab.tsx`:
 - On 404: `setState({ status: 'unavailable' })`.
 - On fetch failure: `setState({ status: 'error', message: t('ui:leaderboard.load_error') })`.
 
-- [ ] **Step 4: Update `LeaderboardTable.tsx`**
+- [x] **Step 4: Update `LeaderboardTable.tsx`**
 In `src/ui/bandhq/leaderboard/components/LeaderboardTable.tsx`:
 - Accept `state: LeaderboardState` (with derived fallbacks for existing props if needed).
 - Match directly on `state.status`: `'loading'`, `'error'`, `'unavailable'`, `'ready'`.
 
-- [ ] **Step 5: Run tests and typecheck**
+- [x] **Step 5: Run tests and typecheck**
 Run: `pnpm exec vitest run tests/ui/bandhq/leaderboard/LeaderboardTab.test.jsx`
 Run: `pnpm run typecheck:core`
 Expected: PASS

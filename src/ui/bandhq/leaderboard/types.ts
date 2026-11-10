@@ -1,3 +1,5 @@
+import type { LeaderboardEntry } from '../../../types/leaderboard'
+
 export type LeaderboardView =
   | 'BALANCE'
   | 'SONG'
@@ -7,4 +9,10 @@ export type LeaderboardView =
   | 'CONFLICTS'
   | 'STAGE_DIVES'
 
-export type { LeaderboardEntry } from '../../../types/leaderboard'
+export type LeaderboardState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'unavailable' }
+  | { status: 'ready'; entries: LeaderboardEntry[] }
+
+export type { LeaderboardEntry }
