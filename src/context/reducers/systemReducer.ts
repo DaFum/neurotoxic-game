@@ -1221,8 +1221,12 @@ export const handleSetPendingRiskEvent = (
   event: RiskEventDescriptor | null
 ): GameState => {
   if (event === null) {
-    if (state.pendingRiskEvent === null) return state
-    const resolved = state.pendingRiskEvent
+    const resolved =
+      state.pendingRiskEvent ??
+      (state.pendingOverlay?.kind === 'risk_event'
+        ? state.pendingOverlay.event
+        : null)
+    if (resolved === null) return state
 
     let asset: NonNullable<typeof state.assets>[number] | undefined
     if (state.assets) {
