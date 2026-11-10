@@ -23,6 +23,11 @@ import {
 import { createPersistedState } from '../../src/context/usePersistence'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 import { capExpeditionSpendAtCashFloor } from '../../src/domain/expedition/loadout'
+import {
+  advanceSettlementLifecycleStage,
+  isSocialReconciled,
+  normalizeGigSettlementLifecycle
+} from '../../src/utils/postGig/settlementLifecycle'
 
 // A save written by the post-gig record save, before Continue settled it.
 const buildPostGigSnapshot = (settlement = {}) => {
@@ -796,7 +801,7 @@ test('pending gig settlement actions', async t => {
     })
     assert.deepEqual(next.pendingGigSettlement, {
       ...record,
-      lifecycleStage: 'pending_social',
+      lifecycleStage: 'recorded',
       socialReconciled: false
     })
   })
@@ -1056,7 +1061,7 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     perfScore: 30,
     misses: 0,
     dealFameMultiplier: 1,
-    lifecycleStage: 'pending_social',
+    lifecycleStage: 'recorded',
     socialReconciled: false
   })
 })
@@ -1428,15 +1433,12 @@ test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
     soldMerch: { shirts: 2 }
   }
 
-  // 1. New record without lifecycleStage acquires 'pending_social'
+  // 1. New record without lifecycleStage acquires 'recorded'
   const recordedState = gameReducer(postGig, {
     type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
     payload: record
   })
-  assert.equal(
-    recordedState.pendingGigSettlement?.lifecycleStage,
-    'pending_social'
-  )
+  assert.equal(recordedState.pendingGigSettlement?.lifecycleStage, 'recorded')
   assert.equal(recordedState.pendingGigSettlement?.socialReconciled, false)
 
   // 2. Applying social post result advances lifecycleStage to 'social_reconciled'
@@ -1544,7 +1546,7 @@ for (const lifecycleStage of ['social_reconciled', 'complete']) {
   })
 }
 
-for (const lifecycleStage of ['social_reconciled', 'complete']) {
+for (const lifecycleStage of ['social_reconciled', 'settled']) {
   test(`re-recording a stage-only ${lifecycleStage} settlement preserves stage and marker`, () => {
     const snapshot = buildPostGigSnapshot({
       lifecycleStage,
@@ -1563,3 +1565,100 @@ for (const lifecycleStage of ['social_reconciled', 'complete']) {
     assert.equal(next.pendingGigSettlement.socialReconciled, true)
   })
 }
+
+test('re-recording a legacy complete settlement canonicalizes to settled and preserves marker', () => {
+  const snapshot = buildPostGigSnapshot({
+    lifecycleStage: 'complete',
+    socialReconciled: false
+  })
+  const state = { ...createInitialState(), ...snapshot }
+  const {
+    id,
+    socialReconciled: _socialReconciled,
+    lifecycleStage: _stage,
+    ...input
+  } = snapshot.pendingGigSettlement
+  const action = createRecordPendingGigSettlementAction(input, id)
+  const next = gameReducer(state, action)
+  assert.equal(next.pendingGigSettlement.lifecycleStage, 'settled')
+  assert.equal(next.pendingGigSettlement.socialReconciled, true)
+})
+
+test('SUB-01-REC-01: monotonic lifecycleStage progression and single source of truth', () => {
+  // Helpers
+  assert.equal(isSocialReconciled({ lifecycleStage: 'recorded' }), false)
+  assert.equal(
+    isSocialReconciled({ lifecycleStage: 'social_reconciled' }),
+    true
+  )
+  assert.equal(isSocialReconciled({ lifecycleStage: 'settled' }), true)
+  assert.equal(isSocialReconciled({ lifecycleStage: 'pending_social' }), false)
+  assert.equal(isSocialReconciled({ lifecycleStage: 'complete' }), true)
+  // Legacy save fallback when lifecycleStage is omitted
+  assert.equal(isSocialReconciled({ socialReconciled: true }), true)
+  assert.equal(isSocialReconciled({ socialReconciled: false }), false)
+
+  // Normalization maps legacy socialReconciled: true to social_reconciled
+  const normalizedFromLegacy = normalizeGigSettlementLifecycle({
+    socialReconciled: true
+  })
+  assert.equal(normalizedFromLegacy.lifecycleStage, 'social_reconciled')
+  assert.equal(normalizedFromLegacy.socialReconciled, true)
+
+  // Normalization maps legacy pending_social to recorded
+  const normalizedFromPending = normalizeGigSettlementLifecycle({
+    lifecycleStage: 'pending_social'
+  })
+  assert.equal(normalizedFromPending.lifecycleStage, 'recorded')
+  assert.equal(normalizedFromPending.socialReconciled, false)
+
+  // Normalization maps legacy complete to settled
+  const normalizedFromComplete = normalizeGigSettlementLifecycle({
+    lifecycleStage: 'complete'
+  })
+  assert.equal(normalizedFromComplete.lifecycleStage, 'settled')
+  assert.equal(normalizedFromComplete.socialReconciled, true)
+
+  // Monotonic advancement prevents demotion
+  assert.equal(
+    advanceSettlementLifecycleStage('settled', 'recorded'),
+    'settled'
+  )
+  assert.equal(
+    advanceSettlementLifecycleStage('settled', 'social_reconciled'),
+    'settled'
+  )
+  assert.equal(
+    advanceSettlementLifecycleStage('social_reconciled', 'recorded'),
+    'social_reconciled'
+  )
+  assert.equal(
+    advanceSettlementLifecycleStage('recorded', 'social_reconciled'),
+    'social_reconciled'
+  )
+  assert.equal(
+    advanceSettlementLifecycleStage('social_reconciled', 'settled'),
+    'settled'
+  )
+  assert.equal(
+    advanceSettlementLifecycleStage('recorded', 'settled'),
+    'settled'
+  )
+
+  // Reducer preserves settled stage against demotion when re-recording with recorded
+  const settledSnapshot = buildPostGigSnapshot({
+    lifecycleStage: 'settled',
+    socialReconciled: true
+  })
+  const state = { ...createInitialState(), ...settledSnapshot }
+  const next = gameReducer(state, {
+    type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT,
+    payload: {
+      ...settledSnapshot.pendingGigSettlement,
+      lifecycleStage: 'recorded',
+      socialReconciled: false
+    }
+  })
+  assert.equal(next.pendingGigSettlement?.lifecycleStage, 'settled')
+  assert.equal(next.pendingGigSettlement?.socialReconciled, true)
+})

@@ -194,7 +194,7 @@ export const createRecordPendingGigSettlementAction = (
   const payload = sanitizePendingGigSettlement({
     ...settlement,
     id,
-    lifecycleStage: settlement.lifecycleStage ?? 'pending_social',
+    lifecycleStage: settlement.lifecycleStage ?? 'recorded',
     socialReconciled: false
   })
   return payload

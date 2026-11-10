@@ -120,7 +120,6 @@ export type PendingOverlayState =
   | { kind: 'risk_event'; event: RiskEventDescriptor }
   | { kind: 'foreclosure'; notices: AssetKind[] }
 
-
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -273,9 +272,11 @@ export interface ToastPayload {
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
+ *
+ * Monotonic progression: recorded -> social_reconciled -> settled.
  */
 export type GigSettlementLifecycleStage =
-  'pending_social' | 'social_reconciled' | 'complete'
+  'recorded' | 'social_reconciled' | 'settled'
 
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
@@ -292,15 +293,15 @@ export interface PendingGigSettlement {
   dealFameMultiplier: number
   soldMerch: Record<string, number>
   /**
-   * Durable linear lifecycle stage: pending_social -\> social_reconciled -\> complete.
+   * Durable linear lifecycle stage: recorded -> social_reconciled -> settled.
    */
   lifecycleStage: GigSettlementLifecycleStage
   /**
    * Durable reconciliation status for this settlement record (`id`).
    *
    * @remarks
-   * Stamped `true` once per-gig social reconciliation (deal decrement and gig history recording)
-   * has been applied to this settlement, preventing duplicate reconciliation on load recovery.
+   * Derived from `lifecycleStage !== 'recorded'`. Kept as a getter or computed
+   * property for backward compatibility.
    */
   socialReconciled?: boolean
 }
