@@ -1,7 +1,7 @@
 import { Container, type Application } from 'pixi.js'
 import type { RhythmGameRefState, RhythmLane } from '../../types/rhythmGame'
 import type { RefObject } from 'react'
-import { buildRhythmLayout } from './stageRenderUtils'
+import { buildRhythmLayout, calculateLaneX } from './stageRenderUtils'
 import { LaneRenderer } from './LaneRenderer'
 
 /**
@@ -199,8 +199,12 @@ export class LaneManager {
     return (
       this.laneXPositions[index] ??
       (this.laneLayout
-        ? this.laneLayout.startX +
-          index * (this.laneLayout.laneWidth + this.laneLayout.laneGap)
+        ? calculateLaneX(
+            this.laneLayout.startX,
+            this.laneLayout.laneWidth,
+            this.laneLayout.laneGap,
+            index
+          )
         : 0)
     )
   }

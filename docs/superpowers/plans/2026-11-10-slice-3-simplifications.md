@@ -70,16 +70,8 @@ export {
       Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/eventRegistryAdmission.test.js tests/node/eventEngine.test.js`
       Expected: PASS
 
-- [ ] **Step 2: Export `EVENTS_BY_ID` and `getEventById` from `src/data/events/index.ts`**
-      In `src/data/events/index.ts`, construct a canonical map during the initialization loop:
-
-```ts
-export const EVENTS_BY_ID: ReadonlyMap<string, GameEvent> = new Map(
-  allEvents.map(e => [e.id, e])
-)
-export const getEventById = (id: string): GameEvent | undefined =>
-  EVENTS_BY_ID.get(id)
-```
+- [x] **Step 2: Export `EVENTS_BY_ID` and `getEventById` from `src/data/events/index.ts`**
+      The registry already exports both symbols and populates the index after validation. Do not add duplicate exports or reference `allEvents`.
 
 - [ ] **Step 3: Update `stateSanitizers.ts` and `eventSelection.ts` to consume canonical index**
       In `stateSanitizers.ts`, replace the manual `registryEventsById` cache loop with `EVENTS_BY_ID`. In `eventSelection.ts`, read from `getEventById(id)` / `EVENTS_BY_ID`.
@@ -110,22 +102,7 @@ export const getEventById = (id: string): GameEvent | undefined =>
       Expected: PASS
 
 - [ ] **Step 2: Add `getConnectedTargetIds` in `src/utils/mapUtils.ts`**
-      Export helper returning reachable node IDs in O(1):
-
-```ts
-export const getConnectedTargetIds = (
-  map: GameMap | null | undefined,
-  currentNodeId: string | null | undefined
-): ReadonlySet<string> => {
-  if (!map || !currentNodeId) return new Set()
-  const outgoing = new Set<string>()
-  for (const edge of map.edges ?? []) {
-    if (edge.from === currentNodeId) outgoing.add(edge.to)
-    else if (edge.to === currentNodeId) outgoing.add(edge.from)
-  }
-  return outgoing
-}
-```
+      Export a helper returning the outgoing target IDs of `currentNodeId` as a `ReadonlySet<string>`. Keep the existing semantics: scan `gameMap.connections` first (and `edges` when present, as a union), and collect only destinations of entries whose `from === currentNodeId`. Edges are directed (A → B does not allow B → A); do not treat them as bidirectional and do not rely on `edges` alone.
 
 - [ ] **Step 3: Update `OverworldMap.tsx` and `useTravelLogic`**
       Replace linear `isConnected` scans inside node rendering with `connectedTargetIds.has(node.id)`.
@@ -149,11 +126,11 @@ export const getConnectedTargetIds = (
 - Modify: `src/components/stage/LaneManager.ts:70-85, 175-190`
 - Modify: `src/components/stage/NoteManager.ts:10-40, 185-205`
 - Modify: `src/components/stage/NoteSpritePool.ts:15-25, 60-70`
-- Test: `tests/ui/LaneManager.test.js`
-- Test: `tests/ui/NoteManager.test.js`
+- Test: `tests/node/LaneManager.test.js`
+- Test: `tests/node/NoteManager.test.js`
 
 - [ ] **Step 1: Check existing tests pass**
-      Run: `pnpm exec vitest run tests/ui/LaneManager.test.js tests/ui/NoteManager.test.js`
+      Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/LaneManager.test.js tests/node/NoteManager.test.js`
       Expected: PASS
 
 - [ ] **Step 2: Clean up `RhythmLane` type and stage render tracking**
@@ -163,7 +140,7 @@ export const getConnectedTargetIds = (
       Access lane X coordinate via layout helper `getLaneX(laneIndex, layout)` or `laneXPositions[laneIndex]` rather than mutating domain state.
 
 - [ ] **Step 4: Run tests and typecheck**
-      Run: `pnpm exec vitest run tests/ui/LaneManager.test.js tests/ui/NoteManager.test.js`
+      Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/LaneManager.test.js tests/node/NoteManager.test.js`
       Run: `pnpm run typecheck:core`
       Expected: PASS
 
@@ -342,8 +319,8 @@ export const checkMilestones = (state: GameState): GameState => {
       Expected: PASS
 
 - [ ] **Step 2: Streamline gig completion quest event dispatch**
-      Emit a single canonical `gig_completed` event with full context (`score`, `accuracy`, `venueId`, `region`) rather than firing 3 legacy pseudo-events (`good_gig`, `small_venue_good_gig`).
-      In `questProgress.ts`, evaluate predicate rules declaratively against the canonical event.
+      `gig.good` and `gig.smallVenueGood` are canonical events consumed by existing quests (including `quest_prove_yourself` and `quest_venue_residency`); do not drop them as legacy pseudo-events. Any consolidation must keep these event types working, or specify a migration for both registry quest rules and saved quest rules.
+      Whatever event payload is emitted must retain `score`, `accuracy`, `venueId`, `region`, **capacity** (needed by the small-venue rule) and the failed-gig flag, and `questProgress.ts` must retain the capacity, accuracy and failed-gig conditions in predicate evaluation.
 
 - [ ] **Step 3: Run tests and typecheck**
       Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/questProgress.test.js tests/node/gigReducer.test.js`
@@ -458,8 +435,8 @@ export const checkMilestones = (state: GameState): GameState => {
 ```ts
 export type ContrabandConsumableItem = BaseContrabandItem & {
   type: 'consumable'
-  maxStacks: number
-  duration: number
+  maxStacks?: number
+  duration?: number
 }
 export type ContrabandEquipmentItem = BaseContrabandItem & {
   type: 'equipment'
@@ -472,7 +449,7 @@ export type SanitizedContrabandItem =
   ContrabandConsumableItem | ContrabandEquipmentItem | ContrabandRelicItem
 ```
 
-Enforce strict type-dependent validation in `validateContrabandItem`.
+Enforce type-dependent validation in `validateContrabandItem`. Keep `duration` and `maxStacks` optional for consumables: instantaneous catalog entries such as `c_void_energy` (no duration) and `c_blood_pact` (neither field) must remain valid with their effects preserved.
 
 - [ ] **Step 3: Run tests and typecheck**
       Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/contraband.schema.test.js tests/node/contrabandStashUtils.test.js`
@@ -656,7 +633,7 @@ Thread `normalizedSocial` into ticket and merch calculators, removing duplicated
       Expected: PASS
 
 - [ ] **Step 2: Move continuation callback to scene**
-      Accept `onContinue?: () => void` in `useRoadieLogic`. Pass `onContinue: handleComplete` from `RoadieRunScene.tsx`. Remove the Redux `currentScene` subscription and internal scene-changing timers from `useRoadieLogic`, aligning with the architecture invariant that minigames stay scene-agnostic.
+      Accept `onContinue?: () => void` in `useRoadieLogic`. In `RoadieRunScene.tsx`, declare `handleComplete` before the `useRoadieLogic` call and pass `onContinue: handleComplete`. Move the existing ten-second completion fallback timer into the scene (clear it when it fires and on unmount) so the hook stays scene-agnostic; add fallback-timer and unmount-cleanup coverage. Remove the Redux `currentScene` subscription and internal scene-changing timers from `useRoadieLogic`, aligning with the architecture invariant that minigames stay scene-agnostic.
 
 - [ ] **Step 3: Run tests and typecheck**
       Run: `pnpm exec vitest run tests/ui/useRoadieLogic.test.jsx tests/ui/RoadieRunScene.test.jsx`

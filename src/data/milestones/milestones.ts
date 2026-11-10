@@ -9,18 +9,7 @@ import {
 } from '../../context/actionCreators'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
-import type { GameState, GameAction } from '../../types'
-
-/**
- * Static milestone definition with condition and optional reward action factory.
- */
-interface Milestone {
-  id: string
-  condition: (state: GameState) => boolean
-  createRewardAction?: () => GameAction
-  labelKey: string
-  createLabelOptions?: () => Record<string, unknown>
-}
+import type { GameState, MilestoneDefinition } from '../../types'
 
 const totalFollowers = (social: GameState['social'] | undefined): number =>
   (social?.tiktok ?? 0) +
@@ -316,4 +305,4 @@ export const MILESTONES = [
       })),
     labelKey: 'ui:milestones.milestone_chaser'
   }
-] satisfies readonly Milestone[]
+] satisfies readonly MilestoneDefinition[]

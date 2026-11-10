@@ -238,4 +238,48 @@ describe('checkMilestones domain module', () => {
     )
     assert.ok(milestoneToast)
   })
+
+  it('applies the survive_1_week reward once and does not re-award it', () => {
+    const state = {
+      ...createBaseState(),
+      player: { ...createBaseState().player, day: 8, money: 500 },
+      completedMilestones: [],
+      toasts: []
+    }
+
+    const first = checkMilestones(state)
+    assert.strictEqual(first.player.money, 600)
+    assert.ok(first.completedMilestones.includes('survive_1_week'))
+
+    const second = checkMilestones(first)
+    assert.strictEqual(second.player.money, 600)
+  })
+
+  it('treats a throwing milestone condition as not met and returns the same state', () => {
+    const state = createBaseState()
+    const throwing = [
+      {
+        id: 'throws',
+        condition: () => {
+          throw new Error('boom')
+        },
+        labelKey: 'ui:milestones.survive_1_week'
+      }
+    ]
+
+    assert.strictEqual(checkMilestones(state, throwing), state)
+  })
+
+  it('evaluates canonical milestones against partial state without throwing', () => {
+    const base = createBaseState()
+    const partial = {
+      ...base,
+      band: undefined,
+      social: undefined,
+      completedMilestones: [],
+      toasts: []
+    }
+
+    assert.doesNotThrow(() => checkMilestones(partial))
+  })
 })

@@ -51,7 +51,7 @@ const isMapConnection = (value: unknown): value is RawMapConnection =>
  * Precomputes and returns a set of reachable outgoing target node IDs from a given node.
  * Provides O(1) membership lookups for map node connectivity checks.
  *
- * @param gameMap - Map whose `connections` or `edges` list is scanned for outgoing edges.
+ * @param gameMap - Map whose `connections` and `edges` lists are both scanned for outgoing edges.
  * @param currentNodeId - Node ID to find outgoing connections from.
  * @returns ReadonlySet of connected target node IDs.
  */
@@ -60,17 +60,15 @@ export const getConnectedTargetIds = (
   currentNodeId: string | null | undefined
 ): ReadonlySet<string> => {
   if (!gameMap || !currentNodeId) return new Set()
-  const rawList = Array.isArray(gameMap.connections)
-    ? gameMap.connections
-    : Array.isArray(gameMap.edges)
-      ? gameMap.edges
-      : []
   const outgoing = new Set<string>()
-  for (let i = 0; i < rawList.length; i++) {
-    const c = rawList[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === currentNodeId && typeof c.to === 'string') {
-      outgoing.add(c.to)
+  for (const rawList of [gameMap.connections, gameMap.edges]) {
+    if (!Array.isArray(rawList)) continue
+    for (let i = 0; i < rawList.length; i++) {
+      const c = rawList[i]
+      if (!isMapConnection(c)) continue
+      if (c.from === currentNodeId && typeof c.to === 'string') {
+        outgoing.add(c.to)
+      }
     }
   }
   return outgoing
@@ -88,7 +86,7 @@ export const isConnected = (
   fromNodeId: string,
   targetNodeId: string
 ): boolean => {
-  if (!gameMap || !fromNodeId || !targetNodeId) return false
+  if (!targetNodeId) return false
   return getConnectedTargetIds(gameMap, fromNodeId).has(targetNodeId)
 }
 

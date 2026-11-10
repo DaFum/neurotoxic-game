@@ -109,6 +109,8 @@ const mockTextureLightning = { id: 'lightning' }
 
 let mockCalculateNoteYResult = 0
 const mockPixiStageUtils = {
+  calculateLaneX: (startX, laneWidth, laneGap, index) =>
+    startX + index * (laneWidth + (laneGap ?? 0)),
   getPixiColorFromToken: mock.fn(() => 0x000000),
   calculateNoteY: mock.fn(() => mockCalculateNoteYResult),
   loadTexture: mock.fn(async url => {
@@ -327,6 +329,8 @@ describe('NoteManager', () => {
     // Pass laneXPositions = [250]
     noteManager.update(state, 1000, { hitLineY: 800 }, [250])
     const sprite = noteManager.activeEntities.find(e => e.note === note)?.sprite
+    // Spawn path must receive the decoupled lane X as the third argument
+    assert.equal(mockAcquireSpriteFromPool.mock.calls[0].arguments[2], 250)
 
     noteManager.update(state, 1100, { hitLineY: 800 }, [250])
     assert.equal(sprite.y, 600)

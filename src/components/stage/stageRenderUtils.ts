@@ -230,6 +230,23 @@ export const CROWD_LAYOUT = Object.freeze({
 })
 
 /**
+ * Computes the horizontal pixel position of a lane from layout metrics.
+ * Single owner of the `startX + index * (laneWidth + laneGap)` formula.
+ *
+ * @param startX - X position of the first lane.
+ * @param laneWidth - Width of one lane.
+ * @param laneGap - Gap between lanes (defaults to 0 when absent).
+ * @param index - Zero-based lane index.
+ * @returns Calculated horizontal pixel position.
+ */
+export const calculateLaneX = (
+  startX: number,
+  laneWidth: number,
+  laneGap: number | undefined,
+  index: number
+): number => startX + index * (laneWidth + (laneGap ?? 0))
+
+/**
  * Builds layout metrics for the rhythm lanes.
  * @param params - Layout inputs.
  * - `params.screenWidth` - Current screen width.

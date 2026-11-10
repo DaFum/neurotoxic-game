@@ -1,6 +1,10 @@
 import { Application, Container } from 'pixi.js'
 import type { RefObject } from 'react'
-import { calculateNoteY, getPixiColorFromToken } from './stageRenderUtils'
+import {
+  calculateLaneX,
+  calculateNoteY,
+  getPixiColorFromToken
+} from './stageRenderUtils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,
@@ -62,8 +66,11 @@ export const getLaneX = (
     typeof layout.startX === 'number' &&
     typeof layout.laneWidth === 'number'
   ) {
-    return (
-      layout.startX + laneIndex * (layout.laneWidth + (layout.laneGap ?? 0))
+    return calculateLaneX(
+      layout.startX,
+      layout.laneWidth,
+      layout.laneGap,
+      laneIndex
     )
   }
   if (fallbackLane && typeof fallbackLane.renderX === 'number') {

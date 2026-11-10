@@ -7,7 +7,12 @@
  * to `gameReducer`.
  */
 
-import type { GameState, GameAction } from '../../types'
+import type {
+  GameState,
+  GameAction,
+  DeclarativeMilestoneReward,
+  MilestoneDefinition
+} from '../../types'
 import { MILESTONES } from '../../data/milestones/milestones'
 import { ActionTypes } from '../../context/actionTypes'
 import { handleUpdatePlayer } from '../../context/reducers/playerReducer'
@@ -19,28 +24,7 @@ import {
   sanitizeLoadedToast
 } from '../../context/reducers/toastSanitizers'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-
-interface DeclarativeMilestoneReward {
-  cash?: number
-  money?: number
-  fans?: number
-  fame?: number
-  harmony?: number
-  luck?: number
-  unlock?: string
-  unlocks?: string[]
-  social?: Partial<GameState['social']>
-}
-
-export interface MilestoneDefinition {
-  id: string
-  condition: (state: GameState) => boolean
-  createRewardAction?: () => GameAction
-  reward?: DeclarativeMilestoneReward
-  rewards?: DeclarativeMilestoneReward
-  labelKey: string
-  createLabelOptions?: () => Record<string, unknown>
-}
+import { logger } from '../../utils/logger'
 
 /**
  * Applies an action-based milestone reward directly using domain reducers,
@@ -149,7 +133,7 @@ const applyDeclarativeReward = (
  */
 export const checkMilestones = (
   state: GameState,
-  milestoneList: readonly MilestoneDefinition[] = MILESTONES as readonly MilestoneDefinition[]
+  milestoneList: readonly MilestoneDefinition[] = MILESTONES
 ): GameState => {
   if (!state || typeof state !== 'object') return state
 
@@ -173,7 +157,8 @@ export const checkMilestones = (
     let conditionPassed: boolean
     try {
       conditionPassed = Boolean(m.condition(state))
-    } catch {
+    } catch (error) {
+      logger.debug('checkMilestones', `Condition threw for ${m.id}`, error)
       conditionPassed = false
     }
 

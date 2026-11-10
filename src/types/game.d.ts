@@ -781,3 +781,27 @@ export * from './map'
 export * from './gig'
 export * from './actions'
 export * from './social'
+
+/** Declarative reward applied when a milestone completes. */
+export interface DeclarativeMilestoneReward {
+  cash?: number
+  money?: number
+  fans?: number
+  fame?: number
+  harmony?: number
+  luck?: number
+  unlock?: string
+  unlocks?: string[]
+  social?: Partial<GameState['social']>
+}
+
+/** Milestone definition evaluated by `checkMilestones`. */
+export interface MilestoneDefinition {
+  id: string
+  condition: (state: GameState) => boolean
+  createRewardAction?: () => GameAction
+  reward?: DeclarativeMilestoneReward
+  rewards?: DeclarativeMilestoneReward
+  labelKey: string
+  createLabelOptions?: () => Record<string, unknown>
+}

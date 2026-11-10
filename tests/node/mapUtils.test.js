@@ -100,6 +100,16 @@ describe('mapUtils', () => {
       assert.equal(targets.has('D'), false)
     })
 
+    test('unions connections and edges when a map carries both', () => {
+      const both = {
+        connections: [],
+        edges: [{ from: 'A', to: 'E' }]
+      }
+      const targets = getConnectedTargetIds(both, 'A')
+      assert.equal(targets.has('E'), true)
+      assert.equal(targets.size, 1)
+    })
+
     test('returns empty set if node has no outgoing connections', () => {
       const targets = getConnectedTargetIds(gameMap, 'D')
       assert.equal(targets.size, 0)

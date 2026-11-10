@@ -26,6 +26,8 @@ mock.module(
   {
     namedExports: {
       buildRhythmLayout: mockBuildRhythmLayout,
+      calculateLaneX: (startX, laneWidth, laneGap, index) =>
+        startX + index * (laneWidth + (laneGap ?? 0)),
       getPixiColorFromToken: mockGetPixiColorFromToken
     }
   }
