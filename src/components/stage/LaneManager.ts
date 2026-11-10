@@ -14,6 +14,7 @@ export class LaneManager {
   rhythmContainer: Container | null
   laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
+  laneXPositions: number[]
   lastLaneActive: boolean[]
   lastScreenWidth: number
   lastScreenHeight: number
@@ -36,6 +37,7 @@ export class LaneManager {
     this.rhythmContainer = null
     this.laneLayout = null
     this.laneGraphics = []
+    this.laneXPositions = []
     this.lastLaneActive = []
     this.lastScreenWidth = -1
     this.lastScreenHeight = -1
@@ -69,14 +71,15 @@ export class LaneManager {
 
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
+    const laneGap = this.laneLayout.laneGap
 
     const lanes = this.gameStateRef.current?.lanes ?? []
+    this.laneXPositions = new Array(lanes.length)
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
       if (!lane || !this.laneLayout) continue
-      const laneX = startX + index * (laneWidth + this.laneLayout.laneGap)
-      // Side-effect: Mutating gameState lanes with render position for NoteManager
-      lane.renderX = laneX
+      const laneX = startX + index * (laneWidth + laneGap)
+      this.laneXPositions[index] = laneX
 
       this._createLaneGraphics(lane, index, laneX)
     }
@@ -116,11 +119,12 @@ export class LaneManager {
     for (let index = 0; index < state.lanes.length; index++) {
       const lane = state.lanes[index]
       const graphicsSet = this.laneGraphics[index]
-      if (!lane || !graphicsSet || typeof lane.renderX !== 'number' || !layout)
+      const laneX = this.laneXPositions[index]
+      if (!lane || !graphicsSet || typeof laneX !== 'number' || !layout)
         continue
 
       if (layoutUpdated) {
-        graphicsSet.draw(lane, lane.renderX, layout)
+        graphicsSet.draw(lane, laneX, layout)
       }
 
       this.updateLaneVisibility(lane, index, graphicsSet)
@@ -171,16 +175,34 @@ export class LaneManager {
       this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     }
     const startX = this.laneLayout.startX
+    const laneWidth = this.laneLayout.laneWidth
+    const laneGap = this.laneLayout.laneGap
 
     const lanes = this.gameStateRef.current?.lanes
-    if (!lanes) return true
-    for (let index = 0, len = lanes.length; index < len; index++) {
-      const lane = lanes[index]
-      if (!lane) continue
-      lane.renderX =
-        startX + index * (this.laneLayout.laneWidth + this.laneLayout.laneGap)
+    const laneCount = lanes ? lanes.length : this.laneXPositions.length
+    if (this.laneXPositions.length !== laneCount) {
+      this.laneXPositions = new Array(laneCount)
+    }
+    for (let index = 0; index < laneCount; index++) {
+      this.laneXPositions[index] = startX + index * (laneWidth + laneGap)
     }
     return true
+  }
+
+  /**
+   * Retrieves the precalculated X position for a given lane index.
+   *
+   * @param index - Numerical index of the lane.
+   * @returns Calculated horizontal pixel position.
+   */
+  getLaneX(index: number): number {
+    return (
+      this.laneXPositions[index] ??
+      (this.laneLayout
+        ? this.laneLayout.startX +
+          index * (this.laneLayout.laneWidth + this.laneLayout.laneGap)
+        : 0)
+    )
   }
 
   /**
@@ -188,6 +210,7 @@ export class LaneManager {
    */
   dispose() {
     this.laneGraphics = []
+    this.laneXPositions = []
 
     if (this.rhythmContainer) {
       this.rhythmContainer.destroy({ children: true })

@@ -311,6 +311,53 @@ describe('NoteManager', () => {
     assert.equal(sprite.x, 150) // 100 (lane) + 50 (offset) + 0 (jitter)
   })
 
+  test('update positions visible notes with decoupled laneXPositions array', () => {
+    mockCalculateNoteYResult = 600
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      // No renderX on the lane
+      lanes: [{ color: 0xff0000, active: false }],
+      modifiers: {},
+      speed: 1
+    }
+
+    mockAcquireSpriteFromPool.mock.mockImplementation(() => new PIXI.Sprite())
+
+    // Pass laneXPositions = [250]
+    noteManager.update(state, 1000, { hitLineY: 800 }, [250])
+    const sprite = noteManager.activeEntities.find(e => e.note === note)?.sprite
+
+    noteManager.update(state, 1100, { hitLineY: 800 }, [250])
+    assert.equal(sprite.y, 600)
+    assert.equal(sprite.x, 300) // 250 (laneX) + 50 (offset)
+  })
+
+  test('update positions visible notes using layout startX and laneWidth metrics', () => {
+    mockCalculateNoteYResult = 400
+    const note = { time: 3000, laneIndex: 1, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: [
+        { color: 0xff0000, active: false },
+        { color: 0x00ff00, active: false }
+      ],
+      modifiers: {},
+      speed: 1
+    }
+
+    mockAcquireSpriteFromPool.mock.mockImplementation(() => new PIXI.Sprite())
+
+    const layout = { hitLineY: 500, startX: 120, laneWidth: 80, laneGap: 10 }
+    // lane 1 X = 120 + 1 * (80 + 10) = 210
+    noteManager.update(state, 1000, layout)
+    const sprite = noteManager.activeEntities.find(e => e.note === note)?.sprite
+
+    noteManager.update(state, 1100, layout)
+    assert.equal(sprite.y, 400)
+    assert.equal(sprite.x, 260) // 210 + 50 (offset)
+  })
+
   test('update handles hit notes and calls onHit', () => {
     const onHitMock = mock.fn()
     noteManager.onHit = onHitMock
