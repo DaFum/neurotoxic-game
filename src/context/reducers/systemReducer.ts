@@ -909,7 +909,11 @@ export const handleAdvanceDay = (
       if (firstEvent && nextStatePre.pendingRiskEvent === null) {
         nextStatePre = {
           ...nextStatePre,
-          pendingOverlay: { kind: 'risk_event', event: firstEvent },
+          pendingOverlay:
+            nextStatePre.pendingOverlay ?? {
+              kind: 'risk_event',
+              event: firstEvent
+            },
           pendingRiskEvent: firstEvent
         }
       }
@@ -1133,13 +1137,20 @@ export const handleSetPendingSupplyStopInventory = (
   // The reducer is authoritative: the same schema the load path applies, so a
   // raw dispatch cannot open a shop offering a negative-cost item.
   const nextInventory = sanitizeSupplyStopInventory(inventory)
-  if (state.pendingSupplyStopInventory === nextInventory) return state
+  const isCurrentlyOverlaySupplyStop =
+    state.pendingOverlay?.kind === 'supply_stop'
+  if (
+    state.pendingSupplyStopInventory === nextInventory &&
+    (nextInventory !== null || !isCurrentlyOverlaySupplyStop)
+  ) {
+    return state
+  }
 
   return {
     ...state,
     pendingOverlay: nextInventory
       ? { kind: 'supply_stop', inventory: nextInventory }
-      : state.pendingOverlay?.kind === 'supply_stop'
+      : isCurrentlyOverlaySupplyStop
         ? null
         : (state.pendingOverlay ?? null),
     pendingSupplyStopInventory: nextInventory
