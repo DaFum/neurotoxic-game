@@ -52,7 +52,8 @@ import {
   createMerchPressAction,
   createSettleSoldMerchAction,
   dismissForeclosureNotice,
-  createSetPendingRiskEventAction
+  createSetPendingRiskEventAction,
+  createInstallAssetModuleAction
 } from '../../src/context/actionCreators'
 import { ActionTypes } from '../../src/context/actionTypes'
 
@@ -397,6 +398,62 @@ describe('Action Creators', () => {
       assert.equal(action.payload.instanceId, 'crafted-pick')
       assert.equal(typeof action.payload.toastId, 'string')
       assert.notEqual(action.payload.toastId, '')
+    })
+  })
+
+  describe('createInstallAssetModuleAction', () => {
+    it('creates correct action with positional arguments', () => {
+      const action = createInstallAssetModuleAction(
+        'asset_1',
+        'slot_roof',
+        'tb_solar_array'
+      )
+      assert.equal(action.type, ActionTypes.INSTALL_MODULE)
+      assert.equal(action.payload.assetId, 'asset_1')
+      assert.equal(action.payload.slotId, 'slot_roof')
+      assert.equal(action.payload.moduleId, 'tb_solar_array')
+    })
+
+    it('creates correct action when given payload object', () => {
+      const action = createInstallAssetModuleAction({
+        assetId: 'asset_2',
+        slotId: 'slot_cabin',
+        moduleId: 'tb_coffee_machine'
+      })
+      assert.equal(action.type, ActionTypes.INSTALL_MODULE)
+      assert.equal(action.payload.assetId, 'asset_2')
+      assert.equal(action.payload.slotId, 'slot_cabin')
+      assert.equal(action.payload.moduleId, 'tb_coffee_machine')
+    })
+
+    it('generates newSlotIds for modules with addsSlots', () => {
+      const action = createInstallAssetModuleAction(
+        'bus_1',
+        'slot_mount',
+        'tb_trailer_hitch'
+      )
+      assert.equal(action.type, ActionTypes.INSTALL_MODULE)
+      assert.ok(Array.isArray(action.payload.newSlotIds))
+      assert.equal(action.payload.newSlotIds.length, 2)
+      for (const slot of action.payload.newSlotIds) {
+        assert.equal(slot.slotType, 'tb_trailer_addon')
+        assert.equal(typeof slot.id, 'string')
+        assert.ok(slot.id.length > 0)
+      }
+    })
+
+    it('preserves explicitly supplied newSlotIds', () => {
+      const customSlots = [
+        { slotType: 'tb_trailer_addon', id: 'custom_slot_1' },
+        { slotType: 'tb_trailer_addon', id: 'custom_slot_2' }
+      ]
+      const action = createInstallAssetModuleAction(
+        'bus_1',
+        'slot_mount',
+        'tb_trailer_hitch',
+        customSlots
+      )
+      assert.deepStrictEqual(action.payload.newSlotIds, customSlots)
     })
   })
 

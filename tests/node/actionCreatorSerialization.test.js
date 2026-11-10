@@ -230,6 +230,7 @@ const CREATOR_ARGS = {
       harmonyCost: 4
     }
   ],
+  createInstallAssetModuleAction: () => ['asset_1', 'tb_roof', 'module_1'],
   // Asset-system creators: each needs a shape-correct state to validate against.
   purchaseChassis: () => [
     { kind: 'tourbus_chassis', flavor: 'legit', financing: 'cash' },

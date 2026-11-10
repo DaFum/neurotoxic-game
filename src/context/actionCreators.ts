@@ -1,3 +1,4 @@
+import { getRegisteredModule } from '../utils/assets/assetModuleRegistry'
 import { sanitizeBandUpdates, sanitizePlayerUpdates } from './updateSanitizers'
 import { createRngStream, nextSeed } from '../utils/seededRng'
 import { getAdvanceDayRngStreamLength } from '../utils/assets/assetConfig'
@@ -70,7 +71,12 @@ import type {
   VoidSermonPayload,
   PurchaseItem
 } from '../types'
-import type { AssetKind, RiskEventDescriptor } from '../types/assets'
+import type {
+  AssetKind,
+  InstallModulePayload,
+  NewSlotEntry,
+  RiskEventDescriptor
+} from '../types/assets'
 
 /**
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
@@ -745,6 +751,99 @@ export const createAddCooldownAction = (
   type: ActionTypes.ADD_COOLDOWN,
   payload: eventId
 })
+
+/**
+ * Creates an action to install a module into an asset slot, pre-generating deterministic
+ * slot IDs for any child slots added by the module to ensure reducer purity.
+ *
+ * @param payload - Complete module installation payload.
+ * @returns Install module action with pre-generated child slot IDs.
+ */
+export function createInstallAssetModuleAction(
+  payload: InstallModulePayload
+): Extract<GameAction, { type: typeof ActionTypes.INSTALL_MODULE }>
+/**
+ * Creates an action to install a module into an asset slot, pre-generating deterministic
+ * slot IDs for any child slots added by the module to ensure reducer purity.
+ *
+ * @param assetId - Asset ID owning the target slot.
+ * @param slotId - Slot ID receiving the module.
+ * @param moduleId - Module ID being installed.
+ * @param newSlotIds - Optional pre-generated new slot IDs.
+ * @returns Install module action with pre-generated child slot IDs.
+ */
+export function createInstallAssetModuleAction(
+  assetId: string,
+  slotId: string,
+  moduleId: string,
+  newSlotIds?: NewSlotEntry[]
+): Extract<GameAction, { type: typeof ActionTypes.INSTALL_MODULE }>
+export function createInstallAssetModuleAction(
+  assetIdOrPayload: string | InstallModulePayload,
+  slotId?: string,
+  moduleId?: string,
+  newSlotIds?: NewSlotEntry[]
+): Extract<GameAction, { type: typeof ActionTypes.INSTALL_MODULE }> {
+  const isPayloadObj =
+    typeof assetIdOrPayload === 'object' && assetIdOrPayload !== null
+  const finalAssetId = isPayloadObj
+    ? typeof assetIdOrPayload.assetId === 'string'
+      ? assetIdOrPayload.assetId
+      : ''
+    : typeof assetIdOrPayload === 'string'
+      ? assetIdOrPayload
+      : ''
+  const finalSlotId = isPayloadObj
+    ? typeof assetIdOrPayload.slotId === 'string'
+      ? assetIdOrPayload.slotId
+      : ''
+    : typeof slotId === 'string'
+      ? slotId
+      : ''
+  const finalModuleId = isPayloadObj
+    ? typeof assetIdOrPayload.moduleId === 'string'
+      ? assetIdOrPayload.moduleId
+      : ''
+    : typeof moduleId === 'string'
+      ? moduleId
+      : ''
+  let finalNewSlotIds = isPayloadObj
+    ? Array.isArray(assetIdOrPayload.newSlotIds)
+      ? assetIdOrPayload.newSlotIds
+      : undefined
+    : Array.isArray(newSlotIds)
+      ? newSlotIds
+      : undefined
+
+  if (!finalNewSlotIds && finalModuleId) {
+    const mod = getRegisteredModule(finalModuleId)
+    if (mod?.addsSlots && mod.addsSlots.length > 0) {
+      const generated: NewSlotEntry[] = []
+      for (let b = 0; b < mod.addsSlots.length; b++) {
+        const block = mod.addsSlots[b]
+        if (!block) continue
+        for (let i = 0; i < block.count; i++) {
+          generated.push({ slotType: block.slotType, id: getSafeUUID() })
+        }
+      }
+      if (generated.length > 0) {
+        finalNewSlotIds = generated
+      }
+    }
+  }
+
+  return {
+    type: ActionTypes.INSTALL_MODULE,
+    payload: {
+      assetId: finalAssetId,
+      slotId: finalSlotId,
+      moduleId: finalModuleId,
+      ...(finalNewSlotIds && finalNewSlotIds.length > 0
+        ? { newSlotIds: finalNewSlotIds }
+        : {})
+    }
+  }
+}
 
 /**
  * Creates start travel minigame action
