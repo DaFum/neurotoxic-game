@@ -397,9 +397,16 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   }
   if (foreclosedKinds.length === 0) return nextState
 
-  const pendingForeclosureNotices = [
-    ...(nextState.pendingForeclosureNotices || [])
-  ]
+  const existingOverlayNotices =
+    nextState.pendingOverlay?.kind === 'foreclosure'
+      ? nextState.pendingOverlay.notices
+      : []
+  const pendingForeclosureNotices = Array.from(
+    new Set([
+      ...existingOverlayNotices,
+      ...(nextState.pendingForeclosureNotices || [])
+    ])
+  )
   for (const kind of foreclosedKinds) {
     if (!pendingForeclosureNotices.includes(kind)) {
       pendingForeclosureNotices.push(kind)
