@@ -550,6 +550,10 @@ describe('useKabelsalatState', () => {
       vi.advanceTimersByTime(2500)
     })
     expect(result.current.phase).toEqual({ name: 'transitioned' })
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
   it('transitions phase to gameover then transitioned on timeout', async () => {
@@ -570,5 +574,9 @@ describe('useKabelsalatState', () => {
       vi.advanceTimersByTime(3500)
     })
     expect(result.current.phase).toEqual({ name: 'transitioned' })
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: false })
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })

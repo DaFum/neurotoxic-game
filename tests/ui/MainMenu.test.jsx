@@ -1,7 +1,14 @@
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  renderHook
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
+import { useMainMenuState } from '../../src/scenes/mainmenu/hooks/useMainMenuState'
 import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { useBandHQModal } from '../../src/hooks/useBandHQModal'
@@ -847,6 +854,76 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:socials'))
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
+    })
+  })
+
+  describe('useMainMenuState', () => {
+    it('handles modal toggles and preserves existing save prompt target', () => {
+      const { result } = renderHook(() => useMainMenuState())
+
+      expect(result.current.activeModal).toBeNull()
+      expect(result.current.showExistingSavePrompt).toBe(false)
+
+      // Open existing save prompt
+      act(() => {
+        result.current.setShowExistingSavePrompt(true)
+      })
+      expect(result.current.activeModal).toEqual({
+        type: 'existingSave',
+        target: 'tour'
+      })
+      expect(result.current.showExistingSavePrompt).toBe(true)
+
+      // Manually simulate custom target (e.g. expedition)
+      act(() => {
+        result.current.setActiveModal({
+          type: 'existingSave',
+          target: 'expedition'
+        })
+      })
+      expect(result.current.activeModal).toEqual({
+        type: 'existingSave',
+        target: 'expedition'
+      })
+
+      // Calling setShowExistingSavePrompt(true) while already on existingSave preserves target
+      act(() => {
+        result.current.setShowExistingSavePrompt(true)
+      })
+      expect(result.current.activeModal).toEqual({
+        type: 'existingSave',
+        target: 'expedition'
+      })
+
+      // Hiding an unrelated modal leaves existingSave intact
+      act(() => {
+        result.current.setShowSocials(false)
+      })
+      expect(result.current.activeModal).toEqual({
+        type: 'existingSave',
+        target: 'expedition'
+      })
+
+      // Functional update to close existingSave
+      act(() => {
+        result.current.setShowExistingSavePrompt(prev => !prev)
+      })
+      expect(result.current.activeModal).toBeNull()
+
+      // Toggling another modal
+      act(() => {
+        result.current.setShowFeatures(true)
+      })
+      expect(result.current.activeModal).toEqual({ type: 'features' })
+      expect(result.current.showFeatures).toBe(true)
+
+      // Switching directly to name input
+      act(() => {
+        result.current.setShowNameInput(true)
+      })
+      expect(result.current.activeModal).toEqual({ type: 'nameInput' })
+      expect(result.current.showNameInput).toBe(true)
+      expect(result.current.showFeatures).toBe(false)
     })
   })
 })

@@ -48,6 +48,7 @@ describe('UpgradesTab', () => {
     handleBuy = vi.fn()
     getPurchaseDecision = vi.fn(item => ({
       cost: item.cost * 0.5,
+      status: item.id === 'upg1' ? 'owned' : 'available',
       isOwned: item.id === 'upg1',
       isConsumable: false,
       canPurchase: item.id !== 'upg1',

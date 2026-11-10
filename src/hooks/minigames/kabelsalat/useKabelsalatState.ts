@@ -61,7 +61,6 @@ export const useKabelsalatState = (): KabelsalatState => {
   // Core State: explicit phase state machine
   const [phase, setPhase] = useState<KabelsalatPhase>({ name: 'playing' })
   const phaseRef = useRef<KabelsalatPhase>(phase)
-  phaseRef.current = phase
 
   const [selectedCable, setSelectedCable] = useState<CableId | null>(null)
   const [connections, setConnections] = useState<
@@ -80,11 +79,17 @@ export const useKabelsalatState = (): KabelsalatState => {
   const isGameOver = phase.name === 'gameover'
 
   const isWinningRef = useRef(false)
-  isWinningRef.current = isWinning
 
   const shockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const winTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingFaultReasonRef = useRef('')
+
+  // Shared phase transition path keeping eager refs synchronized without render-time writes
+  const transitionPhase = useCallback((nextPhase: KabelsalatPhase) => {
+    phaseRef.current = nextPhase
+    isWinningRef.current = nextPhase.name === 'winning'
+    setPhase(nextPhase)
+  }, [])
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -100,36 +105,41 @@ export const useKabelsalatState = (): KabelsalatState => {
     }
   }, [])
 
-  // Transition: shock handling (recovers back to playing after 1500ms)
-  const triggerShock = useCallback((reason: string) => {
-    if (phaseRef.current.name !== 'playing') return
-    pendingFaultReasonRef.current = reason
-    const nextPhase: KabelsalatPhase = { name: 'shocked', reason }
-    phaseRef.current = nextPhase
-    setPhase(nextPhase)
-    setSelectedCable(null)
-    setConnections({})
+  // Shared shock entry and recovery (1500ms recovery window)
+  const enterShock = useCallback(
+    (reason: string) => {
+      if (phaseRef.current.name !== 'playing') return
+      pendingFaultReasonRef.current = reason
+      transitionPhase({ name: 'shocked', reason })
+      setSelectedCable(null)
+      setConnections({})
 
-    if (shockTimeoutRef.current) {
-      clearTimeout(shockTimeoutRef.current)
-    }
-
-    shockTimeoutRef.current = setTimeout(() => {
-      shockTimeoutRef.current = null
-      if (phaseRef.current.name === 'shocked') {
-        const playPhase: KabelsalatPhase = { name: 'playing' }
-        phaseRef.current = playPhase
-        setPhase(playPhase)
+      if (shockTimeoutRef.current) {
+        clearTimeout(shockTimeoutRef.current)
       }
-    }, 1500)
-  }, [])
+
+      shockTimeoutRef.current = setTimeout(() => {
+        shockTimeoutRef.current = null
+        if (phaseRef.current.name === 'shocked') {
+          transitionPhase({ name: 'playing' })
+        }
+      }, 1500)
+    },
+    [transitionPhase]
+  )
+
+  // Transition: shock handling (delegates to shared shock path)
+  const triggerShock = useCallback(
+    (reason: string) => {
+      enterShock(reason)
+    },
+    [enterShock]
+  )
 
   // Transition: win handling (winning -> 600ms -> powered)
   const handleWin = useCallback(() => {
     if (phaseRef.current.name !== 'playing') return
-    const winningPhase: KabelsalatPhase = { name: 'winning' }
-    phaseRef.current = winningPhase
-    setPhase(winningPhase)
+    transitionPhase({ name: 'winning' })
 
     if (winTimeoutRef.current) {
       clearTimeout(winTimeoutRef.current)
@@ -138,27 +148,21 @@ export const useKabelsalatState = (): KabelsalatState => {
     winTimeoutRef.current = setTimeout(() => {
       winTimeoutRef.current = null
       if (phaseRef.current.name === 'winning') {
-        const poweredPhase: KabelsalatPhase = { name: 'powered' }
-        phaseRef.current = poweredPhase
-        setPhase(poweredPhase)
+        transitionPhase({ name: 'powered' })
       }
     }, 600)
-  }, [])
+  }, [transitionPhase])
 
   // Transition: game over handling
   const handleGameOver = useCallback(() => {
     if (phaseRef.current.name !== 'playing') return
-    const gameOverPhase: KabelsalatPhase = { name: 'gameover' }
-    phaseRef.current = gameOverPhase
-    setPhase(gameOverPhase)
-  }, [])
+    transitionPhase({ name: 'gameover' })
+  }, [transitionPhase])
 
   // Transition: completion transition finished
   const handleTransitioned = useCallback(() => {
-    const transitionedPhase: KabelsalatPhase = { name: 'transitioned' }
-    phaseRef.current = transitionedPhase
-    setPhase(transitionedPhase)
-  }, [])
+    transitionPhase({ name: 'transitioned' })
+  }, [transitionPhase])
 
   // Adapter setters for useKabelsalatInteractions compatibility
   const setIsShocked: Dispatch<SetStateAction<boolean>> = useCallback(
@@ -168,35 +172,14 @@ export const useKabelsalatState = (): KabelsalatState => {
           ? action(phaseRef.current.name === 'shocked')
           : action
       if (next) {
-        if (phaseRef.current.name === 'playing') {
-          const nextPhase: KabelsalatPhase = {
-            name: 'shocked',
-            reason: pendingFaultReasonRef.current
-          }
-          phaseRef.current = nextPhase
-          setPhase(nextPhase)
-
-          if (shockTimeoutRef.current) {
-            clearTimeout(shockTimeoutRef.current)
-          }
-          shockTimeoutRef.current = setTimeout(() => {
-            shockTimeoutRef.current = null
-            if (phaseRef.current.name === 'shocked') {
-              const playPhase: KabelsalatPhase = { name: 'playing' }
-              phaseRef.current = playPhase
-              setPhase(playPhase)
-            }
-          }, 1500)
-        }
+        enterShock(pendingFaultReasonRef.current)
       } else {
         if (!shockTimeoutRef.current && phaseRef.current.name === 'shocked') {
-          const playPhase: KabelsalatPhase = { name: 'playing' }
-          phaseRef.current = playPhase
-          setPhase(playPhase)
+          transitionPhase({ name: 'playing' })
         }
       }
     },
-    []
+    [enterShock, transitionPhase]
   )
 
   const setFaultReason: Dispatch<SetStateAction<string>> = useCallback(
@@ -211,12 +194,10 @@ export const useKabelsalatState = (): KabelsalatState => {
           : action
       pendingFaultReasonRef.current = next
       if (next && phaseRef.current.name === 'shocked') {
-        const nextPhase: KabelsalatPhase = { name: 'shocked', reason: next }
-        phaseRef.current = nextPhase
-        setPhase(nextPhase)
+        transitionPhase({ name: 'shocked', reason: next })
       }
     },
-    []
+    [transitionPhase]
   )
 
   // 1. Background

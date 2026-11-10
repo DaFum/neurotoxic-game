@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { PostResult } from '../../types'
 import type { BrandDeal } from '../../types/social'
 
@@ -6,10 +6,10 @@ import type { BrandDeal } from '../../types/social'
 export type PostGigPhase = 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
 
 export type PostGigFlowState =
-  | { phase: 'REPORT' }
-  | { phase: 'SOCIAL' }
+  | { phase: 'REPORT'; result?: PostResult | null; offers?: BrandDeal[] }
+  | { phase: 'SOCIAL'; result?: PostResult | null; offers?: BrandDeal[] }
   | { phase: 'DEALS'; result: PostResult; offers: BrandDeal[] }
-  | { phase: 'COMPLETE'; result: PostResult }
+  | { phase: 'COMPLETE'; result: PostResult; offers?: BrandDeal[] }
 
 const PHASE_METADATA: Record<PostGigPhase, { key: string; default: string }> = {
   REPORT: {
@@ -40,30 +40,19 @@ export const usePostGigState = () => {
   const [flowState, setFlowState] = useState<PostGigFlowState>({
     phase: 'REPORT'
   })
-  const postResultRef = useRef<PostResult | null>(null)
-  const brandOffersRef = useRef<BrandDeal[]>([])
 
   const setPostResult = useCallback((result: PostResult) => {
-    postResultRef.current = result
-    setFlowState(prev => {
-      if (prev.phase === 'DEALS') {
-        return { phase: 'DEALS', result, offers: prev.offers }
-      }
-      if (prev.phase === 'COMPLETE') {
-        return { phase: 'COMPLETE', result }
-      }
-      return prev
-    })
+    setFlowState(prev => ({
+      ...prev,
+      result
+    }))
   }, [])
 
   const setBrandOffers = useCallback((offers: BrandDeal[]) => {
-    brandOffersRef.current = offers
-    setFlowState(prev => {
-      if (prev.phase === 'DEALS') {
-        return { phase: 'DEALS', result: prev.result, offers }
-      }
-      return prev
-    })
+    setFlowState(prev => ({
+      ...prev,
+      offers
+    }))
   }, [])
 
   const setPhase = useCallback(
@@ -74,26 +63,22 @@ export const usePostGigState = () => {
         if (nextPhase === prev.phase) return prev
 
         if (nextPhase === 'REPORT') {
-          postResultRef.current = null
-          brandOffersRef.current = []
           return { phase: 'REPORT' }
         }
         if (nextPhase === 'SOCIAL') {
-          postResultRef.current = null
-          brandOffersRef.current = []
           return { phase: 'SOCIAL' }
         }
         if (nextPhase === 'DEALS') {
-          const result = postResultRef.current
+          const result = 'result' in prev ? prev.result : null
           if (!result) return prev
           return {
             phase: 'DEALS',
             result,
-            offers: brandOffersRef.current
+            offers: 'offers' in prev && prev.offers ? prev.offers : []
           }
         }
         if (nextPhase === 'COMPLETE') {
-          const result = postResultRef.current
+          const result = 'result' in prev ? prev.result : null
           if (!result) return prev
           return {
             phase: 'COMPLETE',
@@ -108,8 +93,9 @@ export const usePostGigState = () => {
 
   const phase: PostGigPhase = flowState.phase
   const postResult: PostResult | null =
-    'result' in flowState ? flowState.result : null
-  const brandOffers: BrandDeal[] = 'offers' in flowState ? flowState.offers : []
+    'result' in flowState && flowState.result ? flowState.result : null
+  const brandOffers: BrandDeal[] =
+    'offers' in flowState && flowState.offers ? flowState.offers : []
 
   const { key: phaseTitleKey, default: phaseTitleDefault } =
     PHASE_METADATA[phase]

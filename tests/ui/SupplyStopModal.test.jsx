@@ -9,6 +9,7 @@ let mockedTransformPlayerPatch = null
 const { mockGetPurchaseDecision, mockIsItemDisabled } = vi.hoisted(() => ({
   mockGetPurchaseDecision: vi.fn(() => ({
     cost: 100,
+    status: 'available',
     canAfford: true,
     isOwned: false,
     isConsumable: false,

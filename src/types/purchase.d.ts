@@ -28,7 +28,7 @@ export type PurchaseStatus =
  */
 export interface PurchaseDecision {
   cost: number
-  status?: PurchaseStatus
+  status: PurchaseStatus
   canAfford: boolean
   isOwned: boolean
   isConsumable: boolean

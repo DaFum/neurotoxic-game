@@ -32,6 +32,7 @@ const mockItem = {
 
 const mockDecision = {
   cost: 100,
+  status: 'available',
   canAfford: true,
   isOwned: false,
   isConsumable: false,

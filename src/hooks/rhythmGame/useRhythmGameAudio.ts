@@ -30,10 +30,8 @@ type RhythmGameAudioParams = {
   resetGameplayState: () => void
   setters: Pick<
     RhythmStateSetters,
-    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind'
-  > & {
-    setInitStatus?: (status: GigInitStatus) => void
-  }
+    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind' | 'setInitStatus'
+  >
   contextState: {
     band: GameState['band']
     gameMap: GameMap | null
@@ -57,8 +55,7 @@ type HarmonyGuardParams = {
   currentStatusRef: React.MutableRefObject<GigAudioStatus>
   gameStateRef: { current: RhythmGameRefState }
   setGameOver: (isGameOver: boolean) => void
-  setAudioStatus: (status: GigAudioStatus) => void
-  setInitStatus?: (status: GigInitStatus) => void
+  setInitStatus: (status: GigInitStatus) => void
   currentT: TFunction
   currentAddToast: OptionalToastCallback
   currentSetLastGigStats: SetLastGigStats
@@ -71,7 +68,6 @@ const handleHarmonyGuard = ({
   currentStatusRef,
   gameStateRef,
   setGameOver,
-  setAudioStatus,
   setInitStatus,
   currentT,
   currentAddToast,
@@ -86,8 +82,7 @@ const handleHarmonyGuard = ({
       currentRhythmState.isGameOver = true
       setGameOver(true)
       currentStatusRef.current = 'ready'
-      setInitStatus?.({ status: 'ready' })
-      setAudioStatus('ready')
+      setInitStatus({ status: 'ready' })
 
       const message = currentT('ui:gig.toasts.bandCollapsed', {
         defaultValue: 'BAND COLLAPSED'
@@ -331,11 +326,7 @@ export const useRhythmGameAudio = ({
   ])
 
   const updateInitStatus = useCallback((status: GigInitStatus) => {
-    latestContextRef.current.setInitStatus?.(status)
-    latestContextRef.current.setAudioStatus?.(status.status)
-    latestContextRef.current.setFailureKind?.(
-      status.status === 'failed' ? status.failureKind : null
-    )
+    latestContextRef.current.setInitStatus(status)
   }, [])
 
   const onStageReady = useCallback(() => {
@@ -426,7 +417,6 @@ export const useRhythmGameAudio = ({
         endGig: currentEndGig,
         t: currentT,
         setInitStatus: currentSetInitStatus,
-        setAudioStatus,
         setIsGameOver: setGameOver
       } = ctx
 
@@ -459,7 +449,6 @@ export const useRhythmGameAudio = ({
           currentStatusRef,
           gameStateRef,
           setGameOver,
-          setAudioStatus,
           setInitStatus: currentSetInitStatus,
           currentT,
           currentAddToast,
@@ -639,10 +628,10 @@ export const useRhythmGameAudio = ({
       // stage; wait for the remounted stage's own signal.
       stageReadyRef.current = false
       stageFailedRef.current = false
-      latestContextRef.current.setFailureKind(null)
+      updateInitStatus({ status: 'idle' })
     }
     await initializeGigState(true)
-  }, [gameStateRef, initializeGigState, resetGameplayState])
+  }, [gameStateRef, initializeGigState, resetGameplayState, updateInitStatus])
 
   return { retryAudioInitialization, onStageReady, onStageInitError }
 }

@@ -7,6 +7,22 @@ export type MainMenuModal =
   | { type: 'features' }
   | { type: 'existingSave'; target: 'tour' | 'expedition' }
 
+type ModalType = Exclude<NonNullable<MainMenuModal>, null>['type']
+
+const toggleModalState = (
+  current: MainMenuModal,
+  type: ModalType,
+  show: boolean | ((prev: boolean) => boolean),
+  createModal: () => NonNullable<MainMenuModal>
+): MainMenuModal => {
+  const isShowing = current?.type === type
+  const next = typeof show === 'function' ? show(isShowing) : show
+  if (next) {
+    return isShowing && current ? current : createModal()
+  }
+  return isShowing ? null : current
+}
+
 /**
  * Owns transient main-menu UI state, modal visibility, and focus refs.
  * @returns Main-menu modal state, booleans, setters, player-name input state, and refs.
@@ -26,60 +42,43 @@ export const useMainMenuState = () => {
 
   const setShowNameInput = useCallback(
     (show: boolean | ((prev: boolean) => boolean)) => {
-      setActiveModal(current => {
-        const isShowing = current?.type === 'nameInput'
-        const next = typeof show === 'function' ? show(isShowing) : show
-        return next
-          ? { type: 'nameInput' }
-          : current?.type === 'nameInput'
-            ? null
-            : current
-      })
+      setActiveModal(current =>
+        toggleModalState(current, 'nameInput', show, () => ({
+          type: 'nameInput'
+        }))
+      )
     },
     []
   )
 
   const setShowSocials = useCallback(
     (show: boolean | ((prev: boolean) => boolean)) => {
-      setActiveModal(current => {
-        const isShowing = current?.type === 'socials'
-        const next = typeof show === 'function' ? show(isShowing) : show
-        return next
-          ? { type: 'socials' }
-          : current?.type === 'socials'
-            ? null
-            : current
-      })
+      setActiveModal(current =>
+        toggleModalState(current, 'socials', show, () => ({ type: 'socials' }))
+      )
     },
     []
   )
 
   const setShowFeatures = useCallback(
     (show: boolean | ((prev: boolean) => boolean)) => {
-      setActiveModal(current => {
-        const isShowing = current?.type === 'features'
-        const next = typeof show === 'function' ? show(isShowing) : show
-        return next
-          ? { type: 'features' }
-          : current?.type === 'features'
-            ? null
-            : current
-      })
+      setActiveModal(current =>
+        toggleModalState(current, 'features', show, () => ({
+          type: 'features'
+        }))
+      )
     },
     []
   )
 
   const setShowExistingSavePrompt = useCallback(
     (show: boolean | ((prev: boolean) => boolean)) => {
-      setActiveModal(current => {
-        const isShowing = current?.type === 'existingSave'
-        const next = typeof show === 'function' ? show(isShowing) : show
-        return next
-          ? { type: 'existingSave', target: 'tour' }
-          : current?.type === 'existingSave'
-            ? null
-            : current
-      })
+      setActiveModal(current =>
+        toggleModalState(current, 'existingSave', show, () => ({
+          type: 'existingSave',
+          target: 'tour'
+        }))
+      )
     },
     []
   )

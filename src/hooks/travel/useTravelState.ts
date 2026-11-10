@@ -1,4 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useCallback
+} from 'react'
 import type { MapNode } from '../../types'
 import type {
   TravelLogicParams,
@@ -25,7 +31,6 @@ import type {
 export const useTravelState = (params: TravelLogicParams) => {
   const [phase, setPhase] = useState<TravelPhase>({ status: 'idle' })
   const phaseRef = useRef<TravelPhase>(phase)
-  phaseRef.current = phase
 
   const isTraveling = phase.status === 'traveling'
   const pendingTravelNode = phase.status === 'confirming' ? phase.node : null
@@ -44,8 +49,13 @@ export const useTravelState = (params: TravelLogicParams) => {
   const venueBlacklistRef = useRef(params.venueBlacklist ?? [])
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
-  isTravelingRef.current = isTraveling
-  pendingTravelNodeRef.current = pendingTravelNode
+
+  useLayoutEffect(() => {
+    phaseRef.current = phase
+    isTravelingRef.current = phase.status === 'traveling'
+    pendingTravelNodeRef.current =
+      phase.status === 'confirming' ? phase.node : null
+  }, [phase])
 
   useEffect(() => {
     playerRef.current = params.player
@@ -70,29 +80,19 @@ export const useTravelState = (params: TravelLogicParams) => {
   const setPhaseWrapper = useCallback<
     React.Dispatch<React.SetStateAction<TravelPhase>>
   >(action => {
-    if (typeof action !== 'function') {
-      phaseRef.current = action
-      isTravelingRef.current = action.status === 'traveling'
-      pendingTravelNodeRef.current =
-        action.status === 'confirming' ? action.node : null
-    }
-    setPhase(prev => {
-      const next = typeof action === 'function' ? action(prev) : action
-      phaseRef.current = next
-      isTravelingRef.current = next.status === 'traveling'
-      pendingTravelNodeRef.current =
-        next.status === 'confirming' ? next.node : null
-      return next
-    })
+    const next =
+      typeof action === 'function' ? action(phaseRef.current) : action
+    phaseRef.current = next
+    isTravelingRef.current = next.status === 'traveling'
+    pendingTravelNodeRef.current =
+      next.status === 'confirming' ? next.node : null
+    setPhase(next)
   }, [])
 
   const setIsTraveling = useCallback<
     React.Dispatch<React.SetStateAction<boolean>>
   >(
     action => {
-      if (typeof action === 'boolean') {
-        isTravelingRef.current = action
-      }
       setPhaseWrapper(prev => {
         const nextTraveling =
           typeof action === 'function'
@@ -121,9 +121,6 @@ export const useTravelState = (params: TravelLogicParams) => {
     React.Dispatch<React.SetStateAction<MapNode | null>>
   >(
     action => {
-      if (typeof action !== 'function') {
-        pendingTravelNodeRef.current = action
-      }
       setPhaseWrapper(prev => {
         const prevNode = prev.status === 'confirming' ? prev.node : null
         const nextNode =

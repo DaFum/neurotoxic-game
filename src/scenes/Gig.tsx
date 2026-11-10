@@ -87,10 +87,8 @@ export const Gig = () => {
     setBandMemberRef
   } = useGigEffects(stats)
 
-  const isInitFailed =
-    stats.initStatus?.status === 'failed' || stats.audioStatus === 'failed'
-  const isInitBlocked =
-    stats.initStatus?.status === 'blocked' || stats.audioStatus === 'blocked'
+  const isInitFailed = stats.initStatus.status === 'failed'
+  const isInitBlocked = stats.initStatus.status === 'blocked'
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
@@ -119,11 +117,9 @@ export const Gig = () => {
   // Render blocking overlay if audio is locked
   if (isInitBlocked || isInitFailed) {
     const failureKind =
-      stats.initStatus?.status === 'failed'
+      stats.initStatus.status === 'failed'
         ? stats.initStatus.failureKind
-        : stats.failureKind === 'stage'
-          ? 'stage'
-          : 'audio'
+        : 'audio'
 
     return (
       <AudioLockedOverlay

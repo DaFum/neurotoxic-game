@@ -197,10 +197,6 @@ export const LeaderboardTab = ({ playerId }: LeaderboardTabProps) => {
       <LeaderboardTable
         view={view}
         state={!isSyncEnabled ? { status: 'unavailable' } : state}
-        isLoading={state.status === 'loading'}
-        error={state.status === 'error' ? state.message : null}
-        isUnavailable={!isSyncEnabled || state.status === 'unavailable'}
-        rankings={state.status === 'ready' ? state.entries : []}
       />
 
       <p

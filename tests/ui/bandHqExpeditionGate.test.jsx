@@ -66,6 +66,7 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
     isItemDisabled: () => false,
     getPurchaseDecision: item => ({
       cost: item.cost,
+      status: 'available',
       isOwned: false,
       isConsumable: false,
       canAfford: true,

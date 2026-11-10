@@ -74,6 +74,7 @@ describe('ShopTab', () => {
     handleBuy = vi.fn()
     getPurchaseDecision = vi.fn(item => ({
       cost: item.cost * 0.5,
+      status: item.id === 'gear1' ? 'owned' : 'available',
       isOwned: item.id === 'gear1',
       isConsumable: false,
       canPurchase: item.id !== 'gear1',

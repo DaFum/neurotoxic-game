@@ -219,14 +219,19 @@ function rhythmGameReducer(
     }
     case 'SET_FAILURE_KIND': {
       const nextFailureKind = resolvePayload(action.payload, state.failureKind)
-      const nextInitStatus: GigInitStatus =
-        state.audioStatus === 'failed'
-          ? { status: 'failed', failureKind: nextFailureKind ?? 'audio' }
-          : state.initStatus
+      const isFailed =
+        state.audioStatus === 'failed' || state.initStatus.status === 'failed'
+      if (isFailed) {
+        const failureKind = nextFailureKind ?? 'audio'
+        return {
+          ...state,
+          failureKind,
+          initStatus: { status: 'failed', failureKind }
+        }
+      }
       return {
         ...state,
-        failureKind: nextFailureKind,
-        initStatus: nextInitStatus
+        failureKind: null
       }
     }
     case 'SET_ACCURACY':
