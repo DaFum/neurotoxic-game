@@ -302,6 +302,8 @@ export class AudioSystem {
       if (getTransportState() === 'paused') {
         const resumed = await resumeAudio()
         this.emitChange()
+        // A resumed lead-in start is still in the future and reads `stopped`.
+        if (resumed) this.emitWhenScheduledStartArrives(this.ambientStartToken)
         return resumed
       }
 
