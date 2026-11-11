@@ -66,8 +66,12 @@ export const calculateMerchIncome = (
   if (modifiers?.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Loyalty converts to merch sales during controversy
-  if (isCultAudience(context?.controversyLevel, context?.loyalty)) {
-    const loyalty = finiteNumberOr(context.loyalty, 0)
+  const controversyLevel =
+    context?.normalizedSocial?.controversyLevel ??
+    finiteNumberOr(context?.controversyLevel, 0)
+  const loyalty =
+    context?.normalizedSocial?.loyalty ?? finiteNumberOr(context?.loyalty, 0)
+  if (isCultAudience(controversyLevel, loyalty)) {
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     // The cap limits how far loyalty may lift a low rate; it never pulls an
     // already higher rate (a strong show) down, or support would sell less.

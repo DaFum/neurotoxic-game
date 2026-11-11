@@ -16,8 +16,10 @@ import {
   calculateSponsorshipBonuses,
   calculateGigExpenses,
   calculateGuaranteedDailyCost,
-  shouldTriggerBankruptcy
+  shouldTriggerBankruptcy,
+  normalizeEconomySocial
 } from '../../src/utils/economy'
+import { BREAKDOWN_LABEL_KEYS } from '../../src/utils/economy/breakdownLabelKeys'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assets/assetSelectors'
 import { finiteNumberOr } from '../../src/utils/finiteNumber'
@@ -1565,4 +1567,110 @@ test('sponsors accept snapshots with ordinary hits and no perfect hits', () => {
     false
   )
   assert.equal(calculateSponsorshipBonuses(stats).totalBonus, 350)
+})
+
+test('normalizeEconomySocial normalizes social metrics from top-level and nested social', () => {
+  const normalized = normalizeEconomySocial({
+    social: {
+      instagram: 500,
+      tiktok: 1000,
+      controversyLevel: 50,
+      loyalty: 80,
+      zealotry: 60,
+      activeDeals: [{ type: 'SPONSORSHIP', offer: { perGig: 100 } }]
+    }
+  })
+  assert.equal(normalized.instagram, 500)
+  assert.equal(normalized.tiktok, 1000)
+  assert.equal(normalized.controversyLevel, 50)
+  assert.equal(normalized.loyalty, 80)
+  assert.equal(normalized.zealotry, 60)
+  assert.equal(normalized.activeDeals.length, 1)
+
+  // Top-level takes precedence over nested when finite
+  const overridden = normalizeEconomySocial({
+    controversyLevel: 20,
+    loyalty: 30,
+    social: {
+      controversyLevel: 50,
+      loyalty: 80
+    }
+  })
+  assert.equal(overridden.controversyLevel, 20)
+  assert.equal(overridden.loyalty, 30)
+
+  // NaN top-level falls back to nested
+  const fallback = normalizeEconomySocial({
+    zealotry: Number.NaN,
+    social: { zealotry: 75 }
+  })
+  assert.equal(fallback.zealotry, 75)
+})
+
+test('calculateGigFinancials normalizes nested context.social with full effect', () => {
+  const baseParams = {
+    gigData: buildGigData({ capacity: 500, price: 20, pay: 500 }),
+    performanceScore: 70,
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerState: { fame: 200 },
+    gigStats: buildGigStats()
+  }
+
+  // Nested in context.social without top-level duplication
+  const nestedResult = calculateGigFinancials({
+    ...baseParams,
+    context: {
+      social: {
+        controversyLevel: 50,
+        loyalty: 80,
+        zealotry: 60
+      }
+    }
+  })
+
+  // Explicit top-level fields
+  const flatResult = calculateGigFinancials({
+    ...baseParams,
+    context: {
+      controversyLevel: 50,
+      loyalty: 80,
+      zealotry: 60
+    }
+  })
+
+  // Both should be identical in every financial aspect
+  assert.deepEqual(nestedResult, flatResult)
+
+  // Verify cult donations line is present in income breakdown
+  const cultDonationItem = nestedResult.income.breakdown.find(
+    item => item.labelKey === BREAKDOWN_LABEL_KEYS.CULT_DONATIONS
+  )
+  assert.ok(
+    cultDonationItem,
+    'Cult donations should be present from nested zealotry'
+  )
+  assert.ok(
+    cultDonationItem.value > 0,
+    'Cult donation should have positive value'
+  )
+
+  // Verify scandal support is present in merch sales breakdown from cult audience (high controversy + high loyalty)
+  const scandalSupportItem = nestedResult.income.breakdown.find(
+    item => item.labelKey === BREAKDOWN_LABEL_KEYS.SCANDAL_SUPPORT
+  )
+  assert.ok(
+    scandalSupportItem,
+    'Scandal support line should be present from nested controversy/loyalty'
+  )
+
+  // Verify promo modifier was not charged as an expense despite automated promo
+  const socialAdsExpense = nestedResult.expenses.breakdown.find(
+    item => item.labelKey === BREAKDOWN_LABEL_KEYS.SOCIAL_ADS
+  )
+  assert.equal(
+    socialAdsExpense,
+    undefined,
+    'Player should not pay for promo when zealotry triggers automated promo'
+  )
 })

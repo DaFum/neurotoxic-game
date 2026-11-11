@@ -66,7 +66,9 @@ export const calculateTicketIncome = (
 
   // Controversy attendance penalty: -1% per point above the high-controversy
   // gate, max -30%
-  const controversyLevel = finiteNumberOr(context?.controversyLevel, 0)
+  const controversyLevel =
+    context?.normalizedSocial?.controversyLevel ??
+    finiteNumberOr(context?.controversyLevel, 0)
   if (isHighControversy(controversyLevel)) {
     fillRate -= Math.min(
       0.3,
