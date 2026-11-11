@@ -10,6 +10,7 @@ import {
   sanitizeActiveQuests,
   sanitizeQuestCooldowns,
   sanitizeQuestScopes,
+  sanitizeCompletedQuests,
   sanitizeGigModifiers,
   sanitizeVenue,
   sanitizeLastGigStats,
@@ -153,6 +154,31 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
         : (item as T)
   }
   return result
+}
+
+const remapCompletedQuestsScopes = (
+  completedQuests: GameState['completedQuests']
+): GameState['completedQuests'] => {
+  const nextScoped: Record<string, string[]> = {}
+  for (const questId of Object.keys(completedQuests.scoped)) {
+    const scopes = completedQuests.scoped[questId]
+    if (!scopes) continue
+    const def = getQuestDefinition(questId)
+    if (def?.repeatPolicy === 'perRegion') {
+      const remappedSet = new Set<string>()
+      for (const scopeKey of scopes) {
+        const regionKey = getRegionKeyForLocation(scopeKey)
+        remappedSet.add(regionKey ?? scopeKey)
+      }
+      nextScoped[questId] = Array.from(remappedSet)
+    } else {
+      nextScoped[questId] = scopes
+    }
+  }
+  return {
+    global: completedQuests.global,
+    scoped: nextScoped
+  }
 }
 
 const migrateVenueBlacklist = (blacklist: string[]): string[] => {
@@ -304,6 +330,10 @@ export const handleLoadGame = (
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests,
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
+    completedQuests: sanitizeCompletedQuests(loadedState.completedQuests, {
+      completedQuestIds: loadedState.completedQuestIds,
+      completedQuestScopes: loadedState.completedQuestScopes
+    }),
     completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
     completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
@@ -427,6 +457,7 @@ export const handleLoadGame = (
       safeState.completedQuestScopes,
       scope => scope.questId
     ),
+    completedQuests: remapCompletedQuestsScopes(safeState.completedQuests),
     // A prepared save re-derives its Sponsor staging against the route it was
     // staged for. Offers and provenance survive or are dropped together: an
     // offer set START can no longer validate is worse than none.

@@ -6,6 +6,7 @@ import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
 import type {
   ActiveQuestState,
+  CompletedQuestsState,
   QuestCooldown,
   QuestScopeCompletion,
   QuestState
@@ -330,6 +331,7 @@ export interface GameState {
   venueBlacklist: string[]
   activeQuests: ActiveQuestState[]
   questCooldowns: QuestCooldown[]
+  completedQuests: CompletedQuestsState
   completedQuestIds: string[]
   completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>

@@ -225,6 +225,7 @@ const initialState: GameState = {
   venueBlacklist: [],
   activeQuests: [],
   questCooldowns: [],
+  completedQuests: { global: [], scoped: {} },
   completedQuestIds: [],
   completedQuestScopes: [],
   reputationByRegion: {},
@@ -293,6 +294,7 @@ export const createInitialState = (
   reputationByRegion: {},
   activeQuests: [],
   questCooldowns: [],
+  completedQuests: { global: [], scoped: {} },
   completedQuestIds: [],
   completedQuestScopes: [],
   band: {

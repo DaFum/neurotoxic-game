@@ -1551,6 +1551,77 @@ test('QuestLifecycle', async t => {
       const next = QuestLifecycle.addQuest(state, { id: 'quest_merch_rush' })
       assert.equal(next, state)
     })
+
+    await t.test(
+      'normalizes legacy completedQuestIds and completedQuestScopes into completedQuests index and blocks re-add',
+      async () => {
+        const { sanitizeCompletedQuests } =
+          await import('../../../src/context/reducers/sanitizers/stateSanitizers')
+        const legacySave = {
+          completedQuestIds: ['quest_pick_of_destiny'],
+          completedQuestScopes: [
+            { questId: 'quest_venue_residency', scopeKey: 'venue_a' }
+          ]
+        }
+
+        const normalized = sanitizeCompletedQuests(undefined, legacySave)
+        assert.deepStrictEqual(normalized, {
+          global: ['quest_pick_of_destiny'],
+          scoped: {
+            quest_venue_residency: ['venue_a']
+          }
+        })
+
+        // canAcceptQuest with normalized completedQuests
+        const stateWithIndex = {
+          player: { day: 1, currentNodeId: 'node_1_0' },
+          activeQuests: [],
+          activeStoryFlags: [],
+          completedQuests: normalized,
+          questCooldowns: [],
+          gameMap: {
+            nodes: {
+              node_1_0: { id: 'node_1_0', type: 'GIG', venueId: 'venue_a' }
+            }
+          }
+        }
+
+        // Global 'never' quest is rejected as completed
+        assert.deepStrictEqual(
+          canAcceptQuest(stateWithIndex, 'quest_pick_of_destiny'),
+          {
+            ok: false,
+            reason: 'completed'
+          }
+        )
+
+        // Scoped quest in the same venue is rejected as scope completed
+        assert.deepStrictEqual(
+          canAcceptQuest(stateWithIndex, 'quest_venue_residency'),
+          {
+            ok: false,
+            reason: 'scope'
+          }
+        )
+
+        // Scoped quest in another venue is accepted
+        const stateDifferentVenue = {
+          ...stateWithIndex,
+          gameMap: {
+            nodes: {
+              node_1_0: { id: 'node_1_0', type: 'GIG', venueId: 'venue_b' }
+            }
+          }
+        }
+        assert.deepStrictEqual(
+          canAcceptQuest(stateDifferentVenue, 'quest_venue_residency'),
+          {
+            ok: true,
+            scopeKey: 'venue_b'
+          }
+        )
+      }
+    )
   })
 
   await t.test('failure penalty handling', async t => {

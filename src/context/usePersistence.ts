@@ -169,6 +169,7 @@ const PERSISTED_FIELDS = {
   pendingRiskEvent: isNullableObject,
   activeQuests: Array.isArray,
   questCooldowns: Array.isArray,
+  completedQuests: isLooseRecord,
   completedQuestIds: Array.isArray,
   completedQuestScopes: Array.isArray,
   reputationByRegion: isLooseRecord,
