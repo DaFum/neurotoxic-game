@@ -176,6 +176,7 @@ test('AudioManager Tests', async t => {
   await t.test(
     'resuming a paused lead-in start emits again when it begins',
     async () => {
+      audioManager.currentSongId = 'ambient'
       mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
       mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
         () => 10
@@ -184,10 +185,14 @@ test('AudioManager Tests', async t => {
       const unsubscribe = audioManager.subscribe(listener)
       assert.equal(await audioManager.resumeMusic(), true)
       const emittedAfterResume = listener.mock.calls.length
+      assert.equal(audioManager.getStateSnapshot().isPlaying, false)
+
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
       await new Promise(resolve => setTimeout(resolve, 120))
       unsubscribe()
       mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
       assert.equal(listener.mock.calls.length, emittedAfterResume + 1)
+      assert.equal(audioManager.getStateSnapshot().isPlaying, true)
     }
   )
 
