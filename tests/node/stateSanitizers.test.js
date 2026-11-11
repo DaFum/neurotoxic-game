@@ -194,6 +194,20 @@ describe('stateSanitizers', () => {
       assert.ok(result)
       // No assertion for propC since it's preserved as []
     })
+
+    it('aliases legacy edges into connections when connections is absent', () => {
+      const legacyMap = {
+        nodes: {
+          a: { id: 'a', x: 0, y: 0 },
+          b: { id: 'b', x: 1, y: 1 }
+        },
+        edges: [{ from: 'a', to: 'b' }]
+      }
+
+      const result = normalizeLoadedGameMap(legacyMap)
+      assert.ok(result)
+      assert.deepStrictEqual(result.connections, [{ from: 'a', to: 'b' }])
+    })
   })
 
   describe('shopInventory (via normalizeLoadedGameMap)', () => {

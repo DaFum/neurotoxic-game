@@ -44,7 +44,6 @@ interface ValidatedMapConnection {
 interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
-  edges?: Array<{ from: string; to: string }>
   cityStates?: Record<string, import('../types/game').CityTraitState>
   [key: string]: unknown
 }
