@@ -15,6 +15,7 @@ import {
   stopAudio,
   resumeAudio,
   getTransportState,
+  getPendingTransportStartDelayMs,
   setDestinationMute
 } from './transportControl'
 import { playRandomAmbientOgg, playRandomAmbientMidi } from './ambient'
@@ -222,6 +223,7 @@ export class AudioSystem {
           return false
         }
         this.emitChange()
+        this.emitWhenScheduledStartArrives(ambientStartToken)
         logger.info(
           'AudioSystem',
           'Ambient started via MIDI synthesis fallback.'
@@ -241,6 +243,25 @@ export class AudioSystem {
     })()
 
     return this.ambientStartPromise
+  }
+
+  /**
+   * Emits once more when a transport start scheduled in the future begins.
+   *
+   * @remarks
+   * Tone reports `stopped` until the scheduled time, so the emission right
+   * after the MIDI fallback schedules playback carries `isPlaying: false`.
+   * A stop or a newer ambient start invalidates the token and skips the emit.
+   *
+   * @param ambientStartToken - Token of the ambient start that scheduled playback.
+   */
+  private emitWhenScheduledStartArrives(ambientStartToken: number): void {
+    const delayMs = getPendingTransportStartDelayMs()
+    if (delayMs === null) return
+    setTimeout(() => {
+      if (ambientStartToken !== this.ambientStartToken) return
+      this.emitChange()
+    }, delayMs + 50)
   }
 
   /**
