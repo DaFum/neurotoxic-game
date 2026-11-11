@@ -528,8 +528,9 @@ Enforce type-dependent validation in `validateContrabandItem`. Keep `duration` a
       Run: `pnpm exec vitest run tests/utils/postGig/derivations.test.ts tests/ui/usePostGigLogic.test.jsx`
       Expected: PASS
 
-- [ ] **Step 2: Remove read-during-render of `financialSnapshotRef`**
-      Memoize the existing `deriveFinancials(...)` call (which applies the performance penalty, repeat-demand adjustment, reward multiplier and smoothing) with `useMemo(..., [gigKey])` using the stable gig ID and completion timestamp. Do not replace it with a direct `calculateGigFinancials` call. Remove mutable ref reads during render.
+- [ ] **Step 2: Establish the stale-financials path, then decide**
+      The stale path is not established yet: `setLastGigStats` is only called from gig-end paths (`useRhythmGameLoop`, `useHandleMiss`, `useGigSession`) before the POSTGIG scene mounts, so a replacement `lastGigStats` reaching an already-mounted `usePostGigDerivations` has not been shown. First add a test in `tests/ui/usePostGigLogic.test.jsx` that rerenders the mounted hook (a) with a new `currentGig`/`lastGigStats` and (b) with changed `player`/`band`/`social` only, and record which case actually produces a wrong result with the current `financialSnapshotRef`. If neither fails, close this task as no-change.
+      If a failing case exists: `PostGigSummary` has no completion timestamp, so do not key on one. Key on the identity of `currentGig` and `lastGigStats` (the existing snapshot check). Keep calling the existing `deriveFinancials(...)` (performance penalty, repeat-demand adjustment, reward multiplier, smoothing), not a direct `calculateGigFinancials` call. The report must stay frozen while parallel post-gig events change `player`, `band` or `social` (current behavior), so do not reduce the deps to a bare `useMemo(..., [gigKey])`, which violates `react-hooks/exhaustive-deps`; no lint suppression. If no render-pure approach preserves that freeze, keep the ref-based snapshot.
 
 - [ ] **Step 3: Run tests and typecheck**
       Run: `pnpm exec vitest run tests/utils/postGig/derivations.test.ts tests/ui/usePostGigLogic.test.jsx`
