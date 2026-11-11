@@ -113,6 +113,7 @@ export interface AudioManagerLike {
   subscribe?: (listener: () => void) => () => void
   setMusicVolume?: (value: number) => unknown
   setSfxVolume?: (value: number) => unknown
+  setSFXVolume?: (value: number) => unknown
   toggleMute?: () => unknown
   stopMusic?: () => unknown
   resumeMusic?: () => boolean | Promise<boolean>

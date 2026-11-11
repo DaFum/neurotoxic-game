@@ -41,9 +41,9 @@ export const executeAudioAction = (
 /**
  * Builds UI-facing audio control handlers bound to a manager instance.
  *
- * The manager must expose `setSfxVolume` (camelCase), not `setSFXVolume`.
- * In production this is always `audioService`; custom managers in tests must
- * match this interface.
+ * Supports managers exposing either `setSfxVolume` or `setSFXVolume`.
+ * In production this is always `audioService`; custom managers in tests may
+ * expose either method.
  *
  * @param manager - Audio manager or service facade receiving handler calls.
  * @returns Handlers for volume, mute, stop, and resume controls.
@@ -54,7 +54,14 @@ export const createAudioHandlers = (
   setMusic: (val: number) =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
   setSfx: (val: number) =>
-    executeAudioAction(manager, 'setSfxVolume', 'setSfx', val),
+    executeAudioAction(
+      manager,
+      typeof manager.setSfxVolume === 'function'
+        ? 'setSfxVolume'
+        : 'setSFXVolume',
+      'setSfx',
+      val
+    ),
   toggleMute: () => executeAudioAction(manager, 'toggleMute', 'toggleMute'),
   stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
   resumeMusic: async () => {

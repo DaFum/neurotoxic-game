@@ -389,6 +389,14 @@ export class AudioSystem {
   }
 
   /**
+   * Sets the SFX volume and persists it (alias for `setSFXVolume`).
+   * @param vol - Volume level between 0 and 1.
+   */
+  setSfxVolume(vol: number): boolean {
+    return this.setSFXVolume(vol)
+  }
+
+  /**
    * Toggles global mute state.
    * @returns The new mute state.
    */
