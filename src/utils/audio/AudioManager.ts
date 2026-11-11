@@ -260,6 +260,12 @@ export class AudioSystem {
     if (delayMs === null) return
     setTimeout(() => {
       if (ambientStartToken !== this.ambientStartToken) return
+      // The timer runs on wall-clock time while the audio clock can stall (for
+      // example a suspended context), so re-arm until the start has passed.
+      if (getPendingTransportStartDelayMs() !== null) {
+        this.emitWhenScheduledStartArrives(ambientStartToken)
+        return
+      }
       this.emitChange()
     }, delayMs + 50)
   }

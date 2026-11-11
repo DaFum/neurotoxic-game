@@ -197,6 +197,35 @@ test('AudioManager Tests', async t => {
   )
 
   await t.test(
+    'the delayed emit waits while the audio clock has not reached the start',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      // Scheduling, the first timer check and the re-armed schedule still see a
+      // pending start; the second timer check sees it has passed.
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      const firstCall = pendingDelay.mock.callCount()
+      for (let i = 0; i < 3; i++) {
+        pendingDelay.mock.mockImplementationOnce(() => 10, firstCall + i)
+      }
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await audioManager.startAmbient()
+      const emittedBeforeStart = listener.mock.calls.length
+
+      await new Promise(resolve => setTimeout(resolve, 90))
+      assert.equal(listener.mock.calls.length, emittedBeforeStart)
+
+      await new Promise(resolve => setTimeout(resolve, 150))
+      unsubscribe()
+      assert.equal(listener.mock.calls.length, emittedBeforeStart + 1)
+    }
+  )
+
+  await t.test(
     'a stop before the scheduled transport starts skips the late emit',
     async () => {
       audioManager.stopMusic()
