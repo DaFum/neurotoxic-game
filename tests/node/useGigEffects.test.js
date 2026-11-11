@@ -170,7 +170,7 @@ describe('applyChaosJitter', async () => {
     const result = applyChaosJitter(el, true, mockRandom)
 
     assert.equal(result, true)
-    assert.equal(el.style.transform, 'translate(0px, 0px)')
+    assert.equal(el.style.transform, 'translate3d(0px, 0px, 0)')
   })
 
   test('removes transform when not in toxic mode', () => {
