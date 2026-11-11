@@ -2272,6 +2272,13 @@ test('systemReducer - LOAD_GAME migrates legacy pendingBandHQOpen to pendingOver
   )
 })
 
+test('systemReducer - LOAD_GAME drops a deferred Band HQ request from the live session', () => {
+  const liveState = { ...createInitialState(), deferredBandHQOpen: true }
+
+  const loadedState = handleLoadGame(liveState, {})
+  assert.equal(loadedState.deferredBandHQOpen, false)
+})
+
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 

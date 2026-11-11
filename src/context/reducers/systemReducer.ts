@@ -282,6 +282,9 @@ export const handleLoadGame = (
       pendingForeclosureNotices: loadedState.pendingForeclosureNotices,
       pendingBandHQOpen: loadedState.pendingBandHQOpen
     }),
+    // Transient and never persisted: a request from the live session must not
+    // replay against the loaded one.
+    deferredBandHQOpen: false,
     eventCooldowns: sanitizeEventCooldowns(
       loadedState.eventCooldowns,
       finiteNumberOr(mergedPlayer.day, 0)
