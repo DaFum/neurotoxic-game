@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import sharedClient from '../lib/redis.js'
-import { createRedisRequest, withRedisDeadline } from '../lib/redisDeadline.js'
+import { createRedisRequest } from '../lib/redisDeadline.js'
 import { connectRedisRequest } from '../lib/apiMiddleware.js'
 import { isLeaderboardRateLimited } from '../lib/leaderboard.js'
 
@@ -41,8 +41,12 @@ export default async function handler(req, res) {
     redisRequest = createRedisRequest(sharedClient)
     const client = redisRequest.client
     await connectRedisRequest(redisRequest)
-    const limited = await withRedisDeadline(client, () =>
-      isLeaderboardRateLimited(req, 'image', 100, 60, client)
+    const limited = await isLeaderboardRateLimited(
+      req,
+      'image',
+      100,
+      60,
+      client
     )
     if (limited) return res.status(429).json({ error: 'Too many requests' })
   } catch {
