@@ -1,5 +1,6 @@
 import {
   defaultStorageAdapter,
+  isStorageItemBuffered,
   listStorageKeys,
   readStorageItemChecked,
   safeStorageOperation,
@@ -23,17 +24,6 @@ type UnlockCache = {
   /** In-memory cache for O(1) duplicate checks. */
   unlocks: Set<string> | null
   lastStorageSnapshot: string | null
-  /**
-   * Marker ids this session retained in the fallback store rather than in
-   * persistent storage.
-   *
-   * @remarks
-   * `readUnlockMarkers` enumerates buffered keys, so a session-only marker is
-   * indistinguishable from a durable one by presence alone. A caller that
-   * requires crash safety needs that distinction, so the refused writes are
-   * remembered here and cleared when a later write for the same id lands.
-   */
-  sessionOnly: Set<string>
 }
 
 /**
@@ -50,7 +40,7 @@ let unlockCaches = new WeakMap<IStorageAdapter, UnlockCache>()
 const getCache = (adapter: IStorageAdapter): UnlockCache => {
   let cache = unlockCaches.get(adapter)
   if (!cache) {
-    cache = { unlocks: null, lastStorageSnapshot: null, sessionOnly: new Set() }
+    cache = { unlocks: null, lastStorageSnapshot: null }
     unlockCaches.set(adapter, cache)
   }
   return cache
@@ -184,15 +174,15 @@ const writeUnlockMarker = (
 
   if (!cache) return { added: false, persistence: 'failed' }
 
-  const sessionOnly = getCache(adapter).sessionOnly
+  const markerKey = `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`
   // Prevent duplicates in O(1) time - but only for a marker that is actually
-  // durable. An id whose write was refused is present in the set and still
-  // lost on the next load, so reporting the old verdict would make every
+  // durable. An id whose write was refused is buffered in the session fallback
+  // store and still lost on the next load, so reporting the old verdict would make every
   // retry return `session_only` for the rest of the session: the caller that
   // offers the retry could never take it. Storage may have recovered since,
   // and the only way to find out is to write again.
   const known = cache.has(unlockId)
-  if (known && !sessionOnly.has(unlockId)) {
+  if (known && !isStorageItemBuffered(markerKey, adapter)) {
     return { added: false, persistence: 'persisted' }
   }
 
@@ -202,12 +192,7 @@ const writeUnlockMarker = (
   // discoverable. Only a thrown write (the null sentinel) loses it outright.
   const markerWrite = safeStorageOperation<boolean | null>(
     'saveUnlockMarker',
-    () =>
-      writeStorageItem(
-        `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
-        '1',
-        adapter
-      ),
+    () => writeStorageItem(markerKey, '1', adapter),
     null
   )
 
@@ -217,8 +202,6 @@ const writeUnlockMarker = (
     cache.add(unlockId)
     currentUnlocks.push(unlockId)
   }
-  if (markerWrite) sessionOnly.delete(unlockId)
-  else sessionOnly.add(unlockId)
 
   // Keep the legacy aggregate for existing saves and callers. The per-unlock
   // marker is authoritative for cross-tab safety: distinct marker keys cannot

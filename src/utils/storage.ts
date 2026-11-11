@@ -228,6 +228,21 @@ export function discardBufferedStorageItem(
 }
 
 /**
+ * Whether a key currently has a buffered fallback value in memory rather than
+ * in persistent storage.
+ *
+ * @param key - Storage key.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns `true` when the key has a value retained only in the session fallback store.
+ */
+export function isStorageItemBuffered(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): boolean {
+  return fallbackStores.get(adapter)?.has(key) ?? false
+}
+
+/**
  * Removes a key from persistent storage and the in-memory fallback.
  *
  * @param key - Storage key.

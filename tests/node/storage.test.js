@@ -2,10 +2,15 @@ import assert from 'node:assert/strict'
 import { describe, test, beforeEach, afterEach } from 'node:test'
 
 import {
+  discardBufferedStorageItem,
   getSafeStorageItem,
+  isStorageItemBuffered,
+  resetStorageFallback,
   safeStorageOperation,
-  setSafeStorageItem
+  setSafeStorageItem,
+  writeStorageItem
 } from '../../src/utils/storage'
+import { InMemoryAdapter, NoopAdapter } from '../../src/utils/storageAdapter'
 
 describe('storage operation wrappers', () => {
   let origConsoleWarn
@@ -89,5 +94,37 @@ describe('storage operation wrappers', () => {
           'Storage operation failed after retries: testStorageThrow'
         )
     )
+  })
+
+  describe('isStorageItemBuffered', () => {
+    test('returns false for absent or non-buffered keys', () => {
+      assert.equal(isStorageItemBuffered('non_existent_key'), false)
+    })
+
+    test('reports true when write falls back to in-memory store and false after discard', () => {
+      const noopAdapter = new NoopAdapter()
+      assert.equal(isStorageItemBuffered('buffered_key', noopAdapter), false)
+
+      writeStorageItem('buffered_key', 'some_value', noopAdapter)
+      assert.equal(isStorageItemBuffered('buffered_key', noopAdapter), true)
+
+      discardBufferedStorageItem('buffered_key', noopAdapter)
+      assert.equal(isStorageItemBuffered('buffered_key', noopAdapter), false)
+    })
+
+    test('reports false after resetStorageFallback', () => {
+      const noopAdapter = new NoopAdapter()
+      writeStorageItem('buffered_key', 'some_value', noopAdapter)
+      assert.equal(isStorageItemBuffered('buffered_key', noopAdapter), true)
+
+      resetStorageFallback(noopAdapter)
+      assert.equal(isStorageItemBuffered('buffered_key', noopAdapter), false)
+    })
+
+    test('reports false when adapter writes succeed', () => {
+      const memAdapter = new InMemoryAdapter()
+      writeStorageItem('persisted_key', 'some_value', memAdapter)
+      assert.equal(isStorageItemBuffered('persisted_key', memAdapter), false)
+    })
   })
 })
