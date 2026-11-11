@@ -251,7 +251,9 @@ describe('App', () => {
       GAME_PHASES.CLINIC,
       GAME_PHASES.ASSETS,
       GAME_PHASES.TOUR_PREP,
-      GAME_PHASES.RUN_SUMMARY
+      GAME_PHASES.RUN_SUMMARY,
+      GAME_PHASES.GIG,
+      GAME_PHASES.PRACTICE
     ]
 
     for (const scene of scenesWithoutHud) {
@@ -262,7 +264,7 @@ describe('App', () => {
       unmount()
     }
 
-    mockGameState.currentScene = GAME_PHASES.GIG
+    mockGameState.currentScene = GAME_PHASES.PRE_GIG
     const renderResult = render(<App />)
     expect(screen.getByTestId('hud')).toBeTruthy()
     renderResult.unmount()

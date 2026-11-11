@@ -12,6 +12,7 @@ import { ToxicHazardTicker } from '../ui/hud/ToxicHazardTicker'
 import { OverloadWarning } from '../ui/hud/OverloadWarning'
 import { OverloadMeter } from '../ui/hud/OverloadMeter'
 import { CorruptionMeter } from '../ui/hud/CorruptionMeter'
+import { GigPedalControls } from '../ui/hud/GigPedalControls'
 import type { GigHUDStats } from '../types/rhythmGame'
 
 interface GigHUDProps {
@@ -71,7 +72,7 @@ export const GigHUD = memo(function GigHUD({
         isToxicMode={isToxicMode}
       />
 
-      {/* Top-edge meter bar; the global HUD hides its band-status panel during gigs to free this space. */}
+      {/* Top-edge meter bar. */}
       <div
         data-chatter-avoid=''
         className='absolute top-3 right-20 z-(--z-stage-overlay) flex items-start gap-3 pointer-events-none max-sm:top-18 max-sm:right-3 max-sm:flex-col max-sm:items-end max-sm:scale-75 max-sm:origin-top-right'
@@ -86,6 +87,8 @@ export const GigHUD = memo(function GigHUD({
           isDanger={visualStatus.corruptionDanger}
         />
       </div>
+
+      <GigPedalControls className='absolute top-24 right-3 z-(--z-stage-overlay) flex flex-col items-end gap-2 pointer-events-none text-xs font-mono max-sm:top-28' />
 
       <StatsOverlay score={score} combo={combo} accuracy={accuracy} />
 

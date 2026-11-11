@@ -6,6 +6,9 @@ import { render, fireEvent, cleanup } from '@testing-library/react'
 vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
+vi.mock('../../src/ui/hud/GigPedalControls.tsx', () => ({
+  GigPedalControls: () => null
+}))
 
 import { GigHUD } from '../../src/components/GigHUD.tsx'
 
