@@ -1128,7 +1128,10 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
     assert.deepEqual(nextState.activeStoryFlags, [FLAGS.SAW_CRISIS_50])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
-    assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis']
+    })
     assert.ok(Object.hasOwn(nextState.eventCooldowns, 'cooldown-a'))
     assert.deepEqual(Object.keys(nextState.eventCooldowns), ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
@@ -2233,7 +2236,7 @@ test('systemReducer - LOAD_GAME logs "Game Loaded" only for a load it accepts', 
   assert.equal(loadedCalls(), 1)
 })
 
-test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
+test('systemReducer - LOAD_GAME sanitizes legacy pending risk event descriptors into pendingOverlay', () => {
   const initialState = createInitialState()
 
   const validState = handleLoadGame(initialState, {
@@ -2243,10 +2246,13 @@ test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () =>
       conditionLoss: 15
     }
   })
-  assert.deepEqual(validState.pendingRiskEvent, {
-    assetId: 'asset_1',
-    eventType: 'fire',
-    conditionLoss: 15
+  assert.deepEqual(validState.pendingOverlay, {
+    kind: 'risk_event',
+    event: {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
   })
 
   const invalidState = handleLoadGame(initialState, {
@@ -2256,7 +2262,7 @@ test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () =>
       conditionLoss: Number.POSITIVE_INFINITY
     }
   })
-  assert.equal(invalidState.pendingRiskEvent, null)
+  assert.equal(invalidState.pendingOverlay, null)
 })
 
 test('systemReducer - LOAD_GAME migrates legacy pendingBandHQOpen to pendingOverlay', () => {
@@ -2382,12 +2388,17 @@ test('systemReducer - pending modal state', async t => {
       const state = createInitialState()
 
       const next = handleSetPendingSupplyStopInventory(state, inventory)
-      assert.deepEqual(next.pendingSupplyStopInventory, inventory)
+      assert.deepEqual(next.pendingOverlay, {
+        kind: 'supply_stop',
+        inventory
+      })
       // Settled: re-dispatching the stored value changes nothing observable.
       assert.deepEqual(
-        handleSetPendingSupplyStopInventory(next, inventory)
-          .pendingSupplyStopInventory,
-        inventory
+        handleSetPendingSupplyStopInventory(next, inventory).pendingOverlay,
+        {
+          kind: 'supply_stop',
+          inventory
+        }
       )
     }
   )
@@ -2410,22 +2421,23 @@ test('systemReducer - pending modal state', async t => {
         null
       ])
 
+      assert.equal(next.pendingOverlay?.kind, 'supply_stop')
+      const items = next.pendingOverlay?.inventory
       assert.ok(
-        next.pendingSupplyStopInventory.every(item => item.cost >= 0),
+        items?.every(item => item.cost >= 0),
         'no negative-cost item is offered'
       )
       assert.ok(
-        next.pendingSupplyStopInventory.some(item => item.id === 'strings')
+        items?.some(item => item.id === 'strings')
       )
       // The shop-item schema clamps a negative cost rather than dropping the item.
       assert.equal(
-        next.pendingSupplyStopInventory.find(item => item.id === 'bad')?.cost,
+        items?.find(item => item.id === 'bad')?.cost,
         0
       )
       // Nothing usable left is no open shop.
       assert.equal(
-        handleSetPendingSupplyStopInventory(state, ['x', null])
-          .pendingSupplyStopInventory,
+        handleSetPendingSupplyStopInventory(state, ['x', null]).pendingOverlay,
         null
       )
     }
@@ -2436,7 +2448,7 @@ test('systemReducer - pending modal state', async t => {
     () => {
       const state = {
         ...createInitialState(),
-        pendingSupplyStopInventory: null
+        pendingOverlay: null
       }
 
       assert.equal(handleSetPendingSupplyStopInventory(state, null), state)
@@ -2444,7 +2456,7 @@ test('systemReducer - pending modal state', async t => {
   )
 
   await t.test('sets and clears pending risk event state', () => {
-    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const state = { ...createInitialState(), pendingOverlay: null }
     const pendingRiskEvent = {
       assetId: 'asset_1',
       eventType: 'fire',
@@ -2453,20 +2465,23 @@ test('systemReducer - pending modal state', async t => {
 
     const nextState = handleSetPendingRiskEvent(state, pendingRiskEvent)
 
-    assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'risk_event',
+      event: pendingRiskEvent
+    })
     assert.equal(
       handleSetPendingRiskEvent(nextState, pendingRiskEvent),
       nextState
     )
     assert.equal(handleSetPendingRiskEvent(state, null), state)
     assert.equal(
-      handleSetPendingRiskEvent(nextState, null).pendingRiskEvent,
+      handleSetPendingRiskEvent(nextState, null).pendingOverlay,
       null
     )
   })
 
   await t.test('rejects malformed pending risk event payloads', () => {
-    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const state = { ...createInitialState(), pendingOverlay: null }
     const invalidPayloads = [
       [],
       { assetId: 'asset_1', eventType: 'fire', conditionLoss: Infinity },
@@ -2483,12 +2498,15 @@ test('systemReducer - pending modal state', async t => {
     )
     const nextState = handleSetPendingRiskEvent(state, hostilePayload)
 
-    assert.deepEqual(nextState.pendingRiskEvent, {
-      assetId: 'asset_1',
-      eventType: 'fire',
-      conditionLoss: 15
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'risk_event',
+      event: {
+        assetId: 'asset_1',
+        eventType: 'fire',
+        conditionLoss: 15
+      }
     })
-    assert.equal(Object.hasOwn(nextState.pendingRiskEvent, '__proto__'), false)
+    assert.equal(Object.hasOwn(nextState.pendingOverlay.event, '__proto__'), false)
   })
 })
 
@@ -2544,7 +2562,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       })
 
       assert.equal(next.assets[0].condition, 99.7)
-      assert.equal(next.pendingRiskEvent, null)
+      assert.equal(next.pendingOverlay, null)
       assert.equal(Number.isFinite(next.rngSeed), true)
       assert.equal(next.rngSeed, nextSeed(initialState.rngSeed))
     }
@@ -2653,7 +2671,10 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
             baseRiskEventChance: 1
           }
         ],
-        pendingRiskEvent,
+        pendingOverlay: {
+          kind: 'risk_event',
+          event: pendingRiskEvent
+        },
         toasts: [],
         activeQuests: []
       }
@@ -2663,7 +2684,10 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         nextRngSeed: initialState.rngSeed
       })
 
-      assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+      assert.deepEqual(nextState.pendingOverlay, {
+        kind: 'risk_event',
+        event: pendingRiskEvent
+      })
       assert.equal(
         nextState.toasts.at(-1)?.messageKey,
         'assets:risk.event.fire'
@@ -2699,7 +2723,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         ...initialState,
         player: { ...initialState.player, day: 1 },
         assets: [makeAsset('asset_a'), makeAsset('asset_b')],
-        pendingRiskEvent: null,
+        pendingOverlay: null,
         toasts: [existingToast],
         activeQuests: []
       }
@@ -2940,29 +2964,33 @@ test('an open supply-stop shop survives a JSON round trip and is capped on load'
   const items = [{ id: 'item_1', name: 'Snack', cost: 5 }]
   const loaded = handleLoadGame(
     createInitialState(),
-    JSON.parse(JSON.stringify({ pendingSupplyStopInventory: items }))
+    JSON.parse(JSON.stringify({ pendingOverlay: { kind: 'supply_stop', inventory: items } }))
   )
   // The sanitizer's copies are prototype-less; compare by content.
   assert.deepEqual(
-    JSON.parse(JSON.stringify(loaded.pendingSupplyStopInventory)),
-    items
+    JSON.parse(JSON.stringify(loaded.pendingOverlay)),
+    { kind: 'supply_stop', inventory: items }
   )
 
   const flood = Array.from({ length: 100 }, (_, i) => ({ id: i, cost: 1 }))
   const capped = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: [...flood, 'junk', null]
+    pendingOverlay: { kind: 'supply_stop', inventory: [...flood, 'junk', null] }
   })
-  assert.equal(capped.pendingSupplyStopInventory.length, 24)
+  assert.equal(capped.pendingOverlay?.kind, 'supply_stop')
+  assert.equal(capped.pendingOverlay?.inventory?.length, 24)
 })
 
 test('restored supply-stop items go through the shop item field schema', () => {
   const loaded = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: [
-      { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
-      { id: 'bad_cost', cost: 'free' }
-    ]
+    pendingOverlay: {
+      kind: 'supply_stop',
+      inventory: [
+        { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
+        { id: 'bad_cost', cost: 'free' }
+      ]
+    }
   })
-  const [first, second] = loaded.pendingSupplyStopInventory
+  const [first, second] = loaded.pendingOverlay?.inventory ?? []
   // A negative cost can never turn a purchase into income.
   assert.equal(first.cost, 0)
   assert.equal(Object.hasOwn(first, 'secret'), false)
@@ -2975,9 +3003,9 @@ test('restored supply-stop items drop forbidden prototype keys', () => {
     '[{"id":"x","cost":1,"__proto__":{"polluted":true},"constructor":{"x":1}}]'
   )
   const loaded = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: hostile
+    pendingOverlay: { kind: 'supply_stop', inventory: hostile }
   })
-  const [item] = loaded.pendingSupplyStopInventory
+  const [item] = loaded.pendingOverlay?.inventory ?? []
   assert.equal(Object.hasOwn(item, '__proto__'), false)
   assert.equal(Object.hasOwn(item, 'constructor'), false)
   assert.equal({}.polluted, undefined)
@@ -2986,22 +3014,22 @@ test('restored supply-stop items drop forbidden prototype keys', () => {
 test('loading a save without a shop closes the live session shop', () => {
   const live = {
     ...createInitialState(),
-    pendingSupplyStopInventory: [{ id: 'x', cost: 1 }]
+    pendingOverlay: { kind: 'supply_stop', inventory: [{ id: 'x', cost: 1 }] }
   }
-  assert.equal(handleLoadGame(live, {}).pendingSupplyStopInventory, null)
+  assert.equal(handleLoadGame(live, {}).pendingOverlay, null)
   assert.equal(
-    handleLoadGame(live, { pendingSupplyStopInventory: 'nope' })
-      .pendingSupplyStopInventory,
+    handleLoadGame(live, { pendingOverlay: null })
+      .pendingOverlay,
     null
   )
 })
 
 test('a saved supply-stop list with nothing usable restores no open shop', () => {
-  for (const pendingSupplyStopInventory of [[], ['junk', null, 5]]) {
+  for (const inventory of [[], ['junk', null, 5]]) {
     const loaded = handleLoadGame(createInitialState(), {
-      pendingSupplyStopInventory
+      pendingOverlay: { kind: 'supply_stop', inventory }
     })
-    assert.equal(loaded.pendingSupplyStopInventory, null)
+    assert.equal(loaded.pendingOverlay, null)
   }
 })
 
@@ -3010,15 +3038,18 @@ test('a saved supply-stop item with an inherited effect type loads without its e
   for (const type of ['__proto__', 'constructor', 'toString']) {
     const hostile = JSON.parse(
       JSON.stringify({
-        pendingSupplyStopInventory: [
-          { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
-          good
-        ]
+        pendingOverlay: {
+          kind: 'supply_stop',
+          inventory: [
+            { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
+            good
+          ]
+        }
       })
     )
     // Loading must not throw, and no effect with an inherited type survives.
     const loaded = handleLoadGame(createInitialState(), hostile)
-    const items = loaded.pendingSupplyStopInventory
+    const items = loaded.pendingOverlay?.inventory
     assert.ok(Array.isArray(items), type)
     for (const item of items) {
       assert.equal(Object.hasOwn(item, 'effect'), false, type)

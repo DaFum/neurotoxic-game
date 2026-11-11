@@ -121,7 +121,7 @@ test('AdvanceDay handler records liability foreclosure notices', () => {
   const initialState = {
     ...baseState,
     currentScene: GAME_PHASES.OVERWORLD,
-    pendingForeclosureNotices: ['tourbus_chassis'],
+    pendingOverlay: { kind: 'foreclosure', notices: ['tourbus_chassis'] },
     player: {
       ...baseState.player,
       money: 0,
@@ -165,10 +165,10 @@ test('AdvanceDay handler records liability foreclosure notices', () => {
     nextRngSeed: 54321
   })
 
-  assert.deepEqual(nextState.pendingForeclosureNotices, [
-    'tourbus_chassis',
-    'studio_chassis'
-  ])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['tourbus_chassis', 'studio_chassis']
+  })
   assert.equal(
     nextState.assets.some(asset => asset.id === 'defaulted_asset'),
     false
@@ -235,13 +235,16 @@ test('AdvanceDay Integration - zero-condition assets are foreclosed through ASSE
     ),
     false
   )
-  assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['tourbus_chassis']
+  })
 })
 
 test('Game reducer dismisses foreclosure notices by kind', () => {
   const initialState = {
     ...createInitialState(),
-    pendingForeclosureNotices: ['tourbus_chassis', 'studio_chassis']
+    pendingOverlay: { kind: 'foreclosure', notices: ['tourbus_chassis', 'studio_chassis'] }
   }
 
   const nextState = gameReducer(initialState, {
@@ -249,7 +252,10 @@ test('Game reducer dismisses foreclosure notices by kind', () => {
     payload: { kind: 'tourbus_chassis' }
   })
 
-  assert.deepEqual(nextState.pendingForeclosureNotices, ['studio_chassis'])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['studio_chassis']
+  })
 })
 
 test('AdvanceDay handler records the first fired asset risk event', () => {
@@ -301,10 +307,13 @@ test('AdvanceDay handler records the first fired asset risk event', () => {
     nextRngSeed: 54321
   })
 
-  assert.deepEqual(nextState.pendingRiskEvent, {
-    assetId: 'risk_asset_1',
-    eventType: 'fire',
-    conditionLoss: 15
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'risk_event',
+    event: {
+      assetId: 'risk_asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
   })
   assert.equal(
     nextState.toasts.filter(toast => toast.type === 'warning').length,
@@ -353,7 +362,7 @@ test('AdvanceDay payloadless dispatch derives the same deterministic stream as a
   const viaPayloadless = handleAdvanceDay(makeState(), { rng })
 
   // Risk events fire on the payloadless path too, with identical results.
-  assert.notEqual(viaPayloadless.pendingRiskEvent, null)
+  assert.notEqual(viaPayloadless.pendingOverlay, null)
   assert.deepEqual(viaPayloadless, viaCreator)
 })
 

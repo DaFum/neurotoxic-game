@@ -402,14 +402,9 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   const pendingForeclosureNotices = Array.from(
     new Set([
       ...existingOverlayNotices,
-      ...(nextState.pendingForeclosureNotices || [])
+      ...foreclosedKinds
     ])
   )
-  for (const kind of foreclosedKinds) {
-    if (!pendingForeclosureNotices.includes(kind)) {
-      pendingForeclosureNotices.push(kind)
-    }
-  }
 
   const canSetForeclosureOverlay =
     !nextState.pendingOverlay || nextState.pendingOverlay.kind === 'foreclosure'
@@ -418,8 +413,7 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
     ...nextState,
     pendingOverlay: canSetForeclosureOverlay
       ? { kind: 'foreclosure', notices: pendingForeclosureNotices }
-      : nextState.pendingOverlay,
-    pendingForeclosureNotices
+      : nextState.pendingOverlay
   }
   return nextState
 }

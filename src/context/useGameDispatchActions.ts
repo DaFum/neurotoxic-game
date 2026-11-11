@@ -258,7 +258,7 @@ type BaseGameDispatchActions = {
   endGig: () => void
   setPendingBandHQOpen: (isOpen: boolean) => void
   setPendingSupplyStopInventory: (
-    inventory: GameState['pendingSupplyStopInventory']
+    inventory: import('../types/components').PurchaseItem[] | null
   ) => void
   dismissForeclosureNotice: (
     kind: Parameters<typeof dismissForeclosureNoticeAction>[0]

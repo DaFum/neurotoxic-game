@@ -9,7 +9,12 @@ const mockDismissForeclosureNotice = mock.fn()
 mock.module('../../src/context/GameState', {
   namedExports: {
     useGameSelector: mock.fn(selector =>
-      selector({ pendingForeclosureNotices: mockPendingForeclosureNotices })
+      selector({
+        pendingOverlay:
+          mockPendingForeclosureNotices.length > 0
+            ? { kind: 'foreclosure', notices: mockPendingForeclosureNotices }
+            : null
+      })
     ),
     useGameActions: mock.fn(() => ({
       dismissForeclosureNotice: mockDismissForeclosureNotice

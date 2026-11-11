@@ -1921,9 +1921,9 @@ const MAX_SUPPLY_STOP_ITEMS = 24
  */
 export const sanitizeSupplyStopInventory = (
   value: unknown
-): GameState['pendingSupplyStopInventory'] => {
+): import('../../../types/components').PurchaseItem[] | null => {
   if (!Array.isArray(value)) return null
-  const items: NonNullable<GameState['pendingSupplyStopInventory']> = []
+  const items: import('../../../types/components').PurchaseItem[] = []
   for (
     let i = 0;
     i < value.length && items.length < MAX_SUPPLY_STOP_ITEMS;

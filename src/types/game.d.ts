@@ -351,11 +351,8 @@ export interface GameState {
    * Transient: `useBandHQModal` re-dispatches it once the slot is free.
    */
   deferredBandHQOpen?: boolean
-  pendingSupplyStopInventory: PurchaseItem[] | null
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null
-  pendingForeclosureNotices: AssetKind[]
-  pendingRiskEvent: RiskEventDescriptor | null
   completedMilestones: string[]
   // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
   assets: import('./assets').LongTermAsset[]
