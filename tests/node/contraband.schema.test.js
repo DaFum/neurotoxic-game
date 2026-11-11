@@ -273,6 +273,25 @@ describe('Contraband Schema (with imagePrompt)', () => {
       )
     })
 
+    it('keeps duration on a valid relic', () => {
+      const result = validateContrabandItem({
+        id: 'c_good_relic',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_good_relic.name',
+        type: 'relic',
+        effectType: 'stamina',
+        value: 10,
+        description: 'items:contraband.c_good_relic.description',
+        rarity: 'rare',
+        icon: 'icon_test',
+        stackable: false,
+        duration: 2
+      })
+
+      assert.equal(result.ok, true)
+      assert.equal(result.value.duration, 2)
+    })
+
     it('accepts instantaneous and non-stackable consumables without duration or maxStacks', () => {
       const instantaneous = validateContrabandItem({
         id: 'c_instant_consumable',
