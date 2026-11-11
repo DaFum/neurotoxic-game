@@ -61,7 +61,6 @@ export const ClinicScene = () => {
               enhanceCostFame={enhanceCostFame}
               healMember={healMember}
               enhanceMember={enhanceMember}
-              graftNeuroOverclock={graftNeuroOverclock}
               onRequestGraft={targetMember =>
                 setActiveModal({ kind: 'graft', member: targetMember })
               }

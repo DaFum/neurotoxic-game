@@ -119,7 +119,7 @@ describe('clinicLogicUtils', () => {
         {
           isAvailable: false,
           reasonKey: 'ui:clinic.fullyRested',
-          defaultReason: 'Member is already relaxed'
+          defaultReason: 'Member is already fully rested'
         }
       )
     })

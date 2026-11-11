@@ -73,7 +73,7 @@ export type ClinicAction =
   | { type: 'heal'; member: BandMember | null | undefined }
   | { type: 'enhance'; member: BandMember | null | undefined; traitId: string }
   | { type: 'graft'; member: BandMember | null | undefined; traitId?: string }
-  | { type: 'therapy'; member?: BandMember | null | undefined }
+  | { type: 'therapy'; member: BandMember | null | undefined }
 
 /**
  * Relevant player and economic state needed to evaluate clinic action availability.
@@ -198,7 +198,7 @@ export const getClinicActionAvailability = (
         return {
           isAvailable: false,
           reasonKey: 'ui:clinic.fullyRested',
-          defaultReason: 'Member is already relaxed'
+          defaultReason: 'Member is already fully rested'
         }
       }
       return { isAvailable: true }

@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
-import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
-import { GraftModal } from './GraftModal'
 import { hasTrait, NEURO_OVERCLOCK_TRAIT_ID } from '../../utils/traitUtils'
 import {
   getClinicActionAvailability,
@@ -41,13 +39,11 @@ export const ClinicMemberCard = ({
   enhanceCostFame,
   healMember,
   enhanceMember,
-  graftNeuroOverclock,
   onRequestGraft
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
   const hasGraft = hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)
-  const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
 
   const healAvailability = getClinicActionAvailability(
     { type: 'heal', member },
@@ -170,11 +166,7 @@ export const ClinicMemberCard = ({
             {disabled => (
               <GlitchButton
                 onClick={() => {
-                  if (onRequestGraft) {
-                    onRequestGraft(member)
-                  } else {
-                    setIsGraftModalOpen(true)
-                  }
+                  onRequestGraft(member)
                 }}
                 disabled={disabled}
                 variant='danger'
@@ -193,24 +185,6 @@ export const ClinicMemberCard = ({
           </ActionButtonWrapper>
         </div>
       </div>
-
-      {!onRequestGraft && (
-        <GraftModal
-          isOpen={isGraftModalOpen}
-          onClose={() => setIsGraftModalOpen(false)}
-          onConfirm={() => {
-            if (memberId) {
-              graftNeuroOverclock(memberId)
-            }
-            setIsGraftModalOpen(false)
-          }}
-          memberName={
-            member.name ||
-            t('ui:clinic.unknown_member', { defaultValue: 'Unknown' })
-          }
-          cost={CLINIC_GRAFT_COST}
-        />
-      )}
     </m.div>
   )
 }
