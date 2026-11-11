@@ -137,3 +137,33 @@ export interface BandState {
   }>
   [key: string]: unknown
 }
+
+/**
+ * Discriminated union of clinic treatment actions that can be evaluated for availability.
+ */
+export type ClinicAction =
+  | { type: 'heal'; member: BandMember | null | undefined }
+  | { type: 'enhance'; member: BandMember | null | undefined; traitId: string }
+  | { type: 'graft'; member: BandMember | null | undefined; traitId?: string }
+  | { type: 'therapy'; member: BandMember | null | undefined }
+
+/**
+ * Relevant player and economic state needed to evaluate clinic action availability.
+ */
+export interface ClinicActionState {
+  spendableMoney?: number
+  fame?: number
+  player?: { fame?: number; money?: number } | null
+  healCostMoney?: number
+  enhanceCostFame?: number
+  graftCostMoney?: number
+}
+
+/**
+ * Result of checking whether a clinic action can currently be performed.
+ */
+export interface ClinicActionAvailability {
+  isAvailable: boolean
+  reasonKey?: string
+  defaultReason?: string
+}

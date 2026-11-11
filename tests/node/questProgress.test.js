@@ -3,15 +3,7 @@ import assert from 'node:assert/strict'
 import { QuestProgress, QuestEvents } from '../../src/utils/questProgress.ts'
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer.ts'
 import { GAME_PHASES } from '../../src/context/gameConstants.ts'
-import {
-  createGigCompletedQuestEvent,
-  createGoodGigQuestEvent,
-  createSmallVenueGoodQuestEvent
-} from '../../src/quests/producers/gigQuestEvents.ts'
-import {
-  createVenueGigCompletedQuestEvent,
-  createVenueGoodGigQuestEvent
-} from '../../src/quests/producers/venueQuestEvents.ts'
+import { createGoodGigQuestEvent } from '../../src/quests/producers/gigQuestEvents.ts'
 
 test('questProgress: applies events without mutating progress rules', async t => {
   await t.test('does not dynamically mutate or replace rule objects', () => {
