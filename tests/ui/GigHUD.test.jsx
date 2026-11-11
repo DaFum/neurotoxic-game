@@ -18,11 +18,10 @@ vi.mock('../../src/context/GameState', () => ({
   })
 }))
 
-vi.mock('../../src/utils/audio/audioEngine', () => ({
-  audioService: {
-    setNeuroDecimator: mockSetNeuroDecimator
-  }
-}))
+vi.mock('../../src/utils/audio/audioEngine', () => {
+  const audioApi = { setNeuroDecimator: mockSetNeuroDecimator }
+  return { audioManager: audioApi, audioService: audioApi }
+})
 
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 vi.mock('../../src/components/HecklerOverlay.tsx', () => ({

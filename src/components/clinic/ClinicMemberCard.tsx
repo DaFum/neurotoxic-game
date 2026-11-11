@@ -5,10 +5,8 @@ import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { hasTrait, NEURO_OVERCLOCK_TRAIT_ID } from '../../utils/traitUtils'
-import {
-  getClinicActionAvailability,
-  type ClinicActionAvailability
-} from '../../utils/clinicLogicUtils'
+import { getClinicActionAvailability } from '../../utils/clinicLogicUtils'
+import type { ClinicActionAvailability } from '../../types/band'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
