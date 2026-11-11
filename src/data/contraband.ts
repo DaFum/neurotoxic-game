@@ -169,7 +169,6 @@ const CONTRABAND_DB = [
     type: 'relic',
     effectType: 'gig_modifier',
     value: 0.12,
-    duration: 2,
     description: 'items:contraband.c_sonic_resonator.description',
     rarity: 'rare',
     icon: 'icon_resonator',
@@ -234,7 +233,6 @@ const CONTRABAND_DB = [
     type: 'relic',
     effectType: 'practice_gain',
     value: 10,
-    duration: 3,
     description: 'items:contraband.c_motivational_gramophone.description',
     rarity: 'rare',
     icon: 'icon_gramophone',
@@ -342,7 +340,6 @@ const CONTRABAND_DB = [
     type: 'relic',
     effectType: 'gig_modifier',
     value: 0.2,
-    duration: 2,
     description: 'items:contraband.c_abyssal_microphone.description',
     rarity: 'epic',
     icon: 'icon_mic',
@@ -478,7 +475,6 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_cursed_setlist',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   {
@@ -492,7 +488,6 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_blood_pick',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   {
@@ -506,7 +501,6 @@ const CONTRABAND_DB = [
     rarity: 'rare',
     icon: 'icon_abyssal_pendant',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   // Sold by the `reststop_trunk_dealer` event (granted through the stash path);
@@ -522,7 +516,6 @@ const CONTRABAND_DB = [
     rarity: 'uncommon',
     icon: 'icon_overdrive',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   }
 ]
