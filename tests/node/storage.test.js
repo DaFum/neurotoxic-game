@@ -90,9 +90,7 @@ describe('storage operation wrappers', () => {
       error =>
         error instanceof Error &&
         error.name === 'StorageError' &&
-        error.message.includes(
-          'Storage operation failed after retries: testStorageThrow'
-        )
+        error.message.includes('Storage operation failed: testStorageThrow')
     )
   })
 
@@ -122,9 +120,7 @@ describe('storage operation wrappers', () => {
       error =>
         error instanceof Error &&
         error.name === 'StorageError' &&
-        error.message.includes(
-          'Storage operation failed after retries: testSingleShotThrow'
-        )
+        error.message.includes('Storage operation failed: testSingleShotThrow')
     )
     assert.equal(callCount, 1)
   })

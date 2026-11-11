@@ -46,6 +46,7 @@ type ContrabandEquipmentItem = BaseContrabandItem & {
 
 type ContrabandRelicItem = BaseContrabandItem & {
   type: 'relic'
+  duration?: number
 }
 
 export type SanitizedContrabandItem =
@@ -159,9 +160,6 @@ export const validateContrabandItem = (
     }
   }
   if (item.type === 'relic') {
-    if (item.duration !== undefined) {
-      errors.push('relics must not specify duration')
-    }
     if (item.maxStacks !== undefined) {
       errors.push('relics must not specify maxStacks')
     }
@@ -200,7 +198,10 @@ export const validateContrabandItem = (
     } else if (item.type === 'relic') {
       sanitized = {
         ...base,
-        type: 'relic'
+        type: 'relic',
+        ...(item.duration !== undefined
+          ? { duration: item.duration as number }
+          : {})
       }
     }
   }

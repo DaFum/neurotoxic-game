@@ -245,7 +245,7 @@ describe('Contraband Schema (with imagePrompt)', () => {
       assert.ok(result.errors.includes('equipment must not specify maxStacks'))
     })
 
-    it('rejects relic items with duration, maxStacks, or applyOnAdd', () => {
+    it('rejects relic items with maxStacks or applyOnAdd but allows duration', () => {
       const result = validateContrabandItem({
         id: 'c_bad_relic',
         imagePrompt: 'ITEM_TEST',
@@ -263,7 +263,10 @@ describe('Contraband Schema (with imagePrompt)', () => {
       })
 
       assert.equal(result.ok, false)
-      assert.ok(result.errors.includes('relics must not specify duration'))
+      assert.equal(
+        result.errors.includes('relics must not specify duration'),
+        false
+      )
       assert.ok(result.errors.includes('relics must not specify maxStacks'))
       assert.ok(
         result.errors.includes('only equipment may use applyOnAdd=true')

@@ -54,7 +54,7 @@ export function runSafeStorageOperation<T>(
     return fn()
   } catch (error) {
     const storageError = new StorageError(
-      `Storage operation failed after retries: ${operation}`,
+      `Storage operation failed: ${operation}`,
       {
         originalError: error instanceof Error ? error.message : String(error)
       }

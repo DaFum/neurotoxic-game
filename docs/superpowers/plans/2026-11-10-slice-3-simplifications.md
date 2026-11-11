@@ -634,7 +634,7 @@ Thread `normalizedSocial` into ticket and merch calculators, removing duplicated
       Expected: PASS
 
 - [x] **Step 2: Move continuation callback to scene**
-      Accept `onContinue?: () => void` in `useRoadieLogic`. In `RoadieRunScene.tsx`, declare `handleComplete` before the `useRoadieLogic` call and pass `onContinue: handleComplete`. Move the existing ten-second completion fallback timer into the scene (clear it when it fires and on unmount) so the hook stays scene-agnostic; add fallback-timer and unmount-cleanup coverage. Remove the Redux `currentScene` subscription and internal scene-changing timers from `useRoadieLogic`, aligning with the architecture invariant that minigames stay scene-agnostic.
+      In `RoadieRunScene.tsx`, own `handleComplete` (the continuation to `GIG`) in the scene and do not add an `onContinue` option to `useRoadieLogic`. Move the existing ten-second completion fallback timer into the scene (clear it when it fires and on unmount) so the hook stays scene-agnostic; add fallback-timer and unmount-cleanup coverage. Remove the Redux `currentScene` subscription and internal scene-changing timers from `useRoadieLogic`, aligning with the architecture invariant that minigames stay scene-agnostic.
 
 - [x] **Step 3: Run tests and typecheck**
       Run: `pnpm exec vitest run tests/ui/useRoadieLogic.test.jsx tests/ui/RoadieRunScene.test.jsx`

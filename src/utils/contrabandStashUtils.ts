@@ -245,7 +245,8 @@ export const addContrabandToBand = (
     ...item,
     instanceId,
     remainingDuration:
-      item.type === 'consumable' && isFiniteNumber(item.duration)
+      (item.type === 'consumable' || item.type === 'relic') &&
+      isFiniteNumber(item.duration)
         ? (item.duration as number)
         : null,
     applied: item.type === 'equipment' && !!item.applyOnAdd,

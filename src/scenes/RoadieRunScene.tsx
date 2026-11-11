@@ -24,8 +24,7 @@ export const RoadieRunScene = () => {
     [changeScene]
   )
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic({
-    requireContrabandBriefing: true,
-    onContinue: handleComplete
+    requireContrabandBriefing: true
   })
   const [showControls, setShowControls] = useState(false)
   const startButtonRef = useRef<HTMLButtonElement | null>(null)

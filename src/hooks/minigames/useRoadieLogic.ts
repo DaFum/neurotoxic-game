@@ -159,7 +159,6 @@ function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
 
 export interface RoadieLogicOptions {
   requireContrabandBriefing?: boolean
-  onContinue?: () => void
 }
 
 /**
@@ -169,10 +168,8 @@ export interface RoadieLogicOptions {
  * @returns Mutable stage state, UI state, movement controls, and update callback.
  */
 export const useRoadieLogic = ({
-  requireContrabandBriefing = false,
-  onContinue
+  requireContrabandBriefing = false
 }: RoadieLogicOptions = {}) => {
-  void onContinue
   const band = useGameSelector(state => state.band)
   const expedition = useGameSelector(state => state.expedition)
   const { completeRoadieMinigame } = useGameActions()
