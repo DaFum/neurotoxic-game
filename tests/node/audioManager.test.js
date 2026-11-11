@@ -204,11 +204,12 @@ test('AudioManager Tests', async t => {
       mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
         async () => false
       )
-      // Scheduling, the first timer check and the re-armed schedule still see a
-      // pending start; the second timer check sees it has passed.
+      // Scheduling and the first timer check still see a pending start; the
+      // second timer check sees it has passed. The re-armed schedule must reuse
+      // the first timer's reading: a read of its own would already see `null`.
       const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
       const firstCall = pendingDelay.mock.callCount()
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 2; i++) {
         pendingDelay.mock.mockImplementationOnce(() => 10, firstCall + i)
       }
       const listener = mock.fn()

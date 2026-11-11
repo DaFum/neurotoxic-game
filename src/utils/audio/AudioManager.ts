@@ -254,16 +254,23 @@ export class AudioSystem {
    * A stop or a newer ambient start invalidates the token and skips the emit.
    *
    * @param ambientStartToken - Token of the ambient start that scheduled playback.
+   * @param delayMs - Remaining delay already read by the caller, or `null` when
+   * no start is pending. Defaults to reading it now.
    */
-  private emitWhenScheduledStartArrives(ambientStartToken: number): void {
-    const delayMs = getPendingTransportStartDelayMs()
+  private emitWhenScheduledStartArrives(
+    ambientStartToken: number,
+    delayMs: number | null = getPendingTransportStartDelayMs()
+  ): void {
     if (delayMs === null) return
     setTimeout(() => {
       if (ambientStartToken !== this.ambientStartToken) return
       // The timer runs on wall-clock time while the audio clock can stall (for
       // example a suspended context), so re-arm until the start has passed.
-      if (getPendingTransportStartDelayMs() !== null) {
-        this.emitWhenScheduledStartArrives(ambientStartToken)
+      const remainingMs = getPendingTransportStartDelayMs()
+      if (remainingMs !== null) {
+        // Reuse this reading: a second read could see the start already passed
+        // and schedule nothing.
+        this.emitWhenScheduledStartArrives(ambientStartToken, remainingMs)
         return
       }
       this.emitChange()
