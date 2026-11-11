@@ -2272,6 +2272,13 @@ test('systemReducer - LOAD_GAME migrates legacy pendingBandHQOpen to pendingOver
   )
 })
 
+test('systemReducer - LOAD_GAME drops a deferred Band HQ request from the live session', () => {
+  const liveState = { ...createInitialState(), deferredBandHQOpen: true }
+
+  const loadedState = handleLoadGame(liveState, {})
+  assert.equal(loadedState.deferredBandHQOpen, false)
+})
+
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 
@@ -2321,6 +2328,27 @@ test('systemReducer - pending modal state', async t => {
       }
 
       assert.equal(handleSetPendingBandHQOpen(closedState, false), closedState)
+    }
+  )
+
+  await t.test(
+    'defers a Band HQ request while another overlay is pending',
+    () => {
+      const riskOverlay = {
+        kind: 'risk_event',
+        event: { kind: 'risk', id: 'r1' }
+      }
+      const state = { ...createInitialState(), pendingOverlay: riskOverlay }
+
+      const deferred = handleSetPendingBandHQOpen(state, true)
+      assert.equal(deferred.pendingOverlay, riskOverlay)
+      assert.equal(deferred.deferredBandHQOpen, true)
+      assert.equal(handleSetPendingBandHQOpen(deferred, true), deferred)
+
+      const freed = { ...deferred, pendingOverlay: null }
+      const opened = handleSetPendingBandHQOpen(freed, true)
+      assert.deepEqual(opened.pendingOverlay, { kind: 'band_hq' })
+      assert.equal(opened.deferredBandHQOpen, false)
     }
   )
 

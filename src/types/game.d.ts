@@ -346,6 +346,11 @@ export interface GameState {
   unlocks: string[]
   /** Consolidated active asynchronous modal overlay. */
   pendingOverlay?: PendingOverlayState | null
+  /**
+   * Band HQ open request made while another overlay held `pendingOverlay`.
+   * Transient: `useBandHQModal` re-dispatches it once the slot is free.
+   */
+  deferredBandHQOpen?: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null

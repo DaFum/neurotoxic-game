@@ -15,6 +15,7 @@ import {
   stopAudio,
   resumeAudio,
   getTransportState,
+  getPendingTransportStartDelayMs,
   setDestinationMute
 } from './transportControl'
 import { playRandomAmbientOgg, playRandomAmbientMidi } from './ambient'
@@ -221,6 +222,7 @@ export class AudioSystem {
           )
           return false
         }
+        this.emitWhenScheduledStartArrives(ambientStartToken)
         this.emitChange()
         logger.info(
           'AudioSystem',
@@ -241,6 +243,38 @@ export class AudioSystem {
     })()
 
     return this.ambientStartPromise
+  }
+
+  /**
+   * Emits once more when a transport start scheduled in the future begins.
+   *
+   * @remarks
+   * Tone reports `stopped` until the scheduled time, so the emission right
+   * after the MIDI fallback schedules playback carries `isPlaying: false`.
+   * A stop or a newer ambient start invalidates the token and skips the emit.
+   *
+   * @param ambientStartToken - Token of the ambient start that scheduled playback.
+   * @param delayMs - Remaining delay already read by the caller, or `null` when
+   * no start is pending. Defaults to reading it now.
+   */
+  private emitWhenScheduledStartArrives(
+    ambientStartToken: number,
+    delayMs: number | null = getPendingTransportStartDelayMs()
+  ): void {
+    if (delayMs === null) return
+    setTimeout(() => {
+      if (ambientStartToken !== this.ambientStartToken) return
+      // The timer runs on wall-clock time while the audio clock can stall (for
+      // example a suspended context), so re-arm until the start has passed.
+      const remainingMs = getPendingTransportStartDelayMs()
+      if (remainingMs !== null) {
+        // Reuse this reading: a second read could see the start already passed
+        // and schedule nothing.
+        this.emitWhenScheduledStartArrives(ambientStartToken, remainingMs)
+        return
+      }
+      this.emitChange()
+    }, delayMs + 50)
   }
 
   /**
@@ -280,6 +314,10 @@ export class AudioSystem {
 
       if (getTransportState() === 'paused') {
         const resumed = await resumeAudio()
+        // A resumed lead-in start is still in the future and reads `stopped`.
+        // Read its delay before the snapshot, or a start that passes in between
+        // is never refreshed.
+        if (resumed) this.emitWhenScheduledStartArrives(this.ambientStartToken)
         this.emitChange()
         return resumed
       }

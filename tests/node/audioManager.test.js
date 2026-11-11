@@ -28,6 +28,7 @@ test('AudioManager Tests', async t => {
       stopAudio: mock.fn(),
       resumeAudio: mock.fn(async () => true),
       getTransportState: mock.fn(() => 'stopped'),
+      getPendingTransportStartDelayMs: mock.fn(() => null),
       setDestinationMute: mock.fn(() => false)
     },
     'ambient.ts': {
@@ -143,6 +144,126 @@ test('AudioManager Tests', async t => {
       assert.equal(await oldStart, false)
       assert.equal(mockAudioEngine.stopAudio.mock.calls.length, stops)
       assert.equal(audioManager.currentSongId, 'ambient')
+    }
+  )
+
+  await t.test(
+    'MIDI ambient fallback emits again when the scheduled transport starts',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await audioManager.startAmbient()
+      const emittedBeforeStart = listener.mock.calls.length
+      assert.equal(audioManager.getStateSnapshot().isPlaying, false)
+
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      assert.equal(listener.mock.calls.length, emittedBeforeStart + 1)
+      assert.equal(audioManager.getStateSnapshot().isPlaying, true)
+    }
+  )
+
+  await t.test(
+    'resuming a paused lead-in start emits again when it begins',
+    async () => {
+      audioManager.currentSongId = 'ambient'
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      assert.equal(await audioManager.resumeMusic(), true)
+      const emittedAfterResume = listener.mock.calls.length
+      assert.equal(audioManager.getStateSnapshot().isPlaying, false)
+
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      assert.equal(listener.mock.calls.length, emittedAfterResume + 1)
+      assert.equal(audioManager.getStateSnapshot().isPlaying, true)
+    }
+  )
+
+  await t.test(
+    'the delayed emit waits while the audio clock has not reached the start',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      // Scheduling and the first timer check still see a pending start; the
+      // second timer check sees it has passed. The re-armed schedule must reuse
+      // the first timer's reading: a read of its own would already see `null`.
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      const firstCall = pendingDelay.mock.callCount()
+      for (let i = 0; i < 2; i++) {
+        pendingDelay.mock.mockImplementationOnce(() => 10, firstCall + i)
+      }
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await audioManager.startAmbient()
+      const emittedBeforeStart = listener.mock.calls.length
+
+      await new Promise(resolve => setTimeout(resolve, 90))
+      assert.equal(listener.mock.calls.length, emittedBeforeStart)
+
+      await new Promise(resolve => setTimeout(resolve, 150))
+      unsubscribe()
+      assert.equal(listener.mock.calls.length, emittedBeforeStart + 1)
+    }
+  )
+
+  await t.test(
+    'the pending start is read before the snapshot is emitted',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      const order = []
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      pendingDelay.mock.mockImplementationOnce(() => {
+        order.push('delay')
+        return null
+      }, pendingDelay.mock.callCount())
+      const unsubscribe = audioManager.subscribe(() => order.push('emit'))
+      await audioManager.startAmbient()
+      unsubscribe()
+      assert.ok(order.indexOf('delay') < order.lastIndexOf('emit'))
+    }
+  )
+
+  await t.test(
+    'a stop before the scheduled transport starts skips the late emit',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      await audioManager.startAmbient()
+      audioManager.stopMusic()
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      assert.equal(listener.mock.calls.length, 0)
     }
   )
 
