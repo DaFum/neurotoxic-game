@@ -6,6 +6,15 @@ import {
   handleBloodBankDonate
 } from '../../src/context/reducers/clinicReducer'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
+import {
+  getClinicActionAvailability,
+  canPerformClinicAction
+} from '../../src/utils/clinicLogicUtils'
+import {
+  CLINIC_CONFIG,
+  CLINIC_GRAFT_COST
+} from '../../src/context/gameConstants'
+import { NEURO_OVERCLOCK_TRAIT_ID } from '../../src/utils/traitUtils'
 
 // The reducer computes costs internally from CLINIC_CONFIG and clinicVisits.
 // At 0 visits: heal cost = 150 money, enhance cost = 500 fame.
@@ -348,5 +357,191 @@ test('clinicReducer', async t => {
     // Member without:         50 - 5 (decay) = 45
     assert.equal(band.members[0].stamina, 48)
     assert.equal(band.members[1].stamina, 45)
+  })
+})
+
+test('clinicActionAvailability (SUB-14-REC-01)', async t => {
+  const member = {
+    id: 'm1',
+    name: 'Member 1',
+    stamina: 50,
+    mood: 50,
+    staminaMax: 100,
+    traits: {}
+  }
+
+  await t.test('returns invalid when member is missing or has no id', () => {
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'heal', member: null },
+        { spendableMoney: 500 }
+      ),
+      {
+        isAvailable: false,
+        reasonKey: 'ui:clinic.invalidMember',
+        defaultReason: 'Member unavailable'
+      }
+    )
+    assert.equal(
+      canPerformClinicAction(
+        { type: 'heal', member: undefined },
+        { spendableMoney: 500 }
+      ),
+      false
+    )
+  })
+
+  await t.test('heal availability validates funds and full health', () => {
+    // Insufficient funds
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'heal', member },
+        { spendableMoney: 10, healCostMoney: 150 }
+      ),
+      {
+        isAvailable: false,
+        reasonKey: 'ui:clinic.notEnoughMoney',
+        defaultReason: 'Not enough money'
+      }
+    )
+
+    // Fully healed
+    const healedMember = { ...member, stamina: 100, mood: 100 }
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'heal', member: healedMember },
+        { spendableMoney: 500, healCostMoney: 150 }
+      ),
+      {
+        isAvailable: false,
+        reasonKey: 'ui:clinic.fullyHealed',
+        defaultReason: 'Member is already fully healed'
+      }
+    )
+
+    // Below upgraded staminaMax
+    const upgradedMember = {
+      ...member,
+      stamina: 100,
+      mood: 100,
+      staminaMax: 120
+    }
+    assert.equal(
+      canPerformClinicAction(
+        { type: 'heal', member: upgradedMember },
+        { spendableMoney: 500, healCostMoney: 150 }
+      ),
+      true
+    )
+
+    // Valid heal
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'heal', member },
+        { spendableMoney: 500, healCostMoney: 150 }
+      ),
+      { isAvailable: true }
+    )
+  })
+
+  await t.test(
+    'enhance availability validates fame and existing traits',
+    () => {
+      // Insufficient fame
+      assert.deepEqual(
+        getClinicActionAvailability(
+          {
+            type: 'enhance',
+            member,
+            traitId: CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID
+          },
+          { fame: 10, enhanceCostFame: 500 }
+        ),
+        {
+          isAvailable: false,
+          reasonKey: 'ui:clinic.notEnoughFame',
+          defaultReason: 'Not enough fame'
+        }
+      )
+
+      // Already enhanced
+      const enhancedMember = {
+        ...member,
+        traits: {
+          [CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]: {
+            id: CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID
+          }
+        }
+      }
+      assert.deepEqual(
+        getClinicActionAvailability(
+          {
+            type: 'enhance',
+            member: enhancedMember,
+            traitId: CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID
+          },
+          { fame: 1000, enhanceCostFame: 500 }
+        ),
+        {
+          isAvailable: false,
+          reasonKey: 'ui:clinic.alreadyEnhanced',
+          defaultReason: 'Member already has this enhancement'
+        }
+      )
+
+      // Valid enhance
+      assert.equal(
+        canPerformClinicAction(
+          {
+            type: 'enhance',
+            member,
+            traitId: CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID
+          },
+          { fame: 1000, enhanceCostFame: 500 }
+        ),
+        true
+      )
+    }
+  )
+
+  await t.test('graft availability validates money and existing graft', () => {
+    // Insufficient money
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'graft', member, traitId: NEURO_OVERCLOCK_TRAIT_ID },
+        { spendableMoney: 10, graftCostMoney: CLINIC_GRAFT_COST }
+      ),
+      {
+        isAvailable: false,
+        reasonKey: 'ui:clinic.notEnoughMoney',
+        defaultReason: 'Not enough money'
+      }
+    )
+
+    // Already grafted
+    const graftedMember = {
+      ...member,
+      traits: { [NEURO_OVERCLOCK_TRAIT_ID]: true }
+    }
+    assert.deepEqual(
+      getClinicActionAvailability(
+        { type: 'graft', member: graftedMember },
+        { spendableMoney: 10000, graftCostMoney: CLINIC_GRAFT_COST }
+      ),
+      {
+        isAvailable: false,
+        reasonKey: 'ui:clinic.alreadyGrafted',
+        defaultReason: 'Member already has this graft'
+      }
+    )
+
+    // Valid graft
+    assert.equal(
+      canPerformClinicAction(
+        { type: 'graft', member },
+        { spendableMoney: 10000, graftCostMoney: CLINIC_GRAFT_COST }
+      ),
+      true
+    )
   })
 })
