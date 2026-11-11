@@ -233,3 +233,8 @@
 
 **Learning:** When adding change-detection short-circuits to PixiJS stage renderers (e.g. `RoadiePlayerManager`), tracking `_flashTimeout !== null` status (`isFlashing === lastWasFlashing`) is essential so that hit flash start, duration, and resolution transitions cleanly re-synchronize sprite tints instead of leaving sprite tints stuck in flash state.
 **Action:** Always include temporary timer/animation status in stage controller change-detection conditions so property updates execute cleanly on animation state transitions.
+
+## 2026-11-11 - Pre-cache CSS token colors in stage controllers
+
+**Learning:** `getPixiColorFromToken` invokes DOM computed styles and token resolution maps. When fallback shapes and drawing routines (such as `drawRoad()` and `createBus()` in `TourbusStageController`) invoke `getPixiColorFromToken` directly during initialization and resize re-renders, it performs redundant DOM/style lookups. Caching all resolved token colors on the controller instance (`this.colors`) eliminates repeated DOM style resolutions and standardizes stage color access across minigame stage controllers.
+**Action:** Always resolve and cache all Pixi token colors on the stage controller instance during construction, and reference `this.colors` directly in all drawing routines rather than calling `getPixiColorFromToken` inline.

@@ -59,6 +59,8 @@ type TourbusColors = {
   bloodRed: number
   toxicGreen: number
   voidPurple: number
+  voidBlack: number
+  ashGray: number
 }
 
 class TourbusStageController extends BaseStageController<TourbusControllerState> {
@@ -98,11 +100,17 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       voidHazard: null
     }
 
+    // ⚡ BOLT OPTIMIZATION: Cache all CSS token colors on class instance during construction.
+    // What: Precomputed `--void-black` and `--ash-gray` along with other theme tokens in this.colors.
+    // Why: Prevents calling getPixiColorFromToken (DOM/computed style map lookup) repeatedly during drawRoad() and fallback branches.
+    // Impact: Reduces frame render/redraw overhead and eliminates repeated DOM/CSS token resolution.
     this.colors = {
       warningYellow: getPixiColorFromToken('--warning-yellow'),
       bloodRed: getPixiColorFromToken('--blood-red'),
       toxicGreen: getPixiColorFromToken('--toxic-green'),
-      voidPurple: getPixiColorFromToken('--void-purple')
+      voidPurple: getPixiColorFromToken('--void-purple'),
+      voidBlack: getPixiColorFromToken('--void-black'),
+      ashGray: getPixiColorFromToken('--ash-gray')
     }
   }
 
@@ -190,10 +198,13 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       // controller is gone instead of assigning cache-owned textures to it.
       if (this.isDisposed) return
 
-      const keys = Object.keys(loaded)
-      for (let i = 0, len = keys.length; i < len; i++) {
-        const key = keys[i] as keyof TourbusTextures | undefined
-        if (!key) continue
+      // ⚡ BOLT OPTIMIZATION: Direct for...in loop over loaded textures dictionary.
+      // What: Replaced Object.keys(loaded) array allocation and index loop with a direct for...in loop.
+      // Why: Avoids allocating an intermediate keys string array during minigame texture registration.
+      // Impact: Reduces garbage collection churn during asset initialization.
+      for (const rawKey in loaded) {
+        if (!Object.hasOwn(loaded, rawKey)) continue
+        const key = rawKey as keyof TourbusTextures
         const texture = loaded[key]
         if (!texture) continue
         // Generated sprites are opaque images on a flat field; only the road
@@ -238,14 +249,14 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       this.roadStripes = null
       const bg = new Graphics()
       bg.rect(0, 0, width, height)
-      bg.fill(getPixiColorFromToken('--void-black'))
+      bg.fill(this.colors.voidBlack)
       this.roadContainer.addChild(bg)
 
       // Draw lane dividers
       for (let i = 1; i < TOURBUS_LANE_COUNT; i++) {
         const line = new Graphics()
         line.rect(i * this.laneWidth - 2, 0, 4, height)
-        line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
+        line.fill({ color: this.colors.ashGray, alpha: 0.3 })
         this.roadContainer.addChild(line)
       }
     }
@@ -262,7 +273,7 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       // Fallback
       const g = new Graphics()
       g.rect(-25, -80, 50, 80)
-      g.fill(getPixiColorFromToken('--toxic-green'))
+      g.fill(this.colors.toxicGreen)
       this.busSprite = g
     }
     // Scale bus to fit lane width AND a max height
