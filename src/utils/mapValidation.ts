@@ -44,7 +44,6 @@ interface ValidatedMapConnection {
 interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
-  edges?: Array<{ from: string; to: string }>
   cityStates?: Record<string, import('../types/game').CityTraitState>
   [key: string]: unknown
 }
@@ -460,7 +459,12 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
     })
   }
 
-  const connections = validateConnections(raw.connections, nodeIds, issues)
+  const rawConnections = Array.isArray(raw.connections)
+    ? raw.connections
+    : Array.isArray(raw.edges)
+      ? raw.edges
+      : raw.connections
+  const connections = validateConnections(rawConnections, nodeIds, issues)
 
   const startNodes = []
   for (const key in nodes) {

@@ -47,11 +47,64 @@ type GameMapLike =
 const isMapConnection = (value: unknown): value is RawMapConnection =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const EMPTY_TARGETS: ReadonlySet<string> = new Set()
+
+/**
+ * WeakMap cache mapping a gameMap object reference to its computed adjacency map:
+ * sourceNodeId -\> Set\<targetNodeId\>.
+ */
+const mapAdjacencyCache = new WeakMap<object, Map<string, Set<string>>>()
+
+/**
+ * Builds or retrieves the cached adjacency lookup map for the given map object.
+ *
+ * @param gameMap - Map whose `connections` (or legacy `edges` fallback) are indexed.
+ * @returns Map of source node ID to set of destination node IDs.
+ */
+export const getMapAdjacency = (
+  gameMap: GameMapLike
+): ReadonlyMap<string, ReadonlySet<string>> => {
+  if (!gameMap || typeof gameMap !== 'object') return new Map()
+
+  const cached = mapAdjacencyCache.get(gameMap)
+  if (cached) return cached
+
+  const adjacency = new Map<string, Set<string>>()
+  const rawList =
+    Array.isArray(gameMap.connections) && gameMap.connections.length > 0
+      ? gameMap.connections
+      : Array.isArray(gameMap.edges) && gameMap.edges.length > 0
+        ? gameMap.edges
+        : Array.isArray(gameMap.connections)
+          ? gameMap.connections
+          : Array.isArray(gameMap.edges)
+            ? gameMap.edges
+            : null
+
+  if (rawList) {
+    for (let i = 0; i < rawList.length; i++) {
+      const c = rawList[i]
+      if (!isMapConnection(c)) continue
+      if (typeof c.from === 'string' && typeof c.to === 'string') {
+        let targets = adjacency.get(c.from)
+        if (!targets) {
+          targets = new Set<string>()
+          adjacency.set(c.from, targets)
+        }
+        targets.add(c.to)
+      }
+    }
+  }
+
+  mapAdjacencyCache.set(gameMap, adjacency)
+  return adjacency
+}
+
 /**
  * Precomputes and returns a set of reachable outgoing target node IDs from a given node.
  * Provides O(1) membership lookups for map node connectivity checks.
  *
- * @param gameMap - Map whose `connections` and `edges` lists are both scanned for outgoing edges.
+ * @param gameMap - Map whose connections are queried for outgoing edges.
  * @param currentNodeId - Node ID to find outgoing connections from.
  * @returns ReadonlySet of connected target node IDs.
  */
@@ -59,19 +112,9 @@ export const getConnectedTargetIds = (
   gameMap: GameMapLike,
   currentNodeId: string | null | undefined
 ): ReadonlySet<string> => {
-  if (!gameMap || !currentNodeId) return new Set()
-  const outgoing = new Set<string>()
-  for (const rawList of [gameMap.connections, gameMap.edges]) {
-    if (!Array.isArray(rawList)) continue
-    for (let i = 0; i < rawList.length; i++) {
-      const c = rawList[i]
-      if (!isMapConnection(c)) continue
-      if (c.from === currentNodeId && typeof c.to === 'string') {
-        outgoing.add(c.to)
-      }
-    }
-  }
-  return outgoing
+  if (!gameMap || !currentNodeId) return EMPTY_TARGETS
+  const adjacency = getMapAdjacency(gameMap)
+  return adjacency.get(currentNodeId) ?? EMPTY_TARGETS
 }
 
 /**
@@ -492,10 +535,6 @@ export const checkSoftlock = (
       : null
   ) as Pick<BandState, 'members'> | null
 
-  const connections = Array.isArray(gameMap.connections)
-    ? gameMap.connections
-    : []
-
   const playerStateForTravel = {
     money: playerMoney,
     fameLevel: finiteNumberOr(player.fameLevel, 0),
@@ -533,13 +572,10 @@ export const checkSoftlock = (
   // ban, prove-yourself capacity cap) is not a real escape route; the gate
   // reads only the node, so it is asked once per node, not per scenario.
   const travelTargets: GameNode[] = []
-  for (let i = 0; i < connections.length; i++) {
-    const c = connections[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === player.currentNodeId && typeof c.to === 'string') {
-      const n = nodes[c.to]
-      if (n) travelTargets.push(n)
-    }
+  const outgoingTargets = getConnectedTargetIds(gameMap, player.currentNodeId)
+  for (const targetId of outgoingTargets) {
+    const n = nodes[targetId]
+    if (n) travelTargets.push(n)
   }
   for (const nodeId in nodes) {
     if (!Object.hasOwn(nodes, nodeId)) continue

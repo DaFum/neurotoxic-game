@@ -601,9 +601,15 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  if (Array.isArray(mapRecord.connections)) {
-    for (let i = 0; i < mapRecord.connections.length; i++) {
-      const entry = mapRecord.connections[i]
+  const rawConnections = Array.isArray(mapRecord.connections)
+    ? mapRecord.connections
+    : Array.isArray(mapRecord.edges)
+      ? mapRecord.edges
+      : null
+
+  if (rawConnections) {
+    for (let i = 0; i < rawConnections.length; i++) {
+      const entry = rawConnections[i]
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
       const entryRecord = entry as Record<string, unknown>
       if (

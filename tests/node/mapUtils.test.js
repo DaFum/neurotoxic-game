@@ -23,6 +23,7 @@ const { GAME_CONSTANTS } = await import('../../src/context/gameConstants.ts')
 const {
   isConnected,
   getConnectedTargetIds,
+  getMapAdjacency,
   getNodeVisibility,
   checkSoftlock,
   normalizeVenueId
@@ -156,6 +157,19 @@ describe('mapUtils', () => {
       const targets = getConnectedTargetIds(edgesMap, 'X')
       assert.equal(targets.size, 1)
       assert.equal(targets.has('Y'), true)
+    })
+
+    test('caches adjacency map and reuses it for the same map instance', () => {
+      const testMap = {
+        connections: [
+          { from: 'Node1', to: 'Node2' },
+          { from: 'Node1', to: 'Node3' }
+        ]
+      }
+      const adj1 = getMapAdjacency(testMap)
+      const adj2 = getMapAdjacency(testMap)
+      assert.equal(adj1, adj2)
+      assert.deepEqual([...adj1.get('Node1')], ['Node2', 'Node3'])
     })
   })
 

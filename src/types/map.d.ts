@@ -25,11 +25,10 @@ export interface MapNode {
 }
 
 /**
- * Generated overworld map with nodes, edges, and city traits.
+ * Generated overworld map with nodes, connections, and city traits.
  */
 export interface GameMap {
   nodes: Record<string, MapNode>
-  edges?: Array<{ from: string; to: string }>
   connections: Array<{ from: string; to: string }>
   cityStates?: Record<string, CityTraitState>
   [key: string]: unknown
