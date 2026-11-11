@@ -296,14 +296,6 @@ export interface PendingGigSettlement {
    * Durable linear lifecycle stage: recorded -\> social_reconciled -\> settled.
    */
   lifecycleStage: GigSettlementLifecycleStage
-  /**
-   * Durable reconciliation status for this settlement record (`id`).
-   *
-   * @remarks
-   * Stored value that writers keep equal to `lifecycleStage !== 'recorded'`.
-   * Retained for backward compatibility with saves and consumers that read it.
-   */
-  socialReconciled?: boolean
 }
 
 /**

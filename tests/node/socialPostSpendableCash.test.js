@@ -207,7 +207,7 @@ describe('Social post spendable Cash eligibility & composite action regression',
 
   it('marks the matching pending settlement socialReconciled atomically with the post', () => {
     const base = createInitialState()
-    base.pendingGigSettlement = { id: 'settlement-1', socialReconciled: false }
+    base.pendingGigSettlement = { id: 'settlement-1', lifecycleStage: 'recorded' }
     const payload = settlementId => ({
       settlementId,
       social: { pendingSocialOptionId: 'opt_1' }
@@ -217,7 +217,7 @@ describe('Social post spendable Cash eligibility & composite action regression',
       type: ActionTypes.APPLY_SOCIAL_POST_RESULT,
       payload: payload('settlement-1')
     })
-    assert.equal(matched.pendingGigSettlement.socialReconciled, true)
+    assert.equal(matched.pendingGigSettlement.lifecycleStage, 'social_reconciled')
 
     const mismatched = gameReducer(base, {
       type: ActionTypes.APPLY_SOCIAL_POST_RESULT,

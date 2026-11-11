@@ -178,7 +178,7 @@ const buildSocialActionNextState = (
  * 1. Optional band patch via handleUpdateBand
  * 2. Player update via handleUpdatePlayer with clamped money and optional failedStageDive counter increment
  * 3. Social update via handleUpdateSocial
- * 4. Optional `pendingGigSettlement.socialReconciled` marker for `settlementId`
+ * 4. Optional `pendingGigSettlement.lifecycleStage: 'social_reconciled'` marker for `settlementId`
  *
  * @param state - Current game state before social post application.
  * @param payload - Composite social post outcome payload.

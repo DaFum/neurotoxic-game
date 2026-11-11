@@ -36,7 +36,7 @@ export const advanceSettlementLifecycleStage = (
   return targetRank > currentRank ? target : current
 }
 
-/** Whether a settlement's stage or marker records completed social effects. */
+/** Whether a settlement's stage records completed social effects. */
 export const isGigSocialReconciled = (
   settlement: SettlementLifecycleInput | null | undefined
 ): boolean => {
@@ -55,7 +55,6 @@ export const normalizeGigSettlementLifecycle = (
   settlement: SettlementLifecycleInput
 ): {
   lifecycleStage: GigSettlementLifecycleStage
-  socialReconciled: boolean
 } => {
   const explicitStage = canonicalizeGigSettlementLifecycleStage(
     settlement.lifecycleStage
@@ -75,8 +74,7 @@ export const normalizeGigSettlementLifecycle = (
   }
 
   return {
-    lifecycleStage: stage,
-    socialReconciled: stage !== 'recorded'
+    lifecycleStage: stage
   }
 }
 
@@ -93,7 +91,6 @@ export const markGigSocialReconciled = (
   )
   return {
     ...settlement,
-    lifecycleStage: nextStage,
-    socialReconciled: true
+    lifecycleStage: nextStage
   }
 }

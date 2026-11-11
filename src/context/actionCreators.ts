@@ -180,10 +180,7 @@ export const createSettleSoldMerchAction = (
  * are malformed.
  */
 export const createRecordPendingGigSettlementAction = (
-  settlement: Omit<
-    PendingGigSettlement,
-    'id' | 'socialReconciled' | 'lifecycleStage'
-  > & {
+  settlement: Omit<PendingGigSettlement, 'id' | 'lifecycleStage'> & {
     lifecycleStage?: PendingGigSettlement['lifecycleStage']
   },
   id: string = getSafeUUID()
@@ -194,8 +191,7 @@ export const createRecordPendingGigSettlementAction = (
   const payload = sanitizePendingGigSettlement({
     ...settlement,
     id,
-    lifecycleStage: settlement.lifecycleStage ?? 'recorded',
-    socialReconciled: false
+    lifecycleStage: settlement.lifecycleStage ?? 'recorded'
   })
   return payload
     ? { type: ActionTypes.RECORD_PENDING_GIG_SETTLEMENT, payload }
@@ -203,7 +199,7 @@ export const createRecordPendingGigSettlementAction = (
 }
 
 /**
- * Creates an action applying a per-gig social update and marking its pending settlement as socialReconciled.
+ * Creates an action applying a per-gig social update and marking its pending settlement as social_reconciled.
  *
  * @param socialUpdate - Social state update payload or updater function.
  * @param settlementId - Id of the target pending settlement, sanitized to non-empty string or null.
