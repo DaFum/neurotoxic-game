@@ -226,6 +226,27 @@ test('AudioManager Tests', async t => {
   )
 
   await t.test(
+    'the pending start is read before the snapshot is emitted',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      const order = []
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      pendingDelay.mock.mockImplementationOnce(() => {
+        order.push('delay')
+        return null
+      }, pendingDelay.mock.callCount())
+      const unsubscribe = audioManager.subscribe(() => order.push('emit'))
+      await audioManager.startAmbient()
+      unsubscribe()
+      assert.ok(order.indexOf('delay') < order.lastIndexOf('emit'))
+    }
+  )
+
+  await t.test(
     'a stop before the scheduled transport starts skips the late emit',
     async () => {
       audioManager.stopMusic()

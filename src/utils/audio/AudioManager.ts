@@ -222,8 +222,8 @@ export class AudioSystem {
           )
           return false
         }
-        this.emitChange()
         this.emitWhenScheduledStartArrives(ambientStartToken)
+        this.emitChange()
         logger.info(
           'AudioSystem',
           'Ambient started via MIDI synthesis fallback.'
@@ -307,9 +307,11 @@ export class AudioSystem {
 
       if (getTransportState() === 'paused') {
         const resumed = await resumeAudio()
-        this.emitChange()
         // A resumed lead-in start is still in the future and reads `stopped`.
+        // Read its delay before the snapshot, or a start that passes in between
+        // is never refreshed.
         if (resumed) this.emitWhenScheduledStartArrives(this.ambientStartToken)
+        this.emitChange()
         return resumed
       }
 
