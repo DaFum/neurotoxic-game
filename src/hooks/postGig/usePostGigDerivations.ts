@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   calculatePerformanceScore,
   deriveGigContext,
@@ -102,24 +102,7 @@ export const usePostGigDerivations = ({
     [assets]
   )
 
-  const financialSnapshotRef = useRef<{
-    currentGig: Venue | null
-    lastGigStats: PostGigSummary | null
-    financials: ReturnType<typeof deriveFinancials>
-  } | null>(null)
-
-  // Freeze the report for this completed gig. Resolving a parallel post-gig
-  // event can change player, band, or social state, but must not rewrite the
-  // already presented financial result.
-  const financials = useMemo(() => {
-    const snapshot = financialSnapshotRef.current
-    if (
-      snapshot?.currentGig === currentGig &&
-      snapshot.lastGigStats === lastGigStats
-    ) {
-      return snapshot.financials
-    }
-
+  const computeFinancials = (): ReturnType<typeof deriveFinancials> => {
     // Normalize first — legacy/saved venues can carry namespaced IDs like
     // `venues:berlin_so36`, but `gameMap.cityStates` is keyed by the normalized
     // form. Skipping this step misses saved entries on those venues.
@@ -164,7 +147,7 @@ export const usePostGigDerivations = ({
       Object.assign(effectiveInventory, band.inventory)
     }
 
-    const nextFinancials = deriveFinancials({
+    return deriveFinancials({
       currentGig,
       lastGigStats,
       perfScore,
@@ -186,33 +169,29 @@ export const usePostGigDerivations = ({
       },
       gigRewardMultiplier
     })
-    return nextFinancials
-  }, [
+  }
+
+  // Freeze the report for this completed gig. Resolving a parallel post-gig
+  // event can change player, band, or social state, but must not rewrite the
+  // already presented financial result.
+  const [financialSnapshot, setFinancialSnapshot] = useState<{
+    currentGig: Venue | null
+    lastGigStats: PostGigSummary | null
+    financials: ReturnType<typeof deriveFinancials>
+  }>(() => ({
     currentGig,
     lastGigStats,
-    perfScore,
-    gigModifiers,
-    band.inventory,
-    band.merchPrices,
-    band.gigModifier,
-    player,
-    social,
-    reputationByRegion,
-    activeStoryFlags,
-    cityStates,
-    gigContext,
-    assetModifiers,
-    gigRewardMultiplier,
-    expedition
-  ])
+    financials: computeFinancials()
+  }))
 
-  useEffect(() => {
-    financialSnapshotRef.current = {
-      currentGig,
-      lastGigStats,
-      financials
-    }
-  }, [currentGig, lastGigStats, financials])
+  let financials = financialSnapshot.financials
+  if (
+    financialSnapshot.currentGig !== currentGig ||
+    financialSnapshot.lastGigStats !== lastGigStats
+  ) {
+    financials = computeFinancials()
+    setFinancialSnapshot({ currentGig, lastGigStats, financials })
+  }
 
   // Derive post options purely without triggering a re-render loop
   const { options: postOptions, error: postOptionsDerivationError } =

@@ -302,6 +302,39 @@ describe('usePostGigDerivations', () => {
     expect(postGigUtils.deriveFinancials).toHaveBeenCalledTimes(1)
   })
 
+  it('updates financial snapshot when currentGig or lastGigStats changes', () => {
+    const initialFinancials = {
+      income: { total: 100 },
+      expenses: { total: 0 },
+      net: 100
+    } as ReturnType<typeof postGigUtils.deriveFinancials>
+    const nextFinancials = {
+      income: { total: 250 },
+      expenses: { total: 50 },
+      net: 200
+    } as ReturnType<typeof postGigUtils.deriveFinancials>
+
+    vi.mocked(postGigUtils.deriveFinancials)
+      .mockReturnValueOnce(initialFinancials)
+      .mockReturnValueOnce(nextFinancials)
+
+    const { result, rerender } = renderHook(
+      props => usePostGigDerivations(props),
+      { initialProps: defaultProps }
+    )
+
+    expect(result.current.financials).toBe(initialFinancials)
+
+    const newGig = { id: 'other-venue' } as Venue
+    rerender({
+      ...defaultProps,
+      currentGig: newGig
+    })
+
+    expect(result.current.financials).toBe(nextFinancials)
+    expect(postGigUtils.deriveFinancials).toHaveBeenCalledTimes(2)
+  })
+
   it('does not commit the financial snapshot during a StrictMode render', () => {
     renderHook(() => usePostGigDerivations(defaultProps), {
       wrapper: StrictMode
