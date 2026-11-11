@@ -96,6 +96,39 @@ describe('storage operation wrappers', () => {
     )
   })
 
+  test('safeStorageOperation executes operation once without retrying on error', () => {
+    let callCount = 0
+    const result = safeStorageOperation(
+      'testSingleShotFallback',
+      () => {
+        callCount++
+        throw new Error('storage unavailable')
+      },
+      'fallback'
+    )
+
+    assert.equal(result, 'fallback')
+    assert.equal(callCount, 1)
+  })
+
+  test('safeStorageOperation executes operation once without retrying when throwing', () => {
+    let callCount = 0
+    assert.throws(
+      () =>
+        safeStorageOperation('testSingleShotThrow', () => {
+          callCount++
+          throw new Error('storage unavailable')
+        }),
+      error =>
+        error instanceof Error &&
+        error.name === 'StorageError' &&
+        error.message.includes(
+          'Storage operation failed after retries: testSingleShotThrow'
+        )
+    )
+    assert.equal(callCount, 1)
+  })
+
   describe('isStorageItemBuffered', () => {
     test('returns false for absent or non-buffered keys', () => {
       assert.equal(isStorageItemBuffered('non_existent_key'), false)
