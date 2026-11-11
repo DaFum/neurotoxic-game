@@ -70,6 +70,8 @@ export interface QuestEventContext extends UnknownRecord {
   region?: string
   cityId?: string
   capacity?: number
+  accuracy?: number
+  failed?: boolean
   platform?: string
   postId?: string
   postCategory?: string

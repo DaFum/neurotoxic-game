@@ -507,22 +507,22 @@ export const handleSetLastGigStats = (
       ? state.currentGig.capacity
       : null
 
+  const gigEventPayload = {
+    score,
+    accuracy,
+    failed: gigFailed,
+    capacity: finiteNumberOr(capacity, 0),
+    venueId: state.currentGig?.id || '',
+    region: cityRegion
+  }
+
   nextState = QuestEvents.emit(
     nextState,
-    createGigCompletedQuestEvent({
-      score,
-      capacity: finiteNumberOr(capacity, 0),
-      venueId: state.currentGig?.id || '',
-      region: cityRegion
-    })
+    createGigCompletedQuestEvent(gigEventPayload)
   )
   nextState = QuestEvents.emit(
     nextState,
-    createVenueGigCompletedQuestEvent({
-      score,
-      venueId: state.currentGig?.id || '',
-      region: cityRegion
-    })
+    createVenueGigCompletedQuestEvent(gigEventPayload)
   )
 
   if (gigFailed || accuracy < 30) {
@@ -593,31 +593,16 @@ export const handleSetLastGigStats = (
     nextState = handleRecordGoodShow(nextState)
     nextState = QuestEvents.emit(
       nextState,
-      createGoodGigQuestEvent({
-        score,
-        capacity: finiteNumberOr(capacity, 0),
-        venueId: state.currentGig?.id || '',
-        region: cityRegion
-      })
+      createGoodGigQuestEvent(gigEventPayload)
     )
     nextState = QuestEvents.emit(
       nextState,
-      createVenueGoodGigQuestEvent({
-        score,
-        capacity: capacity ?? undefined,
-        venueId: state.currentGig?.id || '',
-        region: cityRegion
-      })
+      createVenueGoodGigQuestEvent(gigEventPayload)
     )
     if (capacity !== null && capacity <= 300) {
       nextState = QuestEvents.emit(
         nextState,
-        createSmallVenueGoodQuestEvent({
-          score,
-          capacity,
-          venueId: state.currentGig?.id || '',
-          region: cityRegion
-        })
+        createSmallVenueGoodQuestEvent(gigEventPayload)
       )
     }
   } else if (accuracy >= 30 && accuracy < 60) {
