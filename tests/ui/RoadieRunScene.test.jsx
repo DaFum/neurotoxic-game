@@ -149,6 +149,37 @@ describe('RoadieRunScene', () => {
     expect(mockChangeScene).not.toHaveBeenCalled()
   })
 
+  it('starts the fallback timer when the minigame transitions into game over', () => {
+    mockUiState = {
+      ...mockUiState,
+      isGameOver: false
+    }
+
+    const { rerender } = render(<RoadieRunScene />)
+
+    act(() => {
+      vi.advanceTimersByTime(15000)
+    })
+    expect(mockChangeScene).not.toHaveBeenCalled()
+
+    mockUiState = {
+      ...mockUiState,
+      isGameOver: true
+    }
+    rerender(<RoadieRunScene />)
+
+    act(() => {
+      vi.advanceTimersByTime(9999)
+    })
+    expect(mockChangeScene).not.toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GIG)
+  })
+
   it('does not start the fallback timer while the minigame is in progress', () => {
     mockUiState = {
       ...mockUiState,
