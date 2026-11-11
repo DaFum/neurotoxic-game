@@ -205,7 +205,6 @@ export const BASE_STATE = {
   reputationByRegion: {},
   unlocks: [],
   pendingOverlay: null,
-  pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
   terminalOutcome: null,
   pendingForeclosureNotices: [],

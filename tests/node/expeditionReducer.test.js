@@ -210,19 +210,39 @@ describe('sanitizeExpeditionState', () => {
   })
 
   it('takes the insurance policy from the committed loadout, not a free-standing field', () => {
-    const uninsured = { ...activeSave(), insurancePolicyId: 'touring' }
-    assert.equal(
-      sanitizeExpeditionState(uninsured, 654321).insurancePolicyId,
-      null
-    )
+    const uninsured = activeSave()
+    uninsured.loadout.insurancePolicyId = null
+    uninsured.insurancePolicyId = 'touring'
+    const sanitizedUninsured = sanitizeExpeditionState(uninsured, 654321)
+    assert.equal(sanitizedUninsured.loadout.insurancePolicyId, null)
+    assert.equal(sanitizedUninsured.insurancePolicyId, undefined)
 
     const insured = activeSave()
     insured.loadout.insurancePolicyId = 'roadside'
     insured.insurancePolicyId = 'touring'
-    assert.equal(
-      sanitizeExpeditionState(insured, 654321).insurancePolicyId,
-      'roadside'
-    )
+    const sanitizedInsured = sanitizeExpeditionState(insured, 654321)
+    assert.equal(sanitizedInsured.loadout.insurancePolicyId, 'roadside')
+    assert.equal(sanitizedInsured.insurancePolicyId, undefined)
+  })
+
+  it('folds legacy top-level insurancePolicyId into loadout if loadout does not specify it', () => {
+    const legacy = activeSave()
+    delete legacy.loadout.insurancePolicyId
+    legacy.insurancePolicyId = 'roadside'
+    const sanitized = sanitizeExpeditionState(legacy, 654321)
+    assert.equal(sanitized.loadout.insurancePolicyId, 'roadside')
+    assert.equal(sanitized.insurancePolicyId, undefined)
+  })
+
+  it('folds legacy top-level claimConsumed into insurance object', () => {
+    const legacy = activeSave()
+    legacy.claimConsumed = true
+    delete legacy.insurance
+    delete legacy.insuranceClaimConsumed
+    const sanitized = sanitizeExpeditionState(legacy, 654321)
+    assert.equal(sanitized.insurance.claimConsumed, true)
+    assert.equal(sanitized.claimConsumed, undefined)
+    assert.equal(sanitized.insuranceClaimConsumed, undefined)
   })
 
   it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {

@@ -8,6 +8,8 @@ export interface GigQuestEventInput {
   capacity: number
   venueId: string
   region: string
+  accuracy?: number
+  failed?: boolean
 }
 
 const createGigEvent = (
@@ -16,12 +18,14 @@ const createGigEvent = (
 ): QuestEvent => ({
   type,
   amount: 1,
-  success: true,
+  success: !input.failed,
   context: {
     score: input.score,
     capacity: input.capacity,
     venueId: input.venueId,
-    region: input.region
+    region: input.region,
+    ...(input.accuracy !== undefined && { accuracy: input.accuracy }),
+    ...(input.failed !== undefined && { failed: input.failed })
   }
 })
 

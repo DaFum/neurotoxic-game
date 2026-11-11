@@ -206,4 +206,63 @@ describe('ClinicScene', () => {
 
     expect(mockState.leaveClinic).toHaveBeenCalled()
   })
+
+  it('manages graft modal lifecycle via ClinicScene modal state (SUB-14-REC-01)', () => {
+    const graftNeuroOverclock = vi.fn()
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      spendableMoney: 10000,
+      graftNeuroOverclock
+    })
+
+    renderComponent()
+
+    // Initially modal is not rendered
+    expect(screen.queryByText(/EXPERIMENTAL GRAFT/i)).not.toBeInTheDocument()
+
+    // Click graft button for M1
+    const graftButtons = screen.getAllByRole('button', {
+      name: /NEURO-OVERCLOCK/i
+    })
+    fireEvent.click(graftButtons[0])
+
+    // Modal is opened
+    expect(screen.getByText(/EXPERIMENTAL GRAFT/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/You are about to graft the Neuro-Overclock module/i)
+    ).toBeInTheDocument()
+
+    // Confirm mutation
+    const confirmButton = screen.getByRole('button', {
+      name: /EXECUTE MUTATION/i
+    })
+    fireEvent.click(confirmButton)
+
+    expect(graftNeuroOverclock).toHaveBeenCalledWith('m1')
+    expect(screen.queryByText(/EXPERIMENTAL GRAFT/i)).not.toBeInTheDocument()
+  })
+
+  it('allows dismissing the graft modal without executing mutation', () => {
+    const graftNeuroOverclock = vi.fn()
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      spendableMoney: 10000,
+      graftNeuroOverclock
+    })
+
+    renderComponent()
+
+    const graftButtons = screen.getAllByRole('button', {
+      name: /NEURO-OVERCLOCK/i
+    })
+    fireEvent.click(graftButtons[0])
+
+    expect(screen.getByText(/EXPERIMENTAL GRAFT/i)).toBeInTheDocument()
+
+    const abortButton = screen.getByRole('button', { name: /ABORT/i })
+    fireEvent.click(abortButton)
+
+    expect(graftNeuroOverclock).not.toHaveBeenCalled()
+    expect(screen.queryByText(/EXPERIMENTAL GRAFT/i)).not.toBeInTheDocument()
+  })
 })

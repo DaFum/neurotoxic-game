@@ -120,7 +120,6 @@ export type PendingOverlayState =
   | { kind: 'risk_event'; event: RiskEventDescriptor }
   | { kind: 'foreclosure'; notices: AssetKind[] }
 
-
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -273,9 +272,11 @@ export interface ToastPayload {
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
+ *
+ * Monotonic progression: recorded -\> social_reconciled -\> settled.
  */
 export type GigSettlementLifecycleStage =
-  'pending_social' | 'social_reconciled' | 'complete'
+  'recorded' | 'social_reconciled' | 'settled'
 
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
@@ -292,15 +293,15 @@ export interface PendingGigSettlement {
   dealFameMultiplier: number
   soldMerch: Record<string, number>
   /**
-   * Durable linear lifecycle stage: pending_social -\> social_reconciled -\> complete.
+   * Durable linear lifecycle stage: recorded -\> social_reconciled -\> settled.
    */
   lifecycleStage: GigSettlementLifecycleStage
   /**
    * Durable reconciliation status for this settlement record (`id`).
    *
    * @remarks
-   * Stamped `true` once per-gig social reconciliation (deal decrement and gig history recording)
-   * has been applied to this settlement, preventing duplicate reconciliation on load recovery.
+   * Stored value that writers keep equal to `lifecycleStage !== 'recorded'`.
+   * Retained for backward compatibility with saves and consumers that read it.
    */
   socialReconciled?: boolean
 }
@@ -345,7 +346,6 @@ export interface GameState {
   unlocks: string[]
   /** Consolidated active asynchronous modal overlay. */
   pendingOverlay?: PendingOverlayState | null
-  pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null
@@ -781,3 +781,38 @@ export * from './map'
 export * from './gig'
 export * from './actions'
 export * from './social'
+
+/** Declarative reward applied when a milestone completes. */
+export interface DeclarativeMilestoneReward {
+  cash?: number
+  money?: number
+  fans?: number
+  fame?: number
+  harmony?: number
+  luck?: number
+  unlock?: string
+  unlocks?: string[]
+  social?: Partial<GameState['social']>
+}
+
+/** Reward actions `checkMilestones` can apply; any other action type would be dropped. */
+export type MilestoneRewardAction = Extract<
+  GameAction,
+  {
+    type:
+      | (typeof ActionTypes)['UPDATE_PLAYER']
+      | (typeof ActionTypes)['UPDATE_BAND']
+      | (typeof ActionTypes)['UPDATE_SOCIAL']
+  }
+>
+
+/** Milestone definition evaluated by `checkMilestones`. */
+export interface MilestoneDefinition {
+  id: string
+  condition: (state: GameState) => boolean
+  createRewardAction?: () => MilestoneRewardAction
+  reward?: DeclarativeMilestoneReward
+  rewards?: DeclarativeMilestoneReward
+  labelKey: string
+  createLabelOptions?: () => Record<string, unknown>
+}

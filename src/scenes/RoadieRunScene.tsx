@@ -18,10 +18,14 @@ const keepBriefingOpen = () => {}
  */
 export const RoadieRunScene = () => {
   const { t } = useTranslation(['ui', 'items'])
+  const { changeScene } = useGameActions()
+  const handleComplete = useCallback(
+    () => changeScene(GAME_PHASES.GIG),
+    [changeScene]
+  )
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic({
     requireContrabandBriefing: true
   })
-  const { changeScene } = useGameActions()
   const [showControls, setShowControls] = useState(false)
   const startButtonRef = useRef<HTMLButtonElement | null>(null)
   const { overlayRef, dialogRef } = useModalBehavior(
@@ -33,6 +37,14 @@ export const RoadieRunScene = () => {
     if (uiState.awaitingStart) startButtonRef.current?.focus()
   }, [uiState.awaitingStart])
 
+  useEffect(() => {
+    if (!uiState.isGameOver) return
+    const timer = setTimeout(() => {
+      handleComplete()
+    }, 10000)
+    return () => clearTimeout(timer)
+  }, [uiState.isGameOver, handleComplete])
+
   const logic = useMemo(
     () => ({
       gameStateRef,
@@ -40,11 +52,6 @@ export const RoadieRunScene = () => {
       update
     }),
     [gameStateRef, stats, update]
-  )
-
-  const handleComplete = useCallback(
-    () => changeScene(GAME_PHASES.GIG),
-    [changeScene]
   )
 
   const renderCompletionStats = useCallback(

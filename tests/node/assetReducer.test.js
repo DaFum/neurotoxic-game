@@ -242,6 +242,14 @@ test('handlePurchaseChassis - eligible loan dispatch still mints the chassis and
 
   assert.strictEqual(next.assets[0].id, 'a1')
   assert.ok(next.liabilities.loan_a1)
+  const loan = next.liabilities.loan_a1
+  assert.strictEqual(loan.principalRemaining, configTier.price)
+  assert.strictEqual(loan.interestRate, 0.02)
+  assert.strictEqual(loan.termDaysRemaining, 240)
+  assert.strictEqual(loan.defaultCounter, 0)
+  assert.ok(loan.dailyPayment > 0)
+  // Verify startState liabilities was not mutated
+  assert.deepStrictEqual(startState.liabilities, {})
 })
 
 test('handlePurchaseChassis - uses direct DIY config values', () => {
@@ -411,6 +419,93 @@ test('handleInstallModule - replayed install is a no-op and is not charged again
   assert.notStrictEqual(installed, startState)
   assert.strictEqual(replayed, installed)
   assert.strictEqual(replayed.player.money, installed.player.money)
+})
+
+test('handleInstallModule - preserves pre-generated newSlotIds for addsSlots modules', () => {
+  // Register mock module with addsSlots
+  // @ts-expect-error test mock
+  MODULE_REGISTRY['adds_slots_mod'] = {
+    id: 'adds_slots_mod',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_roof',
+    flavor: 'legit',
+    cost: 100,
+    installCost: 50,
+    removalRefundFraction: 0.5,
+    addsSlots: [{ slotType: 'tb_front', count: 2 }],
+    boni: {},
+    unlock: {},
+    imagePromptKey: 'test'
+  }
+
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 500 },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+      }
+    ]
+  }
+
+  const payload = {
+    assetId: 'a1',
+    slotId: 's1',
+    moduleId: 'adds_slots_mod',
+    newSlotIds: [
+      { slotType: 'tb_front', id: 'prebaked_slot_1' },
+      { slotType: 'tb_front', id: 'prebaked_slot_2' }
+    ]
+  }
+
+  const next = handleInstallModule(startState, payload)
+  assert.strictEqual(next.assets[0].slots.length, 3)
+  assert.strictEqual(next.assets[0].slots[1].id, 'prebaked_slot_1')
+  assert.strictEqual(next.assets[0].slots[2].id, 'prebaked_slot_2')
+  assert.strictEqual(next.assets[0].slots[1].addedByModuleId, 'adds_slots_mod')
+})
+
+test('handleInstallModule - falls back deterministically when newSlotIds is omitted for addsSlots', () => {
+  // @ts-expect-error test mock
+  MODULE_REGISTRY['adds_slots_mod'] = {
+    id: 'adds_slots_mod',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_roof',
+    flavor: 'legit',
+    cost: 100,
+    installCost: 50,
+    removalRefundFraction: 0.5,
+    addsSlots: [{ slotType: 'tb_front', count: 2 }],
+    boni: {},
+    unlock: {},
+    imagePromptKey: 'test'
+  }
+
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 500 },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+      }
+    ]
+  }
+
+  const payload = {
+    assetId: 'a1',
+    slotId: 's1',
+    moduleId: 'adds_slots_mod'
+  }
+
+  const next = handleInstallModule(startState, payload)
+  assert.strictEqual(next.assets[0].slots.length, 3)
+  assert.strictEqual(next.assets[0].slots[1].id, 'a1_s1_tb_front_0')
+  assert.strictEqual(next.assets[0].slots[2].id, 'a1_s1_tb_front_1')
+  assert.strictEqual(next.assets[0].slots[1].addedByModuleId, 'adds_slots_mod')
 })
 
 test('handleUpgradeChassisTier - rejects insufficient funds', () => {
@@ -1073,7 +1168,9 @@ test('handleDismissForeclosureNotice - dismisses notice with overlay-only notice
   const dismissedOverlay = handleDismissForeclosureNotice(overlayOnlyState, {
     kind: 'tourbus_chassis'
   })
-  assert.deepStrictEqual(dismissedOverlay.pendingForeclosureNotices, ['studio_chassis'])
+  assert.deepStrictEqual(dismissedOverlay.pendingForeclosureNotices, [
+    'studio_chassis'
+  ])
   assert.deepStrictEqual(dismissedOverlay.pendingOverlay, {
     kind: 'foreclosure',
     notices: ['studio_chassis']
@@ -1091,7 +1188,9 @@ test('handleDismissForeclosureNotice - dismisses notice with overlay-only notice
   const dismissedMixed = handleDismissForeclosureNotice(mixedState, {
     kind: 'tourbus_chassis'
   })
-  assert.deepStrictEqual(dismissedMixed.pendingForeclosureNotices, ['merch_workshop_chassis'])
+  assert.deepStrictEqual(dismissedMixed.pendingForeclosureNotices, [
+    'merch_workshop_chassis'
+  ])
   assert.deepStrictEqual(dismissedMixed.pendingOverlay, {
     kind: 'foreclosure',
     notices: ['merch_workshop_chassis']

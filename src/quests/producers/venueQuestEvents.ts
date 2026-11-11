@@ -7,16 +7,29 @@ import { sanitizeStringArray } from '../../utils/gameState'
 export const createVenueGigCompletedQuestEvent = ({
   venueId,
   region,
-  score
+  score,
+  capacity,
+  accuracy,
+  failed
 }: {
   venueId: string
   region: string
   score: number
+  capacity?: number
+  accuracy?: number
+  failed?: boolean
 }): QuestEvent => ({
   type: 'venue.gigCompleted',
   amount: 1,
-  success: true,
-  context: { venueId, region, score },
+  success: failed !== true,
+  context: {
+    venueId,
+    region,
+    score,
+    ...(capacity !== undefined && { capacity }),
+    ...(accuracy !== undefined && { accuracy }),
+    ...(failed !== undefined && { failed })
+  },
   tags: [venueId, region]
 })
 
@@ -27,17 +40,28 @@ export const createVenueGoodGigQuestEvent = ({
   venueId,
   region,
   score,
-  capacity
+  capacity,
+  accuracy,
+  failed
 }: {
   venueId: string
   region: string
   score: number
   capacity?: number
+  accuracy?: number
+  failed?: boolean
 }): QuestEvent => ({
   type: 'venue.goodGig',
   amount: 1,
-  success: true,
-  context: { venueId, region, score, capacity },
+  success: failed !== true,
+  context: {
+    venueId,
+    region,
+    score,
+    ...(capacity !== undefined && { capacity }),
+    ...(accuracy !== undefined && { accuracy }),
+    ...(failed !== undefined && { failed })
+  },
   tags: [venueId, region]
 })
 

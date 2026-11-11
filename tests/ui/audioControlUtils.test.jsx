@@ -86,6 +86,16 @@ describe('audioControlUtils', () => {
       expect(resumeResult).toBe(true)
     })
 
+    it('delegates setSfx to setSFXVolume when setSfxVolume is absent on manager', () => {
+      const uppercaseManager = {
+        setMusicVolume: vi.fn(),
+        setSFXVolume: vi.fn()
+      }
+      const handlers = createAudioHandlers(uppercaseManager)
+      handlers.setSfx(0.65)
+      expect(uppercaseManager.setSFXVolume).toHaveBeenCalledWith(0.65)
+    })
+
     it('resumeMusic returns false when returning undefined (error case)', async () => {
       mockManager.resumeMusic.mockImplementation(() => {
         throw new Error('fail')

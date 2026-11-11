@@ -14,7 +14,7 @@ import {
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
 import { isRecordedAppliedValueValid } from '../../../utils/contrabandEffects'
-import { EVENTS_DB } from '../../../data/events'
+import { getEventById } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { resolveActiveBrandDeal } from '../../../utils/brandDealLogic'
@@ -1843,20 +1843,8 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
   return !isEmptyObject(option) ? option : null
 }
 
-let registryEventsById: Map<string, UnknownRecord> | null = null
-
-const getRegistryEvent = (id: string): UnknownRecord | undefined => {
-  if (!registryEventsById) {
-    registryEventsById = new Map()
-    for (const pool of Object.values(EVENTS_DB)) {
-      for (const registered of pool) {
-        if (typeof registered.id === 'string')
-          registryEventsById.set(registered.id, registered)
-      }
-    }
-  }
-  return registryEventsById.get(id)
-}
+const getRegistryEvent = (id: string): UnknownRecord | undefined =>
+  getEventById(id) as UnknownRecord | undefined
 
 // Deep-copies registry data so state never aliases the module-level registry.
 // Only plain objects and arrays are copied: functions and class instances

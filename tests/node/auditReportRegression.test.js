@@ -206,10 +206,14 @@ test('negotiation feedback guard allowlists the exact key union', () => {
 test('milestones do not store raw action objects or raw toast actions', () => {
   const milestones = readSource('src/data/milestones/milestones.ts')
   const reducer = readSource('src/context/gameReducer.ts')
+  const checkMilestones = readSource(
+    'src/domain/progression/checkMilestones.ts'
+  )
   assert.doesNotMatch(milestones, /rewardAction\??:\s*GameAction/)
   assert.doesNotMatch(milestones, /type:\s*ActionTypes\./)
   assert.doesNotMatch(reducer, /type:\s*ActionTypes\.ADD_TOAST/)
-  assert.match(reducer, /createAddToastActionWithId/)
+  // Milestone toasts are built in the pure checkMilestones module, not the reducer.
+  assert.match(checkMilestones, /createAddToastActionWithId/)
   // createAddToastAction mints a random UUID; reducers must stay pure.
   assert.doesNotMatch(reducer, /createAddToastAction\(/)
 })

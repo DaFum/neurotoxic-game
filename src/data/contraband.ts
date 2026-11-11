@@ -478,7 +478,6 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_cursed_setlist',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   {
@@ -492,7 +491,6 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_blood_pick',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   {
@@ -506,7 +504,6 @@ const CONTRABAND_DB = [
     rarity: 'rare',
     icon: 'icon_abyssal_pendant',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   },
   // Sold by the `reststop_trunk_dealer` event (granted through the stash path);
@@ -522,7 +519,6 @@ const CONTRABAND_DB = [
     rarity: 'uncommon',
     icon: 'icon_overdrive',
     stackable: false,
-    maxStacks: 1,
     applyOnAdd: true
   }
 ]

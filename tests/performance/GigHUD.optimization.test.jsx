@@ -5,6 +5,9 @@ import { render, cleanup } from '@testing-library/react'
 vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
+vi.mock('../../src/ui/hud/GigPedalControls.tsx', () => ({
+  GigPedalControls: () => null
+}))
 
 // Create spies with vi.hoisted so they're accessible in vi.mock factories
 // (vi.mock factories are hoisted before const declarations, causing TDZ otherwise)

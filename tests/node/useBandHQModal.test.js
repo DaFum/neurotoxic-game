@@ -10,7 +10,9 @@ const mockSetPendingBandHQOpen = mock.fn()
 mock.module('../../src/context/GameState', {
   namedExports: {
     useGameSelector: mock.fn(selector =>
-      selector({ pendingBandHQOpen: mockPendingBandHQOpen })
+      selector({
+        pendingOverlay: mockPendingBandHQOpen ? { kind: 'band_hq' } : null
+      })
     ),
     useGameActions: mock.fn(() => ({
       setPendingBandHQOpen: mockSetPendingBandHQOpen

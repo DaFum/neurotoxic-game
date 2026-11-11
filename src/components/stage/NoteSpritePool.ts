@@ -34,7 +34,11 @@ export class NoteSpritePool extends BaseSpritePool<NoteSprite> {
   protected maxPoolSize = 64
   noteTextures: NoteTextures = { skull: null, lightning: null }
 
-  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
+  acquireSpriteFromPool(
+    lane: LaneData,
+    laneIndex: number,
+    laneX?: number
+  ): NoteSprite {
     const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
       ? this.noteTextures.lightning
@@ -61,8 +65,9 @@ export class NoteSpritePool extends BaseSpritePool<NoteSprite> {
     }
     sprite.isFallback = !effectiveTexture
 
+    const x = typeof laneX === 'number' ? laneX : (lane.renderX ?? 0)
     sprite.tint = lane.color
-    sprite.x = (lane.renderX ?? 0) + NOTE_CENTER_OFFSET
+    sprite.x = x + NOTE_CENTER_OFFSET
     sprite.y = NOTE_INITIAL_Y
 
     if (sprite.isFallback) {

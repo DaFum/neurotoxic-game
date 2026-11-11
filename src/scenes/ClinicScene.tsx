@@ -1,14 +1,27 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../ui/GlitchButton'
 import { useClinicLogic } from '../hooks/useClinicLogic'
 import { ClinicHeader } from '../components/clinic/ClinicHeader'
 import { ClinicMemberCard } from '../components/clinic/ClinicMemberCard'
+import { GraftModal } from '../components/clinic/GraftModal'
+import { CLINIC_GRAFT_COST } from '../context/gameConstants'
+import type { BandMember } from '../types'
+
+/**
+ * Discriminated union representing active modal state in the clinic scene.
+ */
+export type ClinicModalState =
+  | null
+  | { kind: 'graft'; member: BandMember }
+  | { kind: 'therapy'; member?: BandMember }
 
 /**
  * Hosts the Void Clinic flow for healing or enhancing band members.
  */
 export const ClinicScene = () => {
   const { t } = useTranslation(['ui'])
+  const [activeModal, setActiveModal] = useState<ClinicModalState>(null)
   const {
     player,
     band,
@@ -48,7 +61,9 @@ export const ClinicScene = () => {
               enhanceCostFame={enhanceCostFame}
               healMember={healMember}
               enhanceMember={enhanceMember}
-              graftNeuroOverclock={graftNeuroOverclock}
+              onRequestGraft={targetMember =>
+                setActiveModal({ kind: 'graft', member: targetMember })
+              }
             />
           ))}
         </div>
@@ -59,6 +74,24 @@ export const ClinicScene = () => {
           </GlitchButton>
         </footer>
       </div>
+
+      {activeModal?.kind === 'graft' && (
+        <GraftModal
+          isOpen={true}
+          onClose={() => setActiveModal(null)}
+          onConfirm={() => {
+            if (activeModal.member.id) {
+              graftNeuroOverclock(activeModal.member.id)
+            }
+            setActiveModal(null)
+          }}
+          memberName={
+            activeModal.member.name ||
+            t('ui:clinic.unknown_member', { defaultValue: 'Unknown' })
+          }
+          cost={CLINIC_GRAFT_COST}
+        />
+      )}
     </div>
   )
 }

@@ -1,13 +1,12 @@
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
-import { finiteNumberOr } from '../../utils/finiteNumber'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
-import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
-import { GraftModal } from './GraftModal'
 import { hasTrait, NEURO_OVERCLOCK_TRAIT_ID } from '../../utils/traitUtils'
+import { getClinicActionAvailability } from '../../utils/clinicLogicUtils'
+import type { ClinicActionAvailability } from '../../types/band'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -27,19 +26,6 @@ const ActionButtonWrapper = ({
 }
 
 /**
- * Picks the first reason that applies, so each action can list its blockers
- * in priority order instead of nesting a ternary per blocker.
- */
-const firstReason = (
-  ...candidates: Array<string | false | null>
-): string | null => {
-  for (const candidate of candidates) {
-    if (candidate) return candidate
-  }
-  return null
-}
-
-/**
  * Displays one band member's clinic treatment options and affordability state.
  * @param props - Band member, player resources, clinic costs, and heal/enhance callbacks.
  */
@@ -51,22 +37,37 @@ export const ClinicMemberCard = ({
   enhanceCostFame,
   healMember,
   enhanceMember,
-  graftNeuroOverclock
+  onRequestGraft
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = spendableMoney >= CLINIC_GRAFT_COST
   const hasGraft = hasTrait(member, NEURO_OVERCLOCK_TRAIT_ID)
-  const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
-  // Same fallback as the reducer: an upgraded `staminaMax` raises the ceiling.
-  const isFullyHealed =
-    member.stamina >= finiteNumberOr(member.staminaMax, 100) &&
-    (CLINIC_CONFIG.HEAL_MOOD_GAIN <= 0 || member.mood >= 100)
-  const missingMemberReason = !memberId
-    ? t('ui:clinic.invalidMember', {
-        defaultValue: 'Member unavailable'
-      })
-    : null
+
+  const healAvailability = getClinicActionAvailability(
+    { type: 'heal', member },
+    { spendableMoney, healCostMoney }
+  )
+  const cyberLungsAvailability = getClinicActionAvailability(
+    { type: 'enhance', member, traitId: CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID },
+    { fame: player.fame, enhanceCostFame }
+  )
+  const ironLiverAvailability = getClinicActionAvailability(
+    { type: 'enhance', member, traitId: CLINIC_CONFIG.IRON_LIVER_TRAIT_ID },
+    { fame: player.fame, enhanceCostFame }
+  )
+  const graftAvailability = getClinicActionAvailability(
+    { type: 'graft', member, traitId: NEURO_OVERCLOCK_TRAIT_ID },
+    { spendableMoney, graftCostMoney: CLINIC_GRAFT_COST }
+  )
+
+  const getDisabledReason = (
+    availability: ClinicActionAvailability
+  ): string | null => {
+    if (availability.isAvailable) return null
+    return t(availability.reasonKey || '', {
+      defaultValue: availability.defaultReason
+    })
+  }
 
   return (
     <m.div
@@ -90,17 +91,7 @@ export const ClinicMemberCard = ({
 
       <div className='flex flex-col gap-2 mt-auto'>
         <ActionButtonWrapper
-          disabledReason={firstReason(
-            missingMemberReason,
-            spendableMoney < healCostMoney &&
-              t('ui:clinic.notEnoughMoney', {
-                defaultValue: 'Not enough money'
-              }),
-            isFullyHealed &&
-              t('ui:clinic.fullyHealed', {
-                defaultValue: 'Member is already fully healed'
-              })
-          )}
+          disabledReason={getDisabledReason(healAvailability)}
         >
           {disabled => (
             <GlitchButton
@@ -121,17 +112,7 @@ export const ClinicMemberCard = ({
         </ActionButtonWrapper>
 
         <ActionButtonWrapper
-          disabledReason={firstReason(
-            missingMemberReason,
-            player.fame < enhanceCostFame &&
-              t('ui:clinic.notEnoughFame', {
-                defaultValue: 'Not enough fame'
-              }),
-            hasTrait(member, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID) &&
-              t('ui:clinic.alreadyEnhanced', {
-                defaultValue: 'Member already has this enhancement'
-              })
-          )}
+          disabledReason={getDisabledReason(cyberLungsAvailability)}
         >
           {disabled => (
             <GlitchButton
@@ -154,17 +135,7 @@ export const ClinicMemberCard = ({
         </ActionButtonWrapper>
 
         <ActionButtonWrapper
-          disabledReason={firstReason(
-            missingMemberReason,
-            player.fame < enhanceCostFame &&
-              t('ui:clinic.notEnoughFame', {
-                defaultValue: 'Not enough fame'
-              }),
-            hasTrait(member, CLINIC_CONFIG.IRON_LIVER_TRAIT_ID) &&
-              t('ui:clinic.alreadyEnhanced', {
-                defaultValue: 'Member already has this enhancement'
-              })
-          )}
+          disabledReason={getDisabledReason(ironLiverAvailability)}
         >
           {disabled => (
             <GlitchButton
@@ -188,21 +159,13 @@ export const ClinicMemberCard = ({
 
         <div className='mt-3 border-t border-toxic-green/30 pt-3'>
           <ActionButtonWrapper
-            disabledReason={firstReason(
-              missingMemberReason,
-              !canAffordGraft &&
-                t('ui:clinic.notEnoughMoney', {
-                  defaultValue: 'Not enough money'
-                }),
-              hasGraft &&
-                t('ui:clinic.alreadyGrafted', {
-                  defaultValue: 'Member already has this graft'
-                })
-            )}
+            disabledReason={getDisabledReason(graftAvailability)}
           >
             {disabled => (
               <GlitchButton
-                onClick={() => setIsGraftModalOpen(true)}
+                onClick={() => {
+                  onRequestGraft(member)
+                }}
                 disabled={disabled}
                 variant='danger'
                 className='w-full text-xs py-2'
@@ -220,22 +183,6 @@ export const ClinicMemberCard = ({
           </ActionButtonWrapper>
         </div>
       </div>
-
-      <GraftModal
-        isOpen={isGraftModalOpen}
-        onClose={() => setIsGraftModalOpen(false)}
-        onConfirm={() => {
-          if (memberId) {
-            graftNeuroOverclock(memberId)
-          }
-          setIsGraftModalOpen(false)
-        }}
-        memberName={
-          member.name ||
-          t('ui:clinic.unknown_member', { defaultValue: 'Unknown' })
-        }
-        cost={CLINIC_GRAFT_COST}
-      />
     </m.div>
   )
 }

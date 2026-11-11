@@ -234,7 +234,6 @@ const initialState: GameState = {
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
   pendingOverlay: null,
-  pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
   terminalOutcome: null,
   pendingForeclosureNotices: [],

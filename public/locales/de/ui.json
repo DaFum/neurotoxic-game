@@ -89,6 +89,7 @@
   "clinic.execute_mutation": "MUTATION AUSFÜHREN",
   "clinic.fame": "RUHM:",
   "clinic.fullyHealed": "Bandmitglied ist bereits vollständig geheilt",
+  "clinic.fullyRested": "Bandmitglied ist bereits vollständig erholt",
   "clinic.funds": "GELD:",
   "clinic.graft_button": "[ IMPLANTAT: NEURO-OVERCLOCK {{cost}} ]",
   "clinic.graft_button_applied": "[ IMPLANTIERT ]",

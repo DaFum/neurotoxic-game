@@ -8,9 +8,7 @@ import { useDisclosure } from './useDisclosure'
  */
 export const useBandHQModal = () => {
   const pendingBandHQOpen = useGameSelector(
-    state =>
-      state.pendingOverlay?.kind === 'band_hq' ||
-      Boolean(state.pendingBandHQOpen)
+    state => state.pendingOverlay?.kind === 'band_hq'
   )
   const { setPendingBandHQOpen } = useGameActions()
 
@@ -21,10 +19,10 @@ export const useBandHQModal = () => {
   } = useDisclosure(pendingBandHQOpen)
 
   // Cross-scene opening (e.g. from MainMenu into Overworld) arrives as the
-  // persisted `pendingBandHQOpen` flag; consume it and clear it.
+  // `pendingOverlay: { kind: 'band_hq' }`; consume it and clear it.
   useEffect(() => {
     if (!pendingBandHQOpen) return
-    // Syncing local visibility from the persisted cross-scene flag is the
+    // Syncing local visibility from the pending overlay flag is the
     // point of this effect; the state update is intentional.
     openHQ()
     setPendingBandHQOpen(false)

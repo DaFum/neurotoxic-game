@@ -1,6 +1,10 @@
 import { Application, Container } from 'pixi.js'
 import type { RefObject } from 'react'
-import { calculateNoteY, getPixiColorFromToken } from './stageRenderUtils'
+import {
+  calculateLaneX,
+  calculateNoteY,
+  getPixiColorFromToken
+} from './stageRenderUtils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,
@@ -24,13 +28,56 @@ type StageState = {
   modifiers?: { noteJitter?: boolean }
   speed: number
 }
-type LaneLayout = { hitLineY?: number }
+export type LaneLayout = {
+  hitLineY?: number
+  startX?: number
+  laneWidth?: number
+  laneGap?: number
+  laneXPositions?: number[]
+}
 type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
 
-const getLaneRenderX = (lane: StageLane): number =>
-  // RhythmGameRefState keeps renderX optional while lanes are being laid out.
-  // Before layout completes, render notes at the left edge instead of crashing.
-  lane.renderX ?? 0
+/**
+ * Resolves the horizontal X position for a lane using render layout coordinates.
+ *
+ * @param laneIndex - The zero-based index of the lane.
+ * @param layout - Optional rhythm stage layout metrics.
+ * @param laneXPositions - Optional precalculated array of lane X coordinates.
+ * @param fallbackLane - Optional fallback lane object for test compatibility.
+ * @returns The resolved X coordinate.
+ */
+export const getLaneX = (
+  laneIndex: number,
+  layout?: LaneLayout | null,
+  laneXPositions?: number[] | null,
+  fallbackLane?: StageLane | null
+): number => {
+  if (laneXPositions && typeof laneXPositions[laneIndex] === 'number') {
+    return laneXPositions[laneIndex]
+  }
+  if (
+    layout?.laneXPositions &&
+    typeof layout.laneXPositions[laneIndex] === 'number'
+  ) {
+    return layout.laneXPositions[laneIndex]
+  }
+  if (
+    layout &&
+    typeof layout.startX === 'number' &&
+    typeof layout.laneWidth === 'number'
+  ) {
+    return calculateLaneX(
+      layout.startX,
+      layout.laneWidth,
+      layout.laneGap,
+      laneIndex
+    )
+  }
+  if (fallbackLane && typeof fallbackLane.renderX === 'number') {
+    return fallbackLane.renderX
+  }
+  return 0
+}
 
 /**
  * Manages Note rendering resources and state.
@@ -90,12 +137,17 @@ export class NoteManager {
     }
   }
 
-  update(state: StageState, elapsed: number, laneLayout: LaneLayout): void {
+  update(
+    state: StageState,
+    elapsed: number,
+    laneLayout: LaneLayout,
+    laneXPositions?: number[]
+  ): void {
     const targetY = laneLayout?.hitLineY ?? 0
 
     this._handleSongTransitions(state)
-    this._spawnNewNotes(state, elapsed)
-    this._updateActiveNotes(state, elapsed, targetY)
+    this._spawnNewNotes(state, elapsed, laneLayout, laneXPositions)
+    this._updateActiveNotes(state, elapsed, targetY, laneLayout, laneXPositions)
   }
 
   _handleSongTransitions(state: StageState): void {
@@ -117,7 +169,12 @@ export class NoteManager {
     }
   }
 
-  _spawnNewNotes(state: StageState, elapsed: number): void {
+  _spawnNewNotes(
+    state: StageState,
+    elapsed: number,
+    laneLayout?: LaneLayout,
+    laneXPositions?: number[]
+  ): void {
     const notes = state.notes
     while (this.nextRenderIndex < notes.length) {
       const note = notes[this.nextRenderIndex]
@@ -130,7 +187,17 @@ export class NoteManager {
             // ⚡ BOLT OPTIMIZATION: Pass lane directly to acquireSpriteFromPool instead of creating a shallow clone
             // Why: Prevents creating `{ ...lane, renderX }` object allocations on every note spawn during active gameplay.
             // Impact: Eliminates object allocation and garbage collection pressure for every spawned rhythm note.
-            const sprite = this.pool.acquireSpriteFromPool(lane, note.laneIndex)
+            const laneX = getLaneX(
+              note.laneIndex,
+              laneLayout,
+              laneXPositions,
+              lane
+            )
+            const sprite = this.pool.acquireSpriteFromPool(
+              lane,
+              note.laneIndex,
+              laneX
+            )
             this.container.addChild(sprite)
 
             // ⚡ BOLT OPTIMIZATION: Recycle wrapper objects from entityPool instead of instantiating `{ note, sprite }`
@@ -152,7 +219,9 @@ export class NoteManager {
   _updateActiveNotes(
     state: StageState,
     elapsed: number,
-    targetY: number
+    targetY: number,
+    laneLayout?: LaneLayout,
+    laneXPositions?: number[]
   ): void {
     let writeIdx = 0
     for (let i = 0; i < this.activeEntities.length; i++) {
@@ -187,18 +256,17 @@ export class NoteManager {
       sprite.y = calculateNoteY(elapsed, note.time, targetY, state.speed)
 
       // Unified positioning logic for both texture and fallback sprites
-      // Fallback sprites (isFallback=true) do not jitter and are centered at renderX + 50
-      // Normal sprites jitter and are also centered at renderX + 50
+      // Fallback sprites (isFallback=true) do not jitter and are centered at laneX + 50
+      // Normal sprites jitter and are also centered at laneX + 50
       const lane = state.lanes[note.laneIndex]
       if (!lane) {
         this.pool?.destroyNoteSprite(sprite)
         this.entityPool.push(entity)
         continue
       }
+      const laneX = getLaneX(note.laneIndex, laneLayout, laneXPositions, lane)
       sprite.x =
-        getLaneRenderX(lane) +
-        NOTE_CENTER_OFFSET +
-        (sprite.isFallback ? 0 : jitterOffset)
+        laneX + NOTE_CENTER_OFFSET + (sprite.isFallback ? 0 : jitterOffset)
 
       this.activeEntities[writeIdx++] = entity
     }

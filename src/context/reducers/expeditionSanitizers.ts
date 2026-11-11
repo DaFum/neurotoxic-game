@@ -359,13 +359,21 @@ const sanitizeBuildCommitment = (value: unknown): ExpeditionBuildCommitment => {
  * Region identity is missing.
  */
 const sanitizeExpeditionLoadout = (
-  value: unknown
+  value: unknown,
+  fallbackInsurancePolicyId?: unknown
 ): ExpeditionLoadout | null => {
   if (!isLooseRecord(value)) return null
   const tourTypeId = readString(value, 'tourTypeId')
   const regionId = readString(value, 'regionId')
   if (!tourTypeId || !regionId) return null
   const cargo = isLooseRecord(value.cargo) ? value.cargo : {}
+  const rawPolicyId =
+    Object.hasOwn(value, 'insurancePolicyId') &&
+    value.insurancePolicyId !== undefined
+      ? readString(value, 'insurancePolicyId')
+      : typeof fallbackInsurancePolicyId === 'string'
+        ? fallbackInsurancePolicyId
+        : null
   return {
     tourTypeId,
     regionId,
@@ -377,9 +385,7 @@ const sanitizeExpeditionLoadout = (
     },
     starterPerkId: readString(value, 'starterPerkId'),
     nativeContracts: sanitizeNativeContracts(value.nativeContracts),
-    insurancePolicyId:
-      getExpeditionInsurancePolicy(readString(value, 'insurancePolicyId'))
-        ?.id ?? null,
+    insurancePolicyId: getExpeditionInsurancePolicy(rawPolicyId)?.id ?? null,
     pressureModifierIds: sanitizeUniqueStrings(value.pressureModifierIds),
     build: sanitizeBuildCommitment(value.build)
   }
@@ -593,7 +599,10 @@ export const sanitizeExpeditionState = (
     ? readString(value.prep, 'prepId')
     : null
   const runId = readString(value, 'runId')
-  const loadout = sanitizeExpeditionLoadout(value.loadout)
+  const loadout = sanitizeExpeditionLoadout(
+    value.loadout,
+    readString(value, 'insurancePolicyId')
+  )
   const outcome = sanitizeOutcome(value.outcome)
 
   // Identity requirements per status. A save that fails one of these describes
@@ -967,20 +976,16 @@ export const sanitizeExpeditionState = (
       readString(value, 'metaUnlockQuestCompletedRunId') === runId
         ? runId
         : null,
-    // Like protectedCareerCash, a committed build is authoritative: a save
-    // cannot add a policy whose premium the run never paid.
-    insurancePolicyId:
-      getExpeditionInsurancePolicy(
-        loadout
-          ? loadout.insurancePolicyId
-          : readString(value, 'insurancePolicyId')
-      )?.id ?? null,
-    insuranceClaimConsumed:
-      readBoolean(value, 'insuranceClaimConsumed') ||
-      readBoolean(value, 'claimConsumed'),
-    claimConsumed:
-      readBoolean(value, 'claimConsumed') ||
-      readBoolean(value, 'insuranceClaimConsumed'),
+    insurance: {
+      claimConsumed:
+        (isLooseRecord(value.insurance) &&
+        Object.hasOwn(value.insurance, 'claimConsumed') &&
+        value.insurance.claimConsumed !== undefined
+          ? readBoolean(value.insurance, 'claimConsumed')
+          : undefined) ??
+        (readBoolean(value, 'insuranceClaimConsumed') ||
+          readBoolean(value, 'claimConsumed'))
+    },
     technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
     authorityHiddenCompartmentUsed: readBoolean(
       value,

@@ -144,6 +144,17 @@ describe('NoteSpritePool', () => {
     assert.equal(sprite.height, 80) // NOTE_SPRITE_SIZE
   })
 
+  test('acquireSpriteFromPool positions sprite with explicit laneX coordinate', () => {
+    pool.noteTextures.skull = { id: 'skull' }
+    const lane = { color: 0x00ff00 } // No renderX
+
+    const sprite = pool.acquireSpriteFromPool(lane, 0, 320)
+
+    assert.ok(sprite instanceof PIXI.Sprite)
+    assert.equal(sprite.tint, 0x00ff00)
+    assert.equal(sprite.x, 370) // 320 + 50 (NOTE_CENTER_OFFSET)
+  })
+
   test('acquireSpriteFromPool reuses a sprite from the pool', () => {
     pool.noteTextures.skull = { id: 'skull' }
     const lane = { color: 0x00ff00, renderX: 200 }

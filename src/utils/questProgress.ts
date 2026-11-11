@@ -189,10 +189,28 @@ const buildEventContext = (
     context.dealType = dealType
   }
 
-  const numberKeys = ['score', 'capacity'] as const
+  const numberKeys = ['score', 'capacity', 'accuracy'] as const
   for (const key of numberKeys) {
     const value = readOwnNumber(eventRecord, key)
     if (value !== undefined) context[key] = value
+  }
+
+  const failed = readOwnBoolean(eventRecord, 'failed')
+  if (failed !== undefined) {
+    context.failed = failed
+  }
+
+  if (context.score !== undefined && !isFiniteNumber(context.score)) {
+    delete context.score
+  }
+  if (context.capacity !== undefined && !isFiniteNumber(context.capacity)) {
+    delete context.capacity
+  }
+  if (context.accuracy !== undefined && !isFiniteNumber(context.accuracy)) {
+    delete context.accuracy
+  }
+  if (context.failed !== undefined && typeof context.failed !== 'boolean') {
+    delete context.failed
   }
 
   const category = readOwnString(eventRecord, 'category')
@@ -229,39 +247,21 @@ const normalizeQuestEvent = (
   const type = canonicalizeEventType(event.type)
   if (!type) return undefined
   const eventRecord = event as unknown as Record<string, unknown>
+  const context = buildEventContext(eventRecord)
+  const explicitSuccess = readOwnBoolean(eventRecord, 'success')
+  const success =
+    explicitSuccess !== undefined
+      ? explicitSuccess
+      : typeof context.failed === 'boolean'
+        ? !context.failed
+        : undefined
   return {
     type,
-    context: buildEventContext(eventRecord),
+    context,
     amount: readOwnNumber(eventRecord, 'amount'),
-    success: readOwnBoolean(eventRecord, 'success'),
+    success,
     tags: readOwnStringArray(eventRecord, 'tags') ?? []
   }
-}
-
-const withDefaultScope = (
-  rule: QuestProgressRule,
-  repeatPolicy: QuestRepeatPolicy | undefined
-): QuestProgressRule => {
-  if (rule.match?.scope || repeatPolicy == null) return rule
-  if (repeatPolicy === 'perVenue') {
-    return { ...rule, match: { ...(rule.match ?? {}), scope: 'venue' } }
-  }
-  if (repeatPolicy === 'perRegion') {
-    return { ...rule, match: { ...(rule.match ?? {}), scope: 'region' } }
-  }
-  return rule
-}
-
-const normalizeProgressRules = (
-  quest: QuestState,
-  repeatPolicy: QuestRepeatPolicy | undefined
-): QuestProgressRule[] => {
-  // Single container: migrateLegacyQuestSchema folds the singular
-  // progressRule and a bare progressSource into progressRules at the
-  // addQuest and save-load boundaries, so this runs per event per quest
-  // without re-deciding which of three shapes the quest uses.
-  if (!Array.isArray(quest.progressRules)) return []
-  return quest.progressRules.map(rule => withDefaultScope(rule, repeatPolicy))
 }
 
 const matchesString = (
@@ -280,7 +280,13 @@ const matchesScope = (
   match: QuestProgressRuleMatch | undefined,
   context: QuestEventContext
 ): boolean => {
-  const scope = match?.scope
+  const scope =
+    match?.scope ??
+    (quest.repeatPolicy === 'perVenue'
+      ? 'venue'
+      : quest.repeatPolicy === 'perRegion'
+        ? 'region'
+        : undefined)
   if (!scope || scope === 'none') return true
   if (typeof quest.scopeKey !== 'string' || quest.scopeKey.length === 0) {
     return false
@@ -423,9 +429,8 @@ export const QuestProgress = {
       const quest: QuestState = registryEntry
         ? { ...(registryEntry as Partial<QuestState>), ...activeQuest }
         : activeQuest
-      const repeatPolicy = quest.repeatPolicy
-      const rules = normalizeProgressRules(quest, repeatPolicy)
-      if (rules.length === 0) continue
+      const rules = quest.progressRules
+      if (!Array.isArray(rules) || rules.length === 0) continue
 
       for (const rule of rules) {
         if (!questRuleMatchesEvent(quest, rule, normalizedEvent)) continue

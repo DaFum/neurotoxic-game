@@ -1,6 +1,7 @@
 import type {
   GigEconomyData,
   EconomyContext,
+  NormalizedEconomySocial,
   GigStatsLike,
   BandInventoryLike,
   MapPoint,
@@ -11,6 +12,7 @@ import type {
 export type {
   GigEconomyData,
   EconomyContext,
+  NormalizedEconomySocial,
   GigStatsLike,
   BandInventoryLike,
   MapPoint,

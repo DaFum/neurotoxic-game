@@ -114,9 +114,9 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   intelGrants: [],
   scoutReconUsedRouteSteps: [],
   loadout: null,
-  insurancePolicyId: null,
-  insuranceClaimConsumed: false,
-  claimConsumed: false,
+  insurance: {
+    claimConsumed: false
+  },
   technicalFailureAccepted: false,
   authorityHiddenCompartmentUsed: false,
   startingMoney: 0,

@@ -223,6 +223,95 @@ describe('Contraband Schema (with imagePrompt)', () => {
       )
     })
 
+    it('rejects equipment with duration or maxStacks', () => {
+      const result = validateContrabandItem({
+        id: 'c_bad_equipment_props',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_bad_equipment.name',
+        type: 'equipment',
+        effectType: 'luck',
+        value: 5,
+        description: 'items:contraband.c_bad_equipment.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false,
+        applyOnAdd: true,
+        duration: 2,
+        maxStacks: 1
+      })
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('equipment must not specify duration'))
+      assert.ok(result.errors.includes('equipment must not specify maxStacks'))
+    })
+
+    it('rejects relic items with maxStacks or applyOnAdd but allows duration', () => {
+      const result = validateContrabandItem({
+        id: 'c_bad_relic',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_bad_relic.name',
+        type: 'relic',
+        effectType: 'stamina',
+        value: 10,
+        description: 'items:contraband.c_bad_relic.description',
+        rarity: 'rare',
+        icon: 'icon_test',
+        stackable: false,
+        duration: 2,
+        maxStacks: 3,
+        applyOnAdd: true
+      })
+
+      assert.equal(result.ok, false)
+      assert.equal(
+        result.errors.includes('relics must not specify duration'),
+        false
+      )
+      assert.ok(result.errors.includes('relics must not specify maxStacks'))
+      assert.ok(
+        result.errors.includes('only equipment may use applyOnAdd=true')
+      )
+    })
+
+    it('keeps duration on a valid relic', () => {
+      const result = validateContrabandItem({
+        id: 'c_good_relic',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_good_relic.name',
+        type: 'relic',
+        effectType: 'stamina',
+        value: 10,
+        description: 'items:contraband.c_good_relic.description',
+        rarity: 'rare',
+        icon: 'icon_test',
+        stackable: false,
+        duration: 2
+      })
+
+      assert.equal(result.ok, true)
+      assert.equal(result.value.duration, 2)
+    })
+
+    it('accepts instantaneous and non-stackable consumables without duration or maxStacks', () => {
+      const instantaneous = validateContrabandItem({
+        id: 'c_instant_consumable',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_instant.name',
+        type: 'consumable',
+        effectType: 'stamina',
+        value: 50,
+        description: 'items:contraband.c_instant.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false
+      })
+
+      assert.equal(instantaneous.ok, true)
+      assert.equal(instantaneous.value?.type, 'consumable')
+      assert.equal(instantaneous.value?.duration, undefined)
+      assert.equal(instantaneous.value?.maxStacks, undefined)
+    })
+
     it('should have all items with imagePrompt field', () => {
       for (const item of CONTRABAND_DB) {
         assert.equal(

@@ -246,7 +246,7 @@ export interface ClinicMemberCardProps {
   enhanceCostFame: number
   healMember: (memberId: string) => void
   enhanceMember: (memberId: string, traitId: string) => void
-  graftNeuroOverclock: (memberId: string) => void
+  onRequestGraft: (member: BandMember) => void
 }
 
 /**

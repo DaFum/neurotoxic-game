@@ -89,6 +89,7 @@
   "clinic.execute_mutation": "EXECUTE MUTATION",
   "clinic.fame": "FAME:",
   "clinic.fullyHealed": "Member is already fully healed",
+  "clinic.fullyRested": "Member is already fully rested",
   "clinic.funds": "FUNDS:",
   "clinic.graft_button": "[ GRAFT: NEURO-OVERCLOCK {{cost}} ]",
   "clinic.graft_button_applied": "[ GRAFTED ]",

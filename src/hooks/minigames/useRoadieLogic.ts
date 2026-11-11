@@ -1,7 +1,6 @@
 import { useGamepadActions } from '../../hooks/gamepad/GamepadContext'
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { GAME_PHASES } from '../../context/gameConstants'
 import { finiteNumberOr } from '../../utils/gameState'
 import { getCarriedContrabandStash } from '../../domain/expedition/cargo'
 import {
@@ -158,47 +157,22 @@ function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
   }, [move])
 }
 
-function useRoadieSceneTransition(
-  isGameOver: boolean,
-  currentScene: string,
-  changeScene: (scene: (typeof GAME_PHASES)[keyof typeof GAME_PHASES]) => void
-) {
-  const currentSceneRef = useRef(currentScene)
-  const hasTransitionedRef = useRef(false)
-
-  useEffect(() => {
-    currentSceneRef.current = currentScene
-  }, [currentScene])
-
-  useEffect(() => {
-    if (isGameOver && currentScene === GAME_PHASES.PRE_GIG_MINIGAME) {
-      if (hasTransitionedRef.current) return
-
-      const timeout = setTimeout(() => {
-        if (
-          currentSceneRef.current === GAME_PHASES.PRE_GIG_MINIGAME &&
-          !hasTransitionedRef.current
-        ) {
-          hasTransitionedRef.current = true
-          changeScene(GAME_PHASES.GIG)
-        }
-      }, 10000)
-      return () => clearTimeout(timeout)
-    }
-  }, [isGameOver, currentScene, changeScene])
+export interface RoadieLogicOptions {
+  requireContrabandBriefing?: boolean
 }
 
 /**
  * Owns roadie minigame state, traffic updates, movement controls, and completion dispatch.
  *
- * @param options - Whether escorted contraband requires a pre-play acknowledgement.
+ * @param options - Configuration options for the roadie minigame.
  * @returns Mutable stage state, UI state, movement controls, and update callback.
  */
-export const useRoadieLogic = ({ requireContrabandBriefing = false } = {}) => {
-  const currentScene = useGameSelector(state => state.currentScene)
+export const useRoadieLogic = ({
+  requireContrabandBriefing = false
+}: RoadieLogicOptions = {}) => {
   const band = useGameSelector(state => state.band)
   const expedition = useGameSelector(state => state.expedition)
-  const { completeRoadieMinigame, changeScene } = useGameActions()
+  const { completeRoadieMinigame } = useGameActions()
 
   // Pick the first real stash item to escort, if any; capture its id for
   // the completion callback so the reducer can consume the right item.
@@ -365,7 +339,6 @@ export const useRoadieLogic = ({ requireContrabandBriefing = false } = {}) => {
     { kind: 'gameplay', enabled: !uiState.isGameOver && !uiState.awaitingStart }
   )
   useRoadieKeyboardControls(move)
-  useRoadieSceneTransition(uiState.isGameOver, currentScene, changeScene)
 
   const start = useCallback(() => {
     setUiState(prev => ({ ...prev, awaitingStart: false }))

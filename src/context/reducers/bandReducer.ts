@@ -542,7 +542,7 @@ export const handleCraftItem = (
     // Revert apply-on-add equipment effects if the item is being fully deleted
     if (current - qty <= 0) {
       const itemDef = CONTRABAND_BY_ID.get(itemId)
-      if (itemDef?.applyOnAdd && itemDef.type === 'equipment') {
+      if (itemDef?.type === 'equipment' && itemDef.applyOnAdd) {
         applySharedBandEffect(
           consumedBand,
           itemDef.effectType,

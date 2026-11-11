@@ -1,16 +1,12 @@
 import { memo, useMemo } from 'react'
-import { useGameSelector, useGameActions } from '../context/GameState'
-import { audioService } from '../utils/audio/audioEngine'
+import { useGameSelector } from '../context/GameState'
 import { useTranslation } from 'react-i18next'
-import { Skull } from 'lucide-react'
-import { Tooltip } from './shared'
 import {
   BandStatusPanel,
   PlayerStatusCard
 } from './hud/shared/SharedHUDComponents'
 import { GigControlsCluster } from './hud/GigControlsCluster'
 import { translateLocation } from '../utils/locationI18n'
-import { GAME_PHASES } from '../context/gameConstants'
 import { readVanCondition } from '../utils/gameState'
 
 /**
@@ -25,128 +21,39 @@ export const HUD = memo(() => {
     readVanCondition(state.player?.van?.condition)
   )
 
-  const hasNeuroDecimator = useGameSelector(
-    state => !!state.band?.inventory?.neuroDecimator
-  )
-  const neuroDecimatorActive = useGameSelector(
-    state => !!state.band?.neuroDecimatorActive
-  )
-  const hasNeurotoxicPedal = useGameSelector(
-    state => !!state.band?.inventory?.neurotoxicPedal
-  )
   const bandHarmony = useGameSelector(state => state.band?.harmony ?? 0)
   const bandMembers = useGameSelector(state => state.band?.members)
-  // PRACTICE (Bandprobe) renders the same Gig view, so it hides the same panels.
-  const isGigScene = useGameSelector(
-    state =>
-      state.currentScene === GAME_PHASES.GIG ||
-      state.currentScene === GAME_PHASES.PRACTICE
-  )
 
   // Only the fields BandStatusPanel reads, so band mutations elsewhere
-  // (inventory, decimator state) no longer re-render the panel.
+  // no longer re-render the panel.
   const bandStatus = useMemo(
     () => ({ harmony: bandHarmony, members: bandMembers ?? [] }),
     [bandHarmony, bandMembers]
   )
 
-  const { toggleNeuroDecimator } = useGameActions()
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, playerLocation, playerLocation)
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
-      {/* Left Panel - Player Info (hidden during gigs) */}
+      {/* Left Panel - Player Info */}
       <div className='flex flex-col gap-2 min-w-0'>
-        {!isGigScene && (
-          <PlayerStatusCard
-            money={playerMoney}
-            day={playerDay}
-            locationName={locationName}
-            fuel={playerVanFuel}
-            condition={playerVanCondition}
-            language={i18n.language}
-            t={t}
-          />
-        )}
+        <PlayerStatusCard
+          money={playerMoney}
+          day={playerDay}
+          locationName={locationName}
+          fuel={playerVanFuel}
+          condition={playerVanCondition}
+          language={i18n.language}
+          t={t}
+        />
 
-        {/* During gigs these controls live in the GigHUD's collapsed
-            controls cluster; keyboard shortcuts stay registered above. */}
-        {!isGigScene && (
-          <GigControlsCluster className='relative z-(--z-hud) pointer-events-none' />
-        )}
+        <GigControlsCluster className='relative z-(--z-hud) pointer-events-none' />
       </div>
 
-      {/* Right Panel - Band Status. During gigs only the decimator/pedal
-          controls stay visible, pushed below the GigHUD top-edge meter bar. */}
-      <div
-        className={`flex flex-col gap-2 items-end shrink-0 ${isGigScene ? 'mt-24' : ''}`}
-      >
-        {hasNeuroDecimator && (
-          <Tooltip
-            content={t('ui:hud.decimatorHint', {
-              defaultValue: 'Toggles the neuro-decimator audio effect'
-            })}
-            position='bottom'
-          >
-            <button
-              onClick={() => {
-                const nextState = !neuroDecimatorActive
-                toggleNeuroDecimator(nextState)
-                audioService.setNeuroDecimator(nextState)
-              }}
-              type='button'
-              aria-label={t('ui:hud.toggleDecimator', {
-                defaultValue: 'Toggle decimator'
-              })}
-              aria-pressed={neuroDecimatorActive}
-              className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
-                neuroDecimatorActive
-                  ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
-                  : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
-              }`}
-            >
-              <Skull size={14} className='inline mr-2' aria-hidden='true' />
-              <span className='font-black uppercase tracking-wider text-xs'>
-                {neuroDecimatorActive
-                  ? t('ui:hud.decimatorActive', {
-                      defaultValue: 'DECIMATOR: ON'
-                    })
-                  : t('ui:hud.decimatorInactive', {
-                      defaultValue: 'DECIMATOR: OFF'
-                    })}
-              </span>
-            </button>
-          </Tooltip>
-        )}
-        {hasNeurotoxicPedal && (
-          <Tooltip
-            content={t('ui:hud.neurotoxicHint', {
-              defaultValue: 'Neurotoxic pedal is modifying audio output'
-            })}
-            position='bottom'
-          >
-            <div
-              role='status'
-              tabIndex={0}
-              className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green'
-            >
-              <Skull
-                size={14}
-                className='text-toxic-green'
-                aria-hidden='true'
-              />
-              <span className='font-black uppercase tracking-wider text-xs'>
-                {t('ui:hud.neurotoxicActive', {
-                  defaultValue: 'NEUROTOXIC ACTIVE'
-                })}
-              </span>
-            </div>
-          </Tooltip>
-        )}
-        {!isGigScene && (
-          <BandStatusPanel band={bandStatus} t={t} variant='compact' />
-        )}
+      {/* Right Panel - Band Status */}
+      <div className='flex flex-col gap-2 items-end shrink-0'>
+        <BandStatusPanel band={bandStatus} t={t} variant='compact' />
       </div>
     </div>
   )

@@ -108,6 +108,7 @@ export const Overworld = () => {
   const {
     isTraveling,
     pendingTravelNode,
+    connectedTargetIds,
     isConnected,
     getNodeVisibility,
     handleTravel,
@@ -236,6 +237,7 @@ export const Overworld = () => {
         pendingTravelNode={pendingTravelNode}
         getNodeVisibility={getNodeVisibility}
         isConnected={isConnected}
+        connectedTargetIds={connectedTargetIds}
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}

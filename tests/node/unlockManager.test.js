@@ -266,6 +266,37 @@ test('UnlockManager Unit Tests', async t => {
   )
 
   await t.test(
+    'session-only durability survives cache clearing without desyncing',
+    () => {
+      const originalSetItem = mockStorage.setItem
+      mockStorage.setItem = () => {
+        throw new Error('Storage Full')
+      }
+
+      try {
+        assert.equal(addUnlockWithPersistence('sync_test'), 'session_only')
+        assert.deepEqual(getUnlocks(), ['sync_test'])
+
+        // Clear the unlockManager module cache
+        clearCache()
+
+        // Storage is still failing; the unlock should still be recognized as session-only
+        // and attempted again, reporting session_only instead of falsely reporting persisted.
+        assert.equal(addUnlockWithPersistence('sync_test'), 'session_only')
+      } finally {
+        mockStorage.setItem = originalSetItem
+      }
+
+      // Once storage recovers, retry persists the unlock
+      assert.equal(addUnlockWithPersistence('sync_test'), 'persisted')
+      assert.equal(
+        Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:sync_test'),
+        true
+      )
+    }
+  )
+
+  await t.test(
     'addUnlockWithPersistence reports failed when the store is unreadable',
     () => {
       const originalGetItem = mockStorage.getItem

@@ -21,21 +21,36 @@ const VALID_EFFECT_TYPES = new Set([
   'guitar_difficulty'
 ])
 
-export type SanitizedContrabandItem = {
+type BaseContrabandItem = {
   id: string
   imagePrompt: string
   name: string
-  type: string
   effectType: string
   value: number
   description: string
   rarity: Rarity
   icon: string
   stackable: boolean
+}
+
+type ContrabandConsumableItem = BaseContrabandItem & {
+  type: 'consumable'
   maxStacks?: number
   duration?: number
-  applyOnAdd?: boolean
 }
+
+type ContrabandEquipmentItem = BaseContrabandItem & {
+  type: 'equipment'
+  applyOnAdd: boolean
+}
+
+type ContrabandRelicItem = BaseContrabandItem & {
+  type: 'relic'
+  duration?: number
+}
+
+export type SanitizedContrabandItem =
+  ContrabandConsumableItem | ContrabandEquipmentItem | ContrabandRelicItem
 
 interface ContrabandValidationResult {
   ok: boolean
@@ -119,8 +134,12 @@ export const validateContrabandItem = (
   if (item.applyOnAdd !== undefined && typeof item.applyOnAdd !== 'boolean') {
     errors.push('applyOnAdd must be boolean when present')
   }
-  if (item.type !== 'equipment' && item.applyOnAdd === true) {
-    errors.push('only equipment may use applyOnAdd=true')
+  if (item.type !== 'equipment' && item.applyOnAdd !== undefined) {
+    if (item.applyOnAdd === true) {
+      errors.push('only equipment may use applyOnAdd=true')
+    } else {
+      errors.push('only equipment may specify applyOnAdd')
+    }
   }
   if (item.type === 'equipment') {
     if (item.stackable !== false) errors.push('equipment must not be stackable')
@@ -133,32 +152,59 @@ export const validateContrabandItem = (
     ) {
       errors.push('equipment effectType must support applyOnAdd')
     }
+    if (item.duration !== undefined) {
+      errors.push('equipment must not specify duration')
+    }
+    if (item.maxStacks !== undefined) {
+      errors.push('equipment must not specify maxStacks')
+    }
+  }
+  if (item.type === 'relic') {
+    if (item.maxStacks !== undefined) {
+      errors.push('relics must not specify maxStacks')
+    }
   }
 
-  const sanitized: SanitizedContrabandItem | null =
-    errors.length === 0
-      ? {
-          id: item.id as string,
-          imagePrompt: item.imagePrompt as string,
-          name: item.name as string,
-          type: item.type as string,
-          effectType: item.effectType as string,
-          value: item.value as number,
-          description: item.description as string,
-          rarity: item.rarity as Rarity,
-          icon: item.icon as string,
-          stackable: item.stackable as boolean,
-          ...(item.maxStacks !== undefined
-            ? { maxStacks: item.maxStacks as number }
-            : {}),
-          ...(item.duration !== undefined
-            ? { duration: item.duration as number }
-            : {}),
-          ...(item.applyOnAdd !== undefined
-            ? { applyOnAdd: item.applyOnAdd as boolean }
-            : {})
-        }
-      : null
+  let sanitized: SanitizedContrabandItem | null = null
+  if (errors.length === 0) {
+    const base: BaseContrabandItem = {
+      id: item.id as string,
+      imagePrompt: item.imagePrompt as string,
+      name: item.name as string,
+      effectType: item.effectType as string,
+      value: item.value as number,
+      description: item.description as string,
+      rarity: item.rarity as Rarity,
+      icon: item.icon as string,
+      stackable: item.stackable as boolean
+    }
+    if (item.type === 'consumable') {
+      sanitized = {
+        ...base,
+        type: 'consumable',
+        ...(item.maxStacks !== undefined
+          ? { maxStacks: item.maxStacks as number }
+          : {}),
+        ...(item.duration !== undefined
+          ? { duration: item.duration as number }
+          : {})
+      }
+    } else if (item.type === 'equipment') {
+      sanitized = {
+        ...base,
+        type: 'equipment',
+        applyOnAdd: item.applyOnAdd as boolean
+      }
+    } else if (item.type === 'relic') {
+      sanitized = {
+        ...base,
+        type: 'relic',
+        ...(item.duration !== undefined
+          ? { duration: item.duration as number }
+          : {})
+      }
+    }
+  }
 
   return { ok: errors.length === 0, errors, value: sanitized }
 }

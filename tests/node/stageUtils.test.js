@@ -5,6 +5,7 @@ import * as PIXI from 'pixi.js'
 import {
   getPixiColorFromToken,
   calculateNoteY,
+  calculateLaneX,
   calculateCrowdOffset,
   buildRhythmLayout,
   loadTexture,
@@ -622,4 +623,9 @@ test('stage utils', async t => {
       }
     )
   })
+})
+
+test('calculateLaneX applies startX + index * (laneWidth + laneGap) with gap default 0', () => {
+  assert.equal(calculateLaneX(100, 50, 10, 2), 220)
+  assert.equal(calculateLaneX(100, 50, undefined, 2), 200)
 })

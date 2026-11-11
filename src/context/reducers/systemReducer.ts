@@ -919,11 +919,10 @@ export const handleAdvanceDay = (
       if (firstEvent && nextStatePre.pendingRiskEvent === null) {
         nextStatePre = {
           ...nextStatePre,
-          pendingOverlay:
-            nextStatePre.pendingOverlay ?? {
-              kind: 'risk_event',
-              event: firstEvent
-            },
+          pendingOverlay: nextStatePre.pendingOverlay ?? {
+            kind: 'risk_event',
+            event: firstEvent
+          },
           pendingRiskEvent: firstEvent
         }
       }
@@ -1104,11 +1103,11 @@ export const handleAddUnlock = (
 }
 
 /**
- * Sets the deferred Band HQ open flag.
+ * Sets or clears the deferred Band HQ overlay in pendingOverlay.
  *
- * @param state - Game state before updating the pending flag.
+ * @param state - Game state before updating the pending overlay.
  * @param isOpen - Next pending open state.
- * @returns State with the pending flag changed, or the original state when it
+ * @returns State with the pending overlay updated, or the original state when it
  * already matches or the payload is not a boolean.
  */
 export const handleSetPendingBandHQOpen = (
@@ -1118,21 +1117,17 @@ export const handleSetPendingBandHQOpen = (
   if (typeof isOpen !== 'boolean') return state
   const isCurrentlyOverlayBandHQ = state.pendingOverlay?.kind === 'band_hq'
   if (isOpen) {
-    if (state.pendingBandHQOpen) return state
-  } else {
-    if (!state.pendingBandHQOpen && !isCurrentlyOverlayBandHQ) return state
+    if (isCurrentlyOverlayBandHQ || state.pendingOverlay) return state
+    return {
+      ...state,
+      pendingOverlay: { kind: 'band_hq' }
+    }
   }
-  const canSetBandHQOverlay =
-    !state.pendingOverlay || state.pendingOverlay.kind === 'band_hq'
 
+  if (!isCurrentlyOverlayBandHQ) return state
   return {
     ...state,
-    pendingOverlay: isOpen
-      ? (canSetBandHQOverlay ? { kind: 'band_hq' } : state.pendingOverlay)
-      : isCurrentlyOverlayBandHQ
-        ? null
-        : (state.pendingOverlay ?? null),
-    pendingBandHQOpen: isOpen
+    pendingOverlay: null
   }
 }
 
@@ -1165,9 +1160,9 @@ export const handleSetPendingSupplyStopInventory = (
   return {
     ...state,
     pendingOverlay: nextInventory
-      ? (canSetSupplyOverlay
-          ? { kind: 'supply_stop', inventory: nextInventory }
-          : state.pendingOverlay)
+      ? canSetSupplyOverlay
+        ? { kind: 'supply_stop', inventory: nextInventory }
+        : state.pendingOverlay
       : isCurrentlyOverlaySupplyStop
         ? null
         : (state.pendingOverlay ?? null),

@@ -52,6 +52,12 @@ audioManager.setMusicVolume(0.5)
 unsubscribe()
 report.serviceNotified = notified
 report.serviceMusicVol = audioService.getState().musicVol
+report.stateSnapshotMatchesManager =
+  audioService.getStateSnapshot() === audioManager.getStateSnapshot()
+report.getStateMatchesManager =
+  audioService.getState() === audioManager.getStateSnapshot()
+report.getStateIsReferentiallyStable =
+  audioService.getState() === audioService.getState()
 process.stdout.write(${JSON.stringify(REPORT_MARKER)} + JSON.stringify(report) + '\\n')
 `
 
@@ -102,7 +108,10 @@ for (const [label, order] of Object.entries(IMPORT_ORDERS)) {
       managerVolumes: [0.25, 0.75],
       toggleMute: [true, true],
       serviceNotified: 1,
-      serviceMusicVol: 0.5
+      serviceMusicVol: 0.5,
+      stateSnapshotMatchesManager: true,
+      getStateMatchesManager: true,
+      getStateIsReferentiallyStable: true
     })
   })
 }

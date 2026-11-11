@@ -44,9 +44,8 @@ const createZeroConditionState = (overrides = {}) => {
   }
   active.player.money = 100
   active.expedition.loadout.build.protectedCareerCash = 100 // spendable cash = 0
-  active.expedition.insurancePolicyId = null
-  active.expedition.insuranceClaimConsumed = false
-  active.expedition.claimConsumed = false
+  active.expedition.loadout.insurancePolicyId = null
+  active.expedition.insurance = { claimConsumed: false }
 
   if (overrides.spareParts !== undefined) {
     active.expedition.cargo.spareParts = overrides.spareParts
@@ -61,7 +60,7 @@ const createZeroConditionState = (overrides = {}) => {
     active.player.money = overrides.money
   }
   if (overrides.insurancePolicyId !== undefined) {
-    active.expedition.insurancePolicyId = overrides.insurancePolicyId
+    active.expedition.loadout.insurancePolicyId = overrides.insurancePolicyId
   }
   if (overrides.serviceLocation) {
     active.gameMap = {
@@ -296,7 +295,7 @@ describe('Task 10: Explicit Technical Failure & Terminal Settlement', () => {
 
     const recoveredState = gameReducer(stateWithCrisis, resolveAction)
     assert.equal(recoveredState.expedition.technicalCondition.pa, 25)
-    assert.equal(recoveredState.expedition.insuranceClaimConsumed, true)
+    assert.equal(recoveredState.expedition.insurance.claimConsumed, true)
     assert.equal(recoveredState.expedition.pendingFailure, null)
     assert.equal(canStartExpeditionPreGig(recoveredState), true)
   })

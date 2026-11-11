@@ -291,9 +291,9 @@ const buildPopulatedState = () => {
     blockedTravelAtRouteStep: 4,
     outcome: null,
     metaUnlockQuestCompletedRunId: null,
-    insurancePolicyId: null,
-    insuranceClaimConsumed: false,
-    claimConsumed: false,
+    insurance: {
+      claimConsumed: false
+    },
     technicalFailureAccepted: false,
     authorityHiddenCompartmentUsed: false,
     crew: {

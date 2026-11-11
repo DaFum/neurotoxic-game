@@ -133,7 +133,7 @@ describe('insurance claim NaN safety', () => {
     const next = gameReducer(state, action)
 
     assert.equal(next, state)
-    assert.notEqual(next.expedition.insuranceClaimConsumed, true)
+    assert.notEqual(next.expedition.insurance.claimConsumed, true)
   })
 
   it('repairs a NaN condition instead of writing it back on a real fuel claim', () => {
@@ -151,7 +151,7 @@ describe('insurance claim NaN safety', () => {
 
     assert.equal(next.player.van.fuel, EXPEDITION_TOW_FUEL_RESTORED)
     assert.equal(next.player.van.condition, 100)
-    assert.equal(next.expedition.insuranceClaimConsumed, true)
+    assert.equal(next.expedition.insurance.claimConsumed, true)
   })
 
   it('keeps a healthy van condition untouched on a fuel-only claim', () => {

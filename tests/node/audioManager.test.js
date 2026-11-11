@@ -161,6 +161,36 @@ test('AudioManager Tests', async t => {
   })
 
   await t.test(
+    'setSfxVolume alias updates sfx volume and persistence identical to setSFXVolume',
+    () => {
+      const callsBefore = mockAudioEngine.setSFXVolume.mock.calls.length
+      const storageCallsBefore =
+        globalThis.localStorage.setItem.mock.calls.length
+      const result = audioManager.setSfxVolume(0.7)
+      assert.equal(result, true)
+      assert.equal(audioManager.sfxVolume, 0.7)
+      assert.strictEqual(
+        mockAudioEngine.setSFXVolume.mock.calls.length,
+        callsBefore + 1
+      )
+      assert.equal(
+        mockAudioEngine.setSFXVolume.mock.calls[callsBefore].arguments[0],
+        0.7
+      )
+      assert.ok(
+        globalThis.localStorage.setItem.mock.calls.length > storageCallsBefore
+      )
+      const lastStorageCall =
+        globalThis.localStorage.setItem.mock.calls[
+          globalThis.localStorage.setItem.mock.calls.length - 1
+        ]
+      assert.equal(lastStorageCall.arguments[0], 'neurotoxic_vol_sfx')
+      assert.equal(lastStorageCall.arguments[1], '0.7')
+      assert.equal(audioManager.getStateSnapshot().sfxVol, 0.7)
+    }
+  )
+
+  await t.test(
     'init still marks prefs as loaded when localStorage read fails',
     () => {
       const originalGetItem = globalThis.localStorage.getItem

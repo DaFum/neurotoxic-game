@@ -1004,6 +1004,50 @@ describe('usePostGigLogic', () => {
       expect(mockSaveGameAfterStateCommit).toHaveBeenCalledTimes(1)
     })
 
+    it('preserves frozen financials across player/band/social updates and updates when currentGig or lastGigStats changes', async () => {
+      const state1 = getBaseState({
+        currentGig: { id: 'venue_1', songId: 'test_song', payout: 500 },
+        lastGigStats: { score: 50000, accuracy: 95, misses: 0, events: [] }
+      })
+      mockGameState(state1)
+      economyEngine.calculateGigFinancials.mockReturnValueOnce({
+        net: 300,
+        income: { total: 500, breakdown: [] },
+        expenses: { total: 200, breakdown: [] }
+      })
+
+      const { result, rerender } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+      const initialFinancials = result.current.financials
+      expect(initialFinancials.net).toBe(300)
+
+      // Changing player, band, or social does NOT recalculate financials
+      economyEngine.calculateGigFinancials.mockReturnValueOnce({
+        net: 999,
+        income: { total: 1000, breakdown: [] },
+        expenses: { total: 1, breakdown: [] }
+      })
+      mockGameState({
+        ...state1,
+        player: { ...state1.player, money: 1200 },
+        social: { ...state1.social, followers: 5000 },
+        band: { ...state1.band, morale: 99 }
+      })
+      rerender()
+      expect(result.current.financials).toBe(initialFinancials)
+
+      // Changing currentGig or lastGigStats updates financials to the new calculation
+      const state2 = {
+        ...state1,
+        currentGig: { id: 'venue_2', songId: 'test_song_2', payout: 800 },
+        lastGigStats: { score: 60000, accuracy: 98, misses: 0, events: [] }
+      }
+      mockGameState(state2)
+      rerender()
+      expect(result.current.financials).not.toBe(initialFinancials)
+      expect(result.current.financials.net).toBe(999)
+    })
+
     it('Continue clears the recorded settlement by id', async () => {
       mockGameState(
         getBaseState({
