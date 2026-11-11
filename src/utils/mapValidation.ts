@@ -460,7 +460,7 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
   }
 
   const combinedConnections: unknown[] = []
-  const seenEdgeKeys = new Set<string>()
+  const seenEdges = new Map<string, Set<string>>()
 
   for (const list of [raw.connections, raw.edges]) {
     if (!Array.isArray(list)) continue
@@ -471,9 +471,13 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
         typeof entry.from === 'string' &&
         typeof entry.to === 'string'
       ) {
-        const edgeKey = `${entry.from}>${entry.to}`
-        if (!seenEdgeKeys.has(edgeKey)) {
-          seenEdgeKeys.add(edgeKey)
+        let targets = seenEdges.get(entry.from)
+        if (!targets) {
+          targets = new Set<string>()
+          seenEdges.set(entry.from, targets)
+        }
+        if (!targets.has(entry.to)) {
+          targets.add(entry.to)
           combinedConnections.push(entry)
         }
       } else {

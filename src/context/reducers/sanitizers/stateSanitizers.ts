@@ -601,7 +601,7 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  const seenConnections = new Set<string>()
+  const seenConnections = new Map<string, Set<string>>()
 
   for (const rawList of [mapRecord.connections, mapRecord.edges]) {
     if (!Array.isArray(rawList)) continue
@@ -617,9 +617,13 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       ) {
         const from = String(entryRecord.from)
         const to = String(entryRecord.to)
-        const key = `${from}>${to}`
-        if (!seenConnections.has(key)) {
-          seenConnections.add(key)
+        let targets = seenConnections.get(from)
+        if (!targets) {
+          targets = new Set<string>()
+          seenConnections.set(from, targets)
+        }
+        if (!targets.has(to)) {
+          targets.add(to)
           sanitizedConnections.push({ from, to })
         }
       }

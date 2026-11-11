@@ -169,7 +169,23 @@ describe('mapUtils', () => {
       const adj1 = getMapAdjacency(testMap)
       const adj2 = getMapAdjacency(testMap)
       assert.equal(adj1, adj2)
-      assert.deepEqual([...adj1.get('Node1')], ['Node2', 'Node3'])
+      const targets = adj1.get('Node1')
+      assert.ok(targets)
+      assert.deepEqual([...targets], ['Node2', 'Node3'])
+    })
+
+    test('recomputes adjacency when connections array is modified in-place', () => {
+      const testMap = {
+        connections: [{ from: 'Node1', to: 'Node2' }]
+      }
+      const adj1 = getMapAdjacency(testMap)
+      assert.deepEqual([...adj1.get('Node1')], ['Node2'])
+
+      testMap.connections.push({ from: 'Node1', to: 'Node3' })
+      const adj2 = getMapAdjacency(testMap)
+      const targets = adj2.get('Node1')
+      assert.ok(targets)
+      assert.deepEqual([...targets], ['Node2', 'Node3'])
     })
   })
 

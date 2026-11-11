@@ -49,14 +49,21 @@ const isMapConnection = (value: unknown): value is RawMapConnection =>
 
 const EMPTY_TARGETS: ReadonlySet<string> = new Set()
 
+interface CachedAdjacencyRecord {
+  connectionsLength: number
+  edgesLength: number
+  adjacency: Map<string, Set<string>>
+}
+
 /**
- * WeakMap cache mapping a gameMap object reference to its computed adjacency map:
- * sourceNodeId -\> Set\<targetNodeId\>.
+ * WeakMap cache mapping a gameMap object reference to its computed adjacency record:
+ * topology lengths and sourceNodeId -\> Set\<targetNodeId\>.
  */
-const mapAdjacencyCache = new WeakMap<object, Map<string, Set<string>>>()
+const mapAdjacencyCache = new WeakMap<object, CachedAdjacencyRecord>()
 
 /**
  * Builds or retrieves the cached adjacency lookup map for the given map object.
+ * Recomputes automatically if in-place array edits changed the topology length.
  *
  * @param gameMap - Map whose `connections` (or legacy `edges` fallback) are indexed.
  * @returns Map of source node ID to set of destination node IDs.
@@ -66,8 +73,19 @@ export const getMapAdjacency = (
 ): ReadonlyMap<string, ReadonlySet<string>> => {
   if (!gameMap || typeof gameMap !== 'object') return new Map()
 
+  const connectionsLength = Array.isArray(gameMap.connections)
+    ? gameMap.connections.length
+    : -1
+  const edgesLength = Array.isArray(gameMap.edges) ? gameMap.edges.length : -1
+
   const cached = mapAdjacencyCache.get(gameMap)
-  if (cached) return cached
+  if (
+    cached &&
+    cached.connectionsLength === connectionsLength &&
+    cached.edgesLength === edgesLength
+  ) {
+    return cached.adjacency
+  }
 
   const adjacency = new Map<string, Set<string>>()
   for (const rawList of [gameMap.connections, gameMap.edges]) {
@@ -86,7 +104,11 @@ export const getMapAdjacency = (
     }
   }
 
-  mapAdjacencyCache.set(gameMap, adjacency)
+  mapAdjacencyCache.set(gameMap, {
+    connectionsLength,
+    edgesLength,
+    adjacency
+  })
   return adjacency
 }
 
