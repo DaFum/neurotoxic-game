@@ -7,7 +7,6 @@ import {
   expect
 } from 'vitest'
 
-import { GAME_PHASES } from '../../src/context/gameConstants'
 import { renderHook, act, cleanup } from '@testing-library/react'
 
 // Mock dependencies
@@ -15,7 +14,6 @@ const mockCompleteRoadieMinigame = mock.fn()
 const mockChangeScene = mock.fn()
 const mockUseGameState = mock.fn(() => ({
   completeRoadieMinigame: mockCompleteRoadieMinigame,
-  currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
   band: { stash: {} },
   changeScene: mockChangeScene
 }))
@@ -61,7 +59,6 @@ describe('useRoadieLogic', () => {
       const originalImplementation = mockUseGameState.getMockImplementation()
       mockUseGameState.mockImplementation(() => ({
         completeRoadieMinigame: mockCompleteRoadieMinigame,
-        currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
         band,
         changeScene: mockChangeScene
       }))
@@ -90,7 +87,6 @@ describe('useRoadieLogic', () => {
       const originalImplementation = mockUseGameState.getMockImplementation()
       mockUseGameState.mockImplementation(() => ({
         completeRoadieMinigame: mockCompleteRoadieMinigame,
-        currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
         band: { stash },
         expedition,
         changeScene: mockChangeScene
@@ -426,6 +422,27 @@ describe('useRoadieLogic', () => {
     expect(game.spawners.map(s => s.timer)).toEqual(before.timers)
     expect(game.traffic.map(car => car.x)).toEqual(before.carX)
 
+    unmount()
+  })
+
+  test('does not manage scene transitions or invoke changeScene even after game over and timeout', () => {
+    const { result, unmount } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+
+    game.itemsToDeliver = []
+    game.carrying = { id: 'last-item', weight: 1 }
+    game.playerPos = { x: 6, y: ROADIE_GRID_HEIGHT - 2 }
+    act(() => {
+      result.current.update(1000)
+      result.current.actions.move(0, 1)
+    })
+    expect(result.current.uiState.isGameOver).toBe(true)
+
+    act(() => {
+      mock.advanceTimersByTime(15000)
+    })
+
+    expect(mockChangeScene).not.toHaveBeenCalled()
     unmount()
   })
 })
