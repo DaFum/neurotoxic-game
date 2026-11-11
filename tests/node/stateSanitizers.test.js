@@ -208,6 +208,21 @@ describe('stateSanitizers', () => {
       assert.ok(result)
       assert.deepStrictEqual(result.connections, [{ from: 'a', to: 'b' }])
     })
+
+    it('prefers empty connections array over edges', () => {
+      const mapWithBoth = {
+        nodes: {
+          a: { id: 'a', x: 0, y: 0 },
+          b: { id: 'b', x: 1, y: 1 }
+        },
+        connections: [],
+        edges: [{ from: 'a', to: 'b' }]
+      }
+
+      const result = normalizeLoadedGameMap(mapWithBoth)
+      assert.ok(result)
+      assert.deepStrictEqual(result.connections, [])
+    })
   })
 
   describe('shopInventory (via normalizeLoadedGameMap)', () => {

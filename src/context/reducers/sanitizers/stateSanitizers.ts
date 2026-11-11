@@ -601,15 +601,12 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  // Prefer authoritative `connections`; fall back to legacy `edges` if `connections` is absent or empty.
-  const rawConnections =
-    Array.isArray(mapRecord.connections) && mapRecord.connections.length > 0
-      ? mapRecord.connections
-      : Array.isArray(mapRecord.edges)
-        ? mapRecord.edges
-        : Array.isArray(mapRecord.connections)
-          ? mapRecord.connections
-          : []
+  // Authoritative `connections` array (including empty) takes precedence over legacy `edges`.
+  const rawConnections = Array.isArray(mapRecord.connections)
+    ? mapRecord.connections
+    : Array.isArray(mapRecord.edges)
+      ? mapRecord.edges
+      : []
 
   for (let i = 0; i < rawConnections.length; i++) {
     const entry = rawConnections[i]
