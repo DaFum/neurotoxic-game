@@ -70,18 +70,8 @@ export const getMapAdjacency = (
   if (cached) return cached
 
   const adjacency = new Map<string, Set<string>>()
-  const rawList =
-    Array.isArray(gameMap.connections) && gameMap.connections.length > 0
-      ? gameMap.connections
-      : Array.isArray(gameMap.edges) && gameMap.edges.length > 0
-        ? gameMap.edges
-        : Array.isArray(gameMap.connections)
-          ? gameMap.connections
-          : Array.isArray(gameMap.edges)
-            ? gameMap.edges
-            : null
-
-  if (rawList) {
+  for (const rawList of [gameMap.connections, gameMap.edges]) {
+    if (!Array.isArray(rawList)) continue
     for (let i = 0; i < rawList.length; i++) {
       const c = rawList[i]
       if (!isMapConnection(c)) continue

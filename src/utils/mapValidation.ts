@@ -459,10 +459,32 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
     })
   }
 
-  const rawConnections = Array.isArray(raw.connections)
-    ? raw.connections
-    : Array.isArray(raw.edges)
-      ? raw.edges
+  const combinedConnections: unknown[] = []
+  const seenEdgeKeys = new Set<string>()
+
+  for (const list of [raw.connections, raw.edges]) {
+    if (!Array.isArray(list)) continue
+    for (let i = 0; i < list.length; i++) {
+      const entry = list[i]
+      if (
+        isLooseRecord(entry) &&
+        typeof entry.from === 'string' &&
+        typeof entry.to === 'string'
+      ) {
+        const edgeKey = `${entry.from}>${entry.to}`
+        if (!seenEdgeKeys.has(edgeKey)) {
+          seenEdgeKeys.add(edgeKey)
+          combinedConnections.push(entry)
+        }
+      } else {
+        combinedConnections.push(entry)
+      }
+    }
+  }
+
+  const rawConnections =
+    Array.isArray(raw.connections) || Array.isArray(raw.edges)
+      ? combinedConnections
       : raw.connections
   const connections = validateConnections(rawConnections, nodeIds, issues)
 

@@ -601,15 +601,12 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  const rawConnections = Array.isArray(mapRecord.connections)
-    ? mapRecord.connections
-    : Array.isArray(mapRecord.edges)
-      ? mapRecord.edges
-      : null
+  const seenConnections = new Set<string>()
 
-  if (rawConnections) {
-    for (let i = 0; i < rawConnections.length; i++) {
-      const entry = rawConnections[i]
+  for (const rawList of [mapRecord.connections, mapRecord.edges]) {
+    if (!Array.isArray(rawList)) continue
+    for (let i = 0; i < rawList.length; i++) {
+      const entry = rawList[i]
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
       const entryRecord = entry as Record<string, unknown>
       if (
@@ -618,10 +615,13 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         (typeof entryRecord.to === 'string' ||
           typeof entryRecord.to === 'number')
       ) {
-        sanitizedConnections.push({
-          from: String(entryRecord.from),
-          to: String(entryRecord.to)
-        })
+        const from = String(entryRecord.from)
+        const to = String(entryRecord.to)
+        const key = `${from}>${to}`
+        if (!seenConnections.has(key)) {
+          seenConnections.add(key)
+          sanitizedConnections.push({ from, to })
+        }
       }
     }
   }
