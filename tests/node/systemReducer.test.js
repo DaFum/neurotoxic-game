@@ -2324,6 +2324,27 @@ test('systemReducer - pending modal state', async t => {
     }
   )
 
+  await t.test(
+    'defers a Band HQ request while another overlay is pending',
+    () => {
+      const riskOverlay = {
+        kind: 'risk_event',
+        event: { kind: 'risk', id: 'r1' }
+      }
+      const state = { ...createInitialState(), pendingOverlay: riskOverlay }
+
+      const deferred = handleSetPendingBandHQOpen(state, true)
+      assert.equal(deferred.pendingOverlay, riskOverlay)
+      assert.equal(deferred.deferredBandHQOpen, true)
+      assert.equal(handleSetPendingBandHQOpen(deferred, true), deferred)
+
+      const freed = { ...deferred, pendingOverlay: null }
+      const opened = handleSetPendingBandHQOpen(freed, true)
+      assert.deepEqual(opened.pendingOverlay, { kind: 'band_hq' })
+      assert.equal(opened.deferredBandHQOpen, false)
+    }
+  )
+
   await t.test('rejects a non-boolean pending Band HQ flag', () => {
     const state = createInitialState()
 

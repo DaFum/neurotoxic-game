@@ -1108,7 +1108,8 @@ export const handleAddUnlock = (
  * @param state - Game state before updating the pending overlay.
  * @param isOpen - Next pending open state.
  * @returns State with the pending overlay updated, or the original state when it
- * already matches or the payload is not a boolean.
+ * already matches or the payload is not a boolean. An open request that finds
+ * another overlay pending is stored in `deferredBandHQOpen` instead of dropped.
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,
@@ -1117,10 +1118,16 @@ export const handleSetPendingBandHQOpen = (
   if (typeof isOpen !== 'boolean') return state
   const isCurrentlyOverlayBandHQ = state.pendingOverlay?.kind === 'band_hq'
   if (isOpen) {
-    if (isCurrentlyOverlayBandHQ || state.pendingOverlay) return state
+    if (isCurrentlyOverlayBandHQ) return state
+    if (state.pendingOverlay) {
+      // The slot holds another overlay; keep the request until it is free.
+      if (state.deferredBandHQOpen === true) return state
+      return { ...state, deferredBandHQOpen: true }
+    }
     return {
       ...state,
-      pendingOverlay: { kind: 'band_hq' }
+      pendingOverlay: { kind: 'band_hq' },
+      deferredBandHQOpen: false
     }
   }
 
