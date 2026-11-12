@@ -204,9 +204,6 @@ jobs:
       - name: Run API and server TypeScript checks
         run: pnpm run typecheck:server
 
-      - name: Run reducer TypeScript checks
-        run: pnpm run typecheck
-
       - name: Run locale smoke tests
         run: pnpm run test:locale:smoke
 

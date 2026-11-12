@@ -56,8 +56,17 @@ describe('active brand-deal benefits', () => {
       loyaltyPerGig: 0,
       fameMultiplier: 1,
       staminaRegenPerDay: 0,
-      revenueShare: 0
+      revenueShare: 0,
+      perGigPayout: 15
     })
+  })
+
+  it('aggregates per-gig payout for sponsorships and endorsements', () => {
+    const benefits = getActiveDealBenefits([
+      activeDeal('corp_tech'), // Endorsement: perGig 100
+      activeDeal('energy_drink_cx') // Sponsorship: perGig 50
+    ])
+    assert.equal(benefits.perGigPayout, 150)
   })
 
   it('deducts the record-label share of merch as a visible expense line', () => {

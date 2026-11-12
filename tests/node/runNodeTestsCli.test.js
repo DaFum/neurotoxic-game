@@ -58,19 +58,17 @@ const HEAVY = [
   'tests/node/usePurchaseLogic.test.js'
 ]
 
-// Independent crawl of the six node roots, as absolute native paths.
+// Independent crawl of the six node roots, as relative repository paths.
 const crawl = relDir => {
   const abs = path.join(REPO_ROOT, relDir)
   if (!fs.existsSync(abs)) return []
   return fs.readdirSync(abs, { withFileTypes: true }).flatMap(entry => {
     const rel = `${relDir}/${entry.name}`
     if (entry.isDirectory()) return crawl(rel)
-    return /\.(?:test|spec)\.js$/.test(entry.name)
-      ? [path.join(REPO_ROOT, rel)]
-      : []
+    return /\.(?:test|spec)\.js$/.test(entry.name) ? [rel] : []
   })
 }
-const toRel = abs => path.relative(REPO_ROOT, abs).replaceAll('\\', '/')
+const toRel = rel => rel.replaceAll('\\', '/')
 const DISCOVERED = NODE_TEST_DIRS.flatMap(crawl)
 const toolingSet = new Set(TOOLING_NODE_TESTS)
 const heavySet = new Set(HEAVY)

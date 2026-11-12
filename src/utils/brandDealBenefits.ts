@@ -20,6 +20,8 @@ interface ActiveDealBenefits {
   staminaRegenPerDay: number
   /** Fraction of gig merch revenue a record label takes (0..0.5). */
   revenueShare: number
+  /** Summed per-gig payout from active sponsorships and endorsements. */
+  perGigPayout: number
 }
 
 /** Identity value: no active deal grants or costs anything. */
@@ -27,7 +29,8 @@ const NO_DEAL_BENEFITS: Readonly<ActiveDealBenefits> = Object.freeze({
   loyaltyPerGig: 0,
   fameMultiplier: 1,
   staminaRegenPerDay: 0,
-  revenueShare: 0
+  revenueShare: 0,
+  perGigPayout: 0
 })
 
 const readBenefit = (deal: BrandDeal, key: string): number | undefined => {
@@ -76,6 +79,27 @@ export const getActiveDealBenefits = (
     const share = deal.offer.revenueShare
     if (isFiniteNumber(share) && share > 0) {
       result.revenueShare += share
+    }
+
+    const rawOffer = (entry as { offer?: unknown }).offer
+    const rawPerGig =
+      rawOffer && typeof rawOffer === 'object'
+        ? (rawOffer as { perGig?: unknown }).perGig
+        : undefined
+    const basePerGig = deal.offer.perGig
+    if (
+      typeof basePerGig === 'number' &&
+      Number.isFinite(basePerGig) &&
+      basePerGig > 0
+    ) {
+      if (typeof rawPerGig === 'number' && Number.isFinite(rawPerGig)) {
+        result.perGigPayout += Math.min(
+          Math.max(0, Math.floor(rawPerGig)),
+          Math.ceil(basePerGig * 2)
+        )
+      } else {
+        result.perGigPayout += basePerGig
+      }
     }
   }
   result.revenueShare = Math.min(MAX_REVENUE_SHARE, result.revenueShare)

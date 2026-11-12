@@ -7,6 +7,9 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
       totalCost: 100 + player.fameLevel * 10
     }),
     calculateRefuelCost: () => 0,
+    calculateDailyLivingObligations: player =>
+      80 + (player.fameLevel ?? 0) * 10,
+    calculateDailyYouTubeRevenue: () => 0,
     calculateGuaranteedDailyCost: player => 80 + (player.fameLevel ?? 0) * 10,
     EXPENSE_CONSTANTS: { transport: { maxFuel: 100 } }
   }

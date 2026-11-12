@@ -15,6 +15,8 @@ import {
   calculateBarCut,
   calculateSponsorshipBonuses,
   calculateGigExpenses,
+  calculateDailyLivingObligations,
+  calculateDailyYouTubeRevenue,
   calculateGuaranteedDailyCost,
   shouldTriggerBankruptcy,
   normalizeEconomySocial
@@ -1377,6 +1379,26 @@ test('economy calculators keep hostile numeric input off their outputs', async t
       assert.ok(Number.isFinite(cost), `fameLevel ${fameLevel}`)
     }
   })
+
+  await t.test(
+    'calculateDailyLivingObligations and calculateDailyYouTubeRevenue decouple living costs from digital ad revenue',
+    () => {
+      const player = { fameLevel: 2 }
+      const band = { members: [1, 2, 3, 4] }
+      const social = { youtube: 25000 }
+
+      const obligations = calculateDailyLivingObligations(player, band)
+      const revenue = calculateDailyYouTubeRevenue(social)
+      const guaranteed = calculateGuaranteedDailyCost(player, band, social)
+
+      // Base (62) + members (4 * 8 = 32) + lifestyle (floor(2^1.4 * 15) = floor(2.639 * 15) = 39) = 133
+      assert.equal(obligations, 133)
+      // 25000 / 10000 = 2 * 10 = 20
+      assert.equal(revenue, 20)
+      assert.equal(guaranteed, obligations - revenue)
+      assert.equal(calculateDailyYouTubeRevenue({ youtube: 5000 }), 0)
+    }
+  )
 
   await t.test('calculateTravelExpenses stays finite and non-negative', () => {
     for (const coord of HOSTILE) {

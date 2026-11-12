@@ -6,6 +6,8 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: () => ({ fuelLiters: 10, totalCost: tripCost }),
     calculateRefuelCost: () => 0,
+    calculateDailyLivingObligations: () => 80,
+    calculateDailyYouTubeRevenue: () => 0,
     calculateGuaranteedDailyCost: () => 80,
     EXPENSE_CONSTANTS: { transport: { maxFuel: 100 } }
   }
