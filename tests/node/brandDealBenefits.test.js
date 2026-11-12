@@ -62,11 +62,38 @@ describe('active brand-deal benefits', () => {
   })
 
   it('aggregates per-gig payout for sponsorships and endorsements', () => {
-    const benefits = getActiveDealBenefits([
+    const deals = [
       activeDeal('corp_tech'), // Endorsement: perGig 100
       activeDeal('energy_drink_cx') // Sponsorship: perGig 50
-    ])
+    ]
+    const benefits = getActiveDealBenefits(deals)
     assert.equal(benefits.perGigPayout, 150)
+
+    const report = calculateGigFinancials(gigParams(deals))
+    const sponsorLine = report.income.breakdown.find(
+      b => b.labelKey === BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR
+    )
+    assert.ok(sponsorLine, 'BRAND_SPONSOR breakdown item exists')
+    assert.equal(sponsorLine.value, 150)
+  })
+
+  it('preserves per-gig payout for legacy and mock id-less deals', () => {
+    const idLessDeals = [
+      { type: 'SPONSORSHIP', offer: { perGig: 60 } },
+      { type: 'ENDORSEMENT', offer: { perGig: 40 } }
+    ]
+    const benefits = getActiveDealBenefits(idLessDeals)
+    assert.equal(benefits.perGigPayout, 100)
+
+    const report = calculateGigFinancials(gigParams(idLessDeals))
+    const sponsorLine = report.income.breakdown.find(
+      b => b.labelKey === BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR
+    )
+    assert.ok(
+      sponsorLine,
+      'BRAND_SPONSOR breakdown item exists for id-less deals'
+    )
+    assert.equal(sponsorLine.value, 100)
   })
 
   it('deducts the record-label share of merch as a visible expense line', () => {

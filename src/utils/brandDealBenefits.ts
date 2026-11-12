@@ -63,42 +63,57 @@ export const getActiveDealBenefits = (
   for (const entry of activeDeals) {
     if (!entry || typeof entry !== 'object') continue
     const id = (entry as { id?: unknown }).id
-    if (typeof id !== 'string') continue
-    const deal = BRAND_DEALS_BY_ID.get(id)
-    if (!deal) continue
+    if (typeof id === 'string') {
+      const deal = BRAND_DEALS_BY_ID.get(id)
+      if (!deal) continue
 
-    result.loyaltyPerGig += readBenefit(deal, 'loyalty') ?? 0
-    result.staminaRegenPerDay += Math.max(
-      0,
-      readBenefit(deal, 'staminaRegen') ?? 0
-    )
-    const fameMultiplier = readBenefit(deal, 'fameMultiplier')
-    if (fameMultiplier !== undefined && fameMultiplier > 0) {
-      result.fameMultiplier *= fameMultiplier
-    }
-    const share = deal.offer.revenueShare
-    if (isFiniteNumber(share) && share > 0) {
-      result.revenueShare += share
-    }
+      result.loyaltyPerGig += readBenefit(deal, 'loyalty') ?? 0
+      result.staminaRegenPerDay += Math.max(
+        0,
+        readBenefit(deal, 'staminaRegen') ?? 0
+      )
+      const fameMultiplier = readBenefit(deal, 'fameMultiplier')
+      if (fameMultiplier !== undefined && fameMultiplier > 0) {
+        result.fameMultiplier *= fameMultiplier
+      }
+      const share = deal.offer.revenueShare
+      if (isFiniteNumber(share) && share > 0) {
+        result.revenueShare += share
+      }
 
-    const rawOffer = (entry as { offer?: unknown }).offer
-    const rawPerGig =
-      rawOffer && typeof rawOffer === 'object'
-        ? (rawOffer as { perGig?: unknown }).perGig
-        : undefined
-    const basePerGig = deal.offer.perGig
-    if (
-      typeof basePerGig === 'number' &&
-      Number.isFinite(basePerGig) &&
-      basePerGig > 0
-    ) {
-      if (typeof rawPerGig === 'number' && Number.isFinite(rawPerGig)) {
-        result.perGigPayout += Math.min(
-          Math.max(0, Math.floor(rawPerGig)),
-          Math.ceil(basePerGig * 2)
-        )
-      } else {
-        result.perGigPayout += basePerGig
+      const rawOffer = (entry as { offer?: unknown }).offer
+      const rawPerGig =
+        rawOffer && typeof rawOffer === 'object'
+          ? (rawOffer as { perGig?: unknown }).perGig
+          : undefined
+      const basePerGig = deal.offer.perGig
+      if (
+        typeof basePerGig === 'number' &&
+        Number.isFinite(basePerGig) &&
+        basePerGig > 0
+      ) {
+        if (typeof rawPerGig === 'number' && Number.isFinite(rawPerGig)) {
+          result.perGigPayout += Math.min(
+            Math.max(0, Math.floor(rawPerGig)),
+            Math.ceil(basePerGig * 2)
+          )
+        } else {
+          result.perGigPayout += basePerGig
+        }
+      }
+    } else if (id === undefined) {
+      // Fallback for callers supplying the legacy/typed id-less shape
+      // { type: 'SPONSORSHIP' | 'ENDORSEMENT', offer: { perGig } }
+      const dealType = (entry as { type?: unknown }).type
+      if (dealType === 'SPONSORSHIP' || dealType === 'ENDORSEMENT') {
+        const rawOffer = (entry as { offer?: unknown }).offer
+        const rawPerGig =
+          rawOffer && typeof rawOffer === 'object'
+            ? (rawOffer as { perGig?: unknown }).perGig
+            : undefined
+        if (isFiniteNumber(rawPerGig) && rawPerGig > 0) {
+          result.perGigPayout += Math.floor(rawPerGig)
+        }
       }
     }
   }
