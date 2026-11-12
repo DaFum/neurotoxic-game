@@ -106,7 +106,8 @@ import type {
   ToastPayload,
   GameMap,
   GamePhase,
-  PendingOverlayState
+  PendingOverlayState,
+  DeferredOverlayState
 } from '../../../types'
 import {
   sanitizeAssetKinds,
@@ -2662,4 +2663,28 @@ export const sanitizePendingOverlay = (
   }
 
   return null
+}
+
+/**
+ * Sanitizes the persisted queue of deferred risk event and foreclosure overlays.
+ *
+ * @param value - Raw `deferredOverlays` from save data.
+ * @returns Valid entries in order, at most one per kind.
+ */
+export const sanitizeDeferredOverlays = (
+  value: unknown
+): DeferredOverlayState[] => {
+  if (!Array.isArray(value)) return []
+  const result: DeferredOverlayState[] = []
+  for (const entry of value) {
+    const overlay = sanitizePendingOverlay(entry)
+    if (
+      (overlay?.kind === 'risk_event' || overlay?.kind === 'foreclosure') &&
+      !result.some(queued => queued.kind === overlay.kind)
+    ) {
+      result.push(overlay)
+      if (result.length === 2) break
+    }
+  }
+  return result
 }

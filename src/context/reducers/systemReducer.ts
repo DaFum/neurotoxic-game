@@ -19,8 +19,10 @@ import {
   migratePlayerLocation,
   migrateLegacyVenueId,
   sanitizeEventCooldowns,
-  sanitizePendingOverlay
+  sanitizePendingOverlay,
+  sanitizeDeferredOverlays
 } from './sanitizers/stateSanitizers'
+import { raiseDeferredOverlay } from './overlayQueue'
 import {
   processAssetTick,
   processLiabilityTick,
@@ -251,6 +253,37 @@ export const handleLoadGame = (
     )
   )
 
+  let overlaySlots: Pick<GameState, 'pendingOverlay' | 'deferredOverlays'> = {
+    pendingOverlay: sanitizePendingOverlay(loadedState.pendingOverlay, {
+      pendingRiskEvent: loadedState.pendingRiskEvent,
+      pendingSupplyStopInventory: loadedState.pendingSupplyStopInventory,
+      pendingForeclosureNotices: loadedState.pendingForeclosureNotices,
+      pendingBandHQOpen: loadedState.pendingBandHQOpen
+    }),
+    deferredOverlays: sanitizeDeferredOverlays(loadedState.deferredOverlays)
+  }
+  // Saves written before the overlay slot was consolidated can hold a risk
+  // event or foreclosure notices in their legacy fields that the active
+  // overlay does not show; queue them rather than lose them.
+  const legacyRiskEvent = sanitizeRiskEventDescriptor(
+    loadedState.pendingRiskEvent
+  )
+  if (legacyRiskEvent) {
+    overlaySlots = raiseDeferredOverlay(overlaySlots, {
+      kind: 'risk_event',
+      event: legacyRiskEvent
+    })
+  }
+  const legacyNotices = sanitizeAssetKinds(
+    loadedState.pendingForeclosureNotices
+  )
+  if (legacyNotices.length > 0) {
+    overlaySlots = raiseDeferredOverlay(overlaySlots, {
+      kind: 'foreclosure',
+      notices: legacyNotices
+    })
+  }
+
   const safeState: GameState = {
     ...state,
     // A save carrying an open journal entry is a Career that was debited and
@@ -273,12 +306,7 @@ export const handleLoadGame = (
       flag => isStoryFlag(flag) || inlineStartFlags.has(flag)
     ),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
-    pendingOverlay: sanitizePendingOverlay(loadedState.pendingOverlay, {
-      pendingRiskEvent: loadedState.pendingRiskEvent,
-      pendingSupplyStopInventory: loadedState.pendingSupplyStopInventory,
-      pendingForeclosureNotices: loadedState.pendingForeclosureNotices,
-      pendingBandHQOpen: loadedState.pendingBandHQOpen
-    }),
+    ...overlaySlots,
     // Transient and never persisted: a request from the live session must not
     // replay against the loaded one.
     deferredBandHQOpen: false,
@@ -840,25 +868,10 @@ export const handleAdvanceDay = (
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
   if (liabilityTick.foreclosedKinds.length > 0) {
-    const existingOverlayNotices =
-      nextStatePre.pendingOverlay?.kind === 'foreclosure'
-        ? nextStatePre.pendingOverlay.notices
-        : []
-    const updatedNotices = Array.from(
-      new Set([
-        ...existingOverlayNotices,
-        ...liabilityTick.foreclosedKinds
-      ])
-    )
-    const canSetForeclosureOverlay =
-      !nextStatePre.pendingOverlay ||
-      nextStatePre.pendingOverlay.kind === 'foreclosure'
-    nextStatePre = {
-      ...nextStatePre,
-      pendingOverlay: canSetForeclosureOverlay
-        ? { kind: 'foreclosure', notices: updatedNotices }
-        : nextStatePre.pendingOverlay
-    }
+    nextStatePre = raiseDeferredOverlay(nextStatePre, {
+      kind: 'foreclosure',
+      notices: Array.from(new Set(liabilityTick.foreclosedKinds))
+    })
   }
   nextStatePre = processCrowdfundTick(nextStatePre)
   // Payloadless dispatches derive the same deterministic stream that
@@ -909,14 +922,11 @@ export const handleAdvanceDay = (
         }
       }
       const firstEvent = events[0]
-      if (firstEvent && !nextStatePre.pendingOverlay) {
-        nextStatePre = {
-          ...nextStatePre,
-          pendingOverlay: {
-            kind: 'risk_event',
-            event: firstEvent
-          }
-        }
+      if (firstEvent) {
+        nextStatePre = raiseDeferredOverlay(nextStatePre, {
+          kind: 'risk_event',
+          event: firstEvent
+        })
       }
       const emittedRisk = new Set<string>()
       const assetKinds = new Map<string, string>()
@@ -1169,7 +1179,9 @@ export const handleSetPendingSupplyStopInventory = (
 
   return {
     ...state,
-    pendingOverlay: isCurrentlyOverlaySupplyStop ? null : (state.pendingOverlay ?? null)
+    pendingOverlay: isCurrentlyOverlaySupplyStop
+      ? null
+      : (state.pendingOverlay ?? null)
   }
 }
 

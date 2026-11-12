@@ -86,6 +86,9 @@ const buildPopulatedState = () => {
       conditionLoss: 12
     }
   }
+  state.deferredOverlays = [
+    { kind: 'foreclosure', notices: ['tourbus_chassis'] }
+  ]
   state.activeQuests = [
     {
       id: 'inline_delivery',
