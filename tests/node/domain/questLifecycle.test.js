@@ -1668,6 +1668,28 @@ test('QuestLifecycle', async t => {
     )
 
     await t.test(
+      'accepting a scoped quest whose id is an inherited property name does not throw',
+      () => {
+        const state = {
+          player: { day: 1 },
+          activeQuests: [],
+          activeStoryFlags: [],
+          completedQuests: { global: [], scoped: {} },
+          questCooldowns: []
+        }
+
+        assert.deepStrictEqual(
+          canAcceptQuest(state, {
+            id: 'toString',
+            repeatPolicy: 'perVenue',
+            scopeKey: 'venue_a'
+          }),
+          { ok: true, scopeKey: 'venue_a' }
+        )
+      }
+    )
+
+    await t.test(
       'completing a scoped quest whose id is an inherited property name records its scope',
       () => {
         const state = {
