@@ -223,6 +223,21 @@ describe('stateSanitizers', () => {
       assert.ok(result)
       assert.deepStrictEqual(result.connections, [])
     })
+
+    for (const invalid of [null, 'bad', {}]) {
+      it(`does not fall back to stale edges when connections is present but invalid (${JSON.stringify(invalid)})`, () => {
+        const result = normalizeLoadedGameMap({
+          nodes: {
+            a: { id: 'a', x: 0, y: 0 },
+            b: { id: 'b', x: 1, y: 1 }
+          },
+          connections: invalid,
+          edges: [{ from: 'a', to: 'b' }]
+        })
+        assert.ok(result)
+        assert.deepStrictEqual(result.connections, [])
+      })
+    }
   })
 
   describe('shopInventory (via normalizeLoadedGameMap)', () => {

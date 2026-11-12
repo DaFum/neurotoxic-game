@@ -601,12 +601,11 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  // Authoritative `connections` array (including empty) takes precedence over legacy `edges`.
-  const rawConnections = Array.isArray(mapRecord.connections)
+  // A present `connections` key (even empty or invalid) is authoritative; legacy `edges` only migrates when it is absent.
+  const connectionSource = Object.hasOwn(mapRecord, 'connections')
     ? mapRecord.connections
-    : Array.isArray(mapRecord.edges)
-      ? mapRecord.edges
-      : []
+    : mapRecord.edges
+  const rawConnections = Array.isArray(connectionSource) ? connectionSource : []
 
   for (let i = 0; i < rawConnections.length; i++) {
     const entry = rawConnections[i]
@@ -615,8 +614,7 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     if (
       (typeof entryRecord.from === 'string' ||
         typeof entryRecord.from === 'number') &&
-      (typeof entryRecord.to === 'string' ||
-        typeof entryRecord.to === 'number')
+      (typeof entryRecord.to === 'string' || typeof entryRecord.to === 'number')
     ) {
       sanitizedConnections.push({
         from: String(entryRecord.from),
