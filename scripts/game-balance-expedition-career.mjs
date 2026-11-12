@@ -710,11 +710,12 @@ export const runFreshCareerSequence = (
     const sponsorIncome = cashBeforeSimulation - (cashBeforeRun - prepSpend)
     if (
       sponsor &&
-      state.expedition.activeObligations.some(
-        obligation =>
-          obligation.sourceType === 'brandDeal' &&
-          obligation.sourceId === sponsor.dealId
-      )
+      (state.expedition.activeSponsorDealId === sponsor.dealId ||
+        state.expedition.activeObligations.some(
+          obligation =>
+            obligation.sourceType === 'brandDeal' &&
+            obligation.sourceId === sponsor.dealId
+        ))
     ) {
       metrics.sponsorOffersAccepted += 1
     }
