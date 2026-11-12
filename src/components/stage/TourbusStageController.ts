@@ -23,7 +23,6 @@ import { registerTestHook } from '../../utils/devTestHooks'
 import {
   IMG_PROMPTS,
   getGenImageUrl,
-  isImageGenerationAvailable,
   getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
 import {
@@ -161,7 +160,8 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       // Generate URLs. Game-critical obstacle/pickup sprites (rock, barrier, fuel)
       // must stay null when offline so TourbusObstacleManager falls back to its
       // distinct colored Graphics shapes rather than rendering identical SVGs.
-      const online = isImageGenerationAvailable()
+      // Artwork is bundled with the app; no network-generated image is needed.
+      const online = true
       const urls: Record<string, string | null> = {
         bus: online
           ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)

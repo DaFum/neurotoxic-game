@@ -16,8 +16,7 @@ import {
 } from './stageRenderUtils'
 import {
   IMG_PROMPTS,
-  getGenImageUrl,
-  isImageGenerationAvailable
+  getGenImageUrl
 } from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
@@ -127,7 +126,8 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     try {
       // All Roadie sprites need visual distinction (player vs hazards vs pickups),
       // so offline mode leaves all null — managers fall back to colored Graphics shapes.
-      const online = isImageGenerationAvailable()
+      // Artwork is bundled with the app; no network-generated image is needed.
+      const online = true
       const urls: Record<string, string | null> = {
         roadie: online
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROADIE_IDLE)

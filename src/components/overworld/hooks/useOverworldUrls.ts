@@ -3,7 +3,6 @@ import { BRAND_COLOR_HEX, HEX_COLOR_PATTERN } from '../../../utils/brandColors'
 import {
   getGenImageUrl,
   IMG_PROMPTS,
-  isImageGenerationAvailable,
   getGeneratedImageFallbackUrl
 } from '../../../utils/imageGen'
 import { escapeHtml } from '../../../utils/stringUtils'
@@ -106,7 +105,8 @@ export const useOverworldUrls = (
   t: TranslationCallback
 ) => {
   return useMemo(() => {
-    const isOnline = isImageGenerationAvailable() && isOnlineNetwork
+    // Local artwork remains available while offline.
+    const isOnline = isOnlineNetwork
     const svgTokenStyle = createSvgTokenStyle()
     const createOfflineSvgUrl = (svgMarkup: string) =>
       `data:image/svg+xml;utf8,${encodeURIComponent(svgMarkup)}`
