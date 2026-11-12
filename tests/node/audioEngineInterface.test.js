@@ -80,6 +80,18 @@ describe('IAudioEngine implementations', () => {
       assert.equal('setCorruptionEffect' in engine, false)
     }
   })
+
+  test('the real engine reaches stateful audio only through audioService', () => {
+    // One stateful facade per consumer: `toneAudioEngine` already routes
+    // `playSFX` and `stopMusic` through `audioService`, so mocks of that
+    // facade cover every stateful call the engine makes.
+    const source = readFileSync(
+      'src/utils/audio/audioEngineInterface.ts',
+      'utf8'
+    )
+    assert.doesNotMatch(source, /audioEngineHub\.audioManager\b/)
+    assert.match(source, /audioEngineHub\.audioService\.ensureAudioContext\(/)
+  })
 })
 
 describe('createStubAudioEngine play-request id', () => {

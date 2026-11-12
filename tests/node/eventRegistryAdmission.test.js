@@ -28,13 +28,18 @@ mock.module('../../src/data/events/transport.ts', {
   }
 })
 
-const { EVENTS_DB, KNOWN_EVENT_IDS } =
+const { EVENTS_DB, KNOWN_EVENT_IDS, EVENTS_BY_ID, getEventById } =
   await import('../../src/data/events/index.ts')
 
 test('known IDs contain only admitted events and do not reuse rejected IDs', () => {
   assert.equal(KNOWN_EVENT_IDS.has('fixture_accepted'), true)
   assert.equal(KNOWN_EVENT_IDS.has('fixture_invalid_category'), false)
   assert.equal(KNOWN_EVENT_IDS.has('fixture_invalid_schema'), false)
+  assert.equal(EVENTS_BY_ID.has('fixture_accepted'), true)
+  assert.equal(EVENTS_BY_ID.has('fixture_invalid_category'), false)
+  assert.equal(EVENTS_BY_ID.has('fixture_invalid_schema'), false)
+  assert.equal(getEventById('fixture_accepted')?.id, 'fixture_accepted')
+  assert.equal(getEventById('fixture_invalid_category'), undefined)
   const accepted = EVENTS_DB.transport.filter(
     event => event.id === 'fixture_accepted'
   )

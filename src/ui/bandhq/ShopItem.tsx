@@ -76,16 +76,21 @@ export const ShopItem = React.memo(
           itemName: displayName,
           defaultValue: 'Already owned!'
         })
-      : isDisabled
-        ? t('ui:shop.messages.notEnough', {
-            currency:
-              item.currency === 'fame'
-                ? t('ui:stats.fame', { defaultValue: 'Fame' })
-                : t('ui:stats.money', { defaultValue: 'Money' }),
+      : decision?.status === 'reputation_blocked'
+        ? t('ui:shop.messages.reputationBlocked', {
             itemName: displayName,
-            defaultValue: 'Not enough currency.'
+            defaultValue: 'Reputation too controversial.'
           })
-        : undefined
+        : isDisabled
+          ? t('ui:shop.messages.notEnough', {
+              currency:
+                item.currency === 'fame'
+                  ? t('ui:stats.fame', { defaultValue: 'Fame' })
+                  : t('ui:stats.money', { defaultValue: 'Money' }),
+              itemName: displayName,
+              defaultValue: 'Not enough currency.'
+            })
+          : undefined
 
     const label = isPurchased
       ? t('ui:hq.owned', { defaultValue: 'OWNED' })

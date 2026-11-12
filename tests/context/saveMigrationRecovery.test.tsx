@@ -600,6 +600,9 @@ describe('failed migration of a save in a lower slot than this build writes', ()
       expect(result.current.saveGame(false)).toBe(true)
     })
     expect(adapter.get(SAVE_KEY)).toEqual({ ok: true, value: v1Save })
-    expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({ ok: true, value: expect.any(String) })
+    expect(adapter.get(`${SAVE_KEY}.v4`)).toEqual({
+      ok: true,
+      value: expect.any(String)
+    })
   })
 })

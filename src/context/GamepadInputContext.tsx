@@ -36,6 +36,12 @@ import {
 } from '../ui/shared/useModalBehavior'
 import { GamepadTextEntry } from '../ui/shared/GamepadTextEntry'
 
+type ActiveHoldSession = {
+  element: HTMLElement
+  scope: HTMLElement | null
+  stop: () => void
+}
+
 /**
  * Mounts a centralized polling loop for connected gamepads and synchronizes controller inputs
  * to consumer priorities.
@@ -73,17 +79,20 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
   const snapshotsRef = useRef(new Map<number, GamepadSnapshot>())
   const repeatRef = useRef(createDirectionRepeater())
   const directionRef = useRef<Direction | null>(null)
-  const activeHoldScopeRef = useRef<HTMLElement | null>(null)
-  const activeHoldElementRef = useRef<HTMLElement | null>(null)
+  const activeHoldRef = useRef<ActiveHoldSession | null>(null)
   const directionArmedRef = useRef(false)
+  const cancelActiveHold = () => {
+    if (!activeHoldRef.current) return
+    activeHoldRef.current.stop()
+    activeHoldRef.current = null
+  }
   const reset = useCallback(() => {
     for (const release of releasesRef.current.values()) release()
     releasesRef.current.clear()
     edgesRef.current.rearm()
     repeatRef.current(null, 0)
     directionRef.current = null
-    activeHoldScopeRef.current = null
-    activeHoldElementRef.current = null
+    cancelActiveHold()
     directionArmedRef.current = false
   }, [])
   const register = useCallback(
@@ -159,14 +168,17 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
       else {
         const stop = activateGamepadElement(element as HTMLElement)
         if (stop) {
-          releasesRef.current.set(GAMEPAD_BUTTON.SOUTH, stop)
-          activeHoldScopeRef.current = scope[0] ?? null
-          activeHoldElementRef.current = element as HTMLElement
+          activeHoldRef.current = {
+            element: element as HTMLElement,
+            scope: scope[0] ?? null,
+            stop
+          }
         }
       }
     }
     const route = (button: number, pressed: boolean) => {
       if (!pressed) {
+        if (button === GAMEPAD_BUTTON.SOUTH) cancelActiveHold()
         releasesRef.current.get(button)?.()
         releasesRef.current.delete(button)
         return
@@ -280,14 +292,11 @@ export function GamepadInputProvider({ children }: { children: ReactNode }) {
           consumer.handlers.current.onDisconnect?.()
       const scope = getActiveFocusScope()
       if (
-        activeHoldScopeRef.current &&
-        (activeHoldScopeRef.current !== scope[0] ||
-          document.activeElement !== activeHoldElementRef.current)
+        activeHoldRef.current &&
+        (activeHoldRef.current.scope !== scope[0] ||
+          document.activeElement !== activeHoldRef.current.element)
       ) {
-        releasesRef.current.get(GAMEPAD_BUTTON.SOUTH)?.()
-        releasesRef.current.delete(GAMEPAD_BUTTON.SOUTH)
-        activeHoldScopeRef.current = null
-        activeHoldElementRef.current = null
+        cancelActiveHold()
       }
       let nextDirection: Direction | null = null
       const buttonForNavigation = (button: number) =>

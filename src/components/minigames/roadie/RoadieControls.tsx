@@ -7,26 +7,18 @@ import { RoadieDPad } from './RoadieDPad'
 
 /**
  * Provides touch, keyboard-hint, and optional desktop D-pad controls for Roadie movement.
- * @param props - Roadie touch-control visibility state, visibility setter, and directional movement callbacks.
+ * @param props - Roadie touch-control visibility state, visibility setter, and movement callback.
  */
 export const RoadieControls = memo(function RoadieControls({
   showControls,
   setShowControls,
-  handleMoveUp,
-  handleMoveLeft,
-  handleMoveDown,
-  handleMoveRight
+  onMove
 }: RoadieControlsProps) {
   const { t } = useTranslation(['ui'])
 
   return (
     <>
-      <RoadieTouchSurface
-        handleMoveUp={handleMoveUp}
-        handleMoveLeft={handleMoveLeft}
-        handleMoveDown={handleMoveDown}
-        handleMoveRight={handleMoveRight}
-      />
+      <RoadieTouchSurface onMove={onMove} />
 
       {/* Controls Toggle (Desktop Mode Support). Sits below the frame's SKIP
           button, which owns the top-right corner (top-4). */}
@@ -53,13 +45,7 @@ export const RoadieControls = memo(function RoadieControls({
         {t('ui:roadieRun.controls.touchHint')}
       </div>
 
-      <RoadieDPad
-        showControls={showControls}
-        handleMoveUp={handleMoveUp}
-        handleMoveLeft={handleMoveLeft}
-        handleMoveDown={handleMoveDown}
-        handleMoveRight={handleMoveRight}
-      />
+      <RoadieDPad showControls={showControls} onMove={onMove} />
     </>
   )
 })

@@ -636,7 +636,7 @@ describe('runSafeStorageOperation', () => {
       },
       err =>
         err.name === 'StorageError' &&
-        err.message.includes('Storage operation failed after retries: test')
+        err.message.includes('Storage operation failed: test')
     )
   })
 })

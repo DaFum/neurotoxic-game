@@ -36,12 +36,100 @@ import type {
 type RawMapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
 type GameMapLike =
-  | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
+  | {
+      connections?: unknown
+      edges?: unknown
+      nodes?: Record<string, GameNode | undefined>
+    }
   | null
   | undefined
 
 const isMapConnection = (value: unknown): value is RawMapConnection =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const EMPTY_TARGETS: ReadonlySet<string> = new Set<string>()
+
+/**
+ * Cached map adjacency lookups: MapNodeId -\> Set\<TargetNodeId\>.
+ * Weakly keyed by the gameMap object instance to avoid repeated array iterations on every query.
+ */
+const MAP_ADJACENCY_CACHE = new WeakMap<
+  object,
+  Map<string, ReadonlySet<string>>
+>()
+
+/**
+ * Derives and caches an outgoing adjacency map for the provided map object.
+ *
+ * @param gameMap - Map object containing connections (or legacy edges fallback).
+ * @returns Adjacency mapping from source node ID to set of target node IDs.
+ */
+export const getMapAdjacency = (
+  gameMap: NonNullable<GameMapLike>
+): Map<string, ReadonlySet<string>> => {
+  const cached = MAP_ADJACENCY_CACHE.get(gameMap)
+  if (cached) return cached
+
+  const adjacency = new Map<string, Set<string>>()
+  const recordConnection = (from: unknown, to: unknown) => {
+    if (typeof from === 'string' && typeof to === 'string') {
+      let targets = adjacency.get(from)
+      if (!targets) {
+        targets = new Set<string>()
+        adjacency.set(from, targets)
+      }
+      targets.add(to)
+    }
+  }
+
+  const rawList = Array.isArray(gameMap.connections)
+    ? gameMap.connections
+    : Array.isArray(gameMap.edges)
+      ? gameMap.edges
+      : null
+
+  if (rawList) {
+    for (let i = 0; i < rawList.length; i++) {
+      const c = rawList[i]
+      if (!isMapConnection(c)) continue
+      recordConnection(c.from, c.to)
+    }
+  }
+
+  // Also support unions if both are populated on raw unnormalized mock objects
+  if (
+    Array.isArray(gameMap.connections) &&
+    Array.isArray(gameMap.edges) &&
+    gameMap.edges.length > 0
+  ) {
+    for (let i = 0; i < gameMap.edges.length; i++) {
+      const c = gameMap.edges[i]
+      if (!isMapConnection(c)) continue
+      recordConnection(c.from, c.to)
+    }
+  }
+
+  const readonlyAdjacency = adjacency as Map<string, ReadonlySet<string>>
+  MAP_ADJACENCY_CACHE.set(gameMap, readonlyAdjacency)
+  return readonlyAdjacency
+}
+
+/**
+ * Precomputes and returns a set of reachable outgoing target node IDs from a given node.
+ * Provides O(1) membership lookups for map node connectivity checks via cached map adjacency.
+ *
+ * @param gameMap - Map whose connections are indexed for outgoing edges.
+ * @param currentNodeId - Node ID to find outgoing connections from.
+ * @returns ReadonlySet of connected target node IDs.
+ */
+export const getConnectedTargetIds = (
+  gameMap: GameMapLike,
+  currentNodeId: string | null | undefined
+): ReadonlySet<string> => {
+  if (!gameMap || !currentNodeId) return EMPTY_TARGETS
+  const adjacency = getMapAdjacency(gameMap)
+  return adjacency.get(currentNodeId) ?? EMPTY_TARGETS
+}
 
 /**
  * Checks if a target node is connected to the source node.
@@ -55,18 +143,8 @@ export const isConnected = (
   fromNodeId: string,
   targetNodeId: string
 ): boolean => {
-  if (!gameMap) return false
-  const connections = Array.isArray(gameMap.connections)
-    ? gameMap.connections
-    : []
-  for (let i = 0; i < connections.length; i++) {
-    const c = connections[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === fromNodeId && c.to === targetNodeId) {
-      return true
-    }
-  }
-  return false
+  if (!targetNodeId) return false
+  return getConnectedTargetIds(gameMap, fromNodeId).has(targetNodeId)
 }
 
 /**

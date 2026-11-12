@@ -1,14 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import { StatsOverlay } from '../../src/components/hud/StatsOverlay.tsx'
+import { StatsOverlay } from '../../src/ui/hud/StatsOverlay.tsx'
 
-vi.mock('../../src/components/hud/ScoreDisplay', () => ({
+vi.mock('../../src/ui/hud/ScoreDisplay', () => ({
   ScoreDisplay: ({ score }) => (
     <div data-testid='score-display'>Score: {score}</div>
   )
 }))
 
-vi.mock('../../src/components/hud/ComboDisplay', () => ({
+vi.mock('../../src/ui/hud/ComboDisplay', () => ({
   ComboDisplay: ({ combo, accuracy }) => (
     <div data-testid='combo-display'>
       Combo: {combo}, Acc: {accuracy}

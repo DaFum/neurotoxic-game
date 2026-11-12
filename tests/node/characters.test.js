@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CHARACTERS } from '../../src/data/characters'
+import { CHARACTERS, CLINIC_TRAITS } from '../../src/data/characters'
 
 describe('characters.js', () => {
   describe('CHARACTERS data structure', () => {
@@ -13,6 +13,22 @@ describe('characters.js', () => {
       assert.ok(CHARACTERS.MATZE)
       assert.ok(CHARACTERS.MARIUS)
       assert.ok(CHARACTERS.LARS)
+    })
+
+    it('does not contain CLINIC in CHARACTERS', () => {
+      assert.strictEqual(
+        Object.prototype.hasOwnProperty.call(CHARACTERS, 'CLINIC'),
+        false
+      )
+    })
+  })
+
+  describe('CLINIC_TRAITS data structure', () => {
+    it('exports CLINIC_TRAITS array with the three cyber-graft clinic traits', () => {
+      assert.ok(Array.isArray(CLINIC_TRAITS))
+      assert.strictEqual(CLINIC_TRAITS.length, 3)
+      const ids = CLINIC_TRAITS.map(t => t.id)
+      assert.deepEqual(ids, ['cyber_lungs', 'iron_liver', 'neuro_overclock'])
     })
   })
 

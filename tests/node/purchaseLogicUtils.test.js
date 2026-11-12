@@ -12,7 +12,8 @@ import {
   applyUnlockUpgrade,
   applyUnlockHQ,
   applyPassive,
-  validatePurchase
+  validatePurchase,
+  getPurchaseDecision
 } from '../../src/utils/purchaseLogicUtils'
 
 describe('purchaseLogicUtils', () => {
@@ -627,6 +628,77 @@ describe('purchaseLogicUtils', () => {
       const player = { passiveFollowers: 5 }
       const result = applyPassive(effect, playerPatch, player)
       assert.equal(result.playerPatch.passiveFollowers, 15)
+    })
+  })
+
+  describe('getPurchaseDecision', () => {
+    const validEffect = {
+      type: 'stat_modifier',
+      target: 'player',
+      stat: 'fame',
+      value: 5
+    }
+    const baseItem = {
+      id: 'item_1',
+      cost: 100,
+      currency: 'money',
+      effect: validEffect
+    }
+
+    test('returns status missing_effect when item has no valid effect', () => {
+      const itemNoEffect = { id: 'item_1', cost: 100, currency: 'money' }
+      const decision = getPurchaseDecision(itemNoEffect, { money: 500 }, {}, {})
+      assert.equal(decision.status, 'missing_effect')
+      assert.equal(decision.canPurchase, false)
+    })
+
+    test('returns status owned when item is owned and not consumable', () => {
+      const ownedPlayer = { money: 500, van: { upgrades: ['item_1'] } }
+      const decision = getPurchaseDecision(baseItem, ownedPlayer, {}, {})
+      assert.equal(decision.status, 'owned')
+      assert.equal(decision.canPurchase, false)
+    })
+
+    test('returns status reputation_blocked when controversy is too high', () => {
+      const repItem = { ...baseItem, requiresReputation: true }
+      const decision = getPurchaseDecision(
+        repItem,
+        { money: 500 },
+        {},
+        { controversyLevel: 50 }
+      )
+      assert.equal(decision.status, 'reputation_blocked')
+      assert.equal(decision.canPurchase, false)
+    })
+
+    test('returns status insufficient_funds when player cannot afford', () => {
+      const decision = getPurchaseDecision(baseItem, { money: 50 }, {}, {})
+      assert.equal(decision.status, 'insufficient_funds')
+      assert.equal(decision.canPurchase, false)
+    })
+
+    test('returns status available and canPurchase true when item can be bought', () => {
+      const decision = getPurchaseDecision(baseItem, { money: 500 }, {}, {})
+      assert.equal(decision.status, 'available')
+      assert.equal(decision.canPurchase, true)
+    })
+
+    test('returns status available for consumable item even if already in inventory', () => {
+      const consumableItem = {
+        id: 'snack_item',
+        cost: 50,
+        currency: 'money',
+        effect: { type: 'inventory_add', item: 'snack', value: 1 }
+      }
+      const decision = getPurchaseDecision(
+        consumableItem,
+        { money: 500, inventory: { snack: 2 } },
+        {},
+        {}
+      )
+      assert.equal(decision.status, 'available')
+      assert.equal(decision.canPurchase, true)
+      assert.equal(decision.isConsumable, true)
     })
   })
 })

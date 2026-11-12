@@ -150,6 +150,12 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
   const activeObligations = useGameSelector(
     state => state.expedition?.activeObligations
   )
+  const activeSponsorDealId = useGameSelector(
+    state => state.expedition?.activeSponsorDealId
+  )
+  const activeSponsorDeal = activeSponsorDealId
+    ? BRAND_DEALS_BY_ID.get(activeSponsorDealId)
+    : null
   const runSeed = useGameSelector(state => state.runSeed)
   const resolvedSignalIds = useGameSelector(
     state => state.expedition?.resolvedObligationSignalIds
@@ -159,7 +165,7 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
 
   const active =
     activeObligations?.filter(item => item.status === 'active') ?? []
-  if (active.length === 0) return null
+  if (active.length === 0 && !activeSponsorDeal) return null
 
   return (
     <div
@@ -169,6 +175,24 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
       <span className='text-[0.625rem] uppercase tracking-widest text-ash-gray font-mono w-full'>
         {t('ui:expedition.obligations.title', { defaultValue: 'Obligations' })}
       </span>
+      {activeSponsorDeal && (
+        <div
+          key={`sponsor-${activeSponsorDeal.id}`}
+          className='flex items-center gap-2 border border-steel-gray px-2 py-1 bg-void-black text-star-white'
+          data-testid='expedition-active-sponsor'
+        >
+          <span>
+            {getTranslatedBrandDealDisplay(activeSponsorDeal, t)?.name ??
+              t('ui:expedition.contract.unknown', {
+                defaultValue: 'Unknown Contract'
+              })}
+            :{' '}
+            {t('ui:expedition.obligations.status.active', {
+              defaultValue: 'active'
+            })}
+          </span>
+        </div>
+      )}
       {active.map(item => {
         const derivedOffer =
           item.doubleDown === null && runSeed !== undefined && runSeed !== null

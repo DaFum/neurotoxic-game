@@ -14,7 +14,7 @@ import {
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
 import { isRecordedAppliedValueValid } from '../../../utils/contrabandEffects'
-import { EVENTS_DB } from '../../../data/events'
+import { getEventById } from '../../../data/events'
 import { SONGS_BY_ID } from '../../../data/songs'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { resolveActiveBrandDeal } from '../../../utils/brandDealLogic'
@@ -49,7 +49,10 @@ import {
   readMemberMood,
   readMemberStamina,
   normalizeRegionalGigHistory,
-  normalizeSetlistForSave
+  normalizeSetlistForSave,
+  addEventCooldown,
+  parseCooldownEntry,
+  pruneEventCooldowns
 } from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
@@ -102,8 +105,14 @@ import type {
   ActiveBrandDeal,
   ToastPayload,
   GameMap,
-  GamePhase
+  GamePhase,
+  PendingOverlayState,
+  DeferredOverlayState
 } from '../../../types'
+import {
+  sanitizeAssetKinds,
+  sanitizeRiskEventDescriptor
+} from '../assets/assetSanitizers'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -593,22 +602,25 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  if (Array.isArray(mapRecord.connections)) {
-    for (let i = 0; i < mapRecord.connections.length; i++) {
-      const entry = mapRecord.connections[i]
-      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
-      const entryRecord = entry as Record<string, unknown>
-      if (
-        (typeof entryRecord.from === 'string' ||
-          typeof entryRecord.from === 'number') &&
-        (typeof entryRecord.to === 'string' ||
-          typeof entryRecord.to === 'number')
-      ) {
-        sanitizedConnections.push({
-          from: String(entryRecord.from),
-          to: String(entryRecord.to)
-        })
-      }
+  // A present `connections` key (even empty or invalid) is authoritative; legacy `edges` only migrates when it is absent.
+  const connectionSource = Object.hasOwn(mapRecord, 'connections')
+    ? mapRecord.connections
+    : mapRecord.edges
+  const rawConnections = Array.isArray(connectionSource) ? connectionSource : []
+
+  for (let i = 0; i < rawConnections.length; i++) {
+    const entry = rawConnections[i]
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
+    const entryRecord = entry as Record<string, unknown>
+    if (
+      (typeof entryRecord.from === 'string' ||
+        typeof entryRecord.from === 'number') &&
+      (typeof entryRecord.to === 'string' || typeof entryRecord.to === 'number')
+    ) {
+      sanitizedConnections.push({
+        from: String(entryRecord.from),
+        to: String(entryRecord.to)
+      })
     }
   }
 
@@ -1398,6 +1410,39 @@ export const sanitizeMinigameState = (
 }
 
 /**
+ * Sanitizes loaded event cooldowns into an `eventId -> unlock day` record.
+ *
+ * @param value - Untrusted `eventCooldowns` from a save.
+ * @param currentDay - The loaded save's current day.
+ * @returns A record of the cooldowns still running on `currentDay`.
+ *
+ * @remarks
+ * Saves from before the record model hold a `string[]` of `id` or
+ * `id:expiryDay` entries (grammar in `parseCooldownEntry`). A timed entry
+ * keeps its expiry as the unlock day. A bare id blocked its event until the
+ * next day advance, so it unlocks on `currentDay + 1`. Duplicates keep the
+ * latest unlock day. Forbidden prototype keys, non-finite or non-number
+ * unlock days and expired entries are dropped.
+ */
+export const sanitizeEventCooldowns = (
+  value: unknown,
+  currentDay: number
+): Record<string, number> => {
+  if (!Array.isArray(value)) return pruneEventCooldowns(value, currentDay)
+  let migrated: Record<string, number> = {}
+  for (const entry of value) {
+    const parsed = parseCooldownEntry(entry)
+    if (!parsed) continue
+    migrated = addEventCooldown(
+      migrated,
+      parsed.key,
+      parsed.expiryDay ?? Math.floor(currentDay) + 1
+    )
+  }
+  return pruneEventCooldowns(migrated, currentDay)
+}
+
+/**
  * Sanitizes an array of setlist entries.
  *
  * @remarks
@@ -1802,20 +1847,8 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
   return !isEmptyObject(option) ? option : null
 }
 
-let registryEventsById: Map<string, UnknownRecord> | null = null
-
-const getRegistryEvent = (id: string): UnknownRecord | undefined => {
-  if (!registryEventsById) {
-    registryEventsById = new Map()
-    for (const pool of Object.values(EVENTS_DB)) {
-      for (const registered of pool) {
-        if (typeof registered.id === 'string')
-          registryEventsById.set(registered.id, registered)
-      }
-    }
-  }
-  return registryEventsById.get(id)
-}
+const getRegistryEvent = (id: string): UnknownRecord | undefined =>
+  getEventById(id) as UnknownRecord | undefined
 
 // Deep-copies registry data so state never aliases the module-level registry.
 // Only plain objects and arrays are copied: functions and class instances
@@ -1892,9 +1925,9 @@ const MAX_SUPPLY_STOP_ITEMS = 24
  */
 export const sanitizeSupplyStopInventory = (
   value: unknown
-): GameState['pendingSupplyStopInventory'] => {
+): import('../../../types/components').PurchaseItem[] | null => {
   if (!Array.isArray(value)) return null
-  const items: NonNullable<GameState['pendingSupplyStopInventory']> = []
+  const items: import('../../../types/components').PurchaseItem[] = []
   for (
     let i = 0;
     i < value.length && items.length < MAX_SUPPLY_STOP_ITEMS;
@@ -2573,4 +2606,92 @@ export const sanitizeQuestScopes = (
       return []
     return [{ questId: entry.questId, scopeKey: entry.scopeKey }]
   })
+}
+
+export { sanitizeCompletedQuests } from '../../../domain/questSanitizers'
+
+/**
+ * Sanitizes or reconstructs the consolidated pending overlay state from save data.
+ *
+ * @param value - Explicit pendingOverlay field if present.
+ * @param legacy - Fallback object containing legacy overlay fields.
+ * @returns Sanitized PendingOverlayState or null.
+ */
+export const sanitizePendingOverlay = (
+  value: unknown,
+  legacy?: {
+    pendingRiskEvent?: unknown
+    pendingSupplyStopInventory?: unknown
+    pendingForeclosureNotices?: unknown
+    pendingBandHQOpen?: unknown
+  }
+): PendingOverlayState | null => {
+  if (isLooseRecord(value) && typeof value.kind === 'string') {
+    switch (value.kind) {
+      case 'band_hq':
+        return { kind: 'band_hq' }
+      case 'supply_stop': {
+        const inventory = sanitizeSupplyStopInventory(value.inventory)
+        return inventory ? { kind: 'supply_stop', inventory } : null
+      }
+      case 'risk_event': {
+        const event = sanitizeRiskEventDescriptor(value.event)
+        return event ? { kind: 'risk_event', event } : null
+      }
+      case 'foreclosure': {
+        const notices = sanitizeAssetKinds(value.notices)
+        return notices.length > 0 ? { kind: 'foreclosure', notices } : null
+      }
+      default:
+        break
+    }
+  }
+
+  // Fallback / migration from legacy fields:
+  if (legacy) {
+    // Supply stop first: it is not queueable, while handleLoadGame defers a
+    // legacy risk event behind whichever overlay takes the slot.
+    const supplyInventory = sanitizeSupplyStopInventory(
+      legacy.pendingSupplyStopInventory
+    )
+    if (supplyInventory)
+      return { kind: 'supply_stop', inventory: supplyInventory }
+
+    const riskEvent = sanitizeRiskEventDescriptor(legacy.pendingRiskEvent)
+    if (riskEvent) return { kind: 'risk_event', event: riskEvent }
+
+    const foreclosureNotices = sanitizeAssetKinds(
+      legacy.pendingForeclosureNotices
+    )
+    if (foreclosureNotices.length > 0)
+      return { kind: 'foreclosure', notices: foreclosureNotices }
+
+    if (legacy.pendingBandHQOpen === true) return { kind: 'band_hq' }
+  }
+
+  return null
+}
+
+/**
+ * Sanitizes the persisted queue of deferred risk event and foreclosure overlays.
+ *
+ * @param value - Raw `deferredOverlays` from save data.
+ * @returns Valid entries in order, at most one per kind.
+ */
+export const sanitizeDeferredOverlays = (
+  value: unknown
+): DeferredOverlayState[] => {
+  if (!Array.isArray(value)) return []
+  const result: DeferredOverlayState[] = []
+  for (const entry of value) {
+    const overlay = sanitizePendingOverlay(entry)
+    if (
+      (overlay?.kind === 'risk_event' || overlay?.kind === 'foreclosure') &&
+      !result.some(queued => queued.kind === overlay.kind)
+    ) {
+      result.push(overlay)
+      if (result.length === 2) break
+    }
+  }
+  return result
 }

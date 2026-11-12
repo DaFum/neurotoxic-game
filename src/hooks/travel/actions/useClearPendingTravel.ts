@@ -18,15 +18,36 @@ export const useClearPendingTravel = (
   const { refs, setters } = params
   const { removeToast } = params.params
   return useCallback(() => {
-    if (refs.pendingTimeoutRef.current) {
+    let toastIdToRemove: string | null = null
+
+    if (refs.phaseRef?.current.status === 'confirming') {
+      const { timeoutId, toastId } = refs.phaseRef.current
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+      toastIdToRemove = toastId
+      refs.phaseRef.current = { status: 'idle' }
+      setters.setPhase?.({ status: 'idle' })
+    }
+
+    if (refs.pendingTimeoutRef?.current) {
       clearTimeout(refs.pendingTimeoutRef.current)
       refs.pendingTimeoutRef.current = null
     }
-    if (refs.pendingToastIdRef.current) {
+
+    if (toastIdToRemove) {
+      removeToast(toastIdToRemove)
+      if (refs.pendingToastIdRef) {
+        refs.pendingToastIdRef.current = null
+      }
+    } else if (refs.pendingToastIdRef?.current) {
       removeToast(refs.pendingToastIdRef.current)
       refs.pendingToastIdRef.current = null
     }
-    setters.setPendingTravelNode(null)
-    refs.pendingTravelNodeRef.current = null
+
+    if (refs.pendingTravelNodeRef) {
+      refs.pendingTravelNodeRef.current = null
+    }
+    setters.setPendingTravelNode?.(null)
   }, [setters, refs, removeToast])
 }

@@ -223,7 +223,10 @@ export const addContrabandToBand = (
       return band // Don't add duplicate non-stackable items
     }
     const currentStacks = getStashStackCount(currentStash, item.id)
-    const max = (item.maxStacks as number) || Infinity
+    const max =
+      (item.type === 'consumable' && item.maxStacks !== undefined
+        ? item.maxStacks
+        : undefined) || Infinity
     if (currentStacks >= max) return band // Reached max stacks
     newBand.stash = Object.assign(Object.create(null), currentStash, {
       [item.id]: {
@@ -241,10 +244,12 @@ export const addContrabandToBand = (
   const newInstance = {
     ...item,
     instanceId,
-    remainingDuration: isFiniteNumber(item.duration)
-      ? (item.duration as number)
-      : null,
-    applied: !!item.applyOnAdd,
+    remainingDuration:
+      (item.type === 'consumable' || item.type === 'relic') &&
+      isFiniteNumber(item.duration)
+        ? (item.duration as number)
+        : null,
+    applied: item.type === 'equipment' && !!item.applyOnAdd,
     stacks: item.stackable ? 1 : null
   }
 
@@ -252,7 +257,7 @@ export const addContrabandToBand = (
     [item.id]: newInstance
   })
 
-  if (item.applyOnAdd && item.type === 'equipment') {
+  if (item.type === 'equipment' && item.applyOnAdd) {
     const before = readClampedBandVital(newBand, item.effectType)
     applySharedBandEffect(
       newBand,

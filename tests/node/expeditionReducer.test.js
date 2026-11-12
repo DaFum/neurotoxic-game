@@ -210,19 +210,61 @@ describe('sanitizeExpeditionState', () => {
   })
 
   it('takes the insurance policy from the committed loadout, not a free-standing field', () => {
-    const uninsured = { ...activeSave(), insurancePolicyId: 'touring' }
-    assert.equal(
-      sanitizeExpeditionState(uninsured, 654321).insurancePolicyId,
-      null
-    )
+    const uninsured = activeSave()
+    uninsured.loadout.insurancePolicyId = null
+    uninsured.insurancePolicyId = 'touring'
+    const sanitizedUninsured = sanitizeExpeditionState(uninsured, 654321)
+    assert.equal(sanitizedUninsured.loadout.insurancePolicyId, null)
+    assert.equal(sanitizedUninsured.insurancePolicyId, undefined)
 
     const insured = activeSave()
     insured.loadout.insurancePolicyId = 'roadside'
     insured.insurancePolicyId = 'touring'
-    assert.equal(
-      sanitizeExpeditionState(insured, 654321).insurancePolicyId,
-      'roadside'
-    )
+    const sanitizedInsured = sanitizeExpeditionState(insured, 654321)
+    assert.equal(sanitizedInsured.loadout.insurancePolicyId, 'roadside')
+    assert.equal(sanitizedInsured.insurancePolicyId, undefined)
+  })
+
+  it('folds legacy top-level insurancePolicyId into loadout if loadout does not specify it', () => {
+    const legacy = activeSave()
+    delete legacy.loadout.insurancePolicyId
+    legacy.insurancePolicyId = 'roadside'
+    const sanitized = sanitizeExpeditionState(legacy, 654321)
+    assert.equal(sanitized.loadout.insurancePolicyId, 'roadside')
+    assert.equal(sanitized.insurancePolicyId, undefined)
+  })
+
+  it('folds legacy top-level claimConsumed into insurance object', () => {
+    const legacy = activeSave()
+    legacy.claimConsumed = true
+    delete legacy.insurance
+    delete legacy.insuranceClaimConsumed
+    const sanitized = sanitizeExpeditionState(legacy, 654321)
+    assert.equal(sanitized.insurance.claimConsumed, true)
+    assert.equal(sanitized.claimConsumed, undefined)
+    assert.equal(sanitized.insuranceClaimConsumed, undefined)
+  })
+
+  it('validates activeSponsorDealId against BRAND_DEALS_BY_ID, preserving known IDs and dropping unknown IDs', () => {
+    const known = activeSave()
+    known.activeSponsorDealId = 'energy_drink_cx'
+    const sanitizedKnown = sanitizeExpeditionState(known, 654321)
+    assert.equal(sanitizedKnown.activeSponsorDealId, 'energy_drink_cx')
+
+    const unknown = activeSave()
+    unknown.activeSponsorDealId = 'unknown_deal_123'
+    const sanitizedUnknown = sanitizeExpeditionState(unknown, 654321)
+    assert.equal(sanitizedUnknown.activeSponsorDealId, null)
+
+    const explicitNull = activeSave()
+    explicitNull.activeSponsorDealId = null
+    const sanitizedNull = sanitizeExpeditionState(explicitNull, 654321)
+    assert.equal(sanitizedNull.activeSponsorDealId, null)
+
+    const nonString = activeSave()
+    nonString.activeSponsorDealId = 12345
+    const sanitizedNonString = sanitizeExpeditionState(nonString, 654321)
+    assert.equal(sanitizedNonString.activeSponsorDealId, null)
   })
 
   it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {

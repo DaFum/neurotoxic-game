@@ -7,7 +7,7 @@ import {
   SOCKET_DEFS,
   INITIAL_SOCKET_ORDER,
   TIME_LIMIT
-} from '../../src/scenes/kabelsalat/kabelsalatConstants'
+} from '../../src/utils/minigames/kabelsalatConstants'
 
 describe('kabelsalat/constants', () => {
   describe('CABLES', () => {

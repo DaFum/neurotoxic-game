@@ -129,7 +129,10 @@ export const canAcceptQuest = (
   const repeatPolicy = merged.repeatPolicy
   let scopeKey: string | undefined
   if (repeatPolicy === 'never') {
-    if ((state.completedQuestIds ?? []).includes(questId)) {
+    const isCompleted = state.completedQuests
+      ? state.completedQuests.global.includes(questId)
+      : (state.completedQuestIds ?? []).includes(questId)
+    if (isCompleted) {
       return { ok: false, reason: 'completed' }
     }
     const activeFlags = state.activeStoryFlags ?? []
@@ -185,16 +188,21 @@ export const canAcceptQuest = (
       return { ok: false, reason: 'scope' }
     }
 
-    // ⚡ BOLT OPTIMIZATION: Replaced .some() with a for loop.
-    // Why: Avoids callback overhead and intermediate closure allocations.
-    // Impact: Improves performance in hot paths and reduces GC pressure.
+    // O(1) indexed lookup using completedQuests.scoped when present, with fallback to legacy array
     let alreadyDone = false
-    const scopes = state.completedQuestScopes ?? []
-    for (let i = 0; i < scopes.length; i++) {
-      const c = scopes[i]
-      if (c && c.questId === questId && c.scopeKey === scopeKey) {
-        alreadyDone = true
-        break
+    if (state.completedQuests?.scoped) {
+      const questScopes = Object.hasOwn(state.completedQuests.scoped, questId)
+        ? state.completedQuests.scoped[questId]
+        : undefined
+      alreadyDone = questScopes ? questScopes.includes(scopeKey) : false
+    } else {
+      const scopes = state.completedQuestScopes ?? []
+      for (let i = 0; i < scopes.length; i++) {
+        const c = scopes[i]
+        if (c && c.questId === questId && c.scopeKey === scopeKey) {
+          alreadyDone = true
+          break
+        }
       }
     }
     if (alreadyDone) return { ok: false, reason: 'scope' }

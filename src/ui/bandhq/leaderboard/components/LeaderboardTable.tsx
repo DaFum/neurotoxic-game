@@ -1,22 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { formatCurrency, formatNumber } from '../../../../utils/numberUtils'
-import { LeaderboardEntry, LeaderboardView } from '../types'
+import { LeaderboardState, LeaderboardView } from '../types'
 
 interface LeaderboardTableProps {
   view: LeaderboardView
-  isLoading: boolean
-  error: string | null
-  isUnavailable: boolean
-  rankings: LeaderboardEntry[]
+  state: LeaderboardState
 }
 
-export const LeaderboardTable = ({
-  view,
-  isLoading,
-  error,
-  isUnavailable,
-  rankings
-}: LeaderboardTableProps) => {
+/** Renders the leaderboard panel for the given fetch `state`: connecting, error, unavailable, empty, or the ranked table. */
+export const LeaderboardTable = ({ view, state }: LeaderboardTableProps) => {
   const { t, i18n } = useTranslation()
 
   return (
@@ -26,33 +18,36 @@ export const LeaderboardTable = ({
       aria-labelledby={`tab-${view}`}
       className='flex-1 overflow-hidden flex flex-col'
     >
-      {isLoading && (
-        <div className='flex-1 flex items-center justify-center text-toxic-green animate-pulse font-mono'>
+      {state.status === 'loading' && (
+        <div className='flex-1 flex items-center justify-center text-toxic-green motion-safe:animate-pulse font-mono'>
           {t('ui:leaderboard.connecting')}
         </div>
       )}
 
-      {error && (
+      {state.status === 'error' && (
         <div className='flex-1 flex items-center justify-center text-blood-red font-mono'>
-          {error}
+          {state.message}
         </div>
       )}
 
-      {!isLoading && !error && isUnavailable && (
+      {state.status === 'unavailable' && (
         <div className='flex-1 flex items-center justify-center text-ash-gray font-mono text-center px-4'>
           {t('ui:leaderboard.unavailable')}
         </div>
       )}
 
-      {!isLoading && !error && !isUnavailable && rankings.length === 0 && (
+      {state.status === 'ready' && state.entries.length === 0 && (
         <div className='flex-1 flex items-center justify-center text-ash-gray font-mono'>
           {t('ui:leaderboard.no_data')}
         </div>
       )}
 
-      {!isLoading && !error && !isUnavailable && rankings.length > 0 && (
+      {state.status === 'ready' && state.entries.length > 0 && (
         <div className='flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar touch-pan-y touch-pinch-zoom'>
-          <table className='w-full text-left font-mono'>
+          <table
+            className='w-full text-left font-mono'
+            aria-labelledby={`tab-${view}`}
+          >
             <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
               <tr>
                 <th className='py-2 px-2'>#</th>
@@ -69,7 +64,7 @@ export const LeaderboardTable = ({
               </tr>
             </thead>
             <tbody>
-              {rankings.map(entry => {
+              {state.entries.map(entry => {
                 return (
                   <tr
                     key={entry.playerRef}

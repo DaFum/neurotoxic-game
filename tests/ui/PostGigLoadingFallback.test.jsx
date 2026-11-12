@@ -4,7 +4,7 @@ import { userEvent } from '@testing-library/user-event'
 
 const mockChangeScene = vi.fn()
 
-vi.mock('../../src/hooks/usePostGigLogic', () => ({
+vi.mock('../../src/hooks/postGig/usePostGigLogic', () => ({
   usePostGigLogic: () => ({
     t: (_k, o) => o?.defaultValue ?? _k,
     phase: 'REPORT',

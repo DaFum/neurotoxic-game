@@ -25,7 +25,8 @@ vi.mock('../../src/data/characters', () => ({
   CHARACTERS: {
     AXEL: { name: 'Axel', traits: [] },
     FREDDIE: { name: 'Freddie', traits: [] }
-  }
+  },
+  CLINIC_TRAITS: []
 }))
 
 describe('BandHQ Stats Discrepancy', () => {

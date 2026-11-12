@@ -28,8 +28,6 @@ import {
   getAvailablePressureModifierIds,
   getAvailableStarterPerkIds,
   getAvailableExpeditionTourTypeIds,
-  getAvailableNativeContractTemplateIds,
-  getExpeditionFameLockedContractTemplateIds,
   getExpeditionFuelTopUpCost,
   getExpeditionUpfrontCost,
   validateExpeditionBuildCommitment,
@@ -38,7 +36,9 @@ import {
 } from '../../domain/expedition/loadout'
 import {
   areExpeditionContractsCompatible,
-  getExpeditionContractTargetNodeId
+  getAvailableNativeContractTemplateIds,
+  getExpeditionContractTargetNodeId,
+  getExpeditionFameLockedContractTemplateIds
 } from '../../domain/expedition/contracts'
 import {
   calculateExpeditionCargoCapacity,

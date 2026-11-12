@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useKabelsalatState } from '../../src/scenes/kabelsalat/useKabelsalatState'
+import { useKabelsalatState } from '../../src/hooks/minigames/kabelsalat/useKabelsalatState'
 import {
   FakeImage,
   installFakeImage,
@@ -67,6 +67,7 @@ describe('useKabelsalatState', () => {
       result = hook.result
     })
 
+    expect(result.current.phase).toEqual({ name: 'playing' })
     expect(result.current.selectedCable).toBeNull()
     expect(result.current.connections).toEqual({})
     expect(result.current.isShocked).toBe(false)
@@ -360,6 +361,7 @@ describe('useKabelsalatState', () => {
 
     const requiredKeys = [
       't',
+      'phase',
       'selectedCable',
       'connections',
       'isShocked',
@@ -477,5 +479,104 @@ describe('useKabelsalatState', () => {
 
     expect(result.current.connections).toEqual({})
     expect(Object.keys(result.current.connections).length).toBe(0)
+  })
+
+  it('transitions through phase states on shock and recovers after 1500ms', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
+
+    expect(result.current.phase).toEqual({ name: 'playing' })
+
+    await act(async () => {
+      result.current.handleCableClick('iec')
+    })
+    await act(async () => {
+      result.current.handleSocketClick('mic')
+    })
+
+    expect(result.current.phase.name).toBe('shocked')
+    expect(result.current.isShocked).toBe(true)
+
+    // After 1499ms, still shocked
+    await act(async () => {
+      vi.advanceTimersByTime(1499)
+    })
+    expect(result.current.phase.name).toBe('shocked')
+
+    // At 1500ms, recovers to playing
+    await act(async () => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(result.current.phase).toEqual({ name: 'playing' })
+    expect(result.current.isShocked).toBe(false)
+  })
+
+  it('transitions phase through winning -> powered -> transitioned on full wiring', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
+
+    const wiring = [
+      ['iec', 'power'],
+      ['jack', 'amp'],
+      ['xlr', 'mic'],
+      ['dc', 'pedal'],
+      ['midi', 'synth']
+    ]
+    for (const [cable, socket] of wiring) {
+      await act(async () => {
+        result.current.handleCableClick(cable)
+      })
+      await act(async () => {
+        result.current.handleSocketClick(socket)
+      })
+    }
+
+    expect(result.current.phase).toEqual({ name: 'winning' })
+    expect(result.current.isWinning).toBe(true)
+
+    await act(async () => {
+      vi.advanceTimersByTime(600)
+    })
+    expect(result.current.phase).toEqual({ name: 'powered' })
+    expect(result.current.isPoweredOn).toBe(true)
+
+    await act(async () => {
+      vi.advanceTimersByTime(2500)
+    })
+    expect(result.current.phase).toEqual({ name: 'transitioned' })
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: true })
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('transitions phase to gameover then transitioned on timeout', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(25000)
+    })
+
+    expect(result.current.phase).toEqual({ name: 'gameover' })
+    expect(result.current.isGameOver).toBe(true)
+
+    await act(async () => {
+      vi.advanceTimersByTime(3500)
+    })
+    expect(result.current.phase).toEqual({ name: 'transitioned' })
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith(
+      expect.objectContaining({ isPoweredOn: false })
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })

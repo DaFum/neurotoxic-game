@@ -42,10 +42,6 @@ export const calculateMerchIncome = (
   context: EconomyContext = {},
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  gigStats = gigStats || {}
-  modifiers = modifiers || {}
-  bandInventory = bandInventory || {}
-  context = context || {}
   // Better baseline merch conversion.
   // Smoothly scales from 10% to 40% based on performance
   let buyRate = 0.1 + (performanceScore / 100) * 0.3
@@ -67,11 +63,15 @@ export const calculateMerchIncome = (
     })
   }
 
-  if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
+  if (modifiers?.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Loyalty converts to merch sales during controversy
-  if (isCultAudience(context?.controversyLevel, context?.loyalty)) {
-    const loyalty = finiteNumberOr(context.loyalty, 0)
+  const controversyLevel =
+    context?.normalizedSocial?.controversyLevel ??
+    finiteNumberOr(context?.controversyLevel, 0)
+  const loyalty =
+    context?.normalizedSocial?.loyalty ?? finiteNumberOr(context?.loyalty, 0)
+  if (isCultAudience(controversyLevel, loyalty)) {
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     // The cap limits how far loyalty may lift a low rate; it never pulls an
     // already higher rate (a strong show) down, or support would sell less.
@@ -84,11 +84,11 @@ export const calculateMerchIncome = (
   }
 
   // Calculate missed notes penalty from gigStats
-  const maxHypePenalty = isFiniteNumber(gigStats.peakHype)
-    ? Math.max(0, 1 - gigStats.peakHype / 100) * 0.1
+  const maxHypePenalty = isFiniteNumber(gigStats?.peakHype)
+    ? Math.max(0, 1 - (gigStats?.peakHype ?? 0) / 100) * 0.1
     : 0
-  const missesPenalty = gigStats.misses
-    ? Math.min(0.2, (gigStats.misses / 100) * 0.15)
+  const missesPenalty = gigStats?.misses
+    ? Math.min(0.2, (gigStats?.misses / 100) * 0.15)
     : 0
   buyRate -= maxHypePenalty + missesPenalty
 
@@ -97,9 +97,9 @@ export const calculateMerchIncome = (
     Math.max(0, ticketsSold) * Math.max(0, buyRate)
   )
 
-  const customPrices = context.merchPrices ?? {}
+  const customPrices = context?.merchPrices ?? {}
   const safeInventory = bandInventory || {}
-  const cityTraits = context.cityTraits
+  const cityTraits = context?.cityTraits
 
   const genreBias = (cityTraits?.genreBias ?? '') as CityGenre
   const spendingProfile = (cityTraits?.barSpendingProfile ??

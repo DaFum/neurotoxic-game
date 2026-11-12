@@ -1,12 +1,13 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { finiteNumberOr, parseCooldownEntry } from '../gameState'
+import { finiteNumberOr, pruneEventCooldowns } from '../gameState'
 import { getAssetAggregateBoni } from '../assets/assetSelectors/assetFinancials'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
 import { resolveTemplateString } from './templateResolver'
 import { toStringArray, processEvent } from './helpers'
 import { BASE_BREAKDOWN_CHANCE } from '../upgradeUtils'
+import { getEventById } from '../../data/events/index'
 import type { EngineEvent, EngineGameState, TriggerPoint } from './types'
 
 const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
@@ -16,18 +17,6 @@ const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 const BREAKDOWN_CHANCE_FACTOR_CAP = 4
 /** Template `{venue}` stand-in (an i18n key) for a player with no location. */
 const EVENT_VENUE_FALLBACK_KEY = 'ui:event.venueFallback'
-
-type EventPoolById = Record<string, EngineEvent>
-
-/**
- * WeakMap keyed by event pool array identity.
- *
- * Each cached value maps event ids from that pool to their event objects for
- * pending-event lookup.
- *
- * @remarks WeakMap keys are the pool arrays themselves, not event ids.
- */
-const eventPoolMapCache = new WeakMap<EngineEvent[], EventPoolById>()
 
 const hasInstalledAssetFlag = (
   gameState: EngineGameState,
@@ -40,22 +29,6 @@ const hasInstalledAssetFlag = (
       typeof asset === 'object' &&
       getAssetAggregateBoni(asset)[flag] === true
   )
-}
-
-const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {
-  const cachedMap = eventPoolMapCache.get(pool)
-  if (cachedMap) return cachedMap
-
-  const map: EventPoolById = Object.create(null)
-  for (let i = 0; i < pool.length; i++) {
-    const event = pool[i]
-    const eventId = event?.id
-    if (typeof eventId === 'string' && event) {
-      map[eventId] = event
-    }
-  }
-  eventPoolMapCache.set(pool, map)
-  return map
 }
 
 /**
@@ -106,23 +79,14 @@ const selectEvent = (
   rng: () => number = secureRandom
 ) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
-  const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
   const currentDay = finiteNumberOr(gameState.player?.day, 0)
-  const activeCooldowns: string[] = []
-  for (const cd of eventCooldowns) {
-    const parsed = parseCooldownEntry(cd)
-    if (!parsed) continue
-    if (parsed.expiryDay === null || currentDay < parsed.expiryDay) {
-      activeCooldowns.push(parsed.key)
-    }
-  }
-
+  const cooldowns = gameState.eventCooldowns
   const cooldownsSet =
-    activeCooldowns.length > 0
-      ? new Set<string>(activeCooldowns)
-      : new Set<string>()
+    cooldowns instanceof Set
+      ? new Set<string>(cooldowns)
+      : new Set<string>(Object.keys(pruneEventCooldowns(cooldowns, currentDay)))
   const flagsSet =
     activeStoryFlags.length > 0
       ? new Set<string>(activeStoryFlags)
@@ -155,11 +119,14 @@ const selectEvent = (
   //
   // The authored trigger point is deliberately NOT enforced here — a queued
   // event is a beat to surface at the next opportunity, not at one trigger.
-  const eventsById = pendingEvents.length > 0 ? getEventMapForPool(pool) : null
-  if (eventsById) {
+  if (pendingEvents.length > 0) {
     for (const pendingId of pendingEvents) {
       if (!pendingId || cooldownsSet.has(pendingId)) continue
-      const pendingEvent = eventsById[pendingId]
+      const canonical = getEventById?.(pendingId) as EngineEvent | undefined
+      const pendingEvent =
+        canonical && pool.includes(canonical)
+          ? canonical
+          : pool.find(e => e?.id === pendingId)
       if (!pendingEvent) continue
       const processed = pendingEvent.condition
         ? processEvent(pendingEvent, optimizedState)

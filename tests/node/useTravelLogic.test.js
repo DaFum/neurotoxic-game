@@ -99,6 +99,7 @@ describe('useTravelLogic', () => {
     const props = createTravelLogicProps()
     const { result } = renderHook(() => useTravelLogic(props))
 
+    assert.deepEqual(result.current.phase, { status: 'idle' })
     assert.equal(result.current.isTraveling, false)
     assert.equal(result.current.pendingTravelNode, null)
   })
@@ -110,6 +111,8 @@ describe('useTravelLogic', () => {
     act(() => {
       result.current.handleTravel(targetNode)
     })
+    assert.equal(result.current.phase?.status, 'confirming')
+    assert.equal(result.current.phase?.node.id, targetNode.id)
 
     // Second click: confirms travel
     await act(async () => {
@@ -118,6 +121,8 @@ describe('useTravelLogic', () => {
       await new Promise(resolve => setTimeout(resolve, 0))
     })
 
+    assert.equal(result.current.phase?.status, 'traveling')
+    assert.equal(result.current.phase?.targetNodeId, targetNode.id)
     assert.equal(result.current.isTraveling, true)
     // Confirming a trip hands off to the tourbus minigame; arrival settlement
     // belongs to its completion reducer, not to this hook.
@@ -523,6 +528,41 @@ describe('useTravelLogic', () => {
     assert.equal(props.changeScene.mock.calls.length, 1)
     assert.equal(props.advanceDay.mock.calls.length, 0)
     assert.equal(props.saveGame.mock.calls.length, 0)
+  })
+
+  test('a same-node start the refusal check refuses routes to the map and stays retryable', t => {
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      checkStartGig: t.mock.fn(() => 'festival_booking_locked')
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.checkStartGig.mock.calls.length, 1)
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(mockHandleError.mock.calls.length, 0)
+    assert.deepEqual(
+      props.changeScene.mock.calls.map(call => call.arguments[0]),
+      ['OVERWORLD']
+    )
+
+    // The in-flight guard was not latched: a second click checks again.
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+    assert.equal(props.checkStartGig.mock.calls.length, 2)
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(props.advanceDay.mock.calls.length, 0)
   })
 
   test('re-entry clicks after a requested gig start do not start it again', async () => {

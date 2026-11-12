@@ -797,6 +797,25 @@ describe('G5 — the Sponsor follow-up is about this run', () => {
     })
   })
 
+  it('targets the deal from activeSponsorDealId without activeObligation inflation', () => {
+    const base = settled()
+    const withField = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        activeSponsorDealId: 'deal_via_field',
+        activeObligations: []
+      }
+    }
+    const generated = generate(withField)
+    const decision = decisionOf(generated, 'sponsor_follow_up')
+    assert.ok(decision)
+    assert.deepEqual(decision.target, {
+      kind: 'sponsor',
+      id: 'deal_via_field'
+    })
+  })
+
   it('generates nothing for a sponsorless run with an older deal active', () => {
     // The Career's deal list outlives a Tour, so reading it would follow up on
     // a deal this run never carried.

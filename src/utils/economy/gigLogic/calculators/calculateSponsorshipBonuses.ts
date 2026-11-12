@@ -8,19 +8,18 @@ import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
  * @returns Total sponsor bonus and income breakdown items.
  */
 export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
-  gigStats = gigStats || {}
   const bonuses = []
   let totalBonus = 0
 
   // Legacy callers omit hit counters. When present, zero counters describe
   // an unattempted gig; maxCombo also captures hits in persisted snapshots.
   const unattempted =
-    gigStats.perfectHits === 0 &&
-    finiteNumberOr(gigStats.hits, 0) === 0 &&
-    finiteNumberOr(gigStats.maxCombo, 0) === 0 &&
-    gigStats.misses === 0
-  if (gigStats.failed !== true && !unattempted) {
-    if (gigStats.misses === 0) {
+    gigStats?.perfectHits === 0 &&
+    finiteNumberOr(gigStats?.hits, 0) === 0 &&
+    finiteNumberOr(gigStats?.maxCombo, 0) === 0 &&
+    gigStats?.misses === 0
+  if (gigStats?.failed !== true && !unattempted) {
+    if (gigStats?.misses === 0) {
       const bonus = 200
       bonuses.push({
         labelKey: BREAKDOWN_LABEL_KEYS.TECH_SPONSOR,
@@ -29,7 +28,7 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
       })
       totalBonus += bonus
     }
-    if ((gigStats.peakHype ?? 0) >= 100) {
+    if ((gigStats?.peakHype ?? 0) >= 100) {
       const bonus = 150
       bonuses.push({
         labelKey: BREAKDOWN_LABEL_KEYS.BEER_SPONSOR,

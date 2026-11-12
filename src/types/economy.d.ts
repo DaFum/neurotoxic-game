@@ -28,6 +28,20 @@ import type { CityTraitState } from './game'
 import type { ActiveBrandDeal } from './social'
 
 /**
+ * Normalized social metrics consumed by gig economy calculations.
+ */
+export interface NormalizedEconomySocial {
+  instagram: number
+  tiktok: number
+  controversyLevel: number
+  loyalty: number
+  zealotry: number
+  activeDeals: (Pick<ActiveBrandDeal, 'type' | 'offer'> & {
+    id?: string
+  })[]
+}
+
+/**
  * Minimal gig venue data required by economy calculations.
  */
 export type GigEconomyData = Partial<
@@ -47,6 +61,9 @@ export type EconomyContext = {
   controversyLevel?: number
   loyalty?: number
   zealotry?: number
+  instagram?: number
+  tiktok?: number
+  normalizedSocial?: NormalizedEconomySocial
   regionRep?: number
   discountedTickets?: boolean
   merchPrices?: Record<string, number>
@@ -57,6 +74,10 @@ export type EconomyContext = {
   bandGigModifier?: number
   cityTraits?: CityTraitState
   social?: {
+    instagram?: number
+    tiktok?: number
+    controversyLevel?: number
+    loyalty?: number
     zealotry?: number
     activeDeals?: (Pick<ActiveBrandDeal, 'type' | 'offer'> & {
       id?: string

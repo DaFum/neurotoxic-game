@@ -18,9 +18,11 @@ the real engine.
 
 Deliberate exception: pure, stateless helpers consumed by modules that are themselves dependencies of this directory's playback stack may be imported directly from their sub-module. `src/utils/chartDensity.ts` imports `buildMidiTrackEvents` from `./audio/midiUtils` and `src/utils/rhythmUtils.ts` imports `resolveSongPlaybackWindow` from `./audio/songUtils` — routing these through the `audioEngine.ts` barrel would create an import cycle (`rhythmUtils` is imported by `midiPlayback.ts`, `playbackStrategies.ts`, and `songSequencer.ts`, which the barrel re-exports) and would pull the stateful audio stack into pure utility modules and their `node:test` runs. Do not "fix" these two imports to use the barrel; do not extend this exception to stateful sub-modules.
 
+Inside this directory, `AudioManager.ts` deliberately imports its engine calls directly from `./setup`, `./context`, `./dispose`, `./sfx`, `./transportControl` and `./ambient` instead of the `audioEngine.ts` hub: the hub re-exports `audioManager` and `audioService`, so a hub import there is a runtime import cycle. Do not switch it back to the hub. The reverse direction is prohibited: low-level modules (everything here except `audioEngine.ts`, `AudioManager.ts` and `audioService.ts`) must never import the hub, `AudioManager.ts` or `audioService.ts`, or the cycle returns. `tests/node/audioManager.test.js` therefore mocks those six modules, not the hub, and `tests/node/audioFacadeSingleton.test.js` pins one `audioManager` across hub-, manager- and service-first import orders.
+
 Roles:
 
-- `audioManager` (stateful class instance) — for non-React contexts: Pixi stage controllers, hook lifecycle, imperative timing.
+- `audioManager` (stateful class instance) — internal to `src/utils/audio` (it is re-exported from the `audioEngine.ts` barrel and wrapped by `audioService`); nothing outside this directory imports it.
 - `audioService` (React-safe adapter) — for React components and hooks that need `useSyncExternalStore`-style reactivity.
 
 ## Gig playback sequencing
@@ -37,7 +39,7 @@ Roles:
 ## Drum kits and SFX
 
 - `audioState.midiDrumKit` is `Nullable<DrumKitSynth>` but `playDrumNote` expects `DrumKitSynth | undefined`; pass `audioState.midiDrumKit ?? undefined` so the default drum-kit fallback can run. If no kit exists, `playDrumNote` no-ops.
-- New SFX types must be added both to the `AudioSfxType` union and to `VALID_SFX_TYPES` in `AudioManager`. Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
+- New SFX types must be added to `SFX_RECIPES` in `src/utils/audio/sfx.ts` (the `AudioSfxType` union is derived automatically). Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
 - `audioService.setSfxVolume` (lowercase acronym, React-facing) bridges to `audioManager.setSFXVolume` (uppercase acronym, class-internal). Calling the wrong casing on a facade throws `TypeError` at runtime.
 
 ## Disposal

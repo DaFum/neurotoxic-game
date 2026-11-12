@@ -2,7 +2,9 @@ import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
 import {
   validateHealMember,
-  validateEnhanceMember
+  validateEnhanceMember,
+  getClinicActionAvailability,
+  canPerformClinicAction
 } from '../../src/utils/clinicLogicUtils'
 
 const VALID_MEMBER = {
@@ -74,6 +76,50 @@ describe('clinicLogicUtils', () => {
           silent: false,
           errorKey: 'ui:clinic.not_enough_fame',
           defaultMessage: 'Not enough fame. The void demands sacrifice.'
+        }
+      )
+    })
+  })
+
+  describe('getClinicActionAvailability & canPerformClinicAction', () => {
+    it('returns invalid when member is missing or has no id', () => {
+      assert.deepStrictEqual(
+        getClinicActionAvailability(
+          { type: 'heal', member: null },
+          { spendableMoney: 500 }
+        ),
+        {
+          isAvailable: false,
+          reasonKey: 'ui:clinic.invalidMember',
+          defaultReason: 'Member unavailable'
+        }
+      )
+      assert.strictEqual(
+        canPerformClinicAction(
+          { type: 'heal', member: undefined },
+          { spendableMoney: 500 }
+        ),
+        false
+      )
+    })
+
+    it('evaluates therapy action availability based on member mood', () => {
+      const stressedMember = { ...VALID_MEMBER, mood: 40 }
+      assert.strictEqual(
+        canPerformClinicAction({ type: 'therapy', member: stressedMember }, {}),
+        true
+      )
+
+      const relaxedMember = { ...VALID_MEMBER, mood: 100 }
+      assert.deepStrictEqual(
+        getClinicActionAvailability(
+          { type: 'therapy', member: relaxedMember },
+          {}
+        ),
+        {
+          isAvailable: false,
+          reasonKey: 'ui:clinic.fullyRested',
+          defaultReason: 'Member is already fully rested'
         }
       )
     })

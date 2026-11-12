@@ -20,6 +20,7 @@ import { validateModuleInstall } from '../moduleInstallValidation'
  */
 
 import { ActionTypes } from '../actionTypes'
+import { createInstallAssetModuleAction } from '../actionCreators'
 import { canAffordInState } from './assetAffordability'
 import { logger } from '../../utils/logger'
 import {
@@ -27,7 +28,6 @@ import {
   calculateChassisUpgradeCost,
   getChassisTierConfig
 } from '../../utils/assets/assetConfig'
-import { getRegisteredModule } from '../../utils/assets/assetModuleRegistry'
 import {
   calculateRefinanceFee,
   getLoanProfile,
@@ -103,23 +103,6 @@ type StartCrowdfundFailedAction = ActionByType<
   typeof ActionTypes.START_CROWDFUND_FAILED
 >
 type AssetForeclosedAction = ActionByType<typeof ActionTypes.ASSET_FORECLOSED>
-
-/**
- * Composes the pre-generated `NewSlotEntry` array for a module that uses
- * `addsSlots` to dynamically extend the chassis (e.g., a trailer hitch
- * exposing two trailer addon slots).
- */
-const buildAddedSlotEntries = (moduleId: string): NewSlotEntry[] => {
-  const m = getRegisteredModule(moduleId)
-  if (!m || !m.addsSlots) return []
-  const out: NewSlotEntry[] = []
-  for (const block of m.addsSlots) {
-    for (let i = 0; i < block.count; i++) {
-      out.push({ slotType: block.slotType, id: getSafeUUID() })
-    }
-  }
-  return out
-}
 
 /**
  * Raw chassis purchase request from the asset UI.
@@ -257,16 +240,7 @@ export const installModule = (
   const reason = validateModuleInstall(raw, state)
   if (reason !== null) return fail(reason)
 
-  const newSlotIds = buildAddedSlotEntries(raw.moduleId)
-  return {
-    type: ActionTypes.INSTALL_MODULE,
-    payload: {
-      assetId: raw.assetId,
-      slotId: raw.slotId,
-      moduleId: raw.moduleId,
-      ...(newSlotIds.length > 0 ? { newSlotIds } : {})
-    }
-  }
+  return createInstallAssetModuleAction(raw.assetId, raw.slotId, raw.moduleId)
 }
 
 /**

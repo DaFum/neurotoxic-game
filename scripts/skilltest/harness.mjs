@@ -36,7 +36,11 @@ import { parse as parseYamlDoc } from 'yaml'
  * @param {import('node:path')} [pathImpl=nodePath] - Path implementation to use.
  * @returns {boolean} Whether the path is disabled.
  */
-export const isPathDisabled = (targetPath, disabledSet, pathImpl = nodePath) => {
+export const isPathDisabled = (
+  targetPath,
+  disabledSet,
+  pathImpl = nodePath
+) => {
   const normalizePath = value => pathImpl.normalize(pathImpl.resolve(value))
   const normalizedTarget = normalizePath(targetPath)
   for (const entry of disabledSet) {
@@ -227,15 +231,52 @@ export const parseFrontmatter = contents => {
 export const parseYaml = contents => parseYamlDoc(contents) || {}
 
 /**
+ * Support files that live in a skill's `scripts/` directory but are not
+ * entry points, keyed by skill directory basename. `validateScripts` skips
+ * its executable and shebang checks for exactly these files. The key is the
+ * basename only, so the classification applies to the `.agents` and `.claude`
+ * trees and to user roots alike whenever a skill has the same name.
+ * Every other file, whatever its extension, mode or shebang, is still checked.
+ * Each value records why the file is not an entry point.
+ */
+const SKILL_SUPPORT_FILES = {
+  brainstorming: {
+    'frame-template.html': 'page template read and served by server.cjs',
+    'helper.js': 'browser script that server.cjs injects into served pages',
+    'server.cjs': 'started as `node server.cjs` by start-server.sh'
+  },
+  skilltest: {
+    'skilltest-lib.mjs':
+      'library module imported by the skilltest entry scripts'
+  }
+}
+
+/**
+ * Support-file names for a skill directory, selected by its basename.
+ * @param {string} skillDir - Skill directory.
+ * @returns {Set<string>} Support-file names (empty for unclassified skills).
+ */
+const getSupportFiles = skillDir => {
+  const skillName = nodePath.basename(skillDir)
+  return Object.hasOwn(SKILL_SUPPORT_FILES, skillName)
+    ? new Set(Object.keys(SKILL_SUPPORT_FILES[skillName]))
+    : new Set()
+}
+
+/**
  * Validate executable scripts in a directory.
  * @param {string} scriptsDir - Scripts directory.
+ * @param {{ supportFiles?: ReadonlySet<string> }} [options] - `supportFiles`
+ *   lists file names that are not entry points; both checks are skipped for
+ *   them. Without it every file is checked.
  * @returns {Promise<Array<{level: string, message: string}>>} Findings.
  */
-export const validateScripts = async scriptsDir => {
+export const validateScripts = async (scriptsDir, { supportFiles } = {}) => {
   const findings = []
   try {
     const entries = await fs.readdir(scriptsDir)
     for (const entry of entries) {
+      if (supportFiles?.has(entry)) continue
       const entryPath = nodePath.join(scriptsDir, entry)
       const stat = await fs.stat(entryPath)
       if (!stat.isFile()) continue
@@ -442,7 +483,11 @@ export const loadSkillRecord = async skillDir => {
   }
 
   const scriptsDir = nodePath.join(skillDir, 'scripts')
-  findings.push(...(await validateScripts(scriptsDir)))
+  findings.push(
+    ...(await validateScripts(scriptsDir, {
+      supportFiles: getSupportFiles(skillDir)
+    }))
+  )
   findings.push(...(await validateOpenAIYaml(skillDir)))
 
   return {

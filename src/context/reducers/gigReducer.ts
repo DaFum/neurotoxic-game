@@ -1,4 +1,9 @@
-import type { GameState, PostGigSummary, Venue } from '../../types'
+import type {
+  GameState,
+  PostGigSummary,
+  StartGigRefusalReason,
+  Venue
+} from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
@@ -96,6 +101,65 @@ export const handleSetGig = (
 }
 
 /**
+ * Decides whether `START_GIG` would refuse a venue, without logging.
+ *
+ * @param state - State the start would reduce against.
+ * @param venue - Untrusted venue payload.
+ * @returns The first refusal reason, or `null` when the reducer accepts it.
+ *
+ * @remarks
+ * The single owner of the `START_GIG` refusal rules: `handleStartGig` calls it,
+ * and arrival preflights it through `checkStartGig`. Checks short-circuit in
+ * this order: payload shape and deep forbidden-key scan, non-empty `id` and
+ * `name`, Festival booking lock, arrived overlay on the current node. The deep
+ * scan runs before any field read, so own accessors are rejected without being
+ * invoked.
+ */
+export const getStartGigRefusal = (
+  state: GameState,
+  venue: unknown
+): StartGigRefusalReason | null => {
+  if (
+    !isLooseRecord(venue) ||
+    hasForbiddenKeysDeep(venue) ||
+    typeof venue.id !== 'string' ||
+    venue.id === '' ||
+    typeof venue.name !== 'string' ||
+    venue.name === ''
+  ) {
+    return 'invalid_payload'
+  }
+  // A Festival booking needs the Fame access tier the map and arrival already
+  // show; re-checked here so a raw dispatch cannot book a locked stage.
+  if (
+    getExpeditionNodeBookingLock(
+      state,
+      state.gameMap?.nodes?.[state.player.currentNodeId]?.type
+    ) !== null
+  ) {
+    return 'festival_booking_locked'
+  }
+  // A Legendary converted the node the band stands on into a SPECIAL stop
+  // (`resolveArrivalNode`); the show it replaced is not bookable from it.
+  const arrivedOverlayNodeId = state.expedition?.arrivedOverlay?.nodeId
+  if (
+    typeof arrivedOverlayNodeId === 'string' &&
+    arrivedOverlayNodeId === state.player.currentNodeId
+  ) {
+    return 'node_converted'
+  }
+  return null
+}
+
+const START_GIG_REFUSAL_WARNINGS: Record<StartGigRefusalReason, string> = {
+  invalid_payload: 'Rejected malformed START_GIG payload',
+  festival_booking_locked:
+    'Rejected START_GIG: Festival booking needs a higher Fame access tier',
+  node_converted:
+    'Rejected START_GIG: the current node was converted by a route overlay'
+}
+
+/**
  * Enters the pre-gig scene for a venue and resets gig modifiers to defaults.
  *
  * @remarks
@@ -110,46 +174,12 @@ export const handleSetGig = (
  * @returns Updated state ready for pre-gig setup.
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
-  // Same hostile-payload gate as SET_GIG, plus the venue's mandatory identity:
-  // a raw dispatch must not move to PRE_GIG with an invalid `currentGig`.
-  // The deep scan runs before any field read so it rejects own accessors
-  // without invoking them.
-  if (
-    !isLooseRecord(payload) ||
-    hasForbiddenKeysDeep(payload) ||
-    typeof payload.id !== 'string' ||
-    payload.id === '' ||
-    typeof payload.name !== 'string' ||
-    payload.name === ''
-  ) {
-    logger.warn('GameState', 'Rejected malformed START_GIG payload')
-    return state
-  }
-  // A Festival booking needs the Fame access tier the map and arrival already
-  // show; re-checked here so a raw dispatch cannot book a locked stage.
-  if (
-    getExpeditionNodeBookingLock(
-      state,
-      state.gameMap?.nodes?.[state.player.currentNodeId]?.type
-    ) !== null
-  ) {
-    logger.warn(
-      'GameState',
-      'Rejected START_GIG: Festival booking needs a higher Fame access tier'
-    )
-    return state
-  }
-  // A Legendary converted the node the band stands on into a SPECIAL stop
-  // (`resolveArrivalNode`); the show it replaced is not bookable from it.
-  const arrivedOverlayNodeId = state.expedition?.arrivedOverlay?.nodeId
-  if (
-    typeof arrivedOverlayNodeId === 'string' &&
-    arrivedOverlayNodeId === state.player.currentNodeId
-  ) {
-    logger.warn(
-      'GameState',
-      'Rejected START_GIG: the current node was converted by a route overlay'
-    )
+  // Same hostile-payload gate as SET_GIG, plus the venue's mandatory identity,
+  // the Festival booking lock and the converted-node rule: a raw dispatch must
+  // not move to PRE_GIG with an invalid or unbookable `currentGig`.
+  const refusal = getStartGigRefusal(state, payload)
+  if (refusal !== null) {
+    logger.warn('GameState', START_GIG_REFUSAL_WARNINGS[refusal])
     return state
   }
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
@@ -178,9 +208,11 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
         technicalConditionAggregate: getExpeditionConditionSummary(withDefects),
         heat: withDefects.expedition.pressure.heat,
         exposure: withDefects.expedition.pressure.exposure,
-        hasSponsorObligation: withDefects.expedition.activeObligations.some(
-          obligation => obligation.sourceType === 'brandDeal'
-        )
+        hasSponsorObligation:
+          Boolean(withDefects.expedition.activeSponsorDealId) ||
+          withDefects.expedition.activeObligations.some(
+            obligation => obligation.sourceType === 'brandDeal'
+          )
       })
     : null
   const finaleProfile = getExpeditionFinaleProfile(finaleType)
@@ -477,22 +509,22 @@ export const handleSetLastGigStats = (
       ? state.currentGig.capacity
       : null
 
+  const gigEventPayload = {
+    score,
+    accuracy,
+    failed: gigFailed,
+    capacity: finiteNumberOr(capacity, 0),
+    venueId: state.currentGig?.id || '',
+    region: cityRegion
+  }
+
   nextState = QuestEvents.emit(
     nextState,
-    createGigCompletedQuestEvent({
-      score,
-      capacity: finiteNumberOr(capacity, 0),
-      venueId: state.currentGig?.id || '',
-      region: cityRegion
-    })
+    createGigCompletedQuestEvent(gigEventPayload)
   )
   nextState = QuestEvents.emit(
     nextState,
-    createVenueGigCompletedQuestEvent({
-      score,
-      venueId: state.currentGig?.id || '',
-      region: cityRegion
-    })
+    createVenueGigCompletedQuestEvent(gigEventPayload)
   )
 
   if (gigFailed || accuracy < 30) {
@@ -563,31 +595,16 @@ export const handleSetLastGigStats = (
     nextState = handleRecordGoodShow(nextState)
     nextState = QuestEvents.emit(
       nextState,
-      createGoodGigQuestEvent({
-        score,
-        capacity: finiteNumberOr(capacity, 0),
-        venueId: state.currentGig?.id || '',
-        region: cityRegion
-      })
+      createGoodGigQuestEvent(gigEventPayload)
     )
     nextState = QuestEvents.emit(
       nextState,
-      createVenueGoodGigQuestEvent({
-        score,
-        capacity: capacity ?? undefined,
-        venueId: state.currentGig?.id || '',
-        region: cityRegion
-      })
+      createVenueGoodGigQuestEvent(gigEventPayload)
     )
     if (capacity !== null && capacity <= 300) {
       nextState = QuestEvents.emit(
         nextState,
-        createSmallVenueGoodQuestEvent({
-          score,
-          capacity,
-          venueId: state.currentGig?.id || '',
-          region: cityRegion
-        })
+        createSmallVenueGoodQuestEvent(gigEventPayload)
       )
     }
   } else if (accuracy >= 30 && accuracy < 60) {

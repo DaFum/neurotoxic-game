@@ -195,11 +195,11 @@ describe('SetlistTab', () => {
     expect(mockChangeScene.mock.calls[0][0]).toBe(GAME_PHASES.PRACTICE)
   })
 
-  it('shows warning when starting practice with empty setlist', () => {
+  it('proactively gates practice button with aria-disabled and tooltip when empty', () => {
     const setlist = []
     const setSetlist = vi.fn()
     const addToast = vi.fn()
-    const { getByText } = render(
+    const { getByRole } = render(
       <SetlistTab
         setlist={setlist}
         setSetlist={setSetlist}
@@ -207,16 +207,18 @@ describe('SetlistTab', () => {
       />
     )
 
-    const practiceButton = getByText('START PRACTICE')
+    const practiceButton = getByRole('button', { name: 'START PRACTICE' })
+    expect(practiceButton).toHaveAttribute('aria-disabled', 'true')
+
+    fireEvent.mouseEnter(practiceButton)
+    expect(getByRole('tooltip')).toHaveTextContent(
+      'Select at least one song to practice!'
+    )
+
     fireEvent.click(practiceButton)
 
     expect(mockSetCurrentGig.mock.calls.length).toBe(0)
     expect(mockChangeScene.mock.calls.length).toBe(0)
-
-    expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe(
-      'Select at least one song to practice!'
-    )
-    expect(addToast.mock.calls[0][1]).toBe('warning')
+    expect(addToast.mock.calls.length).toBe(0)
   })
 })

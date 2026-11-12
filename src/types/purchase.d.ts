@@ -14,10 +14,21 @@ export type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
 export type BandPatch = Partial<BandState> | null
 
 /**
+ * Discriminated status reflecting why a catalog item is or isn't purchasable.
+ */
+export type PurchaseStatus =
+  | 'available'
+  | 'owned'
+  | 'insufficient_funds'
+  | 'reputation_blocked'
+  | 'missing_effect'
+
+/**
  * Resolved purchase state parameters for a given catalog item.
  */
 export interface PurchaseDecision {
   cost: number
+  status: PurchaseStatus
   canAfford: boolean
   isOwned: boolean
   isConsumable: boolean

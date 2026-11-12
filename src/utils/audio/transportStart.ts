@@ -23,6 +23,24 @@ export function startTransportAt(timeSec: number, offset?: number): void {
 }
 
 /**
+ * Returns how long until a scheduled transport start actually begins.
+ *
+ * @remarks
+ * Tone reports `stopped` until the scheduled time, so state snapshots taken
+ * right after {@link startTransportAt} miss the start. Callers use this delay to
+ * refresh them once the transport is running.
+ *
+ * @returns Milliseconds until the scheduled start, or `null` when no start is
+ * pending in the future.
+ */
+export function getPendingTransportStartDelayMs(): number | null {
+  const scheduled = audioState.transportScheduledStart
+  if (!scheduled) return null
+  const remainingMs = (scheduled.timeSec - getAudioContextTimeSec()) * 1000
+  return remainingMs > 0 ? remainingMs : null
+}
+
+/**
  * Forgets any scheduled or deferred transport start.
  */
 export function clearScheduledTransportStart(): void {

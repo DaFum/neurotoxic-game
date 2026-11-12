@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { render, cleanup, screen } from '@testing-library/react'
+import { render, cleanup, screen, fireEvent } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { CompletePhase } from '../../src/components/postGig/CompletePhase.tsx'
 
@@ -321,10 +321,44 @@ describe('CompletePhase', () => {
 
     const button = screen.getByRole('button', { name: /Spin Story/i })
     expect(button).toBeDisabled()
-    // The reason is visible, linked via aria-describedby and in the title.
+    // The reason is visible, linked via aria-describedby and rendered inside accessible Tooltip.
     const reason = screen.getByText(/protected career cash/i)
     expect(button).toHaveAttribute('aria-describedby', reason.id)
-    expect(button).toHaveAttribute('title', reason.textContent)
+
+    // Hover and keyboard focus over the disabled action's wrapper to verify the Tooltip popup is triggered
+    expect(button.parentElement).toBeTruthy()
+    expect(button.parentElement).toHaveAttribute('tabindex', '0')
+
+    fireEvent.mouseEnter(button.parentElement)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /protected career cash/i
+    )
+
+    fireEvent.mouseLeave(button.parentElement)
+
+    // Keyboard focus on the disabled action's wrapper opens the tooltip
+    fireEvent.focus(button.parentElement)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /protected career cash/i
+    )
+  })
+
+  test('sets aria-busy on continue button when processing action', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+        isProcessingAction={true}
+      />
+    )
+
+    const button = screen.getByRole('button', { name: /Processing/i })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
   })
 
   test('shows no spin story reason when it is affordable', () => {

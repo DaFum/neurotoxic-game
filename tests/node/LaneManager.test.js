@@ -26,6 +26,8 @@ mock.module(
   {
     namedExports: {
       buildRhythmLayout: mockBuildRhythmLayout,
+      calculateLaneX: (startX, laneWidth, laneGap, index) =>
+        startX + index * (laneWidth + (laneGap ?? 0)),
       getPixiColorFromToken: mockGetPixiColorFromToken
     }
   }
@@ -216,5 +218,28 @@ describe('LaneManager', () => {
     laneManager.update(gameStateRef.current)
 
     assert.equal(firstLaneStaticGraphics.clear.mock.calls.length, 0)
+  })
+
+  test('decouples lane pixel positions into laneXPositions without mutating gameStateRef', () => {
+    // startX=100, laneWidth=100, laneGap=20
+    // Lane 0: 100
+    // Lane 1: 100 + 1 * (100 + 20) = 220
+    // Lane 2: 100 + 2 * (100 + 20) = 340
+    assert.deepEqual(laneManager.laneXPositions, [100, 220, 340])
+    assert.equal(laneManager.getLaneX(0), 100)
+    assert.equal(laneManager.getLaneX(1), 220)
+    assert.equal(laneManager.getLaneX(2), 340)
+
+    // Verify domain state is NOT polluted with renderX or x coordinates
+    for (const lane of gameStateRef.current.lanes) {
+      assert.equal(lane.renderX, undefined)
+      assert.equal(lane.x, undefined)
+    }
+  })
+
+  test('dispose clears laneXPositions', () => {
+    assert.equal(laneManager.laneXPositions.length, 3)
+    laneManager.dispose()
+    assert.equal(laneManager.laneXPositions.length, 0)
   })
 })

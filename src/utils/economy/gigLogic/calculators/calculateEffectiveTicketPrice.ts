@@ -11,9 +11,8 @@ export const calculateEffectiveTicketPrice = (
   context: EconomyContext = {}
 ) => {
   if (!gigData) return 0
-  context = context || {}
   const price = finiteNumberOr(gigData.price, 0)
-  if (context.discountedTickets && price > 10) {
+  if (context?.discountedTickets && price > 10) {
     return Math.floor(price * 0.5)
   }
   return price

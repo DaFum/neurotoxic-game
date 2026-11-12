@@ -25,6 +25,8 @@ import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './assets/useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import { gameReducer } from './gameReducer'
+import { getStartGigRefusal } from './reducers/gigReducer'
+import type { StartGigRefusalReason } from '../types'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,
@@ -131,6 +133,17 @@ type BaseGameDispatchActions = {
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
   startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
+  /**
+   * Preflights a gig start: the reason `START_GIG` would refuse `venue` against
+   * the latest reduced state, or `null` when it would accept. Neither
+   * dispatches nor logs.
+   *
+   * @remarks
+   * A preflight only. Synchronous callbacks run between this check and the
+   * dispatch can change the state, and the reducer re-checks at dispatch time
+   * and stays authoritative.
+   */
+  checkStartGig: (venue: unknown) => StartGigRefusalReason | null
   setSetlist: (list: Parameters<typeof createSetSetlistAction>[0]) => void
   setLastGigStats: (
     stats: Parameters<typeof createSetLastGigStatsAction>[0]
@@ -245,7 +258,7 @@ type BaseGameDispatchActions = {
   endGig: () => void
   setPendingBandHQOpen: (isOpen: boolean) => void
   setPendingSupplyStopInventory: (
-    inventory: GameState['pendingSupplyStopInventory']
+    inventory: import('../types/components').PurchaseItem[] | null
   ) => void
   dismissForeclosureNotice: (
     kind: Parameters<typeof dismissForeclosureNoticeAction>[0]
@@ -681,6 +694,12 @@ export function useGameDispatchActions({
     [dispatch, latestStateRef]
   )
 
+  const checkStartGig = useCallback(
+    (venue: unknown): StartGigRefusalReason | null =>
+      getStartGigRefusal(latestStateRef.current, venue),
+    [latestStateRef]
+  )
+
   // A resolved decision is persisted Career state that changes nothing about
   // the scene, so the write has to travel with the dispatch: the autosave the
   // player would otherwise wait for fires on a scene transition, and a crash
@@ -869,6 +888,7 @@ export function useGameDispatchActions({
       ...expeditionActions,
       ...careerActions,
       commitSocialPost,
+      checkStartGig,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,
@@ -900,6 +920,7 @@ export function useGameDispatchActions({
       expeditionActions,
       careerActions,
       commitSocialPost,
+      checkStartGig,
       resolveExpeditionBetweenTourDecision,
       purchaseExpeditionHqFacility,
       purchaseExpeditionUnlockSet,

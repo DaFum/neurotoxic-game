@@ -4,13 +4,20 @@ import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 let mockPendingBandHQOpen = false
+let mockOtherOverlay = false
 const mockSetPendingBandHQOpen = mock.fn()
 
 // Mock context to prevent errors during render
 mock.module('../../src/context/GameState', {
   namedExports: {
     useGameSelector: mock.fn(selector =>
-      selector({ pendingBandHQOpen: mockPendingBandHQOpen })
+      selector({
+        pendingOverlay: mockPendingBandHQOpen
+          ? { kind: 'band_hq' }
+          : mockOtherOverlay
+            ? { kind: 'foreclosure', notices: ['van'] }
+            : null
+      })
     ),
     useGameActions: mock.fn(() => ({
       setPendingBandHQOpen: mockSetPendingBandHQOpen
@@ -32,6 +39,7 @@ describe('useBandHQModal', () => {
   afterEach(() => {
     cleanup()
     mockPendingBandHQOpen = false
+    mockOtherOverlay = false
     mockSetPendingBandHQOpen.mock.resetCalls()
   })
 

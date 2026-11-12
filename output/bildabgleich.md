@@ -365,8 +365,3 @@ pixel%20art%20yellow%20sports%20car%20isolated%20on%20solid%20black%20background
 pixel%20art%20zine%20library%20shelf%20full%20of%20punk%20magazines%20lounge%20corner
 small%20cozy%20dark%20room%20fireplace%20heavy%20metal%20concert%20atmosphere%20pixel%20art
 top%20down%20view%20dark%20asphalt%20highway%20road%20texture%20pixel%20art%20seamless%20tileable
-
-## Vorhandene Dateien ohne direkten Prompt-Treffer
-
-
-

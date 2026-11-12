@@ -21,7 +21,10 @@ import stats, {
 import song, {
   SET_NAME_IF_UNVERSIONED_SCRIPT
 } from '../../api/leaderboard/song.js'
-import { RATE_LIMIT_SCRIPT } from '../../lib/leaderboard.js'
+import {
+  isLeaderboardRateLimited,
+  RATE_LIMIT_SCRIPT
+} from '../../lib/leaderboard.js'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -158,6 +161,22 @@ it('a timed-out request does not interrupt another Redis operation', async () =>
   await expect(
     withRedisDeadline(redis, () => Promise.resolve('next'))
   ).resolves.toBe('next')
+})
+
+it('isLeaderboardRateLimited bounds a stalled Redis eval operation', async () => {
+  redis.eval.mockImplementationOnce(() => new Promise(() => {}))
+  const check = isLeaderboardRateLimited(
+    /** @type {import('../../lib/apiTypes.js').ApiRequest} */ ({
+      socket: { remoteAddress: '127.0.0.1' }
+    }),
+    'stats',
+    5,
+    60,
+    redis
+  )
+  const failure = expect(check).rejects.toThrow('Redis deadline exceeded')
+  await vi.advanceTimersByTimeAsync(1000)
+  await failure
 })
 
 it('closes a late connection after its request expires', async () => {

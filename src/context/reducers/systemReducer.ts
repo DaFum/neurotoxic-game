@@ -10,6 +10,7 @@ import {
   sanitizeActiveQuests,
   sanitizeQuestCooldowns,
   sanitizeQuestScopes,
+  sanitizeCompletedQuests,
   sanitizeGigModifiers,
   sanitizeVenue,
   sanitizeLastGigStats,
@@ -17,8 +18,12 @@ import {
   sanitizeRivalBand,
   normalizeLoadedGameMap,
   migratePlayerLocation,
-  migrateLegacyVenueId
+  migrateLegacyVenueId,
+  sanitizeEventCooldowns,
+  sanitizePendingOverlay,
+  sanitizeDeferredOverlays
 } from './sanitizers/stateSanitizers'
+import { raiseDeferredOverlay } from './overlayQueue'
 import {
   processAssetTick,
   processLiabilityTick,
@@ -46,7 +51,8 @@ import type {
   GameMap,
   GameSettings,
   RawGameSettings,
-  ResetStatePayload
+  ResetStatePayload,
+  PurchaseItem
 } from '../../types'
 import { logger } from '../../utils/logger'
 import {
@@ -57,7 +63,7 @@ import {
   readMemberStamina,
   isForbiddenKey,
   finiteNumberOr,
-  parseCooldownEntry,
+  pruneEventCooldowns,
   sanitizeStringArray,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
@@ -151,6 +157,31 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
         : (item as T)
   }
   return result
+}
+
+const remapCompletedQuestsScopes = (
+  completedQuests: GameState['completedQuests']
+): GameState['completedQuests'] => {
+  const nextScoped: Record<string, string[]> = {}
+  for (const questId of Object.keys(completedQuests.scoped)) {
+    const scopes = completedQuests.scoped[questId]
+    if (!scopes) continue
+    const def = getQuestDefinition(questId)
+    if (def?.repeatPolicy === 'perRegion') {
+      const remappedSet = new Set<string>()
+      for (const scopeKey of scopes) {
+        const regionKey = getRegionKeyForLocation(scopeKey)
+        remappedSet.add(regionKey ?? scopeKey)
+      }
+      nextScoped[questId] = Array.from(remappedSet)
+    } else {
+      nextScoped[questId] = scopes
+    }
+  }
+  return {
+    global: completedQuests.global,
+    scoped: nextScoped
+  }
 }
 
 const migrateVenueBlacklist = (blacklist: string[]): string[] => {
@@ -248,6 +279,37 @@ export const handleLoadGame = (
     )
   )
 
+  let overlaySlots: Pick<GameState, 'pendingOverlay' | 'deferredOverlays'> = {
+    pendingOverlay: sanitizePendingOverlay(loadedState.pendingOverlay, {
+      pendingRiskEvent: loadedState.pendingRiskEvent,
+      pendingSupplyStopInventory: loadedState.pendingSupplyStopInventory,
+      pendingForeclosureNotices: loadedState.pendingForeclosureNotices,
+      pendingBandHQOpen: loadedState.pendingBandHQOpen
+    }),
+    deferredOverlays: sanitizeDeferredOverlays(loadedState.deferredOverlays)
+  }
+  // Saves written before the overlay slot was consolidated can hold a risk
+  // event or foreclosure notices in their legacy fields that the active
+  // overlay does not show; queue them rather than lose them.
+  const legacyRiskEvent = sanitizeRiskEventDescriptor(
+    loadedState.pendingRiskEvent
+  )
+  if (legacyRiskEvent) {
+    overlaySlots = raiseDeferredOverlay(overlaySlots, {
+      kind: 'risk_event',
+      event: legacyRiskEvent
+    })
+  }
+  const legacyNotices = sanitizeAssetKinds(
+    loadedState.pendingForeclosureNotices
+  )
+  if (legacyNotices.length > 0) {
+    overlaySlots = raiseDeferredOverlay(overlaySlots, {
+      kind: 'foreclosure',
+      notices: legacyNotices
+    })
+  }
+
   const safeState: GameState = {
     ...state,
     // A save carrying an open journal entry is a Career that was debited and
@@ -270,18 +332,13 @@ export const handleLoadGame = (
       flag => isStoryFlag(flag) || inlineStartFlags.has(flag)
     ),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
-    pendingForeclosureNotices: sanitizeAssetKinds(
-      loadedState.pendingForeclosureNotices
+    ...overlaySlots,
+    eventCooldowns: sanitizeEventCooldowns(
+      loadedState.eventCooldowns,
+      finiteNumberOr(mergedPlayer.day, 0)
     ),
-    pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
-    eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     terminalOutcome: sanitizeTerminalOutcome(loadedState.terminalOutcome),
-    // Transient, so it is always set from the save (null when absent): a load
-    // over a live session must not keep that session's open shop.
-    pendingSupplyStopInventory: sanitizeSupplyStopInventory(
-      loadedState.pendingSupplyStopInventory
-    ),
     toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion
@@ -290,6 +347,10 @@ export const handleLoadGame = (
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests,
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
+    completedQuests: sanitizeCompletedQuests(loadedState.completedQuests, {
+      completedQuestIds: loadedState.completedQuestIds,
+      completedQuestScopes: loadedState.completedQuestScopes
+    }),
     completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
     completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
@@ -413,6 +474,7 @@ export const handleLoadGame = (
       safeState.completedQuestScopes,
       scope => scope.questId
     ),
+    completedQuests: remapCompletedQuestsScopes(safeState.completedQuests),
     // A prepared save re-derives its Sponsor staging against the route it was
     // staged for. Offers and provenance survive or are dropped together: an
     // offer set START can no longer validate is worse than none.
@@ -834,15 +896,10 @@ export const handleAdvanceDay = (
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
   if (liabilityTick.foreclosedKinds.length > 0) {
-    nextStatePre = {
-      ...nextStatePre,
-      pendingForeclosureNotices: Array.from(
-        new Set([
-          ...(nextStatePre.pendingForeclosureNotices ?? []),
-          ...liabilityTick.foreclosedKinds
-        ])
-      )
-    }
+    nextStatePre = raiseDeferredOverlay(nextStatePre, {
+      kind: 'foreclosure',
+      notices: Array.from(new Set(liabilityTick.foreclosedKinds))
+    })
   }
   nextStatePre = processCrowdfundTick(nextStatePre)
   // Payloadless dispatches derive the same deterministic stream that
@@ -893,11 +950,11 @@ export const handleAdvanceDay = (
         }
       }
       const firstEvent = events[0]
-      if (firstEvent && nextStatePre.pendingRiskEvent === null) {
-        nextStatePre = {
-          ...nextStatePre,
-          pendingRiskEvent: firstEvent
-        }
+      if (firstEvent) {
+        nextStatePre = raiseDeferredOverlay(nextStatePre, {
+          kind: 'risk_event',
+          event: firstEvent
+        })
       }
       const emittedRisk = new Set<string>()
       const assetKinds = new Map<string, string>()
@@ -1005,19 +1062,13 @@ export const handleAdvanceDay = (
     cd => cd && cd.expiresOnDay > currentDay
   )
 
-  // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
-  // day, while legacy untimed daily cooldowns (no `:`) reset every day as
-  // before. Without this filter the new ego_management_retry / failure cooldown
-  // entries would silently evaporate on the next advanceDay.
-  // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
-  // Legacy format without ':' will be intentionally dropped every day.
-  // The entry grammar lives in `parseCooldownEntry`, shared with every
-  // cooldown reader, so expiry here cannot drift from what `isOnCooldown`
-  // enforces. A null expiryDay is a legacy untimed entry and still resets.
-  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
-    const parsed = parseCooldownEntry(cd)
-    return parsed?.expiryDay != null && parsed.expiryDay > currentDay
-  })
+  // Keep event cooldowns until their unlock day. Same-day cooldowns
+  // (ADD_COOLDOWN, untimed `cooldown` effects) unlock on the next day and
+  // drop here. `pruneEventCooldowns` shares its rule with `isOnCooldown`.
+  const activeEventCooldowns = pruneEventCooldowns(
+    state.eventCooldowns,
+    currentDay
+  )
 
   let nextState: GameState = {
     ...state,
@@ -1082,20 +1133,30 @@ export const handleAddUnlock = (
 }
 
 /**
- * Sets the deferred Band HQ open flag.
+ * Sets or clears the deferred Band HQ overlay in pendingOverlay.
  *
- * @param state - Game state before updating the pending flag.
+ * @param state - Game state before updating the pending overlay.
  * @param isOpen - Next pending open state.
- * @returns State with the pending flag changed, or the original state when it
- * already matches or the payload is not a boolean.
+ * @returns State with the pending overlay updated, or the original state when it
+ * already matches or the payload is not a boolean. An open request that finds
+ * another overlay pending is queued into `deferredOverlays` instead of dropped.
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,
   isOpen: boolean
 ): GameState => {
   if (typeof isOpen !== 'boolean') return state
-  if (state.pendingBandHQOpen === isOpen) return state
-  return { ...state, pendingBandHQOpen: isOpen }
+  const isCurrentlyOverlayBandHQ = state.pendingOverlay?.kind === 'band_hq'
+  if (isOpen) {
+    if (isCurrentlyOverlayBandHQ) return state
+    return raiseDeferredOverlay(state, { kind: 'band_hq' })
+  }
+
+  if (!isCurrentlyOverlayBandHQ) return state
+  return {
+    ...state,
+    pendingOverlay: null
+  }
 }
 
 /**
@@ -1107,16 +1168,39 @@ export const handleSetPendingBandHQOpen = (
  */
 export const handleSetPendingSupplyStopInventory = (
   state: GameState,
-  inventory: GameState['pendingSupplyStopInventory']
+  inventory: PurchaseItem[] | null
 ): GameState => {
   // The reducer is authoritative: the same schema the load path applies, so a
   // raw dispatch cannot open a shop offering a negative-cost item.
   const nextInventory = sanitizeSupplyStopInventory(inventory)
-  if (state.pendingSupplyStopInventory === nextInventory) return state
+  const overlay = state.pendingOverlay
+  const isCurrentlyOverlaySupplyStop = overlay?.kind === 'supply_stop'
+  const currentInventory =
+    overlay?.kind === 'supply_stop' ? overlay.inventory : null
+
+  if (
+    currentInventory === nextInventory ||
+    (nextInventory === null && !isCurrentlyOverlaySupplyStop)
+  ) {
+    return state
+  }
+
+  const canSetSupplyOverlay =
+    !state.pendingOverlay || state.pendingOverlay.kind === 'supply_stop'
+
+  if (nextInventory) {
+    if (!canSetSupplyOverlay) return state
+    return {
+      ...state,
+      pendingOverlay: { kind: 'supply_stop', inventory: nextInventory }
+    }
+  }
 
   return {
     ...state,
-    pendingSupplyStopInventory: nextInventory
+    pendingOverlay: isCurrentlyOverlaySupplyStop
+      ? null
+      : (state.pendingOverlay ?? null)
   }
 }
 
@@ -1184,14 +1268,17 @@ export const handleSetPendingRiskEvent = (
   event: RiskEventDescriptor | null
 ): GameState => {
   if (event === null) {
-    if (state.pendingRiskEvent === null) return state
-    const resolved = state.pendingRiskEvent
+    const overlayEvent =
+      state.pendingOverlay?.kind === 'risk_event'
+        ? state.pendingOverlay.event
+        : null
+    if (!overlayEvent) return state
 
     let asset: NonNullable<typeof state.assets>[number] | undefined
     if (state.assets) {
       for (let i = 0; i < state.assets.length; i++) {
         const a = state.assets[i]
-        if (a?.id === resolved.assetId) {
+        if (a?.id === overlayEvent.assetId) {
           asset = a
           break
         }
@@ -1199,15 +1286,16 @@ export const handleSetPendingRiskEvent = (
     }
 
     const assetKind = asset?.kind ?? 'unknown'
+
     return QuestEvents.emit(
       {
         ...state,
-        pendingRiskEvent: null
+        pendingOverlay: null
       },
       createAssetRiskResolvedQuestEvent({
-        assetId: resolved.assetId,
+        assetId: overlayEvent.assetId,
         assetKind,
-        riskType: resolved.eventType,
+        riskType: overlayEvent.eventType,
         success: true
       })
     )
@@ -1215,16 +1303,23 @@ export const handleSetPendingRiskEvent = (
 
   const nextEvent = sanitizeRiskEventDescriptor(event)
   if (!nextEvent) return state
+
   if (
-    state.pendingRiskEvent?.assetId === nextEvent.assetId &&
-    state.pendingRiskEvent.eventType === nextEvent.eventType &&
-    state.pendingRiskEvent.conditionLoss === nextEvent.conditionLoss
+    state.pendingOverlay?.kind === 'risk_event' &&
+    state.pendingOverlay.event.assetId === nextEvent.assetId &&
+    state.pendingOverlay.event.eventType === nextEvent.eventType &&
+    state.pendingOverlay.event.conditionLoss === nextEvent.conditionLoss
   ) {
     return state
   }
 
+  const canSetRiskOverlay =
+    !state.pendingOverlay || state.pendingOverlay.kind === 'risk_event'
+
+  if (!canSetRiskOverlay) return state
+
   return {
     ...state,
-    pendingRiskEvent: nextEvent
+    pendingOverlay: { kind: 'risk_event', event: nextEvent }
   }
 }

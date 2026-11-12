@@ -8,7 +8,7 @@ vi.mock('../../src/utils/postGig', async importOriginal => ({
   calculatePostGigStateUpdates: vi.fn()
 }))
 
-import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
+import { usePostGigLogic } from '../../src/hooks/postGig/usePostGigLogic'
 import {
   GameStateProvider,
   useGameActions,

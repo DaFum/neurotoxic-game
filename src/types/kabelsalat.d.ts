@@ -1,7 +1,7 @@
 import type {
   SOCKET_DEFS,
   CABLES
-} from '../scenes/kabelsalat/kabelsalatConstants'
+} from '../utils/minigames/kabelsalatConstants'
 
 /**
  * Socket identifier derived from the Kabelsalat socket definitions.
@@ -24,3 +24,14 @@ export interface LightningSeed {
   o3: number
   w: number
 }
+
+/**
+ * Explicit phase state machine for Kabelsalat minigame lifecycle.
+ */
+export type KabelsalatPhase =
+  | { name: 'playing' }
+  | { name: 'shocked'; reason: string }
+  | { name: 'winning' }
+  | { name: 'powered' }
+  | { name: 'gameover' }
+  | { name: 'transitioned' }

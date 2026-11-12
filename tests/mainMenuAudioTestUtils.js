@@ -7,7 +7,7 @@ export const mockAudioManager = {
 
 export const createMockGameState = ({
   canLoad,
-  pendingBandHQOpen = false
+  pendingOverlay = null
 } = {}) => ({
   changeScene: () => {},
   loadGame: () => (canLoad ? { ok: true } : { ok: false, reason: 'missing' }),
@@ -22,7 +22,7 @@ export const createMockGameState = ({
   deleteSave: () => {},
   setlist: [],
   setSetlist: () => {},
-  pendingBandHQOpen,
+  pendingOverlay,
   resetState: () => {}
 })
 

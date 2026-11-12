@@ -121,7 +121,7 @@ test('AdvanceDay handler records liability foreclosure notices', () => {
   const initialState = {
     ...baseState,
     currentScene: GAME_PHASES.OVERWORLD,
-    pendingForeclosureNotices: ['tourbus_chassis'],
+    pendingOverlay: { kind: 'foreclosure', notices: ['tourbus_chassis'] },
     player: {
       ...baseState.player,
       money: 0,
@@ -165,10 +165,10 @@ test('AdvanceDay handler records liability foreclosure notices', () => {
     nextRngSeed: 54321
   })
 
-  assert.deepEqual(nextState.pendingForeclosureNotices, [
-    'tourbus_chassis',
-    'studio_chassis'
-  ])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['tourbus_chassis', 'studio_chassis']
+  })
   assert.equal(
     nextState.assets.some(asset => asset.id === 'defaulted_asset'),
     false
@@ -235,13 +235,19 @@ test('AdvanceDay Integration - zero-condition assets are foreclosed through ASSE
     ),
     false
   )
-  assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['tourbus_chassis']
+  })
 })
 
 test('Game reducer dismisses foreclosure notices by kind', () => {
   const initialState = {
     ...createInitialState(),
-    pendingForeclosureNotices: ['tourbus_chassis', 'studio_chassis']
+    pendingOverlay: {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis', 'studio_chassis']
+    }
   }
 
   const nextState = gameReducer(initialState, {
@@ -249,7 +255,10 @@ test('Game reducer dismisses foreclosure notices by kind', () => {
     payload: { kind: 'tourbus_chassis' }
   })
 
-  assert.deepEqual(nextState.pendingForeclosureNotices, ['studio_chassis'])
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['studio_chassis']
+  })
 })
 
 test('AdvanceDay handler records the first fired asset risk event', () => {
@@ -301,10 +310,13 @@ test('AdvanceDay handler records the first fired asset risk event', () => {
     nextRngSeed: 54321
   })
 
-  assert.deepEqual(nextState.pendingRiskEvent, {
-    assetId: 'risk_asset_1',
-    eventType: 'fire',
-    conditionLoss: 15
+  assert.deepEqual(nextState.pendingOverlay, {
+    kind: 'risk_event',
+    event: {
+      assetId: 'risk_asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
   })
   assert.equal(
     nextState.toasts.filter(toast => toast.type === 'warning').length,
@@ -353,7 +365,7 @@ test('AdvanceDay payloadless dispatch derives the same deterministic stream as a
   const viaPayloadless = handleAdvanceDay(makeState(), { rng })
 
   // Risk events fire on the payloadless path too, with identical results.
-  assert.notEqual(viaPayloadless.pendingRiskEvent, null)
+  assert.notEqual(viaPayloadless.pendingOverlay, null)
   assert.deepEqual(viaPayloadless, viaCreator)
 })
 
@@ -386,4 +398,151 @@ test('AdvanceDay Integration - bankruptcy uses total daily obligations', () => {
 
   assert.equal(nextState.currentScene, GAME_PHASES.GAMEOVER)
   assert.deepEqual(nextState.terminalOutcome, { reason: 'bankruptcy' })
+})
+
+const makeOverlayQueueState = ({ foreclose = true, riskChance = 1 } = {}) => {
+  const baseState = createInitialState()
+  const assets = [
+    {
+      id: 'risk_asset',
+      kind: 'tourbus_chassis',
+      chassisFlavor: 'legit',
+      chassisTier: 1,
+      condition: 100,
+      baseDailyRevenue: 0,
+      baseUpkeep: 0,
+      baseRiskEventChance: riskChance,
+      slots: [],
+      acquiredOnDay: 1,
+      acquisitionMode: 'cash'
+    }
+  ]
+  const liabilities = {}
+  if (foreclose) {
+    assets.push({
+      id: 'defaulted_asset',
+      kind: 'studio_chassis',
+      chassisFlavor: 'legit',
+      chassisTier: 1,
+      condition: 100,
+      baseDailyRevenue: 0,
+      baseUpkeep: 0,
+      baseRiskEventChance: 0,
+      slots: [],
+      acquiredOnDay: 1,
+      acquisitionMode: 'cash'
+    })
+    liabilities.loan_defaulted_asset = {
+      id: 'loan_defaulted_asset',
+      source: 'loan',
+      assetId: 'defaulted_asset',
+      principalRemaining: 500,
+      interestRate: 0.05,
+      dailyPayment: 50,
+      termDaysRemaining: 10,
+      defaultCounter: 6
+    }
+  }
+  return {
+    ...baseState,
+    currentScene: GAME_PHASES.OVERWORLD,
+    player: {
+      ...baseState.player,
+      money: foreclose ? 0 : 1000,
+      day: 10,
+      eventsTriggeredToday: 0
+    },
+    assets,
+    liabilities,
+    crowdfundCampaigns: [],
+    rngSeed: 12345
+  }
+}
+
+const advanceWithStream = state =>
+  gameReducer(state, {
+    type: ActionTypes.ADVANCE_DAY,
+    payload: { dayRngStream: [0, 0], nextRngSeed: 54321 }
+  })
+
+test('AdvanceDay keeps a risk event raised behind a same-day foreclosure and shows it next', () => {
+  const firedEvent = {
+    assetId: 'risk_asset',
+    eventType: 'fire',
+    conditionLoss: 15
+  }
+  const afterDay = advanceWithStream(makeOverlayQueueState())
+
+  assert.deepEqual(afterDay.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['studio_chassis']
+  })
+  assert.deepEqual(afterDay.deferredOverlays, [
+    { kind: 'risk_event', event: firedEvent }
+  ])
+
+  const afterDismiss = gameReducer(afterDay, {
+    type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
+    payload: { kind: 'studio_chassis' }
+  })
+  assert.deepEqual(afterDismiss.pendingOverlay, {
+    kind: 'risk_event',
+    event: firedEvent
+  })
+  assert.deepEqual(afterDismiss.deferredOverlays, [])
+})
+
+test('AdvanceDay keeps liability foreclosure notices raised behind another overlay', () => {
+  const inventory = [{ id: 'item_1', name: 'Strings', cost: 10 }]
+  const state = {
+    ...makeOverlayQueueState({ riskChance: 0 }),
+    pendingOverlay: { kind: 'supply_stop', inventory }
+  }
+  const afterDay = advanceWithStream(state)
+
+  assert.deepEqual(afterDay.pendingOverlay, { kind: 'supply_stop', inventory })
+  assert.deepEqual(afterDay.deferredOverlays, [
+    { kind: 'foreclosure', notices: ['studio_chassis'] }
+  ])
+
+  const afterClose = gameReducer(afterDay, {
+    type: ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY,
+    payload: null
+  })
+  assert.deepEqual(afterClose.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['studio_chassis']
+  })
+})
+
+test('AdvanceDay keeps zero-condition foreclosure notices raised behind another overlay', () => {
+  const riskOverlay = {
+    kind: 'risk_event',
+    event: { assetId: 'other', eventType: 'theft', conditionLoss: 5 }
+  }
+  const base = makeOverlayQueueState({ foreclose: false, riskChance: 0 })
+  const state = {
+    ...base,
+    pendingOverlay: riskOverlay,
+    assets: [{ ...base.assets[0], condition: 0.3, baseUpkeep: 20 }]
+  }
+  const afterDay = advanceWithStream(state)
+
+  assert.equal(
+    afterDay.assets.some(asset => asset.id === 'risk_asset'),
+    false
+  )
+  assert.deepEqual(afterDay.pendingOverlay, riskOverlay)
+  assert.deepEqual(afterDay.deferredOverlays, [
+    { kind: 'foreclosure', notices: ['tourbus_chassis'] }
+  ])
+
+  const afterResolve = gameReducer(afterDay, {
+    type: ActionTypes.SET_PENDING_RISK_EVENT,
+    payload: null
+  })
+  assert.deepEqual(afterResolve.pendingOverlay, {
+    kind: 'foreclosure',
+    notices: ['tourbus_chassis']
+  })
 })

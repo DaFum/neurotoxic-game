@@ -51,12 +51,30 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/playwright-screenshot-fixture-validation.test.js',
   'tests/node/projectDeclarationsLibCheck.test.js',
   'tests/node/runNodeTestsCli.test.js',
+  'tests/node/runtimeImportGraph.test.js',
   'tests/node/skilltestHarness.test.js',
   'tests/node/testRunners.test.js',
   'tests/node/updateSymbols.test.js',
   'tests/node/vitePwaConfig.test.js',
   'tests/node/workflowScripts.test.js',
   'tests/node/zealotryCounterSchema.test.js'
+])
+
+/**
+ * Node suites slow enough to be skipped in quick mode (`--skip-heavy`). A
+ * missing entry only moves a suite to the quick tier, so
+ * tests/node/nodeTestDiscovery.test.js checks every entry still exists.
+ */
+export const HEAVY_NODE_TESTS = Object.freeze([
+  'tests/node/game-balance-cadence-probe.test.js',
+  'tests/node/game-balance-tension-report.test.js',
+  'tests/node/updateSymbols.test.js',
+  'tests/node/CrowdManager.test.js',
+  'tests/node/LaneManager.test.js',
+  'tests/node/NoteManager.test.js',
+  'tests/node/useGigEffects.test.js',
+  'tests/node/useGigInput.test.js',
+  'tests/node/usePurchaseLogic.test.js'
 ])
 
 const toolingNodeTestSet = new Set(TOOLING_NODE_TESTS)

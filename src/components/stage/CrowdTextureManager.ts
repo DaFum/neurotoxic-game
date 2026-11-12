@@ -45,6 +45,8 @@ export class CrowdTextureManager {
    * @returns A promise that resolves when texture loading is complete.
    */
   async loadAssets(): Promise<void> {
+    if (this.isDisposed) return
+
     try {
       const urls = {
         idle: resolveGenImageUrl(IMG_PROMPTS.CROWD_IDLE),

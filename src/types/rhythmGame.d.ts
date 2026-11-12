@@ -7,11 +7,9 @@ import type { Projectile } from '../utils/hecklerLogic'
 export type RhythmLane = {
   id: 'guitar' | 'drums' | 'bass'
   key: 'ArrowLeft' | 'ArrowDown' | 'ArrowRight'
-  x: number
   color: number
   active: boolean
   hitWindow: number
-  renderX?: number
 }
 
 export interface GigHUDStats {

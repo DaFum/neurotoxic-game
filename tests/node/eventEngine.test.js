@@ -27,8 +27,15 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
+const MOCK_EVENTS_BY_ID = new Map(
+  Object.values(MOCK_EVENTS).flatMap(pool => pool.map(e => [e.id, e]))
+)
 mock.module(new URL('../../src/data/events/index.ts', import.meta.url).href, {
-  namedExports: { EVENTS_DB: MOCK_EVENTS }
+  namedExports: {
+    EVENTS_DB: MOCK_EVENTS,
+    EVENTS_BY_ID: MOCK_EVENTS_BY_ID,
+    getEventById: id => MOCK_EVENTS_BY_ID.get(id)
+  }
 })
 
 const mockSecureRandom = mock.fn(() => 0.5)
@@ -409,7 +416,7 @@ test('eventEngine.selectEvent dampens conflict events when infightingDamper is a
 })
 
 test('eventEngine.selectEvent respects cooldowns', () => {
-  const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
+  const state = buildGameState({ eventCooldowns: { event_cooldown: 99 } })
   const selected = eventEngine.selectEvent(
     MOCK_EVENTS.transport,
     state,
@@ -461,7 +468,7 @@ test('eventEngine.selectEvent still gates pending events on their rules', () => 
       pool,
       buildGameState({
         pendingEvents: ['event_guarded'],
-        eventCooldowns: ['event_guarded:9']
+        eventCooldowns: { event_guarded: 9 }
       }),
       'pre_gig'
     ),

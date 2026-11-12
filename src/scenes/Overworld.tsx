@@ -82,6 +82,7 @@ export const Overworld = () => {
   )
   const {
     startGig,
+    checkStartGig,
     updatePlayer,
     triggerEvent,
     saveGame,
@@ -107,6 +108,7 @@ export const Overworld = () => {
   const {
     isTraveling,
     pendingTravelNode,
+    connectedTargetIds,
     isConnected,
     getNodeVisibility,
     handleTravel,
@@ -135,6 +137,7 @@ export const Overworld = () => {
     advanceDay,
     triggerEvent,
     startGig,
+    checkStartGig,
     addToast,
     removeToast,
     changeScene,
@@ -234,6 +237,7 @@ export const Overworld = () => {
         pendingTravelNode={pendingTravelNode}
         getNodeVisibility={getNodeVisibility}
         isConnected={isConnected}
+        connectedTargetIds={connectedTargetIds}
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}

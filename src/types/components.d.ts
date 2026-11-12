@@ -246,7 +246,7 @@ export interface ClinicMemberCardProps {
   enhanceCostFame: number
   healMember: (memberId: string) => void
   enhanceMember: (memberId: string, traitId: string) => void
-  graftNeuroOverclock: (memberId: string) => void
+  onRequestGraft: (member: BandMember) => void
 }
 
 /**
@@ -318,10 +318,7 @@ export interface BandMembersLayerProps {
 export interface RoadieControlsProps {
   showControls: boolean
   setShowControls: React.Dispatch<React.SetStateAction<boolean>>
-  handleMoveUp: () => void
-  handleMoveLeft: () => void
-  handleMoveDown: () => void
-  handleMoveRight: () => void
+  onMove: (dx: number, dy: number) => void
 }
 
 /**

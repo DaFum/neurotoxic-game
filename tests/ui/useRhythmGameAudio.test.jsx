@@ -88,6 +88,24 @@ import { createHecklerSession } from '../../src/utils/hecklerLogic'
 import { handleKeyDownLogic } from '../../src/utils/gigInputUtils'
 import { useRhythmGameAudio } from '../../src/hooks/rhythmGame/useRhythmGameAudio'
 
+const createMockSetters = (overrides = {}) => {
+  const setAudioStatus = overrides.setAudioStatus ?? vi.fn()
+  const setFailureKind = overrides.setFailureKind ?? vi.fn()
+  const setInitStatus =
+    overrides.setInitStatus ??
+    vi.fn(status => {
+      setAudioStatus(status.status)
+      setFailureKind(status.status === 'failed' ? status.failureKind : null)
+    })
+  return {
+    setIsGameOver: vi.fn(),
+    ...overrides,
+    setAudioStatus,
+    setFailureKind,
+    setInitStatus
+  }
+}
+
 describe('useRhythmGameAudio', () => {
   const baseState = {
     band: { harmony: 50 },
@@ -195,7 +213,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: { ...baseState, band: { harmony: NaN } },
         contextActions: {
           addToast: vi.fn(),
@@ -232,7 +250,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: { ...baseState, band: { harmony: 0 } },
         contextActions: {
           addToast,
@@ -327,11 +345,7 @@ describe('useRhythmGameAudio', () => {
       useRhythmGameAudio({
         resetGameplayState: reset,
         gameStateRef: { current: game },
-        setters: {
-          setAudioStatus,
-          setIsGameOver: vi.fn(),
-          setFailureKind: vi.fn()
-        },
+        setters: createMockSetters({ setAudioStatus }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -369,7 +383,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -401,7 +415,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: baseState,
         contextActions: {
           addToast,
@@ -446,7 +460,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: baseState,
         contextActions: {
           addToast,
@@ -482,7 +496,7 @@ describe('useRhythmGameAudio', () => {
       useRhythmGameAudio({
         gameStateRef,
         resetGameplayState: mocks.resetGameplayState,
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -527,11 +541,7 @@ describe('useRhythmGameAudio', () => {
         useRhythmGameAudio({
           resetGameplayState: mocks.resetGameplayState,
           gameStateRef: { current: { lanes } },
-          setters: {
-            setAudioStatus,
-            setIsGameOver: vi.fn(),
-            setFailureKind: vi.fn()
-          },
+          setters: createMockSetters({ setAudioStatus }),
           contextState: baseState,
           contextActions: {
             addToast: vi.fn(),
@@ -569,11 +579,7 @@ describe('useRhythmGameAudio', () => {
       useRhythmGameAudio({
         resetGameplayState: mocks.resetGameplayState,
         gameStateRef: { current: { lanes } },
-        setters: {
-          setAudioStatus,
-          setIsGameOver: vi.fn(),
-          setFailureKind: vi.fn()
-        },
+        setters: createMockSetters({ setAudioStatus }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -609,11 +615,7 @@ describe('useRhythmGameAudio', () => {
       useRhythmGameAudio({
         gameStateRef,
         resetGameplayState: mocks.resetGameplayState,
-        setters: {
-          setAudioStatus,
-          setIsGameOver: vi.fn(),
-          setFailureKind: vi.fn()
-        },
+        setters: createMockSetters({ setAudioStatus }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -644,11 +646,7 @@ describe('useRhythmGameAudio', () => {
       useRhythmGameAudio({
         gameStateRef,
         resetGameplayState: mocks.resetGameplayState,
-        setters: {
-          setAudioStatus,
-          setIsGameOver: vi.fn(),
-          setFailureKind: vi.fn()
-        },
+        setters: createMockSetters({ setAudioStatus }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -688,7 +686,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setAudioStatus, setIsGameOver, setFailureKind: vi.fn() },
+        setters: createMockSetters({ setAudioStatus, setIsGameOver }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -764,7 +762,11 @@ describe('useRhythmGameAudio retry lifetime', () => {
       useRhythmGameAudio({
         gameStateRef,
         resetGameplayState,
-        setters: { setAudioStatus, setIsGameOver, setFailureKind },
+        setters: createMockSetters({
+          setAudioStatus,
+          setIsGameOver,
+          setFailureKind
+        }),
         contextState: {
           band: { harmony: 50 },
           gameMap: { nodes: { n1: { layer: 0 } } },
@@ -919,6 +921,7 @@ describe('useRhythmGameAudio stage readiness gate', () => {
     gigModifiers: {},
     currentGig: { songId: 'song_1' }
   }
+
   // Mirrors the hook's unexported no-stage fallback (STAGE_READY_FALLBACK_MS).
   const STAGE_READY_FALLBACK_MS = 15_000
 
@@ -931,11 +934,10 @@ describe('useRhythmGameAudio stage readiness gate', () => {
       useRhythmGameAudio({
         gameStateRef,
         resetGameplayState: mocks.resetGameplayState,
-        setters: {
+        setters: createMockSetters({
           setAudioStatus,
-          setIsGameOver: vi.fn(),
           setFailureKind
-        },
+        }),
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),

@@ -2,7 +2,11 @@ import { logger } from '../../logger'
 import { BREAKDOWN_LABEL_KEYS } from '../breakdownLabelKeys'
 import { clamp0to100, finiteNumberOr } from '../../gameState'
 import { clampUnit } from '../../numberUtils'
-import type { GigFinancialParams } from '../types'
+import type {
+  GigFinancialParams,
+  EconomyContext,
+  NormalizedEconomySocial
+} from '../types'
 import type { PostGigFinancials } from '../../../types/economy'
 import { calculateZealotryEffects } from '../../socialEngine'
 import {
@@ -48,6 +52,39 @@ export const applySwingSmoothing = (
 }
 
 /**
+ * Normalizes social metrics from top-level and nested `social` fields.
+ * Top-level fields take precedence when finite, falling back to nested fields, then 0.
+ */
+export const normalizeEconomySocial = (
+  context?: EconomyContext
+): NormalizedEconomySocial => {
+  const ctxSocial = context?.social
+  return {
+    instagram: finiteNumberOr(
+      context?.instagram,
+      finiteNumberOr(ctxSocial?.instagram, 0)
+    ),
+    tiktok: finiteNumberOr(
+      context?.tiktok,
+      finiteNumberOr(ctxSocial?.tiktok, 0)
+    ),
+    controversyLevel: finiteNumberOr(
+      context?.controversyLevel,
+      finiteNumberOr(ctxSocial?.controversyLevel, 0)
+    ),
+    loyalty: finiteNumberOr(
+      context?.loyalty,
+      finiteNumberOr(ctxSocial?.loyalty, 0)
+    ),
+    zealotry: finiteNumberOr(
+      context?.zealotry,
+      finiteNumberOr(ctxSocial?.zealotry, 0)
+    ),
+    activeDeals: ctxSocial?.activeDeals ?? []
+  }
+}
+
+/**
  * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
  * @param params - Parameters object
  * - `params.gigData` - `capacity, price, pay (guarantee), dist, diff`
@@ -63,10 +100,10 @@ export const calculateGigFinancials = (
   {
     gigData,
     performanceScore,
-    modifiers,
-    bandInventory,
+    modifiers = {},
+    bandInventory = {},
     playerState,
-    gigStats,
+    gigStats = {},
     context = {}
   }: GigFinancialParams,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
@@ -91,18 +128,22 @@ export const calculateGigFinancials = (
     net: 0
   }
 
-  // Normalize context: some callers flatten social fields to top-level while
-  // also passing the full social sub-object. Support both shapes defensively.
-  const ctxSocial = (context || {})?.social ?? {}
+  // Normalize social metrics once at entry and thread into calculators
+  const normalizedSocial = normalizeEconomySocial(context)
+  const normalizedContext: EconomyContext = {
+    ...context,
+    controversyLevel: normalizedSocial.controversyLevel,
+    loyalty: normalizedSocial.loyalty,
+    zealotry: normalizedSocial.zealotry,
+    instagram: normalizedSocial.instagram,
+    tiktok: normalizedSocial.tiktok,
+    normalizedSocial
+  }
 
   // 1. Ticket Sales
   // Apply automated promo from zealotry to tickets
-  // `??` keeps NaN, and `NaN >= threshold` is silently false; recover it.
-  const zealotry = finiteNumberOr(
-    (context || {}).zealotry,
-    finiteNumberOr(ctxSocial.zealotry, 0)
-  )
-  const effectiveModifiers = { ...(modifiers || {}) }
+  const zealotry = normalizedSocial.zealotry
+  const effectiveModifiers = { ...modifiers }
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     effectiveModifiers.promo = true
   }
@@ -114,7 +155,7 @@ export const calculateGigFinancials = (
     gigData,
     playerFame,
     effectiveModifiers,
-    context
+    normalizedContext
   )
   report.income.breakdown.push(tickets.breakdownItem)
   report.income.total += tickets.revenue
@@ -150,7 +191,7 @@ export const calculateGigFinancials = (
     gigStats,
     modifiers,
     bandInventory,
-    context,
+    normalizedContext,
     assetModifiers
   )
   report.income.breakdown.push(...merch.breakdownItems)
@@ -160,7 +201,7 @@ export const calculateGigFinancials = (
   // Record-deal revenue share: the label takes its cut of merch sales as a
   // visible expense line. Snapshot the fame multiplier here too, so a deal on
   // its final gig still counts and one signed after the gig does not.
-  const dealBenefits = getActiveDealBenefits(ctxSocial.activeDeals)
+  const dealBenefits = getActiveDealBenefits(normalizedSocial.activeDeals)
   report.dealFameMultiplier = dealBenefits.fameMultiplier
   const labelShare = Math.floor(
     Math.max(0, merch.revenue) * dealBenefits.revenueShare
@@ -181,7 +222,7 @@ export const calculateGigFinancials = (
   report.income.total += barCut.revenue
 
   // 6. Expenses (Modifiers)
-  const costModifiers = { ...(modifiers || {}) }
+  const costModifiers = { ...modifiers }
   // If zealotry is high, player does not pay for promo even if they explicitly checked it
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     costModifiers.promo = false
@@ -194,22 +235,14 @@ export const calculateGigFinancials = (
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
-  // Active Deal Per-Gig Payout
-  const activeDeals = ctxSocial.activeDeals ?? []
-  for (let i = 0; i < activeDeals.length; i++) {
-    const activeDeal = activeDeals[i]
-    if (!activeDeal) continue
-    if (activeDeal.type === 'SPONSORSHIP') {
-      const perGig = finiteNumberOr(activeDeal.offer?.perGig, 0)
-      if (perGig > 0) {
-        report.income.breakdown.push({
-          labelKey: BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR,
-          value: perGig,
-          detailKey: 'economy:gigIncome.brandSponsor.detail'
-        })
-        report.income.total += perGig
-      }
-    }
+  // Active Deal Per-Gig Payout (Sponsorships and Endorsements)
+  if (dealBenefits.perGigPayout > 0) {
+    report.income.breakdown.push({
+      labelKey: BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR,
+      value: dealBenefits.perGigPayout,
+      detailKey: 'economy:gigIncome.brandSponsor.detail'
+    })
+    report.income.total += dealBenefits.perGigPayout
   }
 
   // 6. Sponsorship Bonuses
@@ -239,7 +272,7 @@ export const calculateGigFinancials = (
   // applied to income.total as its own line so net stays reconciled.
   const bandGigModifier = Math.max(
     0,
-    finiteNumberOr((context || {}).bandGigModifier, 0)
+    finiteNumberOr(context?.bandGigModifier, 0)
   )
   if (bandGigModifier > 0) {
     const bandBonus = Math.floor(report.income.total * bandGigModifier)

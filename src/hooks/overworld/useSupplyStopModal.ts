@@ -8,8 +8,10 @@ import type { PurchaseItem } from '../../types'
  * @returns Supply-stop modal visibility, inventory, and open/close callbacks.
  */
 export const useSupplyStopModal = () => {
-  const pendingSupplyStopInventory = useGameSelector(
-    state => state.pendingSupplyStopInventory
+  const pendingSupplyStopInventory = useGameSelector(state =>
+    state.pendingOverlay?.kind === 'supply_stop'
+      ? state.pendingOverlay.inventory
+      : null
   )
   const { setPendingSupplyStopInventory } = useGameActions()
 

@@ -15,7 +15,7 @@
  * Run state stores only policy id and whether the claim has been consumed.
  */
 
-import { getExpeditionRescueFuelFloor } from './failure'
+import { getExpeditionRescueFuelFloor } from './rescueFuel'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { readVanCondition } from '../../utils/gameState/clamps'
@@ -102,17 +102,12 @@ export const canClaimExpeditionInsurance = (
   if (crisisReason === 'authority_crisis') return false
 
   // Check claim not consumed
-  if (
-    state.expedition.insuranceClaimConsumed === true ||
-    state.expedition.claimConsumed === true
-  ) {
+  if (state.expedition.insurance?.claimConsumed === true) {
     return false
   }
 
   // Check policy
-  const policyId =
-    state.expedition.insurancePolicyId ??
-    state.expedition.loadout?.insurancePolicyId
+  const policyId = state.expedition.loadout?.insurancePolicyId
   const policy = getExpeditionInsurancePolicy(policyId)
   if (!policy) return false
 

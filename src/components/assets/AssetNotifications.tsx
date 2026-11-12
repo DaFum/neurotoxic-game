@@ -21,7 +21,11 @@ import './assetsHub.css'
  */
 export const AssetNotifications = () => {
   const { t } = useTranslation(['assets'])
-  const pendingRiskEvent = useGameSelector(state => state.pendingRiskEvent)
+  const pendingRiskEvent = useGameSelector(state =>
+    state.pendingOverlay?.kind === 'risk_event'
+      ? state.pendingOverlay.event
+      : null
+  )
   const { setPendingRiskEvent } = useGameActions()
   const foreclosureModal = useForeclosureModal()
   const [lastRiskEvent, setLastRiskEvent] =

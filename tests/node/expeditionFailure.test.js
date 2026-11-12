@@ -19,7 +19,6 @@ import {
 import {
   EXPEDITION_FAILURE_PRIORITY,
   EXPEDITION_TOW_COST,
-  EXPEDITION_TOW_FUEL_RESTORED,
   buildExpeditionFailureId,
   composeExpeditionFailureSignal,
   deriveExpeditionPendingFailure,
@@ -28,6 +27,7 @@ import {
   getExpeditionMobilityFailureSignal,
   isCurrentExpeditionFailureId
 } from '../../src/domain/expedition/failure'
+import { EXPEDITION_TOW_FUEL_RESTORED } from '../../src/domain/expedition/rescueFuel'
 import { getExpeditionCheapestOnwardLegFuel } from '../../src/domain/expedition/travel'
 import { calculateRefuelCost } from '../../src/utils/economy'
 import { getExpeditionSpendableCash } from '../../src/domain/expedition/spendableCash'
@@ -795,8 +795,7 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
       }
     })
     assert.equal(direct, state)
-    assert.equal(direct.expedition.insuranceClaimConsumed, false)
-    assert.equal(direct.expedition.claimConsumed, false)
+    assert.equal(direct.expedition.insurance.claimConsumed, false)
     assert.equal(direct.player.van.fuel, 0)
   })
 
@@ -841,7 +840,7 @@ describe('a fuel rescue covers the cheapest reachable leg (#3479)', () => {
     }
 
     const claimed = crisisOf(state, 'insurance_claim')
-    assert.equal(claimed.expedition.insuranceClaimConsumed, true)
+    assert.equal(claimed.expedition.insurance.claimConsumed, true)
     assert.equal(claimed.player.van.fuel, Math.ceil(cheapest))
 
     const towed = crisisOf(state, 'tow')
@@ -878,7 +877,7 @@ describe('all booking-refused fuel rescue (#3495)', () => {
       assert.ok(state.player.van.condition > 0)
       assert.ok(getExpeditionSpendableCash(state) >= EXPEDITION_TOW_COST)
       assert.ok(getExpeditionSpendableCash(state) >= calculateRefuelCost(fuel))
-      assert.equal(state.expedition.insuranceClaimConsumed, false)
+      assert.equal(state.expedition.insurance.claimConsumed, false)
       assert.equal(getExpeditionCheapestOnwardLegFuel(state), null)
       const pending = deriveExpeditionPendingFailure(state)
       assert.equal(pending?.reason, 'fuel_stranded')
@@ -895,8 +894,7 @@ describe('all booking-refused fuel rescue (#3495)', () => {
         })
         assert.strictEqual(next, state)
         assert.equal(next.player.van.fuel, fuel)
-        assert.equal(next.expedition.insuranceClaimConsumed, false)
-        assert.equal(next.expedition.claimConsumed, false)
+        assert.equal(next.expedition.insurance.claimConsumed, false)
       }
     })
   }

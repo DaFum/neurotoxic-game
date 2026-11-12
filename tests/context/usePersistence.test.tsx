@@ -730,7 +730,10 @@ describe('usePersistence', () => {
         result.current.deleteSave()
       })
 
-      expect(adapter.keys()).toEqual({ ok: true, keys: expect.arrayContaining([...unrelatedKeys]) })
+      expect(adapter.keys()).toEqual({
+        ok: true,
+        keys: expect.arrayContaining([...unrelatedKeys])
+      })
     })
   })
 

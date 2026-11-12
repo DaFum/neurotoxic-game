@@ -1,7 +1,14 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useCallback
+} from 'react'
 import type { MapNode } from '../../types'
 import type {
   TravelLogicParams,
+  TravelPhase,
   TravelRefsBundle,
   TravelStateBundle,
   TravelSettersBundle
@@ -11,7 +18,7 @@ import type {
  * Owns the travel hook's React state, refs, and setters.
  *
  * @remarks
- * Initializes the `isTraveling`/`pendingTravelNode` state, the timeout refs,
+ * Initializes the `phase` state machine, the timeout refs,
  * and the param-mirror refs (kept in sync via effects).
  * The returned `refs` and `setters` bundles are wrapped in
  * `useRef` so they hold a stable object identity, letting consumer hooks list
@@ -22,10 +29,11 @@ import type {
  * the reactive state snapshot, and the state setters (stable).
  */
 export const useTravelState = (params: TravelLogicParams) => {
-  const [isTraveling, setIsTraveling] = useState(false)
-  const [pendingTravelNode, setPendingTravelNode] = useState<MapNode | null>(
-    null
-  )
+  const [phase, setPhase] = useState<TravelPhase>({ status: 'idle' })
+  const phaseRef = useRef<TravelPhase>(phase)
+
+  const isTraveling = phase.status === 'traveling'
+  const pendingTravelNode = phase.status === 'confirming' ? phase.node : null
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -42,12 +50,12 @@ export const useTravelState = (params: TravelLogicParams) => {
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
-  // Callers write these refs next to each setter call so guards see the
-  // change before the re-render; this only re-syncs them with committed state.
   useLayoutEffect(() => {
-    isTravelingRef.current = isTraveling
-    pendingTravelNodeRef.current = pendingTravelNode
-  }, [isTraveling, pendingTravelNode])
+    phaseRef.current = phase
+    isTravelingRef.current = phase.status === 'traveling'
+    pendingTravelNodeRef.current =
+      phase.status === 'confirming' ? phase.node : null
+  }, [phase])
 
   useEffect(() => {
     playerRef.current = params.player
@@ -69,11 +77,80 @@ export const useTravelState = (params: TravelLogicParams) => {
     params.venueBlacklist
   ])
 
+  /** Applies a phase update, mirroring it to the legacy refs before updating React state. */
+  const setPhaseWrapper = useCallback<
+    React.Dispatch<React.SetStateAction<TravelPhase>>
+  >(action => {
+    const next =
+      typeof action === 'function' ? action(phaseRef.current) : action
+    phaseRef.current = next
+    isTravelingRef.current = next.status === 'traveling'
+    pendingTravelNodeRef.current =
+      next.status === 'confirming' ? next.node : null
+    setPhase(next)
+  }, [])
+
+  /** Legacy boolean adapter: `true` enters `traveling`, `false` returns to `idle`. */
+  const setIsTraveling = useCallback<
+    React.Dispatch<React.SetStateAction<boolean>>
+  >(
+    action => {
+      setPhaseWrapper(prev => {
+        const nextTraveling =
+          typeof action === 'function'
+            ? action(prev.status === 'traveling')
+            : action
+        if (nextTraveling) {
+          if (prev.status === 'traveling') {
+            return prev
+          }
+          return {
+            status: 'traveling',
+            targetNodeId: prev.status === 'confirming' ? prev.node.id : '',
+            timeoutId: null
+          }
+        }
+        if (prev.status === 'idle') {
+          return prev
+        }
+        return { status: 'idle' }
+      })
+    },
+    [setPhaseWrapper]
+  )
+
+  /** Legacy node adapter: a node enters `confirming`, `null` returns to `idle`. */
+  const setPendingTravelNode = useCallback<
+    React.Dispatch<React.SetStateAction<MapNode | null>>
+  >(
+    action => {
+      setPhaseWrapper(prev => {
+        const prevNode = prev.status === 'confirming' ? prev.node : null
+        const nextNode =
+          typeof action === 'function' ? action(prevNode) : action
+        if (nextNode) {
+          return {
+            status: 'confirming',
+            node: nextNode,
+            toastId: prev.status === 'confirming' ? prev.toastId : null,
+            timeoutId: prev.status === 'confirming' ? prev.timeoutId : null
+          }
+        }
+        if (prev.status === 'confirming') {
+          return { status: 'idle' }
+        }
+        return prev
+      })
+    },
+    [setPhaseWrapper]
+  )
+
   // Bundle objects must keep a stable identity across renders so consumer
   // hooks (useTravelActions) can list `refs`/`setters` in dependency arrays
   // without churning their callbacks. Every member is itself stable (useRef
   // objects, useState setters), so capturing the bundle once is safe.
   const refs = useRef<TravelRefsBundle>({
+    phaseRef,
     isTravelingRef,
     pendingTravelNodeRef,
     pendingTimeoutRef,
@@ -90,6 +167,7 @@ export const useTravelState = (params: TravelLogicParams) => {
   }).current
 
   const setters = useRef<TravelSettersBundle>({
+    setPhase: setPhaseWrapper,
     setIsTraveling,
     setPendingTravelNode
   }).current
@@ -97,6 +175,7 @@ export const useTravelState = (params: TravelLogicParams) => {
   return {
     refs,
     state: {
+      phase,
       isTraveling,
       pendingTravelNode
     } as TravelStateBundle,

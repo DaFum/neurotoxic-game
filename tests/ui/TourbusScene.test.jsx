@@ -37,7 +37,7 @@ vi.mock('../../src/hooks/minigames/useTourbusLogic', () => ({
   })
 }))
 
-vi.mock('../../src/hooks/useArrivalLogic', () => ({
+vi.mock('../../src/hooks/travel/useArrivalLogic', () => ({
   useArrivalLogic: () => ({ handleArrivalSequence })
 }))
 

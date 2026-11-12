@@ -23,6 +23,7 @@ import type {
   BandState,
   MapNode,
   PlayerState,
+  StartGigRefusalReason,
   Venue
 } from '../types'
 import type { UpdateBandPayload } from '../types/actions'
@@ -45,8 +46,10 @@ type GigArrivalNode<T = ArrivalNode> = T & {
 }
 
 // An inline venue is bookable only with the identity `START_GIG` requires
-// (non-empty `id` and `name`); anything less falls back to a catalog lookup, so
-// arrival never decides `gig` on a venue the reducer would silently refuse.
+// (non-empty `id` and `name`); anything less falls back to a catalog lookup.
+// It checks only `id` and `name`, not the reducer's deep forbidden-key scan: a
+// venue failing that scan is caught by the `checkStartGig` preflight in
+// `requestArrivalGigStart`, and the reducer re-checks at dispatch.
 const isArrivalVenueObject = (value: unknown): value is Venue => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
   const { id, name } = value as { id?: unknown; name?: unknown }
@@ -75,18 +78,44 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
  * @param venue - Venue from a `gig` outcome.
  * @param startGig - The `START_GIG` dispatcher.
  * @param addToast - Toast callback for the failure report.
- * @returns True when the request did not throw. That means a start was
- * requested, not that `PRE_GIG` committed: the reducer stays authoritative.
+ * @param checkStartGig - Optional `START_GIG` refusal preflight (the
+ * `checkStartGig` context action); a returned reason refuses the start.
+ * @returns True when the refusal check passed and `startGig` returned
+ * normally. That means a start was requested, not that `PRE_GIG` committed:
+ * the reducer stays authoritative. False when the check refused (a warning, no
+ * localized warning toast) or when the check or `startGig` threw.
+ *
+ * @remarks
+ * The `catch` receives synchronous throws from the check and from the
+ * `startGig` callback itself. The real `startGig` dispatches inside React's
+ * `startTransition`, which reports a reducer exception through React and does
+ * not rethrow it, so such an exception never reaches this `catch`.
  */
 export const requestArrivalGigStart = (
   venue: Venue,
   startGig: (venue: Venue) => void,
-  addToast: OptionalToastCallback
+  addToast: OptionalToastCallback,
+  checkStartGig?: (venue: Venue) => StartGigRefusalReason | null
 ): boolean => {
   logger.info('ArrivalLogic', 'Starting Gig at destination', {
     venue: venue.name
   })
   try {
+    // Nothing may run between the check and `startGig`: a callback there could
+    // change the state the check just approved.
+    const refusal = checkStartGig ? checkStartGig(venue) : null
+    if (refusal !== null) {
+      logger.warn('ArrivalLogic', 'START_GIG would be refused', { refusal })
+      // The caller routes to OVERWORLD and leaves the click retryable, so say
+      // why nothing happened instead of failing silently.
+      addToast?.(
+        i18n.t('ui:arrival.gigStartRefused', {
+          defaultValue: 'This gig cannot be started right now.'
+        }),
+        'warning'
+      )
+      return false
+    }
     startGig(venue)
     return true
   } catch (error) {

@@ -45,6 +45,7 @@ import {
   isCrewInjuryStage
 } from '../../data/expedition/injuryStages'
 import { POST_OPTIONS } from '../../data/postOptions'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
@@ -359,13 +360,21 @@ const sanitizeBuildCommitment = (value: unknown): ExpeditionBuildCommitment => {
  * Region identity is missing.
  */
 const sanitizeExpeditionLoadout = (
-  value: unknown
+  value: unknown,
+  fallbackInsurancePolicyId?: unknown
 ): ExpeditionLoadout | null => {
   if (!isLooseRecord(value)) return null
   const tourTypeId = readString(value, 'tourTypeId')
   const regionId = readString(value, 'regionId')
   if (!tourTypeId || !regionId) return null
   const cargo = isLooseRecord(value.cargo) ? value.cargo : {}
+  const rawPolicyId =
+    Object.hasOwn(value, 'insurancePolicyId') &&
+    value.insurancePolicyId !== undefined
+      ? readString(value, 'insurancePolicyId')
+      : typeof fallbackInsurancePolicyId === 'string'
+        ? fallbackInsurancePolicyId
+        : null
   return {
     tourTypeId,
     regionId,
@@ -377,9 +386,7 @@ const sanitizeExpeditionLoadout = (
     },
     starterPerkId: readString(value, 'starterPerkId'),
     nativeContracts: sanitizeNativeContracts(value.nativeContracts),
-    insurancePolicyId:
-      getExpeditionInsurancePolicy(readString(value, 'insurancePolicyId'))
-        ?.id ?? null,
+    insurancePolicyId: getExpeditionInsurancePolicy(rawPolicyId)?.id ?? null,
     pressureModifierIds: sanitizeUniqueStrings(value.pressureModifierIds),
     build: sanitizeBuildCommitment(value.build)
   }
@@ -593,7 +600,10 @@ export const sanitizeExpeditionState = (
     ? readString(value.prep, 'prepId')
     : null
   const runId = readString(value, 'runId')
-  const loadout = sanitizeExpeditionLoadout(value.loadout)
+  const loadout = sanitizeExpeditionLoadout(
+    value.loadout,
+    readString(value, 'insurancePolicyId')
+  )
   const outcome = sanitizeOutcome(value.outcome)
 
   // Identity requirements per status. A save that fails one of these describes
@@ -967,20 +977,16 @@ export const sanitizeExpeditionState = (
       readString(value, 'metaUnlockQuestCompletedRunId') === runId
         ? runId
         : null,
-    // Like protectedCareerCash, a committed build is authoritative: a save
-    // cannot add a policy whose premium the run never paid.
-    insurancePolicyId:
-      getExpeditionInsurancePolicy(
-        loadout
-          ? loadout.insurancePolicyId
-          : readString(value, 'insurancePolicyId')
-      )?.id ?? null,
-    insuranceClaimConsumed:
-      readBoolean(value, 'insuranceClaimConsumed') ||
-      readBoolean(value, 'claimConsumed'),
-    claimConsumed:
-      readBoolean(value, 'claimConsumed') ||
-      readBoolean(value, 'insuranceClaimConsumed'),
+    insurance: {
+      claimConsumed:
+        (isLooseRecord(value.insurance) &&
+        Object.hasOwn(value.insurance, 'claimConsumed') &&
+        value.insurance.claimConsumed !== undefined
+          ? readBoolean(value.insurance, 'claimConsumed')
+          : undefined) ??
+        (readBoolean(value, 'insuranceClaimConsumed') ||
+          readBoolean(value, 'claimConsumed'))
+    },
     technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
     authorityHiddenCompartmentUsed: readBoolean(
       value,
@@ -1043,7 +1049,18 @@ export const sanitizeExpeditionState = (
       readCount(value, 'routeStep', 0)
     ),
     gigOutcomeByStep,
-    activeObligations: sanitizedObligations,
+    activeSponsorDealId:
+      typeof value.activeSponsorDealId === 'string'
+        ? BRAND_DEALS_BY_ID.has(value.activeSponsorDealId)
+          ? value.activeSponsorDealId
+          : null
+        : value.activeSponsorDealId === null
+          ? null
+          : (sanitizedObligations.find(o => o.sourceType === 'brandDeal')
+              ?.sourceId ?? null),
+    activeObligations: sanitizedObligations.filter(
+      o => o.sourceType === 'native'
+    ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : // An older active save never stored its cargo; deriving it once here

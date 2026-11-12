@@ -209,7 +209,12 @@ class PixiStageController<
     )
     const laneLayout = this.laneManager.layout
     if (!laneLayout) return
-    this.noteManager.update(state, elapsed, laneLayout)
+    const laneXPositions = this.laneManager.laneXPositions
+    if (laneXPositions && laneXPositions.length > 0) {
+      this.noteManager.update(state, elapsed, laneLayout, laneXPositions)
+    } else {
+      this.noteManager.update(state, elapsed, laneLayout)
+    }
     this.effectManager.update(deltaMS)
   }
 

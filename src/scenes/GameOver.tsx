@@ -1,30 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import type { LoadPreviewResult } from '../types/game'
 import { GameOverBackground } from './gameover/GameOverBackground'
 import { GameOverHeader } from './gameover/GameOverHeader'
 import { GameOverStats } from './gameover/GameOverStats'
 import {
   GameOverButtons,
-  type GameOverLoadAvailability
+  type GameOverSavePreview
 } from './gameover/GameOverButtons'
-
-/**
- * Maps a save preview to what the screen offers. Only `resumable` is an allow
- * for Load, so a missing, refused or future status keeps it hidden; a refusal
- * keeps its reason so the screen can say why.
- */
-const toLoadAvailability = (
-  preview: LoadPreviewResult
-): GameOverLoadAvailability =>
-  preview.status === 'resumable'
-    ? 'available'
-    : preview.status === 'terminal'
-      ? 'ending'
-      : preview.status === 'unavailable'
-        ? { refused: preview.reason }
-        : 'none'
 
 /**
  * Scene displayed when the game ends — defeat (bankruptcy, stranded) or
@@ -41,8 +24,9 @@ export const GameOver = () => {
   const { changeScene, loadGame, previewLoadGame, resetState } =
     useGameActions()
   // Unknown until the stored save has been previewed.
-  const [loadAvailability, setLoadAvailability] =
-    useState<GameOverLoadAvailability>('pending')
+  const [savePreview, setSavePreview] = useState<GameOverSavePreview>({
+    status: 'pending'
+  })
 
   useEffect(() => {
     if (!player || player.score === undefined) {
@@ -57,7 +41,7 @@ export const GameOver = () => {
   // preview right if the screen is ever mounted in the same commit.
   useEffect(() => {
     const evaluation = setTimeout(() => {
-      setLoadAvailability(toLoadAvailability(previewLoadGame()))
+      setSavePreview(previewLoadGame())
     }, 0)
     return () => clearTimeout(evaluation)
   }, [previewLoadGame])
@@ -65,9 +49,9 @@ export const GameOver = () => {
   const handleRetry = () => {
     // The save can have changed since the screen was evaluated, so ask again:
     // only a save that resumes play is loaded from here.
-    const availability = toLoadAvailability(previewLoadGame())
-    if (availability !== 'available') {
-      setLoadAvailability(availability)
+    const preview = previewLoadGame()
+    if (preview.status !== 'resumable') {
+      setSavePreview(preview)
       return
     }
     if (loadGame().ok) {
@@ -88,7 +72,7 @@ export const GameOver = () => {
       <GameOverHeader victory={player?.stats?.tourCompleted === true} />
       <GameOverStats player={player} />
       <GameOverButtons
-        loadAvailability={loadAvailability}
+        savePreview={savePreview}
         onRetry={handleRetry}
         onReturnToMenu={handleReturnToMenu}
       />

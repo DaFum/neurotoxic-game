@@ -6,6 +6,7 @@ import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
 import type {
   ActiveQuestState,
+  CompletedQuestsState,
   QuestCooldown,
   QuestScopeCompletion,
   QuestState
@@ -104,6 +105,30 @@ export type LoadPreviewResult =
  */
 export type ArrivalOutcome =
   { kind: 'overworld' } | { kind: 'gig'; venue: Venue }
+
+/**
+ * Why `START_GIG` refuses a venue: a malformed payload, a Festival booking the
+ * run's Fame tier does not open, or a current node a route overlay converted.
+ * Shared by the reducer (`getStartGigRefusal`), the `checkStartGig` action and
+ * the arrival paths.
+ */
+export type StartGigRefusalReason =
+  'invalid_payload' | 'festival_booking_locked' | 'node_converted'
+
+export type PendingOverlayState =
+  | { kind: 'band_hq' }
+  | { kind: 'supply_stop'; inventory: PurchaseItem[] }
+  | { kind: 'risk_event'; event: RiskEventDescriptor }
+  | { kind: 'foreclosure'; notices: AssetKind[] }
+
+/**
+ * An overlay that waits in `deferredOverlays` instead of being dropped while
+ * the active overlay slot is busy.
+ */
+export type DeferredOverlayState = Extract<
+  PendingOverlayState,
+  { kind: 'risk_event' | 'foreclosure' | 'band_hq' }
+>
 
 export interface GameSettings {
   crtEnabled: boolean
@@ -257,9 +282,11 @@ export interface ToastPayload {
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
  * it so a save taken on the result screen is settled once on load.
+ *
+ * Monotonic progression: recorded -\> social_reconciled -\> settled.
  */
 export type GigSettlementLifecycleStage =
-  'pending_social' | 'social_reconciled' | 'complete'
+  'recorded' | 'social_reconciled' | 'settled'
 
 /**
  * Post-gig settlement the report presented, persisted until Continue settles
@@ -276,17 +303,9 @@ export interface PendingGigSettlement {
   dealFameMultiplier: number
   soldMerch: Record<string, number>
   /**
-   * Durable linear lifecycle stage: pending_social -\> social_reconciled -\> complete.
+   * Durable linear lifecycle stage: recorded -\> social_reconciled -\> settled.
    */
   lifecycleStage: GigSettlementLifecycleStage
-  /**
-   * Durable reconciliation status for this settlement record (`id`).
-   *
-   * @remarks
-   * Stamped `true` once per-gig social reconciliation (deal decrement and gig history recording)
-   * has been applied to this settlement, preventing duplicate reconciliation on load recovery.
-   */
-  socialReconciled?: boolean
 }
 
 /**
@@ -308,10 +327,12 @@ export interface GameState {
   isScreenshotMode: boolean
   toasts: ToastPayload[]
   activeStoryFlags: string[]
-  eventCooldowns: string[]
+  /** Maps an event id (or scoped `${eventId}_${contextId}` key) to the day it unlocks again. */
+  eventCooldowns: Record<string, number>
   venueBlacklist: string[]
   activeQuests: ActiveQuestState[]
   questCooldowns: QuestCooldown[]
+  completedQuests: CompletedQuestsState
   completedQuestIds: string[]
   completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
@@ -326,12 +347,15 @@ export interface GameState {
   pendingGigSettlement?: PendingGigSettlement | null
   minigame: MinigameState
   unlocks: string[]
-  pendingBandHQOpen: boolean
-  pendingSupplyStopInventory: PurchaseItem[] | null
+  /** Consolidated active asynchronous modal overlay. */
+  pendingOverlay?: PendingOverlayState | null
+  /**
+   * Overlays raised while `pendingOverlay` was held, oldest first, at most one
+   * per kind. The root reducer promotes the head once the slot is free.
+   */
+  deferredOverlays?: DeferredOverlayState[]
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null
-  pendingForeclosureNotices: AssetKind[]
-  pendingRiskEvent: RiskEventDescriptor | null
   completedMilestones: string[]
   // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
   assets: import('./assets').LongTermAsset[]
@@ -762,3 +786,38 @@ export * from './map'
 export * from './gig'
 export * from './actions'
 export * from './social'
+
+/** Declarative reward applied when a milestone completes. */
+export interface DeclarativeMilestoneReward {
+  cash?: number
+  money?: number
+  fans?: number
+  fame?: number
+  harmony?: number
+  luck?: number
+  unlock?: string
+  unlocks?: string[]
+  social?: Partial<GameState['social']>
+}
+
+/** Reward actions `checkMilestones` can apply; any other action type would be dropped. */
+export type MilestoneRewardAction = Extract<
+  GameAction,
+  {
+    type:
+      | (typeof ActionTypes)['UPDATE_PLAYER']
+      | (typeof ActionTypes)['UPDATE_BAND']
+      | (typeof ActionTypes)['UPDATE_SOCIAL']
+  }
+>
+
+/** Milestone definition evaluated by `checkMilestones`. */
+export interface MilestoneDefinition {
+  id: string
+  condition: (state: GameState) => boolean
+  createRewardAction?: () => MilestoneRewardAction
+  reward?: DeclarativeMilestoneReward
+  rewards?: DeclarativeMilestoneReward
+  labelKey: string
+  createLabelOptions?: () => Record<string, unknown>
+}

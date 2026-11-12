@@ -324,7 +324,9 @@ describe('GameState Context - Event System', () => {
     })
 
     const deltaLogs = logger.info.mock.calls.filter(call =>
-      call.some(arg => typeof arg === 'string' && arg.includes('Applying Event Delta'))
+      call.some(
+        arg => typeof arg === 'string' && arg.includes('Applying Event Delta')
+      )
     )
 
     expect(deltaLogs.length).toBe(1)

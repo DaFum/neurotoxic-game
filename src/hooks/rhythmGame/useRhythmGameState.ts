@@ -11,7 +11,11 @@ import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { getSafeRandom } from '../../utils/crypto'
 import { registerTestHook } from '../../utils/devTestHooks'
-import type { GigAudioStatus, GigFailureKind } from '../../types/gigAudioStatus'
+import type {
+  GigAudioStatus,
+  GigFailureKind,
+  GigInitStatus
+} from '../../types/gigAudioStatus'
 import type {
   RhythmGameRefState,
   RhythmLiveStats,
@@ -25,6 +29,8 @@ type SetterPayload<T> = T | ((current: T) => T)
  * React-rendered rhythm game state mirrored from the high-frequency game ref.
  */
 export type RhythmUiState = {
+  /** Discriminated union tracking the initialization and readiness state of the gig. */
+  initStatus: GigInitStatus
   /** Current performance score accumulated during the song. */
   score: number
   /** Consecutive notes hit without missing. */
@@ -49,8 +55,6 @@ export type RhythmUiState = {
   isCorruptionBurstActive: boolean
   /** Relative gig time in milliseconds when the current corruption burst effect will conclude. */
   corruptionBurstEndTime: number
-  /** Indicates whether corruption mechanics are currently active in the scene. */
-  isCorruptionActive: boolean
 }
 
 type RhythmStateAction =
@@ -61,16 +65,11 @@ type RhythmStateAction =
   | { type: 'SET_OVERLOAD'; payload: SetterPayload<number> }
   | { type: 'SET_IS_TOXIC_MODE'; payload: SetterPayload<boolean> }
   | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
-  | { type: 'SET_AUDIO_STATUS'; payload: SetterPayload<GigAudioStatus> }
-  | { type: 'SET_FAILURE_KIND'; payload: SetterPayload<GigFailureKind | null> }
+  | { type: 'SET_INIT_STATUS'; payload: SetterPayload<GigInitStatus> }
   | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
   | { type: 'SET_CORRUPTION_LEVEL'; payload: SetterPayload<number> }
-  | { type: 'SET_IS_CORRUPTION_BURST_ACTIVE'; payload: SetterPayload<boolean> }
-  | { type: 'SET_CORRUPTION_BURST_END_TIME'; payload: SetterPayload<number> }
-  | {
-      type: 'SET_CORRUPTION_STATE'
-      payload: { level: number; active: boolean }
-    }
+  | { type: 'START_CORRUPTION_BURST'; payload: { endTime: number } }
+  | { type: 'END_CORRUPTION_BURST'; payload: { level: number } }
 
 export type { RhythmGameRefState } from '../../types/rhythmGame'
 
@@ -90,24 +89,16 @@ export type RhythmStateSetters = {
   setIsToxicMode: (isToxicMode: SetterPayload<boolean>) => void
   /** Updates the completion or failure status of the current game session. */
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
-  /** Updates the availability status of the underlying audio engine. */
-  setAudioStatus: (status: SetterPayload<GigAudioStatus>) => void
-  /** Records what a failed initialization failed on, or clears it with null. */
-  setFailureKind: (kind: SetterPayload<GigFailureKind | null>) => void
+  /** Updates the initialization readiness and failure state of the gig. */
+  setInitStatus: (initStatus: SetterPayload<GigInitStatus>) => void
   /** Updates the calculated accuracy percentage state. */
   setAccuracy: (accuracy: SetterPayload<number>) => void
   /** Updates the accumulated corruption level state. */
   setCorruptionLevel: (corruptionLevel: SetterPayload<number>) => void
-  /** Toggles the active status of the critical corruption burst effect. */
-  setIsCorruptionBurstActive: (
-    isCorruptionBurstActive: SetterPayload<boolean>
-  ) => void
-  /** Updates the termination gig time in milliseconds for an active corruption burst. */
-  setCorruptionBurstEndTime: (
-    corruptionBurstEndTime: SetterPayload<number>
-  ) => void
-  /** Applies combined level and activity updates to the corruption state. */
-  setCorruptionState: (level: number, active: boolean) => void
+  /** Atomically resets corruption level and begins a corruption burst effect. */
+  startCorruptionBurst: (endTime: number) => void
+  /** Atomically ends a corruption burst and applies post-burst corruption level. */
+  endCorruptionBurst: (level: number) => void
 }
 
 /**
@@ -125,6 +116,7 @@ type RhythmGameStateHookReturn = {
 }
 
 const INITIAL_UI_STATE: RhythmUiState = {
+  initStatus: { status: 'idle' },
   score: 0,
   combo: 0,
   health: 100,
@@ -136,8 +128,7 @@ const INITIAL_UI_STATE: RhythmUiState = {
   accuracy: 100,
   corruptionLevel: 0,
   isCorruptionBurstActive: false,
-  corruptionBurstEndTime: 0,
-  isCorruptionActive: false
+  corruptionBurstEndTime: 0
 }
 
 function resolvePayload<T>(payload: SetterPayload<T>, currentStateValue: T): T {
@@ -155,7 +146,8 @@ function rhythmGameReducer(
       return {
         ...INITIAL_UI_STATE,
         audioStatus: state.audioStatus,
-        failureKind: state.failureKind
+        failureKind: state.failureKind,
+        initStatus: state.initStatus
       }
     case 'SET_SCORE':
       return { ...state, score: resolvePayload(action.payload, state.score) }
@@ -178,16 +170,16 @@ function rhythmGameReducer(
         ...state,
         isGameOver: resolvePayload(action.payload, state.isGameOver)
       }
-    case 'SET_AUDIO_STATUS':
+    case 'SET_INIT_STATUS': {
+      const nextInitStatus = resolvePayload(action.payload, state.initStatus)
       return {
         ...state,
-        audioStatus: resolvePayload(action.payload, state.audioStatus)
+        initStatus: nextInitStatus,
+        audioStatus: nextInitStatus.status,
+        failureKind:
+          nextInitStatus.status === 'failed' ? nextInitStatus.failureKind : null
       }
-    case 'SET_FAILURE_KIND':
-      return {
-        ...state,
-        failureKind: resolvePayload(action.payload, state.failureKind)
-      }
+    }
     case 'SET_ACCURACY':
       return {
         ...state,
@@ -198,27 +190,19 @@ function rhythmGameReducer(
         ...state,
         corruptionLevel: resolvePayload(action.payload, state.corruptionLevel)
       }
-    case 'SET_IS_CORRUPTION_BURST_ACTIVE':
+    case 'START_CORRUPTION_BURST':
       return {
         ...state,
-        isCorruptionBurstActive: resolvePayload(
-          action.payload,
-          state.isCorruptionBurstActive
-        )
+        corruptionLevel: 0,
+        isCorruptionBurstActive: true,
+        corruptionBurstEndTime: action.payload.endTime
       }
-    case 'SET_CORRUPTION_BURST_END_TIME':
-      return {
-        ...state,
-        corruptionBurstEndTime: resolvePayload(
-          action.payload,
-          state.corruptionBurstEndTime
-        )
-      }
-    case 'SET_CORRUPTION_STATE':
+    case 'END_CORRUPTION_BURST':
       return {
         ...state,
         corruptionLevel: action.payload.level,
-        isCorruptionActive: action.payload.active
+        isCorruptionBurstActive: false,
+        corruptionBurstEndTime: 0
       }
     default:
       return state
@@ -232,7 +216,6 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
     {
       id: 'guitar',
       key: 'ArrowLeft',
-      x: 0,
       color: getPixiColorFromToken('--rhythm-guitar'),
       active: false,
       hitWindow: 150
@@ -240,7 +223,6 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
     {
       id: 'drums',
       key: 'ArrowDown',
-      x: 120,
       color: getPixiColorFromToken('--rhythm-drums'),
       active: false,
       hitWindow: 150
@@ -248,7 +230,6 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
     {
       id: 'bass',
       key: 'ArrowRight',
-      x: 240,
       color: getPixiColorFromToken('--rhythm-bass'),
       active: false,
       hitWindow: 150
@@ -356,26 +337,16 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
         dispatch({ type: 'SET_IS_TOXIC_MODE', payload: isToxicMode }),
       setIsGameOver: isGameOver =>
         dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
-      setAudioStatus: status =>
-        dispatch({ type: 'SET_AUDIO_STATUS', payload: status }),
-      setFailureKind: kind =>
-        dispatch({ type: 'SET_FAILURE_KIND', payload: kind }),
+      setInitStatus: initStatus =>
+        dispatch({ type: 'SET_INIT_STATUS', payload: initStatus }),
       setAccuracy: accuracy =>
         dispatch({ type: 'SET_ACCURACY', payload: accuracy }),
       setCorruptionLevel: corruptionLevel =>
         dispatch({ type: 'SET_CORRUPTION_LEVEL', payload: corruptionLevel }),
-      setIsCorruptionBurstActive: isCorruptionBurstActive =>
-        dispatch({
-          type: 'SET_IS_CORRUPTION_BURST_ACTIVE',
-          payload: isCorruptionBurstActive
-        }),
-      setCorruptionBurstEndTime: corruptionBurstEndTime =>
-        dispatch({
-          type: 'SET_CORRUPTION_BURST_END_TIME',
-          payload: corruptionBurstEndTime
-        }),
-      setCorruptionState: (level, active) =>
-        dispatch({ type: 'SET_CORRUPTION_STATE', payload: { level, active } })
+      startCorruptionBurst: endTime =>
+        dispatch({ type: 'START_CORRUPTION_BURST', payload: { endTime } }),
+      endCorruptionBurst: level =>
+        dispatch({ type: 'END_CORRUPTION_BURST', payload: { level } })
     }),
     []
   )

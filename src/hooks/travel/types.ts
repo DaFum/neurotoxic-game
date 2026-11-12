@@ -6,6 +6,7 @@ import type {
   MapNode,
   PlayerState,
   SocialState,
+  StartGigRefusalReason,
   Venue
 } from '../../types'
 import type { OptionalToastCallback, ToastType } from '../../types/callbacks'
@@ -45,6 +46,8 @@ export type TravelLogicParams = {
   advanceDay: () => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   startGig: (venue: Venue) => void
+  /** `START_GIG` refusal preflight on the latest state (`checkStartGig`). */
+  checkStartGig: (venue: Venue) => StartGigRefusalReason | null
   /** Queues a toast and returns its id, so the confirmation prompt can be removed. */
   addToast: (message: string, type?: ToastType) => string | null
   removeToast: (id: string) => void
@@ -81,6 +84,23 @@ export type TravelLogicParams = {
 }
 
 /**
+ * Discriminated union representing the explicit phase of overworld travel.
+ */
+export type TravelPhase =
+  | { status: 'idle' }
+  | {
+      status: 'confirming'
+      node: MapNode
+      toastId: string | null
+      timeoutId: ReturnType<typeof setTimeout> | null
+    }
+  | {
+      status: 'traveling'
+      targetNodeId: string
+      timeoutId: ReturnType<typeof setTimeout> | null
+    }
+
+/**
  * Mutable refs shared between the travel sub-hooks.
  *
  * @remarks
@@ -92,6 +112,7 @@ export type TravelLogicParams = {
  * across renders.
  */
 export interface TravelRefsBundle {
+  phaseRef?: React.MutableRefObject<TravelPhase>
   isTravelingRef: React.MutableRefObject<boolean>
   pendingTravelNodeRef: React.MutableRefObject<MapNode | null>
   pendingTimeoutRef: React.MutableRefObject<ReturnType<
@@ -116,6 +137,7 @@ export interface TravelRefsBundle {
  * React state holding current travel execution and confirmation dialog status.
  */
 export interface TravelStateBundle {
+  phase?: TravelPhase
   isTraveling: boolean
   pendingTravelNode: MapNode | null
 }
@@ -124,8 +146,9 @@ export interface TravelStateBundle {
  * State dispatch functions for travel execution and confirmation dialog status.
  */
 export interface TravelSettersBundle {
-  setIsTraveling: React.Dispatch<React.SetStateAction<boolean>>
-  setPendingTravelNode: React.Dispatch<React.SetStateAction<MapNode | null>>
+  setPhase?: React.Dispatch<React.SetStateAction<TravelPhase>>
+  setIsTraveling?: React.Dispatch<React.SetStateAction<boolean>>
+  setPendingTravelNode?: React.Dispatch<React.SetStateAction<MapNode | null>>
 }
 
 /**

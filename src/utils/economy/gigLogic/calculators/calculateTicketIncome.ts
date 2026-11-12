@@ -23,13 +23,10 @@ export const calculateTicketIncome = (
   modifiers: Partial<GigModifiers> = {},
   context: EconomyContext = {}
 ) => {
-  gigData = gigData || {}
-  modifiers = modifiers || {}
-  context = context || {}
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
-  const baseCapacity = Math.max(0, finiteNumberOr(gigData.capacity, 0))
+  const baseCapacity = Math.max(0, finiteNumberOr(gigData?.capacity, 0))
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
@@ -46,13 +43,13 @@ export const calculateTicketIncome = (
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
 
   // Promo Boost
-  if (modifiers.promo) fillRate += 0.22
+  if (modifiers?.promo) fillRate += 0.22
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.2
+  if (modifiers?.soundcheck) fillRate += 0.2
 
-  const gigDifficulty = gigData.diff ?? gigData.difficulty
-  const daysSinceLastGig = context.daysSinceLastGig
+  const gigDifficulty = gigData?.diff ?? gigData?.difficulty
+  const daysSinceLastGig = context?.daysSinceLastGig
   const hasValidDaysSinceLastGig =
     typeof daysSinceLastGig === 'number' &&
     Number.isFinite(daysSinceLastGig) &&
@@ -60,7 +57,7 @@ export const calculateTicketIncome = (
 
   // Gig frequency vs quality gap penalty
   if (
-    context.lastGigDifficulty === gigDifficulty &&
+    context?.lastGigDifficulty === gigDifficulty &&
     hasValidDaysSinceLastGig &&
     daysSinceLastGig < 4
   ) {
@@ -69,7 +66,9 @@ export const calculateTicketIncome = (
 
   // Controversy attendance penalty: -1% per point above the high-controversy
   // gate, max -30%
-  const controversyLevel = finiteNumberOr(context.controversyLevel, 0)
+  const controversyLevel =
+    context?.normalizedSocial?.controversyLevel ??
+    finiteNumberOr(context?.controversyLevel, 0)
   if (isHighControversy(controversyLevel)) {
     fillRate -= Math.min(
       0.3,
@@ -78,7 +77,7 @@ export const calculateTicketIncome = (
   }
 
   // Regional reputation bonus/penalty
-  const regionRep = finiteNumberOr(context.regionRep, 0)
+  const regionRep = finiteNumberOr(context?.regionRep, 0)
   if (regionRep < 0) {
     fillRate -= Math.min(0.2, Math.abs(regionRep) * 0.002) // -2% per -10 rep, max -20%
   } else if (regionRep > 0) {
@@ -86,13 +85,13 @@ export const calculateTicketIncome = (
   }
 
   // Discounted tickets flag: +10% fill
-  if (context.discountedTickets) {
+  if (context?.discountedTickets) {
     fillRate += 0.1
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
   const ticketPrice = calculateEffectiveTicketPrice(gigData, context)
-  if (!context.discountedTickets && ticketPrice > 15) {
+  if (!context?.discountedTickets && ticketPrice > 15) {
     const pricePenalty = (ticketPrice - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
     fillRate -= Math.max(0, pricePenalty - mitigation)

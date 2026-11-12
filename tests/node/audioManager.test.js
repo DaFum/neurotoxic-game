@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
+import { SFX_RECIPES } from '../../src/utils/audio/sfx'
+import { logger } from '../../src/utils/logger'
 
 test('AudioManager Tests', async t => {
   // Setup global mocks
@@ -9,31 +11,42 @@ test('AudioManager Tests', async t => {
     removeItem: mock.fn()
   }
 
-  const mockAudioEngine = {
-    setSFXVolume: mock.fn(),
-    setMusicVolume: mock.fn(),
-    playSFX: mock.fn(),
-    stopAudio: mock.fn(),
-    resumeAudio: mock.fn(async () => true),
-    getTransportState: mock.fn(() => 'stopped'),
-    setDestinationMute: mock.fn(() => false),
-    setupAudio: mock.fn(),
-    ensureAudioContext: mock.fn(async () => true),
-    isAmbientOggPlaying: mock.fn(() => false),
-    playRandomAmbientOgg: mock.fn(async () => true),
-    playRandomAmbientMidi: mock.fn(async () => true),
-    disposeAudio: mock.fn()
-  }
-
-  mock.module(
-    new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
-    {
-      namedExports: mockAudioEngine
+  // AudioManager imports the low-level modules directly (not the
+  // audioEngine.ts hub), so each one is mocked with the exports it uses.
+  const mockAudioModules = {
+    'setup.ts': { setupAudio: mock.fn() },
+    'context.ts': { ensureAudioContext: mock.fn(async () => true) },
+    'dispose.ts': { disposeAudio: mock.fn() },
+    'sfx.ts': {
+      playSFX: mock.fn(),
+      setSFXVolume: mock.fn(),
+      setMusicVolume: mock.fn(),
+      SFX_RECIPES
+    },
+    'transportControl.ts': {
+      isAmbientOggPlaying: mock.fn(() => false),
+      stopAudio: mock.fn(),
+      resumeAudio: mock.fn(async () => true),
+      getTransportState: mock.fn(() => 'stopped'),
+      getPendingTransportStartDelayMs: mock.fn(() => null),
+      setDestinationMute: mock.fn(() => false)
+    },
+    'ambient.ts': {
+      playRandomAmbientOgg: mock.fn(async () => true),
+      playRandomAmbientMidi: mock.fn(async () => true)
     }
-  )
+  }
+  for (const [file, namedExports] of Object.entries(mockAudioModules)) {
+    mock.module(
+      new URL(`../../src/utils/audio/${file}`, import.meta.url).href,
+      { namedExports }
+    )
+  }
+  const mockAudioEngine = Object.assign({}, ...Object.values(mockAudioModules))
 
   // Import the module under test
-  const { audioManager } = await import('../../src/utils/audio/AudioManager')
+  const { audioManager, AudioManager } =
+    await import('../../src/utils/audio/AudioManager')
 
   await t.test('initializes with default values', () => {
     // Init runs on import
@@ -134,6 +147,126 @@ test('AudioManager Tests', async t => {
     }
   )
 
+  await t.test(
+    'MIDI ambient fallback emits again when the scheduled transport starts',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await audioManager.startAmbient()
+      const emittedBeforeStart = listener.mock.calls.length
+      assert.equal(audioManager.getStateSnapshot().isPlaying, false)
+
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      assert.equal(listener.mock.calls.length, emittedBeforeStart + 1)
+      assert.equal(audioManager.getStateSnapshot().isPlaying, true)
+    }
+  )
+
+  await t.test(
+    'resuming a paused lead-in start emits again when it begins',
+    async () => {
+      audioManager.currentSongId = 'ambient'
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      assert.equal(await audioManager.resumeMusic(), true)
+      const emittedAfterResume = listener.mock.calls.length
+      assert.equal(audioManager.getStateSnapshot().isPlaying, false)
+
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      assert.equal(listener.mock.calls.length, emittedAfterResume + 1)
+      assert.equal(audioManager.getStateSnapshot().isPlaying, true)
+    }
+  )
+
+  await t.test(
+    'the delayed emit waits while the audio clock has not reached the start',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      // Scheduling and the first timer check still see a pending start; the
+      // second timer check sees it has passed. The re-armed schedule must reuse
+      // the first timer's reading: a read of its own would already see `null`.
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      const firstCall = pendingDelay.mock.callCount()
+      for (let i = 0; i < 2; i++) {
+        pendingDelay.mock.mockImplementationOnce(() => 10, firstCall + i)
+      }
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await audioManager.startAmbient()
+      const emittedBeforeStart = listener.mock.calls.length
+
+      await new Promise(resolve => setTimeout(resolve, 90))
+      assert.equal(listener.mock.calls.length, emittedBeforeStart)
+
+      await new Promise(resolve => setTimeout(resolve, 150))
+      unsubscribe()
+      assert.equal(listener.mock.calls.length, emittedBeforeStart + 1)
+    }
+  )
+
+  await t.test(
+    'the pending start is read before the snapshot is emitted',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      const order = []
+      const pendingDelay = mockAudioEngine.getPendingTransportStartDelayMs
+      pendingDelay.mock.mockImplementationOnce(() => {
+        order.push('delay')
+        return null
+      }, pendingDelay.mock.callCount())
+      const unsubscribe = audioManager.subscribe(() => order.push('emit'))
+      await audioManager.startAmbient()
+      unsubscribe()
+      assert.ok(order.indexOf('delay') < order.lastIndexOf('emit'))
+    }
+  )
+
+  await t.test(
+    'a stop before the scheduled transport starts skips the late emit',
+    async () => {
+      audioManager.stopMusic()
+      mockAudioEngine.playRandomAmbientOgg.mock.mockImplementationOnce(
+        async () => false
+      )
+      mockAudioEngine.getPendingTransportStartDelayMs.mock.mockImplementationOnce(
+        () => 10
+      )
+      await audioManager.startAmbient()
+      audioManager.stopMusic()
+      const listener = mock.fn()
+      const unsubscribe = audioManager.subscribe(listener)
+      await new Promise(resolve => setTimeout(resolve, 120))
+      unsubscribe()
+      assert.equal(listener.mock.calls.length, 0)
+    }
+  )
+
   await t.test('setMusicVolume rejects non-finite values', () => {
     const callsBefore = mockAudioEngine.setMusicVolume.mock.calls.length
     const result = audioManager.setMusicVolume(Number.NaN)
@@ -149,6 +282,36 @@ test('AudioManager Tests', async t => {
   })
 
   await t.test(
+    'setSfxVolume alias updates sfx volume and persistence identical to setSFXVolume',
+    () => {
+      const callsBefore = mockAudioEngine.setSFXVolume.mock.calls.length
+      const storageCallsBefore =
+        globalThis.localStorage.setItem.mock.calls.length
+      const result = audioManager.setSfxVolume(0.7)
+      assert.equal(result, true)
+      assert.equal(audioManager.sfxVolume, 0.7)
+      assert.strictEqual(
+        mockAudioEngine.setSFXVolume.mock.calls.length,
+        callsBefore + 1
+      )
+      assert.equal(
+        mockAudioEngine.setSFXVolume.mock.calls[callsBefore].arguments[0],
+        0.7
+      )
+      assert.ok(
+        globalThis.localStorage.setItem.mock.calls.length > storageCallsBefore
+      )
+      const lastStorageCall =
+        globalThis.localStorage.setItem.mock.calls[
+          globalThis.localStorage.setItem.mock.calls.length - 1
+        ]
+      assert.equal(lastStorageCall.arguments[0], 'neurotoxic_vol_sfx')
+      assert.equal(lastStorageCall.arguments[1], '0.7')
+      assert.equal(audioManager.getStateSnapshot().sfxVol, 0.7)
+    }
+  )
+
+  await t.test(
     'init still marks prefs as loaded when localStorage read fails',
     () => {
       const originalGetItem = globalThis.localStorage.getItem
@@ -161,6 +324,56 @@ test('AudioManager Tests', async t => {
 
       assert.equal(audioManager.prefsLoaded, true)
       globalThis.localStorage.getItem = originalGetItem
+    }
+  )
+
+  await t.test(
+    'playSFX executes valid recipes and warns on unknown type',
+    () => {
+      const warnCalls = []
+      const origWarn = logger.warn
+      logger.warn = (...args) => {
+        warnCalls.push(args)
+      }
+
+      try {
+        const manager = new AudioManager()
+        mockAudioEngine.playSFX.mock.resetCalls()
+
+        // Effects are held back until stored preferences are applied.
+        manager.playSFX('hit')
+        assert.strictEqual(mockAudioEngine.playSFX.mock.calls.length, 0)
+        manager.prefsLoaded = true
+
+        const validTypes = Object.keys(SFX_RECIPES)
+        for (const type of validTypes) {
+          manager.playSFX(type)
+        }
+
+        assert.strictEqual(warnCalls.length, 0)
+        assert.strictEqual(
+          mockAudioEngine.playSFX.mock.calls.length,
+          validTypes.length
+        )
+        validTypes.forEach((type, idx) => {
+          assert.strictEqual(
+            mockAudioEngine.playSFX.mock.calls[idx].arguments[0],
+            type
+          )
+        })
+
+        // Unknown sound effect should log warning and return without throw
+        manager.playSFX('nonexistent_sfx')
+        assert.strictEqual(warnCalls.length, 1)
+        assert.strictEqual(warnCalls[0][0], 'AudioSystem')
+        assert.match(warnCalls[0][1], /Unknown SFX type: nonexistent_sfx/)
+        assert.strictEqual(
+          mockAudioEngine.playSFX.mock.calls.length,
+          validTypes.length
+        )
+      } finally {
+        logger.warn = origWarn
+      }
     }
   )
 })

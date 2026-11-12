@@ -138,6 +138,8 @@ mock.module(new URL('../src/utils/economy/index.ts', import.meta.url).href, {
     calculateTravelMinigameResult: mock.fn(),
     calculateRoadieMinigameResult: mock.fn(),
     EXPENSE_CONSTANTS: mockExpenseConstants,
+    calculateDailyLivingObligations: mockCalculateGuaranteedDailyCost,
+    calculateDailyYouTubeRevenue: mock.fn(() => 0),
     calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
   }
 })
@@ -289,6 +291,7 @@ export const createTravelLogicProps = (overrides = {}) => ({
   advanceDay: mock.fn(),
   triggerEvent: mock.fn(),
   startGig: mock.fn(),
+  checkStartGig: mock.fn(() => null),
   hasUpgrade: mock.fn(() => false),
   addToast: mock.fn(),
   changeScene: mock.fn(),

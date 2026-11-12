@@ -9,13 +9,11 @@
  */
 /** Tagged result for storage get operations. */
 export type StorageGetResult =
-  | { ok: true; value: string | null }
-  | { ok: false; error?: unknown }
+  { ok: true; value: string | null } | { ok: false; error?: unknown }
 
 /** Tagged result for storage enumeration operations. */
 export type StorageKeysResult =
-  | { ok: true; keys: string[] }
-  | { ok: false; error?: unknown }
+  { ok: true; keys: string[] } | { ok: false; error?: unknown }
 
 export interface IStorageAdapter {
   /**

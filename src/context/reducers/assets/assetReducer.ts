@@ -176,8 +176,9 @@ export const handlePurchaseChassis = (
     ) {
       return state
     }
+    const principal = Math.max(0, finiteNumberOr(configTier.price, 0))
     const dailyPayment = computeAmortization(
-      configTier.price,
+      principal,
       profile.interestRate,
       profile.termDays
     )
@@ -185,10 +186,13 @@ export const handlePurchaseChassis = (
       id: `loan_${id}`,
       source: 'loan',
       assetId: id,
-      principalRemaining: configTier.price,
-      interestRate: profile.interestRate,
+      principalRemaining: principal,
+      interestRate: finiteNumberOr(profile.interestRate, 0),
       dailyPayment,
-      termDaysRemaining: profile.termDays,
+      termDaysRemaining: Math.max(
+        0,
+        Math.floor(finiteNumberOr(profile.termDays, 0))
+      ),
       defaultCounter: 0
     }
     nextLiabilities[liability.id] = liability
@@ -271,7 +275,7 @@ export const handleInstallModule = (
 
   if (!installed) return state
 
-  if (newSlotIds && newSlotIds.length > 0 && moduleInfo.addsSlots) {
+  if (moduleInfo.addsSlots && moduleInfo.addsSlots.length > 0) {
     const allowedSlotTypes: Record<string, number> = {}
     for (let i = 0; i < moduleInfo.addsSlots.length; i++) {
       const def = moduleInfo.addsSlots[i]
@@ -280,8 +284,9 @@ export const handleInstallModule = (
       }
     }
 
-    for (let i = 0; i < newSlotIds.length; i++) {
-      const newSlot = newSlotIds[i]
+    const safeNewSlotIds = Array.isArray(newSlotIds) ? newSlotIds : []
+    for (let i = 0; i < safeNewSlotIds.length; i++) {
+      const newSlot = safeNewSlotIds[i]
       const count =
         newSlot && Object.hasOwn(allowedSlotTypes, newSlot.slotType)
           ? allowedSlotTypes[newSlot.slotType]
@@ -296,6 +301,24 @@ export const handleInstallModule = (
           addedByModuleId: moduleId
         })
       }
+    }
+
+    // Bounds-safe deterministic fallback: if payload lacked slot IDs for any added slots,
+    // synthesize deterministic IDs so the reducer stays pure and state stays valid.
+    for (let i = 0; i < moduleInfo.addsSlots.length; i++) {
+      const def = moduleInfo.addsSlots[i]
+      if (!def) continue
+      const remaining = allowedSlotTypes[def.slotType] ?? 0
+      for (let j = 0; j < remaining; j++) {
+        nextSlots.push({
+          id: `${assetId}_${slotId}_${def.slotType}_${j}`,
+          slotType: def.slotType,
+          position: { x: 0, y: 0 },
+          installedModuleId: null,
+          addedByModuleId: moduleId
+        })
+      }
+      allowedSlotTypes[def.slotType] = 0
     }
   }
 
@@ -676,13 +699,17 @@ export const handleRefinanceLiability = (
   const liabilities = { ...state.liabilities }
   liabilities[payload.liabilityId] = {
     ...targetLiability,
-    interestRate: profile.interestRate,
+    principalRemaining: principal,
+    interestRate: finiteNumberOr(profile.interestRate, 0),
     dailyPayment: computeAmortization(
       principal,
       profile.interestRate,
       profile.termDays
     ),
-    termDaysRemaining: profile.termDays,
+    termDaysRemaining: Math.max(
+      0,
+      Math.floor(finiteNumberOr(profile.termDays, 0))
+    ),
     defaultCounter: 0
   }
 
@@ -763,11 +790,17 @@ export const handleDismissForeclosureNotice = (
   payload: { kind: AssetKind }
 ): GameState => {
   if (!isLooseRecord(payload)) return state
+  if (state.pendingOverlay?.kind !== 'foreclosure') return state
+
+  const remaining = state.pendingOverlay.notices.filter(
+    (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
+  )
+  const nextOverlay: import('../../../types').PendingOverlayState | null =
+    remaining.length > 0 ? { kind: 'foreclosure', notices: remaining } : null
+
   return {
     ...state,
-    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
-      (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
-    )
+    pendingOverlay: nextOverlay
   }
 }
 

@@ -1,11 +1,11 @@
 // Orchestrator
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTravelState } from './useTravelState'
 import { useTravelActions } from './useTravelActions'
 import { useVanMaintenance } from './useVanMaintenance'
 import { useTravelEffects } from './useTravelEffects'
 import {
-  isConnected as isConnectedUtil,
+  getConnectedTargetIds,
   getNodeVisibility as getNodeVisibilityUtil
 } from '../../utils/mapUtils'
 import { getTotalDailyObligations } from '../../utils/assets/assetSelectors'
@@ -78,22 +78,26 @@ export const useTravelLogic = (params: TravelLogicParams) => {
 
   useTravelEffects({ refs, state, params })
 
-  // ⚡ Bolt Optimization: Memoize isConnected to prevent unnecessary invalidation
-  // of the expensive connection rendering useMemo in OverworldMap.tsx.
-  const isConnected = useCallback(
-    (targetNodeId: string) => {
-      return isConnectedUtil(
-        params.gameMap,
-        params.player?.currentNodeId ?? '',
-        targetNodeId
-      )
-    },
+  const connectedTargetIds = useMemo(
+    () => getConnectedTargetIds(params.gameMap, params.player?.currentNodeId),
     [params.gameMap, params.player?.currentNodeId]
   )
 
+  // ⚡ Bolt Optimization: Memoize isConnected using precomputed outgoing set
+  // to avoid O(N*E) connection scans and prevent unnecessary invalidation
+  // of the connection rendering useMemo in OverworldMap.tsx.
+  const isConnected = useCallback(
+    (targetNodeId: string) => {
+      return connectedTargetIds.has(targetNodeId)
+    },
+    [connectedTargetIds]
+  )
+
   return {
+    phase: state.phase,
     isTraveling: state.isTraveling,
     pendingTravelNode: state.pendingTravelNode,
+    connectedTargetIds,
     isConnected,
     getNodeVisibility: getNodeVisibilityUtil,
     handleTravel,

@@ -1,6 +1,6 @@
 import * as m from 'motion/react-m'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
-import { usePostGigLogic } from '../hooks/usePostGigLogic'
+import { usePostGigLogic } from '../hooks/postGig/usePostGigLogic'
 import { GAME_PHASES } from '../context/gameConstants'
 import { ActionButton } from '../ui/shared'
 
@@ -32,10 +32,10 @@ const CompletePhase = lazy(() =>
 export const PostGig = () => {
   const {
     t,
+    flowState,
     phase,
     financials,
     postOptions,
-    postResult,
     brandOffers,
     phaseTitleKey,
     phaseTitleDefault,
@@ -125,9 +125,9 @@ export const PostGig = () => {
             />
           )}
 
-          {phase === 'COMPLETE' && postResult && (
+          {flowState.phase === 'COMPLETE' && (
             <CompletePhase
-              result={postResult}
+              result={flowState.result}
               onContinue={handleContinue}
               onSpinStory={handleSpinStory}
               player={player}

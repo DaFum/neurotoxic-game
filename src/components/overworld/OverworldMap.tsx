@@ -3,14 +3,17 @@ import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
-import { normalizeVenueId } from '../../utils/mapUtils'
+import {
+  getConnectedTargetIds,
+  normalizeVenueId,
+  nodeToPercentPosition
+} from '../../utils/mapUtils'
 import { isGigNode } from '../../utils/arrivalUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
 import { useMapLabelDeclutter } from './useMapLabelDeclutter'
 import { getNodeIconUrl } from './utils'
-import { nodeToPercentPosition } from '../../utils/mapUtils'
 
 import type {
   MapNode as GameMapNode,
@@ -56,7 +59,8 @@ interface OverworldMapProps {
    */
   festivalBookingMinimumFame?: number | null
   getNodeVisibility: (nodeLayer: number, currentLayer: number) => NodeVisibility
-  isConnected: (nodeId: string) => boolean
+  isConnected?: (nodeId: string) => boolean
+  connectedTargetIds?: ReadonlySet<string>
   handleTravel: (node: GameMapNode) => void
   setHoveredNode: React.Dispatch<React.SetStateAction<GameMapNode | null>>
   hoveredNode: GameMapNode | null
@@ -99,6 +103,7 @@ export const OverworldMap = React.memo(
     pendingTravelNode,
     getNodeVisibility,
     isConnected,
+    connectedTargetIds: propConnectedTargetIds,
     handleTravel,
     setHoveredNode,
     hoveredNode,
@@ -115,6 +120,18 @@ export const OverworldMap = React.memo(
     const urls = useOverworldUrls(isOnlineNetwork, t)
 
     const { mapBgUrl, mapBgFallbackUrl, vanUrl, rivalVanUrl } = urls
+
+    const resolvedConnectedTargetIds = useMemo(
+      () =>
+        propConnectedTargetIds ??
+        getConnectedTargetIds(gameMap, player.currentNodeId),
+      [propConnectedTargetIds, gameMap, player.currentNodeId]
+    )
+
+    const isNodeConnected = useMemo(
+      () => isConnected ?? (nodeId => resolvedConnectedTargetIds.has(nodeId)),
+      [isConnected, resolvedConnectedTargetIds]
+    )
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {
@@ -156,7 +173,7 @@ export const OverworldMap = React.memo(
           if (
             candidate &&
             id !== player.currentNodeId &&
-            isConnected(id) &&
+            isNodeConnected(id) &&
             getNodeVisibility(candidate.layer, currentLayer) !== 'hidden'
           ) {
             travelTargetCount += 1
@@ -175,7 +192,7 @@ export const OverworldMap = React.memo(
         // node (re-entering books the show) are actionable, so they must be
         // keyboard-reachable like any other travel target.
         const isReachable =
-          isConnected(node.id) ||
+          isNodeConnected(node.id) ||
           node.type === 'START' ||
           (isCurrent && (node.type === 'SUPPLY_STOP' || isGigNode(node)))
 
@@ -253,7 +270,7 @@ export const OverworldMap = React.memo(
       isTraveling,
       pendingTravelNode,
       getNodeVisibility,
-      isConnected,
+      isNodeConnected,
       handleTravel,
       urls,
       vanUrl,
@@ -271,7 +288,7 @@ export const OverworldMap = React.memo(
 
     // Hover connection memo
     const hoverLine = useMemo(() => {
-      if (!hoveredNode || !isConnected(hoveredNode.id) || !currentNode)
+      if (!hoveredNode || !isNodeConnected(hoveredNode.id) || !currentNode)
         return null
 
       const start = nodeToPercentPosition(currentNode)
@@ -289,7 +306,7 @@ export const OverworldMap = React.memo(
           opacity='0.8'
         />
       )
-    }, [hoveredNode, isConnected, currentNode])
+    }, [hoveredNode, isNodeConnected, currentNode])
 
     // Declutter every map: career start clusters can overlap on desktop too.
     const mapRef = useRef<HTMLDivElement>(null)

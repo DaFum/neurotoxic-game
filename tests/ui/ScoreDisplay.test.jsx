@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { ScoreDisplay } from '../../src/components/hud/ScoreDisplay.tsx'
+import { ScoreDisplay } from '../../src/ui/hud/ScoreDisplay.tsx'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: key => key }),

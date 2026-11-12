@@ -1,4 +1,24 @@
-import * as audioEngine from './audioEngine'
+// Direct low-level imports, not the audioEngine.ts hub: the hub re-exports
+// audioManager, so importing it here would form an import cycle.
+import { setupAudio } from './setup'
+import { ensureAudioContext } from './context'
+import { disposeAudio } from './dispose'
+import {
+  playSFX,
+  setSFXVolume,
+  setMusicVolume,
+  SFX_RECIPES,
+  type AudioSfxType
+} from './sfx'
+import {
+  isAmbientOggPlaying,
+  stopAudio,
+  resumeAudio,
+  getTransportState,
+  getPendingTransportStartDelayMs,
+  setDestinationMute
+} from './transportControl'
+import { playRandomAmbientOgg, playRandomAmbientMidi } from './ambient'
 import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
@@ -10,36 +30,23 @@ import type { AudioSnapshot } from '../../types/audio'
 
 type AudioListener = () => void
 
-/**
- * Supported short sound-effect identifiers routed through the audio manager.
- */
-export type AudioSfxType =
-  | 'hit'
-  | 'miss'
-  | 'menu'
-  | 'travel'
-  | 'cash'
-  | 'crash'
-  | 'honk'
-  | 'pickup'
-  | 'deliver'
-  | 'void_hit'
+export type { AudioSfxType }
 
 type AudioStateSnapshot = Required<AudioSnapshot>
 
 /**
- * High-level audio facade that wraps audioEngine with user preference persistence.
+ * High-level audio facade that wraps the low-level audio modules with user preference persistence.
  *
  * Architecture (three layers):
  *   AudioManager — localStorage prefs, mute toggle, ambient lifecycle
  *   audioEngine  — barrel re-export aggregating low-level audio modules
  *   audio/*      — Tone.js / WebAudio implementation
  *
- * Volume methods here intentionally duplicate the audioEngine calls because they
+ * Volume methods here intentionally duplicate the low-level calls because they
  * add localStorage persistence and deferred-apply logic (audio graph may not
  * exist yet when preferences are loaded at startup).
  */
-class AudioSystem {
+export class AudioSystem {
   currentSongId: string | null
   musicVolume: number
   sfxVolume: number
@@ -70,19 +77,6 @@ class AudioSystem {
     }
   }
 
-  private static readonly VALID_SFX_TYPES = new Set<AudioSfxType>([
-    'hit',
-    'miss',
-    'menu',
-    'travel',
-    'cash',
-    'crash',
-    'honk',
-    'pickup',
-    'deliver',
-    'void_hit'
-  ])
-
   /**
    * Returns true when audio is actively playing through ambient OGG or Tone transport.
    * Keeps playback-state logic encapsulated for UI consumers.
@@ -90,8 +84,7 @@ class AudioSystem {
   get isPlaying(): boolean {
     return (
       this.currentSongId != null &&
-      (audioEngine.isAmbientOggPlaying() ||
-        audioEngine.getTransportState() === 'started')
+      (isAmbientOggPlaying() || getTransportState() === 'started')
     )
   }
 
@@ -162,11 +155,11 @@ class AudioSystem {
 
     try {
       // Initialize Audio Engine settings (but don't start Context yet)
-      audioEngine.setSFXVolume(this.sfxVolume)
-      audioEngine.setMusicVolume(this.musicVolume)
+      setSFXVolume(this.sfxVolume)
+      setMusicVolume(this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
-      audioEngine.setDestinationMute(this.muted)
+      setDestinationMute(this.muted)
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'AudioSystem engine initialization failed'
@@ -192,8 +185,8 @@ class AudioSystem {
 
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
-      if (audioEngine.isAmbientOggPlaying()) return true
-      if (audioEngine.getTransportState() === 'started') return true
+      if (isAmbientOggPlaying()) return true
+      if (getTransportState() === 'started') return true
     }
 
     this.isStartingAmbient = true
@@ -203,12 +196,9 @@ class AudioSystem {
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(
-          secureRandom,
-          {
-            skipStop: true
-          }
-        )
+        const oggSuccess = await playRandomAmbientOgg(secureRandom, {
+          skipStop: true
+        })
         if (ambientStartToken !== this.ambientStartToken) return false
         if (oggSuccess) {
           this.emitChange()
@@ -221,7 +211,7 @@ class AudioSystem {
           'OGG ambient unavailable, falling back to MIDI synthesis.'
         )
 
-        const midiSuccess = await audioEngine.playRandomAmbientMidi()
+        const midiSuccess = await playRandomAmbientMidi()
         if (ambientStartToken !== this.ambientStartToken) return false
         if (!midiSuccess) {
           this.currentSongId = null
@@ -232,6 +222,7 @@ class AudioSystem {
           )
           return false
         }
+        this.emitWhenScheduledStartArrives(ambientStartToken)
         this.emitChange()
         logger.info(
           'AudioSystem',
@@ -255,6 +246,38 @@ class AudioSystem {
   }
 
   /**
+   * Emits once more when a transport start scheduled in the future begins.
+   *
+   * @remarks
+   * Tone reports `stopped` until the scheduled time, so the emission right
+   * after the MIDI fallback schedules playback carries `isPlaying: false`.
+   * A stop or a newer ambient start invalidates the token and skips the emit.
+   *
+   * @param ambientStartToken - Token of the ambient start that scheduled playback.
+   * @param delayMs - Remaining delay already read by the caller, or `null` when
+   * no start is pending. Defaults to reading it now.
+   */
+  private emitWhenScheduledStartArrives(
+    ambientStartToken: number,
+    delayMs: number | null = getPendingTransportStartDelayMs()
+  ): void {
+    if (delayMs === null) return
+    setTimeout(() => {
+      if (ambientStartToken !== this.ambientStartToken) return
+      // The timer runs on wall-clock time while the audio clock can stall (for
+      // example a suspended context), so re-arm until the start has passed.
+      const remainingMs = getPendingTransportStartDelayMs()
+      if (remainingMs !== null) {
+        // Reuse this reading: a second read could see the start already passed
+        // and schedule nothing.
+        this.emitWhenScheduledStartArrives(ambientStartToken, remainingMs)
+        return
+      }
+      this.emitChange()
+    }, delayMs + 50)
+  }
+
+  /**
    * Stops the currently playing music.
    * @param options - Optional. Controls whether subscriber notifications are emitted.
    */
@@ -270,7 +293,7 @@ class AudioSystem {
       'AudioSystem',
       `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
     )
-    audioEngine.stopAudio()
+    stopAudio()
     this.currentSongId = null
 
     if (options.emit !== false) {
@@ -285,20 +308,21 @@ class AudioSystem {
    */
   async resumeMusic(): Promise<boolean> {
     try {
-      if (
-        this.currentSongId === 'ambient' &&
-        audioEngine.isAmbientOggPlaying()
-      ) {
+      if (this.currentSongId === 'ambient' && isAmbientOggPlaying()) {
         return true
       }
 
-      if (audioEngine.getTransportState() === 'paused') {
-        const resumed = await audioEngine.resumeAudio()
+      if (getTransportState() === 'paused') {
+        const resumed = await resumeAudio()
+        // A resumed lead-in start is still in the future and reads `stopped`.
+        // Read its delay before the snapshot, or a start that passes in between
+        // is never refreshed.
+        if (resumed) this.emitWhenScheduledStartArrives(this.ambientStartToken)
         this.emitChange()
         return resumed
       }
 
-      if (audioEngine.getTransportState() !== 'started') {
+      if (getTransportState() !== 'started') {
         return await this.startAmbient()
       }
 
@@ -316,15 +340,15 @@ class AudioSystem {
    */
   async ensureAudioContext(): Promise<boolean> {
     try {
-      await audioEngine.setupAudio()
+      await setupAudio()
 
       // Always re-apply volumes when unlocking to ensure engine state matches prefs
       // (engine nodes might have been created after init() calls)
-      audioEngine.setMusicVolume(this.musicVolume)
-      audioEngine.setSFXVolume(this.sfxVolume)
-      audioEngine.setDestinationMute(this.muted)
+      setMusicVolume(this.musicVolume)
+      setSFXVolume(this.sfxVolume)
+      setDestinationMute(this.muted)
 
-      return await audioEngine.ensureAudioContext()
+      return await ensureAudioContext()
     } catch (e) {
       logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
       return false
@@ -335,13 +359,13 @@ class AudioSystem {
    * Plays a sound effect by key.
    * @param key - The SFX identifier, such as `'hit'` or `'miss'`.
    */
-  playSFX(key: AudioSfxType): void {
-    if (!this.prefsLoaded) return
-    if (!AudioSystem.VALID_SFX_TYPES.has(key)) {
+  playSFX(key: AudioSfxType | string): void {
+    if (!Object.hasOwn(SFX_RECIPES, key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
-    audioEngine.playSFX(key)
+    if (!this.prefsLoaded) return
+    playSFX(key)
   }
 
   private setVolumeHelper(
@@ -389,7 +413,7 @@ class AudioSystem {
     return this.setVolumeHelper(
       vol,
       'music',
-      audioEngine.setMusicVolume,
+      setMusicVolume,
       'neurotoxic_vol_music'
     )
   }
@@ -399,12 +423,15 @@ class AudioSystem {
    * @param vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol: number): boolean {
-    return this.setVolumeHelper(
-      vol,
-      'sfx',
-      audioEngine.setSFXVolume,
-      'neurotoxic_vol_sfx'
-    )
+    return this.setVolumeHelper(vol, 'sfx', setSFXVolume, 'neurotoxic_vol_sfx')
+  }
+
+  /**
+   * Sets the SFX volume and persists it (alias for `setSFXVolume`).
+   * @param vol - Volume level between 0 and 1.
+   */
+  setSfxVolume(vol: number): boolean {
+    return this.setSFXVolume(vol)
   }
 
   /**
@@ -415,7 +442,7 @@ class AudioSystem {
     this.muted = !this.muted
 
     try {
-      audioEngine.setDestinationMute(this.muted)
+      setDestinationMute(this.muted)
     } catch (e) {
       logger.warn('AudioSystem', 'audioEngine mute failed:', e)
     }
@@ -446,8 +473,8 @@ class AudioSystem {
 
     // Explicitly call the engine's dispose function to clear contexts
     try {
-      if (typeof audioEngine.disposeAudio === 'function') {
-        audioEngine.disposeAudio()
+      if (typeof disposeAudio === 'function') {
+        disposeAudio()
       }
     } catch (e) {
       logger.warn('AudioSystem', 'Error during engine dispose:', e)
@@ -463,3 +490,5 @@ class AudioSystem {
  */
 export const audioManager = new AudioSystem()
 audioManager.init()
+
+export { AudioSystem as AudioManager }

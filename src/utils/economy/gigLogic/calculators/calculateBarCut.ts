@@ -17,8 +17,7 @@ export const calculateBarCut = (
   ticketsSold = 0,
   modifiers: Partial<GigModifiers> = {}
 ) => {
-  modifiers = modifiers || {}
-  const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
+  const barRate = modifiers?.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
   // `Math.max(0, …)` alone lets NaN and Infinity through: NaN fails the
   // comparison and Infinity wins it.
@@ -30,11 +29,11 @@ export const calculateBarCut = (
   return {
     revenue: barRevenue,
     incomeItem: {
-      labelKey: modifiers.guestlist
+      labelKey: modifiers?.guestlist
         ? BREAKDOWN_LABEL_KEYS.VIP_BAR_REVENUE
         : BREAKDOWN_LABEL_KEYS.BAR_CUT,
       value: barRevenue,
-      detailKey: modifiers.guestlist
+      detailKey: modifiers?.guestlist
         ? 'economy:gigIncome.vipBarRevenue.detail'
         : 'economy:gigIncome.barCut.detail',
       detailParams: { percent: barPercent }

@@ -29,7 +29,6 @@ export interface MapNode {
  */
 export interface GameMap {
   nodes: Record<string, MapNode>
-  edges?: Array<{ from: string; to: string }>
   connections: Array<{ from: string; to: string }>
   cityStates?: Record<string, CityTraitState>
   [key: string]: unknown

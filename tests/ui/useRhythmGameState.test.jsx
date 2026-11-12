@@ -76,11 +76,8 @@ describe('useRhythmGameState', () => {
       setters.setIsToxicMode(true)
       setters.setIsGameOver(true)
       setters.setAccuracy(44)
-      setters.setCorruptionState(80, true)
-      setters.setIsCorruptionBurstActive(true)
-      setters.setCorruptionBurstEndTime(2000)
-      setters.setAudioStatus('failed')
-      setters.setFailureKind('stage')
+      setters.startCorruptionBurst(2000)
+      setters.setInitStatus({ status: 'failed', failureKind: 'stage' })
     })
 
     act(() => result.current.resetGameplayState())
@@ -118,8 +115,65 @@ describe('useRhythmGameState', () => {
     expect(result.current.state).toEqual({
       ...uiDefaults,
       audioStatus: 'failed',
-      failureKind: 'stage'
+      failureKind: 'stage',
+      initStatus: { status: 'failed', failureKind: 'stage' }
     })
+  })
+
+  it('synchronizes initStatus, audioStatus, and failureKind via setInitStatus', () => {
+    const { result } = renderHook(() => useRhythmGameState())
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'initializing' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'initializing' })
+    expect(result.current.state.audioStatus).toBe('initializing')
+    expect(result.current.state.failureKind).toBeNull()
+
+    act(() => {
+      result.current.setters.setInitStatus({
+        status: 'failed',
+        failureKind: 'audio'
+      })
+    })
+    expect(result.current.state.initStatus).toEqual({
+      status: 'failed',
+      failureKind: 'audio'
+    })
+    expect(result.current.state.audioStatus).toBe('failed')
+    expect(result.current.state.failureKind).toBe('audio')
+
+    act(() => {
+      result.current.setters.setInitStatus({ status: 'ready' })
+    })
+    expect(result.current.state.initStatus).toEqual({ status: 'ready' })
+    expect(result.current.state.audioStatus).toBe('ready')
+    expect(result.current.state.failureKind).toBeNull()
+  })
+
+  it('atomically manages corruption bursts via startCorruptionBurst and endCorruptionBurst', () => {
+    const { result } = renderHook(() => useRhythmGameState())
+
+    act(() => {
+      result.current.setters.setCorruptionLevel(80)
+    })
+    expect(result.current.state.corruptionLevel).toBe(80)
+    expect(result.current.state.isCorruptionBurstActive).toBe(false)
+    expect(result.current.state.corruptionBurstEndTime).toBe(0)
+
+    act(() => {
+      result.current.setters.startCorruptionBurst(5000)
+    })
+    expect(result.current.state.corruptionLevel).toBe(0)
+    expect(result.current.state.isCorruptionBurstActive).toBe(true)
+    expect(result.current.state.corruptionBurstEndTime).toBe(5000)
+
+    act(() => {
+      result.current.setters.endCorruptionBurst(15)
+    })
+    expect(result.current.state.corruptionLevel).toBe(15)
+    expect(result.current.state.isCorruptionBurstActive).toBe(false)
+    expect(result.current.state.corruptionBurstEndTime).toBe(0)
   })
   describe('DEV test hook', () => {
     const engine = {

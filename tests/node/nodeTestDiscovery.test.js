@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   NODE_TEST_DIRS,
+  HEAVY_NODE_TESTS,
   NODE_TEST_FILE_PATTERN,
   TOOLING_NODE_TESTS,
   isToolingNodeTest
@@ -60,6 +61,17 @@ describe('node:test discovery ownership', () => {
     }
 
     assert.equal(isToolingNodeTest('tests/node/actionCreators.test.js'), false)
+  })
+
+  it('keeps every heavy suite unique and present on disk', () => {
+    // A renamed heavy file would otherwise silently fall into the quick tier.
+    assert.ok(HEAVY_NODE_TESTS.length > 0)
+    assert.equal(new Set(HEAVY_NODE_TESTS).size, HEAVY_NODE_TESTS.length)
+
+    for (const relativePath of HEAVY_NODE_TESTS) {
+      assert.equal(fs.existsSync(relativePath), true, `${relativePath} missing`)
+      assert.equal(isRunnerOwned(relativePath), true, `${relativePath} unowned`)
+    }
   })
 
   it('matches the file names supported by each owning runner', () => {

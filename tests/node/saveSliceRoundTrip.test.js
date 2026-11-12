@@ -78,14 +78,17 @@ const buildPopulatedState = () => {
   state.eventCooldowns = [{ eventId: 'evt_1', until: 18 }]
   state.pendingEvents = ['evt_2']
   state.venueBlacklist = ['venue_9']
-  state.pendingForeclosureNotices = [{ kind: 'tourbus_chassis', day: 11 }]
-  // Must satisfy `sanitizeRiskEventDescriptor`: a descriptor missing
-  // `eventType` or `conditionLoss` is legitimately dropped to null on load.
-  state.pendingRiskEvent = {
-    assetId: 'asset_1',
-    eventType: 'theft',
-    conditionLoss: 12
+  state.pendingOverlay = {
+    kind: 'risk_event',
+    event: {
+      assetId: 'asset_1',
+      eventType: 'theft',
+      conditionLoss: 12
+    }
   }
+  state.deferredOverlays = [
+    { kind: 'foreclosure', notices: ['tourbus_chassis'] }
+  ]
   state.activeQuests = [
     {
       id: 'inline_delivery',
@@ -108,6 +111,10 @@ const buildPopulatedState = () => {
     }
   ]
   state.questCooldowns = [{ questId: 'quest_1', until: 20 }]
+  state.completedQuests = {
+    global: ['quest_0'],
+    scoped: { quest_scoped: ['scope_a'] }
+  }
   state.completedQuestIds = ['quest_0']
   state.completedQuestScopes = ['scope_a']
   state.reputationByRegion = { berlin: 25, hamburg: -10 }
@@ -291,9 +298,9 @@ const buildPopulatedState = () => {
     blockedTravelAtRouteStep: 4,
     outcome: null,
     metaUnlockQuestCompletedRunId: null,
-    insurancePolicyId: null,
-    insuranceClaimConsumed: false,
-    claimConsumed: false,
+    insurance: {
+      claimConsumed: false
+    },
     technicalFailureAccepted: false,
     authorityHiddenCompartmentUsed: false,
     crew: {
@@ -314,6 +321,7 @@ const buildPopulatedState = () => {
       temporaryRouteOpportunity: null
     },
     preparedSponsorOffers: [],
+    activeSponsorDealId: null,
     activeObligations: [],
     runDraftTraitIds: [],
     pendingRunDraftOffer: null,
@@ -452,6 +460,7 @@ describe('persisted save slice round-trip', () => {
       'activeStoryFlags',
       'pendingEvents',
       'venueBlacklist',
+      'completedQuests',
       'completedQuestIds',
       'activeQuests',
       'reputationByRegion',

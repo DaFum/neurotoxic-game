@@ -28,9 +28,11 @@ import {
   drainBandStamina,
   type PostGigContinueEffect
 } from '../../hooks/postGig/handlers/continueHandlerUtils'
-import { enforceExpeditionCashFloor } from '../../domain/expedition/loadout'
+import { enforceExpeditionCashFloor } from '../../domain/expedition/spendableCash'
 import { ActionTypes } from '../actionTypes'
 import {
+  advanceSettlementLifecycleStage,
+  canonicalizeGigSettlementLifecycleStage,
   isGigSocialReconciled,
   markGigSocialReconciled,
   normalizeGigSettlementLifecycle
@@ -116,38 +118,33 @@ export const handleRecordPendingGigSettlement = (
       ? state.pendingGigSettlement
       : null
 
-  const socialReconciled =
-    isGigSocialReconciled(prevSettlement) || isGigSocialReconciled(record)
+  const prevStage = prevSettlement
+    ? (canonicalizeGigSettlementLifecycleStage(prevSettlement.lifecycleStage) ??
+      'recorded')
+    : 'recorded'
+  const recordStage = record.lifecycleStage
 
-  // Preserve existing lifecycleStage when re-recording a settlement,
-  // preventing complete or social_reconciled from being demoted.
-  const existingStage = prevSettlement?.lifecycleStage
-  let lifecycleStage = record.lifecycleStage ?? existingStage
-  if (existingStage === 'complete') {
-    lifecycleStage = 'complete'
-  } else if (
-    existingStage === 'social_reconciled' &&
-    lifecycleStage !== 'complete'
+  // Monotonically advance: cannot demote prevStage
+  let effectiveStage = advanceSettlementLifecycleStage(prevStage, recordStage)
+
+  if (
+    (isGigSocialReconciled(prevSettlement) || isGigSocialReconciled(record)) &&
+    effectiveStage === 'recorded'
   ) {
-    lifecycleStage = 'social_reconciled'
-  } else if (socialReconciled && lifecycleStage === 'pending_social') {
-    lifecycleStage = 'social_reconciled'
+    effectiveStage = 'social_reconciled'
   }
 
   return {
     ...state,
     pendingGigSettlement: {
       ...record,
-      lifecycleStage:
-        lifecycleStage ??
-        (socialReconciled ? 'social_reconciled' : 'pending_social'),
-      socialReconciled
+      lifecycleStage: effectiveStage
     }
   }
 }
 
 /**
- * Applies social updates and sets `socialReconciled: true` on matching pending settlement.
+ * Applies social updates and marks matching pending settlement as social_reconciled.
  *
  * @param state - Current game state.
  * @param payload - Object carrying `socialUpdate` and optional `settlementId`.

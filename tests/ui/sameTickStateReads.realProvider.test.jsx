@@ -8,10 +8,18 @@ import {
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { StorageProvider } from '../../src/context/StorageContext'
 import { InMemoryAdapter } from '../../src/utils/storageAdapter'
-import { SAVE_KEY } from '../../src/context/usePersistence'
+import {
+  SAVE_KEY,
+  createPersistedState
+} from '../../src/context/usePersistence'
+import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer'
+import { buildExpeditionMap } from '../../src/domain/expedition/map'
+import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay'
 import { CHASSIS_CONFIG } from '../../src/utils/assets/assetConfig'
+import { createFixedClock } from '../../src/utils/clock'
 import { nextSeed } from '../../src/utils/seededRng'
 import { resetStorageFallback } from '../../src/utils/storage'
+import { startedExpeditionState } from '../expeditionBaseFixture.js'
 
 // #3504: provider actions called in the same tick as an earlier dispatch must
 // read the reduced state (`latestStateRef`), not the last render (`stateRef`).
@@ -43,6 +51,8 @@ const renderProvider = (adapter = null) =>
       rivalBand: useGameSelector(s => s.rivalBand),
       hasMap: useGameSelector(s => s.gameMap !== null),
       expeditionStatus: useGameSelector(s => s.expedition.status),
+      currentNodeId: useGameSelector(s => s.player.currentNodeId),
+      arrivedOverlay: useGameSelector(s => s.expedition.arrivedOverlay),
       sponsorProvenance: useGameSelector(
         s => s.expedition.preparedSponsorProvenance ?? null
       )
@@ -59,6 +69,43 @@ const renderProvider = (adapter = null) =>
   )
 
 const PROBE_EVENT = { id: 'same_tick_probe', title: 'probe', options: [] }
+
+/**
+ * Seeds the provider with an active run standing on a node a Nemesis shortcut
+ * converted. No public action sets `arrivedOverlay`, so the state goes in as a
+ * screenshot-injected save that `initGameState` hydrates on mount. Fame clears
+ * the Festival booking tier, so the converted node is the only refusal.
+ */
+const injectConvertedNodeSave = () => {
+  const started = startedExpeditionState({ fame: 300 })
+  const rivalId = started.rivalBand.id
+  const rival = started.career.rivalsById[rivalId]
+  const atTierTwo = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: { ...rival, history: { ...rival.history, nemesisLevel: 2 } }
+      }
+    }
+  }
+  const { tourTypeId, regionId } = atTierTwo.expedition.loadout
+  const map = buildExpeditionMap(atTierTwo.runSeed, tourTypeId, regionId)
+  const [convertedNodeId] = Object.keys(
+    getEffectiveExpeditionRoute(atTierTwo, map).subtypeByNodeId
+  )
+  const travelled = applyExpeditionRouteAdvance(atTierTwo, convertedNodeId)
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify(createPersistedState(travelled, createFixedClock(1000)))
+  )
+  localStorage.setItem('neurotoxic_inject_marker', 'true')
+  return {
+    convertedNodeId,
+    previousNodeId: travelled.expedition.visitedNodeIds.at(-2)
+  }
+}
 
 describe('same-tick state reads through the real provider', () => {
   beforeEach(() => {
@@ -140,7 +187,9 @@ describe('same-tick state reads through the real provider', () => {
     })
 
     expect(result.current.activeEventId).toBeNull()
-    expect(result.current.eventCooldowns).toContain(PROBE_EVENT.id)
+    expect(Object.hasOwn(result.current.eventCooldowns, PROBE_EVENT.id)).toBe(
+      true
+    )
   })
 
   test('every resolveEvent game-over save includes the earlier same-tick dispatch', () => {
@@ -276,5 +325,35 @@ describe('same-tick state reads through the real provider', () => {
     expect(result.current.expeditionStatus).toBe('prepared')
     // A stale read sends the pre-prepare run seed, which the reducer refuses.
     expect(result.current.sponsorProvenance).not.toBeNull()
+  })
+
+  test('checkStartGig reads a node change made earlier in the same tick', () => {
+    const { convertedNodeId, previousNodeId } = injectConvertedNodeSave()
+    const { result } = renderProvider()
+    expect(result.current.expeditionStatus).toBe('active')
+    expect(result.current.arrivedOverlay?.nodeId).toBe(convertedNodeId)
+    expect(result.current.currentNodeId).toBe(convertedNodeId)
+    expect(typeof previousNodeId).toBe('string')
+
+    const venue = { id: 'same_tick_venue', name: 'Same Tick Venue' }
+    const reads = []
+    act(() => {
+      const { actions } = result.current
+      reads.push(actions.checkStartGig(venue))
+      actions.updatePlayer({ currentNodeId: previousNodeId })
+      reads.push(actions.checkStartGig(venue))
+      actions.updatePlayer({ currentNodeId: convertedNodeId })
+      reads.push(actions.checkStartGig(venue))
+      // Nothing has rendered yet: the last render still stands on the node.
+      reads.push(result.current.currentNodeId)
+    })
+
+    // A render-snapshot read would refuse all three checks.
+    expect(reads).toEqual([
+      'node_converted',
+      null,
+      'node_converted',
+      convertedNodeId
+    ])
   })
 })

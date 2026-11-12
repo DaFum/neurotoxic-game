@@ -7,5 +7,11 @@ export interface CharacterTrait {
   desc: string
   unlockHint: string
   effect?: string
+  effects?: {
+    rhythmMultiplier?: number
+    stressPerGig?: number
+    staminaPerGig?: number
+    [key: string]: unknown
+  }
   exclusiveWith?: string[]
 }

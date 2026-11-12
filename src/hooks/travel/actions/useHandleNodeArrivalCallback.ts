@@ -31,6 +31,7 @@ export const useHandleNodeArrivalCallback = ({
     updatePlayer,
     triggerEvent,
     startGig,
+    checkStartGig,
     addToast,
     onShowHQ,
     onShowSupplyStop,
@@ -42,8 +43,13 @@ export const useHandleNodeArrivalCallback = ({
   // map can stay mounted and clickable well past a microtask; a second call
   // must not dispatch START_GIG again or re-run its side effects (e.g. a
   // finale's starting hype). START_GIG leaves OVERWORLD, which unmounts the map
-  // and discards this ref. A start refused by the reducer is prevented upstream
-  // (venue id/name and the booking lock are checked before the request).
+  // and discards this ref. Refusals are caught before the request, so a refused
+  // start leaves this ref unset and the click retryable: `useHandleTravel`
+  // drops a node the arrived overlay converted and a node just played,
+  // arrival resolves a venue with a non-empty id/name and honours the booking
+  // lock, and `checkStartGig` then runs the reducer's own refusal rule on the
+  // latest state. The reducer still re-checks at dispatch and stays
+  // authoritative.
   const gigStartInFlightRef = useRef(false)
 
   return useCallback(
@@ -73,13 +79,14 @@ export const useHandleNodeArrivalCallback = ({
       // Starting the gig here is synchronous on purpose. `useArrivalLogic`
       // defers its own gig start because arrival has just dispatched
       // `advanceDay()`, so routing must wait for the committed state (bankruptcy
-      // could route to GAMEOVER instead, and saveGame must see the final state).
-      // Re-entering the node the band already stands on dispatches neither a
-      // travel commit nor a day tick, so there is nothing to wait for — and
-      // `handleStartGig` reads only `reputationByRegion`.
+      // could route to GAMEOVER instead). Re-entering the node the band already
+      // stands on dispatches neither a travel commit nor a day tick, so there
+      // is nothing to wait for.
       //
-      // When the start was requested, START_GIG already moved the scene to
-      // PRE_GIG; routing to OVERWORLD would bounce straight back out.
+      // A successful request means the check passed and `startGig` returned,
+      // not that the reducer accepted: the reducer re-checks at dispatch. A
+      // refused request returns false and routes to OVERWORLD without setting
+      // the in-flight ref, so the player can retry.
       //
       // Unlike `useArrivalLogic`, this path queues no save: OVERWORLD → PRE_GIG
       // is not an autosave transition, so a re-entry gig start persists only at
@@ -88,7 +95,7 @@ export const useHandleNodeArrivalCallback = ({
       // path ever gains state worth losing.
       if (
         outcome.kind === 'gig' &&
-        requestArrivalGigStart(outcome.venue, startGig, addToast)
+        requestArrivalGigStart(outcome.venue, startGig, addToast, checkStartGig)
       ) {
         gigStartInFlightRef.current = true
         return
@@ -101,6 +108,7 @@ export const useHandleNodeArrivalCallback = ({
       updatePlayer,
       triggerEvent,
       startGig,
+      checkStartGig,
       addToast,
       onShowHQ,
       onShowSupplyStop,

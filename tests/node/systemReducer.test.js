@@ -14,6 +14,7 @@ import {
   handleSetPendingSupplyStopInventory,
   handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
+import { promoteDeferredOverlay } from '../../src/context/reducers/overlayQueue'
 import { createInitialState } from '../../src/context/initialState'
 import { gameReducer } from '../../src/context/gameReducer'
 import { advanceDay } from '../../src/context/actionCreators'
@@ -359,7 +360,8 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
       assert.deepEqual(nextState.activeStoryFlags, [FLAGS.COMEBACK_TRIGGERED])
       assert.deepEqual(nextState.pendingEvents, ['event1'])
-      assert.deepEqual(nextState.eventCooldowns, ['cooldown1'])
+      // Legacy bare id migrates to unlock on the day after the loaded day 5.
+      assert.deepEqual(nextState.eventCooldowns, { cooldown1: 6 })
       assert.deepEqual(nextState.toasts, [
         { id: '1', message: 'Hello', type: 'info' }
       ])
@@ -679,7 +681,7 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, [])
     assert.deepEqual(nextState.activeStoryFlags, [])
     assert.deepEqual(nextState.pendingEvents, [])
-    assert.deepEqual(nextState.eventCooldowns, [])
+    assert.deepEqual(nextState.eventCooldowns, {})
     assert.deepEqual(nextState.activeQuests, [])
     assert.deepEqual(nextState.unlocks, initialState.unlocks || [])
     assert.equal(nextState.gigModifiers.catering, true)
@@ -1127,8 +1129,12 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
     assert.deepEqual(nextState.activeStoryFlags, [FLAGS.SAW_CRISIS_50])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
-    assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
-    assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis']
+    })
+    assert.ok(Object.hasOwn(nextState.eventCooldowns, 'cooldown-a'))
+    assert.deepEqual(Object.keys(nextState.eventCooldowns), ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
     assert.equal(nextState.gigModifiers.promo, true)
     assert.equal(nextState.gigModifiers.merch, false)
@@ -2231,7 +2237,7 @@ test('systemReducer - LOAD_GAME logs "Game Loaded" only for a load it accepts', 
   assert.equal(loadedCalls(), 1)
 })
 
-test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
+test('systemReducer - LOAD_GAME sanitizes legacy pending risk event descriptors into pendingOverlay', () => {
   const initialState = createInitialState()
 
   const validState = handleLoadGame(initialState, {
@@ -2241,10 +2247,13 @@ test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () =>
       conditionLoss: 15
     }
   })
-  assert.deepEqual(validState.pendingRiskEvent, {
-    assetId: 'asset_1',
-    eventType: 'fire',
-    conditionLoss: 15
+  assert.deepEqual(validState.pendingOverlay, {
+    kind: 'risk_event',
+    event: {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
   })
 
   const invalidState = handleLoadGame(initialState, {
@@ -2254,7 +2263,117 @@ test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () =>
       conditionLoss: Number.POSITIVE_INFINITY
     }
   })
-  assert.equal(invalidState.pendingRiskEvent, null)
+  assert.equal(invalidState.pendingOverlay, null)
+})
+
+test('systemReducer - LOAD_GAME migrates legacy pendingBandHQOpen to pendingOverlay', () => {
+  const initialState = createInitialState()
+
+  const loadedState = handleLoadGame(initialState, {
+    pendingBandHQOpen: true
+  })
+  assert.deepEqual(loadedState.pendingOverlay, { kind: 'band_hq' })
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(loadedState, 'pendingBandHQOpen'),
+    false
+  )
+})
+
+test('LOAD_GAME through the save whitelist restores pending overlays from a legacy save', async t => {
+  const riskEvent = { assetId: 'asset_1', eventType: 'fire', conditionLoss: 15 }
+  const load = save => {
+    const parsed = JSON.parse(JSON.stringify(save))
+    return gameReducer(createInitialState(), {
+      type: 'LOAD_GAME',
+      payload: createRawLoadPayload(parsed, [])
+    })
+  }
+
+  await t.test(
+    'a pre-overlay save keeps its risk event and foreclosure notices',
+    () => {
+      const loaded = load({
+        version: 2,
+        pendingRiskEvent: riskEvent,
+        pendingForeclosureNotices: ['studio_chassis']
+      })
+      assert.deepEqual(loaded.pendingOverlay, {
+        kind: 'risk_event',
+        event: riskEvent
+      })
+      assert.deepEqual(loaded.deferredOverlays, [
+        { kind: 'foreclosure', notices: ['studio_chassis'] }
+      ])
+    }
+  )
+
+  await t.test('a pre-overlay save keeps its open supply stop', () => {
+    const inventory = [{ id: 'item_1', name: 'Strings', cost: 10 }]
+    const loaded = load({ version: 2, pendingSupplyStopInventory: inventory })
+    assert.equal(loaded.pendingOverlay?.kind, 'supply_stop')
+    assert.equal(loaded.pendingOverlay?.inventory[0]?.id, 'item_1')
+  })
+
+  await t.test(
+    'a legacy save with a risk event and an open supply stop keeps both',
+    () => {
+      const inventory = [{ id: 'item_1', name: 'Strings', cost: 10 }]
+      const loaded = load({
+        version: 2,
+        pendingRiskEvent: riskEvent,
+        pendingSupplyStopInventory: inventory
+      })
+      assert.equal(loaded.pendingOverlay?.kind, 'supply_stop')
+      assert.equal(loaded.pendingOverlay?.inventory[0]?.id, 'item_1')
+      assert.deepEqual(loaded.deferredOverlays, [
+        { kind: 'risk_event', event: riskEvent }
+      ])
+    }
+  )
+
+  await t.test(
+    'a legacy risk event deferred behind an active overlay is kept',
+    () => {
+      const loaded = load({
+        version: 2,
+        pendingOverlay: { kind: 'foreclosure', notices: ['tourbus_chassis'] },
+        pendingForeclosureNotices: ['tourbus_chassis'],
+        pendingRiskEvent: riskEvent
+      })
+      assert.deepEqual(loaded.pendingOverlay, {
+        kind: 'foreclosure',
+        notices: ['tourbus_chassis']
+      })
+      assert.deepEqual(loaded.deferredOverlays, [
+        { kind: 'risk_event', event: riskEvent }
+      ])
+    }
+  )
+
+  await t.test('legacy fields are load-only and never written back', () => {
+    const persisted = createPersistedState(
+      load({ version: 2, pendingRiskEvent: riskEvent }),
+      createFixedClock(1000)
+    )
+    for (const key of [
+      'pendingRiskEvent',
+      'pendingSupplyStopInventory',
+      'pendingForeclosureNotices'
+    ]) {
+      assert.equal(Object.hasOwn(persisted, key), false, key)
+    }
+  })
+
+  await t.test('deferred overlays survive a save round trip', () => {
+    const state = {
+      ...createInitialState(),
+      pendingOverlay: { kind: 'foreclosure', notices: ['tourbus_chassis'] },
+      deferredOverlays: [{ kind: 'risk_event', event: riskEvent }]
+    }
+    const loaded = load(createPersistedState(state, createFixedClock(1000)))
+    assert.deepEqual(loaded.pendingOverlay, state.pendingOverlay)
+    assert.deepEqual(loaded.deferredOverlays, state.deferredOverlays)
+  })
 })
 
 test('systemReducer - REMOVE_TOAST', () => {
@@ -2291,20 +2410,59 @@ test('systemReducer - ADD_UNLOCK', async t => {
 
 test('systemReducer - pending modal state', async t => {
   await t.test(
-    'returns same state when pending Band HQ flag is unchanged',
+    'returns same state when pending Band HQ overlay is unchanged',
     () => {
-      const state = { ...createInitialState(), pendingBandHQOpen: true }
+      const state = {
+        ...createInitialState(),
+        pendingOverlay: { kind: 'band_hq' }
+      }
 
       assert.equal(handleSetPendingBandHQOpen(state, true), state)
+
+      const closedState = {
+        ...createInitialState(),
+        pendingOverlay: null
+      }
+
+      assert.equal(handleSetPendingBandHQOpen(closedState, false), closedState)
+    }
+  )
+
+  await t.test(
+    'defers a Band HQ request into deferredOverlays while another overlay is pending',
+    () => {
+      const riskOverlay = {
+        kind: 'risk_event',
+        event: { kind: 'risk', id: 'r1' }
+      }
+      const state = { ...createInitialState(), pendingOverlay: riskOverlay }
+
+      const deferred = handleSetPendingBandHQOpen(state, true)
+      assert.equal(deferred.pendingOverlay, riskOverlay)
+      assert.deepEqual(deferred.deferredOverlays, [{ kind: 'band_hq' }])
+      assert.equal(handleSetPendingBandHQOpen(deferred, true), deferred)
+
+      const freed = { ...deferred, pendingOverlay: null }
+      const promoted = promoteDeferredOverlay(freed)
+      assert.deepEqual(promoted.pendingOverlay, { kind: 'band_hq' })
+      assert.deepEqual(promoted.deferredOverlays, [])
     }
   )
 
   await t.test('rejects a non-boolean pending Band HQ flag', () => {
-    const state = { ...createInitialState(), pendingBandHQOpen: false }
+    const state = createInitialState()
 
     for (const isOpen of ['yes', {}, undefined, 1, null]) {
       assert.equal(handleSetPendingBandHQOpen(state, isOpen), state)
     }
+  })
+
+  await t.test('sets and clears pending Band HQ overlay', () => {
+    const state = createInitialState()
+    const openState = handleSetPendingBandHQOpen(state, true)
+    assert.deepEqual(openState.pendingOverlay, { kind: 'band_hq' })
+    const closedState = handleSetPendingBandHQOpen(openState, false)
+    assert.equal(closedState.pendingOverlay, null)
   })
 
   await t.test(
@@ -2321,12 +2479,17 @@ test('systemReducer - pending modal state', async t => {
       const state = createInitialState()
 
       const next = handleSetPendingSupplyStopInventory(state, inventory)
-      assert.deepEqual(next.pendingSupplyStopInventory, inventory)
+      assert.deepEqual(next.pendingOverlay, {
+        kind: 'supply_stop',
+        inventory
+      })
       // Settled: re-dispatching the stored value changes nothing observable.
       assert.deepEqual(
-        handleSetPendingSupplyStopInventory(next, inventory)
-          .pendingSupplyStopInventory,
-        inventory
+        handleSetPendingSupplyStopInventory(next, inventory).pendingOverlay,
+        {
+          kind: 'supply_stop',
+          inventory
+        }
       )
     }
   )
@@ -2349,22 +2512,18 @@ test('systemReducer - pending modal state', async t => {
         null
       ])
 
+      assert.equal(next.pendingOverlay?.kind, 'supply_stop')
+      const items = next.pendingOverlay?.inventory
       assert.ok(
-        next.pendingSupplyStopInventory.every(item => item.cost >= 0),
+        items?.every(item => item.cost >= 0),
         'no negative-cost item is offered'
       )
-      assert.ok(
-        next.pendingSupplyStopInventory.some(item => item.id === 'strings')
-      )
+      assert.ok(items?.some(item => item.id === 'strings'))
       // The shop-item schema clamps a negative cost rather than dropping the item.
-      assert.equal(
-        next.pendingSupplyStopInventory.find(item => item.id === 'bad')?.cost,
-        0
-      )
+      assert.equal(items?.find(item => item.id === 'bad')?.cost, 0)
       // Nothing usable left is no open shop.
       assert.equal(
-        handleSetPendingSupplyStopInventory(state, ['x', null])
-          .pendingSupplyStopInventory,
+        handleSetPendingSupplyStopInventory(state, ['x', null]).pendingOverlay,
         null
       )
     }
@@ -2375,7 +2534,7 @@ test('systemReducer - pending modal state', async t => {
     () => {
       const state = {
         ...createInitialState(),
-        pendingSupplyStopInventory: null
+        pendingOverlay: null
       }
 
       assert.equal(handleSetPendingSupplyStopInventory(state, null), state)
@@ -2383,7 +2542,7 @@ test('systemReducer - pending modal state', async t => {
   )
 
   await t.test('sets and clears pending risk event state', () => {
-    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const state = { ...createInitialState(), pendingOverlay: null }
     const pendingRiskEvent = {
       assetId: 'asset_1',
       eventType: 'fire',
@@ -2392,20 +2551,23 @@ test('systemReducer - pending modal state', async t => {
 
     const nextState = handleSetPendingRiskEvent(state, pendingRiskEvent)
 
-    assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'risk_event',
+      event: pendingRiskEvent
+    })
     assert.equal(
       handleSetPendingRiskEvent(nextState, pendingRiskEvent),
       nextState
     )
     assert.equal(handleSetPendingRiskEvent(state, null), state)
     assert.equal(
-      handleSetPendingRiskEvent(nextState, null).pendingRiskEvent,
+      handleSetPendingRiskEvent(nextState, null).pendingOverlay,
       null
     )
   })
 
   await t.test('rejects malformed pending risk event payloads', () => {
-    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const state = { ...createInitialState(), pendingOverlay: null }
     const invalidPayloads = [
       [],
       { assetId: 'asset_1', eventType: 'fire', conditionLoss: Infinity },
@@ -2422,12 +2584,18 @@ test('systemReducer - pending modal state', async t => {
     )
     const nextState = handleSetPendingRiskEvent(state, hostilePayload)
 
-    assert.deepEqual(nextState.pendingRiskEvent, {
-      assetId: 'asset_1',
-      eventType: 'fire',
-      conditionLoss: 15
+    assert.deepEqual(nextState.pendingOverlay, {
+      kind: 'risk_event',
+      event: {
+        assetId: 'asset_1',
+        eventType: 'fire',
+        conditionLoss: 15
+      }
     })
-    assert.equal(Object.hasOwn(nextState.pendingRiskEvent, '__proto__'), false)
+    assert.equal(
+      Object.hasOwn(nextState.pendingOverlay.event, '__proto__'),
+      false
+    )
   })
 })
 
@@ -2483,7 +2651,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       })
 
       assert.equal(next.assets[0].condition, 99.7)
-      assert.equal(next.pendingRiskEvent, null)
+      assert.equal(next.pendingOverlay, null)
       assert.equal(Number.isFinite(next.rngSeed), true)
       assert.equal(next.rngSeed, nextSeed(initialState.rngSeed))
     }
@@ -2542,7 +2710,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       assert.equal(nextState.player.eventsTriggeredToday, 0)
       // calculateDailyUpdates increments day
       assert.equal(nextState.player.day, 2)
-      assert.deepEqual(nextState.eventCooldowns, [])
+      assert.deepEqual(nextState.eventCooldowns, {})
     }
   )
 
@@ -2550,16 +2718,16 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
     const state = {
       ...createInitialState(),
       player: { ...createInitialState().player, day: 5, money: 100 },
-      // Legacy untimed entry resets every advanceDay; timed entries persist
-      // until expiry. expiry 10 (future) stays; expiry 5 (=current) drops.
-      eventCooldowns: [
-        'legacy_daily',
-        'ego_management_retry:10',
-        'expired_event:5'
-      ]
+      // A same-day cooldown (unlock day 6) resets on the advance to day 6;
+      // unlock day 10 (future) stays; unlock day 5 (already past) drops.
+      eventCooldowns: {
+        legacy_daily: 6,
+        ego_management_retry: 10,
+        expired_event: 5
+      }
     }
     const next = handleAdvanceDay(state, { dayRngStream: HALF_ROLLS })
-    assert.deepEqual(next.eventCooldowns, ['ego_management_retry:10'])
+    assert.deepEqual(next.eventCooldowns, { ego_management_retry: 10 })
   })
 
   await t.test(
@@ -2592,7 +2760,10 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
             baseRiskEventChance: 1
           }
         ],
-        pendingRiskEvent,
+        pendingOverlay: {
+          kind: 'risk_event',
+          event: pendingRiskEvent
+        },
         toasts: [],
         activeQuests: []
       }
@@ -2602,7 +2773,10 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         nextRngSeed: initialState.rngSeed
       })
 
-      assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+      assert.deepEqual(nextState.pendingOverlay, {
+        kind: 'risk_event',
+        event: pendingRiskEvent
+      })
       assert.equal(
         nextState.toasts.at(-1)?.messageKey,
         'assets:risk.event.fire'
@@ -2638,7 +2812,7 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         ...initialState,
         player: { ...initialState.player, day: 1 },
         assets: [makeAsset('asset_a'), makeAsset('asset_b')],
-        pendingRiskEvent: null,
+        pendingOverlay: null,
         toasts: [existingToast],
         activeQuests: []
       }
@@ -2879,29 +3053,37 @@ test('an open supply-stop shop survives a JSON round trip and is capped on load'
   const items = [{ id: 'item_1', name: 'Snack', cost: 5 }]
   const loaded = handleLoadGame(
     createInitialState(),
-    JSON.parse(JSON.stringify({ pendingSupplyStopInventory: items }))
+    JSON.parse(
+      JSON.stringify({
+        pendingOverlay: { kind: 'supply_stop', inventory: items }
+      })
+    )
   )
   // The sanitizer's copies are prototype-less; compare by content.
-  assert.deepEqual(
-    JSON.parse(JSON.stringify(loaded.pendingSupplyStopInventory)),
-    items
-  )
+  assert.deepEqual(JSON.parse(JSON.stringify(loaded.pendingOverlay)), {
+    kind: 'supply_stop',
+    inventory: items
+  })
 
   const flood = Array.from({ length: 100 }, (_, i) => ({ id: i, cost: 1 }))
   const capped = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: [...flood, 'junk', null]
+    pendingOverlay: { kind: 'supply_stop', inventory: [...flood, 'junk', null] }
   })
-  assert.equal(capped.pendingSupplyStopInventory.length, 24)
+  assert.equal(capped.pendingOverlay?.kind, 'supply_stop')
+  assert.equal(capped.pendingOverlay?.inventory?.length, 24)
 })
 
 test('restored supply-stop items go through the shop item field schema', () => {
   const loaded = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: [
-      { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
-      { id: 'bad_cost', cost: 'free' }
-    ]
+    pendingOverlay: {
+      kind: 'supply_stop',
+      inventory: [
+        { id: 'cheat', name: 'Free money', cost: -100, secret: 'dropped' },
+        { id: 'bad_cost', cost: 'free' }
+      ]
+    }
   })
-  const [first, second] = loaded.pendingSupplyStopInventory
+  const [first, second] = loaded.pendingOverlay?.inventory ?? []
   // A negative cost can never turn a purchase into income.
   assert.equal(first.cost, 0)
   assert.equal(Object.hasOwn(first, 'secret'), false)
@@ -2914,9 +3096,9 @@ test('restored supply-stop items drop forbidden prototype keys', () => {
     '[{"id":"x","cost":1,"__proto__":{"polluted":true},"constructor":{"x":1}}]'
   )
   const loaded = handleLoadGame(createInitialState(), {
-    pendingSupplyStopInventory: hostile
+    pendingOverlay: { kind: 'supply_stop', inventory: hostile }
   })
-  const [item] = loaded.pendingSupplyStopInventory
+  const [item] = loaded.pendingOverlay?.inventory ?? []
   assert.equal(Object.hasOwn(item, '__proto__'), false)
   assert.equal(Object.hasOwn(item, 'constructor'), false)
   assert.equal({}.polluted, undefined)
@@ -2925,22 +3107,21 @@ test('restored supply-stop items drop forbidden prototype keys', () => {
 test('loading a save without a shop closes the live session shop', () => {
   const live = {
     ...createInitialState(),
-    pendingSupplyStopInventory: [{ id: 'x', cost: 1 }]
+    pendingOverlay: { kind: 'supply_stop', inventory: [{ id: 'x', cost: 1 }] }
   }
-  assert.equal(handleLoadGame(live, {}).pendingSupplyStopInventory, null)
+  assert.equal(handleLoadGame(live, {}).pendingOverlay, null)
   assert.equal(
-    handleLoadGame(live, { pendingSupplyStopInventory: 'nope' })
-      .pendingSupplyStopInventory,
+    handleLoadGame(live, { pendingOverlay: null }).pendingOverlay,
     null
   )
 })
 
 test('a saved supply-stop list with nothing usable restores no open shop', () => {
-  for (const pendingSupplyStopInventory of [[], ['junk', null, 5]]) {
+  for (const inventory of [[], ['junk', null, 5]]) {
     const loaded = handleLoadGame(createInitialState(), {
-      pendingSupplyStopInventory
+      pendingOverlay: { kind: 'supply_stop', inventory }
     })
-    assert.equal(loaded.pendingSupplyStopInventory, null)
+    assert.equal(loaded.pendingOverlay, null)
   }
 })
 
@@ -2949,15 +3130,18 @@ test('a saved supply-stop item with an inherited effect type loads without its e
   for (const type of ['__proto__', 'constructor', 'toString']) {
     const hostile = JSON.parse(
       JSON.stringify({
-        pendingSupplyStopInventory: [
-          { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
-          good
-        ]
+        pendingOverlay: {
+          kind: 'supply_stop',
+          inventory: [
+            { id: 'item_bad', name: 'Bad', cost: 1, effect: { type } },
+            good
+          ]
+        }
       })
     )
     // Loading must not throw, and no effect with an inherited type survives.
     const loaded = handleLoadGame(createInitialState(), hostile)
-    const items = loaded.pendingSupplyStopInventory
+    const items = loaded.pendingOverlay?.inventory
     assert.ok(Array.isArray(items), type)
     for (const item of items) {
       assert.equal(Object.hasOwn(item, 'effect'), false, type)

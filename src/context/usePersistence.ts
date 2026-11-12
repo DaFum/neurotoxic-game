@@ -156,16 +156,17 @@ const PERSISTED_FIELDS = {
   lastGigStats: isNullableObject,
   activeEvent: isNullableObject,
   terminalOutcome: isNullableObject,
-  pendingSupplyStopInventory: (value: unknown): boolean =>
-    value === null || Array.isArray(value),
+  pendingOverlay: isNullableObject,
+  deferredOverlays: Array.isArray,
   activeStoryFlags: Array.isArray,
-  eventCooldowns: Array.isArray,
+  // Legacy saves hold a string[]; current saves an `eventId -> unlock day` record.
+  eventCooldowns: (value: unknown): boolean =>
+    Array.isArray(value) || isLooseRecord(value),
   pendingEvents: Array.isArray,
   venueBlacklist: Array.isArray,
-  pendingForeclosureNotices: Array.isArray,
-  pendingRiskEvent: isNullableObject,
   activeQuests: Array.isArray,
   questCooldowns: Array.isArray,
+  completedQuests: isLooseRecord,
   completedQuestIds: Array.isArray,
   completedQuestScopes: Array.isArray,
   reputationByRegion: isLooseRecord,
@@ -188,6 +189,19 @@ const PERSISTED_FIELDS = {
 const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<
   keyof typeof PERSISTED_FIELDS
 >
+
+/**
+ * Retired overlay fields older saves still carry. Loaded so `handleLoadGame`
+ * can restore their overlays, never written back.
+ */
+const LEGACY_LOAD_ONLY_FIELDS: Readonly<
+  Record<string, (value: unknown) => boolean>
+> = {
+  pendingRiskEvent: isNullableObject,
+  pendingSupplyStopInventory: (value: unknown): boolean =>
+    value === null || Array.isArray(value),
+  pendingForeclosureNotices: Array.isArray
+}
 
 /**
  * Core dependencies required for initializing persistence features.
@@ -221,10 +235,14 @@ export const createRawLoadPayload = (
   unlocks: string[]
 ): Record<string, unknown> => {
   const payload: Record<string, unknown> = { unlocks }
-  for (const key of LOADABLE_SAVE_KEYS) {
-    if (!Object.hasOwn(parsedObj, key)) continue
+  const fields: Record<string, (value: unknown) => boolean> = {
+    ...LEGACY_LOAD_ONLY_FIELDS,
+    ...PERSISTED_FIELDS
+  }
+  for (const key in fields) {
+    if (!Object.hasOwn(fields, key) || !Object.hasOwn(parsedObj, key)) continue
     const value = parsedObj[key]
-    if (PERSISTED_FIELDS[key](value)) {
+    if (fields[key]?.(value)) {
       payload[key] = value
     } else {
       logger.warn(
@@ -370,128 +388,84 @@ export const migrateLoadedSave = (
   }
 }
 
-/**
- * How a refused load is reported. A real load toasts and logs each refusal; a
- * preview passes {@link SILENT_LOAD_REPORTER} so nothing leaves the helper.
- */
-type LoadReporter = {
-  unreadable: () => void
-  incompatible: (saveVersion: number) => void
-  parseFailed: () => void
-  corruptFailed: (reason?: string) => void
-  /**
-   * @param slotKey - Slot the save was read from.
-   * @param kept - Whether the recovery copy reached persistent storage.
-   */
-  migrationFailed: (slotKey: string, kept: boolean) => void
-  /**
-   * A refused save (unparseable, not an object, or failing validation) was
-   * copied aside, or storage refused the copy.
-   *
-   * @param slotKey - Slot the save was read from.
-   * @param kept - Whether the recovery copy reached persistent storage.
-   */
-  rejectedCopied: (slotKey: string, kept: boolean) => void
-}
-
-const SILENT_LOAD_REPORTER: LoadReporter = {
-  unreadable: () => {},
-  incompatible: () => {},
-  parseFailed: () => {},
-  corruptFailed: () => {},
-  migrationFailed: () => {},
-  rejectedCopied: () => {}
-}
-
-/** The reasons a stored save is refused, before any reducer sees it. */
-type StoredSaveRefusal = 'missing' | 'incompatible' | 'corrupt' | 'unreadable'
-
 type StoredSaveEvaluation =
   | {
-      ok: true
+      status: 'success'
       /** The parsed, validated and migrated save. */
       migrated: Record<string, unknown>
       /** Persistent unlocks merged with the ones the save carries. */
       unlocks: string[]
     }
-  | { ok: false; reason: StoredSaveRefusal }
+  | { status: 'missing' }
+  | { status: 'unreadable' }
+  | { status: 'incompatible'; saveVersion: number }
+  | {
+      status: 'parse_failed'
+      rawSave: string
+      slotKey: string
+      error: unknown
+    }
+  | {
+      status: 'not_an_object'
+      rawSave: string
+      slotKey: string
+    }
+  | {
+      status: 'validation_failed'
+      rawSave: string
+      slotKey: string
+      storedVersion: number
+      reason: string
+    }
+  | {
+      status: 'migration_failed'
+      rawSave: string
+      slotKey: string
+      storedVersion: number
+      reason: string
+    }
 
 /**
- * Selects the stored slot and decides whether it may load: version guards,
+ * Selects the stored slot and evaluates whether it may load: version guards,
  * parsing, validation and migration.
  *
  * @param storage - Storage backend the slot is read from.
- * @param report - How each refusal is reported.
- * @param preview - Skips every write: the quarantine copy of a refused or
- * migration-failed save. Reads and
- * the unlock merge are unchanged, so a preview reaches the verdict a load would.
- * @param clock - Stamps the key of a quarantine copy.
  * @returns The accepted payload, or the reason the save is refused.
  *
  * @remarks
- * The one place `loadGame` and `previewLoadGame` decide acceptance, so the
- * preview cannot drift from what a load does. It reports only through `report`
- * and writes nothing itself; the load applies the accepted payload.
+ * A pure query without side-effects or storage writes. The caller decides
+ * whether to quarantine, toast, or load.
  */
-const evaluateStoredSave = (
-  storage: IStorageAdapter,
-  report: LoadReporter,
-  preview: boolean,
-  clock: IClock
-): StoredSaveEvaluation => {
-  let parsed: unknown
-  let rawSave: string | undefined
-  let slotKey: string | undefined
-  // Copies a refused payload aside before the caller falls back to the initial
-  // state: the next autosave writes the same key and would destroy the only
-  // copy of the run. A preview writes nothing. Whether the copy landed is
-  // reported, so a refused copy can keep the slot from being saved over.
-  const quarantineRejected = (version: number | null, reason: string): void => {
-    if (preview || !rawSave || !slotKey) return
-    report.rejectedCopied(
-      slotKey,
-      quarantineSave(rawSave, version, reason, storage, {
-        kind: 'rejected',
-        clock
-      })
-    )
+const evaluateStoredSave = (storage: IStorageAdapter): StoredSaveEvaluation => {
+  const newerVersion = readNewerStoredSaveVersion(storage)
+  if (newerVersion === 'unreadable') {
+    return { status: 'unreadable' }
   }
+  if (typeof newerVersion === 'number') {
+    return { status: 'incompatible', saveVersion: newerVersion }
+  }
+  const slotKey = resolveLoadSlotKey(storage)
+  const saved = readStorageItem(slotKey, storage)
+  if (!saved) return { status: 'missing' }
+
+  let parsed: unknown
   try {
-    // The same guard saveGame applies: anything newer than this build
-    // (a slot of its own or a newer payload in the shared key) means a
-    // loaded session could never be saved. Say so rather than loading or
-    // reporting no save at all. An unreadable slot refuses too: a newer
-    // save cannot be ruled out, and saveGame would refuse every save of
-    // the session it started.
-    const newerVersion = readNewerStoredSaveVersion(storage)
-    if (newerVersion === 'unreadable') {
-      report.unreadable()
-      return { ok: false, reason: 'unreadable' }
-    }
-    if (typeof newerVersion === 'number') {
-      report.incompatible(newerVersion)
-      return { ok: false, reason: 'incompatible' }
-    }
-    slotKey = resolveLoadSlotKey(storage)
-    const saved = readStorageItem(slotKey, storage)
-    if (!saved) return { ok: false, reason: 'missing' }
-    rawSave = saved
     parsed = safeJsonParse(saved)
   } catch (error) {
-    // No version can be read from it: `null` files it under its own family,
-    // so it cannot prune a genuine v0 migration failure's copies.
-    quarantineRejected(
-      null,
-      `Save JSON parsing failed: ${error instanceof Error ? error.message : String(error)}`
-    )
-    report.parseFailed()
-    return { ok: false, reason: 'corrupt' }
+    return {
+      status: 'parse_failed',
+      rawSave: saved,
+      slotKey,
+      error
+    }
   }
 
   if (!isLooseRecord(parsed)) {
-    quarantineRejected(null, 'Stored save is not an object')
-    report.corruptFailed()
-    return { ok: false, reason: 'corrupt' }
+    return {
+      status: 'not_an_object',
+      rawSave: saved,
+      slotKey
+    }
   }
 
   // Checked before shape validation: a newer schema may legitimately
@@ -499,30 +473,50 @@ const evaluateStoredSave = (
   // Nothing is written on this path, so the stored save stays as it was.
   const storedVersion = readSaveVersion(parsed)
   if (storedVersion > CURRENT_SAVE_VERSION) {
-    report.incompatible(storedVersion)
-    return { ok: false, reason: 'incompatible' }
+    return { status: 'incompatible', saveVersion: storedVersion }
   }
 
   try {
     validateSaveData(parsed)
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    quarantineRejected(storedVersion, `Save validation failed: ${reason}`)
-    report.corruptFailed(reason)
-    return { ok: false, reason: 'corrupt' }
+    return {
+      status: 'validation_failed',
+      rawSave: saved,
+      slotKey,
+      storedVersion,
+      reason
+    }
   }
 
   const parsedObj = parsed as Record<string, unknown>
-
-  const migration = migrateLoadedSave(parsedObj, rawSave, storage, {
-    quarantine: !preview,
-    clock
-  })
-  if (!migration.ok) {
-    report.migrationFailed(slotKey, migration.quarantined)
-    return { ok: false, reason: 'corrupt' }
+  let migratedObj: Record<string, unknown>
+  if (storedVersion >= CURRENT_SAVE_VERSION) {
+    migratedObj = parsedObj
+  } else {
+    try {
+      const migrated = runSaveMigrations(parsedObj, storedVersion)
+      if (!isLooseRecord(migrated)) {
+        return {
+          status: 'migration_failed',
+          rawSave: saved,
+          slotKey,
+          storedVersion,
+          reason: `Migration from version ${storedVersion} produced a non-object payload`
+        }
+      }
+      migratedObj = { ...migrated, version: CURRENT_SAVE_VERSION }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      return {
+        status: 'migration_failed',
+        rawSave: saved,
+        slotKey,
+        storedVersion,
+        reason
+      }
+    }
   }
-  const migratedObj = migration.migrated
 
   const savedRaw = Array.isArray(parsedObj.unlocks) ? parsedObj.unlocks : []
   const savedUnlocks = savedRaw.filter(
@@ -532,7 +526,7 @@ const evaluateStoredSave = (
   const mergedUnlocks = Array.from(
     new Set([...persistentUnlocks, ...savedUnlocks].filter(u => u.length > 0))
   )
-  return { ok: true, migrated: migratedObj, unlocks: mergedUnlocks }
+  return { status: 'success', migrated: migratedObj, unlocks: mergedUnlocks }
 }
 
 /**
@@ -882,64 +876,15 @@ export function usePersistence({
       }
       return blocksSaves
     }
-    const report: LoadReporter = {
-      unreadable: () => {
-        logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
-        addToast(
-          tRef.current('ui:save.loadUnreadable', {
-            defaultValue:
-              'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
-          }),
-          'error'
-        )
-      },
-      incompatible: saveVersion =>
-        handleError(new StateError(incompatibleSaveMessage(saveVersion)), {
-          addToast
-        }),
-      parseFailed: () =>
-        handleError(
-          new StateError(
-            tRef.current('ui:save.parseFailed', {
-              defaultValue:
-                'Save file parsing failed. Falling back to initial state.'
-            })
-          ),
-          { addToast }
-        ),
-      corruptFailed: reason =>
-        handleError(
-          new StateError(
-            tRef.current('ui:save.corruptFailed', {
-              defaultValue: 'Save file is corrupt or invalid.'
-            }),
-            ...(reason === undefined ? [] : [{ reason }])
-          ),
-          { addToast }
-        ),
-      rejectedCopied: (slotKey, kept) => {
-        trackRecoveryCopy(slotKey, kept)
-      },
-      migrationFailed: (slotKey, kept) => {
-        const blocksSaves = trackRecoveryCopy(slotKey, kept)
-        handleError(
-          new StateError(
-            !blocksSaves
-              ? tRef.current('ui:save.migrationFailed', {
-                  defaultValue:
-                    'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
-                })
-              : tRef.current('ui:save.migrationFailedNotKept', {
-                  defaultValue:
-                    'Save file could not be upgraded, and no recovery copy could be stored. It was left untouched and saving is paused; starting a new tour will overwrite it.'
-                })
-          ),
-          { addToast }
-        )
-      }
-    }
     const refuseUnreadable = (): LoadGameResult => {
-      report.unreadable()
+      logger.warn('Persistence', 'Load skipped: the save slot cannot be read')
+      addToast(
+        tRef.current('ui:save.loadUnreadable', {
+          defaultValue:
+            'The save could not be read, so it was not loaded. Progress will not be saved until storage works again.'
+        }),
+        'error'
+      )
       return { ok: false, reason: 'unreadable' }
     }
     // Returned by identity when the storage operation itself keeps throwing, so
@@ -948,23 +893,126 @@ export function usePersistence({
     const result = safeStorageOperation(
       'loadGame',
       (): LoadGameResult => {
-        const evaluation = evaluateStoredSave(storage, report, false, clock)
-        if (!evaluation.ok) return { ok: false, reason: evaluation.reason }
+        const evaluation = evaluateStoredSave(storage)
+        switch (evaluation.status) {
+          case 'success': {
+            for (const unlockId of evaluation.unlocks) {
+              addUnlock(unlockId, storage)
+            }
 
-        for (const unlockId of evaluation.unlocks) addUnlock(unlockId, storage)
-
-        dispatch(
-          createLoadGameAction(
-            createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
-          )
-        )
-        sessionOwnsStoredSaveRef.current = true
-        // LOAD_GAME consumes a pending gig settlement in memory only; persist
-        // the settled ledger and the cleared record in the same commit.
-        if (isLooseRecord(evaluation.migrated.pendingGigSettlement)) {
-          saveGameAfterStateCommit()
+            dispatch(
+              createLoadGameAction(
+                createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
+              )
+            )
+            sessionOwnsStoredSaveRef.current = true
+            // LOAD_GAME consumes a pending gig settlement in memory only; persist
+            // the settled ledger and the cleared record in the same commit.
+            if (isLooseRecord(evaluation.migrated.pendingGigSettlement)) {
+              saveGameAfterStateCommit()
+            }
+            return { ok: true }
+          }
+          case 'missing':
+            return { ok: false, reason: 'missing' }
+          case 'unreadable':
+            return refuseUnreadable()
+          case 'incompatible':
+            handleError(
+              new StateError(incompatibleSaveMessage(evaluation.saveVersion)),
+              { addToast }
+            )
+            return { ok: false, reason: 'incompatible' }
+          case 'parse_failed': {
+            const kept = quarantineSave(
+              evaluation.rawSave,
+              null,
+              `Save JSON parsing failed: ${evaluation.error instanceof Error ? evaluation.error.message : String(evaluation.error)}`,
+              storage,
+              { kind: 'rejected', clock }
+            )
+            trackRecoveryCopy(evaluation.slotKey, kept)
+            handleError(
+              new StateError(
+                tRef.current('ui:save.parseFailed', {
+                  defaultValue:
+                    'Save file parsing failed. Falling back to initial state.'
+                })
+              ),
+              { addToast }
+            )
+            return { ok: false, reason: 'corrupt' }
+          }
+          case 'not_an_object': {
+            const kept = quarantineSave(
+              evaluation.rawSave,
+              null,
+              'Stored save is not an object',
+              storage,
+              { kind: 'rejected', clock }
+            )
+            trackRecoveryCopy(evaluation.slotKey, kept)
+            handleError(
+              new StateError(
+                tRef.current('ui:save.corruptFailed', {
+                  defaultValue: 'Save file is corrupt or invalid.'
+                })
+              ),
+              { addToast }
+            )
+            return { ok: false, reason: 'corrupt' }
+          }
+          case 'validation_failed': {
+            const kept = quarantineSave(
+              evaluation.rawSave,
+              evaluation.storedVersion,
+              `Save validation failed: ${evaluation.reason}`,
+              storage,
+              { kind: 'rejected', clock }
+            )
+            trackRecoveryCopy(evaluation.slotKey, kept)
+            handleError(
+              new StateError(
+                tRef.current('ui:save.corruptFailed', {
+                  defaultValue: 'Save file is corrupt or invalid.'
+                }),
+                { reason: evaluation.reason }
+              ),
+              { addToast }
+            )
+            return { ok: false, reason: 'corrupt' }
+          }
+          case 'migration_failed': {
+            const kept = quarantineSave(
+              evaluation.rawSave,
+              evaluation.storedVersion,
+              evaluation.reason,
+              storage,
+              { clock }
+            )
+            logger.error(
+              'Persistence',
+              `Save migration from version ${evaluation.storedVersion} failed`,
+              evaluation.reason
+            )
+            const blocksSaves = trackRecoveryCopy(evaluation.slotKey, kept)
+            handleError(
+              new StateError(
+                !blocksSaves
+                  ? tRef.current('ui:save.migrationFailed', {
+                      defaultValue:
+                        'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
+                    })
+                  : tRef.current('ui:save.migrationFailedNotKept', {
+                      defaultValue:
+                        'Save file could not be upgraded, and no recovery copy could be stored. It was left untouched and saving is paused; starting a new tour will overwrite it.'
+                    })
+              ),
+              { addToast }
+            )
+            return { ok: false, reason: 'corrupt' }
+          }
         }
-        return { ok: true }
       },
       storageFailed
     )
@@ -995,19 +1043,22 @@ export function usePersistence({
   const previewLoadGame = useCallback((): LoadPreviewResult => {
     let evaluation: StoredSaveEvaluation
     try {
-      evaluation = evaluateStoredSave(
-        storage,
-        SILENT_LOAD_REPORTER,
-        true,
-        clock
-      )
+      evaluation = evaluateStoredSave(storage)
     } catch (_error) {
       return { status: 'unavailable', reason: 'unreadable' }
     }
-    if (!evaluation.ok) {
-      return evaluation.reason === 'missing'
+    if (evaluation.status !== 'success') {
+      return evaluation.status === 'missing'
         ? { status: 'missing' }
-        : { status: 'unavailable', reason: evaluation.reason }
+        : {
+            status: 'unavailable',
+            reason:
+              evaluation.status === 'incompatible'
+                ? 'incompatible'
+                : evaluation.status === 'unreadable'
+                  ? 'unreadable'
+                  : 'corrupt'
+          }
     }
     const action = createLoadGameAction(
       createRawLoadPayload(evaluation.migrated, evaluation.unlocks)
@@ -1019,7 +1070,7 @@ export function usePersistence({
     return loaded.currentScene === GAME_PHASES.GAMEOVER
       ? { status: 'terminal' }
       : { status: 'resumable' }
-  }, [clock, storage])
+  }, [storage])
 
   return {
     deleteSave,

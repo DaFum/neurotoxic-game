@@ -105,10 +105,8 @@ import {
   settleExpeditionOnTerminalOutcome
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
-import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
-import { MILESTONES } from '../data/milestones/milestones'
-import { createAddToastActionWithId } from './actionCreators'
-import { buildDeterministicToastId } from './reducers/toastSanitizers'
+import { enforceExpeditionCashFloor } from '../domain/expedition/spendableCash'
+import { checkMilestones } from '../domain/progression/checkMilestones'
 import { assetForeclosed } from './assets/assetActionCreators'
 import {
   handleLoadGame,
@@ -152,6 +150,10 @@ import {
   handleUpdateRivalBand,
   handleCheckRivalEncounter
 } from './reducers/rivalReducer'
+import {
+  promoteDeferredOverlay,
+  raiseDeferredOverlay
+} from './reducers/overlayQueue'
 
 /**
  * Utility type to extract the payload type from a GameAction union.
@@ -397,20 +399,10 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   }
   if (foreclosedKinds.length === 0) return nextState
 
-  const pendingForeclosureNotices = [
-    ...(nextState.pendingForeclosureNotices || [])
-  ]
-  for (const kind of foreclosedKinds) {
-    if (!pendingForeclosureNotices.includes(kind)) {
-      pendingForeclosureNotices.push(kind)
-    }
-  }
-
-  nextState = {
-    ...nextState,
-    pendingForeclosureNotices
-  }
-  return nextState
+  return raiseDeferredOverlay(nextState, {
+    kind: 'foreclosure',
+    notices: Array.from(new Set(foreclosedKinds))
+  })
 }
 
 /**
@@ -455,51 +447,7 @@ export const gameReducer = (
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
     nextState = applyZeroConditionForeclosures(nextState)
-    const snapshotBeforeMilestones = nextState
-    const completedSet = new Set(snapshotBeforeMilestones.completedMilestones)
-    const triggeredMilestones: (typeof MILESTONES)[number][] = []
-
-    for (let i = 0; i < MILESTONES.length; i++) {
-      const m = MILESTONES[i]
-      if (
-        m &&
-        !completedSet.has(m.id) &&
-        m.condition(snapshotBeforeMilestones)
-      ) {
-        triggeredMilestones.push(m)
-        completedSet.add(m.id) // Ensure idempotency if conditions overlap
-      }
-    }
-
-    if (triggeredMilestones.length > 0) {
-      // Batch the array allocation once
-      nextState = {
-        ...nextState,
-        completedMilestones: Array.from(completedSet)
-      }
-
-      for (let i = 0; i < triggeredMilestones.length; i++) {
-        const milestone = triggeredMilestones[i]
-        if (!milestone) continue
-
-        const rewardAction = milestone.createRewardAction?.()
-        if (rewardAction) {
-          nextState = gameReducer(nextState, rewardAction)
-        }
-
-        // Reducers must stay pure, so the toast id is derived from state
-        // instead of minted by createAddToastAction.
-        const toastAction = createAddToastActionWithId(
-          {
-            type: 'info',
-            messageKey: milestone.labelKey,
-            options: milestone.createLabelOptions?.()
-          },
-          buildDeterministicToastId('milestone-toast', nextState.toasts)
-        )
-        if (toastAction) nextState = gameReducer(nextState, toastAction)
-      }
-    }
+    nextState = checkMilestones(nextState)
   }
 
   // The protected Career Cash slice is enforced once, here, rather than at
@@ -507,6 +455,10 @@ export const gameReducer = (
   // and a per-reducer check would leave the next spend path added elsewhere
   // unguarded. A rejected spend returns the pre-action state unchanged.
   nextState = enforceExpeditionCashFloor(state, nextState, action.type)
+
+  // Whichever action frees the overlay slot (a dismissal, a closed shop, a
+  // load), the next deferred risk event or foreclosure takes it here.
+  nextState = promoteDeferredOverlay(nextState)
 
   // The Expedition crisis is derived, never raised by a caller, so it is
   // recomputed centrally after every action. This is the only place the stored

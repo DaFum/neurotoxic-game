@@ -10,6 +10,7 @@ const mockGameState = {
   updatePlayer: vi.fn(),
   triggerEvent: vi.fn(),
   startGig: vi.fn(),
+  checkStartGig: vi.fn(() => null),
   changeScene: vi.fn(),
   addToast: vi.fn(),
   setPendingBandHQOpen: vi.fn(),
@@ -52,6 +53,8 @@ export const resetMockGameState = () => {
   mockGameState.updatePlayer.mockReset()
   mockGameState.triggerEvent.mockReset()
   mockGameState.startGig.mockReset()
+  mockGameState.checkStartGig.mockReset()
+  mockGameState.checkStartGig.mockReturnValue(null)
   mockGameState.changeScene.mockReset()
   mockGameState.addToast.mockReset()
   mockGameState.setPendingBandHQOpen.mockReset()
@@ -147,7 +150,8 @@ vi.mock('../src/utils/gameState', () => ({
 }))
 
 export const setupArrivalLogicTest = async () => {
-  const { useArrivalLogic } = await import('../src/hooks/useArrivalLogic')
+  const { useArrivalLogic } =
+    await import('../src/hooks/travel/useArrivalLogic')
   return { useArrivalLogic, mockGameState }
 }
 

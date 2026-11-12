@@ -15,6 +15,7 @@ import {
   createFameGainedQuestEvent
 } from '../quests/producers/economyQuestEvents'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
+import { sanitizeCompletedQuests } from './questSanitizers'
 
 /**
  * Resolves an active quest, applies rewards, and triggers followup logic.
@@ -81,6 +82,18 @@ export const completeQuest = (
   // Toast
   nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
 
+  // Update authoritative completedQuests index
+  const currentCompleted =
+    nextState.completedQuests ??
+    sanitizeCompletedQuests(null, {
+      completedQuestIds: nextState.completedQuestIds,
+      completedQuestScopes: nextState.completedQuestScopes
+    })
+  const nextGlobal = currentCompleted.global.includes(quest.id)
+    ? currentCompleted.global
+    : [...currentCompleted.global, quest.id]
+  let nextScoped = currentCompleted.scoped
+
   // Track completion so repeatPolicy:'never' quests can be blocked later.
   if (!nextState.completedQuestIds?.includes(quest.id)) {
     nextState.completedQuestIds = [
@@ -91,16 +104,20 @@ export const completeQuest = (
 
   // Scope-policy quests record (id, scopeKey) so other scopes stay open.
   if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
-    const scopes = nextState.completedQuestScopes ?? []
-    const exists = scopes.some(
-      c => c?.questId === quest.id && c?.scopeKey === quest.scopeKey
-    )
-    if (!exists) {
-      nextState.completedQuestScopes = [
-        ...(nextState.completedQuestScopes ?? []),
-        { questId: quest.id, scopeKey: quest.scopeKey }
-      ]
+    const existingScopes = Object.hasOwn(currentCompleted.scoped, quest.id)
+      ? (currentCompleted.scoped[quest.id] ?? [])
+      : []
+    if (!existingScopes.includes(quest.scopeKey)) {
+      nextScoped = {
+        ...currentCompleted.scoped,
+        [quest.id]: [...existingScopes, quest.scopeKey]
+      }
     }
+  }
+
+  nextState.completedQuests = {
+    global: nextGlobal,
+    scoped: nextScoped
   }
 
   // Clear transient story flags tied to this quest being active. Both the

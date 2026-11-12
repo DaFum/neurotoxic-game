@@ -98,8 +98,6 @@ import { areBetweenTourDecisionsResolved } from '../../domain/expedition/between
 import {
   applyExpeditionSalvageRights,
   consumeExpeditionLegendary,
-  deriveExpeditionGhostRouteTarget,
-  deriveExpeditionNemesisKeyTarget,
   isExpeditionLegendaryAvailable
 } from '../../domain/expedition/legendaries'
 import {
@@ -110,12 +108,14 @@ import {
 } from '../../domain/expedition/authority'
 import {
   EXPEDITION_TOW_COST,
-  EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
-  getExpeditionRescueFuelFloor,
   isCurrentExpeditionFailureId,
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
+import {
+  EXPEDITION_TOW_FUEL_RESTORED,
+  getExpeditionRescueFuelFloor
+} from '../../domain/expedition/rescueFuel'
 import { calculateRefuelCost } from '../../utils/economy'
 import { calculateFameLevel } from '../../utils/gameState/calculations'
 import {
@@ -245,8 +245,9 @@ const applyExpeditionInsuranceClaim = (
   if (!resolution.ok) return state
   const consumedClaim = {
     ...state.expedition,
-    insuranceClaimConsumed: true,
-    claimConsumed: true
+    insurance: {
+      claimConsumed: true
+    }
   }
 
   if (resolution.claimType === 'vehicle') {
@@ -433,8 +434,8 @@ export const handlePrepareExpeditionSponsorOffers = (
  * exactly once, and the run's Cash/Fame baselines are stamped after the pre-run
  * fuel payment and after the staged sponsor's signing cash, so the settlement
  * measures only what the run itself earned. The signing cash is paid before the
- * run and is never forfeited by retention; the installed `brandDeal` obligation
- * carries the sponsor's risk.
+ * run and is never forfeited by retention; `activeSponsorDealId` carries the
+ * sponsor's risk.
  */
 export const handleStartExpedition = (
   state: GameState,
@@ -549,17 +550,6 @@ export const handleStartExpedition = (
       doubleDown: null
     })
   }
-  if (stagedSponsor)
-    activeObligations.push({
-      id: `${prepId}:${stagedSponsor.dealId}`,
-      sourceType: 'brandDeal',
-      sourceId: stagedSponsor.dealId,
-      constraints: [],
-      progressByConstraintId: Object.create(null),
-      status: 'active',
-      settled: false,
-      doubleDown: null
-    })
 
   // Every rule that depends on the committed Region/Tour has to be resolved
   // against the *validated candidate*, not against `state`: the loadout is not
@@ -630,9 +620,9 @@ export const handleStartExpedition = (
       routeStep: 0,
       visitedNodeIds: [preparedMap.startNodeId],
       loadout: normalized,
-      insurancePolicyId: normalized.insurancePolicyId ?? null,
-      insuranceClaimConsumed: false,
-      claimConsumed: false,
+      insurance: {
+        claimConsumed: false
+      },
       startingMoney: committedMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
@@ -688,6 +678,7 @@ export const handleStartExpedition = (
       ) as NonNullable<GameState['expedition']['bandInjuryByMemberId']>,
       preparedSponsorOffers: [],
       preparedSponsorProvenance: undefined,
+      activeSponsorDealId: stagedSponsor ? stagedSponsor.dealId : null,
       activeObligations
     }
   }
@@ -827,20 +818,6 @@ export const applyExpeditionRouteAdvance = (
     }
   }
 
-  // A Legendary overlay is spent by being travelled, and only then: offering
-  // the opportunity costs nothing, and a run that declined it still holds the
-  // Legendary. Ghost Route is checked against the *pre-move* state because its
-  // trigger is the Authority pressure the run was standing in.
-  if (
-    stepsAhead === 2 &&
-    isExpeditionLegendaryAvailable(state, 'nemesis_key') &&
-    deriveExpeditionNemesisKeyTarget(state, map) === nodeId
-  ) {
-    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
-  } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
-    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
-  }
-
   // The overlay has to outlive the move. Every one of them is derived from the
   // node the run is leaving, so the conversion is gone by the time arrival
   // resolves - and arrival routes on the node's own class, which is the flow
@@ -862,6 +839,15 @@ export const applyExpeditionRouteAdvance = (
         }
       }
     }
+  }
+
+  // A Legendary overlay is spent by being travelled, and only then: offering
+  // the opportunity costs nothing, and a run that declined it still holds the
+  // Legendary.
+  if (travelledSource === 'nemesis_key') {
+    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
+  } else if (travelledSource === 'ghost_route') {
+    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
   }
 
   // One Director step per route step, composed here rather than dispatched:

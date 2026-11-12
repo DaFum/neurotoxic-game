@@ -242,6 +242,24 @@ describe('PixiStageController', () => {
     assert.equal(mockNoteManager.loadAssets.mock.calls.length, 1)
   })
 
+  test('handleTicker forwards populated laneXPositions to noteManager.update', async () => {
+    mockLaneManager.laneXPositions = [10, 20]
+    try {
+      await controller.init()
+      controller.handleTicker({ deltaMS: 16 })
+
+      assert.equal(mockNoteManager.update.mock.calls.length, 1)
+      assert.deepEqual(mockNoteManager.update.mock.calls[0].arguments, [
+        gameStateRef.current,
+        1234,
+        'layout',
+        [10, 20]
+      ])
+    } finally {
+      delete mockLaneManager.laneXPositions
+    }
+  })
+
   test('handleTicker updates managers', async () => {
     await controller.init()
     const ticker = { deltaMS: 16 }

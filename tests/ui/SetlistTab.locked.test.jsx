@@ -49,6 +49,11 @@ describe('SetlistTab during an active Expedition', () => {
     fireEvent.click(buttons[0])
     expect(setSetlist).not.toHaveBeenCalled()
     expect(addToast).not.toHaveBeenCalled()
+
+    const practiceButton = screen.getByRole('button', {
+      name: 'START PRACTICE'
+    })
+    expect(practiceButton).toHaveAttribute('aria-disabled', 'true')
   })
 
   it('keeps editing enabled outside an active run', () => {

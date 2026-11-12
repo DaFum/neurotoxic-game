@@ -3,9 +3,16 @@ export type Rect = { left: number; top: number; right: number; bottom: number }
 /** Top-left anchor a chatter box can be moved to. */
 export type Anchor = { left: number; top: number }
 
-/** Where the chatter box goes: its CSS default, a fallback anchor, or nowhere. */
 import { GAME_PHASES } from '../context/gameConstants'
 
+/**
+ * Defines the final positioning state for a chatter overlay element.
+ *
+ * @remarks
+ * Chatter can either fall back to its CSS default, lock to a specific computed
+ * fallback coordinate, or be entirely suppressed if no valid unobstructed anchor
+ * point exists and suppression is enabled.
+ */
 export type ChatterPlacement =
   | { kind: 'default' }
   | { kind: 'anchor'; anchor: Anchor }

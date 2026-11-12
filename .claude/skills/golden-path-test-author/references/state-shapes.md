@@ -90,7 +90,7 @@ Reference for the game state object used in golden path tests.
   },
 
   // Event tracking
-  eventCooldowns: string[],  // Event IDs in cooldown
+  eventCooldowns: Record<string, number>,  // eventId -> unlock day
   pastEvents: Array<{
     eventId: string,
     day: number,

@@ -15,6 +15,8 @@ import {
   resumeDeferredTransportStart
 } from './transportStart'
 
+export { getPendingTransportStartDelayMs } from './transportStart'
+
 /**
  * Tears down the Tone transport, scheduled events, and corruption burst audio.
  *

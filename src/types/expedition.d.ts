@@ -448,16 +448,6 @@ export interface PendingExpeditionFailure {
 }
 
 /**
- * Expedition interaction modes. The failure synchronizer currently owns only
- * exploring/crisis transitions; decision/extraction are reserved for their UI lifecycle.
- */
-export type ExpeditionInteractionMode =
-  | { mode: 'exploring' }
-  | { mode: 'decision'; decisionId?: string }
-  | { mode: 'crisis'; crisis: PendingExpeditionFailure }
-  | { mode: 'extraction' }
-
-/**
  * Signal shape later gates export into the one G1-owned failure composer.
  */
 export interface ExpeditionFailureSignal {
@@ -724,7 +714,6 @@ export interface ExpeditionState {
    */
   arrivedOverlay: ExpeditionArrivedOverlay | null
   pendingFailure: PendingExpeditionFailure | null
-  interactionMode?: ExpeditionInteractionMode
   /**
    * Mandatory daily obligation a previous day could not pay from the run's
    * spendable Cash.
@@ -762,9 +751,7 @@ export interface ExpeditionState {
   metaUnlockQuestCompletedRunId: string | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
-  insurancePolicyId?: ExpeditionInsurancePolicyId | null
-  insuranceClaimConsumed?: boolean
-  claimConsumed?: boolean
+  insurance: ExpeditionInsuranceRunState
   technicalFailureAccepted?: boolean
   /**
    * Whether this run already used the hidden compartment as an Authority exit.
@@ -781,6 +768,7 @@ export interface ExpeditionState {
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
   preparedSponsorProvenance?: ExpeditionSponsorStagingProvenance
+  activeSponsorDealId?: string | null
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
@@ -997,6 +985,13 @@ export interface ExpeditionInsurancePolicy {
   id: ExpeditionInsurancePolicyId
   premium: number
   coverage: ExpeditionInsuranceCoverage
+}
+
+/**
+ * Run-scoped insurance state tracking claim consumption.
+ */
+export interface ExpeditionInsuranceRunState {
+  claimConsumed: boolean
 }
 
 /**
