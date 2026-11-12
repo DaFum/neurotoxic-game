@@ -194,6 +194,50 @@ describe('stateSanitizers', () => {
       assert.ok(result)
       // No assertion for propC since it's preserved as []
     })
+
+    it('aliases legacy edges into connections when connections is absent', () => {
+      const legacyMap = {
+        nodes: {
+          a: { id: 'a', x: 0, y: 0 },
+          b: { id: 'b', x: 1, y: 1 }
+        },
+        edges: [{ from: 'a', to: 'b' }]
+      }
+
+      const result = normalizeLoadedGameMap(legacyMap)
+      assert.ok(result)
+      assert.deepStrictEqual(result.connections, [{ from: 'a', to: 'b' }])
+    })
+
+    it('prefers empty connections array over edges', () => {
+      const mapWithBoth = {
+        nodes: {
+          a: { id: 'a', x: 0, y: 0 },
+          b: { id: 'b', x: 1, y: 1 }
+        },
+        connections: [],
+        edges: [{ from: 'a', to: 'b' }]
+      }
+
+      const result = normalizeLoadedGameMap(mapWithBoth)
+      assert.ok(result)
+      assert.deepStrictEqual(result.connections, [])
+    })
+
+    for (const invalid of [null, 'bad', {}]) {
+      it(`does not fall back to stale edges when connections is present but invalid (${JSON.stringify(invalid)})`, () => {
+        const result = normalizeLoadedGameMap({
+          nodes: {
+            a: { id: 'a', x: 0, y: 0 },
+            b: { id: 'b', x: 1, y: 1 }
+          },
+          connections: invalid,
+          edges: [{ from: 'a', to: 'b' }]
+        })
+        assert.ok(result)
+        assert.deepStrictEqual(result.connections, [])
+      })
+    }
   })
 
   describe('shopInventory (via normalizeLoadedGameMap)', () => {

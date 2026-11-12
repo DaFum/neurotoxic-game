@@ -42,7 +42,7 @@ describe('rivalReducer', () => {
       }
       const movedRival = { ...oldRival, currentLocationId: 'node_b' }
       const next = handleMoveRivalBand(
-        { rivalBand: oldRival, gameMap: { nodes: {}, edges: [] } },
+        { rivalBand: oldRival, gameMap: { nodes: {}, connections: [] } },
         { rivalBand: movedRival }
       )
 

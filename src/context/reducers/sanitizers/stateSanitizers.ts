@@ -601,22 +601,25 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []
-  if (Array.isArray(mapRecord.connections)) {
-    for (let i = 0; i < mapRecord.connections.length; i++) {
-      const entry = mapRecord.connections[i]
-      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
-      const entryRecord = entry as Record<string, unknown>
-      if (
-        (typeof entryRecord.from === 'string' ||
-          typeof entryRecord.from === 'number') &&
-        (typeof entryRecord.to === 'string' ||
-          typeof entryRecord.to === 'number')
-      ) {
-        sanitizedConnections.push({
-          from: String(entryRecord.from),
-          to: String(entryRecord.to)
-        })
-      }
+  // A present `connections` key (even empty or invalid) is authoritative; legacy `edges` only migrates when it is absent.
+  const connectionSource = Object.hasOwn(mapRecord, 'connections')
+    ? mapRecord.connections
+    : mapRecord.edges
+  const rawConnections = Array.isArray(connectionSource) ? connectionSource : []
+
+  for (let i = 0; i < rawConnections.length; i++) {
+    const entry = rawConnections[i]
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
+    const entryRecord = entry as Record<string, unknown>
+    if (
+      (typeof entryRecord.from === 'string' ||
+        typeof entryRecord.from === 'number') &&
+      (typeof entryRecord.to === 'string' || typeof entryRecord.to === 'number')
+    ) {
+      sanitizedConnections.push({
+        from: String(entryRecord.from),
+        to: String(entryRecord.to)
+      })
     }
   }
 

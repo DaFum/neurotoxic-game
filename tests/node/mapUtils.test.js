@@ -25,7 +25,8 @@ const {
   getConnectedTargetIds,
   getNodeVisibility,
   checkSoftlock,
-  normalizeVenueId
+  normalizeVenueId,
+  getMapAdjacency
 } = await import('../../src/utils/mapUtils')
 
 describe('mapUtils', () => {
@@ -156,6 +157,16 @@ describe('mapUtils', () => {
       const targets = getConnectedTargetIds(edgesMap, 'X')
       assert.equal(targets.size, 1)
       assert.equal(targets.has('Y'), true)
+    })
+
+    test('getMapAdjacency caches adjacency map per object instance', () => {
+      const mapObj = {
+        connections: [{ from: 'N1', to: 'N2' }]
+      }
+      const adj1 = getMapAdjacency(mapObj)
+      const adj2 = getMapAdjacency(mapObj)
+      assert.strictEqual(adj1, adj2)
+      assert.equal(adj1.get('N1')?.has('N2'), true)
     })
   })
 
