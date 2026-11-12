@@ -207,13 +207,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
       sourceScene: currentScene
     })
     changeScene(GAME_PHASES.PRACTICE)
-  }, [
-    practiceDisabledReason,
-    setCurrentGig,
-    changeScene,
-    t,
-    currentScene
-  ])
+  }, [practiceDisabledReason, setCurrentGig, changeScene, t, currentScene])
 
   const practiceButton = (
     <ActionButton

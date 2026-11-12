@@ -354,7 +354,10 @@ test('pending gig settlement reconciliation on load', async t => {
       }
     }
     state = gameReducer(state, compositeAction)
-    assert.equal(state.pendingGigSettlement?.lifecycleStage, 'social_reconciled')
+    assert.equal(
+      state.pendingGigSettlement?.lifecycleStage,
+      'social_reconciled'
+    )
     assert.equal(state.social.loyalty, 15)
 
     // 3. JSON round-trip createPersistedState and load
