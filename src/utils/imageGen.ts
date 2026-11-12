@@ -21,6 +21,28 @@ export const isImageProxyEnabled = (): boolean => {
 
 const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '') : ''}images/generated-offline-fallback.svg`
 
+// The repository contains the artwork using the encoded prompt as its
+// filename. Keep the lookup local so gameplay never needs an image-generation
+// request (and so the same artwork is used on every run).
+const projectImageModules = import.meta.glob('../assets/image/*', {
+  eager: true,
+  import: 'default',
+  query: '?url'
+}) as Record<string, string>
+
+const projectImageUrls = Object.fromEntries(
+  Object.entries(projectImageModules).map(([path, url]) => {
+    const filename = path.slice(path.lastIndexOf('/') + 1)
+    return [decodeURIComponent(filename), url]
+  })
+) as Record<string, string>
+
+export const getProjectImageUrl = (description: string): string | undefined =>
+  projectImageUrls[description]
+
+export const hasProjectImage = (description: string): boolean =>
+  Boolean(getProjectImageUrl(description))
+
 // navigator.onLine is true for any network connection (LAN, captive portals),
 // not necessarily internet access to the image proxy. This is a best-effort
 // check.
@@ -50,7 +72,7 @@ export const getGeneratedImageFallbackUrl = () =>
  * @returns Generated-image proxy URL containing only the encoded prompt.
  */
 export const getGenImageUrl = (description: string) => {
-  return `/api/image?prompt=${encodeURIComponent(description)}`
+  return getProjectImageUrl(description) ?? getGeneratedImageFallbackUrl()
 }
 
 /**
@@ -64,10 +86,7 @@ export const getGenImageUrl = (description: string) => {
 export const resolveGenImageUrl = (
   description: string,
   isOnline?: boolean
-): string =>
-  isImageGenerationAvailable(isOnline)
-    ? getGenImageUrl(description)
-    : getGeneratedImageFallbackUrl()
+): string => getProjectImageUrl(description) ?? getGeneratedImageFallbackUrl()
 
 /**
  * Prompt catalogue for generated scene, item, UI, asset, and event imagery.

@@ -21,13 +21,11 @@ describe('imageGen utilities', () => {
   afterEach(() => vi.unstubAllEnvs())
 
   describe('getGenImageUrl', () => {
-    test('encodes prompts in a same-origin proxy URL without credentials', () => {
+    test('uses the bundled fallback for an unknown prompt', () => {
       const url = getGenImageUrl('hello world / ? & =')
-      expect(url).toBe(
-        '/api/image?prompt=hello%20world%20%2F%20%3F%20%26%20%3D'
-      )
-      expect(url).not.toContain('key=')
-      expect(appendImageSize(url, 800, 600)).toBe(`${url}&width=800&height=600`)
+      expect(url).toBe(getGeneratedImageFallbackUrl())
+      expect(url).not.toContain('/api/image')
+      expect(appendImageSize(url, 800, 600)).toBe(`${url}?width=800&height=600`)
     })
   })
 
@@ -119,9 +117,9 @@ describe('imageGen utilities', () => {
 
   describe('resolveGenImageUrl', () => {
     beforeEach(() => vi.stubEnv('VITE_ENABLE_IMAGE_PROXY', 'true'))
-    test('returns generated URL when online', () => {
+    test('returns the local fallback for an unknown prompt even when online', () => {
       const url = resolveGenImageUrl('test', true)
-      expect(url).toBe('/api/image?prompt=test')
+      expect(url).toBe(getGeneratedImageFallbackUrl())
     })
 
     test('returns fallback URL when offline', () => {
