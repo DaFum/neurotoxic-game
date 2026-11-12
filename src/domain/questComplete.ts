@@ -116,7 +116,9 @@ export const completeQuest = (
 
   // Scope-policy quests record (id, scopeKey) so other scopes stay open.
   if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
-    const existingScopes = currentCompleted.scoped[quest.id] ?? []
+    const existingScopes = Object.hasOwn(currentCompleted.scoped, quest.id)
+      ? (currentCompleted.scoped[quest.id] ?? [])
+      : []
     if (!existingScopes.includes(quest.scopeKey)) {
       nextScoped = {
         ...currentCompleted.scoped,

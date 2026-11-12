@@ -1666,6 +1666,32 @@ test('QuestLifecycle', async t => {
         })
       }
     )
+
+    await t.test(
+      'completing a scoped quest whose id is an inherited property name records its scope',
+      () => {
+        const state = {
+          player: { day: 1 },
+          activeQuests: legacyQuests([{ id: 'toString', scopeKey: 'venue_a' }]),
+          activeStoryFlags: [],
+          completedQuestIds: [],
+          completedQuestScopes: [],
+          questCooldowns: []
+        }
+
+        const next = QuestLifecycle.completeQuest(state, {
+          questId: 'toString'
+        })
+
+        assert.equal(
+          Object.hasOwn(next.completedQuests.scoped, 'toString'),
+          true
+        )
+        assert.deepStrictEqual(next.completedQuests.scoped.toString, [
+          'venue_a'
+        ])
+      }
+    )
   })
 
   await t.test('failure penalty handling', async t => {
