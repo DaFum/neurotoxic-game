@@ -182,37 +182,57 @@ export const SetlistTab = (props: SetlistTabProps) => {
     [setSetlist, addToast, t, setlist, selectedSongIds, setlistLocked]
   )
 
+  const practiceDisabledReason = setlistLocked
+    ? t('ui:bandhq.setlist.lockedTooltip', {
+        defaultValue: 'Setlist is locked while an Expedition is active.'
+      })
+    : setlist.length === 0
+      ? t('ui:bandhq.setlist.selectOne', {
+          defaultValue: 'Select at least one song to practice!'
+        })
+      : undefined
+
+  const handleStartPractice = useCallback(() => {
+    if (practiceDisabledReason) return
+
+    setCurrentGig({
+      id: 'practice_venue',
+      name: t('venues:stendal_proberaum.name'),
+      diff: 1,
+      venue: t('ui:bandhq.venue', { defaultValue: 'Band HQ' }),
+      description: t('ui:hq.practice_desc', {
+        defaultValue: 'Practice makes perfect.'
+      }),
+      isPractice: true,
+      sourceScene: currentScene
+    })
+    changeScene(GAME_PHASES.PRACTICE)
+  }, [
+    practiceDisabledReason,
+    setCurrentGig,
+    changeScene,
+    t,
+    currentScene
+  ])
+
+  const practiceButton = (
+    <ActionButton
+      onClick={handleStartPractice}
+      aria-disabled={Boolean(practiceDisabledReason)}
+      className='px-4 py-2 text-sm'
+    >
+      {t('ui:hq.start_practice', { defaultValue: 'START PRACTICE' })}
+    </ActionButton>
+  )
+
   return (
     <div>
       <div className='flex justify-between items-center mb-4 font-mono text-star-white'>
-        <ActionButton
-          onClick={() => {
-            if (setlist.length === 0) {
-              addToast(
-                t('ui:bandhq.setlist.selectOne', {
-                  defaultValue: 'Select at least one song to practice!'
-                }),
-                'warning'
-              )
-              return
-            }
-            setCurrentGig({
-              id: 'practice_venue',
-              name: t('venues:stendal_proberaum.name'),
-              diff: 1,
-              venue: t('ui:bandhq.venue', { defaultValue: 'Band HQ' }),
-              description: t('ui:hq.practice_desc', {
-                defaultValue: 'Practice makes perfect.'
-              }),
-              isPractice: true,
-              sourceScene: currentScene
-            })
-            changeScene(GAME_PHASES.PRACTICE)
-          }}
-          className='px-4 py-2 text-sm'
-        >
-          {t('ui:hq.start_practice', { defaultValue: 'START PRACTICE' })}
-        </ActionButton>
+        {practiceDisabledReason ? (
+          <Tooltip content={practiceDisabledReason}>{practiceButton}</Tooltip>
+        ) : (
+          practiceButton
+        )}
         <div>
           {t('ui:hq.selected', { defaultValue: 'SELECTED' })}:{' '}
           <span className='text-toxic-green'>{setlist.length}</span>
