@@ -768,6 +768,7 @@ export interface ExpeditionState {
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
   preparedSponsorProvenance?: ExpeditionSponsorStagingProvenance
+  activeSponsorDealId?: string | null
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null

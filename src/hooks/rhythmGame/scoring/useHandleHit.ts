@@ -45,9 +45,7 @@ type HandleHitParams = {
     | 'setOverload'
     | 'setAccuracy'
     | 'setCorruptionLevel'
-    | 'setIsCorruptionBurstActive'
-    | 'setCorruptionBurstEndTime'
-    | 'setCorruptionState'
+    | 'startCorruptionBurst'
   >
   performance: {
     guitarDifficulty: number
@@ -92,9 +90,7 @@ export const useHandleHit = ({
     setOverload,
     setAccuracy,
     setCorruptionLevel,
-    setIsCorruptionBurstActive,
-    setCorruptionBurstEndTime,
-    setCorruptionState
+    startCorruptionBurst
   } = setters
   const {
     guitarDifficulty,
@@ -209,9 +205,7 @@ export const useHandleHit = ({
               const burstEndTime = elapsed + 1000
               gameStateRef.current.isCorruptionBurstActive = true
               gameStateRef.current.corruptionBurstEndTime = burstEndTime
-              setIsCorruptionBurstActive(true)
-              setCorruptionBurstEndTime(burstEndTime)
-              setCorruptionState(0, true)
+              startCorruptionBurst(burstEndTime)
               audioEngine.enableCorruptionBurstAudio()
             }
           }
@@ -305,9 +299,7 @@ export const useHandleHit = ({
       setScore,
       setAccuracy,
       setCorruptionLevel,
-      setIsCorruptionBurstActive,
-      setCorruptionBurstEndTime,
-      setCorruptionState,
+      startCorruptionBurst,
       guitarDifficulty,
       drumMultiplier,
       tempoBonus,

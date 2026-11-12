@@ -76,11 +76,8 @@ describe('useRhythmGameState', () => {
       setters.setIsToxicMode(true)
       setters.setIsGameOver(true)
       setters.setAccuracy(44)
-      setters.setCorruptionState(80, true)
-      setters.setIsCorruptionBurstActive(true)
-      setters.setCorruptionBurstEndTime(2000)
-      setters.setAudioStatus('failed')
-      setters.setFailureKind('stage')
+      setters.startCorruptionBurst(2000)
+      setters.setInitStatus({ status: 'failed', failureKind: 'stage' })
     })
 
     act(() => result.current.resetGameplayState())
@@ -154,61 +151,29 @@ describe('useRhythmGameState', () => {
     expect(result.current.state.failureKind).toBeNull()
   })
 
-  it('synchronizes initStatus, audioStatus, and failureKind via setAudioStatus and setFailureKind', () => {
+  it('atomically manages corruption bursts via startCorruptionBurst and endCorruptionBurst', () => {
     const { result } = renderHook(() => useRhythmGameState())
 
-    // 1. setFailureKind while audioStatus is not failed -> failureKind cleared, initStatus unchanged
     act(() => {
-      result.current.setters.setFailureKind('stage')
+      result.current.setters.setCorruptionLevel(80)
     })
-    expect(result.current.state.initStatus).toEqual({ status: 'idle' })
-    expect(result.current.state.audioStatus).toBe('idle')
-    expect(result.current.state.failureKind).toBeNull()
+    expect(result.current.state.corruptionLevel).toBe(80)
+    expect(result.current.state.isCorruptionBurstActive).toBe(false)
+    expect(result.current.state.corruptionBurstEndTime).toBe(0)
 
-    // 2. setAudioStatus('failed') without prior failureKind -> defaults to 'audio'
     act(() => {
-      result.current.setters.setAudioStatus('failed')
+      result.current.setters.startCorruptionBurst(5000)
     })
-    expect(result.current.state.initStatus).toEqual({
-      status: 'failed',
-      failureKind: 'audio'
-    })
-    expect(result.current.state.audioStatus).toBe('failed')
-    expect(result.current.state.failureKind).toBe('audio')
+    expect(result.current.state.corruptionLevel).toBe(0)
+    expect(result.current.state.isCorruptionBurstActive).toBe(true)
+    expect(result.current.state.corruptionBurstEndTime).toBe(5000)
 
-    // 3. setFailureKind('stage') while audioStatus is failed -> updates to 'stage'
     act(() => {
-      result.current.setters.setFailureKind('stage')
+      result.current.setters.endCorruptionBurst(15)
     })
-    expect(result.current.state.initStatus).toEqual({
-      status: 'failed',
-      failureKind: 'stage'
-    })
-    expect(result.current.state.audioStatus).toBe('failed')
-    expect(result.current.state.failureKind).toBe('stage')
-
-    // 4. setAudioStatus('ready') after failure -> clears failureKind, sets ready
-    act(() => {
-      result.current.setters.setAudioStatus('ready')
-    })
-    expect(result.current.state.initStatus).toEqual({ status: 'ready' })
-    expect(result.current.state.audioStatus).toBe('ready')
-    expect(result.current.state.failureKind).toBeNull()
-
-    // 5. setAudioStatus('failed') with prior failureKind -> preserves it
-    act(() => {
-      result.current.setters.setInitStatus({
-        status: 'failed',
-        failureKind: 'stage'
-      })
-      result.current.setters.setAudioStatus('failed')
-    })
-    expect(result.current.state.initStatus).toEqual({
-      status: 'failed',
-      failureKind: 'stage'
-    })
-    expect(result.current.state.audioStatus).toBe('failed')
-    expect(result.current.state.failureKind).toBe('stage')
+    expect(result.current.state.corruptionLevel).toBe(15)
+    expect(result.current.state.isCorruptionBurstActive).toBe(false)
+    expect(result.current.state.corruptionBurstEndTime).toBe(0)
   })
   describe('DEV test hook', () => {
     const engine = {

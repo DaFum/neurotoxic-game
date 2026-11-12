@@ -1048,7 +1048,16 @@ export const sanitizeExpeditionState = (
       readCount(value, 'routeStep', 0)
     ),
     gigOutcomeByStep,
-    activeObligations: sanitizedObligations,
+    activeSponsorDealId:
+      typeof value.activeSponsorDealId === 'string'
+        ? value.activeSponsorDealId
+        : value.activeSponsorDealId === null
+          ? null
+          : (sanitizedObligations.find(o => o.sourceType === 'brandDeal')
+              ?.sourceId ?? null),
+    activeObligations: sanitizedObligations.filter(
+      o => o.sourceType === 'native'
+    ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : // An older active save never stored its cargo; deriving it once here

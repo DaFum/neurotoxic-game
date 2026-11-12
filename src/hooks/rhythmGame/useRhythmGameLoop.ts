@@ -18,10 +18,7 @@ type RhythmGameLoopParams = {
     handleMiss: (count?: number, isEmptyHit?: boolean) => void
     getLaneHitWindow?: (laneIndex: number) => number
   }
-  setters: Pick<
-    RhythmStateSetters,
-    'setIsToxicMode' | 'setIsCorruptionBurstActive' | 'setCorruptionState'
-  >
+  setters: Pick<RhythmStateSetters, 'setIsToxicMode' | 'endCorruptionBurst'>
   contextState: { activeEvent: GameEvent | null }
   contextActions: {
     setLastGigStats: SetLastGigStats
@@ -43,8 +40,7 @@ export const useRhythmGameLoop = ({
 }: RhythmGameLoopParams) => {
   const audioEngine = useAudioEngine()
   const { handleMiss, getLaneHitWindow } = scoringActions
-  const { setIsToxicMode, setIsCorruptionBurstActive, setCorruptionState } =
-    setters
+  const { setIsToxicMode, endCorruptionBurst } = setters
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
 
@@ -114,14 +110,13 @@ export const useRhythmGameLoop = ({
         deltaMS,
         handleCollision,
         setIsToxicMode,
-        setIsCorruptionBurstActive,
+        endCorruptionBurst,
         handleMiss,
         getLaneHitWindow,
         finalizeGigCallback,
         getGigTimeMs: getGigTimeMsFn,
         pauseAudio,
         resumeAudio,
-        setCorruptionState,
         disableCorruptionBurstAudio
       })
     },
@@ -129,6 +124,7 @@ export const useRhythmGameLoop = ({
       activeEvent,
       audioEngine,
       disableCorruptionBurstAudio,
+      endCorruptionBurst,
       finalizeGigCallback,
       gameStateRef,
       getGigTimeMsFn,
@@ -137,9 +133,7 @@ export const useRhythmGameLoop = ({
       getLaneHitWindow,
       pauseAudio,
       resumeAudio,
-      setIsToxicMode,
-      setIsCorruptionBurstActive,
-      setCorruptionState
+      setIsToxicMode
     ]
   )
 

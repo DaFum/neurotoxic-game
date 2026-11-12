@@ -155,6 +155,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     temporaryRouteOpportunity: null
   },
   preparedSponsorOffers: [],
+  activeSponsorDealId: null,
   activeObligations: [],
   runDraftTraitIds: [],
   pendingRunDraftOffer: null,

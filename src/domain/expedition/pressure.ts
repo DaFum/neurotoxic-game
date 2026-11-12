@@ -81,7 +81,11 @@ export const derivePressureDirectorContext = (
   const activeObligations = state.expedition.activeObligations
   if (activeObligations) {
     for (let i = 0; i < activeObligations.length; i++) {
-      if (activeObligations[i]?.status === 'active') {
+      const obligation = activeObligations[i]
+      if (
+        obligation?.status === 'active' &&
+        obligation.sourceType === 'native'
+      ) {
         activeObligationsCount++
       }
     }

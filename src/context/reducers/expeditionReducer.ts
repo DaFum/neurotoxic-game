@@ -550,17 +550,6 @@ export const handleStartExpedition = (
       doubleDown: null
     })
   }
-  if (stagedSponsor)
-    activeObligations.push({
-      id: `${prepId}:${stagedSponsor.dealId}`,
-      sourceType: 'brandDeal',
-      sourceId: stagedSponsor.dealId,
-      constraints: [],
-      progressByConstraintId: Object.create(null),
-      status: 'active',
-      settled: false,
-      doubleDown: null
-    })
 
   // Every rule that depends on the committed Region/Tour has to be resolved
   // against the *validated candidate*, not against `state`: the loadout is not
@@ -689,6 +678,7 @@ export const handleStartExpedition = (
       ) as NonNullable<GameState['expedition']['bandInjuryByMemberId']>,
       preparedSponsorOffers: [],
       preparedSponsorProvenance: undefined,
+      activeSponsorDealId: stagedSponsor ? stagedSponsor.dealId : null,
       activeObligations
     }
   }
