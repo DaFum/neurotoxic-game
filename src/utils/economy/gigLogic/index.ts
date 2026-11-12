@@ -235,22 +235,14 @@ export const calculateGigFinancials = (
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
-  // Active Deal Per-Gig Payout
-  const activeDeals = normalizedSocial.activeDeals
-  for (let i = 0; i < activeDeals.length; i++) {
-    const activeDeal = activeDeals[i]
-    if (!activeDeal) continue
-    if (activeDeal.type === 'SPONSORSHIP') {
-      const perGig = finiteNumberOr(activeDeal.offer?.perGig, 0)
-      if (perGig > 0) {
-        report.income.breakdown.push({
-          labelKey: BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR,
-          value: perGig,
-          detailKey: 'economy:gigIncome.brandSponsor.detail'
-        })
-        report.income.total += perGig
-      }
-    }
+  // Active Deal Per-Gig Payout (Sponsorships and Endorsements)
+  if (dealBenefits.perGigPayout > 0) {
+    report.income.breakdown.push({
+      labelKey: BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR,
+      value: dealBenefits.perGigPayout,
+      detailKey: 'economy:gigIncome.brandSponsor.detail'
+    })
+    report.income.total += dealBenefits.perGigPayout
   }
 
   // 6. Sponsorship Bonuses

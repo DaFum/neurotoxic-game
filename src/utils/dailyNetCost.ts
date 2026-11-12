@@ -1,4 +1,7 @@
-import { calculateGuaranteedDailyCost } from './economy'
+import {
+  calculateDailyLivingObligations,
+  calculateDailyYouTubeRevenue
+} from './economy'
 import {
   ORIGINAL_CONTROL_BALANCE_TUNING,
   getEarlyGameObligationMultiplier,
@@ -28,11 +31,8 @@ export const calculateDailyNetCost = (
   social: Partial<Pick<SocialState, 'youtube'>>,
   tuning: Readonly<BalanceTuning> = ORIGINAL_CONTROL_BALANCE_TUNING
 ): number => {
-  const obligations = calculateGuaranteedDailyCost(player, band, {
-    youtube: 0
-  })
-  const youtubeRevenue =
-    obligations - calculateGuaranteedDailyCost(player, band, social)
+  const obligations = calculateDailyLivingObligations(player, band)
+  const youtubeRevenue = calculateDailyYouTubeRevenue(social)
   return (
     obligations * getEarlyGameObligationMultiplier(player.day, tuning) -
     youtubeRevenue

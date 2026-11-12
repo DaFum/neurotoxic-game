@@ -96,6 +96,40 @@ export const calculateFuelCost = (
  *
  * @param player - Player state containing fame level.
  * @param band - Band state containing members.
+ * @returns Daily living expenses.
+ */
+export const calculateDailyLivingObligations = (
+  player: Pick<PlayerState, 'fameLevel'>,
+  band: Pick<BandState, 'members'>
+): number => {
+  const bandSize = Array.isArray(band?.members) ? band.members.length : 3
+  const fameLevel = finiteNumberOr(player?.fameLevel, 0)
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  return EXPENSE_CONSTANTS.daily.baseCost + bandSize * 8 + lifestyleInflation
+}
+
+/**
+ * Calculates daily YouTube ad revenue from channel subscriber/view numbers.
+ *
+ * @param social - Social state containing YouTube followers. Defaults to `{}`.
+ * @returns Daily YouTube ad revenue in dollars.
+ */
+export const calculateDailyYouTubeRevenue = (
+  social: Partial<Pick<SocialState, 'youtube'>> = {}
+): number => {
+  const youtube = finiteNumberOr(social?.youtube, 0)
+  if (youtube >= 10000) {
+    return Math.floor(youtube / 10000) * 10
+  }
+  return 0
+}
+
+/**
+ * Calculates guaranteed daily net living cost (obligations minus ad revenue)
+ * before asset upkeep, asset revenue, and liability payments.
+ *
+ * @param player - Player state containing fame level.
+ * @param band - Band state containing members.
  * @param social - Social state containing YouTube followers. Defaults to `{}`.
  * @returns Daily living cost before asset upkeep, asset revenue, and liability payments.
  */
@@ -103,20 +137,11 @@ export const calculateGuaranteedDailyCost = (
   player: Pick<PlayerState, 'fameLevel'>,
   band: Pick<BandState, 'members'>,
   social: Partial<Pick<SocialState, 'youtube'>> = {}
-) => {
-  const bandSize = Array.isArray(band.members) ? band.members.length : 3
-  const fameLevel = finiteNumberOr(player.fameLevel, 0)
-  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
-  let dailyCost =
-    EXPENSE_CONSTANTS.daily.baseCost + bandSize * 8 + lifestyleInflation
-
-  const youtube = finiteNumberOr(social.youtube, 0)
-  if (youtube >= 10000) {
-    const adRevenue = Math.floor(youtube / 10000) * 10
-    dailyCost -= adRevenue
-  }
-
-  return dailyCost
+): number => {
+  return (
+    calculateDailyLivingObligations(player, band) -
+    calculateDailyYouTubeRevenue(social)
+  )
 }
 
 /**
