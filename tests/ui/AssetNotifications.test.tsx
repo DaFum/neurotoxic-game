@@ -6,8 +6,7 @@ import type { AssetKind, RiskEventDescriptor } from '../../src/types/assets'
 const mockDismissForeclosureNotice = vi.fn()
 const mockSetPendingRiskEvent = vi.fn()
 const mockState = vi.hoisted(() => ({
-  pendingForeclosureNotices: [] as AssetKind[],
-  pendingRiskEvent: null as RiskEventDescriptor | null
+  pendingOverlay: null as import('../../src/types').PendingOverlayState | null
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -42,8 +41,7 @@ vi.mock('react-i18next', () => ({
 
 describe('AssetNotifications (global asset modal owner)', () => {
   beforeEach(() => {
-    mockState.pendingForeclosureNotices = []
-    mockState.pendingRiskEvent = null
+    mockState.pendingOverlay = null
     mockDismissForeclosureNotice.mockClear()
     mockSetPendingRiskEvent.mockClear()
   })
@@ -54,10 +52,13 @@ describe('AssetNotifications (global asset modal owner)', () => {
   })
 
   it('surfaces a pending risk event modal without an Assets scene wrapper', async () => {
-    mockState.pendingRiskEvent = {
-      assetId: 'asset_1',
-      eventType: 'fire',
-      conditionLoss: 15
+    mockState.pendingOverlay = {
+      kind: 'risk_event',
+      event: {
+        assetId: 'asset_1',
+        eventType: 'fire',
+        conditionLoss: 15
+      }
     }
 
     render(<AssetNotifications />)
@@ -69,7 +70,10 @@ describe('AssetNotifications (global asset modal owner)', () => {
   })
 
   it('surfaces and dismisses a pending foreclosure notice', () => {
-    mockState.pendingForeclosureNotices = ['tourbus_chassis']
+    mockState.pendingOverlay = {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis']
+    }
 
     render(<AssetNotifications />)
 

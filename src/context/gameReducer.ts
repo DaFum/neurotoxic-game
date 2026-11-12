@@ -150,6 +150,10 @@ import {
   handleUpdateRivalBand,
   handleCheckRivalEncounter
 } from './reducers/rivalReducer'
+import {
+  promoteDeferredOverlay,
+  raiseDeferredOverlay
+} from './reducers/overlayQueue'
 
 /**
  * Utility type to extract the payload type from a GameAction union.
@@ -395,33 +399,10 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   }
   if (foreclosedKinds.length === 0) return nextState
 
-  const existingOverlayNotices =
-    nextState.pendingOverlay?.kind === 'foreclosure'
-      ? nextState.pendingOverlay.notices
-      : []
-  const pendingForeclosureNotices = Array.from(
-    new Set([
-      ...existingOverlayNotices,
-      ...(nextState.pendingForeclosureNotices || [])
-    ])
-  )
-  for (const kind of foreclosedKinds) {
-    if (!pendingForeclosureNotices.includes(kind)) {
-      pendingForeclosureNotices.push(kind)
-    }
-  }
-
-  const canSetForeclosureOverlay =
-    !nextState.pendingOverlay || nextState.pendingOverlay.kind === 'foreclosure'
-
-  nextState = {
-    ...nextState,
-    pendingOverlay: canSetForeclosureOverlay
-      ? { kind: 'foreclosure', notices: pendingForeclosureNotices }
-      : nextState.pendingOverlay,
-    pendingForeclosureNotices
-  }
-  return nextState
+  return raiseDeferredOverlay(nextState, {
+    kind: 'foreclosure',
+    notices: Array.from(new Set(foreclosedKinds))
+  })
 }
 
 /**
@@ -474,6 +455,10 @@ export const gameReducer = (
   // and a per-reducer check would leave the next spend path added elsewhere
   // unguarded. A rejected spend returns the pre-action state unchanged.
   nextState = enforceExpeditionCashFloor(state, nextState, action.type)
+
+  // Whichever action frees the overlay slot (a dismissal, a closed shop, a
+  // load), the next deferred risk event or foreclosure takes it here.
+  nextState = promoteDeferredOverlay(nextState)
 
   // The Expedition crisis is derived, never raised by a caller, so it is
   // recomputed centrally after every action. This is the only place the stored

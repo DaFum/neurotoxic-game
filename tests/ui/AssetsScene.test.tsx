@@ -18,8 +18,7 @@ const mockState = vi.hoisted(() => ({
   assets: [] as LongTermAsset[],
   liabilities: {},
   crowdfundCampaigns: [] as CrowdfundCampaign[],
-  pendingForeclosureNotices: [] as AssetKind[],
-  pendingRiskEvent: null as RiskEventDescriptor | null
+  pendingOverlay: null as import('../../src/types').PendingOverlayState | null
 }))
 
 const pendingTourbusCampaign: CrowdfundCampaign = {
@@ -113,8 +112,7 @@ describe('AssetsScene', () => {
     mockState.assets = []
     mockState.liabilities = {}
     mockState.crowdfundCampaigns = []
-    mockState.pendingForeclosureNotices = []
-    mockState.pendingRiskEvent = null
+    mockState.pendingOverlay = null
     mockChangeScene.mockClear()
     mockDismissForeclosureNotice.mockClear()
     mockSetPendingRiskEvent.mockClear()
@@ -159,11 +157,9 @@ describe('AssetsScene', () => {
   // (see tests/ui/AssetNotifications.test.tsx), not by AssetsScene, so they can
   // surface from any scene. AssetsScene must not render them itself.
   it('does not render asset notification modals itself', () => {
-    mockState.pendingForeclosureNotices = ['tourbus_chassis']
-    mockState.pendingRiskEvent = {
-      assetId: 'asset_1',
-      eventType: 'fire',
-      conditionLoss: 15
+    mockState.pendingOverlay = {
+      kind: 'foreclosure',
+      notices: ['tourbus_chassis']
     }
 
     render(<AssetsScene />)

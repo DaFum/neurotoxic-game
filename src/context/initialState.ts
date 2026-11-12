@@ -235,10 +235,7 @@ const initialState: GameState = {
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
   pendingOverlay: null,
-  pendingSupplyStopInventory: null,
   terminalOutcome: null,
-  pendingForeclosureNotices: [],
-  pendingRiskEvent: null,
   completedMilestones: [],
   assets: [],
   liabilities: {},
@@ -333,8 +330,6 @@ export const createInitialState = (
   unlocks: Array.isArray(persistedData.unlocks)
     ? [...persistedData.unlocks]
     : [],
-  pendingForeclosureNotices: [],
-  pendingRiskEvent: null,
   assets: [],
   liabilities: {},
   crowdfundCampaigns: [],

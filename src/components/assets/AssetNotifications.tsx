@@ -24,7 +24,7 @@ export const AssetNotifications = () => {
   const pendingRiskEvent = useGameSelector(state =>
     state.pendingOverlay?.kind === 'risk_event'
       ? state.pendingOverlay.event
-      : (state.pendingRiskEvent ?? null)
+      : null
   )
   const { setPendingRiskEvent } = useGameActions()
   const foreclosureModal = useForeclosureModal()

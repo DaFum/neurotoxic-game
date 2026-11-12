@@ -11,7 +11,7 @@ export const useSupplyStopModal = () => {
   const pendingSupplyStopInventory = useGameSelector(state =>
     state.pendingOverlay?.kind === 'supply_stop'
       ? state.pendingOverlay.inventory
-      : (state.pendingSupplyStopInventory ?? null)
+      : null
   )
   const { setPendingSupplyStopInventory } = useGameActions()
 

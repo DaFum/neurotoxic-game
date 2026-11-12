@@ -121,6 +121,15 @@ export type PendingOverlayState =
   | { kind: 'risk_event'; event: RiskEventDescriptor }
   | { kind: 'foreclosure'; notices: AssetKind[] }
 
+/**
+ * An overlay a daily tick raises after already applying its effects, so it
+ * waits in `deferredOverlays` instead of being dropped while the slot is busy.
+ */
+export type DeferredOverlayState = Extract<
+  PendingOverlayState,
+  { kind: 'risk_event' | 'foreclosure' }
+>
+
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
@@ -345,11 +354,14 @@ export interface GameState {
    * Transient: `useBandHQModal` re-dispatches it once the slot is free.
    */
   deferredBandHQOpen?: boolean
-  pendingSupplyStopInventory: PurchaseItem[] | null
+  /**
+   * Risk event and foreclosure overlays raised while `pendingOverlay` was
+   * held, oldest first, at most one per kind. Persisted; the root reducer
+   * promotes the head once the slot is free.
+   */
+  deferredOverlays?: DeferredOverlayState[]
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */
   terminalOutcome: TerminalOutcome | null
-  pendingForeclosureNotices: AssetKind[]
-  pendingRiskEvent: RiskEventDescriptor | null
   completedMilestones: string[]
   // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
   assets: import('./assets').LongTermAsset[]

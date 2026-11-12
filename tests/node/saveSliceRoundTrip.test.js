@@ -78,14 +78,17 @@ const buildPopulatedState = () => {
   state.eventCooldowns = [{ eventId: 'evt_1', until: 18 }]
   state.pendingEvents = ['evt_2']
   state.venueBlacklist = ['venue_9']
-  state.pendingForeclosureNotices = [{ kind: 'tourbus_chassis', day: 11 }]
-  // Must satisfy `sanitizeRiskEventDescriptor`: a descriptor missing
-  // `eventType` or `conditionLoss` is legitimately dropped to null on load.
-  state.pendingRiskEvent = {
-    assetId: 'asset_1',
-    eventType: 'theft',
-    conditionLoss: 12
+  state.pendingOverlay = {
+    kind: 'risk_event',
+    event: {
+      assetId: 'asset_1',
+      eventType: 'theft',
+      conditionLoss: 12
+    }
   }
+  state.deferredOverlays = [
+    { kind: 'foreclosure', notices: ['tourbus_chassis'] }
+  ]
   state.activeQuests = [
     {
       id: 'inline_delivery',

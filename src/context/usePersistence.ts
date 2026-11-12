@@ -157,16 +157,13 @@ const PERSISTED_FIELDS = {
   activeEvent: isNullableObject,
   terminalOutcome: isNullableObject,
   pendingOverlay: isNullableObject,
-  pendingSupplyStopInventory: (value: unknown): boolean =>
-    value === null || Array.isArray(value),
+  deferredOverlays: Array.isArray,
   activeStoryFlags: Array.isArray,
   // Legacy saves hold a string[]; current saves an `eventId -> unlock day` record.
   eventCooldowns: (value: unknown): boolean =>
     Array.isArray(value) || isLooseRecord(value),
   pendingEvents: Array.isArray,
   venueBlacklist: Array.isArray,
-  pendingForeclosureNotices: Array.isArray,
-  pendingRiskEvent: isNullableObject,
   activeQuests: Array.isArray,
   questCooldowns: Array.isArray,
   completedQuests: isLooseRecord,
@@ -192,6 +189,19 @@ const PERSISTED_FIELDS = {
 const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<
   keyof typeof PERSISTED_FIELDS
 >
+
+/**
+ * Retired overlay fields older saves still carry. Loaded so `handleLoadGame`
+ * can restore their overlays, never written back.
+ */
+const LEGACY_LOAD_ONLY_FIELDS: Readonly<
+  Record<string, (value: unknown) => boolean>
+> = {
+  pendingRiskEvent: isNullableObject,
+  pendingSupplyStopInventory: (value: unknown): boolean =>
+    value === null || Array.isArray(value),
+  pendingForeclosureNotices: Array.isArray
+}
 
 /**
  * Core dependencies required for initializing persistence features.
@@ -225,10 +235,14 @@ export const createRawLoadPayload = (
   unlocks: string[]
 ): Record<string, unknown> => {
   const payload: Record<string, unknown> = { unlocks }
-  for (const key of LOADABLE_SAVE_KEYS) {
-    if (!Object.hasOwn(parsedObj, key)) continue
+  const fields: Record<string, (value: unknown) => boolean> = {
+    ...LEGACY_LOAD_ONLY_FIELDS,
+    ...PERSISTED_FIELDS
+  }
+  for (const key in fields) {
+    if (!Object.hasOwn(fields, key) || !Object.hasOwn(parsedObj, key)) continue
     const value = parsedObj[key]
-    if (PERSISTED_FIELDS[key](value)) {
+    if (fields[key]?.(value)) {
       payload[key] = value
     } else {
       logger.warn(
