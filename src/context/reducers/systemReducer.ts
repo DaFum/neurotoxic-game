@@ -333,9 +333,6 @@ export const handleLoadGame = (
     ),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
     ...overlaySlots,
-    // Transient and never persisted: a request from the live session must not
-    // replay against the loaded one.
-    deferredBandHQOpen: false,
     eventCooldowns: sanitizeEventCooldowns(
       loadedState.eventCooldowns,
       finiteNumberOr(mergedPlayer.day, 0)
@@ -1142,7 +1139,7 @@ export const handleAddUnlock = (
  * @param isOpen - Next pending open state.
  * @returns State with the pending overlay updated, or the original state when it
  * already matches or the payload is not a boolean. An open request that finds
- * another overlay pending is stored in `deferredBandHQOpen` instead of dropped.
+ * another overlay pending is queued into `deferredOverlays` instead of dropped.
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,
@@ -1152,16 +1149,7 @@ export const handleSetPendingBandHQOpen = (
   const isCurrentlyOverlayBandHQ = state.pendingOverlay?.kind === 'band_hq'
   if (isOpen) {
     if (isCurrentlyOverlayBandHQ) return state
-    if (state.pendingOverlay) {
-      // The slot holds another overlay; keep the request until it is free.
-      if (state.deferredBandHQOpen === true) return state
-      return { ...state, deferredBandHQOpen: true }
-    }
-    return {
-      ...state,
-      pendingOverlay: { kind: 'band_hq' },
-      deferredBandHQOpen: false
-    }
+    return raiseDeferredOverlay(state, { kind: 'band_hq' })
   }
 
   if (!isCurrentlyOverlayBandHQ) return state

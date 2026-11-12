@@ -45,6 +45,7 @@ import {
   isCrewInjuryStage
 } from '../../data/expedition/injuryStages'
 import { POST_OPTIONS } from '../../data/postOptions'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
@@ -1048,7 +1049,18 @@ export const sanitizeExpeditionState = (
       readCount(value, 'routeStep', 0)
     ),
     gigOutcomeByStep,
-    activeObligations: sanitizedObligations,
+    activeSponsorDealId:
+      typeof value.activeSponsorDealId === 'string'
+        ? BRAND_DEALS_BY_ID.has(value.activeSponsorDealId)
+          ? value.activeSponsorDealId
+          : null
+        : value.activeSponsorDealId === null
+          ? null
+          : (sanitizedObligations.find(o => o.sourceType === 'brandDeal')
+              ?.sourceId ?? null),
+    activeObligations: sanitizedObligations.filter(
+      o => o.sourceType === 'native'
+    ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : // An older active save never stored its cargo; deriving it once here

@@ -434,8 +434,8 @@ export const handlePrepareExpeditionSponsorOffers = (
  * exactly once, and the run's Cash/Fame baselines are stamped after the pre-run
  * fuel payment and after the staged sponsor's signing cash, so the settlement
  * measures only what the run itself earned. The signing cash is paid before the
- * run and is never forfeited by retention; the installed `brandDeal` obligation
- * carries the sponsor's risk.
+ * run and is never forfeited by retention; `activeSponsorDealId` carries the
+ * sponsor's risk.
  */
 export const handleStartExpedition = (
   state: GameState,
@@ -550,17 +550,6 @@ export const handleStartExpedition = (
       doubleDown: null
     })
   }
-  if (stagedSponsor)
-    activeObligations.push({
-      id: `${prepId}:${stagedSponsor.dealId}`,
-      sourceType: 'brandDeal',
-      sourceId: stagedSponsor.dealId,
-      constraints: [],
-      progressByConstraintId: Object.create(null),
-      status: 'active',
-      settled: false,
-      doubleDown: null
-    })
 
   // Every rule that depends on the committed Region/Tour has to be resolved
   // against the *validated candidate*, not against `state`: the loadout is not
@@ -689,6 +678,7 @@ export const handleStartExpedition = (
       ) as NonNullable<GameState['expedition']['bandInjuryByMemberId']>,
       preparedSponsorOffers: [],
       preparedSponsorProvenance: undefined,
+      activeSponsorDealId: stagedSponsor ? stagedSponsor.dealId : null,
       activeObligations
     }
   }

@@ -208,9 +208,11 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
         technicalConditionAggregate: getExpeditionConditionSummary(withDefects),
         heat: withDefects.expedition.pressure.heat,
         exposure: withDefects.expedition.pressure.exposure,
-        hasSponsorObligation: withDefects.expedition.activeObligations.some(
-          obligation => obligation.sourceType === 'brandDeal'
-        )
+        hasSponsorObligation:
+          Boolean(withDefects.expedition.activeSponsorDealId) ||
+          withDefects.expedition.activeObligations.some(
+            obligation => obligation.sourceType === 'brandDeal'
+          )
       })
     : null
   const finaleProfile = getExpeditionFinaleProfile(finaleType)

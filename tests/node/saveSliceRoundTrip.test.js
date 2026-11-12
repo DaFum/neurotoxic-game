@@ -321,6 +321,7 @@ const buildPopulatedState = () => {
       temporaryRouteOpportunity: null
     },
     preparedSponsorOffers: [],
+    activeSponsorDealId: null,
     activeObligations: [],
     runDraftTraitIds: [],
     pendingRunDraftOffer: null,

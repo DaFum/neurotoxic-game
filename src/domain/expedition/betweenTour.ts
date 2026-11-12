@@ -327,12 +327,13 @@ const resolveSponsorAdvanceTarget = (
 }
 
 // ⚡ BOLT OPTIMIZATION: Single-pass loop tracking minimum brand deal source ID.
-// What: Replaced array construction, .includes(), and .sort() with single-pass string comparison.
-// Why: Avoids temporary array allocation and sorting overhead.
-// Impact: Reduces GC pressure when evaluating active obligations.
 const resolveSponsorFollowUpTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
+  const dealId = state.expedition?.activeSponsorDealId
+  if (typeof dealId === 'string' && dealId !== '') {
+    return { kind: 'sponsor', id: dealId }
+  }
   let minSourceId: string | null = null
   const obligations = state.expedition?.activeObligations
   if (obligations) {

@@ -28,10 +28,7 @@ import type { OptionalToastCallback } from '../../types/callbacks'
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
   resetGameplayState: () => void
-  setters: Pick<
-    RhythmStateSetters,
-    'setAudioStatus' | 'setIsGameOver' | 'setFailureKind' | 'setInitStatus'
-  >
+  setters: Pick<RhythmStateSetters, 'setIsGameOver' | 'setInitStatus'>
   contextState: {
     band: GameState['band']
     gameMap: GameMap | null
@@ -251,8 +248,7 @@ export const useRhythmGameAudio = ({
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const audioEngine = useAudioEngine()
-  const { setAudioStatus, setIsGameOver, setFailureKind, setInitStatus } =
-    setters
+  const { setIsGameOver, setInitStatus } = setters
   const {
     band,
     gameMap,
@@ -284,9 +280,7 @@ export const useRhythmGameAudio = ({
     endGig,
     t,
     setInitStatus,
-    setAudioStatus,
-    setIsGameOver,
-    setFailureKind
+    setIsGameOver
   })
 
   useEffect(() => {
@@ -303,9 +297,7 @@ export const useRhythmGameAudio = ({
       endGig,
       t,
       setInitStatus,
-      setAudioStatus,
-      setIsGameOver,
-      setFailureKind
+      setIsGameOver
     }
   }, [
     band,
@@ -320,9 +312,7 @@ export const useRhythmGameAudio = ({
     endGig,
     t,
     setInitStatus,
-    setAudioStatus,
-    setIsGameOver,
-    setFailureKind
+    setIsGameOver
   ])
 
   /** Writes the gig init status; the reducer derives `audioStatus` and `failureKind` from it. */

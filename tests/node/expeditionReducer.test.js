@@ -245,6 +245,28 @@ describe('sanitizeExpeditionState', () => {
     assert.equal(sanitized.insuranceClaimConsumed, undefined)
   })
 
+  it('validates activeSponsorDealId against BRAND_DEALS_BY_ID, preserving known IDs and dropping unknown IDs', () => {
+    const known = activeSave()
+    known.activeSponsorDealId = 'energy_drink_cx'
+    const sanitizedKnown = sanitizeExpeditionState(known, 654321)
+    assert.equal(sanitizedKnown.activeSponsorDealId, 'energy_drink_cx')
+
+    const unknown = activeSave()
+    unknown.activeSponsorDealId = 'unknown_deal_123'
+    const sanitizedUnknown = sanitizeExpeditionState(unknown, 654321)
+    assert.equal(sanitizedUnknown.activeSponsorDealId, null)
+
+    const explicitNull = activeSave()
+    explicitNull.activeSponsorDealId = null
+    const sanitizedNull = sanitizeExpeditionState(explicitNull, 654321)
+    assert.equal(sanitizedNull.activeSponsorDealId, null)
+
+    const nonString = activeSave()
+    nonString.activeSponsorDealId = 12345
+    const sanitizedNonString = sanitizeExpeditionState(nonString, 654321)
+    assert.equal(sanitizedNonString.activeSponsorDealId, null)
+  })
+
   it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {
     const save = activeSave()
     save.routeStep = 0

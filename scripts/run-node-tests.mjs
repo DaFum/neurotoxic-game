@@ -113,7 +113,9 @@ const getRemainingTestFiles = () => {
     const items = fs.readdirSync(absoluteDir)
     for (const item of items) {
       const fullPath = path.join(absoluteDir, item)
-      const relativePath = path.relative(REPO_ROOT, fullPath).replace(/\\/g, '/')
+      const relativePath = path
+        .relative(REPO_ROOT, fullPath)
+        .replace(/\\/g, '/')
       let stat
       try {
         stat = fs.statSync(fullPath)
@@ -137,7 +139,9 @@ const getRemainingTestFiles = () => {
 }
 
 const normalizeTestPath = testFile =>
-  path.relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile)).replace(/\\/g, '/')
+  path
+    .relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile))
+    .replace(/\\/g, '/')
 
 const shouldOnlyHeavy =
   process.env.NODE_TEST_ONLY_HEAVY === '1' || flagOnlyHeavy
