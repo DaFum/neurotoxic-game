@@ -234,8 +234,3 @@
 
 **Learning:** In post-gig outcome screens (`CompletePhase`), recovery actions (such as "Spin Story" gated by spendable cash) used native `title={spinStoryReason}`. Native HTML `title` attributes are unstyleable, slow to appear, and inconsistently announced on disabled controls across mobile and assistive tech. At the same time, beware of adding redundant `aria-label`s to controls that already render clear, visible text (such as "SKIP"): in ARIA accessibility, `aria-label` completely replaces the element's accessible name rather than complementing it, which breaks exact text matches and user expectations.
 **Action:** Wrap gated recovery and modal action controls directly in the shared `Tooltip` component (`<Tooltip content={spinStoryReason}>`) instead of passing native `title`, and pass `aria-busy={isProcessingAction}` to async continuation buttons. Never apply an `aria-label` on buttons that already display unambiguous visible text labels.
-
-## 2026-11-11 - Proactive Gating & Tooltips for Action Buttons
-
-**Learning:** Action buttons that allow user clicks and rely exclusively on post-click warning toasts (like "START PRACTICE" in SetlistTab when no songs are selected or during an active expedition) leave keyboard and screen-reader users with no advance feedback about why the action is not viable. Relying on post-click toasts creates a frustrating trial-and-error experience.
-**Action:** Always proactively gate action buttons with `aria-disabled` and wrap them in the shared `Tooltip` component supplying the contextual reason (e.g. empty selection or locked mode). Guard click handlers from executing when `aria-disabled` is present, while keeping the element discoverable and focusable in the tab order.
