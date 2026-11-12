@@ -31,6 +31,7 @@
     "deadcode:budget": "node scripts/check-dead-code-budget.mjs",
     "deadcode:check": "pnpm exec knip --reporter json",
     "deadcode:report": "pnpm exec knip",
+    "images:check-missing": "node scripts/check-missing-images.mjs",
     "sync:agents": "node ./scripts/sync-agent-instructions.mjs",
     "sync:skills": "node ./scripts/sync-code-review-skill.mjs",
     "symbols:check": "node scripts/update-symbols.mjs --check",
