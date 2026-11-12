@@ -81,10 +81,25 @@ export const completeQuest = (
   // Toast
   nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
 
-  // Initialize normalized completedQuests index if missing
-  const currentCompleted = nextState.completedQuests ?? {
-    global: nextState.completedQuestIds ? [...nextState.completedQuestIds] : [],
-    scoped: {}
+  // Initialize normalized completedQuests index from the legacy fields if missing
+  let currentCompleted = nextState.completedQuests
+  if (!currentCompleted) {
+    const legacyScoped: Record<string, string[]> = {}
+    for (const c of nextState.completedQuestScopes ?? []) {
+      if (!c) continue
+      const existing = Object.hasOwn(legacyScoped, c.questId)
+        ? (legacyScoped[c.questId] ?? [])
+        : []
+      if (!existing.includes(c.scopeKey)) {
+        legacyScoped[c.questId] = [...existing, c.scopeKey]
+      }
+    }
+    currentCompleted = {
+      global: nextState.completedQuestIds
+        ? [...nextState.completedQuestIds]
+        : [],
+      scoped: legacyScoped
+    }
   }
   const nextGlobal = currentCompleted.global.includes(quest.id)
     ? currentCompleted.global

@@ -1622,6 +1622,50 @@ test('QuestLifecycle', async t => {
         )
       }
     )
+
+    await t.test(
+      'merges legacy scopes whose questId shadows an Object.prototype key',
+      async () => {
+        const { sanitizeCompletedQuests } =
+          await import('../../../src/context/reducers/sanitizers/stateSanitizers')
+        const normalized = sanitizeCompletedQuests(undefined, {
+          completedQuestScopes: [{ questId: 'toString', scopeKey: 'venue_a' }]
+        })
+        assert.equal(Object.hasOwn(normalized.scoped, 'toString'), true)
+        assert.deepStrictEqual(normalized.scoped.toString, ['venue_a'])
+      }
+    )
+
+    await t.test(
+      'completing a quest without a completedQuests index keeps legacy scoped completions',
+      () => {
+        const state = {
+          player: { day: 1, currentNodeId: 'node_1_0' },
+          activeQuests: legacyQuests([{ id: 'q1' }]),
+          activeStoryFlags: [],
+          completedQuestIds: ['quest_venue_residency'],
+          completedQuestScopes: [
+            { questId: 'quest_venue_residency', scopeKey: 'venue_a' }
+          ],
+          questCooldowns: [],
+          gameMap: {
+            nodes: {
+              node_1_0: { id: 'node_1_0', type: 'GIG', venueId: 'venue_a' }
+            }
+          }
+        }
+
+        const next = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+
+        assert.deepStrictEqual(next.completedQuests.scoped, {
+          quest_venue_residency: ['venue_a']
+        })
+        assert.deepStrictEqual(canAcceptQuest(next, 'quest_venue_residency'), {
+          ok: false,
+          reason: 'scope'
+        })
+      }
+    )
   })
 
   await t.test('failure penalty handling', async t => {

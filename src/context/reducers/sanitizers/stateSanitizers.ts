@@ -2675,7 +2675,9 @@ export const sanitizeCompletedQuests = (
         entry.questId.length > 0 &&
         entry.scopeKey.length > 0
       ) {
-        const existing = scopedMap[entry.questId] ?? []
+        const existing = Object.hasOwn(scopedMap, entry.questId)
+          ? (scopedMap[entry.questId] ?? [])
+          : []
         if (!existing.includes(entry.scopeKey)) {
           scopedMap[entry.questId] = [...existing, entry.scopeKey]
         }
