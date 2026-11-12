@@ -2644,14 +2644,16 @@ export const sanitizePendingOverlay = (
 
   // Fallback / migration from legacy fields:
   if (legacy) {
-    const riskEvent = sanitizeRiskEventDescriptor(legacy.pendingRiskEvent)
-    if (riskEvent) return { kind: 'risk_event', event: riskEvent }
-
+    // Supply stop first: it is not queueable, while handleLoadGame defers a
+    // legacy risk event behind whichever overlay takes the slot.
     const supplyInventory = sanitizeSupplyStopInventory(
       legacy.pendingSupplyStopInventory
     )
     if (supplyInventory)
       return { kind: 'supply_stop', inventory: supplyInventory }
+
+    const riskEvent = sanitizeRiskEventDescriptor(legacy.pendingRiskEvent)
+    if (riskEvent) return { kind: 'risk_event', event: riskEvent }
 
     const foreclosureNotices = sanitizeAssetKinds(
       legacy.pendingForeclosureNotices

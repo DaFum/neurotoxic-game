@@ -2314,6 +2314,23 @@ test('LOAD_GAME through the save whitelist restores pending overlays from a lega
   })
 
   await t.test(
+    'a legacy save with a risk event and an open supply stop keeps both',
+    () => {
+      const inventory = [{ id: 'item_1', name: 'Strings', cost: 10 }]
+      const loaded = load({
+        version: 2,
+        pendingRiskEvent: riskEvent,
+        pendingSupplyStopInventory: inventory
+      })
+      assert.equal(loaded.pendingOverlay?.kind, 'supply_stop')
+      assert.equal(loaded.pendingOverlay?.inventory[0]?.id, 'item_1')
+      assert.deepEqual(loaded.deferredOverlays, [
+        { kind: 'risk_event', event: riskEvent }
+      ])
+    }
+  )
+
+  await t.test(
     'a legacy risk event deferred behind an active overlay is kept',
     () => {
       const loaded = load({
