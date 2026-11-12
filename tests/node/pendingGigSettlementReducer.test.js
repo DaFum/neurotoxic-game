@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
-import { settlePendingGigOnLoad } from '../../src/context/reducers/pendingGigSettlementReducer'
+import {
+  sanitizePendingGigSettlement,
+  settlePendingGigOnLoad
+} from '../../src/context/reducers/pendingGigSettlementReducer'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createInitialState } from '../../src/context/initialState'
@@ -335,7 +338,7 @@ test('pending gig settlement reconciliation on load', async t => {
     )
     assert.ok(recordAction)
     let state = gameReducer(rawPostState, recordAction)
-    assert.equal(state.pendingGigSettlement?.socialReconciled, false)
+    assert.equal(state.pendingGigSettlement?.lifecycleStage, 'recorded')
 
     // 2. Apply composite action
     const compositeAction = {
@@ -351,7 +354,7 @@ test('pending gig settlement reconciliation on load', async t => {
       }
     }
     state = gameReducer(state, compositeAction)
-    assert.equal(state.pendingGigSettlement?.socialReconciled, true)
+    assert.equal(state.pendingGigSettlement?.lifecycleStage, 'social_reconciled')
     assert.equal(state.social.loyalty, 15)
 
     // 3. JSON round-trip createPersistedState and load
@@ -645,17 +648,16 @@ test('pending gig settlement reconciliation on load', async t => {
           snapshot.pendingGigSettlement,
           'test-id'
         )
-        assert.equal(sanitized?.payload?.socialReconciled, false)
+        assert.equal(sanitized?.payload?.lifecycleStage, 'recorded')
       }
       const trueSnapshot = buildPostGigSnapshot({ socialReconciled: true })
-      const trueSanitized = createRecordPendingGigSettlementAction(
-        trueSnapshot.pendingGigSettlement,
-        'test-id'
+      const trueSanitized = sanitizePendingGigSettlement(
+        trueSnapshot.pendingGigSettlement
       )
       assert.equal(
-        trueSanitized?.payload?.socialReconciled,
-        false,
-        'creator always initializes to false'
+        trueSanitized?.lifecycleStage,
+        'social_reconciled',
+        'sanitizer maps legacy socialReconciled: true to social_reconciled'
       )
     }
   )
@@ -756,7 +758,7 @@ test('pending gig settlement reconciliation on load', async t => {
         misses: 0,
         dealFameMultiplier: 1,
         soldMerch: {},
-        socialReconciled: false
+        lifecycleStage: 'recorded'
       }
     }
 
@@ -773,7 +775,7 @@ test('pending gig settlement reconciliation on load', async t => {
       state,
       'an id that names no pending record is a no-op'
     )
-    assert.equal(next.pendingGigSettlement?.socialReconciled, false)
+    assert.equal(next.pendingGigSettlement?.lifecycleStage, 'recorded')
   })
 })
 
@@ -801,8 +803,7 @@ test('pending gig settlement actions', async t => {
     })
     assert.deepEqual(next.pendingGigSettlement, {
       ...record,
-      lifecycleStage: 'recorded',
-      socialReconciled: false
+      lifecycleStage: 'recorded'
     })
   })
 
@@ -1061,8 +1062,7 @@ test('a tampered record is bounded to what the post-gig screen produces', () => 
     perfScore: 30,
     misses: 0,
     dealFameMultiplier: 1,
-    lifecycleStage: 'recorded',
-    socialReconciled: false
+    lifecycleStage: 'recorded'
   })
 })
 
@@ -1337,7 +1337,7 @@ test('an accepted per-gig social patch marks the settlement, a rejected one leav
   )
   assert.ok(record)
   const recorded = gameReducer(base, record)
-  assert.equal(recorded.pendingGigSettlement?.socialReconciled, false)
+  assert.equal(recorded.pendingGigSettlement?.lifecycleStage, 'recorded')
   const reconcile = socialUpdate => ({
     type: ActionTypes.APPLY_GIG_SOCIAL_RECONCILIATION,
     payload: { socialUpdate, settlementId: 'settlement-identity-1' }
@@ -1349,8 +1349,8 @@ test('an accepted per-gig social patch marks the settlement, a rejected one leav
   for (const patch of [{}, { loyalty: recorded.social.loyalty }]) {
     const accepted = gameReducer(recorded, reconcile(patch))
     assert.equal(
-      accepted.pendingGigSettlement?.socialReconciled,
-      true,
+      accepted.pendingGigSettlement?.lifecycleStage,
+      'social_reconciled',
       JSON.stringify(patch)
     )
   }
@@ -1362,7 +1362,7 @@ test('an accepted per-gig social patch marks the settlement, a rejected one leav
     reconcile(() => null)
   )
   assert.strictEqual(rejected, recorded)
-  assert.equal(rejected.pendingGigSettlement?.socialReconciled, false)
+  assert.equal(rejected.pendingGigSettlement?.lifecycleStage, 'recorded')
 })
 
 test('shared settlement policy matches recovered ledger and Finale gates', async () => {
@@ -1439,7 +1439,6 @@ test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
     payload: record
   })
   assert.equal(recordedState.pendingGigSettlement?.lifecycleStage, 'recorded')
-  assert.equal(recordedState.pendingGigSettlement?.socialReconciled, false)
 
   // 2. Applying social post result advances lifecycleStage to 'social_reconciled'
   const socialState = gameReducer(recordedState, {
@@ -1457,7 +1456,6 @@ test('lifecycleStage flow: new-record -> social-post -> load recovery', () => {
     socialState.pendingGigSettlement?.lifecycleStage,
     'social_reconciled'
   )
-  assert.equal(socialState.pendingGigSettlement?.socialReconciled, true)
 
   // 3. Load recovery respects social_reconciled and does not re-reconcile
   const recovered = settlePendingGigOnLoad(
@@ -1562,7 +1560,6 @@ for (const lifecycleStage of ['social_reconciled', 'settled']) {
     const action = createRecordPendingGigSettlementAction(input, id)
     const next = gameReducer(state, action)
     assert.equal(next.pendingGigSettlement.lifecycleStage, previousStage)
-    assert.equal(next.pendingGigSettlement.socialReconciled, true)
   })
 }
 
@@ -1581,7 +1578,6 @@ test('re-recording a legacy complete settlement canonicalizes to settled and pre
   const action = createRecordPendingGigSettlementAction(input, id)
   const next = gameReducer(state, action)
   assert.equal(next.pendingGigSettlement.lifecycleStage, 'settled')
-  assert.equal(next.pendingGigSettlement.socialReconciled, true)
 })
 
 test('SUB-01-REC-01: monotonic lifecycleStage progression and single source of truth', () => {
@@ -1606,21 +1602,18 @@ test('SUB-01-REC-01: monotonic lifecycleStage progression and single source of t
     socialReconciled: true
   })
   assert.equal(normalizedFromLegacy.lifecycleStage, 'social_reconciled')
-  assert.equal(normalizedFromLegacy.socialReconciled, true)
 
   // Normalization maps legacy pending_social to recorded
   const normalizedFromPending = normalizeGigSettlementLifecycle({
     lifecycleStage: 'pending_social'
   })
   assert.equal(normalizedFromPending.lifecycleStage, 'recorded')
-  assert.equal(normalizedFromPending.socialReconciled, false)
 
   // Normalization maps legacy complete to settled
   const normalizedFromComplete = normalizeGigSettlementLifecycle({
     lifecycleStage: 'complete'
   })
   assert.equal(normalizedFromComplete.lifecycleStage, 'settled')
-  assert.equal(normalizedFromComplete.socialReconciled, true)
 
   // Monotonic advancement prevents demotion
   assert.equal(
@@ -1663,5 +1656,4 @@ test('SUB-01-REC-01: monotonic lifecycleStage progression and single source of t
     }
   })
   assert.equal(next.pendingGigSettlement?.lifecycleStage, 'settled')
-  assert.equal(next.pendingGigSettlement?.socialReconciled, true)
 })

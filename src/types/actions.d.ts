@@ -130,7 +130,7 @@ export type UpdateBandPayload =
   Partial<BandState> | ((band: BandState) => Partial<BandState>)
 
 /**
- * Payload for applying per-gig social update and marking settlement as socialReconciled.
+ * Payload for applying per-gig social update and advancing settlement lifecycleStage to social_reconciled.
  */
 export interface ApplyGigSocialReconciliationPayload {
   socialUpdate: import('./social').UpdateSocialPayload
@@ -144,7 +144,7 @@ export interface ApplySocialPostResultPayload {
   band?: UpdateBandPayload
   moneyDelta?: number
   failedStageDive?: boolean
-  /** Pending settlement to mark `socialReconciled` together with the social patch. */
+  /** Pending settlement to advance to `social_reconciled` together with the social patch. */
   settlementId?: string | null
   social: Partial<SocialState> & { pendingSocialOptionId: string }
 }

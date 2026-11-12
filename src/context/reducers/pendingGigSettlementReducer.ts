@@ -138,14 +138,13 @@ export const handleRecordPendingGigSettlement = (
     ...state,
     pendingGigSettlement: {
       ...record,
-      lifecycleStage: effectiveStage,
-      socialReconciled: effectiveStage !== 'recorded'
+      lifecycleStage: effectiveStage
     }
   }
 }
 
 /**
- * Applies social updates and sets `socialReconciled: true` on matching pending settlement.
+ * Applies social updates and marks matching pending settlement as social_reconciled.
  *
  * @param state - Current game state.
  * @param payload - Object carrying `socialUpdate` and optional `settlementId`.
