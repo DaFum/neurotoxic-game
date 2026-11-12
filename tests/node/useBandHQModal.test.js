@@ -4,7 +4,6 @@ import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 let mockPendingBandHQOpen = false
-let mockDeferredBandHQOpen = false
 let mockOtherOverlay = false
 const mockSetPendingBandHQOpen = mock.fn()
 
@@ -13,7 +12,6 @@ mock.module('../../src/context/GameState', {
   namedExports: {
     useGameSelector: mock.fn(selector =>
       selector({
-        deferredBandHQOpen: mockDeferredBandHQOpen,
         pendingOverlay: mockPendingBandHQOpen
           ? { kind: 'band_hq' }
           : mockOtherOverlay
@@ -41,7 +39,6 @@ describe('useBandHQModal', () => {
   afterEach(() => {
     cleanup()
     mockPendingBandHQOpen = false
-    mockDeferredBandHQOpen = false
     mockOtherOverlay = false
     mockSetPendingBandHQOpen.mock.resetCalls()
   })
@@ -72,20 +69,5 @@ describe('useBandHQModal', () => {
     // The effect clears the persisted flag once it has been consumed.
     assert.equal(mockSetPendingBandHQOpen.mock.calls.length, 1)
     assert.deepEqual(mockSetPendingBandHQOpen.mock.calls[0].arguments, [false])
-  })
-
-  test('re-requests a deferred open once the overlay slot is free', () => {
-    mockDeferredBandHQOpen = true
-    renderHook(() => useBandHQModal())
-
-    assert.deepEqual(mockSetPendingBandHQOpen.mock.calls[0].arguments, [true])
-  })
-
-  test('keeps waiting while another overlay still holds the slot', () => {
-    mockDeferredBandHQOpen = true
-    mockOtherOverlay = true
-    renderHook(() => useBandHQModal())
-
-    assert.equal(mockSetPendingBandHQOpen.mock.calls.length, 0)
   })
 })

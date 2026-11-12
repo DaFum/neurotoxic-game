@@ -487,15 +487,12 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
     // preparedSponsorOffers is cleared on active transition
     assert.deepEqual(started.expedition.preparedSponsorOffers, [])
 
-    // Sponsor obligation is materialized
-    const sponsorObligation = started.expedition.activeObligations.find(
-      o => o.sourceType === 'brandDeal' && o.sourceId === validOffer.dealId
+    // Sponsor deal is recorded as activeSponsorDealId
+    assert.equal(
+      started.expedition.activeSponsorDealId,
+      validOffer.dealId,
+      'linked brandDeal must be recorded as activeSponsorDealId'
     )
-    assert.ok(
-      sponsorObligation,
-      'linked brandDeal obligation must be materialized'
-    )
-    assert.equal(sponsorObligation.status, 'active')
 
     // Replay START does not award money or change state
     const replayed = gameReducer(started, {
@@ -646,12 +643,7 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
     assert.equal(started.expedition.status, 'active')
     assert.deepEqual(started.expedition.preparedSponsorOffers, [])
     assert.equal(started.expedition.preparedSponsorProvenance, undefined)
-    assert.equal(
-      started.expedition.activeObligations.some(
-        obligation => obligation.sourceType === 'brandDeal'
-      ),
-      true
-    )
+    assert.equal(started.expedition.activeSponsorDealId, stagedOffers[0].dealId)
   })
 
   it('clears offers and provenance together when the staged route is no longer available', () => {
@@ -723,13 +715,7 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
     assert.equal(started.expedition.status, 'active')
     assert.deepEqual(started.expedition.preparedSponsorOffers, [])
     assert.equal(started.expedition.preparedSponsorProvenance, undefined)
-    assert.ok(
-      started.expedition.activeObligations.some(
-        obligation =>
-          obligation.sourceType === 'brandDeal' &&
-          obligation.sourceId === fourth.dealId
-      )
-    )
+    assert.equal(started.expedition.activeSponsorDealId, fourth.dealId)
   })
 
   it('sanitizes up to the producer ceiling, not a smaller literal', () => {

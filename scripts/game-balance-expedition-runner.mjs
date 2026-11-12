@@ -660,12 +660,16 @@ export const verifyHardCorrectnessGates = (
         `[HardGate14] Sponsor staging provenance survived START at stage ${stage}`
       )
     }
+    const hasSponsorDeal = Boolean(state.expedition.activeSponsorDealId)
     const sponsorObligations = (
       state.expedition.activeObligations ?? []
     ).filter(obligation => obligation.sourceType === 'brandDeal')
-    if (sponsorObligations.length > 1) {
+    if (
+      sponsorObligations.length > 1 ||
+      (hasSponsorDeal && sponsorObligations.length > 0)
+    ) {
       throw new Error(
-        `[HardGate14] ${sponsorObligations.length} Sponsor obligations materialized for one run at stage ${stage}`
+        `[HardGate14] Multiple Sponsor obligations materialized for one run at stage ${stage}`
       )
     }
   }
@@ -1920,9 +1924,11 @@ export const runExpeditionSimulation = (
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
     maxComboBest: 0,
-    sponsorAccepted: (state.expedition.activeObligations ?? []).some(
-      obligation => obligation.sourceType === 'brandDeal'
-    ),
+    sponsorAccepted:
+      Boolean(state.expedition.activeSponsorDealId) ||
+      (state.expedition.activeObligations ?? []).some(
+        obligation => obligation.sourceType === 'brandDeal'
+      ),
     rivalId: state.rivalBand?.id ?? null,
     meaningfulNodesVisited: 0,
     routeDepth: 0,

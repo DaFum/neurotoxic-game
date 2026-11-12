@@ -40,9 +40,7 @@ type RhythmGameScoringParams = {
     | 'setIsGameOver'
     | 'setAccuracy'
     | 'setCorruptionLevel'
-    | 'setIsCorruptionBurstActive'
-    | 'setCorruptionBurstEndTime'
-    | 'setCorruptionState'
+    | 'startCorruptionBurst'
   >
   performance: RhythmPerformance
   contextActions: {

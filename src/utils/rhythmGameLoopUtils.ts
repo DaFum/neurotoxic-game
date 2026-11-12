@@ -31,7 +31,8 @@ interface RhythmTickArgs {
   deltaMS: number
   handleCollision: CollisionHandler
   setIsToxicMode: ToggleBooleanCallback
-  setIsCorruptionBurstActive: ToggleBooleanCallback
+  endCorruptionBurst?: (level: number) => void
+  setIsCorruptionBurstActive?: ToggleBooleanCallback
   handleMiss: MissHandler
   /** Effective lane hit window; a note stays hittable until it elapses. */
   getLaneHitWindow?: (laneIndex: number) => number
@@ -39,7 +40,7 @@ interface RhythmTickArgs {
   getGigTimeMs: () => number
   pauseAudio: AsyncVoidCallback
   resumeAudio: AsyncBooleanCallback
-  setCorruptionState: (level: number, active: boolean) => void
+  setCorruptionState?: (level: number, active: boolean) => void
   disableCorruptionBurstAudio: () => void
 }
 
@@ -154,10 +155,11 @@ const processToxicMode = (
 const processCorruptionBurst = (
   stateRef: RhythmGameRefState,
   now: number,
-  setIsCorruptionBurstActive: ToggleBooleanCallback,
-  setCorruptionState: (level: number, active: boolean) => void,
   disableCorruptionBurstAudio: () => void,
-  clockReset: boolean
+  clockReset: boolean,
+  endCorruptionBurst?: (level: number) => void,
+  setIsCorruptionBurstActive?: ToggleBooleanCallback,
+  setCorruptionState?: (level: number, active: boolean) => void
 ): void => {
   if (
     stateRef.isCorruptionBurstActive &&
@@ -165,11 +167,10 @@ const processCorruptionBurst = (
   ) {
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
-    setIsCorruptionBurstActive(false)
-    setCorruptionState(
-      finiteNumberOr(stateRef.stats?.corruptionLevel, 0),
-      false
-    )
+    const level = finiteNumberOr(stateRef.stats?.corruptionLevel, 0)
+    endCorruptionBurst?.(level)
+    setIsCorruptionBurstActive?.(false)
+    setCorruptionState?.(level, false)
     disableCorruptionBurstAudio()
   }
 }
@@ -365,6 +366,7 @@ export const processRhythmGameTick = ({
   deltaMS,
   handleCollision,
   setIsToxicMode,
+  endCorruptionBurst,
   setIsCorruptionBurstActive,
   handleMiss,
   getLaneHitWindow,
@@ -461,10 +463,11 @@ export const processRhythmGameTick = ({
   processCorruptionBurst(
     stateRef,
     now,
-    setIsCorruptionBurstActive,
-    setCorruptionState,
     disableCorruptionBurstAudio,
-    clockReset
+    clockReset,
+    endCorruptionBurst,
+    setIsCorruptionBurstActive,
+    setCorruptionState
   )
 
   // A projectile hit above can collapse the band in this very tick. Collapse

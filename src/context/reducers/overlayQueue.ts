@@ -38,9 +38,12 @@ export const raiseDeferredOverlay = <T extends OverlaySlots>(
     if (overlay.kind === 'risk_event' && active.kind === 'risk_event') {
       return state
     }
+    if (overlay.kind === 'band_hq' && active.kind === 'band_hq') {
+      return state
+    }
     return { ...state, deferredOverlays: [...deferred, overlay] }
   }
-  if (overlay.kind === 'risk_event') return state
+  if (overlay.kind === 'risk_event' || overlay.kind === 'band_hq') return state
   return {
     ...state,
     deferredOverlays: deferred.map(entry =>

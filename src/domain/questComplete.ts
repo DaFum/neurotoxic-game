@@ -15,6 +15,7 @@ import {
   createFameGainedQuestEvent
 } from '../quests/producers/economyQuestEvents'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
+import { sanitizeCompletedQuests } from './questSanitizers'
 
 /**
  * Resolves an active quest, applies rewards, and triggers followup logic.
@@ -81,26 +82,13 @@ export const completeQuest = (
   // Toast
   nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
 
-  // Initialize normalized completedQuests index from the legacy fields if missing
-  let currentCompleted = nextState.completedQuests
-  if (!currentCompleted) {
-    const legacyScoped: Record<string, string[]> = {}
-    for (const c of nextState.completedQuestScopes ?? []) {
-      if (!c) continue
-      const existing = Object.hasOwn(legacyScoped, c.questId)
-        ? (legacyScoped[c.questId] ?? [])
-        : []
-      if (!existing.includes(c.scopeKey)) {
-        legacyScoped[c.questId] = [...existing, c.scopeKey]
-      }
-    }
-    currentCompleted = {
-      global: nextState.completedQuestIds
-        ? [...nextState.completedQuestIds]
-        : [],
-      scoped: legacyScoped
-    }
-  }
+  // Update authoritative completedQuests index
+  const currentCompleted =
+    nextState.completedQuests ??
+    sanitizeCompletedQuests(null, {
+      completedQuestIds: nextState.completedQuestIds,
+      completedQuestScopes: nextState.completedQuestScopes
+    })
   const nextGlobal = currentCompleted.global.includes(quest.id)
     ? currentCompleted.global
     : [...currentCompleted.global, quest.id]
@@ -124,17 +112,6 @@ export const completeQuest = (
         ...currentCompleted.scoped,
         [quest.id]: [...existingScopes, quest.scopeKey]
       }
-    }
-
-    const scopes = nextState.completedQuestScopes ?? []
-    const exists = scopes.some(
-      c => c?.questId === quest.id && c?.scopeKey === quest.scopeKey
-    )
-    if (!exists) {
-      nextState.completedQuestScopes = [
-        ...(nextState.completedQuestScopes ?? []),
-        { questId: quest.id, scopeKey: quest.scopeKey }
-      ]
     }
   }
 

@@ -10,6 +10,8 @@ mock.module(new URL('../../src/utils/economy/index.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
+    calculateDailyLivingObligations: () => 80,
+    calculateDailyYouTubeRevenue: () => 0,
     // The rest-income escape prices living costs; a flat figure keeps the
     // fixtures' daily net equal to their `dailyObligations`.
     calculateGuaranteedDailyCost: () => 80,

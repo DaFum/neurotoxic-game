@@ -122,12 +122,12 @@ export type PendingOverlayState =
   | { kind: 'foreclosure'; notices: AssetKind[] }
 
 /**
- * An overlay a daily tick raises after already applying its effects, so it
- * waits in `deferredOverlays` instead of being dropped while the slot is busy.
+ * An overlay that waits in `deferredOverlays` instead of being dropped while
+ * the active overlay slot is busy.
  */
 export type DeferredOverlayState = Extract<
   PendingOverlayState,
-  { kind: 'risk_event' | 'foreclosure' }
+  { kind: 'risk_event' | 'foreclosure' | 'band_hq' }
 >
 
 export interface GameSettings {
@@ -350,14 +350,8 @@ export interface GameState {
   /** Consolidated active asynchronous modal overlay. */
   pendingOverlay?: PendingOverlayState | null
   /**
-   * Band HQ open request made while another overlay held `pendingOverlay`.
-   * Transient: `useBandHQModal` re-dispatches it once the slot is free.
-   */
-  deferredBandHQOpen?: boolean
-  /**
-   * Risk event and foreclosure overlays raised while `pendingOverlay` was
-   * held, oldest first, at most one per kind. Persisted; the root reducer
-   * promotes the head once the slot is free.
+   * Overlays raised while `pendingOverlay` was held, oldest first, at most one
+   * per kind. The root reducer promotes the head once the slot is free.
    */
   deferredOverlays?: DeferredOverlayState[]
   /** Durable terminal result; a save carrying it loads straight into GAMEOVER. */

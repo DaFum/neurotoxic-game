@@ -5,7 +5,9 @@ import { existsSync, chmodSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
+import { pathToFileURL } from 'node:url'
 
+const toUrl = p => pathToFileURL(p).href
 const repoRoot = process.cwd()
 
 const EXPECTED_EXPORTS = [
@@ -166,13 +168,13 @@ describe('skilltest parity suite across trees', () => {
   for (const tree of TREES) {
     describe(`Tree: ${tree.name}`, () => {
       test('exports exactly the fixed public API list', async () => {
-        const mod = await import(tree.libPath)
+        const mod = await import(toUrl(tree.libPath))
         const exports = Object.keys(mod).sort()
         assert.deepEqual(exports, EXPECTED_EXPORTS)
       })
 
       test('tree binding getTreeName returns expected tree name', async () => {
-        const mod = await import(tree.libPath)
+        const mod = await import(toUrl(tree.libPath))
         assert.equal(mod.getTreeName(), tree.name)
       })
 
@@ -183,7 +185,7 @@ describe('skilltest parity suite across trees', () => {
         await fs.mkdir(agentSkills, { recursive: true })
         await fs.mkdir(claudeSkills, { recursive: true })
 
-        const mod = await import(tree.libPath)
+        const mod = await import(toUrl(tree.libPath))
         const rootsAgent = await mod.collectSkillRoots(
           tempGit,
           tempGit,
@@ -206,7 +208,7 @@ describe('skilltest parity suite across trees', () => {
 
         const script = `
           import { writeFile } from 'node:fs/promises';
-          import { writeReport, resetRepoRootCache } from ${JSON.stringify(tree.libPath)};
+          import { writeReport, resetRepoRootCache } from ${JSON.stringify(toUrl(tree.libPath))};
           await writeReport({ step: 1 });
           await writeFile('.git', 'gitdir: elsewhere\\n');
           await writeReport({ step: 2 });
@@ -231,7 +233,7 @@ describe('skilltest parity suite across trees', () => {
         const res = await runSubprocess('node', [
           '--input-type=module',
           '-e',
-          `import { validateSkills, formatReport } from ${JSON.stringify(tree.validatorPath)};
+          `import { validateSkills, formatReport } from ${JSON.stringify(toUrl(tree.validatorPath))};
            console.log('IMPORTED_CLEANLY', typeof validateSkills, typeof formatReport);`
         ])
         assert.equal(res.code, 0, res.stderr)
@@ -287,7 +289,7 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         )
 
         const script = `
-          import { discoverSkills, collectSkillRoots, findRepoRoot } from ${JSON.stringify(tree.libPath)};
+          import { discoverSkills, collectSkillRoots, findRepoRoot } from ${JSON.stringify(toUrl(tree.libPath))};
           const repo = await findRepoRoot(process.cwd());
           const roots = await collectSkillRoots(process.cwd(), repo);
           const records = await discoverSkills({ includeUserSkills: false });
@@ -324,53 +326,61 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         }
       })
 
-      test('symlink cases: valid symlink and broken symlink', async t => {
-        const tempGit = await createTempGitRepo(t)
-        const skillsDir = path.join(tempGit, tree.name, 'skills')
-        await fs.mkdir(skillsDir, { recursive: true })
+      test(
+        'symlink cases: valid symlink and broken symlink',
+        {
+          skip:
+            process.platform === 'win32' &&
+            'symlinks require elevated privileges or Developer Mode on Windows'
+        },
+        async t => {
+          const tempGit = await createTempGitRepo(t)
+          const skillsDir = path.join(tempGit, tree.name, 'skills')
+          await fs.mkdir(skillsDir, { recursive: true })
 
-        const targetDir = path.join(tempGit, 'external-skill')
-        await fs.mkdir(targetDir, { recursive: true })
-        await fs.writeFile(
-          path.join(targetDir, 'SKILL.md'),
-          `---\nname: linked-skill\ndescription: A valid linked skill with enough characters to pass description check.\n---\n`
-        )
+          const targetDir = path.join(tempGit, 'external-skill')
+          await fs.mkdir(targetDir, { recursive: true })
+          await fs.writeFile(
+            path.join(targetDir, 'SKILL.md'),
+            `---\nname: linked-skill\ndescription: A valid linked skill with enough characters to pass description check.\n---\n`
+          )
 
-        const validLink = path.join(skillsDir, 'linked-skill')
-        await fs.symlink(targetDir, validLink)
+          const validLink = path.join(skillsDir, 'linked-skill')
+          await fs.symlink(targetDir, validLink)
 
-        const brokenLink = path.join(skillsDir, 'broken-skill')
-        await fs.symlink(path.join(tempGit, 'non-existent'), brokenLink)
+          const brokenLink = path.join(skillsDir, 'broken-skill')
+          await fs.symlink(path.join(tempGit, 'non-existent'), brokenLink)
 
-        const script = `
-          import { discoverSkills, loadSkillRecord } from ${JSON.stringify(tree.libPath)};
+          const script = `
+          import { discoverSkills, loadSkillRecord } from ${JSON.stringify(toUrl(tree.libPath))};
           const records = await discoverSkills({ includeUserSkills: false });
           const brokenRecord = await loadSkillRecord(${JSON.stringify(brokenLink)});
           console.log(JSON.stringify({ records, brokenRecord }));
         `
-        const res = await runSubprocess(
-          'node',
-          ['--input-type=module', '-e', script],
-          {
-            cwd: tempGit
-          }
-        )
-        assert.equal(res.code, 0, res.stderr)
-        const out = JSON.parse(res.stdout.trim())
-
-        const linkedRecord = out.records.find(r => r.name === 'linked-skill')
-        assert.ok(linkedRecord)
-        assert.equal(linkedRecord.isSymlink, true)
-        assert.equal(linkedRecord.realPath, targetDir)
-
-        assert.ok(out.brokenRecord)
-        assert.equal(out.brokenRecord.isSymlink, true)
-        assert.ok(
-          out.brokenRecord.findings.some(
-            f => f.level === 'error' && f.message === 'Broken symlink target.'
+          const res = await runSubprocess(
+            'node',
+            ['--input-type=module', '-e', script],
+            {
+              cwd: tempGit
+            }
           )
-        )
-      })
+          assert.equal(res.code, 0, res.stderr)
+          const out = JSON.parse(res.stdout.trim())
+
+          const linkedRecord = out.records.find(r => r.name === 'linked-skill')
+          assert.ok(linkedRecord)
+          assert.equal(linkedRecord.isSymlink, true)
+          assert.equal(linkedRecord.realPath, targetDir)
+
+          assert.ok(out.brokenRecord)
+          assert.equal(out.brokenRecord.isSymlink, true)
+          assert.ok(
+            out.brokenRecord.findings.some(
+              f => f.level === 'error' && f.message === 'Broken symlink target.'
+            )
+          )
+        }
+      )
 
       test(
         'script checks skip only the named support files of a skill',
@@ -424,7 +434,7 @@ description: Testing skill for ${skillName} with enough characters to pass descr
             ['helper.js', ';(function () {})()\n', 0o644]
           ])
 
-          const mod = await import(tree.libPath)
+          const mod = await import(toUrl(tree.libPath))
           const unclassifiedWarnings = [
             'warning: Executable script missing shebang: format-report.mjs',
             'warning: Script is not executable: start-server.sh'
@@ -493,7 +503,7 @@ description: Testing skill for ${skillName} with enough characters to pass descr
         )
 
         const script = `
-          import { discoverSkills } from ${JSON.stringify(tree.libPath)};
+          import { discoverSkills } from ${JSON.stringify(toUrl(tree.libPath))};
           const records = await discoverSkills({ includeUserSkills: true });
           console.log(JSON.stringify(records));
         `
@@ -550,7 +560,7 @@ enabled = true
         )
 
         const script = `
-          import { readDisabledSkills, buildReport } from ${JSON.stringify(tree.libPath)};
+          import { readDisabledSkills, buildReport } from ${JSON.stringify(toUrl(tree.libPath))};
           const disabled = await readDisabledSkills();
           const records = [
             {
@@ -604,7 +614,7 @@ enabled = true
       test('finding statuses, report schema, and output file path', async t => {
         const tempGit = await createTempGitRepo(t)
         const script = `
-          import { buildReport, writeReport } from ${JSON.stringify(tree.libPath)};
+          import { buildReport, writeReport } from ${JSON.stringify(toUrl(tree.libPath))};
           const records = [
             {
               name: 'pass-skill',
@@ -688,7 +698,7 @@ exit 0
           chmodSync(fakePnpm, 0o755)
 
           const script = `
-          import { runQualityGate } from ${JSON.stringify(tree.libPath)};
+          import { runQualityGate } from ${JSON.stringify(toUrl(tree.libPath))};
           try {
             await runQualityGate();
             console.log('GATE_PASSED');
@@ -825,7 +835,7 @@ exit 0
       )
       const script = `
         import { readFile, writeFile } from 'node:fs/promises';
-        import { createHarness } from ${JSON.stringify(harnessModulePath)};
+        import { createHarness } from ${JSON.stringify(toUrl(harnessModulePath))};
         const h1 = createHarness({
           treeName: '.agents',
           casesDir: '/tmp',
@@ -990,7 +1000,7 @@ exit 0
         )
         const script = `
         Object.defineProperty(process, 'platform', { value: 'win32' });
-        const { runQualityGate } = await import(${JSON.stringify(harnessModulePath)});
+        const { runQualityGate } = await import(${JSON.stringify(toUrl(harnessModulePath))});
         await runQualityGate();
       `
         const res = await runSubprocess(

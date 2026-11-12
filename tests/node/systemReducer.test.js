@@ -14,6 +14,7 @@ import {
   handleSetPendingSupplyStopInventory,
   handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
+import { promoteDeferredOverlay } from '../../src/context/reducers/overlayQueue'
 import { createInitialState } from '../../src/context/initialState'
 import { gameReducer } from '../../src/context/gameReducer'
 import { advanceDay } from '../../src/context/actionCreators'
@@ -2375,13 +2376,6 @@ test('LOAD_GAME through the save whitelist restores pending overlays from a lega
   })
 })
 
-test('systemReducer - LOAD_GAME drops a deferred Band HQ request from the live session', () => {
-  const liveState = { ...createInitialState(), deferredBandHQOpen: true }
-
-  const loadedState = handleLoadGame(liveState, {})
-  assert.equal(loadedState.deferredBandHQOpen, false)
-})
-
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 
@@ -2435,7 +2429,7 @@ test('systemReducer - pending modal state', async t => {
   )
 
   await t.test(
-    'defers a Band HQ request while another overlay is pending',
+    'defers a Band HQ request into deferredOverlays while another overlay is pending',
     () => {
       const riskOverlay = {
         kind: 'risk_event',
@@ -2445,13 +2439,13 @@ test('systemReducer - pending modal state', async t => {
 
       const deferred = handleSetPendingBandHQOpen(state, true)
       assert.equal(deferred.pendingOverlay, riskOverlay)
-      assert.equal(deferred.deferredBandHQOpen, true)
+      assert.deepEqual(deferred.deferredOverlays, [{ kind: 'band_hq' }])
       assert.equal(handleSetPendingBandHQOpen(deferred, true), deferred)
 
       const freed = { ...deferred, pendingOverlay: null }
-      const opened = handleSetPendingBandHQOpen(freed, true)
-      assert.deepEqual(opened.pendingOverlay, { kind: 'band_hq' })
-      assert.equal(opened.deferredBandHQOpen, false)
+      const promoted = promoteDeferredOverlay(freed)
+      assert.deepEqual(promoted.pendingOverlay, { kind: 'band_hq' })
+      assert.deepEqual(promoted.deferredOverlays, [])
     }
   )
 

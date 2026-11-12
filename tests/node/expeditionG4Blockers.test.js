@@ -416,6 +416,32 @@ test('Finale profile enters the production gig lifecycle and applies success Hea
   assert.equal(completed.expedition.pressure.heat, 87)
 })
 
+test('Finale selection routes to corporate_showcase when activeSponsorDealId is set and exposure >= 60', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const atFinale = walkToFinale(started)
+  const sponsoredFinale = {
+    ...atFinale,
+    expedition: {
+      ...atFinale.expedition,
+      activeSponsorDealId: 'energy_drink_cx',
+      pressure: { ...atFinale.expedition.pressure, heat: 0, exposure: 60 }
+    }
+  }
+  const preGig = gameReducer(sponsoredFinale, {
+    type: ActionTypes.START_GIG,
+    payload: { id: 'finale-gig', name: 'Finale' }
+  })
+  assert.equal(preGig.expedition.finaleType, 'corporate_showcase')
+})
+
 test('persisted sponsor offers must equal the deterministic canonical offer set', () => {
   const initial = createInitialState()
   const prepared = gameReducer(initial, {

@@ -94,9 +94,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
 
 const heavyTestSet = new Set(
-  HEAVY_NODE_TESTS.map(testFile =>
-    path.resolve(REPO_ROOT, testFile).replace(/\\/g, '/')
-  )
+  HEAVY_NODE_TESTS.map(testFile => testFile.replace(/\\/g, '/'))
 )
 
 const isPathInNodeDirs = testPath => {
@@ -115,7 +113,9 @@ const getRemainingTestFiles = () => {
     const items = fs.readdirSync(absoluteDir)
     for (const item of items) {
       const fullPath = path.join(absoluteDir, item)
-      const normalizedPath = fullPath.replace(/\\/g, '/')
+      const relativePath = path
+        .relative(REPO_ROOT, fullPath)
+        .replace(/\\/g, '/')
       let stat
       try {
         stat = fs.statSync(fullPath)
@@ -123,12 +123,12 @@ const getRemainingTestFiles = () => {
         continue
       }
       if (stat.isDirectory()) {
-        crawl(path.relative(REPO_ROOT, fullPath))
+        crawl(relativePath)
       } else if (
-        normalizedPath.endsWith('.test.js') ||
-        normalizedPath.endsWith('.spec.js')
+        relativePath.endsWith('.test.js') ||
+        relativePath.endsWith('.spec.js')
       ) {
-        allFiles.push(fullPath)
+        allFiles.push(relativePath)
       }
     }
   }
@@ -138,7 +138,10 @@ const getRemainingTestFiles = () => {
   return allFiles
 }
 
-const normalizeTestPath = testFile => path.resolve(testFile).replace(/\\/g, '/')
+const normalizeTestPath = testFile =>
+  path
+    .relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile))
+    .replace(/\\/g, '/')
 
 const shouldOnlyHeavy =
   process.env.NODE_TEST_ONLY_HEAVY === '1' || flagOnlyHeavy
