@@ -200,6 +200,7 @@ export const BASE_STATE = {
   venueBlacklist: [],
   activeQuests: [],
   questCooldowns: [],
+  completedQuests: { global: [], scoped: {} },
   completedQuestIds: [],
   completedQuestScopes: [],
   reputationByRegion: {},

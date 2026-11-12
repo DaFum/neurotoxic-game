@@ -108,6 +108,10 @@ const buildPopulatedState = () => {
     }
   ]
   state.questCooldowns = [{ questId: 'quest_1', until: 20 }]
+  state.completedQuests = {
+    global: ['quest_0'],
+    scoped: { quest_scoped: ['scope_a'] }
+  }
   state.completedQuestIds = ['quest_0']
   state.completedQuestScopes = ['scope_a']
   state.reputationByRegion = { berlin: 25, hamburg: -10 }
@@ -452,6 +456,7 @@ describe('persisted save slice round-trip', () => {
       'activeStoryFlags',
       'pendingEvents',
       'venueBlacklist',
+      'completedQuests',
       'completedQuestIds',
       'activeQuests',
       'reputationByRegion',

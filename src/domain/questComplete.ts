@@ -81,6 +81,31 @@ export const completeQuest = (
   // Toast
   nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
 
+  // Initialize normalized completedQuests index from the legacy fields if missing
+  let currentCompleted = nextState.completedQuests
+  if (!currentCompleted) {
+    const legacyScoped: Record<string, string[]> = {}
+    for (const c of nextState.completedQuestScopes ?? []) {
+      if (!c) continue
+      const existing = Object.hasOwn(legacyScoped, c.questId)
+        ? (legacyScoped[c.questId] ?? [])
+        : []
+      if (!existing.includes(c.scopeKey)) {
+        legacyScoped[c.questId] = [...existing, c.scopeKey]
+      }
+    }
+    currentCompleted = {
+      global: nextState.completedQuestIds
+        ? [...nextState.completedQuestIds]
+        : [],
+      scoped: legacyScoped
+    }
+  }
+  const nextGlobal = currentCompleted.global.includes(quest.id)
+    ? currentCompleted.global
+    : [...currentCompleted.global, quest.id]
+  let nextScoped = currentCompleted.scoped
+
   // Track completion so repeatPolicy:'never' quests can be blocked later.
   if (!nextState.completedQuestIds?.includes(quest.id)) {
     nextState.completedQuestIds = [
@@ -91,6 +116,14 @@ export const completeQuest = (
 
   // Scope-policy quests record (id, scopeKey) so other scopes stay open.
   if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
+    const existingScopes = currentCompleted.scoped[quest.id] ?? []
+    if (!existingScopes.includes(quest.scopeKey)) {
+      nextScoped = {
+        ...currentCompleted.scoped,
+        [quest.id]: [...existingScopes, quest.scopeKey]
+      }
+    }
+
     const scopes = nextState.completedQuestScopes ?? []
     const exists = scopes.some(
       c => c?.questId === quest.id && c?.scopeKey === quest.scopeKey
@@ -101,6 +134,11 @@ export const completeQuest = (
         { questId: quest.id, scopeKey: quest.scopeKey }
       ]
     }
+  }
+
+  nextState.completedQuests = {
+    global: nextGlobal,
+    scoped: nextScoped
   }
 
   // Clear transient story flags tied to this quest being active. Both the

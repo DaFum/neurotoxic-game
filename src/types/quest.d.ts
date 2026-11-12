@@ -325,3 +325,16 @@ export interface QuestScopeCompletion {
   questId: string
   scopeKey: string
 }
+
+/**
+ * Normalized index of completed quests.
+ *
+ * @remarks
+ * Consolidates global completions and scoped completions (e.g., perVenue or perRegion).
+ * Global completions track quest IDs that cannot repeat globally.
+ * Scoped completions index quest IDs to the list of unique scopeKeys they were completed for.
+ */
+export interface CompletedQuestsState {
+  global: string[]
+  scoped: Record<string, string[]>
+}
