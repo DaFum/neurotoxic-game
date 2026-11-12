@@ -191,7 +191,9 @@ export const canAcceptQuest = (
     // O(1) indexed lookup using completedQuests.scoped when present, with fallback to legacy array
     let alreadyDone = false
     if (state.completedQuests?.scoped) {
-      const questScopes = state.completedQuests.scoped[questId]
+      const questScopes = Object.hasOwn(state.completedQuests.scoped, questId)
+        ? state.completedQuests.scoped[questId]
+        : undefined
       alreadyDone = questScopes ? questScopes.includes(scopeKey) : false
     } else {
       const scopes = state.completedQuestScopes ?? []
