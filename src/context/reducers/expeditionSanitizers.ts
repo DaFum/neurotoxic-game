@@ -45,6 +45,7 @@ import {
   isCrewInjuryStage
 } from '../../data/expedition/injuryStages'
 import { POST_OPTIONS } from '../../data/postOptions'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
@@ -1050,7 +1051,9 @@ export const sanitizeExpeditionState = (
     gigOutcomeByStep,
     activeSponsorDealId:
       typeof value.activeSponsorDealId === 'string'
-        ? value.activeSponsorDealId
+        ? BRAND_DEALS_BY_ID.has(value.activeSponsorDealId)
+          ? value.activeSponsorDealId
+          : null
         : value.activeSponsorDealId === null
           ? null
           : (sanitizedObligations.find(o => o.sourceType === 'brandDeal')

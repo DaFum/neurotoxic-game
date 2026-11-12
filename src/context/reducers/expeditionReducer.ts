@@ -434,8 +434,8 @@ export const handlePrepareExpeditionSponsorOffers = (
  * exactly once, and the run's Cash/Fame baselines are stamped after the pre-run
  * fuel payment and after the staged sponsor's signing cash, so the settlement
  * measures only what the run itself earned. The signing cash is paid before the
- * run and is never forfeited by retention; the installed `brandDeal` obligation
- * carries the sponsor's risk.
+ * run and is never forfeited by retention; `activeSponsorDealId` carries the
+ * sponsor's risk.
  */
 export const handleStartExpedition = (
   state: GameState,
