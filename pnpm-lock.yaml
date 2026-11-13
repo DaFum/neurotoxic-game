@@ -209,8 +209,8 @@ importers:
         specifier: 6.3.0
         version: 6.3.0
       tone:
-        specifier: 15.5.62
-        version: 15.5.62
+        specifier: 15.5.66
+        version: 15.5.66
     devDependencies:
       '@dreamsicle.io/stylelint-config-tailwindcss':
         specifier: 1.2.2
@@ -4907,8 +4907,8 @@ packages:
     resolution: {integrity: sha512-y8MN937s/HVhEoBU1SxfHC+wxCHkV1a9gW8eAdTadYh/bGyesZIVcbjI+mSpFbSVwQici/XjBjuUyri1dnXwBw==}
     engines: {node: '>=10.13.0'}
 
-  tone@15.5.62:
-    resolution: {integrity: sha512-j8EsMFRSoRDyVEfIaIFI5Llxo5q/3dgkyWeYV3QJcImCuJsuItS6n4h7wjnlkQ9POhg4SwWSKGGRgxqioIcIqg==}
+  tone@15.5.66:
+    resolution: {integrity: sha512-IfhfkkdIOncjSQa8efsDWK38myptQEcV77B+vB9MA/b2sldHdBx4wE64YLdyxtZVuJxvFwn8nj7X6QvchxSN9A==}
 
   tough-cookie@6.0.2:
     resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
@@ -10128,7 +10128,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tone@15.5.62:
+  tone@15.5.66:
     dependencies:
       standardized-audio-context: 25.3.77
       tslib: 2.8.1
